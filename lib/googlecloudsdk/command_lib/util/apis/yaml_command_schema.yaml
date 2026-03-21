@@ -141,7 +141,7 @@ definitions:
       # The help text for this attribute.
       help: {type: string}
       # Whether the attribute can be used to set the regional endpoint.
-      regional_endpoints_flag: {type: boolean}
+      is_regional_endpoint_flag: {type: boolean}
       # A property to act as the fallthrough for this attribute when it is not
       # provided on the command line.
       property: {$ref: "#definitions/property"}
@@ -206,6 +206,11 @@ definitions:
       name: {type: string}
       # The pluralized name if default rules won't work.
       plural_name: {type: string}
+      # TODO(b/274890004): remove request_id_field from multitype_resource_spec
+      # The field in the create request that should hold the name of the
+      # resource being created (since create requests don't have the resource
+      # id as an API parameter.
+      request_id_field: {$ref: "#/definitions/attribute"}
       # All resource specs contained in this one.
       # The parsed result will have a "type_" attribute whose name is either the
       # name of the resource spec (if all sub-resource specs are unique) or the
@@ -585,6 +590,11 @@ properties:
       # is not specified, the command will use the global endpoint.
       # If not set, the command will only use global endpoints.
       regional_endpoint_compatibility: {enum: [REQUIRED, SUPPORTED, NOT_SUPPORTED]}
+      # Whether to add a --endpoint-location flag to the command.
+      # This flag is only necessary if regional_endpoint_compatibility is REQUIRED or SUPPORTED
+      # and the user needs to make an API call to a regional endpoint without location,
+      # region, or zone in the path.
+      add_regional_endpoint_flag: {type: boolean}
       # Used for methods that return paginated results. If set to True, makes a single api
       # request rather than utilizing YieldFromList method. YieldFromList method makes
       # continuous api request until the limit is reached or all results are returned.

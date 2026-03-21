@@ -30,9 +30,6 @@ string tuple
 where only one of the three elements need be present.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import display_taps
 from googlecloudsdk.core import exceptions

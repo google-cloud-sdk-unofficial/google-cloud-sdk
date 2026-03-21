@@ -18,9 +18,6 @@
 Refer to the calliope.parser_extensions module for a detailed overview.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import argparse
 

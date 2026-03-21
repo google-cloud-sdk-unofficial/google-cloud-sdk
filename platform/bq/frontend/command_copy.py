@@ -32,6 +32,7 @@ from utils import bq_id_utils
 
 class Copy(bigquery_command.BigqueryCmd):
   usage = """cp [-n] <source_table>[,<source_table>]* <dest_table>"""
+  command = 'cp'
 
   _NOTE = '**** NOTE! **** '
   _DATASET_NOT_FOUND = (

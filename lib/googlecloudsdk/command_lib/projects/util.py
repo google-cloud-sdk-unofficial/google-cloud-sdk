@@ -310,7 +310,7 @@ def GetEnvironmentTag(project_id):
         )
   except Exception as e:  # pylint: disable=broad-except
     # Gracefully print a warning message.
-    log.info(
+    log.debug(
         'Unable to get environment tag for project [{0}]: {1}'.format(
             project_id, e
         )
@@ -322,58 +322,52 @@ def GetStandardEnvironmentValue(value):
   return _ENV_VARIANT_TO_STANDARD_VALUE_MAPPING.get(value, None)
 
 
-def PrintEnvironmentTagMessage(project_id):
+TAG_LINK = 'https://cloud.google.com/resource-manager/docs/creating-managing-projects#designate_project_environments_with_tags'
+
+
+def PrintEnvironmentTagMessageProjectId(project_id):
   """Prints environment tag message given project ID."""
-  env_tag_key, env_tag_value = GetEnvironmentTag(project_id)
-  # TODO(b/485552525): Temporarily disable environment tag messages until
-  # b/485552525 is fixed.
-  if project_id:
-    return
-  if not env_tag_key:
-    log.status.Print(
-        "Project '{0}' lacks an 'environment' tag. Please create or add a tag"
-        " with key 'environment' and a value like 'Production',"
-        " 'Development', 'Test', or 'Staging'. Add an 'environment' tag using"
-        " `gcloud resource-manager tags bindings create`. See"
-        " https://cloud.google.com/resource-manager/docs/creating-managing-projects#designate_project_environments_with_tags"
-        " for details.".format(project_id)
+  try:
+    project = projects_api.Get(ParseProject(project_id),
+                               disable_api_enablement_check=True)
+  except Exception as e:  # pylint: disable=broad-except
+    # Hide errors from the user when printing
+    log.debug(
+        'Unable to get project [{0}] for environment tag message: {1}'.format(
+            project_id, e
+        )
     )
     return
+  if not project:
+    return
+  PrintEnvironmentTagMessage(project)
 
-  env_standard_value = GetStandardEnvironmentValue(
-      env_tag_value
-  )
+
+def PrintEnvironmentTagMessage(project):
+  """Prints environment tag message given project ID."""
+  if not project or not project.parent:
+    return
+  if project.parent.type not in ('folder', 'organization'):
+    # Do not print environment tag message for non-'enterprise' projects, which
+    # are projects under 'folders' or 'organizations'.
+    return
+
+  env_tag_key, env_tag_value = GetEnvironmentTag(project.projectId)
+  if not env_tag_key:
+    log.status.Print(f'[environment: untagged] Read more {TAG_LINK}.')
+    return
+
+  env_standard_value = GetStandardEnvironmentValue(env_tag_value)
   if not env_standard_value:
     log.status.Print(
-        "Project '{0}' has an 'environment' tag with an"
-        " unrecognized value. Please use a standard value such as"
-        " 'Production', 'Development', 'Test', or 'Staging'. You can update"
-        " the tag value using `gcloud resource-manager tags bindings"
-        " create`. Refer to https://cloud.google.com/resource-manager/docs/"
-        "creating-managing-projects#designate_project_environments_with_tags"
-        " for more guidance.".format(project_id)
+        f'[environment: {env_tag_value}] is non-standard. Read more'
+        f' {TAG_LINK}.'
     )
     return
 
   if env_standard_value == Environment.PRODUCTION:
     log.status.Print(
-        "Caution: Project '{0}' is designated as '{2}'(tagged 'environment:"
-        " {1}'). Making changes could affect your '{2}' apps."
-        ' Learn more at https://cloud.google.com/resource-manager/docs/'
-        'creating-managing-projects#designate_project_environments_with_tags'
-        .format(
-            project_id, env_tag_value, env_standard_value.value
-        )
+        f'[environment: {env_standard_value.value}] Proceed with caution.'
     )
   else:
-    log.status.Print(
-        "Caution: Project '{0}' is designated as '{2}'(tagged"
-        " 'environment: {1}'). Making changes could affect your '{2}'"
-        ' apps. If incorrect, you can update it by managing the tag'
-        " binding for the 'environment' key using `gcloud"
-        " resource-manager tags bindings create`. Learn more at"
-        ' https://cloud.google.com/resource-manager/docs/creating-managing-projects#designate_project_environments_with_tags'
-        .format(
-            project_id, env_tag_value, env_standard_value.value
-        )
-    )
+    log.status.Print(f'[environment: {env_standard_value.value}]')

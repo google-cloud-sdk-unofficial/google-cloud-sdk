@@ -80,6 +80,7 @@ class MigrateCloudSqlGA(base.RestoreCommand):
     flags.AddTags(parser)
     flags.AddMigrateCloudSqlFlags(parser)
     flags.AddDenyMaintenancePeriod(parser, alloydb_messages)
+    flags.AddDataplexIntegrationFlags(parser)
 
   def ConstructMigrateCloudSqlRequestFromArgs(
       self,

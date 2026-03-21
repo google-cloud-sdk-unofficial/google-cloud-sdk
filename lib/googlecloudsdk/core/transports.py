@@ -16,11 +16,6 @@
 """A module to get a transport object for making API calls."""
 
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
-
 def GetApitoolsTransport(timeout='unset',
                          response_encoding=None,
                          ca_certs=None,

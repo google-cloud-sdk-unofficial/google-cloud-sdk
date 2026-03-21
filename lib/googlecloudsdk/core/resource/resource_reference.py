@@ -15,9 +15,6 @@
 
 """Cloud resource filter and format key reference utilities."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.core.resource import resource_filter
 from googlecloudsdk.core.resource import resource_keys_expr

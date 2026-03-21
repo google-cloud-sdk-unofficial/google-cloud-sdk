@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utility functions for opening a GCE URL and getting contents."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import os
 

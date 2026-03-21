@@ -22,6 +22,7 @@ from frontend import utils as frontend_utils
 
 class MakeExternalTableDefinition(bigquery_command.BigqueryCmd):
   usage = """mkdef <source_uri> [<schema>]"""
+  command = 'mkdef'
 
   def __init__(self, name: str, fv: flags.FlagValues):
     super(MakeExternalTableDefinition, self).__init__(name, fv)

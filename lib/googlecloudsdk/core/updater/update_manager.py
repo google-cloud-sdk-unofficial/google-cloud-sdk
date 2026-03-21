@@ -15,9 +15,6 @@
 
 """Higher level functions to support updater operations at the CLI level."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import hashlib
 import os

@@ -85,34 +85,34 @@ def main(unused_argv):
   try:
     frontend_utils.ValidateGlobalFlags()
 
-    bq_commands = {
-        # Keep the commands alphabetical.
-        'add-iam-policy-binding': commands_iam.AddIamPolicyBinding,
-        'cancel': command_cancel.Cancel,
-        'cp': command_copy.Copy,
-        'extract': command_extract.Extract,
-        'get-iam-policy': commands_iam.GetIamPolicy,
-        'head': command_head.Head,
-        'info': command_info.Info,
-        'init': command_init.Init,
-        'insert': command_insert.Insert,
-        'load': command_load.Load,
-        'ls': command_list.ListCmd,
-        'mk': command_make.Make,
-        'mkdef': command_mkdef.MakeExternalTableDefinition,
-        'partition': command_partition.Partition,
-        'query': command_query.Query,
-        'remove-iam-policy-binding': commands_iam.RemoveIamPolicyBinding,
-        'rm': command_delete.Delete,
-        'set-iam-policy': commands_iam.SetIamPolicy,
-        'shell': command_repl.Repl,
-        'show': command_show.Show,
-        'truncate': command_truncate.Truncate,
-        'undelete': command_undelete.Undelete,
-        'update': command_update.Update,
-        'version': command_version.Version,
-        'wait': command_wait.Wait,
-    }
+    _bq_commands = [
+        commands_iam.AddIamPolicyBinding,
+        command_cancel.Cancel,
+        command_copy.Copy,
+        command_extract.Extract,
+        commands_iam.GetIamPolicy,
+        command_head.Head,
+        command_info.Info,
+        command_init.Init,
+        command_insert.Insert,
+        command_load.Load,
+        command_list.ListCmd,
+        command_make.Make,
+        command_mkdef.MakeExternalTableDefinition,
+        command_partition.Partition,
+        command_query.Query,
+        commands_iam.RemoveIamPolicyBinding,
+        command_delete.Delete,
+        commands_iam.SetIamPolicy,
+        command_repl.Repl,
+        command_show.Show,
+        command_truncate.Truncate,
+        command_undelete.Undelete,
+        command_update.Update,
+        command_version.Version,
+        command_wait.Wait,
+    ]
+    bq_commands = {command.command: command for command in _bq_commands}
 
     for command, function in bq_commands.items():
       if command not in appcommands.GetCommandList():

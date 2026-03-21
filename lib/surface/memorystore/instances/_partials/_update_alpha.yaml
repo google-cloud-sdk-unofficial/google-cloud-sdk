@@ -127,7 +127,6 @@
             the available_maintenance_versions field.
     - group:
         mutex: true
-        hidden: true
         help_text: |-
           Arguments for the  rotate server certificate.
         params:
@@ -136,7 +135,6 @@
           action: store_true_false
           required: false
           type: bool
-          hidden: true
           help_text: |-
             Rotate the server certificates.
     - help_text: |-

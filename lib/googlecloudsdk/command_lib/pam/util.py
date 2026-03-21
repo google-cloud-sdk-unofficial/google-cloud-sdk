@@ -16,6 +16,7 @@
 """Utility functions for `gcloud pam` commands."""
 
 
+import datetime
 import re
 
 from googlecloudsdk.api_lib.util import apis
@@ -23,6 +24,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 from googlecloudsdk.core import yaml
+from googlecloudsdk.core.util import times
 
 
 def SetForceFieldInDeleteEntitlementRequest(unused_ref, unused_args, req):
@@ -138,6 +140,23 @@ def LoadGrantScopeFromYaml(stream):
     # Return an empty list if no file is provided or the file is empty.
     return []
   return yaml.load(stream[0])
+
+
+def FormatDateTimeAsRfc3339(dt: datetime.datetime | None) -> str | None:
+  """Formats a datetime object into an RFC 3339 string.
+
+  Args:
+    dt: The datetime object to format. Can be None.
+
+  Returns:
+    A string representation of the datetime in RFC 3339 format, or None if dt is
+    None.
+  """
+  if dt is None:
+    return None
+  # Format the datetime object into an RFC 3339 string with microseconds and
+  # timezone offset.
+  return times.FormatDateTime(dt, '%Y-%m-%dT%H:%M:%S.%6f%Ez')
 
 
 # TODO(b/261183749): Remove modify_request_hook when singleton resource args

@@ -37,6 +37,23 @@ DEFAULT_AGGREGATED_LIST_FORMAT = """\
       minTlsVersion
     )"""
 
+ALPHA_LIST_FORMAT = """\
+    table(
+      name,
+      profile,
+      minTlsVersion,
+      postQuantumKeyExchange
+    )"""
+
+ALPHA_AGGREGATED_LIST_FORMAT = """\
+    table(
+      name,
+      region.basename(),
+      profile,
+      minTlsVersion,
+      postQuantumKeyExchange
+    )"""
+
 # Mapping between user supplied argument to the string expected by API.
 _TLS_VERSION_MAP = {
     '1.0': 'TLS_1_0',

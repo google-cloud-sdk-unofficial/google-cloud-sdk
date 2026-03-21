@@ -36,7 +36,7 @@
   request:
     collection: iam.locations.workforcePools.providers
     modify_request_hooks:
-    - googlecloudsdk.command_lib.iam.hooks:AddCreateExtraAndExtendedAttributesConfigToRequest
+    - googlecloudsdk.command_lib.iam.hooks:AddCreateExtendedAttributesConfigToRequest
 
   arguments:
     resource:
@@ -55,7 +55,9 @@
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.saml_idp_metadata_path
       required: true
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.scim_usage
-    additional_arguments_hook: googlecloudsdk.command_lib.iam.workforce_pools.flags:AddExtraAndExtendedAttributesOAuth2Client
+    - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.create_extra_attributes_group
+    additional_arguments_hook: googlecloudsdk.command_lib.iam.workforce_pools.flags:AddExtendedAttributesOAuth2Client
+
 
   async:
     collection: iam.locations.workforcePools.providers.operations

@@ -40,6 +40,7 @@ class BuildsTransport(abc.ABC):
 
     AUTH_SCOPES = (
         'https://www.googleapis.com/auth/cloud-platform',
+        'https://www.googleapis.com/auth/run',
     )
 
     DEFAULT_HOST: str = 'run.googleapis.com'

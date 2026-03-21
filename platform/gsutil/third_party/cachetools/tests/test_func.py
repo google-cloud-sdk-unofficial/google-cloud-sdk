@@ -76,6 +76,11 @@ class DecoratorTestMixin:
         self.assertEqual(cached.cache_info(), (2, 1, 128, 1))
 
     def test_decorator_needs_rlock(self):
+        """This will deadlock on a cache that uses a regular lock.
+        https://github.com/python/cpython/blob/3.13/Lib/test/test_functools.py#L1791
+
+        """
+
         cached = self.decorator(lambda n: n)
 
         class RecursiveEquals:
@@ -109,18 +114,6 @@ class LFUDecoratorTest(unittest.TestCase, DecoratorTestMixin):
 
 class LRUDecoratorTest(unittest.TestCase, DecoratorTestMixin):
     DECORATOR = staticmethod(cachetools.func.lru_cache)
-
-
-class MRUDecoratorTest(unittest.TestCase, DecoratorTestMixin):
-    def decorator(self, maxsize, **kwargs):
-        import warnings
-
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            d = cachetools.func.mru_cache(maxsize, **kwargs)
-        self.assertNotEqual(len(w), 0)
-        self.assertIs(w[0].category, DeprecationWarning)
-        return d
 
 
 class RRDecoratorTest(unittest.TestCase, DecoratorTestMixin):

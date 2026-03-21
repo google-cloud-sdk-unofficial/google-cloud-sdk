@@ -19,6 +19,7 @@ class Undelete(bigquery_command.BigqueryCmd):
   """Undelete the dataset described by identifier."""
 
   usage = """bq undelete dataset"""
+  command = 'undelete'
 
   def __init__(self, name: str, fv: flags.FlagValues):
     super().__init__(name, fv)

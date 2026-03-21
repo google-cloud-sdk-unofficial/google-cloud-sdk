@@ -2,6 +2,55 @@
 All notable changes to charset-normalizer will be documented in this file. This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.4.3](https://github.com/Ousret/charset_normalizer/compare/3.4.2...3.4.3) (2025-08-09)
+
+### Changed
+- mypy(c) is no longer a required dependency at build time if `CHARSET_NORMALIZER_USE_MYPYC` isn't set to `1`. (#595) (#583)
+- automatically lower confidence on small bytes samples that are not Unicode in `detect` output legacy function. (#391)
+
+### Added
+- Custom build backend to overcome inability to mark mypy as an optional dependency in the build phase.
+- Support for Python 3.14
+
+### Fixed
+- sdist archive contained useless directories.
+- automatically fallback on valid UTF-16 or UTF-32 even if the md says it's noisy. (#633)
+
+### Misc
+- SBOM are automatically published to the relevant GitHub release to comply with regulatory changes.
+  Each published wheel comes with its SBOM. We choose CycloneDX as the format.
+- Prebuilt optimized wheel are no longer distributed by default for CPython 3.7 due to a change in cibuildwheel.
+
+## [3.4.2](https://github.com/Ousret/charset_normalizer/compare/3.4.1...3.4.2) (2025-05-02)
+
+### Fixed
+- Addressed the DeprecationWarning in our CLI regarding `argparse.FileType` by backporting the target class into the package. (#591)
+- Improved the overall reliability of the detector with CJK Ideographs. (#605) (#587)
+
+### Changed
+- Optional mypyc compilation upgraded to version 1.15 for Python >= 3.8
+
+## [3.4.1](https://github.com/Ousret/charset_normalizer/compare/3.4.0...3.4.1) (2024-12-24)
+
+### Changed
+- Project metadata are now stored using `pyproject.toml` instead of `setup.cfg` using setuptools as the build backend.
+- Enforce annotation delayed loading for a simpler and consistent types in the project.
+- Optional mypyc compilation upgraded to version 1.14 for Python >= 3.8
+
+### Added
+- pre-commit configuration.
+- noxfile.
+
+### Removed
+- `build-requirements.txt` as per using `pyproject.toml` native build configuration.
+- `bin/integration.py` and `bin/serve.py` in favor of downstream integration test (see noxfile).
+- `setup.cfg` in favor of `pyproject.toml` metadata configuration.
+- Unused `utils.range_scan` function.
+
+### Fixed
+- Converting content to Unicode bytes may insert `utf_8` instead of preferred `utf-8`. (#572)
+- Deprecation warning "'count' is passed as positional argument" when converting to Unicode bytes on Python 3.13+
+
 ## [3.4.0](https://github.com/Ousret/charset_normalizer/compare/3.3.2...3.4.0) (2024-10-08)
 
 ### Added
@@ -181,7 +230,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [2.0.12](https://github.com/Ousret/charset_normalizer/compare/2.0.11...2.0.12) (2022-02-12)
 
 ### Fixed
-- ASCII miss-detection on rare cases (PR #170) 
+- ASCII miss-detection on rare cases (PR #170)
 
 ## [2.0.11](https://github.com/Ousret/charset_normalizer/compare/2.0.10...2.0.11) (2022-01-30)
 
@@ -213,7 +262,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - MD improvement on trailing data and long foreign (non-pure latin) data (PR #124)
 - Efficiency improvements in cd/alphabet_languages from [@adbar](https://github.com/adbar) (PR #122)
 - call sum() without an intermediary list following PEP 289 recommendations from [@adbar](https://github.com/adbar) (PR #129)
-- Code style as refactored by Sourcery-AI (PR #131) 
+- Code style as refactored by Sourcery-AI (PR #131)
 - Minor adjustment on the MD around european words (PR #133)
 - Remove and replace SRTs from assets / tests (PR #139)
 - Initialize the library logger with a `NullHandler` by default from [@nmaynes](https://github.com/nmaynes) (PR #135)
@@ -286,7 +335,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [2.0.2](https://github.com/Ousret/charset_normalizer/compare/2.0.1...2.0.2) (2021-07-15)
 ### Fixed
-- Empty/Too small JSON payload miss-detection fixed. Report from [@tseaver](https://github.com/tseaver) (PR #59) 
+- Empty/Too small JSON payload miss-detection fixed. Report from [@tseaver](https://github.com/tseaver) (PR #59)
 
 ### Changed
 - Don't inject unicodedata2 into sys.modules from [@akx](https://github.com/akx) (PR #57)

@@ -259,20 +259,22 @@
           Setting --session-reauth-method when --session-length is empty raises an error.
       ALPHA:
         help_text: |
-            The maximum lifetime of a user session provided as an  ISO 8601 duration string. Must be at
-            least one hour or zero seconds, and no more than twenty-four hours. Granularity is limited
-            to seconds.
+          The maximum lifetime of a user session provided as an ISO 8601 duration string.
+          For Cloud Identity users, this must be at least one hour or zero seconds, and no more
+          than twenty-four hours.
+          For Workforce Identity Federated users, this can be up to 90 days, or 14 days for Cloud
+          Console. Granularity is limited to seconds.
 
-            When --session-length=0 then users in the group attached to this binding will have infinite
-            session length, effectively disabling session.
+          When --session-length=0 then users in the group attached to this binding will have infinite
+          session length, effectively disabling session.
 
-            A session begins when a user signs-in successfully. If a user signs out before the end of
-            the session lifetime, a new login creates a new session with a fresh lifetime. When a
-            session expires, the user is asked to re-authenticate in accordance with session-method.
+          A session begins when a user signs-in successfully. If a user signs out before the end of
+          the session lifetime, a new login creates a new session with a fresh lifetime. When a
+          session expires, the user is asked to re-authenticate in accordance with session-method.
 
-            Setting --session-reauth-method when --session-length is empty raises an error. Cannot set
-            --session-length with --restricted-client-application-client-ids or
-            --restricted-client-application-names; please use scoped access settings.
+          Setting --session-reauth-method when --session-length is empty raises an error. Cannot set
+          --session-length with --restricted-client-application-client-ids or
+          --restricted-client-application-names; please use scoped access settings.
     - api_field: gcpUserAccessBinding.sessionSettings.sessionReauthMethod
       arg_name: session-reauth-method
       default: login

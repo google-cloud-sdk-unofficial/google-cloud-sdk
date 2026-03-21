@@ -94,7 +94,7 @@ class _BaseServicesRestTransport(ServicesTransport):
             return NotImplementedError("__hash__ must be implemented.")
 
         __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-            "serviceId" : "",        }
+        }
 
         @classmethod
         def _get_unset_required_fields(cls, message_dict):

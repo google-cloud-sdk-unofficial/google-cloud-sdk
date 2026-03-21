@@ -134,6 +134,7 @@ for examples.
       parser, for_node_pool=True
   )
   flags.AddEnableLustreMultiRailFlag(parser, hidden=True)
+  flags.AddCapacityWaitDurationFlag(parser, hidden=True)
 
 
 def ParseCreateNodePoolOptionsBase(args):
@@ -241,6 +242,7 @@ def ParseCreateNodePoolOptionsBase(args):
       enable_lustre_multi_nic=args.enable_lustre_multi_nic,
       subnetwork=args.subnetwork,
       node_architecture_taint_behavior=args.node_architecture_taint_behavior,
+      capacity_wait_duration=args.capacity_wait_duration,
   )
 
 

@@ -15,10 +15,6 @@
 
 """Supported printer types used in resource_printer."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 
 CONFIG = 'config'
 CSV = 'csv'

@@ -23,9 +23,8 @@ from googlecloudsdk.command_lib.compute.routers import flags
 from googlecloudsdk.command_lib.compute.routers import route_policy_utils
 
 
-@base.Hidden
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class RemoveNamedSetElement(base.UpdateCommand):
   """Remove an element from a named set of a Compute Engine router."""
 

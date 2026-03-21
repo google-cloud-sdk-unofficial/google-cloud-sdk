@@ -55,10 +55,11 @@ class CreateServiceRequest(proto.Message):
         service (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.Service):
             Required. The Service instance to create.
         service_id (str):
-            Required. The unique identifier for the Service. It must
+            Optional. The unique identifier for the Service. It must
             begin with letter, and cannot end with hyphen; must contain
             fewer than 50 characters. The name of the service becomes
-            {parent}/services/{service_id}.
+            {parent}/services/{service_id}. If not provided, the server
+            will generate a unique ``service_id``.
         validate_only (bool):
             Indicates that the request should be
             validated and default values populated, without
@@ -104,6 +105,19 @@ class UpdateServiceRequest(proto.Message):
             caller must have 'run.services.create'
             permissions if this is set to true and the
             Service does not exist.
+        force_new_revision (bool):
+            Optional. If set to true, a new revision will
+            be created from the template even if the system
+            doesn't detect any changes from the previously
+            deployed revision.
+
+            This may be useful for cases where the
+            underlying resources need to be recreated or
+            reinitialized. For example if the image is
+            specified by label, but the underlying image
+            digest has changed) or if the container performs
+            deployment initialization work that needs to be
+            performed again.
     """
 
     update_mask: field_mask_pb2.FieldMask = proto.Field(
@@ -123,6 +137,10 @@ class UpdateServiceRequest(proto.Message):
     allow_missing: bool = proto.Field(
         proto.BOOL,
         number=4,
+    )
+    force_new_revision: bool = proto.Field(
+        proto.BOOL,
+        number=5,
     )
 
 

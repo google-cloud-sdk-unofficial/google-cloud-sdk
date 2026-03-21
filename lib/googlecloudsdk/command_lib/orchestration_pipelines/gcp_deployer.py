@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""This module contains a generic, object-oriented deployer for Google Cloud resources."""
+"""A generic, object-oriented deployer for Google Cloud resources."""
 
 from typing import Any
 
@@ -44,16 +44,20 @@ def deploy_gcp_resource(handler: GcpResourceHandler) -> None:
       )
       changed_fields = handler.compare(existing_resource, local_definition)
       if not changed_fields:
+        capitalized_type = (
+            resource_type_name[0].upper() + resource_type_name[1:]
+        )
         log.status.Print(
-            f"     {resource_type_name.capitalize()} is already up-to-date."
+            f"     {capitalized_type} is already up-to-date."
         )
         return
       log.status.Print(
           f"     Differences found in fields: {', '.join(changed_fields)}. "
           "Patching..."
       )
+      resource_message = handler.to_resource_message(local_definition)
       request = handler.build_update_request(
-          existing_resource, local_definition, changed_fields
+          existing_resource, resource_message, changed_fields
       )
 
       if handler.dry_run:
@@ -71,11 +75,13 @@ def deploy_gcp_resource(handler: GcpResourceHandler) -> None:
             f" {name_to_print or resource_id}"
         )
     else:
+      capitalized_type = resource_type_name[0].upper() + resource_type_name[1:]
       log.status.Print(
-          f"     {resource_type_name.capitalize()} not found. Creating a new"
+          f"     {capitalized_type} not found. Creating a new"
           " one..."
       )
-      request = handler.build_create_request(local_definition)
+      resource_message = handler.to_resource_message(local_definition)
+      request = handler.build_create_request(resource_message)
 
       if handler.dry_run:
         log.status.Print(f"     [DRY RUN] Would create {resource_type_name}")

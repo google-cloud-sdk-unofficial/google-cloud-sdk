@@ -14,9 +14,6 @@
 # limitations under the License.
 """google-auth p12 service account credentials."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import os
 

@@ -16,7 +16,6 @@
 """A library to support auth commands."""
 
 
-
 import abc
 import json
 import textwrap

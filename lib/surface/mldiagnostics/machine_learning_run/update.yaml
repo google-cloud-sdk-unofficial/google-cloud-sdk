@@ -21,10 +21,47 @@
     examples: |-
       To update the machine learning run, run:
 
-          $ {command} my-run --location=us-central1 --gcs-path=gs://my-bucket/my-run
-          --gke-cluster-name=projects/my-project/locations/us-central1/clusters/my-cluster
-          --gke-workload-name=my-workload --gke-kind=Job --gke-namespace=default
-          --gke-workload-create-time=2026-02-20T06:06:06Z
+          $ {command} gcloud-cli-run-id-01 --orchestrator gke --run-group group-gcloud-cli
+          --tools xprof --gcs-path gs://diagon-prod-data-bucket --display-name gcloud-cli-run
+          --gke-cluster-name projects/PROJECT_ID/locations/us-central1/clusters/mldiag-prod-gke-cluster
+          projects/PROJECT_ID/locations/us-central1/clusters/mldiag-prod-gke-cluster
+          --gke-namespace diagon --gke-workload-name mldiag-prod-demo-jobset --gke-kind JobSet
+          --gke-workload-create-time 2026-02-20T06:00:00Z --labels "created_by"="cli"
+          --run-phase COMPLETED --etag "1f54a7f4-bd25-4f98-a91c-97bfa1c5b7a6"
+
+          Update command support only full update (partial update is not supported). Hence, user
+          should get the existing metadata of the ML run using get/list command and modify
+          required fields. User need to pass latest `etag` for ML Run to ensure latest ML Run
+          details were read before the update operation.
+
+          Sample output:
+          ```
+            Request issued for: [my-run]
+            Waiting for operation [projects/PROJECT_ID/locations/us-central1/operations/operation-1770309155834-64a1638604a06-34b8ba32-966d4a8f] to complete...done.
+            Updated machine_learning_run [my-run].
+            artifacts:
+              gcsPath: gs://diagon-prod-data
+            createTime: '2026-02-05T16:25:28.367865234Z'
+            displayName: updated-gcloud-cli-run
+            endTime: '0001-01-01T00:00:00Z'
+            etag: 2a9dad60-a18b-4680-b63d-d0e16214713c
+            labels:
+              on_demand_xprof: enabled
+            name: projects/PROJECT_ID/locations/us-central1/machineLearningRuns/my-run
+            orchestrator: GKE
+            runPhase: COMPLETED
+            runSet: group-gcloud-cli
+            tools:
+            - xprof: {}
+            updateTime: '2026-02-05T16:32:35.885684490Z'
+            workloadDetails:
+              gke:
+                cluster: projects/PROJECT_ID/locations/us-central1/clusters/mldiag-prod-cluster
+                id: mldiag-prod-demo-jobset
+                kind: JobSet
+                namespace: diagon
+          ```
+
   arguments:
     params:
     - help_text: |-

@@ -163,9 +163,23 @@ class Collections(enum.Enum):
   )
   PROJECTS_LOCATIONS = (
       'projects.locations',
-      'projects/{projectsId}/locations/{locationsId}',
-      {},
-      ['projectsId', 'locationsId'],
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_CLOUDCONTROLDEPLOYMENTS = (
+      'projects.locations.cloudControlDeployments',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'cloudControlDeployments/{cloudControlDeploymentsId}',
+      },
+      ['name'],
       True
   )
   PROJECTS_LOCATIONS_FRAMEWORKAUDITS = (
@@ -179,6 +193,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_FRAMEWORKDEPLOYMENTS = (
+      'projects.locations.frameworkDeployments',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'frameworkDeployments/{frameworkDeploymentsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_OPERATIONDETAILS = (
       'projects.locations.operationDetails',
       '{+name}',
@@ -186,6 +211,17 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/'
               'operationDetails/{operationDetailsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_OPERATIONS = (
+      'projects.locations.operations',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/operations/'
+              '{operationsId}',
       },
       ['name'],
       True

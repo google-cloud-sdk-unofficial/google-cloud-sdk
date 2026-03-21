@@ -64,8 +64,6 @@ class DataprocGCEActionProcessor(base.ActionProcessor):
     if deploy_mode == "cluster":
       job_props["spark.yarn.appMasterEnv.PYTHONPATH"] = self.full_python_path
     else:
-      job_props["spark.dataproc.driverEnv.PYTHONPATH"] = self.full_python_path
-
       cluster_config = self._get_nested_dict(
           action, ["config", "cluster_config"]
       )
@@ -76,6 +74,12 @@ class DataprocGCEActionProcessor(base.ActionProcessor):
       # Directory name where dependencies are unpacked.
       libs_dir = f"./{extract_path}"
       env_name = "python_environment"
+
+      python_version = self._get_python_version()
+      driver_python_path = (
+          f"/opt/{env_name}/lib/python{python_version}/site-packages"
+      )
+      job_props["spark.dataproc.driverEnv.PYTHONPATH"] = driver_python_path
       gcs_archive_path = f"{self._artifact_base_uri}{self._env_pack_file}"
 
       python_environment_unpack_renderer.render_init_action(

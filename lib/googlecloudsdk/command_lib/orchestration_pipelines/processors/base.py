@@ -45,7 +45,7 @@ class ActionProcessor:
   def process_action(self):
     """Processes a single action in the pipeline, resolving local paths to GCS URIs."""
 
-    requirements_path = self._work_dir / "jobs" / "requirements.txt"
+    requirements_path = self._work_dir / "requirements.txt"
     if self._has_valid_requirements(requirements_path):
       python_version = self._get_python_version()
       if python_version:

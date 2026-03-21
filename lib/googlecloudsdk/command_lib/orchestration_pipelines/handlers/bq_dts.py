@@ -16,43 +16,32 @@
 
 from typing import Any, Dict, List
 
+from apitools.base.protorpclite import messages
 from apitools.base.py import encoding
-from googlecloudsdk.command_lib.orchestration_pipelines import deployment_model
 from googlecloudsdk.command_lib.orchestration_pipelines.handlers import base
 from googlecloudsdk.core import log
 
 
 class BqDataTransferConfigHandler(base.GcpResourceHandler):
-  """Handler for BigQuery DataTransfer Config resources."""
-  resource: deployment_model.BqDataTransferConfigModel
-
-  api_name = "bigquerydatatransfer"
-  api_version = "v1"
-
-  def get_resource_id(self) -> str:
-    return self.resource.name
-
-  def get_create_method(self) -> Any:
-    return self.client.projects_locations_transferConfigs.Create
-
-  def get_update_method(self) -> Any:
-    return self.client.projects_locations_transferConfigs.Patch
+  """Handler for migrating BigQuery DTS configurations."""
 
   def find_existing_resource(self) -> Any:
-    parent = f"projects/{self.environment.project}/locations/{self.environment.region}"
     request = self.messages.BigquerydatatransferProjectsLocationsTransferConfigsListRequest(
-        parent=parent
+        parent=self._get_location_path()
     )
     response = self.client.projects_locations_transferConfigs.List(request)
+    expected_display_name = self.resource.definition.get(
+        "displayName", self.resource.name
+    )
     matching = [
         c
         for c in response.transferConfigs
-        if c.displayName == self.resource.display_name
+        if c.displayName == expected_display_name
     ]
     if len(matching) > 1:
       raise ValueError(
           f"Found {len(matching)} transfer configs with ambiguous displayName"
-          f" '{self.resource.display_name}'"
+          f" '{self.resource.name}'"
       )
     if matching:
       full_config_name = matching[0].name
@@ -67,56 +56,63 @@ class BqDataTransferConfigHandler(base.GcpResourceHandler):
       return self.client.projects_locations_transferConfigs.Get(get_request)
     return None
 
+  def build_get_request(self) -> Any:
+    raise NotImplementedError(
+        "BqDataTransferConfigHandler overrides find_existing_resource."
+    )
+
   def get_local_definition(self) -> Dict[str, Any]:
     definition = super().get_local_definition()
-    definition["displayName"] = self.resource.display_name
+    if "displayName" not in definition:
+      definition["displayName"] = self.resource.name
     return definition
 
   def compare(
       self, existing_resource: Any, local_definition: Dict[str, Any]
   ) -> List[str]:
-    local_copy = local_definition.copy()
-    local_copy.pop("service_account_name", None)
-    changed = []
-    for k, v in local_copy.items():
+    changes = []
+
+    # Check definition fields
+    for k, v in local_definition.items():
       if k == "params":
-        pass  # Handled below
-      elif getattr(existing_resource, k, None) != v:
-        changed.append(k)
+        continue  # Handled below
+      if getattr(existing_resource, k, None) != v:
+        changes.append(k)
+
+    # Check params
     if "params" in local_definition:
       existing_params = encoding.MessageToDict(existing_resource.params)
       if local_definition.get("params") != existing_params:
-        if "params" not in changed:
-          changed.append("params")
-    return changed
+        if "params" not in changes:
+          changes.append("params")
 
-  def build_create_request(self, definition: Dict[str, Any]) -> Any:
-    parent = f"projects/{self.environment.project}/locations/{self.environment.region}"
-    transfer_config_message = encoding.DictToMessage(
-        definition, self.messages.TransferConfig
-    )
+    return changes
+
+  def build_create_request(
+      self, resource_message: messages.Message
+  ) -> messages.Message:
+    service_account_name = None
+    if self.resource.metadata:
+      service_account_name = self.resource.metadata.service_account_name
     return self.messages.BigquerydatatransferProjectsLocationsTransferConfigsCreateRequest(
-        parent=parent,
-        transferConfig=transfer_config_message,
-        serviceAccountName=self.resource.service_account_name,
+        parent=self._get_location_path(),
+        transferConfig=resource_message,
+        serviceAccountName=service_account_name,
     )
 
   def build_update_request(
       self,
-      existing_resource: Any,
-      definition: Dict[str, Any],
+      existing_resource: messages.Message,
+      resource_message: messages.Message,
       changed_fields: List[str],
-  ) -> Any:
-    transfer_config_message = encoding.DictToMessage(
-        definition, self.messages.TransferConfig
-    )
-    transfer_config_message.name = existing_resource.name
-    mask_paths = [
-        field for field in changed_fields if field != "service_account_name"
-    ]
+  ) -> messages.Message:
+    service_account_name = None
+    if self.resource.metadata:
+      service_account_name = self.resource.metadata.service_account_name
+    resource_message.name = existing_resource.name
     return self.messages.BigquerydatatransferProjectsLocationsTransferConfigsPatchRequest(
         name=existing_resource.name,
-        transferConfig=transfer_config_message,
-        updateMask=",".join(mask_paths),
-        serviceAccountName=self.resource.service_account_name,
+        transferConfig=resource_message,
+        updateMask=",".join(changed_fields),
+        serviceAccountName=service_account_name,
     )

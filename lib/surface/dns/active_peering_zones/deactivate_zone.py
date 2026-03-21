@@ -23,6 +23,7 @@ from googlecloudsdk.core import properties
 
 
 @base.Hidden
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Deactivate(base.DeleteCommand):
   """Deactivates a Cloud DNS peering zone.

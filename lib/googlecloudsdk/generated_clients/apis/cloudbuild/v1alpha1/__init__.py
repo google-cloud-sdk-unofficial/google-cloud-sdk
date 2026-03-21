@@ -1,6 +1,5 @@
 """Package marker file."""
 
-from __future__ import absolute_import
 
 import pkgutil
 

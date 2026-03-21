@@ -27,6 +27,7 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.util import iso_duration
 from googlecloudsdk.core.util import times
 
+_WEB_APP_NAMES_14_DAY_SESSION_LENGTH = frozenset(['Cloud Console'])
 
 def AddUpdateMask(ref, args, req):
   """Hook to add update mask."""
@@ -753,7 +754,18 @@ def _ProcessAccessLevelsInScopedAccessSettings(args, req):
 def _ProcessSessionSettingsInScopedAccessSettings(req):
   """Process the session settings in the scoped access settings."""
 
-  def _ValidateSessionSettings(session_settings):
+  is_update_request = hasattr(req, 'name')
+  # For update requests, we don't know if a binding is for a federated
+  # principal without making a GET request first. To avoid this, we assume it
+  # could be federated and allow session lengths > 1d, and rely on backend
+  # validation to enforce 1d max for non-federated principals.
+  has_federated_principal = is_update_request or (
+      hasattr(req.gcpUserAccessBinding, 'principal')
+      and req.gcpUserAccessBinding.principal
+      and req.gcpUserAccessBinding.principal.federatedPrincipal
+  )
+
+  def _ValidateSessionSettings(session_settings, scope):
     if session_settings is None:
       return
     if session_settings.sessionLength is None:
@@ -762,20 +774,37 @@ def _ProcessSessionSettingsInScopedAccessSettings(req):
           'SessionSettings within ScopedAccessSettings must include a session'
           'length.',
       )
-    session_length = times.ParseDuration(
+    session_length_sec = times.ParseDuration(
         session_settings.sessionLength
     ).total_seconds
-    if session_length > iso_duration.Duration(days=1).total_seconds:
+    max_session_length = iso_duration.Duration(days=1)
+    # TODO(b/486106966): Investigate if we can do a better check for v1alpha.
+    if (
+        properties.VALUES.access_context_manager.enable_gcsl.GetBool()
+        and scope
+        and scope.clientScope
+    ):
+      if has_federated_principal:
+        if (
+            scope.clientScope.restrictedClientApplication
+            and scope.clientScope.restrictedClientApplication.name
+            in _WEB_APP_NAMES_14_DAY_SESSION_LENGTH
+        ):
+          max_session_length = iso_duration.Duration(days=14)
+        else:
+          max_session_length = iso_duration.Duration(days=90)
+
+    if session_length_sec > max_session_length.total_seconds:
       raise calliope_exceptions.InvalidArgumentException(
           '--binding-file',
           'SessionLength within ScopedAccessSettings must not be greater than'
-          ' one day',
+          ' {} second(s)'.format(max_session_length.total_seconds),
       )
-    if session_length < 0:
+    if session_length_sec < 3600 and session_length_sec != 0:
       raise calliope_exceptions.InvalidArgumentException(
           '--binding-file',
           'SessionLength within ScopedAccessSettings must not be less than '
-          'zero',
+          '1 hour, unless it is zero',
       )
 
   def _InferEmptySessionSettingsFields(session_settings):
@@ -812,7 +841,7 @@ def _ProcessSessionSettingsInScopedAccessSettings(req):
       session_settings = s.activeSettings.sessionSettings
       if not session_settings:
         continue
-      _ValidateSessionSettings(session_settings)
+      _ValidateSessionSettings(session_settings, s.scope)
       _InferEmptySessionSettingsFields(session_settings)
 
   _Start(req)

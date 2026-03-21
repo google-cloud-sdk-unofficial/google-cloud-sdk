@@ -15,9 +15,6 @@
 
 """A module that provides parsing utilities for each command example."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import collections
 import shlex

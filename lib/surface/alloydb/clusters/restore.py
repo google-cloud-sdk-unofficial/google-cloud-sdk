@@ -74,6 +74,7 @@ class Restore(base.RestoreCommand):
     """
     Restore.CommonArgs(parser)
     flags.AddRestoreClusterSourceFlags(parser, cls.ReleaseTrack())
+    flags.AddDataplexIntegrationFlags(parser)
 
   def ConstructRestoreRequestFromArgs(self, alloydb_messages, location_ref,
                                       resource_parser, args):

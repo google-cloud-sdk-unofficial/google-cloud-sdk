@@ -59,9 +59,6 @@ disables expiry check. These can be used by meta commands/functions to view
 and debug cache data without modifying the underlying persistent data.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import abc
 import time

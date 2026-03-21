@@ -237,6 +237,8 @@ class BinaryAuthorization(proto.Message):
 class RevisionScaling(proto.Message):
     r"""Settings for revision-level scaling settings.
 
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
     Attributes:
         min_instance_count (int):
             Optional. Minimum number of serving instances
@@ -248,6 +250,20 @@ class RevisionScaling(proto.Message):
             default value of
             100. For more information see
             https://cloud.google.com/run/docs/configuring/max-instances
+        cpu_utilization (float):
+            Optional. Determines a threshold for CPU utilization before
+            scaling begins. Accepted values are between ``0.1`` and
+            ``0.95`` (inclusive) or ``0.0`` to disable CPU utilization
+            as threshold for scaling.
+
+            This field is a member of `oneof`_ ``_cpu_utilization``.
+        concurrency_utilization (float):
+            Optional. Determines a threshold for concurrency utilization
+            before scaling begins. Accepted values are between ``0.1``
+            and ``0.95`` (inclusive) or ``0.0`` to disable concurrency
+            utilization as threshold for scaling.
+
+            This field is a member of `oneof`_ ``_concurrency_utilization``.
     """
 
     min_instance_count: int = proto.Field(
@@ -257,6 +273,16 @@ class RevisionScaling(proto.Message):
     max_instance_count: int = proto.Field(
         proto.INT32,
         number=2,
+    )
+    cpu_utilization: float = proto.Field(
+        proto.FLOAT,
+        number=4,
+        optional=True,
+    )
+    concurrency_utilization: float = proto.Field(
+        proto.FLOAT,
+        number=5,
+        optional=True,
     )
 
 

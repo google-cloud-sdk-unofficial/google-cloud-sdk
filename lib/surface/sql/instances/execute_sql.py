@@ -26,7 +26,6 @@ DESCRIPTION = """\
     Executes a statement on a Cloud SQL instance. It will use the
     credentials of the specified Google Cloud account to connect to the
     instance, so an IAM user with the same name must exist in the instance.
-    It doesn't support DQL or DML statements yet.
     WARNING: The requests and responses might transit through intermediate
     locations between your client and the location of the target instance.
     """
@@ -34,7 +33,7 @@ DESCRIPTION = """\
 EXAMPLES = """\
     To execute a statement on a Cloud SQL instance, run:
 
-    $ {command} instance-foo --sql="ALTER TABLE employees RENAME TO personnel;" --database=db1
+    $ {command} my-instance-name --sql="ALTER TABLE employees RENAME TO personnel;" --database=my-db
     """
 
 DETAILED_HELP = {
@@ -43,7 +42,8 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class ExecuteSql(base.Command):
   """Executes a statement on a Cloud SQL instance."""
@@ -69,7 +69,8 @@ class ExecuteSql(base.Command):
         help=(
             'SQL statement(s) to execute. It supports multiple statements as'
             " well. When it starts with the character '@', the rest should be a"
-            ' filepath to read the SQL statement(s) from.'
+            ' filepath to read the SQL statement(s) from. For example,'
+            ' --sql=@my_script.sql.'
         ),
     )
     parser.add_argument(
@@ -83,25 +84,24 @@ class ExecuteSql(base.Command):
         choices={
             'PARTIAL_RESULT_MODE_UNSPECIFIED': (
                 'Unspecified mode, effectively the same as'
-                ' `FAIL_PARTIAL_RESULT`.'
+                ' <code>FAIL_PARTIAL_RESULT</code>.'
             ),
             'FAIL_PARTIAL_RESULT': (
-                "Throw an error if the complete result can't be returned."
-                " Don't return the partial result."
+                'If the complete result is unavailable, returns an error'
+                " and doesn't return the partial result."
             ),
             'ALLOW_PARTIAL_RESULT': (
-                'Return the partial result and mark the field partial_result to'
-                " true if the complete result can't be returned. Don't throw"
-                ' an error.'
+                'If the complete result is unavailable, returns a partial'
+                ' result, marks the field <code>partial_result</code> to'
+                " <code>true</code>, and doesn't throw an error."
             ),
         },
         required=False,
         default=None,
         help=(
-            'Controls how the API should respond when the SQL execution result'
+            'Controls how the API responds when the SQL execution result'
             ' is incomplete due to size limit or other reasons. The default'
-            ' mode is to throw an error instead of returning the partial'
-            ' result.'
+            ' mode is to return an error instead of returning a partial result.'
         ),
     )
     flags.AddDatabase(

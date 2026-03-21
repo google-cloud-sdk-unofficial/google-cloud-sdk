@@ -279,11 +279,16 @@ def AddBaseArgs(parser):
   parser.add_argument(
       '--remove-deny-maintenance-period',
       action='store_true',
-      help='Removes the user-specified deny maintenance period.')
+      help='Removes the user-specified deny maintenance period.',
+  )
   flags.AddInsightsConfigQueryInsightsEnabled(parser, show_negated_in_help=True)
+  flags.AddInsightsConfigEnhancedQueryInsightsEnabled(
+      parser, show_negated_in_help=True
+  )
   flags.AddInsightsConfigQueryStringLength(parser)
   flags.AddInsightsConfigRecordApplicationTags(
-      parser, show_negated_in_help=True)
+      parser, show_negated_in_help=True
+  )
   flags.AddInsightsConfigRecordClientAddress(parser, show_negated_in_help=True)
   flags.AddInsightsConfigQueryPlansPerMinute(parser)
   flags.AddMemory(parser)

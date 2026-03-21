@@ -22,6 +22,7 @@ from utils import bq_id_utils
 
 class Head(bigquery_command.BigqueryCmd):
   usage = """head [-n <max rows>] [-j] [-t] <identifier>"""
+  command = 'head'
 
   def __init__(self, name: str, fv: flags.FlagValues):
     super(Head, self).__init__(name, fv)

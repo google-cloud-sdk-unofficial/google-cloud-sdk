@@ -711,16 +711,13 @@ def AddBigtableConfigFlags(parser, is_update):
   """Adds Bigtable config flags to parser."""
   current_group = parser
   if is_update:
-    mutual_exclusive_group = current_group.add_mutually_exclusive_group(
-        hidden=True
-    )
+    mutual_exclusive_group = current_group.add_mutually_exclusive_group()
     AddBooleanFlag(
         parser=mutual_exclusive_group,
         flag_name='clear-bigtable-config',
         action='store_true',
         default=None,
         help_text='If set, clear the Bigtable config from the subscription.',
-        hidden=True,
         universe_help=BIGTABLE_EXPORT_NOT_SUPPORTED_IN_TPC,
     )
     current_group = mutual_exclusive_group
@@ -737,7 +734,6 @@ def AddBigtableConfigFlags(parser, is_update):
           + MustSpecifyAllHelpText('BigtableConfig', is_update),
           universe_help=BIGTABLE_EXPORT_NOT_SUPPORTED_IN_TPC,
       ),
-      hidden=True,
   )
   bigtable_config_group.add_argument(
       '--bigtable-table',

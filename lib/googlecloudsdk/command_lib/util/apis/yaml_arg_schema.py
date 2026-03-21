@@ -665,7 +665,7 @@ def _GetLocationParamIds(attributes):
   """Get the attribute for specifying endpoint location or default."""
   explicit_params = [
       attr.param_name for attr in attributes
-      if attr.regional_endpoints_flag]
+      if attr.is_regional_endpoint_flag]
   default_params = [
       attr.param_name for attr in attributes
       if attr.name in LOCATION_ATTRIBUTE_NAMES]

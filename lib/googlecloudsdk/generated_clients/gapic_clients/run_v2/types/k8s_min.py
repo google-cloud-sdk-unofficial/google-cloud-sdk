@@ -107,6 +107,8 @@ class Container(proto.Message):
             startup probe is provided, until it succeeds.
             Container will not be added to service endpoints
             if the probe fails.
+        readiness_probe (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.Probe):
+            Readiness probe to be used for health checks.
         depends_on (MutableSequence[str]):
             Names of the containers that must start
             before this container.
@@ -173,6 +175,11 @@ class Container(proto.Message):
     startup_probe: 'Probe' = proto.Field(
         proto.MESSAGE,
         number=11,
+        message='Probe',
+    )
+    readiness_probe: 'Probe' = proto.Field(
+        proto.MESSAGE,
+        number=14,
         message='Probe',
     )
     depends_on: MutableSequence[str] = proto.RepeatedField(
@@ -575,15 +582,26 @@ class CloudSqlInstance(proto.Message):
 
     Attributes:
         instances (MutableSequence[str]):
-            The Cloud SQL instance connection names, as
-            can be found in
-            https://console.cloud.google.com/sql/instances.
-            Visit
-            https://cloud.google.com/sql/docs/mysql/connect-run
-            for more information on how to connect Cloud SQL
-            and Cloud Run. Format:
+            A list of Cloud SQL instance connection names. Cloud Run
+            uses these to establish connections to the specified Cloud
+            SQL instances. While the SQL instance name itself is unique
+            within a project, the full connection name requires the
+            location for proper routing. Format:
+            ``{project}:{location}:{instance}`` Example:
+            ``my-project:us-central1:my-instance``
 
-            {project}:{location}:{instance}
+            You can find this value on the instance's **Overview** page
+            in the Google Cloud console or by using the following
+            ``gcloud`` command:
+
+            .. code:: sh
+
+               gcloud sql instances describe INSTANCE_NAME \
+                 --format='value(connectionName)'
+
+            Visit https://cloud.google.com/sql/docs/mysql/connect-run
+            for more information on how to connect Cloud SQL and Cloud
+            Run.
     """
 
     instances: MutableSequence[str] = proto.RepeatedField(

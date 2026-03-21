@@ -40,6 +40,7 @@ FLAGS = flags.FLAGS
 
 class Query(bigquery_command.BigqueryCmd):
   usage = """query <sql>"""
+  command = 'query'
 
   def __init__(self, name: str, fv: flags.FlagValues):
     super(Query, self).__init__(name, fv)

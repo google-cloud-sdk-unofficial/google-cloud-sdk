@@ -25,6 +25,7 @@ from pyglib import stringutil
 
 class Partition(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstring
   usage = """partition source_prefix destination_table"""
+  command = 'partition'
 
   def __init__(self, name: str, fv: flags.FlagValues):
     super(Partition, self).__init__(name, fv)

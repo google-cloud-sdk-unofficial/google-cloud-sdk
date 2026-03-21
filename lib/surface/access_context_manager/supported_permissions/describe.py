@@ -15,7 +15,6 @@
 
 """permissions describe command."""
 
-
 import dataclasses
 
 from googlecloudsdk.api_lib.accesscontextmanager import supported_permissions
@@ -40,11 +39,11 @@ class SupportedPermission:
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeSupportedPermissions(base.DescribeCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Describe(base.DescribeCommand):
   """Describes which permissions in a provided role are supported by [VPC Service Controls]."""
 
-  _API_VERSION = 'v1alpha'
+  _API_VERSION = 'v1'
   detailed_help = {
       'brief': (
           'Describes which permissions in a provided role are supported by VPC'
@@ -54,16 +53,17 @@ class DescribeSupportedPermissions(base.DescribeCommand):
           'Describes which permissions in a provided role are supported by VPC'
           ' Service Controls.'
       ),
-      'EXAMPLES': """\
+      'EXAMPLES': (
+          """\
   To describe which permissions VPC Service Controls supports for a provided role, run:
 
     $ {command} roles/example.role.name
 
   This command prints out a list of all supported permissions in a tabular form:
 
-    ROLE NAME                    SUPPORT STATUS              SUPPORTED PERMISSIONS
-    roles/example.role.name      SUPPORTED                   example.permission.one
-                                                             example.permission.two
+    ROLE NAME               SUPPORT STATUS SUPPORTED PERMISSIONS
+    roles/example.role.name SUPPORTED      example.permission.one
+                                           example.permission.two
 
   To describe which permissions VPC Service Controls supports for a custom role, run:
 
@@ -73,10 +73,11 @@ class DescribeSupportedPermissions(base.DescribeCommand):
 
   This command prints out a list of all supported permissions in a tabular form:
 
-    ROLE NAME                                      SUPPORT STATUS              SUPPORTED PERMISSIONS
-    projects/example-project/roles/TestCustomRole  SUPPORTED                   example.permission.one
+    ROLE NAME                                      SUPPORT STATUS SUPPORTED PERMISSIONS
+    projects/example-project/roles/TestCustomRole  SUPPORTED      example.permission.one
 
-  """,
+  """
+      ),
   }
 
   @staticmethod
@@ -141,3 +142,13 @@ class DescribeSupportedPermissions(base.DescribeCommand):
             '\n'.join(role_permissions_supported_by_acm),
         )
     ]
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(Describe):
+  _API_VERSION = 'v1'
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(Describe):
+  _API_VERSION = 'v1alpha'

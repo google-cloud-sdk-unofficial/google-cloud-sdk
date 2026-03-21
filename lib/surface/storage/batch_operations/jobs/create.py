@@ -28,12 +28,15 @@ class Create(calliope_base.Command):
   """Create a new batch operation job."""
 
   detailed_help = {
-      "DESCRIPTION": """
+      "DESCRIPTION": (
+          """
       Create a batch operation job, allowing you to perform operations
       such as deletion, updating metadata, and more on objects in a
       serverless manner.
-      """,
-      "EXAMPLES": """
+      """
+      ),
+      "EXAMPLES": (
+          """
       The following example command creates a batch job, named  `my-dry-run`,
       that performs a dry run of object deletion on bucket `my-bucket` for
       objects specified in the manifest file `gs://my-bucket/manifest.csv`:
@@ -57,6 +60,14 @@ class Create(calliope_base.Command):
           --put-metadata=Content-Disposition=inline,Content-Language=en,Retain-Until=2025-01-01T00:00:00Z,Retention-Mode=locked
 
       The following example command creates a batch job, named `my-job`,
+      that removes the object custom context `key1` and updates `key2` to `val2`
+      and `key3` to `val3` on bucket `my-bucket` for objects with prefixes
+      `prefix1` or `prefix2`:
+
+          $ {command} my-job --bucket=my-bucket --included-object-prefixes=prefix1,prefix2
+          --clear-object-custom-contexts=key1 --update-object-custom-contexts=key2=val2,key3=val3
+
+      The following example command creates a batch job, named `my-job`,
       that puts object event based hold on objects in bucket `my-bucket`
       with logging config enabled for corresponding transform action and
       succeeded and failed action states:
@@ -64,7 +75,8 @@ class Create(calliope_base.Command):
           $ {command} my-job --bucket=my-bucket --put-object-event-based-hold
           --put-metadata=Content-Disposition=inline,Content-Language=en
           --log-actions=transform --log-action-states=succeeded,failed
-      """,
+      """
+      ),
   }
 
   @staticmethod

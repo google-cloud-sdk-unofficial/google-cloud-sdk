@@ -94,8 +94,8 @@ class RevisionTemplate(proto.Message):
             provided, the revision will use the project's
             default service account.
         containers (MutableSequence[googlecloudsdk.generated_clients.gapic_clients.run_v2.types.Container]):
-            Holds the single container that defines the
-            unit of execution for this Revision.
+            Holds the list which define the units of
+            execution for this Revision.
         volumes (MutableSequence[googlecloudsdk.generated_clients.gapic_clients.run_v2.types.Volume]):
             Optional. A list of Volumes to make available
             to containers.
@@ -134,6 +134,12 @@ class RevisionTemplate(proto.Message):
             disabled on this revision.
 
             This field is a member of `oneof`_ ``_gpu_zonal_redundancy_disabled``.
+        client (str):
+            Optional. Arbitrary identifier for the API
+            client.
+        client_version (str):
+            Optional. Arbitrary version identifier for
+            the API client.
     """
 
     revision: str = proto.Field(
@@ -224,6 +230,14 @@ class RevisionTemplate(proto.Message):
         proto.BOOL,
         number=24,
         optional=True,
+    )
+    client: str = proto.Field(
+        proto.STRING,
+        number=28,
+    )
+    client_version: str = proto.Field(
+        proto.STRING,
+        number=29,
     )
 
 

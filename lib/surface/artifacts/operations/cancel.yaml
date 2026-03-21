@@ -1,0 +1,29 @@
+- release_tracks: [GA]
+  hidden: true  # TODO(b/488006032): Unhide when ready for GA
+
+  help_text:
+    brief: |
+      Cancel an Artifact Registry operation.
+    description: |
+      Cancel an Artifact Registry operation given the operation id.
+
+      This command can fail for the following reasons:
+      * The operation specified does not exist.
+      * The active account does not have permission to access the given
+        operation.
+      * The operation does not support cancellation.
+    examples: |
+      The following command cancels an operation with id `06d2817d-6566-47c3-88a0-295ef51eb434`:
+
+        $ {command} 06d2817d-6566-47c3-88a0-295ef51eb434
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.artifacts.resources:operation
+      help_text: |
+        The Artifact Registry operation to cancel.
+
+  request:
+    api_version: v1
+    collection: artifactregistry.projects.locations.operations
+    method: cancel

@@ -682,6 +682,7 @@ class _BaseInstances(object):
     settings.insightsConfig = reducers.InsightsConfig(
         sql_messages,
         insights_config_query_insights_enabled=args.insights_config_query_insights_enabled,
+        insights_config_enhanced_query_insights_enabled=args.insights_config_enhanced_query_insights_enabled,
         insights_config_query_string_length=args.insights_config_query_string_length,
         insights_config_record_application_tags=args.insights_config_record_application_tags,
         insights_config_record_client_address=args.insights_config_record_client_address,
@@ -906,6 +907,7 @@ class _BaseInstances(object):
     settings.insightsConfig = reducers.InsightsConfig(
         sql_messages,
         insights_config_query_insights_enabled=args.insights_config_query_insights_enabled,
+        insights_config_enhanced_query_insights_enabled=args.insights_config_enhanced_query_insights_enabled,
         insights_config_query_string_length=args.insights_config_query_string_length,
         insights_config_record_application_tags=args.insights_config_record_application_tags,
         insights_config_record_client_address=args.insights_config_record_client_address,

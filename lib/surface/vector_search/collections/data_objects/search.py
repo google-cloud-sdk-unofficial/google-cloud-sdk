@@ -77,8 +77,8 @@ class Search(base.Command):
       ),
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Register flags for this command."""
     common_args.AddDataObjectFlags(parser, 'search')
     common_args.AddOutputFieldsFlags(parser)
@@ -102,21 +102,22 @@ class Search(base.Command):
         This flag is compatible only with Semantic Search and Vector Search.
         """,
     )
-    use_index_group.add_argument(
-        '--dense-scann-search-leaves-pct',
-        type=int,
-        metavar='PERCENTAGE',
-        help=(
-            'The percentage of leaves to search for dense ScaNN, in the range'
-            ' [0, 100].'
-        ),
-    )
-    use_index_group.add_argument(
-        '--dense-scann-initial-candidate-count',
-        type=int,
-        metavar='CANDIDATE_COUNT',
-        help='The number of initial candidates for dense ScaNN.',
-    )
+    if cls.ReleaseTrack() == base.ReleaseTrack.BETA:
+      use_index_group.add_argument(
+          '--dense-scann-search-leaves-pct',
+          type=int,
+          metavar='PERCENTAGE',
+          help=(
+              'The percentage of leaves to search for dense ScaNN, in the range'
+              ' [0, 100].'
+          ),
+      )
+      use_index_group.add_argument(
+          '--dense-scann-initial-candidate-count',
+          type=int,
+          metavar='CANDIDATE_COUNT',
+          help='The number of initial candidates for dense ScaNN.',
+      )
 
     search_hint_group.add_argument(
         '--use-knn',
@@ -166,10 +167,27 @@ class Search(base.Command):
     vector_search_group.add_argument(
         '--vector-from-file',
         required=True,
-        help=(
-            'Path to a JSON file containing dense or sparse vector to search'
-            ' with.'
-        ),
+        help="""Path to a JSON file containing dense or sparse vector to search with.
+
+Example file content for dense vector:
+{
+  "dense": {
+    "values": [
+      0.7,
+      0.6,
+      0.5,
+      0.4
+    ]
+  }
+}
+
+Example file content for sparse vector:
+{
+  "sparse": {
+    "indices": [1, 5, 10],
+    "values": [0.1, 0.5, 0.21]
+  }
+}""",
     )
     vector_search_group.add_argument(
         '--distance-metric',
@@ -210,7 +228,7 @@ class Search(base.Command):
               name=args.use_index
           )
       )
-      if (
+      if self.ReleaseTrack() == base.ReleaseTrack.BETA and (
           args.dense_scann_search_leaves_pct
           or args.dense_scann_initial_candidate_count
       ):

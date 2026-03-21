@@ -18,7 +18,6 @@
 - release_tracks:
   - GA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Import data objects into a collection
     description: Import data objects into a collection from Google Cloud Storage.

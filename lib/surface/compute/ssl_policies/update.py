@@ -41,7 +41,10 @@ class Update(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      parser.display_info.AddFormat(flags.ALPHA_LIST_FORMAT)
+    else:
+      parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.SSL_POLICY_ARG = flags.GetSslPolicyMultiScopeArgument()
     cls.SSL_POLICY_ARG.AddArgument(parser, operation_type='patch')
     flags.GetProfileFlag().AddToParser(parser)

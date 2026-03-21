@@ -232,6 +232,7 @@ def _SetBuildSteps(
         image,
         '--network',
         'cloudbuild',
+        '--publish',
     ]
     build_tags = [_GetBuildTag(builder)]
     # Keep both env and envs for backward compatibility.
@@ -267,6 +268,17 @@ def _SetBuildSteps(
             name='gcr.io/k8s-skaffold/pack',
             entrypoint='pack',
             args=pack_args,
+        )
+    )
+    # Although `pack build --publish` pushes the image, we need to `docker pull`
+    # it afterwards. This ensures the image is available in the local Docker
+    # daemon, which is required for subsequent steps like provenance generation
+    # that need to inspect the image digest.
+    steps.append(
+        messages.BuildStep(
+            name='gcr.io/cloud-builders/docker',
+            entrypoint='docker',
+            args=['pull', image],
         )
     )
 

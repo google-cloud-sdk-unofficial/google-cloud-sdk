@@ -1044,6 +1044,20 @@ def AddInsightsConfigQueryInsightsEnabled(
   )
 
 
+def AddInsightsConfigEnhancedQueryInsightsEnabled(
+    parser, show_negated_in_help=False, hidden=False
+):
+  kwargs = _GetKwargsForBoolFlag(show_negated_in_help)
+  parser.add_argument(
+      '--insights-config-enhanced-query-insights-enabled',
+      required=False,
+      help="""Enable enhanced query insights for Enterprise Plus edition to provide more detailed query
+        analytics.""",
+      hidden=hidden,
+      **kwargs
+  )
+
+
 def AddInsightsConfigQueryStringLength(parser, hidden=False):
   parser.add_argument(
       '--insights-config-query-string-length',
@@ -3772,6 +3786,7 @@ def AddSourceInstanceOverrideArgs(
   AddEnablePrivateServiceConnect(psc_setup_group, hidden=for_pitr)
   AddFinalBackup(parser, hidden=for_pitr)
   AddFinalbackupRetentionDays(parser, hidden=for_pitr)
+  AddInsightsConfigEnhancedQueryInsightsEnabled(parser, hidden=for_pitr)
   AddInsightsConfigQueryInsightsEnabled(parser, hidden=for_pitr)
   AddInsightsConfigQueryPlansPerMinute(parser, hidden=for_pitr)
   AddInsightsConfigQueryStringLength(parser, hidden=for_pitr)

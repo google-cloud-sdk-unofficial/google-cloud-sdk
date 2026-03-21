@@ -29,6 +29,7 @@ from utils import bq_processor_utils
 
 class Init(bigquery_command.BigqueryCmd):
   """Create a .bigqueryrc file and set up OAuth credentials."""
+  command = 'init'
 
   def __init__(self, name: str, fv: flags.FlagValues):
     super(Init, self).__init__(name, fv)

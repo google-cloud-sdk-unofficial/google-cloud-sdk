@@ -345,6 +345,9 @@ class RequestOptions(proto.Message):
             limited to 50 characters. Values that exceed this limit are
             truncated. Any leading underscore (\_) characters are
             removed from the string.
+        client_context (googlecloudsdk.generated_clients.gapic_clients.spanner_v1.types.RequestOptions.ClientContext):
+            Optional. Optional context that may be needed
+            for some requests.
     """
     class Priority(proto.Enum):
         r"""The relative priority for requests. Note that priority isn't
@@ -383,6 +386,25 @@ class RequestOptions(proto.Message):
         PRIORITY_MEDIUM = 2
         PRIORITY_HIGH = 3
 
+    class ClientContext(proto.Message):
+        r"""Container for various pieces of client-owned context attached
+        to a request.
+
+        Attributes:
+            secure_context (MutableMapping[str, google.protobuf.struct_pb2.Value]):
+                Optional. Map of parameter name to value for this request.
+                These values will be returned by any SECURE_CONTEXT() calls
+                invoked by this request (e.g., by queries against
+                Parameterized Secure Views).
+        """
+
+        secure_context: MutableMapping[str, struct_pb2.Value] = proto.MapField(
+            proto.STRING,
+            proto.MESSAGE,
+            number=1,
+            message=struct_pb2.Value,
+        )
+
     priority: Priority = proto.Field(
         proto.ENUM,
         number=1,
@@ -395,6 +417,11 @@ class RequestOptions(proto.Message):
     transaction_tag: str = proto.Field(
         proto.STRING,
         number=3,
+    )
+    client_context: ClientContext = proto.Field(
+        proto.MESSAGE,
+        number=4,
+        message=ClientContext,
     )
 
 
@@ -1764,7 +1791,13 @@ class BatchWriteResponse(proto.Message):
             indicates a failure.
         commit_timestamp (google.protobuf.timestamp_pb2.Timestamp):
             The commit timestamp of the transaction that applied this
-            batch. Present if ``status`` is ``OK``, absent otherwise.
+            batch. Present if status is OK and the mutation groups were
+            applied, absent otherwise.
+
+            For mutation groups with conditions, a status=OK and missing
+            commit_timestamp means that the mutation groups were not
+            applied due to the condition not being satisfied after
+            evaluation.
     """
 
     indexes: MutableSequence[int] = proto.RepeatedField(

@@ -21,14 +21,14 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListSupportedPermissions(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class List(base.ListCommand):
   """Lists all [VPC Service Controls supported permissions].
 
   Lists the permissions that VPC Service Controls supports.
   """
 
-  _API_VERSION = 'v1alpha'
+  _API_VERSION = 'v1'
   detailed_help = {
       'brief': 'Lists all VPC Service Controls supported permissions',
       'DESCRIPTION': (
@@ -76,3 +76,13 @@ class ListSupportedPermissions(base.ListCommand):
     client = supported_permissions.Client(version=self._API_VERSION)
 
     return client.List(args.page_size, args.limit)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(List):
+  _API_VERSION = 'v1'
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(List):
+  _API_VERSION = 'v1alpha'

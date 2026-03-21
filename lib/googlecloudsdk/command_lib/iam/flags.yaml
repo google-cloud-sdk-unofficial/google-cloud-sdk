@@ -876,6 +876,7 @@ workforce_pool_provider:
       * `AZURE_AD_GROUPS_MAIL`: `mailEnabled` and `securityEnabled` filters
       are applied.
       * `AZURE_AD_GROUPS_ID`: `securityEnabled` filter is applied.
+      * `AZURE_AD_GROUPS_DISPLAY_NAME`: `securityEnabled` filter is applied.
 
   clear_extra_attributes_config: &clear_extra_attributes_config
     arg_name: clear-extra-attributes-config
@@ -883,7 +884,36 @@ workforce_pool_provider:
     action: store_true
     processor: googlecloudsdk.command_lib.iam.hooks:ClearFlag
     help_text: |-
-      Clear the extra attributes configuration
+      Clear the extra attributes configuration.
+
+  create_extra_attributes_group:
+    group:
+      params:
+      - <<: *extra_attributes_issuer_uri
+        required: true
+      - <<: *extra_attributes_client_id
+        required: true
+      - <<: *extra_attributes_client_secret_value
+        required: true
+      - <<: *extra_attributes_type
+        required: true
+      - <<: *extra_attributes_filter
+
+  update_extra_attributes_group: &update_extra_attributes_group
+    group:
+      params:
+      - *extra_attributes_issuer_uri
+      - *extra_attributes_client_id
+      - *extra_attributes_client_secret_value
+      - *extra_attributes_type
+      - *extra_attributes_filter
+
+  clearable_extra_attributes_group:
+    group:
+      mutex: true
+      params:
+      - *clear_extra_attributes_config
+      - *update_extra_attributes_group
 
   scim_usage:
     arg_name: scim-usage

@@ -385,6 +385,32 @@ class ServerlessOperations(object):
     except api_exceptions.HttpNotFoundError:
       return None
 
+  def WaitInstance(self, operation_id):
+    """Wait for the instance to be ready."""
+    messages = self.messages_module
+    project = properties.VALUES.core.project.Get(required=True)
+    op_name = (
+        f'projects/{project}/locations/{self._region}/operations/{operation_id}'
+    )
+    op_ref = self._registry.ParseRelativeName(
+        op_name, collection='run.projects.locations.operations'
+    )
+    try:
+      with metrics.RecordDuration(metric_names.WAIT_OPERATION):
+        poller = op_pollers.WaitOperationPoller(
+            self.messages_module,
+            self._client.projects_locations_instances,
+            self._client.projects_locations_operations,
+        )
+        operation = waiter.PollUntilDone(poller, op_ref)
+        as_dict = encoding.MessageToPyValue(operation.response)
+        as_pb = encoding.PyValueToMessage(messages.Instance, as_dict)
+        return instance.Instance(as_pb, self.messages_module)
+    except api_exceptions.InvalidDataFromServerError as e:
+      serverless_exceptions.MaybeRaiseCustomFieldMismatch(e)
+    except api_exceptions.HttpNotFoundError:
+      return None
+
   def GetConfiguration(self, service_or_configuration_ref):
     """Return the relevant Configuration from the server, or None if 404."""
     messages = self.messages_module
@@ -2127,8 +2153,12 @@ class ServerlessOperations(object):
     )
 
     if not asyn:
-      getter = functools.partial(self.GetInstance, instance_ref)
-      poller = op_pollers.ConditionPoller(
+      if created_instance.operation_id is None:
+        getter = functools.partial(self.GetInstance, instance_ref)
+      else:
+        getter = functools.partial(
+            self.WaitInstance, created_instance.operation_id)
+      poller = op_pollers.InstanceConditionPoller(
           getter, tracker, dependencies=stages.InstanceDependencies()
       )
       self.WaitForCondition(poller)

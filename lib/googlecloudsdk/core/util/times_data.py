@@ -25,11 +25,6 @@
 # numeric +/-HH:MM timezone offset, so duplicates will not be a big problem.
 
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
-
 ABBREVIATION_TO_IANA = {
     'ACST': 'Australia/Adelaide',
     'AEST': 'Australia/Brisbane',

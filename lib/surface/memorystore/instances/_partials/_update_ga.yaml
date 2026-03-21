@@ -125,6 +125,18 @@
             This field can be used to trigger self service update to indicate the
             desired maintenance version. The input to this field can be determined by
             the available_maintenance_versions field.
+    - group:
+        mutex: true
+        help_text: |-
+          Arguments for the  rotate server certificate.
+        params:
+        - arg_name: rotate-server-certificate
+          api_field: instance.rotateServerCertificate
+          action: store_true_false
+          required: false
+          type: bool
+          help_text: |-
+            Rotate the server certificates.
     - help_text: |-
         Identifier. Unique name of the instance.
         Format: projects/{project}/locations/{location}/instances/{instance}

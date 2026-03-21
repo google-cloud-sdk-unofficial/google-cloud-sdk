@@ -20,7 +20,7 @@ from googlecloudsdk.command_lib.orchestration_pipelines import scaffolding
 
 @calliope_base.Hidden
 @calliope_base.DefaultUniverseOnly
-@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.GA)
+@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.BETA)
 class Init(calliope_base.Command):
   """Initialize a orchestration pipeline."""
 
@@ -52,6 +52,10 @@ class Init(calliope_base.Command):
     parser.add_argument(
         '--artifacts-bucket',
         help='Cloud Storage bucket for artifacts.',
+    )
+    parser.add_argument(
+        '--service-account',
+        help='Service account to use for Composer environment.',
     )
 
   def Run(self, args):

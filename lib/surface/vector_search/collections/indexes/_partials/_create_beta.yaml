@@ -76,16 +76,19 @@
                   type: int
                   help_text: |-
                     The minimum number of replicas. If not set or set to `0`, defaults to
-                    `2`. Must be >= `2` and <= `1000`.
+                    `2`. Must be >= `1` and <= `1000`.
                 - arg_name: dedicated-infrastructure-autoscaling-spec-max-replica-count
                   api_field: googleCloudVectorsearchV1betaIndex.dedicatedInfrastructure.autoscalingSpec.maxReplicaCount
                   required: false
                   repeated: false
                   type: int
                   help_text: |-
-                    The maximum number of replicas. If not set or set to `0`, defaults to
-                    the greater of `min_replica_count` and `5`. Must be >=
+                    The maximum number of replicas.  Must be >=
                     `min_replica_count` and <= `1000`.
+                    For the v1beta version, if not set or set to `0`, defaults to
+                    the greater of `min_replica_count` and `5`.
+                    For all other versions, if not set or set to `0`, defaults to
+                    the greater of `min_replica_count` and `2`.
     - group:
         mutex: true
         help_text: |-

@@ -58,20 +58,22 @@ def StartFirestoreEmulator(args, log_file=None):
     process, The handle of the child process running the datastore emulator.
   """
   start_args = ['start']
-  start_args.append('--host={0}'.format(args.host_port.host))
-  start_args.append('--port={0}'.format(args.host_port.port))
+  start_args.append(f'--host={args.host_port.host}')
+  start_args.append(f'--port={args.host_port.port}')
   if args.rules:
-    start_args.append('--rules={0}'.format(args.rules))
+    start_args.append(f'--rules={args.rules}')
   if args.use_firestore_in_datastore_mode:
     start_args.append('--database-mode=datastore-mode')
   else:
-    start_args.append('--database-mode={0}'.format(args.database_mode))
+    start_args.append(f'--database-mode={args.database_mode}')
   if args.import_data:
-    start_args.append('--import-data={0}'.format(args.import_data))
+    start_args.append(f'--import-data={args.import_data}')
   if args.export_on_exit:
-    start_args.append('--export-on-exit={0}'.format(args.export_on_exit))
+    start_args.append(f'--export-on-exit={args.export_on_exit}')
   if args.licenses:
     start_args.append('--licenses')
+  if args.edition:
+    start_args.append(f'--database-edition={args.edition}')
   exec_args = ArgsForFirestoreEmulator(start_args)
 
   log.status.Print('Executing: {0}'.format(' '.join(exec_args)))

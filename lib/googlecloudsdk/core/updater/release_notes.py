@@ -16,9 +16,6 @@
 """Contains utilities for comparing RELEASE_NOTES between Cloud SDK versions.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import re
 

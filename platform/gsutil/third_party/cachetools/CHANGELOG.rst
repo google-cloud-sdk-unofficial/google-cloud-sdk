@@ -1,3 +1,72 @@
+v6.2.1 (2025-10-12)
+===================
+
+- Add support for Python 3.14.
+
+- Improve documentation.
+
+- Update CI environment.
+
+
+v6.2.0 (2025-08-25)
+===================
+
+- Improve general ``RRCache`` performance by storing cache keys in an
+  additional sequence container.  Note that this will increase memory
+  consumption.
+
+- Add more unit tests.
+
+
+v6.1.0 (2025-06-16)
+===================
+
+- Improve ``LFUCache`` insertion performance by switching to an
+  implementation based on the `cacheing
+  <https://pypi.org/project/cacheing/>`_ library.
+
+- Update CI environment.
+
+
+v6.0.0 (2025-05-23)
+===================
+
+- Require Python 3.9 or later (breaking change).
+
+- Remove ``MRUCache`` and the ``@func.mru_cache`` decorator (breaking
+  change).
+
+- Add an optional ``condition`` parameter to the ``@cached`` and
+  ``@cachedmethod`` decorators, which, when used with a
+  ``threading.Condition`` instance, should improve `cache stampede
+  <https://en.wikipedia.org/wiki/Cache_stampede>`_ issues in massively
+  parallel environments.  Note that this will inflict some performance
+  penalty, and therefore has to be enabled explicitly.
+
+- Convert the ``cachetools.func`` decorators to use a
+  ``threading.Condition`` instance to deal with `cache stampede
+  <https://en.wikipedia.org/wiki/Cache_stampede>`_ issues.  Note that
+  this *may* result in a noticable performance degradation, depending
+  on your actual use case.
+
+- Deprecate support for ``cache(self)`` returning ``None`` to suppress
+  caching with the ``@cachedmethod`` decorator.
+
+- Improve documentation.
+
+- Update CI environment.
+
+
+v5.5.2 (2025-02-20)
+===================
+
+- Reduce number of ``@cached`` lock/unlock operations.
+
+- Improve documentation.
+
+- Update CI environment.
+
+
 v5.5.1 (2025-01-21)
 ===================
 

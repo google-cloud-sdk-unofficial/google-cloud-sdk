@@ -420,9 +420,7 @@ def AddConnectionPoolingMaxPreparedStatements(parser):
       type=arg_parsers.BoundedInt(lower_bound=0),
       required=False,
       default=None,
-      help=(
-          'The maximum number of prepared statements allowed.'
-      ),
+      help='The maximum number of prepared statements allowed.',
   )
 
 
@@ -696,6 +694,7 @@ def AddActivationPolicy(parser, alloydb_messages, required=False):
 
   Args:
     parser: argparse.Parser: Parser object for command line inputs.
+    alloydb_messages: Message module.
     required: Whether or not --activation-policy is required.
   """
   parser.add_argument(
@@ -703,7 +702,7 @@ def AddActivationPolicy(parser, alloydb_messages, required=False):
       required=required,
       choices=[
           alloydb_messages.Instance.ActivationPolicyValueValuesEnum.ALWAYS,
-          alloydb_messages.Instance.ActivationPolicyValueValuesEnum.NEVER
+          alloydb_messages.Instance.ActivationPolicyValueValuesEnum.NEVER,
       ],
       type=alloydb_messages.Instance.ActivationPolicyValueValuesEnum,
       help=(
@@ -1953,6 +1952,18 @@ def AddMaintenanceVersion(parser):
   )
 
 
+def AddDataplexIntegrationFlags(parser):
+  """Adds Dataplex integration flags to the parser."""
+  parser.add_argument(
+      '--enable-dataplex-integration',
+      action=arg_parsers.StoreTrueFalseAction,
+      help=(
+          'Enable or disable Dataplex integration for this cluster (Enabled by'
+          ' default).'
+      ),
+  )
+
+
 def GetValidatedMaintenanceVersion(args, alloydb_messages):
   """Returns the maintenance version from the args."""
   if args.maintenance_version.lower() == 'latest':
@@ -1962,7 +1973,7 @@ def GetValidatedMaintenanceVersion(args, alloydb_messages):
   raise exceptions.InvalidArgumentException(
       '--maintenance-version',
       'Invalid maintenance version: {}. Use `latest` to apply the latest'
-      ' available maintenance version.'.format(args.maintenance_version)
+      ' available maintenance version.'.format(args.maintenance_version),
   )
 
 

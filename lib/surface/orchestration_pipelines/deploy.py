@@ -14,24 +14,24 @@
 # limitations under the License.
 """Deploy command for Orchestration Pipelines."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import datetime
 import getpass
-import hashlib
 import json
 import os
 import pathlib
+import re
 import subprocess
 
 from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.orchestration_pipelines import gcp_deployer
+from googlecloudsdk.command_lib.orchestration_pipelines import git_context
+from googlecloudsdk.command_lib.orchestration_pipelines.handlers import bq
 from googlecloudsdk.command_lib.orchestration_pipelines.handlers import bq_dts
+from googlecloudsdk.command_lib.orchestration_pipelines.handlers import composer
 from googlecloudsdk.command_lib.orchestration_pipelines.handlers import dataform
 from googlecloudsdk.command_lib.orchestration_pipelines.handlers import dataproc
+from googlecloudsdk.command_lib.orchestration_pipelines.handlers import iam
 from googlecloudsdk.command_lib.orchestration_pipelines.processors import action_processor
 from googlecloudsdk.command_lib.orchestration_pipelines.tools import yaml_processor
 from googlecloudsdk.core import exceptions
@@ -101,7 +101,6 @@ def _get_definition_file_path():
       data_dir
       / ORCHESTRATION_PIPELINES_DIR
       / bundle_name
-      / pipeline_filename
       / "versions"
       / str(version_id)
       / f"{pipeline_filename}.yaml"
@@ -139,29 +138,8 @@ def _CollectEnvironmentVariables():
   return env_vars
 
 
-def _CheckGitStatus(subprocess_mod):
-  """Checks if there are uncommitted changes in the git repository."""
-  try:
-    status_output = subprocess_mod.check_output(
-        ["git", "status", "--porcelain"], text=True
-    ).strip()
-    if status_output:
-      lines = status_output.splitlines()
-      ignored_patterns = [".pyc", "__pycache__", ENV_PACK_FILE]
-      real_changes = [
-          l for l in lines if not any(p in l for p in ignored_patterns)
-      ]
-      if real_changes:
-        formatted_changes = "\n".join([f"  - {l}" for l in real_changes])
-        msg = "Uncommitted changes detected!\n%r", formatted_changes
-        log.error(msg)
-        raise DeployError("Please commit or stash changes before deploying.")
-  except subprocess_mod.CalledProcessError as e:
-    raise calliope_exceptions.FailedSubCommand(e.cmd, e.returncode)
-
-
 def _GetRepoName(subprocess_mod):
-  """Gets the repository name from git remote origin or falls back to CWD name."""
+  """Gets the repository name from git remote origin or falls back to CWD."""
   try:
     url = subprocess_mod.check_output(
         ["git", "remote", "get-url", "origin"],
@@ -174,84 +152,6 @@ def _GetRepoName(subprocess_mod):
     return base
   except (subprocess_mod.CalledProcessError, FileNotFoundError):
     return pathlib.Path.cwd().name
-
-
-def _GetContentHash(bundle_path):
-  """Generates a deterministic hash based strictly on source file contents."""
-  if bundle_path is None:
-    bundle_path = pathlib.Path.cwd()
-  ignored_patterns = {
-      "__pycache__",
-      ".pyc",
-      ".pyo",
-      ".git",
-      ".DS_Store",
-      ENV_PACK_FILE,
-  }
-
-  content_hashes = []
-  for path in bundle_path.rglob("*"):
-    if any(part in ignored_patterns for part in path.parts):
-      continue
-
-    if path.is_file():
-      if path.name.startswith(".") or path.name.endswith(".log"):
-        continue
-      try:
-        file_content = path.read_bytes()
-        file_hash = hashlib.sha256(file_content).hexdigest()
-        content_hashes.append(file_hash)
-      except (IOError, OSError, PermissionError):
-        continue
-
-  content_hashes.sort()
-
-  final_hasher = hashlib.sha256()
-  for h in content_hashes:
-    final_hasher.update(h.encode())
-
-  return final_hasher.hexdigest()[:12]
-
-
-def _GetVersionId(
-    subprocess_mod,
-    bundle_path=None,
-    version_override=None,
-    is_local=False,
-):
-  """Gets a version ID unique to the bundle path."""
-  if version_override:
-    return version_override
-
-  sha = None
-  if is_local:
-    content_hash = _GetContentHash(bundle_path)
-    return "local-{}".format(content_hash)
-
-  try:
-    if bundle_path:
-      try:
-        sha = subprocess_mod.check_output(
-            ["git", "rev-parse", f"HEAD:{bundle_path.name}"],
-            text=True,
-            stderr=subprocess.DEVNULL,
-        ).strip()
-      except subprocess_mod.CalledProcessError:
-        pass
-
-    if not sha:
-      sha = subprocess_mod.check_output(
-          ["git", "rev-parse", "HEAD"],
-          text=True,
-          stderr=subprocess.DEVNULL,
-      ).strip()
-
-  except (subprocess_mod.CalledProcessError, FileNotFoundError) as e:
-    raise DeployError(
-        "Git history not found. Ensure you are inside an initialized"
-        " repository."
-    ) from e
-  return sha
 
 
 def _GetComposerBucket(subprocess_mod, env_name, location):
@@ -271,6 +171,11 @@ def _GetComposerBucket(subprocess_mod, env_name, location):
         ],
         text=True,
     ).strip()
+    if not out:
+      raise DeployError(
+          f"Failed to retrieve Composer bucket from environment '{env_name}'."
+          " Ensure the environment exists and is fully initialized."
+      )
     bucket = out.replace("gs://", "").split("/")[0]
     return bucket
   except subprocess_mod.CalledProcessError as e:
@@ -356,106 +261,20 @@ def _FetchManifest(subprocess_mod, bucket, manifest_dir_path):
     return None, 0
 
 
-def _CheckAncestry(subprocess_mod, remote_sha, local_sha, env):
-  """Verifies that the remote version is an ancestor of the local version.
-
-  Args:
-    subprocess_mod: The subprocess module or a mock for testing.
-    remote_sha: The git commit hash of the remote version.
-    local_sha: The git commit hash of the local version.
-    env: The target environment for the deployment.
-
-  Returns:
-    True if the remote_sha is an ancestor of local_sha, or if the check is
-    skipped (e.g., in 'dev' environment or if remote_sha is not found). False
-    otherwise.
-  """
-  if str(remote_sha).startswith("local-"):
-    log.status.Print(
-        "Initial non-local deployment detected; skipping ancestry check."
-    )
-    return True
-
-  if str(local_sha).startswith("local-"):
-    log.status.Print("Local deployment; skipping ancestry check.")
-    return True
-
-  if not remote_sha:
-    return True
-
-  try:
-    subprocess_mod.check_call(
-        ["git", "cat-file", "-t", remote_sha],
-    )
-  except subprocess_mod.CalledProcessError:
-    if env == "dev":
-      log.warning(
-          "Remote version %s unknown locally. Proceeding (DEV mode).",
-          remote_sha,
-      )
-      return True
-    log.error("Remote version %s not found in local git history.", remote_sha)
-    return False
-
-  try:
-    subprocess_mod.check_call(
-        [
-            "git",
-            "merge-base",
-            "--is-ancestor",
-            remote_sha,
-            local_sha,
-        ],
-    )
-    return True
-  except subprocess_mod.CalledProcessError:
-    if env == "dev":
-      log.warning(
-          "Remote %s is not an ancestor of %s. Proceeding (DEV mode).",
-          remote_sha,
-          local_sha,
-      )
-      return True
-    return False
+def _NormalizeArtifactPath(path):
+  """Normalizes artifact path to be either absolute or gs path."""
+  if path and isinstance(path, str):
+    if not path.startswith("gs://") and not path.startswith("/"):
+      path = "/" + (path[2:] if path.startswith("./") else path)
+  return path
 
 
-def _ValidateAncestryOrRaise(
-    subprocess_mod, manifest_data, local_version, env, bypass_ancestry=False
-):
-  """Validates that the remote version in the manifest is safe to overwrite.
-
-  Args:
-    subprocess_mod: The subprocess module or a mock for testing.
-    manifest_data: The parsed content of the manifest file from GCS, or None.
-    local_version: The current local git commit hash.
-    env: The target environment for the deployment.
-    bypass_ancestry: If True, skips the ancestry check (rollbacks).
-
-  Returns:
-      The remote_version string if safe (or None if no manifest exists).
-
-  Raises:
-      DeployError: If the remote version is ahead of the local version.
-  """
-  if not manifest_data:
-    return None
-
-  remote_version = manifest_data.get("default-version")
-
-  if bypass_ancestry:
-    log.status.Print(
-        f"Bypassing ancestry check for remote version {remote_version}."
-    )
-    return remote_version
-
-  if not _CheckAncestry(subprocess_mod, remote_version, local_version, env):
-    raise DeployError(
-        f"REGRESSION BLOCKED: The remote version ({remote_version}) "
-        f"is ahead of or divergent from your local version ({local_version}).\n"
-        "Please 'git pull' the latest changes before deploying."
-    )
-
-  return remote_version
+def _GetRelativePath(path):
+  """Returns path relative to bundle dir, removing leading '/' and './'."""
+  path = path.lstrip("/")
+  if path.startswith("./"):
+    path = path[2:]
+  return path
 
 
 def _DeployGcpResources(deployment_file, env, dry_run, external_vars=None):
@@ -501,6 +320,21 @@ def _DeployGcpResources(deployment_file, env, dry_run, external_vars=None):
   return resources_deployed_count
 
 
+_RESOURCE_HANDLERS = {
+    "dataproc.cluster": dataproc.DataprocClusterHandler,
+    "bigquerydatatransfer.transferConfig": bq_dts.BqDataTransferConfigHandler,
+    "dataform.repository": dataform.DataformRepositoryHandler,
+    "dataform.repository.releaseConfig": dataform.DataformReleaseConfigHandler,
+    "dataform.repository.workflowConfig": (
+        dataform.DataformWorkflowConfigHandler
+    ),
+    "bigquery.dataset": bq.BqDatasetHandler,
+    "bigquery.table": bq.BqTableHandler,
+    "composer.environment": composer.ComposerEnvironmentHandler,
+    "iam.serviceAccount": iam.IamServiceAccountHandler,
+}
+
+
 def _GetHandler(
     resource, environment, dry_run, *, debug=False, show_requests=False
 ):
@@ -519,28 +353,11 @@ def _GetHandler(
   Raises:
     DeployError: If the resource type is not supported.
   """
-  if resource.type == "dataproc.cluster":
-    return dataproc.DataprocClusterHandler(
-        resource, environment, dry_run, debug, show_requests
-    )
-  if resource.type == "bigquery.datatransfer.config":
-    return bq_dts.BqDataTransferConfigHandler(
-        resource, environment, dry_run, debug, show_requests
-    )
-  if resource.type == "dataform.repository":
-    return dataform.DataformRepositoryHandler(
-        resource, environment, dry_run, debug, show_requests
-    )
-  if resource.type == "dataform.repository.releaseConfig":
-    return dataform.DataformReleaseConfigHandler(
-        resource, environment, dry_run, debug, show_requests
-    )
-  if resource.type == "dataform.repository.workflowConfig":
-    return dataform.DataformWorkflowConfigHandler(
-        resource, environment, dry_run, debug, show_requests
-    )
-  else:
+  handler_class = _RESOURCE_HANDLERS.get(resource.type)
+  if not handler_class:
     raise DeployError(f"Unsupported resource type: {resource.type}")
+
+  return handler_class(resource, environment, dry_run, debug, show_requests)
 
 
 def _ArtifactsExist(subprocess_mod, artifact_uri):
@@ -556,7 +373,7 @@ def _ArtifactsExist(subprocess_mod, artifact_uri):
 
 @calliope_base.Hidden
 @calliope_base.DefaultUniverseOnly
-@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.GA)
+@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.BETA)
 class Deploy(calliope_base.Command):
   """Deploy a pipeline."""
 
@@ -610,7 +427,35 @@ class Deploy(calliope_base.Command):
         "resource_deployment": "SKIPPED",
         "pipeline_deployment": "SKIPPED",
     }
-    version_to_deploy = None
+    external_vars = _CollectEnvironmentVariables()
+    explicit_version = None
+
+    if args.version:
+      if args.rollback:
+        explicit_version = args.version
+        external_vars["COMMIT_SHA"] = args.version
+        if "COMMIT_SHA" in external_vars:
+          log.warning(
+              "Both --version and COMMIT_SHA provided. COMMIT_SHA will be"
+              " ignored in favor of --version for rollback."
+          )
+      else:
+        log.warning(
+            "--version is only applicable with --rollback. Ignoring provided"
+            " version %s.",
+            args.version,
+        )
+
+    git_context_obj = git_context.GitContext(
+        self._subprocess,
+        explicit_version,
+        bundle_path=work_dir,
+        is_local=getattr(args, "local", False),
+    )
+
+    if "COMMIT_SHA" not in external_vars:
+      external_vars["COMMIT_SHA"] = git_context_obj.GetSafeCommitSha()
+
     if getattr(args, "pipeline", None) and not args.local:
       raise DeployError(
           "Invalid Arguments: --pipeline can only be used in conjunction "
@@ -627,10 +472,6 @@ class Deploy(calliope_base.Command):
             "Invalid Arguments: --local mode is not available for prod "
             "environment. Please use dev environment."
         )
-    else:
-      _CheckGitStatus(self._subprocess)
-
-    external_vars = _CollectEnvironmentVariables()
 
     if args.rollback:
       if not args.version:
@@ -642,7 +483,6 @@ class Deploy(calliope_base.Command):
       )
       try:
         self._subprocess.check_call(["git", "checkout", args.version])
-        version_to_deploy = args.version
       except subprocess.CalledProcessError as e:
         raise DeployError(
             f"Rollback failed: Could not rollback to version {args.version}. "
@@ -664,12 +504,6 @@ class Deploy(calliope_base.Command):
           "Deployment file not found or failed to parse: "
           f"{deployment_path.name}"
       ) from e
-    bundle_version = _GetVersionId(
-        self._subprocess,
-        bundle_path=work_dir,
-        version_override=version_to_deploy,
-        is_local=args.local,
-    )
     parsed_deployment = yaml_processor.parse_deployment(
         deployment_path, args.environment, external_vars
     )
@@ -685,21 +519,31 @@ class Deploy(calliope_base.Command):
             f"Pipeline '{args.pipeline}' not found in {DEPLOYMENT_FILE}."
         )
       pipelines = filtered_pipelines
+    if args.local:
+      try:
+        raw_user = getpass.getuser()
+      except (OSError, ImportError, KeyError):
+        raw_user = "localdev"
+      clean_user = re.sub(r"[^a-z0-9]", "", raw_user.lower())
+      clean_dir = re.sub(r"[^a-z0-9]", "", bundle_dir.name.lower())
+      bundle_name = f"bundle-local-{clean_user}-{clean_dir}"
+    else:
+      bundle_name = _GetRepoName(self._subprocess)
     for pipeline in pipelines:
       yaml_path = bundle_dir / pipeline.source
+
       version_id = self._DeployPipeline(
           args,
           bundle_dir,
           yaml_path,
           deployment_path,
+          git_context_obj,
           rollback=args.rollback,
-          version_id=bundle_version,
-          is_local=args.local,
+          bundle_name=bundle_name,
           external_vars=external_vars,
       )
       status["pipeline_deployment"] = "SUCCESS"
       status["version"] = version_id
-
     success_states = ["SUCCESS"]
     if (
         status["resource_deployment"] not in success_states
@@ -726,128 +570,81 @@ class Deploy(calliope_base.Command):
     elif status["resource_deployment"] == "SUCCESS":
       log.status.Print("Resource deployment successful.")
 
-  def _DeployPipeline(
+  def _ProcessAndUploadArtifacts(
       self,
-      args,
+      resolved_pipeline,
       bundle_dir,
-      pipeline_path,
-      deployment_path,
-      rollback=False,
-      version_id=None,
-      is_local=False,
-      external_vars=None,
-
+      composer_bucket,
+      bundle_dag_prefix,
+      artifact_base_uri,
   ):
-    """Deploys the pipeline using the dynamic context and concurrency control.
+    """Processes actions and uploads artifacts to GCS."""
+    uploaded_dag_projects = set()
+    action_filenames_to_upload = set()
 
-    Args:
-      args: The parsed command-line arguments.
-      bundle_dir: The directory containing the pipeline bundle.
-      pipeline_path: The path to the pipeline YAML file.
-      deployment_path: The path to the deployment YAML file.
-      rollback: If True, this is a rollback operation.
-      version_id: Optional. A specific version ID to use.
-      is_local: If True, this is a local deployment.
-      external_vars: Optional dict of external variables to substitute.
+    for action in resolved_pipeline.get("actions", []):
+      filename = action.get("filename")
+      if filename and isinstance(filename, str):
+        filename = _NormalizeArtifactPath(filename)
+        action["filename"] = filename
+        action_filenames_to_upload.add(filename)
 
-    Returns:
-      The version ID (git commit hash) of the deployed pipeline.
+      clean_path = action.pop("_local_dag_upload_path", None)
+      if clean_path and clean_path not in uploaded_dag_projects:
+        uploaded_dag_projects.add(clean_path)
+        local_project_path = bundle_dir / clean_path
 
-    Raises:
-      calliope_exceptions.BadFileException: If the pipeline file is not found
-        or cannot be read.
-      DeployError: If the manifest update fails after multiple retries.
-    """
-    if is_local:
-      user = getpass.getuser()
-      bundle_name = (
-          f"bundle-local-{user}-{bundle_dir.name}-{pipeline_path.stem}"
+        if local_project_path.exists() and local_project_path.is_dir():
+          dags_dest_uri = (
+              f"gs://{composer_bucket}/{bundle_dag_prefix}/{clean_path}/"
+          )
+
+          engine_raw = action.get("engine")
+          engine_str = (
+              engine_raw.get("engineType")
+              if isinstance(engine_raw, dict)
+              else engine_raw
+          )
+
+          log.status.Print(
+              f"Uploading {engine_str.upper()} project '{clean_path}' to"
+              " DAGs folder..."
+          )
+          _RunGcloudStorage(
+              self._subprocess,
+              ["cp", "-r", str(local_project_path / "*"), dags_dest_uri],
+          )
+        else:
+          log.warning(f"Project path not found locally: {clean_path}")
+      processor = action_processor.get_action_processor(
+          action,
+          bundle_dir,
+          artifact_base_uri,
+          # TODO(b/474620155): This should per action, not global.
+          ENV_PACK_FILE,
+          self._subprocess,
+          resolved_pipeline.get("defaults", {}),
       )
-    else:
-      bundle_name = _GetRepoName(self._subprocess)
-    bundle_data_prefix = f"data/orchestration_pipelines/{bundle_name}"
-    parsed_deployment = yaml_processor.parse_deployment(
-        deployment_path, args.environment, external_vars
-    )
-    composer_bucket = _GetComposerBucket(
-        self._subprocess,
-        parsed_deployment["composer_env"],
-        parsed_deployment["region"],
+      processor.process_action()
+
+    self._UploadArtifacts(
+        subprocess_mod=self._subprocess,
+        work_dir=bundle_dir,
+        artifact_uri=artifact_base_uri,
+        action_filenames=action_filenames_to_upload,
     )
 
-    if not pipeline_path.exists():
-      raise calliope_exceptions.BadFileException(
-          f"{pipeline_path.name} not found in {bundle_dir}"
-      )
-
-    try:
-      yaml_content = files.ReadFileContents(pipeline_path)
-    except files.Error as e:
-      raise calliope_exceptions.BadFileException(
-          f"Error reading {pipeline_path.name}: {e}"
-      )
-
-    resolved_pipeline = yaml_processor.resolve_dynamic_variables(
-        yaml_content=yaml_content,
-        deployment_path=deployment_path,
-        env=args.environment,
-        external_variables=external_vars,
-    )
-
-    artifact_base_uri = (
-        f"gs://{parsed_deployment['artifact_storage']['bucket']}/"
-        f"{parsed_deployment['artifact_storage']['path_prefix']}/"
-        f"{bundle_dir.name}/versions/{version_id}/"
-    )
-    skip_artifact_upload = False
-
-    if rollback:
-      if _ArtifactsExist(self._subprocess, artifact_base_uri):
-        log.status.Print(
-            f"Rollback optimization: Artifacts for version {version_id} "
-            "already found in GCS. Skipping build and upload."
-        )
-        skip_artifact_upload = True
-
-    if not skip_artifact_upload:
-      for action in resolved_pipeline.get("actions", []):
-        processor = action_processor.get_action_processor(
-            action,
-            bundle_dir,
-            artifact_base_uri,
-            # TODO(b/474620155): This should per action, not global.
-            ENV_PACK_FILE,
-            self._subprocess,
-            resolved_pipeline.get("defaults", {}),
-        )
-        processor.process_action()
-
-      self._UploadArtifacts(
-          subprocess_mod=self._subprocess,
-          work_dir=bundle_dir,
-          artifact_uri=artifact_base_uri,
-      )
-
-    resolved_yaml_content = yaml.dump(resolved_pipeline)
-    yaml_dest = f"gs://{composer_bucket}/{bundle_data_prefix}/{pipeline_path.stem}/versions/{version_id}/{pipeline_path.name}"
-    _UploadFile(
-        self._subprocess,
-        resolved_yaml_content,
-        yaml_dest,
-        pipeline_path.name,
-    )
-
-    dag_path = pipeline_path.with_suffix(".py")
-    bundle_dag_prefix = f"dags/orchestration_pipelines/{bundle_name}"
-    dag_dest = f"gs://{composer_bucket}/{bundle_dag_prefix}/{dag_path.name}"
-
-    _UploadFile(
-        self._subprocess,
-        DAG_TEMPLATE,
-        dag_dest,
-        dag_path.name,
-    )
-
+  def _UpdateManifest(
+      self,
+      composer_bucket,
+      bundle_data_prefix,
+      version_id,
+      git_context_obj,
+      environment,
+      rollback,
+      pipeline_path,
+  ):
+    """Updates the manifest file in GCS with retry logic."""
     manifest_dest = (
         f"gs://{composer_bucket}/{bundle_data_prefix}/{MANIFEST_FILE_NAME}"
     )
@@ -862,12 +659,10 @@ class Deploy(calliope_base.Command):
         manifest_data = {}
 
       bypass = rollback
-      remote_version = _ValidateAncestryOrRaise(
-          self._subprocess,
-          manifest_data,
-          version_id,
-          args.environment,
-          bypass_ancestry=bypass,
+      remote_version = git_context_obj.ValidateAncestryOrRaise(
+          manifest_data.get("default-version"),
+          environment,
+          bypass=bypass,
       )
       # TODO(b/474163740): Remove version fields updates below once composer
       # team changes are ready.
@@ -878,7 +673,7 @@ class Deploy(calliope_base.Command):
         prev_version.append(remote_version)
 
       new_manifest_payload = {
-          "default-version": version_id,
+          "default-version": str(version_id),
           "prev-version": prev_version,
           "timestamp": datetime.datetime.now().isoformat(),
           "prev-gcs-version": str(read_generation_id),
@@ -914,9 +709,128 @@ class Deploy(calliope_base.Command):
           f" {max_retries} retries."
       )
 
+  def _DeployPipeline(
+      self,
+      args,
+      bundle_dir,
+      pipeline_path,
+      deployment_path,
+      git_context_obj,
+      rollback=False,
+      bundle_name=None,
+      external_vars=None,
+  ):
+    """Deploys the pipeline using the dynamic context and concurrency control.
+
+    Args:
+      args: The parsed command-line arguments.
+      bundle_dir: The directory containing the pipeline bundle.
+      pipeline_path: The path to the pipeline YAML file.
+      deployment_path: The path to the deployment YAML file.
+      git_context_obj: The GitContext object.
+      rollback: If True, this is a rollback operation.
+      bundle_name: The name of the bundle.
+      external_vars: Optional dict of external variables to substitute.
+
+    Returns:
+      The version ID (git commit hash) of the deployed pipeline.
+
+    Raises:
+      calliope_exceptions.BadFileException: If the pipeline file is not found
+        or cannot be read.
+      DeployError: If the manifest update fails after multiple retries.
+    """
+    git_context_obj.EnforceClean()
+    version_id = git_context_obj.CalculateVersionId()
+
+    parsed_deployment = yaml_processor.parse_deployment(
+        deployment_path, args.environment, external_vars
+    )
+    composer_bucket = _GetComposerBucket(
+        self._subprocess,
+        parsed_deployment["composer_env"],
+        parsed_deployment["region"],
+    )
+    bundle_data_prefix = f"data/orchestration_pipelines/{bundle_name}"
+    artifact_base_uri = (
+        f"gs://{parsed_deployment['artifact_storage']['bucket']}/"
+        f"{parsed_deployment['artifact_storage']['path_prefix']}/"
+        f"{bundle_dir.name}/versions/{version_id}/"
+    )
+    dag_path = pipeline_path.with_suffix(".py")
+    bundle_dag_prefix = f"dags/orchestration_pipelines/{bundle_name}"
+    dag_dest = f"gs://{composer_bucket}/{bundle_dag_prefix}/{dag_path.name}"
+
+    if not pipeline_path.exists():
+      raise calliope_exceptions.BadFileException(
+          f"{pipeline_path.name} not found in {bundle_dir}"
+      )
+
+    try:
+      yaml_content = files.ReadFileContents(pipeline_path)
+    except files.Error as e:
+      raise calliope_exceptions.BadFileException(
+          f"Error reading {pipeline_path.name}: {e}"
+      )
+
+    resolved_pipeline = yaml_processor.resolve_dynamic_variables(
+        yaml_content=yaml_content,
+        deployment_path=deployment_path,
+        env=args.environment,
+        external_variables=external_vars,
+        bundle_dag_prefix=bundle_dag_prefix,
+    )
+
+    if rollback and _ArtifactsExist(self._subprocess, artifact_base_uri):
+      log.status.Print(
+          f"Rollback optimization: Artifacts for version {version_id} "
+          "already found in GCS. Skipping build and upload."
+      )
+    else:
+      self._ProcessAndUploadArtifacts(
+          resolved_pipeline,
+          bundle_dir,
+          composer_bucket,
+          bundle_dag_prefix,
+          artifact_base_uri,
+      )
+
+    resolved_yaml_content = yaml.dump(resolved_pipeline)
+    yaml_dest = f"gs://{composer_bucket}/{bundle_data_prefix}/versions/{version_id}/{pipeline_path.name}"
+    _UploadFile(
+        self._subprocess,
+        resolved_yaml_content,
+        yaml_dest,
+        pipeline_path.name,
+    )
+
+    _UploadFile(
+        self._subprocess,
+        DAG_TEMPLATE,
+        dag_dest,
+        dag_path.name,
+    )
+
+    self._UpdateManifest(
+        composer_bucket,
+        bundle_data_prefix,
+        version_id,
+        git_context_obj,
+        args.environment,
+        rollback,
+        pipeline_path,
+    )
+
     return version_id
 
-  def _UploadArtifacts(self, *, subprocess_mod, work_dir, artifact_uri):
+  def _UploadArtifacts(
+      self,
+      *,
+      subprocess_mod,
+      work_dir,
+      artifact_uri,
+      action_filenames=None,
+  ):
     """Uploads pipeline artifacts to the GCS artifact bucket."""
     env_pack_path = work_dir / ENV_PACK_FILE
     if env_pack_path.exists():
@@ -925,12 +839,30 @@ class Deploy(calliope_base.Command):
       )
       env_pack_path.unlink()
 
-    jobs_dir = work_dir / "jobs"
-    if jobs_dir.exists():
-      _RunGcloudStorage(
-          subprocess_mod,
-          ["cp", "-r", str(jobs_dir / "*"), artifact_uri + "jobs/"],
-      )
+    if action_filenames:
+      for filename in action_filenames:
+        if filename.startswith("gs://"):
+          continue
+
+        clean_path = _GetRelativePath(filename)
+        local_path = work_dir / clean_path
+        if not local_path.exists():
+          log.warning(
+              f"Action file not found locally, skipping upload: {local_path}"
+          )
+          continue
+
+        dest_uri = f"{artifact_uri}{clean_path}"
+        log.status.Print(
+            f"Uploading action file '{clean_path}' to artifacts bucket..."
+        )
+
+        if local_path.is_dir():
+          _RunGcloudStorage(
+              subprocess_mod, ["cp", "-r", str(local_path / "*"), dest_uri]
+          )
+        else:
+          _RunGcloudStorage(subprocess_mod, ["cp", str(local_path), dest_uri])
 
     init_action_path = work_dir / "python_environment_unpack.sh"
     if init_action_path.exists():

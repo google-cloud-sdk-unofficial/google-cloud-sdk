@@ -194,6 +194,7 @@ BASE_PUBLIC_IMAGE_PROJECTS = [
     'ubuntu-os-cloud',
 ]
 PUBLIC_IMAGE_PROJECTS = BASE_PUBLIC_IMAGE_PROJECTS + [
+    'almalinux-cloud',
     'centos-cloud',
     'fedora-coreos-cloud',
     'opensuse-cloud',

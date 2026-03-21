@@ -152,8 +152,11 @@ class Request(object):
       raise util.InvalidSchemaError(
           'request.method was not specified and there is no default for this '
           'command type.')
-    self.regional_endpoints_compatibility = RegionalEndpointsType.FromString(
+    self.regional_endpoint_compatibility = RegionalEndpointsType.FromString(
         data.get('regional_endpoint_compatibility'))
+    self.add_regional_endpoint_flag = data.get(
+        'add_regional_endpoint_flag', False
+    )
     self.disable_pagination = data.get('disable_pagination', False)
     self.static_fields = data.get('static_fields', {})
     self.modify_request_hooks = [

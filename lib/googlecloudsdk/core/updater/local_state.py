@@ -20,9 +20,6 @@ provides functionality like extracting tar files into the installation and
 tracking when we check for updates.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import compileall
 import errno

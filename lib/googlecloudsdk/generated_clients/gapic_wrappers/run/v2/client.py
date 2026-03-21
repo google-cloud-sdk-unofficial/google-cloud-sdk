@@ -15,10 +15,6 @@
 #
 """Run gRPC client. This class is automatically generated."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 import contextlib
 
 from googlecloudsdk.core import gapic_util

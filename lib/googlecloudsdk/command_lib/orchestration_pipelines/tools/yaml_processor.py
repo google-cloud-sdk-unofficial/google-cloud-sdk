@@ -15,6 +15,7 @@
 """Common utilities for Orchestration Pipelines commands."""
 
 import re
+from typing import Any, Dict, Optional
 
 from googlecloudsdk.command_lib.orchestration_pipelines import deployment_model
 from googlecloudsdk.core import exceptions
@@ -37,7 +38,12 @@ class BadFileError(exceptions.Error):
 def _resolve_string_templates(yaml_content, variables):
   for key, value in variables.items():
     placeholder_pattern = r"{{\s*" + re.escape(key) + r"\s*}}"
-    yaml_content = re.sub(placeholder_pattern, str(value), yaml_content)
+    # Use a lambda to evaluate str(value) only if a match is found.
+    # This allows passing objects that raise errors on __str__ conversion
+    # to control when that error occurs (only if used).
+    yaml_content = re.sub(
+        placeholder_pattern, lambda m, v=value: str(v), yaml_content
+    )
   return yaml_content
 
 
@@ -54,16 +60,33 @@ def _check_for_missing_variables(content):
     )
 
 
+def _get_updated_path_info(raw_path, bundle_dag_prefix):
+  """Returns GCS path and clean path if raw_path needs to be updated."""
+  if raw_path and not raw_path.startswith("/home/airflow/gcs/"):
+    clean_path = raw_path[2:] if raw_path.startswith("./") else raw_path
+    gcs_path = f"/home/airflow/gcs/{bundle_dag_prefix}/{clean_path}"
+    return gcs_path, clean_path
+  return None, None
+
+
 def resolve_dynamic_variables(
-    yaml_content, deployment_path, env, external_variables=None
-):
-  """Resolves the dynamic variables in the YAML file by substituting environment variables.
+    yaml_content: str,
+    deployment_path: str,
+    env: str,
+    external_variables: Optional[Dict[str, Any]] = None,
+    bundle_dag_prefix: Optional[str] = None,
+) -> Any:
+  """Resolves dynamic variables in the YAML content.
+
+  This function substitutes environment variables and other dynamic values
+  into the provided YAML content.
 
   Args:
     yaml_content: The content of the YAML file to be resolved.
     deployment_path: The path to the deployment configuration YAML file.
     env: The environment to use (e.g., "dev", "staging", "prod").
     external_variables: Optional dict of external variables to substitute.
+    bundle_dag_prefix: The prefix for the bundle DAG.
 
   Returns:
     The resolved_yaml_content YAML file content as a string.
@@ -77,9 +100,6 @@ def resolve_dynamic_variables(
       **parsed_deployment.get(VARIABLES_KEY, {}),
   }
 
-  resolved_resource_profile = _resolve_resource_profile(
-      parsed_deployment, combined_variables
-  )
   resolved_yaml_content = _resolve_string_templates(
       yaml_content, combined_variables
   )
@@ -95,81 +115,71 @@ def resolve_dynamic_variables(
       and "actions" in resolved_yaml_content
   ):
     resolved_yaml_content = _resolve_pipeline_yaml(
-        resolved_yaml_content, resolved_resource_profile, parsed_deployment
+        resolved_yaml_content,
+        combined_variables,
+        parsed_deployment,
+        bundle_dag_prefix,
     )
   return resolved_yaml_content
 
 
-def _resolve_resource_profile(deployment, combined_variables):
-  """Resolves the resource profile."""
-  profile_map = {}
-  profiles = [
-      r for r in deployment[RESOURCES_KEY] if r.type == "resourceProfile"
-  ]
-  for p in profiles:
-    try:
-      raw_profile_content = files.ReadFileContents(p.source)
-      resolved_profile_str = _resolve_string_templates(
-          raw_profile_content, combined_variables
-      )
-      resource_profile = yaml.load(resolved_profile_str)
-    except (IOError, OSError, yaml.Error) as e:
-      raise BadFileError(
-          f"Error reading or parsing resource profile '{p.source}': {e}"
-      ) from e
-    profile_map[p.name] = resource_profile
-  return profile_map
-
-
-def _resolve_pipeline_yaml(yaml_content, profile_map, deployment):
-  """Resolves pipeline specific configurations within the YAML content.
-
-  This function injects artifact storage details and resource profile
-  definitions
-  into the actions defined in the pipeline YAML.
-
-  Args:
-    yaml_content: The parsed YAML content of the pipeline.
-    profile_map: A dictionary mapping resource profile names to their resolved
-      definitions.
-    deployment: A dictionary containing deployment-specific configurations,
-      including "resources" and "artifact_storage".
-
-  Returns:
-    The modified YAML content with pipeline configurations resolved.
-
-  Raises:
-    ValueError: If there is an error reading the resource profile file.
-    BadFileError: If a resource profile used in an action is not found.
-  """
+def _resolve_pipeline_yaml(
+    yaml_content, combined_variables, deployment, bundle_dag_prefix
+):
+  """Resolves pipeline specific configurations within the YAML content."""
 
   for action in yaml_content.get("actions", []):
-    action["depsBucket"] = deployment[ARTIFACT_STORAGE_KEY]["bucket"]
-    if "script" in action and "mainPythonFileUri" in action["script"]:
-      action["filename"] = action["script"]["mainPythonFileUri"]
-      del action["script"]["mainPythonFileUri"]
-      if not action["script"]:
-        del action["script"]
-    profile_name = action.get("resourceProfile")
-    if profile_name:
-      if profile_name in profile_map:
-        profile_definition = profile_map[profile_name].get("definition", {})
-        engine_type = action.get("engine", {}).get("engineType")
-        config = action.setdefault("config", {})
-        del action["resourceProfile"]
-        if engine_type == "dataproc-serverless":
-          config.setdefault("resourceProfile", profile_definition)
-        elif engine_type == "dataproc-gce":
-          config.update(profile_definition)
-      else:
-        raise BadFileError(
-            f"Resource profile '{profile_name}' used in action "
-            f"'{action.get('name')}' was not found in deployment resources."
+    if ARTIFACT_STORAGE_KEY in deployment:
+      action["depsBucket"] = deployment[ARTIFACT_STORAGE_KEY]["bucket"]
+
+    config = action.get("config", {})
+    resource_profile = config.get("resourceProfile")
+    profile_definition = {}
+    if isinstance(resource_profile, dict) and "path" in resource_profile:
+      profile_path = resource_profile["path"]
+      try:
+        raw_profile_content = files.ReadFileContents(profile_path)
+        resolved_profile_str = _resolve_string_templates(
+            raw_profile_content, combined_variables
         )
+        profile_definition = yaml.load(resolved_profile_str)
+      except (IOError, OSError, yaml.Error) as e:
+        raise BadFileError(
+            f"Error reading or parsing resource profile '{profile_path}': {e}"
+        ) from e
+    engine_raw = action.get("engine")
+    if isinstance(engine_raw, dict):
+      engine_type = engine_raw.get("engineType")
+    else:
+      engine_type = engine_raw
+    if engine_type == "dataproc-serverless":
+      config["resourceProfile"] = profile_definition.get("definition", {})
+    elif engine_type == "dataproc-gce":
+      del config["resourceProfile"]
+      config.update(profile_definition.get("definition", {}))
+
+    if engine_type == "dbt":
+      source = config.setdefault("source", {})
+      raw_path = source.get("path", "")
+      gcs_path, clean_path = _get_updated_path_info(raw_path, bundle_dag_prefix)
+      if gcs_path:
+        source["path"] = gcs_path
+        action["_local_dag_upload_path"] = clean_path
+    if engine_type == "dataform":
+      raw_path = config.get("dataformProjectPath", "")
+      gcs_path, clean_path = _get_updated_path_info(raw_path, bundle_dag_prefix)
+      if gcs_path:
+        config["dataformProjectPath"] = gcs_path
+        action["_local_dag_upload_path"] = clean_path
+
   return yaml_content
 
 
-def load_environment(deployment_path, env, external_variables=None):
+def load_environment(
+    deployment_path: str,
+    env: str,
+    external_variables: Optional[Dict[str, Any]] = None,
+) -> deployment_model.EnvironmentModel:
   """Loads the deployment environment configuration."""
   try:
     # 1. Read raw content
@@ -229,7 +239,9 @@ def load_environment(deployment_path, env, external_variables=None):
   return environments[env]
 
 
-def validate_environment(environment, env):
+def validate_environment(
+    environment: deployment_model.EnvironmentModel, env: str
+) -> deployment_model.EnvironmentModel:
   """Validates the deployment environment configuration.
 
   Args:
@@ -266,7 +278,11 @@ def validate_environment(environment, env):
   return environment
 
 
-def parse_deployment(deployment_path, env, external_variables=None):
+def parse_deployment(
+    deployment_path: str,
+    env: str,
+    external_variables: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
   """Extracts storage and environment specific configuration."""
   environment = load_environment(deployment_path, env, external_variables)
   environment = validate_environment(environment, env)

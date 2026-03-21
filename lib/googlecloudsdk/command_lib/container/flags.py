@@ -3987,7 +3987,7 @@ def AddPodSnapshotConfigFlags(parser, hidden=False):
   )
 
 
-def AddAgentSandboxConfigFlags(parser, hidden=True):
+def AddAgentSandboxConfigFlags(parser, hidden=False):
   """Adds --enable-agent-sandbox flag to parser.
 
   Args:
@@ -5621,6 +5621,8 @@ Examples:
       topologyManager:
         policy: BestEffort
         scope: pod
+      crashLoopBackOff:
+        maxContainerRestartPeriod: '300s'
     linuxConfig:
       sysctl:
         net.core.somaxconn: '2048'
@@ -5661,6 +5663,7 @@ shutdownGracePeriodCriticalPodsSeconds | integer (Grace period for critical pods
 allowedUnsafeSysctls                   | list of sysctls (Allowlisted groups: 'kernel.shm*', 'kernel.msg*', 'kernel.sem', 'fs.mqueue.*', and 'net.*', and sysctls under the groups.)
 singleProcessOomKill                   | true or false
 maxParallelImagePulls                  | integer (The value must be between [2, 5].)
+crashLoopBackOff                       | specify crashloopbackoff thresholds
 
 
 List of supported keys in memoryManager in 'kubeletConfig'.
@@ -5709,6 +5712,11 @@ imagefsAvailable          | percentage (e.g., '5%'. Represents the minimum recla
 imagefsInodesFree         | percentage (e.g., '5%'. Represents the minimum reclaim threshold for imagefs inodes free. The value must be positive and no more than 10%.)
 pidAvailable              | percentage (e.g., '5%'. Represents the minimum reclaim threshold for pid available. The value must be positive and no more than 10%.)
 
+List of supported keys in crashLoopBackOff in 'kubeletConfig'.
+
+KEY                                        | VALUE
+------------------------------------------ | ------------------------------------------
+maxContainerRestartPeriod                  | duration (e.g., '30s', '1m'. The maximum duration the backoff delay can accrue to for container restarts. The value must be between [1s, 300s].)
 
 List of supported sysctls in 'linuxConfig'.
 
@@ -8631,32 +8639,73 @@ def AddControlPlaneSoakDurationFlag(parser, hidden):
   )
 
 
-def AddAutopilotPrivilegedAdmissionFlag(parser, hidden):
+def AddAutopilotPrivilegedAdmissionFlag(parser):
   """Adds a --autopilot-privileged-admission flag to parser."""
   help_text = """\
-  Specify Cloud Storage object paths pointing to privileged workload allowlists
-  to be authorized for use in Autopilot mode.
+  Specifies which privileged workload allowlist paths can be referenced and
+  installed by AllowlistSynchronizers in Autopilot modes.
 
-  The value is a comma-separated list of Cloud Storage object paths in the format 'gke://<partner_name>/<app_name>/<allowlist_path>' for GKE-owned allowlists and 'gs://<bucket_name>/<allowlist_path>' for user-owned allowlists.
-  Wildcards are supported to authorize all allowlists under specific
-  paths.
+  The value is a comma-separated list of paths in the format:
 
-Examples:
-  $ {command} --autopilot-privileged-admission=gke://*
-  $ {command} --autopilot-privileged-admission=gke://my-partner/my-app/my-allowlist.yaml
-  $ {command} --autopilot-privileged-admission=gs://my-bucket/allowlists/my-allowlist.yaml
-  $ {command} --autopilot-privileged-admission=gs://my-bucket/*
-  $ {command} --autopilot-privileged-admission=gke://my-partner/my-app/*,gs://my-bucket/allowlists/my-allowlist.yaml
-  $ {command} --autopilot-privileged-admission=""
+    - `gke://<partner_name>/<app_name>/<allowlist_path>` for Autopilot partner
+      allowlists
+    - `gs://<bucket_name>/<allowlist_path>` for user allowlists
+
+  By default, all GKE-managed allowlists (`gke://*`) are authorized. See
+  https://cloud.google.com/kubernetes-engine/docs/resources/autopilot-partners
+  for all supported Autopilot partner allowlists. When setting this flag, be
+  careful to explicitly specify `gke://*` in addition to other entries if you
+  rely on this default behavior.
+
+  Wildcards (`*`) are supported. For example, if `gke://*` is authorized, then
+  AllowlistSynchronizers can be used to install `gke://partner1/allowlist1.yaml`
+  and `gke://partner2/allowlist2.yaml`.
+
+  Note: Use of user allowlists (`gs://`) requires special permissions and is
+  only available to a subset of high tier customers. Please contact your account
+  team for more information.
+
+  Examples:
+
+  Allow all GKE-managed allowlists (default behavior):
+
+    $ {command} --autopilot-privileged-admission=gke://*
+
+  Authorize only allowlists from a GKE Autopilot partner:
+
+    $ {command} --autopilot-privileged-admission=gke://my-partner/*
+
+  Authorize only a singular user-owned allowlist
+
+    $ {command} --autopilot-privileged-admission=gs://my-bucket/allowlists/my-allowlist.yaml
+
+  Authorize all user-owned allowlists under a given path:
+
+    $ {command} --autopilot-privileged-admission=gs://my-bucket/*
+
+  Authorize all GKE-managed allowlists and a specific user-owned allowlist:
+
+    $ {command} --autopilot-privileged-admission=gke://*,gs://my-bucket/allowlists/my-allowlist.yaml
+
+  Disable allowlist installation entirely:
+
+    $ {command} --autopilot-privileged-admission=""
+
+  Exercise caution when using this flag on an existing cluster. Upon updates,
+  existing AllowlistSynchronizers will uninstall allowlists that are no longer
+  authorized.
+
+  For instructions on installing allowlists in the cluster after authorization,
+  please refer to:
+  https://cloud.google.com/kubernetes-engine/docs/how-to/run-autopilot-partner-workloads
 """
 
   parser.add_argument(
       '--autopilot-privileged-admission',
       type=arg_parsers.ArgList(),
       default=None,
-      hidden=hidden,
       help=help_text,
-      metavar='GCS_PATH',
+      metavar='ALLOWLIST_PATHS',
   )
 
 
@@ -8741,4 +8790,27 @@ def AddLinkedRunnersModeFlag(parser, hidden=False):
       hidden=hidden,
       choices=['standard', 'none'],
       help=help_text,
+  )
+
+
+def AddCapacityWaitDurationFlag(parser, hidden):
+  """Adds the --capacity-wait-duration flag to parser."""
+  help_text = """\
+  The maximum duration we will wait for node pool capacity to be ready before
+  the GKE operation will timeout. If unspecified, GKE comes up with a timeout
+  depending on factors such as the node pool size. When operations fail due
+  to hitting this timeout, the node pool will be left and still attempting to
+  provision capacity in the background. It may acquire capacity eventually.
+  Configuring this timeout allows the GKE CreateNodePool operation to give up
+  earlier, unblocking the ability to delete the node pool, if desired.
+
+  $ {command} node-pool-1 --cluster=example-cluster \
+  --capacity-wait-duration=600s
+  """
+  parser.add_argument(
+      '--capacity-wait-duration',
+      default=None,
+      hidden=hidden,
+      help=help_text,
+      type=str,
   )

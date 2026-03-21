@@ -25,9 +25,6 @@ terminal; when it exits, the file will be reread and returned with any edits
 that the user may have saved while in the EDITOR.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import os
 import subprocess

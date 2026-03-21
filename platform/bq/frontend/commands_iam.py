@@ -238,6 +238,7 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
 
 class GetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
   usage = """get-iam-policy [(-d|-t|-connection|--reservation|-routine)] <identifier>"""
+  command = 'get-iam-policy'
 
   def __init__(self, name: str, fv: flags.FlagValues):
     super().__init__(name, fv, 'Get')
@@ -273,6 +274,7 @@ class GetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
 
 class SetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
   usage = """set-iam-policy [(-d|-t|-connection|--reservation|-routine)] <identifier> <filename>"""
+  command = 'set-iam-policy'
 
   def __init__(self, name: str, fv: flags.FlagValues):
     super().__init__(name, fv, 'Set')
@@ -371,6 +373,7 @@ class AddIamPolicyBinding(_IamPolicyBindingCmd):  # pylint: disable=missing-docs
       'add-iam-policy-binding --member=<member> --role=<role> [(-d|-t)] '
       '<identifier>'
   )
+  command = 'add-iam-policy-binding'
 
   def __init__(self, name: str, fv: flags.FlagValues):
     super(AddIamPolicyBinding, self).__init__(name, fv, verb='Add binding to')
@@ -498,6 +501,7 @@ class RemoveIamPolicyBinding(_IamPolicyBindingCmd):  # pylint: disable=missing-d
       'remove-iam-policy-binding --member=<member> --role=<role> '
       '[(-d|-t)] <identifier>'
   )
+  command = 'remove-iam-policy-binding'
 
   def __init__(self, name: str, fv: flags.FlagValues):
     super(RemoveIamPolicyBinding, self).__init__(

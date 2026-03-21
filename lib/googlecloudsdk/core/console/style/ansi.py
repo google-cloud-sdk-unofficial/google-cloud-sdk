@@ -14,9 +14,6 @@
 # limitations under the License.
 """Contains a list of colors and attributes available in ANSI."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import enum
 

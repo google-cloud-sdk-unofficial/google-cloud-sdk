@@ -195,8 +195,11 @@ class FilePartDownloadTask(file_part_task.FilePartTask):
                         do_not_decompress, download_strategy, start_byte,
                         end_byte, write_mode, digesters):
     """Prepares file stream, calls API, and validates hash."""
+    path = self._destination_resource.storage_url.resource_name
+    if path:
+      path = os.path.realpath(files.ExpandHomeDir(path))
     with files.BinaryFileWriter(
-        self._destination_resource.storage_url.resource_name,
+        path,
         create_path=True,
         mode=write_mode,
         convert_invalid_windows_characters=(

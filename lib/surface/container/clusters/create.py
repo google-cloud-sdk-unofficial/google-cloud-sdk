@@ -881,7 +881,7 @@ flags_to_add = {
         'networkTier': flags.AddNetworkTierFlag,
         'controlPlaneEgress': flags.AddControlPlaneEgressFlag,
         'autopilotPrivilegedAdmission': (
-            lambda p: flags.AddAutopilotPrivilegedAdmissionFlag(p, hidden=True)
+            flags.AddAutopilotPrivilegedAdmissionFlag
         ),
         'enableKernelModuleSignatureEnforcement': (
             flags.AddEnableKernelModuleSignatureEnforcementFlag
@@ -1116,7 +1116,7 @@ flags_to_add = {
             p, hidden=True
         ),
         'autopilotPrivilegedAdmission': (
-            lambda p: flags.AddAutopilotPrivilegedAdmissionFlag(p, hidden=True)
+            flags.AddAutopilotPrivilegedAdmissionFlag
         ),
         'podsnapshots': flags.AddPodSnapshotConfigFlags,
         'agentsandbox': flags.AddAgentSandboxConfigFlags,
@@ -1366,7 +1366,7 @@ flags_to_add = {
             p, hidden=True
         ),
         'autopilotPrivilegedAdmission': (
-            lambda p: flags.AddAutopilotPrivilegedAdmissionFlag(p, hidden=True)
+            flags.AddAutopilotPrivilegedAdmissionFlag
         ),
         'podsnapshots': flags.AddPodSnapshotConfigFlags,
         'agentsandbox': flags.AddAgentSandboxConfigFlags,

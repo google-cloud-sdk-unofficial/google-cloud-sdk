@@ -41,7 +41,10 @@ class Create(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     """Set up arguments for this command."""
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      parser.display_info.AddFormat(flags.ALPHA_LIST_FORMAT)
+    else:
+      parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     parser.display_info.AddCacheUpdater(flags.SslPoliciesCompleter)
     cls.SSL_POLICY_ARG.AddArgument(parser, operation_type='create')
     flags.GetDescriptionFlag().AddToParser(parser)

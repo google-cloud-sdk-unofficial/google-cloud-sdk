@@ -41,6 +41,7 @@ class Make(bigquery_command.BigqueryCmd):
   """Creates a dataset or a table."""
 
   usage = """mk [-d] <identifier>  OR  mk [-t] <identifier> [<schema>]"""
+  command = 'mk'
 
   def __init__(self, name: str, fv: flags.FlagValues):
     super(Make, self).__init__(name, fv)
@@ -1044,10 +1045,6 @@ class Make(bigquery_command.BigqueryCmd):
           default_location=bq_flags.LOCATION.value,
       )
       try:
-        if self.reservation_group_name is not None:
-          utils_flags.fail_if_not_using_alpha_feature(
-              bq_flags.AlphaFeatures.RESERVATION_GROUPS
-          )
         ignore_idle_arg = self.ignore_idle_slots
         if ignore_idle_arg is None:
           ignore_idle_arg = not self.use_idle_slots
@@ -1136,9 +1133,6 @@ class Make(bigquery_command.BigqueryCmd):
         )
     elif self.reservation_group:
       try:
-        utils_flags.fail_if_not_using_alpha_feature(
-            bq_flags.AlphaFeatures.RESERVATION_GROUPS
-        )
         reference = bq_client_utils.GetReservationGroupReference(
             id_fallbacks=client,
             identifier=identifier,

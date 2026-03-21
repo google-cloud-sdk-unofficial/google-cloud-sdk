@@ -22,9 +22,6 @@ during runtime before the Deps object is used) when Get() is called for a given
 attribute, depending on the fallthroughs.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import abc
 

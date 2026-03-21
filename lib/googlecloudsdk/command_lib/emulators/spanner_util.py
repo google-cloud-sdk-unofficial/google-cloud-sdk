@@ -119,9 +119,12 @@ def _BuildStartArgs(args):
       current_os is platforms.OperatingSystem.LINUX
       or current_os is platforms.OperatingSystem.MACOSX
   ) and not args.use_docker:
-    return _BuildStartArgsForNativeExecutable(args)
-  else:
-    return _BuildStartArgsForDocker(args)
+    spanner_executable = os.path.join(util.GetCloudSDKRoot(), 'bin',
+                                      SPANNER_EMULATOR_EXECUTABLE_DIR,
+                                      SPANNER_EMULATOR_EXECUTABLE_FILE)
+    if os.path.exists(spanner_executable):
+      return _BuildStartArgsForNativeExecutable(args)
+  return _BuildStartArgsForDocker(args)
 
 
 def GetEnv(args):

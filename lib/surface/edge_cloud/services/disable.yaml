@@ -1,0 +1,24 @@
+- release_tracks: [ALPHA]
+  command_type: DELETE
+
+  help_text:
+    brief: Disables a Google Cloud Platform service on a Google Distributed Cloud zone.
+    description: Disables a Google Cloud Platform service on a Google Distributed Cloud zone.
+    examples: |
+      To disable `sample-service` service in location `us-central1` in `sample-project` project, run:
+
+      $ {command} sample-service --location=us-central1 --project=sample-project
+
+  request:
+    collection: edgecontainer.projects.locations.zonalServices
+    api_version: v1alpha
+    method: disable
+    display_resource_type: service on Google Cloud Platform region
+
+  arguments:
+    resource:
+      help_text: The zonal service to disable.
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.service.resources:zonalService
+
+  async:
+    collection: edgecontainer.projects.locations.operations

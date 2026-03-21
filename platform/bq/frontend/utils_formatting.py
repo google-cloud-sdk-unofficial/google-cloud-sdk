@@ -11,7 +11,6 @@ from typing import Any, Dict, List, Optional, Tuple, Type, Union, cast
 from typing_extensions import TypeAlias
 
 import table_formatter
-import bq_flags
 from clients import utils as bq_client_utils
 from utils import bq_api_utils
 from utils import bq_consts
@@ -599,13 +598,8 @@ def configure_formatter(
         'autoscaleCurrentSlots',
         'maxSlots',
         'scalingMode',
+        'reservationGroup',
     )
-    # TODO(b/426869105): Remove alpha flag after GA.
-    if bq_flags.AlphaFeatures.RESERVATION_GROUPS in bq_flags.ALPHA.value:
-      shared_columns = (
-          *shared_columns,
-          'reservationGroup',
-      )
     formatter.AddColumns(shared_columns)
   elif (
       reference_type == bq_id_utils.ApiClientHelper.CapacityCommitmentReference

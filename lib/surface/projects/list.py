@@ -95,6 +95,13 @@ class List(base.ListCommand):
   name. Projects that have been deleted or are pending deletion are not
   included.
 
+  The active account can be a user account or a service account. If the active
+  account is a service account, then the list of projects might be
+  incomplete. Specifically, the list excludes projects that the active
+  account only has access to because they're in a [service account principal
+  set](https://cloud.google.com/iam/help/service-accounts/principal-sets) with
+  access to the project.
+
   You can specify the maximum number of projects to list using the `--limit`
   flag.
 

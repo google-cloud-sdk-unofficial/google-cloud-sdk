@@ -15,10 +15,6 @@
 
 """Iterable peek utilities."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 
 class Peeker(object):
   """Peeks the first element from an iterable.

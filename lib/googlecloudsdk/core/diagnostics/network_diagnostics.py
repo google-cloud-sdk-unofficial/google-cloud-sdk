@@ -15,9 +15,6 @@
 
 """A module for diagnosing common network and proxy problems."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.core import config
 from googlecloudsdk.core import properties

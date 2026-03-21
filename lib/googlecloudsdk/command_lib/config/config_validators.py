@@ -229,7 +229,7 @@ def WarnIfSettingProjectWhenAdcExists(project):
   return True
 
 
-def WarnIfSettingProjectWithNoAccess(scope, project):
+def WarnIfSettingProjectWithNoAccess(scope, project_id):
   """Warn if setting 'core/project' config to inaccessible project."""
 
   # Only display a warning if the following conditions are true:
@@ -240,7 +240,7 @@ def WarnIfSettingProjectWithNoAccess(scope, project):
   # If the above conditions are met, check that the project being set exists
   # and is accessible to the current user, otherwise show a warning.
   if scope == properties.Scope.USER and properties.VALUES.core.account.Get():
-    project_ref = projects_util.ParseProject(project)
+    project_ref = projects_util.ParseProject(project_id)
     try:
       with base.WithLegacyQuota():
         project = projects_api.Get(
@@ -248,9 +248,7 @@ def WarnIfSettingProjectWithNoAccess(scope, project):
         )
         # Check project environment tag
         if project:
-          projects_util.PrintEnvironmentTagMessage(
-              project.projectId
-          )
+          projects_util.PrintEnvironmentTagMessage(project)
     except (
         apitools_exceptions.HttpError,
         c_store.NoCredentialsForAccountException,
@@ -258,7 +256,7 @@ def WarnIfSettingProjectWithNoAccess(scope, project):
     ) as e:
       warning_msg = (
           'You do not appear to have access to project [{}] or it does not'
-          ' exist.'.format(project)
+          ' exist.'.format(project_id)
       )
       if isinstance(e, apitools_exceptions.HttpError):
         wrapped_error = api_lib_util_exceptions.HttpException(

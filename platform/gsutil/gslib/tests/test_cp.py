@@ -1936,7 +1936,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     # instead of returning a response. This integration test ensures retries
     # from exceptions work correctly.
 
-    src_bucket_region = 'ap-east-1'
+    src_bucket_region = 'eu-north-1'
     dest_bucket_region = 'us-east-2'
     src_bucket_host = 's3.%s.amazonaws.com' % src_bucket_region
     dest_bucket_host = 's3.%s.amazonaws.com' % dest_bucket_region

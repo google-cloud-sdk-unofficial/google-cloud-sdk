@@ -24,9 +24,8 @@ from googlecloudsdk.command_lib.compute.routers import flags
 from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
-@base.Hidden
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class AddNamedSet(base.CreateCommand):
   """Add an empty named set to a Compute Engine router.
 

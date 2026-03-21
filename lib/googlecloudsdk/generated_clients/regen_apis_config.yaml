@@ -79,6 +79,8 @@ apis:
           path: customer/{customerId}
   aiplatform:
     v1beta1:
+      skip:
+        bug: b/489462230
       default: true
       discovery_doc: aiplatform_v1beta1.json
       gcloud_gapic_library: google/cloud/aiplatform/v1beta1:aiplatform_v1beta1_py
@@ -94,6 +96,8 @@ apis:
         projects.locations.indexEndpoints.operations:
           path: projects/{projectsId}/locations/{locationsId}/indexEndpoints/{indexEndpointsId}/operations/{operationsId}
     v1:
+      skip:
+        bug: b/489462230
       discovery_doc: aiplatform_v1.json
       gcloud_gapic_library: google/cloud/aiplatform/v1:aiplatform_v1_py
       resources:
@@ -542,9 +546,13 @@ apis:
           path: projects/{project}/zones/{zone}
         zoneVmExtensionPolicies:
           path: projects/{project}/zones/{zone}/vmExtensionPolicies/{vmExtensionPolicy}
+        reservationBlocks:
+          path: projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}
         reservationSubBlocks:
           path: projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}/reservationSubBlocks/{reservationSubBlocksId}
     v1:
+      skip:
+        bug: b/489464772
       discovery_doc: compute_v1.json
       default: true
       resources:
@@ -680,6 +688,8 @@ apis:
           path: projects/{projectsId}/locations/{locationsId}/pipelines/{pipelinesId}/jobs/{jobsId}
   dataplex:
     v1:
+      skip:
+        bug: b/489397520
       discovery_doc: dataplex_v1.json
       default: true
       resources:
@@ -1202,13 +1212,19 @@ apis:
       default: true
   logging:
     v2:
+      skip:
+        bug: b/489462171
       discovery_doc: logging_v2.json
       gcloud_gapic_library: google/logging/v2:logging_v2_py
       default: true
   looker:
     v1alpha2:
+      skip:
+        bug: b/488419330
       discovery_doc: looker_v1alpha2.json
     v1:
+      skip:
+        bug: b/488419330
       discovery_doc: looker_v1.json
       default: true
   memcache:
@@ -1290,11 +1306,17 @@ apis:
       default: false
   networkconnectivity:
     v1alpha1:
+      skip:
+        bug: b/489463293
       discovery_doc: networkconnectivity_v1alpha1.json
       default: true
     v1beta:
+      skip:
+        bug: b/489463293
       discovery_doc: networkconnectivity_v1beta.json
     v1:
+      skip:
+        bug: b/489463293
       discovery_doc: networkconnectivity_v1.json
   networkmanagement:
     v1:
@@ -2012,6 +2034,8 @@ apis:
         projects.locations.keyRings.cryptoKeys:
           path: projects/{projectsId}/locations/{locationsId}/keyRings/{keyRingsId}/cryptoKeys/{cryptoKeysId}
     v1alpha:
+      skip:
+        bug: b/489398825
       discovery_doc: oracledatabase_v1alpha.json
       resources:
         projects.locations.autonomousDatabaseBackups:

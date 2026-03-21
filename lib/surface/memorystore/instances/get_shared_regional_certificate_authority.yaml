@@ -1,5 +1,4 @@
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: |
       Get the shared regional CA certificate bundle for Memorystore.
@@ -23,7 +22,12 @@
   request:
     collection: memorystore.projects.locations
     method: getSharedRegionalCertificateAuthority
-    api_version: v1alpha
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
+    GA:
+      api_version: v1
     # The hook is required because the GetSharedRegionalCertificateAuthority API definition
     # includes the '/sharedRegionalCertificateAuthority' suffix within the 'name' path parameter
     # (e.g., name="projects/.../locations/.../sharedRegionalCertificateAuthority").

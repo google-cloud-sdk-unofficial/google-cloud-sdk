@@ -185,8 +185,7 @@
       type: bool
     - arg_name: rotate-server-certificate
       action: store_true
-      release_tracks: [ALPHA]
-      hidden: true
+      release_tracks: [ALPHA, BETA, GA]
       help_text: |
         Rotate the server certificates for the cluster. This is allowed only for clusters using a customer-managed CA.
       type: bool
@@ -226,6 +225,7 @@
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceWindowAny
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceWindowPolicy
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateSimulateMaintenanceEvent
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateRotateServerCertificate
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateAutomatedBackupConfig
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateNodeType
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceVersion
@@ -241,6 +241,7 @@
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceWindowAny
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceWindowPolicy
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateSimulateMaintenanceEvent
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateRotateServerCertificate
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateAutomatedBackupConfig
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateNodeType
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceVersion

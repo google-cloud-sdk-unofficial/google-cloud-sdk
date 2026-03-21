@@ -16,11 +16,6 @@
 """Cloud resource filter expression referenced key backend."""
 
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
-
 class Backend(object):
   """Cloud resource filter expression referenced key backend.
 

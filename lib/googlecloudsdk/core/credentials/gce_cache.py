@@ -14,9 +14,6 @@
 # limitations under the License.
 """Caching logic for checking if we're on GCE."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import http.client
 import os

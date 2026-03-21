@@ -302,6 +302,7 @@ def _add_common_args(parser):
   flags.add_continue_on_error_flag(parser)
   flags.add_recovery_point_objective_flag(parser)
   flags.add_read_paths_from_stdin_flag(parser)
+  flags.add_encryption_enforcement_file_flag(parser)
 
   ip_filter = parser.add_mutually_exclusive_group()
   ip_filter.add_argument(
@@ -319,7 +320,8 @@ def _add_alpha_args(parser):
     parser (argparse.ArgumentParser): The parser to add the arguments to.
 
   """
-  flags.add_encryption_enforcement_file_flag(parser)
+  # All alpha flags have been promoted. Hence a no-op.
+  del parser
 
 
 def _is_initial_bucket_metadata_needed(user_request_args):

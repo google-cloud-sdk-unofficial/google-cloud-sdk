@@ -15,9 +15,6 @@
 
 """A module to get an unauthenticated http object."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import enum
 import google_auth_httplib2

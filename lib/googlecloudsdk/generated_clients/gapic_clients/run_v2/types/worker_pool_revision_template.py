@@ -114,6 +114,12 @@ class WorkerPoolRevisionTemplate(proto.Message):
             disabled on this worker pool.
 
             This field is a member of `oneof`_ ``_gpu_zonal_redundancy_disabled``.
+        client (str):
+            Optional. Arbitrary identifier for the API
+            client.
+        client_version (str):
+            Optional. Arbitrary version identifier for
+            the API client.
     """
 
     revision: str = proto.Field(
@@ -177,6 +183,14 @@ class WorkerPoolRevisionTemplate(proto.Message):
         proto.BOOL,
         number=16,
         optional=True,
+    )
+    client: str = proto.Field(
+        proto.STRING,
+        number=17,
+    )
+    client_version: str = proto.Field(
+        proto.STRING,
+        number=18,
     )
 
 

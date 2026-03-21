@@ -78,7 +78,7 @@ class Create(base.SilentCommand):
       log.status.Print('Activated [{0}].'.format(args.configuration_name))
       project_id = properties.VALUES.core.project.Get()
       if project_id:
-        projects_util.PrintEnvironmentTagMessage(
+        projects_util.PrintEnvironmentTagMessageProjectId(
             project_id
         )
     else:

@@ -46,9 +46,6 @@ assert res.disk_size == 10737418240
 
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import argparse
 import collections

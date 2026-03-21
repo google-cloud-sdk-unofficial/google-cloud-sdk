@@ -15,9 +15,6 @@
 
 """Cloud SDK markdown document text renderer."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.core.console import console_attr
 from googlecloudsdk.core.document_renderers import renderer

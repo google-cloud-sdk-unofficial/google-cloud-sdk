@@ -24,7 +24,6 @@ from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
 from frontend import utils as frontend_utils
-from frontend import utils_flags
 from frontend import utils_id as frontend_id_utils
 from utils import bq_error
 from utils import bq_id_utils
@@ -38,6 +37,7 @@ class Delete(bigquery_command.BigqueryCmd):
   """The Delete CLI command."""
 
   usage = """rm [-f] [-r] [(-d|-t)] <identifier>"""
+  command = 'rm'
 
   def __init__(self, name: str, fv: flags.FlagValues):
     super(Delete, self).__init__(name, fv)
@@ -250,9 +250,6 @@ class Delete(bigquery_command.BigqueryCmd):
         )
     elif self.reservation_group:
       try:
-        utils_flags.fail_if_not_using_alpha_feature(
-            bq_flags.AlphaFeatures.RESERVATION_GROUPS
-        )
         reference = bq_client_utils.GetReservationGroupReference(
             id_fallbacks=client,
             identifier=identifier,

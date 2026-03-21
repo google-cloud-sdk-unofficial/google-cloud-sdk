@@ -17,6 +17,7 @@ import googleapiclient
 import bq_auth_flags
 import bq_flags
 import bq_utils
+from clients import bigquery_http
 from gcloud_wrapper import bq_to_gcloud_command_executor
 from utils import bq_error
 from utils import bq_error_utils
@@ -38,9 +39,11 @@ def _UseServiceAccount() -> bool:
 # Python magic. Explain what the heck is going on throughout.
 class NewCmd(appcommands.Cmd):
   """Featureful extension of appcommands.Cmd."""
+  command = None
 
   def __init__(self, name: str, flag_values: flags.FlagValues) -> None:
     super(NewCmd, self).__init__(name, flag_values)
+
     run_with_args = getattr(self, 'RunWithArgs', None)
     self._new_style = isinstance(run_with_args, types.MethodType)
     if self._new_style:
@@ -126,6 +129,7 @@ class NewCmd(appcommands.Cmd):
       0 on success, nonzero on failure.
     """
     self._CheckFlags()
+    bigquery_http.SetBqCliUserAgentCommand(self.command)
     logging.debug('In NewCmd.Run: %s', argv)
     self._debug_mode = FLAGS.debug_mode
     if not self._new_style:

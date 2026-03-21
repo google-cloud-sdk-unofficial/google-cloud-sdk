@@ -86,7 +86,47 @@ class BatchSearch(base.Command):
         help="""Path to a JSON file containing a list of searches.
 Each element in list should be a JSON object representing a Search message,
 e.g., `{"semanticSearch": {"searchText": "...", "searchField": "..."}}`.
-Keys must be camelCase as in API definition.""",
+Keys must be camelCase as in API definition.
+Example file content:
+[
+  {
+    "vectorSearch": {
+      "vector": {
+        "values": [
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "searchField": "genre_embedding",
+      "topK": 10,
+      "outputFields": {
+        "dataFields": [
+          "director",
+          "genre",
+          "title",
+          "year"
+        ]
+      }
+    }
+  },
+  {
+    "semanticSearch": {
+      "searchText": "sci-fi movie",
+      "searchField": "plot_embedding",
+      "taskType": "SEMANTIC_SIMILARITY",
+      "topK": 10
+    }
+  },
+  {
+    "textSearch": {
+      "searchText": "movie 1",
+      "dataFieldNames": ["title"],
+      "topK": 10
+    }
+  }
+]""",
     )
 
     combine_group = parser.add_argument_group('Combine Results Options')

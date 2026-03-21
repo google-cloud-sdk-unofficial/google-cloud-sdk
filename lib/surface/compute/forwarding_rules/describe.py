@@ -36,18 +36,33 @@ def _Run(args, holder, forwarding_rules_arg):
       holder.resources,
       scope_lister=compute_flags.GetDefaultScopeLister(client))
 
+  request_kwargs = forwarding_rule_ref.AsDict()
   if forwarding_rule_ref.Collection() == 'compute.forwardingRules':
     service = client.apitools_client.forwardingRules
-    request = client.messages.ComputeForwardingRulesGetRequest(
-        **forwarding_rule_ref.AsDict())
+    if args.IsKnownAndSpecified('view'):
+      request_kwargs['view'] = (
+          client.messages.ComputeForwardingRulesGetRequest.ViewValueValuesEnum(
+              args.view
+          )
+      )
+    request = client.messages.ComputeForwardingRulesGetRequest(**request_kwargs)
   elif forwarding_rule_ref.Collection() == 'compute.globalForwardingRules':
     service = client.apitools_client.globalForwardingRules
+    if args.IsKnownAndSpecified('view'):
+      request_kwargs['view'] = (
+          client.messages.ComputeGlobalForwardingRulesGetRequest.ViewValueValuesEnum(
+              args.view
+          )
+      )
     request = client.messages.ComputeGlobalForwardingRulesGetRequest(
-        **forwarding_rule_ref.AsDict())
+        **request_kwargs
+    )
 
   return client.MakeRequests([(service, 'Get', request)])[0]
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class Describe(base.DescribeCommand):
   """Display detailed information about a forwarding rule.
 
@@ -73,3 +88,39 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self.FORWARDING_RULE_ARG)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(Describe):
+  """Display detailed information about a forwarding rule.
+
+  *{command}* displays all data associated with a forwarding rule
+  in a project.
+
+  ## EXAMPLES
+  To get details about a global forwarding rule, run:
+
+    $ {command} FORWARDING-RULE --global
+
+  To get details about a regional forwarding rule, run:
+
+    $ {command} FORWARDING-RULE --region=us-central1
+
+  To get full details, including any extensions attached to the rule, run:
+
+    $ {command} FORWARDING-RULE --region=us-central1 --view=FULL
+  """
+
+  @staticmethod
+  def Args(parser):
+    DescribeAlpha.FORWARDING_RULE_ARG = _Args(parser)
+    parser.add_argument(
+        '--view',
+        choices=['BASIC', 'FULL'],
+        help=(
+            'The view of the forwarding rule to return. '
+            'BASIC includes the standard fields. '
+            'FULL includes standard fields plus any '
+            'extensions attached to the forwarding rule.'
+        ),
+    )

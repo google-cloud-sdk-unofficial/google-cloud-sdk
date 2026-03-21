@@ -15,9 +15,6 @@
 
 """argparse Actions for use with calliope."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import argparse
 import io
@@ -135,7 +132,9 @@ def StoreProperty(prop):
         option_string = option_strings[0]
       else:
         option_string = None
-      properties.VALUES.SetInvocationValue(prop, None, option_string)
+      current = properties.VALUES.GetLatestInvocationValues().get(prop)
+      properties.VALUES.SetInvocationValue(
+          prop, current.value if current else None, option_string)
 
       if '_ARGCOMPLETE' in os.environ:
         self._orig_class = argparse._StoreAction  # pylint:disable=protected-access
@@ -189,7 +188,9 @@ def StoreBooleanProperty(prop):
       else:
         self._inverted = False
       super(Action, self).__init__(*args, **kwargs)
-      properties.VALUES.SetInvocationValue(prop, None, option_string)
+      current = properties.VALUES.GetLatestInvocationValues().get(prop)
+      properties.VALUES.SetInvocationValue(
+          prop, current.value if current else None, option_string)
 
       if '_ARGCOMPLETE' in os.environ:
         self._orig_class = argparse._StoreAction  # pylint:disable=protected-access

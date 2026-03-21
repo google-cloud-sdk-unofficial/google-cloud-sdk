@@ -246,3 +246,15 @@ class PrivateCloudsClient(util.VmwareClientBase):
     for cluster in self.cluster_client.List(resource):
       if cluster.management:
         return cluster
+
+  def MigrateManagementVms(self, resource, cluster_id):
+    migrate_management_vms_request = self.messages.MigrateManagementVmsRequest(
+        clusterId=cluster_id
+    )
+    request = (
+        self.messages.VmwareengineProjectsLocationsPrivateCloudsMigrateManagementVmsRequest(
+            name=resource.RelativeName(),
+            migrateManagementVmsRequest=migrate_management_vms_request
+        )
+    )
+    return self.service.MigrateManagementVms(request)

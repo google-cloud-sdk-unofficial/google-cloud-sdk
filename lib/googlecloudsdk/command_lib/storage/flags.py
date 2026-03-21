@@ -1487,55 +1487,54 @@ def add_batch_jobs_flags(parser, track=calliope_base.ReleaseTrack.GA):
       metavar='KEY=VALUE',
       action=arg_parsers.StoreOnceAction,
   )
-  if track == calliope_base.ReleaseTrack.ALPHA:
-    custom_contexts_mutex_group = transformation.add_group(
-        mutex=True,
-        help='Describes options to update object custom contexts.',
-    )
-    custom_context_updates_group = custom_contexts_mutex_group.add_group(
-        help=(
-            'Flags for updating or clearing individual custom contexts. A key'
-            ' cannot be present in both `--update-object-custom-contexts` and'
-            ' `--clear-object-custom-contexts`.'
-        )
-    )
-    custom_context_updates_options_group = custom_context_updates_group.add_group(
-        mutex=True,
-        help=(
-            'Flags for specifying custom context updates in key-value pairs or'
-            ' from a file.'
-        ),
-    )
-    custom_context_updates_options_group.add_argument(
-        '--update-object-custom-contexts',
-        metavar='CUSTOM_CONTEXTS_KEYS_AND_VALUES',
-        type=arg_parsers.ArgDict(),
-        help=(
-            'Inserts or updates object custom contexts. If an'
-            ' existing entry is found, the value will be updated, otherwise the'
-            ' entry would be added.'
-        ),
-    )
-    custom_context_updates_options_group.add_argument(
-        '--update-object-custom-contexts-file',
-        metavar='CUSTOM_CONTEXTS_FILE',
-        type=str,
-        help=_SBO_CUSTOM_CONTEXT_FILE_HELP_TEXT,
-    )
-    custom_context_updates_group.add_argument(
-        '--clear-object-custom-contexts',
-        metavar='CUSTOM_CONTEXTS_KEYS',
-        type=arg_parsers.ArgList(),
-        help=(
-            'Removes object custom contexts by key. If an entry is not found,'
-            ' it will be ignored.'
-        ),
-    )
-    custom_contexts_mutex_group.add_argument(
-        '--clear-all-object-custom-contexts',
-        action='store_true',
-        help='Clears all object custom contexts.',
-    )
+  custom_contexts_mutex_group = transformation.add_group(
+      mutex=True,
+      help='Describes options to update object custom contexts.',
+  )
+  custom_context_updates_group = custom_contexts_mutex_group.add_group(
+      help=(
+          'Flags for updating or clearing individual custom contexts. A key'
+          ' cannot be present in both `--update-object-custom-contexts` and'
+          ' `--clear-object-custom-contexts`.'
+      ),
+  )
+  custom_context_updates_options_group = custom_context_updates_group.add_group(
+      mutex=True,
+      help=(
+          'Flags for specifying custom context updates in key-value pairs or'
+          ' from a file.'
+      ),
+  )
+  custom_context_updates_options_group.add_argument(
+      '--update-object-custom-contexts',
+      metavar='CUSTOM_CONTEXTS_KEYS_AND_VALUES',
+      type=arg_parsers.ArgDict(),
+      help=(
+          'Inserts or updates object custom contexts. If an existing entry is'
+          ' found, the value will be updated, otherwise the entry would be'
+          ' added. e.g. `--update-object-custom-contexts=key1=val1,key2=val2`'
+      ),
+  )
+  custom_context_updates_options_group.add_argument(
+      '--update-object-custom-contexts-file',
+      metavar='CUSTOM_CONTEXTS_FILE',
+      type=str,
+      help=_SBO_CUSTOM_CONTEXT_FILE_HELP_TEXT,
+  )
+  custom_context_updates_group.add_argument(
+      '--clear-object-custom-contexts',
+      metavar='CUSTOM_CONTEXTS_KEYS',
+      type=arg_parsers.ArgList(),
+      help=(
+          'Removes object custom contexts by key. If an entry is not found,'
+          ' it will be ignored. e.g. `--clear-object-custom-contexts=key1,key2`'
+      ),
+  )
+  custom_contexts_mutex_group.add_argument(
+      '--clear-all-object-custom-contexts',
+      action='store_true',
+      help='Clears all object custom contexts.',
+  )
 
   parser.add_argument(
       '--description',

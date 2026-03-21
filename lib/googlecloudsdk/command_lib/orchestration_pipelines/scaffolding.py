@@ -22,23 +22,34 @@ from googlecloudsdk.core.util import files
 
 _PIPELINE_TEMPLATE = """\
 pipelineId: {pipeline_id}
-version: 1.0.0
 description: TODO - describe your pipeline
+runner: 'airflow'
+owner: 'data-eng-team'
+model_version: 'v1'
+
+defaults:
+  project: ${{project}}
+  region: ${{region}}
+  executionConfig:
+    retries: 1
 
 triggers:
   - type: schedule
     scheduleInterval: '0 2 * * *'  # 2 AM daily
-    timezone: UTC
+    startTime: '2025-11-01T00:00:00'
+    endTime: '2026-12-01T00:00:00'
+    catchup: false
+    timezone: 'UTC'
 
 # Add your jobs here
-actions: []
+actions:
 """
 
 _DEPLOYMENT_TEMPLATE = """\
 environments:
   {environment}:
     # TODO: Replace with your GCP project
-    project_id: "{project_id}"
+    project: "{project_id}"
 
     # TODO: Replace with your region
     region: "{region}"
@@ -47,7 +58,17 @@ environments:
     composer_environment: "{composer_environment}"
 
     # TODO: Replace with your artifacts bucket
-    artifacts_bucket: "{artifacts_bucket}"
+    artifact_storage:
+      bucket: "{artifacts_bucket}"
+      path_prefix: pipelines
+
+    variables:
+      # TODO: Replace with your service account
+      service_account: "{service_account}"
+      # TODO: Replace with your network URI
+      network_uri: projects/{project_id}/global/networks/default
+      # TODO: Replace with your subnetwork URI
+      subnetwork_uri: projects/{project_id}/regions/{region}/subnetworks/default
 
     pipelines:
       - source: {pipeline_file}
@@ -113,6 +134,7 @@ def InitProject(args):
   region = args.region or 'YOUR_REGION'
   composer_env = args.composer_environment or 'YOUR_COMPOSER'
   artifacts_bucket = args.artifacts_bucket or 'YOUR_BUCKET'
+  service_account = args.service_account or 'YOUR_SERVICE_ACCOUNT'
 
   # Generate content
   files.WriteFileContents(
@@ -128,6 +150,7 @@ def InitProject(args):
           region=region,
           composer_environment=composer_env,
           artifacts_bucket=artifacts_bucket,
+          service_account=service_account,
           pipeline_file=pipeline_file,
       )
   )

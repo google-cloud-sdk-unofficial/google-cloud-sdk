@@ -16,6 +16,8 @@
 import logging
 from os import path as os_path
 from typing import Dict, List, Mapping, Sequence
+from apitools.base.protorpclite import messages
+from apitools.base.py import encoding
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.common import util
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.config import feature_helper
 from googlecloudsdk.core import exceptions
@@ -44,14 +46,20 @@ def check_for_urlmap_conditions(
   for url_map in url_maps:
     if (
         input_type == feature_helper.InputType.ADMIN_API
-        and (url_map.urlRegex == '.*' or url_map.urlRegex == '/.*')
-        and url_map.script.scriptPath == 'auto'
+        and (
+            url_map.get('urlRegex') == '.*'
+            or url_map.get('urlRegex') == '/.*'
+        )
+        and url_map.get('script', {}).get('scriptPath') == 'auto'
     ):
       continue
     elif (
         input_type == feature_helper.InputType.APP_YAML
-        and url_map['url'] == '/.*'
-        and url_map['script'] == 'auto'
+        and (
+            url_map.get('url') == '.*'
+            or url_map.get('url') == '/.*'
+        )
+        and url_map.get('script') == 'auto'
     ):
       continue
     else:
@@ -74,7 +82,10 @@ def get_length(val: any) -> int:
 def list_incompatible_features(
     appyaml: str, service: str, version: str
 ) -> None:
-  """Lists the incompatible features in the app.yaml file or deployed app version.
+  """Lists incompatible features for GAE to Cloud Run migration.
+
+  This function checks for incompatible features in either a local app.yaml file
+  or a deployed App Engine version.
 
   Args:
       appyaml: The path to the app.yaml file.
@@ -103,6 +114,29 @@ def _generate_input_name(
   return f'{project_id}/{service}/{version}'
 
 
+def _convert_message_to_dict(data: Mapping[str, any]):
+  """Recursively converts apitools messages.Message objects to dictionaries.
+
+  Args:
+      data: The input data, potentially containing Message objects.
+
+  Returns:
+      A new structure with Message objects converted to dictionaries.
+  """
+  if isinstance(data, messages.Message):
+    dict_data = encoding.MessageToDict(data)
+    return _convert_message_to_dict(dict_data)
+  elif isinstance(data, dict):
+    new_dict = {}
+    for k, v in data.items():
+      new_dict[k] = _convert_message_to_dict(v)
+    return new_dict
+  elif isinstance(data, list):
+    return [_convert_message_to_dict(elem) for elem in data]
+  else:
+    return data
+
+
 def _check_for_incompatibility(
     input_data: Mapping[str, any], input_type: feature_helper.InputType
 ) -> Sequence[any]:
@@ -118,7 +152,10 @@ def _check_for_incompatibility(
   value_restricted_features = feature_helper.get_feature_list_by_input_type(
       input_type, feature_config.value_limited
   )
-  input_key_value_pairs = util.flatten_keys(input_data, '')
+  processed_input_data = input_data
+  if input_type == feature_helper.InputType.ADMIN_API:
+    processed_input_data = _convert_message_to_dict(input_data)
+  input_key_value_pairs = util.flatten_keys(processed_input_data, '')
   for key, val in input_key_value_pairs.items():
     # Check for unsupported features.
     if key.startswith('build_env_variables'):
@@ -145,6 +182,15 @@ def _check_for_incompatibility(
       if key in ['app_engine_apis', 'appEngineApis'] and val:
         incompatible_list.append(unsupported_features[key])
         continue
+    # Check for basic scaling features.
+    if key in [
+        'basic_scaling.max_instances',
+        'basicScaling.maxInstances',
+        'basic_scaling.min_instances',
+        'basicScaling.minInstances',
+    ]:
+      incompatible_list.append(range_limited_features[key])
+      continue
     # Check for range_limited features.
     if key in range_limited_features:
       if not range_limited_features[key].validate(val):
@@ -202,7 +248,15 @@ def _get_display_features(
     features: List[feature_helper.UnsupportedFeature],
     input_type: feature_helper.InputType
 ) -> Sequence[Dict[str, str]]:
-  """Convert a List List[Tuple] to List[Object] in order to print desired out format."""
+  """Converts UnsupportedFeature objects to a display format.
+
+  Args:
+      features: A list of UnsupportedFeature objects.
+      input_type: The input type of the app.yaml file.
+
+  Returns:
+      A list of dictionaries suitable for printing.
+  """
   features_display = []
   for feature in features:
     features_display.append({

@@ -217,9 +217,10 @@ def ParseMemoryStrToNumBytes(binary_size):
 
 def ValidateV1TimeoutFlag(args):
   if args.timeout and args.timeout > 540:
-    raise arg_parsers.ArgumentTypeError(
-        '--timeout: value must be less than or equal to 540s; received: {}s'
-        .format(args.timeout)
+    raise exceptions.InvalidArgumentException(
+        '--timeout',
+        'value must be less than or equal to 540s for 1st gen functions;'
+        ' received: {}s'.format(args.timeout),
     )
 
 

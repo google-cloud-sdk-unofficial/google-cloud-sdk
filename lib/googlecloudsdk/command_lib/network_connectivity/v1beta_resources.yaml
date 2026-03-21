@@ -71,7 +71,7 @@ projects_locations_multicloud_data_transfer_configs_destinations:
 region:
   name: region
   collection: networkconnectivity.projects.locations
-  regional_endpoints_flag: true
+  is_regional_endpoint_flag: true
   attributes:
   - *project
   - &region

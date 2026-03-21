@@ -226,6 +226,33 @@ class Jobs:
       raise exceptions.HttpException(error)
 
   @staticmethod
+  def Pause(job_id, project_id=None, region_id=None):
+    """Pauses a job by calling the Jobs.Update method.
+
+    Args:
+      job_id: Identifies a single job.
+      project_id: The project which owns the job.
+      region_id: The regional endpoint where the job lives.
+
+    Returns:
+      (Job)
+    """
+    project_id = project_id or GetProject()
+    region_id = region_id or DATAFLOW_API_DEFAULT_REGION
+    job = GetMessagesModule().Job(
+        requestedState=(
+            GetMessagesModule().Job.RequestedStateValueValuesEnum.JOB_STATE_PAUSING
+        )
+    )
+    request = GetMessagesModule().DataflowProjectsLocationsJobsUpdateRequest(
+        jobId=job_id, location=region_id, projectId=project_id, job=job
+    )
+    try:
+      return Jobs.GetService().Update(request)
+    except apitools_exceptions.HttpError as error:
+      raise exceptions.HttpException(error) from error
+
+  @staticmethod
   def ResumeUnsupportedSDK(job_id,
                            experiment_with_token,
                            project_id=None,

@@ -1254,6 +1254,7 @@ class AlphaDeploy(BetaDeploy):
     flags.IDENTITY_FLAG.AddToParser(parser)
     flags.IDENTITY_CERTIFICATE_FLAG.AddToParser(parser)
     flags.IDENTITY_TYPE_FLAG.AddToParser(parser)
+    flags.FUNCTIONAL_TYPE_FLAG.AddToParser(parser)
     flags.MESH_DATAPLANE_FLAG.AddToParser(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_args.AddArgument(flags.ReadinessProbeFlag())

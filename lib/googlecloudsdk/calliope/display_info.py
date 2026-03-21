@@ -14,9 +14,6 @@
 # limitations under the License.
 """Resource display info for the Calliope display module."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.core.cache import cache_update_ops
 

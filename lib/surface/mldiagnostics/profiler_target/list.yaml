@@ -22,6 +22,17 @@
       To list all profiler targets, run:
 
           $ {command} --location=us-central1 --machine-learning-run=my-ml-run
+
+          Sample output:
+          ```
+            ---
+            hostname: gke-tpu-1f0789b5-jqx9
+            name: projects/PROJECT_ID/locations/us-central1/machineLearningRuns/mldiag-prod-cluster-diagon-jobset-mldiag-prod-demo-jobset-20260205-164642/profilerTargets/mldiag-prod-demo-jobset-tpu-slice-0-0-tcw2k
+            ---
+            hostname: gke-tpu-1f0789b5-rxvf
+            name: projects/PROJECT_ID/locations/us-central1/machineLearningRuns/mldiag-prod-cluster-diagon-jobset-mldiag-prod-demo-jobset-20260205-164642/profilerTargets/mldiag-prod-demo-jobset-tpu-slice-0-1-dct59
+          ```
+
   arguments:
     params:
     - help_text: |-

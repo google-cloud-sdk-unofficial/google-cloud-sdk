@@ -16,10 +16,6 @@
 """A module to get a credentialed transport object for making API calls."""
 
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import requests as core_requests
 from googlecloudsdk.core.credentials import requests

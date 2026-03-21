@@ -95,6 +95,7 @@ class AppEngineToCloudRun(deploy.Deploy):
     flags.IDENTITY_FLAG.AddToParser(parser)
     flags.IDENTITY_CERTIFICATE_FLAG.AddToParser(parser)
     flags.IDENTITY_TYPE_FLAG.AddToParser(parser)
+    flags.FUNCTIONAL_TYPE_FLAG.AddToParser(parser)
     flags.MESH_DATAPLANE_FLAG.AddToParser(parser)
     flags.AddDelegateBuildsFlag(parser)
     flags.AddOverflowScalingFlag(parser)

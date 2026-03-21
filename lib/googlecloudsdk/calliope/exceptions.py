@@ -21,9 +21,6 @@ littering the screen in CLI mode. In interpreter mode, they are not caught
 from within calliope.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import errno
 from functools import wraps

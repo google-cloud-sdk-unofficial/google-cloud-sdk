@@ -81,6 +81,7 @@ class Delete(base.Command):
           message=message,
           throw_if_unattended=True,
           cancel_on_no=True,
+          default=False,
       )
       deletion.Delete(
           instance_ref, client.GetInstance, client.DeleteInstance, args.async_

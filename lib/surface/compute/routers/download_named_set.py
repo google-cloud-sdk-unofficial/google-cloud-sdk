@@ -27,8 +27,8 @@ from googlecloudsdk.core.resource import resource_printer
 from googlecloudsdk.core.util import files
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class DownloadNamedSet(base.DescribeCommand):
   """Download a named set from a Compute Engine router.
 

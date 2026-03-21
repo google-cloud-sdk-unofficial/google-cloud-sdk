@@ -77,6 +77,7 @@ class Create(base.CreateCommand):
     flags.AddDenyMaintenancePeriod(parser, alloydb_messages)
     flags.AddSubscriptionType(parser, alloydb_messages)
     flags.AddTags(parser)
+    flags.AddDataplexIntegrationFlags(parser)
 
   def ConstructCreateRequestFromArgs(self, alloydb_messages, location_ref,
                                      args):

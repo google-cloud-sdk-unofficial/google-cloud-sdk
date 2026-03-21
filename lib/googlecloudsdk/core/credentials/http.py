@@ -15,9 +15,6 @@
 
 """A module to get a credentialed http object for making API calls."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import json
 

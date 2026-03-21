@@ -1,5 +1,4 @@
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: |
       Get the shared regional certificate authority certificates for Memorystore for Redis Cluster.
@@ -23,6 +22,10 @@
   request:
     ALPHA:
       api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
     collection: redis.projects.locations
     method: getSharedRegionalCertificateAuthority
     modify_request_hooks:

@@ -26,6 +26,7 @@ from frontend import utils_formatting
 
 class Extract(bigquery_command.BigqueryCmd):
   usage = """extract <source_table> <destination_uris>"""
+  command = 'extract'
 
   def __init__(self, name: str, fv: flags.FlagValues):
     super(Extract, self).__init__(name, fv)

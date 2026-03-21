@@ -52,7 +52,7 @@ requires = [
     'six>=1.17.0',
     # aiohttp is the extra dependency that contains requests lib.
     'google-auth[aiohttp]==2.39.0',
-    'google-auth-httplib2>=0.2.0',
+    'google-auth-httplib2>=0.3.0',
 ]
 
 CURDIR = os.path.abspath(os.path.dirname(__file__))
@@ -131,11 +131,12 @@ setup(
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
         'Programming Language :: Python :: 3.13',
+        'Programming Language :: Python :: 3.14',
         'Topic :: System :: Filesystems',
         'Topic :: Utilities',
     ],
-    # Gsutil supports Python 3.9 to 3.13
-    python_requires='>=3.9, <3.14',
+    # Gsutil supports Python 3.9 to 3.14
+    python_requires='>=3.9, <3.15',
     platforms='any',
     packages=find_packages(
         exclude=[

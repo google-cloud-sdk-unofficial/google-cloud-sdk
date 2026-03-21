@@ -15,9 +15,6 @@
 
 """A module for diagnosing common problems caused by properties."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.core import config
 from googlecloudsdk.core import properties

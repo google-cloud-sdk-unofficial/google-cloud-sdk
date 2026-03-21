@@ -33,8 +33,7 @@ class Start(base.Command):
   """
 
   detailed_help = {
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
           To start the local Firestore emulator, run:
 
             $ {command}
@@ -58,6 +57,10 @@ class Start(base.Command):
           To export emulator data upon emulator shutdown, run:
 
             $ {command} --export-on-exit=<path/to/directory>
+
+          To run the local Firestore emulator with a specific database edition, run:
+
+            $ {command} --edition=edition
           """,
   }
 
@@ -110,6 +113,15 @@ class Start(base.Command):
         action='store_true',
         help='If set, the emulator will print open-source dependencies and '
         'licenses, then exit.')
+    parser.add_argument(
+        '--edition',
+        required=False,
+        default='standard',
+        choices=['standard', 'enterprise'],
+        help=(
+            'The database edition to start the Firestore Emulator in.'
+        ),
+    )
 
   def Run(self, args):
     if not args.host_port:
@@ -118,6 +130,7 @@ class Start(base.Command):
     args.host_port.host = args.host_port.host or 'localhost'
     args.host_port.port = args.host_port.port or '8080'
     args.database_mode = args.database_mode or 'firestore-native'
+    args.edition = args.edition or 'standard'
     firestore_util.ValidateStartArgs(args)
     java.RequireJavaInstalled(firestore_util.FIRESTORE_TITLE, min_version=21)
     with firestore_util.StartFirestoreEmulator(args) as proc:

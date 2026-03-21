@@ -96,6 +96,12 @@ class ExecutionTemplate(proto.Message):
             available capacity.
 
             This field is a member of `oneof`_ ``_delay_execution``.
+        client (str):
+            Optional. Arbitrary identifier for the API
+            client.
+        client_version (str):
+            Optional. Arbitrary version identifier for
+            the API client.
     """
     class PriorityTier(proto.Enum):
         r"""Priority tier of the execution.
@@ -148,6 +154,14 @@ class ExecutionTemplate(proto.Message):
         proto.BOOL,
         number=8,
         optional=True,
+    )
+    client: str = proto.Field(
+        proto.STRING,
+        number=9,
+    )
+    client_version: str = proto.Field(
+        proto.STRING,
+        number=10,
     )
 
 

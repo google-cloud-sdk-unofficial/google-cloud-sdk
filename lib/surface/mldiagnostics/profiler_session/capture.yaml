@@ -16,12 +16,30 @@
   - ALPHA
   auto_generated: false
   help_text:
-    brief: Create profiler sessions
-    description: Create a profiler session
+    brief: Capture profiler sessions
+    description: Capture a profiler session
     examples: |-
-      To create the profiler session, run:
+      To capture the profiler session, run:
 
-          $ {command} --location=us-central1 --machine-learning-run=my-ml-run --targets=my-target-1
+          $ {command} on-demand-session --location=us-central1 --machine-learning-run=my-ml-run
+          --targets mldiag-prod-demo-jobset-tpu-slice-0-0-qmx7s --duration 5000ms
+
+          Sample output:
+          ```
+            Request issued for: [on-demand-session]
+            Waiting for operation [projects/PROJECT_ID/locations/us-central1operations/operation-1770310771938-64a1698b41364-06f905e7-8eab435b] to complete...done.
+            createTime: '2026-02-05T16:59:32.307511739Z'
+            deviceTracerLevel: DEVICE_TRACER_LEVEL_ENABLED
+            duration: 5000s
+            etag: d3f59473-ad4c-47f3-b64b-6855575ab622
+            hostTracerLevel: HOST_TRACER_LEVEL_INFO
+            name: projects/PROJECT_ID/locations/us-central1machineLearningRuns/mldiag-prod-cluster-diagon-jobset-mldiag-prod-demo-jobset-20260205-164642/profilerSessions/on-demand-session
+            profilerTargets:
+            - projects/PROJECT_ID/locations/us-central1machineLearningRuns/mldiag-prod-cluster-diagon-jobset-mldiag-prod-demo-jobset-20260205-164642/profilerTargets/mldiag-prod-demo-jobset-tpu-slice-0-0-qmx7s
+            pythonTracerLevel: PYTHON_TRACER_LEVEL_DISABLED
+            storageFolderUri: gs://diagon-prod-data/mldiag-prod-cluster-diagon-jobset-mldiag-prod-demo-jobset-20260205-164642          ```
+          ```
+
   arguments:
     params:
     - help_text: |-
@@ -51,16 +69,13 @@
         Duration for the profiler session.
     - arg_name: targets
       help_text: |-
-        List of profiler targets.
-        Targets on which profiler session to be started. If empty, control
-        plan shall start profiler session on all the targets associated with
-        ML Run.
+        Profiler targets on which profiler session to be started.
       is_positional: false
       is_primary_resource: false
       resource_spec: !REF googlecloudsdk.command_lib.mldiagnostics.machine_learning_run.v1alpha_resources:projects_locations_machine_learning_runs_profiler_targets
       resource_method_params:
         profilerSession.profilerTargets: '{__relative_name__}'
-      required: false
+      required: true
       repeated: true
     - arg_name: host-tracer-level
       api_field: profilerSession.hostTracerLevel

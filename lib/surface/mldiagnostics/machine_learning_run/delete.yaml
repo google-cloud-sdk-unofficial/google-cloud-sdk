@@ -22,6 +22,21 @@
       To delete the machine learning run, run:
 
           $ {command} my-run --location=us-central1
+
+          User will be prompted to confirm the deletion. This command will delete the machine learning run and all its child resources.
+
+          Sample output:
+          ```
+            You are about to delete machine_learning_run [my-run]
+
+            Do you want to continue (Y/n)?  Y
+
+            Delete request issued for: [my-run]
+            Waiting for operation [projects/PROJECT_ID/locations/us-central1/operations/operation-1770309647854-64a1655b3ecc2-08de807c-e28f3b16] to complete...done.
+            Deleted machine_learning_run [my-run].
+          ```
+
+
   arguments:
     params:
     - help_text: |-

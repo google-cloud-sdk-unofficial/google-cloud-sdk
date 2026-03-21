@@ -657,7 +657,7 @@ class UpdateBeta(UpdateGA):
 
   _support_subsetting_subset_size = True
   _support_ip_port_dynamic_forwarding = True
-  _support_forward_proxy = False
+  _support_forward_proxy = True
   _support_zonal_affinity = True
   _support_allow_multinetwork = False
 

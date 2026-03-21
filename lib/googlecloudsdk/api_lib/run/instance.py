@@ -53,6 +53,8 @@ class Instance(container_resource.ContainerResource):
   PAUSED_SYMBOL = '\N{DOUBLE VERTICAL BAR}'
   CHECK_MARK_SYMBOL = '\N{HEAVY CHECK MARK}'
 
+  OPERATION_ID_ANNOTATION = 'run.googleapis.com/operation-id'
+
   INSTANCE_SYMBOLS = {
       InstanceStatus.PENDING: InstanceSymbol(
           best=ELLIPSIS_SYMBOL, alt='.', color='yellow'
@@ -152,3 +154,11 @@ class Instance(container_resource.ContainerResource):
         self._PickSymbol(instance_symbol.best, instance_symbol.alt, encoding),
         instance_symbol.color,
     )
+
+  @property
+  def operation_id(self):
+    return self.annotations.get(self.OPERATION_ID_ANNOTATION)
+
+  @operation_id.setter
+  def operation_id(self, value):
+    self.annotations[self.OPERATION_ID_ANNOTATION] = value

@@ -1823,6 +1823,7 @@ class CreateNodePoolOptions(object):
       enable_lustre_multi_nic=None,
       subnetwork=None,
       node_architecture_taint_behavior=None,
+      capacity_wait_duration=None,
   ):
     self.machine_type = machine_type
     self.disk_size_gb = disk_size_gb
@@ -1940,6 +1941,7 @@ class CreateNodePoolOptions(object):
     )
     self.enable_lustre_multi_nic = enable_lustre_multi_nic
     self.subnetwork = subnetwork
+    self.capacity_wait_duration = capacity_wait_duration
 
 
 class UpdateNodePoolOptions(object):
@@ -6907,6 +6909,9 @@ class APIAdapter(object):
       node_config.lustreConfig.multiRail = self.messages.MultiRail(
           enabled=options.enable_lustre_multi_nic
       )
+
+    if options.capacity_wait_duration is not None:
+      node_config.capacityWaitDuration = options.capacity_wait_duration
 
     return pool
 

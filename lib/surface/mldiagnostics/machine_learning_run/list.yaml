@@ -21,7 +21,78 @@
     examples: |-
       To list all machine learning runs, run:
 
-          $ {command} --location=us-central1
+          $ {command} --location=us-central1 --limit 2
+
+          Sample output:
+          ```
+            ---
+            artifacts:
+              gcsPath: gs://diagon-prod-data
+            createTime: '2026-02-05T16:25:28.367865234Z'
+            displayName: updated-gcloud-cli-run
+            endTime: '0001-01-01T00:00:00Z'
+            etag: 2a9dad60-a18b-4680-b63d-d0e16214713c
+            labels:
+              on_demand_xprof: enabled
+            name: projects/PROJECT_ID/locations/us-central1/machineLearningRuns/my-run
+            orchestrator: GKE
+            runPhase: ACTIVE
+            runSet: group-gcloud-cli
+            tools:
+            - xprof: {}
+            updateTime: '2026-02-05T16:32:35.885684490Z'
+            workloadDetails:
+              gke:
+                cluster: projects/PROJECT_ID/locations/us-central1/clusters/mldiag-prod-cluster
+                id: mldiag-prod-demo-jobset
+                kind: JobSet
+                namespace: diagon
+            ---
+            artifacts:
+              gcsPath: gs://diagon-prod-data
+            configs:
+              hardwareConfigs:
+                device_type: TPU v5 lite
+                devices_per_slice: '8'
+                num_slices: '1'
+              softwareConfigs:
+                framework: JAX
+                framework_version: 0.9.0
+                libtpu_version: 0.0.34
+                xla_flags: default
+            createTime: '2026-02-05T11:02:28.961113732Z'
+            displayName: demo-run-2026-02-05T11:02:01Z
+            endTime: '0001-01-01T00:00:00Z'
+            etag: 5ac79afc-1afc-4689-8ccb-06b0c2a5b541
+            labels:
+              create-tool-mode: regular
+              created_by: diagon_sdk
+              diagon_sdk_version: 0-5-10
+              on_demand_xprof: enabled
+            metrics:
+              avgHbmUtilization: 0.217357
+              avgLatency: 0.502287369s
+              avgMfu: 74.8107
+              avgStep: 0.082316534s
+              avgThroughput: 502.521
+            name: projects/PROJECT_ID/locations/us-central1/machineLearningRuns/mldiag-prod-cluster-diagon-jobset-mldiag-prod-demo-jobset-20260205-110201
+            orchestrator: GKE
+            runPhase: COMPLETED
+            runSet: demo-group
+            tools:
+            - xprof: {}
+            updateTime: '2026-02-05T15:50:55.144914944Z'
+            workloadDetails:
+              gke:
+                cluster: projects/PROJECT_ID/locations/us-central1-a/clusters/mldiag-prod-cluster
+                id: mldiag-prod-demo-jobset
+                kind: JobSet
+                labels:
+                  job-name: mldiag-prod-demo-jobset-tpu-slice-0
+                  managed-mldiagnostics-gke: 'true'
+                namespace: diagon
+                parentWorkload: mldiag-prod-demo-jobset-tpu-slice-0
+          ```
   arguments:
     params:
     - help_text: |-

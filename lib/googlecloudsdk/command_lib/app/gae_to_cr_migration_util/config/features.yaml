@@ -195,12 +195,14 @@ value_limited:
   - java11
   - java17
   - java21
+  - java25
   - python37
   - python39
   - python310
   - python311
   - python312
   - python313
+  - python314
   - php72
   - php73
   - php74
@@ -208,6 +210,7 @@ value_limited:
   - php82
   - php83
   - php84
+  - php85
   - ruby25
   - ruby26
   - ruby27
@@ -230,6 +233,7 @@ value_limited:
   - go123
   - go124
   - go125
+  - go126
   - nodejs8
   - nodejs10
   - nodejs12
@@ -238,6 +242,7 @@ value_limited:
   - nodejs18
   - nodejs20
   - nodejs22
+  - nodejs24
   severity: major
   reason: Cloud Run only supports second generation App Engine runtimes. Older runtimes are not compatible.
 supported:

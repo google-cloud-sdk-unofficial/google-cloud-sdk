@@ -28,6 +28,7 @@ from utils import bq_processor_utils
 class Truncate(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstring
   usage = """bq truncate project_id:dataset[.table] [--timestamp] [--dry_run] [--overwrite] [--skip_fully_replicated_tables]
 """
+  command = 'truncate'
 
   def __init__(self, name: str, fv: flags.FlagValues):
     super(Truncate, self).__init__(name, fv)

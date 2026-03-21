@@ -32,61 +32,28 @@ class ResourceProfileModel:
   """Model for resourceProfile resource."""
   type: Literal['resourceProfile']
   name: str
-  source: str
+  path: str
 
 
 @dataclasses.dataclass
-class DataprocClusterModel:
-  """Model for dataproc.cluster resource."""
-  type: Literal['dataproc.cluster']
-  name: str
-  definition: dict[str, Any]
+class MetadataModel:
+  """Model for resource metadata."""
 
-
-@dataclasses.dataclass
-class BqDataTransferConfigModel:
-  """Model for bigquery.datatransfer.config resource."""
-  type: Literal['bigquery.datatransfer.config']
-  name: str
-  display_name: str
-  definition: dict[str, Any]
   service_account_name: str | None = None
 
 
 @dataclasses.dataclass
-class DataformRepositoryModel:
-  """Model for dataform.repository resource."""
-  type: Literal['dataform.repository']
+class ResourceModel:
+  """Generalized model for ordinary resources."""
+  type: str
   name: str
-  definition: dict[str, Any] | None = None
+  parent: str | None = None
+  api_version: str | None = None
+  definition: dict[str, Any] = dataclasses.field(default_factory=dict)
+  metadata: MetadataModel | None = None
 
 
-@dataclasses.dataclass
-class DataformReleaseConfigModel:
-  """Model for dataform.repository.releaseConfig resource."""
-  type: Literal['dataform.repository.releaseConfig']
-  name: str
-  repository_name: str
-  definition: dict[str, Any]
-
-
-@dataclasses.dataclass
-class DataformWorkflowConfigModel:
-  """Model for dataform.repository.workflowConfig resource."""
-  type: Literal['dataform.repository.workflowConfig']
-  name: str
-  repository_name: str
-  definition: dict[str, Any]
-
-
-AnyResource = (
-    ResourceProfileModel
-    | DataprocClusterModel
-    | BqDataTransferConfigModel
-    | DataformRepositoryModel
-    | DataformReleaseConfigModel
-    | DataformWorkflowConfigModel
-)
+AnyResource = ResourceProfileModel | ResourceModel
 
 
 @dataclasses.dataclass
@@ -116,23 +83,38 @@ class EnvironmentModel:
   variables: dict[str, str] | None = None
 
 
-RESOURCE_MAPPING = {
-    'resourceProfile': ResourceProfileModel,
-    'dataproc.cluster': DataprocClusterModel,
-    'bigquery.datatransfer.config': BqDataTransferConfigModel,
-    'dataform.repository': DataformRepositoryModel,
-    'dataform.repository.releaseConfig': DataformReleaseConfigModel,
-    'dataform.repository.workflowConfig': DataformWorkflowConfigModel,
-}
+def _build_metadata(
+    metadata_def: Mapping[str, Any] | None,
+) -> MetadataModel | None:
+  if not metadata_def:
+    return None
+  return MetadataModel(
+      service_account_name=metadata_def.get('serviceAccountName'),
+  )
 
 
 def _build_resource(resource_def: Mapping[str, Any]) -> AnyResource:
+  """Builds a resource model from its raw YAML definition."""
   resource_type = resource_def.get('type')
-  model = RESOURCE_MAPPING.get(resource_type)
-  if not model:
-    raise ValueError(f'Unknown resource type: {resource_type}')
-  snake_case_def = {_camel_to_snake(k): v for k, v in resource_def.items()}
-  return model(**snake_case_def)
+  if not resource_type:
+    raise ValueError('Resource definition missing type')
+  if resource_type == 'resourceProfile':
+    return ResourceProfileModel(
+        type=resource_type,
+        name=resource_def.get('name'),
+        path=resource_def.get('path'),
+    )
+
+  # For all other resources, use the generalized ResourceModel
+  # Keep original casing for definition fields, but extract known top-level ones
+  return ResourceModel(
+      type=resource_type,
+      name=resource_def.get('name'),
+      definition=resource_def.get('definition', {}),
+      parent=resource_def.get('parent'),
+      api_version=resource_def.get('apiVersion'),
+      metadata=_build_metadata(resource_def.get('metadata')),
+  )
 
 
 def _build_artifact_storage(

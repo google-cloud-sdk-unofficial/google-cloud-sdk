@@ -160,14 +160,12 @@
           required: false
     - group:
         mutex: true
-        hidden: true
         help_text: |-
           Arguments for the  server ca mode.
         params:
         - arg_name: server-ca-mode
           api_field: instance.serverCaMode
           required: false
-          hidden: true
           help_text: |-
             The Server CA mode for the instance.
           choices:
@@ -197,7 +195,6 @@
               Deprecated: Use CUSTOMER_MANAGED_CAS_CA instead.
     - group:
         mutex: true
-        hidden: true
         help_text: |-
           Arguments for the  server ca pool.
         params:
@@ -205,7 +202,6 @@
           api_field: instance.serverCaPool
           required: false
           repeated: false
-          hidden: true
           help_text: |-
             Customer-managed CA pool.
             The resource name of the Certificate Authority Service (CAS) CA Pool.
@@ -213,7 +209,6 @@
             Format: projects/{project}/locations/{region}/caPools/{ca_pool}
     - group:
         mutex: true
-        hidden: true
         help_text: |-
           Arguments for the  rotate server certificate.
         params:
@@ -222,7 +217,6 @@
           action: store_true
           required: false
           type: bool
-          hidden: true
           help_text: |-
             Rotate the server certificates.
           default: null

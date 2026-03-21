@@ -15,9 +15,6 @@
 
 """Utilities to manage credentials."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import abc
 import base64
@@ -155,7 +152,9 @@ def HasDefaultUniverseDomain(credentials):
 
 def GetDefaultTokenUri():
   """Get default token URI for credential based on context aware settings."""
-  if properties.VALUES.context_aware.use_client_certificate.GetBool():
+  if properties.VALUES.auth.token_host.IsExplicitlySet():
+    return properties.VALUES.auth.token_host.Get()
+  elif properties.VALUES.context_aware.use_client_certificate.GetBool():
     return properties.VALUES.auth.mtls_token_host.Get(required=True)
   else:
     return properties.VALUES.auth.token_host.Get(required=True)

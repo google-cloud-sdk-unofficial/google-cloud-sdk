@@ -21,10 +21,33 @@
     examples: |-
       To create the new machine learning run, run:
 
-          $ {command} my-run --location=us-central1 --gcs-path=gs://my-bucket/my-run
-          --gke-cluster-name=projects/my-project/locations/us-central1/clusters/my-cluster
-          --gke-workload-name=my-workload --gke-kind=Job --gke-namespace=default
-          --gke-workload-create-time=2026-02-20T06:06:06Z
+          $ {command} gcloud-cli-run-id-01 --orchestrator gke --run-group group-gcloud-cli
+          --tools xprof --gcs-path gs://diagon-prod-data-bucket --display-name gcloud-cli-run
+          --gke-cluster-name projects/PROJECT_ID/locations/us-central1/clusters/mldiag-prod-gke-cluster
+          projects/PROJECT_ID/locations/us-central1/clusters/mldiag-prod-gke-cluster
+          --gke-namespace diagon --gke-workload-name mldiag-prod-demo-jobset --gke-kind JobSet
+          --gke-workload-create-time 2026-02-20T06:00:00Z --labels "created_by"="cli"
+          --run-phase ACTIVE
+
+          Sample output:
+          ```
+            Create request issued for: [gcloud-cli-run-id-01]
+            Waiting for operation [projects/PROJECT_ID/locations/us-central1/operations/operation-1770308728284-64a161ee4640d-38e79884-425e56e2] to complete...done.
+            Created machine_learning_run [gcloud-cli-run-id-01].
+          ```
+
+          If user want to list all the profiler session capture in Google Cloud Storage bucket (recursively), create a special machine learning run with a special lable `list_existing_sessions_only` as shown below:
+
+          $ {command} gcloud-cli-run-id-02 --run-group group-gcloud-cli
+          --gcs-path gs://diagon-prod-data-bucket/my-parent-directory --display-name gcloud-cli-run-02
+          --labels "created_by"="cli" --labels "list_existing_sessions_only"="true"
+
+          This will create a machine learning run in COMPLETED state without any workload
+          details. User can navigate to the profiler list page to see all the
+          profiler sessions captured under gs://diagon-prod-data-bucket/my-parent-directory (recursively).
+          User can visualize any profiler session by passing the link and share it with others.
+          No further update is possible for this machine learning run as it is marked as COMPLETED.
+
   arguments:
     params:
     - help_text: |-

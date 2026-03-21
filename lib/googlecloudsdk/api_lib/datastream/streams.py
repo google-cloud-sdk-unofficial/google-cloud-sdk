@@ -555,6 +555,9 @@ class StreamsClient:
       stream.state = self._messages.Stream.StateValueValuesEnum(
           (args.state).upper())
 
+    if args.IsSpecified('rule_sets'):
+      stream.ruleSets = self._ParseRuleSets(args.rule_sets)
+
     self._UpdateLabels(stream, args)
     return stream, update_fields
 

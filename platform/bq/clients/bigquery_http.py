@@ -24,6 +24,15 @@ from clients import utils as bq_client_utils
 
 _NUM_RETRIES_FOR_SERVER_SIDE_ERRORS = 3
 
+_BQ_CLI_USER_AGENT_COMMAND: Optional[str] = None
+
+
+def SetBqCliUserAgentCommand(command: Optional[str]):
+  """Sets the BQ CLI user agent command."""
+  global _BQ_CLI_USER_AGENT_COMMAND
+  _BQ_CLI_USER_AGENT_COMMAND = f'bq.{command}' if command else None
+
+
 # pylint: disable=protected-access
 
 _ORIGINAL_GOOGLEAPI_CLIENT_RETRY_REQUEST = http_request._retry_request
@@ -142,8 +151,13 @@ class BigqueryModel(model.JsonModel):
 
     if 'user-agent' not in headers:
       headers['user-agent'] = ''
-    user_agent = ' '.join([bq_utils.GetUserAgent(), headers['user-agent']])
-    headers['user-agent'] = user_agent.strip()
+
+    user_agents = [
+        bq_utils.GetUserAgent(),
+        headers['user-agent'],
+        _BQ_CLI_USER_AGENT_COMMAND,
+    ]
+    headers['user-agent'] = ' '.join([s for s in user_agents if s])
 
     if self.quota_project_id:
       headers['x-goog-user-project'] = self.quota_project_id

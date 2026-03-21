@@ -13,90 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Dataproc resource handler."""
-
 from collections.abc import Mapping
-import dataclasses
-from typing import Any, Tuple
+from typing import Any
 
-from apitools.base.py import encoding
-from apitools.base.py import exceptions as apitools_exceptions
-from googlecloudsdk.api_lib.dataproc import util as dataproc_util
-from googlecloudsdk.api_lib.util import waiter
-from googlecloudsdk.calliope import exceptions as calliope_exceptions
-from googlecloudsdk.command_lib.orchestration_pipelines.handlers.base import GcpResourceHandler
+from apitools.base.protorpclite import messages
+from googlecloudsdk.command_lib.orchestration_pipelines.handlers import base
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 
 
-@dataclasses.dataclass
-class _DataprocHandle:
-  """A handle providing necessary client and messages for Dataproc's `WaitForOperation`."""
-
-  client: Any
-  messages: Any
-
-
-class DataprocClusterHandler(GcpResourceHandler):
+class DataprocClusterHandler(base.GcpResourceHandler):
   """Handler for Dataproc Cluster resources."""
+  api_prefix = "projects_regions"
 
-  api_name = "dataproc"
-  api_version = "v1"
-
-  def wait_for_operation(
-      self, operation: Any
-  ) -> Tuple[Any, str]:
-    """Waits for long running operation if applicable and returns result and name.
-
-    Args:
-      operation: The operation to wait for.
-
-    Returns:
-      A tuple containing the completed operation and a name to print.
-
-    Raises:
-      calliope_exceptions.ToolException: If the operation times out.
-    """
-    try:
-      if not operation.done:
-        operation = dataproc_util.WaitForOperation(
-            _DataprocHandle(self.client, self.messages),
-            operation,
-            message="Waiting for Dataproc operation to complete:",
-            timeout_s=600)
-      response_dict = encoding.MessageToDict(operation.response)
-      name_to_print = response_dict.get("clusterName", "?")
-      return operation, name_to_print
-    except waiter.TimeoutError as e:
-      raise calliope_exceptions.ToolException(
-          "Timed out waiting for Dataproc operation to complete.") from e
-
-  def _get_client(self):
-    universe_domain = properties.VALUES.core.universe_domain.Get()
-    dataproc_endpoint = (
-        f"https://{self.environment.region}-dataproc.{universe_domain}/"
-    )
-    properties.VALUES.api_endpoint_overrides.dataproc.Set(dataproc_endpoint)
-    return super()._get_client()
-
-  def get_resource_id(self) -> str:
-    return self.resource.name
-
-  def get_create_method(self) -> Any:
-    return self.client.projects_regions_clusters.Create
-
-  def get_update_method(self) -> Any:
-    return self.client.projects_regions_clusters.Patch
-
-  def find_existing_resource(self) -> Any:
-    request = self.messages.DataprocProjectsRegionsClustersGetRequest(
+  def build_get_request(self) -> messages.Message:
+    return self.messages.DataprocProjectsRegionsClustersGetRequest(
         projectId=self.environment.project,
         region=self.environment.region,
         clusterName=self.get_resource_id(),
     )
-    try:
-      return self.client.projects_regions_clusters.Get(request)
-    except apitools_exceptions.HttpNotFoundError:
-      return None
 
   def get_local_definition(self) -> dict[str, Any]:
     definition = super().get_local_definition()
@@ -192,26 +126,26 @@ class DataprocClusterHandler(GcpResourceHandler):
       log.status.Print("--- Finished Dataproc comparison ---")
     return changed_fields
 
-  def build_create_request(self, definition: dict[str, Any]) -> Any:
-    cluster_message = encoding.DictToMessage(definition, self.messages.Cluster)
+  def build_create_request(
+      self, resource_message: messages.Message
+  ) -> messages.Message:
     return self.messages.DataprocProjectsRegionsClustersCreateRequest(
         projectId=self.environment.project,
         region=self.environment.region,
-        cluster=cluster_message,
+        cluster=resource_message,
     )
 
   def build_update_request(
       self,
-      existing_resource: Any,
-      definition: dict[str, Any],
+      existing_resource: messages.Message,
+      resource_message: messages.Message,
       changed_fields: list[str],
-  ) -> Any:
+  ) -> messages.Message:
     del existing_resource  # Unused.
-    cluster_message = encoding.DictToMessage(definition, self.messages.Cluster)
     return self.messages.DataprocProjectsRegionsClustersPatchRequest(
         projectId=self.environment.project,
         region=self.environment.region,
         clusterName=self.get_resource_id(),
-        cluster=cluster_message,
+        cluster=resource_message,
         updateMask=",".join(changed_fields),
     )

@@ -1,0 +1,25 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: List IPs used for static IP connectivity method.
+    description: |
+      Fetches a set of static IP addresses that need to be allowlisted when using the static IP
+      connectivity method.
+    examples: |
+      To list the static IPs, run:
+
+        $ {command} my-location
+
+  request:
+    collection: datamigration.projects.locations
+    method: fetchStaticIps
+    api_version: v1
+
+  response:
+    id_field: staticIps
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.database_migration.resources:region
+      help_text: |
+        The region you want to list static ips of.

@@ -463,6 +463,7 @@ def ValidateDate(s):
 
 def InsightsConfig(sql_messages,
                    insights_config_query_insights_enabled=None,
+                   insights_config_enhanced_query_insights_enabled=None,
                    insights_config_query_string_length=None,
                    insights_config_record_application_tags=None,
                    insights_config_record_client_address=None,
@@ -473,6 +474,8 @@ def InsightsConfig(sql_messages,
     sql_messages: module, The messages module that should be used.
     insights_config_query_insights_enabled: boolean, True if query insights
       should be enabled.
+    insights_config_enhanced_query_insights_enabled: boolean, True if enhanced
+      query insights should be enabled.
     insights_config_query_string_length: number, length of the query string to
       be stored.
     insights_config_record_application_tags: boolean, True if application tags
@@ -488,6 +491,7 @@ def InsightsConfig(sql_messages,
 
   should_generate_config = any([
       insights_config_query_insights_enabled is not None,
+      insights_config_enhanced_query_insights_enabled is not None,
       insights_config_query_string_length is not None,
       insights_config_record_application_tags is not None,
       insights_config_record_client_address is not None,
@@ -501,6 +505,9 @@ def InsightsConfig(sql_messages,
   if insights_config_query_insights_enabled is not None:
     insights_config.queryInsightsEnabled = (
         insights_config_query_insights_enabled)
+  if insights_config_enhanced_query_insights_enabled is not None:
+    insights_config.enhancedQueryInsightsEnabled = (
+        insights_config_enhanced_query_insights_enabled)
   if insights_config_query_string_length is not None:
     insights_config.queryStringLength = insights_config_query_string_length
   if insights_config_record_application_tags is not None:

@@ -14,10 +14,6 @@
 # limitations under the License.
 """Default value constants exposed by core utilities."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 
 DEFAULT_REGISTRY = 'gcr.io'
 REGIONAL_GCR_REGISTRIES = ['us.gcr.io', 'eu.gcr.io', 'asia.gcr.io']

@@ -26,9 +26,6 @@ These patterns are kept in a Python source file to minimize loading time.
 They should be updated periodically with //cloud/sdk:update_lazy_regex.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 # These lines don't need to be readable, so bother don't breaking them up.
 # pylint: disable=line-too-long

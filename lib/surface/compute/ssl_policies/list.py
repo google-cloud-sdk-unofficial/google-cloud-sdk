@@ -21,12 +21,16 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.ssl_policies import flags
 
 
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List SSL policies."""
 
-  @staticmethod
-  def Args(parser):
-    parser.display_info.AddFormat(flags.DEFAULT_AGGREGATED_LIST_FORMAT)
+  @classmethod
+  def Args(cls, parser):
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      parser.display_info.AddFormat(flags.ALPHA_AGGREGATED_LIST_FORMAT)
+    else:
+      parser.display_info.AddFormat(flags.DEFAULT_AGGREGATED_LIST_FORMAT)
     lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
 
   def Run(self, args):

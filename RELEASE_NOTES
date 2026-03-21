@@ -5,6 +5,129 @@ Copyright 2014-2026 Google Inc. All rights reserved.
 Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
 
 
+## 560.0.0 (2026-03-10)
+
+### Google Cloud CLI
+
+* Fixed issue where API enablement was checked on the wrong project for some
+  commands depending on where `--project` was specified on the command line.
+
+### AlloyDB
+
+* Added `--enable-dataplex-integration` flag to `gcloud alloydb clusters create|update|create-secondary|restore|migrate-cloud-sql` to enable or disable Dataplex integration.
+
+### App Engine
+
+* Updated the Java SDK to version 5.0.0 build from the open source project
+  <https://github.com/GoogleCloudPlatform/appengine-java-standard/releases/tag/v5.0.0>.
+
+### Auth Login
+
+* Fixed an issue where `auth/token_host` property was ignored when `context_aware/use_client_certificate` was set to True.
+
+### BigQuery
+
+* Added new `--reservation_group` flag that can be used in bq mk, show, ls and rm operations.
+* Added information about command that is being executed to the user-agent header.
+* Added new `--reservation_group_name` flag that can be used in bq update reservation operation.
+
+### Cloud Access Context Manager
+
+*   Promoted `gcloud access-context-manager supported-permissions describe ROLE_ID` to beta and GA.
+*   Promoted `gcloud access-context-manager supported-permissions list` to beta and GA.
+
+### Cloud Build
+
+*   Added `--publish` flag to `gcloud builds submit` for pack builds, which will
+    directly build images on Artifact Registry and not on local Docker.
+
+### Cloud Datastream
+
+* Fixed an issue where `gcloud datastream streams update` did not properly handle `--rule-sets` flag.
+
+### Cloud Firestore Emulator
+
+* Added `--edition` flag to `gcloud emulators firestore start` to allow starting
+  the emulator in both 'enterprise' and 'standard' edition.
+
+### Cloud IAM
+
+*   Added `azure-ad-groups-display-name` field to `--extra-attributes-type` flag
+    to
+    `gcloud iam workforce-pools providers create-saml`,
+    `gcloud iam workforce-pools providers update-saml`,
+    `gcloud iam workforce-pools providers create-oidc`,
+    `gcloud iam workforce-pools providers update-oidc` which allow user to setup
+    attributes type for extra attributes oauth2 that fetches azure ad group
+    display name property.
+
+### Cloud SQL
+
+*   Added `gcloud sql instances execute-sql` in GA.
+
+### Cloud Storage
+
+*   Promoted `--update-object-custom-contexts`,
+    `update-object-custom-contexts-file`, `clear-object-custom-contexts`,
+    and `clear-all-object-custom-contexts` flags in
+    `gcloud storage batch-operations jobs create` to GA.
+* Updated gsutil component to 5.36.
+* Promoted `--encryption-enforcement-file` flag of `gcloud storage buckets create` and `gcloud storage buckets update` to GA.
+
+### Compute Engine
+
+* Updated `gcloud compute images list` to include public images from the `almalinux-cloud` project in the default search.
+* Promoted `gcloud compute storage-pools list` support for Exapools to GA.
+* Added `--forward-proxy-direct-forwarding` flag to `gcloud compute backend-services create` in beta.
+* Added `--forward-proxy-cloud-run` flag to `gcloud compute backend-services create` in beta.
+* Promoted `--early-access-maintenance` in `gcloud compute reservations update` to GA.
+* Promoted the following `gcloud compute routers` command groups to beta:
+  `add-named-set`, `add-named-set-element`, `download-named-set`,
+  `get-named-set`, `list-named-sets`, `remove-named-set`,
+  `remove-named-set-element`, and `upload-named-set`.
+
+### Config Connector
+
+* Updated Google Cloud Config Connector to version 1.145.0.
+  See Config Connector Overview for more details [https://cloud.google.com/config-connector/docs/overview](https://cloud.google.com/config-connector/docs/overview).
+
+### Database Migration
+
+* Added `gcloud database-migration connection-profiles fetch-static-ips` command
+  to fetch the static IP addresses that need to be allowlisted for static IP
+  connectivity.
+
+### Kubernetes Engine
+
+* Added flag option `--autopilot-privileged-admission` to
+  `gcloud container clusters create`, `gcloud container clusters create-auto`
+  and `gcloud container clusters update` commands. This flag allows specifying
+  Cloud Storage or GKE-specific object paths pointing to privileged workload
+  allowlists to be authorized for use in Autopilot mode.
+* Added support for setting max container restart period in node pools via
+  system config file using `--system-config-from-file` flag in
+  `gcloud container cluster create` and
+  `gcloud container node-pools create|update` commands.
+* Updated default kubectl from 1.34.4 to 1.34.5.
+* Additional kubectl versions:
+  * kubectl.1.30 (1.30.14)
+  * kubectl.1.31 (1.31.14)
+  * kubectl.1.32 (1.32.13)
+  * kubectl.1.33 (1.33.9)
+  * kubectl.1.34 (1.34.5)
+  * kubectl.1.35 (1.35.2)
+*   Added `--enable-agent-sandbox` flag to `gcloud container clusters create`
+    and `update` commands to enable or disable GKE Agent Sandbox feature.
+
+### Vector Search
+
+* Added `gcloud vector-search` which allows for basic CRUDL operations on Vector Search 2.0 resources via v1 API.
+* Added support for Data Objects aggregation, query and search via v1 API.
+
+
+Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
+
+
 ## 559.0.0 (2026-03-03)
 
 ### Breaking Changes

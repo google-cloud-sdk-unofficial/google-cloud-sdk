@@ -13,6 +13,7 @@ from frontend import bigquery_command
 
 class Version(bigquery_command.BigqueryCmd):
   usage = """version"""
+  command = 'version'
 
   def _NeedsInit(self) -> bool:
     """If just printing the version, don't run `init` first."""

@@ -93,6 +93,9 @@ def AddBaseArgs(parser):
   flags.AddDenyMaintenancePeriodEndDate(parser)
   flags.AddDenyMaintenancePeriodTime(parser)
   flags.AddInsightsConfigQueryInsightsEnabled(parser, show_negated_in_help=True)
+  flags.AddInsightsConfigEnhancedQueryInsightsEnabled(
+      parser, show_negated_in_help=True
+  )
   flags.AddInsightsConfigQueryStringLength(parser)
   flags.AddInsightsConfigRecordApplicationTags(
       parser, show_negated_in_help=True

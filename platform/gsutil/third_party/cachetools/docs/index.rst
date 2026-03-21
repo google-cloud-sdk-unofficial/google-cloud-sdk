@@ -41,21 +41,27 @@ of the cache.  When a cache is full, :meth:`Cache.__setitem__()` calls
 :meth:`self.popitem()` repeatedly until there is enough room for the
 item to be added.
 
+.. note::
+
+   Please be aware that `maxsize` must be a positive number.  If you
+   really want your cache to grow without bounds, use
+   :const:`math.inf` or something similar.
+
 In general, a cache's size is the total size of its item's values.
 Therefore, :class:`Cache` provides a :meth:`getsizeof` method, which
 returns the size of a given `value`.  The default implementation of
 :meth:`getsizeof` returns :const:`1` irrespective of its argument,
 making the cache's size equal to the number of its items, or
-``len(cache)``.  For convenience, all cache classes accept an optional
+`len(cache)`.  For convenience, all cache classes accept an optional
 named constructor parameter `getsizeof`, which may specify a function
 of one argument used to retrieve the size of an item's value.
 
-Note that the values of a :class:`Cache` are mutable by default, as
-are e.g. the values of a :class:`dict`.  It is the user's
-responsibility to take care that cached values are not accidentally
-modified.  This is especially important when using a custom
-`getsizeof` function, since the size of an item's value will only be
-computed when the item is inserted into the cache.
+The values of a :class:`Cache` are mutable by default, as are e.g. the
+values of a :class:`dict`.  It is the user's responsibility to take
+care that cached values are not accidentally modified.  This is
+especially important when using a custom `getsizeof` function, since
+the size of an item's value will only be computed when the item is
+inserted into the cache.
 
 .. note::
 
@@ -91,18 +97,6 @@ computed when the item is inserted into the cache.
 
    This class discards the least recently used items first to make
    space when necessary.
-
-.. autoclass:: MRUCache(maxsize, getsizeof=None)
-   :members: popitem
-
-   This class discards the most recently used items first to make
-   space when necessary.
-
-   .. deprecated:: 5.4
-
-   `MRUCache` has been deprecated due to lack of use, to reduce
-   maintenance.  Please choose another cache implementation that suits
-   your needs.
 
 .. autoclass:: RRCache(maxsize, choice=random.choice, getsizeof=None)
    :members: choice, popitem
@@ -168,7 +162,7 @@ computed when the item is inserted into the cache.
    value of `timer()`.
 
    .. testcode::
-   
+
       def my_ttu(_key, value, now):
           # assume value.ttu contains the item's time-to-use in seconds
           # note that the _key argument is ignored in this example
@@ -305,7 +299,7 @@ often called with the same arguments:
    >>> fib(42)
    267914296
 
-.. decorator:: cached(cache, key=cachetools.keys.hashkey, lock=None, info=False)
+.. decorator:: cached(cache, key=cachetools.keys.hashkey, lock=None, condition=None, info=False)
 
    Decorator to wrap a function with a memoizing callable that saves
    results in a cache.
@@ -327,19 +321,45 @@ often called with the same arguments:
    implementing the `context manager`_ protocol.  Any access to the
    cache will then be nested in a ``with lock:`` statement.  This can
    be used for synchronizing thread access to the cache by providing a
-   :class:`threading.Lock` instance, for example.
+   :class:`threading.Lock` or :class:`threading.RLock` instance, for
+   example.
 
    .. note::
 
       The `lock` context manager is used only to guard access to the
       cache object.  The underlying wrapped function will be called
-      outside the `with` statement, and must be thread-safe by itself.
+      outside the `with` statement to allow concurrent execution, and
+      therefore must be `thread-safe`_ by itself.
 
-   The decorator's `cache`, `key` and `lock` parameters are also
-   available as :attr:`cache`, :attr:`cache_key` and
-   :attr:`cache_lock` attributes of the memoizing wrapper function.
-   These can be used for clearing the cache or invalidating individual
-   cache items, for example.
+   If `condition` is not :const:`None`, it must specify a `condition
+   variable`_, i.e. an object providing :func:`wait()`,
+   :func:`wait_for()`, :func:`notify()` and :func:`notify_all()`
+   methods as defined by :class:`threading.Condition`.  Using a
+   `condition` variable will prevent concurrent execution of the
+   wrapped function with *identical* parameters, or cache keys.
+   Instead, a calling thread will check if an identical function call
+   is already executing, and will then :func:`wait()` for the pending
+   call to finish.  The executing thread will :func:`notify()` any
+   waiting threads as soon as the function completes, which will then
+   return the cached function result.
+
+   .. note::
+
+      Although providing a `lock` alone is generally sufficient to
+      make :func:`cached` `thread-safe`_, it may still be subject to
+      `cache stampede`_ issues under high load, depending on your
+      actual use case.  Providing a `condition` variable will mitigate
+      these situations, but will inflict some performance penalty.
+
+   If no separate `lock` parameter is provided, `condition` must also
+   implement the `context manager`_ protocol, and will also be used to
+   guard access to the cache.
+
+   The decorator's `cache`, `key`, `lock` and `condition` parameters
+   are also available as :attr:`cache`, :attr:`cache_key`,
+   :attr:`cache_lock` and :attr:`cache_condition` attributes of the
+   memoizing wrapper function.  These can be used for clearing the
+   cache or invalidating individual cache items, for example.
 
    .. testcode::
 
@@ -377,8 +397,8 @@ often called with the same arguments:
 
    .. note::
 
-      Note that this will inflict a - probably minor - performance
-      penalty, so it has to be explicitly enabled.
+      Note that this will inflict some performance penalty, so it has
+      to be enabled explicitly.
 
    .. doctest::
       :pyversion: >= 3
@@ -431,7 +451,7 @@ often called with the same arguments:
       [..., (('fib', 42), 267914296), ..., (('luc', 42), 599074578)]
 
 
-   Function invocations are _not_ cached if any exception are raised.
+   Function invocations are *not* cached if any exceptions are raised.
    To cache some (or all) calls raising exceptions, additional
    function wrappers may be introduced which wrap exceptions as
    regular function results for caching purposes:
@@ -468,22 +488,66 @@ often called with the same arguments:
           print(e, "-", _get_pep_wrapped.cache_info())
 
 
-.. decorator:: cachedmethod(cache, key=cachetools.keys.methodkey, lock=None)
+   Curiously, default function arguments are not quite handled as one
+   might expect, and also the use of positional vs. keyword arguments
+   may lead to surprising results.  In the example below, `foo()`,
+   `foo(1)` and `foo(a=1)` are treated as different function
+   invocations, with seperately cached results:
+
+   .. doctest::
+      :pyversion: >= 3
+
+      >>> @cached(LRUCache(maxsize=100))
+      ... def foo(a=1):
+      ...     print(f"foo({a}) called")
+      ...
+      >>> foo()
+      foo(1) called
+      >>> foo()
+      >>> foo(1)
+      foo(1) called
+      >>> foo(1)
+      >>> foo(a=1)
+      foo(1) called
+      >>> foo(a=1)
+
+   If consistent behavior is required, a private helper function may
+   be introduced to avoid ambiguities, e.g.:
+
+   .. doctest::
+      :pyversion: >= 3
+
+      >>> def foo(a=1):
+      ...     _foo(a)
+      ...
+      >>> @cached(LRUCache(maxsize=100))
+      ... def _foo(a):
+      ...     print(f"_foo({a}) called")
+      ...
+      >>> foo()
+      _foo(1) called
+      >>> foo()
+      >>> foo(1)
+      >>> foo(a=1)
+
+
+.. decorator:: cachedmethod(cache, key=cachetools.keys.methodkey, lock=None, condition=None)
 
    Decorator to wrap a class or instance method with a memoizing
    callable that saves results in a (possibly shared) cache.
 
    The main difference between this and the :func:`cached` function
-   decorator is that `cache` and `lock` are not passed objects, but
-   functions.  Both will be called with :const:`self` (or :const:`cls`
-   for class methods) as their sole argument to retrieve the cache or
-   lock object for the method's respective instance or class.
+   decorator is that `cache`, `lock` and `condition` are not passed
+   objects, but functions.  Those will be called with :const:`self`
+   (or :const:`cls` for class methods) as their sole argument to
+   retrieve the cache, lock, or condition object for the method's
+   respective instance or class.
 
    .. note::
 
       As with :func:`cached`, the context manager obtained by calling
-      ``lock(self)`` will only guard access to the cache itself.  It
-      is the user's responsibility to handle concurrent calls to the
+      `lock(self)` will only guard access to the cache itself.  It is
+      the user's responsibility to handle concurrent calls to the
       underlying wrapped method in a multithreaded environment.
 
    The `key` function will be called as `key(self, *args, **kwargs)`
@@ -500,6 +564,9 @@ often called with the same arguments:
    be set at runtime:
 
    .. testcode::
+
+      from cachetools.keys import hashkey
+      from functools import partial
 
       class CachedPEPs:
 
@@ -529,19 +596,22 @@ often called with the same arguments:
 
    .. testcode::
 
+      from cachetools.keys import methodkey
+      from functools import partial
+
       class CachedReferences:
 
           def __init__(self, cachesize):
               self.cache = LRUCache(maxsize=cachesize)
 
-          @cachedmethod(lambda self: self.cache, key=partial(hashkey, 'pep'))
+          @cachedmethod(lambda self: self.cache, key=partial(methodkey, method='pep'))
           def get_pep(self, num):
               """Retrieve text of a Python Enhancement Proposal"""
               url = 'http://www.python.org/dev/peps/pep-%04d/' % num
               with urllib.request.urlopen(url) as s:
                   return s.read()
 
-          @cachedmethod(lambda self: self.cache, key=partial(hashkey, 'rfc'))
+          @cachedmethod(lambda self: self.cache, key=partial(methodkey, method='rfc'))
           def get_rfc(self, num):
               """Retrieve text of an IETF Request for Comments"""
               url = 'https://tools.ietf.org/rfc/rfc%d.txt' % num
@@ -549,15 +619,26 @@ often called with the same arguments:
                   return s.read()
 
       docs = CachedReferences(cachesize=100)
-      print("PEP #1: %s" % docs.get_pep(1))
-      print("RFC #1: %s" % docs.get_rfc(1))
+      print("PEP #20: %s" % docs.get_pep(20))
+      print("RFC #20: %s" % docs.get_rfc(20))
+      assert len(docs.cache) == 2
 
    .. testoutput::
       :hide:
       :options: +ELLIPSIS
 
-      PEP #1: ...
-      RFC #1: ...
+      PEP #20: ...
+      RFC #20: ...
+
+   Note how keyword arguments are used with :func:`functools.partial`
+   to create distinct cache keys, to avoid issues with
+   :func:`methodkey` skipping its initial `self` argument.
+
+   .. deprecated:: 6.0
+
+   Support for `cache(self)` returning :const:`None` to suppress any
+   caching has been deprecated.  `cache(self)` should always return a
+   valid cache object.
 
 
 *****************************************************************
@@ -584,8 +665,7 @@ functions with the :func:`cached` and :func:`cachedmethod` decorators:
 
    This function is similar to :func:`hashkey`, but arguments of
    different types will yield distinct cache keys.  For example,
-   ``typedkey(3)`` and ``typedkey(3.0)`` will return different
-   results.
+   `typedkey(3)` and `typedkey(3.0)` will return different results.
 
 .. autofunction:: typedmethodkey
 
@@ -637,8 +717,8 @@ without bound.
 
 If the optional argument `typed` is set to :const:`True`, function
 arguments of different types will be cached separately.  For example,
-``f(3)`` and ``f(3.0)`` will be treated as distinct calls with
-distinct results.
+`f(3)` and `f(3.0)` will be treated as distinct calls with distinct
+results.
 
 If a `user_function` is specified instead, it must be a callable.
 This allows the decorator to be applied directly to a user function,
@@ -682,18 +762,6 @@ all the decorators in this module are thread-safe by default.
    saves up to `maxsize` results based on a Least Recently Used (LRU)
    algorithm.
 
-.. decorator:: mru_cache(user_function)
-               mru_cache(maxsize=128, typed=False)
-
-   Decorator that wraps a function with a memoizing callable that
-   saves up to `maxsize` results based on a Most Recently Used (MRU)
-   algorithm.
-
-   .. deprecated:: 5.4
-
-   The `mru_cache` decorator has been deprecated due to lack of use.
-   Please choose a decorator based on some other algorithm.
-
 .. decorator:: rr_cache(user_function)
                rr_cache(maxsize=128, choice=random.choice, typed=False)
 
@@ -706,11 +774,15 @@ all the decorators in this module are thread-safe by default.
 
    Decorator to wrap a function with a memoizing callable that saves
    up to `maxsize` results based on a Least Recently Used (LRU)
-   algorithm with a per-item time-to-live (TTL) value.
+   algorithm with a per-item time-to-live (TTL) value.  By default,
+   the time-to-live is set to 600 seconds and :func:`time.monotonic`
+   is used to retrieve the current time.
 
-
-.. _@lru_cache: http://docs.python.org/3/library/functools.html#functools.lru_cache
-.. _cache algorithm: http://en.wikipedia.org/wiki/Cache_algorithms
-.. _context manager: http://docs.python.org/dev/glossary.html#term-context-manager
-.. _mapping: http://docs.python.org/dev/glossary.html#term-mapping
-.. _mutable: http://docs.python.org/dev/glossary.html#term-mutable
+.. _@lru_cache: https://docs.python.org/3/library/functools.html#functools.lru_cache
+.. _cache algorithm: https://en.wikipedia.org/wiki/Cache_algorithms
+.. _cache stampede: https://en.wikipedia.org/wiki/Cache_stampede
+.. _condition variable: https://docs.python.org/3/library/threading.html#condition-objects
+.. _context manager: https://docs.python.org/dev/glossary.html#term-context-manager
+.. _mapping: https://docs.python.org/dev/glossary.html#term-mapping
+.. _mutable: https://docs.python.org/dev/glossary.html#term-mutable
+.. _thread-safe: https://en.wikipedia.org/wiki/Thread_safety

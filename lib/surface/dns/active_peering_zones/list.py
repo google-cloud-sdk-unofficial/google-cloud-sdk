@@ -23,6 +23,7 @@ from googlecloudsdk.core import properties
 
 
 @base.Hidden
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """View the list of all active managed zones that target your network.

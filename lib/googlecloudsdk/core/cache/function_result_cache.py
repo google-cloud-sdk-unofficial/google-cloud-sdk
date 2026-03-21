@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for caching the result of function calls."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import functools
 

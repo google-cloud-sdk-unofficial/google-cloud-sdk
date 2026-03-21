@@ -14,9 +14,6 @@
 # limitations under the License.
 """Read and write properties for the CloudSDK."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import enum
 import functools
@@ -2927,6 +2924,12 @@ class _SectionGrpc(_Section):
         hidden=True,
         validator=_IntegerValidator,
         help_text='The number of bytes gRPC will look ahead in the TCP stream.',
+    )
+    self.max_metadata_size = self._Add(
+        'max_metadata_size',
+        hidden=True,
+        validator=functools.partial(_IntegerValidator, 'max_metadata_size'),
+        help_text='Maximum metadata size (soft limit), in bytes.',
     )
 
 

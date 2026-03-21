@@ -41,6 +41,7 @@ from googlecloudsdk.command_lib.storage.tasks.cp import finalize_sliced_download
 from googlecloudsdk.command_lib.storage.tasks.rm import delete_task
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import scaled_integer
 
 
@@ -281,10 +282,17 @@ class FileDownloadTask(copy_util.ObjectCopyTaskWithExitHandler):
     preserve_symlinks = symlink_util.get_preserve_symlink_from_user_request(
         self._user_request_args
     )
+    temporary_path = temporary_file_url.resource_name
+    if isinstance(temporary_file_url, storage_url.FileUrl) and temporary_path:
+      temporary_path = os.path.realpath(files.ExpandHomeDir(temporary_path))
+    final_path = destination_url.resource_name
+    if isinstance(destination_url, storage_url.FileUrl) and final_path:
+      final_path = os.path.realpath(files.ExpandHomeDir(final_path))
+
     download_util.finalize_download(
         self._source_resource,
-        temporary_file_url.resource_name,
-        destination_url.resource_name,
+        temporary_path,
+        final_path,
         convert_symlinks=preserve_symlinks,
         do_not_decompress_flag=self._do_not_decompress,
         server_encoding=server_encoding,

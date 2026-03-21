@@ -125,13 +125,13 @@ def _generate_cpu_memory_flags_by_instance_class(
   if memory_value > 32:
     memory_value = 32
     cpu_value = 8
-  if memory_value > 24:
+  elif memory_value > 24:
     cpu_value = 8
-  if memory_value > 16:
+  elif memory_value > 16:
     cpu_value = 6
-  if memory_value > 8:
+  elif memory_value > 8:
     cpu_value = 4
-  if memory_value > 4:
+  elif memory_value > 4:
     cpu_value = 2
   # Cloud Run --memory requires a unit suffix
   # https://cloud.google.com/run/docs/configuring/memory-limits#setting-services

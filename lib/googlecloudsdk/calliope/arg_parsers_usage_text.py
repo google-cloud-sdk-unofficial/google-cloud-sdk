@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for adding help text for flags with an argparser type."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import abc
 from typing import Union

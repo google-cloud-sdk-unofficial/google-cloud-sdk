@@ -85,7 +85,10 @@ def handle(
     _handle_no_build(source_build, project_name, region, tracker)
     return
 
-  loaded_fingerprints = _load_source_fingerprints(project_name)
+  gcp_project = properties.VALUES.core.project.Get(required=True)
+  loaded_fingerprints = _load_source_fingerprints(
+      project_name, gcp_project, region
+  )
   fingerprints_to_save = {}
   build_ops = []
 
@@ -135,7 +138,9 @@ def handle(
       ) from e
 
   if not build_ops:
-    _save_source_fingerprints(fingerprints_to_save, project_name)
+    _save_source_fingerprints(
+        fingerprints_to_save, project_name, gcp_project, region
+    )
     return
 
   def _run_build(args):
@@ -188,7 +193,9 @@ def handle(
           _IMAGE_ID_KEY: image_id,
       }
 
-  _save_source_fingerprints(fingerprints_to_save, project_name)
+  _save_source_fingerprints(
+      fingerprints_to_save, project_name, gcp_project, region
+  )
 
   if num_build_successes != len(build_ops):
     raise compose_exceptions.BuildError(
@@ -196,20 +203,51 @@ def handle(
     )
 
 
+def _get_fingerprint_file_path(
+    compose_project_name: str, gcp_project_name: str, region: str
+) -> str:
+  """Constructs the path to the fingerprint JSON file.
+
+  Args:
+    compose_project_name: The name of the compose project.
+    gcp_project_name: The name of the GCP project.
+    region: The region of the deployment.
+
+  Returns:
+    The full path to the fingerprint file.
+  """
+  cfg_dir = config.Paths().global_config_dir
+  out_dir = os.path.join(
+      cfg_dir,
+      'surface',
+      'run',
+      'compose',
+      compose_project_name,
+      gcp_project_name,
+      region,
+  )
+  files.MakeDir(out_dir)
+  return os.path.join(out_dir, _FINGERPRINTS_FILE_NAME)
+
+
 def _save_source_fingerprints(
-    source_fingerprint_map: Dict[str, Dict[str, str]], project_name: str
+    source_fingerprint_map: Dict[str, Dict[str, str]],
+    compose_project_name: str,
+    gcp_project_name: str,
+    region: str,
 ) -> None:
   """Saves the source fingerprint map to a JSON file.
 
   Args:
-    source_fingerprint_map: A dictionary mapping container names to a
-      dictionary containing their 'fingerprint' and 'image_id'.
-    project_name: The name of the project.
+    source_fingerprint_map: A dictionary mapping container names to a dictionary
+      containing their 'fingerprint' and 'image_id'.
+    compose_project_name: The name of the compose project.
+    gcp_project_name: The name of the GCP project.
+    region: The region of the deployment.
   """
-  cfg_dir = config.Paths().global_config_dir
-  out_dir = os.path.join(cfg_dir, 'surface', 'run', 'compose', project_name)
-  files.MakeDir(out_dir)
-  fingerprint_file = os.path.join(out_dir, _FINGERPRINTS_FILE_NAME)
+  fingerprint_file = _get_fingerprint_file_path(
+      compose_project_name, gcp_project_name, region
+  )
 
   try:
     with files.FileWriter(fingerprint_file) as f:
@@ -219,20 +257,24 @@ def _save_source_fingerprints(
     log.warning(f"Could not write fingerprint file '{fingerprint_file}': {e}")
 
 
-def _load_source_fingerprints(project_name: str) -> Dict[str, Dict[str, str]]:
+def _load_source_fingerprints(
+    compose_project_name: str, gcp_project_name: str, region: str
+) -> Dict[str, Dict[str, str]]:
   """Loads the source fingerprint map from a JSON file.
 
   Args:
-    project_name: The name of the project.
+    compose_project_name: The name of the compose project.
+    gcp_project_name: The name of the GCP project.
+    region: The region of the deployment.
 
   Returns:
     A dictionary mapping container names to a dictionary containing their
     'fingerprint' and 'image_id'. Returns an empty map if the file is not
     found or cannot be parsed, as this loading is done on a best-effort basis.
   """
-  cfg_dir = config.Paths().global_config_dir
-  out_dir = os.path.join(cfg_dir, 'surface', 'run', 'compose', project_name)
-  fingerprint_file = os.path.join(out_dir, _FINGERPRINTS_FILE_NAME)
+  fingerprint_file = _get_fingerprint_file_path(
+      compose_project_name, gcp_project_name, region
+  )
 
   if os.path.exists(fingerprint_file):
     try:
@@ -456,12 +498,17 @@ def _build_from_source(
       f"Creating build config for image '{image_tag}' from source"
       f" '{source_path}'"
   )
+  build_args = ['buildx', 'build', '--load', '-t', image_tag]
+  if build_cfg.dockerfile:
+    build_args.extend(['-f', build_cfg.dockerfile])
+  build_args.append('.')
+
   build_config = messages.Build(
       steps=[
           messages.BuildStep(
               id=f'Build Docker Image: {image_tag}',
               name='gcr.io/cloud-builders/docker',
-              args=['buildx', 'build', '--load', '-t', image_tag, '.'],
+              args=build_args,
           )
       ],
       images=[image_tag],

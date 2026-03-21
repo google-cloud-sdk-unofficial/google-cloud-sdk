@@ -48,11 +48,14 @@ class StoragePoolsClient(object):
   def messages(self):
     return self._adapter.messages
 
-  def WaitForOperation(self, operation_ref):
+  def WaitForOperation(
+      self, operation_ref, max_wait_ms=constants.DEFAULT_MAX_WAIT_MS
+  ):
     """Waits on the long-running operation until the done field is True.
 
     Args:
       operation_ref: the operation reference.
+      max_wait_ms: The maximum time to wait in milliseconds.
 
     Raises:
       waiter.OperationError: if the operation contains an error.
@@ -62,8 +65,10 @@ class StoragePoolsClient(object):
     """
     return waiter.WaitFor(
         waiter.CloudOperationPollerNoResources(
-            self.client.projects_locations_operations), operation_ref,
-        'Waiting for [{0}] to finish'.format(operation_ref.Name()))
+            self.client.projects_locations_operations),
+        operation_ref,
+        'Waiting for [{0}] to finish'.format(operation_ref.Name()),
+        max_wait_ms=max_wait_ms)
 
   def CreateStoragePool(self, storagepool_ref, async_, config):
     """Create a Cloud NetApp Storage Pool."""
@@ -76,7 +81,9 @@ class StoragePoolsClient(object):
       return create_op
     operation_ref = resources.REGISTRY.ParseRelativeName(
         create_op.name, collection=constants.OPERATIONS_COLLECTION)
-    return self.WaitForOperation(operation_ref)
+    return self.WaitForOperation(
+        operation_ref, max_wait_ms=constants.MAX_WAIT_MS_CREATE_STORAGE_POOL
+    )
 
   def ParseStoragePoolConfig(
       self,
@@ -246,7 +253,9 @@ class StoragePoolsClient(object):
       return update_op
     operation_ref = resources.REGISTRY.ParseRelativeName(
         update_op.name, collection=constants.OPERATIONS_COLLECTION)
-    return self.WaitForOperation(operation_ref)
+    return self.WaitForOperation(
+        operation_ref, max_wait_ms=constants.MAX_WAIT_MS_UPDATE_STORAGE_POOL
+    )
 
   def SwitchStoragePool(self, storagepool_ref, async_):
     """Switch the zone of a Regional Cloud NetApp Storage Pooln.

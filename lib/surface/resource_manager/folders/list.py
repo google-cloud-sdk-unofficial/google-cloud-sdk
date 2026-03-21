@@ -25,9 +25,16 @@ from googlecloudsdk.command_lib.resource_manager import flags
 class ListBeta(base.ListCommand):
   r"""List folders accessible by the active account.
 
-  List all folders to which the user has access under the specified
-  parent (either an Organization or a Folder). Exactly one of --folder
-  or --organization must be provided.
+  List all folders to which the active account has access under the specified
+  parent (either an organization or a folder). Exactly one of --folder or
+  --organization must be provided.
+
+  The active account can be a user account or a service account. If the active
+  account is a service account, then the list of folders might be
+  incomplete. Specifically, the list excludes folders that the active
+  account only has access to because they're in a [service account principal
+  set](https://cloud.google.com/iam/help/service-accounts/principal-sets) with
+  access to the folder.
 
   ## EXAMPLES
 

@@ -359,21 +359,11 @@ class BaseCommandGenerator(six.with_metaclass(abc.ABCMeta, object)):
           disable_pagination=self.spec.request.disable_pagination))
     return methods
 
-  def _EndpointLocationRequired(self):
-    if self.spec.request.regional_endpoints_compatibility is None:
+  def _ShouldAddEndpointLocationFlag(self):
+    # Only add flag if regional endpoints are supported or required.
+    if self.spec.request.regional_endpoint_compatibility is None:
       return False
-
-    primary_resources = self.arg_generator.GetPrimaryResourceArgs(self.methods)
-    # Get the location attributes. If there are any collections that do not
-    # contain a location attribute, then we need to add the endpoint location
-    # flag.
-    for resource in primary_resources:
-      location_param_ids = set(resource.location_param_ids)
-      for collection in resource.collections:
-        location_param = location_param_ids & set(collection.detailed_params)
-        if not location_param:
-          return True
-    return False
+    return self.spec.request.add_regional_endpoint_flag
 
   def _CommonArgs(self, parser):
     """Performs argument actions common to all commands.
@@ -392,7 +382,7 @@ class BaseCommandGenerator(six.with_metaclass(abc.ABCMeta, object)):
       for arg in self.spec.arguments.additional_arguments_hook():
         arg.AddToParser(parser)
 
-    if self._EndpointLocationRequired():
+    if self._ShouldAddEndpointLocationFlag():
       base.ENDPOINT_LOCATION.AddToParser(parser)
 
     if self.spec.output.format:
@@ -719,26 +709,26 @@ class BaseCommandGenerator(six.with_metaclass(abc.ABCMeta, object)):
         command = base.UniverseCompatible(command)
       else:
         command = base.DefaultUniverseOnly(command)
+    if self.spec.release_tracks:
+      command = base.ReleaseTracks(*self.spec.release_tracks)(command)
+    if self.spec.deprecated_data:
+      command = base.Deprecate(**self.spec.deprecated_data)(command)
+
+    help_key_map = {
+        'description': 'DESCRIPTION',
+        'examples': 'EXAMPLES',
+    }
+    command.detailed_help = {
+        help_key_map.get(k, k): v for k, v in self.spec.help_text.items()
+    }
 
     request = self.spec.request
-    compatibility = request and request.regional_endpoints_compatibility
+    compatibility = request and request.regional_endpoint_compatibility
     if compatibility == yaml_command_schema.RegionalEndpointsType.REQUIRED:
       command = base.RegionalEndpointsRequired(command)
     elif compatibility == yaml_command_schema.RegionalEndpointsType.SUPPORTED:
       command = base.RegionalEndpointsSupported(command)
 
-    if self.spec.release_tracks:
-      command = base.ReleaseTracks(*self.spec.release_tracks)(command)
-    if self.spec.deprecated_data:
-      command = base.Deprecate(**self.spec.deprecated_data)(command)
-    if not hasattr(command, 'detailed_help'):
-      key_map = {
-          'description': 'DESCRIPTION',
-          'examples': 'EXAMPLES',
-      }
-      command.detailed_help = {
-          key_map.get(k, k): v for k, v in self.spec.help_text.items()
-      }
     if self.has_request_method:
       api_names = set(
           f'{method.collection.api_name}/{method.collection.api_version}'

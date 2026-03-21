@@ -21,9 +21,6 @@ However, dumping uses version 1.2.
 It also prevents use of unsafe loading and dumping.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import collections
 

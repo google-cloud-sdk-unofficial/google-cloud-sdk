@@ -15,9 +15,6 @@
 
 """Methods for suggesting corrections to command typos."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import collections
 import os

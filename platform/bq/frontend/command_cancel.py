@@ -22,6 +22,7 @@ class Cancel(bigquery_command.BigqueryCmd):
   """Attempt to cancel the specified job if it is running."""
 
   usage = """cancel [--nosync] [<job_id>]"""
+  command = 'cancel'
 
   def __init__(self, name: str, fv: flags.FlagValues):
     super(Cancel, self).__init__(name, fv)

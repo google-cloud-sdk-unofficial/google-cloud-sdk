@@ -16,7 +16,6 @@
 """Hooks for modifying responses for better formatting on gcloud."""
 
 import re
-from googlecloudsdk.calliope import base
 
 PROVISIONING_TYPE_ABBREVIATIONS = {
     "ADVANCED": "Adv",
@@ -41,7 +40,7 @@ GB = 1 << 30
 TB_IN_GB = 1 << 10
 
 
-def format_for_listing(pool_list, args):
+def format_for_listing(pool_list, _):
   """Format existing fields for displaying them in the list response.
 
   The formatting logic is complicated enough to the point gcloud"s formatter
@@ -49,24 +48,20 @@ def format_for_listing(pool_list, args):
 
   Args:
     pool_list: list of storage pools.
-    args: the arguments passed to the command.
 
   Returns:
     the inputted pool list, with the added fields containing new formatting.
   """
-  if args.calliope_command.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-    storage_pools = []
-    exapools = []
+  storage_pools = []
+  exapools = []
 
-    for pool in pool_list:
-      if _is_exapool(pool):
-        exapools.append(_format_exapool(pool))
-      else:
-        storage_pools.append(_format_storage_pool(pool))
+  for pool in pool_list:
+    if _is_exapool(pool):
+      exapools.append(_format_exapool(pool))
+    else:
+      storage_pools.append(_format_storage_pool(pool))
 
-    return {"storagePools": storage_pools, "exapools": exapools}
-
-  return list(map(_format_storage_pool, pool_list))
+  return {"storagePools": storage_pools, "exapools": exapools}
 
 
 def _is_exapool(pool):

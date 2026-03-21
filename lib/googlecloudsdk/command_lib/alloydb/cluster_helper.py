@@ -14,7 +14,6 @@
 # limitations under the License.
 """Helper functions for constructing and validating AlloyDB cluster requests."""
 
-
 import argparse
 import dataclasses
 import types
@@ -190,6 +189,10 @@ def _ConstructClusterForCreateRequestGA(alloydb_messages, args):
 
   cluster.subscriptionType = args.subscription_type
   cluster.tags = flags.GetTagsFromArgs(args, alloydb_messages.Cluster.TagsValue)
+  if args.enable_dataplex_integration is not None:
+    cluster.dataplexConfig = alloydb_messages.DataplexConfig(
+        enabled=args.enable_dataplex_integration
+    )
   return cluster
 
 
@@ -353,6 +356,11 @@ def _ConstructClusterResourceForRestoreRequest(alloydb_messages, args):
   if args.tags:
     cluster_resource.tags = flags.GetTagsFromArgs(
         args, alloydb_messages.Cluster.TagsValue
+    )
+
+  if args.enable_dataplex_integration is not None:
+    cluster_resource.dataplexConfig = alloydb_messages.DataplexConfig(
+        enabled=args.enable_dataplex_integration
     )
 
   return cluster_resource
@@ -536,6 +544,12 @@ def _ConstructClusterAndMaskForPatchRequestGA(alloydb_messages, args):
     cluster.subscriptionType = args.subscription_type
     update_masks.append('subscription_type')
 
+  if args.enable_dataplex_integration is not None:
+    cluster.dataplexConfig = alloydb_messages.DataplexConfig(
+        enabled=args.enable_dataplex_integration
+    )
+    update_masks.append('dataplex_config.enabled')
+
   return cluster, update_masks
 
 
@@ -678,6 +692,11 @@ def _ConstructClusterForCreateSecondaryRequestGA(alloydb_messages, args):
   if args.tags:
     cluster.tags = flags.GetTagsFromArgs(
         args, alloydb_messages.Cluster.TagsValue
+    )
+
+  if args.enable_dataplex_integration is not None:
+    cluster.dataplexConfig = alloydb_messages.DataplexConfig(
+        enabled=args.enable_dataplex_integration
     )
   return cluster
 

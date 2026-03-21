@@ -319,6 +319,18 @@ def GetReservationSharingPolicyFlag(custom_name=None):
   )
 
 
+def GetResourceManagerTagsFlag(custom_name=None):
+  """Gets the --resource-manager-tags flag."""
+  help_text = """\
+  Resource manager tags to be bound to the reservation.
+  """
+  return base.Argument(
+      custom_name or '--resource-manager-tags',
+      metavar='KEY=VALUE',
+      type=arg_parsers.ArgDict(),
+      help=help_text)
+
+
 def GetTpuVersion(required=True):
   """Gets the --tpu-version flag."""
   help_text = """\
@@ -416,19 +428,22 @@ def GetSchedulingTypeFlag():
 def GetEarlyAccessMaintenanceFlag():
   """--early-access-maintenance flag."""
   help_text = """\
-  The early access maintenance for the reservation.
+  Enable this feature to receive quarterly updates and new features for your
+  reservation earlier than the standard schedule..
   """
   return base.Argument(
       '--early-access-maintenance',
       choices={
           'NO_EARLY_ACCESS': (
-              'No early access maintenance.'
+              "Standard maintenance schedule. The reservation doesn't have"
+              ' early access maintenance.'
           ),
           'WAVE1': (
-              'Wave 1: Fastest notification period.'
+              'Provides the earliest available notification and maintenance.'
           ),
           'WAVE2': (
-              'Wave 2: Medium notification period.'
+              'Provides notification and maintenance after WAVE1, but before'
+              ' the standard maintenance schedule.'
           ),
       },
       help=help_text,
@@ -442,6 +457,7 @@ def AddCreateFlags(
     support_ssd_count=False,
     support_auto_delete=False,
     support_reservation_sharing_policy=False,
+    support_resource_manager_tags=False,
 ):
   """Adds all flags needed for the create command."""
   GetDescriptionFlag().AddToParser(parser)
@@ -451,6 +467,9 @@ def AddCreateFlags(
   # create the group for all properties used in SpecificSkuReservations
   specific_sku_group = base.ArgumentGroup(
       'Manage the SpecificSKU reservation properties.', required=True)
+
+  if support_resource_manager_tags:
+    GetResourceManagerTagsFlag().AddToParser(parser)
 
   specific_sku_group.AddArgument(GetRequireSpecificAllocation())
   specific_sku_group.AddArgument(GetVmCountFlag())

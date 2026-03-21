@@ -27,6 +27,7 @@ FLAGS = flags.FLAGS
 
 class Insert(bigquery_command.BigqueryCmd):
   usage = """insert [-s] [-i] [-x=<suffix>] <table identifier> [file]"""
+  command = 'insert'
 
   def __init__(self, name: str, fv: flags.FlagValues):
     super(Insert, self).__init__(name, fv)

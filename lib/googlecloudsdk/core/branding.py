@@ -14,10 +14,6 @@
 # limitations under the License.
 """Convenience utilities for manipulating collection and resource names."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 
 class Branding(object):
   """Convenience class for mapping service names to official branding titles."""

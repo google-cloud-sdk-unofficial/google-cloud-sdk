@@ -44,9 +44,6 @@ This module is resource agnostic.  All resource specific information is
 encapsulated in resource specific Completer objects.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import abc
 

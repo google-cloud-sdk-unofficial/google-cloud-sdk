@@ -26,7 +26,6 @@ from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
 from frontend import utils as frontend_utils
-from frontend import utils_flags
 from frontend import utils_id as frontend_id_utils
 from utils import bq_error
 from utils import bq_id_utils
@@ -40,6 +39,7 @@ from utils import bq_processor_utils
 
 class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstring
   usage = """ls [(-j|-p|-d)] [-a] [-n <number>] [<identifier>]"""
+  command = 'ls'
 
   def __init__(self, name: str, fv: flags.FlagValues):
     super(ListCmd, self).__init__(name, fv)
@@ -486,10 +486,6 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
 
       try:
         if True:
-          if self.reservation_group_name is not None:
-            utils_flags.fail_if_not_using_alpha_feature(
-                bq_flags.AlphaFeatures.RESERVATION_GROUPS
-            )
           response = client_reservation.ListReservations(
               client=client.GetReservationApiClient(),
               reference=reference,
@@ -517,9 +513,6 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
           default_reservation_group_id=' ',
       )
       try:
-        utils_flags.fail_if_not_using_alpha_feature(
-            bq_flags.AlphaFeatures.RESERVATION_GROUPS
-        )
         response = client_reservation.ListReservationGroups(
             reservation_group_client=client.GetReservationApiClient(),
             reference=reference,

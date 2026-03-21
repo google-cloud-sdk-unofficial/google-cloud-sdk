@@ -56,6 +56,17 @@ class Collections(enum.Enum):
       ['project', 'bucket', 'notification_config'],
       True
   )
+  PROJECTS_BUCKETS_SNAPSHOTS = (
+      'projects.buckets.snapshots',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/buckets/{bucketsId}/snapshots/'
+              '{snapshotsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS = (
       'projects.locations',
       'projects/{project}/locations/{location}',

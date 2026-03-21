@@ -78,6 +78,9 @@ RUN_FUNCTIONS_ENABLE_AUTOMATIC_UPDATES_DEPRECATED = (
 # A json map string from container to GCS source location.
 SOURCE_DEPLOY_NO_BUILD_SOURCE_LOCATION_ANNOTATION = 'run.googleapis.com/sources'
 
+# Functional type annotation.
+FUNCTIONAL_TYPE_ANNOTATION = 'apphub.cloud.google.com/functional-type'
+
 
 class Service(k8s_object.KubernetesObject):
   """Wraps a Serverless Service message, making fields more convenient.

@@ -256,10 +256,8 @@
         arg_name: maintenance-policy
         clearable: true
         required: false
-        hidden: true
         help_text: |-
-          The maintenance policy for the instance to determine when to allow or exclude
-          updates.
+          Defines a maintenance policy for a resource.
         params:
         - arg_name: maintenance-policy-weekly-windows
           api_field: instance.maintenancePolicy.weeklyMaintenanceWindows

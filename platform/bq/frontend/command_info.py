@@ -11,6 +11,7 @@ from gcloud_wrapper import gcloud_runner
 
 class Info(bigquery_command.BigqueryCmd):
   usage = """info"""
+  command = 'info'
 
   def _NeedsInit(self) -> bool:
     """If just printing known versions, don't run `init` first."""

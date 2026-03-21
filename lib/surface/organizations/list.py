@@ -23,8 +23,15 @@ from googlecloudsdk.command_lib.organizations import org_utils
 class List(base.ListCommand):
   """List organizations accessible by the active account.
 
-  Lists all organizations to which the user has access. Organizations are listed
-  in an unspecified order.
+  Lists all organizations to which the active account has access. Organizations
+  are listed in an unspecified order.
+
+  The active account can be a user account or a service account. If the active
+  account is a service account, then the list of organizations might be
+  incomplete. Specifically, the list excludes organizations that the active
+  account only has access to because they're in a [service account principal
+  set](https://cloud.google.com/iam/help/service-accounts/principal-sets) with
+  access to the organization.
   """
 
   @staticmethod

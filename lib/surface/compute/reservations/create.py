@@ -57,6 +57,7 @@ class Create(base.CreateCommand):
   _support_folder_share_setting = False
   _support_reservation_sharing_policy = True
   _support_ssd_count = True
+  _support_resource_manager_tags = False
 
   @classmethod
   def Args(cls, parser):
@@ -67,6 +68,7 @@ class Create(base.CreateCommand):
         support_folder_share_setting=cls._support_folder_share_setting,
         support_reservation_sharing_policy=cls._support_reservation_sharing_policy,
         support_ssd_count=cls._support_ssd_count,
+        support_resource_manager_tags=cls._support_resource_manager_tags,
     )
 
   def Run(self, args):
@@ -80,6 +82,7 @@ class CreateBeta(Create):
   _support_auto_delete = True
   _support_folder_share_setting = False
   _support_reservation_sharing_policy = True
+  _support_resource_manager_tags = False
 
   @classmethod
   def Args(cls, parser):
@@ -91,6 +94,7 @@ class CreateBeta(Create):
         support_auto_delete=cls._support_auto_delete,
         support_reservation_sharing_policy=cls._support_reservation_sharing_policy,
         support_ssd_count=cls._support_ssd_count,
+        support_resource_manager_tags=cls._support_resource_manager_tags,
     )
 
   def Run(self, args):
@@ -105,6 +109,7 @@ class CreateAlpha(CreateBeta):
   _support_auto_delete = True
   _support_folder_share_setting = True
   _support_reservation_sharing_policy = True
+  _support_resource_manager_tags = True
 
   @classmethod
   def Args(cls, parser):
@@ -117,6 +122,7 @@ class CreateAlpha(CreateBeta):
         support_ssd_count=cls._support_ssd_count,
         support_auto_delete=cls._support_auto_delete,
         support_reservation_sharing_policy=cls._support_reservation_sharing_policy,
+        support_resource_manager_tags=cls._support_resource_manager_tags,
     )
 
   def Run(self, args):

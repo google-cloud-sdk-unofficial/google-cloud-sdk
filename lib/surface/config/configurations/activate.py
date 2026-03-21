@@ -62,7 +62,7 @@ class Activate(base.SilentCommand):
     if project_id:
       # Warning if current project does not match the one in ADC
       config_validators.WarnIfSettingProjectWhenAdcExists(project_id)
-      projects_util.PrintEnvironmentTagMessage(project_id)
+      projects_util.PrintEnvironmentTagMessageProjectId(project_id)
 
     return args.configuration_name
 

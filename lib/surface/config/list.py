@@ -115,12 +115,6 @@ class List(base.ListCommand):
           'config list <SECTION>/` without a property specified.'
       )
 
-    project_id = properties.VALUES.core.project.Get()
-    if project_id:
-      projects_util.PrintEnvironmentTagMessage(
-          project_id
-      )
-
     return self._GetPropertiesToDisplay(args)
 
   def Epilog(self, resources_were_displayed):
@@ -128,3 +122,6 @@ class List(base.ListCommand):
     log.status.write(
         '\nYour active configuration is: [{0}]\n'.format(config_name)
     )
+    project_id = properties.VALUES.core.project.Get()
+    if project_id:
+      projects_util.PrintEnvironmentTagMessageProjectId(project_id)

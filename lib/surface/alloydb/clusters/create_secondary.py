@@ -64,6 +64,7 @@ class CreateSecondary(base.CreateCommand):
             " 'Cloud KMS CryptoKey Encrypter/Decrypter'"
         ),
     )
+    flags.AddDataplexIntegrationFlags(parser)
 
   def ConstructCreateSecondaryRequestFromArgs(
       self, alloydb_messages, location_ref, args):

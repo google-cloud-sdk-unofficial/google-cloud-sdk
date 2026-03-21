@@ -14,9 +14,6 @@
 # limitations under the License.
 """Protocol adapter class to allow requests to GET file:// URLs."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import io
 import os

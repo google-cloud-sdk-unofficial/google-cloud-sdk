@@ -36,6 +36,9 @@ from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
+# Default max metadata size(soft limit) for the client.
+_DEFAULT_MAX_METADATA_SIZE = 131_072  # 128KB
+
 
 def _log_transfer(
     transfer_type: str,
@@ -98,6 +101,7 @@ class GcsGrpcBidiStreamingClient(cloud_api.CloudApi):
     # property and end up creating the gapic client.
     # Creating the gapic client before "fork" will lead to a deadlock.
     if self._gapic_client is None:
+      max_metadata_size = properties.VALUES.grpc.max_metadata_size.GetInt()
       self._gapic_client = core_apis.GetGapicClientInstance(
           'storage',
           'v2',
@@ -109,6 +113,11 @@ class GcsGrpcBidiStreamingClient(cloud_api.CloudApi):
               ),
               'grpc.http2.bdp_probe': (
                   properties.VALUES.grpc.enable_http2_bdp_probe.GetBool()
+              ),
+              'grpc.max_metadata_size': (
+                  max_metadata_size
+                  if max_metadata_size is not None
+                  else _DEFAULT_MAX_METADATA_SIZE
               ),
           },
       )

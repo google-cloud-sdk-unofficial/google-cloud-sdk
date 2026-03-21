@@ -14,10 +14,6 @@
 # limitations under the License.
 """Functions for formatting debugging output."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 
 def generic_repr(class_instance):
   """Generic debug output for object that lists its property keys and values.

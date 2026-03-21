@@ -291,13 +291,12 @@
         help_text: |
           Catalog Integration - Catalog Integration is a feature that allows Looker to integrate with Universal Dataplex Catalog.
         params:
-        - api_field: instance.catalogIntegrationEnabled
-          arg_name: catalog-integration-enabled
+        - api_field: instance.catalogIntegrationOptOut
+          arg_name: catalog-integration-opt-out
           type: bool
-          default: true
           required: false
           help_text: |
-            This specifies whether Catalog Integration is enabled on the Looker instance.
+            If specified, catalog integration will be disabled, otherwise it will be enabled by default.
 
   async:
     collection: looker.projects.locations.operations

@@ -19,6 +19,6 @@ from googlecloudsdk.calliope import base as calliope_base
 
 @calliope_base.Hidden
 @calliope_base.DefaultUniverseOnly
-@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.GA)
+@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.BETA)
 class OrchestrationPipelines(calliope_base.Group):
   """Manage Orchestration Pipelines resources."""

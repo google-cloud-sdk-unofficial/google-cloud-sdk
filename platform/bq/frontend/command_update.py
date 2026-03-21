@@ -45,6 +45,7 @@ class Update(bigquery_command.BigqueryCmd):
   """The BigQuery CLI update command."""
 
   usage = """update [-d] [-t] <identifier> [<schema>]"""
+  command = 'update'
 
   # May be extended to more resource types and commands.
   INCOMPATIBLE_FLAGS = {
@@ -884,10 +885,6 @@ class Update(bigquery_command.BigqueryCmd):
           )
           print(object_info)
         else:
-          if self.reservation_group_name is not None:
-            utils_flags.fail_if_not_using_alpha_feature(
-                bq_flags.AlphaFeatures.RESERVATION_GROUPS
-            )
           reference = bq_client_utils.GetReservationReference(
               id_fallbacks=client,
               identifier=identifier,

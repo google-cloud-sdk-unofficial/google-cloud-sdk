@@ -30,8 +30,8 @@ from googlecloudsdk.core import yaml
 from googlecloudsdk.core.util import files
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class UploadNamedSet(base.SilentCommand):
   """Upload a named set into a Compute Engine router.
 

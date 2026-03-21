@@ -178,8 +178,6 @@ class Create(base.CreateCommand):
           'Updated property [core/project] to [{0}].'.format(project_id)
       )
 
-    command_lib_projects_util.PrintEnvironmentTagMessage(
-        project.projectId
-    )
+    command_lib_projects_util.PrintEnvironmentTagMessage(project)
 
     return project

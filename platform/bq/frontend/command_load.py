@@ -28,6 +28,7 @@ from frontend import utils_formatting
 
 class Load(bigquery_command.BigqueryCmd):
   usage = """load <destination_table> <source> <schema>"""
+  command = 'load'
 
   def __init__(self, name: str, fv: flags.FlagValues):
     super(Load, self).__init__(name, fv)

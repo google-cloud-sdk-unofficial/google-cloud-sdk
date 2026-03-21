@@ -24,6 +24,7 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.container import kubeconfig as kconfig
 from googlecloudsdk.api_lib.services import enable_api
 from googlecloudsdk.api_lib.services import exceptions
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import config
 from googlecloudsdk.core import exceptions as core_exceptions
@@ -104,6 +105,10 @@ INVALID_NC_KERNEL_MODULE_LOADING_FLAG_CONFIG_OVERLAP = (
     'enable-kernel-module-signature-enforcement specified in both config '
     'file and by flag. Please specify either command line option '
     'or the value in the config file.'
+)
+
+INVALID_NC_FLAG_MAX_CONTAINER_RESTART_PERIOD = (
+    'value of maxContainerRestartPeriod must be a duration between 1s and 300s.'
 )
 
 
@@ -214,6 +219,9 @@ NC_EVICTION_MAX_POD_GRACE_PERIOD_SECONDS = 'evictionMaxPodGracePeriodSeconds'
 
 NC_KERNEL_MODULE_LOADING = 'nodeKernelModuleLoading'
 NC_KERNEL_MODULE_LOADING_POLICY = 'policy'
+
+NC_CRASHLOOPBACKOFF = 'crashLoopBackOff'
+NC_CRASHLOOPBACKOFF_MAX_CONTAINER_RESTART_PERIOD = 'maxContainerRestartPeriod'
 
 
 class Error(core_exceptions.Error):
@@ -930,6 +938,7 @@ def LoadSystemConfigFromYAML(
         NC_EVICTION_SOFT_GRACE_PERIOD: dict,
         NC_EVICTION_MINIMUM_RECLAIM: dict,
         NC_EVICTION_MAX_POD_GRACE_PERIOD_SECONDS: int,
+        NC_CRASHLOOPBACKOFF: dict,
     }
     _CheckNodeConfigFields(
         NC_KUBELET_CONFIG, kubelet_config_opts, config_fields
@@ -1041,6 +1050,30 @@ def LoadSystemConfigFromYAML(
       )
       if topology_manager_scope:
         node_config.kubeletConfig.topologyManager.scope = topology_manager_scope
+
+    # Parse crashloopbackoff.
+    crashloopbackoff_opts = kubelet_config_opts.get(NC_CRASHLOOPBACKOFF)
+    if crashloopbackoff_opts:
+      _CheckNodeConfigFields(
+          NC_CRASHLOOPBACKOFF,
+          crashloopbackoff_opts,
+          {
+              NC_CRASHLOOPBACKOFF_MAX_CONTAINER_RESTART_PERIOD: str,
+          },
+      )
+      container_restart_period = crashloopbackoff_opts.get(
+          NC_CRASHLOOPBACKOFF_MAX_CONTAINER_RESTART_PERIOD
+      )
+      if container_restart_period:
+        duration_parser = arg_parsers.Duration(default_unit='s')
+        seconds = duration_parser(container_restart_period)
+        if not 1 <= seconds <= 300:
+          raise NodeConfigError(INVALID_NC_FLAG_MAX_CONTAINER_RESTART_PERIOD)
+        node_config.kubeletConfig.crashLoopBackOff = (
+            messages.CrashLoopBackOffConfig(
+                maxContainerRestartPeriod=container_restart_period
+            )
+        )
 
     sysctls = kubelet_config_opts.get(NC_ALLOWED_UNSAFE_SYSCTLS)
     if sysctls:

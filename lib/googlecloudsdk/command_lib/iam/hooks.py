@@ -196,37 +196,28 @@ def GeneratePublicKeyDataFromFile(path):
   return public_key_data.encode('utf-8')
 
 
-def AddCreateExtraAndExtendedAttributesConfigToRequest(ref, args, request):
-  """Add ExtraAttributesOAuth2Client and ExtendedAttributesOAuth2Client fields to create workforcePoolProvider requests."""
+def AddCreateExtendedAttributesConfigToRequest(ref, args, request):
+  """Add ExtendedAttributesOAuth2Client fields to create requests.
+
+  This hook adds fields to workforcePoolProvider requests.
+
+  Args:
+    ref: A resource ref to the parsed resource.
+    args: Parsed args namespace.
+    request: The apitools request message to be modified.
+
+  Returns:
+    The modified apitools request message.
+  """
 
   del ref
   messages = apis.GetMessagesModule('iam', 'v1')
-  SetExtraAttributesOauth2ClientFields(request, args, messages)
   SetExtendedAttributesOauth2ClientFields(request, args, messages)
   return request
 
 
-def AddClearableExtraAttributesConfigToRequest(ref, args, request):
-  """Add ExtraAttributesOAuth2Client fields to update workforcePoolProvider requests."""
-  del ref
-  messages = apis.GetMessagesModule('iam', 'v1')
-  if (
-      args.clear_extra_attributes_config is not None
-      and args.clear_extra_attributes_config
-  ):
-    arg_utils.SetFieldInMessage(
-        request,
-        'workforcePoolProvider.extraAttributesOauth2Client',
-        None,
-    )
-  else:
-    SetExtraAttributesOauth2ClientFields(request, args, messages)
-
-  return request
-
-
 def AddClearableExtendedAttributesConfigToRequest(ref, args, request):
-  """Add ExtraAttributesOAuth2Client fields to update workforcePoolProvider requests."""
+  """Adds or clears ExtraAttributesOAuth2Client fields in update requests."""
   del ref
   messages = apis.GetMessagesModule('iam', 'v1')
   if (
@@ -242,56 +233,6 @@ def AddClearableExtendedAttributesConfigToRequest(ref, args, request):
     SetExtendedAttributesOauth2ClientFields(request, args, messages)
 
   return request
-
-
-def SetExtraAttributesOauth2ClientFields(request, args, messages):
-  """Set ExtraAttributesOauth2Client fields in the request."""
-  if args.extra_attributes_type is not None:
-    response_type = (
-        messages.GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client.AttributesTypeValueValuesEnum
-    )
-    if 'azure-ad-groups-mail' in args.extra_attributes_type:
-      arg_utils.SetFieldInMessage(
-          request,
-          'workforcePoolProvider.extraAttributesOauth2Client.attributesType',
-          response_type.AZURE_AD_GROUPS_MAIL,
-      )
-    elif 'azure-ad-groups-id' in args.extra_attributes_type:
-      arg_utils.SetFieldInMessage(
-          request,
-          'workforcePoolProvider.extraAttributesOauth2Client.attributesType',
-          response_type.AZURE_AD_GROUPS_ID,
-      )
-    elif 'azure-ad-groups-display-name' in args.extra_attributes_type:
-      arg_utils.SetFieldInMessage(
-          request,
-          'workforcePoolProvider.extraAttributesOauth2Client.attributesType',
-          response_type.AZURE_AD_GROUPS_DISPLAY_NAME,
-      )
-  if args.extra_attributes_client_id is not None:
-    arg_utils.SetFieldInMessage(
-        request,
-        'workforcePoolProvider.extraAttributesOauth2Client.clientId',
-        args.extra_attributes_client_id,
-    )
-  if args.extra_attributes_client_secret_value is not None:
-    arg_utils.SetFieldInMessage(
-        request,
-        'workforcePoolProvider.extraAttributesOauth2Client.clientSecret.value.plainText',
-        args.extra_attributes_client_secret_value,
-    )
-  if args.extra_attributes_issuer_uri is not None:
-    arg_utils.SetFieldInMessage(
-        request,
-        'workforcePoolProvider.extraAttributesOauth2Client.issuerUri',
-        args.extra_attributes_issuer_uri,
-    )
-  if args.extra_attributes_filter is not None:
-    arg_utils.SetFieldInMessage(
-        request,
-        'workforcePoolProvider.extraAttributesOauth2Client.queryParameters.filter',
-        args.extra_attributes_filter,
-    )
 
 
 def SetExtendedAttributesOauth2ClientFields(request, args, messages):
@@ -330,33 +271,6 @@ def SetExtendedAttributesOauth2ClientFields(request, args, messages):
         'workforcePoolProvider.extendedAttributesOauth2Client.queryParameters.filter',
         args.extended_attributes_filter,
     )
-
-
-def AddExtraAttributesConfigFieldMask(unused_ref, args, request):
-  """Adds ExtraAttributesOauth2Client specific fieldmask entries to the update workforcePoolProvider request."""
-  mask_fields = []
-  if request.updateMask:
-    mask_fields = request.updateMask.split(',')
-  if (
-      args.clear_extra_attributes_config is not None
-      and args.clear_extra_attributes_config
-  ):
-    mask_fields.append('extraAttributesOauth2Client')
-  if args.extra_attributes_type is not None:
-    mask_fields.append('extraAttributesOauth2Client.attributesType')
-  if args.extra_attributes_client_id is not None:
-    mask_fields.append('extraAttributesOauth2Client.clientId')
-  if args.extra_attributes_client_secret_value is not None:
-    mask_fields.append(
-        'extraAttributesOauth2Client.clientSecret.value.plainText'
-    )
-  if args.extra_attributes_issuer_uri is not None:
-    mask_fields.append('extraAttributesOauth2Client.issuerUri')
-  if args.extra_attributes_filter is not None:
-    mask_fields.append('extraAttributesOauth2Client.queryParameters.filter')
-  if mask_fields:
-    request.updateMask = ','.join(mask_fields)
-  return request
 
 
 def AddExtendedAttributesConfigFieldMask(unused_ref, args, request):

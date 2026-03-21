@@ -186,3 +186,14 @@ def define_use_full_timestamp(
       ' in the result.',
       flag_values=flag_values,
   )
+
+
+def define_parent_group(
+    flag_values: flags.FlagValues,
+) -> flags.FlagHolder[Optional[str]]:
+  return flags.DEFINE_string(
+      'parent_group',
+      None,
+      'The new full resource name of the parent reservation group.',
+      flag_values=flag_values,
+  )

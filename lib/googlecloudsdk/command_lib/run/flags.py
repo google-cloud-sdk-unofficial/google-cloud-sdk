@@ -82,17 +82,36 @@ IDENTITY_CERTIFICATE_FLAG = base.Argument(
 _IDENTITY_TYPE_CHOICES = {
     'SERVICE_ACCOUNT': 'Use a service account.',
     'WORKLOAD_IDENTITY': 'Use a managed workload identity.',
+    'AGENT_IDENTITY': 'Use an agent identity.',
 }
 
 _TO_ANNOTATION_IDENTITY_TYPE_STR = {
     'SERVICE_ACCOUNT': 'service-account',
     'WORKLOAD_IDENTITY': 'workload-identity',
+    'AGENT_IDENTITY': 'agent-identity',
 }
 
 IDENTITY_TYPE_FLAG = base.Argument(
     '--identity-type',
     choices=_IDENTITY_TYPE_CHOICES,
     help='Configures the type of identity to be used by the resource.',
+    hidden=True,
+)
+
+_FUNCTIONAL_TYPE_CHOICES = {
+    'AGENT': 'Use an agent.',
+    'MCP_SERVER': 'Use a MCP server.',
+}
+
+_TO_ANNOTATION_FUNCTIONAL_TYPE_STR = {
+    'AGENT': 'agent',
+    'MCP_SERVER': 'mcp-server',
+}
+
+FUNCTIONAL_TYPE_FLAG = base.Argument(
+    '--functional-type',
+    choices=_FUNCTIONAL_TYPE_CHOICES,
+    help='Configures functional type of the resource.',
     hidden=True,
 )
 
@@ -3481,6 +3500,13 @@ def GetServiceConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
   if FlagIsExplicitlySet(args, 'domain'):
     changes.append(
         config_changes.MultiRegionDomainNameChange(domain_name=args.domain)
+    )
+  if FlagIsExplicitlySet(args, 'functional_type'):
+    changes.append(
+        config_changes.SetAnnotationChange(
+            service.FUNCTIONAL_TYPE_ANNOTATION,
+            _TO_ANNOTATION_FUNCTIONAL_TYPE_STR[args.functional_type],
+        )
     )
 
   changes.extend(_GetIapChanges(args))

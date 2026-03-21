@@ -20,8 +20,11 @@ deployed version to Cloud Run.
 """
 
 from collections.abc import Mapping, Sequence
+import re
 from typing import Any
 
+from apitools.base.protorpclite import messages
+from apitools.base.py import encoding
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.common import util
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.config import feature_helper
@@ -36,6 +39,16 @@ from googlecloudsdk.core import properties
 
 
 ExportImageResult = appengine_api_client.ExportImageResult
+
+# Regex patterns used in _to_snake_case
+_CAMEL_TO_SNAKE_1 = re.compile(r'(.)([A-Z][a-z]+)')
+_CAMEL_TO_SNAKE_2 = re.compile(r'([a-z0-9])([A-Z])')
+
+
+def _to_snake_case(name: str) -> str:
+  """Converts camelCase to snake_case."""
+  s1 = _CAMEL_TO_SNAKE_1.sub(r'\1_\2', name)
+  return _CAMEL_TO_SNAKE_2.sub(r'\1_\2', s1).lower()
 
 
 def translate_from_source(
@@ -141,52 +154,49 @@ def _get_source_path(
     ) + '/'
 
 
-def _convert_admin_api_input_to_app_yaml(
-    admin_api_input_data: Mapping[str, Any],
-) -> Mapping[str, Any]:
-  """Converts the input from admin api to app yaml."""
-  input_key_value_pairs = util.flatten_keys(
-      admin_api_input_data, parent_path=''
-  )
-  feature_config = feature_helper.get_feature_config()
-  translatable_features: Mapping[str, feature_helper.Feature] = {}
-  translatable_features.update(
-      feature_helper.get_feature_list_by_input_type(
-          feature_helper.InputType.ADMIN_API, feature_config.range_limited
-      )
-  )
-  translatable_features.update(
-      feature_helper.get_feature_list_by_input_type(
-          feature_helper.InputType.ADMIN_API, feature_config.value_limited
-      )
-  )
-  translatable_features.update(
-      feature_helper.get_feature_list_by_input_type(
-          feature_helper.InputType.ADMIN_API, feature_config.supported
-      )
-  )
+def _convert_keys_to_snake_case(data: Any) -> Any:
+  """Recursively converts keys in dictionaries within the data to snake_case."""
+  if isinstance(data, messages.Message):
+    data = encoding.MessageToDict(data)
+  if isinstance(data, dict):
+    new_dict = {}
+    for k, v in data.items():
+      new_key = _to_snake_case(k)
+      new_dict[new_key] = _convert_keys_to_snake_case(v)
+    return new_dict
+  elif isinstance(data, list):
+    return [_convert_keys_to_snake_case(elem) for elem in data]
+  else:
+    return data
 
-  merged_keys = [
-      key for key in input_key_value_pairs if key in translatable_features
-  ]
-  merged_features: list[feature_helper.Feature] = []
-  for key in merged_keys:
-    merged_features.append(translatable_features[key])
-  app_yaml_input = {}
-  for feature in merged_features:
-    app_yaml_input[feature.path[feature_helper.InputType.APP_YAML.value]] = (
-        input_key_value_pairs[
-            feature.path[feature_helper.InputType.ADMIN_API.value]
-        ]
-    )
-  if 'instanceClass' in admin_api_input_data:
-    app_yaml_input['instance_class'] = input_key_value_pairs['instanceClass']
-  return app_yaml_input
+
+def _convert_admin_api_input_to_app_yaml(
+    version_data: Mapping[str, Any]
+) -> Mapping[str, Any]:
+  """Converts a dict from Admin API Version data to a dict resembling app.yaml.
+
+  Args:
+    version_data: A dictionary derived from the App Engine Admin API Version
+      object, potentially containing camelCase keys and nested dictionaries.
+
+  Returns:
+    A dictionary structured like a parsed app.yaml, with snake_case keys.
+  """
+  if not version_data:
+    return {}
+
+  app_yaml_data = _convert_keys_to_snake_case(version_data)
+  flattened_data = util.flatten_keys(app_yaml_data, parent_path='')
+  result = {}
+  for k, v in flattened_data.items():
+    new_key = k.replace('.standard_scheduler_settings', '')
+    result[new_key] = v
+  return result
 
 
 def _get_cloud_run_flags(
-    input_data: Mapping[str, Any],
-    input_flatten_as_appyaml: Mapping[str, Any],
+    input_data: Mapping[str, any],
+    input_flatten_as_appyaml: Mapping[str, any],
     input_type: feature_helper.InputType,
     entrypoint_command: str, *,
     source_path: str | None,
@@ -241,7 +251,7 @@ def _get_cloud_run_flags(
   )
 
 
-def _get_service_name(input_data: Mapping[str, Any]) -> str:
+def _get_service_name(input_data: Mapping[str, any]) -> str:
   """Gets the service name from the input data."""
   if 'service' in input_data:
     custom_service_name = input_data['service'].strip()

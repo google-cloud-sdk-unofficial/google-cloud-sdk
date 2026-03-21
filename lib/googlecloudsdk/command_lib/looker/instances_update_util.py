@@ -284,11 +284,11 @@ def UpdateControlledEgressConfig(unused_instance_ref, args, patch_request):
   return patch_request
 
 
-def UpdateCatalogIntegrationEnabled(unused_instance_ref, args, patch_request):
-  """Hook to update catalog integration enabled to the update mask of the request."""
-  if args.IsSpecified('catalog_integration_enabled'):
+def UpdateCatalogIntegrationOptOut(unused_instance_ref, args, patch_request):
+  """Updates catalog integration opt out in the request update mask."""
+  if args.IsSpecified('catalog_integration_opt_out'):
     patch_request = AddFieldToUpdateMask(
-        'catalog_integration_enabled', patch_request
+        'catalog_integration_opt_out', patch_request
     )
   return patch_request
 

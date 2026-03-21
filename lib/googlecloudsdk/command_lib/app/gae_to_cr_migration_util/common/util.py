@@ -83,7 +83,9 @@ def get_features_by_prefix(
 ) -> Mapping[str, feature_helper.Feature]:
   """Return a dict of features matched with the prefix."""
   return {
-      key: value for key, value in features.items() if key.startswith(prefix)
+      key: value
+      for key, value in features.items()
+      if key.startswith(prefix) and value is not None
   }
 
 
@@ -172,7 +174,21 @@ def get_input_data_by_input_type(
     service: str = None,
     version: str = None,
 ) -> Mapping[str, any]:
-  """Retrieve the input_data (from yaml to python objects) by a given input_type."""
+  """Retrieves input data as Python objects.
+
+  This function fetches input data either from an `app.yaml` file or
+  by calling the App Engine Admin API, depending on the `input_type`.
+
+  Args:
+    input_type: The type of input source (ADMIN_API or APP_YAML).
+    appyaml: The path to the app.yaml file.
+    service: The service name, used when input_type is ADMIN_API.
+    version: The version name, used when input_type is ADMIN_API.
+
+  Returns:
+    A mapping containing the input data as Python objects, or None if the
+    input data could not be retrieved or is empty.
+  """
   # deployed version is input type
   if input_type == feature_helper.InputType.ADMIN_API:
     api_client = appengine_api_client.GetApiClientForTrack(base.ReleaseTrack.GA)
@@ -185,7 +201,9 @@ def get_input_data_by_input_type(
 
     version_data = {
         'automaticScaling': gcloud_output.automaticScaling,
+        'basicScaling': gcloud_output.basicScaling,
         'createTime': gcloud_output.createTime,
+        'manualScaling': gcloud_output.manualScaling,
         'createdBy': gcloud_output.createdBy,
         'deployment': gcloud_output.deployment,
         'diskUsageBytes': gcloud_output.diskUsageBytes,

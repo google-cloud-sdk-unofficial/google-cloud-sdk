@@ -56,6 +56,7 @@ class Update(base.UpdateCommand):
             '--enable-continuous-backup | '
             '--continuous-backup-* | --clear-continuous-backup-encryption-key'
         ),
+        ('--dataplex-integration'),
     ]
 
   @classmethod
@@ -79,6 +80,7 @@ class Update(base.UpdateCommand):
     flags.AddDenyMaintenancePeriod(parser, alloydb_messages, update=True)
     flags.AddMaintenanceVersion(parser)
     flags.AddSubscriptionType(parser, alloydb_messages)
+    flags.AddDataplexIntegrationFlags(parser)
 
   def ConstructPatchRequestFromArgs(self, alloydb_messages, cluster_ref, args):
     return cluster_helper.ConstructPatchRequestFromArgsGA(

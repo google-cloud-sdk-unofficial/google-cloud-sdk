@@ -22,14 +22,34 @@ from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.config import featu
 
 
 _MAX_CONCURRENT_REQUESTS_KEY = 'automatic_scaling.max_concurrent_requests'
-_ALLOW_MAX_CONCURRENT_REQ_KEYS = _MAX_CONCURRENT_REQUESTS_KEY
+_TARGET_CONCURRENT_REQUESTS_KEY = (
+    'automatic_scaling.target_concurrent_requests'
+)
+_ALLOW_MAX_CONCURRENT_REQ_KEYS = (
+    _MAX_CONCURRENT_REQUESTS_KEY,
+    _TARGET_CONCURRENT_REQUESTS_KEY,
+)
 _DEFAULT_STANDARD_CONCURRENCY = 10
 
 
 def translate_concurrent_requests_features(
     input_data: Mapping[str, any],
     range_limited_features: feature_helper.RangeLimitFeature) -> Sequence[str]:
-  """Translate max_concurrent_requests (standard) to Cloud Run --concurrency flag."""
+  """Translates GAE concurrent request settings to Cloud Run.
+
+  This function translates `max_concurrent_requests` (standard) or
+  `target_concurrent_requests` from GAE to the Cloud Run --concurrency flag.
+
+  Args:
+    input_data: A mapping containing the input configuration.
+    range_limited_features: Feature helper for range-limited features.
+
+  Returns:
+    A sequence of strings representing the Cloud Run flags.
+  """
+  if (_MAX_CONCURRENT_REQUESTS_KEY not in input_data and
+      _TARGET_CONCURRENT_REQUESTS_KEY not in input_data):
+    return []
   feature_key = util.get_feature_key_from_input(
       input_data, _ALLOW_MAX_CONCURRENT_REQ_KEYS
   )

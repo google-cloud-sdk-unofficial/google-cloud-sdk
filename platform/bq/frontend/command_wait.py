@@ -23,6 +23,7 @@ from utils import bq_id_utils
 
 class Wait(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstring
   usage = """wait [<job_id>] [<secs>]"""
+  command = 'wait'
 
   def __init__(self, name: str, fv: flags.FlagValues):
     super(Wait, self).__init__(name, fv)

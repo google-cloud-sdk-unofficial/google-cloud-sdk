@@ -45,6 +45,8 @@ class WorkerPoolsTransport(abc.ABC):
 
     AUTH_SCOPES = (
         'https://www.googleapis.com/auth/cloud-platform',
+        'https://www.googleapis.com/auth/run',
+        'https://www.googleapis.com/auth/run.readonly',
     )
 
     DEFAULT_HOST: str = 'run.googleapis.com'

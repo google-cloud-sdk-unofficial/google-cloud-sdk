@@ -36,9 +36,6 @@ Errors are raised at the time of the Get() call on the future (which is implicit
 for Apply() and Map()).
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import abc
 import pickle

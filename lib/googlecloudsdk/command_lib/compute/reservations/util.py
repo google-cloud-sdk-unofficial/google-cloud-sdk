@@ -17,6 +17,7 @@
 
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import resource_manager_tags_utils
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.resource_policies import util as maintenance_util
 from googlecloudsdk.core.util import times
@@ -76,6 +77,7 @@ def MakeReservationMessageFromArgs(messages, args, reservation_ref, resources):
       getattr(args, 'delete_after_duration', None),
       getattr(args, 'reservation_sharing_policy', None),
       getattr(args, 'enable_emergent_maintenance', None),
+      getattr(args, 'resource_manager_tags', None),
       scheduling_type,
       early_access_maintenance,
   )
@@ -306,6 +308,7 @@ def MakeReservationMessage(
     delete_after_duration=None,
     reservation_sharing_policy=None,
     enable_emergent_maintenance=None,
+    resource_manager_tags=None,
     scheduling_type=None,
     early_access_maintenance=None,
 ):
@@ -347,6 +350,11 @@ def MakeReservationMessage(
   if early_access_maintenance is not None:
     reservation_message.earlyAccessMaintenance = MakeEarlyAccessMaintenance(
         messages, early_access_maintenance
+    )
+
+  if resource_manager_tags is not None:
+    reservation_message.params = MakeReservationParams(
+        messages, resource_manager_tags
     )
 
   return reservation_message
@@ -407,6 +415,23 @@ def MakeResourcePolicies(
           )
           for key, value in sorted(six.iteritems(resource_policy_dictionary))
       ]
+  )
+
+
+def MakeReservationParams(messages, resource_manager_tags):
+  """Creates a reservation params object for resource manager tags."""
+  resource_manager_tags_map = (
+      resource_manager_tags_utils.GetResourceManagerTags(resource_manager_tags)
+  )
+  params = messages.ReservationParams
+  additional_properties = [
+      params.ResourceManagerTagsValue.AdditionalProperty(key=key, value=value)
+      for key, value in sorted(resource_manager_tags_map.items())
+  ]
+  return params(
+      resourceManagerTags=params.ResourceManagerTagsValue(
+          additionalProperties=additional_properties
+      )
   )
 
 

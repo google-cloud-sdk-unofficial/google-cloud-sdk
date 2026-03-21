@@ -236,6 +236,7 @@ class CommandLoop(cmd.Cmd):
 
 class Repl(bigquery_command.BigqueryCmd):
   """Start an interactive bq session."""
+  command = 'shell'
 
   def __init__(self, name: str, fv: flags.FlagValues):
     super(Repl, self).__init__(name, fv)

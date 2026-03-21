@@ -56,8 +56,9 @@ class CreateJobRequest(proto.Message):
         job (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.Job):
             Required. The Job instance to create.
         job_id (str):
-            Required. The unique identifier for the Job. The name of the
-            job becomes {parent}/jobs/{job_id}.
+            Optional. The unique identifier for the Job. The name of the
+            job becomes {parent}/jobs/{job_id}. If not provided, the
+            server will generate a unique ``job_id``.
         validate_only (bool):
             Indicates that the request should be
             validated and default values populated, without

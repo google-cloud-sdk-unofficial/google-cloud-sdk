@@ -22,6 +22,23 @@
       To list all profiler sessions, run:
 
           $ {command} --location=us-central1 --machine-learning-run=my-ml-run
+
+          This list all capture profiler sessions which are completed and provides sharable
+          dashboard URIs for each session to visualize the profiling data.
+
+          Sample output:
+          ```
+            ---
+            createTime: '2026-02-27T05:08:12.588Z'
+            dashboardUri: https://6541a9e59c4f6445-dot-datalab-vm-staging.googleusercontent.com?session_path=gs%3A%2F%2Fdiagon-prod-data%2Fmldiag-prod-cluster-diagon-jobset-mldiag-prod-demo-jobset-20260227-050640%2Fplugins%2Fprofile%2Fon-demand-session
+            name: projects/PROJECT_ID/locations/us-central1/machineLearningRuns/mldiag-prod-cluster-diagon-jobset-mldiag-prod-demo-jobset-20260227-050640/profilerSessions/on-demand-session
+            storageFolderUri: gs://diagon-prod-data/mldiag-prod-cluster-diagon-jobset-mldiag-prod-demo-jobset-20260227-050640/plugins/profile/on-demand-session
+            ---
+            createTime: '2026-02-27T05:07:18.619Z'
+            dashboardUri: https://6541a9e59c4f6445-dot-datalab-vm-staging.googleusercontent.com?session_path=gs%3A%2F%2Fdiagon-prod-data%2Fmldiag-prod-cluster-diagon-jobset-mldiag-prod-demo-jobset-20260227-050640%2Fplugins%2Fprofile%2Fprogrammatic-session
+            name: projects/PROJECT_ID/locations/us-central1/machineLearningRuns/mldiag-prod-cluster-diagon-jobset-mldiag-prod-demo-jobset-20260227-050640/profilerSessions/programmatic-session
+            storageFolderUri: gs://diagon-prod-data/mldiag-prod-cluster-diagon-jobset-mldiag-prod-demo-jobset-20260227-050640/plugins/profile/programmatic-session
+          ```
   arguments:
     params:
     - help_text: |-
