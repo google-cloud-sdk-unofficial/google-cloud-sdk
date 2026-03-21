@@ -51,10 +51,8 @@
         params:
         - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool.inline_certificate_issuance_config_file
         - group:
-            hidden: true
             params:
             - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool.use_default_shared_ca
-              hidden: true
     - group:
         mutex: true
         params:

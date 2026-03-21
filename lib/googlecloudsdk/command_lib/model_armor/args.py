@@ -221,6 +221,53 @@ def AddGoogleMcpServerFloorSetting(parser) -> None:
   )
 
 
+def AddGoogleMcpServerApiFlags(parser):
+  """Add flags for Google MCP server APIs."""
+  apis_group = parser.add_group(
+      mutex=True,
+      help=(
+          'Manage list of MCP servers for which the Google MCP server floor'
+          ' setting is applicable. Empty list indicates that the floor setting'
+          ' is applicable to all Google MCP servers. APIs need to be valid MCP'
+          ' resources, for example:'
+          '`"bigquery.googleapis.com/mcp"`, `"run.googleapis.com/mcp"`'
+      ),
+  )
+  apis_group.add_argument(
+      _ArgOrFlag('google-mcp-server-apis', False),
+      metavar='API',
+      type=arg_parsers.ArgList(),
+      action=arg_parsers.FlattenAction(),
+      help=(
+          'Replaces the current list of Google MCP server APIs with the'
+          ' provided list.'
+      ),
+  )
+  apis_group.add_argument(
+      _ArgOrFlag('add-google-mcp-server-apis', False),
+      metavar='API',
+      type=arg_parsers.ArgList(),
+      action=arg_parsers.FlattenAction(),
+      help='Appends the given APIs to the list of Google MCP server APIs.',
+  )
+  apis_group.add_argument(
+      _ArgOrFlag('remove-google-mcp-server-apis', False),
+      metavar='API',
+      type=arg_parsers.ArgList(),
+      action=arg_parsers.FlattenAction(),
+      help='Removes the given APIs from the list of Google MCP server APIs.',
+  )
+  apis_group.add_argument(
+      _ArgOrFlag('clear-google-mcp-server-apis', False),
+      action='store_true',
+      help=(
+          'Removes all APIs from the list of Google MCP server APIs. Empty'
+          ' list indicates that the floor setting is applicable to all Google'
+          ' MCP servers.'
+      ),
+  )
+
+
 def AddMultiLanguageDetection(parser):
   """Add flags for specifying multi language detection."""
   group = parser.add_group(

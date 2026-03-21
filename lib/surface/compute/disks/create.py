@@ -867,7 +867,8 @@ class Create(base.Command):
         New disks are unformatted. You must format and mount a disk before it
         can be used. You can find instructions on how to do this at:
 
-        https://cloud.google.com/compute/docs/disks/add-persistent-disk#formatting
+        For Linux: https://cloud.google.com/compute/docs/disks/format-mount-disk-linux
+        For Windows: https://cloud.google.com/compute/docs/disks/format-mount-disk-windows
         """
     if self.show_unformated_message:
       log.status.Print(textwrap.dedent(message))

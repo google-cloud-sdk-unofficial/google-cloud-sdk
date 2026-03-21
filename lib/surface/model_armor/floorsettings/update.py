@@ -78,13 +78,11 @@ def _GetServicesConfig(messages):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
-  """Update the FloorSetting resource.
+  """Update a Model Armor floor setting.
 
-  Updates the floor setting resource with the given name.
+  Updates the Model Armor floor setting with the given name.
   """
 
   NO_CHANGES_MESSAGE = 'There are no changes to the floor setting for update.'
@@ -141,6 +139,27 @@ class Update(base.Command):
           'inspectAndBlock',
           True,
       )
+
+  def _updateGoogleMcpServerApis(self, service_setting, args):
+    """Updates Google MCP server APIs list."""
+    apis = []
+    if service_setting.apis is not None:
+      apis = list(service_setting.apis)
+
+    if args.IsSpecified('google_mcp_server_apis'):
+      apis = args.google_mcp_server_apis
+    elif args.IsSpecified('add_google_mcp_server_apis'):
+      for api in args.add_google_mcp_server_apis:
+        if api not in apis:
+          apis.append(api)
+    elif args.IsSpecified('remove_google_mcp_server_apis'):
+      for api in args.remove_google_mcp_server_apis:
+        if api in apis:
+          apis.remove(api)
+    elif args.IsSpecified('clear_google_mcp_server_apis'):
+      apis = []
+
+    service_setting.apis = apis
 
   def _validateRaiFilterSettings(self, messages, filters, argument_name):
     for item in [json.loads(f) for f in filters]:
@@ -345,6 +364,16 @@ class Update(base.Command):
       update_mask.append('ai_platform_floor_setting.enable_cloud_logging')
     if args.IsSpecified('enable_google_mcp_server_cloud_logging'):
       update_mask.append('google_mcp_server_floor_setting.enable_cloud_logging')
+    if self.ReleaseTrack() in [
+        base.ReleaseTrack.ALPHA,
+        base.ReleaseTrack.BETA,
+    ] and (
+        args.IsSpecified('google_mcp_server_apis')
+        or args.IsSpecified('add_google_mcp_server_apis')
+        or args.IsSpecified('remove_google_mcp_server_apis')
+        or args.IsSpecified('clear_google_mcp_server_apis')
+    ):
+      update_mask.append('google_mcp_server_floor_setting.apis')
     if args.IsSpecified('enable_multi_language_detection'):
       update_mask.append('floor_setting_metadata.multi_language_detection')
 
@@ -370,6 +399,16 @@ class Update(base.Command):
           '--google-mcp-server-enforcement-type',
           '--enable-multi-language-detection',
       ]
+      if self.ReleaseTrack() in [
+          base.ReleaseTrack.ALPHA,
+          base.ReleaseTrack.BETA,
+      ]:
+        possible_args.extend([
+            '--google-mcp-server-apis',
+            '--add-google-mcp-server-apis',
+            '--remove-google-mcp-server-apis',
+            '--clear-google-mcp-server-apis',
+        ])
 
       raise exceptions.MinimumArgumentException(
           possible_args,
@@ -562,7 +601,15 @@ class Update(base.Command):
   def _UpdateServiceSpecificSettings(
       self, messages, args, floor_setting_updated
   ):
-    """Handles Cloud Logging and Enforcement Type for Integrated Services."""
+    """Handles Cloud Logging and Enforcement Type for Integrated Services.
+
+    Also handles API list for GOOGLE_MCP_SERVER.
+
+    Args:
+      messages: The messages module for the API version.
+      args: The parsed arguments for the command.
+      floor_setting_updated: The floor setting resource to update.
+    """
     services_config = _GetServicesConfig(messages)
     for service_config in services_config:
       service_attr = service_config.service_floor_setting_attr
@@ -573,7 +620,22 @@ class Update(base.Command):
       is_enforcement_type_specified = args.IsSpecified(
           service_config.enforcement_type_arg
       )
-      if is_cloud_logging_specified or is_enforcement_type_specified:
+      is_google_mcp_server_apis_specified = False
+      if service_config.name == 'GOOGLE_MCP_SERVER' and self.ReleaseTrack() in [
+          base.ReleaseTrack.ALPHA,
+          base.ReleaseTrack.BETA,
+      ]:
+        is_google_mcp_server_apis_specified = (
+            args.IsSpecified('google_mcp_server_apis')
+            or args.IsSpecified('add_google_mcp_server_apis')
+            or args.IsSpecified('remove_google_mcp_server_apis')
+            or args.IsSpecified('clear_google_mcp_server_apis')
+        )
+      if (
+          is_cloud_logging_specified
+          or is_enforcement_type_specified
+          or is_google_mcp_server_apis_specified
+      ):
         if service_setting is None:
           service_setting = service_config.setting_message()
           setattr(floor_setting_updated, service_attr, service_setting)
@@ -589,6 +651,9 @@ class Update(base.Command):
             getattr(args, service_config.enforcement_type_arg)
         )
         self._handleEnforcementType(arg_enforcement_type, service_setting)
+
+      if is_google_mcp_server_apis_specified:
+        self._updateGoogleMcpServerApis(service_setting, args)
 
   def _UpdateIntegratedServices(
       self, messages, args, floor_setting_updated, update_mask
@@ -781,3 +846,14 @@ class Update(base.Command):
       )
       log.status.Print(message)
     return res
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class UpdateAlphaBeta(Update):
+  """Update a Model Armor floor setting."""
+
+  @staticmethod
+  def Args(parser):
+    Update.Args(parser)
+    model_armor_args.AddGoogleMcpServerApiFlags(parser)

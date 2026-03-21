@@ -23,7 +23,7 @@ from googlecloudsdk.command_lib.orchestration_pipelines.handlers import base
 class BqDatasetHandler(base.GcpResourceHandler):
   """Handler for migrating BigQuery Dataset configurations."""
 
-  api_client_collection_path = "datasets"
+  api_prefix = ""
 
   def get_create_method(self) -> Any:
     return self._api_client_collection.Insert
@@ -66,14 +66,7 @@ class BqDatasetHandler(base.GcpResourceHandler):
 class BqTableHandler(base.GcpResourceHandler):
   """Handler for migrating BigQuery Table configurations."""
 
-  api_client_collection_path = "tables"
-
-  def _get_dataset_id(self) -> str:
-    # table parent format: `/datasets/{datasetId}`
-    parent = self.resource.parent
-    if parent and parent.startswith("/datasets/"):
-      return parent[len("/datasets/"):]
-    raise ValueError(f"Invalid parent for BigQuery table: {parent}")
+  api_prefix = ""
 
   def get_create_method(self) -> Any:
     return self._api_client_collection.Insert
@@ -81,8 +74,8 @@ class BqTableHandler(base.GcpResourceHandler):
   def build_get_request(self) -> messages.Message:
     return self.messages.BigqueryTablesGetRequest(
         projectId=self.environment.project,
-        datasetId=self._get_dataset_id(),
-        tableId=self.resource.name
+        datasetId=self.get_validated_parent_id(),
+        tableId=self.resource.name,
     )
 
   def build_create_request(
@@ -91,12 +84,12 @@ class BqTableHandler(base.GcpResourceHandler):
     if not resource_message.tableReference:
       resource_message.tableReference = self.messages.TableReference()
     resource_message.tableReference.projectId = self.environment.project
-    resource_message.tableReference.datasetId = self._get_dataset_id()
+    resource_message.tableReference.datasetId = self.get_validated_parent_id()
     resource_message.tableReference.tableId = self.resource.name
 
     return self.messages.BigqueryTablesInsertRequest(
         projectId=self.environment.project,
-        datasetId=self._get_dataset_id(),
+        datasetId=self.get_validated_parent_id(),
         table=resource_message,
     )
 
@@ -110,7 +103,56 @@ class BqTableHandler(base.GcpResourceHandler):
 
     return self.messages.BigqueryTablesPatchRequest(
         projectId=self.environment.project,
-        datasetId=self._get_dataset_id(),
+        datasetId=self.get_validated_parent_id(),
         tableId=self.resource.name,
         table=resource_message,
+    )
+
+
+class BqRoutineHandler(base.GcpResourceHandler):
+  """Handler for migrating BigQuery Routine configurations."""
+
+  api_prefix = ""
+
+  def get_create_method(self) -> Any:
+    return self._api_client_collection.Insert
+
+  def get_update_method(self) -> Any:
+    return self._api_client_collection.Update
+
+  def build_get_request(self) -> messages.Message:
+    return self.messages.BigqueryRoutinesGetRequest(
+        projectId=self.environment.project,
+        datasetId=self.get_validated_parent_id(),
+        routineId=self.resource.name,
+    )
+
+  def build_create_request(
+      self, resource_message: messages.Message
+  ) -> messages.Message:
+    if not resource_message.routineReference:
+      resource_message.routineReference = self.messages.RoutineReference()
+    resource_message.routineReference.projectId = self.environment.project
+    resource_message.routineReference.datasetId = self.get_validated_parent_id()
+    resource_message.routineReference.routineId = self.resource.name
+
+    return self.messages.BigqueryRoutinesInsertRequest(
+        projectId=self.environment.project,
+        datasetId=self.get_validated_parent_id(),
+        routine=resource_message,
+    )
+
+  def build_update_request(
+      self,
+      existing_resource: Any,
+      resource_message: messages.Message,
+      changed_fields: List[str],
+  ) -> messages.Message:
+    resource_message.routineReference = existing_resource.routineReference
+
+    return self.messages.BigqueryRoutinesUpdateRequest(
+        projectId=self.environment.project,
+        datasetId=self.get_validated_parent_id(),
+        routineId=self.resource.name,
+        routine=resource_message,
     )

@@ -20,7 +20,7 @@ used because it is only supported in Python 3.10+. These type aliases are
 intended to be used in type hints when the specific track is not known.
 """
 
-from typing import Generator, Union
+from typing import Generator
 
 from googlecloudsdk.generated_clients.apis.gkehub.v1 import gkehub_v1_client as ga_client
 from googlecloudsdk.generated_clients.apis.gkehub.v1 import gkehub_v1_messages as ga_messages
@@ -33,191 +33,196 @@ from googlecloudsdk.generated_clients.apis.gkehub.v2alpha import gkehub_v2alpha_
 from googlecloudsdk.generated_clients.apis.gkehub.v2beta import gkehub_v2beta_client as v2_beta_client
 
 
-BinaryAuthorizationConfig = Union[
-    alpha_messages.BinaryAuthorizationConfig,
-    beta_messages.BinaryAuthorizationConfig,
-    ga_messages.BinaryAuthorizationConfig,
-]
+BinaryAuthorizationConfig = (
+    alpha_messages.BinaryAuthorizationConfig
+    | beta_messages.BinaryAuthorizationConfig
+    | ga_messages.BinaryAuthorizationConfig
+)
 
-BinaryAuthorizationConfigEvaluationModeValueValuesEnum = Union[
-    alpha_messages.BinaryAuthorizationConfig.EvaluationModeValueValuesEnum,
-    beta_messages.BinaryAuthorizationConfig.EvaluationModeValueValuesEnum,
-    ga_messages.BinaryAuthorizationConfig.EvaluationModeValueValuesEnum,
-]
+BinaryAuthorizationConfigEvaluationModeValueValuesEnum = (
+    alpha_messages.BinaryAuthorizationConfig.EvaluationModeValueValuesEnum
+    | beta_messages.BinaryAuthorizationConfig.EvaluationModeValueValuesEnum
+    | ga_messages.BinaryAuthorizationConfig.EvaluationModeValueValuesEnum
+)
 
-CompliancePostureConfig = Union[
-    alpha_messages.CompliancePostureConfig,
-    beta_messages.CompliancePostureConfig,
-    ga_messages.CompliancePostureConfig,
-]
+CompliancePostureConfig = (
+    alpha_messages.CompliancePostureConfig
+    | beta_messages.CompliancePostureConfig
+    | ga_messages.CompliancePostureConfig
+)
 
-DefaultClusterConfig = Union[
-    alpha_messages.DefaultClusterConfig,
-    beta_messages.DefaultClusterConfig,
-    ga_messages.DefaultClusterConfig,
-]
+DefaultClusterConfig = (
+    alpha_messages.DefaultClusterConfig
+    | beta_messages.DefaultClusterConfig
+    | ga_messages.DefaultClusterConfig
+)
 
-Fleet = Union[alpha_messages.Fleet, beta_messages.Fleet, ga_messages.Fleet]
+Fleet = alpha_messages.Fleet | beta_messages.Fleet | ga_messages.Fleet
 
-GkehubProjectsLocationsFleetsCreateRequest = Union[
-    alpha_messages.GkehubProjectsLocationsFleetsCreateRequest,
-    beta_messages.GkehubProjectsLocationsFleetsCreateRequest,
-    ga_messages.GkehubProjectsLocationsFleetsCreateRequest,
-]
+GkehubProjectsLocationsFleetsCreateRequest = (
+    alpha_messages.GkehubProjectsLocationsFleetsCreateRequest
+    | beta_messages.GkehubProjectsLocationsFleetsCreateRequest
+    | ga_messages.GkehubProjectsLocationsFleetsCreateRequest
+)
 
-GkehubProjectsLocationsFleetsDeleteRequest = Union[
-    alpha_messages.GkehubProjectsLocationsFleetsDeleteRequest,
-    beta_messages.GkehubProjectsLocationsFleetsDeleteRequest,
-    ga_messages.GkehubProjectsLocationsFleetsDeleteRequest,
-]
+GkehubProjectsLocationsFleetsDeleteRequest = (
+    alpha_messages.GkehubProjectsLocationsFleetsDeleteRequest
+    | beta_messages.GkehubProjectsLocationsFleetsDeleteRequest
+    | ga_messages.GkehubProjectsLocationsFleetsDeleteRequest
+)
 
-GkehubProjectsLocationsFleetsPatchRequest = Union[
-    alpha_messages.GkehubProjectsLocationsFleetsPatchRequest,
-    beta_messages.GkehubProjectsLocationsFleetsPatchRequest,
-    ga_messages.GkehubProjectsLocationsFleetsPatchRequest,
-]
+GkehubProjectsLocationsFleetsPatchRequest = (
+    alpha_messages.GkehubProjectsLocationsFleetsPatchRequest
+    | beta_messages.GkehubProjectsLocationsFleetsPatchRequest
+    | ga_messages.GkehubProjectsLocationsFleetsPatchRequest
+)
 
-GkehubProjectsLocationsOperationsListRequest = Union[
-    alpha_messages.GkehubProjectsLocationsOperationsListRequest,
-    beta_messages.GkehubProjectsLocationsOperationsListRequest,
-    ga_messages.GkehubProjectsLocationsOperationsListRequest,
-]
+GkehubProjectsLocationsOperationsListRequest = (
+    alpha_messages.GkehubProjectsLocationsOperationsListRequest
+    | beta_messages.GkehubProjectsLocationsOperationsListRequest
+    | ga_messages.GkehubProjectsLocationsOperationsListRequest
+)
 
-GkehubProjectsLocationsOperationsGetRequest = Union[
-    alpha_messages.GkehubProjectsLocationsOperationsGetRequest,
-    beta_messages.GkehubProjectsLocationsOperationsGetRequest,
-    ga_messages.GkehubProjectsLocationsOperationsGetRequest,
-]
+GkehubProjectsLocationsOperationsGetRequest = (
+    alpha_messages.GkehubProjectsLocationsOperationsGetRequest
+    | beta_messages.GkehubProjectsLocationsOperationsGetRequest
+    | ga_messages.GkehubProjectsLocationsOperationsGetRequest
+)
 
-GkehubProjectsLocationsRolloutsCreateRequest = Union[
-    alpha_messages.GkehubProjectsLocationsRolloutsCreateRequest,
+GkehubProjectsLocationsRolloutsCreateRequest = (
+    alpha_messages.GkehubProjectsLocationsRolloutsCreateRequest
     # Rollouts are not yet available in beta or GA.
-    # beta_messages.GkehubProjectsLocationsRolloutsCreateRequest,
-    # ga_messages.GkehubProjectsLocationsRolloutsCreateRequest,
-]
+    # | beta_messages.GkehubProjectsLocationsRolloutsCreateRequest
+    # | ga_messages.GkehubProjectsLocationsRolloutsCreateRequest
+)
 
-GkehubProjectsLocationsRolloutsDeleteRequest = Union[
-    alpha_messages.GkehubProjectsLocationsRolloutsDeleteRequest,
+GkehubProjectsLocationsRolloutsDeleteRequest = (
+    alpha_messages.GkehubProjectsLocationsRolloutsDeleteRequest
     # Rollouts are not yet available in beta or GA.
-    # beta_messages.GkehubProjectsLocationsRolloutsDeleteRequest,
-    # ga_messages.GkehubProjectsLocationsRolloutsDeleteRequest,
-]
+    # | beta_messages.GkehubProjectsLocationsRolloutsDeleteRequest
+    # | ga_messages.GkehubProjectsLocationsRolloutsDeleteRequest
+)
 
-GkehubProjectsLocationsRolloutsGetRequest = Union[
-    alpha_messages.GkehubProjectsLocationsRolloutsGetRequest,
+GkehubProjectsLocationsRolloutsForceCompleteStageRequest = (
+    alpha_messages.GkehubProjectsLocationsRolloutsForceCompleteStageRequest
     # Rollouts are not yet available in beta or GA.
-    # beta_messages.GkehubProjectsLocationsRolloutsGetRequest,
-    # ga_messages.GkehubProjectsLocationsRolloutsGetRequest,
-]
+    # | beta_messages.GkehubProjectsLocationsRolloutsForceCompleteStageRequest
+    # | ga_messages.GkehubProjectsLocationsRolloutsForceCompleteStageRequest
+)
 
-GkehubProjectsLocationsRolloutsListRequest = Union[
-    alpha_messages.GkehubProjectsLocationsRolloutsListRequest,
+GkehubProjectsLocationsRolloutsGetRequest = (
+    alpha_messages.GkehubProjectsLocationsRolloutsGetRequest
     # Rollouts are not yet available in beta or GA.
-    # beta_messages.GkehubProjectsLocationsRolloutsListRequest,
-    # ga_messages.GkehubProjectsLocationsRolloutsListRequest,
-]
+    # | beta_messages.GkehubProjectsLocationsRolloutsGetRequest
+    # | ga_messages.GkehubProjectsLocationsRolloutsGetRequest
+)
 
-GkehubProjectsLocationsRolloutsPauseRequest = Union[
-    alpha_messages.GkehubProjectsLocationsRolloutsPauseRequest,
+GkehubProjectsLocationsRolloutsListRequest = (
+    alpha_messages.GkehubProjectsLocationsRolloutsListRequest
     # Rollouts are not yet available in beta or GA.
-    # beta_messages.GkehubProjectsLocationsRolloutsPauseRequest,
-    # ga_messages.GkehubProjectsLocationsRolloutsPauseRequest,
-]
+    # | beta_messages.GkehubProjectsLocationsRolloutsListRequest
+    # | ga_messages.GkehubProjectsLocationsRolloutsListRequest
+)
 
-GkehubProjectsLocationsRolloutsResumeRequest = Union[
-    alpha_messages.GkehubProjectsLocationsRolloutsResumeRequest,
+GkehubProjectsLocationsRolloutsPauseRequest = (
+    alpha_messages.GkehubProjectsLocationsRolloutsPauseRequest
     # Rollouts are not yet available in beta or GA.
-    # beta_messages.GkehubProjectsLocationsRolloutsResumeRequest,
-    # ga_messages.GkehubProjectsLocationsRolloutsResumeRequest,
-]
+    # | beta_messages.GkehubProjectsLocationsRolloutsPauseRequest
+    # | ga_messages.GkehubProjectsLocationsRolloutsPauseRequest
+)
 
-GkehubProjectsLocationsRolloutSequencesCreateRequest = Union[
-    alpha_messages.GkehubProjectsLocationsRolloutSequencesCreateRequest,
+GkehubProjectsLocationsRolloutsResumeRequest = (
+    alpha_messages.GkehubProjectsLocationsRolloutsResumeRequest
+    # Rollouts are not yet available in beta or GA.
+    # | beta_messages.GkehubProjectsLocationsRolloutsResumeRequest
+    # | ga_messages.GkehubProjectsLocationsRolloutsResumeRequest
+)
+
+GkehubProjectsLocationsRolloutSequencesCreateRequest = (
+    alpha_messages.GkehubProjectsLocationsRolloutSequencesCreateRequest
     # RolloutSequences are not yet available in beta or GA.
-    # beta_messages.GkehubProjectsLocationsRolloutSequencesCreateRequest,
-    # ga_messages.GkehubProjectsLocationsRolloutSequencesCreateRequest,
-]
+    # | beta_messages.GkehubProjectsLocationsRolloutSequencesCreateRequest
+    # | ga_messages.GkehubProjectsLocationsRolloutSequencesCreateRequest
+)
 
-GkehubProjectsLocationsRolloutSequencesGetRequest = Union[
-    alpha_messages.GkehubProjectsLocationsRolloutSequencesGetRequest,
+GkehubProjectsLocationsRolloutSequencesGetRequest = (
+    alpha_messages.GkehubProjectsLocationsRolloutSequencesGetRequest
     # RolloutSequences are not yet available in beta or GA.
-    # beta_messages.GkehubProjectsLocationsRolloutSequencesGetRequest,
-    # ga_messages.GkehubProjectsLocationsRolloutSequencesGetRequest,
-]
+    # | beta_messages.GkehubProjectsLocationsRolloutSequencesGetRequest
+    # | ga_messages.GkehubProjectsLocationsRolloutSequencesGetRequest
+)
 
-GkehubProjectsLocationsRolloutSequencesListRequest = Union[
-    alpha_messages.GkehubProjectsLocationsRolloutSequencesListRequest,
+GkehubProjectsLocationsRolloutSequencesListRequest = (
+    alpha_messages.GkehubProjectsLocationsRolloutSequencesListRequest
     # RolloutSequences are not yet available in beta or GA.
-    # beta_messages.GkehubProjectsLocationsRolloutSequencesListRequest,
-    # ga_messages.GkehubProjectsLocationsRolloutSequencesListRequest,
-]
+    # | beta_messages.GkehubProjectsLocationsRolloutSequencesListRequest
+    # | ga_messages.GkehubProjectsLocationsRolloutSequencesListRequest
+)
 
-GkehubProjectsLocationsRolloutSequencesDeleteRequest = Union[
-    alpha_messages.GkehubProjectsLocationsRolloutSequencesDeleteRequest,
+GkehubProjectsLocationsRolloutSequencesDeleteRequest = (
+    alpha_messages.GkehubProjectsLocationsRolloutSequencesDeleteRequest
     # RolloutSequences are not yet available in beta or GA.
-    # beta_messages.GkehubProjectsLocationsRolloutSequencesDeleteRequest,
-    # ga_messages.GkehubProjectsLocationsRolloutSequencesDeleteRequest,
-]
+    # | beta_messages.GkehubProjectsLocationsRolloutSequencesDeleteRequest
+    # | ga_messages.GkehubProjectsLocationsRolloutSequencesDeleteRequest
+)
 
-GkehubProjectsLocationsRolloutSequencesPatchRequest = Union[
-    alpha_messages.GkehubProjectsLocationsRolloutSequencesPatchRequest,
+GkehubProjectsLocationsRolloutSequencesPatchRequest = (
+    alpha_messages.GkehubProjectsLocationsRolloutSequencesPatchRequest
     # RolloutSequences are not yet available in beta or GA.
-    # beta_messages.GkehubProjectsLocationsRolloutSequencesPatchRequest,
-    # ga_messages.GkehubProjectsLocationsRolloutSequencesPatchRequest,
-]
+    # | beta_messages.GkehubProjectsLocationsRolloutSequencesPatchRequest
+    # | ga_messages.GkehubProjectsLocationsRolloutSequencesPatchRequest
+)
 
-Operation = Union[
-    alpha_messages.Operation, beta_messages.Operation, ga_messages.Operation
-]
+Operation = alpha_messages.Operation | beta_messages.Operation | ga_messages.Operation
 
-PolicyBinding = Union[
-    alpha_messages.PolicyBinding,
-    beta_messages.PolicyBinding,
-    ga_messages.PolicyBinding,
-]
+PolicyBinding = (
+    alpha_messages.PolicyBinding
+    | beta_messages.PolicyBinding
+    | ga_messages.PolicyBinding
+)
 
-Rollout = Union[
-    alpha_messages.Rollout,
+Rollout = (
+    alpha_messages.Rollout
     # Rollouts are not yet available in beta or GA.
-    # beta_messages.Rollout,
-    # ga_messages.Rollout,
-]
+    # | beta_messages.Rollout
+    # | ga_messages.Rollout
+)
 
-RolloutSequence = Union[
-    alpha_messages.RolloutSequence,
+RolloutSequence = (
+    alpha_messages.RolloutSequence
     # RolloutSequences are not yet available in beta or GA.
-    # beta_messages.RolloutSequence,
-    # ga_messages.RolloutSequence,
-]
+    # | beta_messages.RolloutSequence
+    # | ga_messages.RolloutSequence
+)
 
 RolloutGenerator = Generator[Rollout, None, None]
 
 RolloutSequenceGenerator = Generator[RolloutSequence, None, None]
 
-SecurityPostureConfig = Union[
-    alpha_messages.SecurityPostureConfig,
-    beta_messages.SecurityPostureConfig,
-    ga_messages.SecurityPostureConfig,
-]
+SecurityPostureConfig = (
+    alpha_messages.SecurityPostureConfig
+    | beta_messages.SecurityPostureConfig
+    | ga_messages.SecurityPostureConfig
+)
 
-SecurityPostureConfigModeValueValuesEnum = Union[
-    alpha_messages.SecurityPostureConfig.ModeValueValuesEnum,
-    beta_messages.SecurityPostureConfig.ModeValueValuesEnum,
-    ga_messages.SecurityPostureConfig.ModeValueValuesEnum,
-]
+SecurityPostureConfigModeValueValuesEnum = (
+    alpha_messages.SecurityPostureConfig.ModeValueValuesEnum
+    | beta_messages.SecurityPostureConfig.ModeValueValuesEnum
+    | ga_messages.SecurityPostureConfig.ModeValueValuesEnum
+)
 
-SecurityPostureConfigVulnerabilityModeValueValuesEnum = Union[
-    alpha_messages.SecurityPostureConfig.VulnerabilityModeValueValuesEnum,
-    beta_messages.SecurityPostureConfig.VulnerabilityModeValueValuesEnum,
-    ga_messages.SecurityPostureConfig.VulnerabilityModeValueValuesEnum,
-]
+SecurityPostureConfigVulnerabilityModeValueValuesEnum = (
+    alpha_messages.SecurityPostureConfig.VulnerabilityModeValueValuesEnum
+    | beta_messages.SecurityPostureConfig.VulnerabilityModeValueValuesEnum
+    | ga_messages.SecurityPostureConfig.VulnerabilityModeValueValuesEnum
+)
 
-TrackClient = Union[
-    alpha_client.GkehubV1alpha, beta_client.GkehubV1beta, ga_client.GkehubV1
-]
+TrackClient = (
+    alpha_client.GkehubV1alpha | beta_client.GkehubV1beta | ga_client.GkehubV1
+)
 
-V2TrackClient = Union[
-    v2_alpha_client.GkehubV2alpha,
-    v2_beta_client.GkehubV2beta,
-    v2_ga_client.GkehubV2,
-]
+V2TrackClient = (
+    v2_alpha_client.GkehubV2alpha
+    | v2_beta_client.GkehubV2beta
+    | v2_ga_client.GkehubV2
+)

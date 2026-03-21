@@ -32,6 +32,7 @@ from googlecloudsdk.command_lib.builds import submit_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
+from googlecloudsdk.generated_clients.apis.dataflow.v1b3 import dataflow_v1b3_messages as messages
 import six
 
 DATAFLOW_API_NAME = 'dataflow'
@@ -226,8 +227,39 @@ class Jobs:
       raise exceptions.HttpException(error)
 
   @staticmethod
-  def Pause(job_id, project_id=None, region_id=None):
+  def Pause(
+      job_id, project_id=None, region_id=None
+  ) -> messages.Job:
     """Pauses a job by calling the Jobs.Update method.
+
+    Args:
+      job_id: Identifies a single job.
+      project_id: The project which owns the job.
+      region_id: The regional endpoint where the job lives.
+
+    Returns:
+      (messages.Job) The updated Job.
+    """
+    project_id = project_id or GetProject()
+    region_id = region_id or DATAFLOW_API_DEFAULT_REGION
+    job = GetMessagesModule().Job(
+        requestedState=(
+            GetMessagesModule().Job.RequestedStateValueValuesEnum.JOB_STATE_PAUSING
+        )
+    )
+    request = GetMessagesModule().DataflowProjectsLocationsJobsUpdateRequest(
+        jobId=job_id, location=region_id, projectId=project_id, job=job
+    )
+    try:
+      return Jobs.GetService().Update(request)
+    except apitools_exceptions.HttpError as error:
+      raise exceptions.HttpException(error) from error
+
+  @staticmethod
+  def Resume(
+      job_id, project_id=None, region_id=None
+  ) -> messages.Job:
+    """Resumes a job by calling the Jobs.Update method.
 
     Args:
       job_id: Identifies a single job.
@@ -241,7 +273,7 @@ class Jobs:
     region_id = region_id or DATAFLOW_API_DEFAULT_REGION
     job = GetMessagesModule().Job(
         requestedState=(
-            GetMessagesModule().Job.RequestedStateValueValuesEnum.JOB_STATE_PAUSING
+            GetMessagesModule().Job.RequestedStateValueValuesEnum.JOB_STATE_RUNNING
         )
     )
     request = GetMessagesModule().DataflowProjectsLocationsJobsUpdateRequest(
@@ -1260,11 +1292,11 @@ class Templates:
       log.status.Print(
           'Generated Dockerfile. Contents: {}'.format(dockerfile_contents))
 
-      messages = cloudbuild_util.GetMessagesModule()
+      cloudbuild_messages = cloudbuild_util.GetMessagesModule()
       build_config = submit_util.CreateBuildConfig(
           tag=image_gcr_path,
           no_cache=False,
-          messages=messages,
+          messages=cloudbuild_messages,
           substitutions=None,
           arg_config='cloudbuild.yaml',
           is_specified_source=True,
@@ -1289,7 +1321,7 @@ class Templates:
       )
       log.status.Print('Pushing flex template container image to GCR...')
 
-      submit_util.Build(messages, False, build_config)
+      submit_util.Build(cloudbuild_messages, False, build_config)
       return True
 
   @staticmethod

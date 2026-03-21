@@ -45,13 +45,14 @@ The following command creates a new object `target.txt` by concatenating
 `a.txt` and `b.txt`:
 
   $ {command} gs://bucket/a.txt gs://bucket/b.txt gs://bucket/target.txt
-"""
-_ALPHA_EXAMPLES = """
+
 Contexts are merged from source objects on the composed object by default.
 However, the following command overwrites custom contexts on composed object:
 
   $ {command} gs://bucket/a.txt gs://bucket/b.txt gs://bucket/target.txt \
       --custom-contexts=key1=value1,key2=value2
+"""
+_ALPHA_EXAMPLES = """
 """
 
 
@@ -80,9 +81,9 @@ class Compose(base.Command):
     flags.add_per_object_retention_flags(parser)
     flags.add_precondition_flags(parser)
 
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      context_group = flags.get_object_context_group(parser)
-      flags.add_object_context_setter_flags(context_group)
+    context_group = flags.get_object_context_group(parser)
+    flags.add_object_context_setter_flags(context_group)
+    flags.add_clear_object_context_flag(context_group)
 
   def Run(self, args):
     encryption_util.initialize_key_store(args)

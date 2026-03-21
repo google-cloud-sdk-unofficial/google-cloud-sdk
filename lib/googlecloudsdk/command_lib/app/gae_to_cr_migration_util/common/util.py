@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*- #
 # Copyright 2025 Google LLC. All Rights Reserved.
 #
@@ -50,6 +49,13 @@ RUNTIMES_WITH_PROCFILE_ENTRYPOINT: Sequence[str] = (
     + RUBY_RUNTIMES_WITH_PROCFILE_ENTRYPOINT
 )
 _FLATTEN_EXCLUDE_KEYS: Sequence[str] = ['env_variables', 'envVariables']
+_ALLOW_FLEX_ENV_VALUES = ('flex', 'flexible')
+
+
+def is_flex_env(input_data: Mapping[str, any]) -> bool:
+  """Detect whether input app.yaml is for flex environment."""
+
+  return input_data.get('env') in _ALLOW_FLEX_ENV_VALUES
 
 
 def generate_output_flags(flags: Sequence[str], value: str) -> Sequence[str]:

@@ -16,7 +16,6 @@
 """Utility functions for the KMS Inventory CLI."""
 
 
-
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.util import apis
 
@@ -47,13 +46,33 @@ def ListKeys(project, args):
       field='cryptoKeys')
 
 
-def GetProtectedResourcesSummary(name):
+def GetProtectedResourcesSummary(name, fallback_scope=None):
+  """Gets a summary of protected resources for a given CryptoKey.
+
+  Args:
+    name: The resource name of the CryptoKey.
+    fallback_scope: Optional. The scope to fall back to if the summary cannot
+      be generated for the specified CryptoKey.
+
+  Returns:
+    A ProtectedResourcesSummary message.
+  """
   client = GetClientInstance()
-  request = GetMessagesModule(
-  ).KmsinventoryProjectsLocationsKeyRingsCryptoKeysGetProtectedResourcesSummaryRequest(
-      name=name)
+  messages = GetMessagesModule()
+  fallback_scope_enum = None
+  if fallback_scope is not None:
+    fallback_scope_enum = (
+        messages.KmsinventoryProjectsLocationsKeyRingsCryptoKeysGetProtectedResourcesSummaryRequest.FallbackScopeValueValuesEnum(
+            fallback_scope
+        )
+    )
+  request = messages.KmsinventoryProjectsLocationsKeyRingsCryptoKeysGetProtectedResourcesSummaryRequest(
+      name=name,
+      fallbackScope=fallback_scope_enum
+  )
   return client.projects_locations_keyRings_cryptoKeys.GetProtectedResourcesSummary(
-      request)
+      request
+  )
 
 
 def SearchProtectedResources(scope, key_name, resource_types, args):
@@ -64,6 +83,50 @@ def SearchProtectedResources(scope, key_name, resource_types, args):
 
   return list_pager.YieldFromList(
       client.organizations_protectedResources,
+      request,
+      method='Search',
+      limit=args.limit,
+      batch_size_attribute='pageSize',
+      batch_size=args.page_size,
+      field='protectedResources',
+  )
+
+
+# TODO: b/465667614 - Remove old function and rephrase function name and
+# comments while doing GA.
+# This new version allows the user to use project ID or project number as the
+# scope and is only available in alpha.
+# This function would be gradually propagated to beta and will be used in place
+# of the old version in ga.
+def SearchProtectedResourcesNew(scope, key_name, resource_types, args):
+  """Searches for protected resources within a given scope.
+
+  Args:
+    scope: The scope of the search, can be 'organizations/ORG_ID' or
+      'projects/PROJECT_ID'.
+    key_name: The name of the crypto key.
+    resource_types: A list of resource types to filter the search.
+    args: The command line arguments, including limit and page_size.
+
+  Returns:
+    A generator yielding protected resources.
+  """
+  client = GetClientInstance()
+  if scope.startswith('projects/'):
+    service = client.projects_protectedResources
+    request = (
+        GetMessagesModule().KmsinventoryProjectsProtectedResourcesSearchRequest(
+            scope=scope, cryptoKey=key_name, resourceTypes=resource_types
+        )
+    )
+  else:
+    service = client.organizations_protectedResources
+    request = GetMessagesModule().KmsinventoryOrganizationsProtectedResourcesSearchRequest(
+        scope=scope, cryptoKey=key_name, resourceTypes=resource_types
+    )
+
+  return list_pager.YieldFromList(
+      service,
       request,
       method='Search',
       limit=args.limit,

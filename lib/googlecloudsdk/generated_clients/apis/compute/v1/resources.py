@@ -455,6 +455,14 @@ class Collections(enum.Enum):
       ['project', 'region', 'commitment'],
       True
   )
+  REGIONCOMPOSITEHEALTHCHECKS = (
+      'regionCompositeHealthChecks',
+      'projects/{project}/regions/{region}/compositeHealthChecks/'
+      '{compositeHealthCheck}',
+      {},
+      ['project', 'region', 'compositeHealthCheck'],
+      True
+  )
   REGIONDISKTYPES = (
       'regionDiskTypes',
       'projects/{project}/regions/{region}/diskTypes/{diskType}',
@@ -490,6 +498,21 @@ class Collections(enum.Enum):
       'projects/{project}/regions/{region}/healthChecks/{healthCheck}',
       {},
       ['project', 'region', 'healthCheck'],
+      True
+  )
+  REGIONHEALTHSOURCES = (
+      'regionHealthSources',
+      'projects/{project}/regions/{region}/healthSources/{healthSource}',
+      {},
+      ['project', 'region', 'healthSource'],
+      True
+  )
+  REGIONINSTANCEGROUPMANAGERRESIZEREQUESTS = (
+      'regionInstanceGroupManagerResizeRequests',
+      'projects/{project}/regions/{region}/instanceGroupManagers/'
+      '{instanceGroupManager}/resizeRequests/{resizeRequest}',
+      {},
+      ['project', 'region', 'instanceGroupManager', 'resizeRequest'],
       True
   )
   REGIONINSTANCEGROUPMANAGERS = (
@@ -622,7 +645,11 @@ class Collections(enum.Enum):
       'reservationBlocks',
       'projects/{project}/zones/{zone}/reservations/{reservation}/'
       'reservationBlocks/{reservationBlock}',
-      {},
+      {
+          '':
+              'projects/{project}/zones/{zone}/reservations/{reservationsId}/'
+              'reservationBlocks/{reservationBlocksId}',
+      },
       ['project', 'zone', 'reservation', 'reservationBlock'],
       True
   )
@@ -641,7 +668,7 @@ class Collections(enum.Enum):
   )
   RESERVATIONSUBBLOCKS = (
       'reservationSubBlocks',
-      'projects/{project}/zones/{zone}/{parentName}/reservationSubBlocks/'
+      'projects/{project}/zones/{zone}/{+parentName}/reservationSubBlocks/'
       '{reservationSubBlock}',
       {
           '':
@@ -843,6 +870,14 @@ class Collections(enum.Enum):
       'projects/{project}/zones/{zone}/operations/{operation}',
       {},
       ['project', 'zone', 'operation'],
+      True
+  )
+  ZONEVMEXTENSIONPOLICIES = (
+      'zoneVmExtensionPolicies',
+      'projects/{project}/zones/{zone}/vmExtensionPolicies/'
+      '{vmExtensionPolicy}',
+      {},
+      ['project', 'zone', 'vmExtensionPolicy'],
       True
   )
   ZONES = (

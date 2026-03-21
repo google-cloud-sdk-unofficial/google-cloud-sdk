@@ -123,6 +123,32 @@ class Date(_messages.Message):
   year = _messages.IntegerField(3, variant=_messages.Variant.INT32)
 
 
+class DynamicTierOptions(_messages.Message):
+  r"""Dynamic tier options for a Managed Lustre instance.
+
+  Enums:
+    ModeValueValuesEnum: Required. The dynamic tier mode of the instance.
+
+  Fields:
+    mode: Required. The dynamic tier mode of the instance.
+  """
+
+  class ModeValueValuesEnum(_messages.Enum):
+    r"""Required. The dynamic tier mode of the instance.
+
+    Values:
+      MODE_UNSPECIFIED: Unspecified dynamic tier mode.
+      DISABLED: The dynamic tier is explicitly disabled.
+      DEFAULT_CACHE: The dynamic tier is enabled with a default cache
+        configuration.
+    """
+    MODE_UNSPECIFIED = 0
+    DISABLED = 1
+    DEFAULT_CACHE = 2
+
+  mode = _messages.EnumField('ModeValueValuesEnum', 1)
+
+
 class ExportDataRequest(_messages.Message):
   r"""Export data from Managed Lustre to a Cloud Storage bucket.
 
@@ -204,6 +230,9 @@ class Instance(_messages.Message):
       sizes for each performance tier.
     createTime: Output only. Timestamp when the instance was created.
     description: Optional. A user-readable description of the instance.
+    dynamicTierOptions: Optional. Dynamic tier options for the instance. If
+      the instance is using the Dynamic tier, `per_unit_storage_throughput`
+      must not be set or must be set to zero.
     filesystem: Required. Immutable. The filesystem name for this instance.
       This name is used by client-side tools, including when mounting the
       instance. Must be eight characters or less and can only contain letters
@@ -297,21 +326,22 @@ class Instance(_messages.Message):
   capacityGib = _messages.IntegerField(2)
   createTime = _messages.StringField(3)
   description = _messages.StringField(4)
-  filesystem = _messages.StringField(5)
-  gkeSupportEnabled = _messages.BooleanField(6)
-  kmsKey = _messages.StringField(7)
-  labels = _messages.MessageField('LabelsValue', 8)
-  maintenancePolicy = _messages.MessageField('MaintenancePolicy', 9)
-  mountPoint = _messages.StringField(10)
-  name = _messages.StringField(11)
-  network = _messages.StringField(12)
-  perUnitStorageThroughput = _messages.IntegerField(13)
-  placementPolicy = _messages.StringField(14)
-  state = _messages.EnumField('StateValueValuesEnum', 15)
-  stateReason = _messages.StringField(16)
-  uid = _messages.StringField(17)
-  upcomingMaintenanceSchedule = _messages.MessageField('MaintenanceSchedule', 18)
-  updateTime = _messages.StringField(19)
+  dynamicTierOptions = _messages.MessageField('DynamicTierOptions', 5)
+  filesystem = _messages.StringField(6)
+  gkeSupportEnabled = _messages.BooleanField(7)
+  kmsKey = _messages.StringField(8)
+  labels = _messages.MessageField('LabelsValue', 9)
+  maintenancePolicy = _messages.MessageField('MaintenancePolicy', 10)
+  mountPoint = _messages.StringField(11)
+  name = _messages.StringField(12)
+  network = _messages.StringField(13)
+  perUnitStorageThroughput = _messages.IntegerField(14)
+  placementPolicy = _messages.StringField(15)
+  state = _messages.EnumField('StateValueValuesEnum', 16)
+  stateReason = _messages.StringField(17)
+  uid = _messages.StringField(18)
+  upcomingMaintenanceSchedule = _messages.MessageField('MaintenanceSchedule', 19)
+  updateTime = _messages.StringField(20)
 
 
 class ListInstancesResponse(_messages.Message):
@@ -610,6 +640,20 @@ class LustreProjectsLocationsInstancesPatchRequest(_messages.Message):
   updateMask = _messages.StringField(4)
 
 
+class LustreProjectsLocationsInstancesRescheduleMaintenanceRequest(_messages.Message):
+  r"""A LustreProjectsLocationsInstancesRescheduleMaintenanceRequest object.
+
+  Fields:
+    name: Required. Format:
+      projects/{project}/locations/{location}/instances/{instance}
+    rescheduleMaintenanceRequest: A RescheduleMaintenanceRequest resource to
+      be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  rescheduleMaintenanceRequest = _messages.MessageField('RescheduleMaintenanceRequest', 2)
+
+
 class LustreProjectsLocationsListRequest(_messages.Message):
   r"""A LustreProjectsLocationsListRequest object.
 
@@ -901,6 +945,52 @@ class ReconciliationOperationMetadata(_messages.Message):
 
   deleteResource = _messages.BooleanField(1)
   exclusiveAction = _messages.EnumField('ExclusiveActionValueValuesEnum', 2)
+
+
+class Reschedule(_messages.Message):
+  r"""The desired reschedule settings.
+
+  Enums:
+    RescheduleTypeValueValuesEnum: Required. The type of rescheduling.
+
+  Fields:
+    rescheduleType: Required. The type of rescheduling.
+    scheduleTime: Optional. Required if reschedule_type is BY_TIME. Timestamp
+      when the maintenance shall be rescheduled to. This time must be within
+      28 days of the original scheduled maintenance start time.
+  """
+
+  class RescheduleTypeValueValuesEnum(_messages.Enum):
+    r"""Required. The type of rescheduling.
+
+    Values:
+      RESCHEDULE_TYPE_UNSPECIFIED: Unspecified schedule type.
+      IMMEDIATE: Apply update immediately
+      NEXT_AVAILABLE_WINDOW: Reschedule to the next available window.
+      BY_TIME: Reschedule to a specific time.
+    """
+    RESCHEDULE_TYPE_UNSPECIFIED = 0
+    IMMEDIATE = 1
+    NEXT_AVAILABLE_WINDOW = 2
+    BY_TIME = 3
+
+  rescheduleType = _messages.EnumField('RescheduleTypeValueValuesEnum', 1)
+  scheduleTime = _messages.StringField(2)
+
+
+class RescheduleMaintenanceRequest(_messages.Message):
+  r"""Message for requesting to reschedule a maintenance event for a specific
+  instance.
+
+  Fields:
+    requestId: Optional. A unique identifier for this request. A random UUID
+      is recommended. This request is only idempotent if a `request_id` is
+      provided.
+    reschedule: Required. The desired reschedule settings.
+  """
+
+  requestId = _messages.StringField(1)
+  reschedule = _messages.MessageField('Reschedule', 2)
 
 
 class StandardQueryParameters(_messages.Message):

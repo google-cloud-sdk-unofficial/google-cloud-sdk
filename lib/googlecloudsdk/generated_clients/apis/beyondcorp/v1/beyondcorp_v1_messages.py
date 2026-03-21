@@ -3060,6 +3060,10 @@ class GoogleCloudBeyondcorpSecuritygatewaysV1ListSecurityGatewaysResponse(_messa
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class GoogleCloudBeyondcorpSecuritygatewaysV1LoggingConfig(_messages.Message):
+  r"""Configuration for Cloud Logging."""
+
+
 class GoogleCloudBeyondcorpSecuritygatewaysV1ProxyProtocolConfig(_messages.Message):
   r"""The configuration for the proxy.
 
@@ -3153,6 +3157,8 @@ class GoogleCloudBeyondcorpSecuritygatewaysV1SecurityGateway(_messages.Message):
       connection to the endpoints.
     hubs: Optional. Map of Hubs that represents regional data path deployment
       with GCP region as a key.
+    logging: Optional. Configuration for Cloud Logging. If this field is
+      present, the logging will be enabled.
     name: Identifier. Name of the resource.
     proxyProtocolConfig: Optional. Shared proxy configuration for all apps.
     serviceDiscovery: Optional. Settings related to the Service Discovery.
@@ -3211,11 +3217,12 @@ class GoogleCloudBeyondcorpSecuritygatewaysV1SecurityGateway(_messages.Message):
   displayName = _messages.StringField(3)
   externalIps = _messages.StringField(4, repeated=True)
   hubs = _messages.MessageField('HubsValue', 5)
-  name = _messages.StringField(6)
-  proxyProtocolConfig = _messages.MessageField('GoogleCloudBeyondcorpSecuritygatewaysV1ProxyProtocolConfig', 7)
-  serviceDiscovery = _messages.MessageField('GoogleCloudBeyondcorpSecuritygatewaysV1ServiceDiscovery', 8)
-  state = _messages.EnumField('StateValueValuesEnum', 9)
-  updateTime = _messages.StringField(10)
+  logging = _messages.MessageField('GoogleCloudBeyondcorpSecuritygatewaysV1LoggingConfig', 6)
+  name = _messages.StringField(7)
+  proxyProtocolConfig = _messages.MessageField('GoogleCloudBeyondcorpSecuritygatewaysV1ProxyProtocolConfig', 8)
+  serviceDiscovery = _messages.MessageField('GoogleCloudBeyondcorpSecuritygatewaysV1ServiceDiscovery', 9)
+  state = _messages.EnumField('StateValueValuesEnum', 10)
+  updateTime = _messages.StringField(11)
 
 
 class GoogleCloudBeyondcorpSecuritygatewaysV1SecurityGatewayOperationMetadata(_messages.Message):

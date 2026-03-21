@@ -221,6 +221,16 @@
                   repeated: false
                   help_text: |-
                     Contains the URI path fragment where HTTP request is sent.
+    - group:
+        api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.logging
+        arg_name: logging
+        settable: true
+        clearable: true
+        required: false
+        hidden: true
+        help_text: |-
+          Configuration for Cloud Logging.
+        params: []
     - arg_name: request-id
       api_field: requestId
       required: false

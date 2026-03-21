@@ -1,0 +1,44 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Updates a BigLake Hive database.
+    description: |
+      Updates a BigLake Hive database.
+    examples: |-
+      To update a BigLake Hive database named `my-database` in catalog `my-catalog` with a new location, description, and properties, run:
+
+        $ {command} my-database --catalog=my-catalog --location-uri=gs://my-bucket/new-location --description="Updated description" --properties=key1=value1,key2=value2
+
+  request:
+    collection: biglake.hive.v1beta.projects.catalogs.databases
+    api_version: v1beta
+    method: patch
+
+  arguments:
+    params:
+    - arg_name: database
+      resource_spec: !REF googlecloudsdk.command_lib.biglake.resources:hive_database
+      required: true
+      is_positional: true
+      is_primary_resource: true
+      help_text: |
+        The Hive Database to update.
+    - arg_name: location-uri
+      api_field: hiveDatabase.locationUri
+      help_text: |
+        The Cloud Storage location path where the database exists.
+        Format: gs://bucket/path/to/database
+    - arg_name: description
+      api_field: hiveDatabase.description
+      help_text: |
+        The description of the Hive database.
+    - arg_name: properties
+      api_field: hiveDatabase.parameters.additionalProperties
+      metavar: KEY=VALUE
+      help_text: |
+        Additional properties associated with the database.
+      type:
+        arg_dict:
+          flatten: true
+          spec:
+          - api_field: key
+          - api_field: value

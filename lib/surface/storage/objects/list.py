@@ -54,11 +54,12 @@ List all objects within current directory of bucket with JSON formatting, only
 returning the value of the ``name'' metadata field:
 
   $ {command} gs://my-bucket --format="json(name)"
-"""
-_ALPHA_EXAMPLES = """
+
 List only contexts attached to objects as key value pairs.
 
   $ {command} gs://my-bucket --format=contextsonly
+"""
+_ALPHA_EXAMPLES = """
 """
 
 
@@ -111,9 +112,8 @@ class List(base.ListCommand):
     flags.add_soft_delete_flags(parser)
     flags.add_uri_support_to_list_commands(parser)
 
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      flags.add_metadata_filter_flag(parser)
-      contexts_only_formatter.ContextsOnlyPrinter.Register()
+    flags.add_metadata_filter_flag(parser)
+    contexts_only_formatter.ContextsOnlyPrinter.Register()
 
   def Display(self, args, resources):
     if args.stat:

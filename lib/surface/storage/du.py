@@ -146,9 +146,7 @@ class Du(base.Command):
     )
 
     flags.add_additional_headers_flag(parser)
-
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      flags.add_metadata_filter_flag(parser)
+    flags.add_metadata_filter_flag(parser)
 
   def Run(self, args):
 

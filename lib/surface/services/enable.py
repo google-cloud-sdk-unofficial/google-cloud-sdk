@@ -110,7 +110,6 @@ _DETAILED_HELP = {
 }
 
 
-# TODO(b/321801975) make command public after preview.
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class EnableAlpha(base.SilentCommand):
@@ -156,7 +155,7 @@ class EnableAlpha(base.SilentCommand):
     )
     inputted_group = True if args.IsSpecified('group') else False
 
-    update_consumer_policy_op, services_enabled = serviceusage.AddEnableRule(
+    update_consumer_policy_op = serviceusage.AddEnableRule(
         args.service,
         project,
         folder=folder,
@@ -177,10 +176,6 @@ class EnableAlpha(base.SilentCommand):
           'Use the following command to wait for its '
           f'completion:\n {cmd}'
       )
-      if not folder and not organization:
-        serviceusage.GenerateServiceIdentityForEnabledService(
-            project, services_enabled
-        )
       return
     update_consumer_policy_op = services_util.WaitOperation(
         update_consumer_policy_op.name, serviceusage.GetOperationV2Beta
@@ -189,14 +184,6 @@ class EnableAlpha(base.SilentCommand):
       services_util.PrintOperation(update_consumer_policy_op)
     else:
       services_util.PrintOperationWithResponse(update_consumer_policy_op)
-      if (
-          not update_consumer_policy_op.error
-          and not folder
-          and not organization
-      ):
-        serviceusage.GenerateServiceIdentityForEnabledService(
-            project, services_enabled
-        )
 
 
 EnableAlpha.detailed_help = _DETAILED_HELP_ALPHA

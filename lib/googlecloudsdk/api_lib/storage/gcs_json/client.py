@@ -833,15 +833,28 @@ class JsonClient(cloud_api.CloudApi):
         method_type=metadata_util.MethodType.OBJECT_COMPOSE,
     )
 
+    additional_kwargs = {}
+    if (
+        request_config.resource_args
+        and
+        request_config.resource_args.custom_contexts_to_set
+        == user_request_args_factory.CLEAR
+    ):
+      additional_kwargs['dropContextGroups'] = ['custom']
+
     compose_request_payload = self.messages.ComposeRequest(
-        sourceObjects=source_messages, destination=final_destination_metadata)
+        sourceObjects=source_messages,
+        destination=final_destination_metadata,
+    )
 
     compose_request = self.messages.StorageObjectsComposeRequest(
         composeRequest=compose_request_payload,
         destinationBucket=destination_resource.storage_url.bucket_name,
         destinationObject=destination_resource.storage_url.resource_name,
         ifGenerationMatch=request_config.precondition_generation_match,
-        ifMetagenerationMatch=request_config.precondition_metageneration_match)
+        ifMetagenerationMatch=request_config.precondition_metageneration_match,
+        **additional_kwargs,
+    )
 
     if request_config.resource_args:
       encryption_key = request_config.resource_args.encryption_key
@@ -926,6 +939,17 @@ class JsonClient(cloud_api.CloudApi):
 
     max_bytes_per_call = scaled_integer.ParseInteger(
         properties.VALUES.storage.copy_chunk_size.Get())
+
+    if (
+        request_config.resource_args
+        and
+        request_config.resource_args.custom_contexts_to_set
+        == user_request_args_factory.CLEAR
+    ):
+      additional_kwargs = {'dropContextGroups': ['custom']}
+    else:
+      additional_kwargs = {}
+
     with self._encryption_headers_for_rewrite_call_context(request_config):
       while True:
         request = self.messages.StorageObjectsRewriteRequest(
@@ -941,7 +965,9 @@ class JsonClient(cloud_api.CloudApi):
             .precondition_metageneration_match,
             destinationPredefinedAcl=predefined_acl,
             rewriteToken=resume_rewrite_token,
-            maxBytesRewrittenPerCall=max_bytes_per_call)
+            maxBytesRewrittenPerCall=max_bytes_per_call,
+            **additional_kwargs
+        )
 
         encryption_key = getattr(
             request_config.resource_args, 'encryption_key', None)

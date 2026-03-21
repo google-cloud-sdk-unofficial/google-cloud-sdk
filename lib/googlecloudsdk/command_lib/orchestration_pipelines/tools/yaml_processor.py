@@ -14,6 +14,7 @@
 # limitations under the License.
 """Common utilities for Orchestration Pipelines commands."""
 
+import os
 import re
 from typing import Any, Dict, Optional
 
@@ -105,10 +106,10 @@ def resolve_dynamic_variables(
   )
   try:
     resolved_yaml_content = yaml.load(resolved_yaml_content)
-  except yaml.YAMLParseError as e:
+  except yaml.Error as e:
     raise BadFileError(
         f"Failed to parse pipeline YAML after variable substitution:: {e}"
-    )
+    ) from e
 
   if (
       isinstance(resolved_yaml_content, dict)
@@ -136,17 +137,21 @@ def _resolve_pipeline_yaml(
     resource_profile = config.get("resourceProfile")
     profile_definition = {}
     if isinstance(resource_profile, dict) and "path" in resource_profile:
-      profile_path = resource_profile["path"]
       try:
-        raw_profile_content = files.ReadFileContents(profile_path)
-        resolved_profile_str = _resolve_string_templates(
-            raw_profile_content, combined_variables
+        selected_names = []
+        if resource_profile.get("name"):
+          selected_names = [resource_profile.get("name")]
+
+        loaded = _load_resource_profile(
+            resource_profile["path"],
+            names=selected_names,
+            context=combined_variables,
         )
-        profile_definition = yaml.load(resolved_profile_str)
-      except (IOError, OSError, yaml.Error) as e:
-        raise BadFileError(
-            f"Error reading or parsing resource profile '{profile_path}': {e}"
-        ) from e
+        if loaded:
+          profile_definition = loaded[0]
+      except BadFileError as e:
+        # pylint: disable=raise-missing-from
+        raise BadFileError(f"Error processing resource profile: {e}")
     engine_raw = action.get("engine")
     if isinstance(engine_raw, dict):
       engine_type = engine_raw.get("engineType")
@@ -155,7 +160,7 @@ def _resolve_pipeline_yaml(
     if engine_type == "dataproc-serverless":
       config["resourceProfile"] = profile_definition.get("definition", {})
     elif engine_type == "dataproc-gce":
-      del config["resourceProfile"]
+      config.pop("resourceProfile", None)
       config.update(profile_definition.get("definition", {}))
 
     if engine_type == "dbt":
@@ -173,6 +178,110 @@ def _resolve_pipeline_yaml(
         action["_local_dag_upload_path"] = clean_path
 
   return yaml_content
+
+
+def _load_resource_profile(
+    path: str,
+    names: Optional[list[str]] = None,
+    context: Optional[Dict[str, Any]] = None,
+) -> list[Dict[str, Any]]:
+  """Loads resource definitions from a profile file.
+
+  Args:
+    path: Path to the profile file.
+    names: Optional list of resource names to select from the profile.
+    context: Optional dictionary of variables for substitution.
+
+  Returns:
+    A list of resource definitions (dicts).
+
+  Raises:
+    BadFileError: If the file cannot be read or parsed.
+  """
+  try:
+    raw_content = files.ReadFileContents(path)
+    if context:
+      raw_content = _resolve_string_templates(raw_content, context)
+    profile_data = yaml.load(raw_content)
+  except (IOError, OSError, yaml.Error) as e:
+    raise BadFileError(
+        f"Error reading or parsing resource profile '{path}': {e}"
+    ) from e
+
+  if isinstance(profile_data, list):
+    # Catalog mode
+    if names:
+      target_names = set(names)
+      filtered_content = [
+          r for r in profile_data if r.get("name") in target_names
+      ]
+      found_names = {r.get("name") for r in filtered_content}
+      missing = target_names - found_names
+      if missing:
+        raise BadFileError(
+            f"Resource profiles {missing} not found in catalog '{path}'"
+        )
+      return filtered_content
+    else:
+      return profile_data
+
+  elif isinstance(profile_data, dict):
+    return [profile_data]
+
+  else:
+    raise BadFileError(f"Invalid resource profile format in '{path}'")
+
+
+def _expand_environment_resources(
+    env_model: deployment_model.EnvironmentModel,
+    deployment_path: str,
+    context: Optional[Dict[str, Any]] = None,
+) -> None:
+  """Expands resource profiles into actual resources."""
+  expanded_resources = []
+  base_dir = os.path.dirname(str(deployment_path))
+
+  for r in env_model.resources:
+    if isinstance(r, deployment_model.ResourceProfileModel):
+      path = r.path
+      # Resolve path relative to deployment file
+      if not os.path.isabs(path):
+        path = os.path.join(base_dir, path)
+
+      if r.name and r.names:
+        raise ValueError(
+            f"Resource profile at '{r.path}' cannot specify both 'name' and"
+            " 'names'."
+        )
+
+      selected_names = r.names
+      if r.name:
+        selected_names = [r.name]
+
+      loaded_defs = _load_resource_profile(
+          path,
+          names=selected_names,
+          context=context,
+      )
+
+      # If we loaded a single resource and we have a specific name for it
+      # in the profile, we should apply it (e.g. for single-file profiles
+      # that don't specify name in the file).
+      if r.name and len(loaded_defs) == 1:
+        # We only override/set name if we have a single result
+        # and we requested a specific name (or just one resource).
+        # Note: if selected_names was used for catalog, loaded_defs might be
+        # size 1 too. But if r.name is used, we know it was a single
+        # selection intent.
+        loaded_defs[0]["name"] = r.name
+
+      for definition in loaded_defs:
+        # Convert dict definition to ResourceModel
+        expanded_resources.append(deployment_model.build_resource(definition))
+    else:
+      expanded_resources.append(r)
+
+  env_model.resources = expanded_resources
 
 
 def load_environment(
@@ -224,8 +333,8 @@ def load_environment(
     # 4. Final Parse
     deployment_yaml = yaml.load(resolved_content)
 
-  except yaml.YAMLParseError as e:
-    raise BadFileError(f"Error parsing deployment.yaml: {e}")
+  except yaml.Error as e:
+    raise BadFileError(f"Error parsing deployment.yaml: {e}") from e
 
   try:
     deployment = deployment_model.DeploymentModel.build(deployment_yaml)
@@ -235,6 +344,11 @@ def load_environment(
   environments = getattr(deployment, ENVIRONMENTS_KEY)
   if env not in environments:
     raise BadFileError(f"Environment '{env}' not found in deployment file.")
+
+  # Expand resources after building the model
+  _expand_environment_resources(
+      environments[env], deployment_path, context=internal_variables
+  )
 
   return environments[env]
 

@@ -932,6 +932,7 @@ flags_to_add = {
         'dataplanev2': flags.AddDataplaneV2Flag,
         'dataplanev2metrics': flags.AddDataplaneV2MetricsFlag,
         'dataplanev2obs': flags.AddDataplaneV2ObservabilityFlags,
+        'enableAmbientNetworking': flags.AddEnableAmbientNetworkingFlag,
         'disabledefaultsnat': AddDisableDefaultSnatFlagForClusterCreate,
         'disksize': flags.AddDiskSizeFlag,
         'disktype': flags.AddDiskTypeFlag,

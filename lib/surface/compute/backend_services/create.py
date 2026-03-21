@@ -92,7 +92,6 @@ class CreateHelper(object):
       support_subsetting_subset_size,
       support_ip_port_dynamic_forwarding,
       support_forward_proxy,
-      support_zonal_affinity,
       support_allow_multinetwork,
       support_identity,
       support_external_passthrough,
@@ -158,8 +157,7 @@ class CreateHelper(object):
     flags.AddBackendServiceCustomMetrics(parser)
     if support_ip_port_dynamic_forwarding:
       flags.AddDynamicForwarding(parser, support_forward_proxy)
-    if support_zonal_affinity:
-      flags.AddZonalAffinity(parser)
+    flags.AddZonalAffinity(parser)
     if support_allow_multinetwork:
       flags.AddAllowMultinetwork(parser)
     flags.AddResourceManagerTags(parser)
@@ -170,7 +168,6 @@ class CreateHelper(object):
       release_track,
       support_ip_port_dynamic_forwarding,
       support_forward_proxy,
-      support_zonal_affinity,
       support_allow_multinetwork,
       support_identity,
       support_external_passthrough,
@@ -180,7 +177,6 @@ class CreateHelper(object):
         support_ip_port_dynamic_forwarding
     )
     self._support_forward_proxy = support_forward_proxy
-    self._support_zonal_affinity = support_zonal_affinity
     self._support_allow_multinetwork = support_allow_multinetwork
     self._release_track = release_track
     self._support_identity = support_identity
@@ -422,8 +418,7 @@ class CreateHelper(object):
     if self._support_forward_proxy:
       backend_services_utils.ForwardProxy(client, args, backend_service)
 
-    if self._support_zonal_affinity:
-      backend_services_utils.ZonalAffinity(client, args, backend_service)
+    backend_services_utils.ZonalAffinity(client, args, backend_service)
 
     if self._support_allow_multinetwork:
       backend_service.allowMultinetwork = args.allow_multinetwork
@@ -528,7 +523,6 @@ class CreateGA(base.CreateCommand):
   _support_subsetting_subset_size = False
   _support_ip_port_dynamic_forwarding = False
   _support_forward_proxy = False
-  _support_zonal_affinity = False
   _support_allow_multinetwork = False
   _support_identity = False
   _support_external_passthrough = False
@@ -540,7 +534,6 @@ class CreateGA(base.CreateCommand):
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
         support_ip_port_dynamic_forwarding=cls._support_ip_port_dynamic_forwarding,
         support_forward_proxy=cls._support_forward_proxy,
-        support_zonal_affinity=cls._support_zonal_affinity,
         support_allow_multinetwork=cls._support_allow_multinetwork,
         support_identity=cls._support_identity,
         support_external_passthrough=cls._support_external_passthrough,
@@ -554,7 +547,6 @@ class CreateGA(base.CreateCommand):
         support_subsetting_subset_size=self._support_subsetting_subset_size,
         support_ip_port_dynamic_forwarding=self._support_ip_port_dynamic_forwarding,
         support_forward_proxy=self._support_forward_proxy,
-        support_zonal_affinity=self._support_zonal_affinity,
         support_allow_multinetwork=self._support_allow_multinetwork,
         release_track=self.ReleaseTrack(),
         support_identity=self._support_identity,
@@ -583,7 +575,6 @@ class CreateBeta(CreateGA):
   _support_subsetting_subset_size = True
   _support_ip_port_dynamic_forwarding = True
   _support_forward_proxy = True
-  _support_zonal_affinity = True
   _support_allow_multinetwork = False
   _support_identity = True
   _support_external_passthrough = False
@@ -610,7 +601,6 @@ class CreateAlpha(CreateBeta):
   _support_subsetting_subset_size = True
   _support_ip_port_dynamic_forwarding = True
   _support_forward_proxy = True
-  _support_zonal_affinity = True
   _support_allow_multinetwork = True
   _support_identity = True
   _support_external_passthrough = True

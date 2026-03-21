@@ -81,15 +81,15 @@ using `--recursive`:
 
 Recursive listings are similar to `**` except recursive listings include
 line breaks and header formatting for each subdirectory.
-"""
-_ALPHA_EXAMPLES = """
+
 The following command filters objects based on specified filter while listing.
 Note that the flag is only supported for Google Cloud Storage URLs and only
 applies to objects. This means that directories or buckets will still be listed
 even if they do not contain objects that match the filter.
 
   $ {command} gs://my-bucket --metadata-filter='contexts."foo"="bar"'
-
+"""
+_ALPHA_EXAMPLES = """
 """
 
 
@@ -198,9 +198,7 @@ class Ls(base.Command):
     flags.add_fetch_encrypted_object_hashes_flag(parser, is_list=True)
     flags.add_read_paths_from_stdin_flag(parser)
     flags.add_soft_delete_flags(parser)
-
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      flags.add_metadata_filter_flag(parser)
+    flags.add_metadata_filter_flag(parser)
 
   @classmethod
   def _get_args(cls, args):

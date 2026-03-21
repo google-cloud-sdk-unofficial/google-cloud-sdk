@@ -34,6 +34,30 @@ DETAILED_HELP = {
        """,
 }
 
+DETAILED_HELP_ALPHA = {
+    'DESCRIPTION': (
+        """
+         *{command}* returns a list of the resources a key is protecting
+         within the specified organization or project.
+       """
+    ),
+    'EXAMPLES': (
+        """
+         To view the protected resources for the key
+         `projects/test-prj/locations/us/keyRings/us-keyring/cryptoKeys/us-key`
+         within the organization number `1234` run:
+
+           $ {command} --keyname=projects/test-prj/locations/us/keyRings/us-keyring/cryptoKeys/us-key --scope=organizations/1234
+
+         To view the protected resources for the key
+         `projects/test-prj/locations/us/keyRings/us-keyring/cryptoKeys/us-key`
+         within the project `2345` run:
+
+           $ {command} --keyname=projects/test-prj/locations/us/keyRings/us-keyring/cryptoKeys/us-key --scope=projects/2345
+       """
+    ),
+}
+
 
 RESOURCE_TYPE_HELP = """\
 A list of resource types that this request searches for. If empty, it will
@@ -54,6 +78,8 @@ supported resource type, an ``INVALID_ARGUMENT'' error will be returned.
 """
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
 class SearchProtectedResources(base.ListCommand):
   """Searches the resources protected by a key."""
   detailed_help = DETAILED_HELP
@@ -82,4 +108,44 @@ class SearchProtectedResources(base.ListCommand):
       resource_types = []
     return inventory.SearchProtectedResources(
         scope=org, key_name=key_name, resource_types=resource_types, args=args
+    )
+
+
+# This new version allows the user to use project ID or project number as the
+# scope and is only available in alpha.
+# This function would be gradually propagated to beta and will be used in place
+# of the old version in ga.
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
+class SearchProtectedResourcesNew(base.ListCommand):
+  """Searches the resources protected by a key."""
+  detailed_help = DETAILED_HELP_ALPHA
+
+  @staticmethod
+  def Args(parser):
+    resource_args.AddKmsKeyResourceArgForKMS(parser, True, '--keyname')
+    parser.add_argument(
+        '--scope',
+        metavar='SEARCH_SCOPE',
+        required=True,
+        help=(
+            'The scope of the search, which can be an organization ID or a'
+            ' project ID or a project number.'
+        ),
+    )
+    parser.add_argument(
+        '--resource-types',
+        metavar='RESOURCE_TYPES',
+        type=arg_parsers.ArgList(),
+        help=RESOURCE_TYPE_HELP,
+    )
+
+  def Run(self, args):
+    key_name = args.keyname
+    scope = args.scope
+    resource_types = args.resource_types
+    if not resource_types:
+      resource_types = []
+    return inventory.SearchProtectedResourcesNew(
+        scope=scope, key_name=key_name, resource_types=resource_types, args=args
     )

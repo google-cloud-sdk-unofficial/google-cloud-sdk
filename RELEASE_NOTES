@@ -5,6 +5,133 @@ Copyright 2014-2026 Google Inc. All rights reserved.
 Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
 
 
+## 561.0.0 (2026-03-17)
+
+### AI
+
+* - Added `europe-north2` to online prediction supported regions.
+- Added `europe-west15` to online prediction supported regions.
+- Added `us-west8` to online prediction supported regions.
+
+### AlloyDB
+
+* Added the --[no-]observability-config-track-active-query-plan flag to
+  `gcloud beta alloydb instances create` and
+  `gcloud beta alloydb instances update` to enable or disable the tracking of
+  active query plans.
+
+### BigLake
+
+*   Promoted `gcloud biglake iceberg namespaces` to beta. Create, Update, Delete, Describe, and List commands are now available in beta.
+*   Promoted `gcloud biglake iceberg tables` to beta. Delete, Describe, Get-Iam-Policy, List, Register, and Set-Iam-Policy commands are now available in beta.
+
+### Cloud DNS
+
+* Added `--skip-soa-update` flag to `gcloud dns record-sets transaction start`
+  and `gcloud dns record-sets import` to allow initiating transactions without
+  automatically staging an SOA serial number increment.
+
+### Cloud Filestore
+
+* Add source-backup-project flag to `gcloud filestore instances create`.
+
+### Cloud IAM
+
+*   Deprecated the extended-attributes flags used in
+    `gcloud iam workforce-pools providers create-saml`,
+    `gcloud iam workforce-pools providers update-saml`,
+    `gcloud iam workforce-pools providers create-oidc`,
+    `gcloud iam workforce-pools providers update-oidc` in favor of SCIM.
+
+*   Added the --[no-]use-default-shared-ca flag to
+    `gcloud iam workload-identity-pools` `create` and `update` commands to let
+    you provision certificates from default shared certificate authorities
+    (CAs).
+
+### Cloud Key Management Service
+
+*   Added support for post-quantum asymmetric signing algorithms: `ML-DSA-44`, `ML-DSA-88`, and the external-mu ML-DSA variants.
+
+### Cloud SQL
+
+* Added support in `gcloud sql instances point-in-time-restore` to perform
+  cross-project PITR with flags: `--activation-policy`, `--assign-ip`,
+  `--network`, `--authorized-networks`, `--enable-google-private-path`,
+  `--availability-type`, `--backup`, `--backup-location`,
+  `--backup-start-time`, `--collation`, `--cpu`, `--database-version`,
+  `--enable-bin-log`, `--enable-point-in-time-recovery`,
+  `--maintenance-release-channel`, `--maintenance-window-day`,
+  `--maintenance-window-hour`, `--deny-maintenance-period-start-date`,
+  `--deny-maintenance-period-end-date`, `--deny-maintenance-period-time`,
+  `--insights-config-query-insights-enabled`,
+  `--insights-config-query-string-length`,
+  `--insights-config-record-application-tags`,
+  `--insights-config-record-client-address`,
+  `--insights-config-query-plans-per-minute`, `--memory`, `--region`, `--zone`,
+  `--secondary-zone`, `--require-ssl`, `--retained-backups-count`,
+  `--retained-transaction-log-days`, `--storage-auto-increase`,
+  `--storage-size`, `--storage-provisioned-iops`,
+  `--storage-provisioned-throughput`, `--storage-type`, `--tier`, `--t`,
+  `--edition`, `--disk-encryption-key`, `--active-directory-domain`,
+  `--audit-bucket-path`, `--audit-retention-interval`,
+  `--audit-upload-interval`, `--deletion-protection`, `--time-zone`,
+  `--connector-enforcement`, `--timeout`, `--enable-private-service-connect`,
+  `--allowed-psc-projects`, `--ssl-mode`, `--final-backup`,
+  `--final-backup-retention-days`, `--clear-network`,
+  `--active-directory-mode`, `--active-directory-dns-servers`,
+  `--active-directory-organizational-unit`,
+  `--active-directory-secret-manager-key`,
+  `--clear-active-directory-dns-servers`, `--clear-active-directory`,
+  `--clear-disk-encryption`.
+
+### Cloud Storage
+
+*   Promoted object-contexts feature to GA.
+
+### Compute Engine
+
+*   Promoted endpoint-based connection policies feature for
+    `gcloud compute service-attachments update` to GA.
+    This feature allows specifying endpoint URLs in
+    `--consumer-accept-list` and `--consumer-reject-list`.
+*   Added `--remove-obsolete-endpoint-accept-reject-entries` flag to
+    `gcloud compute service-attachments update` to cleanup obsolete entries.
+* Promoted `cachePolicy` support for `gcloud compute url-maps` to beta.
+* Promoted `--zonal-affinity-spillover` and `--zonal-affinity-spillover-ratio` of `gcloud compute backend-services create|update` commands to GA.
+* Promoted `--preemption-notice-duration` flag to `gcloud compute instances` in beta.
+
+### Database Migration
+
+* Added `--enable-iam-authentication` and `--disable-iam-authentication` to
+  `gcloud database-migrate connection-profiles create` and
+  `gcloud database-migrate connection-profiles update`. The flag enabled or
+  disables IAM authentication using DMS service agent to the destination
+  instance. Currently supported only for Postgres destinations (Cloud SQL &
+  AlloyDB).
+
+### Kubernetes Engine
+
+* Added support for enabling PTP-KVM time synchronization in node pools
+  via system config file using `--system-config-from-file` flag in
+  `gcloud container cluster create` and
+  `gcloud container node-pools create|update` commands.
+
+### Looker
+
+* Added `--catalog-integration-opt-out` flag to `gcloud looker instance create` and `gcloud looker instance update` commands to manage Universal Dataplex Catalog integration with Looker.
+
+### Network Services
+
+* Updated `gcloud network-services tls-routes import` and `gcloud network-services tls-routes export` to support `targetProxies` field.
+
+### Vector Search
+
+* Promoted `gcloud vector-search collections export-data-objects` to GA.
+
+
+Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
+
+
 ## 560.0.0 (2026-03-10)
 
 ### Google Cloud CLI

@@ -16,19 +16,19 @@
 
 from googlecloudsdk.api_lib.run import ssh as run_ssh
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import ssh_command
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
 @base.DefaultUniverseOnly
-class Ssh(base.Command):
-  """SSH into an instance."""
+class Ssh(ssh_command.BaseSshCommand):
+  """SSH into a Service instance."""
 
   detailed_help = {
       'DESCRIPTION': """\
-          Starts a secure, interactive shell session with a Cloud Run instance.
+          Starts a secure, interactive shell session with an instance of a Cloud Run Service.
           """,
       'EXAMPLES': """\
           To start an interactive shell session with a Cloud Run service:
@@ -41,30 +41,18 @@ class Ssh(base.Command):
   def Args(cls, parser):
     # Add flags for targeting a specific instance and container.
     flags.AddInstanceArg(parser)
-    flags.AddContainerArg(parser)
+    cls.AddBaseArgs(parser)
     # Add the service name as a required positional argument.
     parser.add_argument(
         'service',
         help='The name of the service to SSH into.',
     )
-    parser.add_argument(
-        '--iap-tunnel-url-override',
-        hidden=True,
-        help=(
-            'Allows for overriding the connection endpoint for integration '
-            'testing.'
-        ),
-    )
 
   def Run(self, args):
     """Connect to a running Cloud Run Service deployment."""
-    args.project = flags.GetProjectID(args)
-    args.region = flags.GetRegion(args, prompt=False)
-    if not args.region:
-      raise exceptions.ArgumentError(
-          'Missing required argument [region]. Set --region flag or set'
-          ' run/region property.'
-      )
-    args.deployment_name = args.service
-    args.release_track = self.ReleaseTrack()
-    run_ssh.Ssh(args, run_ssh.Ssh.WorkloadType.SERVICE).Run()
+    self.RunSsh(
+        args,
+        run_ssh.Ssh.WorkloadType.SERVICE,
+        args.service,
+        getattr(args, 'instance', None),
+    )

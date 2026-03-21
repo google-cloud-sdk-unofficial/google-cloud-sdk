@@ -1,0 +1,35 @@
+project:
+  name: project
+  collection: biglake.hive.v1beta.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: |
+      Name of the Cloud project to use.
+    property: core/project
+
+hive_catalog:
+  name: hive_catalog
+  collection: biglake.hive.v1beta.projects.catalogs
+  request_id_field: hiveCatalogId
+  attributes:
+  - *project
+  - &catalog
+    parameter_name: catalogsId
+    attribute_name: catalog
+    help: |
+      Name of the Hive catalog to use.
+
+hive_database:
+  name: hive_database
+  collection: biglake.hive.v1beta.projects.catalogs.databases
+  request_id_field: hiveDatabaseId
+  attributes:
+  - *project
+  - *catalog
+  - &database
+    parameter_name: databasesId
+    attribute_name: database
+    help: |
+      Name of the Hive database to use.

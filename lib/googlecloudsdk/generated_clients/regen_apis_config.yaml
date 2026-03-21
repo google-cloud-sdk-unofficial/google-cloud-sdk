@@ -551,8 +551,6 @@ apis:
         reservationSubBlocks:
           path: projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}/reservationSubBlocks/{reservationSubBlocksId}
     v1:
-      skip:
-        bug: b/489464772
       discovery_doc: compute_v1.json
       default: true
       resources:
@@ -560,6 +558,8 @@ apis:
           path: projects/{project}/global/gateways/{nextHopGateway}
         regionSecurityPolicyRules:
           path: projects/{project}/regions/{region}/securityPolicies/{securityPolicy}/securityPolicyRules/{securityPolicyRule}
+        reservationBlocks:
+          path: projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}
         reservationSubBlocks:
           path: projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}/reservationSubBlocks/{reservationSubBlocksId}
         securityPolicyRules:
@@ -1139,6 +1139,12 @@ apis:
           path: projects/{project}/iap_web/{iapWebId}/services/{serviceId}
         projects.iap_web.services.versions:
           path: projects/{project}/iap_web/{iapWebId}/services/{serviceId}/versions/{versionId}
+        projects.iap_tunnel.tunnel_types:
+          path: projects/{project}/iap_tunnel/{tunnelType}
+        projects.iap_tunnel.tunnel_types.locations:
+          path: projects/{project}/iap_tunnel/{tunnelType}/locations/{location}
+        projects.iap_tunnel.tunnel_types.locations.services:
+          path: projects/{project}/iap_tunnel/{tunnelType}/locations/{location}/services/{tunnelService}
   ids:
     v1:
       discovery_doc: ids_v1.json
@@ -1219,12 +1225,8 @@ apis:
       default: true
   looker:
     v1alpha2:
-      skip:
-        bug: b/488419330
       discovery_doc: looker_v1alpha2.json
     v1:
-      skip:
-        bug: b/488419330
       discovery_doc: looker_v1.json
       default: true
   memcache:
@@ -1544,9 +1546,11 @@ apis:
     v1beta1:
       discovery_doc: runtimeconfig_v1beta1.json
   saasservicemgmt:
+    v1:
+      discovery_doc: saasservicemgmt_v1.json
+      default: true
     v1alpha1:
       discovery_doc: saasservicemgmt_v1alpha1.json
-      default: true
     v1beta1:
       discovery_doc: saasservicemgmt_v1beta1.json
   sasportal:
@@ -2034,8 +2038,6 @@ apis:
         projects.locations.keyRings.cryptoKeys:
           path: projects/{projectsId}/locations/{locationsId}/keyRings/{keyRingsId}/cryptoKeys/{cryptoKeysId}
     v1alpha:
-      skip:
-        bug: b/489398825
       discovery_doc: oracledatabase_v1alpha.json
       resources:
         projects.locations.autonomousDatabaseBackups:

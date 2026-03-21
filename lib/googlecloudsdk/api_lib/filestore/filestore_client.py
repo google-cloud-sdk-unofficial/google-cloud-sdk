@@ -655,8 +655,11 @@ class AlphaFilestoreAdapter(object):
             project, location, file_share.get('source-snapshot')
         )
       if 'source-backup' in file_share:
-        project = properties.VALUES.core.project.Get(required=True)
         location = file_share.get('source-backup-region')
+        if file_share.get('source-backup-project') is not None:
+          project = file_share.get('source-backup-project')
+        else:
+          project = properties.VALUES.core.project.Get(required=True)
         source_backup = backup_util.BACKUP_NAME_TEMPLATE.format(
             project, location, file_share.get('source-backup')
         )
@@ -826,16 +829,25 @@ class BetaFilestoreAdapter(AlphaFilestoreAdapter):
     self.client = GetClient(version=BETA_API_VERSION)
     self.messages = GetMessages(version=BETA_API_VERSION)
 
+  def _GetSourceBackupProject(self, file_share):
+    """Get the source backup project from the fileshare."""
+    if 'source-backup-project' in file_share:
+      return file_share.get('source-backup-project')
+    else:
+      return properties.VALUES.core.project.Get(required=True)
+
   def _ParseSourceBackupFromFileshare(self, file_share):
+    """Parse the source backup from the fileshare."""
+
     if 'source-backup' not in file_share:
       return None
-    project = properties.VALUES.core.project.Get(required=True)
     location = file_share.get('source-backup-region')
     if location is None:
       raise InvalidArgumentError(
           "If 'source-backup' is specified, 'source-backup-region' must also "
           'be specified.'
       )
+    project = self._GetSourceBackupProject(file_share)
     return backup_util.BACKUP_NAME_TEMPLATE.format(
         project, location, file_share.get('source-backup')
     )

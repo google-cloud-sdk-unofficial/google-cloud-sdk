@@ -23,8 +23,6 @@ from googlecloudsdk.command_lib.orchestration_pipelines.handlers import base
 class ComposerEnvironmentHandler(base.GcpResourceHandler):
   """Handler for migrating Composer Environment configurations."""
 
-  api_client_collection_path = "projects_locations_environments"
-
   def build_get_request(self) -> messages.Message:
     return self.messages.ComposerProjectsLocationsEnvironmentsGetRequest(
         name=self._get_resource_name()
@@ -35,7 +33,7 @@ class ComposerEnvironmentHandler(base.GcpResourceHandler):
   ) -> messages.Message:
     resource_message.name = self._get_resource_name()
     return self.messages.ComposerProjectsLocationsEnvironmentsCreateRequest(
-        parent=self._get_location_path(),
+        parent=self._get_parent_path(),
         environment=resource_message,
     )
 

@@ -38,7 +38,8 @@ def translate_concurrent_requests_features(
   """Translates GAE concurrent request settings to Cloud Run.
 
   This function translates `max_concurrent_requests` (standard) or
-  `target_concurrent_requests` from GAE to the Cloud Run --concurrency flag.
+  `target_concurrent_requests` (flex) from GAE to the Cloud Run --concurrency
+  flag.
 
   Args:
     input_data: A mapping containing the input configuration.
@@ -47,9 +48,9 @@ def translate_concurrent_requests_features(
   Returns:
     A sequence of strings representing the Cloud Run flags.
   """
-  if (_MAX_CONCURRENT_REQUESTS_KEY not in input_data and
-      _TARGET_CONCURRENT_REQUESTS_KEY not in input_data):
-    return []
+
+  is_flex = util.is_flex_env(input_data)
+
   feature_key = util.get_feature_key_from_input(
       input_data, _ALLOW_MAX_CONCURRENT_REQ_KEYS
   )
@@ -60,7 +61,9 @@ def translate_concurrent_requests_features(
   # app2run/config/features.yaml as the default feature.
   if not input_has_concurrent_requests:
     feature = range_limited_features[_MAX_CONCURRENT_REQUESTS_KEY]
-    default_value = _DEFAULT_STANDARD_CONCURRENCY
+    default_value = (
+        feature.range['max'] if is_flex else _DEFAULT_STANDARD_CONCURRENCY
+    )
     return util.generate_output_flags(feature.flags, default_value)
   feature = range_limited_features[feature_key]
   input_value = input_data[feature_key]

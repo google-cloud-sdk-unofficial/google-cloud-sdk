@@ -183,11 +183,9 @@ workload_identity_pool:
     arg_name: use-default-shared-ca
     action: store_true_false
     help_text: |-
-      Whether to use the default shared CA to issue certificates.
-      If this flag is enabled, certificates will be automatically provisioned from the default
-      shared CAs. A default CA in the same region as the workload will be selected to issue the
-      certificate. Enabling this flag will clear any existing `ca_pools` configuration to provision
-      the certificates.
+      Use the default shared certificate authorities (CAs) to issue certificates. If enabled,
+      Google Cloud automatically provisions certificates from a default shared CA in the same region
+      as the workload. Enabling this flag clears any existing CA pools configuration.
   inline_trust_config_file:
     api_field: workloadIdentityPool.inlineTrustConfig
     type: "googlecloudsdk.calliope.arg_parsers:YAMLFileContents:"

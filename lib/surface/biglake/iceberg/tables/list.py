@@ -28,7 +28,7 @@ help_text = textwrap.dedent("""\
     """)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class ListIcebergTables(base.ListCommand):
   """List BigLake Iceberg REST tables."""

@@ -80,38 +80,54 @@ IDENTITY_CERTIFICATE_FLAG = base.Argument(
 )
 
 _IDENTITY_TYPE_CHOICES = {
-    'SERVICE_ACCOUNT': 'Use a service account.',
-    'WORKLOAD_IDENTITY': 'Use a managed workload identity.',
-    'AGENT_IDENTITY': 'Use an agent identity.',
+    'SERVICE-ACCOUNT': 'Use a service account.',
+    'WORKLOAD-IDENTITY': 'Use a managed workload identity.',
+    'AGENT-IDENTITY': 'Use an agent identity.',
 }
 
-_TO_ANNOTATION_IDENTITY_TYPE_STR = {
-    'SERVICE_ACCOUNT': 'service-account',
-    'WORKLOAD_IDENTITY': 'workload-identity',
-    'AGENT_IDENTITY': 'agent-identity',
-}
-
-IDENTITY_TYPE_FLAG = base.Argument(
+IDENTITY_TYPE_FLAG = base.ChoiceArgument(
     '--identity-type',
-    choices=_IDENTITY_TYPE_CHOICES,
-    help='Configures the type of identity to be used by the resource.',
+    choices=[x.lower() for x in _IDENTITY_TYPE_CHOICES],
+    help_str=(
+        'Configures the type of identity to be used by the resource. Allowed'
+        ' values: service-account, workload-identity, agent-identity.'
+    ),
+    hidden=True,
+)
+
+_AMBIENT_NETWORKING_CHOICES = {
+    'disable': 'Disable ambient networking.',
+    'regional': 'Use regional ambient networking.',
+    'global': 'Use global ambient networking.',
+}
+
+_TO_ANNOTATION_AMBIENT_NETWORKING_STR = {
+    'disable': '',
+    'regional': 'regional',
+    'global': 'global',
+}
+
+AMBIENT_NETWORKING_FLAG = base.ChoiceArgument(
+    '--ambient-networking',
+    choices=_AMBIENT_NETWORKING_CHOICES,
+    help_str=(
+        'Configures ambient networking mode used by the resource.'
+    ),
     hidden=True,
 )
 
 _FUNCTIONAL_TYPE_CHOICES = {
     'AGENT': 'Use an agent.',
-    'MCP_SERVER': 'Use a MCP server.',
+    'MCP-SERVER': 'Use a MCP server.',
 }
 
-_TO_ANNOTATION_FUNCTIONAL_TYPE_STR = {
-    'AGENT': 'agent',
-    'MCP_SERVER': 'mcp-server',
-}
-
-FUNCTIONAL_TYPE_FLAG = base.Argument(
+FUNCTIONAL_TYPE_FLAG = base.ChoiceArgument(
     '--functional-type',
-    choices=_FUNCTIONAL_TYPE_CHOICES,
-    help='Configures functional type of the resource.',
+    choices=[x.lower() for x in _FUNCTIONAL_TYPE_CHOICES],
+    help_str=(
+        'Specifies the function of the workload for Agent Registry. Allowed'
+        ' values: agent, mcp-server.'
+    ),
     hidden=True,
 )
 
@@ -146,18 +162,22 @@ _VISIBILITY_MODES = {
 
 _INGRESS_MODES = {
     'all': 'Inbound requests from all sources are allowed.',
-    'internal': """\
+    'internal': (
+        """\
         For Cloud Run, only inbound requests from VPC networks
         in the same project or VPC Service Controls perimeter, as well as
         Pub/Sub subscriptions and Eventarc events in the same project or VPC
         Service Controls perimeter are allowed. All other requests are rejected.
         See https://cloud.google.com/run/docs/securing/ingress for full details
         on the definition of internal traffic for Cloud Run.
-        """,
-    'internal-and-cloud-load-balancing': """\
+        """
+    ),
+    'internal-and-cloud-load-balancing': (
+        """\
         Only inbound requests from Google Cloud Load Balancing or a traffic
         source allowed by the internal option are allowed.
-        """,
+        """
+    ),
 }
 
 _SANDBOX_CHOICES = {
@@ -168,10 +188,12 @@ _SANDBOX_CHOICES = {
 _DEFAULT_KUBECONFIG_PATH = '~/.kube/config'
 
 _POST_CMEK_KEY_REVOCATION_ACTION_TYPE_CHOICES = {
-    'shut-down': """\
+    'shut-down': (
+        """\
         No new instances will be started and the existing instances will be shut
         down after CMEK key revocation.
-        """,
+        """
+    ),
     'prevent-new': (
         'No new instances will be started after CMEK key revocation.'
     ),
@@ -462,9 +484,9 @@ def AddNoPromoteFlag(parser):
           ' deployment. The effect is that the revision being deployed will not'
           ' receive instance split.\n\nAfter a deployment with this flag the'
           ' LATEST revision will not receive instances on future deployments.'
-          ' To restore assinging instances to the LATEST revision by default,'
-          ' run the `gcloud run workers update-instance-split` command with'
-          ' `--to-latest`.'
+          ' To restore assigning instances to the LATEST revision by default,'
+          ' run the `{parent_command}'
+          ' update-instance-split` command with `--to-latest`.'
       ),
   )
 
@@ -3173,7 +3195,7 @@ def _GetConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
     changes.append(
         config_changes.SetTemplateAnnotationChange(
             revision.IDENTITY_TYPE_ANNOTATION,
-            _TO_ANNOTATION_IDENTITY_TYPE_STR[args.identity_type],
+            args.identity_type,
         )
     )
   if FlagIsExplicitlySet(args, 'mesh_dataplane'):
@@ -3181,6 +3203,13 @@ def _GetConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
         config_changes.SetTemplateAnnotationChange(
             revision.MESH_DATAPLANE_ANNOTATION,
             args.mesh_dataplane,
+        )
+    )
+  if FlagIsExplicitlySet(args, 'ambient_networking'):
+    changes.append(
+        config_changes.SetTemplateAnnotationChange(
+            revision.AMBIENT_NETWORKING_ANNOTATION,
+            _TO_ANNOTATION_AMBIENT_NETWORKING_STR[args.ambient_networking],
         )
     )
 
@@ -3502,10 +3531,11 @@ def GetServiceConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
         config_changes.MultiRegionDomainNameChange(domain_name=args.domain)
     )
   if FlagIsExplicitlySet(args, 'functional_type'):
+    _MaybePrintFunctionalTypeWarning(args.functional_type)
     changes.append(
         config_changes.SetAnnotationChange(
             service.FUNCTIONAL_TYPE_ANNOTATION,
-            _TO_ANNOTATION_FUNCTIONAL_TYPE_STR[args.functional_type],
+            args.functional_type,
         )
     )
 
@@ -3514,6 +3544,17 @@ def GetServiceConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
   changes.extend(_GetCpuUtilizationChanges(args))
   changes.extend(_GetConcurrencyUtilizationChanges(args))
   return changes
+
+
+def _MaybePrintFunctionalTypeWarning(functional_type):
+  """Prints a warning if the functional type is set to 'agent'."""
+  if functional_type == 'agent':
+    pretty_print.Info(
+        '\n{bold}WARNING:{reset} Updating the functional type to an agent also'
+        ' requires\nupdating its identity to agent_identity. Make sure to'
+        ' update the IAM\npolicies on the agent_identity to ensure no issues'
+        ' with connectivity\nto other services.\n'
+    )
 
 
 def _GetServiceContainerChanges(container_args, container_name=None):

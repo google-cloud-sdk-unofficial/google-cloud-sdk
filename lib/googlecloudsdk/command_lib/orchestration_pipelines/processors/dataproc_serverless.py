@@ -37,15 +37,9 @@ class DataprocServerlessActionProcessor(base.ActionProcessor):
     return "3.11" if str(runtime_version).startswith("2.3") else "3.12"
 
   def _update_yaml_properties(self, action):
-    env_pack_path = self._work_dir / self._env_pack_file
-    if not env_pack_path.exists():
+    if not self._env_pack_file:
       return
 
-    env_pack_uri = f"{self._artifact_base_uri}{self._env_pack_file}#libs"
-    if "archives" not in self.action:
-      self.action["archives"] = []
-    if not any(env_pack_uri in arch for arch in self.action["archives"]):
-      self.action["archives"].append(env_pack_uri)
     # Add PYTHONPATH to Spark driver and executors
     # to include the site-packages
     # from the uploaded dependencies.zip, allowing the Spark jobs to find

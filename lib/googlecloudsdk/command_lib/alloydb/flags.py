@@ -1498,6 +1498,16 @@ def AddObservabilityConfigTrackActiveQueries(parser, show_negated_in_help):
   )
 
 
+def AddObservabilityConfigTrackActiveQueryPlan(parser, show_negated_in_help):
+  kwargs = _GetKwargsForBoolFlag(show_negated_in_help)
+  parser.add_argument(
+      '--observability-config-track-active-query-plan',
+      required=False,
+      help="""Track active query plans.""",
+      **kwargs,
+  )
+
+
 def KmsKeyAttributeConfig():
   # For anchor attribute, help text is generated automatically.
   return concepts.ResourceParameterAttributeConfig(name='kms-key')
@@ -2571,3 +2581,65 @@ def AddAutoscalerUpdateFlags(parser):
       default=None,
       help='The name of the schedule to enable for the autoscaler.',
   )
+
+
+def AddEndpoint(parser, positional=True, required=True):
+  """Adds a positional endpoint argument to parser.
+
+  Args:
+    parser: argparse.Parser: Parser object for command line inputs.
+    positional: whether or not --endpoint is positional.
+    required: whether or not the argument is required. Only relevant if the
+      argument is non-positional.
+  """
+  if positional:
+    parser.add_argument('endpoint', type=str, help='AlloyDB endpoint ID')
+  else:
+    parser.add_argument(
+        '--endpoint', required=required, type=str, help='AlloyDB endpoint ID'
+    )
+
+
+def AddEndpointType(parser, required=True):
+  """Adds an --endpoint-type flag to parser.
+
+  Args:
+    parser: argparse.Parser: Parser object for command line inputs.
+    required: Whether or not --endpoint-type is required.
+  """
+  parser.add_argument(
+      '--endpoint-type',
+      type=str,
+      required=required,
+      choices={
+          'WRITE_ENDPOINT': (
+              'Provide a consistent connection point that always directs'
+              ' traffic to the instance. The write endpoint can serve both read'
+              ' and write traffic.'
+          ),
+      },
+      help='Specifies endpoint type.',
+  )
+
+
+def AddTargetInstances(parser, required=True):
+  """Adds a --target-instances flag to parser.
+
+  Args:
+    parser: argparse.Parser: Parser object for command line inputs.
+    required: Whether or not --target-instances is required.
+  """
+  parser.add_argument(
+      '--target-instances',
+      required=required,
+      type=arg_parsers.ArgList(),
+      metavar='TARGET_INSTANCES',
+      help=(
+          'Comma-separated list of target instances that the endpoint will'
+          ' direct traffic to.'
+          'For example,'
+          ' `--target-instances=projects/my-project/locations/us-central1/clusters/my-cluster/instances/my-instance`.'
+          'For WRITE endpoint, only one target instance is allowed.'
+      ),
+  )
+

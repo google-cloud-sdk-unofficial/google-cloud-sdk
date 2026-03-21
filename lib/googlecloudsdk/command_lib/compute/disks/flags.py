@@ -19,6 +19,7 @@
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.command_lib.compute import completers as compute_completers
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.util import completers
 from googlecloudsdk.core import properties
 
@@ -534,6 +535,11 @@ STORAGE_POOL_ARG = compute_flags.ResourceArgument(
     plural=False,
     required=False,
     scope_flags_usage=compute_flags.ScopeFlagsUsage.USE_EXISTING_SCOPE_FLAGS)
+
+
+def AddKmsKeyArg(parser):
+  kms_resource_args.AddKmsKeyResourceArg(
+      parser, 'disk', region_fallthrough=True)
 
 
 def AddSourceMachineImageNameArg(parser):

@@ -102,8 +102,8 @@ def AppendRemoteRepoConfigToRequest(messages, repo_args, request):
   remote_cfg.description = repo_args.remote_repo_config_desc
 
   # Connector Mode
-  if repo_args.mode == "CONNECTOR_REPOSITORY":
-    remote_cfg.no_cache = messages.RemoteRepositoryConfig.NoCacheFetching()
+  if arg_utils.ChoiceToEnumName(repo_args.mode) == "CONNECTOR_REPOSITORY":
+    remote_cfg.noCache = messages.NoCacheFetching()
 
   # Credentials
   username = repo_args.remote_username

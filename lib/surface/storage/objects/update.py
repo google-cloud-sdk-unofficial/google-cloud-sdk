@@ -54,9 +54,7 @@ You can also provide a precondition on an object's metageneration in
 order to avoid potential race conditions:
 
   $ {command} gs://bucket/*.jpg --storage-class=NEARLINE --if-metageneration-match=123456789
-"""
 
-_ALPHA_EXAMPLES = """
 The following command overwrites the custom contexts of an object:
 
   $ {command} gs://bucket/my-object --custom-contexts=key1=value1,key2=value2
@@ -66,6 +64,9 @@ remove being applied first:
 
   $ {command} gs://bucket/my-object --update-custom-contexts=key2=value3 \
       --remove-custom-contexts=key2,key3
+"""
+
+_ALPHA_EXAMPLES = """
 """
 
 

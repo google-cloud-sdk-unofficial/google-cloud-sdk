@@ -27,7 +27,6 @@ class Agent(_messages.Message):
 
   Fields:
     agentId: Output only. A stable, globally unique identifier for agents.
-      Example: `urn:agent:acme.com:my-agent`
     attributes: Output only. Attributes of the Agent. Valid values: *
       `agentregistry.googleapis.com/system/Framework`: {"framework": "google-
       adk"} - the agent framework used to develop the Agent. Example values:
@@ -139,11 +138,13 @@ class AgentSpec(_messages.Message):
 
   Messages:
     ContentValue: Optional. The content of the Agent spec in the JSON format.
-      This payload is validated against the schema for the specified type.
+      This payload is validated against the schema for the specified type. The
+      content size is limited to `10KB`.
 
   Fields:
     content: Optional. The content of the Agent spec in the JSON format. This
-      payload is validated against the schema for the specified type.
+      payload is validated against the schema for the specified type. The
+      content size is limited to `10KB`.
     type: Required. The type of the agent spec content.
   """
 
@@ -152,10 +153,10 @@ class AgentSpec(_messages.Message):
 
     Values:
       TYPE_UNSPECIFIED: Unspecified type.
-      NO_SPEC: There is no spec for the Agent. The content field must be
+      NO_SPEC: There is no spec for the Agent. The `content` field must be
         empty.
       A2A_AGENT_CARD: The content is an A2A Agent Card following the A2A
-        specification. The interfaces field must be empty.
+        specification. The `interfaces` field must be empty.
     """
     TYPE_UNSPECIFIED = 0
     NO_SPEC = 1
@@ -164,7 +165,8 @@ class AgentSpec(_messages.Message):
   @encoding.MapUnrecognizedFields('additionalProperties')
   class ContentValue(_messages.Message):
     r"""Optional. The content of the Agent spec in the JSON format. This
-    payload is validated against the schema for the specified type.
+    payload is validated against the schema for the specified type. The
+    content size is limited to `10KB`.
 
     Messages:
       AdditionalProperty: An additional property for a ContentValue object.
@@ -218,6 +220,19 @@ class AgentregistryProjectsLocationsAgentsListRequest(_messages.Message):
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   parent = _messages.StringField(5, required=True)
+
+
+class AgentregistryProjectsLocationsAgentsSearchRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsAgentsSearchRequest object.
+
+  Fields:
+    parent: Required. Parent value for SearchAgentsRequest
+    searchAgentsRequest: A SearchAgentsRequest resource to be passed as the
+      request body.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  searchAgentsRequest = _messages.MessageField('SearchAgentsRequest', 2)
 
 
 class AgentregistryProjectsLocationsEndpointsGetRequest(_messages.Message):
@@ -318,6 +333,19 @@ class AgentregistryProjectsLocationsMcpServersListRequest(_messages.Message):
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   parent = _messages.StringField(5, required=True)
+
+
+class AgentregistryProjectsLocationsMcpServersSearchRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsMcpServersSearchRequest object.
+
+  Fields:
+    parent: Required. Parent value for SearchMcpServersRequest.
+    searchMcpServersRequest: A SearchMcpServersRequest resource to be passed
+      as the request body.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  searchMcpServersRequest = _messages.MessageField('SearchMcpServersRequest', 2)
 
 
 class AgentregistryProjectsLocationsOperationsCancelRequest(_messages.Message):
@@ -607,6 +635,8 @@ class Endpoint(_messages.Message):
     createTime: Output only. Create time.
     description: Output only. Description of an Endpoint.
     displayName: Output only. Display name for the Endpoint.
+    endpointId: Output only. A stable, globally unique identifier for
+      Endpoint.
     interfaces: Required. The connection details for the Endpoint.
     name: Identifier. The resource name of the Endpoint. Format:
       `projects/{project}/locations/{location}/endpoints/{endpoint}`.
@@ -671,9 +701,10 @@ class Endpoint(_messages.Message):
   createTime = _messages.StringField(2)
   description = _messages.StringField(3)
   displayName = _messages.StringField(4)
-  interfaces = _messages.MessageField('Interface', 5, repeated=True)
-  name = _messages.StringField(6)
-  updateTime = _messages.StringField(7)
+  endpointId = _messages.StringField(5)
+  interfaces = _messages.MessageField('Interface', 6, repeated=True)
+  name = _messages.StringField(7)
+  updateTime = _messages.StringField(8)
 
 
 class EndpointSpec(_messages.Message):
@@ -697,7 +728,7 @@ class EndpointSpec(_messages.Message):
 
     Values:
       TYPE_UNSPECIFIED: Unspecified type.
-      NO_SPEC: There is no spec for the Endpoint. The content field must be
+      NO_SPEC: There is no spec for the Endpoint. The `content` field must be
         empty.
     """
     TYPE_UNSPECIFIED = 0
@@ -950,6 +981,8 @@ class McpServer(_messages.Message):
     description: Output only. The description of the MCP Server.
     displayName: Output only. The display name of the MCP Server.
     interfaces: Output only. The connection details for the MCP Server.
+    mcpServerId: Output only. A stable, globally unique identifier for MCP
+      Servers.
     name: Identifier. The resource name of the MCP Server. Format:
       `projects/{project}/locations/{location}/mcpServers/{mcp_server}`.
     tools: Output only. Tools provided by the MCP Server.
@@ -1017,9 +1050,10 @@ class McpServer(_messages.Message):
   description = _messages.StringField(3)
   displayName = _messages.StringField(4)
   interfaces = _messages.MessageField('Interface', 5, repeated=True)
-  name = _messages.StringField(6)
-  tools = _messages.MessageField('Tool', 7, repeated=True)
-  updateTime = _messages.StringField(8)
+  mcpServerId = _messages.StringField(6)
+  name = _messages.StringField(7)
+  tools = _messages.MessageField('Tool', 8, repeated=True)
+  updateTime = _messages.StringField(9)
 
 
 class McpServerSpec(_messages.Message):
@@ -1030,11 +1064,13 @@ class McpServerSpec(_messages.Message):
 
   Messages:
     ContentValue: Optional. The content of the MCP Server spec. This payload
-      is validated against the schema for the specified type.
+      is validated against the schema for the specified type. The content size
+      is limited to `10KB`.
 
   Fields:
     content: Optional. The content of the MCP Server spec. This payload is
-      validated against the schema for the specified type.
+      validated against the schema for the specified type. The content size is
+      limited to `10KB`.
     type: Required. The type of the MCP Server spec content.
   """
 
@@ -1043,10 +1079,10 @@ class McpServerSpec(_messages.Message):
 
     Values:
       TYPE_UNSPECIFIED: Unspecified type.
-      NO_SPEC: There is no spec for the MCP Server. The content field must be
-        empty.
+      NO_SPEC: There is no spec for the MCP Server. The `content` field must
+        be empty.
       TOOL_SPEC: The content is a MCP Tool Spec following the One MCP
-        specification. The payload is the same as the tools/list response.
+        specification. The payload is the same as the `tools/list` response.
     """
     TYPE_UNSPECIFIED = 0
     NO_SPEC = 1
@@ -1055,7 +1091,8 @@ class McpServerSpec(_messages.Message):
   @encoding.MapUnrecognizedFields('additionalProperties')
   class ContentValue(_messages.Message):
     r"""Optional. The content of the MCP Server spec. This payload is
-    validated against the schema for the specified type.
+    validated against the schema for the specified type. The content size is
+    limited to `10KB`.
 
     Messages:
       AdditionalProperty: An additional property for a ContentValue object.
@@ -1247,22 +1284,139 @@ class Protocol(_messages.Message):
   type = _messages.EnumField('TypeValueValuesEnum', 3)
 
 
+class SearchAgentsRequest(_messages.Message):
+  r"""Message for searching Agents
+
+  Enums:
+    SearchTypeValueValuesEnum: Optional. The type of search. If set, must be
+      set to `KEYWORD`.
+
+  Fields:
+    pageSize: Optional. The page size for search result pagination. Page size
+      is 500 if unspecified and is capped at `500` even if a larger value is
+      given. A negative value will result in an `INVALID_ARGUMENT` error. If
+      set to zero, server will pick an appropriate default. Returned results
+      may be fewer than requested.
+    pageToken: Optional. If present, then retrieve the next batch of results
+      from the preceding call to this method. `page_token` must be the value
+      of `next_page_token` from the previous response. The values of all other
+      method parameters, must be identical to those in the previous call.
+    searchString: Optional. Search criteria used to select the Agents to
+      return. If no search criteria is specified then all accessible Agents
+      will be returned. Search expressions can be used to restrict results
+      based upon `skills`, `agentId`, `description`, `name` and `trust`, where
+      the operators `=`, `NOT`, `AND` and `OR` can be used along with the
+      suffix wildcard symbol `*`.
+    searchType: Optional. The type of search. If set, must be set to
+      `KEYWORD`.
+  """
+
+  class SearchTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The type of search. If set, must be set to `KEYWORD`.
+
+    Values:
+      SEARCH_TYPE_UNSPECIFIED: Invalid search type.
+      KEYWORD: Search for a keyword across all searchable fields.
+    """
+    SEARCH_TYPE_UNSPECIFIED = 0
+    KEYWORD = 1
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  searchString = _messages.StringField(3)
+  searchType = _messages.EnumField('SearchTypeValueValuesEnum', 4)
+
+
+class SearchAgentsResponse(_messages.Message):
+  r"""Message for response to searching Agents
+
+  Fields:
+    agents: A list of Agents that match the `search_string` and `filter`.
+    nextPageToken: If there are more results than those appearing in this
+      response, then `next_page_token` is included. To get the next set of
+      results, call this method again using the value of `next_page_token` as
+      `page_token`.
+  """
+
+  agents = _messages.MessageField('Agent', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
+class SearchMcpServersRequest(_messages.Message):
+  r"""Message for searching MCP Servers
+
+  Enums:
+    SearchTypeValueValuesEnum: Optional. The type of search. If set, must be
+      set to `KEYWORD`.
+
+  Fields:
+    pageSize: Optional. The page size for search result pagination. Page size
+      is 500 if unspecified and is capped at `500` even if a larger value is
+      given. A negative value will result in an `INVALID_ARGUMENT` error. If
+      set to zero, server will pick an appropriate default. Returned results
+      may be fewer than requested.
+    pageToken: Optional. If present, then retrieve the next batch of results
+      from the preceding call to this method. `page_token` must be the value
+      of `next_page_token` from the previous response. The values of all other
+      method parameters, must be identical to those in the previous call.
+    searchString: Optional. Search criteria used to select the MCP Servers to
+      return. If no search criteria is specified then all accessible MCP
+      Servers will be returned. Search expressions can be used to restrict
+      results based upon `mcpServerId`, `description`, and `name`, where the
+      operators `=`, `NOT`, `AND` and `OR` can be used along with the suffix
+      wildcard symbol `*`.
+    searchType: Optional. The type of search. If set, must be set to
+      `KEYWORD`.
+  """
+
+  class SearchTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The type of search. If set, must be set to `KEYWORD`.
+
+    Values:
+      SEARCH_TYPE_UNSPECIFIED: Invalid search type.
+      KEYWORD: Search for a keyword across all searchable fields.
+    """
+    SEARCH_TYPE_UNSPECIFIED = 0
+    KEYWORD = 1
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  searchString = _messages.StringField(3)
+  searchType = _messages.EnumField('SearchTypeValueValuesEnum', 4)
+
+
+class SearchMcpServersResponse(_messages.Message):
+  r"""Message for response to searching MCP Servers
+
+  Fields:
+    mcpServers: A list of McpServers that match the `search_string` and
+      `filter`.
+    nextPageToken: If there are more results than those appearing in this
+      response, then `next_page_token` is included. To get the next set of
+      results, call this method again using the value of `next_page_token` as
+      `page_token`.
+  """
+
+  mcpServers = _messages.MessageField('McpServer', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
 class Service(_messages.Message):
   r"""Represents a user-defined Service.
 
   Fields:
-    agentSpec: Optional. The spec of the Agent. When set, the type of the
-      service is Agent.
+    agentSpec: Optional. The spec of the Agent. When `agent_spec` is set, the
+      type of the service is Agent.
     createTime: Output only. Create time.
     description: Optional. User-defined description of an Service. Can have a
-      maximum length of 2048 characters.
+      maximum length of `2048` characters.
     displayName: Optional. User-defined display name for the Service. Can have
-      a maximum length of 63 characters.
-    endpointSpec: Optional. The spec of the Endpoint. When set, the type of
-      the service is Endpoint.
+      a maximum length of `63` characters.
+    endpointSpec: Optional. The spec of the Endpoint. When `endpoint_spec` is
+      set, the type of the service is Endpoint.
     interfaces: Optional. The connection details for the Service.
-    mcpServerSpec: Optional. The spec of the MCP Server. When set, the type of
-      the service is MCP Server.
+    mcpServerSpec: Optional. The spec of the MCP Server. When
+      `mcp_server_spec` is set, the type of the service is MCP Server.
     name: Identifier. The resource name of the Service. Format:
       `projects/{project}/locations/{location}/services/{service}`.
     updateTime: Output only. Update time.

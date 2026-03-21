@@ -725,12 +725,17 @@ instance-zone will be used.
 
 *source-backup-region*::: The region of the source backup.
 
+*source-backup-project*::: The project of the source backup,  If
+unspecified, it is assumed that the backup is in the same project where the
+instance is to be created.
+
 """
 
   spec = FILE_SHARE_ARG_SPEC.copy()
   if include_backup_flags:
     spec['source-backup'] = str
     spec['source-backup-region'] = str
+    spec['source-backup-project'] = str
   if include_snapshot_flags:
     spec['source-snapshot'] = str
     spec['source-snapshot-region'] = str

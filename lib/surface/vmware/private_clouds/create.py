@@ -14,7 +14,6 @@
 # limitations under the License.
 """'vmware private-clouds create' command."""
 
-
 from googlecloudsdk.api_lib.vmware.privateclouds import PrivateCloudsClient
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -23,10 +22,13 @@ from googlecloudsdk.command_lib.vmware.clusters import util
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
-    'DESCRIPTION': """
+    'DESCRIPTION': (
+        """
           Create a VMware Engine private cloud. Private cloud creation is considered finished when the private cloud is in READY state. Check the progress of a private cloud using `{parent_command} list`.
-        """,
-    'EXAMPLES': """
+        """
+    ),
+    'EXAMPLES': (
+        """
           To create a private cloud in the `us-west2-a` zone using `standard-72` nodes that connects to the `my-network` VMware Engine network, run:
 
 
@@ -44,7 +46,8 @@ DETAILED_HELP = {
           $ {command} my-private-cloud --project=sample-project --location=us-west2 --cluster=my-management-cluster --node-type-config=type=standard-72,count=6 --management-range=192.168.0.0/24 --vmware-engine-network=my-network --type=STRETCHED --preferred-zone=us-west2-a --secondary-zone=us-west2-b
 
           The project is taken from gcloud properties core/project.
-    """,
+    """
+    ),
 }
 
 
@@ -111,13 +114,19 @@ class Create(base.CreateCommand):
         required=False,
         default='STANDARD',
         choices={
-            'STANDARD': """Standard private is a zonal resource, with 3 or more nodes nodes. Default type.""",
-            'TIME_LIMITED': """Time limited private cloud is a zonal resource, can have only 1 node and
+            'STANDARD': (
+                """Standard private is a zonal resource, with 3 or more nodes. Default type."""
+            ),
+            'TIME_LIMITED': (
+                """Time limited private cloud is a zonal resource, can have only 1 node and
             has limited life span. Will be deleted after defined period of time,
             can be converted into standard private cloud by expanding it up to 3
-            or more nodes.""",
-            'STRETCHED': """Stretched private cloud is a regional resource with redundancy,
-            with a minimum of 6 nodes, nodes count has to be even.""",
+            or more nodes."""
+            ),
+            'STRETCHED': (
+                """Stretched private cloud is a regional resource with redundancy,
+            with a minimum of 6 nodes, nodes count has to be even."""
+            ),
         },
         help='Type of the private cloud',
     )
@@ -148,6 +157,15 @@ class Create(base.CreateCommand):
         A non-overlapping CIDR range and prefix length for the service subnets.
         The service subnets are used for appliance or service deployment, such as storage,
         backup, disaster recovery, and media streaming.
+        """,
+    )
+    parser.add_argument(
+        '--kms-key',
+        required=False,
+        hidden=True,  # TODO: b/487194873 - Remove when the feature goes GA.
+        help="""\
+        The KMS key to use for encryption of the private cloud.
+        Format: projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}
         """,
     )
     flags.AddAutoscalingSettingsFlagsToParser(parser)
@@ -188,6 +206,7 @@ class Create(base.CreateCommand):
         secondary_zone=args.secondary_zone,
         autoscaling_settings=autoscaling_settings,
         service_subnet=args.service_subnet,
+        kms_key=args.kms_key,
     )
     if is_async:
       log.CreatedResource(operation.name, kind='private cloud', is_async=True)

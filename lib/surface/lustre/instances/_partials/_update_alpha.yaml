@@ -49,23 +49,6 @@
             enum_value: BASIC
             help_text: |-
               File system basic audit logs are enabled.
-    - group:
-        mutex: true
-        help_text: |-
-          Arguments for the  source backup.
-        params:
-        - arg_name: source-backup
-          help_text: |-
-            The source backup used to create the instance. Only set this field if the
-            instance is being created from a backup.
-            Format: projects/{project}/locations/{location}/backups/{backup}
-          is_positional: false
-          is_primary_resource: false
-          resource_spec: !REF googlecloudsdk.command_lib.lustre.v1alpha_resources:projects_locations_backups
-          resource_method_params:
-            instance.sourceBackup: '{__relative_name__}'
-          required: false
-          clearable: true
     - help_text: |-
         Identifier.
         The name of the instance.
@@ -367,7 +350,6 @@
         arg_name: dynamic-tier-options
         clearable: true
         required: false
-        hidden: true
         help_text: |-
           Dynamic tier options for a Managed Lustre instance.
         params:
@@ -375,7 +357,7 @@
           api_field: instance.dynamicTierOptions.mode
           required: false
           help_text: |-
-            The mode for the Dynamic tier instance.
+            The dynamic tier mode of the instance.
           choices:
           - arg_value: disabled
             enum_value: DISABLED

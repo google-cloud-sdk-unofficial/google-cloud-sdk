@@ -24,6 +24,7 @@ import itertools
 import re
 import sys
 
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import display
 from googlecloudsdk.core import exceptions
@@ -601,7 +602,15 @@ class _Common(six.with_metaclass(abc.ABCMeta, object)):
         'requires'
         if cls._regional_endpoint_compatibility == properties.VALUES.regional.REQUIRED  # pylint:disable=line-too-long
         else 'supports')
-    help_text = f'This {entity} {support_level} regional endpoints.'
+    help_text = (
+        f'This {entity} {support_level} regional endpoints.')
+    if cls._regional_endpoint_compatibility == properties.VALUES.regional.SUPPORTED:  # pylint:disable=line-too-long
+      help_text += (
+          ' To use regional endpoints for this command, use the'
+          ' `--endpoint-mode=regional-preferred` flag. To use regional'
+          ' endpoints by default, run `$ gcloud config set '
+          ' regional/endpoint_mode regional-preferred`.'
+      )
     cls.detailed_help = getattr(cls, 'detailed_help', {})
     cls.detailed_help.setdefault('REGIONAL ENDPOINTS', help_text)
 
@@ -715,14 +724,46 @@ class Command(six.with_metaclass(abc.ABCMeta, _Common)):
     """
     return self._cli_power_users_only.Execute(args, call_arg_complete=False)
 
-  @staticmethod
-  def _Flags(parser):
+  @classmethod
+  def _Flags(cls, parser):
     """Sets the default output format.
 
     Args:
       parser: The argparse parser.
     """
     parser.display_info.AddFormat(properties.VALUES.core.default_format.Get())
+    if cls.RegionalEndpointCompatibility() is not None:
+      parser.add_argument(
+          '--endpoint-mode',
+          metavar='ENDPOINT_MODE',
+          choices={
+              properties.VALUES.regional.GLOBAL: (
+                  '(Default) Use global rather than regional endpoints.'
+              ),
+              properties.VALUES.regional.REGIONAL: (
+                  'Only use regional endpoints. An error will be raised if a'
+                  ' regional endpoint is not available for a given command.'
+              ),
+              properties.VALUES.regional.REGIONAL_PREFERRED: (
+                  'Use regional endpoints when available, otherwise use global'
+                  ' endpoints. Recommended for most users.'
+              ),
+          },
+          help="""\
+          Specifies endpoint mode for a given command. Regional endpoints
+          provide enhanced data residency and reliability by ensuring your
+          request is handled entirely within the specified Google Cloud region.
+          This differs from global endpoints, which may process parts of the
+          request outside the target region.
+
+          Benefits of Regional Endpoints:
+          (1) Data Residency: Keeps data in-transit within the chosen region.
+          (2) Improved Isolation: Reduces the risk of cross-region impact
+          from outages.
+          """,
+          action=actions.StoreProperty(
+              properties.VALUES.regional.endpoint_mode),
+      )
 
   @abc.abstractmethod
   def Run(self, args):

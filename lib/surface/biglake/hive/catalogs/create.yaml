@@ -1,0 +1,45 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Create a BigLake Hive catalog.
+    description: |
+      Creates a BigLake Hive catalog.
+    examples: |-
+      To create a BigLake Hive catalog named `my-catalog` in Cloud Storage bucket `gs://my-bucket` which is in region `us-central1`, run:
+
+        $ {command} my-catalog --location-uri=gs://my-bucket --primary-location=us-central1
+
+      To create a BigLake Hive catalog named `my-catalog` in Cloud Storage bucket `gs://my-bucket` which is in region `us-central1` and has description `My new catalog`, run:
+
+        $ {command} my-catalog --location-uri=gs://my-bucket --primary-location=us-central1 --description="My new catalog"
+
+  request:
+    collection: biglake.hive.v1beta.projects.catalogs
+    ALPHA:
+      api_version: v1beta
+    method: create
+
+  arguments:
+    params:
+    - arg_name: catalog
+      resource_spec: !REF googlecloudsdk.command_lib.biglake.resources:hive_catalog
+      required: true
+      is_positional: true
+      is_primary_resource: true
+      help_text: |
+        The Hive Catalog to create.
+
+    - arg_name: location-uri
+      api_field: hiveCatalog.locationUri
+      required: true
+      help_text: |
+        The Cloud Storage location path where the catalog data will be stored.
+        Format: gs://bucket/path/to/catalog
+    - arg_name: description
+      api_field: hiveCatalog.description
+      help_text: |
+        Description of the Hive catalog.
+    - arg_name: primary-location
+      api_field: primary_location
+      required: true
+      help_text: |
+        Google Cloud region that specifies where the catalog metadata is stored, e.g. us-central1.

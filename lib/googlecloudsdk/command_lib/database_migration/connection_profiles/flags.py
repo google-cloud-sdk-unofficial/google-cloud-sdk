@@ -295,20 +295,16 @@ def AddEnableIamAuthenticationFlag(parser, required=False, for_create=False):
         action='store_const',
         const=True,
         dest='enable_iam_authentication',
-        hidden=True,
         required=required,
     )
   else:
-    iam_authentication_group = parser.add_group(
-        required=required, mutex=True, hidden=True
-    )
+    iam_authentication_group = parser.add_group(required=required, mutex=True)
     iam_authentication_group.add_argument(
         '--enable-iam-authentication',
         help=help_text,
         action='store_const',
         const=True,
         dest='enable_iam_authentication',
-        hidden=True,
         required=False,
     )
     iam_authentication_group.add_argument(
@@ -317,6 +313,5 @@ def AddEnableIamAuthenticationFlag(parser, required=False, for_create=False):
         action='store_const',
         const=False,
         dest='enable_iam_authentication',
-        hidden=True,
         required=False,
     )

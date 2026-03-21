@@ -49,12 +49,12 @@
               - arg_value: no-spec
                 enum_value: NO_SPEC
                 help_text: |-
-                  There is no spec for the Agent. The content field must be empty.
+                  There is no spec for the Agent. The `content` field must be empty.
               - arg_value: a2a-agent-card
                 enum_value: A2A_AGENT_CARD
                 help_text: |-
                   The content is an A2A Agent Card following the A2A specification.
-                  The interfaces field must be empty.
+                  The `interfaces` field must be empty.
             - arg_name: agent-spec-content
               api_field: service.agentSpec.content
               required: false
@@ -63,6 +63,7 @@
               help_text: |-
                 The content of the Agent spec in the JSON format.
                 This payload is validated against the schema for the specified type.
+                The content size is limited to `10KB`.
         - group:
             api_field: service.mcpServerSpec
             arg_name: mcp-server-spec
@@ -80,12 +81,12 @@
               - arg_value: no-spec
                 enum_value: NO_SPEC
                 help_text: |-
-                  There is no spec for the MCP Server. The content field must be empty.
+                  There is no spec for the MCP Server. The `content` field must be empty.
               - arg_value: tool-spec
                 enum_value: TOOL_SPEC
                 help_text: |-
                   The content is a MCP Tool Spec following the One MCP specification.
-                  The payload is the same as the tools/list response.
+                  The payload is the same as the `tools/list` response.
             - arg_name: mcp-server-spec-content
               api_field: service.mcpServerSpec.content
               required: false
@@ -94,6 +95,7 @@
               help_text: |-
                 The content of the MCP Server spec.
                 This payload is validated against the schema for the specified type.
+                The content size is limited to `10KB`.
         - group:
             api_field: service.endpointSpec
             arg_name: endpoint-spec
@@ -111,7 +113,7 @@
               - arg_value: no-spec
                 enum_value: NO_SPEC
                 help_text: |-
-                  There is no spec for the Endpoint. The content field must be empty.
+                  There is no spec for the Endpoint. The `content` field must be empty.
             - arg_name: endpoint-spec-content
               api_field: service.endpointSpec.content
               required: false
@@ -133,14 +135,14 @@
       repeated: false
       help_text: |-
         User-defined display name for the Service.
-        Can have a maximum length of 63 characters.
+        Can have a maximum length of `63` characters.
     - arg_name: description
       api_field: service.description
       required: false
       repeated: false
       help_text: |-
         User-defined description of an Service.
-        Can have a maximum length of 2048 characters.
+        Can have a maximum length of `2048` characters.
     - arg_name: interfaces
       api_field: service.interfaces
       required: false

@@ -25,7 +25,7 @@
       To export data objects from a collection `my-collection` in project `my-project` and
       location `us-central1` to Google Cloud Storage bucket `my-bucket`, run:
 
-      $ {command} my-collection --location=us-central1 --gcs-destination-export-uri=gs://my-bucket/export/ --gcs-destination-format=json --project=my-project
+      $ {command} my-collection --location=us-central1 --gcs-destination-export-uri=gs://my-bucket/export/ --gcs-destination-format=jsonl --project=my-project
   arguments:
     params:
     - arg_name: gcs-destination-export-uri
@@ -44,7 +44,11 @@
       - arg_value: json
         enum_value: JSON
         help_text: |-
-          The exported Data Objects will be in JSON format.
+          Deprecated: Exports Data Objects in `JSON` format. Use `JSONL` instead.
+      - arg_value: jsonl
+        enum_value: JSONL
+        help_text: |-
+          Exports Data Objects in `JSONL` format.
     - help_text: |-
         The resource name of the Collection from which we want to export Data
         Objects. Format:

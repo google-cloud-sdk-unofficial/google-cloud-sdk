@@ -680,10 +680,13 @@ class GoogleCloudVectorsearchV1betaExportDataObjectsRequestGcsExportDestination(
 
     Values:
       FORMAT_UNSPECIFIED: Unspecified format.
-      JSON: The exported Data Objects will be in JSON format.
+      JSON: Deprecated: Exports Data Objects in `JSON` format. Use `JSONL`
+        instead.
+      JSONL: Exports Data Objects in `JSONL` format.
     """
     FORMAT_UNSPECIFIED = 0
     JSON = 1
+    JSONL = 2
 
   exportUri = _messages.StringField(1)
   format = _messages.EnumField('FormatValueValuesEnum', 2)

@@ -14,6 +14,7 @@
 # limitations under the License.
 """Common flags for workforce pools commands."""
 
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 
@@ -96,6 +97,14 @@ def ExtendedAttributesOAuth2ClientAttributesGroup(required=True):
       type=str,
       required=required,
       metavar='EXTENDED_ATTRIBUTES_CLIENT_ID',
+      action=actions.DeprecationAction(
+          '--extended-attributes-client-id',
+          warn=(
+              'The {flag_name} flag is restricted. We suggest you use SCIM'
+              ' instead.'
+          ),
+          removed=False,
+      ),
       help=(
           'The OAuth 2.0 client ID for retrieving extended attributes from the'
           ' identity provider. Required to get extended group memberships for'
@@ -108,6 +117,14 @@ def ExtendedAttributesOAuth2ClientAttributesGroup(required=True):
       type=str,
       required=required,
       metavar='EXTENDED_ATTRIBUTES_CLIENT_SECRET_VALUE',
+      action=actions.DeprecationAction(
+          '--extended-attributes-client-secret-value',
+          warn=(
+              'The {flag_name} flag is restricted. We suggest you use SCIM'
+              ' instead.'
+          ),
+          removed=False,
+      ),
       help=(
           'The OAuth 2.0 client secret for retrieving extended attributes from'
           ' the identity provider. Required to get extended group memberships'
@@ -120,6 +137,14 @@ def ExtendedAttributesOAuth2ClientAttributesGroup(required=True):
       type=str,
       required=required,
       metavar='EXTENDED_ATTRIBUTES_ISSUER_URI',
+      action=actions.DeprecationAction(
+          '--extended-attributes-issuer-uri',
+          warn=(
+              'The {flag_name} flag is restricted. We suggest you use SCIM'
+              ' instead.'
+          ),
+          removed=False,
+      ),
       help=(
           "OIDC identity provider's issuer URI. Must be a valid URI using"
           ' the `https` scheme. Required to get the OIDC discovery'
@@ -141,6 +166,14 @@ def ExtendedAttributesOAuth2ClientAttributesGroup(required=True):
       ),
       required=required,
       metavar='EXTENDED_ATTRIBUTES_TYPE',
+      action=actions.DeprecationAction(
+          '--extended-attributes-type',
+          warn=(
+              'The {flag_name} flag is restricted. We suggest you use SCIM'
+              ' instead.'
+          ),
+          removed=False,
+      ),
       help=(
           'Represents the identity provider and type of claims that should'
           ' be fetched.'
@@ -152,6 +185,14 @@ def ExtendedAttributesOAuth2ClientAttributesGroup(required=True):
       type=str,
       required=False,
       metavar='EXTENDED_ATTRIBUTES_FILTER',
+      action=actions.DeprecationAction(
+          '--extended-attributes-filter',
+          warn=(
+              'The {flag_name} flag is restricted. We suggest you use SCIM'
+              ' instead.'
+          ),
+          removed=False,
+      ),
       help=(
           'The filter used to request specific records from the IdP. By'
           ' default, all of the groups that are associated with a user are'

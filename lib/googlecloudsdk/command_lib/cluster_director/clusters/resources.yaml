@@ -38,4 +38,4 @@ projects_locations_clusters:
     parameter_name: clustersId
     attribute_name: cluster
     help: The cluster id of the {resource} resource.
-  disable_auto_completers: false
+  disable_auto_completers: true

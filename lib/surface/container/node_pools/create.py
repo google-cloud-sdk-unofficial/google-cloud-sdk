@@ -596,10 +596,19 @@ class CreateAlpha(Create):
           'The --enable-attestation flag must be provided when --tee-policy is'
           ' specified.',
       )
+    if args.enable_attestation and args.security_mode is None:
+      args.security_mode = 'debug'
+    if args.enable_attestation and args.security_mode == 'none':
+      raise exceptions.InvalidArgumentException(
+          '--enable-attestation',
+          'The --security-mode flag must be set to "debug" or "hardened" when'
+          ' --enable-attestation is specified.',
+      )
     ops.runner_pool_control_mode = args.runner_pool_control_mode
     ops.control_node_pool = args.control_node_pool
     ops.enable_attestation = args.enable_attestation
     ops.tee_policy = args.tee_policy
+    ops.security_mode = args.security_mode
     ops.subnetwork = args.subnetwork
     return ops
 
@@ -678,6 +687,7 @@ class CreateAlpha(Create):
     flags.AddRunnerPoolControlModeFlag(linked_runner_group, hidden=True)
     runner_pool_group = linked_runner_group.add_group()
     flags.AddControlNodePoolFlag(runner_pool_group, hidden=True)
+    flags.AddSecurityModeFlag(runner_pool_group, hidden=True)
     attestation_group = runner_pool_group.add_group(
         help='Settings for attestation.')
     flags.AddEnableAttestationFlag(attestation_group, hidden=True)

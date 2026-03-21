@@ -1,0 +1,24 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Deletes a BigLake Hive database.
+    description: |
+      Deletes a BigLake Hive database.
+    examples: |-
+      To delete a BigLake Hive database named `my-database` in catalog `my-catalog`, run:
+
+        $ {command} my-database --catalog=my-catalog
+
+  request:
+    collection: biglake.hive.v1beta.projects.catalogs.databases
+    api_version: v1beta
+    method: delete
+
+  arguments:
+    params:
+    - arg_name: database
+      resource_spec: !REF googlecloudsdk.command_lib.biglake.resources:hive_database
+      required: true
+      is_positional: true
+      is_primary_resource: true
+      help_text: |
+        The Hive Database to delete.

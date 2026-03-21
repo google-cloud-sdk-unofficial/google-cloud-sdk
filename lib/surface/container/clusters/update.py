@@ -1270,6 +1270,7 @@ class UpdateBeta(Update):
     group_dataplane_v2_observability = group.add_group()
     flags.AddDataplaneV2MetricsFlag(group_dataplane_v2_observability)
     flags.AddDataplaneV2ObservabilityFlags(group_dataplane_v2_observability)
+    flags.AddEnableAmbientNetworkingFlag(group, is_update=True)
     flags.AddWorkloadConfigAuditFlag(group)
     flags.AddHPAProfilesFlag(group)
     flags.AddWorkloadVulnScanningFlag(group)
@@ -1457,6 +1458,7 @@ class UpdateBeta(Update):
     opts.enable_image_streaming = args.enable_image_streaming
     opts.maintenance_interval = args.maintenance_interval
     opts.dataplane_v2 = args.enable_dataplane_v2
+    opts.enable_ambient_networking = args.enable_ambient_networking
     opts.enable_dataplane_v2_metrics = args.enable_dataplane_v2_metrics
     opts.disable_dataplane_v2_metrics = args.disable_dataplane_v2_metrics
     opts.enable_dataplane_v2_flow_observability = (

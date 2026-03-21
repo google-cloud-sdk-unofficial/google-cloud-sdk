@@ -3,8 +3,6 @@ $schema: "http://json-schema.org/draft-06/schema#"
 title: networkservices v1alpha1 Gateway export schema
 description: A gcloud export/import command YAML validation schema.
 type: object
-required:
-- ports
 additionalProperties: false
 properties:
   COMMENT:
@@ -37,6 +35,11 @@ properties:
     type: array
     items:
       type: string
+  allPorts:
+    description: |-
+      If true, the gateway will listen on all ports. This is only
+      supported for gateways of type SECURE_WEB_GATEWAY.
+    type: boolean
   authorizationPolicy:
     description: |-
       A fully-qualified AuthorizationPolicy URL reference. Specifies how

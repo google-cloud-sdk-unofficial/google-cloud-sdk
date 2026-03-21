@@ -18,6 +18,7 @@ from typing import Any, Dict
 
 from apitools.base.protorpclite import messages
 from googlecloudsdk.command_lib.orchestration_pipelines.handlers import base
+from googlecloudsdk.core import log
 
 
 class DataformRepositoryHandler(base.GcpResourceHandler):
@@ -32,7 +33,7 @@ class DataformRepositoryHandler(base.GcpResourceHandler):
       self, resource_message: messages.Message
   ) -> messages.Message:
     return self.messages.DataformProjectsLocationsRepositoriesCreateRequest(
-        parent=self._get_location_path(),
+        parent=self._get_parent_path(),
         repository=resource_message,
         repositoryId=self.get_resource_id(),
     )
@@ -63,7 +64,7 @@ class DataformReleaseConfigHandler(base.GcpResourceHandler):
       self, resource_message: messages.Message
   ) -> messages.Message:
     return self.messages.DataformProjectsLocationsRepositoriesReleaseConfigsCreateRequest(
-        parent=self._get_location_path(),
+        parent=self._get_parent_path(),
         releaseConfig=resource_message,
         releaseConfigId=self.get_resource_id(),
     )
@@ -81,6 +82,37 @@ class DataformReleaseConfigHandler(base.GcpResourceHandler):
         updateMask=",".join(changed_fields),
     )
 
+  def get_local_definition(self) -> Dict[str, Any]:
+    definition = super().get_local_definition()
+    if "releaseCompilationResult" in definition:
+      self._release_compilation_result = definition.pop(
+          "releaseCompilationResult"
+      )
+    return definition
+
+  def post_deploy(self, api_response: Any, created: bool) -> None:
+    if getattr(self, "_release_compilation_result", None) == "auto":
+      log.status.Print(
+          f"     [+] Triggering compilation for release config "
+          f"'{self.resource.name}'..."
+      )
+      if self.dry_run:
+        log.status.Print(
+            f"     [DRY RUN] Would compile release config "
+            f"'{self.resource.name}'"
+        )
+        return
+
+      request = self.messages.DataformProjectsLocationsRepositoriesCompilationResultsCreateRequest(
+          parent=self._get_parent_path(),
+          compilationResult=self.messages.CompilationResult(
+              releaseConfig=self._get_resource_name()
+          ),
+      )
+      self.client.projects_locations_repositories_compilationResults.Create(
+          request=request
+      )
+
 
 class DataformWorkflowConfigHandler(base.GcpResourceHandler):
   """Handler for Dataform WorkflowConfig resources."""
@@ -96,7 +128,7 @@ class DataformWorkflowConfigHandler(base.GcpResourceHandler):
         "/" not in definition["releaseConfig"]):
       release_config_id = definition["releaseConfig"]
       definition["releaseConfig"] = (
-          f"{self._get_location_path()}/releaseConfigs/{release_config_id}"
+          f"{self._get_parent_path()}/releaseConfigs/{release_config_id}"
       )
     return definition
 
@@ -104,7 +136,7 @@ class DataformWorkflowConfigHandler(base.GcpResourceHandler):
       self, resource_message: messages.Message
   ) -> messages.Message:
     return self.messages.DataformProjectsLocationsRepositoriesWorkflowConfigsCreateRequest(
-        parent=self._get_location_path(),
+        parent=self._get_parent_path(),
         workflowConfig=resource_message,
         workflowConfigId=self.get_resource_id(),
     )
@@ -119,5 +151,41 @@ class DataformWorkflowConfigHandler(base.GcpResourceHandler):
     return self.messages.DataformProjectsLocationsRepositoriesWorkflowConfigsPatchRequest(
         name=existing_resource.name,
         workflowConfig=resource_message,
+        updateMask=",".join(changed_fields),
+    )
+
+
+class DataformWorkspaceHandler(base.GcpResourceHandler):
+  """Handler for Dataform Workspace resources."""
+
+  def build_get_request(self) -> messages.Message:
+    req_cls = (
+        self.messages.DataformProjectsLocationsRepositoriesWorkspacesGetRequest
+    )
+    return req_cls(name=self._get_resource_name())
+
+  def build_create_request(
+      self, resource_message: messages.Message
+  ) -> messages.Message:
+    return self.messages.DataformProjectsLocationsRepositoriesWorkspacesCreateRequest(
+        parent=self._get_parent_path(),
+        workspace=resource_message,
+        workspaceId=self.get_resource_id(),
+    )
+
+  def build_update_request(
+      self,
+      existing_resource: messages.Message,
+      resource_message: messages.Message,
+      changed_fields: list[str],
+  ) -> messages.Message:
+    # Dataform Workspaces only support Create/Get/Delete according to API,
+    # so we should error on update. Note: dataform v1beta1 might have different
+    # methods but we fall back to generic approach. If Patch is unsupported
+    # it will raise exception during execution.
+    resource_message.name = existing_resource.name
+    return self.messages.DataformProjectsLocationsRepositoriesWorkspacesPatchRequest(
+        name=existing_resource.name,
+        workspace=resource_message,
         updateMask=",".join(changed_fields),
     )

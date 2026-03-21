@@ -69,6 +69,18 @@ def GetKeyArg(help_text='The DNS key identifier.', is_beta=False):
   )
 
 
+def GetSkipSoaUpdateArg():
+  return base.Argument(
+      '--skip-soa-update',
+      action='store_true',
+      default=False,
+      help=(
+          'Skip incrementing the serial number of the SOA record when making'
+          ' changes to the record-sets.'
+      ),
+  )
+
+
 def GetDnsZoneArg(help_text):
   return base.Argument(
       'dns_zone',

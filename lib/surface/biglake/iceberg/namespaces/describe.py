@@ -27,7 +27,7 @@ help_text = textwrap.dedent("""\
     """)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class DescribeCatalog(base.DescribeCommand):
   """Describe a BigLake Iceberg REST namespace."""

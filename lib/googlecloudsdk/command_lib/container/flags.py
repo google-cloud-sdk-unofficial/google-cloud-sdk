@@ -5624,6 +5624,8 @@ Examples:
       crashLoopBackOff:
         maxContainerRestartPeriod: '300s'
     linuxConfig:
+      accurateTimeConfig:
+        enablePtpKvmTimeSync: true
       sysctl:
         net.core.somaxconn: '2048'
         net.ipv4.tcp_rmem: '4096 87380 6291456'
@@ -5772,6 +5774,12 @@ vm.vfs_cache_pressure                              | Must be between [0, 100]
 vm.swappiness                                      | Must be between [0, 200]
 vm.watermark_scale_factor                          | Must be between [10, 3000]
 vm.min_free_kbytes                                 | Must be between [67584, 1048576]
+
+List of supported keys in 'accurateTimeConfig' under 'linuxConfig'.
+
+KEY                                        | VALUE
+------------------------------------------ | ------------------------------------------
+enablePtpKvmTimeSync                       | boolean
 
 List of supported hugepage size in 'hugepageConfig'.
 
@@ -6190,6 +6198,18 @@ def AddTeePolicyFlag(parser, hidden=False):
       hidden=hidden,
       type=str,
       default=None)
+
+
+def AddSecurityModeFlag(parser, hidden=False):
+  """Adds a --security-mode flag to the given parser."""
+  parser.add_argument(
+      '--security-mode',
+      choices=['none', 'hardened', 'debug'],
+      help='The security mode of the runner pool node image.',
+      hidden=hidden,
+      type=str,
+      default=None,
+  )
 
 
 def AddKubernetesObjectsExportConfig(parser, for_create=False):

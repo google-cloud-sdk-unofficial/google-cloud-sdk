@@ -13,7 +13,7 @@ class AgentregistryV1alpha(base_api.BaseApiClient):
   MTLS_BASE_URL = 'https://agentregistry.mtls.googleapis.com/'
 
   _PACKAGE = 'agentregistry'
-  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform']
+  _SCOPES = ['https://www.googleapis.com/auth/agentregistry.read-only', 'https://www.googleapis.com/auth/agentregistry.read-write', 'https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/cloud-platform.read-only']
   _VERSION = 'v1alpha'
   _CLIENT_ID = 'CLIENT_ID'
   _CLIENT_SECRET = 'CLIENT_SECRET'
@@ -106,6 +106,33 @@ class AgentregistryV1alpha(base_api.BaseApiClient):
         request_field='',
         request_type_name='AgentregistryProjectsLocationsAgentsListRequest',
         response_type_name='ListAgentsResponse',
+        supports_download=False,
+    )
+
+    def Search(self, request, global_params=None):
+      r"""Searches Agents in a given project and location.
+
+      Args:
+        request: (AgentregistryProjectsLocationsAgentsSearchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SearchAgentsResponse) The response message.
+      """
+      config = self.GetMethodConfig('Search')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Search.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/agents:search',
+        http_method='POST',
+        method_id='agentregistry.projects.locations.agents.search',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1alpha/{+parent}/agents:search',
+        request_field='searchAgentsRequest',
+        request_type_name='AgentregistryProjectsLocationsAgentsSearchRequest',
+        response_type_name='SearchAgentsResponse',
         supports_download=False,
     )
 
@@ -234,6 +261,33 @@ class AgentregistryV1alpha(base_api.BaseApiClient):
         request_field='',
         request_type_name='AgentregistryProjectsLocationsMcpServersListRequest',
         response_type_name='ListMcpServersResponse',
+        supports_download=False,
+    )
+
+    def Search(self, request, global_params=None):
+      r"""Searches McpServers in a given project and location.
+
+      Args:
+        request: (AgentregistryProjectsLocationsMcpServersSearchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SearchMcpServersResponse) The response message.
+      """
+      config = self.GetMethodConfig('Search')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Search.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/mcpServers:search',
+        http_method='POST',
+        method_id='agentregistry.projects.locations.mcpServers.search',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1alpha/{+parent}/mcpServers:search',
+        request_field='searchMcpServersRequest',
+        request_type_name='AgentregistryProjectsLocationsMcpServersSearchRequest',
+        response_type_name='SearchMcpServersResponse',
         supports_download=False,
     )
 

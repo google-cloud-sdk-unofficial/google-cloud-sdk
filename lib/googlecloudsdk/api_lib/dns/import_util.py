@@ -291,40 +291,58 @@ def _RecordSetCopy(record_set, api_version='v1'):
   return copy
 
 
-def _SOAReplacement(current_record, record_to_be_imported, api_version='v1'):
+def _SOAReplacement(
+    current_record,
+    record_to_be_imported,
+    api_version='v1',
+    update_soa=True,
+):
   """Returns the replacement SOA record with restored primary NS name.
 
   Args:
     current_record: ResourceRecordSet, Current record-set.
     record_to_be_imported: ResourceRecordSet, Record-set to be imported.
     api_version: [str], the api version to use for creating the records.
+    update_soa: [bool], True to perform the automatic SOA serial number
+      increment.
 
   Returns:
-    ResourceRecordSet, the replacement SOA record with restored primary NS name.
+    ResourceRecordSet, the replacement SOA record with restored primary NS name,
+    or None if `update_soa` is false and the record to be imported is
+    identical to the current record.
   """
   replacement = _RecordSetCopy(record_to_be_imported, api_version=api_version)
   replacement.rrdatas[0] = replacement.rrdatas[0].format(
       current_record.rrdatas[0].split()[0])
 
   if replacement == current_record:
+    if not update_soa:
+      return None
     # There should always be a different 'next' SOA record.
     return NextSOARecordSet(replacement, api_version)
   else:
     return replacement
 
 
-def _RDataReplacement(current_record, record_to_be_imported, api_version='v1'):
+def _RDataReplacement(
+    current_record,
+    record_to_be_imported,
+    api_version='v1',
+    update_soa=True,
+):
   """Returns a record-set containing rrdata to be imported.
 
   Args:
     current_record: ResourceRecordSet, Current record-set.
     record_to_be_imported: ResourceRecordSet, Record-set to be imported.
     api_version: [str], the api version to use for creating the records.
+    update_soa: [bool], unused.
 
   Returns:
     ResourceRecordSet, a record-set containing rrdata to be imported.
     None, if rrdata to be imported is identical to current rrdata.
   """
+  del update_soa  # Unused.
   replacement = _RecordSetCopy(record_to_be_imported, api_version=api_version)
   if replacement == current_record:
     return None
@@ -385,12 +403,16 @@ def _NameAndType(record):
   return '{0} {1}'.format(record.name, record.type)
 
 
-def ComputeChange(current,
-                  to_be_imported,
-                  replace_all=False,
-                  origin=None,
-                  replace_origin_ns=False,
-                  api_version='v1'):
+def ComputeChange(
+    current,
+    to_be_imported,
+    *,
+    replace_all=False,
+    origin=None,
+    replace_origin_ns=False,
+    api_version='v1',
+    update_soa=True,
+):
   """Returns a change for importing the given record-sets.
 
   Args:
@@ -401,13 +423,15 @@ def ComputeChange(current,
     origin: string, the name of the apex zone ex. "foo.com"
     replace_origin_ns: bool, Whether origin NS records should be imported.
     api_version: [str], the api version to use for creating the records.
+    update_soa: [bool], whether to perform the automatic SOA serial number
+      increment.
 
   Raises:
     ConflictingRecordsFound: If conflicting records are found.
 
   Returns:
     A Change that describes the actions required to import the given
-    record-sets.
+    record-sets, or None if no changes are needed.
   """
   messages = core_apis.GetMessagesModule('dns', api_version)
   change = messages.Change()
@@ -431,8 +455,12 @@ def ComputeChange(current,
                             rdtype,
                             origin,
                             replace_origin_ns):
-      replacement = _GetRDataReplacement(rdtype)(
-          current_record, record_to_be_imported, api_version=api_version)
+      replacement_func = _GetRDataReplacement(rdtype)
+      replacement = replacement_func(
+          current_record,
+          record_to_be_imported,
+          api_version=api_version,
+          update_soa=update_soa)
       if replacement:
         change.deletions.append(current_record)
         change.additions.append(replacement)
@@ -444,13 +472,17 @@ def ComputeChange(current,
     current_record = current[key]
     rdtype = _ToStandardEnumTypeSafe(key[1])
     if rdtype is rdatatype.SOA:
-      change.deletions.append(current_record)
-      change.additions.append(NextSOARecordSet(current_record, api_version))
+      if update_soa:
+        change.deletions.append(current_record)
+        change.additions.append(NextSOARecordSet(current_record, api_version))
     elif replace_all and not _FilterOutRecord(current_record.name,
                                               rdtype,
                                               origin,
                                               replace_origin_ns):
       change.deletions.append(current_record)
+
+  if not change.additions and not change.deletions:
+    return None
 
   # If the only change is an SOA increment, there is nothing to be done.
   if IsOnlySOAIncrement(change, api_version):

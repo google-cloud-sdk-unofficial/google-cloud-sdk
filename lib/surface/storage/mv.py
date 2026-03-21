@@ -67,13 +67,14 @@ to be under gs://my_bucket/newprefix, otherwise preserving the naming
 structure:
 
   $ {command} gs://my_bucket/oldprefix gs://my_bucket/newprefix
-"""
-_ALPHA_EXAMPLES = """
+
 The following command would clear all custom contexts from the destination
 object while moving the object to the destination bucket.
 
   $ {command} gs://my-bucket/object gs://destination-bucket/object \
       --clear-custom-contexts
+"""
+_ALPHA_EXAMPLES = """
 """
 
 

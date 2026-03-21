@@ -335,7 +335,7 @@ def _GetClearedFieldsForRoutAction(route_action, field_prefix):
         route_action.faultInjectionPolicy,
         field_prefix + 'faultInjectionPolicy.')
 
-  # cachePolicy is currently Alpha-only.
+  # cachePolicy is currently Alpha and Beta only.
   if hasattr(route_action, 'cachePolicy'):
     if not route_action.cachePolicy:
       cleared_fields.append(field_prefix + 'cachePolicy')

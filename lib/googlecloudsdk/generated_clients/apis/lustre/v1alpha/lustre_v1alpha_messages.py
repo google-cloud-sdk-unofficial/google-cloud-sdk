@@ -264,14 +264,14 @@ class DynamicTierOptions(_messages.Message):
   r"""Dynamic tier options for a Managed Lustre instance.
 
   Enums:
-    ModeValueValuesEnum: Required. The mode for the Dynamic tier instance.
+    ModeValueValuesEnum: Required. The dynamic tier mode of the instance.
 
   Fields:
-    mode: Required. The mode for the Dynamic tier instance.
+    mode: Required. The dynamic tier mode of the instance.
   """
 
   class ModeValueValuesEnum(_messages.Enum):
-    r"""Required. The mode for the Dynamic tier instance.
+    r"""Required. The dynamic tier mode of the instance.
 
     Values:
       MODE_UNSPECIFIED: Unspecified dynamic tier mode.

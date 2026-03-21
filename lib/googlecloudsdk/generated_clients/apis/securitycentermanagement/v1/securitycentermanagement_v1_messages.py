@@ -1575,8 +1575,9 @@ class SecuritycentermanagementFoldersLocationsSecurityCenterServicesGetRequest(_
       assessment` * `gce-vulnerability-assessment` * `azure-vulnerability-
       assessment` * `notebook-security-scanner` * `artifact-analysis` *
       `agent-engine-threat-detection`
-    showEligibleModulesOnly: Optional. Set to `true` to show only modules that
-      are in scope. By default, all modules are shown.
+    showEligibleModulesOnly: Optional. Indicates whether to show only modules
+      that are available in your Security Command Center service tier. By
+      default, all modules are shown.
   """
 
   name = _messages.StringField(1, required=True)
@@ -1600,9 +1601,9 @@ class SecuritycentermanagementFoldersLocationsSecurityCenterServicesListRequest(
       `organizations/{organization}/locations/{location}` *
       `folders/{folder}/locations/{location}` *
       `projects/{project}/locations/{location}`
-    showEligibleModulesOnly: Flag that, when set, is used to filter the module
-      settings that are shown. The default setting is that all modules are
-      shown.
+    showEligibleModulesOnly: Indicates whether to show only modules that are
+      available in your Security Command Center service tier. By default, all
+      modules are shown.
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -2146,8 +2147,9 @@ class SecuritycentermanagementOrganizationsLocationsSecurityCenterServicesGetReq
       assessment` * `gce-vulnerability-assessment` * `azure-vulnerability-
       assessment` * `notebook-security-scanner` * `artifact-analysis` *
       `agent-engine-threat-detection`
-    showEligibleModulesOnly: Optional. Set to `true` to show only modules that
-      are in scope. By default, all modules are shown.
+    showEligibleModulesOnly: Optional. Indicates whether to show only modules
+      that are available in your Security Command Center service tier. By
+      default, all modules are shown.
   """
 
   name = _messages.StringField(1, required=True)
@@ -2170,9 +2172,9 @@ class SecuritycentermanagementOrganizationsLocationsSecurityCenterServicesListRe
       `organizations/{organization}/locations/{location}` *
       `folders/{folder}/locations/{location}` *
       `projects/{project}/locations/{location}`
-    showEligibleModulesOnly: Flag that, when set, is used to filter the module
-      settings that are shown. The default setting is that all modules are
-      shown.
+    showEligibleModulesOnly: Indicates whether to show only modules that are
+      available in your Security Command Center service tier. By default, all
+      modules are shown.
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -2747,8 +2749,9 @@ class SecuritycentermanagementProjectsLocationsSecurityCenterServicesGetRequest(
       assessment` * `gce-vulnerability-assessment` * `azure-vulnerability-
       assessment` * `notebook-security-scanner` * `artifact-analysis` *
       `agent-engine-threat-detection`
-    showEligibleModulesOnly: Optional. Set to `true` to show only modules that
-      are in scope. By default, all modules are shown.
+    showEligibleModulesOnly: Optional. Indicates whether to show only modules
+      that are available in your Security Command Center service tier. By
+      default, all modules are shown.
   """
 
   name = _messages.StringField(1, required=True)
@@ -2772,9 +2775,9 @@ class SecuritycentermanagementProjectsLocationsSecurityCenterServicesListRequest
       `organizations/{organization}/locations/{location}` *
       `folders/{folder}/locations/{location}` *
       `projects/{project}/locations/{location}`
-    showEligibleModulesOnly: Flag that, when set, is used to filter the module
-      settings that are shown. The default setting is that all modules are
-      shown.
+    showEligibleModulesOnly: Indicates whether to show only modules that are
+      available in your Security Command Center service tier. By default, all
+      modules are shown.
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)

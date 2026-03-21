@@ -1817,6 +1817,7 @@ class CreateNodePoolOptions(object):
       control_node_pool=None,
       enable_attestation=None,
       tee_policy=None,
+      security_mode=None,
       node_drain_grace_period=None,
       node_drain_pdb_timeout=None,
       respect_pdb_during_node_pool_deletion=None,
@@ -1934,6 +1935,7 @@ class CreateNodePoolOptions(object):
     self.control_node_pool = control_node_pool
     self.enable_attestation = enable_attestation
     self.tee_policy = tee_policy
+    self.security_mode = security_mode
     self.node_drain_grace_period = node_drain_grace_period
     self.node_drain_pdb_timeout = node_drain_pdb_timeout
     self.respect_pdb_during_node_pool_deletion = (
@@ -6694,26 +6696,49 @@ class APIAdapter(object):
       node_config.runnerPoolControl = self.messages.RunnerPoolControl(
           mode=self.messages.RunnerPoolControl.ModeValueValuesEnum.CONFIDENTIAL
       )
-    elif options.control_node_pool:
+
+    elif (
+        options.control_node_pool
+        or options.enable_attestation
+        or options.tee_policy
+        or options.security_mode
+    ):
       node_config.runnerPoolConfig = self.messages.RunnerPoolConfig(
-          controlNodePool=options.control_node_pool,
-          attestation=self.messages.AttestationConfig(),
+          controlNodePool=(
+              options.control_node_pool
+              if options.control_node_pool
+              else None
+          ),
       )
-      if options.enable_attestation:
-        node_config.runnerPoolConfig.attestation.mode = (
+
+      if (
+          options.control_node_pool
+          or options.enable_attestation
+          or options.tee_policy
+      ):
+        if not options.control_node_pool:
+          raise util.Error(
+              '--enable-attestation and --tee-policy can only be specified with'
+              ' --control-node-pool.'
+          )
+        attestation_mode = (
             self.messages.AttestationConfig.ModeValueValuesEnum.ENABLED
+            if options.enable_attestation
+            else self.messages.AttestationConfig.ModeValueValuesEnum.DISABLED
         )
-      else:
-        node_config.runnerPoolConfig.attestation.mode = (
-            self.messages.AttestationConfig.ModeValueValuesEnum.DISABLED
+        node_config.runnerPoolConfig.attestation = (
+            self.messages.AttestationConfig(
+                mode=attestation_mode,
+                teePolicy=options.tee_policy if options.tee_policy else None,
+            )
         )
-      if options.tee_policy:
-        node_config.runnerPoolConfig.attestation.teePolicy = options.tee_policy
-    elif options.enable_attestation or options.tee_policy:
-      raise util.Error(
-          '--enable-attestation and --tee-policy can only be specified with '
-          '--control-node-pool.'
-      )
+
+      if options.security_mode:
+        node_config.runnerPoolConfig.securityMode = (
+            self.messages.RunnerPoolConfig.SecurityModeValueValuesEnum(
+                options.security_mode.upper()
+            )
+        )
 
     # if we are creating a multi-host TPU (tpu_topology or a resource policy
     # is specified) and num_nodes is not specified, calculate the

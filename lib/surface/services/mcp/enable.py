@@ -127,7 +127,7 @@ class Enable(base.SilentCommand):
           throw_if_unattended=True,
       )
       if do_enable:
-        enable_service_op, _ = serviceusage.AddEnableRule(
+        enable_service_op = serviceusage.AddEnableRule(
             [args.service],
             project,
             folder=folder,

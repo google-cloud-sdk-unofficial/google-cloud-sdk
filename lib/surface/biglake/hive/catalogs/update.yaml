@@ -1,0 +1,29 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Update a BigLake Hive catalog.
+    description: |
+      Updates a BigLake Hive catalog.
+    examples: |-
+      To update a BigLake Hive catalog named 'my-catalog' with the following
+        arguments, run:
+        $ {command} my-catalog --description="My updated catalog"
+
+  request:
+    collection: biglake.hive.v1beta.projects.catalogs
+    ALPHA:
+      api_version: v1beta
+    method: patch
+
+  arguments:
+    params:
+    - arg_name: catalog
+      resource_spec: !REF googlecloudsdk.command_lib.biglake.resources:hive_catalog
+      required: true
+      is_positional: true
+      is_primary_resource: true
+      help_text: |
+        The Hive Catalog to update.
+    - arg_name: description
+      api_field: hiveCatalog.description
+      help_text: |
+        Description of the Hive catalog.

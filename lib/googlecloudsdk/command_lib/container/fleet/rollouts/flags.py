@@ -77,6 +77,12 @@ class RolloutFlags:
                     lower_bound=0
                 ),
                 'straggler-migration-strategy': str,
+                'error-budget-percentage': arg_parsers.BoundedInt(
+                    lower_bound=0, upper_bound=100
+                ),
+                'error-budget-count': arg_parsers.BoundedInt(
+                    lower_bound=0
+                ),
             },
             required_keys=[],
         ),
@@ -84,8 +90,9 @@ class RolloutFlags:
         help=textwrap.dedent("""\
             Comma-separated list of custom waves to be used for the rollout.
             Each custom wave is specified as `upper-bound-percentage`,
-            `minimum-completion-percentage` or `minimum-completion-number`, and
-            `straggler-migration-strategy`.
+            `minimum-completion-percentage` or `minimum-completion-number`,
+            `straggler-migration-strategy` and `error-budget-percentage` or
+            `error-budget-count`.
 
             In order to have multiple custom waves, use the `--custom-wave`
             flag multiple times.
@@ -183,6 +190,17 @@ class RolloutFlags:
         help='Configurations for the Rollout. Waves are assigned automatically.'
     )
     self._AddSoakDuration(managed_rollout_config_group)
+
+  def AddStage(self):
+    self.parser.add_argument(
+        '--stage',
+        required=True,
+        type=int,
+        help=textwrap.dedent("""\
+            The number of the rollout stage to force-complete. The stage must
+            be the current active stage of the rollout.
+        """),
+    )
 
   def _AddSoakDuration(
       self, managed_rollout_config_group: parser_arguments.ArgumentInterceptor
@@ -484,6 +502,14 @@ class RolloutFlagParser:
               '`minimum-completion-number` must be specified for each wave in '
               '--custom-wave.'
           )
+        if ('error-budget-percentage' in wave) and (
+            'error-budget-count' in wave
+        ):
+          raise ValueError(
+              'Exactly one of `error-budget-percentage` or '
+              '`error-budget-count` must be specified for each wave in '
+              '--custom-wave.'
+          )
         custom_wave = fleet_messages.WaveTemplate()
         if 'upper-bound-percentage' in wave:
           custom_wave.upperBoundPercentage = wave['upper-bound-percentage']
@@ -511,6 +537,12 @@ class RolloutFlagParser:
           custom_wave.stragglerMigrationStrategy = fleet_messages.WaveTemplate.StragglerMigrationStrategyValueValuesEnum(
               wave['straggler-migration-strategy']
           )
+
+        if 'error-budget-percentage' in wave:
+          custom_wave.errorBudgetPercentage = wave['error-budget-percentage']
+
+        if 'error-budget-count' in wave:
+          custom_wave.errorBudgetCount = wave['error-budget-count']
 
         custom_waves.append(custom_wave)
 

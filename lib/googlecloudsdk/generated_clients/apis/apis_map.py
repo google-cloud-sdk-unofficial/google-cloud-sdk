@@ -3571,7 +3571,7 @@ MAP = {
                 default_version=False,
                 enable_mtls=True,
                 mtls_endpoint_override='',
-                regional_endpoints={'asia-northeast1': 'https://oracledatabase.asia-northeast1.rep.googleapis.com/', 'asia-northeast2': 'https://oracledatabase.asia-northeast2.rep.googleapis.com/', 'asia-south1': 'https://oracledatabase.asia-south1.rep.googleapis.com/', 'asia-south2': 'https://oracledatabase.asia-south2.rep.googleapis.com/', 'australia-southeast1': 'https://oracledatabase.australia-southeast1.rep.googleapis.com/', 'australia-southeast2': 'https://oracledatabase.australia-southeast2.rep.googleapis.com/', 'europe-west2': 'https://oracledatabase.europe-west2.rep.googleapis.com/', 'europe-west3': 'https://oracledatabase.europe-west3.rep.googleapis.com/', 'europe-west8': 'https://oracledatabase.europe-west8.rep.googleapis.com/', 'northamerica-northeast1': 'https://oracledatabase.northamerica-northeast1.rep.googleapis.com/', 'northamerica-northeast2': 'https://oracledatabase.northamerica-northeast2.rep.googleapis.com/', 'southamerica-east1': 'https://oracledatabase.southamerica-east1.rep.googleapis.com/', 'us-central1': 'https://oracledatabase.us-central1.rep.googleapis.com/', 'us-east4': 'https://oracledatabase.us-east4.rep.googleapis.com/', 'us-west3': 'https://oracledatabase.us-west3.rep.googleapis.com/'}),
+                regional_endpoints={'asia-northeast2': 'https://oracledatabase.asia-northeast2.rep.googleapis.com/', 'asia-south2': 'https://oracledatabase.asia-south2.rep.googleapis.com/', 'asia-south1': 'https://oracledatabase.asia-south1.rep.googleapis.com/', 'australia-southeast2': 'https://oracledatabase.australia-southeast2.rep.googleapis.com/', 'europe-west8': 'https://oracledatabase.europe-west8.rep.googleapis.com/', 'northamerica-northeast2': 'https://oracledatabase.northamerica-northeast2.rep.googleapis.com/'}),
     },
     'orglifecycle': {
         'v1':
@@ -4146,6 +4146,17 @@ MAP = {
                 regional_endpoints={}),
     },
     'saasservicemgmt': {
+        'v1':
+            APIDef(
+                apitools=ApitoolsClientDef(
+                    class_path='googlecloudsdk.generated_clients.apis.saasservicemgmt.v1',
+                    client_classpath='saasservicemgmt_v1_client.SaasservicemgmtV1',
+                    base_url='https://saasservicemgmt.googleapis.com/',
+                    messages_modulepath='saasservicemgmt_v1_messages'),
+                default_version=True,
+                enable_mtls=True,
+                mtls_endpoint_override='',
+                regional_endpoints={}),
         'v1alpha1':
             APIDef(
                 apitools=ApitoolsClientDef(
@@ -4153,7 +4164,7 @@ MAP = {
                     client_classpath='saasservicemgmt_v1alpha1_client.SaasservicemgmtV1alpha1',
                     base_url='https://saasservicemgmt.googleapis.com/',
                     messages_modulepath='saasservicemgmt_v1alpha1_messages'),
-                default_version=True,
+                default_version=False,
                 enable_mtls=True,
                 mtls_endpoint_override='',
                 regional_endpoints={}),

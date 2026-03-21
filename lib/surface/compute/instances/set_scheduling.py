@@ -260,6 +260,7 @@ class SetSchedulingInstancesBeta(SetSchedulingInstances):
     flags.AddLocalSsdRecoveryTimeoutArgs(parser)
     flags.AddGracefulShutdownArgs(parser)
     flags.AddSkipGuestOsShutdownArgs(parser)
+    flags.AddPreemptionNoticeDurationArgs(parser)
 
   def Run(self, args):
     return self._Run(args)

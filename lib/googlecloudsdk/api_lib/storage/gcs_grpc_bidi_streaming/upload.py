@@ -28,6 +28,7 @@ from googlecloudsdk.api_lib.storage.gcs_grpc import grpc_util
 from googlecloudsdk.api_lib.storage.gcs_grpc import metadata_util
 from googlecloudsdk.api_lib.storage.gcs_grpc import retry_util
 from googlecloudsdk.api_lib.storage.gcs_grpc_bidi_streaming import retry_util as bidi_retry_util
+from googlecloudsdk.command_lib.storage import encryption_util
 from googlecloudsdk.command_lib.storage import errors as command_errors
 from googlecloudsdk.command_lib.storage import fast_crc32c_util
 from googlecloudsdk.command_lib.storage import gzip_util
@@ -39,6 +40,7 @@ from googlecloudsdk.command_lib.util import crc32c
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 import six
+
 
 # TODO: b/441010615 - Remove this constant once the flush size is configurable
 # by the user. The default flush size is 50MiB.
@@ -121,6 +123,7 @@ class _Upload(six.with_metaclass(abc.ABCMeta, object)):
       start_offset: int = 0,
       delegator: cloud_api.CloudApi | None = None,
       posix_to_set: posix_util.PosixAttributes | None = None,
+      encryption_key: encryption_util.EncryptionKey | None = None,
   ):
     """Initializes _Upload.
 
@@ -132,11 +135,12 @@ class _Upload(six.with_metaclass(abc.ABCMeta, object)):
       request_config: Tracks additional request preferences.
       source_resource: Contains the source StorageUrl and source object
         metadata.
-      start_offset: The offset from the beginning of the object at which
-        the data should be written.
+      start_offset: The offset from the beginning of the object at which the
+        data should be written.
       delegator: The client used to make non-bidi streaming or metadata API
         calls.
       posix_to_set: POSIX attributes to set on the destination object.
+      encryption_key: The encryption key to use for the upload.
     """
     self._client = client
     self._source_stream = source_stream
@@ -162,6 +166,10 @@ class _Upload(six.with_metaclass(abc.ABCMeta, object)):
         destination_resource=self._destination_resource,
     )
     self._posix_to_set = posix_to_set
+    self._encryption_key = encryption_key
+    self._encryption_params = grpc_util.get_encryption_request_params(
+        self._client, encryption_key
+    )
 
   def _get_max_buffer_size(self):
     """Returns the maximum buffer size."""
@@ -391,6 +399,7 @@ class _Upload(six.with_metaclass(abc.ABCMeta, object)):
     )
     return self._client.types.BidiWriteObjectRequest(
         write_object_spec=write_object_spec,
+        common_object_request_params=self._encryption_params,
     )
 
   def _get_request_for_resuming_appendable_object_upload(
@@ -406,7 +415,8 @@ class _Upload(six.with_metaclass(abc.ABCMeta, object)):
         ),
     )
     return self._client.types.BidiWriteObjectRequest(
-        append_object_spec=append_object_spec
+        append_object_spec=append_object_spec,
+        common_object_request_params=self._encryption_params,
     )
 
   def _check_existing_destination_is_valid(self, destination_object):
@@ -485,6 +495,7 @@ class _Upload(six.with_metaclass(abc.ABCMeta, object)):
             bucket=self._initial_request.append_object_spec.bucket,
             object=self._initial_request.append_object_spec.object,
             generation=self._initial_request.append_object_spec.generation,
+            common_object_request_params=self._encryption_params,
         )
     )
     bidi_rpc = self._redirection_handler.start_bidi_rpc_with_retry_on_redirected_token_error(
@@ -566,4 +577,5 @@ class ResumableUpload(_Upload):
         start_offset=0,
         delegator=self._delegator,
         posix_to_set=self._posix_to_set,
+        encryption_key=self._encryption_key,
     ).run()

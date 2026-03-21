@@ -17,6 +17,7 @@
 
 from googlecloudsdk.command_lib.compute import completers as compute_completers
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 
 
 def MakeSnapshotArg(plural=False):
@@ -120,6 +121,11 @@ def AddMaxRetentionDays(parser):
     Days for snapshot to live before being automatically deleted. If unspecified, the snapshot will live until manually deleted.
     """,
   )
+
+
+def AddKmsKeyArg(parser):
+  kms_resource_args.AddKmsKeyResourceArg(
+      parser, 'snapshot', region_fallthrough=True)
 
 
 SOURCE_DISK_ARG = compute_flags.ResourceArgument(

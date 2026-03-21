@@ -34,7 +34,7 @@ help_text = textwrap.dedent("""\
     """)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class CreateNamespace(base.CreateCommand):
   """Create a BigLake Iceberg REST namespace."""

@@ -965,6 +965,13 @@ class PutObjectHold(_messages.Message):
 class RewriteObject(_messages.Message):
   r"""Describes options for object rewrite.
 
+  Enums:
+    StorageClassValueValuesEnum: Optional. Rewrites the object to the
+      specified storage class. Setting this field will perform a full byte
+      copy of the object if the storage class is different from the object's
+      current storage class. If Autoclass is enabled on the bucket, storage
+      class changes are ignored by Cloud Storage.
+
   Fields:
     kmsKey: Required. Resource name of the Cloud KMS key that will be used to
       encrypt the object. The Cloud KMS key must be located in same location
@@ -975,9 +982,35 @@ class RewriteObject(_messages.Message):
       example: "projects/123456/locations/us-central1/keyRings/my-
       keyring/cryptoKeys/my-key". The object will be rewritten and set with
       the specified KMS key.
+    storageClass: Optional. Rewrites the object to the specified storage
+      class. Setting this field will perform a full byte copy of the object if
+      the storage class is different from the object's current storage class.
+      If Autoclass is enabled on the bucket, storage class changes are ignored
+      by Cloud Storage.
   """
 
+  class StorageClassValueValuesEnum(_messages.Enum):
+    r"""Optional. Rewrites the object to the specified storage class. Setting
+    this field will perform a full byte copy of the object if the storage
+    class is different from the object's current storage class. If Autoclass
+    is enabled on the bucket, storage class changes are ignored by Cloud
+    Storage.
+
+    Values:
+      STORAGE_CLASS_UNSPECIFIED: The storage class is not specified.
+      STANDARD: Standard storage class.
+      NEARLINE: Nearline storage class.
+      COLDLINE: Coldline storage class.
+      ARCHIVE: Archive storage class.
+    """
+    STORAGE_CLASS_UNSPECIFIED = 0
+    STANDARD = 1
+    NEARLINE = 2
+    COLDLINE = 3
+    ARCHIVE = 4
+
   kmsKey = _messages.StringField(1)
+  storageClass = _messages.EnumField('StorageClassValueValuesEnum', 2)
 
 
 class StandardQueryParameters(_messages.Message):

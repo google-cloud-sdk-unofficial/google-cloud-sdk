@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2018 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -63,6 +63,18 @@ def OperationAttributeConfig():
       help_text='Cloud Composer operation for the {resource}.')
 
 
+def DagAttributeConfig():
+  return concepts.ResourceParameterAttributeConfig(
+      name='dag', help_text='Cloud Composer DAG for the {resource}.'
+  )
+
+
+def DagRunAttributeConfig():
+  return concepts.ResourceParameterAttributeConfig(
+      name='dag_run', help_text='Cloud Composer DAG run for the {resource}.'
+  )
+
+
 def GetLocationResourceSpec(fallthroughs_enabled=True):
   return concepts.ResourceSpec(
       'composer.projects.locations',
@@ -88,6 +100,29 @@ def GetOperationResourceSpec():
       projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
       locationsId=OperationLocationAttributeConfig(),
       operationsId=OperationAttributeConfig())
+
+
+def GetDagResourceSpec():
+  return concepts.ResourceSpec(
+      'composer.projects.locations.environments.dags',
+      resource_name='dag',
+      projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+      locationsId=EnvironmentLocationAttributeConfig(),
+      environmentsId=EnvironmentAttributeConfig(),
+      dagsId=DagAttributeConfig(),
+  )
+
+
+def GetDagRunResourceSpec():
+  return concepts.ResourceSpec(
+      'composer.projects.locations.environments.dags.dagRuns',
+      resource_name='dag_run',
+      projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+      locationsId=EnvironmentLocationAttributeConfig(),
+      environmentsId=EnvironmentAttributeConfig(),
+      dagsId=DagAttributeConfig(),
+      dagRunsId=DagRunAttributeConfig(),
+  )
 
 
 def AddLocationResourceArg(parser,
@@ -177,6 +212,58 @@ def AddOperationResourceArg(parser,
       'The {} {}.'.format(noun, verb),
       required=required,
       plural=plural).AddToParser(parser)
+
+
+def AddDagResourceArg(
+    parser, verb, positional=True, required=True, plural=False
+):
+  """Add a resource argument for a Cloud Composer DAG.
+
+  NOTE: Must be used only if it's the only resource arg in the command.
+
+  Args:
+    parser: the parser for the command
+    verb: str, the verb to describe the resource, for example, 'to update'.
+    positional: boolean, if True, means that the resource is a positional rather
+      than a flag.
+    required: boolean, if True, the arg is required
+    plural: boolean, if True, expects a list of resources
+  """
+  noun = 'dag' + ('s' if plural else '')
+  name = _BuildArgName(noun, positional)
+  concept_parsers.ConceptParser.ForResource(
+      name,
+      GetDagResourceSpec(),
+      'The {} {}.'.format(noun, verb),
+      required=required,
+      plural=plural,
+  ).AddToParser(parser)
+
+
+def AddDagRunResourceArg(
+    parser, verb, positional=True, required=True, plural=False
+):
+  """Add a resource argument for a Cloud Composer DAG run.
+
+  NOTE: Must be used only if it's the only resource arg in the command.
+
+  Args:
+    parser: the parser for the command
+    verb: str, the verb to describe the resource, for example, 'to update'.
+    positional: boolean, if True, means that the resource is a positional rather
+      than a flag.
+    required: boolean, if True, the arg is required
+    plural: boolean, if True, expects a list of resources
+  """
+  noun = 'dagRun' + ('s' if plural else '')
+  name = _BuildArgName(noun, positional)
+  concept_parsers.ConceptParser.ForResource(
+      name,
+      GetDagRunResourceSpec(),
+      'The {} {}.'.format(noun, verb),
+      required=required,
+      plural=plural,
+  ).AddToParser(parser)
 
 
 def _BuildArgName(name, positional):

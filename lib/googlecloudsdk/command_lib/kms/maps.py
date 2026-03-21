@@ -88,9 +88,14 @@ VALID_ALGORITHMS_MAP = {
         'rsa-sign-raw-pkcs1-2048',
         'rsa-sign-raw-pkcs1-3072',
         'rsa-sign-raw-pkcs1-4096',
-        'pq-sign-ml-dsa-65',
         'pq-sign-slh-dsa-sha2-128s',
         'pq-sign-hash-slh-dsa-sha2-128s-sha256',
+        'pq-sign-ml-dsa-44',
+        'pq-sign-ml-dsa-65',
+        'pq-sign-ml-dsa-87',
+        'pq-sign-ml-dsa-44-external-mu',
+        'pq-sign-ml-dsa-65-external-mu',
+        'pq-sign-ml-dsa-87-external-mu',
     ],
     PURPOSE_ENUM.ASYMMETRIC_DECRYPT: [
         'rsa-decrypt-oaep-2048-sha1',
@@ -116,12 +121,10 @@ VALID_ALGORITHMS_MAP = {
 }
 
 # Derive available algorithms from VALID_ALGORITHMS_MAP.
-ALL_ALGORITHMS = frozenset({
-    # pylint: disable=g-complex-comprehension
-    algorithm
-    for algorithms in VALID_ALGORITHMS_MAP.values()
-    for algorithm in algorithms
-})
+_all_algorithms = []
+for algorithms in VALID_ALGORITHMS_MAP.values():
+  _all_algorithms.extend(algorithms)
+ALL_ALGORITHMS = frozenset(_all_algorithms)
 
 ALGORITHMS_FOR_IMPORT = ALL_ALGORITHMS - {'external-symmetric-encryption'}
 

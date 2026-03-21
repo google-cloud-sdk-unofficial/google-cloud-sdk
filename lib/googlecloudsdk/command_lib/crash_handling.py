@@ -46,6 +46,21 @@ def _IsInstallationCorruption(err):
           isinstance(err.root_exception, ImportError))
 
 
+def _PrintModuleInstallationAction(command, err_string):
+  """Prompts installation error action."""
+  module_name = err_string.split('No module named ')[1].strip("'.")
+  log.error(
+      f'gcloud failed to load ({command}): {err_string}\n\n'
+      f'This indicates that the `{module_name}` module required for '
+      'this gcloud command is not installed in your Python environment.\n\n'
+      f'Action Required: Install the missing module `{module_name}` '
+      'in your Python environment by running:\n'
+      f'   $ sudo pip3 install {module_name}\nand set:\n'
+      '    $ export CLOUDSDK_PYTHON_SITEPACKAGES=1\n'
+      '\nFor more information, see '
+      'https://docs.cloud.google.com/sdk/gcloud/reference/topic/startup')
+
+
 def _PrintInstallationAction(err, err_string):
   """Prompts installation error action.
 
@@ -53,6 +68,11 @@ def _PrintInstallationAction(err, err_string):
     err: Exception err.
     err_string: Exception err string.
   """
+  # if module is missing, display instructions for the user to install it.
+  if 'No module named' in err_string:
+    _PrintModuleInstallationAction(err.command, err_string)
+    return
+
   # This usually indicates installation corruption.
   # We do want to suggest `gcloud components reinstall` here (ex. as opposed
   # to the similar message in gcloud.py), because there's a good chance it'll

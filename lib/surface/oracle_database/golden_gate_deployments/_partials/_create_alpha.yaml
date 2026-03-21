@@ -71,7 +71,7 @@
             The environment type of the GoldenGateDeployment.
         - arg_name: properties-cpu-core-count
           api_field: goldenGateDeployment.properties.cpuCoreCount
-          required: true
+          required: false
           repeated: false
           type: int
           help_text: |-
@@ -103,6 +103,23 @@
             help_text: |-
               The Ogg data of the GoldenGateDeployment.
             params:
+            - group:
+                mutex: true
+                help_text: |-
+                  Arguments for the deployment password options.
+                params:
+                - arg_name: ogg-data-admin-password
+                  api_field: goldenGateDeployment.properties.oggData.adminPassword
+                  required: false
+                  repeated: false
+                  help_text: |-
+                    The GoldenGate deployment console password in plain text.
+                - arg_name: ogg-data-admin-password-secret-version
+                  api_field: goldenGateDeployment.properties.oggData.adminPasswordSecretVersion
+                  required: false
+                  repeated: false
+                  help_text: |-
+                    The GoldenGate deployment console password secret version.
             - arg_name: ogg-data-deployment
               api_field: goldenGateDeployment.properties.oggData.deployment
               required: true
@@ -113,86 +130,16 @@
                 start with a letter.
             - arg_name: ogg-data-admin-username
               api_field: goldenGateDeployment.properties.oggData.adminUsername
-              required: false
+              required: true
               repeated: false
               help_text: |-
                 The GoldenGate deployment console username.
-            - arg_name: ogg-data-admin-password
-              api_field: goldenGateDeployment.properties.oggData.adminPassword
-              required: false
-              repeated: false
-              help_text: |-
-                The GoldenGate deployment console password.
             - arg_name: ogg-data-version
               api_field: goldenGateDeployment.properties.oggData.oggVersion
               required: false
               repeated: false
               help_text: |-
                 Version of OGG
-            - arg_name: ogg-data-certificate
-              api_field: goldenGateDeployment.properties.oggData.certificate
-              required: false
-              repeated: false
-              help_text: |-
-                The certificate of the GoldenGateDeployment.
-            - arg_name: ogg-data-credential-store
-              api_field: goldenGateDeployment.properties.oggData.credentialStore
-              required: false
-              help_text: |-
-                The credential store of the GoldenGateDeployment.
-              choices:
-              - arg_value: goldengate
-                enum_value: GOLDENGATE
-                help_text: |-
-                  The credential store is Goldengate.
-                hidden: true
-              - arg_value: iam
-                enum_value: IAM
-                help_text: |-
-                  The credential store is IAM.
-                hidden: true
-            - arg_name: ogg-data-identity-domain-id
-              api_field: goldenGateDeployment.properties.oggData.identityDomainId
-              required: false
-              repeated: false
-              help_text: |-
-                The identity domain id of the GoldenGateDeployment.
-            - arg_name: ogg-data-password-secret-id
-              api_field: goldenGateDeployment.properties.oggData.passwordSecretId
-              required: false
-              repeated: false
-              help_text: |-
-                The password secret id of the GoldenGateDeployment.
-            - group:
-                api_field: goldenGateDeployment.properties.oggData.groupRolesMapping
-                required: false
-                help_text: |-
-                  The group to roles mapping of the GoldenGateDeployment.
-                params:
-                - arg_name: group-roles-mapping-security-id
-                  api_field: goldenGateDeployment.properties.oggData.groupRolesMapping.securityGroupId
-                  required: false
-                  repeated: false
-                  help_text: |-
-                    The security group id.
-                - arg_name: group-roles-mapping-administrator-id
-                  api_field: goldenGateDeployment.properties.oggData.groupRolesMapping.administratorGroupId
-                  required: false
-                  repeated: false
-                  help_text: |-
-                    The administrator group id.
-                - arg_name: group-roles-mapping-operator-id
-                  api_field: goldenGateDeployment.properties.oggData.groupRolesMapping.operatorGroupId
-                  required: false
-                  repeated: false
-                  help_text: |-
-                    The operator group id.
-                - arg_name: group-roles-mapping-user-id
-                  api_field: goldenGateDeployment.properties.oggData.groupRolesMapping.userGroupId
-                  required: false
-                  repeated: false
-                  help_text: |-
-                    The user group id.
         - group:
             api_field: goldenGateDeployment.properties.maintenanceWindow
             required: false
@@ -202,9 +149,37 @@
             - arg_name: maintenance-window-day
               api_field: goldenGateDeployment.properties.maintenanceWindow.day
               required: true
-              repeated: false
               help_text: |-
                 Days of the week.
+              choices:
+              - arg_value: monday
+                enum_value: MONDAY
+                help_text: |-
+                  Monday
+              - arg_value: tuesday
+                enum_value: TUESDAY
+                help_text: |-
+                  Tuesday
+              - arg_value: wednesday
+                enum_value: WEDNESDAY
+                help_text: |-
+                  Wednesday
+              - arg_value: thursday
+                enum_value: THURSDAY
+                help_text: |-
+                  Thursday
+              - arg_value: friday
+                enum_value: FRIDAY
+                help_text: |-
+                  Friday
+              - arg_value: saturday
+                enum_value: SATURDAY
+                help_text: |-
+                  Saturday
+              - arg_value: sunday
+                enum_value: SUNDAY
+                help_text: |-
+                  Sunday
             - arg_name: maintenance-window-start-hour
               api_field: goldenGateDeployment.properties.maintenanceWindow.startHour
               required: true
@@ -265,26 +240,6 @@
                 configured period cannot be longer than service defined period for security
                 releases. Not passing this field during create will equate to using the
                 service default.
-        - arg_name: properties-deployment-backup-id
-          api_field: goldenGateDeployment.properties.deploymentBackupId
-          required: false
-          repeated: false
-          help_text: |-
-            The deployment backup id of the GoldenGateDeployment.
-        - arg_name: properties-nsg-ids
-          api_field: goldenGateDeployment.properties.nsgIds
-          required: false
-          repeated: true
-          help_text: |-
-            The nsg ids of the GoldenGateDeployment.
-        - arg_name: properties-is-public
-          api_field: goldenGateDeployment.properties.isPublic
-          action: store_true
-          required: false
-          type: bool
-          help_text: |-
-            Whether the GoldenGateDeployment is public.
-          default: null
     - arg_name: gcp-oracle-zone
       api_field: goldenGateDeployment.gcpOracleZone
       required: false

@@ -305,3 +305,59 @@ class GitContext:
           "Please 'git pull' the latest changes before deploying."
       )
     return remote_version
+
+  def GetDeploymentMetadata(self, version_id):
+    """Retrieves Git deployment metadata.
+
+    Args:
+      version_id: The version ID of the deployment (typically a commit SHA).
+
+    Returns:
+      A dictionary containing git repository, branch, and commit SHA, or None
+      if the deployment is local.
+    """
+    if self._is_local:
+      return None
+
+    git_repo = "unknown"
+    git_branch = "unknown"
+
+    try:
+      git_branch = self._subprocess.check_output(
+          ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+          text=True,
+          stderr=self._subprocess.DEVNULL,
+      ).strip()
+    except (self._subprocess.CalledProcessError, FileNotFoundError):
+      pass
+
+    remote_name = "origin"
+    if git_branch != "unknown":
+      try:
+        configured_remote = self._subprocess.check_output(
+            ["git", "config", "--get", f"branch.{git_branch}.remote"],
+            text=True,
+            stderr=self._subprocess.DEVNULL,
+        ).strip()
+        if configured_remote:
+          remote_name = configured_remote
+      except (self._subprocess.CalledProcessError, FileNotFoundError):
+        pass
+
+    try:
+      git_repo = self._subprocess.check_output(
+          ["git", "remote", "get-url", remote_name],
+          text=True,
+          stderr=self._subprocess.DEVNULL,
+      ).strip()
+    except (self._subprocess.CalledProcessError, FileNotFoundError):
+      pass
+
+    return {
+        "origination": "GIT",
+        "deployment_details": {
+            "git_repo": git_repo,
+            "git_branch": git_branch,
+            "commit_sha": str(version_id),
+        },
+    }

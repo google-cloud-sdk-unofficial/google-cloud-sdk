@@ -1,0 +1,22 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: List BigLake Hive catalogs.
+    description: |
+      Lists BigLake Hive catalogs.
+    examples: |-
+      To list BigLake Hive catalogs in a project, run:
+        $ {command}
+  request:
+    collection: biglake.hive.v1beta.projects.catalogs
+    ALPHA:
+      api_version: v1beta
+    method: list
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: |
+        The Hive Catalog to list.
+      spec: !REF googlecloudsdk.command_lib.biglake.resources:project

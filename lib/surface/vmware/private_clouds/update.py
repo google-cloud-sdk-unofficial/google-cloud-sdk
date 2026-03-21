@@ -14,18 +14,18 @@
 # limitations under the License.
 """'vmware private-clouds update' command."""
 
-
 from googlecloudsdk.api_lib.vmware.privateclouds import PrivateCloudsClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.vmware import flags
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
-    'DESCRIPTION':
+    'DESCRIPTION': (
         """
           Update a VMware Engine private cloud.
-        """,
-    'EXAMPLES':
+        """
+    ),
+    'EXAMPLES': (
         """
           To update a private cloud named `my-private-cloud` by changing its description to `Example description` run:
 
@@ -37,11 +37,13 @@ DETAILED_HELP = {
 
           In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
 
-    """,
+    """
+    ),
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Update(base.UpdateCommand):
   """Update a Google Cloud VMware Engine private cloud."""
 
@@ -58,20 +60,54 @@ class Update(base.UpdateCommand):
         '--description',
         help="""\
         Text describing the private cloud
-        """)
+        """,
+    )
+    parser.add_argument(
+        '--encryption-type',
+        required=False,
+        hidden=True,  # TODO: b/487194873 - Remove when the feature goes GA.
+        help="""\
+        The encryption type to use for the private cloud.
+        CMEK requires --kms-key to be set.
+        """,
+        choices={
+            'GMEK': """Google managed encryption key.""",
+            'CMEK': """Customer managed encryption key.""",
+        },
+    )
+
+    parser.add_argument(
+        '--kms-key',
+        required=False,
+        hidden=True,  # TODO: b/487194873 - Remove when the feature goes GA.
+        help="""\
+        The Cloud KMS key resource name to use for encryption.
+        Format: projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}
+        Required and only applicable when --encryption-type is CMEK.
+        """,
+        default=None,
+    )
 
   def Run(self, args):
     privatecloud = args.CONCEPTS.private_cloud.Parse()
     client = PrivateCloudsClient()
     is_async = args.async_
-    operation = client.Update(privatecloud, description=args.description)
+
+    operation = client.Update(
+        privatecloud,
+        description=args.description,
+        encryption_type=args.encryption_type,
+        kms_key=args.kms_key,
+    )
     if is_async:
       log.UpdatedResource(operation.name, kind='private cloud', is_async=True)
-      return
+      return None
 
     resource = client.WaitForOperation(
         operation_ref=client.GetOperationRef(operation),
         message='waiting for private cloud [{}] to be updated'.format(
-            privatecloud.RelativeName()))
+            privatecloud.RelativeName()
+        ),
+    )
     log.UpdatedResource(privatecloud.RelativeName(), kind='private cloud')
     return resource

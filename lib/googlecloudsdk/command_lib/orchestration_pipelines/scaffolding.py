@@ -42,7 +42,7 @@ triggers:
     timezone: 'UTC'
 
 # Add your jobs here
-actions:
+actions: []
 """
 
 _DEPLOYMENT_TEMPLATE = """\

@@ -155,9 +155,10 @@ class GcsGrpcBidiStreamingClient(cloud_api.CloudApi):
   ):
     """Get object metadata using gRPC bidi streaming API."""
     gapic_client = self._get_gapic_client()
-    decryption_key = getattr(
-        getattr(request_config, 'resource_args', None), 'decryption_key', None
-    )
+    resource_args = getattr(request_config, 'resource_args', None)
+    decryption_key = None
+    if resource_args:
+      decryption_key = getattr(resource_args, 'decryption_key', None)
     read_request = gapic_client.types.BidiReadObjectRequest(
         read_object_spec=gapic_client.types.BidiReadObjectSpec(
             bucket=grpc_util.get_full_bucket_name(bucket_name),
@@ -296,6 +297,11 @@ class GcsGrpcBidiStreamingClient(cloud_api.CloudApi):
           'Gzip transport encoding is not supported with Zonal Buckets.'
       )
 
+    resource_args = getattr(request_config, 'resource_args', None)
+    encryption_key = None
+    if resource_args:
+      encryption_key = getattr(resource_args, 'encryption_key', None)
+
     if upload_strategy == cloud_api.UploadStrategy.SIMPLE:
       uploader = upload.SimpleUpload(
           client=client,
@@ -305,6 +311,7 @@ class GcsGrpcBidiStreamingClient(cloud_api.CloudApi):
           source_resource=source_resource,
           delegator=self._delegator,
           posix_to_set=posix_to_set,
+          encryption_key=encryption_key,
       )
     elif upload_strategy == cloud_api.UploadStrategy.RESUMABLE:
       uploader = upload.ResumableUpload(
@@ -315,6 +322,7 @@ class GcsGrpcBidiStreamingClient(cloud_api.CloudApi):
           source_resource=source_resource,
           delegator=self._delegator,
           posix_to_set=posix_to_set,
+          encryption_key=encryption_key,
       )
     else:
       raise core_exceptions.InternalError(

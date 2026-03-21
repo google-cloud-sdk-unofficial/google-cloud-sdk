@@ -17,7 +17,7 @@
 from typing import Any
 
 from apitools.base.py import exceptions as apitools_exceptions
-from googlecloudsdk.command_lib.orchestration_pipelines.handlers.base import GcpResourceHandler
+from googlecloudsdk.command_lib.orchestration_pipelines.handlers import base as handlers_base
 from googlecloudsdk.core import log
 
 
@@ -27,7 +27,7 @@ def _print_padded_request(request: Any) -> None:
     log.status.Print(f"     {line}")
 
 
-def deploy_gcp_resource(handler: GcpResourceHandler) -> None:
+def deploy_gcp_resource(handler: handlers_base.GcpResourceHandler) -> None:
   """Deploys a GCP resource using the given handler."""
   resource_id = handler.get_resource_id()
   resource_type_name = handler.resource.type
@@ -68,18 +68,21 @@ def deploy_gcp_resource(handler: GcpResourceHandler) -> None:
         if handler.show_requests:
           log.error("--- GCP API UPDATE REQUEST ---")
           _print_padded_request(request)
-        operation = handler.get_update_method()(request=request)
-        _, name_to_print = handler.wait_for_operation(operation)
+        api_response = handler.get_update_method()(request=request)
+        api_response = handler.wait_for_operation(api_response)
+        handler.post_deploy(api_response, created=False)
+        success_message = handler.get_success_deployment_message(api_response)
         log.status.Print(
-            f"     Successfully updated {resource_type_name}:"
-            f" {name_to_print or resource_id}"
+            f"     Successfully updated {resource_type_name}: {success_message}"
         )
+
     else:
       capitalized_type = resource_type_name[0].upper() + resource_type_name[1:]
       log.status.Print(
           f"     {capitalized_type} not found. Creating a new"
           " one..."
       )
+
       resource_message = handler.to_resource_message(local_definition)
       request = handler.build_create_request(resource_message)
 
@@ -91,13 +94,14 @@ def deploy_gcp_resource(handler: GcpResourceHandler) -> None:
         if handler.show_requests:
           log.error("--- GCP API CREATE REQUEST ---")
           _print_padded_request(request)
-        operation = handler.get_create_method()(request=request)
-        _, name_to_print = handler.wait_for_operation(operation)
+        api_response = handler.get_create_method()(request=request)
+        api_response = handler.wait_for_operation(api_response)
+        handler.post_deploy(api_response, created=True)
+        success_message = handler.get_success_deployment_message(api_response)
         log.status.Print(
-            f"     Successfully created {resource_type_name}:"
-            f" {name_to_print or resource_id}"
+            f"     Successfully created {resource_type_name}: {success_message}"
         )
-  except (apitools_exceptions.HttpError, ValueError) as e:
+  except (apitools_exceptions.HttpError, ValueError, NotImplementedError) as e:
     raise ValueError(
         f"Failed to deploy resource '{resource_id}' of type"
         f" '{resource_type_name}': {e}"

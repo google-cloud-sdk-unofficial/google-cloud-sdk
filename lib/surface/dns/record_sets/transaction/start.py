@@ -32,6 +32,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
 
 
+@base.UniverseCompatible
 class Start(base.Command):
   """Start a transaction.
 
@@ -47,11 +48,12 @@ class Start(base.Command):
   @staticmethod
   def Args(parser):
     flags.GetZoneArg().AddToParser(parser)
+    flags.GetSkipSoaUpdateArg().AddToParser(parser)
 
   def Run(self, args):
     api_version = 'v1'
     # If in the future there are differences between API version, do NOT use
-    # this patter of checking ReleaseTrack. Break this into multiple classes.
+    # this pattern of checking ReleaseTrack. Break this into multiple classes.
     if self.ReleaseTrack() == base.ReleaseTrack.BETA:
       api_version = 'v1beta2'
     elif self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
@@ -84,17 +86,20 @@ class Start(base.Command):
 
     # Get the SOA record, there will be one and only one.
     # Add addition and deletion for SOA incrementing to change.
-    records = [record for record in list_pager.YieldFromList(
-        dns.resourceRecordSets,
-        dns.MESSAGES_MODULE.DnsResourceRecordSetsListRequest(
-            project=zone_ref.project,
-            managedZone=zone_ref.Name(),
-            name=zone.dnsName,
-            type='SOA'),
-        field='rrsets')]
-    change.deletions.append(records[0])
-    change.additions.append(
-        import_util.NextSOARecordSet(records[0], api_version=api_version))
+    if not args.skip_soa_update:
+      records_iter = list_pager.YieldFromList(
+          dns.resourceRecordSets,
+          dns.MESSAGES_MODULE.DnsResourceRecordSetsListRequest(
+              project=zone_ref.project,
+              managedZone=zone_ref.Name(),
+              name=zone.dnsName,
+              type='SOA'),
+          field='rrsets')
+      soa_record = next(records_iter, None)
+      if soa_record:
+        change.deletions.append(soa_record)
+        change.additions.append(
+            import_util.NextSOARecordSet(soa_record, api_version=api_version))
 
     # Write change to transaction file
     try:

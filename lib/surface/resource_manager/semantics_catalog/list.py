@@ -34,14 +34,24 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat(
-        'table(semantics_key:sort=1, otel_attribute_key, description)'
+    # Other argument parsing setup can go here
+
+    # Add the default format string for the command output
+    format_string = (
+        'table('
+        'semantics_key:sort=1, '
+        'otel_attribute_key, '
+        'semantic_value, '
+        'otel_value, '
+        'description'
+        ')'
     )
+    parser.display_info.AddFormat(format_string)
 
   def Run(self, args):
     del args  # Unused.
     # TODO: b/473455439 - Fetch from catalog service when RPC is ready.
-    return [
+    data = [
         {
             'semantics_key': 'ENVIRONMENT',
             'otel_attribute_key': 'deployment.environment.name',
@@ -49,18 +59,22 @@ class List(base.ListCommand):
                 {
                     'semantics_value': 'PRODUCTION',
                     'otel_attribute_value': 'production',
+                    'description': 'Production environment',
                 },
                 {
                     'semantics_value': 'STAGING',
                     'otel_attribute_value': 'staging',
+                    'description': 'Staging environment',
                 },
                 {
                     'semantics_value': 'TEST',
                     'otel_attribute_value': 'test',
+                    'description': 'Test environment',
                 },
                 {
                     'semantics_value': 'DEVELOPMENT',
                     'otel_attribute_value': 'development',
+                    'description': 'Development environment',
                 },
             ],
             'description': 'Specifies deployment environment of a resource.',
@@ -72,37 +86,47 @@ class List(base.ListCommand):
                 {
                     'semantics_value': 'MISSION_CRITICAL',
                     'otel_attribute_value': 'mission_critical',
+                    'description': 'Mission critical service',
                 },
                 {
                     'semantics_value': 'HIGH',
                     'otel_attribute_value': 'high',
+                    'description': 'High criticality service',
                 },
                 {
                     'semantics_value': 'MEDIUM',
                     'otel_attribute_value': 'medium',
+                    'description': 'Medium criticality service',
                 },
                 {
                     'semantics_value': 'LOW',
                     'otel_attribute_value': 'low',
+                    'description': 'Low criticality service',
                 },
             ],
             'description': (
                 'Criticality level of a resource for business operational'
                 ' continuity.'
             ),
-        },
-        {
-            'semantics_key': 'COST_CENTER',
-            'otel_attribute_key': 'service.cost_center',
-            'value_mappings': [],
-            'description': 'Cost center associated with a resource.',
-        },
-        {
-            'semantics_key': 'BUSINESS_UNIT',
-            'otel_attribute_key': 'service.business_unit',
-            'value_mappings': [],
-            'description': (
-                'Business unit or department responsible for a resource.'
-            ),
-        },
+        }
     ]
+    flattened_data = []
+    for item in data:
+      if item['value_mappings']:
+        for mapping in item['value_mappings']:
+          flattened_data.append({
+              'semantics_key': item['semantics_key'],
+              'otel_attribute_key': item['otel_attribute_key'],
+              'semantic_value': mapping['semantics_value'],
+              'otel_value': mapping['otel_attribute_value'],
+              'description': mapping.get('description') or item['description'],
+          })
+      else:
+        flattened_data.append({
+            'semantics_key': item['semantics_key'],
+            'otel_attribute_key': item['otel_attribute_key'],
+            'semantic_value': None,
+            'otel_value': None,
+            'description': item['description'],
+        })
+    return flattened_data

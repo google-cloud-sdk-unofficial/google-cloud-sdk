@@ -193,10 +193,23 @@ class Up(base.BinaryBackedCommand):
       return response
     except compose_exceptions.ComposeError:
       raise
+    except exceptions.DeploymentFailedError as e:
+      raise compose_exceptions.DeployError(
+          str(e), exit_codes.DEPLOY_CONTAINER_FAILED_TO_START
+      ) from e
+    except exceptions.ConfigurationError as e:
+      raise compose_exceptions.DeployError(
+          str(e), exit_codes.DEPLOY_PERMISSIONS_ERROR
+      ) from e
+    except exceptions.HttpError as e:
+      raise compose_exceptions.DeployError(
+          str(e), exit_codes.DEPLOY_API_ERROR
+      ) from e
     except Exception as e:
       log.debug(f'Raw output: {resource_response.stdout}')
+      # Keep this as the fallback for truly unexpected errors
       raise compose_exceptions.GcloudError(
-          str(e), exit_codes.UNKNOWN_ERROR
+          str(e), exit_codes.GCLOUD_UNCATEGORIZED_ERROR
       ) from e
 
   def Run(self, args):

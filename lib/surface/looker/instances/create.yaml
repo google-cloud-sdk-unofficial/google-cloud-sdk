@@ -287,7 +287,7 @@
     # Group for Enable Catalog Integration
     - group:
         required: false
-        release_tracks: [ALPHA]
+        release_tracks: [ALPHA, GA]
         help_text: |
           Catalog Integration - Catalog Integration is a feature that allows Looker to integrate with Universal Dataplex Catalog.
         params:

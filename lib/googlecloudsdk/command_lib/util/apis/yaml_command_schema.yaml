@@ -481,7 +481,6 @@ definitions:
           params:
             type: array
             items: {$ref: "#/definitions/argument"}
-            minItems: 1
 
 type: object
 additionalProperties: false

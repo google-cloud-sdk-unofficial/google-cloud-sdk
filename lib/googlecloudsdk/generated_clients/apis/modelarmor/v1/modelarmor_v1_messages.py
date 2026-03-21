@@ -140,6 +140,7 @@ class Empty(_messages.Message):
   """
 
 
+
 class FilterConfig(_messages.Message):
   r"""Filters configuration.
 
@@ -453,6 +454,10 @@ class McpServerFloorSetting(_messages.Message):
       applicable. Examples: "bigquery.googleapis.com/mcp",
       "run.googleapis.com/mcp" Empty list denotes that the floor setting is
       applicable to all MCP servers.
+    crossJurisdictionFallbackEnabled: Output only. If true, enable cross
+      jurisdiction fallback to available Model Armor location to enforce Model
+      Armor policy when Model Armor doesn't have a presence in the requested
+      jurisdiction.
     enableCloudLogging: Optional. If true, log Model Armor filter results to
       Cloud Logging.
     inspectAndBlock: Optional. If true, Model Armor filters will be run in
@@ -463,9 +468,10 @@ class McpServerFloorSetting(_messages.Message):
   """
 
   apis = _messages.StringField(1, repeated=True)
-  enableCloudLogging = _messages.BooleanField(2)
-  inspectAndBlock = _messages.BooleanField(3)
-  inspectOnly = _messages.BooleanField(4)
+  crossJurisdictionFallbackEnabled = _messages.BooleanField(2)
+  enableCloudLogging = _messages.BooleanField(3)
+  inspectAndBlock = _messages.BooleanField(4)
+  inspectOnly = _messages.BooleanField(5)
 
 
 class MessageItem(_messages.Message):
@@ -988,7 +994,7 @@ class RaiFilterResult(_messages.Message):
   Messages:
     RaiFilterTypeResultsValue: The map of RAI filter results where key is RAI
       filter type - either of "sexually_explicit", "hate_speech",
-      "harassment", "dangerous".
+      "harassment", "dangerous", "violence", "sexually_suggestive".
 
   Fields:
     executionState: Output only. Reports whether the RAI filter was
@@ -1001,7 +1007,7 @@ class RaiFilterResult(_messages.Message):
       skipped then this field provides related reason/explanation.
     raiFilterTypeResults: The map of RAI filter results where key is RAI
       filter type - either of "sexually_explicit", "hate_speech",
-      "harassment", "dangerous".
+      "harassment", "dangerous", "violence", "sexually_suggestive".
   """
 
   class ExecutionStateValueValuesEnum(_messages.Enum):
@@ -1035,7 +1041,8 @@ class RaiFilterResult(_messages.Message):
   @encoding.MapUnrecognizedFields('additionalProperties')
   class RaiFilterTypeResultsValue(_messages.Message):
     r"""The map of RAI filter results where key is RAI filter type - either of
-    "sexually_explicit", "hate_speech", "harassment", "dangerous".
+    "sexually_explicit", "hate_speech", "harassment", "dangerous", "violence",
+    "sexually_suggestive".
 
     Messages:
       AdditionalProperty: An additional property for a

@@ -71,7 +71,6 @@ class UpdateHelper(object):
       support_subsetting_subset_size,
       support_ip_port_dynamic_forwarding,
       support_forward_proxy,
-      support_zonal_affinity,
       support_allow_multinetwork,
   ):
     """Add all arguments for updating a backend service."""
@@ -151,8 +150,7 @@ class UpdateHelper(object):
     flags.AddBackendServiceCustomMetrics(parser, add_clear_argument=True)
     if support_ip_port_dynamic_forwarding:
       flags.AddDynamicForwarding(parser, support_forward_proxy)
-    if support_zonal_affinity:
-      flags.AddZonalAffinity(parser)
+    flags.AddZonalAffinity(parser)
     if support_allow_multinetwork:
       flags.AddAllowMultinetwork(parser)
 
@@ -161,7 +159,6 @@ class UpdateHelper(object):
       support_subsetting_subset_size,
       support_ip_port_dynamic_forwarding=False,
       support_forward_proxy=False,
-      support_zonal_affinity=False,
       support_allow_multinetwork=False,
       release_track=None,
   ):
@@ -170,7 +167,6 @@ class UpdateHelper(object):
         support_ip_port_dynamic_forwarding
     )
     self._support_forward_proxy = support_forward_proxy
-    self._support_zonal_affinity = support_zonal_affinity
     self._support_allow_multinetwork = support_allow_multinetwork
     self._release_track = release_track
 
@@ -354,8 +350,7 @@ class UpdateHelper(object):
     if self._support_forward_proxy:
       backend_services_utils.ForwardProxy(client, args, replacement)
 
-    if self._support_zonal_affinity:
-      backend_services_utils.ZonalAffinity(client, args, replacement)
+    backend_services_utils.ZonalAffinity(client, args, replacement)
     if self._support_allow_multinetwork and args.IsSpecified(
         'allow_multinetwork'
     ):
@@ -448,12 +443,8 @@ class UpdateHelper(object):
         args.IsSpecified('forward_proxy_cloud_run')
         if self._support_forward_proxy
         else False,
-        args.IsSpecified('zonal_affinity_spillover')
-        if self._support_zonal_affinity
-        else False,
-        args.IsSpecified('zonal_affinity_spillover_ratio')
-        if self._support_zonal_affinity
-        else False,
+        args.IsSpecified('zonal_affinity_spillover'),
+        args.IsSpecified('zonal_affinity_spillover_ratio'),
         args.IsSpecified('allow_multinetwork')
         if self._support_allow_multinetwork
         else False,
@@ -621,7 +612,6 @@ class UpdateGA(base.UpdateCommand):
   _support_subsetting_subset_size = False
   _support_ip_port_dynamic_forwarding = False
   _support_forward_proxy = False
-  _support_zonal_affinity = False
   _support_allow_multinetwork = False
 
   @classmethod
@@ -631,7 +621,6 @@ class UpdateGA(base.UpdateCommand):
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
         support_ip_port_dynamic_forwarding=cls._support_ip_port_dynamic_forwarding,
         support_forward_proxy=cls._support_forward_proxy,
-        support_zonal_affinity=cls._support_zonal_affinity,
         support_allow_multinetwork=cls._support_allow_multinetwork,
     )
 
@@ -642,7 +631,6 @@ class UpdateGA(base.UpdateCommand):
         self._support_subsetting_subset_size,
         support_ip_port_dynamic_forwarding=self._support_ip_port_dynamic_forwarding,
         support_forward_proxy=self._support_forward_proxy,
-        support_zonal_affinity=self._support_zonal_affinity,
         support_allow_multinetwork=self._support_allow_multinetwork,
         release_track=self.ReleaseTrack(),
     ).Run(args, holder)
@@ -658,7 +646,6 @@ class UpdateBeta(UpdateGA):
   _support_subsetting_subset_size = True
   _support_ip_port_dynamic_forwarding = True
   _support_forward_proxy = True
-  _support_zonal_affinity = True
   _support_allow_multinetwork = False
 
 
@@ -672,5 +659,4 @@ class UpdateAlpha(UpdateBeta):
   _support_subsetting_subset_size = True
   _support_ip_port_dynamic_forwarding = True
   _support_forward_proxy = True
-  _support_zonal_affinity = True
   _support_allow_multinetwork = True

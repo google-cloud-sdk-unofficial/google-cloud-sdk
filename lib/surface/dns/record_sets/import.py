@@ -64,6 +64,7 @@ class Import(base.Command):
   def Args(cls, parser):
     flags.GetZoneArg().AddToParser(parser)
     flags.GetLocationArg().AddToParser(parser)
+    flags.GetSkipSoaUpdateArg().AddToParser(parser)
     parser.add_argument('records_file',
                         help='File from which record-sets should be '
                              'imported. For examples of YAML-formatted '
@@ -153,10 +154,11 @@ class Import(base.Command):
     change = import_util.ComputeChange(
         current,
         imported,
-        args.delete_all_existing,
-        zone.dnsName,
-        args.replace_origin_ns,
-        api_version=api_version)
+        replace_all=args.delete_all_existing,
+        origin=zone.dnsName,
+        replace_origin_ns=args.replace_origin_ns,
+        api_version=api_version,
+        update_soa=not args.skip_soa_update)
     if not change:
       msg = 'Nothing to do, all the records in [{0}] already exist.'.format(
           args.records_file)

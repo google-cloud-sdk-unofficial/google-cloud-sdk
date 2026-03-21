@@ -94,14 +94,15 @@ To skip the file `dir/data1/a.txt`:
 To skip all .txt and .jpg files:
 
   $ {command} dir gs://my-bucket --exclude=".*\\.txt$|.*\\.jpg$"
-"""
-_ALPHA_EXAMPLES = """
+
 The contexts are preserved when using rsync to sync to Google Cloud Storage.
 However, the following command would clear all custom contexts from the
 destination object while syncing to the destination bucket.
 
   $ {command} gs://my-bucket/ gs://destination-bucket/ \
       --clear-custom-contexts
+"""
+_ALPHA_EXAMPLES = """
 """
 
 

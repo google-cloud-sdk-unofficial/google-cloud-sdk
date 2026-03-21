@@ -14,11 +14,11 @@
 # limitations under the License.
 """Cloud vmware Privateclouds client."""
 
-
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.vmware import clusters
 from googlecloudsdk.api_lib.vmware import networks
 from googlecloudsdk.api_lib.vmware import util
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core.exceptions import Error
 
@@ -38,6 +38,15 @@ class PreferredZoneNotProvidedError(Error):
     super(PreferredZoneNotProvidedError, self).__init__(
         'FAILED_PRECONDITION: Preferred Zone value is required for Stretched'
         ' Private Cloud.'
+    )
+
+
+class MissingKmsKeyError(exceptions.RequiredArgumentException):
+
+  def __init__(self):
+    super(MissingKmsKeyError, self).__init__(
+        message='KMS Key value is required when using CMEK encryption.',
+        parameter_name='--kms-key',
     )
 
 
@@ -73,6 +82,7 @@ class PrivateCloudsClient(util.VmwareClientBase):
       preferred_zone=None,
       autoscaling_settings=None,
       service_subnet=None,
+      kms_key=None,
   ):
     parent = resource.Parent().RelativeName()
     project = resource.Parent().Parent().Name()
@@ -86,7 +96,8 @@ class PrivateCloudsClient(util.VmwareClientBase):
           self.messages.Subnet(ipCidrRange=cidr) for cidr in service_subnet
       ]
     network_config = self.messages.NetworkConfig(
-        managementCidr=network_cidr, vmwareEngineNetwork=ven.name,
+        managementCidr=network_cidr,
+        vmwareEngineNetwork=ven.name,
         serviceSubnets=new_subnets,
     )
 
@@ -120,6 +131,13 @@ class PrivateCloudsClient(util.VmwareClientBase):
         )
     )
 
+    if kms_key:
+      encryption_config = self.messages.EncryptionConfig(
+          type=self.messages.EncryptionConfig.TypeValueValuesEnum.CMEK,
+          cryptoKeyName=kms_key,
+      )
+      private_cloud.encryptionConfig = encryption_config
+
     private_cloud.managementCluster = management_cluster
     private_cloud.networkConfig = network_config
     request = (
@@ -131,11 +149,33 @@ class PrivateCloudsClient(util.VmwareClientBase):
     )
     return self.service.Create(request)
 
-  def Update(self, resource, description):
+  def Update(
+      self,
+      resource,
+      description,
+      encryption_type=None,
+      kms_key=None,
+  ):
     private_cloud = self.Get(resource)
     update_mask = []
-    private_cloud.description = description
-    update_mask.append('description')
+    if description is not None:
+      private_cloud.description = description
+      update_mask.append('description')
+
+    if encryption_type is not None:
+      update_mask.append('encryption_config')
+      if encryption_type == 'CMEK' and kms_key is None:
+        raise MissingKmsKeyError()
+      elif encryption_type == 'CMEK':
+        private_cloud.encryptionConfig = self.messages.EncryptionConfig(
+            type=self.messages.EncryptionConfig.TypeValueValuesEnum.CMEK,
+            cryptoKeyName=kms_key,
+        )
+      elif encryption_type == 'GMEK':
+        # The EncryptionConfig.Type enum only has CMEK.
+        # Setting encryptionConfig to None signifies Google-Managed Encryption.
+        private_cloud.encryptionConfig = None
+
     request = (
         self.messages.VmwareengineProjectsLocationsPrivateCloudsPatchRequest(
             privateCloud=private_cloud,
@@ -161,10 +201,8 @@ class PrivateCloudsClient(util.VmwareClientBase):
     )
 
   def DeleteNow(self, resource):
-    request = (
-        self.messages.VmwareengineProjectsLocationsPrivateCloudsPrivateCloudDeletionNowRequest(
-            name=resource.RelativeName()
-        )
+    request = self.messages.VmwareengineProjectsLocationsPrivateCloudsPrivateCloudDeletionNowRequest(
+        name=resource.RelativeName()
     )
     return self.service.PrivateCloudDeletionNow(request)
 

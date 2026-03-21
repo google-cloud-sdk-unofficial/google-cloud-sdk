@@ -372,7 +372,7 @@ class CreateBeta(Create):
   _support_igmp_query = False
   _support_source_snapshot_region = False
   _support_skip_guest_os_shutdown = True
-  _support_preemption_notice_duration = False
+  _support_preemption_notice_duration = True
   _support_instance_flexibility_policy = True
   _support_workload_identity_config = False
 

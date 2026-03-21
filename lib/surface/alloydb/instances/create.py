@@ -164,6 +164,9 @@ class CreateBeta(Create):
     flags.AddObservabilityConfigTrackActiveQueries(
         parser, show_negated_in_help=True
     )
+    flags.AddObservabilityConfigTrackActiveQueryPlan(
+        parser, show_negated_in_help=True
+    )
 
     flags.AddAutoscalerCreateFlags(parser)
 

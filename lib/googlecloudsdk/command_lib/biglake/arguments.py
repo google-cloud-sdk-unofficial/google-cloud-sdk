@@ -82,3 +82,16 @@ def AddTableRegisterArgs(parser):
       default=False,
       help='Overwrite the table if it already exists.',
   )
+
+
+def AddCatalogsCreateArgs(parser):
+  """Adds arguments for creating catalogs."""
+  parser.add_argument(
+      '--primary-location',
+      help=(
+          'Primary location for mirroring the remote catalog metadata. It'
+          ' must be a BigLake-supported location, and it should be proximate to'
+          ' the remote catalog\'s location for better performance and lower'
+          ' cost.'
+      ),
+  )

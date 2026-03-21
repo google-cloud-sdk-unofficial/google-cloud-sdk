@@ -621,6 +621,44 @@ class GoogleCloudVectorsearchV1DenseVectorField(_messages.Message):
   vertexEmbeddingConfig = _messages.MessageField('GoogleCloudVectorsearchV1VertexEmbeddingConfig', 2)
 
 
+class GoogleCloudVectorsearchV1ExportDataObjectsRequest(_messages.Message):
+  r"""Request message for VectorSearchService.ExportDataObjects.
+
+  Fields:
+    gcsDestination: The Cloud Storage location where user wants to export Data
+      Objects.
+  """
+
+  gcsDestination = _messages.MessageField('GoogleCloudVectorsearchV1ExportDataObjectsRequestGcsExportDestination', 1)
+
+
+class GoogleCloudVectorsearchV1ExportDataObjectsRequestGcsExportDestination(_messages.Message):
+  r"""Google Cloud Storage configuration for the export.
+
+  Enums:
+    FormatValueValuesEnum: Required. The format of the exported Data Objects.
+
+  Fields:
+    exportUri: Required. URI prefix of the Cloud Storage where to export Data
+      Objects. The bucket is required to be in the same region as the
+      collection.
+    format: Required. The format of the exported Data Objects.
+  """
+
+  class FormatValueValuesEnum(_messages.Enum):
+    r"""Required. The format of the exported Data Objects.
+
+    Values:
+      FORMAT_UNSPECIFIED: Unspecified format.
+      JSONL: Exports Data Objects in `JSONL` format.
+    """
+    FORMAT_UNSPECIFIED = 0
+    JSONL = 1
+
+  exportUri = _messages.StringField(1)
+  format = _messages.EnumField('FormatValueValuesEnum', 2)
+
+
 class GoogleCloudVectorsearchV1ImportDataObjectsRequest(_messages.Message):
   r"""Request message for VectorSearchService.ImportDataObjects.
 
@@ -1792,6 +1830,23 @@ class VectorsearchProjectsLocationsCollectionsDeleteRequest(_messages.Message):
 
   name = _messages.StringField(1, required=True)
   requestId = _messages.StringField(2)
+
+
+class VectorsearchProjectsLocationsCollectionsExportDataObjectsRequest(_messages.Message):
+  r"""A VectorsearchProjectsLocationsCollectionsExportDataObjectsRequest
+  object.
+
+  Fields:
+    googleCloudVectorsearchV1ExportDataObjectsRequest: A
+      GoogleCloudVectorsearchV1ExportDataObjectsRequest resource to be passed
+      as the request body.
+    name: Required. The resource name of the Collection from which we want to
+      export Data Objects. Format:
+      `projects/{project}/locations/{location}/collections/{collection}`.
+  """
+
+  googleCloudVectorsearchV1ExportDataObjectsRequest = _messages.MessageField('GoogleCloudVectorsearchV1ExportDataObjectsRequest', 1)
+  name = _messages.StringField(2, required=True)
 
 
 class VectorsearchProjectsLocationsCollectionsGetRequest(_messages.Message):

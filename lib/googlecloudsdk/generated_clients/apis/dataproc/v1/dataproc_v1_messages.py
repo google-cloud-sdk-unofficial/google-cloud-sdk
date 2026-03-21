@@ -943,6 +943,7 @@ class Batch(_messages.Message):
     operation: Output only. The resource name of the operation associated with
       this batch.
     pysparkBatch: Optional. PySpark batch config.
+    pysparkNotebookBatch: Optional. PySpark notebook batch config.
     rayBatch: Optional. Ray batch config.
     runtimeConfig: Optional. Runtime configuration for the batch execution.
     runtimeInfo: Output only. Runtime information about batch execution.
@@ -1014,17 +1015,18 @@ class Batch(_messages.Message):
   name = _messages.StringField(5)
   operation = _messages.StringField(6)
   pysparkBatch = _messages.MessageField('PySparkBatch', 7)
-  rayBatch = _messages.MessageField('RayBatch', 8)
-  runtimeConfig = _messages.MessageField('RuntimeConfig', 9)
-  runtimeInfo = _messages.MessageField('RuntimeInfo', 10)
-  sparkBatch = _messages.MessageField('SparkBatch', 11)
-  sparkRBatch = _messages.MessageField('SparkRBatch', 12)
-  sparkSqlBatch = _messages.MessageField('SparkSqlBatch', 13)
-  state = _messages.EnumField('StateValueValuesEnum', 14)
-  stateHistory = _messages.MessageField('StateHistory', 15, repeated=True)
-  stateMessage = _messages.StringField(16)
-  stateTime = _messages.StringField(17)
-  uuid = _messages.StringField(18)
+  pysparkNotebookBatch = _messages.MessageField('PySparkNotebookBatch', 8)
+  rayBatch = _messages.MessageField('RayBatch', 9)
+  runtimeConfig = _messages.MessageField('RuntimeConfig', 10)
+  runtimeInfo = _messages.MessageField('RuntimeInfo', 11)
+  sparkBatch = _messages.MessageField('SparkBatch', 12)
+  sparkRBatch = _messages.MessageField('SparkRBatch', 13)
+  sparkSqlBatch = _messages.MessageField('SparkSqlBatch', 14)
+  state = _messages.EnumField('StateValueValuesEnum', 15)
+  stateHistory = _messages.MessageField('StateHistory', 16, repeated=True)
+  stateMessage = _messages.StringField(17)
+  stateTime = _messages.StringField(18)
+  uuid = _messages.StringField(19)
 
 
 class BatchOperationMetadata(_messages.Message):
@@ -1797,6 +1799,33 @@ class ClusterToRepair(_messages.Message):
     REPAIR_ERROR_DUE_TO_UPDATE_CLUSTER = 1
 
   clusterRepairAction = _messages.EnumField('ClusterRepairActionValueValuesEnum', 1)
+
+
+class CohortInfo(_messages.Message):
+  r"""Information about the cohort that the workload belongs to.
+
+  Enums:
+    CohortSourceValueValuesEnum: Output only. Source of the cohort.
+
+  Fields:
+    cohort: Output only. Final cohort that was used to tune the workload.
+    cohortSource: Output only. Source of the cohort.
+  """
+
+  class CohortSourceValueValuesEnum(_messages.Enum):
+    r"""Output only. Source of the cohort.
+
+    Values:
+      COHORT_SOURCE_UNSPECIFIED: Cohort source is unspecified.
+      USER_PROVIDED: Indicates that the cohort was explicitly provided.
+      AIRFLOW: Composed from the labels coming from Airflow/Composer.
+    """
+    COHORT_SOURCE_UNSPECIFIED = 0
+    USER_PROVIDED = 1
+    AIRFLOW = 2
+
+  cohort = _messages.StringField(1)
+  cohortSource = _messages.EnumField('CohortSourceValueValuesEnum', 2)
 
 
 class ConfidentialInstanceConfig(_messages.Message):
@@ -8828,6 +8857,58 @@ class PySparkJob(_messages.Message):
   sparkEngine = _messages.EnumField('SparkEngineValueValuesEnum', 9)
 
 
+class PySparkNotebookBatch(_messages.Message):
+  r"""A configuration for running a PySpark Notebook batch workload.
+
+  Messages:
+    ParamsValue: Optional. The parameters to pass to the notebook.
+
+  Fields:
+    archiveUris: Optional. HCFS URIs of archives to be extracted into the
+      working directory of each executor. Supported file types: .jar, .tar,
+      .tar.gz, .tgz, and .zip.
+    fileUris: Optional. HCFS URIs of files to be placed in the working
+      directory of each executor
+    jarFileUris: Optional. HCFS URIs of jar files to be added to the Spark
+      CLASSPATH.
+    notebookFileUri: Required. The HCFS URI of the notebook file to execute.
+    params: Optional. The parameters to pass to the notebook.
+    pythonFileUris: Optional. HCFS URIs of Python files to pass to the PySpark
+      framework.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ParamsValue(_messages.Message):
+    r"""Optional. The parameters to pass to the notebook.
+
+    Messages:
+      AdditionalProperty: An additional property for a ParamsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type ParamsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ParamsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  archiveUris = _messages.StringField(1, repeated=True)
+  fileUris = _messages.StringField(2, repeated=True)
+  jarFileUris = _messages.StringField(3, repeated=True)
+  notebookFileUri = _messages.StringField(4)
+  params = _messages.MessageField('ParamsValue', 5)
+  pythonFileUris = _messages.StringField(6, repeated=True)
+
+
 class Quantiles(_messages.Message):
   r"""Quantile metrics data related to Tasks. Units can be seconds, bytes,
   milliseconds, etc depending on the message type.
@@ -9213,35 +9294,6 @@ class ResizeNodeGroupRequest(_messages.Message):
   size = _messages.IntegerField(4, variant=_messages.Variant.INT32)
 
 
-class ResolvedCohortInfo(_messages.Message):
-  r"""Information about the cohort that the workload belongs to.
-
-  Enums:
-    CohortSourceValueValuesEnum: Output only. Source of the cohort.
-
-  Fields:
-    cohortSource: Output only. Source of the cohort.
-    resolvedCohort: Output only. Final cohort that was used to tune the
-      workload.
-  """
-
-  class CohortSourceValueValuesEnum(_messages.Enum):
-    r"""Output only. Source of the cohort.
-
-    Values:
-      COHORT_SOURCE_UNSPECIFIED: Cohort source is unspecified.
-      USER_PROVIDED: Cohort was resolved from the cohort config, explicitly
-        provided by the user.
-      AIRFLOW: Composed from the labels coming from Airflow/Composer.
-    """
-    COHORT_SOURCE_UNSPECIFIED = 0
-    USER_PROVIDED = 1
-    AIRFLOW = 2
-
-  cohortSource = _messages.EnumField('CohortSourceValueValuesEnum', 1)
-  resolvedCohort = _messages.StringField(2)
-
-
 class ResourceInformation(_messages.Message):
   r"""A ResourceInformation object.
 
@@ -9393,6 +9445,8 @@ class RuntimeInfo(_messages.Message):
       the Dataproc Serverless release notes
       (https://cloud.google.com/dataproc-serverless/docs/release-notes) for
       announcements, changes, fixes and other Dataproc developments).
+    cohortInfo: Output only. Information about the cohort that the workload
+      belongs to.
     currentUsage: Output only. Snapshot of current workload resource usage.
     diagnosticOutputUri: Output only. A URI pointing to the location of the
       diagnostics tarball.
@@ -9401,8 +9455,6 @@ class RuntimeInfo(_messages.Message):
     outputUri: Output only. A URI pointing to the location of the stdout and
       stderr of the workload.
     propertiesInfo: Optional. Properties of the workload organized by origin.
-    resolvedCohortInfo: Output only. Information about the cohort that the
-      workload belongs to.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -9431,12 +9483,12 @@ class RuntimeInfo(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   approximateUsage = _messages.MessageField('UsageMetrics', 1)
-  currentUsage = _messages.MessageField('UsageSnapshot', 2)
-  diagnosticOutputUri = _messages.StringField(3)
-  endpoints = _messages.MessageField('EndpointsValue', 4)
-  outputUri = _messages.StringField(5)
-  propertiesInfo = _messages.MessageField('PropertiesInfo', 6)
-  resolvedCohortInfo = _messages.MessageField('ResolvedCohortInfo', 7)
+  cohortInfo = _messages.MessageField('CohortInfo', 2)
+  currentUsage = _messages.MessageField('UsageSnapshot', 3)
+  diagnosticOutputUri = _messages.StringField(4)
+  endpoints = _messages.MessageField('EndpointsValue', 5)
+  outputUri = _messages.StringField(6)
+  propertiesInfo = _messages.MessageField('PropertiesInfo', 7)
 
 
 class SchedulingConfig(_messages.Message):

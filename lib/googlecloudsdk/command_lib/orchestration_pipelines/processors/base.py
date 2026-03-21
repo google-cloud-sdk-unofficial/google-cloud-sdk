@@ -15,67 +15,103 @@
 """Base action processor for Orchestration Pipelines."""
 
 from collections.abc import MutableMapping, Sequence
+import hashlib
 import pathlib
-from typing import Any, Optional
+from typing import Any
 
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.orchestration_pipelines.tools import python_environment
+from googlecloudsdk.core import log
 
 
 class ActionProcessor:
   """Base class for engine-specific action processors."""
 
+  LIBS_EXTRACT_DIR = "libs"
+
   def __init__(
       self,
-      action,
-      work_dir,
-      artifact_base_uri,
-      env_pack_file,
-      subprocess_mod,
-      defaults,
+      action: MutableMapping[str, Any],
+      work_dir: pathlib.Path,
+      artifact_base_uri: str,
+      subprocess_mod: Any,
+      defaults: MutableMapping[str, Any],
+      requirements_path: pathlib.Path | None = None,
   ):
     self.action = action
     self._work_dir = work_dir
     self._artifact_base_uri = artifact_base_uri
-    self._env_pack_file = env_pack_file
+    self._env_pack_file = None
     self._subprocess_mod = subprocess_mod
     self._defaults = defaults
     self.full_python_path = None
+    self.requirements_path = requirements_path
 
   def process_action(self):
     """Processes a single action in the pipeline, resolving local paths to GCS URIs."""
 
-    requirements_path = self._work_dir / "requirements.txt"
-    if self._has_valid_requirements(requirements_path):
+    log.debug(f"Processing action: {self.action.get('name')}")
+
+    if self._has_valid_requirements():
       python_version = self._get_python_version()
       if python_version:
-        self.full_python_path = (
-            f"./libs/lib/python{python_version}/site-packages"
-        )
+        self.full_python_path = f"./{self.LIBS_EXTRACT_DIR}/lib/python{python_version}/site-packages"
 
-        python_environment.build_env_local(
-            self._subprocess_mod,
-            self._work_dir,
-            requirements_path,
-            self._work_dir / self._env_pack_file,
-            python_version,
+        with self.requirements_path.open("rb") as f:
+          reqs_hash = hashlib.md5(f.read()).hexdigest()
+        self._env_pack_file = (
+            f"environment-{reqs_hash}-python{python_version}.tar.gz"
         )
+        log.debug(f"Resolved environment pack file: {self._env_pack_file}")
 
-    if not self._resolve_filename():
-      return
+        env_pack_path = self._work_dir / self._env_pack_file
+        if not env_pack_path.exists():
+          log.debug(f"Creating environment pack at {env_pack_path}...")
+          python_environment.build_env_local(
+              self._subprocess_mod,
+              self._work_dir,
+              self.requirements_path,
+              env_pack_path,
+              python_version,
+          )
+
+        if not env_pack_path.exists():
+          raise exceptions.BadFileException(
+              f"Failed to create environment file: {env_pack_path}"
+          )
+
+        # Add to archives
+        env_pack_uri = f"{self._artifact_base_uri}{self._env_pack_file}#{self.LIBS_EXTRACT_DIR}"
+        self.action.setdefault("archives", [])
+        if not any(env_pack_uri in arch for arch in self.action["archives"]):
+          self.action["archives"].append(env_pack_uri)
+
+    self._resolve_filename()
+    self._resolve_py_files()
 
     self._update_yaml_properties(self.action)
+
+  @property
+  def env_pack_file(self) -> str | None:
+    """Returns the name of the generated environment pack file."""
+    return self._env_pack_file
 
   def _resolve_filename(self) -> bool:
     """Checks for presence of and resolves filename to GCS URI.
 
     Returns:
-      bool: True if filename is present in action, False otherwise.
+      True if filename is present in action, False otherwise.
     """
     if "filename" not in self.action:
       return False
 
     raw_path = self.action["filename"]
+    if not isinstance(raw_path, str):
+      raise exceptions.BadFileException(
+          "The value of 'filename' in the action must be a string, found type "
+          f"{type(raw_path).__name__}: {raw_path}"
+      )
+
     local_path = pathlib.Path(raw_path.lstrip("/"))
 
     absolute_local_path = self._work_dir / local_path
@@ -89,7 +125,40 @@ class ActionProcessor:
     )
     return True
 
-  def _get_python_version(self) -> Optional[str]:
+  def _resolve_py_files(self) -> bool:
+    """Checks for presence of and resolves pyFiles to GCS URIs.
+
+    Returns:
+      True if pyFiles is present in action, False otherwise.
+    """
+    py_files = self.action.get("pyFiles")
+    if py_files is None:
+      return False
+
+    if not isinstance(py_files, list):
+      raise exceptions.BadFileException(
+          "The value of 'pyFiles' in the action must be a list, found type "
+          f"{type(py_files).__name__}: {py_files}"
+      )
+
+    resolved_py_files = []
+    for raw_path in py_files:
+      local_path = pathlib.Path(raw_path.lstrip("/"))
+      absolute_local_path = self._work_dir / local_path
+
+      if not absolute_local_path.exists():
+        raise exceptions.BadFileException(
+            f"File in YAML does not exist locally: {local_path}"
+        )
+
+      resolved_py_files.append(
+          f"{self._artifact_base_uri}{local_path.as_posix()}"
+      )
+
+    self.action["pyFiles"] = resolved_py_files
+    return True
+
+  def _get_python_version(self) -> str | None:
     """Returns the Python version for this action, or None if not specified."""
     return None
 
@@ -97,12 +166,12 @@ class ActionProcessor:
     """Performs updates on YAML properties."""
     pass
 
-  def _has_valid_requirements(self, requirements_path) -> bool:
+  def _has_valid_requirements(self) -> bool:
     """Checks if requirements file exists and has at least one non-comment line."""
-    if not requirements_path.exists():
+    if not self.requirements_path or not self.requirements_path.exists():
       return False
 
-    with requirements_path.open("r") as f:
+    with self.requirements_path.open("r") as f:
       for line in f:
         line = line.strip()
         if line and not line.startswith("#"):

@@ -18,6 +18,7 @@
 
 import textwrap
 
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.ha_controllers import utils as api_utils
 from googlecloudsdk.calliope import arg_parsers
@@ -214,6 +215,15 @@ class Create(base.CreateCommand):
             'Adds a network interface to the instance.'
         ),
     )
+    parser.add_argument(
+        '--backend-service',
+        required=False,
+        type=arg_parsers.ArgList(min_length=1),
+        help=(
+            'Specifies existing backend service references (names or full URLs'
+            ' can be used) to be used with the HA Controller.'
+        ),
+    )
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -231,6 +241,8 @@ class Create(base.CreateCommand):
             args.network_auto_configuration
         ),
     )
+    if args.backend_service:
+      ha_controller.backendServices = args.backend_service
     return api_utils.Insert(
         holder, ha_controller, ha_controller_ref, args.async_
     )

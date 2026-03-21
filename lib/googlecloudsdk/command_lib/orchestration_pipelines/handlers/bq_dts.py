@@ -25,9 +25,11 @@ from googlecloudsdk.core import log
 class BqDataTransferConfigHandler(base.GcpResourceHandler):
   """Handler for migrating BigQuery DTS configurations."""
 
+  allowed_metadata = ["service_account_name"]
+
   def find_existing_resource(self) -> Any:
     request = self.messages.BigquerydatatransferProjectsLocationsTransferConfigsListRequest(
-        parent=self._get_location_path()
+        parent=self._get_parent_path()
     )
     response = self.client.projects_locations_transferConfigs.List(request)
     expected_display_name = self.resource.definition.get(
@@ -81,7 +83,10 @@ class BqDataTransferConfigHandler(base.GcpResourceHandler):
 
     # Check params
     if "params" in local_definition:
-      existing_params = encoding.MessageToDict(existing_resource.params)
+      existing_params = {}
+      if existing_resource.params is not None:
+        existing_params = encoding.MessageToDict(existing_resource.params)
+
       if local_definition.get("params") != existing_params:
         if "params" not in changes:
           changes.append("params")
@@ -95,7 +100,7 @@ class BqDataTransferConfigHandler(base.GcpResourceHandler):
     if self.resource.metadata:
       service_account_name = self.resource.metadata.service_account_name
     return self.messages.BigquerydatatransferProjectsLocationsTransferConfigsCreateRequest(
-        parent=self._get_location_path(),
+        parent=self._get_parent_path(),
         transferConfig=resource_message,
         serviceAccountName=service_account_name,
     )
@@ -116,3 +121,9 @@ class BqDataTransferConfigHandler(base.GcpResourceHandler):
         updateMask=",".join(changed_fields),
         serviceAccountName=service_account_name,
     )
+
+  def get_success_deployment_message(self, api_response: Any) -> str:
+    """Uses the generated API resource name instead of local name for BQ DTS."""
+    if hasattr(api_response, "name"):
+      return api_response.name
+    return self.resource.name

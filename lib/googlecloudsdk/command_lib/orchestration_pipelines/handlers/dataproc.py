@@ -28,7 +28,7 @@ class DataprocClusterHandler(base.GcpResourceHandler):
   def build_get_request(self) -> messages.Message:
     return self.messages.DataprocProjectsRegionsClustersGetRequest(
         projectId=self.environment.project,
-        region=self.environment.region,
+        region=self.location,
         clusterName=self.get_resource_id(),
     )
 
@@ -131,7 +131,7 @@ class DataprocClusterHandler(base.GcpResourceHandler):
   ) -> messages.Message:
     return self.messages.DataprocProjectsRegionsClustersCreateRequest(
         projectId=self.environment.project,
-        region=self.environment.region,
+        region=self.location,
         cluster=resource_message,
     )
 
@@ -144,8 +144,93 @@ class DataprocClusterHandler(base.GcpResourceHandler):
     del existing_resource  # Unused.
     return self.messages.DataprocProjectsRegionsClustersPatchRequest(
         projectId=self.environment.project,
-        region=self.environment.region,
+        region=self.location,
         clusterName=self.get_resource_id(),
         cluster=resource_message,
         updateMask=",".join(changed_fields),
     )
+
+
+class DataprocWorkflowTemplateHandler(base.GcpResourceHandler):
+  """Handler for Dataproc Workflow Templates."""
+
+  api_prefix = "projects_regions"
+
+  def _get_location_path(self) -> str:
+    path = f"projects/{self.environment.project}/regions/"
+    return path + f"{self.location}"
+
+  def get_local_definition(self) -> dict[str, Any]:
+    definition = super().get_local_definition()
+    if definition.get("id") and definition["id"] != self.resource.name:
+      raise ValueError(
+          f"The ID inside the definition block ('{definition['id']}') "
+          "cannot be different from the logical name of the resource "
+          f"('{self.resource.name}'). Please remove it from the definition."
+      )
+    definition["id"] = self.resource.name
+    return definition
+
+  def build_get_request(self) -> messages.Message:
+    req_class = self.messages.DataprocProjectsRegionsWorkflowTemplatesGetRequest
+    return req_class(name=self._get_resource_name())
+
+  def build_create_request(
+      self, resource_message: messages.Message
+  ) -> messages.Message:
+    req_cls = (
+        self.messages.DataprocProjectsRegionsWorkflowTemplatesCreateRequest
+    )
+    return req_cls(
+        parent=self._get_parent_path(),
+        workflowTemplate=resource_message,
+    )
+
+  def build_update_request(
+      self,
+      existing_resource: messages.Message,
+      resource_message: messages.Message,
+      changed_fields: list[str],
+  ) -> messages.Message:
+    resource_message.name = existing_resource.name
+    return resource_message
+
+  def get_update_method(self) -> Any:
+    return self._api_client_collection.Update
+
+
+class DataprocAutoscalingPolicyHandler(base.GcpResourceHandler):
+  """Handler for Dataproc Autoscaling Policies."""
+
+  api_prefix = "projects_regions"
+
+  def _get_location_path(self) -> str:
+    path = f"projects/{self.environment.project}/regions/"
+    return path + f"{self.location}"
+
+  def build_get_request(self) -> messages.Message:
+    req_cls = self.messages.DataprocProjectsRegionsAutoscalingPoliciesGetRequest
+    return req_cls(name=self._get_resource_name())
+
+  def build_create_request(
+      self, resource_message: messages.Message
+  ) -> messages.Message:
+    req_cls = (
+        self.messages.DataprocProjectsRegionsAutoscalingPoliciesCreateRequest
+    )
+    return req_cls(
+        parent=self._get_parent_path(),
+        autoscalingPolicy=resource_message,
+    )
+
+  def build_update_request(
+      self,
+      existing_resource: messages.Message,
+      resource_message: messages.Message,
+      changed_fields: list[str],
+  ) -> messages.Message:
+    resource_message.name = existing_resource.name
+    return resource_message
+
+  def get_update_method(self) -> Any:
+    return self._api_client_collection.Update

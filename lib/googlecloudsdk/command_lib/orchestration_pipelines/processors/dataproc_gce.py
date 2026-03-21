@@ -43,20 +43,8 @@ class DataprocGCEActionProcessor(base.ActionProcessor):
     return "3.12"
 
   def _update_yaml_properties(self, action):
-    # Add PYTHONPATH to Spark driver and executors to include the site-packages
-    # from the uploaded dependencies.zip, allowing the Spark jobs to find
-    # the required Python libraries.
-    env_pack_path = self._work_dir / self._env_pack_file
-    if not env_pack_path.exists():
+    if not self._env_pack_file:
       return
-
-    extract_path = "libs"
-    env_pack_uri = (
-        f"{self._artifact_base_uri}{self._env_pack_file}#{extract_path}"
-    )
-    self.action.setdefault("archives", [])
-    if not any(env_pack_uri in arch for arch in self.action["archives"]):
-      self.action["archives"].append(env_pack_uri)
 
     job_props = self._get_nested_dict(action, ["config", "job", "properties"])
     deploy_mode = job_props.get("spark.submit.deployMode", "client")
@@ -72,7 +60,7 @@ class DataprocGCEActionProcessor(base.ActionProcessor):
       )
 
       # Directory name where dependencies are unpacked.
-      libs_dir = f"./{extract_path}"
+      libs_dir = f"./{self.LIBS_EXTRACT_DIR}"
       env_name = "python_environment"
 
       python_version = self._get_python_version()

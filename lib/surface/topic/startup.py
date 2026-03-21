@@ -24,47 +24,44 @@ class Startup(base.TopicCommand):
   """Supplementary help for gcloud startup options.
 
 
-  # Choosing a Python Interpreter
+  This page provides supplementary help for configuring the gcloud command-line
+  tool's startup behavior, including Python interpreter selection and
+  environment variables.
 
-  The `gcloud` CLI runs under Python. Note that `gcloud` supports Python version
-  3.10-3.14. Certain Windows and Linux installs include a bundled Python
-  interpreter depending on the package and architecture. Similarly, Intel-based
-  Macs offer the option to install CPython as part of the main install script.
-  Otherwise, you must have a Python interpreter available on your system. The
-  `gcloud` CLI will attempt to locate an interpreter on your system PATH by
-  looking for the following binaries:
+  ## CONFIGURING THE PYTHON INTERPRETER
 
-      * python3
-      * python
+  The `gcloud` CLI requires a compatible Python version (3.10-3.14) to run. In
+  most gcloud CLI installations, the gcloud installer manages the Python
+  installation (version 3.13) for the user. Configuring the Python
+  interpreter is only supported in specific scenarios described below.
 
-  If you have a bundled Python installed, it will be preferred. To override this
-  you will need to set the `CLOUDSDK_PYTHON` environment variable, see below.
+  ### When to Use `CLOUDSDK_PYTHON` environment variable
 
-  Other Python tools shipped in the Google Cloud CLI do not support Python 3 and
-  require Python 2.7.x, including:
+  You can ONLY consider using the CLOUDSDK_PYTHON environment variable when you
+  are on:
 
-      * `dev_appserver`
+  - *Linux*: Installing from a versioned archives (`*.tar.gz*`) on ARM or x86
+  architectures where Python is NOT included as part of the installation, gcloud
+  will search for a compatible Python on your system PATH (looking for python3
+  then python). You can set the `CLOUDSDK_PYTHON` environment variable to the
+  full path of your preferred compatible Python interpreter if the default one
+  found on PATH is not desired.
+  - *macOS*: Available only for archived install and where the Python version
+  matches the Python version managed by the gcloud CLI Tools install. Note
+  that this is not available for Homebrew installations of gcloud CLI Tools.
+  - *Windows*: gcloud installer includes the required Python interpreter by
+  default. Only use `CLOUDSDK_PYTHON` if you need to use a different
+  Python installation.
 
-  # Bundled Python on Linux
-
-  Linux-based installs include a bundled Python installation on x86_64
-  architectures. This installation will be used by default. If you want to use a
-  different Python installation, set the `CLOUDSDK_PYTHON` environment variable
-  to the absolute path to your python interpreter.
-
-  If you have multiple Python interpreters available (including a bundled
-  python) or if you don't have one on your PATH, you can specify which
-  interpreter to use by setting the `CLOUDSDK_PYTHON` environment variable. For
-  example:
+  Example Usages:
 
     # Use the python3 interpreter on your path
-
     $ export CLOUDSDK_PYTHON=python3
 
-
     # Use a python you have installed in a special location
-
     $ export CLOUDSDK_PYTHON=/usr/local/my-custom-python-install/python
+
+  ### Other Components
 
   `gsutil` versions 5.0 and later support Python 3.10-3.13. To use a different
   interpreter for `gsutil` than for the other Python tools, set the
@@ -75,23 +72,7 @@ class Startup(base.TopicCommand):
   interpreter for `bq` than for the other Python tools, set the
   `CLOUDSDK_BQ_PYTHON` environment variable to the interpreter that you want.
 
-  # Configuring the Python Interpreter
-
-  While not typically necessary, you can pass interpreter level
-  arguments to the Python running `gcloud` using the `CLOUDSDK_PYTHON_ARGS`
-  environment variable.
-
-  A common use case for this (which has been special-cased) is to enable
-  'site packages'. This allows Python to pick up libraries from the system (
-  for example, those that may have been installed with `pip`). Site packages may
-  be necessary if you require certain native libraries (as is the case if you
-  work with service accounts using a legacy `.p12` key, for example). To enable
-  site packages, set `CLOUDSDK_PYTHON_SITEPACKAGES=1`. Note that enabling site
-  packages may cause conflicts with `gcloud` packaged libraries, depending on
-  what you have installed on your system.
-
-
-  # Setting Configurations and Properties
+  ## SETTING CONFIGURATIONS AND PROPERTIES
 
   Your active configuration can also be set via the environment variable
   `CLOUDSDK_ACTIVE_CONFIG_NAME`. This allows you to specify a certain

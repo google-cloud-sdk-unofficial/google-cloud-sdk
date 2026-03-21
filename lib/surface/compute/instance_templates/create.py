@@ -1357,7 +1357,7 @@ class CreateBeta(Create):
   _support_flex_start = True
   _support_display_device = True
   _support_skip_guest_os_shutdown = True
-  _support_preemption_notice_duration = False
+  _support_preemption_notice_duration = True
   _support_enable_vpc_scoped_dns = False
   _support_workload_identity_config = False
 

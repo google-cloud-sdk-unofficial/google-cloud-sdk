@@ -14,10 +14,10 @@
 # limitations under the License.
 """The command group for the vmware private-clouds CLI."""
 
-
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class PrivateClouds(base.Group):
   """Manage private clouds in Google Cloud VMware Engine."""

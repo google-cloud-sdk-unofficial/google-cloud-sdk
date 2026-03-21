@@ -15,7 +15,8 @@
 """Base class for GCP resource handlers."""
 
 import abc
-from typing import Any, Optional, Tuple, Union
+import dataclasses
+from typing import Any, Union
 
 from apitools.base.protorpclite import messages
 from apitools.base.py import encoding
@@ -35,6 +36,7 @@ class GcpResourceHandler(abc.ABC):
   api_prefix = "projects_locations"
   api_client_collection_path = None
   collection_name = None
+  allowed_metadata = []
 
   def __init__(
       self,
@@ -51,6 +53,45 @@ class GcpResourceHandler(abc.ABC):
     self.show_requests = show_requests
     self.client = self._get_client()
     self.messages = self._get_messages()
+    self._validate_metadata()
+
+  def _validate_metadata(self):
+    """Validates that the resource metadata is applicable for this handler."""
+    if not self.resource.metadata:
+      return
+
+    # attributes in MetadataModel that are not None
+    used_metadata_keys = [
+        f.name
+        for f in dataclasses.fields(self.resource.metadata)
+        if getattr(self.resource.metadata, f.name) is not None
+    ]
+
+    supported_metadata = {"location"}
+    if self.allowed_metadata:
+      supported_metadata.update(self.allowed_metadata)
+
+    for key in used_metadata_keys:
+      if key not in supported_metadata:
+        msg = (
+            f"Metadata field '{key}' is not applicable for resource type"
+            f" '{self.resource.type}'."
+        )
+        if self.allowed_metadata:
+          msg += f" Allowed metadata fields: {list(supported_metadata)}"
+        else:
+          msg += " This resource does not support any metadata fields."
+        raise ValueError(msg)
+
+    # Validate that nested resources have an explicit parent defined
+    parts = self.resource.type.split(".")
+    if len(parts) >= 3 and not self.resource.parent:
+      parent_type = parts[-2]
+      raise ValueError(
+          f"Resource type '{self.resource.type}' represents a nested resource "
+          f"and requires an explicit 'parent' (expected type: '{parent_type}') "
+          "to be set in the resource configuration."
+      )
 
   @property
   def _api_name(self) -> str:
@@ -68,10 +109,34 @@ class GcpResourceHandler(abc.ABC):
     # otherwise find gcloud default
     return apis.ResolveVersion(self._api_name)
 
+  @property
+  def location(self) -> str:
+    """Returns the effective location (region/zone/global) for the resource.
+
+    Checks metadata.location first, falls back to environment region.
+    """
+    if self.resource.metadata.location is not None:
+      return self.resource.metadata.location
+    return self.environment.region
+
   def _get_location_path(self) -> str:
-    location_path = f"projects/{self.environment.project}/locations/{self.environment.region}"
+    """Returns the base path for the API location."""
+    return f"projects/{self.environment.project}/locations/{self.location}"
+
+  def _get_parent_path(self) -> str:
+    """Returns the path to the parent resource."""
+    location_path = self._get_location_path()
     if self.resource.parent:
-      return f"{location_path}{self.resource.parent}"
+      parts = self.resource.type.split(".")
+      if len(parts) >= 3:
+        parent_type = self._pluralize(parts[-2])
+        parent_id = self.get_validated_parent_id()
+        return f"{location_path}/{parent_type}/{parent_id}"
+      else:
+        raise ValueError(
+            "Cannot infer parent type from resource type "
+            f"'{self.resource.type}'"
+        )
     return location_path
 
   def _get_client(self):
@@ -80,13 +145,36 @@ class GcpResourceHandler(abc.ABC):
   def _get_messages(self):
     return apis.GetMessagesModule(self._api_name, self._api_version)
 
+  def get_validated_parent_id(self) -> str:
+    """Extracts and validates the ID from a parent string.
+
+    Expected format is 'parentId'.
+
+    Returns:
+      The validated parent ID.
+
+    Raises:
+      ValueError: If the parent is missing or the format is invalid (e.g.
+        contains '/').
+    """
+    if not self.resource.parent:
+      raise ValueError(f"Parent must be specified for {self.resource.type}.")
+
+    parent = self.resource.parent.strip()
+    if "/" in parent:
+      raise ValueError(
+          f"Resource parent '{self.resource.parent}' must not contain '/'."
+      )
+
+    return parent
+
   def get_resource_id(self) -> str:
     """Returns the unique identifier for the resource."""
     return self.resource.name
 
   def _pluralize(self, word: str) -> str:
     """Returns the pluralized form of a word."""
-    if word.endswith("y"):
+    if word.endswith("y") and word[-2:-1].lower() not in "aeiouy":
       return word[:-1] + "ies"
     return word + "s"
 
@@ -110,17 +198,19 @@ class GcpResourceHandler(abc.ABC):
       else:
         pluralized_parts.append(self._pluralize(part))
 
-    return "_".join([self.api_prefix] + pluralized_parts)
+    if self.api_prefix:
+      return "_".join([self.api_prefix] + pluralized_parts)
+    return "_".join(pluralized_parts)
 
   def _get_resource_name(self) -> str:
     """Returns the full resource name including location and collection."""
-    return f"{self._get_location_path()}/{self._collection_name}/{self.get_resource_id()}"
+    return f"{self._get_parent_path()}/{self._collection_name}/{self.get_resource_id()}"
 
   def find_existing_resource(self) -> Any:
     """Finds the existing resource on GCP."""
     request = self.build_get_request()
     try:
-      return self._api_client_collection.Get(request)
+      return self.get_get_method()(request)
     except apitools_exceptions.HttpNotFoundError:
       return None
 
@@ -183,6 +273,10 @@ class GcpResourceHandler(abc.ABC):
     """Returns the client method used to update the resource."""
     return self._api_client_collection.Patch
 
+  def get_get_method(self) -> Any:
+    """Returns the client method used to get the resource."""
+    return self._api_client_collection.Get
+
   def compare(
       self, existing_resource: Any, local_definition: dict[str, Any]
   ) -> list[str]:
@@ -219,33 +313,44 @@ class GcpResourceHandler(abc.ABC):
           diffs.append(next_prefix)
         else:
           diffs.extend(self._compare_recursive(existing[k], v, next_prefix))
+    elif isinstance(local, list) and isinstance(existing, list):
+      if len(local) != len(existing):
+        return [prefix] if prefix else []
+      for ext_item, loc_item in zip(existing, local):
+        item_diffs = self._compare_recursive(ext_item, loc_item, prefix)
+        if item_diffs:
+          return [prefix] if prefix else []
     else:
-      # List or Primitive
-      if existing != local:
+      # Primitive
+      if isinstance(existing, str) and isinstance(local, str):
+        if existing != local:
+          # Permit API URLs to match partial configuration paths natively
+          if not (existing.startswith("https://") and existing.endswith(local)):
+            return [prefix] if prefix else []
+      elif str(existing) != str(local) and existing != local:
         return [prefix] if prefix else []
 
     return diffs
 
-  def wait_for_operation(
-      self, operation: Any
-  ) -> Tuple[Any, Optional[str]]:
+  def wait_for_operation(self, api_response: Any) -> Any:
     """Waits for long running operation if applicable.
 
     The default implementation handles resources that don't return LROs.
-    It returns the operation as is, and resource name for name_to_print.
+    It returns the api_response as is.
     Handlers for resources that return LROs should override this method.
 
     Args:
-      operation: The operation to wait for, or the result if no LRO.
+      api_response: The operation to wait for, or the resource if no LRO.
 
     Returns:
-      A tuple containing the completed operation and a name to print.
+      The completed operation or the originally returned resource.
     """
-    if type(operation).__name__ == "Operation":
-      if getattr(operation, "done", False):
-        return operation, self.resource.name
 
-      op_name = getattr(operation, "name", "unknown")
+    if type(api_response).__name__ == "Operation":
+      if getattr(api_response, "done", False):
+        return api_response
+
+      op_name = getattr(api_response, "name", "unknown")
       log.status.Print(f"     Waiting for operation {op_name} to complete...")
 
       # Determine collection for the operation based on the current api client
@@ -255,12 +360,12 @@ class GcpResourceHandler(abc.ABC):
 
       try:
         operation_ref = resources.REGISTRY.Parse(
-            operation.name,
+            api_response.name,
             collection=operation_collection,
         )
       except resources.Error:
         # Fallback if parse fails
-        return operation, getattr(operation, "name", self.resource.name)
+        return api_response
 
       operation_service_name = f"{self.api_prefix}_operations"
       if not hasattr(self.client, operation_service_name):
@@ -272,11 +377,32 @@ class GcpResourceHandler(abc.ABC):
 
       poller = waiter.CloudOperationPollerNoResources(ops_service)
       try:
-        operation = waiter.WaitFor(
+        api_response = waiter.WaitFor(
             poller,
             operation_ref,
             f"Waiting for {self._api_name} operation",
         )
       except waiter.TimeoutError:
         log.error(f"Timed out waiting for {self._api_name} operation.")
-    return operation, self.resource.name
+    return api_response
+
+  def get_success_deployment_message(self, api_response: Any) -> str:  # pylint: disable=unused-argument
+    """Returns the identifier to print after successful resource deployment.
+
+    Args:
+      api_response: The API response returned by wait_for_operation or create.
+
+    By default this returns the logical name defined in the local configuration.
+    Subclasses should override this if the generated API identifier is required
+    by users to track the resource (e.g. BQ DTS config IDs).
+    """
+    return self.resource.name
+
+  def post_deploy(self, api_response: Any, created: bool) -> None:
+    """Executes actions after a successful deployment.
+
+    Args:
+      api_response: The API response returned by the deployment operation.
+      created: True if the resource was created, False if it was updated.
+    """
+    pass

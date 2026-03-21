@@ -59,6 +59,8 @@ OVERFLOW_SCALING_ANNOTATION = 'run.googleapis.com/overflow-scaling'
 CPU_UTILIZATION_ANNOTATION = 'run.googleapis.com/scaling-cpu-target'
 # Annotation to set the concurrency utilization target for scaling.
 CONCURRENCY_UTILIZATION_ANNOTATION = 'run.googleapis.com/scaling-concurrency-target'
+# gcloud-disable-gdu-domain
+AMBIENT_NETWORKING_ANNOTATION = 'run.googleapis.com/ambient-networking'
 
 
 class Revision(container_resource.ContainerResource):

@@ -868,7 +868,7 @@ class CreateBeta(Create):
   _support_ipv6_only = True
   _support_source_snapshot_region = True
   _support_skip_guest_os_shutdown = True
-  _support_preemption_notice_duration = False
+  _support_preemption_notice_duration = True
   _support_enable_vpc_scoped_dns = False
   _support_service_class_id = False
   _support_workload_identity_config = False

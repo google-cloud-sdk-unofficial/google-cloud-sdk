@@ -90,7 +90,11 @@ def _IsHomebrewInstalled():
 
 
 def _PrintPythonInstallError(error):
-  print(f'Failed to install the required Python. Error: {error}')
+  print(
+      f'Failed to install the required Python. Error: {error}. \n'
+      'Please install the required Python and modules manually by running:\n'
+      '   $ gcloud components update-macos-python'
+  )
 
 
 def _BrewInstallPython():

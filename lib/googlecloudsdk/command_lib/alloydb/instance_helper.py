@@ -235,6 +235,7 @@ def _ConstructInstanceFromArgsBeta(client, alloydb_messages, args):
       observability_config_record_application_tags=args.observability_config_record_application_tags,
       observability_config_query_plans_per_minute=args.observability_config_query_plans_per_minute,
       observability_config_track_active_queries=args.observability_config_track_active_queries,
+      observability_config_track_active_query_plan=args.observability_config_track_active_query_plan,
   )
 
   if (
@@ -706,6 +707,7 @@ def _ObservabilityConfig(
     observability_config_record_application_tags=None,
     observability_config_query_plans_per_minute=None,
     observability_config_track_active_queries=None,
+    observability_config_track_active_query_plan=None,
 ):
   """Generates the observability config for the instance.
 
@@ -725,6 +727,8 @@ def _ObservabilityConfig(
       to sample every minute.
     observability_config_track_active_queries: boolean, True if active queries
       should be tracked.
+    observability_config_track_active_query_plan: boolean, True if active query
+      plans should be tracked.
 
   Returns:
     alloydb_messages.ObservabilityInstanceConfig or None
@@ -738,6 +742,7 @@ def _ObservabilityConfig(
       observability_config_record_application_tags is not None,
       observability_config_query_plans_per_minute is not None,
       observability_config_track_active_queries is not None,
+      observability_config_track_active_query_plan is not None,
   ])
   if not should_generate_config:
     return None
@@ -769,6 +774,10 @@ def _ObservabilityConfig(
   if observability_config_track_active_queries is not None:
     observability_config.trackActiveQueries = (
         observability_config_track_active_queries
+    )
+  if observability_config_track_active_query_plan is not None:
+    observability_config.trackActiveQueryPlan = (
+        observability_config_track_active_query_plan
     )
 
   return observability_config
@@ -1399,6 +1408,9 @@ def ConstructInstanceAndUpdatePathsFromArgsBeta(
   observability_config_track_active_queries_path = (
       'observabilityConfig.trackActiveQueries'
   )
+  observability_config_track_active_query_plan_path = (
+      'observabilityConfig.trackActiveQueryPlan'
+  )
   instance_resource, paths = ConstructInstanceAndUpdatePathsFromArgs(
       alloydb_messages, instance_ref, args, release_track
   )
@@ -1423,6 +1435,8 @@ def ConstructInstanceAndUpdatePathsFromArgsBeta(
     paths.append(observability_config_query_plans_per_minute_path)
   if args.observability_config_track_active_queries is not None:
     paths.append(observability_config_track_active_queries_path)
+  if args.observability_config_track_active_query_plan is not None:
+    paths.append(observability_config_track_active_query_plan_path)
 
   instance_resource.observabilityConfig = _ObservabilityConfig(
       alloydb_messages,
@@ -1433,6 +1447,7 @@ def ConstructInstanceAndUpdatePathsFromArgsBeta(
       args.observability_config_record_application_tags,
       args.observability_config_query_plans_per_minute,
       args.observability_config_track_active_queries,
+      args.observability_config_track_active_query_plan,
   )
 
   # We update the whole connection pool config if any of the connection pooling

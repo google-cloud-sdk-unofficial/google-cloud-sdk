@@ -3351,17 +3351,29 @@ class _SectionRegional(_Section):
   REQUIRED = 'required'
 
   def __init__(self):
-    super(_SectionRegional, self).__init__('regional', hidden=True)
+    super(_SectionRegional, self).__init__('regional')
     self.endpoint_mode = self._Add(
         'endpoint_mode',
         choices=[self.GLOBAL, self.REGIONAL, self.REGIONAL_PREFERRED],
         help_text="""\
-Determines how regional endpoints are used. The choices are:
-    *   `global` - Use only global/locational endpoints.
-    *   `regional` - Use only regional endpoints.
-    *   `regional-preferred` - Allow commands to choose between regional/global endpoints, preferring regional if available.
-If unset, commands will choose between regional/global endpoints, preferring global where possible.
-"""
+        Specifies endpoint mode for a given command. Regional endpoints
+        provide enhanced data residency and reliability by ensuring your
+        request is handled entirely within the specified Google Cloud region.
+        This differs from global endpoints, which may process parts of the
+        request outside the target region.
+
+        Benefits of Regional Endpoints:
+        (1) Data Residency: Keeps data in-transit within the chosen region.
+        (2) Improved Isolation: Reduces the risk of cross-region impact
+        from outages.
+
+        The choices are:
+        *   `global` - (Default) Use global rather than regional endpoints.
+        *   `regional` - Only use regional endpoints. An error will be raised
+            if a regional endpoint is not available for a given command.
+        *   `regional-preferred` - Use regional endpoints when available,
+            otherwise use global endpoints. Recommended for most users.
+        """,
     )
     self.endpoint_compatibility = self._Add(
         'endpoint_compatibility',

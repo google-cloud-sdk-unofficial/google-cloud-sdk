@@ -67,3 +67,13 @@ properties:
     type: array
     items:
       $ref: TlsRouteRouteRule.yaml
+  targetProxies:
+    description: |-
+      TargetProxies defines a list of TargetTcpProxies this TlsRoute is attached
+      to, as one of the routing rules to route the requests served by the
+      TargetTcpProxy.
+      Each TargetTcpProxy reference should match the pattern:
+      `projects/*/locations/*/targetTcpProxies/<target_tcp_proxy_name>`
+    type: array
+    items:
+      type: string

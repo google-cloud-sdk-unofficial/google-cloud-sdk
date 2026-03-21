@@ -70,6 +70,28 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_IAP_TUNNEL_TUNNEL_TYPES = (
+      'projects.iap_tunnel.tunnel_types',
+      'projects/{project}/iap_tunnel/{tunnelType}',
+      {},
+      ['project', 'tunnelType'],
+      True
+  )
+  PROJECTS_IAP_TUNNEL_TUNNEL_TYPES_LOCATIONS = (
+      'projects.iap_tunnel.tunnel_types.locations',
+      'projects/{project}/iap_tunnel/{tunnelType}/locations/{location}',
+      {},
+      ['project', 'tunnelType', 'location'],
+      True
+  )
+  PROJECTS_IAP_TUNNEL_TUNNEL_TYPES_LOCATIONS_SERVICES = (
+      'projects.iap_tunnel.tunnel_types.locations.services',
+      'projects/{project}/iap_tunnel/{tunnelType}/locations/{location}/'
+      'services/{tunnelService}',
+      {},
+      ['project', 'tunnelType', 'location', 'tunnelService'],
+      True
+  )
   PROJECTS_IAP_WEB = (
       'projects.iap_web',
       'projects/{project}/iap_web/{iapWebId}',

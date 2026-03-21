@@ -214,39 +214,41 @@ class GoogleIamV3alphaAccessPolicyRule(_messages.Message):
     EffectValueValuesEnum: Required. The effect of the rule.
 
   Messages:
-    ActivationConditionsValue: Optional. The conditions that determine whether
-      this rule applies to a request. Conditions are identified by their key,
-      which is the FQDN of the service that they are relevant to. For example:
-      ``` "activationConditions": { "iam.googleapis.com": { "cel_condition": }
-      } ``` Each rule is evaluated independently. If this rule does not apply
-      to a request, other rules might still apply. Currently supported keys
-      are as follows: * `eventarc.googleapis.com`
+    ConditionsValue: Optional. The conditions that determine whether this rule
+      applies to a request. Conditions are identified by their key, which is
+      the FQDN of the service that they are relevant to. For example: ```
+      "conditions": { "iam.googleapis.com": } ``` Each rule is evaluated
+      independently. If this rule does not apply to a request, other rules
+      might still apply. Currently supported keys are as follows: *
+      `eventarc.googleapis.com`: Can use `CEL` functions that evaluate
+      resource fields. * `iam.googleapis.com`: Can use `CEL` functions that
+      evaluate [resource
+      tags](https://cloud.google.com/iam/help/conditions/resource-tags) and
+      combine them using boolean and logical operators. Other functions and
+      operators are not supported.
 
   Fields:
-    activationConditions: Optional. The conditions that determine whether this
-      rule applies to a request. Conditions are identified by their key, which
-      is the FQDN of the service that they are relevant to. For example: ```
-      "activationConditions": { "iam.googleapis.com": { "cel_condition": } }
-      ``` Each rule is evaluated independently. If this rule does not apply to
-      a request, other rules might still apply. Currently supported keys are
-      as follows: * `eventarc.googleapis.com`
+    conditions: Optional. The conditions that determine whether this rule
+      applies to a request. Conditions are identified by their key, which is
+      the FQDN of the service that they are relevant to. For example: ```
+      "conditions": { "iam.googleapis.com": } ``` Each rule is evaluated
+      independently. If this rule does not apply to a request, other rules
+      might still apply. Currently supported keys are as follows: *
+      `eventarc.googleapis.com`: Can use `CEL` functions that evaluate
+      resource fields. * `iam.googleapis.com`: Can use `CEL` functions that
+      evaluate [resource
+      tags](https://cloud.google.com/iam/help/conditions/resource-tags) and
+      combine them using boolean and logical operators. Other functions and
+      operators are not supported.
     description: Optional. Customer specified description of the rule. Must be
       less than or equal to 256 characters.
     effect: Required. The effect of the rule.
-    excludedPermissions: Optional. Specifies the permissions that this rule
-      excludes from the set of affected permissions given by `permissions`. If
-      a permission appears in `permissions` _and_ in `excluded_permissions`
-      then it will _not_ be subject to the policy effect. The excluded
-      permissions can be specified using the same syntax as `permissions`.
     excludedPrincipals: Optional. The identities that are excluded from the
       access policy rule, even if they are listed in the `principals`. For
       example, you could add a Google group to the `principals`, then exclude
       specific users who belong to that group.
-    permissions: Required. The permissions that are explicitly affected by
-      this rule. Each permission uses the format
-      `{service_fqdn}/{resource}.{verb}`, where `{service_fqdn}` is the fully
-      qualified domain name for the service. Currently supported permissions
-      are as follows: * `eventarc.googleapis.com/messageBuses.publish`.
+    operation: Required. Attributes that are used to determine whether this
+      rule applies to a request.
     principals: Required. The identities for which this rule's effect governs
       using one or more permissions on Google Cloud resources. This field can
       contain the following values: * `principal://goog/subject/{email_id}`: A
@@ -297,59 +299,81 @@ class GoogleIamV3alphaAccessPolicyRule(_messages.Message):
     ALLOW = 2
 
   @encoding.MapUnrecognizedFields('additionalProperties')
-  class ActivationConditionsValue(_messages.Message):
-    r"""Optional. The conditions that determine whether this rule applies to a
-    request. Conditions are identified by their key, which is the FQDN of the
-    service that they are relevant to. For example: ```
-    "activationConditions": { "iam.googleapis.com": { "cel_condition": } } ```
-    Each rule is evaluated independently. If this rule does not apply to a
-    request, other rules might still apply. Currently supported keys are as
-    follows: * `eventarc.googleapis.com`
+  class ConditionsValue(_messages.Message):
+    r"""Optional.
+
+    The conditions that determine whether this rule applies to a request.
+    Conditions are identified by their key, which is the FQDN of the service
+    that they are relevant to. For example: ``` "conditions": {
+    "iam.googleapis.com": } ``` Each rule is evaluated independently. If this
+    rule does not apply to a request, other rules might still apply. Currently
+    supported keys are as follows: * `eventarc.googleapis.com`: Can use `CEL`
+    functions that evaluate resource fields. * `iam.googleapis.com`: Can use
+    `CEL` functions that evaluate [resource
+    tags](https://cloud.google.com/iam/help/conditions/resource-tags) and
+    combine them using boolean and logical operators. Other functions and
+    operators are not supported.
 
     Messages:
-      AdditionalProperty: An additional property for a
-        ActivationConditionsValue object.
+      AdditionalProperty: An additional property for a ConditionsValue object.
 
     Fields:
-      additionalProperties: Additional properties of type
-        ActivationConditionsValue
+      additionalProperties: Additional properties of type ConditionsValue
     """
 
     class AdditionalProperty(_messages.Message):
-      r"""An additional property for a ActivationConditionsValue object.
+      r"""An additional property for a ConditionsValue object.
 
       Fields:
         key: Name of the additional property.
-        value: A GoogleIamV3alphaAccessPolicyRuleActivationCondition
-          attribute.
+        value: A GoogleTypeExpr attribute.
       """
 
       key = _messages.StringField(1)
-      value = _messages.MessageField('GoogleIamV3alphaAccessPolicyRuleActivationCondition', 2)
+      value = _messages.MessageField('GoogleTypeExpr', 2)
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  activationConditions = _messages.MessageField('ActivationConditionsValue', 1)
+  conditions = _messages.MessageField('ConditionsValue', 1)
   description = _messages.StringField(2)
   effect = _messages.EnumField('EffectValueValuesEnum', 3)
-  excludedPermissions = _messages.StringField(4, repeated=True)
-  excludedPrincipals = _messages.StringField(5, repeated=True)
-  permissions = _messages.StringField(6, repeated=True)
-  principals = _messages.StringField(7, repeated=True)
+  excludedPrincipals = _messages.StringField(4, repeated=True)
+  operation = _messages.MessageField(
+      'GoogleIamV3alphaAccessPolicyRuleOperation', 5
+  )
+  principals = _messages.StringField(6, repeated=True)
 
 
-class GoogleIamV3alphaAccessPolicyRuleActivationCondition(_messages.Message):
-  r"""Defines an activation condition.
+class GoogleIamV3alphaAccessPolicyRuleOperation(_messages.Message):
+  r"""Attributes that are used to determine whether this rule applies to a
+
+  request.
 
   Fields:
-    celCondition: Required. The CEL condition that will be evaluated to
-      determine rule applicability. Note that the attributes and functions
-      that can be used in the condition will be limited by the namespace it is
-      associated with in the `activation_conditions` map. Expr.expression must
-      be less than 512 characters in length.
+    excludedPermissions: Optional. Specifies the permissions that this rule
+      excludes from the set of affected permissions given by `permissions`. If
+      a permission appears in `permissions` _and_ in `excluded_permissions`
+      then it will _not_ be subject to the policy effect. The excluded
+      permissions can be specified using the same syntax as `permissions`.
+    excludedServiceMethods: Optional. Specifies the service methods that this
+      rule excludes from the set of affected service methods given by
+      `service_methods`. If a service method appears in `service_methods`
+      _and_ in `excluded_service_methods` then it will _not_ be subject to the
+      policy effect.
+    permissions: Optional. The permissions that are explicitly affected by
+      this rule. Each permission uses the format
+      `{service_fqdn}/{resource}.{verb}`, where `{service_fqdn}` is the fully
+      qualified domain name for the service. Currently supported permissions
+      are as follows: * `eventarc.googleapis.com/messageBuses.publish`.
+    serviceMethods: Optional. The service methods that are explicitly affected
+      by this rule. Each service method uses the format
+      `{service_name}.{operation_name}`.
   """
 
-  celCondition = _messages.MessageField('GoogleTypeExpr', 1)
+  excludedPermissions = _messages.StringField(1, repeated=True)
+  excludedServiceMethods = _messages.StringField(2, repeated=True)
+  permissions = _messages.StringField(3, repeated=True)
+  serviceMethods = _messages.StringField(4, repeated=True)
 
 
 class GoogleIamV3alphaAccessTrace(_messages.Message):
@@ -538,7 +562,9 @@ class GoogleIamV3alphaPolicy(_messages.Message):
   """
 
   accessPolicy = _messages.MessageField('GoogleIamV3alphaAccessPolicy', 1)
-  principalAccessBoundaryPolicy = _messages.MessageField('GoogleIamV3alphaPrincipalAccessBoundaryPolicy', 2)
+  principalAccessBoundaryPolicy = _messages.MessageField(
+      'GoogleIamV3alphaPrincipalAccessBoundaryPolicy', 2
+  )
 
 
 class GoogleIamV3alphaPolicyBinding(_messages.Message):

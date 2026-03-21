@@ -1,0 +1,36 @@
+# -*- coding: utf-8 -*- #
+# Copyright 2026 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Commands for reading and manipulating snapshot recycle bin policy."""
+
+from googlecloudsdk.calliope import base
+
+
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA
+)
+@base.Hidden
+@base.DefaultUniverseOnly
+class SnapshotRecycleBinPolicy(base.Group):
+  """Update and describe Compute Engine snapshot recycle bin policy."""
+
+
+SnapshotRecycleBinPolicy.category = base.DISKS_CATEGORY
+SnapshotRecycleBinPolicy.detailed_help = {
+    'brief': 'Update and describe Compute Engine snapshot recycle bin policy.',
+    'DESCRIPTION': """\
+      Update and describe Compute Engine snapshot recycle bin policy.
+      """,
+}

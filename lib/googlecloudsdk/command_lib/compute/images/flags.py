@@ -16,6 +16,7 @@
 """Flags and helpers for the compute backend-buckets commands."""
 
 
+import textwrap
 from googlecloudsdk.calliope import actions as calliope_actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -193,13 +194,19 @@ def AddCommonSourcesArgs(parser, sources_group):
   """Add common args for specifying the source for image creation."""
   sources_group.add_argument(
       '--source-uri',
-      help="""\
-      The full Cloud Storage URI where the disk image is stored.
-      This file must be a gzip-compressed tarball whose name ends in
-      ``.tar.gz''.
-      For more information about Cloud Storage URIs,
-      see https://cloud.google.com/storage/docs/request-endpoints#json-api.
-      """)
+      help=textwrap.dedent("""\
+          The full Cloud Storage URI or Artifact Registry path where
+          the raw disk image archive is stored. This file must be a
+          gzip-compressed tarball whose name ends in .tar.gz or a valid
+          Artifact Registry generic repository path.
+          For more information about Cloud Storage URIs, see
+          https://cloud.google.com/storage/docs/request-endpoints#json-api.
+          If an Artifact Registry path is provided, it must be a valid Artifact
+          Registry generic repository path in the format:
+          projects/<project>/locations/<locations>/repositories/<repo>/packages/<package>/versions/<version_id>
+          or
+          projects/<project>/locations/<locations>/repositories/<repo>/packages/<package>/versions/<version_id>@dirsum_sha256:<hex_value>
+      """))
 
   SOURCE_DISK_ARG.AddArgument(parser, mutex_group=sources_group)
 

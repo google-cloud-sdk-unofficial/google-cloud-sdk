@@ -47,9 +47,6 @@ DESCRIPTION = """\
     instance to clone. If not specified, the current state of the instance is
     cloned.
 
-    Note: The flags --destination-project and --destination-network are
-    currently for allowlisted customers only.
-
     """
 
 EXAMPLES_GA = """\
@@ -300,6 +297,7 @@ def AddBaseArgs(parser):
       required. If not specified, the clone is created in the same project
       as the source instance.
       """,
+      hidden=True,
   )
   parser.add_argument(
       '--destination-network',
@@ -310,6 +308,7 @@ def AddBaseArgs(parser):
       example: `projects/my-network-project/global/networks/my-network`. This
       field is required only for cross-project cloning.
       """,
+      hidden=True,
   )
   pitr_options_group = parser.add_group(mutex=True, required=False)
   bin_log_group = pitr_options_group.add_group(

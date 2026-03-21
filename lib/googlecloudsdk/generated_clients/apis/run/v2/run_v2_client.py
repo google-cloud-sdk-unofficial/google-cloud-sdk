@@ -45,6 +45,7 @@ class RunV2(base_api.BaseApiClient):
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
     self.projects_locations_services_revisions = self.ProjectsLocationsServicesRevisionsService(self)
     self.projects_locations_services = self.ProjectsLocationsServicesService(self)
+    self.projects_locations_sourceUploads = self.ProjectsLocationsSourceUploadsService(self)
     self.projects_locations_workerPools_revisions = self.ProjectsLocationsWorkerPoolsRevisionsService(self)
     self.projects_locations_workerPools = self.ProjectsLocationsWorkerPoolsService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
@@ -1180,6 +1181,55 @@ class RunV2(base_api.BaseApiClient):
         request_field='googleIamV1TestIamPermissionsRequest',
         request_type_name='RunProjectsLocationsServicesTestIamPermissionsRequest',
         response_type_name='GoogleIamV1TestIamPermissionsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsSourceUploadsService(base_api.BaseApiService):
+    """Service class for the projects_locations_sourceUploads resource."""
+
+    _NAME = 'projects_locations_sourceUploads'
+
+    def __init__(self, client):
+      super(RunV2.ProjectsLocationsSourceUploadsService, self).__init__(client)
+      self._upload_configs = {
+          'Upload': base_api.ApiUploadInfo(
+              accept=['*/*'],
+              max_size=262144000,
+              resumable_multipart=None,
+              resumable_path=None,
+              simple_multipart=True,
+              simple_path='/upload/v2/{+parent}:uploadSource',
+          ),
+          }
+
+    def Upload(self, request, global_params=None, upload=None):
+      r"""Uploads a source archive to a Google Cloud Storage bucket through Cloud Run. The uploaded source object should be used for Cloud Run resource deployments. User is responsible for managing the lifecycle of the uploaded object.
+
+      Args:
+        request: (RunProjectsLocationsSourceUploadsUploadRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+        upload: (Upload, default: None) If present, upload
+            this stream with the request.
+      Returns:
+        (GoogleCloudRunV2UploadSourceResponse) The response message.
+      """
+      config = self.GetMethodConfig('Upload')
+      upload_config = self.GetUploadConfig('Upload')
+      return self._RunMethod(
+          config, request, global_params=global_params,
+          upload=upload, upload_config=upload_config)
+
+    Upload.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}:uploadSource',
+        http_method='POST',
+        method_id='run.projects.locations.sourceUploads.upload',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v2/{+parent}:uploadSource',
+        request_field='googleCloudRunV2UploadSourceRequest',
+        request_type_name='RunProjectsLocationsSourceUploadsUploadRequest',
+        response_type_name='GoogleCloudRunV2UploadSourceResponse',
         supports_download=False,
     )
 

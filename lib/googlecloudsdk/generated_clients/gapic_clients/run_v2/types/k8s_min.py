@@ -374,6 +374,9 @@ class VolumeMount(proto.Message):
             Optional. Path within the volume from which
             the container's volume should be mounted.
             Defaults to "" (volume's root).
+
+            This field is currently ignored for Secret
+            volumes.
     """
 
     name: str = proto.Field(
@@ -930,11 +933,22 @@ class BuildInfo(proto.Message):
 class SourceCode(proto.Message):
     r"""Source type for the container.
 
+    This message has `oneof`_ fields (mutually exclusive fields).
+    For each oneof, at most one member field can be set at the same time.
+    Setting any member of the oneof automatically clears all other
+    members.
+
     .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
 
     Attributes:
         cloud_storage_source (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.SourceCode.CloudStorageSource):
             The source is a Cloud Storage bucket.
+
+            This field is a member of `oneof`_ ``source_type``.
+        inlined_source (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.SourceCode.InlinedSource):
+            Optional. Input only. Source code inlined in the request.
+            Cloud Run will store the inlined_source to Cloud Storage and
+            replace the field with cloud_storage_source.
 
             This field is a member of `oneof`_ ``source_type``.
     """
@@ -965,11 +979,60 @@ class SourceCode(proto.Message):
             number=3,
         )
 
+    class SourceFile(proto.Message):
+        r"""Source file.
+
+        Attributes:
+            filename (str):
+                Required. Input only. The file name for the source code.
+                e.g., ``"index.js"`` or ``"node_modules/dependency.js"``.
+                The filename must be less than 255 characters and cannot
+                contain ``..``, ``./``, ``//``, or end with a ``/``. Cloud
+                Run will place the files in the container subdirectories,
+                please use relative path to access the file.
+            content (str):
+                Required. Input only. Represents the exact, literal, and
+                complete source code of the file. Placeholders like ``...``
+                or comments such as ``# [rest of code]`` should NEVER be
+                used as omission. Every character in this field will be
+                built into the final container. Any omission will result in
+                a broken application.
+        """
+
+        filename: str = proto.Field(
+            proto.STRING,
+            number=1,
+        )
+        content: str = proto.Field(
+            proto.STRING,
+            number=2,
+        )
+
+    class InlinedSource(proto.Message):
+        r"""Inlined source.
+
+        Attributes:
+            sources (MutableSequence[googlecloudsdk.generated_clients.gapic_clients.run_v2.types.SourceCode.SourceFile]):
+                Required. Input only. The source code.
+        """
+
+        sources: MutableSequence['SourceCode.SourceFile'] = proto.RepeatedField(
+            proto.MESSAGE,
+            number=1,
+            message='SourceCode.SourceFile',
+        )
+
     cloud_storage_source: CloudStorageSource = proto.Field(
         proto.MESSAGE,
         number=1,
         oneof='source_type',
         message=CloudStorageSource,
+    )
+    inlined_source: InlinedSource = proto.Field(
+        proto.MESSAGE,
+        number=2,
+        oneof='source_type',
+        message=InlinedSource,
     )
 
 

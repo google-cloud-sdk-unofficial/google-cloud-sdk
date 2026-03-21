@@ -31,15 +31,20 @@ def _camel_to_snake(name):
 class ResourceProfileModel:
   """Model for resourceProfile resource."""
   type: Literal['resourceProfile']
-  name: str
   path: str
+  name: str | None = None
+  names: list[str] | None = None
 
 
 @dataclasses.dataclass
 class MetadataModel:
   """Model for resource metadata."""
 
+  # Applicable to: BigQuery Data Transfer Configs
   service_account_name: str | None = None
+
+  # Applicable to: All (Global Override)
+  location: str | None = None
 
 
 @dataclasses.dataclass
@@ -50,7 +55,7 @@ class ResourceModel:
   parent: str | None = None
   api_version: str | None = None
   definition: dict[str, Any] = dataclasses.field(default_factory=dict)
-  metadata: MetadataModel | None = None
+  metadata: MetadataModel = dataclasses.field(default_factory=MetadataModel)
 
 
 AnyResource = ResourceProfileModel | ResourceModel
@@ -85,15 +90,16 @@ class EnvironmentModel:
 
 def _build_metadata(
     metadata_def: Mapping[str, Any] | None,
-) -> MetadataModel | None:
+) -> MetadataModel:
   if not metadata_def:
-    return None
+    return MetadataModel()
   return MetadataModel(
       service_account_name=metadata_def.get('serviceAccountName'),
+      location=metadata_def.get('location'),
   )
 
 
-def _build_resource(resource_def: Mapping[str, Any]) -> AnyResource:
+def build_resource(resource_def: Mapping[str, Any]) -> AnyResource:
   """Builds a resource model from its raw YAML definition."""
   resource_type = resource_def.get('type')
   if not resource_type:
@@ -102,6 +108,7 @@ def _build_resource(resource_def: Mapping[str, Any]) -> AnyResource:
     return ResourceProfileModel(
         type=resource_type,
         name=resource_def.get('name'),
+        names=resource_def.get('names'),
         path=resource_def.get('path'),
     )
 
@@ -130,7 +137,8 @@ def _build_environment(env_def: Mapping[str, Any]) -> EnvironmentModel:
   raw_resources = env_def.get('resources', [])
   if isinstance(raw_resources, dict):
     raw_resources = [raw_resources]
-  resources = [_build_resource(r) for r in raw_resources]
+
+  resources = [build_resource(r) for r in raw_resources]
   artifact_storage = _build_artifact_storage(env_def.get('artifact_storage'))
   raw_pipelines = env_def.get('pipelines', [])
   pipelines = (

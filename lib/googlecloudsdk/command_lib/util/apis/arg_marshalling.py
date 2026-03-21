@@ -15,7 +15,6 @@
 
 """Classes that generate and parse arguments for apitools messages."""
 
-
 import collections
 
 from apitools.base.protorpclite import messages
@@ -51,15 +50,17 @@ def _ParseLabelsIntoCreateMessage(message, args, api_field):
 
 def _AddLabelsToUpdateMask(static_field, update_mask_path):
   if (update_mask_path not in static_field) or (
-      not static_field[update_mask_path]):
+      not static_field[update_mask_path]
+  ):
     static_field[update_mask_path] = 'labels'
     return
 
   if 'labels' in static_field[update_mask_path].split(','):
     return
 
-  static_field[
-      update_mask_path] = static_field[update_mask_path] + ',' + 'labels'
+  static_field[update_mask_path] = (
+      static_field[update_mask_path] + ',' + 'labels'
+  )
 
 
 def _RetrieveFieldValueFromMessage(message, api_field):
@@ -69,7 +70,8 @@ def _RetrieveFieldValueFromMessage(message, api_field):
       message = getattr(message, field_name)
     except AttributeError:
       raise AttributeError(
-          'The message does not have field specified in {}.'.format(api_field))
+          'The message does not have field specified in {}.'.format(api_field)
+      )
   return message
 
 
@@ -115,8 +117,8 @@ def _GetPrimaryResource(resource_params, resource_collection):
 
   Args:
     resource_params: list of YAMLConceptParser
-    resource_collection: registry.APICollection, resource collection
-      associated with method
+    resource_collection: registry.APICollection, resource collection associated
+      with method
 
   Returns:
     YAMLConceptArgument (resource arg) or None.
@@ -127,8 +129,10 @@ def _GetPrimaryResource(resource_params, resource_collection):
     return None
 
   primary_resources = [
-      arg for arg in resource_params
-      if arg.IsPrimaryResource(resource_collection)]
+      arg
+      for arg in resource_params
+      if arg.IsPrimaryResource(resource_collection)
+  ]
 
   if not primary_resources:
     if resource_collection:
@@ -143,15 +147,16 @@ def _GetPrimaryResource(resource_params, resource_collection):
         'Add resource arguments that corresponds with request.method '
         'collection [{name} {version}]. HINT: Can set resource arg '
         'is_primary_resource to True in yaml schema to receive more assistance '
-        'with validation.'.format(
-            name=full_name, version=api_version))
+        'with validation.'.format(name=full_name, version=api_version)
+    )
 
   if len(primary_resources) > 1:
     primary_resource_names = [arg.name for arg in primary_resources]
     raise util.InvalidSchemaError(
         'Only one resource arg can be listed as primary. Remove one of the '
         'primary resource args [{}] or set is_primary_resource to False in '
-        'yaml schema.'.format(', '.join(primary_resource_names)))
+        'yaml schema.'.format(', '.join(primary_resource_names))
+    )
 
   return primary_resources[0]
 
@@ -160,8 +165,7 @@ def _GetMethodResourceArgs(resource_args, methods):
   """Gets list of primary resource args and methods associated with them.
 
   Args:
-    resource_args: list[YAMLConceptArg], list of potential primary resource
-      args
+    resource_args: list[YAMLConceptArg], list of potential primary resource args
     methods: list[registry.APIMethod], The method to generate arguments for.
 
   Returns:
@@ -175,7 +179,8 @@ def _GetMethodResourceArgs(resource_args, methods):
   yaml_methods = []
   for method in methods:
     resource_arg = _GetPrimaryResource(
-        args, method.resource_argument_collection)
+        args, method.resource_argument_collection
+    )
     yaml_methods.append(MethodResourceArg(resource_arg, method))
   return yaml_methods
 
@@ -198,8 +203,9 @@ def _DoesDupResourceArgHaveSameAttributes(resource, resource_params):
     if res_arg != resource and res_arg.name == resource.name:
       # Normalize the attribute names to account for positional
       # and non-positional.
-      return(_NormalizeNames(res_arg.attribute_names) ==
-             _NormalizeNames(resource.attribute_names))
+      return _NormalizeNames(res_arg.attribute_names) == _NormalizeNames(
+          resource.attribute_names
+      )
   return True
 
 
@@ -283,8 +289,8 @@ class DeclarativeArgumentGenerator(object):
     """Creates a new Argument Generator.
 
     Args:
-      arg_info: [yaml_arg_schema.Argument], Information about
-        request fields and how to map them into arguments.
+      arg_info: [yaml_arg_schema.Argument], Information about request fields and
+        how to map them into arguments.
     """
     self.arg_info = arg_info
     self.resource_args = _GetResources(self.arg_info)
@@ -301,26 +307,36 @@ class DeclarativeArgumentGenerator(object):
     shared_flag_resource_dict = _GetSharedFlags(self.resource_args)
     shared_resource_flag_list = list(shared_flag_resource_dict)
 
-    args = [arg.Generate(methods, shared_resource_flag_list)
-            for arg in self.arg_info]
+    args = [
+        arg.Generate(methods, shared_resource_flag_list)
+        for arg in self.arg_info
+    ]
 
     primary_resource_args = _GetMethodResourceArgs(self.resource_args, methods)
     primary_names = set(
         arg.primary_resource and arg.primary_resource.name
-        for arg in primary_resource_args)
+        for arg in primary_resource_args
+    )
 
     for flag_name, resource_args in shared_flag_resource_dict.items():
       resource_names = list(set(resource_args))
       resource_names.sort(
-          key=lambda name: '' if name in primary_names else name)
+          key=lambda name: '' if name in primary_names else name
+      )
 
-      args.append(base.Argument(
-          flag_name,
-          help='For resources [{}], provides fallback value for resource '
-               '{attr} attribute. When the resource\'s full URI path is not '
-               'provided, {attr} will fallback to this flag value.'.format(
-                   ', '.join(resource_names),
-                   attr=resource_util.StripPrefix(flag_name))))
+      args.append(
+          base.Argument(
+              flag_name,
+              help=(
+                  'For resources [{}], provides fallback value for resource '
+                  "{attr} attribute. When the resource's full URI path is not "
+                  'provided, {attr} will fallback to this flag value.'.format(
+                      ', '.join(resource_names),
+                      attr=resource_util.StripPrefix(flag_name),
+                  )
+              ),
+          )
+      )
 
     return args
 
@@ -329,7 +345,8 @@ class DeclarativeArgumentGenerator(object):
     resource_args = {}
     for method in methods:
       resource_arg = _GetPrimaryResource(
-          self.resource_args, method.resource_argument_collection)
+          self.resource_args, method.resource_argument_collection
+      )
       if resource_arg:
         resource_args[resource_arg.presentation_name] = resource_arg
     return list(resource_args.values())
@@ -377,12 +394,14 @@ class DeclarativeArgumentGenerator(object):
         )
 
       method_collection = _GetCollectionName(
-          method, is_parent=primary_resource.is_parent_resource)
+          method, is_parent=primary_resource.is_parent_resource
+      )
 
       specified_resource = method_info.Parse(namespace)
       primary_collection = (
-          specified_resource and
-          specified_resource.GetCollectionInfo().full_name)
+          specified_resource
+          and specified_resource.GetCollectionInfo().full_name
+      )
 
       if method_collection == primary_collection:
         specified_methods.append(method_info)
@@ -396,20 +415,23 @@ class DeclarativeArgumentGenerator(object):
       args = ', '.join(uris)
       raise ConflictingResourcesError(
           f'User specified multiple primary resource arguments: [{args}]. '
-          'Unable to determine api request method.')
+          'Unable to determine api request method.'
+      )
 
     if len(specified_methods) == 1:
       return specified_methods.pop()
     else:
       return MethodResourceArg(primary_resource=None, method=None)
 
-  def CreateRequest(self,
-                    namespace,
-                    method,
-                    static_fields=None,
-                    labels=None,
-                    command_type=None,
-                    existing_message=None):
+  def CreateRequest(
+      self,
+      namespace,
+      method,
+      static_fields=None,
+      labels=None,
+      command_type=None,
+      existing_message=None,
+  ):
     """Generates the request object for the method call from the parsed args.
 
     Args:
@@ -434,7 +456,8 @@ class DeclarativeArgumentGenerator(object):
     # instead of creating an empty one.
     if existing_message:
       message = arg_utils.ParseExistingMessageIntoMessage(
-          new_message, existing_message, method)
+          new_message, existing_message, method
+      )
     else:
       message = new_message
 
@@ -443,8 +466,9 @@ class DeclarativeArgumentGenerator(object):
       if command_type == yaml_command_schema.CommandType.CREATE:
         _ParseLabelsIntoCreateMessage(message, namespace, labels.api_field)
       elif command_type == yaml_command_schema.CommandType.UPDATE:
-        need_update = _ParseLabelsIntoUpdateMessage(message, namespace,
-                                                    labels.api_field)
+        need_update = _ParseLabelsIntoUpdateMessage(
+            message, namespace, labels.api_field
+        )
         if need_update:
           update_mask_path = update.GetMaskFieldPath(method)
           _AddLabelsToUpdateMask(static_fields, update_mask_path)
@@ -473,13 +497,15 @@ class DeclarativeArgumentGenerator(object):
       resources.Resource, The parsed resource reference.
     """
     methods = [method] if method else []
-    parent_ref = self.GetSpecifiedPrimaryResource(
-        methods, namespace).Parse(namespace)
+    parent_ref = self.GetSpecifiedPrimaryResource(methods, namespace).Parse(
+        namespace
+    )
     return resources.REGISTRY.Parse(
         id_value,
         collection=method.collection.full_name,
         api_version=method.collection.api_version,
-        params=parent_ref.AsDict())
+        params=parent_ref.AsDict(),
+    )
 
   def Limit(self, namespace):
     """Gets the value of the limit flag (if present)."""
@@ -511,6 +537,7 @@ class AutoArgumentGenerator(object):
   the proper API fields automatically). In both cases, we generate additional
   resource arguments for path parameters.
   """
+
   FLAT_RESOURCE_ARG_NAME = 'resource'
   IGNORABLE_LIST_FIELDS = {'filter', 'pageToken', 'orderBy'}
 
@@ -582,8 +609,9 @@ class AutoArgumentGenerator(object):
     ref = self._ParseResourceArg(namespace)
     if ref:
       relative_name = ref.RelativeName()
-      fields.update({f: getattr(ref, f, relative_name)
-                     for f in self.method.params})
+      fields.update(
+          {f: getattr(ref, f, relative_name) for f in self.method.params}
+      )
     return request_type(**fields)
 
   def Limit(self, namespace):
@@ -618,17 +646,24 @@ class AutoArgumentGenerator(object):
           flags.append(base.PAGE_SIZE_FLAG)
     return flags
 
-  def _GenerateArguments(self, prefix, message):
+  def _GenerateArguments(self, prefix, message, seen_messages=None):
     """Gets the arguments to add to the parser that appear in the method body.
 
     Args:
-      prefix: str, A string to prepend to the name of the flag. This is used
-        for flags representing fields of a submessage.
+      prefix: str, A string to prepend to the name of the flag. This is used for
+        flags representing fields of a submessage.
       message: The apitools message to generate the flags for.
+      seen_messages: set, The set of apitools message classes that have been
+        seen in the ancestry chain to prevent infinite recursion.
 
     Returns:
       {str, calliope.base.Argument}, A map of field name to argument.
     """
+    if seen_messages is None:
+      seen_messages = set()
+    if message in seen_messages:
+      return []
+
     args = []
     field_helps = arg_utils.FieldHelpDocs(message)
     for field in message.all_fields():
@@ -638,7 +673,9 @@ class AutoArgumentGenerator(object):
         continue
       name = prefix + name
       if field.variant == messages.Variant.MESSAGE:
-        sub_args = self._GenerateArguments(name + '.', field.type)
+        sub_args = self._GenerateArguments(
+            name + '.', field.type, seen_messages | {message}
+        )
         if sub_args:
           help_text = (name + ': ' + field_help) if field_help else ''
           group = base.ArgumentGroup(help=help_text)
@@ -647,8 +684,9 @@ class AutoArgumentGenerator(object):
             group.AddArgument(arg)
       else:
         attributes = yaml_arg_schema.Argument(name, name, field_help)
-        arg = arg_utils.GenerateFlag(field, attributes, fix_bools=False,
-                                     category='MESSAGE')
+        arg = arg_utils.GenerateFlag(
+            field, attributes, fix_bools=False, category='MESSAGE'
+        )
         if not arg.kwargs.get('help'):
           arg.kwargs['help'] = 'API doc needs help for field [{}].'.format(name)
         args.append(arg)
@@ -661,8 +699,11 @@ class AutoArgumentGenerator(object):
       {str, calliope.base.Argument}, A map of field name to argument.
     """
     args = []
-    field_names = (self.method.request_collection.detailed_params
-                   if self.method.request_collection else None)
+    field_names = (
+        self.method.request_collection.detailed_params
+        if self.method.request_collection
+        else None
+    )
     if not field_names:
       return args
     field_helps = arg_utils.FieldHelpDocs(self.method.GetRequestType())
@@ -673,7 +714,8 @@ class AutoArgumentGenerator(object):
     arg = base.Argument(
         AutoArgumentGenerator.FLAT_RESOURCE_ARG_NAME,
         nargs='?',
-        help='The GRI for the resource being operated on.')
+        help='The GRI for the resource being operated on.',
+    )
     args.append(arg)
 
     for field in field_names:
@@ -681,21 +723,29 @@ class AutoArgumentGenerator(object):
           '--' + field,
           metavar=resource_property.ConvertToAngrySnakeCase(field),
           category='RESOURCE',
-          help=field_helps.get(field, default_help))
+          help=field_helps.get(field, default_help),
+      )
       args.append(arg)
     return args
 
-  def _ParseArguments(self, namespace, prefix, message):
+  def _ParseArguments(self, namespace, prefix, message, seen_messages=None):
     """Recursively generates data for the request message and any sub-messages.
 
     Args:
       namespace: The argparse namespace containing the all the parsed arguments.
       prefix: str, The flag prefix for the sub-message being generated.
       message: The apitools class for the message.
+      seen_messages: set, The set of apitools message classes that have been
+        seen in the ancestry chain to prevent infinite recursion.
 
     Returns:
       A dict of message field data that can be passed to an apitools Message.
     """
+    if seen_messages is None:
+      seen_messages = set()
+    if message in seen_messages:
+      return {}
+
     kwargs = {}
     for field in message.all_fields():
       arg_name = self._GetArgName(field.name)
@@ -704,7 +754,9 @@ class AutoArgumentGenerator(object):
       arg_name = prefix + arg_name
       # Field is a sub-message, recursively generate it.
       if field.variant == messages.Variant.MESSAGE:
-        sub_kwargs = self._ParseArguments(namespace, arg_name + '.', field.type)
+        sub_kwargs = self._ParseArguments(
+            namespace, arg_name + '.', field.type, seen_messages | {message}
+        )
         if sub_kwargs:
           # Only construct the sub-message if we have something to put in it.
           value = field.type(**sub_kwargs)
@@ -726,8 +778,11 @@ class AutoArgumentGenerator(object):
       The parsed resource ref or None if no resource arg was generated for this
       method.
     """
-    field_names = (self.method.request_collection.detailed_params
-                   if self.method.request_collection else None)
+    field_names = (
+        self.method.request_collection.detailed_params
+        if self.method.request_collection
+        else None
+    )
     if not field_names:
       return
     r = getattr(namespace, AutoArgumentGenerator.FLAT_RESOURCE_ARG_NAME)
@@ -751,10 +806,12 @@ class AutoArgumentGenerator(object):
 
     defaults.update(params)
     return resources.REGISTRY.Parse(
-        r, collection=self.method.request_collection.full_name,
+        r,
+        collection=self.method.request_collection.full_name,
         enforce_collection=enforce_collection,
         api_version=self.method.request_collection.api_version,
-        params=defaults)
+        params=defaults,
+    )
 
   def _GetArgName(self, field_name, field_help=None):
     """Gets the name of the argument to generate for the field.
@@ -771,7 +828,8 @@ class AutoArgumentGenerator(object):
       return None
     if field_name in self.ignored_fields:
       return None
-    if (field_name == self.method.request_field and
-        field_name.lower().endswith('request')):
+    if field_name == self.method.request_field and field_name.lower().endswith(
+        'request'
+    ):
       return 'request'
     return field_name

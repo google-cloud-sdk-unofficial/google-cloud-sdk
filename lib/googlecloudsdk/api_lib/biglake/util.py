@@ -117,7 +117,7 @@ def GetCatalogTypeEnumMapper(release_track):
               (
                   'BigLake Iceberg catalog. Catalog type which allows'
                   ' namespaces and tables within a catalog to be mapped to'
-                  ' locations beyond the catalog\'s designated default.'
+                  " locations beyond the catalog's designated default."
               ),
           ),
       },
@@ -223,9 +223,7 @@ def CheckValidArgCombinations(args):
     raise arg_parsers.ArgumentTypeError(
         '--default-location must be specified when catalog type is BigLake.'
     )
-  elif args.catalog_type != 'biglake' and args.IsSpecified(
-      'default_location'
-  ):
+  elif args.catalog_type != 'biglake' and args.IsSpecified('default_location'):
     raise arg_parsers.ArgumentTypeError(
         '--default-location is only supported for BigLake catalogs.'
     )
@@ -244,9 +242,7 @@ def ProcessNamespaceListResponse(parent_name, response):
     for ns_parts in response['namespaces']:
       ns_id = '.'.join(ns_parts)
       namespaces.append(
-          types.SimpleNamespace(
-              name=f'{parent_name}/namespaces/{ns_id}'
-          )
+          types.SimpleNamespace(name=f'{parent_name}/namespaces/{ns_id}')
       )
   page_token = response.get('next-page-token', None)
   unreachable = response.get('unreachable', [])
@@ -290,3 +286,48 @@ def ListNamespaces(parent_name, page_size=None, page_token=None):
         'No JSON object could be decoded from the HTTP response body: '
         + response.text
     ) from e
+
+
+def CreateCatalog(catalog_id, catalog_msg, primary_location=None):
+  """Creates a catalog.
+
+  Args:
+      catalog_id: The ID of the catalog.
+      catalog_msg: The IcebergCatalog message.
+      primary_location: The primary location.
+
+  Returns:
+      The created IcebergCatalog message.
+
+  Raises:
+      HttpRequestFailError: if error happens with http request, or parsing
+          the http response.
+  """
+  endpoint = apis.GetEffectiveApiEndpoint('biglake', 'v1').strip('/')
+  parent_name = GetParentName()
+  url = f'{endpoint}/iceberg/v1/restcatalog/extensions/{parent_name}/catalogs?alt=json&iceberg-catalog-id={catalog_id}'
+  if primary_location:
+    url += f'&primary_location={primary_location}'
+
+  body = {
+      'name': catalog_msg.name,
+      'catalog-type': str(catalog_msg.catalog_type),
+  }
+  if catalog_msg.credential_mode:
+    body['credential-mode'] = str(catalog_msg.credential_mode)
+  if hasattr(catalog_msg, 'default_location') and catalog_msg.default_location:
+    body['default-location'] = catalog_msg.default_location
+  if (
+      hasattr(catalog_msg, 'additional_locations')
+      and catalog_msg.additional_locations
+  ):
+    body['additional-locations'] = catalog_msg.additional_locations
+  headers = {'Content-Type': 'application/json'}
+  response = requests.GetSession().request(
+      'POST', url, data=json.dumps(body), headers=headers
+  )
+  if int(response.status_code) != httplib.OK:
+    raise HttpRequestFailError(
+        'HTTP request failed. Response: ' + response.text
+    )
+  return response.text

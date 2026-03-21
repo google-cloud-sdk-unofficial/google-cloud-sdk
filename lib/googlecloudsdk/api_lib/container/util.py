@@ -223,6 +223,9 @@ NC_KERNEL_MODULE_LOADING_POLICY = 'policy'
 NC_CRASHLOOPBACKOFF = 'crashLoopBackOff'
 NC_CRASHLOOPBACKOFF_MAX_CONTAINER_RESTART_PERIOD = 'maxContainerRestartPeriod'
 
+NC_ACCURATE_TIME_CONFIG = 'accurateTimeConfig'
+NC_ENABLE_PTP_KVM_TIME_SYNC = 'enablePtpKvmTimeSync'
+
 
 class Error(core_exceptions.Error):
   """Class for errors raised by container commands."""
@@ -1109,6 +1112,7 @@ def LoadSystemConfigFromYAML(
             NC_TIME_ZONE: str,
             NC_CUSTOM_NODE_INIT: dict,
             NC_KERNEL_MODULE_LOADING: dict,
+            NC_ACCURATE_TIME_CONFIG: dict,
         },
     )
     node_config.linuxNodeConfig = messages.LinuxNodeConfig()
@@ -1531,6 +1535,23 @@ def LoadSystemConfigFromYAML(
         init_args = init_script_opts.get(NC_CUSTOM_NODE_INIT_SCRIPT_ARGS)
         if init_args is not None:
           node_config.linuxNodeConfig.customNodeInit.initScript.args = init_args
+
+    accurate_time_config_opts = linux_config_opts.get(NC_ACCURATE_TIME_CONFIG)
+    if accurate_time_config_opts:
+      _CheckNodeConfigFields(
+          NC_ACCURATE_TIME_CONFIG,
+          accurate_time_config_opts,
+          {NC_ENABLE_PTP_KVM_TIME_SYNC: bool},
+      )
+      ptp_kvm_time_sync_enabled = accurate_time_config_opts.get(
+          NC_ENABLE_PTP_KVM_TIME_SYNC
+      )
+      if ptp_kvm_time_sync_enabled is not None:
+        node_config.linuxNodeConfig.accurateTimeConfig = (
+            messages.AccurateTimeConfig(
+                enablePtpKvmTimeSync=ptp_kvm_time_sync_enabled
+            )
+        )
 
     kernel_module_loading_opts = linux_config_opts.get(NC_KERNEL_MODULE_LOADING)
     if kernel_module_loading_opts:

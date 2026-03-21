@@ -143,13 +143,12 @@ def AddConsumerRejectList(parser):
       metavar='REJECT_LIST',
       default=None,
       help="""\
-      Specifies a comma separated list of projects or networks that are not
-      allowed to connect to this service attachment. The project can be
-      specified using its project ID or project number and the network can be
-      specified using its URL. A given service attachment can manage connections
-      at either the project or network level. Therefore, both the reject and
-      accept lists for a given service attachment must contain either only
-      projects or only networks.""")
+    Specifies a comma-separated list of projects/networks/endpoints that are not
+    allowed to connect to this service attachment. The project can be
+    specified using its project ID or project number and the network or
+    endpoint can be specified using its URL. For a given service
+    attachment, consumer accept and reject lists must contain entries of
+    the same type: all projects, all networks, or all endpoints.""")
 
 
 def AddConsumerAcceptListOld(parser):
@@ -185,20 +184,22 @@ def AddConsumerAcceptList(parser):
       default=None,
       help="""\
     Specifies which consumer projects/networks/endpoints are allowed to connect to the
-    service attachment. Each project or network has a connection limit. For
-    endpoints, the connection limit is optional. Both the accept and reject lists for a
-    given service attachment must contain either only one of projects, networks
-    or endpoints.
+    service attachment. A connection limit is required for each accepted
+    project/network (optional for endpoints). For a given service attachment,
+    consumer accept and reject lists must contain entries of the same type:
+    all projects, all networks or all endpoints.
 
-    For example, `--consumer-accept-list myProjectId1=20` accepts a consumer
-    project myProjectId1 with connection limit 20;
-    `--consumer-accept-list projects/myProjectId1/global/networks/myNet1=20`
-    accepts a consumer network myNet1 with connection limit 20
-    `--consumer-accept-list projects/myProjectId1/regions/myRegion1/forwardingRules/8167352512`
-    also accepts a consumer endpoint with ID 8167352512.
+    For example:
+    * `--consumer-accept-list myProjectId1=20` - Accepts a consumer
+      project myProjectId1 with connection limit 20.
+    * `--consumer-accept-list projects/myProjectId1/global/networks/myNet1=20` -
+      Accepts a consumer network myNet1 with connection limit 20.
+    * `--consumer-accept-list projects/myProjectId1/regions/myRegion1/forwardingRules/8167352512` -
+      Accepts a consumer endpoint with ID 8167352512.
 
-    * `PROJECT_OR_NETWORK_OR_ENDPOINT` - Consumer project ID/number or network URL orendpoint URL.
-    * `CONNECTION_LIMIT` - The maximum number of allowed connections.
+    * `PROJECT_OR_NETWORK_OR_ENDPOINT` - Consumer project ID/number or network URL or endpoint URL.
+    * `CONNECTION_LIMIT` - The maximum number of allowed connections. This
+    field is optional for endpoints.
     """,
   )
 

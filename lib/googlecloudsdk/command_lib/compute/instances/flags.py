@@ -2193,8 +2193,12 @@ def AddPreemptionNoticeDurationArgs(parser):
       '--preemption-notice-duration',
       type=arg_parsers.Duration(),
       help="""\
-      Specifies the metadata preemption notice duration before the ACPI G2
-      soft off signal is triggered for Spot VMs. e.g. 120s.
+      Only allowed with `--provisioning-model=SPOT`. If provided, the
+      preemption notice will be triggered ``PREEMPTION_NOTICE_DURATION''
+      seconds before the ACPI G2 soft off signal. Valid values for
+      ``PREEMPTION_NOTICE_DURATION'' are [0s,120s]; for example, specify `120s`
+      for 120 seconds. Otherwise, if this flag is omitted (default), there will
+      be no wait time before the ACPI G2 soft off signal is triggered.
       """,
   )
 

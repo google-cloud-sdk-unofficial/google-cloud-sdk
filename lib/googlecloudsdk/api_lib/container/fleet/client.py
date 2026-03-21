@@ -1528,6 +1528,23 @@ class FleetClient(object):
     """Delete a fleet rollout."""
     return self.client.projects_locations_rollouts.Delete(req)
 
+  def ForceCompleteRolloutStage(
+      self, req: types.GkehubProjectsLocationsRolloutsForceCompleteStageRequest
+  ) -> types.Operation:
+    """Force-completes a rollout stage.
+
+    Args:
+      req: An HTTP force-complete rollout stage request to be sent to the API
+        server.
+
+    Returns:
+      A long-running operation.
+
+    Raises:
+      apitools.base.py.HttpError: if the request returns an HTTP error
+    """
+    return self.client.projects_locations_rollouts.ForceCompleteStage(req)
+
   def CreateRolloutSequence(
       self, req: types.GkehubProjectsLocationsRolloutSequencesCreateRequest
   ):

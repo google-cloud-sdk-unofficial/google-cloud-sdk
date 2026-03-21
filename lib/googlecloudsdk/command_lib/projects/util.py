@@ -322,7 +322,7 @@ def GetStandardEnvironmentValue(value):
   return _ENV_VARIANT_TO_STANDARD_VALUE_MAPPING.get(value, None)
 
 
-TAG_LINK = 'https://cloud.google.com/resource-manager/docs/creating-managing-projects#designate_project_environments_with_tags'
+TAG_LINK = 'g.co/cloud/project-env-tag'
 
 
 def PrintEnvironmentTagMessageProjectId(project_id):

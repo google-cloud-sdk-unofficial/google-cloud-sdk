@@ -20,7 +20,12 @@ from googlecloudsdk.command_lib.orchestration_pipelines.processors import datapr
 
 
 def get_action_processor(
-    action, work_dir, artifact_base_uri, env_pack_file, subprocess_mod, defaults
+    action,
+    work_dir,
+    artifact_base_uri,
+    subprocess_mod,
+    defaults,
+    requirements_path=None,
 ) -> base.ActionProcessor:
   """Returns the appropriate ActionProcessor for the given action."""
   engine = action.get("engine", "dataproc-serverless")
@@ -34,25 +39,25 @@ def get_action_processor(
         action,
         work_dir,
         artifact_base_uri,
-        env_pack_file,
         subprocess_mod,
         defaults,
+        requirements_path,
     )
   if engine_type == "dataproc-gce":
     return dataproc_gce.DataprocGCEActionProcessor(
         action,
         work_dir,
         artifact_base_uri,
-        env_pack_file,
         subprocess_mod,
         defaults,
+        requirements_path,
     )
   # TODO: b/474620155 - Support other actions.
   return dataproc_serverless.DataprocServerlessActionProcessor(
       action,
       work_dir,
       artifact_base_uri,
-      env_pack_file,
       subprocess_mod,
       defaults,
+      requirements_path,
   )

@@ -1146,7 +1146,7 @@ def AddEnableRule(
             + ','.join(services)
             + ' are already enabled and present in the consumer policy.'
         )
-        return None, []
+        return None
       else:
         service_list_str = ','.join(services)
         message = f'The service(s) {service_list_str}'
@@ -1160,7 +1160,7 @@ def AddEnableRule(
 
         message += ' are already enabled and present in the consumer policy'
         log.warning(message)
-        return None, []
+        return None
 
     if policy.enableRules:
       for service in list(services_to_enabled):
@@ -1174,7 +1174,7 @@ def AddEnableRule(
 
     return UpdateConsumerPolicyV2Beta(
         policy, policy_name, validateonly=validate_only
-    ), list(services_to_enabled)
+    )
   except (
       apitools_exceptions.HttpForbiddenError,
       apitools_exceptions.HttpNotFoundError,
@@ -1869,50 +1869,6 @@ def GetOperationV2Beta(name: str):
       apitools_exceptions.HttpNotFoundError,
   ) as e:
     exceptions.ReraiseError(e, exceptions.OperationErrorException)
-
-
-def GenerateServiceIdentityForEnabledService(
-    container, enabled_services: list[str]
-):
-  """Generate a service identity for an enabled service.
-
-  Args:
-    container: The container to generate a service identity for.
-    enabled_services: The services to generate a service identity for.
-
-  Raises:
-    exceptions.GenerateServiceIdentityPermissionDeniedException: when
-    generating
-    service identity fails.
-    apitools_exceptions.HttpError: Another miscellaneous error with the
-    service.
-
-  Returns:
-    A dict with the email and uniqueId of the generated service identity. If
-    service does not have a default identity, the response will be an empty
-    dictionary.
-  """
-  client = _GetClientInstance(version=_V1BETA1_VERSION)
-  messages = client.MESSAGES_MODULE
-
-  # Generate service identity for all the services to be enabled.
-  for service in sorted(list(enabled_services)):
-    request = messages.ServiceusageServicesGenerateServiceIdentityRequest(
-        parent=f'projects/{container}/{service}'
-    )
-    try:
-      _ = client.services.GenerateServiceIdentity(request)
-    except apitools_exceptions.HttpBadRequestError:
-      # Bad request error is thrown if the service does not have a default
-      # identity.
-      continue  # Proceed to the next service.
-    except (
-        apitools_exceptions.HttpForbiddenError,
-        apitools_exceptions.HttpNotFoundError,
-    ) as e:
-      exceptions.ReraiseError(
-          e, exceptions.GenerateServiceIdentityPermissionDeniedException
-      )
 
 
 def GenerateServiceIdentity(

@@ -35,12 +35,22 @@ DESCRIPTION = """\
     *{command}* performs a point in time restore for a Cloud SQL instance
     managed by Google Cloud Backup and Disaster Recovery (DR) Service.
 
+    If point-in-time restore is performed using a multiregion datasource,
+    the '--region' flag is required to specify the target region for
+    the restore.
+    NOTE: The target region must be the same as the region of the source
+    instance.
     """
 
 EXAMPLES_GA = """\
     To perform a point in time restore from an earlier point in time:
 
       $ {command} datasource target-instance '2012-11-15T16:19:00.094Z'
+
+    To perform a point in time restore from an earlier point in time to a
+    target region, specify the --region flag:
+
+      $ {command} datasource target-instance '2012-11-15T16:19:00.094Z' --region=us-central1
 
     """
 
@@ -83,6 +93,9 @@ def _UpdateRequestFromArgs(
 
   if args.allocated_ip_range_name:
     pitr_context.allocatedIpRange = args.allocated_ip_range_name
+
+  if args.region:
+    pitr_context.region = args.region
 
 
 @base.DefaultUniverseOnly
@@ -171,7 +184,7 @@ class PointInTimeRestore(base.Command):
       set, the destination instance will only restore the specified databases.
       """,
     )
-    flags.AddSourceInstanceOverrideArgs(parser=parser, for_pitr=True)
+    flags.AddSourceInstanceOverrideArgs(parser=parser)
 
   def Run(self, args: parser_extensions.Namespace):
     """Performs a point in time restore for a Cloud SQL instance.

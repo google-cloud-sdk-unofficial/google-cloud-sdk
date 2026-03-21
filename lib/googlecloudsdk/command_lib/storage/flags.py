@@ -211,15 +211,20 @@ def get_object_context_group(parser):
   )
 
 
-def add_object_contexts_flags(parser):
-  """Adds common object context related flags."""
-  context_group = get_object_context_group(parser)
-  add_object_context_setter_flags(context_group)
-  context_group.add_argument(
+def add_clear_object_context_flag(parser):
+  """Adds a flag that allow users to clear object contexts."""
+  parser.add_argument(
       '--clear-custom-contexts',
       action='store_true',
       help='Clears all custom contexts on objects.',
   )
+
+
+def add_object_contexts_flags(parser):
+  """Adds common object context related flags."""
+  context_group = get_object_context_group(parser)
+  add_object_context_setter_flags(context_group)
+  add_clear_object_context_flag(context_group)
   context_subgroup = context_group.add_group(
       help=(
           'Flags that preserve the existing contexts on the object, and can be'
@@ -406,6 +411,8 @@ def add_object_metadata_flags(
     parser, allow_patch=False, release_track=calliope_base.ReleaseTrack.GA
 ):
   """Add flags that allow setting object metadata."""
+  del release_track
+
   metadata_group = parser.add_group(category='OBJECT METADATA')
   metadata_group.add_argument(
       '--cache-control',
@@ -469,8 +476,7 @@ def add_object_metadata_flags(
           ' `--preserve-posix`, POSIX attributes specified by this flag are not'
           ' preserved.'))
 
-  if release_track == calliope_base.ReleaseTrack.ALPHA:
-    add_object_contexts_flags(metadata_group)
+  add_object_contexts_flags(metadata_group)
 
   if allow_patch:
     metadata_group.add_argument(

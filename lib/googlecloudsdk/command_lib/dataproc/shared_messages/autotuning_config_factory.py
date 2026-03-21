@@ -70,7 +70,7 @@ def AddArguments(parser):
       if sc
       not in [
           ac.ScenariosValueListEntryValuesEnum.SCENARIO_UNSPECIFIED,
-          ac.ScenariosValueListEntryValuesEnum.BHJ,
+          ac.ScenariosValueListEntryValuesEnum.BROADCAST_HASH_JOIN,
           ac.ScenariosValueListEntryValuesEnum.NONE,
       ]
   ]

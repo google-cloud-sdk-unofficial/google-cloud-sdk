@@ -1197,6 +1197,16 @@ class GoogleCloudRunV2ImageExportStatus(_messages.Message):
   tag = _messages.StringField(4)
 
 
+class GoogleCloudRunV2InlinedSource(_messages.Message):
+  r"""Inlined source.
+
+  Fields:
+    sources: Required. Input only. The source code.
+  """
+
+  sources = _messages.MessageField('GoogleCloudRunV2SourceFile', 1, repeated=True)
+
+
 class GoogleCloudRunV2Instance(_messages.Message):
   r"""A Cloud Run Instance represents a single group of containers running in
   a region.
@@ -3129,9 +3139,33 @@ class GoogleCloudRunV2SourceCode(_messages.Message):
 
   Fields:
     cloudStorageSource: The source is a Cloud Storage bucket.
+    inlinedSource: Optional. Input only. Source code inlined in the request.
+      Cloud Run will store the inlined_source to Cloud Storage and replace the
+      field with cloud_storage_source.
   """
 
   cloudStorageSource = _messages.MessageField('GoogleCloudRunV2CloudStorageSource', 1)
+  inlinedSource = _messages.MessageField('GoogleCloudRunV2InlinedSource', 2)
+
+
+class GoogleCloudRunV2SourceFile(_messages.Message):
+  r"""Source file.
+
+  Fields:
+    content: Required. Input only. Represents the exact, literal, and complete
+      source code of the file. Placeholders like `...` or comments such as `#
+      [rest of code]` should NEVER be used as omission. Every character in
+      this field will be built into the final container. Any omission will
+      result in a broken application.
+    filename: Required. Input only. The file name for the source code. e.g.,
+      `"index.js"` or `"node_modules/dependency.js"`. The filename must be
+      less than 255 characters and cannot contain `..`, `./`, `//`, or end
+      with a `/`. Cloud Run will place the files in the container
+      subdirectories, please use relative path to access the file.
+  """
+
+  content = _messages.StringField(1)
+  filename = _messages.StringField(2)
 
 
 class GoogleCloudRunV2StartInstanceRequest(_messages.Message):
@@ -3658,6 +3692,31 @@ class GoogleCloudRunV2TrafficTargetStatus(_messages.Message):
   uri = _messages.StringField(5)
 
 
+class GoogleCloudRunV2UploadSourceRequest(_messages.Message):
+  r"""The request message for the UploadSource method.
+
+  Fields:
+    encryptionKey: Optional. A reference to a customer managed encryption key
+      (CMEK) to use to encrypt the uploaded source archive in Cloud Storage.
+    service: The name of Cloud Run Service upload source archive will be used
+      for.
+  """
+
+  encryptionKey = _messages.StringField(1)
+  service = _messages.StringField(2)
+
+
+class GoogleCloudRunV2UploadSourceResponse(_messages.Message):
+  r"""The response message for the UploadSource method.
+
+  Fields:
+    cloudStorageSource: The Cloud Storage object path the source archive is
+      uploaded to.
+  """
+
+  cloudStorageSource = _messages.MessageField('GoogleCloudRunV2CloudStorageSource', 1)
+
+
 class GoogleCloudRunV2VersionToPath(_messages.Message):
   r"""VersionToPath maps a specific version of a secret to a relative file to
   mount to, relative to VolumeMount's mount_path.
@@ -3718,7 +3777,8 @@ class GoogleCloudRunV2VolumeMount(_messages.Message):
       https://cloud.google.com/sql/docs/mysql/connect-run
     name: Required. This must match the Name of a Volume.
     subPath: Optional. Path within the volume from which the container's
-      volume should be mounted. Defaults to "" (volume's root).
+      volume should be mounted. Defaults to "" (volume's root). This field is
+      currently ignored for Secret volumes.
   """
 
   mountPath = _messages.StringField(1)
@@ -5008,20 +5068,43 @@ class GoogleDevtoolsCloudbuildV1BuildStep(_messages.Message):
 class GoogleDevtoolsCloudbuildV1BuiltImage(_messages.Message):
   r"""An image built by the pipeline.
 
+  Enums:
+    OciMediaTypeValueValuesEnum: Output only. The OCI media type of the
+      artifact. Non-OCI images, such as Docker images, will have an
+      unspecified value.
+
   Fields:
     artifactRegistryPackage: Output only. Path to the artifact in Artifact
       Registry.
     digest: Docker Registry 2.0 digest.
     name: Name used to push the container image to Google Container Registry,
       as presented to `docker push`.
+    ociMediaType: Output only. The OCI media type of the artifact. Non-OCI
+      images, such as Docker images, will have an unspecified value.
     pushTiming: Output only. Stores timing information for pushing the
       specified image.
   """
 
+  class OciMediaTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The OCI media type of the artifact. Non-OCI images, such
+    as Docker images, will have an unspecified value.
+
+    Values:
+      OCI_MEDIA_TYPE_UNSPECIFIED: Default value.
+      IMAGE_MANIFEST: The artifact is an image manifest, which represents a
+        single image with all its layers.
+      IMAGE_INDEX: The artifact is an image index, which can contain a list of
+        image manifests.
+    """
+    OCI_MEDIA_TYPE_UNSPECIFIED = 0
+    IMAGE_MANIFEST = 1
+    IMAGE_INDEX = 2
+
   artifactRegistryPackage = _messages.StringField(1)
   digest = _messages.StringField(2)
   name = _messages.StringField(3)
-  pushTiming = _messages.MessageField('GoogleDevtoolsCloudbuildV1TimeSpan', 4)
+  ociMediaType = _messages.EnumField('OciMediaTypeValueValuesEnum', 4)
+  pushTiming = _messages.MessageField('GoogleDevtoolsCloudbuildV1TimeSpan', 5)
 
 
 class GoogleDevtoolsCloudbuildV1ConnectedRepository(_messages.Message):
@@ -7199,6 +7282,20 @@ class RunProjectsLocationsServicesTestIamPermissionsRequest(_messages.Message):
 
   googleIamV1TestIamPermissionsRequest = _messages.MessageField('GoogleIamV1TestIamPermissionsRequest', 1)
   resource = _messages.StringField(2, required=True)
+
+
+class RunProjectsLocationsSourceUploadsUploadRequest(_messages.Message):
+  r"""A RunProjectsLocationsSourceUploadsUploadRequest object.
+
+  Fields:
+    googleCloudRunV2UploadSourceRequest: A GoogleCloudRunV2UploadSourceRequest
+      resource to be passed as the request body.
+    parent: Required. The project and location in which the source archive
+      should be uploaded to, specified in the format `projects/*/locations/*`.
+  """
+
+  googleCloudRunV2UploadSourceRequest = _messages.MessageField('GoogleCloudRunV2UploadSourceRequest', 1)
+  parent = _messages.StringField(2, required=True)
 
 
 class RunProjectsLocationsWorkerPoolsCreateRequest(_messages.Message):

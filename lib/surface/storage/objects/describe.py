@@ -42,11 +42,12 @@ Describe a Google Cloud Storage object with the url
 Describe object with JSON formatting, only returning the "name" key:
 
   $ {command} gs://bucket/my-object --format="json(name)"
-"""
-_ALPHA_EXAMPLES = """
+
 Describe only contexts attached to objects as key value pairs.
 
   $ {command} gs://my-bucket/object --format=contextsonly
+"""
+_ALPHA_EXAMPLES = """
 """
 
 
@@ -69,9 +70,7 @@ class Describe(base.DescribeCommand):
     flags.add_raw_display_flag(parser)
     flags.add_soft_deleted_flag(parser)
     gsutil_json_printer.GsutilJsonPrinter.Register()
-
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      contexts_only_formatter.ContextsOnlyPrinter.Register()
+    contexts_only_formatter.ContextsOnlyPrinter.Register()
 
   def Run(self, args):
     encryption_util.initialize_key_store(args)

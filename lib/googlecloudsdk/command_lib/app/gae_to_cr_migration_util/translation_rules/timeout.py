@@ -16,8 +16,8 @@
 """Translation rule for timeout feature."""
 
 from typing import Mapping, Sequence
+from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.common import util
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.translation_rules import scaling
-
 
 _SCALING_METHOD_W_10_MIN_TIMEOUT = frozenset(
     {scaling.ScalingTypeAppYaml.AUTOMATIC_SCALING}
@@ -30,6 +30,11 @@ _SCALING_METHOD_W_60_MIN_TIMEOUT = frozenset({
 
 def translate_timeout_features(input_data: Mapping[str, any]) -> Sequence[str]:
   """Translate timeout features based on scaling method."""
+  is_flex = util.is_flex_env(input_data)
+  # Flex environment has a default timeout of 60 minutes.
+  if is_flex:
+    return ['--timeout=60m']
+
   scaling_features_used = scaling.get_scaling_features_used(input_data)
   if len(scaling_features_used) == 1:
     scaling_feature = scaling_features_used[0]

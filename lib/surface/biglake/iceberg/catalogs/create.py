@@ -18,6 +18,7 @@ import textwrap
 
 from googlecloudsdk.api_lib.biglake import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.biglake import arguments
 from googlecloudsdk.command_lib.biglake import flags
 from googlecloudsdk.core import log
 
@@ -41,6 +42,7 @@ class CreateCatalog(base.CreateCommand):
       'EXAMPLES': help_text,
   }
   _support_catalog_type_biglake = False
+  _support_primary_location = False
 
   @classmethod
   def Args(cls, parser):
@@ -51,6 +53,8 @@ class CreateCatalog(base.CreateCommand):
     util.GetCatalogTypeEnumMapper(
         base.ReleaseTrack.BETA
     ).choice_arg.AddToParser(parser)
+    if cls._support_primary_location:
+      arguments.AddCatalogsCreateArgs(parser)
     if cls._support_catalog_type_biglake:
       util.AddDefaultLocationArg(parser)
       util.AddAdditionalLocationsArg(parser)
@@ -80,15 +84,16 @@ class CreateCatalog(base.CreateCommand):
       catalog.default_location = args.default_location
       catalog.additional_locations = args.additional_locations or []
 
-    request = messages.BiglakeIcebergV1RestcatalogExtensionsProjectsCatalogsCreateRequest(
-        iceberg_catalog_id=args.catalog,
-        icebergCatalog=catalog,
-        parent=util.GetParentName(),
+    response = util.CreateCatalog(
+        args.catalog,
+        catalog,
+        primary_location=(
+            args.primary_location if self._support_primary_location else None
+        ),
     )
-    log.CreatedResource(catalog_name, 'catalog')
-    return client.iceberg_v1_restcatalog_extensions_projects_catalogs.Create(
-        request
-    )
+    if response:
+      log.CreatedResource(catalog_name, 'catalog')
+    return response
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -98,3 +103,4 @@ class CreateAlpha(CreateCatalog):
       'EXAMPLES': help_text,
   }
   _support_catalog_type_biglake = True
+  _support_primary_location = True
