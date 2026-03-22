@@ -20,6 +20,7 @@ import os
 import re
 import stat
 import tarfile
+import hashlib
 
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import local_file_adapter
@@ -71,6 +72,16 @@ class AuthenticationError(Error):
 
 class UnsupportedSourceError(Error):
   """An exception when trying to install a component with an unknown source."""
+  pass
+
+
+class ArchiveIntegrityError(Error):
+  """An exception for when downloaded archive integrity checks fail."""
+  pass
+
+
+class UnsafeArchivePathError(Error):
+  """An exception for unsafe paths in archives."""
   pass
 
 
@@ -237,6 +248,64 @@ def DownloadTar(url, download_dir, progress_callback=None,
   return download_file_path
 
 
+def _IsWithinDirectory(root, path):
+  """Checks if path resolves within root."""
+  root = os.path.realpath(root)
+  path = os.path.realpath(path)
+  return path == root or path.startswith(root + os.sep)
+
+
+def _ValidateArchiveMember(member, extract_dir):
+  """Validates that a tar member resolves within extract_dir."""
+  member_name = member.name.replace('\\', '/')
+  if os.path.isabs(member_name):
+    raise UnsafeArchivePathError(
+        'Archive member has an absolute path [{}].'.format(member.name))
+
+  normalized_name = os.path.normpath(member_name)
+  if normalized_name == os.pardir or normalized_name.startswith(
+      os.pardir + os.sep):
+    raise UnsafeArchivePathError(
+        'Archive member escapes extraction root [{}].'.format(member.name))
+
+  destination_path = os.path.join(extract_dir, member_name)
+  if not _IsWithinDirectory(extract_dir, destination_path):
+    raise UnsafeArchivePathError(
+        'Archive member escapes extraction root [{}].'.format(member.name))
+
+  if member.issym() or member.islnk():
+    link_name = (member.linkname or '').replace('\\', '/')
+    if os.path.isabs(link_name):
+      raise UnsafeArchivePathError(
+          'Archive link target is absolute [{}].'.format(member.name))
+    link_target = os.path.normpath(
+        os.path.join(os.path.dirname(destination_path), link_name))
+    if not _IsWithinDirectory(extract_dir, link_target):
+      raise UnsafeArchivePathError(
+          'Archive link target escapes extraction root [{}].'.format(
+              member.name))
+
+
+def _VerifyArchiveChecksum(archive_path, expected_checksum):
+  """Verifies archive checksum when expected checksum is provided."""
+  if not expected_checksum:
+    return
+
+  digest = hashlib.sha256()
+  with file_utils.BinaryFileReader(archive_path) as f:
+    while True:
+      chunk = f.read(WRITE_BUFFER_SIZE)
+      if not chunk:
+        break
+      digest.update(chunk)
+  actual_checksum = digest.hexdigest()
+  expected_checksum = expected_checksum.lower()
+  if actual_checksum != expected_checksum:
+    raise ArchiveIntegrityError(
+        'Checksum mismatch for downloaded archive. expected [{0}] got [{1}]'
+        .format(expected_checksum, actual_checksum))
+
+
 def ExtractTar(downloaded_archive, extract_dir, progress_callback=None):
   """Extracts the given archive.
 
@@ -259,6 +328,7 @@ def ExtractTar(downloaded_archive, extract_dir, progress_callback=None):
 
     files = []
     for num, member in enumerate(members, start=1):
+      _ValidateArchiveMember(member, extract_dir)
       files.append(member.name + '/' if member.isdir() else member.name)
       tar.extract(member, extract_dir)
       full_path = os.path.join(extract_dir, member.name)
@@ -388,9 +458,17 @@ class ComponentInstaller(object):
                        'because the base URL of the snapshot is not defined.'
                        .format(component.id))
 
+    downloaded_archive = None
     try:
-      return DownloadTar(
+      downloaded_archive = DownloadTar(
           url, self.__download_directory, progress_callback=progress_callback,
           command_path=command_path)
-    except (URLFetchError, AuthenticationError) as e:
+      _VerifyArchiveChecksum(downloaded_archive, component.data.checksum)
+      return downloaded_archive
+    except (URLFetchError, AuthenticationError, ArchiveIntegrityError) as e:
+      if downloaded_archive and os.path.exists(downloaded_archive):
+        try:
+          os.remove(downloaded_archive)
+        except OSError:
+          pass
       raise ComponentDownloadFailedError(component.id, e)
