@@ -50,6 +50,8 @@ def _set_iam_policy_task_iterator(url_strings, recurse, object_state, policy):
 class SetIamPolicy(base.Command):
   """Set access policy for an object."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION':
           """

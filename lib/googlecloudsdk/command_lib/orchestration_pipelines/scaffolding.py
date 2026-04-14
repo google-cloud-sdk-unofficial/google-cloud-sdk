@@ -25,7 +25,7 @@ pipelineId: {pipeline_id}
 description: TODO - describe your pipeline
 runner: 'airflow'
 owner: 'data-eng-team'
-modelVersion: 'v2'
+modelVersion: '1.0'
 defaults:
   projectId: {{{{ project }}}}
   location: {{{{ region }}}}

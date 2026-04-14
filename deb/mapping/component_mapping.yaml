@@ -37,6 +37,7 @@ log-streaming: google-cloud-cli-log-streaming
 package-go-module: google-cloud-cli-package-go-module
 minikube: google-cloud-cli-minikube
 nomos: google-cloud-cli-nomos
+preview: google-cloud-cli
 pubsub-emulator: google-cloud-cli-pubsub-emulator
 skaffold: google-cloud-cli-skaffold
 kustomize: unavailable

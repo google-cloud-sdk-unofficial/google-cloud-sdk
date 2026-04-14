@@ -38,6 +38,7 @@ DETAILED_HELP = {
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.RegionalEndpointsSupported
 class Delete(base.DeleteCommand):
   """Delete a Secure Source Manager repository."""
 
@@ -50,7 +51,9 @@ class Delete(base.DeleteCommand):
     # Get resource args to contruct base url
     repository_ref = args.CONCEPTS.repository.Parse()
     # Delete repository
-    client = repositories.RepositoriesClient()
+    client = repositories.RepositoriesClient(
+        location=repository_ref.locationsId
+    )
     # this is a shortcut LRO, it completes immediately and is marked as done
     # there is no need to wait
     delete_operation = client.Delete(repository_ref, args.allow_missing)

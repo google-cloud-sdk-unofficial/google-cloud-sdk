@@ -15,7 +15,6 @@
 """Implementation of objects compose command for Cloud Storage."""
 
 
-
 import textwrap
 
 from googlecloudsdk.api_lib.storage import cloud_api
@@ -60,6 +59,8 @@ _ALPHA_EXAMPLES = """
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Compose(base.Command):
   """Concatenate a sequence of objects into a new composite object."""
+
+  hints = base.CommandHint(read_only=False)
 
   detailed_help = {
       'DESCRIPTION': _COMMAND_DESCRIPTION,

@@ -12,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-"""Wrapper model for union of v1 and v2 pipeline models."""
+"""Wrapper model for union of pipeline models."""
 
 from typing import Union
-from orchestration_pipelines_models.v1.pipeline_model import PipelineModel as PipelineModelV1
-from orchestration_pipelines_models.v2.orchestration_pipeline_builder import (
+from orchestration_pipelines_models.pipeline_v1_model.orchestration_pipeline_builder import (
     OrchestrationPipelineBuilder, )
-from orchestration_pipelines_models.v2.protos.orchestration_pipeline_pb2 import (
+from orchestration_pipelines_models.pipeline_v1_model.protos.orchestration_pipeline_pb2 import (
     OrchestrationPipeline, )
 
 
@@ -30,33 +29,36 @@ class OrchestrationPipelinesModel:
     """
 
     @classmethod
-    def build(cls, obj: dict) -> Union[PipelineModelV1, OrchestrationPipeline]:
+    def build(cls, pipeline_def: dict) -> Union[OrchestrationPipeline]:
         """
-        Builds a v1 or v2 model from a dictionary based on `model_version`.
+        Builds 1.0 pipeline model from a dictionary based on `modelVersion`.
 
         Args:
-            obj: A dictionary representing the pipeline model.
+            pipeline_def: A dictionary representing the pipeline model.
 
         Returns:
-            A PipelineModelV1 or OrchestrationPipeline instance.
+            An OrchestrationPipeline instance.
 
         Raises:
             TypeError: If the input is not a dictionary.
-            ValueError: If 'model_version' is missing or invalid.
-            """
-        if not isinstance(obj, dict):
+            ValueError: If 'modelVersion' is missing or not supported.
+        """
+        if not isinstance(pipeline_def, dict):
             raise TypeError("Input must be a dictionary")
 
-        # Temporary fallback as we are migrating towards CamelCase
-        model_version = obj.get("modelVersion")
-        if not model_version:
-            model_version = obj.get("model_version")
+        # Support both camelCase ('modelVersion') and snake_case ('model_version').
+        model_version = pipeline_def.get("modelVersion") or pipeline_def.get(
+            "model_version")
 
-        if model_version == "v1":
-            return PipelineModelV1.from_dict(obj)
-        elif model_version == "v2":
-            return OrchestrationPipelineBuilder.build(obj)
+        # For backwards compatibility, map legacy "v2" to "1.0".
+        builder_dict = pipeline_def.copy()
+        if model_version == "v2":
+            model_version = "1.0"
+            builder_dict["model_version"] = model_version
+
+        if model_version == "1.0":
+            return OrchestrationPipelineBuilder.build(builder_dict)
         else:
             raise ValueError(
                 f"Invalid or missing 'model_version'. Value: {model_version}. "
-                "Expected 'v1' or 'v2'.")
+                "Expected '1.0'.")

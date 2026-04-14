@@ -32,7 +32,9 @@ from googlecloudsdk.command_lib.storage import encryption_util
 from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage.tasks import task
 from googlecloudsdk.command_lib.storage.tasks import task_buffer
-from googlecloudsdk.command_lib.storage.tasks import task_graph as task_graph_module
+from googlecloudsdk.command_lib.storage.tasks import (
+    task_graph as task_graph_module,
+)
 from googlecloudsdk.command_lib.storage.tasks import task_graph_debugger
 from googlecloudsdk.command_lib.storage.tasks import task_status
 from googlecloudsdk.core import execution_utils
@@ -254,11 +256,20 @@ def _thread_worker(task_queue, task_output_queue, task_status_queue,
       threads are busy. Useful for spawning new workers if all threads are busy.
     abort_event (multiprocessing.Event): Global signal to abort.
   """
+  # Verifiable Accounting: The thread is alive and ready for work.
+  idle_thread_count.release()
+
   while not abort_event.is_set():
     with _task_queue_lock():
-      task_wrapper = task_queue.get()
+      try:
+        task_wrapper = task_queue.get(timeout=1.0)
+      except queue.Empty:
+        continue
+
     if task_wrapper == _SHUTDOWN:
       break
+
+    # We received a task. Mark ourselves as busy.
     idle_thread_count.acquire()
 
     task_execution_error = None
@@ -287,9 +298,13 @@ def _thread_worker(task_queue, task_output_queue, task_status_queue,
     # pylint: enable=broad-except
     finally:
       task_wrapper.task.exit_handler(task_execution_error, task_status_queue)
+      # By placing the release here, inside the finally block of the
+      # execution loop, we guarantee the capacity token is returned to the
+      # Producer even if the thread crashed structurally during execution.
+      # This prevents capacity starvation deadlocks (the "Ghost Token" bug).
+      idle_thread_count.release()
 
     task_output_queue.put((task_wrapper, task_output))
-    idle_thread_count.release()
 
 
 @crash_handling.CrashManager
@@ -385,7 +400,10 @@ def _process_factory(
   processes = []
   while not abort_event.is_set():
     # We receive one signal message for each process to be created.
-    signal = signal_queue.get()
+    try:
+      signal = signal_queue.get(timeout=1.0)
+    except queue.Empty:
+      continue
 
     if signal == _SHUTDOWN:
       for _ in processes:
@@ -393,9 +411,6 @@ def _process_factory(
           task_queue.put(_SHUTDOWN)
       break
     elif signal == _CREATE_WORKER_PROCESS:
-      for _ in range(thread_count):
-        idle_thread_count.release()
-
       process = multiprocessing_context.Process(
           target=_process_worker,
           args=(
@@ -571,7 +586,10 @@ class TaskGraphExecutor:
     task_wrapper = None
     while not self._abort_event.is_set():
       if task_wrapper is None:
-        task_wrapper = self._executable_tasks.get()
+        try:
+          task_wrapper = self._executable_tasks.get(timeout=1.0)
+        except queue.Empty:
+          continue
         if task_wrapper == _SHUTDOWN:
           break
 
@@ -591,7 +609,10 @@ class TaskGraphExecutor:
   def _handle_task_output(self):
     """Updates a dependency graph based on information from executed tasks."""
     while not self._abort_event.is_set():
-      output = self._task_output_queue.get()
+      try:
+        output = self._task_output_queue.get(timeout=1.0)
+      except queue.Empty:
+        continue
       if output == _SHUTDOWN:
         break
 
@@ -612,7 +633,7 @@ class TaskGraphExecutor:
         self._executable_tasks.put(task_wrapper, prioritize=True)
 
   def _clean_worker_process_spawner(self, worker_process_spawner):
-    """Common method which carries out the required steps to clean up worker processes.
+    """Carries out the required steps to clean up worker processes.
 
     Args:
       worker_process_spawner (Process): The worker parent process that we need
@@ -620,7 +641,10 @@ class TaskGraphExecutor:
     """
     # Shutdown all the workers.
     if worker_process_spawner.is_alive():
-      self._signal_queue.put(_SHUTDOWN)
+      try:
+        self._signal_queue.put(_SHUTDOWN, timeout=1.0)
+      except queue.Full:
+        pass
       worker_process_spawner.join()
 
     # Restore the debug signal handler.
@@ -687,11 +711,18 @@ class TaskGraphExecutor:
           except Exception:
             # If any thread fails to start, stop the ones that did start.
             self._accepting_new_tasks = False
-            self._executable_tasks.put(_SHUTDOWN)
-            self._task_output_queue.put(_SHUTDOWN)
+            try:
+              self._executable_tasks.put(_SHUTDOWN, timeout=1.0)
+            except queue.Full:
+              pass
+            try:
+              self._task_output_queue.put(_SHUTDOWN, timeout=1.0)
+            except queue.Full:
+              pass
             # The get_tasks_from_iterator thread might be blocked on the
             # task graph semaphore. Release it to allow the thread to exit.
-            self._task_graph._top_level_task_semaphore.release()    # pylint: disable=protected-access
+            # pylint: disable=protected-access
+            self._task_graph._top_level_task_semaphore.release()
             # pylint: enable=protected-access
             for thread in started_threads:
               if thread.is_alive():
@@ -729,8 +760,14 @@ class TaskGraphExecutor:
             # the graph if we skip this endless wait.
             pass
 
-          self._executable_tasks.put(_SHUTDOWN)
-          self._task_output_queue.put(_SHUTDOWN)
+          try:
+            self._executable_tasks.put(_SHUTDOWN, timeout=1.0)
+          except queue.Full:
+            pass
+          try:
+            self._task_output_queue.put(_SHUTDOWN, timeout=1.0)
+          except queue.Full:
+            pass
 
           handle_task_output_thread.join()
           add_executable_tasks_to_queue_thread.join()

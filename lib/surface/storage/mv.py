@@ -83,6 +83,8 @@ _ALPHA_EXAMPLES = """
 class Mv(base.Command):
   """Moves or renames objects."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       "DESCRIPTION": _COMMAND_DESCRIPTION,
       "EXAMPLES": _GA_EXAMPLES,

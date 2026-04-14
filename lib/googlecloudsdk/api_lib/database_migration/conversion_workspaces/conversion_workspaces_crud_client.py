@@ -14,11 +14,12 @@
 # limitations under the License.
 """Database Migration Service conversion workspaces CRUD API."""
 
-from typing import Any, Mapping, Optional, Set, Tuple
+from typing import Any, Mapping, Optional
 
 from googlecloudsdk.api_lib.database_migration import api_util
 from googlecloudsdk.api_lib.database_migration.conversion_workspaces import base_conversion_workspaces_client
 from googlecloudsdk.api_lib.database_migration.conversion_workspaces import conversion_workspace_builder
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.database_migration.conversion_workspaces import enums
 from googlecloudsdk.generated_clients.apis.datamigration.v1 import datamigration_v1_messages as messages
 
@@ -75,6 +76,18 @@ class ConversionWorkspacesCRUDClient(
     Returns:
       Operation: the operation for creating the conversion workspace.
     """
+    if global_settings and global_settings.additionalProperties:
+      props = {
+          prop.key: prop.value for prop in global_settings.additionalProperties
+      }
+      if (
+          props.get('autoAssessment') == 'true'
+          and props.get('aiConversion') == 'false'
+      ):
+        raise exceptions.InvalidArgumentException(
+            '--quality-assessment',
+            'cannot be true if --auto-conversion is false.',
+        )
     return self.cw_service.Create(
         self.messages.DatamigrationProjectsLocationsConversionWorkspacesCreateRequest(
             conversionWorkspace=self.cw_builder.Build(
@@ -128,7 +141,9 @@ class ConversionWorkspacesCRUDClient(
 
     return {
         additional_property.key: additional_property.value
-        for additional_property in conversion_workspace.globalSettings.additionalProperties
+        for additional_property in (
+            conversion_workspace.globalSettings.additionalProperties
+        )
     }
 
   def Update(
@@ -136,6 +151,10 @@ class ConversionWorkspacesCRUDClient(
       name: str,
       display_name: Optional[str],
       global_filter: Optional[str],
+      auto_conversion: Optional[bool] = None,
+      quality_assessment: Optional[bool] = None,
+      conversion_assistance: Optional[bool] = None,
+      pattern_matching: Optional[bool] = None,
   ):
     """Updates a conversion workspace.
 
@@ -143,6 +162,10 @@ class ConversionWorkspacesCRUDClient(
       name: str, the reference of the conversion workspace to update.
       display_name: the display name to update.
       global_filter: the global filter for the conversion workspace.
+      auto_conversion: whether to enable auto-conversion.
+      quality_assessment: whether to enable quality assessment.
+      conversion_assistance: whether to enable conversion assistance.
+      pattern_matching: whether to enable pattern matching.
 
     Returns:
       Operation: the operation for updating the conversion workspace.
@@ -151,6 +174,10 @@ class ConversionWorkspacesCRUDClient(
         conversion_workspace=self.Read(name),
         display_name=display_name,
         global_filter=global_filter,
+        auto_conversion=auto_conversion,
+        quality_assessment=quality_assessment,
+        conversion_assistance=conversion_assistance,
+        pattern_matching=pattern_matching,
     )
     return self.cw_service.Patch(
         self.messages.DatamigrationProjectsLocationsConversionWorkspacesPatchRequest(
@@ -179,20 +206,29 @@ class ConversionWorkspacesCRUDClient(
 
   def _GetUpdatedConversionWorkspace(
       self,
-      conversion_workspace: str,
+      conversion_workspace: messages.ConversionWorkspace,
       display_name: Optional[str],
       global_filter: Optional[str],
-  ) -> Tuple[str, Set[str]]:
+      auto_conversion: Optional[bool] = None,
+      quality_assessment: Optional[bool] = None,
+      conversion_assistance: Optional[bool] = None,
+      pattern_matching: Optional[bool] = None,
+  ) -> tuple[messages.ConversionWorkspace, set[str]]:
     """Returns updated conversion workspace and list of updated fields.
 
     Args:
       conversion_workspace: the conversion workspace to update.
       display_name: the display name to update.
       global_filter: the global filter for the conversion workspace.
+      auto_conversion: whether to enable auto-conversion.
+      quality_assessment: whether to enable quality assessment.
+      conversion_assistance: whether to enable conversion assistance.
+      pattern_matching: whether to enable pattern matching.
 
     Returns:
-      conversion_workspace: str, the updated conversion workspace object.
-      update_fields: tuple[str, ...], the list of updated fields.
+      A tuple containing:
+        The updated conversion workspace object.
+        A set of the names of the updated fields.
     """
     update_fields = set()
 
@@ -200,15 +236,50 @@ class ConversionWorkspacesCRUDClient(
       conversion_workspace.displayName = display_name
       update_fields.add('displayName')
 
+    current_settings = {}
+    if conversion_workspace.globalSettings:
+      for prop in (
+          conversion_workspace.globalSettings.additionalProperties or []
+      ):
+        current_settings[prop.key] = prop.value
+
+    new_settings = current_settings.copy()
+
+    if auto_conversion is not None:
+      new_settings['aiConversion'] = str(auto_conversion).lower()
+      if not auto_conversion:
+        new_settings['autoAssessment'] = str(auto_conversion).lower()
+    if quality_assessment is not None:
+      new_settings['autoAssessment'] = str(quality_assessment).lower()
     if global_filter is not None:
-      conversion_workspace.globalSettings = self.messages.ConversionWorkspace.GlobalSettingsValue(
-          additionalProperties=[
-              self.messages.ConversionWorkspace.GlobalSettingsValue.AdditionalProperty(
-                  key='filter',
-                  value=global_filter,
-              ),
-          ]
+      new_settings['filter'] = global_filter
+    if conversion_assistance is not None:
+      new_settings['aiAssistant'] = str(conversion_assistance).lower()
+    if pattern_matching is not None:
+      new_settings['aiPatternApplier'] = str(pattern_matching).lower()
+
+    if (
+        new_settings.get('autoAssessment') == 'true'
+        and new_settings.get('aiConversion', 'false') == 'false'
+    ):
+      raise exceptions.InvalidArgumentException(
+          '--quality-assessment',
+          'cannot be true if auto-conversion is false.',
       )
-      update_fields.add('globalSettings.filter')
+
+    if new_settings != current_settings:
+      update_fields.add('globalSettings')
+      properties = []
+      for key, value in sorted(new_settings.items()):
+        properties.append(
+            self.messages.ConversionWorkspace.GlobalSettingsValue.AdditionalProperty(
+                key=key, value=value
+            )
+        )
+      conversion_workspace.globalSettings = (
+          self.messages.ConversionWorkspace.GlobalSettingsValue(
+              additionalProperties=properties
+          )
+      )
 
     return conversion_workspace, update_fields

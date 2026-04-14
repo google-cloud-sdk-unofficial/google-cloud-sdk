@@ -189,10 +189,15 @@
       help_text: |
         Rotate the server certificates for the cluster. This is allowed only for clusters using a customer-managed CA.
       type: bool
+    - arg_name: acl-policy
+      api_field: cluster.aclPolicy
+      release_tracks: [ALPHA]
+      hidden: true
+      help_text: |
+        The ACL policy to use for the cluster.
     additional_arguments_hook: googlecloudsdk.command_lib.redis.cluster_util:AdditionalClusterUpdateArguments
     labels:
       api_field: cluster.labels
-
   async:
     collection: redis.projects.locations.operations
 
@@ -213,6 +218,7 @@
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateAutomatedBackupConfig
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateNodeType
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceVersion
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateAclPolicy
     BETA:
       api_version: v1beta1
       modify_request_hooks:

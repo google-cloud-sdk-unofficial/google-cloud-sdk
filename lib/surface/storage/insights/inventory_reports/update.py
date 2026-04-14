@@ -28,6 +28,8 @@ from googlecloudsdk.command_lib.storage.insights.inventory_reports import resour
 class Update(base.Command):
   """Update an inventory report config."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION': """
        Update an inventory report config.

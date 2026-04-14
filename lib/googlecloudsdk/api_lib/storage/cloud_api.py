@@ -44,6 +44,7 @@ class Capability(enum.Enum):
   # This value is used by daisy chain operation to determine if the upload
   # stream can be treated as seekable.
   DAISY_CHAIN_SEEKABLE_UPLOAD_STREAM = 'DAISY_CHAIN_SEEKABLE_UPLOAD_STREAM'
+  MOVE_OBJECTS = 'MOVE_OBJECTS'
 
 
 class DownloadStrategy(enum.Enum):
@@ -764,6 +765,17 @@ class CloudApi(object):
         this interface.
     """
     raise NotImplementedError('list_objects must be overridden.')
+
+  def move_object(self, source_url, destination_url, request_config):
+    """Moves source object to destination object in the same bucket.
+
+    Args:
+      source_url (storage_url.CloudUrl): Url of object to move.
+      destination_url (storage_url.CloudUrl): Url of object to move to.
+      request_config (RequestConfig): Object containing general API function
+        arguments. Subclasses for specific cloud providers are available.
+    """
+    raise NotImplementedError('move_object must be overridden.')
 
   def patch_object_metadata(
       self,

@@ -5037,6 +5037,17 @@ MAP = {
                 regional_endpoints={}),
     },
     'workloadidentity': {
+        'v1':
+            APIDef(
+                apitools=ApitoolsClientDef(
+                    class_path='googlecloudsdk.generated_clients.apis.workloadidentity.v1',
+                    client_classpath='workloadidentity_v1_client.WorkloadidentityV1',
+                    base_url='https://workloadidentity.googleapis.com/',
+                    messages_modulepath='workloadidentity_v1_messages'),
+                default_version=True,
+                enable_mtls=True,
+                mtls_endpoint_override='',
+                regional_endpoints={}),
         'v1alpha':
             APIDef(
                 apitools=ApitoolsClientDef(
@@ -5044,7 +5055,7 @@ MAP = {
                     client_classpath='workloadidentity_v1alpha_client.WorkloadidentityV1alpha',
                     base_url='https://workloadidentity.googleapis.com/',
                     messages_modulepath='workloadidentity_v1alpha_messages'),
-                default_version=True,
+                default_version=False,
                 enable_mtls=True,
                 mtls_endpoint_override='',
                 regional_endpoints={}),

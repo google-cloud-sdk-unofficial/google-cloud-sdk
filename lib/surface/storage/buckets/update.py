@@ -342,6 +342,8 @@ def _is_initial_bucket_metadata_needed(user_request_args):
 class Update(base.Command):
   """Update bucket settings."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION':
           """

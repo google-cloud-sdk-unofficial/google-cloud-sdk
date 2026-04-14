@@ -17,10 +17,14 @@
 from __future__ import annotations
 
 import collections
+import ctypes
+import hashlib
+import json
 import os
 import time
 
 from google.api_core import bidi
+from google.auth.transport import _custom_tls_signer
 from google.rpc import error_details_pb2
 from googlecloudsdk.api_lib.util import api_enablement
 from googlecloudsdk.calliope import base
@@ -36,7 +40,6 @@ from googlecloudsdk.core.util import encoding
 from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import http_proxy_types
 from googlecloudsdk.core.util import regional
-
 import grpc
 from six.moves import urllib
 import socks
@@ -44,6 +47,10 @@ import socks
 
 class Error(exceptions.Error):
   """Exceptions for the gapic module."""
+
+
+class EcpError(exceptions.Error):
+  """Exceptions for Enterprise Certificate Proxy."""
 
 
 class ClientCallDetailsInterceptor(grpc.UnaryUnaryClientInterceptor,
@@ -868,6 +875,76 @@ class RPCDurationReporterInterceptor(grpc.UnaryUnaryClientInterceptor):
     return response
 
 
+class EcpGrpcSigner(object):
+  """A custom signer for ECP (Enterprise Certificate Proxy)."""
+
+  def __init__(self, config_file_path):
+    self._config_file_path = config_file_path
+    self._lib = None
+    self._LoadLib()
+
+  def _LoadLib(self):
+    """Loads the ECP client library."""
+    with files.FileReader(self._config_file_path) as f:
+      config_json = json.load(f)
+
+    libs = config_json.get('libs', {})
+    lib_path = libs.get('ecp_client')
+    if not lib_path:
+      raise EcpError('ecp_client library path not found in ECP config.')
+
+    self._lib = _custom_tls_signer.load_signer_lib(lib_path)
+
+    # Set up types for Sign
+    self._lib.Sign.argtypes = [
+        ctypes.c_char_p,
+        ctypes.c_char_p,
+        ctypes.c_int,
+        ctypes.c_char_p,
+        ctypes.c_int,
+    ]
+    self._lib.Sign.restype = ctypes.c_int
+
+  def GetCertificateChain(self):
+    """Returns the certificate chain bytes."""
+    return _custom_tls_signer.get_cert(self._lib, self._config_file_path)
+
+  def __call__(self, data, algorithm, on_complete):
+    """Signs the data.
+
+    Args:
+      data: The data bytes to sign.
+      algorithm: The signing algorithm (unused, ECP decides).
+      on_complete: Callback for async completion (unused, we are sync).
+
+    Returns:
+      The signature bytes.
+
+    Raises:
+      EcpError: If signing with ECP fails.
+    """
+    # ECP expects SHA256 digest
+    digest = hashlib.sha256(data).digest()
+    digest_len = len(digest)
+
+    # Reserve 2000 bytes for the signature. This should be more than enough,
+    # as typical signatures (e.g., RSA 4096 or ECDSA) are much smaller,
+    # generally under 512 bytes.
+    sig_holder_len = 2000
+    sig_holder = ctypes.create_string_buffer(sig_holder_len)
+
+    config_path_bytes = self._config_file_path.encode('utf-8')
+
+    ret_len = self._lib.Sign(
+        config_path_bytes, digest, digest_len, sig_holder, sig_holder_len
+    )
+
+    if ret_len == 0:
+      raise EcpError('Failed to sign data with ECP.')
+
+    return sig_holder.raw[:ret_len]
+
+
 def GetSSLCredentials(mtls_enabled):
   """Returns SSL credentials."""
   ca_certs_file = properties.VALUES.core.custom_ca_certs_file.Get()
@@ -882,9 +959,28 @@ def GetSSLCredentials(mtls_enabled):
           ca_config.client_cert_bytes,
           ca_config.client_key_bytes,
       )
+    elif (
+        ca_config.config_type == context_aware.ConfigType.ENTERPRISE_CERTIFICATE
+        and properties.VALUES.context_aware.use_mtls_for_grpc.GetBool()
+    ):
+      log.debug('Using Enterprise Certificate for mTLS...')
+      try:
+        signer = EcpGrpcSigner(ca_config.certificate_config_file_path)
+        certificate_chain = signer.GetCertificateChain()
+        return grpc.experimental.ssl_channel_credentials_with_custom_signer(
+            private_key_sign_fn=signer,
+            certificate_chain=certificate_chain,
+            root_certificates=files.ReadBinaryFileContents(ca_certs_file)
+            if ca_certs_file
+            else None,
+        )
+      except Exception as e:  # pylint: disable=broad-except
+        log.warning('Failed to initialize ECP signer: %s', e)
+        return None
     else:
       log.debug(
-          'Not using On Disk Certificate for mTLS, config type: %s',
+          'Not using On Disk or Enterprise Certificate for mTLS, config'
+          ' type: %s',
           ca_config.config_type,
       )
       return None

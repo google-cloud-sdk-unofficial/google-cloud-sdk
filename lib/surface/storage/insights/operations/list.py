@@ -24,6 +24,8 @@ from googlecloudsdk.calliope import base
 class List(base.ListCommand):
   """List insights operations."""
 
+  hints = base.CommandHint(read_only=True)
+
   detailed_help = {
       'DESCRIPTION': """\
       List storage operations.

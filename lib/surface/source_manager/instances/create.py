@@ -46,6 +46,7 @@ DETAILED_HELP = {
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.RegionalEndpointsSupported
 class Create(base.CreateCommand):
   """Create a Secure Source Manager instance."""
 
@@ -66,6 +67,10 @@ class Create(base.CreateCommand):
     kms_key = args.kms_key
     is_private = args.is_private
     ca_pool = args.ca_pool
+    custom_hostname_api = args.custom_hostname_api
+    custom_hostname_git_http = args.custom_hostname_git_http
+    custom_hostname_git_ssh = args.custom_hostname_git_ssh
+    custom_hostname_html = args.custom_hostname_html
     enable_workforce_identity_federation = (
         args.enable_workforce_identity_federation
     )
@@ -74,8 +79,8 @@ class Create(base.CreateCommand):
       psc_allowed_projects = args.psc_allowed_projects
 
     # Get a long-running operation for this creation
-    client = instances.InstancesClient()
     instance = args.CONCEPTS.instance.Parse()
+    client = instances.InstancesClient(location=instance.locationsId)
 
     try:
       operation = client.Create(
@@ -83,6 +88,10 @@ class Create(base.CreateCommand):
           kms_key=kms_key,
           is_private=is_private,
           ca_pool=ca_pool,
+          custom_hostname_api=custom_hostname_api,
+          custom_hostname_git_http=custom_hostname_git_http,
+          custom_hostname_git_ssh=custom_hostname_git_ssh,
+          custom_hostname_html=custom_hostname_html,
           enable_workforce_identity_federation=enable_workforce_identity_federation,
           psc_allowed_projects=psc_allowed_projects,
       )

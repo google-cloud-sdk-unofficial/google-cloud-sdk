@@ -19,15 +19,17 @@ from googlecloudsdk.calliope import base
 
 VERSION_MAP = {
     base.ReleaseTrack.ALPHA: 'v1alpha',
+    base.ReleaseTrack.BETA: 'v1',
+    base.ReleaseTrack.GA: 'v1',
 }
 
 
 # The messages module can also be accessed from client.MESSAGES_MODULE
-def GetMessagesModule(release_track=base.ReleaseTrack.ALPHA):
+def GetMessagesModule(release_track=base.ReleaseTrack.GA):
   api_version = VERSION_MAP.get(release_track)
   return apis.GetMessagesModule('workloadidentity', api_version)
 
 
-def GetClientInstance(release_track=base.ReleaseTrack.ALPHA):
+def GetClientInstance(release_track=base.ReleaseTrack.GA):
   api_version = VERSION_MAP.get(release_track)
   return apis.GetClientInstance('workloadidentity', api_version)

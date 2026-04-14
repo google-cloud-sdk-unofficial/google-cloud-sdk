@@ -69,7 +69,8 @@ class Create(base.CreateCommand):
     query_group.add_argument('--sql-query-text', help='SQL query text.')
     log_query_group = query_group.add_group()
     log_query_group.add_argument(
-        '--filter', help='Filter expression for the log-based query.'
+        '--log-filter',
+        help='Filter expression for the log-based query.',
     )
     log_query_group.add_argument(
         '--summary-fields',
@@ -124,8 +125,8 @@ class Create(base.CreateCommand):
       )
     else:
       logging_query_data = {}
-      if args.filter:
-        logging_query_data['filter'] = args.filter
+      if args.log_filter:
+        logging_query_data['filter'] = args.log_filter
       if args.summary_fields:
         logging_query_data['summaryFields'] = [
             messages.SummaryField(field=field)

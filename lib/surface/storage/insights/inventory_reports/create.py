@@ -29,6 +29,8 @@ from googlecloudsdk.core import log
 class Create(base.Command):
   """Create a new inventory report config."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION': """
        Create an inventory report config that defines how often

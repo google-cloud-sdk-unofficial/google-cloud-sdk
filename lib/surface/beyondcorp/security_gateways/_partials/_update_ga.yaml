@@ -198,6 +198,7 @@
     - group:
         api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.serviceDiscovery
         arg_name: service-discovery
+        settable: true
         clearable: true
         required: false
         help_text: |-
@@ -227,7 +228,6 @@
         settable: true
         clearable: true
         required: false
-        hidden: true
         help_text: |-
           Configuration for Cloud Logging.
         params: []

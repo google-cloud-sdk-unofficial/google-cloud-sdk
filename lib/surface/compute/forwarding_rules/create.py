@@ -63,9 +63,6 @@ def _Args(parser, support_all_protocol, support_external_passthrough):
       'You cannot use the `--service-label` flag  if the forwarding rule '
       'references an internal IP address that has the '
       '`--purpose=SHARED_LOADBALANCER_VIP` flag set.')
-  flags.AddAddressesAndIPVersions(
-      parser, include_external_passthrough=support_external_passthrough
-  )
   forwarding_rule_arg = flags.ForwardingRuleArgument()
   forwarding_rule_arg.AddArgument(parser, operation_type='create')
   parser.display_info.AddCacheUpdater(flags.ForwardingRulesCompleter)
@@ -237,11 +234,34 @@ class CreateHelper(object):
         raise exceptions.InvalidArgumentException(
             '--ports', '[--ports] is required for global forwarding rules.')
 
+    if hasattr(args, 'ip_addresses') and args.ip_addresses:
+      if (
+          load_balancing_scheme
+          != client.messages.ForwardingRule.LoadBalancingSchemeValueValuesEnum.EXTERNAL_PASSTHROUGH
+      ):
+        raise exceptions.InvalidArgumentException(
+            '--ip-addresses',
+            '--ip-addresses can only be specified for EXTERNAL_PASSTHROUGH load'
+            ' balancing scheme.',
+        )
+      if hasattr(args, 'ip_addresses') and len(args.ip_addresses) not in [1, 2]:
+        raise exceptions.InvalidArgumentException(
+            '--ip-addresses',
+            'Exactly one or two IP addresses must be specified.',
+        )
+
     protocol = self.ConstructProtocol(client.messages, args)
 
     address = self._ResolveAddress(resources, args,
                                    compute_flags.compute_scope.ScopeEnum.GLOBAL,
                                    forwarding_rule_ref)
+
+    ip_addresses = []
+    if hasattr(args, 'ip_addresses'):
+      ip_addresses = self._ResolveIpAddresses(
+          resources, args, forwarding_rule_ref
+      )
+
     forwarding_rule = client.messages.ForwardingRule(
         description=args.description,
         name=forwarding_rule_ref.Name(),
@@ -251,6 +271,8 @@ class CreateHelper(object):
         target=target_as_str,
         networkTier=_ConstructNetworkTier(client.messages, args),
         loadBalancingScheme=load_balancing_scheme)
+    if ip_addresses:
+      forwarding_rule.IPAddresses = ip_addresses
 
     self._ProcessCommonArgs(client, resources, args, forwarding_rule_ref,
                             forwarding_rule)
@@ -309,6 +331,20 @@ class CreateHelper(object):
       raise fw_exceptions.ArgumentError(
           'You cannot specify an INTERNAL_SELF_MANAGED '
           '[--load-balancing-scheme] for a regional forwarding rule.')
+
+    if hasattr(args, 'ip_addresses') and args.ip_addresses:
+      raise exceptions.InvalidArgumentException(
+          '--ip-addresses',
+          '--ip-addresses can only be used for global forwarding rules using '
+          'the EXTERNAL_PASSTHROUGH load balancing scheme.',
+      )
+
+    address = self._ResolveAddress(
+        resources,
+        args,
+        compute_flags.compute_scope.ScopeEnum.REGION,
+        forwarding_rule_ref,
+    )
 
     forwarding_rule = client.messages.ForwardingRule(
         description=args.description,
@@ -518,6 +554,32 @@ class CreateHelper(object):
         address = address_ref.SelfLink()
 
     return address
+
+  def _ResolveIpAddresses(self, resources, args, forwarding_rule_ref):
+    """Resolve ip_addresses field for Global NetLB (see go/global-netlb-ug)."""
+    if not args.ip_addresses:
+      return []
+
+    resolved_addresses = []
+    for address in args.ip_addresses:
+      try:
+        # ipaddress only allows unicode input
+        ipaddress.ip_network(six.text_type(address))
+        resolved_addresses.append(address)
+      except ValueError:
+        # Resolve as resource.
+        # We use a temporary attribute on args to use ResolveAsResource
+        # effectively or just use the registry directly.
+        # registry.Parse is safer here.
+        params = {'project': forwarding_rule_ref.project}
+        collection = 'compute.globalAddresses'
+
+        address_ref = resources.Parse(
+            address, collection=collection, params=params
+        )
+        resolved_addresses.append(address_ref.SelfLink())
+
+    return resolved_addresses
 
   def _ProcessCommonArgs(self, client, resources, args, forwarding_rule_ref,
                          forwarding_rule):

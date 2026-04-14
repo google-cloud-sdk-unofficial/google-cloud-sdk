@@ -35,11 +35,15 @@
       resource_method_params:
         googleCloudNetworkconnectivityV1betaTransport.network: "{__relative_name__}"
       help_text: VPC that will be peered to the provider via the Transport.
-      required: true
     - arg_name: advertised-routes
       api_field: googleCloudNetworkconnectivityV1betaTransport.advertisedRoutes
       help_text: List of routes to advertise from the VPC `network` toward the provider.
       metavar: CIDR_RANGE
+    - arg_name: hub
+      resource_spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:hub
+      resource_method_params:
+        googleCloudNetworkconnectivityV1betaTransport.hub: "{__relative_name__}"
+      help_text: Hub that the transport will be attached to.
     - group:
         mutex: true
         required: true
@@ -105,5 +109,15 @@
       api_field: googleCloudNetworkconnectivityV1betaTransport.adminEnabled
       help_text: Administrative state of the underlying connectivity.
       default: true
+    - arg_name: auto-accept
+      type: bool
+      api_field: googleCloudNetworkconnectivityV1betaTransport.autoAccept
+      help_text: Whether to auto-accept NCC proposals.
+      default: true
+    - arg_name: psc-routing-enabled
+      type: bool
+      api_field: googleCloudNetworkconnectivityV1betaTransport.pscRoutingEnabled
+      help_text: Whether PSC routing is enabled for the transport.
+      default: false
     labels:
       api_field: googleCloudNetworkconnectivityV1betaTransport.labels

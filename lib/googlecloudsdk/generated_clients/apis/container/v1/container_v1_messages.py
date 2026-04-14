@@ -206,7 +206,7 @@ class AddonsConfig(_messages.Message):
       add-on.
     parallelstoreCsiDriverConfig: Configuration for the Cloud Storage
       Parallelstore CSI driver.
-    podSnapshotConfig: Configuration for the Pod Snapshot feature.
+    podSnapshotConfig: Optional. Configuration for the Pod Snapshot feature.
     rayConfig: Optional. DEPRECATED. Use RayOperatorConfig instead.
     rayOperatorConfig: Optional. Configuration for Ray Operator addon.
     sliceControllerConfig: Optional. Configuration for the slice controller
@@ -1185,7 +1185,8 @@ class Cluster(_messages.Message):
     satisfiesPzs: Output only. Reserved for future use.
     scheduleUpgradeConfig: Optional. Configuration for scheduled upgrades.
     secretManagerConfig: Secret CSI driver configuration.
-    secretSyncConfig: Secret Sync controller configuration.
+    secretSyncConfig: Configuration for sync Secret Manager secrets as k8s
+      secrets.
     securityPostureConfig: Optional. Enable/Disable Security Posture API
       features for the cluster.
     selfLink: Output only. Server-defined URL for the resource.
@@ -1713,7 +1714,8 @@ class ClusterUpdate(_messages.Message):
     desiredScheduleUpgradeConfig: Optional. The desired scheduled upgrades
       configuration for the cluster.
     desiredSecretManagerConfig: Enable/Disable Secret Manager Config.
-    desiredSecretSyncConfig: Enable/Disable Secret Sync Config.
+    desiredSecretSyncConfig: Configuration for sync Secret Manager secrets as
+      k8s secrets.
     desiredSecurityPostureConfig: Enable/Disable Security Posture API features
       for the cluster.
     desiredServiceExternalIpsConfig: ServiceExternalIPsConfig specifies the
@@ -5588,14 +5590,18 @@ class NodeConfig(_messages.Message):
       used for encrypting the Local SSDs attached to the node.
 
   Messages:
-    LabelsValue: The map of Kubernetes labels (key/value pairs) to be applied
-      to each node. These will added in addition to any default label(s) that
-      Kubernetes may apply to the node. In case of conflict in label keys, the
-      applied set may differ depending on the Kubernetes version -- it's best
-      to assume the behavior is undefined and conflicts should be avoided. For
-      more information, including usage and the valid values, see:
-      https://kubernetes.io/docs/concepts/overview/working-with-
-      objects/labels/
+    LabelsValue: The Kubernetes labels (key/value pairs) to apply to each
+      node. The values in this field are added to the set of default labels
+      Kubernetes applies to nodes. This field has the following restrictions:
+      * Labels must use a valid Kubernetes syntax and character set, as
+      defined in https://kubernetes.io/docs/concepts/overview/working-with-
+      objects/labels/#syntax-and-character-set. * This field supports up to
+      1,024 total characters in a single request. Depending on the Kubernetes
+      version, keys in this field might conflict with the keys of the default
+      labels, which might change which of your labels are applied to the
+      nodes. Assume that the behavior is unpredictable and avoid label key
+      conflicts. For more information about the default labels, see:
+      https://kubernetes.io/docs/reference/labels-annotations-taints/
     MetadataValue: The metadata key/value pairs assigned to instances in the
       cluster. Keys must conform to the regexp `[a-zA-Z0-9-_]+` and be less
       than 128 bytes in length. These are reflected as part of a URL in the
@@ -5665,14 +5671,18 @@ class NodeConfig(_messages.Message):
       https://cloud.google.com/kubernetes-engine/docs/concepts/node-images for
       available image types.
     kubeletConfig: Node kubelet configs.
-    labels: The map of Kubernetes labels (key/value pairs) to be applied to
-      each node. These will added in addition to any default label(s) that
-      Kubernetes may apply to the node. In case of conflict in label keys, the
-      applied set may differ depending on the Kubernetes version -- it's best
-      to assume the behavior is undefined and conflicts should be avoided. For
-      more information, including usage and the valid values, see:
+    labels: The Kubernetes labels (key/value pairs) to apply to each node. The
+      values in this field are added to the set of default labels Kubernetes
+      applies to nodes. This field has the following restrictions: * Labels
+      must use a valid Kubernetes syntax and character set, as defined in
       https://kubernetes.io/docs/concepts/overview/working-with-
-      objects/labels/
+      objects/labels/#syntax-and-character-set. * This field supports up to
+      1,024 total characters in a single request. Depending on the Kubernetes
+      version, keys in this field might conflict with the keys of the default
+      labels, which might change which of your labels are applied to the
+      nodes. Assume that the behavior is unpredictable and avoid label key
+      conflicts. For more information about the default labels, see:
+      https://kubernetes.io/docs/reference/labels-annotations-taints/
     linuxNodeConfig: Parameters that can be configured on Linux nodes.
     localNvmeSsdBlockConfig: Parameters for using raw-block Local NVMe SSDs.
     localSsdCount: The number of local SSD disks to be attached to the node.
@@ -5805,13 +5815,18 @@ class NodeConfig(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""The map of Kubernetes labels (key/value pairs) to be applied to each
-    node. These will added in addition to any default label(s) that Kubernetes
-    may apply to the node. In case of conflict in label keys, the applied set
-    may differ depending on the Kubernetes version -- it's best to assume the
-    behavior is undefined and conflicts should be avoided. For more
-    information, including usage and the valid values, see:
-    https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+    r"""The Kubernetes labels (key/value pairs) to apply to each node. The
+    values in this field are added to the set of default labels Kubernetes
+    applies to nodes. This field has the following restrictions: * Labels must
+    use a valid Kubernetes syntax and character set, as defined in
+    https://kubernetes.io/docs/concepts/overview/working-with-
+    objects/labels/#syntax-and-character-set. * This field supports up to
+    1,024 total characters in a single request. Depending on the Kubernetes
+    version, keys in this field might conflict with the keys of the default
+    labels, which might change which of your labels are applied to the nodes.
+    Assume that the behavior is unpredictable and avoid label key conflicts.
+    For more information about the default labels, see:
+    https://kubernetes.io/docs/reference/labels-annotations-taints/
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.

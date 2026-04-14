@@ -15,9 +15,7 @@
 
 """api registry mcp server disable command."""
 
-from googlecloudsdk.api_lib.api_registry import resources
-from googlecloudsdk.api_lib.services import services_util
-from googlecloudsdk.api_lib.services import serviceusage
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
@@ -37,18 +35,11 @@ class DisableAlpha(base.SilentCommand):
 
   def Run(self, args):
     """Disables MCP server for a given service in the current project."""
-    op = serviceusage.RemoveMcpEnableRule(
-        resources.GetProjectId(),
-        args.service,
+    log.status.Print(
+        'MCP server enablement is no longer required, and enabling the'
+        ' underlying service is now sufficient. This command will be'
+        ' deprecated and has no effect.'
     )
-
-    if op is None:
-      return None
-
-    services_util.WaitOperation(op.name, serviceusage.GetOperationV2Beta)
-
-    # services_util.PrintOperation(op)
-    log.status.Print('MCP Server disabled for service:', args.service)
 
 
 @base.DefaultUniverseOnly
@@ -65,15 +56,8 @@ class DisableBeta(base.SilentCommand):
 
   def Run(self, args):
     """Disables MCP server for a given service in the current project."""
-    op = serviceusage.RemoveMcpEnableRule(
-        resources.GetProjectId(),
-        args.service,
+    log.status.Print(
+        'MCP server enablement is no longer required, and enabling the'
+        ' underlying service is now sufficient. This command will be'
+        ' deprecated and has no effect.'
     )
-
-    if op is None:
-      return None
-
-    services_util.WaitOperation(op.name, serviceusage.GetOperationV2Beta)
-
-    # services_util.PrintOperation(op)
-    log.status.Print('MCP Server disabled for service:', args.service)

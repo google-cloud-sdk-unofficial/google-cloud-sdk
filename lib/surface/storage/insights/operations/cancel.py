@@ -25,6 +25,8 @@ from googlecloudsdk.core import log
 class Cancel(base.Command):
   """Cancel an insights operation."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION': """\
       Cancel an insights operation. Since operations are asynchronous, this

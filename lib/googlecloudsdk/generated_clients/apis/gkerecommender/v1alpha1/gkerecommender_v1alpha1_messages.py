@@ -165,6 +165,59 @@ class GkerecommenderOptimizedManifestRequest(_messages.Message):
   targetNtpotMilliseconds = _messages.IntegerField(7, variant=_messages.Variant.INT32)
 
 
+class GoogleCloudGkerecommenderV1alpha1GenerateOptimizedManifestRequest(_messages.Message):
+  r"""Request message for WorkloadOptimizer.GenerateOptimizedManifest.
+
+  Fields:
+    clusterVersion: Required. The GKE version to generate the manifest for.
+    optimizationSet: Required. The name of the optimization set to generate
+      the manifest for. This specifies the workload, workload version, and
+      workload characterization to optimize for. E.g. "redis-7-caching"
+    options: Optional. Includes machine series to use for provisioning nodes
+      e.g. [{key: "machine_series", value: "c4d-highmem-16,c4a-highmem-16"}]
+  """
+
+  clusterVersion = _messages.StringField(1)
+  optimizationSet = _messages.StringField(2)
+  options = _messages.MessageField('GoogleCloudGkerecommenderV1alpha1Option', 3, repeated=True)
+
+
+class GoogleCloudGkerecommenderV1alpha1GenerateOptimizedManifestResponse(_messages.Message):
+  r"""Response message for WorkloadOptimizer.GenerateOptimizedManifest.
+
+  Fields:
+    kubernetesManifests: A list of generated Kubernetes manifests.
+  """
+
+  kubernetesManifests = _messages.MessageField('GoogleCloudGkerecommenderV1alpha1KubernetesManifest', 1, repeated=True)
+
+
+class GoogleCloudGkerecommenderV1alpha1KubernetesManifest(_messages.Message):
+  r"""A Kubernetes manifest.
+
+  Fields:
+    apiVersion: Output only. Kubernetes API version.
+    content: Output only. Kubernetes manifest specification.
+    kind: Output only. Kubernetes resource kind.
+  """
+
+  apiVersion = _messages.StringField(1)
+  content = _messages.StringField(2)
+  kind = _messages.StringField(3)
+
+
+class GoogleCloudGkerecommenderV1alpha1Option(_messages.Message):
+  r"""Option is a key-value pair for additional configuration options.
+
+  Fields:
+    key: Required. The option name.
+    value: Required. The option value.
+  """
+
+  key = _messages.StringField(1)
+  value = _messages.StringField(2)
+
+
 class K8SManifest(_messages.Message):
   r"""A K8SManifest object.
 

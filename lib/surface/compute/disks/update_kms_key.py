@@ -30,12 +30,12 @@ DETAILED_HELP = {
     'EXAMPLES': """
         To rotate the KMS key of a disk named example-disk-1 to the primary version, run:
 
-          $ {command} example-disk-1 --zone us-central1-a
+          $ {command} example-disk-1 --zone=us-central1-a
 
         To change the KMS key of a disk named example-disk-2 to a new KMS key named
         example-key in a key ring named example-key-ring in the global scope, run:
 
-          $ {command} example-disk-2 --zone us-central1-a --kms-key example-key --kms-keyring example-key-ring --kms-location global
+          $ {command} example-disk-2 --zone=us-central1-a --kms-key=example-key --kms-keyring=example-key-ring --kms-location=global
     """,
 }
 
@@ -46,10 +46,10 @@ def _CommonArgs(parser):
   disks_flags.AddKmsKeyArg(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
 class UpdateKmsKey(base.Command):
-  """Rotate the KMS key of a persistent disk to the primary version."""
+  """Update the KMS key of a persistent disk."""
 
   @classmethod
   def Args(cls, parser):
@@ -60,9 +60,6 @@ class UpdateKmsKey(base.Command):
     return base_classes.ComputeApiHolder(cls.ReleaseTrack(), no_http)
 
   def Run(self, args):
-    return self._Run(args)
-
-  def _Run(self, args):
     """Issues request for updating the KMS key of a disk."""
     compute_holder = self._GetApiHolder()
     client = compute_holder.client
@@ -98,6 +95,16 @@ class UpdateKmsKey(base.Command):
           ),
       )
       return client.MakeRequests([(service, 'UpdateKmsKey', request)])
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateKmsKeyBeta(UpdateKmsKey):
+  """Update the KMS key of a persistent disk."""
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateKmsKeyAlpha(UpdateKmsKeyBeta):
+  """Update the KMS key of a persistent disk."""
 
 
 UpdateKmsKey.detailed_help = DETAILED_HELP

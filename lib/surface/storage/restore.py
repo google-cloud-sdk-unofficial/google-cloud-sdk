@@ -214,6 +214,8 @@ def _restore_task_iterator(args):
 class Restore(base.Command):
   """Restore one or more soft-deleted objects."""
 
+  hints = base.CommandHint(read_only=False)
+
   # TODO(b/292075826): Update docstring and help once bucket restore supported.
   detailed_help = {
       'DESCRIPTION': """

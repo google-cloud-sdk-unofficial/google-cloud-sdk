@@ -18,6 +18,8 @@ import pathlib
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.command_lib.orchestration_pipelines import gcp_deployer
+from googlecloudsdk.command_lib.orchestration_pipelines.handlers import registry
 from googlecloudsdk.command_lib.orchestration_pipelines.tools import yaml_processor
 from googlecloudsdk.core import yaml
 
@@ -34,9 +36,14 @@ class Validate(calliope_base.Command):
   def Args(cls, parser):
     parser.add_argument(
         "--environment",
-        required=True,
         help="The target environment of the pipeline, as defined in"
         " deployment.yaml.",
+    )
+    parser.add_argument(
+        "--pipeline-paths",
+        metavar="PATH",
+        type=arg_parsers.ArgList(),
+        help="The list of relative pipeline YAML file paths to validate.",
     )
     parser.add_argument(
         "--substitutions",
@@ -49,6 +56,19 @@ class Validate(calliope_base.Command):
         help=(
             "Path to a YAML file containing variable substitutions for the "
             "pipeline configuration."
+        ),
+    )
+    parser.add_argument(
+        "--mode",
+        choices=["syntax-only", "full"],
+        default="full",
+        help=(
+            "The validation mode to use. 'syntax-only' checks the syntax"
+            " and type correctness of the pipeline YAML files. 'full' performs"
+            " 'syntax-only' validation and adds semantic checks for referenced"
+            " resources such as Cloud project, Composer environment, and"
+            " other resources in both deployment and pipeline YAML files."
+            " Default mode is 'full'."
         ),
     )
 
@@ -79,33 +99,90 @@ class Validate(calliope_base.Command):
     if getattr(args, "substitutions", None):
       external_vars.update(args.substitutions)
 
-    # 2. Load and validate deployment file.
-    deployment_path = work_dir / DEPLOYMENT_FILE_NAME
-    try:
+    environment = None
+
+    # 2. Load and validate deployment file if environment is specified.
+    # Otherwise, use the pipeline paths specified in the command.
+    if args.environment:
+      deployment_path = work_dir / DEPLOYMENT_FILE_NAME
       environment = yaml_processor.load_environment(
           deployment_path, args.environment, external_vars
       )
       yaml_processor.validate_environment(environment, args.environment)
-    except (
-        yaml.FileLoadError,
-        yaml.YAMLParseError,
-        yaml_processor.BadFileError,
-    ) as e:
-      raise calliope_exceptions.BadFileException(
-          "Deployment file not found or failed to parse:"
-          f" {deployment_path.name}"
-      ) from e
 
-    combined_variables = {
-        "project": environment.project,
-        "region": environment.region,
-        **(environment.variables if environment.variables else {}),
-    }
+      combined_variables = {
+          "project": environment.project,
+          "region": environment.region,
+          **(environment.variables if environment.variables else {}),
+      }
+      pipeline_paths_in_deployment = (
+          [p.source for p in environment.pipelines]
+          if getattr(environment, "pipelines", None)
+          else []
+      )
 
-    # 3. Perform L1 validation for pipelines defined in the deployment
+      # Check if all the pipeline paths specified in the command are a
+      # subset of the pipelines in the deployment environment. If not, raise
+      # an error.
+      if not args.pipeline_paths:
+        pipeline_paths = pipeline_paths_in_deployment
+      else:
+        pipeline_paths = args.pipeline_paths
+        for pipeline_path in pipeline_paths:
+          if pipeline_path not in pipeline_paths_in_deployment:
+            raise calliope_exceptions.BadArgumentException(
+                "--pipeline-paths",
+                f"Pipeline path '{pipeline_path}' not found in deployment "
+                f"environment '{args.environment}'."
+            )
+    else:
+      combined_variables = external_vars
+      pipeline_paths = args.pipeline_paths
+
+    # 3. Perform L1 syntax validation for pipelines defined in the deployment
     # environment.
     yaml_processor.validate_pipeline_l1(
         work_dir,
-        environment,
+        pipeline_paths,
         combined_variables,
     )
+
+    if environment:
+      for resource in environment.resources:
+        if resource.type == "resourceProfile":
+          continue
+        handler = registry.GetHandler(resource, environment, dry_run=True)
+        gcp_deployer.validate_gcp_resource_l1(handler)
+
+      print(
+          "Successfully finished syntax validation for pipelines and resources"
+          f" in deployment environment '{args.environment}'."
+      )
+    else:
+      print(
+          "Successfully finished syntax validation for all provided pipelines."
+      )
+    if args.mode == "syntax-only":
+      return
+
+    # 4. Perform L2 semantic validation for pipelines defined in the deployment
+    # environment.
+    yaml_processor.validate_pipeline_l2(
+        work_dir,
+        pipeline_paths,
+        combined_variables,
+        environment,
+    )
+    if environment:
+      for resource in environment.resources:
+        if resource.type == "resourceProfile":
+          continue
+        handler = registry.GetHandler(resource, environment, dry_run=True)
+        gcp_deployer.validate_gcp_resource_l2(handler)
+
+      print(
+          "Successfully finished full validation for all pipelines and"
+          f" resources in deployment environment '{args.environment}'."
+      )
+    else:
+      print("Successfully finished full validation for all provided pipelines.")

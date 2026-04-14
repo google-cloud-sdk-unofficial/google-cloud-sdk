@@ -237,6 +237,14 @@ class Collections(enum.Enum):
       ['project', 'zone', 'instance'],
       True
   )
+  INSTANTSNAPSHOTGROUPS = (
+      'instantSnapshotGroups',
+      'projects/{project}/zones/{zone}/instantSnapshotGroups/'
+      '{instantSnapshotGroup}',
+      {},
+      ['project', 'zone', 'instantSnapshotGroup'],
+      True
+  )
   INSTANTSNAPSHOTS = (
       'instantSnapshots',
       'projects/{project}/zones/{zone}/instantSnapshots/{instantSnapshot}',
@@ -545,6 +553,14 @@ class Collections(enum.Enum):
       ['project', 'region', 'instanceTemplate'],
       True
   )
+  REGIONINSTANTSNAPSHOTGROUPS = (
+      'regionInstantSnapshotGroups',
+      'projects/{project}/regions/{region}/instantSnapshotGroups/'
+      '{instantSnapshotGroup}',
+      {},
+      ['project', 'region', 'instantSnapshotGroup'],
+      True
+  )
   REGIONINSTANTSNAPSHOTS = (
       'regionInstantSnapshots',
       'projects/{project}/regions/{region}/instantSnapshots/{instantSnapshot}',
@@ -595,6 +611,20 @@ class Collections(enum.Enum):
       'securityPolicyRules/{securityPolicyRule}',
       {},
       ['project', 'region', 'securityPolicy', 'securityPolicyRule'],
+      True
+  )
+  REGIONSNAPSHOTSETTINGS = (
+      'regionSnapshotSettings',
+      'projects/{project}/regions/{region}/snapshotSettings',
+      {},
+      ['project', 'region'],
+      True
+  )
+  REGIONSNAPSHOTS = (
+      'regionSnapshots',
+      'projects/{project}/regions/{region}/snapshots/{snapshot}',
+      {},
+      ['project', 'region', 'snapshot'],
       True
   )
   REGIONSSLCERTIFICATES = (

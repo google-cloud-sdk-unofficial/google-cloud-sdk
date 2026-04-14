@@ -23,7 +23,6 @@
 
     - arg_name: evaluation-spec
       api_field: flag.evaluationSpec
-      clearable: true
       help_text: |-
         Specification of how the Flag value should be evaluated.
       is_positional: false
@@ -80,7 +79,7 @@
             Max length: 128 bytes.
         - api_field: boolValue
           help_text: |-
-            Value is a single flag value for the variant.
+            Value is a single boolean flag value for the variant.
 
     - arg_name: flag-set
       api_field: flag.flagSet
@@ -95,7 +94,6 @@
     - arg_name: variants
       hidden: true
       api_field: flag.variants
-      clearable: true
       help_text: |-
         A list of variants.
         Variant is an identifier for a value (name assigned to a value).
@@ -132,6 +130,32 @@
       help_text: |-
         A description of the flag. Max length: 500 bytes.
       is_positional: false
+
+    - arg_name: state
+      hidden: true
+      api_field: flag.state
+      help_text: |-
+        Current state of the flag.
+      is_positional: false
+      required: false
+      repeated: false
+      choices:
+      - arg_value: in-development
+        enum_value: FLAG_STATE_IN_DEVELOPMENT
+        help_text: |-
+          The flag is currently in the in-development state.
+      - arg_value: active
+        enum_value: FLAG_STATE_ACTIVE
+        help_text: |-
+          The flag is in the active state.
+      - arg_value: sunsetting
+        enum_value: FLAG_STATE_SUNSETTING
+        help_text: |-
+          The flag is in the sunsetting state, indicating it is being phased out.
+      - arg_value: cleanup
+        enum_value: FLAG_STATE_CLEANUP
+        help_text: |-
+          The flag is in the cleanup state and ready to be deleted.
 
     - arg_name: labels
       api_field: flag.labels

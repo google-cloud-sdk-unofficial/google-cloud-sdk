@@ -27,6 +27,8 @@ from googlecloudsdk.core import log
 class Create(base.Command):
   """Create managed folders."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION': 'Create managed folders.',
       'EXAMPLES': """

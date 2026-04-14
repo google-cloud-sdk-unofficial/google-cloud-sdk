@@ -39,6 +39,7 @@ DETAILED_HELP = {
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.RegionalEndpointsSupported
 class Update(base.UpdateCommand):
   """Update a Secure Source Manager repository."""
 
@@ -56,7 +57,9 @@ class Update(base.UpdateCommand):
     # Get resource args to contruct base url
     repository_ref = args.CONCEPTS.repository.Parse()
     # Update repository
-    client = repositories.RepositoriesClient()
+    client = repositories.RepositoriesClient(
+        location=repository_ref.locationsId
+    )
 
     # Collect the list of update masks
     update_mask = []

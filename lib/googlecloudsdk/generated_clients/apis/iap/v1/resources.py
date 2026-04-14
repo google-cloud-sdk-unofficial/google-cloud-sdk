@@ -114,6 +114,37 @@ class Collections(enum.Enum):
       ['project', 'iapWebId', 'serviceId', 'versionId'],
       True
   )
+  PROJECTS_LOCATIONS_IAP_WEB = (
+      'projects.locations.iap_web',
+      'projects/{project}/locations/{location}/iap_web/{iapWebId}',
+      {},
+      ['project', 'location', 'iapWebId'],
+      True
+  )
+  PROJECTS_LOCATIONS_IAP_WEB_AGENTS = (
+      'projects.locations.iap_web.agents',
+      'projects/{project}/locations/{location}/iap_web/{iapWebId}/agents/'
+      '{agentId}',
+      {},
+      ['project', 'location', 'iapWebId', 'agentId'],
+      True
+  )
+  PROJECTS_LOCATIONS_IAP_WEB_ENDPOINTS = (
+      'projects.locations.iap_web.endpoints',
+      'projects/{project}/locations/{location}/iap_web/{iapWebId}/endpoints/'
+      '{endpointId}',
+      {},
+      ['project', 'location', 'iapWebId', 'endpointId'],
+      True
+  )
+  PROJECTS_LOCATIONS_IAP_WEB_MCPSERVERS = (
+      'projects.locations.iap_web.mcpServers',
+      'projects/{project}/locations/{location}/iap_web/{iapWebId}/mcpServers/'
+      '{mcpServerId}',
+      {},
+      ['project', 'location', 'iapWebId', 'mcpServerId'],
+      True
+  )
 
   def __init__(self, collection_name, path, flat_paths, params,
                enable_uri_parsing):

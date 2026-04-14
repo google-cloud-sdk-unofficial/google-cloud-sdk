@@ -27,9 +27,9 @@ from googlecloudsdk.core import properties
 import six.moves.http_client
 
 
-# TODO(b/265881192): remove Hidden label once we are ready to launch.
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class GetStorageShrinkConfig(base.Command):
   """Displays the minimum storage size to which a Cloud SQL instance can be decreased.
   """

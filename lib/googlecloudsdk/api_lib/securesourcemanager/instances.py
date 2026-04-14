@@ -30,16 +30,18 @@ def GetMessagesModule(release_track=base.ReleaseTrack.ALPHA):
   return apis.GetMessagesModule('securesourcemanager', api_version)
 
 
-def GetClientInstance(release_track=base.ReleaseTrack.ALPHA):
+def GetClientInstance(release_track=base.ReleaseTrack.ALPHA, location=None):
   api_version = VERSION_MAP.get(release_track)
-  return apis.GetClientInstance('securesourcemanager', api_version)
+  return apis.GetClientInstance(
+      'securesourcemanager', api_version, location=location
+  )
 
 
 class InstancesClient(object):
   """Client for Secure Source Manager instances."""
 
-  def __init__(self):
-    self.client = GetClientInstance(base.ReleaseTrack.ALPHA)
+  def __init__(self, location=None):
+    self.client = GetClientInstance(base.ReleaseTrack.ALPHA, location=location)
     self.messages = GetMessagesModule(base.ReleaseTrack.ALPHA)
     self._service = self.client.projects_locations_instances
     self._resource_parser = resources.Registry()
@@ -51,6 +53,10 @@ class InstancesClient(object):
       kms_key,
       is_private,
       ca_pool,
+      custom_hostname_api,
+      custom_hostname_git_http,
+      custom_hostname_git_ssh,
+      custom_hostname_html,
       enable_workforce_identity_federation,
       psc_allowed_projects,
   ):
@@ -62,6 +68,10 @@ class InstancesClient(object):
       kms_key: customer managed encrypted key to create instance.
       is_private:  boolean indicator for private instance.
       ca_pool: path of ca pool for private instance.
+      custom_hostname_api: custom hostname for api.
+      custom_hostname_git_http: custom hostname for git http.
+      custom_hostname_git_ssh: custom hostname for git ssh.
+      custom_hostname_html: custom hostname for html.
       enable_workforce_identity_federation: boolean indicator for workforce
         identity federation.
       psc_allowed_projects: list of projects allowed to connect to the instance
@@ -77,6 +87,14 @@ class InstancesClient(object):
           caPool=ca_pool,
           pscAllowedProjects=psc_allowed_projects,
       )
+      if custom_hostname_api:
+        private_config.customHostConfig = self.messages.CustomHostConfig(
+            api=custom_hostname_api,
+            gitHttp=custom_hostname_git_http,
+            gitSsh=custom_hostname_git_ssh,
+            html=custom_hostname_html,
+        )
+
     workforce_identity_federation_config = None
     if enable_workforce_identity_federation:
       workforce_identity_federation_config = (

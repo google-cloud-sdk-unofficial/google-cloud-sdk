@@ -67,12 +67,32 @@ def GetCatalogRef(catalog):
 
 
 def GetNamespaceName(catalog_id, namespace_id):
-  """Get the namespace name in the format of projects/{project-id}/catalogs/{catalog-id}/namespaces/{namespace-id}."""
+  """Get the namespace name.
+
+  The name is in the format of
+  projects/{project-id}/catalogs/{catalog-id}/namespaces/{namespace-id}.
+
+  Args:
+    catalog_id: The ID of the catalog.
+    namespace_id: The ID of the namespace.
+
+  Returns:
+    The namespace name string.
+  """
   return f'projects/{properties.VALUES.core.project.GetOrFail()}/catalogs/{catalog_id}/namespaces/{namespace_id}'
 
 
 def GetCatalogName(catalog_id):
-  """Get the catalog name in the format of projects/{project-id}/catalogs/{catalog-id}."""
+  """Get the catalog name.
+
+  The name is in the format of projects/{project-id}/catalogs/{catalog-id}.
+
+  Args:
+    catalog_id: The ID of the catalog.
+
+  Returns:
+    The catalog name string.
+  """
   return f'projects/{properties.VALUES.core.project.GetOrFail()}/catalogs/{catalog_id}'
 
 
@@ -148,10 +168,6 @@ def GetUpdateCatalogTypeEnumMapper(release_track):
                   ' namespaces and tables within a catalog to be mapped to'
                   " locations beyond the catalog's designated default."
               ),
-          ),
-          'CATALOG_TYPE_FEDERATED': (
-              'federated',
-              'A federated catalog.',
           ),
       },
   )
@@ -243,6 +259,78 @@ def CheckValidArgCombinations(args):
     )
 
 
+def CheckValidUnityArgCombinations(args):
+  """Checks for valid combinations of Unity arguments.
+
+  Args:
+    args: The parsed command-line arguments.
+
+  Raises:
+    arg_parsers.ArgumentTypeError: If an invalid argument combination is found.
+  """
+  if not args.IsSpecified('secret_name'):
+    raise arg_parsers.ArgumentTypeError(
+        '--secret-name must be specified when federated catalog type is'
+        ' unity.'
+    )
+  if not args.IsSpecified('unity_instance_name'):
+    raise arg_parsers.ArgumentTypeError(
+        '--unity-instance-name must be specified when federated catalog type'
+        ' is unity.'
+    )
+  if not args.IsSpecified('unity_catalog_name'):
+    raise arg_parsers.ArgumentTypeError(
+        '--unity-catalog-name must be specified when federated catalog type'
+        ' is unity.'
+    )
+
+
+def CheckValidFederatedArgCombinations(args):
+  """Checks for valid combinations of federated arguments.
+
+  Ensures that federated-specific flags are only used when `--catalog-type`
+  is 'federated', and that required flags are provided for the specific
+  federated catalog type.
+
+  Args:
+    args: The parsed command-line arguments.
+
+  Raises:
+    arg_parsers.ArgumentTypeError: If an invalid argument combination is found.
+  """
+  federated_flags = [
+      'secret_name',
+      'unity_instance_name',
+      'unity_catalog_name',
+      'refresh_interval',
+      'namespace_filters',
+  ]
+  is_federated = args.catalog_type == 'federated'
+  if is_federated:
+    # Check that the federated catalog type is specified for federated catalogs.
+    if not args.IsSpecified('federated_catalog_type'):
+      raise arg_parsers.ArgumentTypeError(
+          '--federated-catalog-type must be specified when catalog type is'
+          ' federated.'
+      )
+    if not args.IsSpecified('primary_location'):
+      raise arg_parsers.ArgumentTypeError(
+          '--primary-location must be specified when catalog type is federated.'
+      )
+  else:
+    # Check that federated flags are not specified for non-federated catalogs.
+    for flag in federated_flags:
+      if args.IsSpecified(flag):
+        raise arg_parsers.ArgumentTypeError(
+            '--{} is only supported for federated catalogs.'.format(
+                flag.replace('_', '-')
+            )
+        )
+    return
+  if is_federated and args.federated_catalog_type == 'unity':
+    CheckValidUnityArgCombinations(args)
+
+
 def ProcessNamespaceListResponse(parent_name, response):
   """Processes the response from the list namespaces request."""
   namespaces = []
@@ -296,6 +384,85 @@ def ListNamespaces(parent_name, page_size=None, page_token=None):
     ) from e
 
 
+def _BuildRefreshOptions(refresh_options_option):
+  """Builds the refresh options for the request body."""
+  refresh_options = {}
+  if (
+      hasattr(refresh_options_option, 'refresh_schedule')
+      and refresh_options_option.refresh_schedule
+  ):
+    refresh_schedule = {}
+    if (
+        hasattr(
+            refresh_options_option.refresh_schedule, 'refresh_interval'
+        )
+        and refresh_options_option.refresh_schedule.refresh_interval
+    ):
+      refresh_schedule['refresh-interval'] = (
+          refresh_options_option.refresh_schedule.refresh_interval
+      )
+    if refresh_schedule:
+      refresh_options['refresh-schedule'] = refresh_schedule
+  if (
+      hasattr(refresh_options_option, 'refresh_scope')
+      and refresh_options_option.refresh_scope
+  ):
+    refresh_scope = {}
+    if (
+        hasattr(refresh_options_option.refresh_scope, 'namespace_filters')
+        and refresh_options_option.refresh_scope.namespace_filters
+    ):
+      refresh_scope['namespace-filters'] = (
+          refresh_options_option.refresh_scope.namespace_filters
+      )
+    if refresh_scope:
+      refresh_options['refresh-scope'] = refresh_scope
+  return refresh_options
+
+
+def _BuildUnityCatalogInfo(unity_catalog_info_option):
+  """Builds the unity catalog info for the request body."""
+  unity_catalog_info = {}
+  if (
+      hasattr(unity_catalog_info_option, 'instance_name')
+      and unity_catalog_info_option.instance_name
+  ):
+    unity_catalog_info['instance-name'] = (
+        unity_catalog_info_option.instance_name
+    )
+  if (
+      hasattr(unity_catalog_info_option, 'catalog_name')
+      and unity_catalog_info_option.catalog_name
+  ):
+    unity_catalog_info['catalog-name'] = (
+        unity_catalog_info_option.catalog_name
+    )
+  return unity_catalog_info
+
+
+def _BuildFederatedCatalogOptions(options):
+  """Builds the federated catalog options for the request body."""
+  federated_catalog_options = {}
+  if hasattr(options, 'secret_name') and options.secret_name:
+    federated_catalog_options['secret-name'] = options.secret_name
+  if (
+      hasattr(options, 'service_directory_name')
+      and options.service_directory_name
+  ):
+    federated_catalog_options['service-directory-name'] = (
+        options.service_directory_name
+    )
+  if hasattr(options, 'unity_catalog_info') and options.unity_catalog_info:
+    unity_catalog_info = _BuildUnityCatalogInfo(options.unity_catalog_info)
+    if unity_catalog_info:
+      federated_catalog_options['unity-catalog-info'] = unity_catalog_info
+  if hasattr(options, 'refresh_options') and options.refresh_options:
+    refresh_options = _BuildRefreshOptions(options.refresh_options)
+    if refresh_options:
+      federated_catalog_options['refresh-options'] = refresh_options
+  return federated_catalog_options
+
+
 def CreateCatalog(catalog_id, catalog_msg, primary_location=None):
   """Creates a catalog.
 
@@ -330,17 +497,118 @@ def CreateCatalog(catalog_id, catalog_msg, primary_location=None):
       and catalog_msg.additional_locations
   ):
     body['additional-locations'] = catalog_msg.additional_locations
-  if catalog_msg.federated_catalog_options is not None:
-    body['federated-catalog-options'] = {
-        'service-directory-name': (
-            catalog_msg.federated_catalog_options.service_directory_name
-        )
-    }
+
+  if (
+      hasattr(catalog_msg, 'federated_catalog_options')
+      and catalog_msg.federated_catalog_options
+  ):
+    body['federated-catalog-options'] = _BuildFederatedCatalogOptions(
+        catalog_msg.federated_catalog_options
+    )
+
   headers = {'Content-Type': 'application/json'}
   response = requests.GetSession().request(
       'POST', url, data=json.dumps(body), headers=headers
   )
   if int(response.status_code) != httplib.OK:
+    raise HttpRequestFailError(
+        'HTTP request failed. Response: ' + response.text
+    )
+  try:
+    response_json = json.loads(response.text)
+    return types.SimpleNamespace(
+        biglake_service_account=response_json.get('biglake-service-account'),
+        biglake_service_account_id=response_json.get(
+            'biglake-service-account-id'
+        ),
+    )
+  except ValueError as e:
+    raise HttpRequestFailError(
+        'No JSON object could be decoded from the HTTP response body: '
+        + response.text
+    ) from e
+
+
+def CreateTable(catalog_id, namespace_id, table_data):
+  """Creates an Iceberg table.
+
+  Args:
+      catalog_id: The ID of the catalog.
+      namespace_id: The ID of the namespace.
+      table_data: The JSON data for the table creation request.
+
+  Returns:
+      The created Iceberg table metadata as JSON.
+
+  Raises:
+      HttpRequestFailError: if error happens with http request, or parsing
+          the http response.
+  """
+  endpoint = apis.GetEffectiveApiEndpoint('biglake', 'v1').strip('/')
+  parent_name = GetNamespaceName(catalog_id, namespace_id)
+  url = f'{endpoint}/iceberg/v1/restcatalog/v1/{parent_name}/tables'
+  headers = {'Content-Type': 'application/json'}
+  response = requests.GetSession().request(
+      'POST', url, data=json.dumps(table_data), headers=headers
+  )
+  if int(response.status_code) not in [httplib.OK, httplib.CREATED]:
+    raise HttpRequestFailError(
+        'HTTP request failed. Response: ' + response.text
+    )
+  return response.text
+
+
+def GetTable(catalog_id, namespace_id, table_id):
+  """Gets Iceberg table metadata.
+
+  Args:
+      catalog_id: The ID of the catalog.
+      namespace_id: The ID of the namespace.
+      table_id: The ID of the table.
+
+  Returns:
+      The Iceberg table metadata as JSON.
+
+  Raises:
+      HttpRequestFailError: if error happens with HTTP request, or parsing
+          the http response.
+  """
+  endpoint = apis.GetEffectiveApiEndpoint('biglake', 'v1').strip('/')
+  table_name = GetTableName(catalog_id, namespace_id, table_id)
+  url = f'{endpoint}/iceberg/v1/restcatalog/v1/{table_name}?alt=json&snapshots=refs'
+  headers = {'Content-Type': 'application/json'}
+  response = requests.GetSession().request('GET', url, headers=headers)
+  if int(response.status_code) != httplib.OK:
+    raise HttpRequestFailError(
+        'HTTP request failed. Response: ' + response.text
+    )
+  return response.text
+
+
+def UpdateTable(catalog_id, namespace_id, table_id, table_data):
+  """Updates an Iceberg table.
+
+  Args:
+      catalog_id: The ID of the catalog.
+      namespace_id: The ID of the namespace.
+      table_id: The ID of the table.
+      table_data: The JSON data for the table update request.
+
+  Returns:
+      The updated Iceberg table metadata as JSON.
+
+  Raises:
+      HttpRequestFailError: if error happens with http request, or parsing
+          the http response.
+  """
+  endpoint = apis.GetEffectiveApiEndpoint('biglake', 'v1').strip('/')
+  table_name = GetTableName(catalog_id, namespace_id, table_id)
+  url = f'{endpoint}/iceberg/v1/restcatalog/v1/{table_name}?alt=json'
+  headers = {'Content-Type': 'application/json'}
+  response = requests.GetSession().request(
+      'POST', url, data=json.dumps(table_data), headers=headers
+  )
+  if int(response.status_code) not in [httplib.OK, httplib.CREATED]:
     raise HttpRequestFailError(
         'HTTP request failed. Response: ' + response.text
     )

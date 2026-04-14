@@ -55,6 +55,7 @@ class _FlagDefinitionBase(TypedDict):
     flagType: The type of the flag (e.g., 'boolean', 'string').
     defaultValue: The default value of the flag.
   """
+
   flagType: str  # pylint: disable=invalid-name
   defaultValue: _FlagValue  # pylint: disable=invalid-name
 
@@ -85,25 +86,27 @@ class _FlagTypeInfo:
 
 
 _FLAG_TYPE_INFO_BY_VALUE_TYPE: dict[
-    ezmessages.Flag.ValueTypeValueValuesEnum, _FlagTypeInfo
+    ezmessages.Flag.FlagValueTypeValueValuesEnum, _FlagTypeInfo
 ] = {
-    ezmessages.Flag.ValueTypeValueValuesEnum.FLAG_VALUE_TYPE_BOOL: (
+    ezmessages.Flag.FlagValueTypeValueValuesEnum.FLAG_VALUE_TYPE_BOOLEAN: (
         _FlagTypeInfo(
             openfeature_type='boolean',
             default_value=False,
         )
     ),
-    ezmessages.Flag.ValueTypeValueValuesEnum.FLAG_VALUE_TYPE_INT: _FlagTypeInfo(
-        openfeature_type='integer',
-        default_value=0,
+    ezmessages.Flag.FlagValueTypeValueValuesEnum.FLAG_VALUE_TYPE_INTEGER: (
+        _FlagTypeInfo(
+            openfeature_type='integer',
+            default_value=0,
+        )
     ),
-    ezmessages.Flag.ValueTypeValueValuesEnum.FLAG_VALUE_TYPE_DOUBLE: (
+    ezmessages.Flag.FlagValueTypeValueValuesEnum.FLAG_VALUE_TYPE_DOUBLE: (
         _FlagTypeInfo(
             openfeature_type='double',
             default_value=0.0,
         )
     ),
-    ezmessages.Flag.ValueTypeValueValuesEnum.FLAG_VALUE_TYPE_STRING: (
+    ezmessages.Flag.FlagValueTypeValueValuesEnum.FLAG_VALUE_TYPE_STRING: (
         _FlagTypeInfo(
             openfeature_type='string',
             default_value='',
@@ -114,11 +117,13 @@ _FLAG_TYPE_INFO_BY_VALUE_TYPE: dict[
 
 class InvalidFlagDataError(calliope_exceptions.ToolException):
   """Invalid or unsupported flag data from the API."""
+
   pass
 
 
 def _GetFlagTypeInfo(
-    flag_type: ezmessages.Flag.ValueTypeValueValuesEnum | None, flag_key: str
+    flag_type: ezmessages.Flag.FlagValueTypeValueValuesEnum | None,
+    flag_key: str,
 ) -> _FlagTypeInfo:
   """Gets the type info or raises an error.
 
@@ -134,8 +139,7 @@ def _GetFlagTypeInfo(
   """
   if flag_type not in _FLAG_TYPE_INFO_BY_VALUE_TYPE:
     raise InvalidFlagDataError(
-        f'Flag {flag_key!r} invalid. {flag_type} is not a supported'
-        ' flag type.'
+        f'Flag {flag_key!r} invalid. {flag_type} is not a supported flag type.'
     )
   return _FLAG_TYPE_INFO_BY_VALUE_TYPE[flag_type]
 
@@ -172,8 +176,7 @@ def _ListFlagsIter(
     # TODO: b/479525288 - Replace with the filter parameter in the ListFlags
     # API call.
     yield from (
-        f for f in flags_iterator
-        if (flag_set is None or f.flagSet == flag_set)
+        f for f in flags_iterator if (flag_set is None or f.flagSet == flag_set)
     )
   except GeneratorExit:
     raise
@@ -192,7 +195,7 @@ def _ConstructFlagEntry(flag: ezmessages.Flag) -> _FlagDefinition:
   Returns:
     A dictionary representing the flag definition in the manifest.
   """
-  flag_type_info = _GetFlagTypeInfo(flag.valueType, flag.key)
+  flag_type_info = _GetFlagTypeInfo(flag.flagValueType, flag.key)
 
   flag_definition: _FlagDefinition = {
       'flagType': flag_type_info.openfeature_type,

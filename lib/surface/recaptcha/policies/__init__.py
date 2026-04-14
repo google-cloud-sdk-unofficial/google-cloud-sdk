@@ -19,7 +19,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 @base.DefaultUniverseOnly
 class RecaptchaPolicy(base.Group):
   """Manage reCAPTCHA Policies."""

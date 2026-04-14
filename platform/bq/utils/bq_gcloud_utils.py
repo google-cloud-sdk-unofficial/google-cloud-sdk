@@ -4,7 +4,7 @@
 import json
 import logging
 import subprocess
-from typing import Dict
+from typing import Any, Dict, Optional
 
 from absl import flags
 
@@ -12,7 +12,7 @@ import bq_utils
 from gcloud_wrapper import gcloud_runner
 
 
-# Cache of `gcloud config list` to be used in load_config().
+# Cache of `gcloud config config-helper` to be used in load_full_config().
 _config_cache = None
 
 
@@ -150,8 +150,14 @@ def process_config(flag_values: flags._flagvalues.FlagValues) -> None:
       bq_utils.UpdateFlag(flag_values, 'use_google_auth', True)
 
 
-def load_config() -> Dict[str, Dict[str, str]]:
-  """Loads the user configs from gcloud, cache the result, and returns them as a dictionary."""
+def load_full_config() -> Dict[str, Any]:
+  """Loads the user full configs from gcloud.
+
+  The result is cached to avoid multiple calls to gcloud.
+
+  Returns:
+    A dictionary containing the full gcloud configuration.
+  """
   global _config_cache
   if _config_cache is not None:
     logging.info('Using cached gcloud config')
@@ -164,6 +170,17 @@ def load_config() -> Dict[str, Dict[str, str]]:
         ['config', 'config-helper', '--format=json'], stderr=subprocess.PIPE
     )
     out, err = process.communicate()
+
+    if process.returncode != 0:
+      # Retry interactively to allow reauthentication prompts if needed.
+      retry_process = gcloud_runner.run_gcloud_command(
+          ['config', 'config-helper', '--format=json'], stderr=None
+      )
+      retry_out, retry_err = retry_process.communicate()
+      if retry_process.returncode == 0:
+        process = retry_process
+        out = retry_out
+        err = retry_err
   except FileNotFoundError as e:
     # TODO: b/365836272 - Catch gcloud-not-found error in gcloud_runner.
     logging.warning(
@@ -186,7 +203,7 @@ def load_config() -> Dict[str, Dict[str, str]]:
 
   try:
     full_config = json.loads(out)
-    _config_cache = full_config.get('configuration', {}).get('properties', {})
+    _config_cache = full_config
   except json.JSONDecodeError as e:
     logging.warning(
         'Continuing with empty gcloud config data due to invalid config'
@@ -194,3 +211,15 @@ def load_config() -> Dict[str, Dict[str, str]]:
         e,
     )
   return _config_cache
+
+
+def load_config() -> Dict[str, Dict[str, str]]:
+  """Loads the user configs from gcloud and returns them as a dictionary."""
+  full_config = load_full_config()
+  return full_config.get('configuration', {}).get('properties', {})
+
+
+def load_access_token() -> Optional[str]:
+  """Loads the access token from gcloud."""
+  full_config = load_full_config()
+  return full_config.get('credential', {}).get('access_token')

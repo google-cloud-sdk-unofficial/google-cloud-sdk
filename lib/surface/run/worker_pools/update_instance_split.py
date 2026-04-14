@@ -14,6 +14,7 @@
 # limitations under the License.
 """Command for updating instances split for worker-pool resource."""
 
+from google.api_core import exceptions as gapic_exceptions
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import exceptions as serverless_exceptions
@@ -28,6 +29,7 @@ from googlecloudsdk.command_lib.run.v2 import instance_split
 from googlecloudsdk.command_lib.run.v2 import worker_pools_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.resource import resource_printer
 
@@ -146,5 +148,8 @@ class AdjustInstanceSplit(base.Command):
       if args.async_:
         pretty_print.Success('Updating instance split asynchronously.')
       else:
-        response.result()  # Wait for the operation to complete.
+        try:
+          response.result()  # Wait for the operation to complete.
+        except gapic_exceptions.GoogleAPICallError as e:
+          core_exceptions.reraise(core_exceptions.Error(str(e)))
         return instance_split.GetInstanceSplitPairs(response.metadata)

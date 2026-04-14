@@ -29,6 +29,8 @@ from googlecloudsdk.command_lib.storage.tasks import task_graph_executor
 class Delete(base.Command):
   """Delete managed folders."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION': """Delete managed folders.""",
       'EXAMPLES': """

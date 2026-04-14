@@ -108,12 +108,14 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
                     api_adapter.RAYOPERATOR: _ParseAddonDisabled,
                     api_adapter.SLURMOPERATOR: _ParseAddonDisabled,
+                    api_adapter.KUEUE: _ParseAddonDisabled,
                 },
                 **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS}
             ),
         ),
         dest='disable_addons',
         metavar='ADDON=ENABLED|DISABLED',
+        # TODO: b/482020381 - Add KUEUE once it is GA.
         help="""Cluster addons to enable or disable. Options are
 {hpa}=ENABLED|DISABLED
 {ingress}=ENABLED|DISABLED
@@ -168,12 +170,14 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
                     api_adapter.RAYOPERATOR: _ParseAddonDisabled,
                     api_adapter.SLURMOPERATOR: _ParseAddonDisabled,
+                    api_adapter.KUEUE: _ParseAddonDisabled,
                 },
                 **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS}
             ),
         ),
         dest='disable_addons',
         metavar='ADDON=ENABLED|DISABLED',
+        # TODO: b/482020381 - Add KUEUE once it is GA.
         help="""Cluster addons to enable or disable. Options are
 {hpa}=ENABLED|DISABLED
 {ingress}=ENABLED|DISABLED
@@ -224,12 +228,14 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.LUSTRECSIDRIVER: _ParseAddonDisabled,
                     api_adapter.RAYOPERATOR: _ParseAddonDisabled,
                     api_adapter.SLURMOPERATOR: _ParseAddonDisabled,
+                    api_adapter.KUEUE: _ParseAddonDisabled,
                 },
                 **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS}
             ),
         ),
         dest='disable_addons',
         metavar='ADDON=ENABLED|DISABLED',
+        # TODO: b/482020381 - Add KUEUE once it is GA.
         help="""Cluster addons to enable or disable. Options are
 {hpa}=ENABLED|DISABLED
 {ingress}=ENABLED|DISABLED
@@ -441,6 +447,7 @@ class Update(base.UpdateCommand):
     flags.AddAutoprovisioningCgroupModeFlag(group)
     flags.AddEnableAutopilotCompatibilityAuditingFlag(group)
     flags.AddAnonymousAuthenticationConfigFlag(group)
+    flags.AddNodeCreationModeFlag(group)
 
     group_for_control_plane_endpoints = group.add_group()
     flags.AddMasterAuthorizedNetworksFlags(group_for_control_plane_endpoints)
@@ -467,6 +474,7 @@ class Update(base.UpdateCommand):
     flags.AddAutopilotPrivilegedAdmissionFlag(group)
     flags.AddEnableKernelModuleSignatureEnforcementFlag(group)
     flags.AddEnableSliceControllerFlag(group, hidden=True)
+    flags.AddDataplaneV2Flag(group, hidden=True, is_update=True)
     flags.AddAutopilotGeneralProfileFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
@@ -628,6 +636,7 @@ class Update(base.UpdateCommand):
         args.control_plane_disk_encryption_key
     )
     opts.anonymous_authentication_config = args.anonymous_authentication_config
+    opts.node_creation_mode = args.node_creation_mode
     opts.patch_update = args.patch_update
     opts.enable_auto_ipam = args.enable_auto_ipam
     opts.disable_auto_ipam = args.disable_auto_ipam
@@ -646,6 +655,7 @@ class Update(base.UpdateCommand):
         args.enable_kernel_module_signature_enforcement
     )
     opts.enable_slice_controller = args.enable_slice_controller
+    opts.dataplane_v2 = args.enable_dataplane_v2
     opts.autopilot_general_profile = args.autopilot_general_profile
     opts.enable_agent_sandbox = getattr(args, 'enable_agent_sandbox', None)
     return opts
@@ -1075,6 +1085,14 @@ to completion."""
         )
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif getattr(args, 'node_creation_mode', None) is not None:
+      try:
+        op_ref = adapter.ModifyNodeCreationMode(
+            cluster_ref,
+            args.node_creation_mode,
+        )
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     elif getattr(args, 'control_plane_egress', None) is not None:
       try:
         op_ref = adapter.ModifyControlPlaneEgress(
@@ -1266,7 +1284,7 @@ class UpdateBeta(Update):
     flags.AddAutoprovisioningNetworkTagsUpdate(group)
     flags.AddEnableImageStreamingFlag(group)
     flags.AddMaintenanceIntervalFlag(group)
-    flags.AddDataplaneV2Flag(group, hidden=True)
+    flags.AddDataplaneV2Flag(group, hidden=True, is_update=True)
     group_dataplane_v2_observability = group.add_group()
     flags.AddDataplaneV2MetricsFlag(group_dataplane_v2_observability)
     flags.AddDataplaneV2ObservabilityFlags(group_dataplane_v2_observability)
@@ -1323,6 +1341,7 @@ class UpdateBeta(Update):
     flags.AddAutoprovisioningCgroupModeFlag(group)
     flags.AddEnableAutopilotCompatibilityAuditingFlag(group)
     flags.AddAnonymousAuthenticationConfigFlag(group)
+    flags.AddNodeCreationModeFlag(group)
 
     group_for_control_plane_endpoints = group.add_group()
     flags.AddMasterAuthorizedNetworksFlags(group_for_control_plane_endpoints)
@@ -1570,6 +1589,7 @@ class UpdateBeta(Update):
         args.control_plane_disk_encryption_key
     )
     opts.anonymous_authentication_config = args.anonymous_authentication_config
+    opts.node_creation_mode = args.node_creation_mode
     opts.patch_update = args.patch_update
     opts.enable_auto_ipam = args.enable_auto_ipam
     opts.disable_auto_ipam = args.disable_auto_ipam
@@ -1677,7 +1697,7 @@ class UpdateAlpha(Update):
     flags.AddAutoprovisioningNetworkTagsUpdate(group)
     flags.AddEnableImageStreamingFlag(group)
     flags.AddMaintenanceIntervalFlag(group)
-    flags.AddDataplaneV2Flag(group, hidden=True)
+    flags.AddDataplaneV2Flag(group, hidden=True, is_update=True)
     group_dataplane_v2_observability = group.add_group()
     flags.AddDataplaneV2MetricsFlag(group_dataplane_v2_observability)
     flags.AddDataplaneV2ObservabilityFlags(group_dataplane_v2_observability)
@@ -1733,6 +1753,7 @@ class UpdateAlpha(Update):
     flags.AddAutoprovisioningCgroupModeFlag(group)
     flags.AddEnableAutopilotCompatibilityAuditingFlag(group)
     flags.AddAnonymousAuthenticationConfigFlag(group)
+    flags.AddNodeCreationModeFlag(group)
 
     group_for_control_plane_endpoints = group.add_group()
     flags.AddMasterAuthorizedNetworksFlags(group_for_control_plane_endpoints)
@@ -1976,6 +1997,7 @@ class UpdateAlpha(Update):
         args.control_plane_disk_encryption_key
     )
     opts.anonymous_authentication_config = args.anonymous_authentication_config
+    opts.node_creation_mode = args.node_creation_mode
     opts.patch_update = args.patch_update
     opts.enable_auto_ipam = args.enable_auto_ipam
     opts.disable_auto_ipam = args.disable_auto_ipam

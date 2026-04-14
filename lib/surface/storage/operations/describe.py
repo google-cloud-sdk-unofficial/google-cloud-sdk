@@ -25,6 +25,8 @@ from googlecloudsdk.command_lib.storage import storage_url
 class Describe(base.DescribeCommand):
   """Get configuration and latest storage operation details."""
 
+  hints = base.CommandHint(read_only=True)
+
   detailed_help = {
       'DESCRIPTION': """\
       Get details about a specific storage operation.

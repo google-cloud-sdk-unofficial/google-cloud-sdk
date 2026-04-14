@@ -3663,7 +3663,7 @@ def AddClearEntraIdConfig(parser, hidden=False):
       '--clear-entra-id-config',
       action='store_true',
       hidden=hidden,
-      help="""Clear the Entra ID config for the SQL Server instance.""",
+      help="""Clears the Entra ID config for the SQL Server instance.""",
   )
 
 

@@ -18,12 +18,13 @@ import os
 import pathlib
 import re
 from typing import Any, Dict, Optional
-
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.util import apis
-from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.api_lib.util import exceptions as api_exceptions
 from googlecloudsdk.command_lib.orchestration_pipelines import deployment_model
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
+from googlecloudsdk.core import resources
 from googlecloudsdk.core import yaml
 from googlecloudsdk.core.util import files
 
@@ -37,6 +38,12 @@ RESOURCES_KEY = "resources"
 
 class BadFileError(exceptions.Error):
   """Raised when the file is not valid."""
+
+  pass
+
+
+class InvalidPathError(exceptions.Error):
+  """Raised when a path in the pipeline configuration is invalid."""
 
   pass
 
@@ -108,7 +115,7 @@ def _resolve_resource_profile(
   if not isinstance(resource_profile, dict):
     return resource_profile
 
-  if "inline" in resource_profile:
+  if "inline" in resource_profile or "external_config_path" in resource_profile:
     return resource_profile  # Leave it completely intact
   elif "path" in resource_profile:
     try:
@@ -341,7 +348,7 @@ def _build_orchestration_pipelines_model(resolved_pipeline: Dict[str, Any]):
   validation.
 
   Args:
-    resolved_pipeline: The parsed YAML content of the pipeline.
+    resolved_pipeline: The resolved pipeline definition as a dictionary.
 
   Raises:
     exceptions.Error: If the pipeline definition fails to build against the
@@ -371,8 +378,38 @@ def _build_orchestration_pipelines_model(resolved_pipeline: Dict[str, Any]):
     raise exceptions.Error(f"{error_message_prefix}{error_message}") from e
 
 
+def _extract_paths_from_nested_data(data: Any) -> list[str]:
+  """Recursively extracts string values where the key ends with 'path'.
+
+  Excludes fields under 'job' keys.
+
+  Args:
+    data: The dictionary or list to search within.
+
+  Returns:
+    A list of strings, each representing a path.
+  """
+  values = []
+  if isinstance(data, dict):
+    for k, v in data.items():
+      # Exclude fields under 'job' keys(usually under dataproc actions) as
+      # they may include fields with "path" that are not relevant to the
+      # actual file paths used in the pipeline.
+      if k == "job":
+        continue
+      if isinstance(k, str) and (k.lower().endswith("path")):
+        if isinstance(v, str):
+          values.append(v)
+      elif isinstance(v, (dict, list)):
+        values.extend(_extract_paths_from_nested_data(v))
+  elif isinstance(data, list):
+    for item in data:
+      values.extend(_extract_paths_from_nested_data(item))
+  return values
+
+
 def _extract_nested_errors(exc: BaseException, path: str = "$") -> list[str]:
-  """Recursively transforms validation exceptions into formatted error messages.
+  """Recursively transforms ExceptionGroup errors into formatted messages.
 
   If the exception contains nested exceptions (i.e., has an `exceptions`
   attribute), it traverses them to build a list of all errors. It uses
@@ -425,6 +462,262 @@ def _extract_nested_errors(exc: BaseException, path: str = "$") -> list[str]:
     else:
       errors.append(f"{path}: {str(subexc)}")
   return errors
+
+
+def _validate_gcp_project(project_id: str, pipeline_path: str):
+  """Validates that a GCP project exists and is accessible.
+
+  Checks if the provided `project_id` exists and if the current account has
+  permissions to access it.
+
+  Args:
+    project_id: The GCP project ID to validate.
+    pipeline_path: The relative path to the pipeline file for error messages.
+
+  Raises:
+    ValueError: If the project ID is missing.
+    api_exceptions.HttpException: If the project is not found, inaccessible,
+      or invalid, or for other HTTP errors during validation.
+  """
+  crm_version = apis.ResolveVersion("cloudresourcemanager")
+  crm_message_module = apis.GetMessagesModule(
+      "cloudresourcemanager", crm_version
+  )
+  resource_manager = apis.GetClientInstance("cloudresourcemanager", crm_version)
+  if project_id:
+    try:
+      resource_manager.projects.Get(
+          crm_message_module.CloudresourcemanagerProjectsGetRequest(
+              projectId=project_id
+          )
+      )
+    except apitools_exceptions.HttpForbiddenError as e:
+      raise api_exceptions.HttpException(
+          e,
+          error_format=(
+              f'Permission denied when checking GCP project "{project_id}" from'
+              f' pipeline "{pipeline_path}". Please ensure your account has'
+              " necessary permissions and the project exists."
+          ),
+      )
+    except apitools_exceptions.HttpBadRequestError as e:
+      raise api_exceptions.HttpException(
+          e,
+          error_format=(
+              f'GCP project "{project_id}" from pipeline "{pipeline_path}" is'
+              " invalid."
+          ),
+      )
+    except apitools_exceptions.HttpError as e:
+      raise api_exceptions.HttpException(
+          e, error_format="Failed to check GCP project: {message}"
+      )
+  else:
+    raise ValueError(
+        f"No project ID is found for pipeline '{pipeline_path}'."
+    )
+
+
+def _validate_paths_in_pipeline(
+    bundle_dir: pathlib.Path,
+    pipeline_path: str,
+    path_str: str,
+):
+  """Validates a path fields from a pipeline definition, checking for existence.
+
+  Checks GCS object paths via API and local paths relative to the bundle
+  directory.
+
+  Args:
+    bundle_dir: The directory where the pipeline bundle is located.
+    pipeline_path: The relative path to the pipeline configuration.
+    path_str: The path string to validate.
+
+  Raises:
+    InvalidPathError: If path_str is an invalid format, or points to a
+      non-existent local or GCS resource.
+    api_exceptions.HttpException: If permissions are insufficient during GCS
+      path validation or for other HTTP errors.
+  """
+  if path_str.startswith("gs://"):
+    version = apis.ResolveVersion("storage")
+    client = apis.GetClientInstance("storage", version)
+    messages = apis.GetMessagesModule("storage", version)
+    storage_resource = None
+    try:
+      storage_resource = resources.REGISTRY.ParseStorageURL(path_str)
+    except resources.WrongResourceCollectionException as e:
+      raise InvalidPathError(
+          f"Invalid GCS path in pipeline '{pipeline_path}': {path_str} - {e}"
+      ) from e
+
+    try:
+      if not storage_resource.object:
+        raise InvalidPathError(
+            f"GCS path in pipeline '{pipeline_path}' appears to point to"
+            f" a bucket '{path_str}' but an object path was expected."
+        )
+      client.objects.Get(
+          messages.StorageObjectsGetRequest(
+              bucket=storage_resource.bucket, object=storage_resource.object
+          )
+      )
+    except apitools_exceptions.HttpForbiddenError as e:
+      raise api_exceptions.HttpException(
+          e,
+          error_format=(
+              f'Permission denied when checking GCS path "{path_str}" in'
+              f' pipeline "{pipeline_path}". Please ensure your account has'
+              " necessary permissions."
+          ),
+      )
+    except apitools_exceptions.HttpNotFoundError as e:
+      raise api_exceptions.HttpException(
+          e,
+          error_format=(
+              f'GCS path "{path_str}" from pipeline "{pipeline_path}" does'
+              " not exist."
+          ),
+      )
+    except apitools_exceptions.HttpBadRequestError as e:
+      raise api_exceptions.HttpException(
+          e,
+          error_format=(
+              f'GCS path "{path_str}" from pipeline "{pipeline_path}" is'
+              " invalid."
+          ),
+      )
+    except apitools_exceptions.HttpError as e:
+      raise api_exceptions.HttpException(
+          e, error_format="Failed to check GCS path: {message}"
+      )
+  elif not path_str.startswith(("http://", "https://", "/")):
+    candidate_path = bundle_dir / path_str
+    if not candidate_path.exists():
+      raise InvalidPathError(
+          f"In pipeline '{pipeline_path}', path '{path_str}' does not "
+          f"exist relative to bundle directory: {candidate_path}"
+      )
+  else:
+    raise InvalidPathError(
+        f"Invalid path in pipeline '{pipeline_path}': {path_str}"
+    )
+
+
+def _validate_composer_environment(
+    composer_environment_resource_name: str, pipeline_path: str
+):
+  """Validates that a Composer environment exists.
+
+  Args:
+    composer_environment_resource_name: The Composer environment resource name
+      to validate.
+    pipeline_path: The relative path to the pipeline file for error messages.
+
+  Raises:
+    api_exceptions.HttpException: If the Composer environment is not found,
+      inaccessible, or invalid, or for other HTTP errors during validation.
+  """
+  version = apis.ResolveVersion("composer")
+  composer_message_module = apis.GetMessagesModule("composer", version)
+  composer = apis.GetClientInstance("composer", version)
+  try:
+    composer.projects_locations_environments.Get(
+        composer_message_module.ComposerProjectsLocationsEnvironmentsGetRequest(
+            name=composer_environment_resource_name
+        )
+    )
+  except apitools_exceptions.HttpForbiddenError as e:
+    raise api_exceptions.HttpException(
+        e,
+        error_format=(
+            "Permission denied when checking Composer environment"
+            f' "{composer_environment_resource_name}" from pipeline'
+            f' "{pipeline_path}". Please ensure your account has necessary'
+            " permissions and the Composer environment exists."
+        ),
+    )
+  except apitools_exceptions.HttpNotFoundError as e:
+    raise api_exceptions.HttpException(
+        e,
+        error_format=(
+            f'Composer environment "{composer_environment_resource_name}"'
+            f' from pipeline "{pipeline_path}" does not exist.'
+        ),
+    )
+  except apitools_exceptions.HttpBadRequestError as e:
+    raise api_exceptions.HttpException(
+        e,
+        error_format=(
+            f'Composer environment "{composer_environment_resource_name}"'
+            f' from pipeline "{pipeline_path}" is invalid.'
+        ),
+    )
+  except apitools_exceptions.HttpError as e:
+    raise api_exceptions.HttpException(
+        e, error_format="Failed to check Composer environment: {message}"
+    )
+
+
+def _validate_dataproc_cluster(
+    cluster_name: str,
+    region: str,
+    project_id: str,
+    action_name: str,
+    pipeline_path: str,
+):
+  """Validates that a Dataproc cluster exists.
+
+  Args:
+    cluster_name: The Dataproc cluster name to validate.
+    region: The region of the cluster.
+    project_id: The project ID of the cluster.
+    action_name: The name of the action for error messages.
+    pipeline_path: The relative path to the pipeline file for error messages.
+
+  Raises:
+    api_exceptions.HttpException: If the Dataproc cluster is not found,
+      inaccessible, or invalid, or for other HTTP errors during validation.
+  """
+  version = apis.ResolveVersion("dataproc")
+  dataproc_message_module = apis.GetMessagesModule("dataproc", version)
+  dataproc = apis.GetClientInstance("dataproc", version)
+  try:
+    dataproc.projects_regions_clusters.Get(
+        dataproc_message_module.DataprocProjectsRegionsClustersGetRequest(
+            clusterName=cluster_name, region=region, projectId=project_id
+        )
+    )
+  except apitools_exceptions.HttpForbiddenError as e:
+    raise api_exceptions.HttpException(
+        e,
+        error_format=(
+            "Permission denied when checking Dataproc cluster"
+            f' "{cluster_name}" from pipeline "{pipeline_path}" and action'
+            f' "{action_name}". Please ensure'
+            " your account has necessary permissions and the cluster exists."
+        ),
+    )
+  except apitools_exceptions.HttpNotFoundError as e:
+    raise api_exceptions.HttpException(
+        e,
+        error_format=(
+            f'Dataproc cluster "{cluster_name}" from pipeline'
+            f' "{pipeline_path}" and action "{action_name}" does not exist.'
+        ),
+    )
+  except apitools_exceptions.HttpBadRequestError as e:
+    raise api_exceptions.HttpException(
+        e,
+        error_format=(
+            f'Dataproc cluster "{cluster_name}" from pipeline'
+            f' "{pipeline_path}" and action "{action_name}" is invalid.'
+        ),
+    )
+  except apitools_exceptions.HttpError as e:
+    raise api_exceptions.HttpException(
+        e, error_format="Failed to check Dataproc cluster: {message}"
+    )
 
 
 def resolve_string_templates(yaml_content, variables):
@@ -641,20 +934,32 @@ def collect_environment_variables() -> dict[str, str]:
 
 def validate_pipeline_l1(
     bundle_dir: pathlib.Path,
-    environment: deployment_model.EnvironmentModel,
+    pipeline_paths: list[str],
     combined_variables: Dict[str, Any] = None,
 ) -> None:
-  """Syntax validation(L1) for the orchestration pipeline configuration."""
+  """Performs L1 validation for all pipelines in an environment.
 
-  for pipeline in environment.pipelines:
-    pipeline_path = bundle_dir / pipeline.source
+  L1 validation includes syntax checking, variable substitution, and
+  validation against the orchestration pipelines data model.
+
+  Args:
+    bundle_dir: The directory where pipeline bundles are located.
+    pipeline_paths: The list of pipeline file paths to validate.
+    combined_variables: Dictionary of variables for template substitution.
+
+  Raises:
+    BadFileError: If a pipeline file cannot be read or parsed, or if variable
+    substitution fails.
+    exceptions.Error: If model validation fails.
+  """
+
+  for pipeline_path in pipeline_paths:
+    full_pipeline_path = bundle_dir / pipeline_path
 
     try:
-      yaml_content = files.ReadFileContents(pipeline_path)
+      yaml_content = files.ReadFileContents(full_pipeline_path)
     except files.Error as e:
-      raise calliope_exceptions.BadFileException(
-          f"Error reading {pipeline_path.name}: {e}"
-      ) from e
+      raise BadFileError(f"Error reading {full_pipeline_path}: {e}") from e
 
     resolved_yaml_content = resolve_string_templates(
         yaml_content, combined_variables
@@ -662,11 +967,120 @@ def validate_pipeline_l1(
     check_for_missing_variables(resolved_yaml_content)
 
     try:
-      resolved_yaml_content = yaml.load(resolved_yaml_content)
+      resolved_pipeline = yaml.load(resolved_yaml_content)
     except yaml.Error as e:
-      raise calliope_exceptions.BadFileException(
+      raise BadFileError(
           f"Failed to parse pipeline YAML after variable substitution: {e}"
       ) from e
 
-    _build_orchestration_pipelines_model(resolved_yaml_content)
-    log.status.Print(f"Successfully validated pipeline {pipeline.source}.")
+    _build_orchestration_pipelines_model(resolved_pipeline)
+
+
+def _validate_single_pipeline(
+    pipeline_path: str,
+    bundle_dir: pathlib.Path,
+    combined_variables: Dict[str, Any],
+    environment: deployment_model.EnvironmentModel,
+) -> None:
+  """Performs L2 semantic validation for a single orchestration pipeline.
+
+  L2 validation includes checks requiring external calls, such as verifying
+  GCP project existence and path (local or GCS) validity.
+
+  Args:
+    pipeline_path: The path to the pipeline to validate.
+    bundle_dir: The directory where pipeline bundles are located.
+    combined_variables: Dictionary of variables for template substitution.
+    environment: The deployment_model.EnvironmentModel object.
+
+  Raises:
+    BadFileError: If a pipeline file cannot be read or parsed, or if variable
+      substitution fails.
+    InvalidPathError: If any path in the pipeline is invalid.
+    api_exceptions.HttpException: If GCP project or GCS path validation fails
+      due to API errors.
+  """
+  pipeline_path = bundle_dir / pipeline_path
+
+  try:
+    yaml_content = files.ReadFileContents(pipeline_path)
+  except files.Error as e:
+    raise BadFileError(f"Error reading {pipeline_path.name}: {e}") from e
+
+  resolved_yaml_content = resolve_string_templates(
+      yaml_content, combined_variables
+  )
+  check_for_missing_variables(resolved_yaml_content)
+
+  try:
+    resolved_pipeline = yaml.load(resolved_yaml_content)
+  except yaml.Error as e:
+    raise BadFileError(
+        f"Failed to parse pipeline YAML after variable substitution: {e}"
+    ) from e
+
+  project = resolved_pipeline.get("defaults", {}).get(
+      "project_id"
+  ) or resolved_pipeline.get("defaults", {}).get("projectId")
+  region = resolved_pipeline.get("defaults", {}).get("location")
+  # Check if GCP project exists
+  _validate_gcp_project(project, pipeline_path)
+
+  # Check if all 'path' fields refer to existing resources.
+  all_paths_in_pipeline = _extract_paths_from_nested_data(resolved_pipeline)
+  for path_str in all_paths_in_pipeline:
+    _validate_paths_in_pipeline(bundle_dir, pipeline_path, path_str)
+
+  # Check if Composer environment exists
+  if environment:
+    if not environment.composer_environment:
+      raise BadFileError(
+          "Composer environment name is not set in deployment file."
+      )
+    composer_environment_resource_name = f"projects/{environment.project}/locations/{environment.region}/environments/{environment.composer_environment}"
+    _validate_composer_environment(
+        composer_environment_resource_name, pipeline_path
+    )
+
+  # Check if specified Dataproc cluster exists
+  for action in resolved_pipeline.get("actions", []):
+    pyspark_action = action.get("pyspark")
+    if pyspark_action:
+      existing_cluster = (
+          pyspark_action.get("engine", {})
+          .get("dataprocOnGce", {})
+          .get("existingCluster", {})
+      )
+      cluster_region = existing_cluster.get("location") or region
+      cluster_project = existing_cluster.get("projectId") or project
+      if not cluster_region:
+        raise BadFileError(
+            "Region is not set in Dataproc cluster config or pipeline defaults."
+        )
+      if not cluster_project:
+        raise BadFileError(
+            "Project is not set in Dataproc cluster config or pipeline"
+            " defaults."
+        )
+      if existing_cluster:
+        _validate_dataproc_cluster(
+            existing_cluster.get("clusterName"),
+            cluster_region,
+            cluster_project,
+            pyspark_action.get("name"),
+            pipeline_path,
+        )
+
+
+def validate_pipeline_l2(
+    bundle_dir: pathlib.Path,
+    pipeline_paths: list[str],
+    combined_variables: Dict[str, Any] = None,
+    environment: deployment_model.EnvironmentModel = None,
+) -> None:
+  """Performs L2 validation for all pipelines in the deployment environment."""
+
+  for pipeline_path in pipeline_paths:
+    _validate_single_pipeline(
+        pipeline_path, bundle_dir, combined_variables, environment
+    )

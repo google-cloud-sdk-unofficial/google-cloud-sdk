@@ -54,6 +54,8 @@ def _range_parser(string_value):
 class Cat(base.Command):
   """Outputs the contents of one or more URLs to stdout."""
 
+  hints = base.CommandHint(read_only=True)
+
   detailed_help = {
       'DESCRIPTION':
           """

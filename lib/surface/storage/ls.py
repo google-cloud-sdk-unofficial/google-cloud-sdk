@@ -98,6 +98,8 @@ _ALPHA_EXAMPLES = """
 class Ls(base.Command):
   """List Cloud Storage buckets and objects."""
 
+  hints = base.CommandHint(read_only=True)
+
   # pylint:disable=g-backslash-continuation
   detailed_help = {
       'DESCRIPTION': _COMMAND_DESCRIPTION,

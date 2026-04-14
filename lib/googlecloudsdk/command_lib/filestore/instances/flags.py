@@ -730,6 +730,12 @@ unspecified, it is assumed that the backup is in the same project where the
 instance is to be created.
 
 """
+  source_backupdr_backup_help = """\
+*source-backupdr-backup*::: (Optional) The resource name of the backup, in the
+format projects/{project_id}/locations/{location_id}/backupVaults/{backupvault_id}/dataSources/{datasource_id}/backups/{backup_id},
+that this file share has been restored from.
+
+"""
 
   spec = FILE_SHARE_ARG_SPEC.copy()
   if include_backup_flags:
@@ -755,7 +761,8 @@ instance is to be created.
         required=required,
         help=file_share_help
         + (source_snapshot_help if include_snapshot_flags else '')
-        + (source_backup_help if include_backup_flags else ''),
+        + (source_backup_help if include_backup_flags else '')
+        + (source_backupdr_backup_help if include_backupdr_flags else ''),
     )
   else:
     parser.add_argument(
@@ -764,7 +771,9 @@ instance is to be created.
         required=required,
         help=file_share_help
         + (source_snapshot_help if include_snapshot_flags else '')
-        + (source_backup_help if include_backup_flags else ''),
+        + (source_backup_help if include_backup_flags else '')
+        + (source_backupdr_backup_help if include_backupdr_flags else ''),
+
     )
 
 

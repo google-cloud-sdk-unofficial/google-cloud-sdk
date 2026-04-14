@@ -27,6 +27,8 @@ from googlecloudsdk.command_lib.storage.tasks.buckets.anywhere_caches import res
 class Resume(base.Command):
   """Resume Anywhere Cache instances."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION': """
 

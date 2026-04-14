@@ -62,6 +62,7 @@ class ComputeAlpha(base_api.BaseApiClient):
     self.globalVmExtensionPolicies = self.GlobalVmExtensionPoliciesService(self)
     self.haControllers = self.HaControllersService(self)
     self.healthChecks = self.HealthChecksService(self)
+    self.hosts = self.HostsService(self)
     self.httpHealthChecks = self.HttpHealthChecksService(self)
     self.httpsHealthChecks = self.HttpsHealthChecksService(self)
     self.imageFamilyViews = self.ImageFamilyViewsService(self)
@@ -5813,6 +5814,94 @@ included in the request.
         request_field='healthCheckResource',
         request_type_name='ComputeHealthChecksUpdateRequest',
         response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class HostsService(base_api.BaseApiService):
+    """Service class for the hosts resource."""
+
+    _NAME = 'hosts'
+
+    def __init__(self, client):
+      super(ComputeAlpha.HostsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Retrieves information about the specified host.
+
+      Args:
+        request: (ComputeHostsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Host) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.hosts.get',
+        ordered_params=['project', 'zone', 'association', 'host'],
+        path_params=['association', 'host', 'project', 'zone'],
+        query_params=[],
+        relative_path='projects/{project}/zones/{zone}/{association}/hosts/{host}',
+        request_field='',
+        request_type_name='ComputeHostsGetRequest',
+        response_type_name='Host',
+        supports_download=False,
+    )
+
+    def GetVersion(self, request, global_params=None):
+      r"""Allows customers to get SBOM versions of a host.
+
+      Args:
+        request: (ComputeHostsGetVersionRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('GetVersion')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetVersion.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.hosts.getVersion',
+        ordered_params=['project', 'zone', 'association', 'host'],
+        path_params=['association', 'host', 'project', 'zone'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/zones/{zone}/{association}/hosts/{host}/getVersion',
+        request_field='hostsGetVersionRequest',
+        request_type_name='ComputeHostsGetVersionRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Retrieves a list of hosts.
+
+      Args:
+        request: (ComputeHostsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (HostsListResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.hosts.list',
+        ordered_params=['project', 'zone', 'association'],
+        path_params=['association', 'project', 'zone'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
+        relative_path='projects/{project}/zones/{zone}/{association}/hosts',
+        request_field='',
+        request_type_name='ComputeHostsListRequest',
+        response_type_name='HostsListResponse',
         supports_download=False,
     )
 
@@ -15394,7 +15483,7 @@ instead.
         method_id='compute.organizationSnapshotRecycleBinPolicy.patch',
         ordered_params=['organization'],
         path_params=['organization'],
-        query_params=['requestId', 'updateMask'],
+        query_params=['requestId'],
         relative_path='{+organization}/global/snapshotRecycleBinPolicy',
         request_field='snapshotRecycleBinPolicy',
         request_type_name='ComputeOrganizationSnapshotRecycleBinPolicyPatchRequest',
@@ -26213,6 +26302,32 @@ Replaces any existing policy.
         supports_download=False,
     )
 
+    def StartNextWave(self, request, global_params=None):
+      r"""Starts the next wave of a Rollout.
+
+      Args:
+        request: (ComputeRolloutsStartNextWaveRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('StartNextWave')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    StartNextWave.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.rollouts.startNextWave',
+        ordered_params=['project', 'rollout'],
+        path_params=['project', 'rollout'],
+        query_params=['requestId', 'waveNumber'],
+        relative_path='projects/{project}/global/rollouts/{rollout}/startNextWave',
+        request_field='',
+        request_type_name='ComputeRolloutsStartNextWaveRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class RoutersService(base_api.BaseApiService):
     """Service class for the routers resource."""
 
@@ -27840,7 +27955,7 @@ Replaces any existing policy.
         method_id='compute.snapshotRecycleBinPolicy.patch',
         ordered_params=['project'],
         path_params=['project'],
-        query_params=['requestId', 'updateMask'],
+        query_params=['requestId'],
         relative_path='projects/{project}/global/snapshotRecycleBinPolicy',
         request_field='snapshotRecycleBinPolicy',
         request_type_name='ComputeSnapshotRecycleBinPolicyPatchRequest',

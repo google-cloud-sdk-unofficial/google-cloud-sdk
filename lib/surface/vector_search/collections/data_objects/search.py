@@ -107,13 +107,14 @@ class Search(base.Command):
     use_index_group = search_hint_group.add_group('Use Index Options')
     use_index_group.add_argument(
         '--use-index',
-        metavar='INDEX_NAME',
+        metavar='INDEX',
         required=True,
-        help="""
-        The resource name of the index to use for the search.
-
-        This flag is compatible only with Semantic Search and Vector Search.
-        """,
+        help=(
+            """
+            Full resource name or ID of the index to use for the search.
+            This flag is compatible only with Semantic Search and Vector Search.
+            """
+        ),
     )
     if cls.ReleaseTrack() == base.ReleaseTrack.BETA:
       use_index_group.add_argument(
@@ -136,9 +137,9 @@ class Search(base.Command):
         '--use-knn',
         action='store_true',
         help=(
-            """If set to true, the search will use the system's default K-Nearest
+            """
+            If set to true, the search will use the system's default K-Nearest
             Neighbor (KNN) index engine.
-
             This flag is compatible only with Semantic Search and Vector Search.
             """
         ),
@@ -182,7 +183,9 @@ class Search(base.Command):
         required=True,
         help="""Path to a JSON file containing dense or sparse vector to search with.
 
-Example file content for dense vector:
+* Example file content for dense vector:
+
+```
 {
   "dense": {
     "values": [
@@ -193,14 +196,19 @@ Example file content for dense vector:
     ]
   }
 }
+```
 
-Example file content for sparse vector:
+* Example file content for sparse vector:
+
+```
 {
   "sparse": {
     "indices": [1, 5, 10],
     "values": [0.1, 0.5, 0.21]
   }
-}""",
+}
+```
+""",
     )
     vector_search_group.add_argument(
         '--distance-metric',
@@ -234,11 +242,17 @@ Example file content for sparse vector:
       return common_args.ParseOutputFields(args, client)
     return None
 
-  def _GetSearchHint(self, args, client):
+  def _GetSearchHint(self, args, client, parent):
     if args.use_index:
+      # if this is not full resource name, add parent path to the index name
+      index_name = args.use_index
+      if '/' not in index_name:
+        index_name = '{}/indexes/{}'.format(
+            parent, index_name
+        )
       index_hint_msg = (
           client.GetMessage('SearchHint.IndexHint')(
-              name=args.use_index
+              name=index_name
           )
       )
       if self.ReleaseTrack() == base.ReleaseTrack.BETA and (
@@ -419,7 +433,7 @@ Example file content for sparse vector:
     search_request_body = client.GetMessage('SearchDataObjectsRequest')()
 
     output_fields = self._GetOutputFields(args, client)
-    search_hint = self._GetSearchHint(args, client)
+    search_hint = self._GetSearchHint(args, client, parent)
     filter_dict = self._GetFilterDict(args)
 
     if (

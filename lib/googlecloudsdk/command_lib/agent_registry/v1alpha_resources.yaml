@@ -42,6 +42,18 @@ projects_locations_agents:
     attribute_name: agent
     help: The agent id of the {resource} resource.
   disable_auto_completers: false
+projects_locations_bindings:
+  name: binding
+  plural_name: bindings
+  collection: agentregistry.projects.locations.bindings
+  attributes:
+  - *project
+  - *location
+  - &binding
+    parameter_name: bindingsId
+    attribute_name: binding
+    help: The binding id of the {resource} resource.
+  disable_auto_completers: false
 projects_locations_endpoints:
   name: endpoint
   plural_name: endpoints

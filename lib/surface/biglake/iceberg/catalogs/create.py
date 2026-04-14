@@ -21,6 +21,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.biglake import arguments
 from googlecloudsdk.command_lib.biglake import flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core.util import times
 
 help_text = textwrap.dedent("""\
     To add a catalog using a Cloud Storage bucket `my-catalog-bucket`, run:
@@ -33,7 +34,39 @@ help_text = textwrap.dedent("""\
     """)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+def _BuildFederatedCatalogMessage(args, messages):
+  """Builds FederatedCatalogMessage for federated catalogs."""
+  if args.federated_catalog_type == 'unity':
+    federated_catalog_options = messages.FederatedCatalogOptions(
+        service_directory_name=args.service_directory_name,
+        secret_name=args.secret_name,
+        unity_catalog_info=messages.UnityCatalogInfo(
+            instance_name=args.unity_instance_name,
+            catalog_name=args.unity_catalog_name,
+        ),
+    )
+  else:
+    federated_catalog_options = messages.FederatedCatalogOptions()
+  # Refresh options are supported for all federated catalog types.
+  refresh_options = messages.RefreshOptions()
+  if args.refresh_interval:
+    refresh_options.refresh_schedule = messages.RefreshSchedule(
+        refresh_interval=times.FormatDurationForJson(
+            times.ParseDuration(str(args.refresh_interval) + 's')
+        )
+    )
+  if args.namespace_filters:
+    refresh_options.refresh_scope = messages.RefreshScope(
+        namespace_filters=args.namespace_filters
+    )
+  federated_catalog_options.refresh_options = refresh_options
+  return federated_catalog_options
+
+
+# TODO(b/496225715): Support description field for all kinds of catalogs.
+@base.ReleaseTracks(
+    base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.DefaultUniverseOnly
 class CreateCatalog(base.CreateCommand):
   """Create a BigLake Iceberg REST catalog."""
@@ -45,18 +78,21 @@ class CreateCatalog(base.CreateCommand):
   _support_catalog_type_biglake = False
   _support_primary_location = False
   _support_service_directory_name = False
+  _support_federated_catalog = False
 
   @classmethod
   def Args(cls, parser):
     flags.AddCatalogResourceArg(parser, 'to create')
     util.GetCredentialModeEnumMapper(
-        base.ReleaseTrack.BETA
+        cls.ReleaseTrack()
     ).choice_arg.AddToParser(parser)
     util.GetCatalogTypeEnumMapper(
-        base.ReleaseTrack.BETA
+        cls.ReleaseTrack()
     ).choice_arg.AddToParser(parser)
     if cls._support_primary_location:
       arguments.AddCatalogsCreateArgs(parser)
+    if cls._support_federated_catalog:
+      arguments.AddFederatedCatalogArgs(parser)
     if cls._support_catalog_type_biglake:
       util.AddDefaultLocationArg(parser)
       util.AddAdditionalLocationsArg(parser)
@@ -66,6 +102,8 @@ class CreateCatalog(base.CreateCommand):
   def Run(self, args):
     if self._support_catalog_type_biglake:
       util.CheckValidArgCombinations(args)
+    if self._support_federated_catalog:
+      util.CheckValidFederatedArgCombinations(args)
     client = util.GetClientInstance(self.ReleaseTrack())
     messages = client.MESSAGES_MODULE
 
@@ -84,15 +122,14 @@ class CreateCatalog(base.CreateCommand):
         ).GetEnumForChoice(args.catalog_type),
         credential_mode=credential_mode,
     )
-    if self._support_service_directory_name and args.IsSpecified(
-        'service_directory_name'
-    ):
-      catalog.federated_catalog_options = messages.FederatedCatalogOptions(
-          service_directory_name=args.service_directory_name
-      )
     if self._support_catalog_type_biglake:
       catalog.default_location = args.default_location
       catalog.additional_locations = args.additional_locations or []
+
+    if self._support_federated_catalog and args.catalog_type == 'federated':
+      catalog.federated_catalog_options = _BuildFederatedCatalogMessage(
+          args, messages
+      )
 
     response = util.CreateCatalog(
         args.catalog,
@@ -103,6 +140,18 @@ class CreateCatalog(base.CreateCommand):
     )
     if response:
       log.CreatedResource(catalog_name, 'catalog')
+      if response.biglake_service_account:
+        log.status.Print(
+            'BigLake service account: {}'.format(
+                response.biglake_service_account
+            )
+        )
+      if response.biglake_service_account_id:
+        log.status.Print(
+            'BigLake service account ID: {}'.format(
+                response.biglake_service_account_id
+            )
+        )
     return response
 
 
@@ -115,3 +164,4 @@ class CreateAlpha(CreateCatalog):
   _support_catalog_type_biglake = True
   _support_primary_location = True
   _support_service_directory_name = True
+  _support_federated_catalog = True

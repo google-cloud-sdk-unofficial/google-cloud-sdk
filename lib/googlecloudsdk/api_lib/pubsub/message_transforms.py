@@ -44,16 +44,13 @@ class MessageTransformsClient(object):
     self.messages = messages or GetMessagesModule(client)
     self._service = self.client.projects
 
-  def Validate(
-      self, project_ref, message_transform_file=None, enable_vertex_ai_smt=False
-  ):
+  def Validate(self, project_ref, message_transform_file=None):
     """Validates a message transform.
 
     Args:
       project_ref (Resource): Resource reference for the project.
       message_transform_file (str): The file path to the JSON or YAML file
         containing the message transform.
-      enable_vertex_ai_smt (bool): Whether to enable Vertex AI SMTs.
 
     Returns:
       ValidateMessageTransformResponse (success) if the message transform is
@@ -72,7 +69,6 @@ class MessageTransformsClient(object):
       message_transform = utils.GetMessageTransformFromFileForValidation(
           self.messages.MessageTransform,
           message_transform_file,
-          enable_vertex_ai_smt=enable_vertex_ai_smt,
       )
     except (
         utils.MessageTransformsInvalidFormatError,
@@ -97,7 +93,6 @@ class MessageTransformsClient(object):
       message_transforms_file=None,
       topic_ref=None,
       subscription_ref=None,
-      enable_vertex_ai_smt=False,
   ):
     """Tests applying message transforms to a message.
 
@@ -112,7 +107,6 @@ class MessageTransformsClient(object):
         against.
       subscription_ref (Resource): The subscription containing the message
         transforms to test against.
-      enable_vertex_ai_smt (bool): Whether to enable Vertex AI SMTs.
 
     Returns:
       TestMessageTransformsResponse which contains a list of TransformedMessage.
@@ -140,7 +134,6 @@ class MessageTransformsClient(object):
         message_transforms = utils.GetMessageTransformsFromFile(
             self.messages.MessageTransform,
             message_transforms_file,
-            enable_vertex_ai_smt=enable_vertex_ai_smt,
         )
       except (
           utils.MessageTransformsInvalidFormatError,

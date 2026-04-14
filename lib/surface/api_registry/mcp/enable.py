@@ -15,10 +15,7 @@
 
 """api registry mcp server enable command."""
 
-from googlecloudsdk.api_lib.api_registry import resources
-from googlecloudsdk.api_lib.services import exceptions
-from googlecloudsdk.api_lib.services import services_util
-from googlecloudsdk.api_lib.services import serviceusage
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
@@ -38,37 +35,12 @@ class EnableAlpha(base.SilentCommand):
 
   def Run(self, args):
     """Enables MCP server for a given service in the current project."""
-    project_resource = resources.GetProjectResource()
-
-    # check if service has Mcp Config
-    try:
-      service_metadata = serviceusage.GetServiceV2Beta(
-          f'{project_resource}/services/{args.service}')
-    except exceptions.GetServiceException:
-      log.error(
-          'Service %s not found or permission_denied.', args.service)
-      return
-
-    if not service_metadata.state.enableRules:
-      track_prefix = 'alpha '
-      enable_command = f'gcloud {track_prefix}services enable {args.service}'
-      log.warning(
-          'To enable the MCP endpoint, the service must'
-          ' be enabled first. Please run the following command to enable the'
-          ' service: %s.', enable_command)
-
-    op = serviceusage.AddMcpEnableRule(
+    log.status.Print(
+        'MCP server enablement is no longer required. Enabling the underlying'
+        ' service is now sufficient. If not already enabled, run the following'
+        ' command to enable the service: gcloud alpha services enable',
         args.service,
-        resources.GetProjectId(),
     )
-
-    if op is None:
-      return None
-
-    services_util.WaitOperation(op.name, serviceusage.GetOperationV2Beta)
-
-    # services_util.PrintOperation(op)
-    log.status.Print('MCP Server enabled for service:', args.service)
 
 
 @base.DefaultUniverseOnly
@@ -85,34 +57,9 @@ class EnableBeta(base.SilentCommand):
 
   def Run(self, args):
     """Enables MCP server for a given service in the current project."""
-    project_resource = resources.GetProjectResource()
-
-    # check if service has Mcp Config
-    try:
-      service_metadata = serviceusage.GetServiceV2Beta(
-          f'{project_resource}/services/{args.service}')
-    except exceptions.GetServiceException:
-      log.error(
-          'Service %s not found or permission_denied.', args.service)
-      return
-
-    if not service_metadata.state.enableRules:
-      track_prefix = 'beta '
-      enable_command = f'gcloud {track_prefix}services enable {args.service}'
-      log.warning(
-          'To enable the MCP endpoint, the service must'
-          ' be enabled first. Please run the following command to enable the'
-          ' service: %s.', enable_command)
-
-    op = serviceusage.AddMcpEnableRule(
+    log.status.Print(
+        'MCP server enablement is no longer required. Enabling the underlying'
+        ' service is now sufficient. If not already enabled, run the following'
+        ' command to enable the service: gcloud beta services enable',
         args.service,
-        resources.GetProjectId(),
     )
-
-    if op is None:
-      return None
-
-    services_util.WaitOperation(op.name, serviceusage.GetOperationV2Beta)
-
-    # services_util.PrintOperation(op)
-    log.status.Print('MCP Server enabled for service:', args.service)

@@ -23,16 +23,18 @@ from googlecloudsdk.core import resources
 VERSION_MAP = {base.ReleaseTrack.ALPHA: 'v1'}
 
 
-def GetClientInstance(release_track=base.ReleaseTrack.ALPHA):
+def GetClientInstance(release_track=base.ReleaseTrack.ALPHA, location=None):
   api_version = VERSION_MAP.get(release_track)
-  return apis.GetClientInstance('securesourcemanager', api_version)
+  return apis.GetClientInstance(
+      'securesourcemanager', api_version, location=location
+  )
 
 
 class RepositoriesClient(object):
   """Client for Secure Source Manager repositories."""
 
-  def __init__(self):
-    self.client = GetClientInstance(base.ReleaseTrack.ALPHA)
+  def __init__(self, location=None):
+    self.client = GetClientInstance(base.ReleaseTrack.ALPHA, location=location)
     self.messages = self.client.MESSAGES_MODULE
     self._service = self.client.projects_locations_repositories
     self._resource_parser = resources.Registry()

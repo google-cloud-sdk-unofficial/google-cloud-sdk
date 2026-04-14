@@ -31,6 +31,8 @@ from googlecloudsdk.core import log
 class Copy(base.Command):
   """Upload, download, and copy Cloud Storage objects."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION': """\
       Copy files between your local file system and Cloud Storage or from one

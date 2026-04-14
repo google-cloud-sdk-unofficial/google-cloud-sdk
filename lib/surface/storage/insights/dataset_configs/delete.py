@@ -26,6 +26,8 @@ from googlecloudsdk.core.console import console_io
 class Delete(base.Command):
   """Delete dataset config for Insights."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION': """
       Delete an Insights dataset config.

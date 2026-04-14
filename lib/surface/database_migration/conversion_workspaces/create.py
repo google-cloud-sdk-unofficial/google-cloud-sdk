@@ -34,10 +34,13 @@ class Create(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
   """Create a Database Migration Service conversion workspace."""
 
   detailed_help = {
-      'DESCRIPTION': """
+      'DESCRIPTION': (
+          """
         Create a Database Migration Service conversion workspace.
-      """,
-      'EXAMPLES': """\
+      """
+      ),
+      'EXAMPLES': (
+          """\
         To create a conversion workspace:
 
             $ {command} my-conversion-workspace --region=us-central1
@@ -46,7 +49,8 @@ class Create(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
             --source-database-version=11
             --destination-database-engine=POSTGRESQL
             --destination-database-version=15
-      """,
+      """
+      ),
   }
 
   @staticmethod
@@ -64,6 +68,7 @@ class Create(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
     cw_flags.AddDatabaseProviderFlags(parser)
     cw_flags.AddDatabaseVersionFlag(parser)
     cw_flags.AddGlobalSettingsFlag(parser)
+    cw_flags.AddFeatureFlags(parser)
 
   def Run(self, args: argparse.Namespace) -> Optional[messages.Operation]:
     """Create a Database Migration Service conversion workspace.
@@ -144,9 +149,35 @@ class Create(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
     Returns:
       A global settings value object.
     """
+    auto_conversion = (
+        args.auto_conversion if args.IsSpecified('auto_conversion') else False
+    )
+    quality_assessment = (
+        args.quality_assessment
+        if args.IsSpecified('quality_assessment')
+        else False
+    )
+    conversion_assistance = (
+        args.conversion_assistance
+        if args.IsSpecified('conversion_assistance')
+        else False
+    )
+    pattern_matching = (
+        args.pattern_matching if args.IsSpecified('pattern_matching') else False
+    )
+
     if args.global_settings is None:
       args.global_settings = {}
-    args.global_settings.update(filter='*', v2='true')
+    args.global_settings.update(
+        filter='*',
+        v2='true',
+        cc='true',
+        aiConversion='true' if auto_conversion else 'false',
+        autoAssessment='true' if quality_assessment else 'false',
+        aiAssistant='true' if conversion_assistance else 'false',
+        aiPatternApplier='true' if pattern_matching else 'false',
+    )
+
     return labels_util.ParseCreateArgs(
         args=args,
         labels_cls=global_settings_value_cls,

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -58,6 +58,10 @@
                 enum_value: GEMINI_CODE_ASSIST
                 help_text: |-
                   The Gemini Code Assist Application.
+              - arg_value: dataform
+                enum_value: DATAFORM
+                help_text: |-
+                  The Dataform GitHub Application.
             - group:
                 api_field: connection.githubConfig.authorizerCredential
                 required: false
@@ -468,11 +472,12 @@
             api_field: connection.secureSourceManagerInstanceConfig
             required: false
             help_text: |-
-              Configuration for connections to SSM instance
+              Configuration for connections to Secure Source Manager instance
             params:
             - arg_name: secure-source-manager-instance-config
               help_text: |-
-                SSM instance resource, formatted as `projects/*/locations/*/instances/*`
+                Secure Source Manager instance resource, formatted as
+                `projects/*/locations/*/instances/*`
               is_positional: false
               is_primary_resource: false
               resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_locations_instances

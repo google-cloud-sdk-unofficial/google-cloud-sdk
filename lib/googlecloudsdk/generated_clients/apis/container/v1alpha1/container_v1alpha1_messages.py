@@ -6277,14 +6277,18 @@ class NodeConfig(_messages.Message):
       used for encrypting the Local SSDs attached to the node.
 
   Messages:
-    LabelsValue: The map of Kubernetes labels (key/value pairs) to be applied
-      to each node. These will added in addition to any default label(s) that
-      Kubernetes may apply to the node. In case of conflict in label keys, the
-      applied set may differ depending on the Kubernetes version -- it's best
-      to assume the behavior is undefined and conflicts should be avoided. For
-      more information, including usage and the valid values, see:
-      https://kubernetes.io/docs/concepts/overview/working-with-
-      objects/labels/
+    LabelsValue: The Kubernetes labels (key/value pairs) to apply to each
+      node. The values in this field are added to the set of default labels
+      Kubernetes applies to nodes. This field has the following restrictions:
+      * Labels must use a valid Kubernetes syntax and character set, as
+      defined in https://kubernetes.io/docs/concepts/overview/working-with-
+      objects/labels/#syntax-and-character-set. * This field supports up to
+      1,024 total characters in a single request. Depending on the Kubernetes
+      version, keys in this field might conflict with the keys of the default
+      labels, which might change which of your labels are applied to the
+      nodes. Assume that the behavior is unpredictable and avoid label key
+      conflicts. For more information about the default labels, see:
+      https://kubernetes.io/docs/reference/labels-annotations-taints/
     MetadataValue: The metadata key/value pairs assigned to instances in the
       cluster. Keys must conform to the regexp `[a-zA-Z0-9-_]+` and be less
       than 128 bytes in length. These are reflected as part of a URL in the
@@ -6359,14 +6363,18 @@ class NodeConfig(_messages.Message):
       https://cloud.google.com/kubernetes-engine/docs/concepts/node-images for
       available image types.
     kubeletConfig: Node kubelet configs.
-    labels: The map of Kubernetes labels (key/value pairs) to be applied to
-      each node. These will added in addition to any default label(s) that
-      Kubernetes may apply to the node. In case of conflict in label keys, the
-      applied set may differ depending on the Kubernetes version -- it's best
-      to assume the behavior is undefined and conflicts should be avoided. For
-      more information, including usage and the valid values, see:
+    labels: The Kubernetes labels (key/value pairs) to apply to each node. The
+      values in this field are added to the set of default labels Kubernetes
+      applies to nodes. This field has the following restrictions: * Labels
+      must use a valid Kubernetes syntax and character set, as defined in
       https://kubernetes.io/docs/concepts/overview/working-with-
-      objects/labels/
+      objects/labels/#syntax-and-character-set. * This field supports up to
+      1,024 total characters in a single request. Depending on the Kubernetes
+      version, keys in this field might conflict with the keys of the default
+      labels, which might change which of your labels are applied to the
+      nodes. Assume that the behavior is unpredictable and avoid label key
+      conflicts. For more information about the default labels, see:
+      https://kubernetes.io/docs/reference/labels-annotations-taints/
     linuxNodeConfig: Parameters that can be configured on Linux nodes.
     localNvmeSsdBlockConfig: Parameters for using raw-block Local NVMe SSDs.
     localSsdCount: The number of local SSD disks to be attached to the node.
@@ -6507,13 +6515,18 @@ class NodeConfig(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""The map of Kubernetes labels (key/value pairs) to be applied to each
-    node. These will added in addition to any default label(s) that Kubernetes
-    may apply to the node. In case of conflict in label keys, the applied set
-    may differ depending on the Kubernetes version -- it's best to assume the
-    behavior is undefined and conflicts should be avoided. For more
-    information, including usage and the valid values, see:
-    https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+    r"""The Kubernetes labels (key/value pairs) to apply to each node. The
+    values in this field are added to the set of default labels Kubernetes
+    applies to nodes. This field has the following restrictions: * Labels must
+    use a valid Kubernetes syntax and character set, as defined in
+    https://kubernetes.io/docs/concepts/overview/working-with-
+    objects/labels/#syntax-and-character-set. * This field supports up to
+    1,024 total characters in a single request. Depending on the Kubernetes
+    version, keys in this field might conflict with the keys of the default
+    labels, which might change which of your labels are applied to the nodes.
+    Assume that the behavior is unpredictable and avoid label key conflicts.
+    For more information about the default labels, see:
+    https://kubernetes.io/docs/reference/labels-annotations-taints/
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.
@@ -8653,6 +8666,7 @@ class RunnerPoolConfig(_messages.Message):
     attestation: Attestation config for the runner pool.
     controlNodePool: The name of the node pool that the runner pool is linked
       to.
+    networkConfig: Optional. The network configuration for the runner pool.
     runnerTelemetryConfig: Optional. Telemetry configuration for the runner
       pool.
     securityMode: Optional. The security mode of the runner pool node image.
@@ -8676,8 +8690,9 @@ class RunnerPoolConfig(_messages.Message):
 
   attestation = _messages.MessageField('AttestationConfig', 1)
   controlNodePool = _messages.StringField(2)
-  runnerTelemetryConfig = _messages.MessageField('RunnerTelemetryConfig', 3)
-  securityMode = _messages.EnumField('SecurityModeValueValuesEnum', 4)
+  networkConfig = _messages.MessageField('RunnerPoolNetworkConfig', 3)
+  runnerTelemetryConfig = _messages.MessageField('RunnerTelemetryConfig', 4)
+  securityMode = _messages.EnumField('SecurityModeValueValuesEnum', 5)
 
 
 class RunnerPoolControl(_messages.Message):
@@ -8689,6 +8704,7 @@ class RunnerPoolControl(_messages.Message):
 
   Fields:
     mode: The mode of the runner pool control.
+    networkConfig: Optional. The network configuration for the runner pool.
   """
 
   class ModeValueValuesEnum(_messages.Enum):
@@ -8708,6 +8724,18 @@ class RunnerPoolControl(_messages.Message):
     STANDARD = 3
 
   mode = _messages.EnumField('ModeValueValuesEnum', 1)
+  networkConfig = _messages.MessageField('RunnerPoolNetworkConfig', 2)
+
+
+class RunnerPoolNetworkConfig(_messages.Message):
+  r"""RunnerPoolNetworkConfig contains the configuration for the network of
+  the runner pool.
+
+  Fields:
+    subnetwork: Required. The subnetwork to use for the runner pool.
+  """
+
+  subnetwork = _messages.StringField(1)
 
 
 class RunnerTelemetryConfig(_messages.Message):

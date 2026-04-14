@@ -35,6 +35,8 @@ from googlecloudsdk.core.console import console_io
 class Delete(base.Command):
   """Delete Cloud Storage objects and buckets."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION': """\
       *{command}* lets you delete Cloud Storage objects and buckets. You can

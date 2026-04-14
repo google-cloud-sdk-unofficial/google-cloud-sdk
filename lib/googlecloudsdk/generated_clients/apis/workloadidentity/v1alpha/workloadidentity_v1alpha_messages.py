@@ -31,17 +31,6 @@ class GenerateServiceAgentsRequest(_messages.Message):
 
 
 
-class GenerateServiceAgentsResponse(_messages.Message):
-  r"""Message for creating all ServiceAgents for a ServiceProducer in a
-  project and location.
-
-  Fields:
-    serviceAgents: The list of ServiceAgent
-  """
-
-  serviceAgents = _messages.MessageField('ServiceAgent', 1, repeated=True)
-
-
 class ListLocationsResponse(_messages.Message):
   r"""The response message for Locations.ListLocations.
 
@@ -288,65 +277,6 @@ class OperationMetadata(_messages.Message):
   verb = _messages.StringField(7)
 
 
-class ServiceAgent(_messages.Message):
-  r"""Message describing ServiceAgent object
-
-  Messages:
-    LabelsValue: Optional. Labels as key value pairs
-
-  Fields:
-    container: Optional. Name of the container the service agent is associated
-      with. e.g. projects/1234 folders/1234 organizations/2344
-    createTime: Output only. [Output only] Create time stamp
-    labels: Optional. Labels as key value pairs
-    name: Identifier. name of resource
-    principal: Optional. The principal i.e. email, that a service producer
-      would use to access consumer resources.
-    role: Optional. Role that should be granted to service agent on consumer
-      project, if any. e.g. "roles/aiplatform.serviceAgent".
-    serviceAgentRole: Optional. Deprecated: Use 'role' instead. Role that
-      should be granted to service agent on consumer project, if any. e.g.
-      "roles/aiplatform.serviceAgent".
-    serviceProducer: Optional. The service the agent belongs to. e.g.
-      bigquery.googleapis.com
-    updateTime: Output only. [Output only] Update time stamp
-  """
-
-  @encoding.MapUnrecognizedFields('additionalProperties')
-  class LabelsValue(_messages.Message):
-    r"""Optional. Labels as key value pairs
-
-    Messages:
-      AdditionalProperty: An additional property for a LabelsValue object.
-
-    Fields:
-      additionalProperties: Additional properties of type LabelsValue
-    """
-
-    class AdditionalProperty(_messages.Message):
-      r"""An additional property for a LabelsValue object.
-
-      Fields:
-        key: Name of the additional property.
-        value: A string attribute.
-      """
-
-      key = _messages.StringField(1)
-      value = _messages.StringField(2)
-
-    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
-
-  container = _messages.StringField(1)
-  createTime = _messages.StringField(2)
-  labels = _messages.MessageField('LabelsValue', 3)
-  name = _messages.StringField(4)
-  principal = _messages.StringField(5)
-  role = _messages.StringField(6)
-  serviceAgentRole = _messages.StringField(7)
-  serviceProducer = _messages.StringField(8)
-  updateTime = _messages.StringField(9)
-
-
 class StandardQueryParameters(_messages.Message):
   r"""Query parameters accepted by all methods.
 
@@ -459,21 +389,6 @@ class Status(_messages.Message):
   code = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   details = _messages.MessageField('DetailsValueListEntry', 2, repeated=True)
   message = _messages.StringField(3)
-
-
-class WorkloadidentityLocationsServiceProducersCreateServiceAgentsRequest(_messages.Message):
-  r"""A WorkloadidentityLocationsServiceProducersCreateServiceAgentsRequest
-  object.
-
-  Fields:
-    parent: Required. The parent resource.
-      projects/1234/locations/global/serviceProducers/bigquery.googleapis.com
-      folders/1234/locations/global/serviceProducers/storageinsights.googleapi
-      s.com organizations/2344/locations/global/serviceProducers/vertexai.goog
-      leapis.com
-  """
-
-  parent = _messages.StringField(1, required=True)
 
 
 class WorkloadidentityLocationsServiceProducersGenerateServiceAgentsRequest(_messages.Message):

@@ -105,3 +105,27 @@ def GetFailureComponentFlag():
       },
       help='The component that experienced the fault.',
       required=True)
+
+
+def AddGetVersionFlags(parser):
+  """Adds flags to the parser for the get-version command."""
+  parser.add_argument(
+      '--block-name',
+      metavar='BLOCK_NAME',
+      type=str,
+      required=True,
+      help='The name of the reservation block.')
+  parser.add_argument(
+      '--sub-block-name',
+      metavar='SUB_BLOCK_NAME',
+      type=str,
+      required=True,
+      help='The name of the reservation sub block.')
+  parser.add_argument(
+      '--current',
+      action='store_true',
+      help='Whether to get the current version.')
+  parser.add_argument(
+      '--target',
+      action='store_true',
+      help='Whether to get the target version.')

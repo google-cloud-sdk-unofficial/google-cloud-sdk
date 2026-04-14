@@ -35,15 +35,15 @@ from googlecloudsdk.generated_clients.apis.saasservicemgmt.v1beta1 import saasse
 
 
 FLAG_TYPE_MAP: dict[str, str] = {
-    'boolean': 'FLAG_VALUE_TYPE_BOOL',
-    'integer': 'FLAG_VALUE_TYPE_INT',
+    'boolean': 'FLAG_VALUE_TYPE_BOOLEAN',
+    'integer': 'FLAG_VALUE_TYPE_INTEGER',
     'double': 'FLAG_VALUE_TYPE_DOUBLE',
     'string': 'FLAG_VALUE_TYPE_STRING',
 }
 
 VALUE_TYPE_HANDLERS: dict[str, tuple[str, type[Any]]] = {
-    'FLAG_VALUE_TYPE_BOOL': ('booleanValue', bool),
-    'FLAG_VALUE_TYPE_INT': ('integerValue', int),
+    'FLAG_VALUE_TYPE_BOOLEAN': ('booleanValue', bool),
+    'FLAG_VALUE_TYPE_INTEGER': ('integerValue', int),
     'FLAG_VALUE_TYPE_DOUBLE': ('doubleValue', float),
     'FLAG_VALUE_TYPE_STRING': ('stringValue', str),
 }
@@ -83,7 +83,7 @@ def _ParseFlagData(
 
   flag_dict = {
       'key': flag_key,
-      'valueType': value_type,
+      'flagValueType': value_type,
       'evaluationSpec': default_evaluation_spec,
       'variants': [default_variant],
       'unitKind': unit_kind_name,
@@ -260,10 +260,10 @@ def _CreateFlag(
           f' flag:\n{pprint.pformat(encoding.MessageToDict(existing_flag))}'
       )
 
-      if existing_flag.valueType != flag_msg.valueType:
+      if existing_flag.flagValueType != flag_msg.flagValueType:
         raise exceptions.InvalidDataError(
-            f'Flag {flag_msg.key} of type {flag_msg.valueType} already exists'
-            f' with different value type {existing_flag.valueType}'
+            f'Flag {flag_msg.key!r} of type {flag_msg.flagValueType!r} already'
+            f' exists with different value type {existing_flag.flagValueType}'
         ) from e
       else:
         raise exceptions.HttpConflictError(

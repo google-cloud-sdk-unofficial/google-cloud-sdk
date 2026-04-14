@@ -26,6 +26,8 @@ from googlecloudsdk.command_lib.storage import storage_url
 class Delete(base.Command):
   """Remove a service account HMAC."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION': """
        *{command}* permanently deletes the specified HMAC key. Note that keys

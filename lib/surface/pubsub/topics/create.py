@@ -14,7 +14,6 @@
 # limitations under the License.
 """Cloud Pub/Sub topics create command."""
 
-
 from apitools.base.py import exceptions as api_ex
 from googlecloudsdk.api_lib.pubsub import topics
 from googlecloudsdk.api_lib.util import exceptions
@@ -58,7 +57,7 @@ def _GetTopicPresentationSpec():
   )
 
 
-def _Run(args, /, *, legacy_output=False, enable_vertex_ai_smt=False):
+def _Run(args, /, *, legacy_output=False):
   """Creates one or more topics."""
   client = topics.TopicsClient()
 
@@ -238,7 +237,6 @@ def _Run(args, /, *, legacy_output=False, enable_vertex_ai_smt=False):
           ingestion_log_severity=ingestion_log_severity,
           message_transforms_file=message_transforms_file,
           tags=tags,
-          enable_vertex_ai_smt=enable_vertex_ai_smt,
       )
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
@@ -291,10 +289,14 @@ def _Args(
 class Create(base.CreateCommand):
   """Creates one or more Cloud Pub/Sub topics."""
 
-  detailed_help = {'EXAMPLES': """\
+  detailed_help = {
+      'EXAMPLES': (
+          """\
           To create a Cloud Pub/Sub topic, run:
 
-              $ {command} mytopic"""}
+              $ {command} mytopic"""
+      )
+  }
 
   @staticmethod
   def Args(parser):
@@ -318,7 +320,7 @@ class CreateBeta(Create):
 
   def Run(self, args):
     legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
-    return _Run(args, legacy_output=legacy_output, enable_vertex_ai_smt=False)
+    return _Run(args, legacy_output=legacy_output)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -328,7 +330,3 @@ class CreateAlpha(CreateBeta):
   @staticmethod
   def Args(parser):
     super(CreateAlpha, CreateAlpha).Args(parser)
-
-  def Run(self, args):
-    legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
-    return _Run(args, legacy_output=legacy_output, enable_vertex_ai_smt=True)

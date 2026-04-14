@@ -1,0 +1,25 @@
+# Copyright 2026 Google LLC. All Rights Reserved.
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Delete an AgentGateway.
+  description: |
+    Delete the specified AgentGateway.
+  examples: |
+    To delete a AgentGateway named 'my-agentgateway', run:
+
+      $ {command} my-agent-gateway --location=us-central1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:agentGateway
+    help_text: Name of the agent gateway to delete.
+
+async:
+  collection: networkservices.projects.locations.operations
+
+request:
+  ALPHA:
+    api_version: v1alpha1
+  collection: networkservices.projects.locations.agentGateways

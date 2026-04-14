@@ -25,6 +25,8 @@ from googlecloudsdk.command_lib.storage import flags
 class Describe(base.DescribeCommand):
   """Describes storage intelligence configuration."""
 
+  hints = base.CommandHint(read_only=True)
+
   detailed_help = {
       'DESCRIPTION': """
           Describe storage intelligence config for the organization, sub-folder

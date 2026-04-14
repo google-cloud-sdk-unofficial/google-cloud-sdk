@@ -20,9 +20,13 @@ from googlecloudsdk.api_lib.util import apis
 TAGS_API_VERSION = 'v3'
 
 
-def TagClient():
+def TagClient(skip_activation_prompt=False):
   """Returns a client instance of the CRM Tags service."""
-  return apis.GetClientInstance('cloudresourcemanager', TAGS_API_VERSION)
+  return apis.GetClientInstance(
+      'cloudresourcemanager',
+      TAGS_API_VERSION,
+      skip_activation_prompt=skip_activation_prompt,
+  )
 
 
 def TagMessages():
@@ -48,9 +52,9 @@ def TagBindingsService():
   return client.tagBindings
 
 
-def EffectiveTagsService():
+def EffectiveTagsService(skip_activation_prompt=False):
   """Returns the effective tags service class."""
-  client = TagClient()
+  client = TagClient(skip_activation_prompt=skip_activation_prompt)
   return client.effectiveTags
 
 

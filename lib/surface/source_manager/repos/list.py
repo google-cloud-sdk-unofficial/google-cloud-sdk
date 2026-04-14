@@ -35,6 +35,7 @@ DETAILED_HELP = {
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.RegionalEndpointsSupported
 class List(base.ListCommand):
   """List all repositories under a Secure Source Manager instance."""
 
@@ -61,7 +62,7 @@ class List(base.ListCommand):
     location_ref = args.CONCEPTS.region.Parse()
 
     # List repositories
-    client = repositories.RepositoriesClient()
+    client = repositories.RepositoriesClient(location=location_ref.locationsId)
     return client.List(location_ref, args.instance, args.page_size, args.limit)
 
 

@@ -45,6 +45,7 @@ DETAILED_HELP = {
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.RegionalEndpointsSupported
 class Delete(base.DeleteCommand):
   """Delete a Secure Source Manager instance."""
 
@@ -62,8 +63,8 @@ class Delete(base.DeleteCommand):
     max_wait = datetime.timedelta(seconds=args.max_wait)
 
     # Get a long-running operation for this deletion.
-    client = instances.InstancesClient()
     instance = args.CONCEPTS.instance.Parse()
+    client = instances.InstancesClient(location=instance.locationsId)
     operation = client.Delete(instance_ref=instance)
 
     log.status.Print('Delete request issued for [{}].'

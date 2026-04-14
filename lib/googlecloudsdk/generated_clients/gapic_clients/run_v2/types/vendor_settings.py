@@ -254,14 +254,16 @@ class RevisionScaling(proto.Message):
             Optional. Determines a threshold for CPU utilization before
             scaling begins. Accepted values are between ``0.1`` and
             ``0.95`` (inclusive) or ``0.0`` to disable CPU utilization
-            as threshold for scaling.
+            as threshold for scaling. CPU and concurrency scaling cannot
+            both be disabled.
 
             This field is a member of `oneof`_ ``_cpu_utilization``.
         concurrency_utilization (float):
             Optional. Determines a threshold for concurrency utilization
             before scaling begins. Accepted values are between ``0.1``
             and ``0.95`` (inclusive) or ``0.0`` to disable concurrency
-            utilization as threshold for scaling.
+            utilization as threshold for scaling. CPU and concurrency
+            scaling cannot both be disabled.
 
             This field is a member of `oneof`_ ``_concurrency_utilization``.
     """

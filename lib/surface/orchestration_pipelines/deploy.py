@@ -37,7 +37,6 @@ from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.orchestration_pipelines import gcp_deployer
 from googlecloudsdk.command_lib.orchestration_pipelines import git_context
-from googlecloudsdk.command_lib.orchestration_pipelines.handlers import base as handlers_base
 from googlecloudsdk.command_lib.orchestration_pipelines.handlers import registry
 from googlecloudsdk.command_lib.orchestration_pipelines.processors import action_processor
 from googlecloudsdk.command_lib.orchestration_pipelines.tools import composer_utils
@@ -261,7 +260,7 @@ def _DeployGcpResources(
       log.status.Print(f"Skipping resource profile '{resource.name}'.")
       continue
     try:
-      handler = _GetHandler(resource, environment, dry_run)
+      handler = registry.GetHandler(resource, environment, dry_run=dry_run)
       gcp_deployer.deploy_gcp_resource(handler)
       resources_deployed_count += 1
     except Exception as e:
@@ -270,36 +269,6 @@ def _DeployGcpResources(
           f"from file '{deployment_file.name}':\n{e}"
       ) from e
   return resources_deployed_count
-
-
-def _GetHandler(
-    resource: Any,
-    environment: Any,
-    dry_run: bool,
-    *,
-    debug: bool = False,
-    show_requests: bool = False,
-) -> handlers_base.GcpResourceHandler:
-  """Gets the appropriate handler for a given resource.
-
-  Args:
-    resource: The resource object from the deployment model.
-    environment: The environment object from the deployment model.
-    dry_run: Whether to perform a dry run.
-    debug: Whether to enable debug logging.
-    show_requests: Whether to show API requests.
-
-  Returns:
-    A handler object for the specified resource type.
-
-  Raises:
-    DeployError: If the resource type is not supported.
-  """
-  handler_class = registry.RESOURCE_HANDLERS.get(resource.type)
-  if not handler_class:
-    raise DeployError(f"Unsupported resource type: {resource.type}")
-
-  return handler_class(resource, environment, dry_run, debug, show_requests)
 
 
 def _ArtifactsExist(artifact_uri: str) -> bool:
@@ -565,6 +534,10 @@ class Deploy(calliope_base.Command):
 
     version_id = None
     if pipelines:
+      composer_bucket = _GetComposerBucket(
+          parsed_deployment["composer_env"],
+          parsed_deployment["region"],
+      )
       for pipeline in pipelines:
         yaml_path = bundle_dir / pipeline.source
 
@@ -578,6 +551,8 @@ class Deploy(calliope_base.Command):
             bundle_name=bundle_name,
             external_vars=external_vars,
             is_paused=is_paused,
+            composer_bucket=composer_bucket,
+            is_local=getattr(args, "local", False),
         )
       status["version"] = version_id
       if getattr(args, "async_", False):
@@ -671,6 +646,41 @@ class Deploy(calliope_base.Command):
       )
     elif status["resource_deployment"] == "SUCCESS":
       log.status.Print("Resource deployment successful.")
+
+  def _CleanupObsoleteDags(
+      self,
+      composer_bucket: str,
+      parsed_deployment: dict[str, Any],
+      bundle_name: str,
+  ) -> None:
+    """Cleans up DAGs in GCS that are no longer present in deployment.yaml."""
+    try:
+      bundle_dag_prefix = f"dags/orchestration_pipelines/{bundle_name}/"
+      bucket_ref = storage_util.BucketReference.FromArgument(
+          f"gs://{composer_bucket}"
+      )
+      storage_client = storage_api.StorageClient()
+
+      expected_dags = {
+          pathlib.Path(p.source).with_suffix(".py").name
+          for p in parsed_deployment.get("pipelines", [])
+      }
+
+      for obj in storage_client.ListBucket(
+          bucket_ref, prefix=bundle_dag_prefix
+      ):
+        basename = obj.name.split("/")[-1]
+        if basename.endswith(".py") and basename not in expected_dags:
+          log.status.Print(f"Cleaning up obsolete pipeline DAG: {basename}")
+          del_req = storage_client.messages.StorageObjectsDeleteRequest(
+              bucket=composer_bucket, object=obj.name
+          )
+          try:
+            storage_client.client.objects.Delete(del_req)
+          except api_exceptions.HttpError as e:
+            log.warning(f"Failed to delete obsolete DAG {obj.name}: {e}")
+    except api_exceptions.HttpError as e:
+      log.warning(f"Failed to clean up obsolete pipelines: {e}")
 
   def _WaitForPipelines(
       self,
@@ -801,6 +811,7 @@ class Deploy(calliope_base.Command):
 
     defaults = resolved_pipeline.get("defaults", {})
     default_reqs_path = defaults.get("requirementsPath")
+    allowed_processor_engines = {"dataprocServerless", "dataprocOnGce"}
 
     for action_item in resolved_pipeline.get("actions", []):
       action = action_item
@@ -835,6 +846,8 @@ class Deploy(calliope_base.Command):
             action = action_item[first_key]
             action_type = first_key
 
+      engine_dict = action.get("engine", {})
+
       if "mainFilePath" in action:
         needs_gcs_rewrite = action_type in ["pyspark", "notebook"]
         action["mainFilePath"] = self._ResolveAndQueuePath(
@@ -848,7 +861,6 @@ class Deploy(calliope_base.Command):
           and isinstance(action.get("query"), dict)
           and "path" in action["query"]
       ):
-        engine_dict = action.get("engine", {})
         is_serverless = "dataprocServerless" in engine_dict
         action["query"]["path"] = self._ResolveAndQueuePath(
             raw_path=action["query"]["path"],
@@ -898,19 +910,28 @@ class Deploy(calliope_base.Command):
               f"Requirements file not found: {resolved_reqs_path}"
           )
 
-      processor = action_processor.get_action_processor(
-          action,
-          bundle_dir,
-          artifact_base_uri,
-          self._subprocess,
-          defaults,
-          requirements_path=resolved_reqs_path,
-      )
-      if processor:
-        processor.process_action()
-        env_pack_file = processor.env_pack_file
-        if env_pack_file:
-          env_pack_files_to_upload.add(env_pack_file)
+      if engine_dict and all(
+          engine in allowed_processor_engines for engine in engine_dict
+      ):
+        processor = action_processor.get_action_processor(
+            action,
+            bundle_dir,
+            artifact_base_uri,
+            self._subprocess,
+            defaults,
+            requirements_path=resolved_reqs_path,
+        )
+        if processor:
+          processor.process_action()
+          env_pack_file = processor.env_pack_file
+          if env_pack_file:
+            env_pack_files_to_upload.add(env_pack_file)
+      else:
+        provided_engines = list(engine_dict.keys()) if engine_dict else "None"
+        log.warning(
+            f"Skipping requirements processing. Engine(s) {provided_engines} "
+            f"are not supported. Allowed engines: {allowed_processor_engines}."
+        )
 
       if "requirementsPath" in action:
         del action["requirementsPath"]
@@ -928,10 +949,10 @@ class Deploy(calliope_base.Command):
       bundle_data_prefix,
       version_id,
       git_context_obj,
-      rollback,
       pipeline_path,
       bundle_name,
       is_paused=False,
+      is_local=False,
   ):
     """Updates the manifest file in GCS with retry logic."""
     manifest_dest = (
@@ -939,8 +960,15 @@ class Deploy(calliope_base.Command):
     )
     max_retries = 5
     attempts = 0
+    local_metadata = {
+        "origination": "LOCAL_DEPLOY",
+    }
 
-    metadata = git_context_obj.GetDeploymentMetadata(version_id)
+    metadata = (
+        local_metadata
+        if is_local
+        else git_context_obj.GetDeploymentMetadata(version_id)
+    )
     while attempts < max_retries:
       manifest_data, read_generation_id = _FetchManifest(
           composer_bucket, bundle_data_prefix
@@ -951,12 +979,6 @@ class Deploy(calliope_base.Command):
             "pausedPipelines": [],
             "versionsHistory": [],
         }
-
-      bypass = rollback
-      git_context_obj.ValidateAncestryOrRaise(
-          manifest_data.get("defaultVersion"),
-          bypass=bypass,
-      )
       current_time = datetime.datetime.now(datetime.timezone.utc).isoformat(
           timespec="milliseconds"
       ).replace("+00:00", "Z")
@@ -1048,6 +1070,8 @@ class Deploy(calliope_base.Command):
       bundle_name=None,
       external_vars=None,
       is_paused=False,
+      composer_bucket=None,
+      is_local=False,
   ):
     """Deploys the pipeline using the dynamic context and concurrency control.
 
@@ -1062,6 +1086,8 @@ class Deploy(calliope_base.Command):
       external_vars: Optional dict of external variables to substitute.
       is_paused: If True, the pipeline will be added to the paused_pipelines
         list in the manifest.
+      composer_bucket: The GCS bucket of the Composer environment.
+      is_local: If True, the deployment is a local deployment.
 
     Returns:
       The version ID (git commit hash) of the deployed pipeline.
@@ -1076,10 +1102,6 @@ class Deploy(calliope_base.Command):
 
     parsed_deployment = yaml_processor.parse_deployment(
         deployment_path, args.environment, external_vars
-    )
-    composer_bucket = _GetComposerBucket(
-        parsed_deployment["composer_env"],
-        parsed_deployment["region"],
     )
     bundle_data_prefix = f"data/{bundle_name}"
     artifact_base_uri = (
@@ -1146,10 +1168,10 @@ class Deploy(calliope_base.Command):
         bundle_data_prefix,
         version_id,
         git_context_obj,
-        rollback,
         pipeline_path,
         bundle_name,
         is_paused=is_paused,
+        is_local=is_local,
     )
 
     return version_id

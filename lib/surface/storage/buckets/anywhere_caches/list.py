@@ -27,6 +27,8 @@ from surface.storage.buckets.anywhere_caches import describe
 class List(base.ListCommand):
   """List all Anywhere Cache instances of a bucket."""
 
+  hints = base.CommandHint(read_only=True)
+
   detailed_help = {
       'DESCRIPTION': """
 

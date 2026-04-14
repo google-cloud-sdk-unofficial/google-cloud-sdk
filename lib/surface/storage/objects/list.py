@@ -91,6 +91,8 @@ def _object_iterator(
 class List(base.ListCommand):
   """Lists Cloud Storage objects."""
 
+  hints = base.CommandHint(read_only=True)
+
   detailed_help = {
       'DESCRIPTION': _COMMAND_DESCRIPTION,
       'EXAMPLES': _GA_EXAMPLES,

@@ -54,6 +54,8 @@ def _TransformDryRun(job):
 class List(base.ListCommand):
   """List batch-operations jobs."""
 
+  hints = base.CommandHint(read_only=True)
+
   detailed_help = {
       "DESCRIPTION": (
           """

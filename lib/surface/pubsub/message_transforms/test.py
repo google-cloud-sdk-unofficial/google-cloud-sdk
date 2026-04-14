@@ -21,7 +21,7 @@ from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core.util import http_encoding
 
 
-def _Run(args, enable_vertex_ai_smt=False):
+def _Run(args):
   """Runs the message transforms test command."""
   client = message_transforms.MessageTransformsClient()
 
@@ -44,7 +44,6 @@ def _Run(args, enable_vertex_ai_smt=False):
       message_transforms_file=message_transforms_file,
       topic_ref=topic,
       subscription_ref=subscription,
-      enable_vertex_ai_smt=enable_vertex_ai_smt,
   )
   output = []
   for transformed_message in result.transformedMessages:
@@ -63,7 +62,9 @@ def _Run(args, enable_vertex_ai_smt=False):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class Test(base.Command):
   """Tests message transforms against a given message."""
 
@@ -73,15 +74,3 @@ class Test(base.Command):
 
   def Run(self, args):
     return _Run(args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class TestAlpha(Test):
-  """Tests message transforms against a given message."""
-
-  @staticmethod
-  def Args(parser):
-    super(TestAlpha, TestAlpha).Args(parser)
-
-  def Run(self, args):
-    return _Run(args, enable_vertex_ai_smt=True)

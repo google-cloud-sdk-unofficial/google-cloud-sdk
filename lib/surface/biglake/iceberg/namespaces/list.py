@@ -28,7 +28,9 @@ help_text = textwrap.dedent("""\
 """)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.DefaultUniverseOnly
 class ListIcebergNamespaces(base.ListCommand):
   """List BigLake Iceberg REST namespaces."""

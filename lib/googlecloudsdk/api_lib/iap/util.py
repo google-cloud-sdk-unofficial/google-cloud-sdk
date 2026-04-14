@@ -46,6 +46,13 @@ IAP_WEB_SERVICES_COLLECTION = 'iap.projects.iap_web.services'
 IAP_WEB_SERVICES_VERSIONS_COLLECTION = 'iap.projects.iap_web.services.versions'
 IAP_TCP_DESTGROUP_COLLECTION = 'iap.projects.iap_tunnel.locations.destGroups'
 IAP_TCP_LOCATIONS_COLLECTION = 'iap.projects.iap_tunnel.locations'
+IAP_TCP_TUNNEL_TYPES_COLLECTION = 'iap.projects.iap_tunnel.tunnel_types'
+IAP_TCP_TUNNEL_TYPES_LOCATIONS_COLLECTION = (
+    'iap.projects.iap_tunnel.tunnel_types.locations'
+)
+IAP_TCP_TUNNEL_TYPES_LOCATIONS_SERVICES_COLLECTION = (
+    'iap.projects.iap_tunnel.tunnel_types.locations.services'
+)
 
 
 def _ApiVersion(release_track):
@@ -759,5 +766,68 @@ class IapTunnelDestGroupResource(IapIamResource):
     request = self.messages.IapProjectsIapTunnelLocationsDestGroupsPatchRequest(
         name=self._Parse().RelativeName(),
         tunnelDestGroup=tunnel_dest_group,
-        updateMask=update_mask)
+        updateMask=update_mask,
+    )
     return self.ResourceService().Patch(request)
+
+
+class IapTcpIamResource(IapIamResource):
+  """IAP TCP IAM resource."""
+
+  def __init__(self, release_track, project, *, tunnel_type, region, service):
+    super(IapTcpIamResource, self).__init__(release_track, project)
+    self.tunnel_type = tunnel_type
+    self.region = region
+    self.service_id = service
+
+  def _Name(self):
+    del self  # Unused in this method.
+    return 'iap tcp iam resource'
+
+  def _Parse(self):
+    project = _GetProject(self.project)
+    return self.registry.Parse(
+        None,
+        params={
+            'project': project.projectNumber,
+            'tunnelType': self.tunnel_type,
+            'location': self.region,
+            'tunnelService': self.service_id,
+        },
+        collection=IAP_TCP_TUNNEL_TYPES_LOCATIONS_SERVICES_COLLECTION,
+    )
+
+
+class IapTcpIamResources(IapIamResource):
+  """IAP TCP IAM resources."""
+
+  def __init__(self, release_track, project, *, tunnel_type, region=None):
+    super(IapTcpIamResources, self).__init__(release_track, project)
+    self.tunnel_type = tunnel_type
+    self.region = region
+
+  def _Name(self):
+    del self  # Unused in this method.
+    return 'iap tcp iam resources'
+
+  def _Parse(self):
+    project = _GetProject(self.project)
+    if self.region:
+      return self.registry.Parse(
+          None,
+          params={
+              'project': project.projectNumber,
+              'tunnelType': self.tunnel_type,
+              'location': self.region,
+          },
+          collection=IAP_TCP_TUNNEL_TYPES_LOCATIONS_COLLECTION,
+      )
+    return self.registry.Parse(
+        None,
+        params={
+            'project': project.projectNumber,
+            'tunnelType': self.tunnel_type,
+        },
+        collection=IAP_TCP_TUNNEL_TYPES_COLLECTION,
+    )
+

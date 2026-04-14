@@ -27,6 +27,8 @@ from googlecloudsdk.command_lib.storage import storage_url
 class Update(base.Command):
   """Change the status of a service account HMAC."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION': """
        *{command}* sets the state of the specified key. Valid state arguments

@@ -81,6 +81,8 @@ filter.
 class Du(base.Command):
   """Displays the amount of space in bytes used by storage resources."""
 
+  hints = base.CommandHint(read_only=True)
+
   detailed_help = {
       'DESCRIPTION': _COMMAND_DESCRIPTION,
       'EXAMPLES': _GA_EXAMPLES,

@@ -24,6 +24,8 @@ from googlecloudsdk.command_lib.storage.batch_operations.jobs import resource_ar
 class Describe(base.DescribeCommand):
   """Describe a bucket operation for a batch operation job."""
 
+  hints = base.CommandHint(read_only=True)
+
   detailed_help = {
       'DESCRIPTION': """
       Describe a single bucket operation for a batch operation job.

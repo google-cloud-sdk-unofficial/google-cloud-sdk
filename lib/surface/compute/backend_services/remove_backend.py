@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class RemoveBackend(base.UpdateCommand):
   """Remove a backend from a backend service.
 
@@ -168,8 +168,8 @@ class RemoveBackend(base.UpdateCommand):
     )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class RemoveBackendAlpha(RemoveBackend):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class RemoveBackendBeta(RemoveBackend):
   """Remove a backend from a backend service.
 
   *{command}* is used to remove a backend from a backend

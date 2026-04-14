@@ -58,19 +58,23 @@ class TaskBuffer:
   def __init__(self):
     self._queue = queue.PriorityQueue()
 
-  def get(self):
+  def get(self, block=True, timeout=None):
     """Removes and returns an item from the buffer.
 
     Calls to `get` block if there are no elements in the queue, and return
     prioritized items before non-prioritized items.
 
+    Args:
+      block (bool): If True, block until a task is available.
+      timeout (float|None): If block is True, the maximum time to block.
+
     Returns:
       A buffered item. Expected to be a task or a string (to handle shutdowns)
       when used by task_graph_executor.
     """
-    return self._queue.get().task
+    return self._queue.get(block=block, timeout=timeout).task
 
-  def put(self, task, prioritize=False):
+  def put(self, task, prioritize=False, block=True, timeout=None):
     """Adds an item to the buffer.
 
     Args:
@@ -78,10 +82,12 @@ class TaskBuffer:
         string (to handle shutdowns) when used by task_graph_executor.
       prioritize (bool): Tasks added with prioritize=True will be returned by
         `get` before tasks added with prioritize=False.
+      block (bool): If True, block until space is available.
+      timeout (float|None): If block is True, the maximum time to block.
     """
     priority = 0 if prioritize else 1
     prioritized_item = _PriorityWrapper(task, priority)
-    self._queue.put(prioritized_item)
+    self._queue.put(prioritized_item, block=block, timeout=timeout)
 
   def size(self) -> int:
     """Returns the number of items in the buffer."""

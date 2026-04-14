@@ -194,25 +194,27 @@
           default: null
     - group:
         api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.serviceDiscovery
+        arg_name: service-discovery
+        settable: true
         required: false
         help_text: |-
           Settings related to the Service Discovery.
         params:
         - group:
             api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.serviceDiscovery.apiGateway
-            required: true
+            required: false
             help_text: |-
               If Service Discovery is done through API, defines its settings.
             params:
             - group:
                 api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.serviceDiscovery.apiGateway.resourceOverride
-                required: true
+                required: false
                 help_text: |-
                   API operation descriptor.
                 params:
                 - arg_name: resource-override-path
                   api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.serviceDiscovery.apiGateway.resourceOverride.path
-                  required: true
+                  required: false
                   repeated: false
                   help_text: |-
                     Contains the URI path fragment where HTTP request is sent.
@@ -221,7 +223,6 @@
         arg_name: logging
         settable: true
         required: false
-        hidden: true
         help_text: |-
           Configuration for Cloud Logging.
         params: []

@@ -160,16 +160,10 @@ class AgentSpec(_messages.Message):
         empty.
       A2A_AGENT_CARD: The content is an A2A Agent Card following the A2A
         specification. The `interfaces` field must be empty.
-      MARKETPLACE_AGENT: The agent is procured from the Marketplace. The
-        content field must contain the struct with the `entitlement` field.
-        The caller must have `consumerprocurement.entitlements.get` IAM
-        permission on the specified entitlement. Example: ``` { "entitlement":
-        "projects/1234/entitlements/entitlement-id" } ```
     """
     TYPE_UNSPECIFIED = 0
     NO_SPEC = 1
     A2A_AGENT_CARD = 2
-    MARKETPLACE_AGENT = 3
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class ContentValue(_messages.Message):
@@ -242,6 +236,125 @@ class AgentregistryProjectsLocationsAgentsSearchRequest(_messages.Message):
 
   parent = _messages.StringField(1, required=True)
   searchAgentsRequest = _messages.MessageField('SearchAgentsRequest', 2)
+
+
+class AgentregistryProjectsLocationsBindingsCreateRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsBindingsCreateRequest object.
+
+  Fields:
+    binding: A Binding resource to be passed as the request body.
+    bindingId: Required. The ID to use for the binding, which will become the
+      final component of the binding's resource name. This value should be
+      4-63 characters, and must conform to RFC-1034. Specifically, it must
+      match the regular expression `^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$`.
+    parent: Required. The project and location to create the Binding in.
+      Expected format: `projects/{project}/locations/{location}`.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  binding = _messages.MessageField('Binding', 1)
+  bindingId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class AgentregistryProjectsLocationsBindingsDeleteRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsBindingsDeleteRequest object.
+
+  Fields:
+    name: Required. The name of the Binding. Format:
+      `projects/{project}/locations/{location}/bindings/{binding}`.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class AgentregistryProjectsLocationsBindingsGetRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsBindingsGetRequest object.
+
+  Fields:
+    name: Required. The name of the Binding. Format:
+      `projects/{project}/locations/{location}/bindings/{binding}`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class AgentregistryProjectsLocationsBindingsListRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsBindingsListRequest object.
+
+  Fields:
+    filter: Optional. A query string used to filter the list of bindings
+      returned. The filter expression must follow AIP-160 syntax.
+    orderBy: Optional. Hint for how to order the results
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. Page size is 500 if unspecified and is capped at `500`
+      even if a larger value is given.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. The project and location to list bindings in. Expected
+      format: `projects/{project}/locations/{location}`.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class AgentregistryProjectsLocationsBindingsPatchRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsBindingsPatchRequest object.
+
+  Fields:
+    binding: A Binding resource to be passed as the request body.
+    name: Required. Identifier. The resource name of the Binding. Format:
+      `projects/{project}/locations/{location}/bindings/{binding}`.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the Binding resource by the update. The fields specified
+      in the update_mask are relative to the resource, not the full request. A
+      field will be overwritten if it is in the mask. If the user does not
+      provide a mask then all fields present in the request will be
+      overwritten.
+  """
+
+  binding = _messages.MessageField('Binding', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
 
 
 class AgentregistryProjectsLocationsEndpointsGetRequest(_messages.Message):
@@ -563,6 +676,45 @@ class Annotations(_messages.Message):
   title = _messages.StringField(5)
 
 
+class AuthProviderBinding(_messages.Message):
+  r"""The AuthProvider of the Binding.
+
+  Fields:
+    authProvider: Required. The resource name of the target AuthProvider.
+      Format: *
+      `projects/{project}/locations/{location}/authProviders/{auth_provider}`
+  """
+
+  authProvider = _messages.StringField(1)
+
+
+class Binding(_messages.Message):
+  r"""Represents a user-defined Binding.
+
+  Fields:
+    authProviderBinding: The binding for AuthProvider.
+    createTime: Output only. Timestamp when this binding was created.
+    description: Required. User-defined description of a Binding. Can have a
+      maximum length of `2048` characters.
+    displayName: Required. User-defined display name for the Binding. Can have
+      a maximum length of `63` characters.
+    name: Required. Identifier. The resource name of the Binding. Format:
+      `projects/{project}/locations/{location}/bindings/{binding}`.
+    source: Required. The target Agent of the Binding.
+    target: Required. The target Agent Registry Resource of the Binding.
+    updateTime: Output only. Timestamp when this binding was last updated.
+  """
+
+  authProviderBinding = _messages.MessageField('AuthProviderBinding', 1)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  displayName = _messages.StringField(4)
+  name = _messages.StringField(5)
+  source = _messages.MessageField('Source', 6)
+  target = _messages.MessageField('Target', 7)
+  updateTime = _messages.StringField(8)
+
+
 class CancelOperationRequest(_messages.Message):
   r"""The request message for Operations.CancelOperation."""
 
@@ -812,6 +964,21 @@ class ListAgentsResponse(_messages.Message):
   """
 
   agents = _messages.MessageField('Agent', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
+class ListBindingsResponse(_messages.Message):
+  r"""Message for response to listing Bindings
+
+  Fields:
+    bindings: The list of Binding resources matching the parent and filter
+      criteria in the request. Each Binding resource follows the format:
+      `projects/{project}/locations/{location}/bindings/{binding}`.
+    nextPageToken: A token identifying a page of results the server should
+      return. Used in page_token.
+  """
+
+  bindings = _messages.MessageField('Binding', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
 
 
@@ -1467,6 +1634,17 @@ class Skill(_messages.Message):
   tags = _messages.StringField(5, repeated=True)
 
 
+class Source(_messages.Message):
+  r"""The source of the Binding.
+
+  Fields:
+    identifier: The identifier of the source Agent. Format: *
+      `urn:agent:{publisher}:{namespace}:{name}`
+  """
+
+  identifier = _messages.StringField(1)
+
+
 class StandardQueryParameters(_messages.Message):
   r"""Query parameters accepted by all methods.
 
@@ -1579,6 +1757,19 @@ class Status(_messages.Message):
   code = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   details = _messages.MessageField('DetailsValueListEntry', 2, repeated=True)
   message = _messages.StringField(3)
+
+
+class Target(_messages.Message):
+  r"""The target of the Binding.
+
+  Fields:
+    identifier: The identifier of the target Agent, MCP Server, or Endpoint.
+      Format: * `urn:agent:{publisher}:{namespace}:{name}` *
+      `urn:mcp:{publisher}:{namespace}:{name}` *
+      `urn:endpoint:{publisher}:{namespace}:{name}`
+  """
+
+  identifier = _messages.StringField(1)
 
 
 class Tool(_messages.Message):

@@ -393,7 +393,7 @@ class CreateHelper(object):
 
     if args.resource_manager_tags is not None:
       backend_service.params = self._CreateBackendServiceParams(
-          client.messages, args.resource_manager_tag)
+          client.messages, args.resource_manager_tags)
 
     backend_services_utils.ApplyAffinityCookieArgs(
         client, args, backend_service

@@ -29,6 +29,8 @@ from googlecloudsdk.core import properties
 class ServiceAgent(base.Command):
   """Manage a project's Cloud Storage service agent, which is used to perform Cloud KMS operations."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION':
           """
@@ -70,8 +72,8 @@ class ServiceAgent(base.Command):
     if args.authorize_cmek:
       requests.AddCryptoKeyPermission(args.authorize_cmek,
                                       'serviceAccount:' + service_agent)
-      log.Print(
+      log.status.Print(
           'Authorized project {} to encrypt and decrypt with key:\n{}'.format(
               properties.VALUES.core.project.Get(), args.authorize_cmek))
-    else:
-      log.Print(service_agent)
+      return None
+    return service_agent

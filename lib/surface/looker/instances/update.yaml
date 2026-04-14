@@ -377,6 +377,7 @@
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdatePscServiceAttachments
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdatePeriodicExportConfig
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateControlledEgressConfig
+      - googlecloudsdk.command_lib.looker.instances_update_util:UpdateCatalogIntegrationOptOut
     collection: looker.projects.locations.instances
 
   update:

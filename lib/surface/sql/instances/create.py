@@ -170,6 +170,7 @@ def AddBaseArgs(parser):
   flags.AddConnectionPoolFlags(parser)
   flags.AddReadPoolAutoScaleConfig(parser)
   flags.AddDataApiAccess(parser)
+  flags.AddSqlServerEntraId(parser)
 
   # When adding a new field for instance creation, determine if it should also
   # be included in the restore to new instance command. This command uses backup
@@ -189,7 +190,6 @@ def AddBetaArgs(parser):
   flags.AddEnableAcceleratedReplicaMode(parser)
   flags.AddPerformanceCaptureConfig(parser, hidden=False)
   flags.AddUncMappings(parser)
-  flags.AddSqlServerEntraId(parser)
 
 
 def AddAlphaArgs(unused_parser):

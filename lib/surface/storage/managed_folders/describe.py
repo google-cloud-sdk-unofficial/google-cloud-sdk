@@ -28,6 +28,8 @@ from googlecloudsdk.command_lib.storage.resources import resource_util
 class Describe(base.Command):
   """Describe managed folders."""
 
+  hints = base.CommandHint(read_only=True)
+
   detailed_help = {
       'DESCRIPTION': """Describe managed folders.""",
       'EXAMPLES': """

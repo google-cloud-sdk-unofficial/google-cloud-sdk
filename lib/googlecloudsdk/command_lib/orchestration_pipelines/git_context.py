@@ -338,7 +338,7 @@ class GitContext:
       pass
 
     return {
-        "origination": "GIT",
+        "origination": "GIT_CI_CD",
         "deploymentDetails": {
             "gitRepo": git_repo,
             "gitBranch": git_branch,

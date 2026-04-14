@@ -158,6 +158,33 @@ def AddPrivateConfigGroup(parser, help_text="Private instance configuration."):
           " private service connect."
       ),
   )
+  custom_hostname_group = group.add_group(
+      required=False, help="Custom hostname configuration."
+  )
+  custom_hostname_group.add_argument(
+      "--custom-hostname-api",
+      dest="custom_hostname_api",
+      required=True,
+      help="Custom hostname for api.",
+  )
+  custom_hostname_group.add_argument(
+      "--custom-hostname-git-http",
+      dest="custom_hostname_git_http",
+      required=True,
+      help="Custom hostname for git http.",
+  )
+  custom_hostname_group.add_argument(
+      "--custom-hostname-git-ssh",
+      dest="custom_hostname_git_ssh",
+      required=True,
+      help="Custom hostname for git ssh.",
+  )
+  custom_hostname_group.add_argument(
+      "--custom-hostname-html",
+      dest="custom_hostname_html",
+      required=True,
+      help="Custom hostname for html.",
+  )
 
 
 def AddEnableWorkforceIdentityFederation(

@@ -73,7 +73,7 @@ class _BaseList(object):
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
 @base.DefaultUniverseOnly
 class List(_BaseList, base.ListCommand):

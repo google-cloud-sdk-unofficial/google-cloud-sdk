@@ -96,6 +96,8 @@ def _maybe_create_or_modify_topic(topic_name, service_account_email):
 class Create(base.Command):
   """Create a notification configuration on a bucket."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION':
           """

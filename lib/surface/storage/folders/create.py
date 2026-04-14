@@ -27,6 +27,8 @@ from googlecloudsdk.core import log
 class Create(base.Command):
   """Create folders for hierarchical namespace bucket."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION': 'Create folders.',
       'EXAMPLES': """

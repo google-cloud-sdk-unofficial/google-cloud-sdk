@@ -30,6 +30,8 @@ from googlecloudsdk.command_lib.storage.tasks import set_iam_policy_task
 class AddIamPolicyBinding(base.Command):
   """Add an IAM policy binding to a managed folder."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION': """
       Add an IAM policy binding to a managed folder. For more information, see [Cloud

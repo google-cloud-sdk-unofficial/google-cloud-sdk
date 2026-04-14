@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.util.args import labels_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class Update(base.UpdateCommand):
   r"""Update an existing  CA Pool.
 

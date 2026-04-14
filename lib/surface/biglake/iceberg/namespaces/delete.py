@@ -29,7 +29,9 @@ help_text = textwrap.dedent("""\
     """)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.DefaultUniverseOnly
 class DeleteCatalog(base.DeleteCommand):
   """Delete a BigLake Iceberg REST namespace."""

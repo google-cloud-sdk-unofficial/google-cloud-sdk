@@ -3905,6 +3905,9 @@ def AddAddonsFlagsWithOptions(parser, addon_options):
       not in [
           api_adapter.APPLICATIONMANAGER,
           api_adapter.STATEFULHA,
+          # TODO: b/482020381 - Remove once KUEUE is GA, so it appears in the
+          # visible addon options.
+          api_adapter.KUEUE
       ]
   ]
   visible_addon_options += api_adapter.VISIBLE_CLOUDRUN_ADDONS
@@ -5066,6 +5069,32 @@ def AddMetadataFlags(parser):
   )
 
 
+def AddNodeCreationModeFlag(parser):
+  """Adds --node-creation-mode flag to parser."""
+  help_text = """\
+Configures node creation mode for the cluster, either via kubelet or via control plane.
+"""
+  choices = {
+      'KUBELET': (
+          """\
+                registers nodes via kubelet."""
+      ),
+      'CONTROL_PLANE': (
+          """\
+                registers nodes via control plane; kubelet registration will be
+                rejected. This selection will not take effect if you turn off
+                Shielded Nodes."""
+      ),
+  }
+  parser.add_argument(
+      '--node-creation-mode',
+      choices=choices,
+      default=None,
+      help=help_text,
+      hidden=True,
+  )
+
+
 def AddEnableShieldedNodesFlags(parser):
   """Adds a --enable-shielded-nodes flag to the given parser."""
   help_text = """\
@@ -5951,18 +5980,32 @@ $ {command} --datapath-provider=advanced
   )
 
 
-def AddDataplaneV2Flag(parser, hidden=False):
+def AddDataplaneV2Flag(parser, *, hidden=False, is_update=False):
   """Adds --enable-dataplane-v2 boolean flag."""
   help_text = """
 Enables the new eBPF dataplane for GKE clusters that is required for
 network security, scalability and visibility features.
 """
-  parser.add_argument(
-      '--enable-dataplane-v2',
-      action='store_true',
-      help=help_text,
-      hidden=hidden,
-  )
+  if is_update:
+    update_help_text = """
+Enabling Dataplane V2 causes a re-creation of all cluster nodes.
+Node pools will be patched to run Dataplane V2 agents; node pools that are
+pending patch (including due to maintenance windows) will not.
+"""
+    parser.add_argument(
+        '--enable-dataplane-v2',
+        action=arg_parsers.StoreTrueFalseAction,
+        help=update_help_text,
+        hidden=hidden,
+    )
+  else:
+    parser.add_argument(
+        '--enable-dataplane-v2',
+        action='store_true',
+        default=None,
+        help=help_text,
+        hidden=hidden,
+    )
 
 
 def AddDataplaneV2MetricsFlag(parser):
@@ -6196,6 +6239,22 @@ def AddTeePolicyFlag(parser, hidden=False):
       '--tee-policy',
       help='The TEE policy to apply to the runner pool.',
       hidden=hidden,
+      type=str,
+      default=None)
+
+
+def AddLinkedRunnerSubnetFlag(parser, hidden=False):
+  """Adds a --linked-runner-subnet flag to the given parser."""
+  help_text = """\
+Specifies the subnet for the linked runner node pool. This can be either the
+full resource URL of the subnet or just the subnet name. If only the name is
+provided, the subnet is assumed to be in the same project and region as the
+node pool.
+"""
+  parser.add_argument(
+      '--linked-runner-subnet',
+      hidden=hidden,
+      help=help_text,
       type=str,
       default=None)
 
@@ -8609,7 +8668,7 @@ def AddAcceleratorNetworkProfileFlag(parser, hidden=True):
       Accelerator Network Profile that will be used by the node pool.
 
       Currently only the `auto` value is supported. A compatible Accelerator machine type needs to be specified with the `--machine-type` flag.
-      An Accelerator Network Profiles will be created if it does not exist.
+      An Accelerator Network Profile will be created if it does not exist.
       """,
       default=None,
       type=str,

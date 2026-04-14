@@ -281,8 +281,14 @@ def convert_tasks_to_actions(tasks):
   for task in tasks:
     doc_md = parse_metadata_json(task.docMd)
     action_name = doc_md.get('op_action_name')
-    task_id_to_action_name[task.id] = action_name
-    action_tasks.setdefault(action_name, []).append(task)
+    if action_name:
+      task_id_to_action_name[task.id] = action_name
+      action_tasks.setdefault(action_name, []).append(task)
+    else:
+      log.warning(
+          'No action name found in task metadata: %s',
+          task.id,
+      )
 
   actions_dict = {}
   for action_name, tasks_in_action in action_tasks.items():
@@ -355,13 +361,17 @@ def aggregate_task_instances_to_actions(task_instances):
   Returns:
     A list of dictionaries, each representing an action.
   """
-  task_instance_id_to_action_name = {}
   action_task_instances = {}
   for task_instance in task_instances:
     note = parse_metadata_json(task_instance.note)
     action_name = note.get('op_action_name')
-    task_instance_id_to_action_name[task_instance.id] = action_name
-    action_task_instances.setdefault(action_name, []).append(task_instance)
+    if action_name:
+      action_task_instances.setdefault(action_name, []).append(task_instance)
+    else:
+      log.warning(
+          'No action name found for task instance note: %s',
+          task_instance.taskId,
+      )
 
   actions_dict = {}
   for action_name, task_instances_in_action in action_task_instances.items():

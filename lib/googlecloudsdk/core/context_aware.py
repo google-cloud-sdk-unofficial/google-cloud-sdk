@@ -67,6 +67,17 @@ CONTEXT_AWARE_ACCESS_MTLS_HELP_MSG_GOOGLER = (
     ' set to true as that overrides the gcloud properties flag.'
 )
 
+ENDPOINT_VERIFICATION_AGENT_HELP_MSG = (
+    'Use of client certificate requires endpoint verification agent. '
+    'Run `gcloud topic client-certificate` for installation guide.'
+)
+ENDPOINT_VERIFICATION_AGENT_HELP_MSG_GOOGLER = (
+    'Use of client certificate requires endpoint verification agent. '
+    'Run `gcloud topic client-certificate` for installation guide. '
+    'If you already have an endpoint agent installed, perform a sync by '
+    'following the instructions at go/gcloud-caa-error.'
+)
+
 
 def IsContextAwareAccessDeniedError(exc):
   exc_text = six.text_type(exc)
@@ -110,11 +121,12 @@ class ContextAwareAccessError:
 
 class ConfigException(exceptions.Error):
 
-  def __init__(self):
-    super(ConfigException, self).__init__(
-        'Use of client certificate requires endpoint verification agent. '
-        'Run `gcloud topic client-certificate` for installation guide.'
-    )
+  def __init__(self, is_internal_user):
+    if is_internal_user:
+      msg = ENDPOINT_VERIFICATION_AGENT_HELP_MSG_GOOGLER
+    else:
+      msg = ENDPOINT_VERIFICATION_AGENT_HELP_MSG
+    super(ConfigException, self).__init__(msg)
 
 
 class CertProvisionException(exceptions.Error):
@@ -148,7 +160,7 @@ def SSLCredentials(config_path):
   except google_auth_exceptions.ClientCertError as caught_exc:
     new_exc = CertProvisionException(caught_exc)
     six.raise_from(new_exc, caught_exc)
-  raise ConfigException()
+  raise ConfigException(properties.IsInternalUserCheck())
 
 
 def EncryptedSSLCredentials(config_path):
@@ -185,7 +197,7 @@ def EncryptedSSLCredentials(config_path):
   except files.Error as e:
     log.debug('context aware settings discovery file %s - %s', config_path, e)
 
-  raise ConfigException()
+  raise ConfigException(properties.IsInternalUserCheck())
 
 
 def _ShouldRepairECP(cert_config):

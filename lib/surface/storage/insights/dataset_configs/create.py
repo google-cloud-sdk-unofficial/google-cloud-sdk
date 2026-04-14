@@ -30,6 +30,8 @@ from googlecloudsdk.core import properties
 class Create(base.Command):
   """Create a new dataset config for Insights."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION': """
        Create a new dataset config for Insights.

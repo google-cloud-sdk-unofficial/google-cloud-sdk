@@ -14,6 +14,7 @@
 # limitations under the License.
 """Command for updating env vars and other configuration info."""
 
+from google.api_core import exceptions as gapic_exceptions
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import config_changes as config_changes_mod
@@ -30,6 +31,7 @@ from googlecloudsdk.command_lib.run.v2 import flags_parser
 from googlecloudsdk.command_lib.run.v2 import worker_pools_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core.console import progress_tracker
 
 
@@ -217,7 +219,10 @@ class Update(base.Command):
           )
       )
     else:
-      response.result()  # Wait for the operation to complete.
+      try:
+        response.result()  # Wait for the operation to complete.
+      except gapic_exceptions.GoogleAPICallError as e:
+        core_exceptions.reraise(core_exceptions.Error(str(e)))
       worker_pool_name = worker_pool_ref.workerPoolsId
 
       if creates_revision:

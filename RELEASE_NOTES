@@ -5,6 +5,139 @@ Copyright 2014-2026 Google Inc. All rights reserved.
 Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
 
 
+## 563.0.0 (2026-03-31)
+
+### Google Cloud CLI
+
+* Updated Windows bundled Python for the `gcloud` CLI to 3.13.12.
+
+### AlloyDB
+
+* Added `gcloud beta alloydb connect` which provides a secure connection to your
+  instance using the AlloyDB Auth Proxy and psql.
+* Added support for c4a-highmem-2-lssd machine-type in `gcloud alloydb instances create` and `gcloud alloydb instances update`.
+
+### App Engine
+
+* Reduced the flags to only those that were needed for migrate-to-run command.
+
+### Beyondcorp
+
+* Added `--service-discovery` flag to `gcloud beyondcorp security-gateways create` and `update` commands.
+
+### BigLake
+
+*   Added `gcloud biglake iceberg tables create` to beta.
+*   Promoted `gcloud biglake iceberg catalogs` to GA.
+*   Promoted `gcloud biglake iceberg namespaces` to GA.
+*   Added `gcloud biglake iceberg tables update` to beta.
+
+### BigQuery
+
+* Fixed a bug that would fail to load Cloud CLI configs when reauthentication is required of the user.
+* Improved authentication performance for user account credentials. Note that
+  changing the active Cloud CLI account during a long-running `bq` command may
+  cause the command to fail if the new account has no access to the
+  corresponding resource.
+
+### Certificate Authority Service
+
+* Added rdn sequence subject argument to `gcloud privateca certificates create` to use exact distinguished name from CSR.
+
+### Cloud Identity-Aware Proxy
+
+* Added `get-iam-policy`, `set-iam-policy`, `add-iam-policy-binding`, and `remove-iam-policy-binding` commands to `gcloud alpha iap tcp`.
+
+### Cloud Memorystore
+
+*   Added `maintenance_version`, `available_maintenance_versions`, and `effective_maintenance_version` fields to the output of `gcloud memcache instances describe`.
+*   Added `--maintenance-version` flag to `gcloud memcache instances update` to support self-service updates.
+
+### Cloud Observability
+
+*   Added `gcloud observability trace-scopes` command group. For more
+    information, see <https://docs.cloud.google.com/trace/docs/trace-scope>.
+
+### Cloud SQL
+
+* Promoted `gcloud sql instances perform-storage-shrink` to the GA track.
+* Promoted `gcloud sql instances get-storage-shrink-config` to the GA track.
+* Updated 'cloud-sql-proxy' packaged component to use 2.21.2 of the Cloud SQL
+ Proxy.
+* Added Microsoft Entra ID authentication support for Cloud SQL instances.
+* Added `--entra-id-tenant-id` and `--entra-id-application-id` flags to `gcloud sql instances create`.
+* Added `--entra-id-tenant-id`, `--entra-id-application-id`, and `--clear-entra-id-config` flags to `gcloud sql instances patch`.
+* Added Entra ID certificate management commands:
+    *   `gcloud sql ssl entraid-certs create`
+    *   `gcloud sql ssl entraid-certs list`
+    *   `gcloud sql ssl entraid-certs rotate`
+    *   `gcloud sql ssl entraid-certs rollback`
+
+### Cloud Services
+
+* Updated `gcloud services mcp enable` command to only perform service enablement, as MCP enablement is no longer required.
+* Updated `gcloud services mcp disable` command to be a no-op, as MCP enablement is no longer required.
+* Updated `gcloud services mcp list` command to list enabled services with MCP configuration. No behavior change to `--available`.
+
+### Compute Engine
+
+* Promoted `--service` flag for
+   `gcloud compute backend-services add-backend`,
+   `gcloud compute backend-services update-backend`, and
+   `compute backend-services remove-backend` to beta.
+* Fixed typo in `--resource-manager-tags` flag for Regional Backend Services.
+* Promoted `gcloud compute disks update-kms-key` to GA.
+* Promoted `gcloud compute snapshots update-kms-key` to GA.
+
+### Database Migration
+
+* Added `--auto-conversion`,
+`--quality-assessment` `--conversion-assistance`, and `--pattern-matching` flags
+to `gcloud database-migration conversion-workspaces`
+`create` and `update` to control Gemini settings.
+
+### Developer Connect
+
+* Added `dataform` option to `--github-config-app` of `gcloud developer connect connections create`.
+
+### Kubernetes Engine
+
+* Updated default kubectl from 1.34.5 to 1.34.6.
+* Additional kubectl versions:
+  * kubectl.1.30 (1.30.14)
+  * kubectl.1.31 (1.31.14)
+  * kubectl.1.32 (1.32.13)
+  * kubectl.1.33 (1.33.10)
+  * kubectl.1.34 (1.34.6)
+  * kubectl.1.35 (1.35.3)
+* Added `--accelerator-network-profile` flag to
+  `gcloud container node-pools create` command.
+
+### Network Connectivity
+
+*   Added `--auto-accept`, `--hub`, and `--psc-routing-enabled` flags to `gcloud beta network-connectivity transports create`.
+*   Made `--network` flag optional for `gcloud beta network-connectivity transports create`.
+
+### Secure Source Manager
+
+* Added `--custom-hostname-api`, `--custom-hostname-git-http`,
+  `--custom-hostname-git-ssh`, and `--custom-hostname-html` flags to
+  `gcloud source-manager instances create` command to allow users to specify
+  custom hostnames for Git HTTP/SSH, API and HTML access when creating a private
+  instance.
+
+### Service Extensions
+
+*   Added `--kms-key-name` flag to `gcloud beta service-extensions wasm-plugins` command group to enable CMEK support.
+
+### Vector Search
+
+* Modified `--use-index` flag of `gcloud vector-search collections data-objects search` to accept index ID as a value.
+
+
+Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
+
+
 ## 562.0.0 (2026-03-24)
 
 ### BigQuery
@@ -140,7 +273,6 @@ Subscribe to these release notes at [https://groups.google.com/forum/#!forum/goo
 ### AI
 
 * - Added `europe-north2` to online prediction supported regions.
-- Added `europe-west15` to online prediction supported regions.
 - Added `us-west8` to online prediction supported regions.
 
 ### AlloyDB

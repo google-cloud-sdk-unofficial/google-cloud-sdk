@@ -1643,13 +1643,7 @@ class ClusterUtil:
       if hasattr(slurm_node_set, "computeId"):
         slurm_node_set.computeId = node_set.get("computeId")
       slurm_node_set.computeInstance = compute_instance
-      if hasattr(self.message_module.SlurmNodeSet, "LabelsValue"):
-        slurm_node_set.labels = self.MakeLabels(
-            label_args=node_set.get("labels"),
-            label_cls=self.message_module.SlurmNodeSet.LabelsValue,
-        )
-      if hasattr(slurm_node_set, "startupScript"):
-        slurm_node_set.startupScript = startup_script
+
     return slurm_node_set
 
   def _MakeSlurmPartition(self, partition):

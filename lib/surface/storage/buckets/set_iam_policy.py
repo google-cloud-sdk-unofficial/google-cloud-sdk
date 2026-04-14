@@ -41,6 +41,8 @@ def _set_iam_policy_task_iterator(url_strings, policy):
 class SetIamPolicy(base.Command):
   """Set the IAM policy for a bucket."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION':
           """

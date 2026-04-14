@@ -71,6 +71,10 @@
               api_field: instance.nodeCount
               help_text: |
                 Number of memcache nodes in this instance. Valid values range from 1 to 20.
+            - arg_name: maintenance-version
+              api_field: instance.maintenanceVersion
+              help_text: |
+                The maintenance version to update to.
             - group:
                 release_tracks: [ALPHA, BETA, GA]
                 mutex: true

@@ -410,8 +410,7 @@ def AddressArgHelp(include_external_passthrough=False):
     * 2600:1901::/96
     * https://compute.googleapis.com/compute/v1/projects/project-1/regions/us-central1/addresses/address-1
     * projects/project-1/regions/us-central1/addresses/address-1
-    * regions/us-central1/addresses/address-1
-    * global/addresses/address-1
+    * projects/project-1/global/addresses/address-1
     * address-1
 
     The load-balancing-scheme {lb_schemes} and the target of the forwarding rule
@@ -424,12 +423,58 @@ def AddressArgHelp(include_external_passthrough=False):
 
   if include_external_passthrough:
     detailed_help += """\
-    For load-balancing-scheme EXTERNAL_PASSTHROUGH (used with global
-    Passthrough Network Load Balancers), use the ip_addresses argument to
+
+    For load-balancing-scheme EXTERNAL_PASSTHROUGH (used with global External
+    Passthrough Network Load Balancers), use the `--ip-addresses` argument to
     specify the IP addresses instead.
     """
 
   return textwrap.dedent(detailed_help)
+
+
+def IPAddressesArgHelp():
+  """Build the help text for the ip-addresses argument.
+
+  Returns:
+    The help text for the ip-addresses argument.
+  """
+
+  detailed_help = """\
+    The global IP addresses that the forwarding rule serves. This flag
+    is only used for global forwarding rules with the `EXTERNAL_PASSTHROUGH`
+    load balancing scheme, and must be used in place of the `--address` flag.
+
+    One or two comma-separated global IP addresses may be provided. If one
+    address is provided, the other will be auto-allocated. If two
+    addresses are provided, one must have purpose
+    `PASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP0` and the other must
+    have purpose `PASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP1`.
+
+    If you don't specify IP addresses, ephemeral IP addresses are assigned. You
+    can specify each IP address as a literal IP address or as a
+    reference to an existing Address resource. The following examples are
+    all valid:
+    * 100.1.2.3
+    * 2600:1901::/96
+    * https://compute.googleapis.com/compute/v1/projects/project-1/global/addresses/address-1
+    * projects/project-1/global/addresses/address-1
+    * address-1
+  """
+
+  return textwrap.dedent(detailed_help)
+
+
+def IPAddressesArg():
+  return compute_flags.ResourceArgument(
+      name='--ip-addresses',
+      required=False,
+      resource_name='ip addresses',
+      completer=addresses_flags.AddressesCompleter,
+      global_collection='compute.globalAddresses',
+      plural=True,
+      short_help='IP addresses that the forwarding rule will serve.',
+      detailed_help=IPAddressesArgHelp(),
+  )
 
 
 def AddressArg(include_external_passthrough=False):
@@ -501,6 +546,10 @@ def AddCreateArgs(
       include_psc_google_apis=include_psc_google_apis,
       include_target_service_attachment=include_target_service_attachment,
       include_external_passthrough=include_external_passthrough,
+  )
+
+  AddAddressesAndIPVersions(
+      parser, include_external_passthrough=include_external_passthrough
   )
 
 
@@ -742,8 +791,12 @@ def AddIPProtocols(parser, support_all_protocol):
 def AddAddressesAndIPVersions(parser, include_external_passthrough=False):
   """Adds Addresses and IP versions flag."""
 
+  address_group = parser.add_mutually_exclusive_group()
   address_arg = AddressArg(include_external_passthrough)
-  address_arg.AddArgument(parser)
+  address_arg.AddArgument(parser, mutex_group=address_group)
+  if include_external_passthrough:
+    ip_addresses_arg = IPAddressesArg()
+    ip_addresses_arg.AddArgument(parser, mutex_group=address_group)
   parser.add_argument(
       '--ip-version',
       choices=['IPV4', 'IPV6'],

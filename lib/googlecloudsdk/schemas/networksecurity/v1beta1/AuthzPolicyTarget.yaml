@@ -4,7 +4,6 @@ title: networksecurity v1beta1 AuthzPolicyTarget export schema
 description: A gcloud export/import command YAML validation schema.
 type: object
 required:
-- loadBalancingScheme
 - resources
 additionalProperties: false
 properties:

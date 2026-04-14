@@ -25,6 +25,8 @@ from googlecloudsdk.core import log
 class Delete(base.Command):
   """Delete an inventory report config."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION':
           """

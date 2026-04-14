@@ -14,7 +14,6 @@
 # limitations under the License.
 """Cloud Pub/Sub subscriptions create command."""
 
-
 from apitools.base.py import exceptions as api_ex
 from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.api_lib.util import exceptions
@@ -34,7 +33,6 @@ def _Run(
     enable_labels=False,
     legacy_output=False,
     enable_push_to_cps=False,
-    enable_vertex_ai_smt=False,
 ):
   """Creates one or more subscriptions."""
   flags.ValidateDeadLetterPolicy(args)
@@ -174,7 +172,6 @@ def _Run(
           bigtable_write_metadata=bigtable_write_metadata,
           message_transforms_file=message_transforms_file,
           tags=tags,
-          enable_vertex_ai_smt=enable_vertex_ai_smt,
       )
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
@@ -225,10 +222,14 @@ def _Args(parser, enable_push_to_cps=False, enable_bigtable_config=False):
 class Create(base.CreateCommand):
   """Creates one or more Cloud Pub/Sub subscriptions."""
 
-  detailed_help = {'DESCRIPTION': """\
+  detailed_help = {
+      'DESCRIPTION': (
+          """\
           Creates one or more Cloud Pub/Sub subscriptions for a given topic.
           The new subscription defaults to a PULL subscription unless a push
-          endpoint is specified."""}
+          endpoint is specified."""
+      )
+  }
 
   @classmethod
   def Args(cls, parser):
@@ -265,14 +266,3 @@ class CreateAlpha(CreateBeta):
   @classmethod
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
-
-  def Run(self, args):
-    flags.ValidateFilterString(args)
-    legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
-    return _Run(
-        args,
-        enable_labels=True,
-        legacy_output=legacy_output,
-        enable_push_to_cps=True,
-        enable_vertex_ai_smt=True,
-    )

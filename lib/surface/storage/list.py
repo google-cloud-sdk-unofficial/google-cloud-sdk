@@ -32,6 +32,8 @@ from six.moves import queue
 class List(base.ListCommand):
   """List the objects in Cloud Storage buckets."""
 
+  hints = base.CommandHint(read_only=True)
+
   detailed_help = {
       'DESCRIPTION': """\
       *{command}* lets you list the objects in your Cloud Storage buckets.

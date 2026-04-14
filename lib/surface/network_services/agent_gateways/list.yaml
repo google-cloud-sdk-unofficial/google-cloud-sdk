@@ -1,0 +1,31 @@
+# Copyright 2026 Google LLC. All Rights Reserved.
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    List AgentGateways.
+  description: |
+    List all agent gateways in the specified location of the current project.
+  examples: |
+    To list agent gateways in the current project, run:
+
+      $ {command} --location=us-central1
+
+request:
+  ALPHA:
+    api_version: v1alpha1
+  collection: networkservices.projects.locations.agentGateways
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:location
+    help_text: Location to list agent gateways in.
+
+response:
+  id_field: name
+
+output:
+  format: |-
+    table(
+       name.basename():label=NAME
+     )

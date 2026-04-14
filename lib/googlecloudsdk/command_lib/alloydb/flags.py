@@ -731,6 +731,7 @@ def AddMachineType(parser, required=False):
       'n2-highmem-96',
       'n2-highmem-128',
       'c4a-highmem-1',
+      'c4a-highmem-2-lssd',
       'c4a-highmem-4-lssd',
       'c4a-highmem-8-lssd',
       'c4a-highmem-16-lssd',

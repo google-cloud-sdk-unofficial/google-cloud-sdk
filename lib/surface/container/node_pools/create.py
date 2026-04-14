@@ -323,7 +323,7 @@ class Create(base.CreateCommand):
     flags.AddSecondaryBootDisksArgs(parser)
     flags.AddEnableConfidentialStorageFlag(parser, for_node_pool=True)
     flags.AddDataCacheCountFlag(parser, for_node_pool=True)
-    flags.AddAcceleratorNetworkProfileFlag(parser)
+    flags.AddAcceleratorNetworkProfileFlag(parser, hidden=False)
     flags.AddNodeDrainSettingsFlag(parser)
 
   def ParseCreateNodePoolOptions(self, args):
@@ -593,32 +593,41 @@ class CreateAlpha(Create):
     ops.local_ssd_encryption_mode = args.local_ssd_encryption_mode
     ops.data_cache_count = args.data_cache_count
 
-    if args.enable_attestation and not args.tee_policy:
-      raise exceptions.InvalidArgumentException(
-          '--enable-attestation',
-          'The --tee-policy flag must be provided when --enable-attestation is'
-          ' specified.',
-      )
     if args.tee_policy and not args.enable_attestation:
       raise exceptions.InvalidArgumentException(
           '--tee-policy',
           'The --enable-attestation flag must be provided when --tee-policy is'
           ' specified.',
       )
-    if args.enable_attestation and args.security_mode is None:
-      args.security_mode = 'debug'
-    if args.enable_attestation and args.security_mode == 'none':
+    security_mode = args.security_mode
+    # Default to security mode hardened to be secure by default when
+    # attestation is enabled.
+    if args.enable_attestation and security_mode is None:
+      security_mode = 'hardened'
+
+    if args.enable_attestation and security_mode == 'none':
       raise exceptions.InvalidArgumentException(
           '--enable-attestation',
           'The --security-mode flag must be set to "debug" or "hardened" when'
           ' --enable-attestation is specified.',
       )
+    if (
+        not args.enable_attestation
+        and security_mode != 'none'
+        and security_mode is not None
+    ):
+      raise exceptions.InvalidArgumentException(
+          '--security-mode',
+          'The --security-mode flag cannot be set to "debug" or "hardened" when'
+          ' --enable-attestation is not specified.',
+      )
     ops.runner_pool_control_mode = args.runner_pool_control_mode
     ops.control_node_pool = args.control_node_pool
     ops.enable_attestation = args.enable_attestation
     ops.tee_policy = args.tee_policy
-    ops.security_mode = args.security_mode
+    ops.security_mode = security_mode
     ops.subnetwork = args.subnetwork
+    ops.linked_runner_subnet = args.linked_runner_subnet
     return ops
 
   @staticmethod
@@ -705,5 +714,6 @@ class CreateAlpha(Create):
     flags.AddEnableOtlpIngestionEndpointFlag(runner_pool_group, hidden=True)
     flags.AddEnableWorkloadLogCollectionFlag(runner_pool_group, hidden=True)
     flags.AddNodeDrainSettingsFlag(parser)
+    flags.AddLinkedRunnerSubnetFlag(parser, hidden=True)
 
 Create.detailed_help = DETAILED_HELP

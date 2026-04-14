@@ -39,6 +39,8 @@ def _delete_notification_configuration_task_iterator(urls):
 class Delete(base.DeleteCommand):
   """Delete notification configurations from a bucket."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION':
           """

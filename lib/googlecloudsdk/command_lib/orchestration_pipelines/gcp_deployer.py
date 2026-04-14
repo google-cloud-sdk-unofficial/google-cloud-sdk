@@ -158,7 +158,81 @@ def _handle_existing_resource(
     )
 
 
+def validate_gcp_resource_l1(handler: handlers_base.GcpResourceHandler) -> None:
+  """Validates GCP resource L1 (Can it be converted to One Platform message)."""
+  resource_id = handler.get_resource_id()
+  resource_type_name = handler.resource.type
+  log.status.Print(
+      f"     Checking schema for {resource_type_name}: '{resource_id}'"
+  )
+  try:
+    local_definition = handler.get_local_definition()
+    handler.to_resource_message(local_definition)
+    log.status.Print(f"     {resource_type_name} schema is valid.")
+  except Exception as e:
+    raise ValueError(
+        f"Validation failed for resource '{resource_id}' of type"
+        f" '{resource_type_name}': {e}"
+    ) from e
+
+
+def validate_gcp_resource_l2(handler: handlers_base.GcpResourceHandler) -> None:
+  """Validates GCP resource L2 (Does it exist in GCP and what are diffs)."""
+  resource_id = handler.get_resource_id()
+  resource_type_name = handler.resource.type
+  log.status.Print(
+      f"     Checking existence of {resource_type_name}: '{resource_id}'"
+  )
+  try:
+    existing_resource = handler.find_existing_resource()
+    local_definition = handler.get_local_definition()
+    if existing_resource:
+      log.status.Print(
+          f"     Found existing {resource_type_name}. "
+          "Comparing configurations..."
+      )
+      changed_fields = handler.compare(existing_resource, local_definition)
+      if changed_fields:
+        fields_str = ", ".join(changed_fields)
+        log.status.Print(f"     Differences found in fields: {fields_str}")
+        if handler.resource.update_action == "recreate":
+          try:
+            handler.get_delete_method()
+          except NotImplementedError as e:
+            raise ValueError(
+                f"Validation failed for resource '{resource_id}': "
+                "Update mode is set to 'recreate' but the resource type "
+                f"'{resource_type_name}' does not support deletion."
+            ) from e
+        elif handler.resource.update_action != "skip":
+          try:
+            handler.get_update_method()
+          except NotImplementedError as e:
+            raise ValueError(
+                f"Validation failed for resource '{resource_id}': "
+                "Update mode is set to patch but the resource type "
+                f"'{resource_type_name}' does not support patch updates. "
+                "Please set `updateAction: recreate`."
+            ) from e
+      else:
+        log.status.Print(f"     {resource_type_name} is up-to-date in cloud.")
+    else:
+      log.status.Print(
+          f"     {resource_type_name} not found in cloud. Will be created."
+      )
+  except (
+      apitools_exceptions.HttpError,
+      ValueError,
+      NotImplementedError,
+  ) as e:
+    raise ValueError(
+        f"Validation failed for resource '{resource_id}' of type"
+        f" '{resource_type_name}': {e}"
+    ) from e
+
+
 def deploy_gcp_resource(handler: handlers_base.GcpResourceHandler) -> None:
+
   """Deploys a GCP resource using the given handler."""
   resource_id = handler.get_resource_id()
   resource_type_name = handler.resource.type

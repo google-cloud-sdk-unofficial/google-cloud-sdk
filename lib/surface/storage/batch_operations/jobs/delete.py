@@ -26,6 +26,8 @@ from googlecloudsdk.core import log
 class Delete(base.Command):
   """Delete a batch-operations job."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       "DESCRIPTION": """
       Delete the batch operation job.

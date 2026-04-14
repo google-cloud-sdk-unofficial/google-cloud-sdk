@@ -78,12 +78,11 @@ def GetProtectedServiceWarning(service_name):
   return _PROTECTED_SERVICES.get(service_name)
 
 
-def GetMcpEnabledError(resource_name):
+def GetMcpEnabledError(service, resource_name):
   """Return the error message associated with a MCP enabled service."""
   return (
-      'To enable the MCP endpoint, the service must be enabled first. '
-      'Do you want to enable the service for the resource'
-      f' {resource_name}?'
+      'This command will enable the service'
+      f' {service} for the resource {resource_name}.'
   )
 
 
@@ -1709,13 +1708,12 @@ def ListMcpServicesV2Beta(
   parent = []
   try:
     if enabled:
-      policy_name = resource_name + _EFFECTIVE_MCP_POLICY
-      effectivemcppolicy = GetEffectiveMcpPolicy(policy_name)
+      policy_name = resource_name + _EFFECTIVE_POLICY
+      effective_policy = GetEffectivePolicyV2Beta(policy_name)
 
-      for rules in effectivemcppolicy.mcpEnableRules:
-        for mcp_service in rules.mcpServices:
-          parent.append(f'{resource_name}/{mcp_service.service}')
-          service_to_endpoint[mcp_service.service] = ''
+      for rules in effective_policy.enableRules:
+        for service in rules.services:
+          parent.append(f'{resource_name}/{service}')
 
       for value in range(0, len(parent), 20):
         response = BatchGetService(resource_name, parent[value : value + 20])

@@ -1209,8 +1209,7 @@ apis:
         projects.iap_web.services:
           path: projects/{project}/iap_web/{iapWebId}/services/{serviceId}
         projects.iap_web.services.versions:
-          path: 
-            projects/{project}/iap_web/{iapWebId}/services/{serviceId}/versions/{versionId}
+          path: projects/{project}/iap_web/{iapWebId}/services/{serviceId}/versions/{versionId}
     v1:
       discovery_doc: iap_v1.json
       default: true
@@ -1220,15 +1219,21 @@ apis:
         projects.iap_web.services:
           path: projects/{project}/iap_web/{iapWebId}/services/{serviceId}
         projects.iap_web.services.versions:
-          path: 
-            projects/{project}/iap_web/{iapWebId}/services/{serviceId}/versions/{versionId}
+          path: projects/{project}/iap_web/{iapWebId}/services/{serviceId}/versions/{versionId}
         projects.iap_tunnel.tunnel_types:
           path: projects/{project}/iap_tunnel/{tunnelType}
         projects.iap_tunnel.tunnel_types.locations:
           path: projects/{project}/iap_tunnel/{tunnelType}/locations/{location}
         projects.iap_tunnel.tunnel_types.locations.services:
-          path: 
-            projects/{project}/iap_tunnel/{tunnelType}/locations/{location}/services/{tunnelService}
+          path: projects/{project}/iap_tunnel/{tunnelType}/locations/{location}/services/{tunnelService}
+        projects.locations.iap_web:
+          path: projects/{project}/locations/{location}/iap_web/{iapWebId}
+        projects.locations.iap_web.agents:
+          path: projects/{project}/locations/{location}/iap_web/{iapWebId}/agents/{agentId}
+        projects.locations.iap_web.mcpServers:
+          path: projects/{project}/locations/{location}/iap_web/{iapWebId}/mcpServers/{mcpServerId}
+        projects.locations.iap_web.endpoints:
+          path: projects/{project}/locations/{location}/iap_web/{iapWebId}/endpoints/{endpointId}
   ids:
     v1:
       discovery_doc: ids_v1.json
@@ -1406,8 +1411,6 @@ apis:
       discovery_doc: networkconnectivity_v1alpha1.json
       default: true
     v1beta:
-      skip:
-        bug: b/489463293
       discovery_doc: networkconnectivity_v1beta.json
     v1:
       skip:
@@ -2211,11 +2214,23 @@ apis:
   workloadidentity:
     v1alpha:
       discovery_doc: workloadidentity_v1alpha.json
+      resources:
+        projects.locations.serviceProducers:
+          path: projects/{project}/locations/{location}/serviceProducers/{serviceProducer}
+        folders.locations.serviceProducers:
+          path: folders/{folder}/locations/{location}/serviceProducers/{serviceProducer}
+        organizations.locations.serviceProducers:
+          path: organizations/{organization}/locations/{location}/serviceProducers/{serviceProducer}
+    v1:
+      discovery_doc: workloadidentity_v1.json
       default: true
       resources:
-        projects.locations.serviceAgents:
-          path: 
-            projects/{projectsId}/locations/{locationsId}/serviceAgents/{serviceAgentsId}
+        projects.locations.serviceProducers:
+          path: projects/{project}/locations/{location}/serviceProducers/{serviceProducer}
+        folders.locations.serviceProducers:
+          path: folders/{folder}/locations/{location}/serviceProducers/{serviceProducer}
+        organizations.locations.serviceProducers:
+          path: organizations/{organization}/locations/{location}/serviceProducers/{serviceProducer}
 canonical_surfaces:
   accessapproval:
     name: accessapproval

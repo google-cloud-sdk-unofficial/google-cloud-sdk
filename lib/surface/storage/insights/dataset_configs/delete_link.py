@@ -25,6 +25,8 @@ from googlecloudsdk.command_lib.storage.insights.dataset_configs import resource
 class DeleteLink(base.Command):
   """Delete a link to a BigQuery instance."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION': """
       Delete a link to a BigQuery instance.

@@ -27,8 +27,8 @@
       required: true
       repeated: false
 
-    - arg_name: value-type
-      api_field: flagAttribute.valueType
+    - arg_name: attribute-value-type
+      api_field: flagAttribute.attributeValueType
       help_text: |-
         The type of the flag attribute's value, e.g. STRING (required).
       is_positional: false
@@ -36,19 +36,19 @@
       repeated: false
       choices:
       - arg_value: bool
-        enum_value: BOOLEAN
+        enum_value: FLAG_ATTRIBUTE_VALUE_TYPE_BOOLEAN
         help_text: |-
           The flag attribute's value is a boolean.
       - arg_value: int
-        enum_value: INTEGER
+        enum_value: FLAG_ATTRIBUTE_VALUE_TYPE_INTEGER
         help_text: |-
           The flag attribute's value is an integer.
       - arg_value: string
-        enum_value: STRING
+        enum_value: FLAG_ATTRIBUTE_VALUE_TYPE_STRING
         help_text: |-
           The flag attribute's value is a string.
       - arg_value: double
-        enum_value: DOUBLE
+        enum_value: FLAG_ATTRIBUTE_VALUE_TYPE_DOUBLE
         help_text: |-
           The flag attribute's value is a double.
 

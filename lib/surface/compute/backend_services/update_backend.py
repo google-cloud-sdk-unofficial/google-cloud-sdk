@@ -102,7 +102,10 @@ class UpdateBackend(base.UpdateCommand):
     replacement = encoding.CopyProtoMessage(existing)
 
     backend_to_update = None
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA and args.service:
+    if (
+        self.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]
+        and args.service
+    ):
       for backend in replacement.backends:
         if backend.service == args.service:
           backend_to_update = backend
@@ -274,7 +277,9 @@ class UpdateBackendBeta(UpdateBackend):
   @classmethod
   def Args(cls, parser):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
-    flags.AddInstanceGroupAndNetworkEndpointGroupArgs(parser, 'update in')
+    flags.AddInstanceGroupAndNetworkEndpointGroupArgs(
+        parser, 'update in', support_inline_service=True
+    )
     backend_flags.AddDescription(parser)
     backend_flags.AddBalancingMode(parser, release_track=cls.ReleaseTrack())
     backend_flags.AddCapacityLimits(parser, release_track=cls.ReleaseTrack())
@@ -333,21 +338,6 @@ class UpdateBackendAlpha(UpdateBackendBeta):
   For more information about the available settings, see
   https://cloud.google.com/load-balancing/docs/backend-service.
   """
-
-  @classmethod
-  def Args(cls, parser):
-    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
-    flags.AddInstanceGroupAndNetworkEndpointGroupArgs(
-        parser, 'update in', support_inline_service=True
-    )
-    backend_flags.AddDescription(parser)
-    backend_flags.AddBalancingMode(parser, release_track=cls.ReleaseTrack())
-    backend_flags.AddCapacityLimits(parser, release_track=cls.ReleaseTrack())
-    backend_flags.AddCapacityScalar(parser)
-    backend_flags.AddFailover(parser, default=None)
-    backend_flags.AddPreference(parser)
-    backend_flags.AddTrafficDuration(parser)
-    backend_flags.AddCustomMetrics(parser, add_clear_argument=True)
 
   def _ValidateArgs(self, args):
     """Overrides."""

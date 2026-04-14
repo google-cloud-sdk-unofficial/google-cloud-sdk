@@ -1,0 +1,51 @@
+project:
+  name: project
+  collection: observability.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: The id of the project
+
+folder:
+  name: folder
+  collection: observability.folders
+  attributes:
+  - &folder
+    parameter_name: foldersId
+    attribute_name: folder
+    help: The id of the folder
+
+organization:
+  name: organization
+  collection: observability.organizations
+  attributes:
+  - &organization
+    parameter_name: organizationsId
+    attribute_name: organization
+    help: The id of the organization
+
+location:
+  name: location
+  resources:
+  - name: location
+    collection: observability.projects.locations
+    attributes:
+    - *project
+    - &location
+      parameter_name: locationsId
+      attribute_name: location
+      help: The resource location
+    disable_auto_completers: true
+  - name: location
+    collection: observability.folders.locations
+    attributes:
+    - *folder
+    - *location
+    disable_auto_completers: true
+  - name: location
+    collection: observability.organizations.locations
+    attributes:
+    - *organization
+    - *location
+    disable_auto_completers: true

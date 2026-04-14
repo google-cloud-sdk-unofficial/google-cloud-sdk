@@ -14,7 +14,10 @@
 # limitations under the License.
 """Registry of supported GCP resource handlers."""
 
+from typing import Any
+
 from googlecloudsdk.command_lib.orchestration_pipelines.handlers import artifactregistry
+from googlecloudsdk.command_lib.orchestration_pipelines.handlers import base as handlers_base
 from googlecloudsdk.command_lib.orchestration_pipelines.handlers import bq
 from googlecloudsdk.command_lib.orchestration_pipelines.handlers import bq_dts
 from googlecloudsdk.command_lib.orchestration_pipelines.handlers import cloudkms
@@ -28,7 +31,7 @@ from googlecloudsdk.command_lib.orchestration_pipelines.handlers import secretma
 from googlecloudsdk.command_lib.orchestration_pipelines.handlers import sqladmin
 from googlecloudsdk.command_lib.orchestration_pipelines.handlers import storage
 
-RESOURCE_HANDLERS = {
+_RESOURCE_HANDLERS = {
     # go/keep-sorted start
     "artifactregistry.repository": (
         artifactregistry.ArtifactRegistryRepositoryHandler
@@ -79,3 +82,46 @@ RESOURCE_HANDLERS = {
     "storage.bucket.notification": storage.StorageNotificationHandler,
     # go/keep-sorted end
 }
+
+
+def GetHandlerClasses():
+  """Returns a dictionary mapping resource type to its handler class."""
+  return _RESOURCE_HANDLERS.copy()
+
+
+def GetHandler(
+    resource: Any,
+    environment: Any,
+    dry_run: bool = False,
+    *,
+    debug: bool = False,
+    show_requests: bool = False,
+) -> handlers_base.GcpResourceHandler:
+  """Gets the appropriate handler for a given resource.
+
+  Args:
+    resource: The resource object from the deployment model.
+    environment: The environment object from the deployment model.
+    dry_run: Whether to perform a dry run.
+    debug: Whether to enable debug logging.
+    show_requests: Whether to show API requests.
+
+  Returns:
+    A handler object for the specified resource type.
+
+  Raises:
+    ValueError: If the resource type is not supported.
+  """
+  handler_class = _RESOURCE_HANDLERS.get(resource.type)
+  if not handler_class:
+    raise ValueError(f"Unsupported resource type: {resource.type}")
+
+  # Passing debug and show_requests regardless of handler kwargs compatibility.
+  # Typically handled correctly by GcpResourceHandler base.
+  return handler_class(
+      resource,
+      environment,
+      dry_run=dry_run,
+      debug=debug,
+      show_requests=show_requests,
+  )

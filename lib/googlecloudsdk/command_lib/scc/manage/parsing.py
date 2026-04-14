@@ -233,8 +233,7 @@ def ParseJSONFile(file):
 
 
 def GetEnablementStateFromArgs(
-    enablement_state: str,
-    module_type: constants.CustomModuleType
+    enablement_state: str, module_type: constants.CustomModuleType
 ):
   """Parse the enablement state."""
   if module_type == constants.CustomModuleType.SHA:
@@ -251,9 +250,7 @@ def GetEnablementStateFromArgs(
     )
 
   if enablement_state is None:
-    raise errors.InvalidEnablementStateError(
-        'Error parsing enablement state. Enablement state cannot be empty.'
-    )
+    return None
 
   state = enablement_state.upper()
 
@@ -270,14 +267,22 @@ def GetEnablementStateFromArgs(
     )
 
 
-def CreateUpdateMaskFromArgs(args):
+def CreateUpdateMaskFromArgs(
+    args,
+    module_type: constants.CustomModuleType = constants.CustomModuleType.SHA,
+):
   """Create an update mask with the args given."""
+  config_field = (
+      'config'
+      if module_type == constants.CustomModuleType.ETD
+      else 'custom_config'
+  )
   if args.enablement_state is not None and args.custom_config_file is not None:
-    return 'enablement_state,custom_config'
+    return 'enablement_state,{}'.format(config_field)
   elif args.enablement_state is not None:
     return 'enablement_state'
   elif args.custom_config_file is not None:
-    return 'custom_config'
+    return config_field
   else:
     raise errors.InvalidUpdateMaskInputError(
         'Error parsing Update Mask. Either a custom configuration or an'

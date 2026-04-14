@@ -182,6 +182,13 @@ def UpdateNodeType(unused_cluster_ref, args, patch_request):
   return patch_request
 
 
+def UpdateAclPolicy(unused_cluster_ref, args, patch_request):
+  """Hook to add ACL policy to the redis cluster update request."""
+  if args.IsSpecified('acl_policy'):
+    patch_request = AddFieldToUpdateMask('acl_policy', patch_request)
+  return patch_request
+
+
 def UpdateAutomatedBackupConfig(unused_cluster_ref, args, patch_request):
   """Hook to add automated backup config to the redis cluster update request."""
   if (

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@
     examples: |-
       To update the scope, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - help_text: |-
@@ -46,6 +46,14 @@
         The full resource name of the `LogScope`. For example:
 
             //logging.googleapis.com/projects/myproject/locations/global/logScopes/my-log-scope
+    - arg_name: trace-scope
+      api_field: scope.traceScope
+      required: false
+      repeated: false
+      help_text: |-
+        The resource name of the `TraceScope`. For example:
+
+            projects/myproject/locations/global/traceScopes/my-trace-scope
   request:
     api_version: v1
     collection:

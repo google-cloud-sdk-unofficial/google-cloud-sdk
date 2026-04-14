@@ -14,7 +14,6 @@
 # limitations under the License.
 """Cloud Pub/Sub subscriptions update command."""
 
-
 from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
@@ -66,7 +65,6 @@ class Update(base.UpdateCommand):
       /,
       *,
       enable_push_to_cps=False,
-      enable_vertex_ai_smt=False,
   ):
     """This is what gets called when the user runs this command.
 
@@ -75,7 +73,6 @@ class Update(base.UpdateCommand):
         command invocation.
       enable_push_to_cps: Whether or not to enable Pubsub Export config flags
         support.
-      enable_vertex_ai_smt: Whether to enable Vertex AI SMTs.
 
     Returns:
       A serialized object (dict) describing the results of the operation. This
@@ -246,7 +243,6 @@ class Update(base.UpdateCommand):
           clear_bigtable_config=clear_bigtable_config,
           message_transforms_file=message_transforms_file,
           clear_message_transforms=clear_message_transforms,
-          enable_vertex_ai_smt=enable_vertex_ai_smt,
       )
     except subscriptions.NoFieldsSpecifiedError:
       if not any(
@@ -274,12 +270,8 @@ class UpdateBeta(Update):
     )
 
   @exceptions.CatchHTTPErrorRaiseHTTPException()
-  def Run(self, args, /, *, enable_vertex_ai_smt=False):
-    return super(UpdateBeta, self).Run(
-        args,
-        enable_push_to_cps=True,
-        enable_vertex_ai_smt=enable_vertex_ai_smt,
-    )
+  def Run(self, args):
+    return super(UpdateBeta, self).Run(args, enable_push_to_cps=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -289,7 +281,3 @@ class UpdateAlpha(UpdateBeta):
   @classmethod
   def Args(cls, parser):
     super(UpdateAlpha, cls).Args(parser)
-
-  @exceptions.CatchHTTPErrorRaiseHTTPException()
-  def Run(self, args):
-    return super(UpdateAlpha, self).Run(args, enable_vertex_ai_smt=True)

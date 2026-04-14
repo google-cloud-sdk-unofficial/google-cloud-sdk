@@ -15,7 +15,6 @@
 
 """Utils for IAP commands."""
 
-
 from googlecloudsdk.api_lib.iap import util as iap_api
 from googlecloudsdk.calliope import exceptions as calliope_exc
 from googlecloudsdk.command_lib.iam import iam_util
@@ -49,6 +48,9 @@ SETTING_RESOURCE_TYPE_ENUM = (
     FOLDER_RESOURCE_TYPE,
     BACKEND_SERVICES_RESOURCE_TYPE,
     FORWARDING_RULE_RESOURCE_TYPE,
+    CLOUD_RUN_RESOURCE_TYPE,
+)
+IAP_TCP_IAM_RESOURCE_TYPE_ENUM = (
     CLOUD_RUN_RESOURCE_TYPE,
 )
 
@@ -261,6 +263,27 @@ def AddOauthClientArgs(parser):
       '--oauth2-client-secret',
       required=True,
       help='OAuth 2.0 client secret to use.')
+
+
+def AddIapTcpIamResourceArgs(
+    parser,
+):
+  """Adds flags for an IAP TCP IAM resource.
+  """
+  group = parser.add_group()
+  group.add_argument(
+      '--resource-type',
+      choices=IAP_TCP_IAM_RESOURCE_TYPE_ENUM,
+      help='Resource type of the IAP resource.',
+  )
+  group.add_argument('--service', help='Service name.')
+  group.add_argument(
+      '--region',
+      help=(
+          'Region name. Required when `--service` is specified for '
+          '`resource-type=cloud-run`.'
+      ),
+  )
 
 
 def AddAddIamPolicyBindingArgs(parser):
@@ -675,3 +698,31 @@ def ParseIapDestGroupResourceWithNoGroupId(release_track, args):
   """
   project = properties.VALUES.core.project.GetOrFail()
   return iap_api.IapTunnelDestGroupResource(release_track, project, args.region)
+
+
+def ParseIapTcpIamResource(release_track, args):
+  """Parses an IAP TCP IAM resource from the input arguments."""
+  project = properties.VALUES.core.project.GetOrFail()
+  if args.resource_type != CLOUD_RUN_RESOURCE_TYPE:
+    raise calliope_exc.InvalidArgumentException(
+        '--resource-type',
+        '`--resource-type` must be specified for IAP TCP IAM resources.',
+    )
+  if not args.service:
+    return iap_api.IapTcpIamResources(
+        release_track, project, tunnel_type='cloudRun', region=args.region
+    )
+  if not args.region:
+    raise calliope_exc.InvalidArgumentException(
+        '--region',
+        '`--region` must be specified for '
+        '`--resource-type=cloud-run` with `--service`.',
+    )
+  return iap_api.IapTcpIamResource(
+      release_track,
+      project,
+      tunnel_type='cloudRun',
+      region=args.region,
+      service=args.service,
+  )
+

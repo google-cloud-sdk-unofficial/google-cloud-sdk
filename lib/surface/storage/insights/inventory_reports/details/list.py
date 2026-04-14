@@ -24,6 +24,8 @@ from googlecloudsdk.command_lib.storage.insights.inventory_reports import resour
 class List(base.ListCommand):
   """List inventory report details."""
 
+  hints = base.CommandHint(read_only=True)
+
   detailed_help = {
       'DESCRIPTION':
           """

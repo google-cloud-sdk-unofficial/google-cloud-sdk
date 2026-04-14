@@ -351,6 +351,13 @@ Resource policy '{policy_name}' not found in project '{project}' region '{region
 WRONG_REGION_RESOURCE_POLICY_ERROR_MSG = """\
 Resource policy '{policy_name}' was not found in region '{wrong_region}', but a policy with the same name exists in region '{region}'. Did you mean to specify that region?'"""
 
+NODE_CREATE_VIA_CONTROL_PLANE_WITHOUT_SHIELDED_NODES_ERROR_MSG = """\
+Cannot use control_plane node creation mode when Shielded Nodes are disabled."""
+
+NODE_CREATION_MODE_NOT_SUPPORTED = """\
+Invalid value for --node-creation-mode: '{mode}'.
+"""
+
 DEFAULT_MAX_NODES_PER_POOL = 1000
 
 MAX_AUTHORIZED_NETWORKS_CIDRS_PRIVATE = 100
@@ -371,6 +378,7 @@ HIGHSCALECHECKPOINTING = 'HighScaleCheckpointing'
 LUSTRECSIDRIVER = 'LustreCsiDriver'
 RAYOPERATOR = 'RayOperator'
 SLURMOPERATOR = 'SlurmOperator'
+KUEUE = 'Kueue'
 ISTIO = 'Istio'
 NETWORK_POLICY = 'NetworkPolicy'
 NODELOCALDNS = 'NodeLocalDNS'
@@ -411,6 +419,7 @@ ADDONS_OPTIONS = DEFAULT_ADDONS + [
     LUSTRECSIDRIVER,
     RAYOPERATOR,
     SLURMOPERATOR,
+    KUEUE,
 ]
 BETA_ADDONS_OPTIONS = ADDONS_OPTIONS + [
     ISTIO,
@@ -913,6 +922,7 @@ class CreateClusterOptions(object):
       node_architecture_taint_behavior=None,
       node_pool_upgrade_concurrency_config=None,
       enable_scheduled_upgrades=None,
+      node_creation_mode=None,
   ):
     self.node_machine_type = node_machine_type
     self.node_source_image = node_source_image
@@ -1238,6 +1248,7 @@ class CreateClusterOptions(object):
         node_pool_upgrade_concurrency_config
     )
     self.enable_scheduled_upgrades = enable_scheduled_upgrades
+    self.node_creation_mode = node_creation_mode
 
 
 class UpdateClusterOptions(object):
@@ -1443,6 +1454,7 @@ class UpdateClusterOptions(object):
       linked_runners_mode=None,
       enable_scheduled_upgrades=None,
       disable_scheduled_upgrades=None,
+      node_creation_mode=None,
   ):
     self.version = version
     self.update_master = bool(update_master)
@@ -1693,6 +1705,7 @@ class UpdateClusterOptions(object):
     self.linked_runners_mode = linked_runners_mode
     self.enable_scheduled_upgrades = enable_scheduled_upgrades
     self.disable_scheduled_upgrades = disable_scheduled_upgrades
+    self.node_creation_mode = node_creation_mode
 
 
 class SetMasterAuthOptions(object):
@@ -1834,6 +1847,7 @@ class CreateNodePoolOptions(object):
       enable_system_telemetry_collection=None,
       enable_otlp_ingestion_endpoint=None,
       enable_workload_log_collection=None,
+      linked_runner_subnet=None,
   ):
     self.machine_type = machine_type
     self.disk_size_gb = disk_size_gb
@@ -1950,6 +1964,7 @@ class CreateNodePoolOptions(object):
     self.respect_pdb_during_node_pool_deletion = (
         respect_pdb_during_node_pool_deletion
     )
+    self.linked_runner_subnet = linked_runner_subnet
     self.enable_lustre_multi_nic = enable_lustre_multi_nic
     self.subnetwork = subnetwork
     self.capacity_wait_duration = capacity_wait_duration
@@ -2670,6 +2685,7 @@ class APIAdapter(object):
           enable_lustre_csi_driver=options.addons.get(LUSTRECSIDRIVER, False),
           enable_ray_operator=options.addons.get(RAYOPERATOR, False),
           enable_slurm_operator=options.addons.get(SLURMOPERATOR, False),
+          enable_kueue=options.addons.get(KUEUE),
       )
       # CONFIGCONNECTOR is disabled by default.
       if CONFIGCONNECTOR in options.addons:
@@ -2922,7 +2938,18 @@ class APIAdapter(object):
       cluster.shieldedNodes = self.messages.ShieldedNodes(
           enabled=options.enable_shielded_nodes
       )
-
+    if options.node_creation_mode is not None:
+      if (
+          options.node_creation_mode == 'CONTROL_PLANE'
+          and options.enable_shielded_nodes is not None
+          and not options.enable_shielded_nodes
+      ):
+        raise util.Error(
+            NODE_CREATE_VIA_CONTROL_PLANE_WITHOUT_SHIELDED_NODES_ERROR_MSG
+        )
+      cluster.nodeCreationConfig = _GetNodeCreationConfig(
+          options, self.messages
+      )
     if options.workload_pool:
       cluster.workloadIdentityConfig = self.messages.WorkloadIdentityConfig(
           workloadPool=options.workload_pool
@@ -4982,6 +5009,10 @@ class APIAdapter(object):
         addons.slurmOperatorConfig = self.messages.SlurmOperatorConfig(
             enabled=not options.disable_addons.get(SLURMOPERATOR)
         )
+      if options.disable_addons.get(KUEUE) is not None:
+        addons.kueueConfig = self.messages.KueueConfig(
+            enabled=not options.disable_addons.get(KUEUE)
+        )
       update = self.messages.ClusterUpdate(desiredAddonsConfig=addons)
     elif (
         options.enable_ray_cluster_logging is not None
@@ -5961,6 +5992,12 @@ class APIAdapter(object):
       update = self.messages.ClusterUpdate(
           desiredAnonymousAuthenticationConfig=config
       )
+    if options.node_creation_mode is not None:
+      update = self.messages.ClusterUpdate(
+          desiredNodeCreationConfig=_GetNodeCreationConfig(
+              options, self.messages
+          )
+      )
     if options.network_tier is not None:
       update = self.messages.ClusterUpdate(
           desiredNetworkTierConfig=_GetNetworkTierConfig(options, self.messages)
@@ -5978,6 +6015,17 @@ class APIAdapter(object):
       config = self.messages.DesiredControlPlaneEgress()
       config.mode = modes[options.control_plane_egress_mode]
       update = self.messages.ClusterUpdate(desiredControlPlaneEgress=config)
+
+    if options.dataplane_v2 is not None:
+      provider = (
+          self.messages.ClusterUpdate.DesiredDatapathProviderValueValuesEnum.ADVANCED_DATAPATH
+          if options.dataplane_v2
+          else self.messages.ClusterUpdate.DesiredDatapathProviderValueValuesEnum.LEGACY_DATAPATH
+      )
+      if update:
+        update.desiredDatapathProvider = provider
+      else:
+        update = self.messages.ClusterUpdate(desiredDatapathProvider=provider)
 
     if options.enable_scheduled_upgrades is not None:
       update = self.messages.ClusterUpdate(
@@ -6103,6 +6151,7 @@ class APIAdapter(object):
       enable_slurm_operator=None,
       enable_slice_controller=None,
       enable_agent_sandbox=None,
+      enable_kueue=None,
   ):
     """Generates an AddonsConfig object given specific parameters.
 
@@ -6127,6 +6176,7 @@ class APIAdapter(object):
       enable_slurm_operator: whether to enable SlurmOperator.
       enable_slice_controller: whether to enable SliceController.
       enable_agent_sandbox: whether to enable AgentSandbox.
+      enable_kueue: whether to enable Kueue.
 
     Returns:
       An AddonsConfig object that contains the options defining what addons to
@@ -6206,6 +6256,8 @@ class APIAdapter(object):
       addons.sliceControllerConfig = self.messages.SliceControllerConfig(
           enabled=True
       )
+    if enable_kueue is not None:
+      addons.kueueConfig = self.messages.KueueConfig(enabled=enable_kueue)
 
     return addons
 
@@ -6729,6 +6781,12 @@ class APIAdapter(object):
       node_config.runnerPoolControl = self.messages.RunnerPoolControl(
           mode=self.messages.RunnerPoolControl.ModeValueValuesEnum.CONFIDENTIAL
       )
+      if options.linked_runner_subnet:
+        node_config.runnerPoolControl.networkConfig = (
+            self.messages.RunnerPoolNetworkConfig(
+                subnetwork=options.linked_runner_subnet
+            )
+        )
 
     elif (
         options.control_node_pool
@@ -6800,6 +6858,13 @@ class APIAdapter(object):
                   enableWorkloadLogCollection=options.enable_workload_log_collection,
               )
           )
+
+      if options.linked_runner_subnet:
+        node_config.runnerPoolConfig.networkConfig = (
+            self.messages.RunnerPoolNetworkConfig(
+                subnetwork=options.linked_runner_subnet
+            )
+        )
 
     # if we are creating a multi-host TPU (tpu_topology or a resource policy
     # is specified) and num_nodes is not specified, calculate the
@@ -8412,6 +8477,31 @@ class APIAdapter(object):
     )
     return self.ParseOperation(op.name, cluster_ref.zone)
 
+  def ModifyNodeCreationMode(self, cluster_ref, node_creation_mode):
+    """Updates the node creation mode on the cluster."""
+    update = self.messages.ClusterUpdate()
+    available_modes = {
+        'KUBELET': (
+            self.messages.NodeCreationConfig.NodeCreationModeValueValuesEnum.VIA_KUBELET
+        ),
+        'CONTROL_PLANE': (
+            self.messages.NodeCreationConfig.NodeCreationModeValueValuesEnum.VIA_CONTROL_PLANE
+        ),
+    }
+    if node_creation_mode is not None:
+      update.desiredNodeCreationConfig = self.messages.NodeCreationConfig(
+          nodeCreationMode=available_modes[node_creation_mode]
+      )
+    op = self.client.projects_locations_clusters.Update(
+        self.messages.UpdateClusterRequest(
+            name=ProjectLocationCluster(
+                cluster_ref.projectId, cluster_ref.zone, cluster_ref.clusterId
+            ),
+            update=update,
+        )
+    )
+    return self.ParseOperation(op.name, cluster_ref.zone)
+
   def ModifyLegacyLustrePortEnabled(
       self, cluster_ref, enable_legacy_lustre_port
   ):
@@ -9078,6 +9168,10 @@ class V1Beta1Adapter(V1Adapter):
       if disable_addons.get(SLURMOPERATOR) is not None:
         addons.slurmOperatorConfig = self.messages.SlurmOperatorConfig(
             enabled=not disable_addons.get(SLURMOPERATOR)
+        )
+      if disable_addons.get(KUEUE) is not None:
+        addons.kueueConfig = self.messages.KueueConfig(
+            enabled=not disable_addons.get(KUEUE)
         )
       update = self.messages.ClusterUpdate(desiredAddonsConfig=addons)
     elif (
@@ -10066,6 +10160,12 @@ class V1Beta1Adapter(V1Adapter):
       update = self.messages.ClusterUpdate(
           desiredAnonymousAuthenticationConfig=config
       )
+    if options.node_creation_mode is not None:
+      update = self.messages.ClusterUpdate(
+          desiredNodeCreationConfig=_GetNodeCreationConfig(
+              options, self.messages
+          )
+      )
     if options.network_tier is not None:
       update = self.messages.ClusterUpdate(
           desiredNetworkTierConfig=_GetNetworkTierConfig(options, self.messages)
@@ -10216,12 +10316,16 @@ class V1Beta1Adapter(V1Adapter):
           )
       )
 
-    if options.dataplane_v2:
-      update = self.messages.ClusterUpdate(
-          desiredDatapathProvider=(
-              self.messages.ClusterUpdate.DesiredDatapathProviderValueValuesEnum.ADVANCED_DATAPATH
-          )
+    if options.dataplane_v2 is not None:
+      provider = (
+          self.messages.ClusterUpdate.DesiredDatapathProviderValueValuesEnum.ADVANCED_DATAPATH
+          if options.dataplane_v2
+          else self.messages.ClusterUpdate.DesiredDatapathProviderValueValuesEnum.LEGACY_DATAPATH
       )
+      if update:
+        update.desiredDatapathProvider = provider
+      else:
+        update = self.messages.ClusterUpdate(desiredDatapathProvider=provider)
 
     if options.enable_cost_allocation is not None:
       update = self.messages.ClusterUpdate(
@@ -11003,12 +11107,16 @@ class V1Alpha1Adapter(V1Beta1Adapter):
           )
       )
 
-    if options.dataplane_v2:
-      update = self.messages.ClusterUpdate(
-          desiredDatapathProvider=(
-              self.messages.ClusterUpdate.DesiredDatapathProviderValueValuesEnum.ADVANCED_DATAPATH
-          )
+    if options.dataplane_v2 is not None:
+      provider = (
+          self.messages.ClusterUpdate.DesiredDatapathProviderValueValuesEnum.ADVANCED_DATAPATH
+          if options.dataplane_v2
+          else self.messages.ClusterUpdate.DesiredDatapathProviderValueValuesEnum.LEGACY_DATAPATH
       )
+      if update:
+        update.desiredDatapathProvider = provider
+      else:
+        update = self.messages.ClusterUpdate(desiredDatapathProvider=provider)
 
     if options.convert_to_autopilot is not None:
       update = self.messages.ClusterUpdate(
@@ -12624,3 +12732,25 @@ def _GetLinkedRunnersConfig(mode_str, messages):
         messages.LinkedRunnersConfig.ModeValueValuesEnum.NONE
     )
   return linked_runners_config
+
+
+def _GetNodeCreationConfig(options, messages):
+  """Configures the NodeCreationConfig from options."""
+  config = messages.NodeCreationConfig()
+  if options.node_creation_mode is not None:
+    modes = {
+        'KUBELET': (
+            messages.NodeCreationConfig.NodeCreationModeValueValuesEnum.VIA_KUBELET
+        ),
+        'CONTROL_PLANE': (
+            messages.NodeCreationConfig.NodeCreationModeValueValuesEnum.VIA_CONTROL_PLANE
+        ),
+    }
+    if options.node_creation_mode not in modes:
+      raise util.Error(
+          NODE_CREATION_MODE_NOT_SUPPORTED.format(
+              mode=options.node_creation_mode
+          )
+      )
+    config.nodeCreationMode = modes[options.node_creation_mode]
+  return config

@@ -76,6 +76,8 @@ _ALPHA_EXAMPLES = """
 class Cp(base.Command):
   """Upload, download, and copy Cloud Storage objects."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION': _COMMAND_DESCRIPTION,
       'EXAMPLES': _GA_EXAMPLES,

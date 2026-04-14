@@ -30,6 +30,7 @@ DETAILED_HELP = {
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA,
     base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
 )
 @base.DefaultUniverseOnly
 class Biglake(base.Group):

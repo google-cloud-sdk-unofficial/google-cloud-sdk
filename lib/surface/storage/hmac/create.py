@@ -24,6 +24,8 @@ from googlecloudsdk.command_lib.storage import storage_url
 class Create(base.Command):
   """Add a service account HMAC."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION': """
        *{command}* command creates an HMAC key for the specified service

@@ -14,16 +14,17 @@
 # limitations under the License.
 """The update command for BigLake Iceberg REST catalogs."""
 
-from googlecloudsdk.calliope import arg_parsers
-
 from googlecloudsdk.api_lib.biglake import util
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.biglake import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import times
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.DefaultUniverseOnly
 class Failover(base.Command):
   """Failover a BigLake Iceberg REST catalog."""

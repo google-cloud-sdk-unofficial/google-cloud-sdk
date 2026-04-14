@@ -25,6 +25,8 @@ from googlecloudsdk.command_lib.storage import storage_url
 class GetIamPolicy(base.Command):
   """Get the IAM policy for a managed folder."""
 
+  hints = base.CommandHint(read_only=True)
+
   detailed_help = {
       'DESCRIPTION': """
       Get the IAM policy for a managed folder. For more information, see [Cloud

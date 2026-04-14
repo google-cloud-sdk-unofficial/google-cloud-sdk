@@ -23,6 +23,7 @@ import gc
 import io
 import os
 import select
+import signal
 import socket
 import sys
 import threading
@@ -52,6 +53,14 @@ else:
   from ctypes import wintypes  # pylint: disable=g-import-not-at-top
 
 READ_FROM_STDIN_TIMEOUT_SECS = 3
+_TERMINATION_SIGNALS = (
+    'SIGHUP',
+    'SIGTERM',
+    'SIGINT',
+    'SIGQUIT',
+    'SIGBREAK',
+    'SIGABRT',
+)
 
 
 class LocalPortUnavailableError(exceptions.Error):
@@ -963,11 +972,29 @@ class IapTunnelProxyServerHelper():
 class IapTunnelStdinHelper():
   """Facilitates a connection that gets local data from stdin."""
 
-  def __init__(self, tunneler):
+  def __init__(self, tunneler, with_graceful_shutdown=False):
     self._tunneler = tunneler
+    self._with_graceful_shutdown = with_graceful_shutdown
 
   def Run(self):
     """Executes the tunneling of data."""
+    local_conn = _StdinSocket()
+
+    def _HandleTerminationSignal(signum, frame):
+      del signum, frame
+      # Closing the stdin wrapper causes the read loop to hit EOF,
+      # which triggers the finally block to flush the WebSocket CLOSE frame.
+      local_conn.close()
+
+    original_sig_handlers = {}
+    if self._with_graceful_shutdown:
+      for sig_name in _TERMINATION_SIGNALS:
+        if hasattr(signal, sig_name):
+          sig = getattr(signal, sig_name)
+          original_sig_handlers[sig] = signal.signal(
+              sig, _HandleTerminationSignal
+          )
+
     try:
       with execution_utils.RaisesKeyboardInterrupt():
 
@@ -976,6 +1003,10 @@ class IapTunnelStdinHelper():
         # waiting for data in the stdin. This only affects MacOs + python 2.7.
         user_agent = transport.MakeUserAgentString()
 
-        self._tunneler.RunReceiveLocalData(_StdinSocket(), 'stdin', user_agent)
+        self._tunneler.RunReceiveLocalData(local_conn, 'stdin', user_agent)
     except KeyboardInterrupt:
       log.info('Keyboard interrupt received.')
+    finally:
+      if self._with_graceful_shutdown:
+        for sig, handler in original_sig_handlers.items():
+          signal.signal(sig, handler)

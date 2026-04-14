@@ -1,3 +1,4 @@
+# Copyright 2026 Google LLC. All Rights Reserved.
 project:
   name: project
   collection: networkservices.projects
@@ -113,6 +114,18 @@ gateway:
     parameter_name: gatewaysId
     attribute_name: gateway
     help: Id of the gateway.
+
+agentGateway:
+  name: agent gateway
+  collection: networkservices.projects.locations.agentGateways
+  request_id_field: agentGatewayId
+  attributes:
+  - *project
+  - *location
+  - &agentGateway
+    parameter_name: agentGatewaysId
+    attribute_name: agent_gateway
+    help: Id of the agent gateway.
 
 httpRoute:
   name: http route

@@ -30,6 +30,8 @@ from googlecloudsdk.command_lib.storage.tasks import set_iam_policy_task
 class AddIamPolicyBinding(base.Command):
   """Grant a principal access to an object."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION':
           """

@@ -47,6 +47,8 @@ class BatchSearch(base.Command):
           $ {command} --collection=my-collection --location=us-central1 --searches-from-file=searches.json
 
           Example `searches.json`:
+
+          ```
           [
             {
               "semanticSearch": {
@@ -63,6 +65,7 @@ class BatchSearch(base.Command):
               }
             }
           ]
+          ```
       """
       ),
   }
@@ -88,6 +91,8 @@ Each element in list should be a JSON object representing a Search message,
 e.g., `{"semanticSearch": {"searchText": "...", "searchField": "..."}}`.
 Keys must be camelCase as in API definition.
 Example file content:
+
+```
 [
   {
     "vectorSearch": {
@@ -126,7 +131,9 @@ Example file content:
       "topK": 10
     }
   }
-]""",
+]
+```
+""",
     )
 
     combine_group = parser.add_argument_group('Combine Results Options')

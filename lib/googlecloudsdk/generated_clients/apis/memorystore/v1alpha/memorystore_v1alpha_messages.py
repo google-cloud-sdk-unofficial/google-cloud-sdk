@@ -1510,18 +1510,20 @@ class MigrationConfig(_messages.Message):
         a migration attempt that failed, and the subsequent rollback was
         successful. The instance is now ready for a new migration attempt if
         desired.
-      ROLLBACK_ATTEMPT_FAILED: A previous migration attempt failed, and the
-        subsequent rollback also failed. The high-level instance state will be
-        MIGRATING.
-      READY_FOR_FINALIZATION: Instance is in the process of migration.
+      ROLLING_BACK: Indicates a previous migration attempt failed. The high-
+        level instance state will be `MIGRATING`. The instance is not ready
+        for a new migration attempt. Rollback is in progress to restore the
+        instance to its original state. The instance will remain in this state
+        until rollback is successful.
+      REPLICATION_ESTABLISHED: Instance is in the process of migration.
         Instance has established successful replication and is ready for
-        finalization.
+        cutover.
       MIGRATED: Instance is successfully migrated.
     """
     STATE_UNSPECIFIED = 0
     ROLLED_BACK = 1
-    ROLLBACK_ATTEMPT_FAILED = 2
-    READY_FOR_FINALIZATION = 3
+    ROLLING_BACK = 2
+    REPLICATION_ESTABLISHED = 3
     MIGRATED = 4
 
   forceMigrationFinalization = _messages.BooleanField(1)

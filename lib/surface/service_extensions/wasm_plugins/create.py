@@ -104,7 +104,6 @@ class Create(base.CreateCommand):
           ),
           name='--kms-key-name',
           flag_overrides=kms_flag_overrides,
-          hidden=True,
       )
 
   def Run(self, args):

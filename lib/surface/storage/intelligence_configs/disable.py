@@ -26,6 +26,8 @@ from googlecloudsdk.core import log
 class Disable(base.Command):
   """Disables storage intelligence."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION': """
           Disable storage intelligence for the organization, sub-folder or project.

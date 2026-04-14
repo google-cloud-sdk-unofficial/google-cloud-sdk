@@ -24,6 +24,22 @@ DOCS_URL = 'https://docs.cloud.google.com/iam/docs/service-agents'
 class Collections(enum.Enum):
   """Collections for all supported apis."""
 
+  FOLDERS_LOCATIONS_SERVICEPRODUCERS = (
+      'folders.locations.serviceProducers',
+      'folders/{folder}/locations/{location}/serviceProducers/'
+      '{serviceProducer}',
+      {},
+      ['folder', 'location', 'serviceProducer'],
+      True
+  )
+  ORGANIZATIONS_LOCATIONS_SERVICEPRODUCERS = (
+      'organizations.locations.serviceProducers',
+      'organizations/{organization}/locations/{location}/serviceProducers/'
+      '{serviceProducer}',
+      {},
+      ['organization', 'location', 'serviceProducer'],
+      True
+  )
   PROJECTS = (
       'projects',
       'projects/{projectsId}',
@@ -52,12 +68,12 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
-  PROJECTS_LOCATIONS_SERVICEAGENTS = (
-      'projects.locations.serviceAgents',
-      'projects/{projectsId}/locations/{locationsId}/serviceAgents/'
-      '{serviceAgentsId}',
+  PROJECTS_LOCATIONS_SERVICEPRODUCERS = (
+      'projects.locations.serviceProducers',
+      'projects/{project}/locations/{location}/serviceProducers/'
+      '{serviceProducer}',
       {},
-      ['projectsId', 'locationsId', 'serviceAgentsId'],
+      ['project', 'location', 'serviceProducer'],
       True
   )
 

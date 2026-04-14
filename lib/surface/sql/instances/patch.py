@@ -375,6 +375,8 @@ def AddBaseArgs(parser):
   flags.AddReadPoolAutoScaleConfig(parser)
   flags.AddDataApiAccess(parser)
   flags.AddReconcilePsaNetworking(parser)
+  flags.AddSqlServerEntraId(parser)
+  flags.AddClearEntraIdConfig(parser)
 
 
 def AddBetaArgs(parser):
@@ -388,8 +390,6 @@ def AddBetaArgs(parser):
   flags.AddUncMappings(unc_mappings_group)
   flags.AddClearUncMappings(unc_mappings_group)
   flags.AddPerformanceCaptureConfig(parser, hidden=False)
-  flags.AddSqlServerEntraId(parser)
-  flags.AddClearEntraIdConfig(parser)
 
 
 def AddAlphaArgs(unused_parser):

@@ -17,6 +17,7 @@
 import enum
 import os.path
 
+from google.api_core import exceptions as gapic_exceptions
 from googlecloudsdk.api_lib.run import api_enabler
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
@@ -37,6 +38,7 @@ from googlecloudsdk.command_lib.run.v2 import flags_parser
 from googlecloudsdk.command_lib.run.v2 import worker_pools_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
@@ -374,7 +376,10 @@ class Deploy(base.Command):
           'asynchronously.'.format(worker_pool=worker_pool_ref.workerPoolsId)
       )
     else:
-      response.result()  # Wait for the operation to complete.
+      try:
+        response.result()  # Wait for the operation to complete.
+      except gapic_exceptions.GoogleAPICallError as e:
+        core_exceptions.reraise(core_exceptions.Error(str(e)))
       worker_pool_name = worker_pool_ref.workerPoolsId
       revision_name = None
       if response.metadata and response.metadata.latest_created_revision:

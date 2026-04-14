@@ -47,6 +47,8 @@ old are deleted automatically:
 class Create(base.Command):
   """Create buckets for storing objects."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION': """
       Create new buckets.

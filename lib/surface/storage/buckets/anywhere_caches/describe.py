@@ -46,6 +46,8 @@ AnywhereCacheDisplayTitlesAndDefaults = collections.namedtuple(
 class Describe(base.DescribeCommand):
   """Returns details of Anywhere Cache instance of a bucket."""
 
+  hints = base.CommandHint(read_only=True)
+
   detailed_help = {
       'DESCRIPTION': """
 

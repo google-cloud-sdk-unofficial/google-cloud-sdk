@@ -97,7 +97,9 @@ class _BaseRollbackCert(object):
     )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 @base.DefaultUniverseOnly
 class RollbackCert(_BaseRollbackCert, base.CreateCommand):
   """Roll back to the previous Entra ID certificate for a Cloud SQL instance."""

@@ -29,6 +29,8 @@ from googlecloudsdk.command_lib.storage.resources import resource_util
 class List(base.ListCommand):
   """List managed folders."""
 
+  hints = base.CommandHint(read_only=True)
+
   detailed_help = {
       'DESCRIPTION': """List managed folders.""",
       'EXAMPLES': """

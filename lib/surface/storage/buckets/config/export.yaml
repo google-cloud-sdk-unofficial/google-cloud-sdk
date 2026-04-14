@@ -1,5 +1,7 @@
 release_tracks: [ALPHA]
 command_type: CONFIG_EXPORT
+hints:
+  read_only: false
 help_text:
   brief: Export the configuration for a Storage bucket.
   description: |

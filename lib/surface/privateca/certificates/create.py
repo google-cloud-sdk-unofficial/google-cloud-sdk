@@ -60,7 +60,7 @@ def _WritePemChain(pem_cert, issuing_chain, cert_file):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class Create(base.CreateCommand):
   r"""Create a new certificate.
 
@@ -131,7 +131,6 @@ class Create(base.CreateCommand):
             'If this value is set then the issued certificate will use the '
             'subject found in the CSR preserving the exact RDN sequence.'
         ),
-        hidden=True,
         action='store_true',
     ).AddToParser(csr_group)
 

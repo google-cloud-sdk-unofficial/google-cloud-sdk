@@ -24,6 +24,8 @@ from googlecloudsdk.command_lib.storage.insights.dataset_configs import resource
 class Describe(base.DescribeCommand):
   """Describe dataset config for Insights."""
 
+  hints = base.CommandHint(read_only=True)
+
   detailed_help = {
       'DESCRIPTION': """
       Describe the Insights dataset config.

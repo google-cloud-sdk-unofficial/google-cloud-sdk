@@ -294,6 +294,22 @@ class FlagTypes:
               "computeId": str,
               "staticNodeCount": int,
               "maxDynamicNodeCount": int,
+              "computeInstance": arg_parsers.ArgObject(
+                  spec={
+                      "startupScript": str,
+                      "labels": LABEL,
+                      "bootDisk": self.GetProtoBootDiskType(),
+                      "startupScriptTimeout": str,
+                  },
+                  enable_shorthand=True,
+              ),
+              "containerNodePool": arg_parsers.ArgObject(
+                  spec={
+                      "resourceLabels": LABEL,
+                      "startupScript": str,
+                  },
+                  enable_shorthand=True,
+              ),
               "startupScript": arg_parsers.ArgObject(),
               "labels": LABEL,
               "bootDisk": self.GetProtoBootDiskType(),
@@ -366,6 +382,7 @@ class FlagTypes:
               "enablePublicIps": bool,
               "startupScript": arg_parsers.ArgObject(),
               "labels": LABEL,
+              "serviceAccount": str,
               "bootDisk": self.GetProtoBootDiskType(),
               "storageConfigs": STORAGE_CONFIG,
           },

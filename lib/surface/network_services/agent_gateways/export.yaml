@@ -1,0 +1,22 @@
+# Copyright 2026 Google LLC. All Rights Reserved.
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Export an AgentGateway.
+  description: |
+    Export an AgentGateway.
+  examples: |
+    To export an AgentGateway named 'my-agentgateway' to a YAML file, run:
+
+      $ {command} my-agent-gateway --location=us-central1 --destination=my-agentgateway.yaml
+
+request:
+  collection: networkservices.projects.locations.agentGateways
+  ALPHA:
+    api_version: v1alpha1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:agentGateway
+    help_text: Name of the agent gateway to export.

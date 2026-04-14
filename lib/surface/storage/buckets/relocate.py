@@ -15,12 +15,14 @@
 
 """Implementation of buckets relocate command."""
 
+
 import textwrap
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.api_lib.storage import errors as api_errors
+from googlecloudsdk.api_lib.util import exceptions as api_exceptions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import errors as command_errors
@@ -49,6 +51,14 @@ performing the relocation.
 _ADVANCING_BUCKET_RELOCATION_WARNING = textwrap.dedent("""
 1. Any ongoing, in-flight resumable uploads will be canceled and lost.
 2. Write downtime will be incurred.
+""")
+
+_CMEK_VALIDATION_WARNING = textwrap.dedent("""
+1. The Cloud KMS key '{key_name}' could not be accessed.
+2. Underlying error: {error_message}
+3. This error means you may not have access to the key, or the key may not exist.
+4. The relocation does not require you to have access to the key.
+5. Please ensure the key exists and is in the destination location.
 """)
 
 
@@ -100,7 +110,7 @@ def _prompt_user_to_confirm_advancing_the_relocation(bucket_name):
   )
 
 
-def _validate_kms_key(key_name):
+def _validate_kms_key(key_name, bucket_url):
   """Validates the KMS key exists and is accessible."""
   client = cloudkms_base.GetClientInstance()
   messages = cloudkms_base.GetMessagesModule()
@@ -110,17 +120,36 @@ def _validate_kms_key(key_name):
             name=key_name
         )
     )
-  except (api_errors.CloudApiError, apitools_exceptions.HttpError) as e:
-    raise command_errors.FatalError(
-        f"The Cloud KMS key '{key_name}' could not be accessed. Please ensure "
-        'the key exists and you have permissions to access it.'
-    ) from e
+  except apitools_exceptions.HttpError as e:
+    error_message = api_exceptions.HttpException(
+        e
+    ).payload.status_message or str(e)
+  except api_errors.CloudApiError as e:
+    error_message = str(e)
+  else:
+    return
+
+  log.warning(
+      _CMEK_VALIDATION_WARNING.format(
+          key_name=key_name,
+          error_message=error_message,
+      )
+  )
+  console_io.PromptContinue(
+      prompt_string=(
+          "Please acknowledge that you've read the above warnings and want to"
+          f' relocate the bucket {bucket_url}?'
+      ),
+      cancel_on_no=True,
+  )
 
 
 # TODO: b/361729720 - Make bucket-relocate command group universe compatible.
 @base.DefaultUniverseOnly
 class Relocate(base.Command):
   """Relocates bucket between different locations."""
+
+  hints = base.CommandHint(read_only=False)
 
   detailed_help = {
       'DESCRIPTION': """
@@ -248,7 +277,7 @@ class Relocate(base.Command):
       _prompt_user_to_confirm_the_relocation(bucket_resource, args)
 
       if getattr(args, 'destination_kms_key_name', None):
-        _validate_kms_key(args.destination_kms_key_name)
+        _validate_kms_key(args.destination_kms_key_name, args.url)
 
       return gcs_client.relocate_bucket(
           url.bucket_name,

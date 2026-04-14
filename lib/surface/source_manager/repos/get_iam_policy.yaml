@@ -10,6 +10,7 @@
 
   request:
     collection: securesourcemanager.projects.locations.repositories
+    regional_endpoint_compatibility: SUPPORTED
 
   arguments:
     resource:

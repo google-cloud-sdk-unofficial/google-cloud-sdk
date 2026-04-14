@@ -25,6 +25,8 @@ from googlecloudsdk.command_lib.storage.insights.dataset_configs import resource
 class CreateLink(base.Command):
   """Create a link to a BigQuery instance."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION': """
       Create link to the customer BigQuery instance for Insights dataset config.

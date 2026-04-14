@@ -25,6 +25,8 @@ from googlecloudsdk.command_lib.storage.batch_operations.jobs import resource_ar
 class List(base.ListCommand):
   """List bucket operations for a batch operation job."""
 
+  hints = base.CommandHint(read_only=True)
+
   detailed_help = {
       'DESCRIPTION': """
       List bucket operations for a specific batch operation job.

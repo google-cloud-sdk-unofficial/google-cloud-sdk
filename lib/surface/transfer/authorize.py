@@ -48,8 +48,29 @@ SERVICE_ACCOUNT_URL_FORMAT = (
 
 def _get_iam_prefixed_email(email_string, is_service_account):
   """Returns an email format useful for interacting with IAM APIs."""
-  iam_prefix = 'serviceAccount' if is_service_account else 'user'
-  return '{}:{}'.format(iam_prefix, email_string)
+  if not email_string:
+    iam_prefix = 'serviceAccount' if is_service_account else 'user'
+    return f'{iam_prefix}:{email_string}'
+
+  # If the string already contains a prefix (indicated by a colon), return it
+  # as-is. This handles BYOID (principal://, principalSet://) and explicitly
+  # prefixed members without needing a hardcoded list of all IAM principal
+  # types. According to official IAM documentation, all fully-qualified member
+  # strings contain a colon as a delimiter, while raw email addresses do not.
+  # See https://cloud.google.com/iam/docs/principal-identifiers
+  if ':' in email_string:
+    return email_string
+
+  # If we can't determine the type from credentials (common in token-based
+  # auth), fall back to checking the format of the identifier itself.
+  effective_is_sa = (
+      is_service_account or
+      email_string.endswith('.gserviceaccount.com') or
+      email_string.isdigit()
+  )
+
+  iam_prefix = 'serviceAccount' if effective_is_sa else 'user'
+  return f'{iam_prefix}:{email_string}'
 
 
 def _get_iam_prefiexed_gcs_sa_email(project_number):

@@ -136,7 +136,6 @@ class Update(base.UpdateCommand):
           ),
           name='--kms-key-name',
           flag_overrides=kms_flag_overrides,
-          hidden=True,
       )
 
   def Run(self, args):

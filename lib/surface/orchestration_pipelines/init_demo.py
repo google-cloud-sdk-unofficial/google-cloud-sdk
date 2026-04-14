@@ -27,7 +27,7 @@ _PIPELINE_YAML = """\
 pipelineId: orchestration-pipeline
 description: 'Test deployment pipeline for Dataproc Serverless PySpark job'
 runner: 'airflow'
-modelVersion: v2
+modelVersion: '1.0'
 owner: 'data-eng-team'
 
 defaults:

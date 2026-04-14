@@ -68,7 +68,7 @@ def AddJsonFilterFlag(parser, help_verb):
       '--json-filter',
       help=(
           f'A filter expression in JSON format to apply to the {help_verb},'
-          ' e.g. \'{"genre": {"$eq": "sci-fi"}}\'.'
+          ' e.g. ```\'{"genre": {"$eq": "sci-fi"}}\'```.'
       ),
   )
 

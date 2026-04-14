@@ -29,10 +29,10 @@ from googlecloudsdk.core.console import console_io
 import six.moves.http_client
 
 
-# TODO(b/265881192): remove Hidden label once we are ready to launch.
 @base.DefaultUniverseOnly
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class PerformStorageShrink(base.Command):
   """Performs a storage size decrease of a Cloud SQL instance."""
 
@@ -85,10 +85,10 @@ class PerformStorageShrink(base.Command):
     )
 
     if not console_io.PromptContinue(
-        'Confirm that you have already run `gcloud alpha sql instances'
-        ' get-storage-shrink-config $instance_name` and understand that this'
-        ' operation will restart your database and might take a long time to'
-        ' complete (y/n)'
+        'Confirm that you have already run `gcloud sql instances'
+        ' get-storage-shrink-config` on your primary instance. This '
+        'operation restarts your database and might'
+        ' take a long time to complete. Continue? (y/n)'
     ):
       return None
 

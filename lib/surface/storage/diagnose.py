@@ -92,6 +92,8 @@ class TestType(enum.Enum):
 class Diagnose(base.Command):
   """Diagnose Google Cloud Storage."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION': """
       The diagnose command runs a series of diagnostic tests for common gcloud

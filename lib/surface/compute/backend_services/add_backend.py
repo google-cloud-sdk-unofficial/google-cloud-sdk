@@ -177,7 +177,10 @@ class AddBackend(base.UpdateCommand):
           maxConnectionsPerEndpoint=args.max_connections_per_endpoint,
           failover=args.failover,
       )
-      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      if self.ReleaseTrack() in [
+          base.ReleaseTrack.ALPHA,
+          base.ReleaseTrack.BETA,
+      ]:
         backend.service = args.service
       if (
           self.ReleaseTrack() == base.ReleaseTrack.ALPHA
@@ -208,7 +211,10 @@ class AddBackend(base.UpdateCommand):
           maxConnectionsPerEndpoint=args.max_connections_per_endpoint,
           failover=args.failover,
       )
-      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      if self.ReleaseTrack() in [
+          base.ReleaseTrack.ALPHA,
+          base.ReleaseTrack.BETA,
+      ]:
         backend.service = args.service
       if (
           self.ReleaseTrack() == base.ReleaseTrack.ALPHA
@@ -252,7 +258,8 @@ class AddBackend(base.UpdateCommand):
             )
         )
       elif (
-          self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+          self.ReleaseTrack()
+          in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]
           and args.service
           and args.service == backend.service
       ):
@@ -340,6 +347,7 @@ class AddBackendBeta(AddBackend):
 
   # Allow --preference flag to be set when updating the backend.
   support_in_flight_balancing = True
+  support_inline_service = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

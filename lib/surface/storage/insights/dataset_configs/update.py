@@ -29,6 +29,8 @@ from googlecloudsdk.core.console import console_io
 class Update(base.Command):
   """Updates a dataset config for Insights."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION': """
       Update a dataset config for Insights.
@@ -167,4 +169,3 @@ class Update(base.Command):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(Update):
   """Updates a dataset config for Insights."""
-

@@ -80,7 +80,9 @@ class StartIapTunnel(base.Command):
   def Run(self, args):
     """Runs the command."""
     tunneler = run_iap_tunnel.CloudRunIAPWebsocketTunnelHelper(args)
-    iap_tunnel_helper = iap_tunnel.IapTunnelStdinHelper(tunneler)
+    iap_tunnel_helper = iap_tunnel.IapTunnelStdinHelper(
+        tunneler, with_graceful_shutdown=True
+    )
     self._CheckNumpyInstalled()
     iap_tunnel_helper.Run()
 

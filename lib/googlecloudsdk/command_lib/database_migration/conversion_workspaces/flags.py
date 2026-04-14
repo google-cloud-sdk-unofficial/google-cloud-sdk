@@ -14,11 +14,12 @@
 # limitations under the License.
 """Flags and helpers for the conversion workspace related commands."""
 
+import argparse
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.command_lib.database_migration.conversion_workspaces import enums
 
 
-def AddNoAsyncFlag(parser):
+def AddNoAsyncFlag(parser: argparse.ArgumentParser) -> None:
   """Adds a --no-async flag to the given parser."""
   parser.add_argument(
       '--no-async',
@@ -27,7 +28,7 @@ def AddNoAsyncFlag(parser):
   )
 
 
-def AddDisplayNameFlag(parser):
+def AddDisplayNameFlag(parser: argparse.ArgumentParser) -> None:
   """Adds a --display-name flag to the given parser."""
   parser.add_argument(
       '--display-name',
@@ -39,8 +40,15 @@ def AddDisplayNameFlag(parser):
   )
 
 
-def AddDatabaseEngineFlags(parser):
-  """Adds the --source-database-engine and --destination-database-engine flags to the given parser."""
+def AddDatabaseEngineFlags(parser: argparse.ArgumentParser) -> None:
+  """Adds database engine flags to the given parser.
+
+  Adds the --source-database-engine and --destination-database-engine flags.
+
+  Args:
+    parser: The argparse parser.
+  """
+
   parser.add_argument(
       '--source-database-engine',
       help='Source database engine type.',
@@ -58,8 +66,15 @@ def AddDatabaseEngineFlags(parser):
   )
 
 
-def AddDatabaseProviderFlags(parser):
-  """Adds the --source-database-provider and --destination-database-provider flags to the given parser."""
+def AddDatabaseProviderFlags(parser: argparse.ArgumentParser) -> None:
+  """Adds database provider flags.
+
+  Adds the --source-database-provider and --destination-database-provider flags
+  to the given parser.
+
+  Args:
+    parser: The argparse parser.
+  """
   parser.add_argument(
       '--source-database-provider',
       help='Source database provider.',
@@ -77,8 +92,14 @@ def AddDatabaseProviderFlags(parser):
   )
 
 
-def AddDatabaseVersionFlag(parser):
-  """Adds the --source-database-version and --destination-database-version flags to the given parser."""
+def AddDatabaseVersionFlag(parser: argparse.ArgumentParser) -> None:
+  """Adds database version flags to the given parser.
+
+  Adds the --source-database-version and --destination-database-version flags.
+
+  Args:
+    parser: The argparse parser.
+  """
   parser.add_argument(
       '--source-database-version',
       help="""\
@@ -99,7 +120,7 @@ def AddDatabaseVersionFlag(parser):
   )
 
 
-def AddGlobalSettingsFlag(parser):
+def AddGlobalSettingsFlag(parser: argparse.ArgumentParser) -> None:
   """Adds a --global-settings flag to the given parser."""
   parser.add_argument(
       '--global-settings',
@@ -114,7 +135,7 @@ def AddGlobalSettingsFlag(parser):
   )
 
 
-def AddGlobalFilterFlag(parser):
+def AddGlobalFilterFlag(parser: argparse.ArgumentParser) -> None:
   """Adds a --global-filter flag to the given parser."""
   parser.add_argument(
       '--global-filter',
@@ -126,7 +147,31 @@ def AddGlobalFilterFlag(parser):
   )
 
 
-def AddCommitNameFlag(parser):
+def AddFeatureFlags(parser: argparse.ArgumentParser) -> None:
+  """Adds feature flags to the given parser."""
+  parser.add_argument(
+      '--auto-conversion',
+      action=arg_parsers.StoreTrueFalseAction,
+      help='Whether to enable Gemini auto-conversion.',
+  )
+  parser.add_argument(
+      '--quality-assessment',
+      action=arg_parsers.StoreTrueFalseAction,
+      help='Whether to enable Gemini quality assessment.',
+  )
+  parser.add_argument(
+      '--conversion-assistance',
+      action=arg_parsers.StoreTrueFalseAction,
+      help='Whether to enable Gemini conversion assistance.',
+  )
+  parser.add_argument(
+      '--pattern-matching',
+      action=arg_parsers.StoreTrueFalseAction,
+      help='Whether to enable Gemini pattern matching.',
+  )
+
+
+def AddCommitNameFlag(parser: argparse.ArgumentParser) -> None:
   """Adds a --commit-name flag to the given parser."""
   parser.add_argument(
       '--commit-name',
@@ -138,7 +183,7 @@ def AddCommitNameFlag(parser):
   )
 
 
-def AddAutoCommitFlag(parser):
+def AddAutoCommitFlag(parser: argparse.ArgumentParser) -> None:
   """Adds a --auto-commit flag to the given parser."""
   parser.add_argument(
       '--auto-commit',
@@ -147,7 +192,7 @@ def AddAutoCommitFlag(parser):
   )
 
 
-def AddImportFileFormatFlag(parser):
+def AddImportFileFormatFlag(parser: argparse.ArgumentParser) -> None:
   """Adds the --file-format flag to the given parser."""
   parser.add_argument(
       '--file-format',
@@ -157,7 +202,7 @@ def AddImportFileFormatFlag(parser):
   )
 
 
-def AddConfigFilesFlag(parser):
+def AddConfigFilesFlag(parser: argparse.ArgumentParser) -> None:
   """Adds a --config-files flag to the given parser."""
   parser.add_argument(
       '--config-files',
@@ -172,7 +217,7 @@ def AddConfigFilesFlag(parser):
   )
 
 
-def AddFilterFlag(parser):
+def AddFilterFlag(parser: argparse.ArgumentParser) -> None:
   """Adds a --filter flag to the given parser."""
   parser.add_argument(
       '--filter',
@@ -186,7 +231,11 @@ def AddFilterFlag(parser):
   )
 
 
-def AddTreeTypeFlag(parser, required=True, default_value='DRAFT'):
+def AddTreeTypeFlag(
+    parser: argparse.ArgumentParser,
+    required: bool = True,
+    default_value: str = 'DRAFT',
+) -> None:
   """Adds the --tree-type flag to the given parser."""
   parser.add_argument(
       '--tree-type',
@@ -197,7 +246,7 @@ def AddTreeTypeFlag(parser, required=True, default_value='DRAFT'):
   )
 
 
-def AddUncommittedFlag(parser):
+def AddUncommittedFlag(parser: argparse.ArgumentParser) -> None:
   """Adds a --uncommitted flag to the given parser."""
   parser.add_argument(
       '--uncommitted',
@@ -210,7 +259,7 @@ def AddUncommittedFlag(parser):
   )
 
 
-def AddCommitIdFlag(parser):
+def AddCommitIdFlag(parser: argparse.ArgumentParser) -> None:
   """Adds a --commit-id flag to the given parser."""
   parser.add_argument(
       '--commit-id',
@@ -221,15 +270,15 @@ def AddCommitIdFlag(parser):
   )
 
 
-def AddSourceDetailsFlag(parser):
-  """Adds the source details to the given parser for application code conversion."""
+def AddSourceDetailsFlag(parser: argparse.ArgumentParser) -> None:
+  """Adds source details to the parser for application code conversion."""
 
   source_details_group = parser.add_group(required=True, mutex=True)
   AddSourceFolderFlag(source_details_group)
   AddSourceFileFlag(source_details_group)
 
 
-def AddSourceFolderFlag(parser):
+def AddSourceFolderFlag(parser: argparse.ArgumentParser) -> None:
   """Adds a --source-folder flag to the given parser."""
   parser.add_argument(
       '--source-folder',
@@ -241,7 +290,7 @@ def AddSourceFolderFlag(parser):
   )
 
 
-def AddSourceFileFlag(parser):
+def AddSourceFileFlag(parser: argparse.ArgumentParser) -> None:
   """Adds a --source-file flag to the given parser."""
   parser.add_argument(
       '--source-file',
@@ -253,7 +302,7 @@ def AddSourceFileFlag(parser):
   )
 
 
-def AddTargetPathFlag(parser):
+def AddTargetPathFlag(parser: argparse.ArgumentParser) -> None:
   """Adds a --target-path flag to the given parser."""
   parser.add_argument(
       '--target-path',
@@ -267,7 +316,7 @@ def AddTargetPathFlag(parser):
   )
 
 
-def AddSourceDialectFlag(parser):
+def AddSourceDialectFlag(parser: argparse.ArgumentParser) -> None:
   """Adds a --source-dialect flag to the given parser."""
   parser.add_argument(
       '--source-dialect',
@@ -279,7 +328,7 @@ def AddSourceDialectFlag(parser):
   )
 
 
-def AddTargetDialectFlag(parser):
+def AddTargetDialectFlag(parser: argparse.ArgumentParser) -> None:
   """Adds a --target-dialect flag to the given parser."""
   parser.add_argument(
       '--target-dialect',

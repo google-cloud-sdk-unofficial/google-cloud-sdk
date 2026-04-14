@@ -22,37 +22,48 @@
       required: true
       repeated: false
 
-    - arg_name: flag-revisions
-      help_text: |-
-        Flag Revisions (IDs) to be rolled out. Only one of flag_revisions, all_flags,
-        or flag_sets can be set.
-      is_positional: false
-      resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:flag_revision
-      resource_method_params:
-        flagRelease.flagRevisions: '{__relative_name__}'
-      required: false
-      repeated: true
-
-    - arg_name: flag-sets
-      hidden: true
-      api_field: flagRelease.flagSets
-      help_text: |-
-        Flag sets to be rolled out. All flags in provided flag sets that are in
-        the flag release's unit kind will be included. Only one of flag_revisions, all_flags
-        or flag_sets can be set.
-      is_positional: false
-      required: false
-      repeated: true
-
-    - arg_name: all-flags
-      hidden: true
-      api_field: flagRelease.allFlags
-      help_text: |-
-        All flags in the flag release's unit kind to be rolled out. Only one of flag_revisions,
-        all_flags or flag_sets can be set.
-      is_positional: false
-      required: false
-      repeated: false
+    - group:
+        mutex: true
+        required: false
+        help_text: "Flags for specifying the content of the release. You can use only one of the following flags."
+        params:
+        - arg_name: flag-revisions
+          help_text: |-
+            Flag Revisions (IDs) to be rolled out.
+          is_positional: false
+          resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:flag_revision
+          resource_method_params:
+            flagRelease.flagRevisions: '{__relative_name__}'
+          required: false
+          repeated: true
+        - arg_name: revisions
+          help_text: |-
+            Flag Revisions (IDs) to be rolled out.
+          is_positional: false
+          resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:flag_revision
+          resource_method_params:
+            flagRelease.flagRevisionsRelease.revisions: '{__relative_name__}'
+          required: false
+          repeated: true
+        - arg_name: flag-sets
+          hidden: true
+          api_field: flagRelease.flagSetsRelease.sets
+          is_positional: false
+          required: false
+          repeated: true
+          help_text: |-
+            Flag sets to be rolled out. All flags in provided flag sets that are in
+            the flag release's unit kind will be included to be rolled out.
+        - arg_name: all-flags
+          hidden: true
+          api_field: flagRelease.allFlagsRelease
+          is_positional: false
+          required: false
+          type: bool
+          default: null
+          action: store_true
+          help_text: |-
+            All flags in the flag release's unit kind will be included to be rolled out.
 
     - arg_name: obsolete-flags
       help_text: |-

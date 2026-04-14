@@ -24,6 +24,8 @@ from googlecloudsdk.calliope import base
 class Describe(base.Command):
   """Describe an insights operation."""
 
+  hints = base.CommandHint(read_only=True)
+
   detailed_help = {
       'DESCRIPTION': """\
       Get details about an insights operation.

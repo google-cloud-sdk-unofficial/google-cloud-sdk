@@ -14,6 +14,7 @@ help_text:
 request:
   api_version: v1
   collection: securesourcemanager.projects.locations.instances
+  regional_endpoint_compatibility: SUPPORTED
 
 arguments:
   resource:

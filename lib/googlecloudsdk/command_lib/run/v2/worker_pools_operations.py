@@ -15,16 +15,34 @@
 """Allows you to write surfaces in terms of logical Cloud Run V2 WorkerPools API operations."""
 
 
-
-from google.api_core import exceptions
+import functools
 from googlecloudsdk.api_lib.run import metric_names
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.command_lib.run.sourcedeploys import deployer
 from googlecloudsdk.command_lib.run.v2 import config_changes as config_changes_mod
+from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import metrics
 from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import worker_pool as worker_pool_objects
+
+
+def _CatchGoogleAPICallError(func):
+  """Decorator to catch GoogleAPICallError and raise core_exceptions.Error."""
+
+  @functools.wraps(func)
+  def Wrapper(*args, **kwargs):
+    try:
+      return func(*args, **kwargs)
+    except Exception as e:
+      # Checking module name string directly avoids importing standard GAPIC
+      # exceptions at top level that pull heavy grpc dependencies at loaded
+      # startup time.
+      if 'google.api_core.exceptions' in type(e).__module__:
+        core_exceptions.reraise(core_exceptions.Error(str(e)))
+      raise
+
+  return Wrapper
 
 
 class WorkerPoolsOperations(object):
@@ -33,6 +51,7 @@ class WorkerPoolsOperations(object):
   def __init__(self, client):
     self._client = client
 
+  @_CatchGoogleAPICallError
   def GetWorkerPool(self, worker_pool_ref):
     """Get the WorkerPool.
 
@@ -49,9 +68,17 @@ class WorkerPoolsOperations(object):
     try:
       with metrics.RecordDuration(metric_names.GET_WORKER_POOL):
         return worker_pools.get_worker_pool(get_request)
-    except exceptions.NotFound:
-      return None
+    except Exception as e:
+      # Checking module/class strings directly avoids importing standard GAPIC
+      # exceptions that pull heavy grpc dependencies at loaded startup time.
+      if (
+          'google.api_core.exceptions' in type(e).__module__
+          and type(e).__name__ == 'NotFound'
+      ):
+        return None
+      raise
 
+  @_CatchGoogleAPICallError
   def DeleteWorkerPool(self, worker_pool_ref):
     """Delete the WorkerPool.
 
@@ -68,9 +95,17 @@ class WorkerPoolsOperations(object):
     try:
       with metrics.RecordDuration(metric_names.DELETE_WORKER_POOL):
         return worker_pools.delete_worker_pool(delete_request)
-    except exceptions.NotFound:
-      return None
+    except Exception as e:
+      # Checking module/class strings directly avoids importing standard GAPIC
+      # exceptions that pull heavy grpc dependencies at loaded startup time.
+      if (
+          'google.api_core.exceptions' in type(e).__module__
+          and type(e).__name__ == 'NotFound'
+      ):
+        return None
+      raise
 
+  @_CatchGoogleAPICallError
   def ListWorkerPools(self, region_ref):
     """List the WorkerPools in a region.
 
@@ -88,6 +123,7 @@ class WorkerPoolsOperations(object):
     with metrics.RecordDuration(metric_names.LIST_WORKER_POOLS):
       return worker_pools.list_worker_pools(list_request)
 
+  @_CatchGoogleAPICallError
   def ReleaseWorkerPool(
       self,
       worker_pool_ref,
@@ -197,6 +233,7 @@ class WorkerPoolsOperations(object):
     with metrics.RecordDuration(metric_name):
       return worker_pools.update_worker_pool(upsert_request)
 
+  @_CatchGoogleAPICallError
   def UpdateInstanceSplit(
       self,
       worker_pool_ref,
@@ -205,7 +242,7 @@ class WorkerPoolsOperations(object):
     """Update the instance split of a WorkerPool."""
     worker_pool = self.GetWorkerPool(worker_pool_ref)
     if worker_pool is None:
-      raise exceptions.NotFound(
+      raise core_exceptions.Error(
           'WorkerPool [{}] could not be found.'.format(
               worker_pool_ref.workerPoolsId
           )
@@ -218,6 +255,7 @@ class WorkerPoolsOperations(object):
     with metrics.RecordDuration(metric_names.UPDATE_WORKER_POOL):
       return worker_pools.update_worker_pool(update_request)
 
+  @_CatchGoogleAPICallError
   def GetRevision(self, worker_pool_revision_ref):
     """Get the Revision.
 
@@ -234,9 +272,17 @@ class WorkerPoolsOperations(object):
     try:
       with metrics.RecordDuration(metric_names.GET_WORKER_POOL_REVISION):
         return worker_pool_revisions.get_revision(get_request)
-    except exceptions.NotFound:
-      return None
+    except Exception as e:
+      # Checking module/class strings directly avoids importing standard GAPIC
+      # exceptions that pull heavy grpc dependencies at loaded startup time.
+      if (
+          'google.api_core.exceptions' in type(e).__module__
+          and type(e).__name__ == 'NotFound'
+      ):
+        return None
+      raise
 
+  @_CatchGoogleAPICallError
   def DeleteRevision(self, worker_pool_revision_ref):
     """Delete the Revision.
 
@@ -253,9 +299,17 @@ class WorkerPoolsOperations(object):
     try:
       with metrics.RecordDuration(metric_names.DELETE_WORKER_POOL_REVISION):
         return worker_pool_revisions.delete_revision(delete_request)
-    except exceptions.NotFound:
-      return None
+    except Exception as e:
+      # Checking module/class strings directly avoids importing standard GAPIC
+      # exceptions that pull heavy grpc dependencies at loaded startup time.
+      if (
+          'google.api_core.exceptions' in type(e).__module__
+          and type(e).__name__ == 'NotFound'
+      ):
+        return None
+      raise
 
+  @_CatchGoogleAPICallError
   def ListRevisions(self, worker_pool_ref):
     """List the Revisions in a region under the given WorkerPool.
 

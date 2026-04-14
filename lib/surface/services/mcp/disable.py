@@ -15,12 +15,8 @@
 
 """services mcp disable command."""
 
-from googlecloudsdk.api_lib.services import services_util
-from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.services import common_flags
-from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 
 _OP_BASE_CMD = 'gcloud beta services operations '
 _OP_WAIT_CMD = _OP_BASE_CMD + 'wait {0}'
@@ -32,6 +28,17 @@ _ORGANIZATION_RESOURCE = 'organizations/{}'
 _CONSUMER_POLICY_DEFAULT = '/consumerPolicies/{}'
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'MCP enablement is not required and this command is no-op. To disable'
+        ' a service, please use: gcloud services disable.'
+    ),
+    error=(
+        'MCP enablement is not required and this command is no-op. To disable'
+        ' a service, please use: gcloud services disable.'
+    ),
+)
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Disable(base.SilentCommand):
@@ -87,48 +94,4 @@ class Disable(base.SilentCommand):
     Returns:
       Updated MCP Policy.
     """
-
-    project = properties.VALUES.core.project.Get(required=True)
-    resource_name = _PROJECT_RESOURCE.format(project)
-    if args.IsSpecified('project'):
-      resource_name = _PROJECT_RESOURCE.format(args.project)
-      project = args.project
-    if args.IsSpecified('folder'):
-      resource_name = _FOLDER_RESOURCE.format(args.folder)
-      folder = args.folder
-    else:
-      folder = None
-    if args.IsSpecified('organization'):
-      resource_name = _ORGANIZATION_RESOURCE.format(args.organization)
-      organization = args.organization
-    else:
-      organization = None
-
-    op = serviceusage.RemoveMcpEnableRule(
-        project,
-        args.service,
-        folder=folder,
-        organization=organization,
-    )
-
-    if op is None:
-      return None
-
-    if args.async_:
-      cmd = _OP_WAIT_CMD.format(op.name)
-      log.status.Print(
-          'Asynchronous operation is in progress... '
-          'Use the following command to wait for its '
-          f'completion:\n {cmd}'
-      )
-      return
-
-    op = services_util.WaitOperation(op.name, serviceusage.GetOperationV2Beta)
-
-    if op.error:
-      services_util.PrintOperation(op)
-    else:
-      log.status.Print(
-          f'The MCP endpoint for service {args.service} has been disabled for'
-          f' the resource {resource_name}.'
-      )
+    pass

@@ -27,6 +27,8 @@ from googlecloudsdk.command_lib.storage.tasks.buckets.anywhere_caches import pau
 class Pause(base.Command):
   """Pause Anywhere Cache instances."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION': """
 

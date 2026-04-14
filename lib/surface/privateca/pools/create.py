@@ -26,7 +26,7 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class Create(base.CreateCommand):
   r"""Create a new CA Pool.
 

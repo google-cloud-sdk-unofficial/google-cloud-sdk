@@ -19,6 +19,30 @@ arguments:
   - arg_name: description
     api_field: serviceBinding.description
     help_text: The description for the service binding.
+  - arg_name: source-services
+    api_field: serviceBinding.source.services
+    release_tracks: [ALPHA]
+    help_text: |
+      List of resources attached to the ServiceBinding. The resources can be
+      Cloud Run services.
+    type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+  - arg_name: destination-services
+    api_field: serviceBinding.destination.services
+    release_tracks: [ALPHA]
+    help_text: |
+      List of service URIs to which the ServiceBinding resource is bound.
+    type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+  - arg_name: matches
+    api_field: serviceBinding.matches
+    release_tracks: [ALPHA]
+    repeated: true
+    help_text: |
+      List of matches define conditions used to match requests to destination
+      services.
+    spec:
+    - api_field: hostname
+      help_text: |
+        Specifies the hostname to match against the HTTP request host header.
 
 async:
   collection: networkservices.projects.locations.operations

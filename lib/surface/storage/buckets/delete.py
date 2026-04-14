@@ -31,6 +31,8 @@ from googlecloudsdk.command_lib.storage.tasks.rm import delete_task_iterator_fac
 class Delete(base.Command):
   """Deletes Cloud Storage buckets."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION':
           """

@@ -299,6 +299,12 @@
       release_tracks: [ALPHA, BETA, GA]
       help_text: |
         The customer-managed Certificate Authority Service CA Pool resource name to use for issuing server certificates. Format: projects/{project}/locations/{region}/caPools/{ca_pool}. This is applicable only if --server-ca-mode is set to customer-managed-cas-ca. This field is immutable.
+    - arg_name: acl-policy
+      api_field: cluster.aclPolicy
+      release_tracks: [ALPHA]
+      hidden: true
+      help_text: |
+        The ACL policy to use for the cluster.
     labels:
       api_field: cluster.labels
 

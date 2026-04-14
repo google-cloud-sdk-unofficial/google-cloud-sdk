@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*- #
 # Copyright 2025 Google LLC. All Rights Reserved.
 #
@@ -28,13 +27,19 @@ from googlecloudsdk.core import log
 @base.DefaultUniverseOnly
 class Enable(base.Command):
   """Enables storage intelligence."""
+
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
-      'DESCRIPTION': """
+      'DESCRIPTION': (
+          """
           Enable storage intelligence plan for the organization, sub-folder or project
           along with filters. The command sets `STANDARD` edition by default if
           no other edition flags like ``--trial-edition`` are specified.
-      """,
-      'EXAMPLES': """
+      """
+      ),
+      'EXAMPLES': (
+          """
           To remove buckets from the storage intelligence plan, Use the following
           command with ``--exclude-bucket-id-regexes'' flag.
           to specify list of bucket id regexes.,\n
@@ -50,7 +55,8 @@ class Enable(base.Command):
           The following command enables storage intelligence with Trial edition
           for the given project,\n
             $ {command} --project=my-project --trial-edition
-      """,
+      """
+      ),
   }
 
   @classmethod

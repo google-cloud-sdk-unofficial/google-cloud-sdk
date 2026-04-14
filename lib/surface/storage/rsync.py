@@ -228,6 +228,8 @@ def _perform_rsync(
 class Rsync(base.Command):
   """Synchronize content of two buckets/directories."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION': _COMMAND_DESCRIPTION,
       'EXAMPLES': _GA_EXAMPLES,

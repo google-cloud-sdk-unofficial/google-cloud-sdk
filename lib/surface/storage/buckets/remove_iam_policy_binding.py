@@ -28,6 +28,8 @@ from googlecloudsdk.command_lib.storage.tasks import set_iam_policy_task
 class RemoveIamPolicyBinding(base.Command):
   """Remove an IAM policy binding from a bucket."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION':
           """

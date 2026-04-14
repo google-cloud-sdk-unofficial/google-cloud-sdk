@@ -1973,6 +1973,9 @@ class Gateway(_messages.Message):
       subnetwork is allocated This field only applies to gateways of type
       'SECURE_WEB_GATEWAY'. Gateways of type 'OPEN_MESH' listen on 0.0.0.0 for
       IPv4 and :: for IPv6.
+    allPorts: Optional. If true, the Gateway will listen on all ports. This is
+      mutually exclusive with the `ports` field. This field only applies to
+      gateways of type 'SECURE_WEB_GATEWAY'.
     allowGlobalAccess: Optional. If true, the gateway will allow traffic from
       clients outside of the region where the gateway is located. This field
       is configurable only for gateways of type SECURE_WEB_GATEWAY.
@@ -2124,26 +2127,27 @@ class Gateway(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   addresses = _messages.StringField(1, repeated=True)
-  allowGlobalAccess = _messages.BooleanField(2)
-  authorizationPolicy = _messages.StringField(3)
-  certificateUrls = _messages.StringField(4, repeated=True)
-  createTime = _messages.StringField(5)
-  description = _messages.StringField(6)
-  envoyHeaders = _messages.EnumField('EnvoyHeadersValueValuesEnum', 7)
-  gatewaySecurityPolicy = _messages.StringField(8)
-  ipVersion = _messages.EnumField('IpVersionValueValuesEnum', 9)
-  labels = _messages.MessageField('LabelsValue', 10)
-  name = _messages.StringField(11)
-  network = _messages.StringField(12)
-  ports = _messages.IntegerField(13, repeated=True, variant=_messages.Variant.INT32)
-  routingMode = _messages.EnumField('RoutingModeValueValuesEnum', 14)
-  scope = _messages.StringField(15)
-  securityPolicy = _messages.StringField(16)
-  selfLink = _messages.StringField(17)
-  serverTlsPolicy = _messages.StringField(18)
-  subnetwork = _messages.StringField(19)
-  type = _messages.EnumField('TypeValueValuesEnum', 20)
-  updateTime = _messages.StringField(21)
+  allPorts = _messages.BooleanField(2)
+  allowGlobalAccess = _messages.BooleanField(3)
+  authorizationPolicy = _messages.StringField(4)
+  certificateUrls = _messages.StringField(5, repeated=True)
+  createTime = _messages.StringField(6)
+  description = _messages.StringField(7)
+  envoyHeaders = _messages.EnumField('EnvoyHeadersValueValuesEnum', 8)
+  gatewaySecurityPolicy = _messages.StringField(9)
+  ipVersion = _messages.EnumField('IpVersionValueValuesEnum', 10)
+  labels = _messages.MessageField('LabelsValue', 11)
+  name = _messages.StringField(12)
+  network = _messages.StringField(13)
+  ports = _messages.IntegerField(14, repeated=True, variant=_messages.Variant.INT32)
+  routingMode = _messages.EnumField('RoutingModeValueValuesEnum', 15)
+  scope = _messages.StringField(16)
+  securityPolicy = _messages.StringField(17)
+  selfLink = _messages.StringField(18)
+  serverTlsPolicy = _messages.StringField(19)
+  subnetwork = _messages.StringField(20)
+  type = _messages.EnumField('TypeValueValuesEnum', 21)
+  updateTime = _messages.StringField(22)
 
 
 class GatewayRouteView(_messages.Message):

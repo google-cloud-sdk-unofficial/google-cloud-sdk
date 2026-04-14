@@ -26,6 +26,8 @@ from googlecloudsdk.core import log
 class Update(base.Command):
   """Updates storage intelligence configuration."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION': """
           Update storage intelligence configuration for the organization, sub-folder

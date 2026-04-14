@@ -14,7 +14,6 @@
 # limitations under the License.
 """Cloud Pub/Sub topics update command."""
 
-
 from googlecloudsdk.api_lib.pubsub import topics
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
@@ -25,7 +24,9 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 
-DETAILED_HELP = {'EXAMPLES': """\
+DETAILED_HELP = {
+    'EXAMPLES': (
+        """\
           To update existing labels on a Cloud Pub/Sub topic, run:
 
               $ {command} mytopic --update-labels=KEY1=VAL1,KEY2=VAL2
@@ -61,7 +62,9 @@ DETAILED_HELP = {'EXAMPLES': """\
           To enforce both at-rest and in-transit guarantees for messages published to the topic, run:
 
               $ {command} mytopic --message-storage-policy-allowed-regions=some-cloud-region1,some-cloud-region2 --message-storage-policy-enforce-in-transit
-          """}
+          """
+    )
+}
 
 _KMS_FLAG_OVERRIDES = {
     'kms-key': '--topic-encryption-key',
@@ -136,13 +139,12 @@ def _Args(
   flags.AddMessageTransformsFlags(parser, is_update=True)
 
 
-def _Run(args, /, *, enable_vertex_ai_smt=False):
+def _Run(args, /):
   """This is what gets called when the user runs this command.
 
   Args:
     args: an argparse namespace. All the arguments that were provided to this
       command invocation.
-    enable_vertex_ai_smt: Whether to enable Vertex AI SMTs.
 
   Returns:
     A serialized object (dict) describing the results of the operation.
@@ -318,7 +320,6 @@ def _Run(args, /, *, enable_vertex_ai_smt=False):
         ingestion_log_severity=ingestion_log_severity,
         message_transforms_file=message_transforms_file,
         clear_message_transforms=clear_message_transforms,
-        enable_vertex_ai_smt=enable_vertex_ai_smt,
     )
   except topics.NoFieldsSpecifiedError:
     operations = [
@@ -377,6 +378,3 @@ class UpdateAlpha(UpdateBeta):
     _Args(
         parser,
     )
-
-  def Run(self, args):
-    return _Run(args, enable_vertex_ai_smt=True)

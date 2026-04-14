@@ -38,6 +38,7 @@ DETAILED_HELP = {
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.RegionalEndpointsSupported
 class Create(base.CreateCommand):
   """Create a Secure Source Manager repository."""
 
@@ -53,7 +54,9 @@ class Create(base.CreateCommand):
     repository_ref = args.CONCEPTS.repository.Parse()
 
     # Create a repository
-    client = repositories.RepositoriesClient()
+    client = repositories.RepositoriesClient(
+        location=repository_ref.locationsId
+    )
     # this is a shortcut LRO, it completes immediately and is marked as done
     # there is no need to wait
     create_operation = client.Create(

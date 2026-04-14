@@ -26,6 +26,8 @@ from googlecloudsdk.command_lib.storage import storage_url
 class List(base.ListCommand):
   """List storage operations."""
 
+  hints = base.CommandHint(read_only=True)
+
   detailed_help = {
       'DESCRIPTION': """\
       List storage operations.

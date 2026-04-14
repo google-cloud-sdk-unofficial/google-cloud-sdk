@@ -36,7 +36,7 @@ DETAILED_HELP = {
         KMS key named example-key in a key ring named example-key-ring in the
         global scope, run:
 
-          $ {command} example-snapshot-2 --kms-key example-key --kms-keyring example-key-ring --kms-location global
+          $ {command} example-snapshot-2 --kms-key=example-key --kms-keyring=example-key-ring --kms-location=global
     """,
 }
 
@@ -54,7 +54,7 @@ def _CommonArgs(parser):
   )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
 class UpdateKmsKey(base.Command):
   """Update the KMS key of a persistent snapshot."""
@@ -105,6 +105,16 @@ class UpdateKmsKey(base.Command):
           ),
       )
       return client.MakeRequests([(service, 'UpdateKmsKey', request)])
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateKmsKeyBeta(UpdateKmsKey):
+  """Update the KMS key of a persistent snapshot."""
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateKmsKeyAlpha(UpdateKmsKeyBeta):
+  """Update the KMS key of a persistent snapshot."""
 
 
 UpdateKmsKey.detailed_help = DETAILED_HELP

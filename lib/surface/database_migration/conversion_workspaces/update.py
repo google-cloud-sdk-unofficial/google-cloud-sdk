@@ -30,15 +30,19 @@ class Update(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
   """Update a Database Migration Service conversion workspace."""
 
   detailed_help = {
-      'DESCRIPTION': """
+      'DESCRIPTION': (
+          """
         Update a Database Migration Service conversion workspace.
-      """,
-      'EXAMPLES': """\
+      """
+      ),
+      'EXAMPLES': (
+          """\
         To update a conversion workspace:
 
             $ {command} my-conversion-workspace --region=us-central1
             --display-name=new-display-name
-      """,
+      """
+      ),
   }
 
   @staticmethod
@@ -53,6 +57,7 @@ class Update(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
     cw_flags.AddNoAsyncFlag(parser)
     cw_flags.AddDisplayNameFlag(parser)
     cw_flags.AddGlobalFilterFlag(parser)
+    cw_flags.AddFeatureFlags(parser)
 
   def Run(self, args: argparse.Namespace) -> Optional[messages.Operation]:
     """Update a Database Migration Service conversion workspace.
@@ -70,6 +75,26 @@ class Update(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
         name=conversion_workspace_ref.RelativeName(),
         display_name=args.display_name,
         global_filter=args.global_filter,
+        auto_conversion=(
+            args.auto_conversion
+            if args.IsSpecified('auto_conversion')
+            else None
+        ),
+        quality_assessment=(
+            args.quality_assessment
+            if args.IsSpecified('quality_assessment')
+            else None
+        ),
+        conversion_assistance=(
+            args.conversion_assistance
+            if args.IsSpecified('conversion_assistance')
+            else None
+        ),
+        pattern_matching=(
+            args.pattern_matching
+            if args.IsSpecified('pattern_matching')
+            else None
+        ),
     )
     return self.HandleOperationResult(
         conversion_workspace_ref=conversion_workspace_ref,

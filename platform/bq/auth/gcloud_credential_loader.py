@@ -29,14 +29,12 @@ def LoadCredential() -> google_oauth2.Credentials:
   logging.info('Loading auth credentials from gcloud for account: %s', account)
 
   is_service_account = bq_utils.IsServiceAccount(account)
-  access_token = _GetAccessTokenAndPrintOutput(is_service_account)
-  # Service accounts use the refresh_handler instead of the token for refresh.
-  refresh_token = (
-      None if is_service_account else _GetRefreshTokenAndPrintOutput()
-  )
-  refresh_handler = (
-      _ServiceAccountRefreshHandler if is_service_account else None
-  )
+  if not is_service_account:
+    access_token = bq_gcloud_utils.load_access_token()
+    if not access_token:
+      access_token = _GetAccessTokenAndPrintOutput(is_service_account)
+  else:
+    access_token = _GetAccessTokenAndPrintOutput(is_service_account)
   fallback_quota_project_id = bq_utils.GetFallbackQuotaProject(
       is_service_account=is_service_account,
       fallback_project_id=bq_flags.PROJECT_ID.value,
@@ -45,8 +43,8 @@ def LoadCredential() -> google_oauth2.Credentials:
   return google_oauth2.Credentials(
       account=account,
       token=access_token,
-      refresh_token=refresh_token,
-      refresh_handler=refresh_handler,
+      refresh_token=None,
+      refresh_handler=_GetRefreshHandler(is_service_account),
       client_id=bq_auth_utils.get_client_id(),
       client_secret=bq_auth_utils.get_client_secret(),
       token_uri=bq_auth_utils.get_token_uri(),
@@ -73,10 +71,6 @@ def _GetAccessTokenAndPrintOutput(
         ['auth', 'print-access-token', '--scopes', ','.join(scopes)]
     )
   return _GetTokenFromGcloudAndPrintOtherOutput(['auth', 'print-access-token'])
-
-
-def _GetRefreshTokenAndPrintOutput() -> Optional[str]:
-  return _GetTokenFromGcloudAndPrintOtherOutput(['auth', 'print-refresh-token'])
 
 
 def _GetTokenFromGcloudAndPrintOtherOutput(
@@ -130,7 +124,21 @@ def _GetTokenFromGcloudAndPrintOtherOutput(
 def _RunGcloudCommand(
     cmd: List[str], stderr: Optional[int] = subprocess.STDOUT
 ) -> Iterator[str]:
-  """Runs the given gcloud command, yields the output, and returns the final status code."""
+  """Runs the given gcloud command and yields output.
+
+  Yields each line of stdout from the gcloud command. Raises a BigqueryError
+  if the command returns a non-zero exit code.
+
+  Args:
+    cmd: The gcloud command as a list of strings.
+    stderr: Where to redirect stderr. Defaults to subprocess.STDOUT.
+
+  Yields:
+    Each line of the command's standard output.
+
+  Raises:
+    bq_error.BigqueryError: If the gcloud command fails.
+  """
   proc = gcloud_runner.run_gcloud_command(cmd, stderr=stderr)
   error_msgs = []
   if proc.stdout:
@@ -162,19 +170,24 @@ def _UpdateReauthMessage(message: str) -> str:
   )
 
 
-def _ServiceAccountRefreshHandler(request, scopes):
-  """Refreshes the access token for a service account."""
-  del request  # Unused.
-  access_token = _GetAccessTokenAndPrintOutput(
-      is_service_account=True, scopes=scopes
-  )
-  # According to
-  # https://cloud.google.com/docs/authentication/token-types#at-lifetime
-  # and https://cloud.google.com/sdk/gcloud/reference/auth/print-access-token,
-  # the access token lifetime from gcloud auth print-access-token is 1 hour,
-  # but set token expiry to 55 minutes from now to be safe.
-  expiry = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
-      minutes=55
-  )
-  expiry = expiry.replace(tzinfo=None)
-  return access_token, expiry
+def _GetRefreshHandler(is_service_account: bool):
+  """Returns a refresh handler for the given account type."""
+
+  def _RefreshHandler(request, scopes):
+    """Refreshes the access token."""
+    del request  # Unused.
+    access_token = _GetAccessTokenAndPrintOutput(
+        is_service_account=is_service_account, scopes=scopes
+    )
+    # According to
+    # https://cloud.google.com/docs/authentication/token-types#at-lifetime
+    # and https://cloud.google.com/sdk/gcloud/reference/auth/print-access-token,
+    # the access token lifetime from gcloud auth print-access-token is 1 hour,
+    # but set token expiry to 55 minutes from now to be safe.
+    expiry = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
+        minutes=55
+    )
+    expiry = expiry.replace(tzinfo=None)
+    return access_token, expiry
+
+  return _RefreshHandler

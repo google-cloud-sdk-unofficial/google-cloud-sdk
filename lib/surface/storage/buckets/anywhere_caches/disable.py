@@ -28,6 +28,8 @@ from googlecloudsdk.command_lib.storage.tasks.buckets.anywhere_caches import dis
 class Disable(base.Command):
   """Disable Anywhere Cache instances."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION': """
 

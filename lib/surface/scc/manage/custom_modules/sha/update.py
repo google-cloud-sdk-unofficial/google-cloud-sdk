@@ -23,6 +23,7 @@ from googlecloudsdk.command_lib.scc.manage import parsing
 from googlecloudsdk.core.console import console_io
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 class Update(base.Command):
   """Update a Security Health Analytics custom module.
@@ -60,7 +61,9 @@ class Update(base.Command):
     enablement_state = parsing.GetEnablementStateFromArgs(
         args.enablement_state, module_type=constants.CustomModuleType.SHA
     )
-    update_mask = parsing.CreateUpdateMaskFromArgs(args)
+    update_mask = parsing.CreateUpdateMaskFromArgs(
+        args, module_type=constants.CustomModuleType.SHA
+    )
     if not validate_only:
       console_io.PromptContinue(
           message=(

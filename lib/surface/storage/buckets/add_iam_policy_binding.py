@@ -29,6 +29,8 @@ from googlecloudsdk.command_lib.storage.tasks import set_iam_policy_task
 class AddIamPolicyBinding(base.Command):
   """Add an IAM policy binding to a bucket."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION':
           """

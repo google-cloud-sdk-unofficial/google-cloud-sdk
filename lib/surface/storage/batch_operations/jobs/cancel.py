@@ -25,6 +25,8 @@ from googlecloudsdk.core import log
 class Cancel(base.Command):
   """Cancel a batch-operations job."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       "DESCRIPTION": """
       Cancel the batch operation job.

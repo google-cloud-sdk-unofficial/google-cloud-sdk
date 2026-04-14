@@ -18,12 +18,20 @@
 from googlecloudsdk.calliope import base
 
 
+@base.Deprecate(
+    is_removed=True,
+    error='This command has been removed.')
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ImmersiveStreamAlpha(base.Group):
   """Manage Immersive Stream resources."""
   category = base.UNCATEGORIZED_CATEGORY
 
 
+@base.Deprecate(
+    is_removed=True,
+    error='This command has been removed.')
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class ImmersiveStream(base.Group):
   """Manage Immersive Stream resources."""

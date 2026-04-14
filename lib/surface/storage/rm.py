@@ -38,6 +38,8 @@ from googlecloudsdk.core import log
 class Rm(base.Command):
   """Delete objects and buckets."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION':
           """

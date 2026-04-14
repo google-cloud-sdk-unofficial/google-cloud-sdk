@@ -105,14 +105,14 @@ class Update(base.Command):
         '--sql-query-text',
         help=(
             'The SQL query text. If this argument is specified, no '
-            'LoggingQuery arguments (--filter, --add-summary-field, etc.) '
+            'LoggingQuery arguments (--log-filter, --add-summary-field, etc.) '
             'may be specified.'
         ),
     )
 
     ops_group = query_group.add_group()
     ops_group.add_argument(
-        '--filter',
+        '--log-filter',
         help=(
             'The logging filter. If this argument is specified, '
             '--sql-query-text may not be specified.'
@@ -179,7 +179,7 @@ class Update(base.Command):
       update_mask.append('visibility')
 
     # The '--sql-query-text' argument and arguments for LoggingQuery
-    # ('--filter', '--add-summary-field', etc.) are in a mutex group,
+    # ('--log-filter', '--add-summary-field', etc.) are in a mutex group,
     # so they cannot be specified together.
     if args.IsSpecified('sql_query_text'):
       saved_query_data['opsAnalyticsQuery'] = messages.OpsAnalyticsQuery(
@@ -188,8 +188,8 @@ class Update(base.Command):
       update_mask.append('opsAnalyticsQuery.sqlQueryText')
     else:
       logging_query_data = {}
-      if args.IsSpecified('filter'):
-        logging_query_data['filter'] = args.filter
+      if args.IsSpecified('log_filter'):
+        logging_query_data['filter'] = args.log_filter
         update_mask.append('loggingQuery.filter')
       if args.IsSpecified('summary_field_start'):
         logging_query_data['summaryFieldStart'] = args.summary_field_start

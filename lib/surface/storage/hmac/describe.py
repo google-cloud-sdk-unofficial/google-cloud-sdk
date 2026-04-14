@@ -24,6 +24,8 @@ from googlecloudsdk.command_lib.storage import storage_url
 class Describe(base.DescribeCommand):
   """Describes a service account HMAC key."""
 
+  hints = base.CommandHint(read_only=True)
+
   detailed_help = {
       'DESCRIPTION': """
        *{command}* retrieves the specified HMAC key's metadata. Note that there

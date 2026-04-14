@@ -53,33 +53,6 @@ class WorkloadidentityV1alpha(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
-    def CreateServiceAgents(self, request, global_params=None):
-      r"""Creates all ServiceAgents in a given project, location and serviceProducer.
-
-      Args:
-        request: (WorkloadidentityLocationsServiceProducersCreateServiceAgentsRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (Operation) The response message.
-      """
-      config = self.GetMethodConfig('CreateServiceAgents')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    CreateServiceAgents.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v1alpha/{v1alphaId}/{v1alphaId1}/locations/{locationsId}/serviceProducers/{serviceProducersId}:createServiceAgents',
-        http_method='POST',
-        method_id='workloadidentity.locations.serviceProducers.createServiceAgents',
-        ordered_params=['parent'],
-        path_params=['parent'],
-        query_params=[],
-        relative_path='v1alpha/{+parent}:createServiceAgents',
-        request_field='',
-        request_type_name='WorkloadidentityLocationsServiceProducersCreateServiceAgentsRequest',
-        response_type_name='Operation',
-        supports_download=False,
-    )
-
     def GenerateServiceAgents(self, request, global_params=None):
       r"""Creates all ServiceAgents in a given project, location and serviceProducer.
 
@@ -273,7 +246,7 @@ class WorkloadidentityV1alpha(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method can be called in two ways: * **List all public locations:** Use the path `GET /v1/locations`. * **List project-visible locations:** Use the path `GET /v1/projects/{project_id}/locations`. This may include public locations as well as private or other locations specifically visible to the project.
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
       Args:
         request: (WorkloadidentityProjectsLocationsListRequest) input message

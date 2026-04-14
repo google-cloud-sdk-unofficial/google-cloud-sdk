@@ -24,6 +24,7 @@ from googlecloudsdk.core import log
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
+@base.Hidden
 class Pause(base.Command):
   """Starts pausing all given jobs.
 

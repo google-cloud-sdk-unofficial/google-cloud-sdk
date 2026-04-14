@@ -60,7 +60,7 @@ class List(calliope_base.ListCommand):
   def Run(self, args):
     """Run the list command."""
     results = []
-    for type_name, handler_class in registry.RESOURCE_HANDLERS.items():
+    for type_name, handler_class in registry.GetHandlerClasses().items():
       # Instantiate with dummy values to read properties
       dummy_resource = type(
           "DummyResource",

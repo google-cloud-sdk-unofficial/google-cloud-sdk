@@ -282,7 +282,7 @@ def GetIamPolicyWithAncestors(project_id, include_deny, release_track):
         ' ancestors')
 
 
-def GetEnvironmentTag(project_id):
+def GetEnvironmentTag(project_id, disable_api_enablement_check=False):
   """Returns the environment tag for the project id."""
   messages = tags.TagMessages()
   project_ref = ParseProject(project_id)
@@ -295,8 +295,16 @@ def GetEnvironmentTag(project_id):
             parent=resource_name
         )
     )
+    effective_tags_service = tags.EffectiveTagsService(
+        skip_activation_prompt=disable_api_enablement_check
+    )
+    # disable_api_enablement_check added to handle special case when
+    # the CRM API is disabled, see b/491964961/
+    if disable_api_enablement_check:
+      effective_tags_service.client.check_response_func = None
+
     effective_tags_response = list_pager.YieldFromList(
-        tags.EffectiveTagsService(),
+        effective_tags_service,
         effective_tags_request,
         batch_size_attribute='pageSize',
         field='effectiveTags',
@@ -352,15 +360,18 @@ def PrintEnvironmentTagMessage(project):
     # are projects under 'folders' or 'organizations'.
     return
 
-  env_tag_key, env_tag_value = GetEnvironmentTag(project.projectId)
+  env_tag_key, env_tag_value = GetEnvironmentTag(
+      project.projectId,
+      disable_api_enablement_check=True,
+  )
   if not env_tag_key:
-    log.status.Print(f'[environment: untagged] Read more {TAG_LINK}.')
+    log.status.Print(f'[environment: untagged] Read more to tag: {TAG_LINK}.')
     return
 
   env_standard_value = GetStandardEnvironmentValue(env_tag_value)
   if not env_standard_value:
     log.status.Print(
-        f'[environment: {env_tag_value}] is non-standard. Read more'
+        f'[environment: {env_tag_value}] is non-standard. Read more to fix: '
         f' {TAG_LINK}.'
     )
     return

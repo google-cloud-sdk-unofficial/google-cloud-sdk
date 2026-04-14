@@ -85,6 +85,7 @@ auto_flags = [
     'maintenancedisruptionbudget',
     'nodepoolupgradeconcurrencyconfig',
     'enableScheduledUpgrades',
+    'nodecreationmode',
 ]
 # LINT.ThenChange()
 

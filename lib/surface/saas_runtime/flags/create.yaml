@@ -30,20 +30,20 @@
       required: true
       repeated: false
 
-    - arg_name: value-type
-      api_field: flag.valueType
+    - arg_name: flag-value-type
+      api_field: flag.flagValueType
       help_text: |-
-        The type of the flag's value, e.g. BOOL (required).
+        The type of the flag's value, e.g. BOOLEAN (required).
       is_positional: false
       required: true
       repeated: false
       choices:
       - arg_value: bool
-        enum_value: FLAG_VALUE_TYPE_BOOL
+        enum_value: FLAG_VALUE_TYPE_BOOLEAN
         help_text: |-
           The flag's value type is a boolean.
       - arg_value: int
-        enum_value: FLAG_VALUE_TYPE_INT
+        enum_value: FLAG_VALUE_TYPE_INTEGER
         help_text: |-
           The flag's value type is an integer.
       - arg_value: string
@@ -182,6 +182,32 @@
         A description of the flag.
         Max length: 500 bytes.
       is_positional: false
+
+    - arg_name: state
+      hidden: true
+      api_field: flag.state
+      help_text: |-
+        Current state of the flag.
+      is_positional: false
+      required: false
+      repeated: false
+      choices:
+      - arg_value: in-development
+        enum_value: FLAG_STATE_IN_DEVELOPMENT
+        help_text: |-
+          The flag is currently in development.
+      - arg_value: active
+        enum_value: FLAG_STATE_ACTIVE
+        help_text: |-
+          The flag is in the active state.
+      - arg_value: sunsetting
+        enum_value: FLAG_STATE_SUNSETTING
+        help_text: |-
+          The flag is in the sunsetting state, indicating it is being phased out.
+      - arg_value: cleanup
+        enum_value: FLAG_STATE_CLEANUP
+        help_text: |-
+          The flag is in the cleanup state and ready to be deleted.
 
     - arg_name: labels
       api_field: flag.labels

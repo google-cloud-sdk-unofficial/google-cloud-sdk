@@ -496,6 +496,8 @@ class _Sections(object):
       SDK.
     secrets: Section, The section containing secretmanager properties for the
       Cloud SDK.
+    servicehealth: Section, The section containing servicehealth properties for
+      the Cloud SDK.
     spanner: Section, The section containing spanner properties for the Cloud
       SDK.
     storage: Section, The section containing storage properties for the Cloud
@@ -598,6 +600,7 @@ class _Sections(object):
     self.run = _SectionRun()
     self.runapps = _SectionRunApps()
     self.secrets = _SectionSecrets()
+    self.servicehealth = _SectionServiceHealth()
     self.spanner = _SectionSpanner()
     self.storage = _SectionStorage()
     self.survey = _SectionSurvey()
@@ -683,6 +686,7 @@ class _Sections(object):
         self.run,
         self.runapps,
         self.secrets,
+        self.servicehealth,
         self.spanner,
         self.storage,
         self.survey,
@@ -2218,6 +2222,15 @@ class _SectionContextAware(_Section):
         default=False,
         hidden=True,
     )
+    self.use_mtls_for_grpc = self._AddBool(
+        'use_mtls_for_grpc',
+        help_text=(
+            'If True, use mTLS for gRPC connections when Enterprise Certificate'
+            ' is configured.'
+        ),
+        default=False,
+        hidden=True,
+    )
 
 
 class _SectionCore(_Section):
@@ -3499,6 +3512,19 @@ class _SectionSecrets(_Section):
         'secrets to. Only applies to secrets with a user-managed policy.')
 
 
+class _SectionServiceHealth(_Section):
+  """Contains the properties for the 'servicehealth' section."""
+
+  def __init__(self):
+    super(_SectionServiceHealth, self).__init__('servicehealth')
+    self.location = self._Add(
+        'location',
+        default='global',
+        help_text='Default location to use when working with Service Health '
+        'resources. When a `--location` flag is required but not provided, the '
+        'command will fall back to this value, if set.')
+
+
 class _SectionSpanner(_Section):
   """Contains the properties for the 'spanner' section."""
 
@@ -3674,6 +3700,16 @@ class _SectionStorage(_Section):
         help_text=(
             'If True, gRPC will attempt to use DirectPath for Zonal Buckets.'
             'To disable DirectPath, set this property to False.'
+        ),
+    )
+
+    self.use_move_object_api = self._AddBool(
+        'use_move_object_api',
+        default=False,
+        hidden=True,
+        help_text=(
+            'If True, gcloud storage will use the MoveObject API for'
+            ' intra-bucket moves when possible.'
         ),
     )
 

@@ -291,6 +291,7 @@ class JsonClient(cloud_api.CloudApi):
       cloud_api.Capability.STORAGE_LAYOUT,
       cloud_api.Capability.RESUMABLE_UPLOAD,
       cloud_api.Capability.SLICED_DOWNLOAD,
+      cloud_api.Capability.MOVE_OBJECTS,
   }
 
   # The API limits the number of objects that can be composed in a single call.
@@ -1245,6 +1246,36 @@ class JsonClient(cloud_api.CloudApi):
 
       if not next_page_token:
         break
+
+  @error_util.catch_http_error_raise_gcs_api_error()
+  def move_object(self, source_url, destination_url, request_config):
+    if source_url.bucket_name != destination_url.bucket_name:
+      raise cloud_errors.GcsApiError(
+          'Move operation is only supported within the same bucket. Source:'
+          f' {source_url.bucket_name}, Destination:'
+          f' {destination_url.bucket_name}.'
+      )
+
+    if_source_generation_match = (
+        int(source_url.generation)
+        if source_url.generation is not None
+        else None
+    )
+
+    request = self.messages.StorageObjectsMoveRequest(
+        bucket=source_url.bucket_name,
+        sourceObject=source_url.resource_name,
+        destinationObject=destination_url.resource_name,
+        ifGenerationMatch=copy_util.get_generation_match_value(request_config),
+        ifMetagenerationMatch=request_config.precondition_metageneration_match,
+        ifSourceGenerationMatch=if_source_generation_match,
+    )
+    with self._apitools_request_headers_context(
+        {'x-goog-gcs-idempotency-token': uuid.uuid4().hex}
+    ):
+      return metadata_util.get_object_resource_from_metadata(
+          self.client.objects.Move(request)
+      )
 
   @error_util.catch_http_error_raise_gcs_api_error()
   def patch_object_metadata(

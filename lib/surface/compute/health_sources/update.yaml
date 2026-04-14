@@ -7,7 +7,6 @@
       "my-health-source":
 
         $ {command} <HEALTH_SOURCE_NAME> --region=<REGION> \
-          --source-type=BACKEND_SERVICE
           --sources=my-backend-service
           --health-aggregation-policy=my-health-aggregation-policy
 

@@ -20,8 +20,8 @@ import dataclasses
 import enum
 import json
 import subprocess
+from typing import Any
 
-from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import iap_tunnel
 from googlecloudsdk.command_lib.compute import ssh_utils
@@ -35,15 +35,47 @@ SSH_CA_PUBLIC_KEY_URL_TEMPLATE = (
 )
 
 
-def ProjectIdToProjectNumber(project_id):
-  """Returns the Cloud project number associated with the `project_id`."""
-  crm_message_module = apis.GetMessagesModule("cloudresourcemanager", "v1")
-  resource_manager = apis.GetClientInstance("cloudresourcemanager", "v1")
-  req = crm_message_module.CloudresourcemanagerProjectsGetRequest(
-      projectId=project_id
+def _GetProjectNumberFromWorkloadJson(
+    workload_json: dict[str, Any],
+) -> str:
+  """Retrieves the project number from the workload JSON.
+
+  Args:
+    workload_json: dict, The JSON representation of the Cloud Run workload.
+
+  Returns:
+    str, The project number.
+
+  Raises:
+    ValueError: If the project number is not found in the workload JSON.
+  """
+  project_number = workload_json.get("metadata", {}).get("namespace")
+  if not project_number:
+    raise ValueError("Project number not found in workload.")
+  return project_number
+
+
+def _ValidateGen2(workload_json: dict[str, Any]) -> None:
+  """Validates that the workload is gen2.
+
+  Args:
+    workload_json: dict, The JSON representation of the Cloud Run workload.
+
+  Raises:
+    ValueError: If the workload is a gen1 deployment.
+  """
+  template = workload_json.get("spec", {}).get("template", {})
+  execution_environment = (
+      template.get("metadata", {})
+      .get("annotations", {})
+      .get("run.googleapis.com/execution-environment")
   )
-  project = resource_manager.projects.Get(req)
-  return project.projectNumber
+  if execution_environment == "gen1":
+    raise ValueError(
+        "SSH is not supported for Cloud Run gen1 deployments. If you"
+        " already switched the execution environment to gen2, please wait a"
+        " few minutes for the deployment to be updated."
+    )
 
 
 def CreateSshTunnelArgs(
@@ -123,7 +155,6 @@ class Ssh:
     self.deployment_name = args.deployment_name
     self.workload_type = workload_type
     self.project = args.project
-    self.project_number = ProjectIdToProjectNumber(args.project)
     self.instance = getattr(args, "instance", None)
     self.container = getattr(args, "container", None)
     self.revision = getattr(args, "revision", None)
@@ -132,7 +163,13 @@ class Ssh:
     self.iap_tunnel_url_override = getattr(
         args, "iap_tunnel_url_override", None
     )
-    self.service_account = self._GetServiceAccountFromWorkload()
+
+    workload_json = self._GetWorkloadJson()
+    _ValidateGen2(workload_json)
+    self.service_account = self._GetServiceAccountFromWorkloadJson(
+        workload_json
+    )
+    self.project_number = _GetProjectNumberFromWorkloadJson(workload_json)
 
     self.workload_type = (
         self.WorkloadType.SERVICE
@@ -154,8 +191,8 @@ class Ssh:
       return False
     return True
 
-  def _GetServiceAccountFromWorkload(self):
-    """Retrieves the service account from the Cloud Run workload."""
+  def _GetWorkloadJson(self):
+    """Retrieves the JSON representation of the Cloud Run workload."""
     command = ["gcloud"]
 
     if self.workload_type == self.WorkloadType.SERVICE:
@@ -184,27 +221,30 @@ class Ssh:
       raise ValueError(
           f"Error describing deployment: {e.stderr.decode('utf-8')}"
       ) from e
+    return json.loads(output)
+
+  def _GetServiceAccountFromWorkloadJson(
+      self, workload_json: dict[str, Any]
+  ) -> str:
+    """Retrieves the service account from the workload JSON.
+
+    Args:
+      workload_json: A dict, the JSON representation of the Cloud Run workload.
+
+    Returns:
+      A str, the service account name.
+
+    Raises:
+      ValueError: If the service account is not found in the workload JSON.
+    """
+    if self.workload_type == self.WorkloadType.INSTANCE:
+      service_account = workload_json.get("spec", {}).get("serviceAccountName")
     else:
-      service_data = json.loads(output)
-      if self.workload_type == self.WorkloadType.INSTANCE:
-        service_account = service_data.get("spec", {}).get("serviceAccountName")
-      else:
-        template = service_data.get("spec", {}).get("template", {})
-        execution_environment = (
-            template.get("metadata", {})
-            .get("annotations", {})
-            .get("run.googleapis.com/execution-environment")
-        )
-        if execution_environment == "gen1":
-          raise ValueError(
-              "SSH is not supported for Cloud Run gen1 deployments. If you"
-              " already switched the execution environment to gen2, please wait"
-              " a few minutes for the deployment to be updated. "
-          )
-        service_account = template.get("spec", {}).get("serviceAccountName")
-      if not service_account:
-        raise ValueError("Service account not found for workload.")
-      return service_account
+      template = workload_json.get("spec", {}).get("template", {})
+      service_account = template.get("spec", {}).get("serviceAccountName")
+    if not service_account:
+      raise ValueError("Service account not found for workload.")
+    return service_account
 
   def HostKeyAlias(self):
     """Returns the host key alias for the SSH connection."""

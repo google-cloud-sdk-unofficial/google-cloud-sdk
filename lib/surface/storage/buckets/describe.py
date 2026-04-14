@@ -50,6 +50,8 @@ def _validate_url_does_not_contain_wildcards(url):
 class Describe(base.DescribeCommand):
   """Describes Cloud Storage buckets."""
 
+  hints = base.CommandHint(read_only=True)
+
   detailed_help = {
       'DESCRIPTION': """
       Describe a Cloud Storage bucket.

@@ -127,27 +127,3 @@ def check_duration(value):
             f"Invalid duration format: '{value}'. "
             "Expected format: <number><unit> (e.g., '1h 30m', '30s'). "
             "Valid units are: s, m, h, d, w.")
-
-
-# ---------------------------------------------------------------------------
-# Validators for attrs models (v1)
-# ---------------------------------------------------------------------------
-def validate_cron_expression(instance, attribute, value):
-    try:
-        check_cron_expression(value)
-    except ValueError as e:
-        raise ValueError(f"'{attribute.name}' error: {e}")
-
-
-def validate_timezone(instance, attribute, value):
-    try:
-        check_timezone(value)
-    except ValueError as e:
-        raise ValueError(f"'{attribute.name}' error: {e}")
-
-
-def validate_duration(instance, attribute, value):
-    try:
-        check_duration(value)
-    except (ValueError, TypeError) as e:
-        raise type(e)(f"'{attribute.name}' error: {e}")

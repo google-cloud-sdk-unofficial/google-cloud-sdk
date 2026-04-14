@@ -55,18 +55,6 @@
                 help_text: |-
                   The content is an A2A Agent Card following the A2A specification.
                   The `interfaces` field must be empty.
-              - arg_value: marketplace-agent
-                enum_value: MARKETPLACE_AGENT
-                help_text: |-
-                  The agent is procured from the Marketplace. The content field must
-                  contain the struct with the `entitlement` field. The caller must have
-                  `consumerprocurement.entitlements.get` IAM permission on the specified
-                  entitlement.
-
-                  Example: `{
-                    "entitlement": "projects/1234/entitlements/entitlement-id"
-                  }`.
-                hidden: true
             - arg_name: agent-spec-content
               api_field: service.agentSpec.content
               required: false

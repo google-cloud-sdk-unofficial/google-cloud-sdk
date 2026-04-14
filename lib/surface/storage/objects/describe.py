@@ -56,6 +56,8 @@ _ALPHA_EXAMPLES = """
 class Describe(base.DescribeCommand):
   """Describe a Cloud Storage object."""
 
+  hints = base.CommandHint(read_only=True)
+
   detailed_help = {
       'DESCRIPTION': _COMMAND_DESCRIPTION,
       'EXAMPLES': _GA_EXAMPLES,

@@ -88,7 +88,7 @@ class _BaseRotateCert(object):
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
 @base.DefaultUniverseOnly
 class RotateCert(_BaseRotateCert, base.CreateCommand):

@@ -583,6 +583,7 @@ def ParseCreateOptionsBase(
       anonymous_authentication_config=get_default(
           'anonymous_authentication_config'
       ),
+      node_creation_mode=get_default('node_creation_mode'),
       enable_auto_ipam=get_default('enable_auto_ipam'),
       enable_k8s_tokens_via_dns=get_default('enable_k8s_tokens_via_dns'),
       enable_legacy_lustre_port=get_default('enable_legacy_lustre_port'),
@@ -795,6 +796,7 @@ flags_to_add = {
         'resourceusageexport': flags.AddResourceUsageExportFlags,
         'shieldedinstance': flags.AddShieldedInstanceFlags,
         'shieldednodes': flags.AddEnableShieldedNodesFlags,
+        'nodecreationmode': flags.AddNodeCreationModeFlag,
         'spot': lambda p: flags.AddSpotFlag(p, hidden=False),
         'surgeupgrade': lambda p: flags.AddSurgeUpgradeFlag(p, default=1),
         'systemconfig': lambda p: flags.AddSystemConfigFlag(p, hidden=False),
@@ -1017,6 +1019,7 @@ flags_to_add = {
         'resourceusageexport': flags.AddResourceUsageExportFlags,
         'reservationaffinity': flags.AddReservationAffinityFlags,
         'shieldedinstance': flags.AddShieldedInstanceFlags,
+        'nodecreationmode': flags.AddNodeCreationModeFlag,
         'shieldednodes': flags.AddEnableShieldedNodesFlags,
         'spot': flags.AddSpotFlag,
         'stackdriver': flags.AddEnableStackdriverKubernetesFlag,
@@ -1268,6 +1271,7 @@ flags_to_add = {
         'resourceusageexport': flags.AddResourceUsageExportFlags,
         'releasechannel': flags.AddReleaseChannelFlag,
         'shieldedinstance': flags.AddShieldedInstanceFlags,
+        'nodecreationmode': flags.AddNodeCreationModeFlag,
         'shieldednodes': flags.AddEnableShieldedNodesFlags,
         'spot': flags.AddSpotFlag,
         'stackdriver': flags.AddEnableStackdriverKubernetesFlag,

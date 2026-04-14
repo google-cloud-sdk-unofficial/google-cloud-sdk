@@ -651,9 +651,12 @@ class EmptyDirVolumeSource(proto.Message):
             MEMORY (1):
                 Explicitly set the EmptyDir to be in memory.
                 Uses tmpfs.
+            DISK (2):
+                Explicitly sets the EmptyDir to be a disk.
         """
         MEDIUM_UNSPECIFIED = 0
         MEMORY = 1
+        DISK = 2
 
     medium: Medium = proto.Field(
         proto.ENUM,

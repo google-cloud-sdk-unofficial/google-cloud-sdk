@@ -39,6 +39,8 @@ _TRANSFORMS = {'location_transform': _transform_location}
 class List(base.ListCommand):
   """List returns all the Insights dataset configs for given location."""
 
+  hints = base.CommandHint(read_only=True)
+
   detailed_help = {
       'DESCRIPTION': """
       List Cloud storage Insights dataset configs.

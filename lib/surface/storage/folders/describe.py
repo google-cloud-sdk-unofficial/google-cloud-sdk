@@ -28,6 +28,8 @@ from googlecloudsdk.command_lib.storage.resources import resource_util
 class Describe(base.DescribeCommand):
   """Describe hierarchical namesapace bucket folders."""
 
+  hints = base.CommandHint(read_only=True)
+
   detailed_help = {
       'DESCRIPTION': """Describe hierarchical namespace bucket folders.""",
       'EXAMPLES': """

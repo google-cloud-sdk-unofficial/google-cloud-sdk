@@ -119,8 +119,14 @@ class Enable(base.SilentCommand):
       )
       return
 
+    log.warning(
+        'MCP enablement is not required and only service enablement will be'
+        ' performed.'
+    )
     if not service_metadata.state.enableRules:
-      enable_msg = serviceusage.GetMcpEnabledError(resource_name)
+      enable_msg = serviceusage.GetMcpEnabledError(
+          service=args.service, resource_name=resource_name
+      )
       do_enable = console_io.PromptContinue(
           enable_msg,
           default=False,
@@ -133,6 +139,15 @@ class Enable(base.SilentCommand):
             folder=folder,
             organization=organization,
         )
+
+        if args.async_:
+          cmd = _OP_WAIT_CMD.format(enable_service_op.name)
+          log.status.Print(
+              'Asynchronous operation is in progress... '
+              'Use the following command to wait for its '
+              f'completion:\n {cmd}'
+          )
+          return
 
         # The operation should not be None when enable rules are empty,
         # but in case it is, we check it here to avoid error.
@@ -147,34 +162,18 @@ class Enable(base.SilentCommand):
                 f' {resource_name}: {enable_service_op.error}'
             )
             return
+          else:
+            log.status.Print(
+                f'The service {args.service} has been enabled for the'
+                f' resource {resource_name}.'
+            )
+            return
       else:
         return
 
-    op = serviceusage.AddMcpEnableRule(
-        args.service,
-        project,
-        folder=folder,
-        organization=organization,
-    )
-
-    if op is None:
-      return None
-
-    if args.async_:
-      cmd = _OP_WAIT_CMD.format(op.name)
-      log.status.Print(
-          'Asynchronous operation is in progress... '
-          'Use the following command to wait for its '
-          f'completion:\n {cmd}'
-      )
-      return
-
-    op = services_util.WaitOperation(op.name, serviceusage.GetOperationV2Beta)
-
-    if op.error:
-      services_util.PrintOperation(op)
     else:
       log.status.Print(
-          f'The MCP endpoint for service {args.service} has been enabled for'
-          f' the resource {resource_name}.'
+          f'The service {args.service} has'
+          f' been enabled for the resource {resource_name}.'
       )
+      return

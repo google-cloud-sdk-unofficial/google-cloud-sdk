@@ -25,6 +25,8 @@ from googlecloudsdk.core import log
 class Describe(base.DescribeCommand):
   """Describe inventory reports detail."""
 
+  hints = base.CommandHint(read_only=True)
+
   detailed_help = {
       'DESCRIPTION':
           """

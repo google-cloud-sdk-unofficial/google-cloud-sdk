@@ -40,6 +40,8 @@ def _add_common_args(parser):
 class List(base.ListCommand):
   """Lists Cloud Storage buckets."""
 
+  hints = base.CommandHint(read_only=True)
+
   detailed_help = {
       'DESCRIPTION': """
       List Cloud Storage buckets.

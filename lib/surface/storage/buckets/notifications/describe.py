@@ -28,6 +28,8 @@ from googlecloudsdk.core.resource import resource_projector
 class Describe(base.DescribeCommand):
   """Show metadata for a notification configuration."""
 
+  hints = base.CommandHint(read_only=True)
+
   detailed_help = {
       'DESCRIPTION':
           """

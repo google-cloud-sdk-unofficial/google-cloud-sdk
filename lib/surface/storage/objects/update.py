@@ -206,6 +206,8 @@ def _add_alpha_args(parser):
 class Update(base.Command):
   """Update Cloud Storage objects."""
 
+  hints = base.CommandHint(read_only=False)
+
   detailed_help = {
       'DESCRIPTION': _COMMAND_DESCRIPTION,
       'EXAMPLES': _GA_EXAMPLES,

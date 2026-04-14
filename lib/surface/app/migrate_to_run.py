@@ -36,6 +36,64 @@ from surface.run import deploy
 from typing_extensions import override
 
 
+class _HiddenParserProxy:
+  """Proxy for calliope parser that sets hidden=True for all added arguments."""
+
+  def __init__(self, real_parser: Any) -> None:
+    """Initializes the proxy."""
+    self._real_parser = real_parser
+
+  def add_argument(self, *args: Any, **kwargs: Any) -> Any:
+    """Adds an argument to the parser, setting hidden=True."""
+    kwargs['hidden'] = True
+    return self._real_parser.add_argument(*args, **kwargs)
+
+  def add_group(self, *args: Any, **kwargs: Any) -> '_HiddenParserProxy':
+    """Adds a group to the parser, setting hidden=True."""
+    kwargs['hidden'] = True
+    return _HiddenParserProxy(self._real_parser.add_group(*args, **kwargs))
+
+  def add_argument_group(
+      self, *args: Any, **kwargs: Any
+  ) -> '_HiddenParserProxy':
+    """Adds an argument group to the parser, setting hidden=True."""
+    kwargs['hidden'] = True
+    return _HiddenParserProxy(
+        self._real_parser.add_argument_group(*args, **kwargs)
+    )
+
+  def add_mutually_exclusive_group(
+      self, *args: Any, **kwargs: Any
+  ) -> '_HiddenParserProxy':
+    """Adds a mutually exclusive group to the parser, setting hidden=True."""
+    kwargs['hidden'] = True
+    return _HiddenParserProxy(
+        self._real_parser.add_mutually_exclusive_group(*args, **kwargs)
+    )
+
+  def set_defaults(self, **kwargs: Any) -> None:
+    """Sets default values for arguments."""
+    return self._real_parser.set_defaults(**kwargs)
+
+  def get_default(self, dest: str) -> Any:
+    """Gets the default value for an argument."""
+    return self._real_parser.get_default(dest)
+
+  def register(self, registry_name: str, value: Any, obj: Any) -> None:
+    """Registers a value with the parser."""
+    return self._real_parser.register(registry_name, value, obj)
+
+  def parse_known_args(
+      self, args: Any = None, namespace: Any = None
+  ) -> tuple[Any, list[str]]:
+    """Parses known arguments from a list of arguments."""
+    return self._real_parser.parse_known_args(args=args, namespace=namespace)
+
+  def __getattr__(self, name: str) -> Any:
+    """Gets an attribute from the real parser."""
+    return getattr(self._real_parser, name)
+
+
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class AppEngineToCloudRun(deploy.Deploy):
@@ -56,9 +114,10 @@ class AppEngineToCloudRun(deploy.Deploy):
 
   @classmethod
   def Args(cls, parser):
-    deploy.Deploy.CommonArgs(parser)
+    hidden_parser = _HiddenParserProxy(parser)
+    deploy.Deploy.CommonArgs(hidden_parser)
     cls.CommonArgs(parser)
-    cls.AddCloudRunFlags(parser)
+    cls.AddCloudRunFlags(hidden_parser)
 
   @classmethod
   def CommonArgs(cls, parser) -> None:
@@ -124,6 +183,12 @@ class AppEngineToCloudRun(deploy.Deploy):
       self._start_migration(args)
       # Execute the gcloud run deploy command using the arguments prepared in
       # StartMigration.
+
+      # Calling super().Run() from a parent class is considered an
+      # anti-pattern and should not be replicated(see yaqs/3868851564655411200).
+      # Our long-term plan is to refactor the cloud run deploy logic into a
+      # shared command_lib so that both the App Engine migration tool and Cloud
+      # Run can utilize it.
       super().Run(args)
       self._print_migration_summary(args)
     finally:

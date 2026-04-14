@@ -19,6 +19,7 @@ from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.asset import client_util as asset_client_util
 from googlecloudsdk.command_lib.developer_connect import name
 from googlecloudsdk.core import log
+from googlecloudsdk.core.util import regional
 
 _CLOUD_RUN_REVISION_ASSET_TYPE = 'run.googleapis.com/Revision'
 _GKE_POD_ASSET_TYPE = 'k8s.io/Pod'
@@ -198,9 +199,17 @@ def construct_partial_pod_uri_and_get_parent(gke_workload):
   namespace_id = gke_workload.gke_namespace.namespace_id
   deployment_id = gke_workload.deployment_id
   parent = f'projects/{project_info.project_id}'
+
+  # Zonal clusters use 'zones' and regional clusters use 'locations' in CAIS.
+  location_type = (
+      'locations'
+      if regional.LocationToRegion(location) == location
+      else 'zones'
+  )
+
   partial_pod_uri = (
       f'//container.googleapis.com/projects/{project_info.project_id}/'
-      f'locations/{location}/clusters/{cluster_id}/k8s/namespaces/'
+      f'{location_type}/{location}/clusters/{cluster_id}/k8s/namespaces/'
       f'{namespace_id}/pods/{deployment_id}'
   )
   return partial_pod_uri, parent

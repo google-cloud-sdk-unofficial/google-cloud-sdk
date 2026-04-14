@@ -84,6 +84,8 @@ def _get_resource_iterator(url_strings):
 class Hash(base.Command):
   """Calculates hashes on local or cloud files."""
 
+  hints = base.CommandHint(read_only=True)
+
   detailed_help = {
       'DESCRIPTION':
           """
