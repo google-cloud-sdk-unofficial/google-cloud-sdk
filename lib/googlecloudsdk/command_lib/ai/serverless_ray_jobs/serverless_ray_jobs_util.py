@@ -14,84 +14,75 @@
 # limitations under the License.
 """Utilities for AI Platform serverless ray jobs commands."""
 
-
+from googlecloudsdk.core import log
 
 SERVERLESS_RAY_JOB_COLLECTION = (
     'aiplatform.projects.locations.serverlessRayJobs'
 )
 
 
-def _ConstructResourceSpecs(aiplatform_client, resource_spec):
+def _ConstructWorkerPoolSpecs(aiplatform_client, worker_pool_spec):
   """Constructs the specification of a Ray worker nodepool.
 
   Args:
     aiplatform_client: The AI Platform API client used.
-    resource_spec: A dict whose fields represent the resource spec.
+    worker_pool_spec: A dict whose fields represent the worker pool spec.
 
   Returns:
-    A ResoueceSpec message instance for nodepool resource spec for the
+    A RayWorkerPoolSpec message instance for nodepool resource spec for the
     serverless ray job.
   """
 
-  resource_specs = []
-  spec = aiplatform_client.GetMessage('ServerlessRayJobSpecResourceSpec')()
-  resource_spec_dict = resource_spec
+  worker_pool_specs = []
+  spec = aiplatform_client.GetMessage('RayWorkerPoolSpec')()
+  worker_pool_spec_dict = worker_pool_spec
 
-  if resource_spec_dict.get('disk-size'):
-    spec.disk = aiplatform_client.GetMessage(
-        'ServerlessRayJobSpecResourceSpecDisk'
-    )(diskSizeGb=resource_spec_dict.get('disk-size'))
+  spec.machineSpec = aiplatform_client.GetMessage('MachineSpec')()
 
-  if resource_spec_dict.get('resource-unit'):
-    spec.resourceUnit = resource_spec_dict.get('resource-unit')
-  if resource_spec_dict.get('max-node-count'):
-    spec.maxNodeCount = resource_spec_dict.get('max-node-count')
+  if worker_pool_spec_dict.get('disk-size'):
+    spec.diskSpec = aiplatform_client.GetMessage('DiskSpec')()
+    spec.diskSpec.bootDiskSizeGb = worker_pool_spec_dict.get('disk-size')
 
-  print('resource_spec: {}'.format(spec))
+  if worker_pool_spec_dict.get('max-node-count'):
+    spec.maxReplicaCount = worker_pool_spec_dict.get('max-node-count')
 
-  resource_specs.append(spec)
+  log.status.Print('worker_pool_spec: {}'.format(spec))
 
-  return resource_specs
+  worker_pool_specs.append(spec)
+
+  return worker_pool_specs
 
 
 def ConstructServerlessRayJobSpec(
     aiplatform_client,
-    main_python_file_uri=None,
-    entrypoint_file_args=None,
-    archive_uris=None,
+    entrypoint=None,
     service_account=None,
     container_image_uri=None,
-    resource_spec=None,
+    worker_pool_spec=None,
 ):
-  """Constructs the spec of a serverless ray job to be used in job creation request.
+  """Constructs the specification of a serverless ray job.
 
   Args:
-    aiplatform_client: The AI Platform API client used.
-    main_python_file_uri: The main python file uri of the serverless ray job.
-    entrypoint_file_args: The args to pass into the serverless ray job.
-    archive_uris: The uris of the archives to be extracted and copy to Ray
-      worker nodes.
-    service_account: The service account to run the serverless ray job as.
-    container_image_uri: The container image uri to run the serverless ray job.
-    resource_spec: The resource spec of the nodepool for the serverless ray job.
+    aiplatform_client: The AI platform API client used.
+    entrypoint: The code entrypoint to use for the Ray job.
+    service_account: The service account for the serverless ray job.
+    container_image_uri: The container image URI for the serverless ray job.
+    worker_pool_spec: The worker pool spec of the nodepool for the serverless
+      ray job.
 
   Returns:
     A ServerlessRayJobSpec message instance for creating a serverless ray job.
   """
 
   job_spec_message = aiplatform_client.GetMessage('ServerlessRayJobSpec')
-  job_spec = job_spec_message(mainPythonFileUri=main_python_file_uri)
+  job_spec = job_spec_message(entrypoint=entrypoint)
 
   if service_account is not None:
     job_spec.serviceAccount = service_account
-  if archive_uris:
-    job_spec.archiveUris = archive_uris
-  if entrypoint_file_args:
-    job_spec.args = entrypoint_file_args
 
-  if resource_spec:
-    job_spec.resourceSpecs = _ConstructResourceSpecs(
-        aiplatform_client, resource_spec
+  if worker_pool_spec:
+    job_spec.workerPoolSpecs = _ConstructWorkerPoolSpecs(
+        aiplatform_client, worker_pool_spec
     )
 
   if container_image_uri:

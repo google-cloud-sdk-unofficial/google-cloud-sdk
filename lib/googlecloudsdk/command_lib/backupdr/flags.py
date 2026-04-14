@@ -1102,7 +1102,6 @@ def AddDiskBackupPlanProperties(parser):
   parser.add_argument(
       '--disk-properties',
       metavar='PROPERTY=VALUE',
-      hidden=True,
       type=arg_parsers.ArgDict(
           spec={
               'guest-flush': arg_parsers.ArgBoolean(),

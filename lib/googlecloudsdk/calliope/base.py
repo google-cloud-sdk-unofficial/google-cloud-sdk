@@ -18,11 +18,14 @@
 import abc
 import collections
 import contextlib
+import dataclasses
 import enum
 from functools import wraps  # pylint:disable=g-importing-member
 import itertools
+import json
 import re
 import sys
+import typing
 
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
@@ -502,10 +505,79 @@ ENDPOINT_LOCATION = Argument(
 )
 
 
+@dataclasses.dataclass(frozen=True)
+class CommandHint(object):
+  """A structured hint for a command.
+
+  Attributes:
+    read_only: bool, True if the command has no side effects.
+    destructive: bool, True if the command can cause irreversible data loss or
+      resource deletion.
+    idempotent: bool, True if running the command multiple times has the same
+      effect as running it once.
+    open_world: bool, True if the command interacts with external systems beyond
+      the local environment.
+  """
+  read_only: typing.Optional[bool] = None
+  destructive: typing.Optional[bool] = None
+  idempotent: typing.Optional[bool] = None
+  open_world: typing.Optional[bool] = None
+  _hints: dict[str, bool] = dataclasses.field(default_factory=dict, init=False)
+
+  def __init__(
+      self,
+      read_only=None,
+      destructive=None,
+      idempotent=None,
+      open_world=None,
+      **kwargs
+  ):
+    object.__setattr__(self, 'read_only', read_only)
+    object.__setattr__(self, 'destructive', destructive)
+    object.__setattr__(self, 'idempotent', idempotent)
+    object.__setattr__(self, 'open_world', open_world)
+
+    hints = kwargs.copy()
+    if read_only is not None:
+      hints['readOnly'] = read_only
+    if destructive is not None:
+      hints['destructive'] = destructive
+    if idempotent is not None:
+      hints['idempotent'] = idempotent
+    if open_world is not None:
+      hints['openWorld'] = open_world
+    object.__setattr__(self, '_hints', hints)
+
+  def ToString(self, command):
+    """Returns a JSON string representation of the hint.
+
+    Args:
+      command: calliope._CommandCommon, The command object.
+
+    Returns:
+      str: A JSON string of the hint metadata.
+    """
+    description = ''
+    if (
+        hasattr(command, 'detailed_help')
+        and 'DESCRIPTION' in command.detailed_help
+    ):
+      description = command.detailed_help['DESCRIPTION'].strip()
+
+    hint_output = {
+        'schema': 'cli-hints/v1',
+        'command': command.dotted_name.replace('gcloud.', '').replace('.', ' '),
+        'hints': self._hints,
+        'description': description,
+    }
+    return json.dumps(hint_output)
+
+
 class _Common(six.with_metaclass(abc.ABCMeta, object)):
   """Base class for Command and Group."""
 
   category = None
+  hints = None
   _cli_generator = None
   _is_hidden = False
   _is_auto_generated = False
@@ -530,8 +602,8 @@ class _Common(six.with_metaclass(abc.ABCMeta, object)):
     """
     pass
 
-  @staticmethod
-  def _Flags(parser):
+  @classmethod
+  def _Flags(cls, parser):
     """Adds subclass flags.
 
     Args:
@@ -725,13 +797,8 @@ class Command(six.with_metaclass(abc.ABCMeta, _Common)):
     return self._cli_power_users_only.Execute(args, call_arg_complete=False)
 
   @classmethod
-  def _Flags(cls, parser):
-    """Sets the default output format.
-
-    Args:
-      parser: The argparse parser.
-    """
-    parser.display_info.AddFormat(properties.VALUES.core.default_format.Get())
+  def _AddCommonEndpointFlags(cls, parser):
+    """Adds common flags for this command."""
     if cls.RegionalEndpointCompatibility() is not None:
       parser.add_argument(
           '--endpoint-mode',
@@ -755,15 +822,21 @@ class Command(six.with_metaclass(abc.ABCMeta, _Common)):
           request is handled entirely within the specified Google Cloud region.
           This differs from global endpoints, which may process parts of the
           request outside the target region.
-
-          Benefits of Regional Endpoints:
-          (1) Data Residency: Keeps data in-transit within the chosen region.
-          (2) Improved Isolation: Reduces the risk of cross-region impact
-          from outages.
           """,
           action=actions.StoreProperty(
-              properties.VALUES.regional.endpoint_mode),
+              properties.VALUES.regional.endpoint_mode
+          ),
       )
+
+  @classmethod
+  def _Flags(cls, parser):
+    """Sets the default output format.
+
+    Args:
+      parser: The argparse parser.
+    """
+    parser.display_info.AddFormat(properties.VALUES.core.default_format.Get())
+    cls._AddCommonEndpointFlags(parser)
 
   @abc.abstractmethod
   def Run(self, args):
@@ -812,9 +885,10 @@ class TopicCommand(six.with_metaclass(abc.ABCMeta, Command)):
 class SilentCommand(six.with_metaclass(abc.ABCMeta, Command)):
   """A command that produces no output."""
 
-  @staticmethod
-  def _Flags(parser):
+  @classmethod
+  def _Flags(cls, parser):
     parser.display_info.AddFormat('none')
+    cls._AddCommonEndpointFlags(parser)
 
 
 class DescribeCommand(six.with_metaclass(abc.ABCMeta, Command)):
@@ -836,8 +910,9 @@ class DeclarativeCommand(six.with_metaclass(abc.ABCMeta, Command)):
 class BinaryBackedCommand(six.with_metaclass(abc.ABCMeta, Command)):
   """A command that wraps a BinaryBackedOperation."""
 
-  @staticmethod
-  def _Flags(parser):
+  @classmethod
+  def _Flags(cls, parser):
+    cls._AddCommonEndpointFlags(parser)
     SHOW_EXEC_ERROR_FLAG.AddToParser(parser)
 
   @staticmethod
@@ -866,14 +941,15 @@ class CacheCommand(six.with_metaclass(abc.ABCMeta, Command)):
 class ListCommand(six.with_metaclass(abc.ABCMeta, CacheCommand)):
   """A command that pretty-prints all resources."""
 
-  @staticmethod
-  def _Flags(parser):
+  @classmethod
+  def _Flags(cls, parser):
     """Adds the default flags for all ListCommand commands.
 
     Args:
       parser: The argparse parser.
     """
 
+    cls._AddCommonEndpointFlags(parser)
     FILTER_FLAG.AddToParser(parser)
     LIMIT_FLAG.AddToParser(parser)
     PAGE_SIZE_FLAG.AddToParser(parser)

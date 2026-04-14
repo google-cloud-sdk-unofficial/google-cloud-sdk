@@ -27,6 +27,137 @@ def _print_padded_request(request: Any) -> None:
     log.status.Print(f"     {line}")
 
 
+def _delete_resource(
+    handler: handlers_base.GcpResourceHandler,
+    existing_resource: Any,
+    resource_type_name: str,
+) -> None:
+  """Deletes a GCP resource and waits for the operation to complete."""
+  delete_request = handler.build_delete_request(existing_resource)
+  if handler.dry_run:
+    log.status.Print(f"     [DRY RUN] Would delete {resource_type_name}")
+    if handler.show_requests:
+      _print_padded_request(delete_request)
+  else:
+    if handler.show_requests:
+      log.error("--- GCP API DELETE REQUEST ---")
+      _print_padded_request(delete_request)
+    api_response = handler.get_delete_method()(request=delete_request)
+    handler.wait_for_operation(api_response)
+    log.status.Print(f"     Successfully deleted {resource_type_name}.")
+
+
+def _update_resource(
+    handler: handlers_base.GcpResourceHandler,
+    existing_resource: Any,
+    local_definition: Any,
+    changed_fields: list[str],
+    resource_type_name: str,
+) -> None:
+  """Updates a GCP resource and waits for the operation to complete."""
+  resource_message = handler.to_resource_message(local_definition)
+  try:
+    request = handler.build_update_request(
+        existing_resource, resource_message, changed_fields
+    )
+
+    if handler.dry_run:
+      log.status.Print(f"     [DRY RUN] Would update {resource_type_name}")
+      if handler.show_requests:
+        _print_padded_request(request)
+    else:
+      if handler.show_requests:
+        log.error("--- GCP API UPDATE REQUEST ---")
+        _print_padded_request(request)
+      api_response = handler.get_update_method()(request=request)
+      api_response = handler.wait_for_operation(api_response)
+      handler.post_deploy(api_response, created=False)
+      success_message = handler.get_success_deployment_message(api_response)
+      log.status.Print(
+          f"     Successfully updated {resource_type_name}: {success_message}"
+      )
+  except NotImplementedError as e:
+    raise ValueError(
+        "This resource does not support patch updates. "
+        "Please set `updateAction: recreate` in your deployment "
+        "model to recreate the resource when it changes."
+    ) from e
+
+
+def _create_resource(
+    handler: handlers_base.GcpResourceHandler,
+    local_definition: Any,
+    resource_type_name: str,
+) -> None:
+  """Creates a new GCP resource and waits for the operation to complete."""
+  resource_message = handler.to_resource_message(local_definition)
+  request = handler.build_create_request(resource_message)
+
+  if handler.dry_run:
+    log.status.Print(f"     [DRY RUN] Would create {resource_type_name}")
+    if handler.show_requests:
+      _print_padded_request(request)
+  else:
+    if handler.show_requests:
+      log.error("--- GCP API CREATE REQUEST ---")
+      _print_padded_request(request)
+    api_response = handler.get_create_method()(request=request)
+    api_response = handler.wait_for_operation(api_response)
+    handler.post_deploy(api_response, created=True)
+    success_message = handler.get_success_deployment_message(api_response)
+    log.status.Print(
+        f"     Successfully created {resource_type_name}: {success_message}"
+    )
+
+
+def _handle_existing_resource(
+    handler: handlers_base.GcpResourceHandler,
+    existing_resource: Any,
+    local_definition: Any,
+    resource_type_name: str,
+) -> None:
+  """Handles updating, skipping, or recreating an existing GCP resource."""
+  if handler.resource.update_action == "skip":
+    log.status.Print(
+        f"     Found existing {resource_type_name}. Skipping update based on "
+        "updateAction."
+    )
+    return
+
+  log.status.Print(
+      f"     Found existing {resource_type_name}. Comparing configurations..."
+  )
+  changed_fields = handler.compare(existing_resource, local_definition)
+  if not changed_fields:
+    capitalized_type = resource_type_name[0].upper() + resource_type_name[1:]
+    log.status.Print(f"     {capitalized_type} is already up-to-date.")
+    return
+
+  if handler.resource.update_action == "recreate":
+    log.status.Print(
+        f"     Differences found in fields: {', '.join(changed_fields)}. "
+        "Recreating..."
+    )
+    _delete_resource(handler, existing_resource, resource_type_name)
+
+    log.status.Print(
+        f"     Creating new {resource_type_name} after deletion..."
+    )
+    _create_resource(handler, local_definition, resource_type_name)
+  else:
+    log.status.Print(
+        f"     Differences found in fields: {', '.join(changed_fields)}. "
+        "Patching..."
+    )
+    _update_resource(
+        handler,
+        existing_resource,
+        local_definition,
+        changed_fields,
+        resource_type_name,
+    )
+
+
 def deploy_gcp_resource(handler: handlers_base.GcpResourceHandler) -> None:
   """Deploys a GCP resource using the given handler."""
   resource_id = handler.get_resource_id()
@@ -38,70 +169,21 @@ def deploy_gcp_resource(handler: handlers_base.GcpResourceHandler) -> None:
     existing_resource = handler.find_existing_resource()
     local_definition = handler.get_local_definition()
     if existing_resource:
-      log.status.Print(
-          f"     Found existing {resource_type_name}. "
-          "Comparing configurations..."
+      _handle_existing_resource(
+          handler, existing_resource, local_definition, resource_type_name
       )
-      changed_fields = handler.compare(existing_resource, local_definition)
-      if not changed_fields:
-        capitalized_type = (
-            resource_type_name[0].upper() + resource_type_name[1:]
-        )
-        log.status.Print(
-            f"     {capitalized_type} is already up-to-date."
-        )
-        return
-      log.status.Print(
-          f"     Differences found in fields: {', '.join(changed_fields)}. "
-          "Patching..."
-      )
-      resource_message = handler.to_resource_message(local_definition)
-      request = handler.build_update_request(
-          existing_resource, resource_message, changed_fields
-      )
-
-      if handler.dry_run:
-        log.status.Print(f"     [DRY RUN] Would update {resource_type_name}")
-        if handler.show_requests:
-          _print_padded_request(request)
-      else:
-        if handler.show_requests:
-          log.error("--- GCP API UPDATE REQUEST ---")
-          _print_padded_request(request)
-        api_response = handler.get_update_method()(request=request)
-        api_response = handler.wait_for_operation(api_response)
-        handler.post_deploy(api_response, created=False)
-        success_message = handler.get_success_deployment_message(api_response)
-        log.status.Print(
-            f"     Successfully updated {resource_type_name}: {success_message}"
-        )
-
     else:
       capitalized_type = resource_type_name[0].upper() + resource_type_name[1:]
       log.status.Print(
-          f"     {capitalized_type} not found. Creating a new"
-          " one..."
+          f"     {capitalized_type} not found. Creating a new one..."
       )
+      _create_resource(handler, local_definition, resource_type_name)
 
-      resource_message = handler.to_resource_message(local_definition)
-      request = handler.build_create_request(resource_message)
-
-      if handler.dry_run:
-        log.status.Print(f"     [DRY RUN] Would create {resource_type_name}")
-        if handler.show_requests:
-          _print_padded_request(request)
-      else:
-        if handler.show_requests:
-          log.error("--- GCP API CREATE REQUEST ---")
-          _print_padded_request(request)
-        api_response = handler.get_create_method()(request=request)
-        api_response = handler.wait_for_operation(api_response)
-        handler.post_deploy(api_response, created=True)
-        success_message = handler.get_success_deployment_message(api_response)
-        log.status.Print(
-            f"     Successfully created {resource_type_name}: {success_message}"
-        )
-  except (apitools_exceptions.HttpError, ValueError, NotImplementedError) as e:
+  except (
+      apitools_exceptions.HttpError,
+      ValueError,
+      NotImplementedError,
+  ) as e:
     raise ValueError(
         f"Failed to deploy resource '{resource_id}' of type"
         f" '{resource_type_name}': {e}"

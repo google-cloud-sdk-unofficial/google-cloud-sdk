@@ -41,8 +41,10 @@ class CreateCatalog(base.CreateCommand):
   detailed_help = {
       'EXAMPLES': help_text,
   }
+  # Not supported in beta yet.
   _support_catalog_type_biglake = False
   _support_primary_location = False
+  _support_service_directory_name = False
 
   @classmethod
   def Args(cls, parser):
@@ -58,6 +60,8 @@ class CreateCatalog(base.CreateCommand):
     if cls._support_catalog_type_biglake:
       util.AddDefaultLocationArg(parser)
       util.AddAdditionalLocationsArg(parser)
+    if cls._support_service_directory_name:
+      arguments.AddServiceDirectoryNameArg(parser)
 
   def Run(self, args):
     if self._support_catalog_type_biglake:
@@ -80,6 +84,12 @@ class CreateCatalog(base.CreateCommand):
         ).GetEnumForChoice(args.catalog_type),
         credential_mode=credential_mode,
     )
+    if self._support_service_directory_name and args.IsSpecified(
+        'service_directory_name'
+    ):
+      catalog.federated_catalog_options = messages.FederatedCatalogOptions(
+          service_directory_name=args.service_directory_name
+      )
     if self._support_catalog_type_biglake:
       catalog.default_location = args.default_location
       catalog.additional_locations = args.additional_locations or []
@@ -104,3 +114,4 @@ class CreateAlpha(CreateCatalog):
   }
   _support_catalog_type_biglake = True
   _support_primary_location = True
+  _support_service_directory_name = True

@@ -14,7 +14,6 @@
 # limitations under the License.
 """Command to create a new VPN gateway."""
 
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.vpn_gateways import vpn_gateways_utils
 from googlecloudsdk.calliope import arg_parsers
@@ -45,12 +44,16 @@ class Create(base.CreateCommand):
   external VPN gateways or Cloud VPN Gateways.
   """
 
-  detailed_help = {'EXAMPLES': """\
+  detailed_help = {
+      'EXAMPLES': (
+          """\
           To create a VPN gateway, run:
 
               $ {command} my-vpn-gateway --region=us-central1 --network=default
-          """}
-  _support_tagging_at_creation = False
+          """
+      )
+  }
+  _support_tagging_at_creation = True
 
   @classmethod
   def Args(cls, parser):
@@ -178,7 +181,6 @@ class CreateBeta(Create):
   INSTANCE_ARG = None
 
   _support_outer_vpn_ipv6 = True
-  _support_tagging_at_creation = True
 
   @classmethod
   def Args(cls, parser):
@@ -206,7 +208,6 @@ class CreateAlpha(Create):
 
   ROUTER_ARG = None
   INSTANCE_ARG = None
-  _support_tagging_at_creation = True
 
   @classmethod
   def Args(cls, parser):

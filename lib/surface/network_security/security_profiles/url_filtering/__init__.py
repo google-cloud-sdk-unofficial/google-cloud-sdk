@@ -18,9 +18,10 @@ from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class UrlFiltering(base.Group):
-  """Manage Security Profiles - Url Filtering Profile.
-  """
+  """Security Profiles - Url Filtering Profile commands."""
 
   category = base.NETWORK_SECURITY_CATEGORY

@@ -1,0 +1,24 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Describes a BigLake Hive table.
+    description: |
+      Describes a BigLake Hive table.
+    examples: |-
+      To describe a BigLake Hive table, run:
+
+        $ {command} my-table --database=my-database --catalog=my-catalog
+
+  request:
+    collection: biglake.hive.v1beta.projects.catalogs.databases.tables
+    api_version: v1beta
+    method: get
+
+  arguments:
+    params:
+    - arg_name: table
+      resource_spec: !REF googlecloudsdk.command_lib.biglake.resources:hive_table
+      required: true
+      is_positional: true
+      is_primary_resource: true
+      help_text: |
+        The Hive Table to describe.

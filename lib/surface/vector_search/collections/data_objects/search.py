@@ -73,6 +73,19 @@ class Search(base.Command):
           To search data objects from collection `my-collection` in location `us-central1` using text search and return 10 results, run:
 
           $ {command} --collection=my-collection --location=us-central1 --text-search-text="test" --text-search-data-fields="text_field" --top-k=10
+
+          To search data objects from collection `my-collection` in location `us-central1` using semantic search and return 5 results, run:
+
+          $ {command} --collection=my-collection --location=us-central1 --semantic-search-text="sci-fi" --semantic-search-field="plot_embedding" --semantic-task-type="retrieval-query" --top-k=5
+
+          To search data objects from collection `my-collection` in location `us-central1` using vector search with an index hint and return 7 results, run:
+
+          $ {command} --collection=my-collection --location=us-central1 --vector-search-field="genre_embedding" --vector-from-file="vector.json" --use-index="my-index" --top-k=7
+
+          To search data objects from collection `my-collection` in location `us-central1` using vector search with KNN for exact results, run:
+
+          $ {command} --collection=my-collection --location=us-central1 --vector-search-field="genre_embedding" --vector-from-file="vector.json" --use-knn --top-k=7
+
       """
       ),
   }

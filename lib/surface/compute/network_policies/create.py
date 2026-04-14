@@ -14,7 +14,6 @@
 # limitations under the License.
 """Command for creating network policies."""
 
-
 from typing import ClassVar
 
 from googlecloudsdk.api_lib.compute import base_classes
@@ -25,7 +24,7 @@ from googlecloudsdk.command_lib.compute.network_policies import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a Compute Engine network policy.
 
@@ -59,7 +58,8 @@ class Create(base.CreateCommand):
 
 
 Create.detailed_help = {
-    'EXAMPLES': """\
+    'EXAMPLES': (
+        """\
 
     To create a regional network policy named ``my-region-policy'' under project
     with ID ``test-project'', in region ``my-region'', run:
@@ -67,5 +67,6 @@ Create.detailed_help = {
       $ {command} my-region-policy \
           --project=test-project \
           --region=my-region
-    """,
+    """
+    ),
 }

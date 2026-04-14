@@ -1,0 +1,25 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    List regional multicast producer associations.
+  description: |
+    List all regional multicast producer associations in the specified location of the current project.
+  examples: |
+    To list regional multicast producer associations in the current project and location, run:
+
+      $ {command} --location=region
+request:
+  ALPHA:
+    api_version: v1alpha1
+  collection: networkservices.projects.locations.regionalMulticastProducerAssociations
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:location
+    help_text: The location of the regional multicast producer associations to display.
+response:
+  id_field: name
+output:
+  format: |
+     table(
+        name.basename():label=NAME, create_time, network, regional_multicast_domain_activation
+      )

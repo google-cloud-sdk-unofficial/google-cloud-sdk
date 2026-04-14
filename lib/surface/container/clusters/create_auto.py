@@ -83,6 +83,8 @@ auto_flags = [
     'autopilotGeneralProfile',
     'disableMultiNicLustre',
     'maintenancedisruptionbudget',
+    'nodepoolupgradeconcurrencyconfig',
+    'enableScheduledUpgrades',
 ]
 # LINT.ThenChange()
 

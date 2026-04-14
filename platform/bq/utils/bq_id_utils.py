@@ -5,6 +5,7 @@ import collections
 import sys
 from typing import Any, Optional, Tuple, Type, Union
 from absl import app
+import bq_utils
 from utils import bq_error
 from pyglib import stringutil
 
@@ -25,6 +26,7 @@ class ApiClientHelper:
     _required_fields = frozenset()
     _optional_fields = frozenset()
     _format_str = ''
+    typename: Optional[str] = None
 
     def __init__(self, **kwds):
       # pylint: disable=unidiomatic-typecheck Check if this isn't a subclass.
@@ -52,7 +54,13 @@ class ApiClientHelper:
           for k, v in kwds.items()
           if k in cls._required_fields.union(cls._optional_fields)
       )
-      return cls(**args)
+      obj = cls(**args)
+      if cls.typename:
+        resource = ApiClientHelper.get_resource_name_from_type_name(
+            cls.typename
+        )
+        bq_utils.SetBqCliUserAgentResource(resource, overwrite=False)
+      return obj
 
     def __iter__(self):
       return iter(self._required_fields.union(self._optional_fields))
@@ -258,7 +266,7 @@ class ApiClientHelper:
     typename = 'page token'
 
   class TransferLogReference(TransferRunReference):
-    pass
+    typename = 'transfer log'
 
   class EncryptionServiceAccount(Reference):
     _required_fields = frozenset(('serviceAccount',))
@@ -360,6 +368,11 @@ class ApiClientHelper:
 
     def path(self) -> str:  # pylint: disable=invalid-name Legacy
       return self._path_str % dict(self)
+
+  @staticmethod
+  def get_resource_name_from_type_name(name: str) -> str:
+    """Get resource name from typename for the user agent string."""
+    return bq_utils.Pluralize(name)
 
 
 def typecheck(  # pylint: disable=invalid-name

@@ -269,6 +269,33 @@ class ApihubV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Patch(self, request, global_params=None):
+      r"""Update an Api Hub instance. The following fields in the ApiHubInstance can be updated: * disable_search * vertex_location * agent_registry_sync_config The update_mask should be used to specify the fields being updated.
+
+      Args:
+        request: (ApihubProjectsLocationsApiHubInstancesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/apiHubInstances/{apiHubInstancesId}',
+        http_method='PATCH',
+        method_id='apihub.projects.locations.apiHubInstances.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1/{+name}',
+        request_field='googleCloudApihubV1ApiHubInstance',
+        request_type_name='ApihubProjectsLocationsApiHubInstancesPatchRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
   class ProjectsLocationsApisVersionsDefinitionsService(base_api.BaseApiService):
     """Service class for the projects_locations_apis_versions_definitions resource."""
 
@@ -539,33 +566,6 @@ class ApihubV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='ApihubProjectsLocationsApisVersionsSpecsFetchAdditionalSpecContentRequest',
         response_type_name='GoogleCloudApihubV1FetchAdditionalSpecContentResponse',
-        supports_download=False,
-    )
-
-    def GenerateSpecMCPDetails(self, request, global_params=None):
-      r"""Get the Model Context Protocol (MCP) details for a set of OAS(s). This method analyzes the provided specs (typically OpenAPI documents) and generates corresponding MCP tool definitions. For each operation identified in the input specs, the service extracts HTTP details (path, method, description) and maps them to an MCP tool structure, including input and output JSON schemas. Note: This method currently does not support specs with path-level or operation-level server overrides.
-
-      Args:
-        request: (ApihubProjectsLocationsApisVersionsSpecsGenerateSpecMCPDetailsRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (GoogleCloudApihubV1GenerateSpecMCPDetailsResponse) The response message.
-      """
-      config = self.GetMethodConfig('GenerateSpecMCPDetails')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    GenerateSpecMCPDetails.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v1/projects/{projectsId}/locations/{locationsId}/apis/{apisId}/versions/{versionsId}/specs:generateSpecMCPDetails',
-        http_method='POST',
-        method_id='apihub.projects.locations.apis.versions.specs.generateSpecMCPDetails',
-        ordered_params=['parent'],
-        path_params=['parent'],
-        query_params=[],
-        relative_path='v1/{+parent}/specs:generateSpecMCPDetails',
-        request_field='googleCloudApihubV1GenerateSpecMCPDetailsRequest',
-        request_type_name='ApihubProjectsLocationsApisVersionsSpecsGenerateSpecMCPDetailsRequest',
-        response_type_name='GoogleCloudApihubV1GenerateSpecMCPDetailsResponse',
         supports_download=False,
     )
 

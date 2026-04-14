@@ -37,10 +37,6 @@ _DETAILED_HELP = {
         """,
 }
 
-_URL_FILTERING_SUPPORTED = (
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
-)
-
 _WILDFIRE_ANALYSIS_SUPPORTED = (
     base.ReleaseTrack.ALPHA,
 )
@@ -85,17 +81,15 @@ class CreateProfileGroup(base.CreateCommand):
     )
     spg_flags.AddProfileGroupDescription(parser)
     required_group = parser.add_group(required=True)
-    # TODO: b/349671332 - Remove this conditional once the group is released.
-    if cls.ReleaseTrack() in _URL_FILTERING_SUPPORTED:
-      spg_flags.AddSecurityProfileResource(
-          parser,
-          cls.ReleaseTrack(),
-          'url-filtering-profile',
-          group=required_group,
-          required=False,
-          help_text='Path to URL Filtering Profile resource.',
-          project_scope_supported=project_scope_supported,
-      )
+    spg_flags.AddSecurityProfileResource(
+        parser,
+        cls.ReleaseTrack(),
+        'url-filtering-profile',
+        group=required_group,
+        required=False,
+        help_text='Path to URL Filtering Profile resource.',
+        project_scope_supported=project_scope_supported,
+    )
     # TODO: b/399684751 - Remove this conditional once the group is released.
     if cls.ReleaseTrack() in _WILDFIRE_ANALYSIS_SUPPORTED:
       spg_flags.AddSecurityProfileResource(

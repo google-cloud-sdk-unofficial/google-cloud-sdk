@@ -1,0 +1,53 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    Create a regional multicast group range activation.
+  description: |
+    Create a regional multicast group range activation in the specified location of the current project.
+  examples: |
+    Create a regional multicast group range activation with the name 'my-rmgra',
+    multicast-group-range 'path-to-mgr',
+    multicast-domain-activation 'path-to-rmda',
+    and location 'region'.
+
+      $ {command} my-rmgra --multicast-group-range=path-to-mgr --regional-multicast-domain-activation=path-to-rmda --location=region
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:regionalMulticastGroupRangeActivation
+    help_text: |
+      Name of the regional multicast group range activation to be created.
+  params:
+  - arg_name: multicast-group-range
+    api_field: regionalMulticastGroupRangeActivation.multicastGroupRange
+    help_text: The multicast group range to be used.
+    required: true
+  - arg_name: regional-multicast-domain-activation
+    api_field: regionalMulticastGroupRangeActivation.regionalMulticastDomainActivation
+    help_text: The regional multicast domain activation to be used.
+    required: true
+  - arg_name: description
+    api_field: regionalMulticastGroupRangeActivation.description
+    help_text: The description for the regional multicast group range activation.
+  - arg_name: pim-mode
+    api_field: regionalMulticastGroupRangeActivation.pimSpec.pimMode
+    help_text: The PIM mode for the regional multicast group range activation.
+  - arg_name: rp-ip-address
+    api_field: regionalMulticastGroupRangeActivation.pimSpec.rpIpAddress
+    help_text: The Rendezvous Point IP address for the regional multicast group range activation.
+  - arg_name: multicast-source-location
+    api_field: regionalMulticastGroupRangeActivation.pimSpec.multicastSourceLocation
+    help_text: The location of the multicast source.
+  - arg_name: enable-logging
+    api_field: regionalMulticastGroupRangeActivation.logConfig.enabled
+    action: store_true
+    help_text: Enable logging for the regional multicast group range activation.
+  labels:
+    api_field: regionalMulticastGroupRangeActivation.labels
+async:
+  collection: networkservices.projects.locations.operations
+request:
+  ALPHA:
+    api_version: v1alpha1
+  collection: networkservices.projects.locations.regionalMulticastGroupRangeActivations
+  method: create

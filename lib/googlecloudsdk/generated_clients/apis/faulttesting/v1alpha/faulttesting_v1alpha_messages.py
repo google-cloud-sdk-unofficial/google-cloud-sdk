@@ -15,10 +15,10 @@ class Action(_messages.Message):
   r"""The action to be performed by the experiment.
 
   Fields:
-    cloudSqlFailover: Specify a CloudSQLFailover action.
-    gceFailCompute: Specify a GCEFailCompute action.
-    gkeFailCompute: Specify a GKEFailCompute action.
-    l7LbHttpFault: Specify a L7LBHTTPFault action.
+    cloudSqlFailover: Specifies a CloudSQLFailover action.
+    gceFailCompute: Specifies a GCEFailCompute action.
+    gkeFailCompute: Specifies a GKEFailCompute action.
+    l7LbHttpFault: Specifies an L7LBHTTPFault action.
   """
 
   cloudSqlFailover = _messages.MessageField('CloudSQLFailover', 1)
@@ -91,7 +91,7 @@ class CloudSQLFailover(_messages.Message):
 
   Fields:
     instance: Required. The identifying name of the Cloud SQL instance to fail
-      over. Formatted like projects/{project_id}/instances/{instance_id}
+      over. Format: `projects/{project}/instances/{instance}`
   """
 
   instance = _messages.StringField(1)
@@ -215,9 +215,9 @@ class ExperimentTemplate(_messages.Message):
       1000.
     duration: Required. How long the experiment is intended to run. Min
       duration is 0, max is 10 days.
-    name: Identifier. The resource name of this experiment template. Format: p
-      rojects/{project}/locations/{location}/experimentTemplates/{experiment_t
-      emplate_id}
+    name: Identifier. The resource name of this experiment template. Format: `
+      projects/{project}/locations/{location}/experimentTemplates/{experiment_
+      template}`
     updateTime: Output only. The time the template was last updated.
   """
 
@@ -301,9 +301,9 @@ class FaulttestingProjectsLocationsExperimentTemplatesPatchRequest(_messages.Mes
   Fields:
     experimentTemplate: A ExperimentTemplate resource to be passed as the
       request body.
-    name: Identifier. The resource name of this experiment template. Format: p
-      rojects/{project}/locations/{location}/experimentTemplates/{experiment_t
-      emplate_id}
+    name: Identifier. The resource name of this experiment template. Format: `
+      projects/{project}/locations/{location}/experimentTemplates/{experiment_
+      template}`
     updateMask: Optional. The mask to control which fields get updated. If the
       mask is not present, all fields will be updated.
   """
@@ -669,20 +669,22 @@ class GCEFailCompute(_messages.Message):
   r"""GCEFailCompute specifies which instances to fail.
 
   Fields:
-    instance: Specify a single instance by name. Format:
-      "projects/*/zones/*/instances/*".
-    location: Specify that an entire zone or region should be affected.
-    mig: Specify a managed instance group. Can be zonal or regional.
-    secureTagValue: Specify a group of non-MIG (Managed Instance Group)
+    instance: Specifies a single instance by name. Format:
+      `projects/{project}/zones/{zone}/instances/{instance}`
+    instances: Specifies a list of instances.
+    location: Specifies that an entire zone or region should be affected.
+    mig: Specifies a managed instance group. Can be zonal or regional.
+    secureTagValue: Specifies a group of non-MIG (Managed Instance Group)
       instances by secure tag. See
       https://cloud.google.com/firewall/docs/tags-firewalls-overview for more
-      details on tags. Format: "tagValues/[0-9]+"
+      details on tags. Format: `{project}/{tag_key}/{tag_value}`.
   """
 
   instance = _messages.StringField(1)
-  location = _messages.StringField(2)
-  mig = _messages.MessageField('MigElement', 3)
-  secureTagValue = _messages.StringField(4)
+  instances = _messages.MessageField('InstanceList', 2)
+  location = _messages.StringField(3)
+  mig = _messages.MessageField('MigElement', 4)
+  secureTagValue = _messages.StringField(5)
 
 
 class GKEFailCompute(_messages.Message):
@@ -690,9 +692,10 @@ class GKEFailCompute(_messages.Message):
 
   Fields:
     cluster: Required. Options for selecting which GKE resources to fail. The
-      GKE cluster resource name.
-    k8sNamespace: Optional. Specify one or more Kubernetes namespaces.
-    location: Optional. Specify a zone or region location.
+      GKE cluster resource name. Format:
+      `projects/{project}/locations/{location}/clusters/{cluster}`
+    k8sNamespace: Optional. Specifies one or more Kubernetes namespaces.
+    location: Optional. Specifies a zone or region location.
   """
 
   cluster = _messages.StringField(1)
@@ -728,22 +731,33 @@ class HTTPDelay(_messages.Message):
   percentage = _messages.IntegerField(2, variant=_messages.Variant.INT32)
 
 
+class InstanceList(_messages.Message):
+  r"""A GCEFailCompute option for failing multiple instances by name.
+
+  Fields:
+    instances: Required. Specifies instances by name. Format:
+      `projects/{project}/zones/{zone}/instances/{instance}`
+  """
+
+  instances = _messages.StringField(1, repeated=True)
+
+
 class L7LBHTTPFault(_messages.Message):
   r"""Injection of HTTP faults into a layer 7 load balancer.
 
   Fields:
     abort: Returns an HTTP error code for some requests.
     backendService: Optional. Optional identifying name of the backend service
-      to inject faults into. Formatted like
-      projects/{project}/regions/{region}/backendServices/{backendService} or
-      projects/{project}/global/backendServices/{backendService} If not
+      to inject faults into. Format:
+      `projects/{project}/regions/{region}/backendServices/{backend_service}`
+      or `projects/{project}/global/backendServices/{backend_service}` If not
       specified, all backend services connected to the forwarding_rule will be
       affected.
     delay: Delays some HTTP responses.
     forwardingRule: Required. The identifying name of the forwarding rule
-      resource where the faults will be injected. Formatted like
-      projects/{project}/regions/{region}/forwardingRules/{forwardingRule} or
-      projects/{project}/global/forwardingRules/{forwardingRule}
+      resource where the faults will be injected. Format:
+      `projects/{project}/regions/{region}/forwardingRules/{forwarding_rule}`
+      or `projects/{project}/global/forwardingRules/{forwarding_rule}`
   """
 
   abort = _messages.MessageField('HTTPAbort', 1)
@@ -947,13 +961,16 @@ class MigElement(_messages.Message):
   within it.
 
   Fields:
-    instanceGroup: Required. The managed instance group. Can be zonal or
-      regional.
+    instanceGroupManager: Required. Specifies the manager of a managed
+      instance group. Can be zonal or regional. Format: `projects/{project}/zo
+      nes/{zone}/instanceGroupManagers/{instance_group_manager}` or `projects/
+      {project}/regions/{region}/instanceGroupManagers/{instance_group_manager
+      }`
     location: Optional. Optionally specify a zone location to further restrict
       a regional MIG.
   """
 
-  instanceGroup = _messages.StringField(1)
+  instanceGroupManager = _messages.StringField(1)
   location = _messages.StringField(2)
 
 

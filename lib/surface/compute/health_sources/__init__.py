@@ -24,9 +24,18 @@ class HealthSources(base.Group):
   """Manage health sources."""
 
 
+@base.Hidden
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class HealthSourcesGa(HealthSources):
+  """Manage health sources."""
+
+
 HealthSources.category = base.COMPUTE_CATEGORY
 HealthSources.detailed_help = {
     'DESCRIPTION': """
         Manage health sources.
     """,
 }
+HealthSourcesGa.category = base.COMPUTE_CATEGORY
+HealthSourcesGa.detailed_help = HealthSources.detailed_help

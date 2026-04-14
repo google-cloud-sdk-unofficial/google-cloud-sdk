@@ -21,21 +21,28 @@ import six.moves.urllib.parse
 
 DEFAULT_API_VERSION = 'v1'
 V1_API_VERSION = 'v1'
+API_NAME = 'privateca'
 
 
 def GetClientClass(api_version=DEFAULT_API_VERSION):
-  return apis.GetClientClass('privateca', api_version)
+  return apis.GetClientClass(API_NAME, api_version)
 
 
 def GetClientInstance(api_version=DEFAULT_API_VERSION):
-  return apis.GetClientInstance('privateca', api_version)
+  return apis.GetClientInstance(API_NAME, api_version)
 
 
 def GetMessagesModule(api_version=DEFAULT_API_VERSION):
-  return apis.GetMessagesModule('privateca', api_version)
+  return apis.GetMessagesModule(API_NAME, api_version)
 
 
-def GetServiceName(api_version=DEFAULT_API_VERSION):
-  """Gets the service name based on the configured API endpoint."""
-  endpoint = apis.GetEffectiveApiEndpoint('privateca', api_version)
+def GetServiceName():
+  """Gets the service name, which is the same in all universes."""
+  # gcloud-disable-gdu-domain
+  return 'privateca.googleapis.com'
+
+
+def GetServiceEndpoint(api_version=DEFAULT_API_VERSION):
+  """Gets the service endpoint based on the configured API endpoint."""
+  endpoint = apis.GetEffectiveApiEndpoint(API_NAME, api_version)
   return six.moves.urllib.parse.urlparse(endpoint).hostname

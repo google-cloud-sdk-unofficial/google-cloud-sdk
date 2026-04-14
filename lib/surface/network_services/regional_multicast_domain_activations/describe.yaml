@@ -1,0 +1,19 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    Describe a regional multicast domain activation.
+  description: |
+    Show details of a regional multicast domain activation in the specified location of the current project.
+  examples: |
+    To describe details of a regional multicast domain activation in the current project and location, run:
+
+      $ {command} my-rmda --location=region
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:regionalMulticastDomainActivation
+    help_text: |
+      The regional multicast domain activation to display.
+request:
+  ALPHA:
+    api_version: v1alpha1
+  collection: networkservices.projects.locations.regionalMulticastDomainActivations

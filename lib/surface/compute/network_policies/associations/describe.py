@@ -14,7 +14,6 @@
 # limitations under the License.
 """Command for describing network policy associations."""
 
-
 from typing import ClassVar
 
 from googlecloudsdk.api_lib.compute import base_classes
@@ -25,7 +24,7 @@ from googlecloudsdk.command_lib.compute.network_policies import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe an association between a network policy and a network.
 
@@ -57,7 +56,8 @@ class Describe(base.DescribeCommand):
 
 
 Describe.detailed_help = {
-    'EXAMPLES': """\
+    'EXAMPLES': (
+        """\
     To describe an association named ``my-association'' on a network policy
     with name ``my-policy'' in region ``region-a'', run:
 
@@ -65,5 +65,6 @@ Describe.detailed_help = {
           --network-policy=my-policy \\
           --name=my-association \\
           --network-policy-region=region-a
-    """,
+    """
+    ),
 }

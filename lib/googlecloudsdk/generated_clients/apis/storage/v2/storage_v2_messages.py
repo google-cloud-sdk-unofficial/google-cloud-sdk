@@ -297,6 +297,21 @@ class BucketAccessControl(_messages.Message):
   role = _messages.StringField(9)
 
 
+class BucketSourceSpec(_messages.Message):
+  r"""Represents the set of bucket and the inclusion/exclusion criteria.
+
+  Fields:
+    bucket: Required. The bucket name to index, e.g. "my-bucket". Buckets are
+      globally unique.
+    includedObjectGlobs: Optional. If specified, only objects matching this
+      glob are indexed. Example: "my-object-*.txt" will match "my-
+      object-1.txt" and "my-object-2.txt".
+  """
+
+  bucket = _messages.StringField(1)
+  includedObjectGlobs = _messages.StringField(2, repeated=True)
+
+
 class CloudStorageBucket(_messages.Message):
   r"""Defines the bucket by its name or a regex pattern to match the buckets.
 
@@ -563,6 +578,25 @@ class Date(_messages.Message):
   day = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   month = _messages.IntegerField(2, variant=_messages.Variant.INT32)
   year = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+
+
+class DeleteFolderRecursiveRequest(_messages.Message):
+  r"""Request message for DeleteFolderRecursive.
+
+  Fields:
+    ifMetagenerationMatch: Optional. Makes the operation only succeed
+      conditional on whether the root folder's current metageneration matches
+      the given value.
+    ifMetagenerationNotMatch: Optional. Makes the operation only succeed
+      conditional on whether the root folder's current metageneration does not
+      match the given value.
+    requestId: Optional. A unique identifier for this request. UUID is the
+      recommended format, but other formats are still accepted.
+  """
+
+  ifMetagenerationMatch = _messages.IntegerField(1)
+  ifMetagenerationNotMatch = _messages.IntegerField(2)
+  requestId = _messages.StringField(3)
 
 
 class EffectiveIntelligenceConfig(_messages.Message):
@@ -834,6 +868,20 @@ class GoogleStorageV2HierarchicalNamespace(_messages.Message):
   enabled = _messages.BooleanField(1)
 
 
+class HardDeletePause(_messages.Message):
+  r"""The bucket's hard delete pause configuration.
+
+  Fields:
+    effectiveTime: Output only. Time from which the hard delete pause was
+      effective. This field is only populated when `enabled` is true. This is
+      service-provided.
+    enabled: Whether hard deletions are paused.
+  """
+
+  effectiveTime = _messages.StringField(1)
+  enabled = _messages.BooleanField(2)
+
+
 class HierarchicalNamespace(_messages.Message):
   r"""Configuration for a bucket's hierarchical namespace feature.
 
@@ -856,6 +904,47 @@ class IamConfig(_messages.Message):
 
   publicAccessPrevention = _messages.StringField(1)
   uniformBucketLevelAccess = _messages.MessageField('UniformBucketLevelAccess', 2)
+
+
+class Image(_messages.Message):
+  r"""Image match
+
+  Messages:
+    MetadataValue: object custom metadata.
+
+  Fields:
+    generation: object version
+    metadata: object custom metadata.
+    url: gs:///
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class MetadataValue(_messages.Message):
+    r"""object custom metadata.
+
+    Messages:
+      AdditionalProperty: An additional property for a MetadataValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type MetadataValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a MetadataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  generation = _messages.IntegerField(1)
+  metadata = _messages.MessageField('MetadataValue', 2)
+  url = _messages.StringField(3)
 
 
 class IntelligenceConfig(_messages.Message):
@@ -1523,6 +1612,21 @@ class ListIntelligenceFindingsResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
+class ListObjectIndexesResponse(_messages.Message):
+  r"""Response for the `ListObjectIndexes` method.
+
+  Fields:
+    nextPageToken: Token to retrieve the next page of results, or empty if
+      there are no more results.
+    objectIndexes: The list of ObjectIndex.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  objectIndexes = _messages.MessageField('ObjectIndex', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListSnapshotsResponse(_messages.Message):
   r"""Response message for ListSnapshots.
 
@@ -1776,6 +1880,107 @@ class ObjectAccessControl(_messages.Message):
   role = _messages.StringField(9)
 
 
+class ObjectIndex(_messages.Message):
+  r"""An ObjectIndex resource is used to configure and manage a searchable
+  index over Storage objects. The index enables hybrid search capabilities,
+  combining semantic search with attribute-based filtering. The embeddings for
+  semantic search are automatically generated and kept in sync with the source
+  objects specified in the SourceConfig.
+
+  Enums:
+    FilterFieldsValueListEntryValuesEnum:
+    StateValueValuesEnum: Output only. The current state of the ObjectIndex.
+
+  Messages:
+    LabelsValue: Optional. Labels as key value pairs (go/ccfe-user-labels)
+
+  Fields:
+    createTime: Output only. The time the ObjectIndex was created.
+    description: Optional. Human readable description
+    errorSamples: Output only. Summarizes errors encountered with sample error
+      log entries. At most 5 error samples are recorded for a given error code
+      for a single operation.
+    filterFields: Optional. The fields that can be used for filtering in
+      SearchObjectIndexRequest. When specified, these filter fields are in
+      addition to the default filter fields (e.g. `bucket_name`,
+      `content_type`). Refer to documentation for the full list of filter
+      fields.
+    labels: Optional. Labels as key value pairs (go/ccfe-user-labels)
+    name: Identifier. The resource name of the ObjectIndex. Format:
+      `projects/{project}/locations/{location}/objectIndexes/{object_index}`
+    sourceConfig: Required. Source configuration for the ObjectIndex.
+    state: Output only. The current state of the ObjectIndex.
+    updateTime: Output only. The time the ObjectIndex was last updated. Output
+      only.
+  """
+
+  class FilterFieldsValueListEntryValuesEnum(_messages.Enum):
+    r"""FilterFieldsValueListEntryValuesEnum enum type.
+
+    Values:
+      FILTER_FIELD_UNSPECIFIED: The default value. This value is used if the
+        field is omitted.
+      CUSTOM_METADATA: The object custom metadata key value pairs can be used
+        for filtering. Example filter: `metadata.key = "value"`
+      OBJECT_CONTEXTS: The object contexts key value pairs can be used for
+        filtering. Example filter: `contexts.key = "value"`
+    """
+    FILTER_FIELD_UNSPECIFIED = 0
+    CUSTOM_METADATA = 1
+    OBJECT_CONTEXTS = 2
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current state of the ObjectIndex.
+
+    Values:
+      STATE_UNSPECIFIED: The default value. This value is used if the status
+        is omitted.
+      CREATING: The ObjectIndex is being created.
+      ACTIVE: The ObjectIndex is active and ready for use.
+      UPDATING: The ObjectIndex is being updated.
+      DELETING: The ObjectIndex is being deleted.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    UPDATING = 3
+    DELETING = 4
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels as key value pairs (go/ccfe-user-labels)
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  errorSamples = _messages.MessageField('Status', 3, repeated=True)
+  filterFields = _messages.EnumField('FilterFieldsValueListEntryValuesEnum', 4, repeated=True)
+  labels = _messages.MessageField('LabelsValue', 5)
+  name = _messages.StringField(6)
+  sourceConfig = _messages.MessageField('SourceConfig', 7)
+  state = _messages.EnumField('StateValueValuesEnum', 8)
+  updateTime = _messages.StringField(9)
+
+
 class ObjectRetention(_messages.Message):
   r"""Object Retention related properties of a bucket.
 
@@ -2022,6 +2227,32 @@ class Rule(_messages.Message):
   condition = _messages.MessageField('Condition', 2)
 
 
+class SearchObjectIndexResponse(_messages.Message):
+  r"""Response message for the `SearchObjectIndex` method.
+
+  Fields:
+    errors: Detailed feedback for the caller. Used for the "Self-Correction"
+      loop, providing suggestions or soft-error details to the calling agent.
+    nextPageToken: Token to retrieve the next page of results, or empty if
+      there are no more results.
+    results: The list of search results matching the request.
+  """
+
+  errors = _messages.MessageField('Status', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  results = _messages.MessageField('SearchResultItem', 3, repeated=True)
+
+
+class SearchResultItem(_messages.Message):
+  r"""A single item found in the search results.
+
+  Fields:
+    image: Image item.
+  """
+
+  image = _messages.MessageField('Image', 1)
+
+
 class Snapshot(_messages.Message):
   r"""A snapshot resource.
 
@@ -2050,13 +2281,32 @@ class SoftDeletePolicy(_messages.Message):
   Fields:
     effectiveTime: Time from which the policy was effective. This is service-
       provided.
+    hardDeletePause: Optional. The bucket's hard delete pause configuration.
+      If not set, hard delete pause is disabled.
     retentionDuration: The period of time that soft-deleted objects in the
       bucket must be retained and cannot be permanently deleted. The duration
       must be greater than or equal to 7 days and less than 1 year.
   """
 
   effectiveTime = _messages.StringField(1)
-  retentionDuration = _messages.StringField(2)
+  hardDeletePause = _messages.MessageField('HardDeletePause', 2)
+  retentionDuration = _messages.StringField(3)
+
+
+class SourceConfig(_messages.Message):
+  r"""Source configuration for an ObjectIndex. This configuration determines
+  which objects are within the scope of the ObjectIndex.
+
+  Fields:
+    bucketSources: Required. List of sources that will be used to hydrate the
+      index.
+    modelId: Required. The model ID to use for generating embeddings for the
+      objects in that match the source spec. Valid values are: - gemini-
+      embedding-001
+  """
+
+  bucketSources = _messages.MessageField('BucketSourceSpec', 1, repeated=True)
+  modelId = _messages.StringField(2)
 
 
 class StandardQueryParameters(_messages.Message):
@@ -2556,23 +2806,15 @@ class StorageProjectsBucketsFoldersDeleteRecursiveRequest(_messages.Message):
   r"""A StorageProjectsBucketsFoldersDeleteRecursiveRequest object.
 
   Fields:
-    ifMetagenerationMatch: Optional. Makes the operation only succeed
-      conditional on whether the root folder's current metageneration matches
-      the given value.
-    ifMetagenerationNotMatch: Optional. Makes the operation only succeed
-      conditional on whether the root folder's current metageneration does not
-      match the given value.
+    deleteFolderRecursiveRequest: A DeleteFolderRecursiveRequest resource to
+      be passed as the request body.
     name: Required. Name of the folder being deleted, however all of its
       contents will be deleted too. Format:
       `projects/{project}/buckets/{bucket}/folders/{folder}`
-    requestId: Optional. A unique identifier for this request. UUID is the
-      recommended format, but other formats are still accepted.
   """
 
-  ifMetagenerationMatch = _messages.IntegerField(1)
-  ifMetagenerationNotMatch = _messages.IntegerField(2)
-  name = _messages.StringField(3, required=True)
-  requestId = _messages.StringField(4)
+  deleteFolderRecursiveRequest = _messages.MessageField('DeleteFolderRecursiveRequest', 1)
+  name = _messages.StringField(2, required=True)
 
 
 class StorageProjectsBucketsFoldersDeleteRequest(_messages.Message):
@@ -2931,6 +3173,128 @@ class StorageProjectsLocationsIntelligenceFindingsSummarizeRequest(_messages.Mes
   pageToken = _messages.StringField(3)
   parent = _messages.StringField(4, required=True)
   resourceScope = _messages.EnumField('ResourceScopeValueValuesEnum', 5)
+
+
+class StorageProjectsLocationsObjectIndexesCreateRequest(_messages.Message):
+  r"""A StorageProjectsLocationsObjectIndexesCreateRequest object.
+
+  Fields:
+    objectIndex: A ObjectIndex resource to be passed as the request body.
+    objectIndexId: Required. Name of the ObjectIndex. * Must contain only
+      lowercase letters, numbers, and hyphens. * Must start with a letter. *
+      Must be between 1-63 characters. * Must end with a number or a letter.
+    parent: Required. The parent resource name. Format:
+      `projects/{project}/locations/{location}`
+    requestId: Optional. A unique identifier for this request. UUID is the
+      recommended format, but other formats are still accepted. This request
+      is only idempotent if a `request_id` is provided.
+  """
+
+  objectIndex = _messages.MessageField('ObjectIndex', 1)
+  objectIndexId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class StorageProjectsLocationsObjectIndexesDeleteRequest(_messages.Message):
+  r"""A StorageProjectsLocationsObjectIndexesDeleteRequest object.
+
+  Fields:
+    name: Required. The name of the ObjectIndex to delete. Format:
+      `projects/{project}/locations/{location}/objectIndexes/{object_index}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class StorageProjectsLocationsObjectIndexesGetRequest(_messages.Message):
+  r"""A StorageProjectsLocationsObjectIndexesGetRequest object.
+
+  Fields:
+    name: Required. The name of the ObjectIndex to retrieve. Format:
+      `projects/{project}/locations/{location}/objectIndexes/{object_index}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class StorageProjectsLocationsObjectIndexesListRequest(_messages.Message):
+  r"""A StorageProjectsLocationsObjectIndexesListRequest object.
+
+  Fields:
+    filter: Optional. Filter request. Filters are case-sensitive. The service
+      supports the following formats: * labels.key1 = "value1" * labels:key1 *
+      name = "value" These restrictions can be conjoined with AND, OR, and NOT
+      conjunctions.
+    orderBy: Optional. Order by fields for the result.
+    pageSize: Optional. Maximum number of ObjectIndexes to return. The service
+      may return fewer than this value. If unspecified, the service returns at
+      most 10 ObjectIndexes. The maximum value is 1000; values above 1000 will
+      be coerced to 1000.
+    pageToken: Optional. Page token received from a previous
+      `ListObjectIndexes` call. Provide this to retrieve the subsequent page.
+      When paginating, all other parameters you provided to
+      `ListObjectIndexes` must match the call that provided the page token.
+    parent: Required. The parent resource's name. Format:
+      `projects/{project}/locations/{location}`. To list across all locations,
+      use the wildcard `-` for `{location}`.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class StorageProjectsLocationsObjectIndexesPatchRequest(_messages.Message):
+  r"""A StorageProjectsLocationsObjectIndexesPatchRequest object.
+
+  Fields:
+    name: Identifier. The resource name of the ObjectIndex. Format:
+      `projects/{project}/locations/{location}/objectIndexes/{object_index}`
+    objectIndex: A ObjectIndex resource to be passed as the request body.
+    requestId: Optional. A unique identifier for this request. UUID is the
+      recommended format, but other formats are still accepted. This request
+      is only idempotent if a `request_id` is provided.
+    updateMask: Optional. The list of fields to update.
+  """
+
+  name = _messages.StringField(1, required=True)
+  objectIndex = _messages.MessageField('ObjectIndex', 2)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
+
+
+class StorageProjectsLocationsObjectIndexesSearchRequest(_messages.Message):
+  r"""A StorageProjectsLocationsObjectIndexesSearchRequest object.
+
+  Fields:
+    filter: Optional. A Common Expression Language (CEL) expression used to
+      filter results based on object metadata and attributes (e.g.,
+      "bucket_name == 'finance'"). This filter is applied to limit the set of
+      documents considered for semantic search and may use any of the
+      `filter_fields` provided in the ObjectIndex definition. Examples: -
+      `bucket_name = "my-bucket"` - `content_type = "image/png"` -
+      `time_created > timestamp("2025-01-01T00:00:00Z")` - `metadata.team =
+      "finance"` - `storage_class = "ARCHIVE" AND content_type = "image/jpeg"`
+    name: Required. The resource name of the ObjectIndex to search within.
+      Format:
+      `projects/{project}/locations/{location}/objectIndexes/{object_index}`
+    pageSize: Optional. Maximum number of results to return in a single
+      response. If unspecified, the service will return at most 10 results.
+      The maximum value is 100; values above 100 will be coerced to 100.
+    pageToken: Optional. A previously-returned page token representing part of
+      the larger set of results to view.
+    textQuery: Optional. A natural language query string (e.g., "firefighter
+      near truck").
+  """
+
+  filter = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  textQuery = _messages.StringField(5)
 
 
 class StorageProjectsLocationsUpdateIntelligenceConfigRequest(_messages.Message):

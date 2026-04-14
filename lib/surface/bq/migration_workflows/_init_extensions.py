@@ -19,13 +19,16 @@
 from googlecloudsdk.calliope import base
 
 
+@base.DefaultUniverseOnly
 class MigrationWorkflowsAlpha(base.Group):
   """Optional no-auto-generated code for ALPHA."""
 
 
+@base.DefaultUniverseOnly
 class MigrationWorkflowsBeta(base.Group):
   """Optional no-auto-generated code for BETA."""
 
 
+@base.DefaultUniverseOnly
 class MigrationWorkflowsGa(base.Group):
   """Optional no-auto-generated code for GA."""

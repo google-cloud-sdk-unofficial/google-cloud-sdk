@@ -1,0 +1,20 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    Delete a regional multicast domain activation.
+  description: |
+    Delete a regional multicast domain activation in the specified location of the current project.
+  examples: |
+    To delete a regional multicast domain activation in the current project, run:
+
+      $ {command} my-rmda --location=region
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:regionalMulticastDomainActivation
+    help_text: The regional multicast domain activation to delete.
+async:
+  collection: networkservices.projects.locations.operations
+request:
+  ALPHA:
+    api_version: v1alpha1
+  collection: networkservices.projects.locations.regionalMulticastDomainActivations

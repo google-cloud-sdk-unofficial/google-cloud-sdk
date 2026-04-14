@@ -398,6 +398,37 @@ def ShortHelpAction(command):
   return FunctionExitAction(Func)
 
 
+def RenderHintAction(command, default_style=None):
+  """Get an argparse.Action that renders a hint document.
+
+  Args:
+    command: calliope._CommandCommon, The command object that we're
+    outputting agent hints for.
+    default_style: str, The default style if not specified in flag value.
+
+  Returns:
+    argparse.Action, The action to use.
+  """
+
+  class Action(argparse.Action):
+    """The action created for RenderHintAction."""
+
+    def __init__(self, **kwargs):
+      if default_style:
+        kwargs['nargs'] = 0
+      super(Action, self).__init__(**kwargs)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+      metadata = getattr(command._common_type, 'hints', None)
+      if not metadata:
+        metadata = base.CommandHint()
+
+      sys.stdout.write(metadata.ToString(command) + '\n')
+      sys.exit(0)
+
+  return Action
+
+
 def RenderDocumentAction(command, default_style=None):
   """Get an argparse.Action that renders a help document from markdown.
 

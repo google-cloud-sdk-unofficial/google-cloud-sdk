@@ -28,7 +28,6 @@ from googlecloudsdk.core import resources as sdkresources
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class AddAttestationRule(base.Command):
   """Add an attestation rule on a workload identity pool."""
 

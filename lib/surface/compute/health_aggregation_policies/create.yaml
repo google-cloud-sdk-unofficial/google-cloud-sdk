@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: "Create a health aggregation policy."
     description: "Create a health aggregation policy."
@@ -16,6 +16,8 @@
       api_version: alpha
     BETA:
       api_version: beta
+    GA:
+      api_version: v1
 
     collection: compute.regionHealthAggregationPolicies
     method: insert

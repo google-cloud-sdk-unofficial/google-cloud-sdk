@@ -40,6 +40,11 @@ properties:
       If true, the gateway will listen on all ports. This is only
       supported for gateways of type SECURE_WEB_GATEWAY.
     type: boolean
+  allowGlobalAccess:
+    description: |-
+      If true, the gateway will be accessible from any region. This is only
+      supported for gateways of type SECURE_WEB_GATEWAY.
+    type: boolean
   authorizationPolicy:
     description: |-
       A fully-qualified AuthorizationPolicy URL reference. Specifies how

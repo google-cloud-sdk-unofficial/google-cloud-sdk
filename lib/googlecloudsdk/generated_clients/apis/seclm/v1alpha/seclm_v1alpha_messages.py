@@ -198,12 +198,16 @@ class GroundingSupport(_messages.Message):
       specifying the citations associated with the claim. For instance [1,3,4]
       means that grounding_chunk[1], grounding_chunk[3], grounding_chunk[4]
       are the retrieved content attributed to the claim.
+    renderedParts: Indices into the `rendered_parts` field of the
+      `GroundingMetadata` message. These indices specify which rendered parts
+      are associated with this support message.
     segment: Segment of the content this support belongs to.
   """
 
   confidenceScores = _messages.FloatField(1, repeated=True, variant=_messages.Variant.FLOAT)
   groundingChunkIndices = _messages.IntegerField(2, repeated=True, variant=_messages.Variant.INT32)
-  segment = _messages.MessageField('Segment', 3)
+  renderedParts = _messages.IntegerField(3, repeated=True, variant=_messages.Variant.INT32)
+  segment = _messages.MessageField('Segment', 4)
 
 
 class ListLocationsResponse(_messages.Message):

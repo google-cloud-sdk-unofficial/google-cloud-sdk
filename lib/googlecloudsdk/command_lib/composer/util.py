@@ -443,9 +443,30 @@ def HandleKubectlErrorStream(err_func, err):
   if 'Unable to connect to the server' in err:
     err_handler_func(err)
     err_handler_func(
-        '\nPlease, check if you have connectivity to GKE control plane.\n')
+        '\nPlease, check if you have connectivity to GKE control plane.\n'
+    )
   else:
     err_handler_func(err)
+
+
+def IsPrivateIpEnvironment(env_obj, release_track=base.ReleaseTrack.GA):
+  """Checks if the environment is a private IP environment.
+
+  Args:
+    env_obj: The environment object.
+    release_track: The release track of the command.
+
+  Returns:
+    bool: True if the environment is a private IP environment, False otherwise.
+  """
+  if env_obj.config.privateEnvironmentConfig:
+    private_config = env_obj.config.privateEnvironmentConfig
+    messages = api_util.GetMessagesModule(release_track=release_track)
+    networking_type = (
+        messages.PrivateEnvironmentConfig.NetworkingTypeValueValuesEnum
+    )
+    return private_config.networkingType == networking_type.PRIVATE
+  return False
 
 
 def ConvertImageVersionToNamespacePrefix(image_version):

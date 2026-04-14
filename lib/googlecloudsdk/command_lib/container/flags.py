@@ -1601,7 +1601,7 @@ def AddLoggingFlag(parser, autopilot=False):
   """Adds a --logging flag to parser."""
   help_text = """\
 Set the components that have logging enabled. Valid component values are:
-`SYSTEM`, `WORKLOAD`, `API_SERVER`, `CONTROLLER_MANAGER`, `SCHEDULER`, `NONE`
+`SYSTEM`, `WORKLOAD`, `API_SERVER`, `CONTROLLER_MANAGER`, `SCHEDULER`, `KCP_HPA`, `NONE`
 
 For more information, see
 https://cloud.google.com/kubernetes-engine/docs/concepts/about-logs#available-logs
@@ -1615,7 +1615,7 @@ Examples:
   if autopilot:
     help_text = """\
 Set the components that have logging enabled. Valid component values are:
-`SYSTEM`, `WORKLOAD`, `API_SERVER`, `CONTROLLER_MANAGER`, `SCHEDULER`
+`SYSTEM`, `WORKLOAD`, `API_SERVER`, `CONTROLLER_MANAGER`, `SCHEDULER`, `KCP_HPA`
 
 The default is `SYSTEM,WORKLOAD`. If this flag is set, then `SYSTEM` must be
 included.
@@ -1627,7 +1627,7 @@ Examples:
 
   $ {command} --logging=SYSTEM
   $ {command} --logging=SYSTEM,WORKLOAD
-  $ {command} --logging=SYSTEM,WORKLOAD,API_SERVER,CONTROLLER_MANAGER,SCHEDULER
+  $ {command} --logging=SYSTEM,WORKLOAD,API_SERVER,CONTROLLER_MANAGER,SCHEDULER,KCP_HPA
 """
 
   parser.add_argument(
@@ -6212,6 +6212,51 @@ def AddSecurityModeFlag(parser, hidden=False):
   )
 
 
+def AddEnableSystemTelemetryCollectionFlag(parser, hidden=True):
+  """Adds an --enable-system-telemetry-collection flag to the given parser."""
+  help_text = (
+      'Enable system metrics and logs collection from the runner to Google'
+      ' Cloud.'
+  )
+  parser.add_argument(
+      '--enable-system-telemetry-collection',
+      action='store_true',
+      default=None,
+      help=help_text,
+      hidden=hidden,
+  )
+
+
+def AddEnableOtlpIngestionEndpointFlag(parser, hidden=True):
+  """Adds an --enable-otlp-ingestion-endpoint flag to the given parser."""
+  help_text = (
+      'Enable an OTLP endpoint in Runner VM for applications to push'
+      ' traces, metrics, and logs.'
+  )
+  parser.add_argument(
+      '--enable-otlp-ingestion-endpoint',
+      action='store_true',
+      default=None,
+      help=help_text,
+      hidden=hidden,
+  )
+
+
+def AddEnableWorkloadLogCollectionFlag(parser, hidden=True):
+  """Adds an --enable-workload-log-collection flag to the given parser."""
+  help_text = (
+      'Enable collecting container logs from default pods log directory'
+      ' path /var/log/pods.'
+  )
+  parser.add_argument(
+      '--enable-workload-log-collection',
+      action='store_true',
+      default=None,
+      help=help_text,
+      hidden=hidden,
+  )
+
+
 def AddKubernetesObjectsExportConfig(parser, for_create=False):
   """Adds kubernetes-objects-changes-target and kubernetes-objects-snapshots-target flags to parser."""
   help_text = """\
@@ -8809,6 +8854,37 @@ def AddLinkedRunnersModeFlag(parser, hidden=False):
       default=None,
       hidden=hidden,
       choices=['standard', 'none'],
+      help=help_text,
+  )
+
+
+def AddEnableScheduledUpgradesFlag(parser):
+  """Adds the --enable-scheduled-upgrades flag to parser."""
+  help_text = """\
+  Enables the scheduled upgrades feature for the cluster.
+
+  When enabled, automatic cluster control plane upgrades will only occur when you
+  receive notice at least 72 hours beforehand.
+  """
+  parser.add_argument(
+      '--enable-scheduled-upgrades',
+      default=None,
+      action='store_const',
+      const=True,
+      help=help_text,
+  )
+
+
+def AddDisableScheduledUpgradesFlag(parser):
+  """Adds the --disable-scheduled-upgrades flag to parser."""
+  help_text = """\
+  Disables the scheduled upgrades feature for the cluster.
+  """
+  parser.add_argument(
+      '--disable-scheduled-upgrades',
+      default=None,
+      action='store_const',
+      const=False,
       help=help_text,
   )
 

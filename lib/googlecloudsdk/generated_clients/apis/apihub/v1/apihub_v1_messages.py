@@ -119,6 +119,22 @@ class ApihubProjectsLocationsApiHubInstancesLookupRequest(_messages.Message):
   parent = _messages.StringField(1, required=True)
 
 
+class ApihubProjectsLocationsApiHubInstancesPatchRequest(_messages.Message):
+  r"""A ApihubProjectsLocationsApiHubInstancesPatchRequest object.
+
+  Fields:
+    googleCloudApihubV1ApiHubInstance: A GoogleCloudApihubV1ApiHubInstance
+      resource to be passed as the request body.
+    name: Identifier. Format: `projects/{project}/locations/{location}/apiHubI
+      nstances/{apiHubInstance}`.
+    updateMask: Optional. The list of fields to update.
+  """
+
+  googleCloudApihubV1ApiHubInstance = _messages.MessageField('GoogleCloudApihubV1ApiHubInstance', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
+
+
 class ApihubProjectsLocationsApisCreateRequest(_messages.Message):
   r"""A ApihubProjectsLocationsApisCreateRequest object.
 
@@ -691,23 +707,6 @@ class ApihubProjectsLocationsApisVersionsSpecsFetchAdditionalSpecContentRequest(
 
   name = _messages.StringField(1, required=True)
   specContentType = _messages.EnumField('SpecContentTypeValueValuesEnum', 2)
-
-
-class ApihubProjectsLocationsApisVersionsSpecsGenerateSpecMCPDetailsRequest(_messages.Message):
-  r"""A ApihubProjectsLocationsApisVersionsSpecsGenerateSpecMCPDetailsRequest
-  object.
-
-  Fields:
-    googleCloudApihubV1GenerateSpecMCPDetailsRequest: A
-      GoogleCloudApihubV1GenerateSpecMCPDetailsRequest resource to be passed
-      as the request body.
-    parent: Required. The parent resource name, which is the version where the
-      specs reside. Format:
-      `projects/{project}/locations/{location}/apis/{api}/versions/{version}`.
-  """
-
-  googleCloudApihubV1GenerateSpecMCPDetailsRequest = _messages.MessageField('GoogleCloudApihubV1GenerateSpecMCPDetailsRequest', 1)
-  parent = _messages.StringField(2, required=True)
 
 
 class ApihubProjectsLocationsApisVersionsSpecsGetContentsRequest(_messages.Message):
@@ -2317,6 +2316,17 @@ class GoogleCloudApihubV1AddonConfig(_messages.Message):
   gatewayPluginAddonConfig = _messages.MessageField('GoogleCloudApihubV1GatewayPluginAddonConfig', 2)
 
 
+class GoogleCloudApihubV1AgentRegistrySyncConfig(_messages.Message):
+  r"""The configuration for Agent Registry sync.
+
+  Fields:
+    disabled: Optional. If true, the MCP data sync to the Agent Registry will
+      be disabled. The default value is false.
+  """
+
+  disabled = _messages.BooleanField(1)
+
+
 class GoogleCloudApihubV1AllDataAddonConfig(_messages.Message):
   r"""Configuration for addons which act on all data in the API hub. This is
   used to specify if the addon is enabled for all data in the API hub.
@@ -2759,8 +2769,8 @@ class GoogleCloudApihubV1ApiView(_messages.Message):
   r"""The view of an API.
 
   Fields:
-    mcpServerView: Output only. MCP server view.
-    mcpToolView: Output only. MCP tools view.
+    mcpServerView: MCP server view.
+    mcpToolView: MCP tools view.
   """
 
   mcpServerView = _messages.MessageField('GoogleCloudApihubV1FlattenedApiVersionDeploymentView', 1)
@@ -3096,6 +3106,8 @@ class GoogleCloudApihubV1Config(_messages.Message):
       no encryption type is provided, GMEK will be used.
 
   Fields:
+    agentRegistrySyncConfig: Optional. The configuration for syncing MCP data
+      in the API Hub instance to the Agent Registry.
     cmekKeyName: Optional. The Customer Managed Encryption Key (CMEK) used for
       data encryption. The CMEK name should follow the format of `projects/([^
       /]+)/locations/([^/]+)/keyRings/([^/]+)/cryptoKeys/([^/]+)`, where the
@@ -3124,10 +3136,11 @@ class GoogleCloudApihubV1Config(_messages.Message):
     GMEK = 1
     CMEK = 2
 
-  cmekKeyName = _messages.StringField(1)
-  disableSearch = _messages.BooleanField(2)
-  encryptionType = _messages.EnumField('EncryptionTypeValueValuesEnum', 3)
-  vertexLocation = _messages.StringField(4)
+  agentRegistrySyncConfig = _messages.MessageField('GoogleCloudApihubV1AgentRegistrySyncConfig', 1)
+  cmekKeyName = _messages.StringField(2)
+  disableSearch = _messages.BooleanField(3)
+  encryptionType = _messages.EnumField('EncryptionTypeValueValuesEnum', 4)
+  vertexLocation = _messages.StringField(5)
 
 
 class GoogleCloudApihubV1ConfigTemplate(_messages.Message):
@@ -4074,9 +4087,9 @@ class GoogleCloudApihubV1FlattenedApiVersionDeploymentView(_messages.Message):
   deployments.
 
   Fields:
-    api: The API.
-    deployment: The deployment.
-    version: The version.
+    api: Optional. The API.
+    deployment: Optional. The deployment.
+    version: Optional. The version.
   """
 
   api = _messages.MessageField('GoogleCloudApihubV1Api', 1)
@@ -4090,10 +4103,10 @@ class GoogleCloudApihubV1FlattenedApiVersionOperationDeploymentView(_messages.Me
   operation then the result will be empty.
 
   Fields:
-    api: The API.
-    apiOperation: The API operation.
-    deployment: The deployment.
-    version: The version.
+    api: Optional. The API.
+    apiOperation: Optional. The API operation.
+    deployment: Optional. The deployment.
+    version: Optional. The version.
   """
 
   api = _messages.MessageField('GoogleCloudApihubV1Api', 1)
@@ -4133,42 +4146,6 @@ class GoogleCloudApihubV1GatewayPluginConfig(_messages.Message):
   apigeeOpdkConfig = _messages.MessageField('GoogleCloudApihubV1ApigeeOPDKConfig', 2)
   apigeeXHybridConfig = _messages.MessageField('GoogleCloudApihubV1ApigeeXHybridConfig', 3)
   pluginInstance = _messages.StringField(4)
-
-
-class GoogleCloudApihubV1GenerateSpecMCPDetailsRequest(_messages.Message):
-  r"""Request for the GenerateSpecMCPDetails method.
-
-  Fields:
-    specs: Required. A list of full resource names for the specs to be
-      analyzed. Format: `projects/{project}/locations/{location}/apis/{api}/ve
-      rsions/{version}/specs/{spec}` Constraints and requirements: 1. All
-      specs must exist within the API Hub instance specified by the `parent`
-      field. 2. All specs must be of a type supported for MCP conversion
-      (currently OpenAPI 2.0 or 3.0/3.1). 3. The service will perform a cross-
-      spec validation to ensure that there is at least one common server
-      hostname defined across all input specs. If no common hostname is found,
-      the request will fail. 4. Specs containing path-level or operation-level
-      server definitions are not supported and will cause the request to fail.
-      5. A maximum of 100 specs can be provided in a single request.
-  """
-
-  specs = _messages.StringField(1, repeated=True)
-
-
-class GoogleCloudApihubV1GenerateSpecMCPDetailsResponse(_messages.Message):
-  r"""Response for the GenerateSpecMCPDetails method.
-
-  Fields:
-    toolDetails: A comprehensive list of MCP tool details generated from the
-      input specs. Each element in this list provides a one-to-one mapping
-      between an original API operation (from the spec) and its derived MCP
-      tool representation. The tools are aggregated from all valid input
-      specs. If multiple specs define the same operation, it may appear
-      multiple times if the specs themselves are different, though typically
-      they should be unique per operation across the set of common-host specs.
-  """
-
-  toolDetails = _messages.MessageField('GoogleCloudApihubV1MCPToolDetails', 1, repeated=True)
 
 
 class GoogleCloudApihubV1GoogleServiceAccountConfig(_messages.Message):
@@ -4813,38 +4790,6 @@ class GoogleCloudApihubV1LookupRuntimeProjectAttachmentResponse(_messages.Messag
   """
 
   runtimeProjectAttachment = _messages.MessageField('GoogleCloudApihubV1RuntimeProjectAttachment', 1)
-
-
-class GoogleCloudApihubV1MCPToolDetails(_messages.Message):
-  r"""Detailed mapping between an original API operation and its generated MCP
-  tool.
-
-  Fields:
-    hasOverriddenServerDetails: Output only. Indicates whether the spec
-      contains server details at the path or operation level. This field is
-      used to determine if the spec is valid for MCP conversion. If true, the
-      spec contains server details at the path or operation level and is not
-      valid for MCP conversion.
-    operationDetails: The underlying HTTP operation details extracted and
-      parsed from the source specification. This includes the target path,
-      HTTP verb (GET, POST, etc.), human-readable description, and links to
-      external documentation if available in the spec.
-    spec: Output only. The full resource name of the specific API Hub spec
-      from which this particular tool was derived. Format: `projects/{project}
-      /locations/{location}/apis/{api}/versions/{version}/specs/{spec}` This
-      field is essential for traceability, allowing clients to identify
-      exactly which document defined the operation.
-    tool: The generated Model Context Protocol (MCP) tool definition. This
-      object is ready to be used by MCP-compliant clients and servers. It
-      contains: - A unique name for the tool. - A user-friendly title and
-      description. - JSON schemas for validating both the input parameters
-      (arguments) and the expected output (results) of the tool.
-  """
-
-  hasOverriddenServerDetails = _messages.BooleanField(1)
-  operationDetails = _messages.MessageField('GoogleCloudApihubV1OperationDetails', 2)
-  spec = _messages.StringField(3)
-  tool = _messages.MessageField('GoogleCloudApihubV1McpTool', 4)
 
 
 class GoogleCloudApihubV1ManageAddonConfigRequest(_messages.Message):
@@ -5717,7 +5662,7 @@ class GoogleCloudApihubV1RetrieveApiViewsResponse(_messages.Message):
   r"""The RetrieveApiViews method's response.
 
   Fields:
-    apiViews: The list of API views.
+    apiViews: Output only. The list of API views.
     nextPageToken: Next page token.
   """
 

@@ -22,9 +22,18 @@ class CompositeHealthChecks(base.Group):
   """Manage composite health checks."""
 
 
+@base.Hidden
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class CompositeHealthChecksGa(CompositeHealthChecks):
+  """Manage composite health checks."""
+
+
 CompositeHealthChecks.category = base.COMPUTE_CATEGORY
 CompositeHealthChecks.detailed_help = {
     'DESCRIPTION': """
         Manage composite health checks.
     """,
 }
+CompositeHealthChecksGa.category = base.COMPUTE_CATEGORY
+CompositeHealthChecksGa.detailed_help = CompositeHealthChecks.detailed_help

@@ -213,10 +213,8 @@ class RunBeta(Run):
   """
 
   def ConvertKubectlError(self, error, env_obj):
-    is_private = (
-        env_obj.config.privateEnvironmentConfig and
-        env_obj.config.privateEnvironmentConfig.enablePrivateEnvironment)
-    if is_private:
+    if command_util.IsPrivateIpEnvironment(
+        env_obj, release_track=self.ReleaseTrack()):
       return command_util.Error(
           six.text_type(error) +
           ' Make sure you have followed https://cloud.google.com/composer/docs/how-to/accessing/airflow-cli#running_commands_on_a_private_ip_environment '

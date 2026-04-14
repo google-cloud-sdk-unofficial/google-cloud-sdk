@@ -147,6 +147,22 @@ class StorageBatchOperationsApi:
     rewrite_object = self.messages.RewriteObject()
     if rewrite_object_dict.get("kms-key"):
       rewrite_object.kmsKey = rewrite_object_dict["kms-key"]
+    if rewrite_object_dict.get("storage-class"):
+      try:
+        rewrite_object.storageClass = (
+            self.messages.RewriteObject.StorageClassValueValuesEnum(
+                rewrite_object_dict["storage-class"].upper()
+            )
+        )
+      except TypeError as exc:
+        valid_classes = (
+            self.messages.RewriteObject.StorageClassValueValuesEnum.to_dict().keys()
+        )
+        raise errors.StorageBatchOperationsApiError(
+            "Invalid value for storage-class:"
+            f' {rewrite_object_dict["storage-class"]}. Must be one of'
+            f" {valid_classes}."
+        ) from exc
     job.rewriteObject = rewrite_object
 
   def _modify_job_put_metadata(self, job, put_metadata_dict):

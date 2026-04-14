@@ -5,6 +5,136 @@ Copyright 2014-2026 Google Inc. All rights reserved.
 Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
 
 
+## 562.0.0 (2026-03-24)
+
+### BigQuery
+
+* Added regional endpoint support for `bq migration-workflows`. Use global flag
+  `--endpoint-mode=regional` or `--endpoint-mode=regional-preferred` to make
+  API requests with regional endpoints.
+* Fixed a bug where an actual authorization error may be masked by a "missing `x-goog-user-project` header" error.
+* Errors with the reason `alreadyExists` are now thrown as `BigqueryDuplicateError` instead of `BigqueryServiceError`.
+* Fixed quota project HTTP header fallback value when using legacy auth.
+* Updated the data source for Cloud CLI properties when `--use_gcloud_config` is
+set.
+* Add information about the resource that is being managed to the user-agent
+HTTP header in the API request.
+
+### Cloud Backup DR
+
+*   Unhide `--disk-properties` flag in `gcloud backup-dr backup-plans create` and `gcloud backup-dr backup-plans update` to allow configuring disk-level properties like `guest-flush`.
+
+### Cloud DNS
+
+* Improved robustness of `gcloud dns record-sets transaction` commands by
+  allowing transaction files to be empty or omit sections, and added a
+  "Nothing to do" message for transactions with no changes.
+
+### Cloud Dataplex
+
+* Promoted `dataplex context` to GA.
+*   Added `--semantic-search` flag to `gcloud dataplex entries search` to enable search based on meaning and intent, rather than just keywords.
+
+### Cloud Dataproc
+
+* Fixed a security issue where a race condition could allow local files staged for job submission to be modified before job execution.
+
+### Cloud IAM
+
+*   Added `gcloud iam workload-identity-pools add-attestation-rule|remove-attestation-rule|set-attestation-ruleslist-attestation-rules` which is part of the [Managed Workload Identity](https://cloud.google.com/iam/docs/managed-workload-identity) feature.
+
+### Cloud Key Management Service
+
+*   Added `--fallback-scope` flag to
+    `gcloud beta kms inventory get-protected-resources-summary`.
+*   Updated `gcloud beta kms inventory search-protected-resources` to allow
+    projects in scope flag while still supporting organization scopes.
+
+### Cloud Run
+
+* Promoted `gcloud run compose up` command to GA.
+
+### Cloud SQL
+
+*   Upgraded `--reconcile-psa-networking` flag for `gcloud sql instances patch`
+    command to GA. This field reconciles the instance's PSA networking
+    configuration. If the instance is already on a PSA network,
+    the DNS zone and records associated with the PSA write endpoint are
+    either added if missing or updated if incorrect.
+
+### Cloud Storage
+
+*   Updated `gcloud storage cp`, `gcloud storage mv` and `gcloud storage rsync` to support Rapid Bucket see <https://docs.cloud.google.com/storage/docs/rapid/rapid-bucket>.
+*   Added a new predefined key, `storage-class` to the existing
+    `--rewrite-object` flag in `gcloud storage batch-operations jobs create` to
+    rewrite object storage classes.
+
+### Compute Engine
+
+*   Added `--load-balancing-scheme` flag to `gcloud beta compute target-tcp-proxies create`.
+* Promoted `--resource-manager-tags` flag for `gcloud compute external-vpn-gateways create` command in GA.
+* Promoted `--resource-manager-tags` flag for `gcloud compute target-vpn-gateways create` command in GA.
+* Promoted `--resource-manager-tags` flag for `gcloud compute vpn-gateways create` command in GA.
+* Promoted `--resource-manager-tags` flag for `gcloud compute vpn-tunnels create` command in GA.
+* Promoted `health-aggregation-policies` command in `gcloud compute` to GA.
+* Promoted `health-sources` command in `gcloud compute` to GA.
+* Promoted `composite-health-checks` command in `gcloud compute` to GA.
+* Promoted `--target-size-policy-mode` flag for `gcloud compute instance-groups managed create` to GA.
+
+### Compute Network Policies
+
+* Promoted `compute network-policies` to beta.
+
+### Gemini
+
+*   Added `gcloud gemini gda-observability-settings` API.
+*   Added `gcloud gemini gda-observability-settings setting-bindings` API.
+*   Added `gcloud gemini gibq-observability-settings` API.
+*   Added `gcloud gemini gibq-observability-settings setting-bindings` API.
+
+### Kubernetes Engine
+
+* Added `--enable-scheduled-upgrades` to
+  `gcloud alpha|beta container clusters create|update` command.
+* Added `--disable-scheduled-upgrades` to
+  `gcloud alpha|beta container clusters update` command.
+
+### Model Armor
+
+* Added support for `--google-mcp-server-apis`,
+  `--add-google-mcp-server-apis`,
+  `--remove-google-mcp-server-apis`, and
+  `--clear-google-mcp-server-apis` flags to manage Google MCP server APIs in
+  floor settings.
+*   Added support for repeated `--add-integrated-services` and `--remove-integrated-services` flags to `gcloud model-armor floorsettings update`.
+
+### Network Connectivity
+
+* Modified `--include-import-ranges` flag, and added `--exclude-import-ranges`,
+`--include-export-ranges`, `--exclude-export-ranges` flags to
+`gcloud network-connectivity spokes linked-router-appliances create`,
+`gcloud network-connectivity spokes linked-router-appliances update`,
+`gcloud network-connectivity spokes linked-interconnect-attachments create`,
+`gcloud network-connectivity spokes linked-interconnect-attachments update`,
+`gcloud network-connectivity spokes linked-vpn-tunnels create`,
+`gcloud network-connectivity spokes linked-vpn-tunnels update` to support hybrid
+spoke filters.
+
+### Network Management
+
+* Removed deprecated 'alpha network-management simulation'.
+
+### Network Security
+
+* Added command group `network-security security-profiles url-filtering` and promoted it to GA.
+* Added flag `--url-filtering-profile` to command `network-security security-profile-groups create` in the GA track.
+* Moved flag `--threat-prevention-profile` to a mutex with flag `--clear-threat-prevention-profile` for command `network-security security-profile-groups update` in the GA track.
+* Added mutex with flags `--url-filtering-profile` and `--clear-url-filtering-profile` to command `network-security security-profile-groups update` in the GA track.
+
+
+Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
+
+
 ## 561.0.0 (2026-03-17)
 
 ### AI

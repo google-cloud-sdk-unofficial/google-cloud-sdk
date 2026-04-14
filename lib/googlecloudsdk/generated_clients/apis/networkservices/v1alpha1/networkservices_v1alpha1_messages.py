@@ -306,8 +306,9 @@ class AuthzExtension(_messages.Message):
       qualified resource name.
 
   Fields:
-    authority: Required. The `:authority` header in the gRPC request sent from
-      Envoy to the extension service.
+    authority: Optional. The `:authority` header in the gRPC request sent from
+      Envoy to the extension service. It is required when the `service` field
+      points to a backend service or a wasm plugin.
     createTime: Output only. The timestamp when the resource was created.
     description: Optional. A human-readable description of the resource.
     failOpen: Optional. Determines how the proxy behaves if the call to the
@@ -1701,16 +1702,12 @@ class ExtensionChainExtension(_messages.Message):
       maximum length of 63 characters. Additionally, the first character must
       be a letter and the last a letter or a number. This field is required
       except for AuthzExtension.
-    observabilityMode: Optional. When set to `TRUE`, enables
-      `observability_mode` on the `ext_proc` filter. This makes `ext_proc`
-      calls asynchronous. Envoy doesn't check for the response from `ext_proc`
-      calls. For more information about the filter, see: https://www.envoyprox
-      y.io/docs/envoy/v1.32.3/api-
-      v3/extensions/filters/http/ext_proc/v3/ext_proc.proto#extensions-
-      filters-http-ext-proc-v3-externalprocessor This field is helpful when
-      you want to try out the extension in async log-only mode. Supported by
-      regional `LbTrafficExtension` and `LbRouteExtension` resources. Only
-      `STREAMED` (default) body processing mode is supported.
+    observabilityMode: Optional. When set to `true`, the calls to the
+      extension backend are performed asynchronously, without pausing the
+      processing of the ongoing request. In this mode, only `STREAMED`
+      (default) body processing is supported. Responses, if any, are ignored.
+      Supported by regional `LbTrafficExtension` and `LbRouteExtension`
+      resources.
     requestBodySendMode: Optional. Configures the send mode for request body
       processing. The field can only be set if `supported_events` includes
       `REQUEST_BODY`. If `supported_events` includes `REQUEST_BODY`, but

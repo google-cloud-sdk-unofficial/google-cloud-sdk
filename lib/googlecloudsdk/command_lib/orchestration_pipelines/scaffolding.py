@@ -25,21 +25,20 @@ pipelineId: {pipeline_id}
 description: TODO - describe your pipeline
 runner: 'airflow'
 owner: 'data-eng-team'
-model_version: 'v1'
-
+modelVersion: 'v2'
 defaults:
-  project: ${{project}}
-  region: ${{region}}
+  projectId: {{{{ project }}}}
+  location: {{{{ region }}}}
   executionConfig:
     retries: 1
 
 triggers:
-  - type: schedule
-    scheduleInterval: '0 2 * * *'  # 2 AM daily
-    startTime: '2025-11-01T00:00:00'
-    endTime: '2026-12-01T00:00:00'
-    catchup: false
-    timezone: 'UTC'
+  - schedule:
+      interval: '0 2 * * *'  # 2 AM daily
+      startTime: '2025-11-01T00:00:00'
+      endTime: '2026-12-01T00:00:00'
+      catchup: false
+      timezone: 'UTC'
 
 # Add your jobs here
 actions: []

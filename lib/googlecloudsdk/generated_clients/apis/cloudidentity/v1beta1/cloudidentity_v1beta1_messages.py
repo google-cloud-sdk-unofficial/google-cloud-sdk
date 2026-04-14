@@ -54,7 +54,7 @@ class AndroidAttributes(_messages.Message):
       For phones, only true for owner profiles. Android 4+ devices can have
       secondary or restricted user profiles.
     ownershipPrivilege: Ownership privileges on device.
-    supportsWorkProfile: Whether device supports Android work profiles. If
+    supportsWorkProfile: Whether the device supports Android work profiles. If
       false, this service will not block access to corp data even if an
       administrator turns on the "Enforce Work Profile" policy.
     verifiedBoot: Whether Android verified boot status is GREEN.
@@ -138,14 +138,16 @@ class BlockDeviceUserResponse(_messages.Message):
 
 
 class BrowserAttributes(_messages.Message):
-  r"""Contains information about browser profiles reported by the [Endpoint
-  Verification extension](https://chromewebstore.google.com/detail/endpoint-
-  verification/callobklhcbilhphinckomhgkigmfocg?pli=1).
+  r"""Contains information about browser profiles reported by the clients on
+  the device (e.g. [Endpoint Verification
+  extension](https://chromewebstore.google.com/detail/endpoint-
+  verification/callobklhcbilhphinckomhgkigmfocg?pli=1)).
 
   Fields:
     chromeBrowserInfo: Represents the current state of the [Chrome browser
       attributes](https://cloud.google.com/access-context-
-      manager/docs/browser-attributes) sent by the [Endpoint Verification
+      manager/docs/browser-attributes) sent by the clients on the device, such
+      as [Endpoint Verification
       extension](https://chromewebstore.google.com/detail/endpoint-
       verification/callobklhcbilhphinckomhgkigmfocg?pli=1).
     chromeProfileId: Chrome profile ID that is exposed by the Chrome API. It
@@ -160,7 +162,8 @@ class BrowserAttributes(_messages.Message):
 
 
 class BrowserInfo(_messages.Message):
-  r"""Browser-specific fields reported by the [Endpoint Verification
+  r"""Browser-specific fields reported by clients on the device, such as
+  [Endpoint Verification
   extension](https://chromewebstore.google.com/detail/endpoint-
   verification/callobklhcbilhphinckomhgkigmfocg?pli=1).
 
@@ -207,6 +210,10 @@ class BrowserInfo(_messages.Message):
     passwordProtectionWarningTrigger: Current state of [password protection tr
       igger](https://chromeenterprise.google/policies/#PasswordProtectionWarni
       ngTrigger).
+    policies: Output only. Chrome policies information for the browser as can
+      be seen in chrome://policy. Full possibilities of policies can be
+      consulted in [Chrome Enterprise Policy
+      List](https://chromeenterprise.google/policies/).
     safeBrowsingProtectionLevel: Current state of [Safe Browsing protection le
       vel](https://chromeenterprise.google/policies/#SafeBrowsingProtectionLev
       el).
@@ -279,7 +286,8 @@ class BrowserInfo(_messages.Message):
   isSiteIsolationEnabled = _messages.BooleanField(11)
   isThirdPartyBlockingEnabled = _messages.BooleanField(12)
   passwordProtectionWarningTrigger = _messages.EnumField('PasswordProtectionWarningTriggerValueValuesEnum', 13)
-  safeBrowsingProtectionLevel = _messages.EnumField('SafeBrowsingProtectionLevelValueValuesEnum', 14)
+  policies = _messages.MessageField('ChromePolicy', 14, repeated=True)
+  safeBrowsingProtectionLevel = _messages.EnumField('SafeBrowsingProtectionLevelValueValuesEnum', 15)
 
 
 class CancelUserInvitationRequest(_messages.Message):
@@ -404,6 +412,95 @@ class CheckTransitiveMembershipResponse(_messages.Message):
   """
 
   hasMembership = _messages.BooleanField(1)
+
+
+class ChromePolicy(_messages.Message):
+  r"""Represents a Chrome policy and its current state.
+
+  Enums:
+    ScopeValueValuesEnum: Output only. The scope at which the *applied* policy
+      value is set (USER or MACHINE).
+    SourceValueValuesEnum: Output only. The source from which the *applied*
+      policy value originated.
+
+  Fields:
+    conflicts: Output only. A list of other policy values for the same policy
+      name that were not applied due to lower precedence. This field is empty
+      if there were no conflicts.
+    name: Output only. The unique name of the Chrome policy. These names
+      correspond to the policy names listed in [Chrome Enterprise Policy
+      List](https://chromeenterprise.google/policies/)
+    scope: Output only. The scope at which the *applied* policy value is set
+      (USER or MACHINE).
+    source: Output only. The source from which the *applied* policy value
+      originated.
+    value: Output only. The currently applied value of the policy. The format
+      depends on the policy type (e.g., boolean, string, JSON array/object).
+  """
+
+  class ScopeValueValuesEnum(_messages.Enum):
+    r"""Output only. The scope at which the *applied* policy value is set
+    (USER or MACHINE).
+
+    Values:
+      SCOPE_UNKNOWN: Default value. The policy scope is unknown or not
+        specified.
+      USER: User-level policy. This scope indicates the policy applies to the
+        specific user session or profile. For cloud policies, this is
+        typically the signed-in Chrome profile. On some platforms like
+        Windows, this can also refer to the OS user.
+      MACHINE: Machine-level policy. This scope indicates the policy applies
+        system-wide to all users on the current machine or device.
+    """
+    SCOPE_UNKNOWN = 0
+    USER = 1
+    MACHINE = 2
+
+  class SourceValueValuesEnum(_messages.Enum):
+    r"""Output only. The source from which the *applied* policy value
+    originated.
+
+    Values:
+      SOURCE_UNKNOWN: Default value. The policy source is unknown or not
+        specified.
+      ENTERPRISE_DEFAULT: The policy is provided by Chrome's default settings
+        when running in an enterprise environment.
+      CLOUD: The policy is managed and pushed from a cloud-based
+        administration console, such as the Google Admin console.
+      ACTIVE_DIRECTORY: The policy is sourced from Active Directory, primarily
+        for Active Directory-managed ChromeOS devices.
+      DEVICE_LOCAL_ACCOUNT_OVERRIDE_DEPRECATED: Deprecated: Formerly used when
+        a policy was overridden by ChromeOS for public sessions or kiosk mode.
+      PLATFORM: The policy is set by OS built-in tool on desktop.
+      PRIORITY_CLOUD_DEPRECATED: Deprecated: Formerly used for cloud policies
+        with higher priority.
+      MERGED: The applied policy value is the result of a merge from multiple
+        policy sources.
+      COMMAND_LINE: The policy is set using a command line argument passed to
+        the Chrome executable, usually intended for development or testing.
+      CLOUD_FROM_ASH: For ChromeOS, this indicates a policy set by cloud
+        management in the Ash browser and then made available to the Lacros
+        browser.
+      RESTRICTED_MANAGED_GUEST_SESSION_OVERRIDE: The policy is set by the
+        restricted managed guest session override.
+    """
+    SOURCE_UNKNOWN = 0
+    ENTERPRISE_DEFAULT = 1
+    CLOUD = 2
+    ACTIVE_DIRECTORY = 3
+    DEVICE_LOCAL_ACCOUNT_OVERRIDE_DEPRECATED = 4
+    PLATFORM = 5
+    PRIORITY_CLOUD_DEPRECATED = 6
+    MERGED = 7
+    COMMAND_LINE = 8
+    CLOUD_FROM_ASH = 9
+    RESTRICTED_MANAGED_GUEST_SESSION_OVERRIDE = 10
+
+  conflicts = _messages.MessageField('PolicyConflict', 1, repeated=True)
+  name = _messages.StringField(2)
+  scope = _messages.EnumField('ScopeValueValuesEnum', 3)
+  source = _messages.EnumField('SourceValueValuesEnum', 4)
+  value = _messages.StringField(5)
 
 
 class ClientState(_messages.Message):
@@ -1997,6 +2094,10 @@ class Device(_messages.Message):
     basebandVersion: Output only. Baseband version of the device.
     bootloaderVersion: Output only. Device bootloader version. Example: 0.6.7.
     brand: Output only. Device brand. Example: Samsung.
+    browserProfiles: Browser profiles on the device. This is a copy of the
+      BrowserAttributes message defined in
+      EndpointVerificationSpecificAttributes. We are replicating it here since
+      EndpointVerification isn't the only client reporting browser profiles.
     buildNumber: Output only. Build number of the device.
     clientTypes: List of the clients the device is reporting to.
     compromisedState: Output only. Represents whether the Device is
@@ -2119,7 +2220,7 @@ class Device(_messages.Message):
       APPROVED: Device is approved.
       BLOCKED: Device is blocked.
       PENDING: Device is pending approval.
-      UNPROVISIONED: The device is not provisioned. Device will start from
+      UNPROVISIONED: The device is not provisioned. The device will start from
         this state until some action is taken (i.e. a user starts using the
         device).
       WIPING: Data and settings on the device are being removed.
@@ -2151,34 +2252,35 @@ class Device(_messages.Message):
   basebandVersion = _messages.StringField(3)
   bootloaderVersion = _messages.StringField(4)
   brand = _messages.StringField(5)
-  buildNumber = _messages.StringField(6)
-  clientTypes = _messages.EnumField('ClientTypesValueListEntryValuesEnum', 7, repeated=True)
-  compromisedState = _messages.EnumField('CompromisedStateValueValuesEnum', 8)
-  createTime = _messages.StringField(9)
-  deviceId = _messages.StringField(10)
-  deviceType = _messages.EnumField('DeviceTypeValueValuesEnum', 11)
-  enabledDeveloperOptions = _messages.BooleanField(12)
-  enabledUsbDebugging = _messages.BooleanField(13)
-  encryptionState = _messages.EnumField('EncryptionStateValueValuesEnum', 14)
-  endpointVerificationSpecificAttributes = _messages.MessageField('EndpointVerificationSpecificAttributes', 15)
-  hostname = _messages.StringField(16)
-  imei = _messages.StringField(17)
-  kernelVersion = _messages.StringField(18)
-  lastSyncTime = _messages.StringField(19)
-  managementState = _messages.EnumField('ManagementStateValueValuesEnum', 20)
-  manufacturer = _messages.StringField(21)
-  meid = _messages.StringField(22)
-  model = _messages.StringField(23)
-  name = _messages.StringField(24)
-  networkOperator = _messages.StringField(25)
-  osVersion = _messages.StringField(26)
-  otherAccounts = _messages.StringField(27, repeated=True)
-  ownerType = _messages.EnumField('OwnerTypeValueValuesEnum', 28)
-  releaseVersion = _messages.StringField(29)
-  securityPatchTime = _messages.StringField(30)
-  serialNumber = _messages.StringField(31)
-  unifiedDeviceId = _messages.StringField(32)
-  wifiMacAddresses = _messages.StringField(33, repeated=True)
+  browserProfiles = _messages.MessageField('BrowserAttributes', 6, repeated=True)
+  buildNumber = _messages.StringField(7)
+  clientTypes = _messages.EnumField('ClientTypesValueListEntryValuesEnum', 8, repeated=True)
+  compromisedState = _messages.EnumField('CompromisedStateValueValuesEnum', 9)
+  createTime = _messages.StringField(10)
+  deviceId = _messages.StringField(11)
+  deviceType = _messages.EnumField('DeviceTypeValueValuesEnum', 12)
+  enabledDeveloperOptions = _messages.BooleanField(13)
+  enabledUsbDebugging = _messages.BooleanField(14)
+  encryptionState = _messages.EnumField('EncryptionStateValueValuesEnum', 15)
+  endpointVerificationSpecificAttributes = _messages.MessageField('EndpointVerificationSpecificAttributes', 16)
+  hostname = _messages.StringField(17)
+  imei = _messages.StringField(18)
+  kernelVersion = _messages.StringField(19)
+  lastSyncTime = _messages.StringField(20)
+  managementState = _messages.EnumField('ManagementStateValueValuesEnum', 21)
+  manufacturer = _messages.StringField(22)
+  meid = _messages.StringField(23)
+  model = _messages.StringField(24)
+  name = _messages.StringField(25)
+  networkOperator = _messages.StringField(26)
+  osVersion = _messages.StringField(27)
+  otherAccounts = _messages.StringField(28, repeated=True)
+  ownerType = _messages.EnumField('OwnerTypeValueValuesEnum', 29)
+  releaseVersion = _messages.StringField(30)
+  securityPatchTime = _messages.StringField(31)
+  serialNumber = _messages.StringField(32)
+  unifiedDeviceId = _messages.StringField(33)
+  wifiMacAddresses = _messages.StringField(34, repeated=True)
 
 
 class DeviceUser(_messages.Message):
@@ -4448,6 +4550,87 @@ class Policy(_messages.Message):
   policyQuery = _messages.MessageField('PolicyQuery', 3)
   setting = _messages.MessageField('Setting', 4)
   type = _messages.EnumField('TypeValueValuesEnum', 5)
+
+
+class PolicyConflict(_messages.Message):
+  r"""Represents a policy value from a source that was not applied because a
+  higher-priority source took precedence.
+
+  Enums:
+    ScopeValueValuesEnum: Output only. The scope at which this lower-priority
+      policy is set (USER or MACHINE).
+    SourceValueValuesEnum: Output only. The source from which this lower-
+      priority policy value originated.
+
+  Fields:
+    scope: Output only. The scope at which this lower-priority policy is set
+      (USER or MACHINE).
+    source: Output only. The source from which this lower-priority policy
+      value originated.
+    value: Output only. The policy value from this lower-priority source.
+  """
+
+  class ScopeValueValuesEnum(_messages.Enum):
+    r"""Output only. The scope at which this lower-priority policy is set
+    (USER or MACHINE).
+
+    Values:
+      SCOPE_UNKNOWN: Default value. The policy scope is unknown or not
+        specified.
+      USER: User-level policy. This scope indicates the policy applies to the
+        specific user session or profile. For cloud policies, this is
+        typically the signed-in Chrome profile. On some platforms like
+        Windows, this can also refer to the OS user.
+      MACHINE: Machine-level policy. This scope indicates the policy applies
+        system-wide to all users on the current machine or device.
+    """
+    SCOPE_UNKNOWN = 0
+    USER = 1
+    MACHINE = 2
+
+  class SourceValueValuesEnum(_messages.Enum):
+    r"""Output only. The source from which this lower-priority policy value
+    originated.
+
+    Values:
+      SOURCE_UNKNOWN: Default value. The policy source is unknown or not
+        specified.
+      ENTERPRISE_DEFAULT: The policy is provided by Chrome's default settings
+        when running in an enterprise environment.
+      CLOUD: The policy is managed and pushed from a cloud-based
+        administration console, such as the Google Admin console.
+      ACTIVE_DIRECTORY: The policy is sourced from Active Directory, primarily
+        for Active Directory-managed ChromeOS devices.
+      DEVICE_LOCAL_ACCOUNT_OVERRIDE_DEPRECATED: Deprecated: Formerly used when
+        a policy was overridden by ChromeOS for public sessions or kiosk mode.
+      PLATFORM: The policy is set by OS built-in tool on desktop.
+      PRIORITY_CLOUD_DEPRECATED: Deprecated: Formerly used for cloud policies
+        with higher priority.
+      MERGED: The applied policy value is the result of a merge from multiple
+        policy sources.
+      COMMAND_LINE: The policy is set using a command line argument passed to
+        the Chrome executable, usually intended for development or testing.
+      CLOUD_FROM_ASH: For ChromeOS, this indicates a policy set by cloud
+        management in the Ash browser and then made available to the Lacros
+        browser.
+      RESTRICTED_MANAGED_GUEST_SESSION_OVERRIDE: The policy is set by the
+        restricted managed guest session override.
+    """
+    SOURCE_UNKNOWN = 0
+    ENTERPRISE_DEFAULT = 1
+    CLOUD = 2
+    ACTIVE_DIRECTORY = 3
+    DEVICE_LOCAL_ACCOUNT_OVERRIDE_DEPRECATED = 4
+    PLATFORM = 5
+    PRIORITY_CLOUD_DEPRECATED = 6
+    MERGED = 7
+    COMMAND_LINE = 8
+    CLOUD_FROM_ASH = 9
+    RESTRICTED_MANAGED_GUEST_SESSION_OVERRIDE = 10
+
+  scope = _messages.EnumField('ScopeValueValuesEnum', 1)
+  source = _messages.EnumField('SourceValueValuesEnum', 2)
+  value = _messages.StringField(3)
 
 
 class PolicyQuery(_messages.Message):

@@ -28,7 +28,7 @@ class GoogleCloudOrgpolicyV2AlternatePolicySpec(_messages.Message):
 
 
 class GoogleCloudOrgpolicyV2Constraint(_messages.Message):
-  r"""A constraint describes a way to restrict resource's configuration. For
+  r"""A constraint describes a way to restrict a resource's configuration. For
   example, you could enforce a constraint that controls which Google Cloud
   services can be activated across an organization, or whether a Compute
   Engine instance can have serial port connections established. Constraints
@@ -52,9 +52,12 @@ class GoogleCloudOrgpolicyV2Constraint(_messages.Message):
     description: Detailed description of what this constraint controls as well
       as how and where it is enforced. Mutable.
     displayName: The human readable name. Mutable.
-    equivalentConstraint: Managed constraint and canned constraint sometimes
-      can have equivalents. This field is used to store the equivalent
-      constraint name.
+    equivalentConstraint: Defines the equivalent constraint name, if it
+      exists. Managed constraints can have an equivalent legacy managed
+      constraint, and legacy managed constraints can have an equivalent
+      managed constraint. For example,
+      "constraints/iam.disableServiceAccountKeyUpload" is equivalent to
+      "constraints/iam.managed.disableServiceAccountKeyUpload".
     listConstraint: Defines this constraint as being a list constraint.
     name: Immutable. The resource name of the constraint. Must be in one of
       the following forms: *
@@ -127,9 +130,8 @@ class GoogleCloudOrgpolicyV2ConstraintCustomConstraintDefinition(_messages.Messa
     methodTypes: All the operations being applied for this constraint.
     parameters: Stores the structure of `Parameters` used by the constraint
       condition. The key of `map` represents the name of the parameter.
-    resourceTypes: The resource instance type on which this policy applies.
-      Format will be of the form : `/` Example: *
-      `compute.googleapis.com/Instance`.
+    resourceTypes: The resource instance type that this policy applies to, in
+      the format `/`. Example: * `compute.googleapis.com/Instance`.
   """
 
   class ActionTypeValueValuesEnum(_messages.Enum):
@@ -218,7 +220,7 @@ class GoogleCloudOrgpolicyV2ConstraintCustomConstraintDefinitionParameter(_messa
     type: Type of the parameter.
     validValuesExpr: Provides a CEL expression to specify the acceptable
       parameter values during assignment. For example, parameterName in
-      ("parameterValue1", "parameterValue2")
+      ("parameterValue1", "parameterValue2").
   """
 
   class ItemValueValuesEnum(_messages.Enum):
@@ -263,8 +265,8 @@ class GoogleCloudOrgpolicyV2ConstraintCustomConstraintDefinitionParameterMetadat
   r"""Defines Metadata structure.
 
   Fields:
-    description: Detailed description of what this `parameter` is and use of
-      it. Mutable.
+    description: Detailed description of what this `parameter` is and its use.
+      Mutable.
   """
 
   description = _messages.StringField(1)
@@ -417,7 +419,7 @@ class GoogleCloudOrgpolicyV2ListPoliciesResponse(_messages.Message):
 
 
 class GoogleCloudOrgpolicyV2Policy(_messages.Message):
-  r"""Defines an organization policy which is used to specify constraints for
+  r"""Defines an organization policy that is used to specify constraints for
   configurations of Google Cloud resources.
 
   Fields:
@@ -426,12 +428,13 @@ class GoogleCloudOrgpolicyV2Policy(_messages.Message):
       the policy would have impacted the existing and future resources if it's
       enforced.
     etag: Optional. An opaque tag indicating the current state of the policy,
-      used for concurrency control. This 'etag' is computed by the server
-      based on the value of other fields, and may be sent on update and delete
-      requests to ensure the client has an up-to-date value before proceeding.
+      used for concurrency control. This entity tag (ETag) is computed by the
+      server based on the value of other fields, and may be sent on update and
+      delete requests to ensure the client has an up-to-date value before
+      proceeding.
     name: Immutable. The resource name of the policy. Must be one of the
       following forms, where `constraint_name` is the name of the constraint
-      which this policy configures: *
+      that this policy configures: *
       `projects/{project_number}/policies/{constraint_name}` *
       `folders/{folder_id}/policies/{constraint_name}` *
       `organizations/{organization_id}/policies/{constraint_name}` For
@@ -450,30 +453,30 @@ class GoogleCloudOrgpolicyV2Policy(_messages.Message):
 
 
 class GoogleCloudOrgpolicyV2PolicySpec(_messages.Message):
-  r"""Defines a Google Cloud policy specification which is used to specify
+  r"""Defines a Google Cloud policy specification that is used to specify
   constraints for configurations of Google Cloud resources.
 
   Fields:
     etag: An opaque tag indicating the current version of the policySpec, used
       for concurrency control. This field is ignored if used in a
       `CreatePolicy` request. When the policy is returned from either a
-      `GetPolicy` or a `ListPolicies` request, this `etag` indicates the
-      version of the current policySpec to use when executing a read-modify-
-      write loop. When the policy is returned from a `GetEffectivePolicy`
-      request, the `etag` will be unset.
+      `GetPolicy` or a `ListPolicies` request, this entity tag (ETag)
+      indicates the version of the current policySpec to use when executing a
+      read-modify-write loop. When the policy is returned from a
+      `GetEffectivePolicy` request, the ETag will be unset.
     inheritFromParent: Determines the inheritance behavior for this policy. If
       `inherit_from_parent` is true, policy rules set higher up in the
       hierarchy (up to the closest root) are inherited and present in the
       effective policy. If it is false, then no rules are inherited, and this
       policy becomes the new root for evaluation. This field can be set only
-      for policies which configure list constraints.
+      for policies that configure list constraints.
     reset: Ignores policies set above this resource and restores the
       `constraint_default` enforcement behavior of the specific constraint at
       this resource. This field can be set in policies for either list or
       boolean constraints. If set, `rules` must be empty and
       `inherit_from_parent` must be set to false.
     rules: In policies for boolean constraints, the following requirements
-      apply: - There must be one and only one policy rule where condition is
+      apply: - There must be exactly one policy rule where a condition is
       unset. - Boolean policy rules with conditions must set `enforced` to the
       opposite of the policy rule without a condition. - During policy
       evaluation, policy rules with conditions that are true for a target
@@ -703,9 +706,10 @@ class OrgpolicyFoldersPoliciesDeleteRequest(_messages.Message):
   r"""A OrgpolicyFoldersPoliciesDeleteRequest object.
 
   Fields:
-    etag: Optional. The current etag of policy. If an etag is provided and
-      does not match the current etag of the policy, deletion will be blocked
-      and an ABORTED error will be returned.
+    etag: Optional. The current entity tag (ETag) of the organization policy.
+      If an ETag is provided and doesn't match the current ETag of the policy,
+      deletion of the policy will be blocked and an `ABORTED` error will be
+      returned.
     name: Required. Name of the policy to delete. See the policy entry for
       naming rules.
   """
@@ -766,7 +770,7 @@ class OrgpolicyFoldersPoliciesPatchRequest(_messages.Message):
       be passed as the request body.
     name: Immutable. The resource name of the policy. Must be one of the
       following forms, where `constraint_name` is the name of the constraint
-      which this policy configures: *
+      that this policy configures: *
       `projects/{project_number}/policies/{constraint_name}` *
       `folders/{folder_id}/policies/{constraint_name}` *
       `organizations/{organization_id}/policies/{constraint_name}` For
@@ -775,8 +779,8 @@ class OrgpolicyFoldersPoliciesPatchRequest(_messages.Message):
       name for API requests, but responses will return the name using the
       equivalent project number.
     updateMask: Field mask used to specify the fields to be overwritten in the
-      policy by the set. The fields specified in the update_mask are relative
-      to the policy, not the full request.
+      policy. The fields specified in the update_mask are relative to the
+      policy, not the full request.
   """
 
   googleCloudOrgpolicyV2Policy = _messages.MessageField('GoogleCloudOrgpolicyV2Policy', 1)
@@ -902,9 +906,10 @@ class OrgpolicyOrganizationsPoliciesDeleteRequest(_messages.Message):
   r"""A OrgpolicyOrganizationsPoliciesDeleteRequest object.
 
   Fields:
-    etag: Optional. The current etag of policy. If an etag is provided and
-      does not match the current etag of the policy, deletion will be blocked
-      and an ABORTED error will be returned.
+    etag: Optional. The current entity tag (ETag) of the organization policy.
+      If an ETag is provided and doesn't match the current ETag of the policy,
+      deletion of the policy will be blocked and an `ABORTED` error will be
+      returned.
     name: Required. Name of the policy to delete. See the policy entry for
       naming rules.
   """
@@ -965,7 +970,7 @@ class OrgpolicyOrganizationsPoliciesPatchRequest(_messages.Message):
       be passed as the request body.
     name: Immutable. The resource name of the policy. Must be one of the
       following forms, where `constraint_name` is the name of the constraint
-      which this policy configures: *
+      that this policy configures: *
       `projects/{project_number}/policies/{constraint_name}` *
       `folders/{folder_id}/policies/{constraint_name}` *
       `organizations/{organization_id}/policies/{constraint_name}` For
@@ -974,8 +979,8 @@ class OrgpolicyOrganizationsPoliciesPatchRequest(_messages.Message):
       name for API requests, but responses will return the name using the
       equivalent project number.
     updateMask: Field mask used to specify the fields to be overwritten in the
-      policy by the set. The fields specified in the update_mask are relative
-      to the policy, not the full request.
+      policy. The fields specified in the update_mask are relative to the
+      policy, not the full request.
   """
 
   googleCloudOrgpolicyV2Policy = _messages.MessageField('GoogleCloudOrgpolicyV2Policy', 1)
@@ -1024,9 +1029,10 @@ class OrgpolicyProjectsPoliciesDeleteRequest(_messages.Message):
   r"""A OrgpolicyProjectsPoliciesDeleteRequest object.
 
   Fields:
-    etag: Optional. The current etag of policy. If an etag is provided and
-      does not match the current etag of the policy, deletion will be blocked
-      and an ABORTED error will be returned.
+    etag: Optional. The current entity tag (ETag) of the organization policy.
+      If an ETag is provided and doesn't match the current ETag of the policy,
+      deletion of the policy will be blocked and an `ABORTED` error will be
+      returned.
     name: Required. Name of the policy to delete. See the policy entry for
       naming rules.
   """
@@ -1087,7 +1093,7 @@ class OrgpolicyProjectsPoliciesPatchRequest(_messages.Message):
       be passed as the request body.
     name: Immutable. The resource name of the policy. Must be one of the
       following forms, where `constraint_name` is the name of the constraint
-      which this policy configures: *
+      that this policy configures: *
       `projects/{project_number}/policies/{constraint_name}` *
       `folders/{folder_id}/policies/{constraint_name}` *
       `organizations/{organization_id}/policies/{constraint_name}` For
@@ -1096,8 +1102,8 @@ class OrgpolicyProjectsPoliciesPatchRequest(_messages.Message):
       name for API requests, but responses will return the name using the
       equivalent project number.
     updateMask: Field mask used to specify the fields to be overwritten in the
-      policy by the set. The fields specified in the update_mask are relative
-      to the policy, not the full request.
+      policy. The fields specified in the update_mask are relative to the
+      policy, not the full request.
   """
 
   googleCloudOrgpolicyV2Policy = _messages.MessageField('GoogleCloudOrgpolicyV2Policy', 1)

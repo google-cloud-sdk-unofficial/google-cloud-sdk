@@ -45,13 +45,13 @@ DETAILED_HELP_ALPHA = {
         """
          To view the protected resources for the key
          `projects/test-prj/locations/us/keyRings/us-keyring/cryptoKeys/us-key`
-         within the organization number `1234` run:
+         within organization number `1234` run:
 
            $ {command} --keyname=projects/test-prj/locations/us/keyRings/us-keyring/cryptoKeys/us-key --scope=organizations/1234
 
          To view the protected resources for the key
          `projects/test-prj/locations/us/keyRings/us-keyring/cryptoKeys/us-key`
-         within the project `2345` run:
+         within project number `2345` run:
 
            $ {command} --keyname=projects/test-prj/locations/us/keyRings/us-keyring/cryptoKeys/us-key --scope=projects/2345
        """
@@ -78,7 +78,7 @@ supported resource type, an ``INVALID_ARGUMENT'' error will be returned.
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class SearchProtectedResources(base.ListCommand):
   """Searches the resources protected by a key."""
@@ -115,7 +115,7 @@ class SearchProtectedResources(base.ListCommand):
 # scope and is only available in alpha.
 # This function would be gradually propagated to beta and will be used in place
 # of the old version in ga.
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class SearchProtectedResourcesNew(base.ListCommand):
   """Searches the resources protected by a key."""

@@ -44,7 +44,7 @@ class Create(base.CreateCommand):
 
               $ {command} my-external-gateway --interfaces=0=8.9.9.9"""}
 
-  _support_tagging_at_creation = False
+  _support_tagging_at_creation = True
 
   @classmethod
   def Args(cls, parser):
@@ -127,7 +127,6 @@ class CreateBeta(Create):
 
   *{command} creates a new External Vpn Gateway
   """
-  _support_tagging_at_creation = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -137,4 +136,3 @@ class CreateAlpha(Create):
   *{command}* creates a new external VPN gateway.
 
   """
-  _support_tagging_at_creation = True

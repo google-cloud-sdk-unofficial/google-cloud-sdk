@@ -32,7 +32,7 @@
     - help_text: |-
         Identifier. The resource name of this experiment template.
         Format:
-        projects/{project}/locations/{location}/experimentTemplates/{experiment_template_id}
+        `projects/{project}/locations/{location}/experimentTemplates/{experiment_template}`
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.fault_testing.v1alpha_resources:projects_locations_experiment_templates
@@ -84,7 +84,7 @@
                   repeated: false
                   help_text: |-
                     The identifying name of the Cloud SQL instance to fail over.
-                    Formatted like projects/{project_id}/instances/{instance_id}
+                    Format: `projects/{project}/instances/{instance}`
             - group:
                 api_field: experimentTemplate.action.l7LbHttpFault
                 required: false
@@ -144,18 +144,18 @@
                   help_text: |-
                     The identifying name of the forwarding rule resource where the faults will
                     be injected.
-                    Formatted like
-                    projects/{project}/regions/{region}/forwardingRules/{forwardingRule} or
-                    projects/{project}/global/forwardingRules/{forwardingRule}
+                    Format:
+                    `projects/{project}/regions/{region}/forwardingRules/{forwarding_rule}` or
+                    `projects/{project}/global/forwardingRules/{forwarding_rule}`
                 - arg_name: l7-lb-http-fault-backend-service
                   api_field: experimentTemplate.action.l7LbHttpFault.backendService
                   required: false
                   repeated: false
                   help_text: |-
                     Optional identifying name of the backend service to inject faults into.
-                    Formatted like
-                    projects/{project}/regions/{region}/backendServices/{backendService} or
-                    projects/{project}/global/backendServices/{backendService}
+                    Format:
+                    `projects/{project}/regions/{region}/backendServices/{backend_service}` or
+                    `projects/{project}/global/backendServices/{backend_service}`
                     If not specified, all backend services connected to the forwarding_rule
                     will be affected.
             - group:
@@ -174,16 +174,16 @@
                       required: false
                       repeated: false
                       help_text: |-
-                        Specify a single instance by name. Format:
-                        "projects/*/zones/*/instances/*".
+                        Specifies a single instance by name.
+                        Format: `projects/{project}/zones/{zone}/instances/{instance}`
                     - arg_name: gce-fail-compute-secure-tag-value
                       api_field: experimentTemplate.action.gceFailCompute.secureTagValue
                       required: false
                       repeated: false
                       help_text: |-
-                        Specify a group of non-MIG (Managed Instance Group) instances by secure
+                        Specifies a group of non-MIG (Managed Instance Group) instances by secure
                         tag. See https://cloud.google.com/firewall/docs/tags-firewalls-overview
-                        for more details on tags. Format: "tagValues/[0-9]+"
+                        for more details on tags. Format: `{project}/{tag_key}/{tag_value}`.
                     - group:
                         api_field: experimentTemplate.action.gceFailCompute.mig
                         required: false
@@ -191,12 +191,17 @@
                           Details specifying a Managed Instance Group (MIG) and optionally a zone
                           within it.
                         params:
-                        - arg_name: gce-fail-compute-mig-instance-group
-                          api_field: experimentTemplate.action.gceFailCompute.mig.instanceGroup
+                        - arg_name: gce-fail-compute-mig-instance-group-manager
+                          api_field: experimentTemplate.action.gceFailCompute.mig.instanceGroupManager
                           required: false
                           repeated: false
                           help_text: |-
-                            The managed instance group. Can be zonal or regional.
+                            Specifies the manager of a managed instance group. Can be zonal or
+                            regional.
+                            Format:
+                            `projects/{project}/zones/{zone}/instanceGroupManagers/{instance_group_manager}`
+                            or
+                            `projects/{project}/regions/{region}/instanceGroupManagers/{instance_group_manager}`
                         - arg_name: gce-fail-compute-mig-location
                           api_field: experimentTemplate.action.gceFailCompute.mig.location
                           required: false
@@ -208,7 +213,20 @@
                       required: false
                       repeated: false
                       help_text: |-
-                        Specify that an entire zone or region should be affected.
+                        Specifies that an entire zone or region should be affected.
+                    - group:
+                        api_field: experimentTemplate.action.gceFailCompute.instances
+                        required: false
+                        help_text: |-
+                          A GCEFailCompute option for failing multiple instances by name.
+                        params:
+                        - arg_name: gce-fail-compute-instances
+                          api_field: experimentTemplate.action.gceFailCompute.instances.instances
+                          required: false
+                          repeated: true
+                          help_text: |-
+                            Specifies instances by name.
+                            Format: `projects/{project}/zones/{zone}/instances/{instance}`
   request:
     api_version: v1alpha
     collection:

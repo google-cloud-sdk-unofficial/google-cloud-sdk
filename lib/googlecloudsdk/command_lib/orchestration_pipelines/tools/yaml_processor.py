@@ -15,18 +15,23 @@
 """Common utilities for Orchestration Pipelines commands."""
 
 import os
+import pathlib
 import re
 from typing import Any, Dict, Optional
 
+from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.orchestration_pipelines import deployment_model
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import yaml
 from googlecloudsdk.core.util import files
 
+DEPLOYMENT_FILE_NAME = "deployment.yaml"
 ARTIFACT_STORAGE_KEY = "artifact_storage"
 ENVIRONMENTS_KEY = "environments"
 VARIABLES_KEY = "variables"
+SECRETS_KEY = "secrets"
 RESOURCES_KEY = "resources"
 
 
@@ -36,46 +41,11 @@ class BadFileError(exceptions.Error):
   pass
 
 
-def _resolve_string_templates(yaml_content, variables):
-  for key, value in variables.items():
-    placeholder_pattern = r"{{\s*" + re.escape(key) + r"\s*}}"
-    # Use a lambda to evaluate str(value) only if a match is found.
-    # This allows passing objects that raise errors on __str__ conversion
-    # to control when that error occurs (only if used).
-    yaml_content = re.sub(
-        placeholder_pattern, lambda m, v=value: str(v), yaml_content
-    )
-  return yaml_content
-
-
-def _check_for_missing_variables(content):
-  """Checks if there are any unsubstituted variables in the content."""
-  pattern = r"{{\s*([A-Za-z0-9_]+)\s*}}"
-  match = re.search(pattern, content)
-  if match:
-    var_name = match.group(1)
-    raise BadFileError(
-        f"Variable '{var_name}' not found in deployment file 'deployment.yaml' "
-        "variables section, nor in environment variables "
-        f"(as _DEPLOY_VAR_{var_name})."
-    )
-
-
-def _get_updated_path_info(raw_path, bundle_dag_prefix):
-  """Returns GCS path and clean path if raw_path needs to be updated."""
-  if raw_path and not raw_path.startswith("/home/airflow/gcs/"):
-    clean_path = raw_path[2:] if raw_path.startswith("./") else raw_path
-    gcs_path = f"/home/airflow/gcs/{bundle_dag_prefix}/{clean_path}"
-    return gcs_path, clean_path
-  return None, None
-
-
 def resolve_dynamic_variables(
     yaml_content: str,
     deployment_path: str,
     env: str,
     external_variables: Optional[Dict[str, Any]] = None,
-    bundle_dag_prefix: Optional[str] = None,
 ) -> Any:
   """Resolves dynamic variables in the YAML content.
 
@@ -87,7 +57,6 @@ def resolve_dynamic_variables(
     deployment_path: The path to the deployment configuration YAML file.
     env: The environment to use (e.g., "dev", "staging", "prod").
     external_variables: Optional dict of external variables to substitute.
-    bundle_dag_prefix: The prefix for the bundle DAG.
 
   Returns:
     The resolved_yaml_content YAML file content as a string.
@@ -101,7 +70,7 @@ def resolve_dynamic_variables(
       **parsed_deployment.get(VARIABLES_KEY, {}),
   }
 
-  resolved_yaml_content = _resolve_string_templates(
+  resolved_yaml_content = resolve_string_templates(
       yaml_content, combined_variables
   )
   try:
@@ -116,66 +85,146 @@ def resolve_dynamic_variables(
       and "actions" in resolved_yaml_content
   ):
     resolved_yaml_content = _resolve_pipeline_yaml(
-        resolved_yaml_content,
-        combined_variables,
-        parsed_deployment,
-        bundle_dag_prefix,
+        resolved_yaml_content, combined_variables, parsed_deployment
     )
   return resolved_yaml_content
 
 
-def _resolve_pipeline_yaml(
-    yaml_content, combined_variables, deployment, bundle_dag_prefix
-):
+def _resolve_resource_profile(
+    resource_profile: Dict[str, Any], context: Dict[str, Any]
+) -> Dict[str, Any]:
+  """Resolves a resource profile.
+
+  This function handles resource profiles defined either 'inline' or via a
+  'path' reference to an external file.
+
+  Args:
+    resource_profile: The resource profile dictionary.
+    context: A dictionary of variables for template substitution.
+
+  Returns:
+    The resolved resource profile.
+  """
+  if not isinstance(resource_profile, dict):
+    return resource_profile
+
+  if "inline" in resource_profile:
+    return resource_profile  # Leave it completely intact
+  elif "path" in resource_profile:
+    try:
+      selected_names = (
+          [resource_profile["name"]] if resource_profile.get("name") else []
+      )
+      loaded = _load_resource_profile(
+          resource_profile["path"],
+          names=selected_names,
+          context=context,
+      )
+      if loaded:
+        return {"inline": loaded[0].get("definition", {})}
+    except BadFileError as e:
+      # pylint: disable=raise-missing-from
+      raise BadFileError(f"Error processing resource profile: {e}")
+
+  return resource_profile
+
+
+def _resolve_pipeline_yaml(yaml_content, combined_variables, deployment):
   """Resolves pipeline specific configurations within the YAML content."""
 
-  for action in yaml_content.get("actions", []):
-    if ARTIFACT_STORAGE_KEY in deployment:
-      action["depsBucket"] = deployment[ARTIFACT_STORAGE_KEY]["bucket"]
+  for action_item in yaml_content.get("actions", []):
 
-    config = action.get("config", {})
-    resource_profile = config.get("resourceProfile")
-    profile_definition = {}
-    if isinstance(resource_profile, dict) and "path" in resource_profile:
-      try:
-        selected_names = []
-        if resource_profile.get("name"):
-          selected_names = [resource_profile.get("name")]
+    action_props = action_item
+    action_type = None
+    if isinstance(action_item, dict):
+      if "pipeline" in action_item and isinstance(
+          action_item["pipeline"], dict
+      ):
+        action_props = action_item["pipeline"]
+        action_type = "pipeline"
+      elif "pyspark" in action_item and isinstance(
+          action_item["pyspark"], dict
+      ):
+        action_props = action_item["pyspark"]
+        action_type = "pyspark"
+      elif "notebook" in action_item and isinstance(
+          action_item["notebook"], dict
+      ):
+        action_props = action_item["notebook"]
+        action_type = "notebook"
+      elif "sql" in action_item and isinstance(action_item["sql"], dict):
+        action_props = action_item["sql"]
+        action_type = "sql"
+      elif "python" in action_item and isinstance(action_item["python"], dict):
+        action_props = action_item["python"]
+        action_type = "python"
+      elif len(action_item) == 1:
+        first_key = next(iter(action_item.keys()))
+        if isinstance(action_item[first_key], dict):
+          action_props = action_item[first_key]
+          action_type = first_key
 
-        loaded = _load_resource_profile(
-            resource_profile["path"],
-            names=selected_names,
-            context=combined_variables,
-        )
-        if loaded:
-          profile_definition = loaded[0]
-      except BadFileError as e:
-        # pylint: disable=raise-missing-from
-        raise BadFileError(f"Error processing resource profile: {e}")
-    engine_raw = action.get("engine")
-    if isinstance(engine_raw, dict):
-      engine_type = engine_raw.get("engineType")
+    if ARTIFACT_STORAGE_KEY in deployment and action_type in [
+        "pyspark",
+        "notebook",
+    ]:
+      action_props["staging_bucket"] = deployment[ARTIFACT_STORAGE_KEY][
+          "bucket"
+      ]
+
+    engine = action_props.get("engine", {})
+    framework = action_props.get("framework", {})
+
+    if isinstance(engine, dict):
+      engine_type = next(iter(engine.keys()), None)
     else:
-      engine_type = engine_raw
-    if engine_type == "dataproc-serverless":
-      config["resourceProfile"] = profile_definition.get("definition", {})
-    elif engine_type == "dataproc-gce":
-      config.pop("resourceProfile", None)
-      config.update(profile_definition.get("definition", {}))
+      engine_type = engine
 
-    if engine_type == "dbt":
-      source = config.setdefault("source", {})
-      raw_path = source.get("path", "")
-      gcs_path, clean_path = _get_updated_path_info(raw_path, bundle_dag_prefix)
-      if gcs_path:
-        source["path"] = gcs_path
-        action["_local_dag_upload_path"] = clean_path
-    if engine_type == "dataform":
-      raw_path = config.get("dataformProjectPath", "")
-      gcs_path, clean_path = _get_updated_path_info(raw_path, bundle_dag_prefix)
-      if gcs_path:
-        config["dataformProjectPath"] = gcs_path
-        action["_local_dag_upload_path"] = clean_path
+    # Handle Dataproc Serverless ---
+    if engine_type == "dataprocServerless":
+      dp_serverless = engine["dataprocServerless"]
+      if "resourceProfile" in dp_serverless:
+        dp_serverless["resourceProfile"] = _resolve_resource_profile(
+            dp_serverless["resourceProfile"], combined_variables
+        )
+
+    # Handle Dataproc on GCE (Ephemeral) ---
+    elif engine_type == "dataprocOnGce":
+      ephemeral_cluster = engine[engine_type].get("ephemeralCluster", {})
+      if "resourceProfile" in ephemeral_cluster:
+        ephemeral_cluster["resourceProfile"] = _resolve_resource_profile(
+            ephemeral_cluster["resourceProfile"], combined_variables
+        )
+
+    # Extract Local Upload Paths for Frameworks, SQL, and Python ---
+    raw_upload_path = None
+
+    if "dbt" in framework:
+      raw_upload_path = (
+          framework["dbt"]
+          .setdefault("airflowWorker", {})
+          .get("projectDirectoryPath", "")
+      )
+    elif "dataform" in framework:
+      raw_upload_path = (
+          framework["dataform"]
+          .setdefault("airflowWorker", {})
+          .get("projectDirectoryPath", "")
+      )
+    elif action_type == "sql":
+      raw_upload_path = action_props.get("query", {}).get("path", "")
+    elif action_type == "python":
+      main_file = action_props.get("mainFilePath", "")
+      if main_file and not main_file.startswith("gs://"):
+        raw_upload_path = main_file
+
+    if raw_upload_path:
+      clean_path = (
+          raw_upload_path[2:]
+          if raw_upload_path.startswith("./")
+          else raw_upload_path
+      )
+      action_item["_local_framework_upload_path"] = clean_path
 
   return yaml_content
 
@@ -201,7 +250,7 @@ def _load_resource_profile(
   try:
     raw_content = files.ReadFileContents(path)
     if context:
-      raw_content = _resolve_string_templates(raw_content, context)
+      raw_content = resolve_string_templates(raw_content, context)
     profile_data = yaml.load(raw_content)
   except (IOError, OSError, yaml.Error) as e:
     raise BadFileError(
@@ -284,6 +333,125 @@ def _expand_environment_resources(
   env_model.resources = expanded_resources
 
 
+def _build_orchestration_pipelines_model(resolved_pipeline: Dict[str, Any]):
+  """Validates a pipeline definition against a specific model version.
+
+  This function extracts the 'model_version' from the provided definition,
+  selects the corresponding Orchestration Pipelines model, and performs
+  validation.
+
+  Args:
+    resolved_pipeline: The parsed YAML content of the pipeline.
+
+  Raises:
+    exceptions.Error: If the pipeline definition fails to build against the
+      model.
+  """
+
+  pipeline_id = resolved_pipeline.get("pipelineId") or resolved_pipeline.get(
+      "pipeline_id"
+  )
+
+  error_message_prefix = (
+      f"Pipeline configuration for '{pipeline_id}' is invalid. Please address"
+      " the following issues:\n"
+  )
+
+  from orchestration_pipelines_models.orchestration_pipelines_model import OrchestrationPipelinesModel  # pylint: disable=g-import-not-at-top
+  try:
+    OrchestrationPipelinesModel.build(resolved_pipeline)
+  except ExceptionGroup as e:
+    # Due to nested nature of validation exceptions for attrs classes, we need
+    # to handle the error message aggregation manually.
+    errors = _extract_nested_errors(e)
+    error_message = "\n".join("  - " + error for error in errors)
+    raise exceptions.Error(f"{error_message_prefix}{error_message}") from e
+  except (ValueError, TypeError) as e:
+    error_message = str(e)
+    raise exceptions.Error(f"{error_message_prefix}{error_message}") from e
+
+
+def _extract_nested_errors(exc: BaseException, path: str = "$") -> list[str]:
+  """Recursively transforms validation exceptions into formatted error messages.
+
+  If the exception contains nested exceptions (i.e., has an `exceptions`
+  attribute), it traverses them to build a list of all errors. It uses
+  `__notes__` attached to exceptions to construct a path to the error
+  location (e.g., '$.field[0]').
+
+  Args:
+    exc: The validation exception, potentially containing nested exceptions.
+    path: The current JSON-like path to the error location.
+
+  Returns:
+    A list of error strings, each formatted as "path: error message".
+  """
+  errors = []
+  if not isinstance(exc, ExceptionGroup):
+    errors.append(f"{path}: {str(exc)}")
+    return errors
+
+  excs_with_notes = []
+  other_excs = []
+  for subexc in exc.exceptions:
+    note_found = False
+    if hasattr(subexc, "__notes__"):
+      for note in subexc.__notes__:
+        if hasattr(note, "name") and hasattr(note, "type"):
+          excs_with_notes.append((subexc, note))
+          note_found = True
+          break
+        elif hasattr(note, "index") and hasattr(note, "type"):
+          excs_with_notes.append((subexc, note))
+          note_found = True
+          break
+    if not note_found:
+      other_excs.append(subexc)
+
+  for subexc, note in excs_with_notes:
+    if hasattr(note, "name"):
+      p = f"{path}.{note.name}"
+    else:
+      p = f"{path}[{note.index!r}]"
+
+    if isinstance(subexc, ExceptionGroup):
+      errors.extend(_extract_nested_errors(subexc, p))
+    else:
+      errors.append(f"{p}: {str(subexc)}")
+
+  for subexc in other_excs:
+    if isinstance(subexc, ExceptionGroup):
+      errors.extend(_extract_nested_errors(subexc, path))
+    else:
+      errors.append(f"{path}: {str(subexc)}")
+  return errors
+
+
+def resolve_string_templates(yaml_content, variables):
+  for key, value in variables.items():
+    placeholder_pattern = r"{{\s*" + re.escape(key) + r"\s*}}"
+    # Use a lambda to evaluate str(value) only if a match is found.
+    # This allows passing objects that raise errors on __str__ conversion
+    # to control when that error occurs (only if used).
+    yaml_content = re.sub(
+        placeholder_pattern, lambda m, v=value: str(v), yaml_content
+    )
+  return yaml_content
+
+
+def check_for_missing_variables(content):
+  """Checks if there are any unsubstituted variables in the content."""
+  pattern = r"{{\s*([A-Za-z0-9_]+)\s*}}"
+  match = re.search(pattern, content)
+  if match:
+    var_name = match.group(1)
+    raise BadFileError(
+        f"Variable '{var_name}' not found in deployment file 'deployment.yaml' "
+        "variables section, nor in environment variables "
+        f"(as _DEPLOY_VAR_{var_name})."
+    )
+
+
 def load_environment(
     deployment_path: str,
     env: str,
@@ -304,31 +472,63 @@ def load_environment(
 
     pre_deployment_yaml = yaml.load(masked_content)
 
-    # Extract internal variables
-    internal_variables = {}
+    # Extract resolved variables
+    resolved_variables = {}
+    env_dict = {}
     if (
         pre_deployment_yaml
         and ENVIRONMENTS_KEY in pre_deployment_yaml
         and env in pre_deployment_yaml[ENVIRONMENTS_KEY]
-        and VARIABLES_KEY in pre_deployment_yaml[ENVIRONMENTS_KEY][env]
     ):
+      env_dict = pre_deployment_yaml[ENVIRONMENTS_KEY][env]
+
+    if VARIABLES_KEY in env_dict:
       # We need to revert the masking in the values of variables if they had any
-      raw_vars = pre_deployment_yaml[ENVIRONMENTS_KEY][env][VARIABLES_KEY] or {}
+      raw_vars = env_dict[VARIABLES_KEY] or {}
       for k, v in raw_vars.items():
         if isinstance(v, str):
-          internal_variables[k] = v.replace("__OPEN_TAG__", "{{").replace(
-              "__CLOSE_TAG__", "}}")
+          resolved_variables[k] = v.replace("__OPEN_TAG__", "{{").replace(
+              "__CLOSE_TAG__", "}}"
+          )
         else:
-          internal_variables[k] = v
+          resolved_variables[k] = v
 
     if external_variables:
-      internal_variables.update(external_variables)
+      resolved_variables.update(external_variables)
+
+    if SECRETS_KEY in env_dict:
+      raw_secrets = env_dict[SECRETS_KEY] or {}
+      if raw_secrets:
+        sm_version = apis.ResolveVersion("secretmanager")
+        client = apis.GetClientInstance("secretmanager", sm_version)
+        messages = apis.GetMessagesModule("secretmanager", sm_version)
+        for k, secret_name in raw_secrets.items():
+          if k in resolved_variables:
+            continue
+          if isinstance(secret_name, str):
+            secret_name = secret_name.replace("__OPEN_TAG__", "{{").replace(
+                "__CLOSE_TAG__", "}}"
+            )
+            secret_name = resolve_string_templates(
+                secret_name, resolved_variables
+            )
+          try:
+            req = messages.SecretmanagerProjectsSecretsVersionsAccessRequest(
+                name=secret_name
+            )
+            response = client.projects_secrets_versions.Access(req)
+            resolved_variables[k] = response.payload.data.decode("utf-8")
+          except Exception as e:
+            raise BadFileError(
+                f"Failed to fetch secret '{secret_name}' from Secret Manager:"
+                f" {e}"
+            ) from e
 
     # 3. Substitute on raw content
-    resolved_content = _resolve_string_templates(
-        yaml_content, internal_variables)
+    resolved_content = resolve_string_templates(
+        yaml_content, resolved_variables)
 
-    _check_for_missing_variables(resolved_content)
+    check_for_missing_variables(resolved_content)
 
     # 4. Final Parse
     deployment_yaml = yaml.load(resolved_content)
@@ -347,7 +547,7 @@ def load_environment(
 
   # Expand resources after building the model
   _expand_environment_resources(
-      environments[env], deployment_path, context=internal_variables
+      environments[env], deployment_path, context=resolved_variables
   )
 
   return environments[env]
@@ -417,7 +617,56 @@ def parse_deployment(
     result["composer_env"] = environment.composer_environment
   if environment.pipelines:
     result["pipelines"] = environment.pipelines
-  if environment.variables:
+  if getattr(environment, "variables", None):
     result["variables"] = environment.variables
+  if getattr(environment, "secrets", None):
+    result["secrets"] = environment.secrets
 
   return result
+
+
+def collect_environment_variables() -> dict[str, str]:
+  """Collects variables from environment variables with _DEPLOY_VAR_ prefix.
+
+  Returns:
+      A dictionary containing environment variables starting with
+      _DEPLOY_VAR_ prefix.
+  """
+  env_vars = {}
+  for key, value in os.environ.items():
+    if key.startswith("_DEPLOY_VAR_"):
+      env_vars[key[len("_DEPLOY_VAR_") :]] = value
+  return env_vars
+
+
+def validate_pipeline_l1(
+    bundle_dir: pathlib.Path,
+    environment: deployment_model.EnvironmentModel,
+    combined_variables: Dict[str, Any] = None,
+) -> None:
+  """Syntax validation(L1) for the orchestration pipeline configuration."""
+
+  for pipeline in environment.pipelines:
+    pipeline_path = bundle_dir / pipeline.source
+
+    try:
+      yaml_content = files.ReadFileContents(pipeline_path)
+    except files.Error as e:
+      raise calliope_exceptions.BadFileException(
+          f"Error reading {pipeline_path.name}: {e}"
+      ) from e
+
+    resolved_yaml_content = resolve_string_templates(
+        yaml_content, combined_variables
+    )
+    check_for_missing_variables(resolved_yaml_content)
+
+    try:
+      resolved_yaml_content = yaml.load(resolved_yaml_content)
+    except yaml.Error as e:
+      raise calliope_exceptions.BadFileException(
+          f"Failed to parse pipeline YAML after variable substitution: {e}"
+      ) from e
+
+    _build_orchestration_pipelines_model(resolved_yaml_content)
+    log.status.Print(f"Successfully validated pipeline {pipeline.source}.")

@@ -49,6 +49,9 @@ class IamV1(base_api.BaseApiClient):
     self.locations_workforcePools_subjects = self.LocationsWorkforcePoolsSubjectsService(self)
     self.locations_workforcePools = self.LocationsWorkforcePoolsService(self)
     self.locations = self.LocationsService(self)
+    self.organizations_locations_workloadIdentityPools_operations = self.OrganizationsLocationsWorkloadIdentityPoolsOperationsService(self)
+    self.organizations_locations_workloadIdentityPools = self.OrganizationsLocationsWorkloadIdentityPoolsService(self)
+    self.organizations_locations = self.OrganizationsLocationsService(self)
     self.organizations_roles = self.OrganizationsRolesService(self)
     self.organizations = self.OrganizationsService(self)
     self.permissions = self.PermissionsService(self)
@@ -710,6 +713,33 @@ class IamV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def SuggestClaimMapping(self, request, global_params=None):
+      r"""Suggests a SCIM Tenant claim mapping based on the parent provider attribute mapping.
+
+      Args:
+        request: (IamLocationsWorkforcePoolsProvidersScimTenantsSuggestClaimMappingRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SuggestScimTenantClaimMappingResponse) The response message.
+      """
+      config = self.GetMethodConfig('SuggestClaimMapping')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SuggestClaimMapping.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants:suggestClaimMapping',
+        http_method='GET',
+        method_id='iam.locations.workforcePools.providers.scimTenants.suggestClaimMapping',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['intendedScimUsage'],
+        relative_path='v1/{+parent}/scimTenants:suggestClaimMapping',
+        request_field='',
+        request_type_name='IamLocationsWorkforcePoolsProvidersScimTenantsSuggestClaimMappingRequest',
+        response_type_name='SuggestScimTenantClaimMappingResponse',
+        supports_download=False,
+    )
+
     def Undelete(self, request, global_params=None):
       r"""Gemini Enterprise only. Undeletes a WorkforcePoolProviderScimTenant, that was deleted fewer than 30 days ago.
 
@@ -1297,6 +1327,117 @@ class IamV1(base_api.BaseApiClient):
 
     def __init__(self, client):
       super(IamV1.LocationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class OrganizationsLocationsWorkloadIdentityPoolsOperationsService(base_api.BaseApiService):
+    """Service class for the organizations_locations_workloadIdentityPools_operations resource."""
+
+    _NAME = 'organizations_locations_workloadIdentityPools_operations'
+
+    def __init__(self, client):
+      super(IamV1.OrganizationsLocationsWorkloadIdentityPoolsOperationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.
+
+      Args:
+        request: (IamOrganizationsLocationsWorkloadIdentityPoolsOperationsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/organizations/{organizationsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/operations/{operationsId}',
+        http_method='GET',
+        method_id='iam.organizations.locations.workloadIdentityPools.operations.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='IamOrganizationsLocationsWorkloadIdentityPoolsOperationsGetRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class OrganizationsLocationsWorkloadIdentityPoolsService(base_api.BaseApiService):
+    """Service class for the organizations_locations_workloadIdentityPools resource."""
+
+    _NAME = 'organizations_locations_workloadIdentityPools'
+
+    def __init__(self, client):
+      super(IamV1.OrganizationsLocationsWorkloadIdentityPoolsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets an individual WorkloadIdentityPool.
+
+      Args:
+        request: (IamOrganizationsLocationsWorkloadIdentityPoolsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (WorkloadIdentityPool) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/organizations/{organizationsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}',
+        http_method='GET',
+        method_id='iam.organizations.locations.workloadIdentityPools.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='IamOrganizationsLocationsWorkloadIdentityPoolsGetRequest',
+        response_type_name='WorkloadIdentityPool',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists all non-deleted WorkloadIdentityPools in a project. If `show_deleted` is set to `true`, then deleted pools are also listed.
+
+      Args:
+        request: (IamOrganizationsLocationsWorkloadIdentityPoolsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListWorkloadIdentityPoolsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/organizations/{organizationsId}/locations/{locationsId}/workloadIdentityPools',
+        http_method='GET',
+        method_id='iam.organizations.locations.workloadIdentityPools.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken', 'showDeleted'],
+        relative_path='v1/{+parent}/workloadIdentityPools',
+        request_field='',
+        request_type_name='IamOrganizationsLocationsWorkloadIdentityPoolsListRequest',
+        response_type_name='ListWorkloadIdentityPoolsResponse',
+        supports_download=False,
+    )
+
+  class OrganizationsLocationsService(base_api.BaseApiService):
+    """Service class for the organizations_locations resource."""
+
+    _NAME = 'organizations_locations'
+
+    def __init__(self, client):
+      super(IamV1.OrganizationsLocationsService, self).__init__(client)
       self._upload_configs = {
           }
 

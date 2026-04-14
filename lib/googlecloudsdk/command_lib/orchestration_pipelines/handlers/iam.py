@@ -23,6 +23,12 @@ from googlecloudsdk.command_lib.orchestration_pipelines.handlers import base
 class IamServiceAccountHandler(base.GcpResourceHandler):
   """Handler for deploying IAM Service Accounts."""
   api_prefix = "projects"
+  description = (
+      "IAM Service Accounts.\n"
+      "Special handling:\n"
+      " - resource ID: implicitly formatted as email address "
+      "({name}@{project}.iam.gserviceaccount.com) for API requests"
+  )
 
   def _get_location_path(self) -> str:
     return f"projects/{self.environment.project}"
@@ -30,7 +36,6 @@ class IamServiceAccountHandler(base.GcpResourceHandler):
   def build_create_request(
       self, resource_message: messages.Message
   ) -> messages.Message:
-    project_name = f"projects/{self.environment.project}"
     account_id = self.resource.name
 
     create_request = self.messages.CreateServiceAccountRequest(
@@ -38,13 +43,14 @@ class IamServiceAccountHandler(base.GcpResourceHandler):
     )
 
     return self.messages.IamProjectsServiceAccountsCreateRequest(
-        name=project_name, createServiceAccountRequest=create_request
+        name=self._get_location_path(),
+        createServiceAccountRequest=create_request,
     )
 
   def build_get_request(self) -> Any:
-    email = f"{self.resource.name}@{self.environment.project}.iam.gserviceaccount.com"
-    name = f"projects/{self.environment.project}/serviceAccounts/{email}"
-    return self.messages.IamProjectsServiceAccountsGetRequest(name=name)
+    return self.messages.IamProjectsServiceAccountsGetRequest(
+        name=self._get_resource_name()
+    )
 
   def build_update_request(
       self,
@@ -67,15 +73,16 @@ class IamServiceAccountHandler(base.GcpResourceHandler):
 class IamServiceAccountIamPolicyHandler(base.GcpResourceHandler):
   """Handler for deploying IAM Service Account policies."""
 
+  description = "IAM Service Account policies."
   api_client_collection_path = "projects_serviceAccounts"
+  collection_name = "serviceAccounts"
 
   @property
   def resource_message_type(self) -> type[messages.Message]:
     return self.messages.Policy
 
-  def _get_service_account_resource_name(self) -> str:
-    email = f"{self.resource.name}@{self.environment.project}.iam.gserviceaccount.com"
-    return f"projects/{self.environment.project}/serviceAccounts/{email}"
+  def _get_location_path(self) -> str:
+    return f"projects/{self.environment.project}"
 
   def build_create_request(
       self, resource_message: messages.Message
@@ -83,7 +90,7 @@ class IamServiceAccountIamPolicyHandler(base.GcpResourceHandler):
     # Requires special client handling since SetIamPolicy returns a Policy
 
     return self.messages.IamProjectsServiceAccountsSetIamPolicyRequest(
-        resource=self._get_service_account_resource_name(),
+        resource=self._get_resource_name(),
         setIamPolicyRequest=self.messages.SetIamPolicyRequest(
             policy=resource_message
         ),
@@ -91,7 +98,7 @@ class IamServiceAccountIamPolicyHandler(base.GcpResourceHandler):
 
   def build_get_request(self) -> Any:
     return self.messages.IamProjectsServiceAccountsGetIamPolicyRequest(
-        resource=self._get_service_account_resource_name()
+        resource=self._get_resource_name()
     )
 
   def build_update_request(
@@ -102,7 +109,7 @@ class IamServiceAccountIamPolicyHandler(base.GcpResourceHandler):
   ) -> messages.Message:
 
     return self.messages.IamProjectsServiceAccountsSetIamPolicyRequest(
-        resource=self._get_service_account_resource_name(),
+        resource=self._get_resource_name(),
         setIamPolicyRequest=self.messages.SetIamPolicyRequest(
             policy=resource_message
         ),
@@ -117,9 +124,14 @@ class IamServiceAccountIamPolicyHandler(base.GcpResourceHandler):
   def get_update_method(self) -> Any:
     return self._api_client_collection.SetIamPolicy
 
+  def get_resource_id(self) -> str:
+    return f"{self.resource.name}@{self.environment.project}.iam.gserviceaccount.com"
+
 
 class IamWorkloadIdentityPoolHandler(base.GcpResourceHandler):
   """Handler for deploying IAM Workload Identity Pools."""
+
+  description = "IAM Workload Identity Pools."
 
   def build_create_request(
       self, resource_message: messages.Message
@@ -151,7 +163,9 @@ class IamWorkloadIdentityPoolHandler(base.GcpResourceHandler):
 class IamWorkloadIdentityPoolProviderHandler(base.GcpResourceHandler):
   """Handler for deploying IAM Workload Identity Pool Providers."""
 
+  description = "IAM Workload Identity Pool Providers."
   collection_name = "providers"
+  _documentation_uri = "https://cloud.google.com/iam/docs/reference/rest/v1/projects.locations.workloadIdentityPools.providers"
 
   def _get_parent_path(self) -> str:
     return f"{self._get_location_path()}/workloadIdentityPools/{self.get_validated_parent_id()}"

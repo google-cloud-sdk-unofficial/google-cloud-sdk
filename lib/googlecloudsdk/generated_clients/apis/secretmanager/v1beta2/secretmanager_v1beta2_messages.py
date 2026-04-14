@@ -564,8 +564,11 @@ class OperationMetadata(_messages.Message):
 
   Fields:
     apiVersion: Output only. API version used to start the operation.
-    createTime: Output only. The time the operation was created.
-    endTime: Output only. The time the operation finished running.
+    createTime: Output only. Time the operation was created.
+    endTime: Output only. Time the operation finished running.
+    progress: Output only. Represents the progress of the operation. This
+      field is populated for operations that involve processing multiple
+      secret versions.
     requestedCancellation: Output only. Identifies whether the user has
       requested cancellation of the operation. Operations that have been
       cancelled successfully have google.longrunning.Operation.error value
@@ -580,10 +583,11 @@ class OperationMetadata(_messages.Message):
   apiVersion = _messages.StringField(1)
   createTime = _messages.StringField(2)
   endTime = _messages.StringField(3)
-  requestedCancellation = _messages.BooleanField(4)
-  statusMessage = _messages.StringField(5)
-  target = _messages.StringField(6)
-  verb = _messages.StringField(7)
+  progress = _messages.MessageField('Progress', 4)
+  requestedCancellation = _messages.BooleanField(5)
+  statusMessage = _messages.StringField(6)
+  target = _messages.StringField(7)
+  verb = _messages.StringField(8)
 
 
 class Policy(_messages.Message):
@@ -662,6 +666,24 @@ class Policy(_messages.Message):
   bindings = _messages.MessageField('Binding', 2, repeated=True)
   etag = _messages.BytesField(3)
   version = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+
+
+class Progress(_messages.Message):
+  r"""Represents progress information for operations involving multiple secret
+  versions.
+
+  Fields:
+    completedVersionCount: Output only. Number of secret versions that have
+      been successfully processed so far.
+    failedVersionCount: Output only. Number of secret versions that failed to
+      process.
+    totalVersionCount: Output only. Provides the total number of secret
+      versions to be processed by the operation.
+  """
+
+  completedVersionCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  failedVersionCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  totalVersionCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
 
 
 class Replica(_messages.Message):

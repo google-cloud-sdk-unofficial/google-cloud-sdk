@@ -24,18 +24,17 @@ from clients import utils as bq_client_utils
 
 _NUM_RETRIES_FOR_SERVER_SIDE_ERRORS = 3
 
-_BQ_CLI_USER_AGENT_COMMAND: Optional[str] = None
-
-
-def SetBqCliUserAgentCommand(command: Optional[str]):
-  """Sets the BQ CLI user agent command."""
-  global _BQ_CLI_USER_AGENT_COMMAND
-  _BQ_CLI_USER_AGENT_COMMAND = f'bq.{command}' if command else None
-
 
 # pylint: disable=protected-access
 
 _ORIGINAL_GOOGLEAPI_CLIENT_RETRY_REQUEST = http_request._retry_request
+
+
+def _GetErrorMessage(content) -> str:
+  data = json.loads(content.decode('utf-8'))
+  if isinstance(data, dict) and 'message' in data['error']:
+    return data['error']['message']
+  return ''
 
 
 # Note: All the `Optional` added here is to support tests.
@@ -76,31 +75,49 @@ def _RetryRequest(
       http, num_retries, req_type, sleep, rand, uri, method, *args, **kwargs
   )
   if int(resp.status) == 403:
-    data = json.loads(content.decode('utf-8'))
-    if isinstance(data, dict) and 'message' in data['error']:
-      err_message = data['error']['message']
-      if 'roles/serviceusage.serviceUsageConsumer' in err_message:
-        if 'headers' in kwargs and 'x-goog-user-project' in kwargs['headers']:
-          del kwargs['headers']['x-goog-user-project']
-          logging.info(
-              'Retrying request without the x-goog-user-project header'
-          )
-          resp, content = _ORIGINAL_GOOGLEAPI_CLIENT_RETRY_REQUEST(
-              http,
-              num_retries,
-              req_type,
-              sleep,
-              rand,
-              uri,
-              method,
-              *args,
-              **kwargs,
-          )
+    if 'roles/serviceusage.serviceUsageConsumer' in _GetErrorMessage(content):
+      if 'headers' in kwargs and 'x-goog-user-project' in kwargs['headers']:
+        del kwargs['headers']['x-goog-user-project']
+        logging.info('Retrying request without the x-goog-user-project header')
+        new_resp, new_content = _ORIGINAL_GOOGLEAPI_CLIENT_RETRY_REQUEST(
+            http,
+            num_retries,
+            req_type,
+            sleep,
+            rand,
+            uri,
+            method,
+            *args,
+            **kwargs,
+        )
+        # Report previous error if the new error is not informative
+        if (int(new_resp.status) != 403) or (
+            'missing `x-goog-user-project` header'
+            not in _GetErrorMessage(new_content)
+        ):
+          return new_resp, new_content
   return resp, content
 
 
 http_request._retry_request = _RetryRequest
 # pylint: enable=protected-access
+
+
+def _UpdateUserAgentInHeaders(headers: Dict[str, str]) -> None:
+  """Updates the user-agent header with BigQuery CLI specific components."""
+  user_agent = headers.get('user-agent', '')
+  bq_user_agent = bq_utils.GetUserAgent()
+  bq_component = bq_utils.GetBqCliUserAgentComponent()
+
+  parts = []
+  if bq_user_agent.lower() not in user_agent.lower():
+    parts.append(bq_user_agent)
+  if user_agent:
+    parts.append(user_agent)
+  if bq_component and bq_component.lower() not in user_agent.lower():
+    parts.append(bq_component)
+
+  headers['user-agent'] = ' '.join(parts)
 
 
 class BigqueryModel(model.JsonModel):
@@ -149,15 +166,7 @@ class BigqueryModel(model.JsonModel):
     if 'trace' not in query_params and self.trace:
       headers['cookie'] = self.trace
 
-    if 'user-agent' not in headers:
-      headers['user-agent'] = ''
-
-    user_agents = [
-        bq_utils.GetUserAgent(),
-        headers['user-agent'],
-        _BQ_CLI_USER_AGENT_COMMAND,
-    ]
-    headers['user-agent'] = ' '.join([s for s in user_agents if s])
+    _UpdateUserAgentInHeaders(headers)
 
     if self.quota_project_id:
       headers['x-goog-user-project'] = self.quota_project_id
@@ -220,11 +229,7 @@ class BigqueryHttp(http_request.HttpRequest):
 
       # Set user-agent if not already set in BigqueryModel.request, e.g. for
       # DELETE requests.
-      user_agent = kwds['headers'].get('user-agent', '')
-      bq_user_agent = bq_utils.GetUserAgent()
-      if str.lower(bq_user_agent) not in str.lower(user_agent):
-        user_agent = ' '.join([bq_user_agent, user_agent])
-        kwds['headers']['user-agent'] = user_agent.strip()
+      _UpdateUserAgentInHeaders(kwds['headers'])
 
       if (
           'x-goog-user-project' not in kwds['headers']

@@ -208,12 +208,11 @@ class GitContext:
 
     return final_hasher.hexdigest()[:12]
 
-  def CheckAncestry(self, remote_sha, env):
+  def CheckAncestry(self, remote_sha):
     """Verifies that the remote version is an ancestor of the local version.
 
     Args:
       remote_sha: The git commit hash of the remote version.
-      env: The target environment for the deployment.
 
     Returns:
       True if the remote_sha is an ancestor of local_sha, or if the check is
@@ -238,12 +237,6 @@ class GitContext:
           ["git", "cat-file", "-t", remote_sha],
       )
     except self._subprocess.CalledProcessError:
-      if env == "dev":
-        log.warning(
-            "Remote version %s unknown locally. Proceeding (DEV mode).",
-            remote_sha,
-        )
-        return True
       log.error("Remote version %s not found in local git history.", remote_sha)
       return False
 
@@ -259,14 +252,6 @@ class GitContext:
       )
       return True
     except self._subprocess.CalledProcessError:
-      if env == "dev":
-        log.warning(
-            "Regression detected: Remote version %s is ahead of local version"
-            " %s. Proceeding (DEV mode).",
-            remote_sha,
-            self._version,
-        )
-        return True
       log.error(
           "REGRESSION BLOCKED: The remote version (%s) is ahead of your local"
           " version (%s). Please pull the latest changes before deploying.",
@@ -275,12 +260,11 @@ class GitContext:
       )
       return False
 
-  def ValidateAncestryOrRaise(self, remote_version, env, bypass=False):
+  def ValidateAncestryOrRaise(self, remote_version, bypass=False):
     """Validates that the remote version in the manifest is safe to overwrite.
 
     Args:
       remote_version: The git commit hash of the remote version.
-      env: The target environment for the deployment.
       bypass: If True, skips the ancestry check (rollbacks).
 
     Returns:
@@ -298,7 +282,7 @@ class GitContext:
       )
       return remote_version
 
-    if not self.CheckAncestry(remote_version, env):
+    if not self.CheckAncestry(remote_version):
       raise GitError(
           f"REGRESSION BLOCKED: The remote version ({remote_version}) "
           "is ahead of or divergent from your local version.\n"
@@ -355,9 +339,9 @@ class GitContext:
 
     return {
         "origination": "GIT",
-        "deployment_details": {
-            "git_repo": git_repo,
-            "git_branch": git_branch,
-            "commit_sha": str(version_id),
+        "deploymentDetails": {
+            "gitRepo": git_repo,
+            "gitBranch": git_branch,
+            "commitSha": str(version_id),
         },
     }

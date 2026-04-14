@@ -14,7 +14,6 @@
 # limitations under the License.
 """Command for creating network policy associations."""
 
-
 from typing import ClassVar
 
 from googlecloudsdk.api_lib.compute import base_classes
@@ -25,7 +24,7 @@ from googlecloudsdk.command_lib.compute.network_policies import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a new association between a network policy and a network.
 
@@ -71,7 +70,8 @@ class Create(base.CreateCommand):
 
 
 Create.detailed_help = {
-    'EXAMPLES': """\
+    'EXAMPLES': (
+        """\
     To associate a network policy with name ``my-region-policy'' in
     region ``region-a'' to network ``my-network'' with an association
     named ``my-association'', run:
@@ -81,5 +81,6 @@ Create.detailed_help = {
           --network-policy-region=region-a
           --network=my-network
           --name=my-association
-    """,
+    """
+    ),
 }

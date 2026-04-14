@@ -7861,11 +7861,15 @@ class Role(_messages.Message):
 
 
 class Rollout(_messages.Message):
-  r"""Rollout contains the Rollout metadata and configuration.
+  r"""Rollout contains the Rollout metadata and configuration. Next ID: 28
 
   Enums:
+    IntentValueValuesEnum: Output only. The intent of the rollout.
     StateValueValuesEnum: Output only. State specifies various states of the
       Rollout.
+    StateReasonTypeValueValuesEnum: Output only. StateReasonType specifies the
+      reason type of the Rollout state.
+    TriggerValueValuesEnum: Output only. The trigger of the rollout.
 
   Messages:
     AnnotationsValue: Optional. Annotations for this Rollout.
@@ -7888,6 +7892,7 @@ class Rollout(_messages.Message):
     excludedClusters: Optional. Output only. The excluded clusters from the
       rollout.
     feature: Optional. Feature config to use for Rollout.
+    intent: Output only. The intent of the rollout.
     labels: Optional. Labels for this Rollout.
     lastPauseTime: Output only. The timestamp at which the Rollout was last
       paused.
@@ -7909,6 +7914,11 @@ class Rollout(_messages.Message):
     state: Output only. State specifies various states of the Rollout.
     stateReason: Output only. A human-readable description explaining the
       reason for the current state.
+    stateReasonType: Output only. StateReasonType specifies the reason type of
+      the Rollout state.
+    systemConfigIgnored: Output only. If set, the Rollout should progress
+      despite a GKE freeze, rollout being halted or other external reasons.
+    trigger: Output only. The trigger of the rollout.
     uid: Output only. Google-generated UUID for this resource. This is unique
       across all Rollout resources. If a Rollout resource is deleted and
       another resource with the same name is created, it gets a different uid.
@@ -7916,6 +7926,39 @@ class Rollout(_messages.Message):
       updated.
     versionUpgrade: Optional. Config for version upgrade of clusters.
   """
+
+  class IntentValueValuesEnum(_messages.Enum):
+    r"""Output only. The intent of the rollout.
+
+    Values:
+      ROLLOUT_INTENT_UNSPECIFIED: The default value.
+      REGULAR_UPGRADE: A standard rollout.
+      FORCE_PATCH: A mandatory upgrade for clusters that haven't been patched
+        within the allowed window.
+      END_OF_LIFE_ENFORCEMENT: A mandatory upgrade for clusters that have
+        reached its end of support.
+    """
+    ROLLOUT_INTENT_UNSPECIFIED = 0
+    REGULAR_UPGRADE = 1
+    FORCE_PATCH = 2
+    END_OF_LIFE_ENFORCEMENT = 3
+
+  class StateReasonTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. StateReasonType specifies the reason type of the Rollout
+    state.
+
+    Values:
+      STATE_REASON_TYPE_UNSPECIFIED: Unspecified state reason.
+      PAUSED_BY_USER: Paused by the user.
+      PAUSED_BY_SYSTEM_CONFIG: Paused by the RSv2 Orchestrator due to system
+        config(ex. GKE freeze).
+      PAUSED_WAITING_FOR_NEXT_STAGE: Paused waiting for the next stage to
+        start.
+    """
+    STATE_REASON_TYPE_UNSPECIFIED = 0
+    PAUSED_BY_USER = 1
+    PAUSED_BY_SYSTEM_CONFIG = 2
+    PAUSED_WAITING_FOR_NEXT_STAGE = 3
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. State specifies various states of the Rollout.
@@ -7934,6 +7977,18 @@ class Rollout(_messages.Message):
     CANCELLED = 3
     COMPLETED = 4
     SCHEDULED = 5
+
+  class TriggerValueValuesEnum(_messages.Enum):
+    r"""Output only. The trigger of the rollout.
+
+    Values:
+      ROLLOUT_TRIGGER_UNSPECIFIED: The default value.
+      USER: A user-initiated rollout.
+      GKE: A Google-triggered rollout.
+    """
+    ROLLOUT_TRIGGER_UNSPECIFIED = 0
+    USER = 1
+    GKE = 2
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AnnotationsValue(_messages.Message):
@@ -8022,20 +8077,24 @@ class Rollout(_messages.Message):
   etag = _messages.StringField(7)
   excludedClusters = _messages.MessageField('ExcludedCluster', 8, repeated=True)
   feature = _messages.MessageField('FeatureUpdate', 9)
-  labels = _messages.MessageField('LabelsValue', 10)
-  lastPauseTime = _messages.StringField(11)
-  managedRolloutConfig = _messages.MessageField('ManagedRolloutConfig', 12)
-  membershipStates = _messages.MessageField('MembershipStatesValue', 13)
-  name = _messages.StringField(14)
-  rolloutSequence = _messages.StringField(15)
-  schedule = _messages.MessageField('Schedule', 16)
-  scheduledStartTime = _messages.StringField(17)
-  stages = _messages.MessageField('RolloutStage', 18, repeated=True)
-  state = _messages.EnumField('StateValueValuesEnum', 19)
-  stateReason = _messages.StringField(20)
-  uid = _messages.StringField(21)
-  updateTime = _messages.StringField(22)
-  versionUpgrade = _messages.MessageField('VersionUpgrade', 23)
+  intent = _messages.EnumField('IntentValueValuesEnum', 10)
+  labels = _messages.MessageField('LabelsValue', 11)
+  lastPauseTime = _messages.StringField(12)
+  managedRolloutConfig = _messages.MessageField('ManagedRolloutConfig', 13)
+  membershipStates = _messages.MessageField('MembershipStatesValue', 14)
+  name = _messages.StringField(15)
+  rolloutSequence = _messages.StringField(16)
+  schedule = _messages.MessageField('Schedule', 17)
+  scheduledStartTime = _messages.StringField(18)
+  stages = _messages.MessageField('RolloutStage', 19, repeated=True)
+  state = _messages.EnumField('StateValueValuesEnum', 20)
+  stateReason = _messages.StringField(21)
+  stateReasonType = _messages.EnumField('StateReasonTypeValueValuesEnum', 22)
+  systemConfigIgnored = _messages.BooleanField(23)
+  trigger = _messages.EnumField('TriggerValueValuesEnum', 24)
+  uid = _messages.StringField(25)
+  updateTime = _messages.StringField(26)
+  versionUpgrade = _messages.MessageField('VersionUpgrade', 27)
 
 
 class RolloutMembershipState(_messages.Message):
@@ -8074,6 +8133,8 @@ class RolloutSequence(_messages.Message):
     displayName: Optional. Human readable display name of the Rollout
       Sequence.
     etag: Output only. etag of the Rollout Sequence Ex. abc1234
+    ignoredClustersSelector: Optional. Selector for clusters to exclude from
+      the Rollout Sequence.
     labels: Optional. Labels for this Rollout Sequence.
     name: Identifier. Name of the rollout sequence in the format of:
       projects/{PROJECT_ID}/locations/global/rolloutSequences/{NAME}
@@ -8115,12 +8176,13 @@ class RolloutSequence(_messages.Message):
   deleteTime = _messages.StringField(2)
   displayName = _messages.StringField(3)
   etag = _messages.StringField(4)
-  labels = _messages.MessageField('LabelsValue', 5)
-  name = _messages.StringField(6)
-  stages = _messages.MessageField('Stage', 7, repeated=True)
-  state = _messages.MessageField('RolloutSequenceState', 8)
-  uid = _messages.StringField(9)
-  updateTime = _messages.StringField(10)
+  ignoredClustersSelector = _messages.MessageField('ClusterSelector', 5)
+  labels = _messages.MessageField('LabelsValue', 6)
+  name = _messages.StringField(7)
+  stages = _messages.MessageField('Stage', 8, repeated=True)
+  state = _messages.MessageField('RolloutSequenceState', 9)
+  uid = _messages.StringField(10)
+  updateTime = _messages.StringField(11)
 
 
 class RolloutSequenceState(_messages.Message):
@@ -8132,6 +8194,9 @@ class RolloutSequenceState(_messages.Message):
     StateReasonsValueListEntryValuesEnum:
 
   Fields:
+    lastStateChangeTime: Output only. The timestamp at which the
+      LifecycleState was last changed. Used to track how long it has been in
+      the current state.
     lifecycleState: Output only. Lifecycle state of the Rollout Sequence.
     stateReasons: Output only. StateReason represents the reason for the
       Rollout Sequence state.
@@ -8173,40 +8238,48 @@ class RolloutSequenceState(_messages.Message):
     MIXED_RELEASE_CHANNELS_WARNING = 4
     INTERNAL_ERROR = 5
 
-  lifecycleState = _messages.EnumField('LifecycleStateValueValuesEnum', 1)
-  stateReasons = _messages.EnumField('StateReasonsValueListEntryValuesEnum', 2, repeated=True)
+  lastStateChangeTime = _messages.StringField(1)
+  lifecycleState = _messages.EnumField('LifecycleStateValueValuesEnum', 2)
+  stateReasons = _messages.EnumField('StateReasonsValueListEntryValuesEnum', 3, repeated=True)
 
 
 class RolloutStage(_messages.Message):
   r"""Stage represents a single stage in the Rollout.
 
   Enums:
-    StateValueValuesEnum: Output only. The state of the wave.
+    StateValueValuesEnum: Output only. The state of the stage.
 
   Fields:
     clusterSelector: Output only. The selector from the sequence that was used
       to create this stage. Example CEL expression: resource.labels.canary ==
       'true'
-    endTime: Optional. Output only. The time at which the wave ended.
+    endTime: Optional. Output only. The time at which the stage ended.
     fleetProjects: Output only. The fleet projects from the sequence that was
       used to create this stage. Expected format: projects/{project_number}
-    soakDuration: Optional. Duration to soak after this wave before starting
-      the next wave.
-    stageNumber: Output only. The wave number to which this status applies.
-    startTime: Optional. Output only. The time at which the wave started.
-    state: Output only. The state of the wave.
+    runningPauseDuration: Output only. The duration for which the current
+      stage of the Rollout was paused by the user while the stage was in
+      `RUNNING` state.
+    soakDuration: Optional. Duration to soak after this stage before starting
+      the next stage.
+    soakingPauseDuration: Output only. The duration for which the current
+      stage of the Rollout was paused by the user while the stage was in
+      `SOAKING` state.
+    stageNumber: Output only. The stage number to which this status applies.
+    startTime: Optional. Output only. The time at which the stage started.
+    state: Output only. The state of the stage.
   """
 
   class StateValueValuesEnum(_messages.Enum):
-    r"""Output only. The state of the wave.
+    r"""Output only. The state of the stage.
 
     Values:
       STATE_UNSPECIFIED: Default value.
-      PENDING: The wave is pending.
-      RUNNING: The wave is running.
-      SOAKING: The wave is soaking.
-      COMPLETED: The wave is completed.
-      FORCED_SOAKING: The wave is force soaking.
+      PENDING: The stage is pending.
+      RUNNING: The stage is running.
+      SOAKING: The stage is soaking.
+      COMPLETED: The stage is completed.
+      FORCED_SOAKING: The stage is force soaking.
+      PAUSED: The stage is paused.
     """
     STATE_UNSPECIFIED = 0
     PENDING = 1
@@ -8214,14 +8287,17 @@ class RolloutStage(_messages.Message):
     SOAKING = 3
     COMPLETED = 4
     FORCED_SOAKING = 5
+    PAUSED = 6
 
   clusterSelector = _messages.MessageField('ClusterSelector', 1)
   endTime = _messages.StringField(2)
   fleetProjects = _messages.StringField(3, repeated=True)
-  soakDuration = _messages.StringField(4)
-  stageNumber = _messages.IntegerField(5, variant=_messages.Variant.INT32)
-  startTime = _messages.StringField(6)
-  state = _messages.EnumField('StateValueValuesEnum', 7)
+  runningPauseDuration = _messages.StringField(4)
+  soakDuration = _messages.StringField(5)
+  soakingPauseDuration = _messages.StringField(6)
+  stageNumber = _messages.IntegerField(7, variant=_messages.Variant.INT32)
+  startTime = _messages.StringField(8)
+  state = _messages.EnumField('StateValueValuesEnum', 9)
 
 
 class RolloutTarget(_messages.Message):
@@ -9215,10 +9291,12 @@ class ServiceMeshFeatureSpec(_messages.Message):
       MODERNIZATION_UNSPECIFIED: Unspecified.
       AUTOMATICALLY_MODERNIZED: Google should start modernization.
       BEFORE_MODERNIZATION: Google should rollback fleet.
+      COMPATIBILITY_VALIDATION_ENABLED: Validates compatibility for the fleet.
     """
     MODERNIZATION_UNSPECIFIED = 0
     AUTOMATICALLY_MODERNIZED = 1
     BEFORE_MODERNIZATION = 2
+    COMPATIBILITY_VALIDATION_ENABLED = 3
 
   modernization = _messages.EnumField('ModernizationValueValuesEnum', 1)
 

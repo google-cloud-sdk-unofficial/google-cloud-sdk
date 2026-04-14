@@ -27,7 +27,9 @@ class DataprocGCEActionProcessor(base.ActionProcessor):
   def _get_python_version(self) -> Optional[str]:
     # See
     # https://docs.cloud.google.com/dataproc/docs/concepts/versioning/dataproc-version-clusters
-    config = self.action.get("config", {})
+    dp_on_gce = self.action.get("engine", {}).get("dataprocOnGce", {})
+    cluster_base = dp_on_gce.get("ephemeralCluster", {})
+    config = cluster_base.get("resourceProfile", {}).get("inline", {})
     image_version = str(
         config.get("softwareConfig", {}).get("imageVersion")
         or config.get("clusterConfig", {})
@@ -46,14 +48,25 @@ class DataprocGCEActionProcessor(base.ActionProcessor):
     if not self._env_pack_file:
       return
 
-    job_props = self._get_nested_dict(action, ["config", "job", "properties"])
+    job_props = self._get_nested_dict(
+        action,
+        ["engine", "dataprocOnGce", "ephemeralCluster", "job", "properties"],
+    )
     deploy_mode = job_props.get("spark.submit.deployMode", "client")
     job_props["spark.executorEnv.PYTHONPATH"] = self.full_python_path
     if deploy_mode == "cluster":
       job_props["spark.yarn.appMasterEnv.PYTHONPATH"] = self.full_python_path
     else:
       cluster_config = self._get_nested_dict(
-          action, ["config", "cluster_config"]
+          action,
+          [
+              "engine",
+              "dataprocOnGce",
+              "ephemeralCluster",
+              "resourceProfile",
+              "inline",
+              "clusterConfig",
+          ],
       )
       initialization_actions = cluster_config.setdefault(
           "initialization_actions", []

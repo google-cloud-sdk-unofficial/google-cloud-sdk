@@ -84,10 +84,14 @@ class _OnGCECache(object):
   if more than _GCE_CACHE_MAX_AGE passed since it was updated.
   """
 
-  def __init__(self, connected=None, expiration_time=None):
+  def __init__(self, connected=None, expiration_time=None, gce_cache_path=None):
     self.connected = connected
     self.expiration_time = expiration_time
     self.file_lock = threading.Lock()
+    self._gce_cache_path = gce_cache_path
+
+  def _GetGCECachePath(self):
+    return self._gce_cache_path or config.Paths().GCECachePath()
 
   def GetOnGCE(self, check_age=True):
     """Check if we are on a GCE machine.
@@ -144,7 +148,7 @@ class _OnGCECache(object):
 
   def _CheckDisk(self):
     """Reads cache from disk."""
-    gce_cache_path = config.Paths().GCECachePath()
+    gce_cache_path = self._GetGCECachePath()
     with self.file_lock:
       try:
         mtime = os.stat(gce_cache_path).st_mtime
@@ -160,7 +164,7 @@ class _OnGCECache(object):
 
   def _WriteDisk(self, on_gce):
     """Updates cache on disk."""
-    gce_cache_path = config.Paths().GCECachePath()
+    gce_cache_path = self._GetGCECachePath()
     with self.file_lock:
       try:
         files.WriteFileContents(gce_cache_path, str(on_gce), private=True)
@@ -190,11 +194,13 @@ class _OnGCECache(object):
 _SINGLETON_ON_GCE_CACHE = _OnGCECache()
 
 
-def GetOnGCE(check_age=True):
+def GetOnGCE(check_age=True, gce_cache_instance=None):
   """Helper function to abstract the caching logic of if we're on GCE."""
-  return _SINGLETON_ON_GCE_CACHE.GetOnGCE(check_age)
+  gce_cache_instance = gce_cache_instance or _SINGLETON_ON_GCE_CACHE
+  return gce_cache_instance.GetOnGCE(check_age)
 
 
-def ForceCacheRefresh():
+def ForceCacheRefresh(gce_cache_instance=None):
   """Force rechecking server status and refreshing of all the caches."""
-  return _SINGLETON_ON_GCE_CACHE.CheckServerRefreshAllCaches()
+  gce_cache_instance = gce_cache_instance or _SINGLETON_ON_GCE_CACHE
+  return gce_cache_instance.CheckServerRefreshAllCaches()

@@ -47,6 +47,11 @@
     - arg_name: limit
       help_text: Maximum number of resources.
       type: int
+    - arg_name: semantic-search
+      help_text: Specifies whether the search should understand the meaning and intent behind the query, rather than just matching keywords.
+      type: bool
+      action: store_true
+      api_field: semanticSearch
   response:
     modify_response_hooks:
     - googlecloudsdk.command_lib.dataplex.response_hooks:ExtractEntryFromSearchEntriesResult

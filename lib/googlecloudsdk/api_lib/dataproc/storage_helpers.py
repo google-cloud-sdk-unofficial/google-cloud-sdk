@@ -55,9 +55,11 @@ def Upload(files, destination, storage_client=None):
   # implementation seems stable.
   use_gsutil = properties.VALUES.storage.use_gsutil.GetBool()
   if use_gsutil:
-    _UploadGsutil(files, destination)
+    return _UploadGsutil(files, destination)
   else:
-    _UploadStorageClient(files, destination, storage_client=storage_client)
+    return _UploadStorageClient(
+        files, destination, storage_client=storage_client
+    )
 
 
 def _UploadStorageClient(files, destination, storage_client=None):
@@ -67,18 +69,24 @@ def _UploadStorageClient(files, destination, storage_client=None):
     files: The list of local files to upload.
     destination: A GCS "directory" to copy the files into.
     storage_client: Storage api client used to copy files to gcs.
+
+  Returns:
+    A dict mapping file names to their generation numbers.
   """
   client = storage_client or storage_api.StorageClient()
+  uploaded_files = {}
   for file_to_upload in files:
     file_name = os.path.basename(file_to_upload)
     dest_url = os.path.join(destination, file_name)
     dest_object = storage_util.ObjectReference.FromUrl(dest_url)
     try:
-      client.CopyFileToGCS(file_to_upload, dest_object)
+      response = client.CopyFileToGCS(file_to_upload, dest_object)
+      uploaded_files[file_name] = response.generation
     except exceptions.BadFileException as err:
       raise dp_exceptions.FileUploadError(
           "Failed to upload files ['{}'] to '{}': {}".format(
               "', '".join(files), destination, err))
+  return uploaded_files
 
 
 def _UploadGsutil(files, destination):
@@ -87,6 +95,9 @@ def _UploadGsutil(files, destination):
   Args:
     files: The list of local files to upload.
     destination: A GCS "directory" to copy the files into.
+
+  Returns:
+    A dict mapping file names to their generation numbers (empty for gsutil).
   """
   args = files
   args += [destination]
@@ -95,6 +106,7 @@ def _UploadGsutil(files, destination):
     raise dp_exceptions.FileUploadError(
         "Failed to upload files ['{0}'] to '{1}' using gsutil.".format(
             "', '".join(files), destination))
+  return {}
 
 
 def GetBucket(bucket, storage_client=None):

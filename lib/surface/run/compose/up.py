@@ -39,7 +39,9 @@ from googlecloudsdk.core.console import progress_tracker
 DEFAULT_REPO_NAME = 'cloud-run-source-deploy'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.DefaultUniverseOnly
 class Up(base.BinaryBackedCommand):
   """Deploy to Cloud Run from compose specification."""

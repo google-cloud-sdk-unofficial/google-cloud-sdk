@@ -19,7 +19,6 @@ import enum
 import os.path
 import shutil
 import tarfile
-import typing
 import uuid
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.cloudbuild import snapshot
@@ -30,10 +29,13 @@ from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.deploy import deploy_util
 from googlecloudsdk.command_lib.deploy import exceptions
+from googlecloudsdk.command_lib.deploy import manifest_util
 from googlecloudsdk.command_lib.deploy import rollout_util
 from googlecloudsdk.command_lib.deploy import skaffold_util
 from googlecloudsdk.command_lib.deploy import staging_bucket_util
 from googlecloudsdk.command_lib.deploy import target_util
+from googlecloudsdk.command_lib.storage import errors as storage_errors
+from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
@@ -41,6 +43,7 @@ from googlecloudsdk.core import yaml
 from googlecloudsdk.core.resource import resource_transform
 from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import times
+from googlecloudsdk.generated_clients.apis.clouddeploy.v1 import clouddeploy_v1_messages as cd_messages
 import six
 
 
@@ -104,7 +107,7 @@ def RenderPattern(release_id):
   Returns:
     The formatted release name
   """
-  time_now = datetime.datetime.utcnow()
+  time_now = datetime.datetime.now(datetime.timezone.utc)
   formatted_id = release_id.replace(_DATE_PATTERN, time_now.strftime('%Y%m%d'))
   formatted_id = formatted_id.replace(_TIME_PATTERN, time_now.strftime('%H%M'))
   _CheckForRemainingDollars(formatted_id)
@@ -171,7 +174,7 @@ def CreateReleaseConfig(
     source: str | None,
     gcs_source_staging_dir: str | None,
     ignore_file: str | None,
-    images: typing.Dict[str, str],
+    images: dict[str, str],
     build_artifacts: str | None,
     description: str | None,
     docker_version: str | None,
@@ -185,15 +188,30 @@ def CreateReleaseConfig(
     pipeline_uuid: str,
     from_k8s_manifest: str | None,
     from_run_manifest: str | None,
-    pipeline_obj: typing.Any,
+    pipeline_obj: cd_messages.DeliveryPipeline,
     deploy_parameters: dict[str, str] | None,
+    config_file: str | None = None,
     native_config_used: bool = False,
+    native_source_specified: bool = False,
     hide_logs: bool = False,
 ):
   """Returns a build config."""
   messages = client_util.GetMessagesModule(client_util.GetClientInstance())
   release_config = messages.Release(description=description)
-  release_config = _StageSourceObjectToGcs(
+  if native_config_used:
+    release_config = _ParseReleaseConfig(config_file, messages)
+    release_config.description = description
+    # If none of the native source flags are specified, then use the source
+    # in the release config.
+    if (
+        not native_source_specified
+        and release_config.source
+        and release_config.source.storageSource
+    ):
+      source = _GcsUriFromStorageSource(release_config.source.storageSource)
+      release_config.source = None
+
+  _StageSourceObjectToGcs(
       release_config=release_config,
       source=source,
       gcs_source_staging_dir=gcs_source_staging_dir,
@@ -208,7 +226,7 @@ def CreateReleaseConfig(
       hide_logs=hide_logs,
   )
 
-  release_config = _SetVersion(
+  _SetVersion(
       release_config,
       messages,
       docker_version,
@@ -218,8 +236,8 @@ def CreateReleaseConfig(
       kustomize_version,
       skaffold_version,
   )
-  release_config = _SetImages(messages, release_config, images, build_artifacts)
-  release_config = _SetDeployParameters(
+  _SetImages(messages, release_config, images, build_artifacts)
+  _SetDeployParameters(
       messages,
       deploy_util.ResourceType.RELEASE,
       release_config,
@@ -352,15 +370,23 @@ def _SetVersion(
 
 def GetActualSource(
     args: parser_extensions.Namespace,
-) -> str:
-  """Determines the actual source location."""
+) -> tuple[str, bool]:
+  """Determines the actual source location.
+
+  Args:
+    args: the argparse namespace
+
+  Returns:
+    A tuple of the actual source location and a boolean indicating if the
+    native source flags are specified.
+  """
   if args.IsKnownAndSpecified('local_source'):
-    return args.local_source
+    return args.local_source, True
   if args.IsKnownAndSpecified('gcs_source'):
-    return args.gcs_source
+    return args.gcs_source, True
   if args.IsKnownAndSpecified('source'):
-    return args.source
-  return os.getcwd()
+    return args.source, False
+  return os.getcwd(), False
 
 
 def GetConfigCheckModeFromArgs(
@@ -404,7 +430,7 @@ def VerifyConfigs(
   if config_check_mode is ConfigCheckMode.NONE:
     return False
   if config_check_mode is ConfigCheckMode.NATIVE:
-    _VerifyFileExistsInSource(source, config_file)
+    _VerifyReleaseConfigFileExists(config_file)
     return True
   if config_check_mode is ConfigCheckMode.SKAFFOLD:
     _VerifyFileExistsInSource(source, skaffold_file or 'skaffold.yaml')
@@ -414,7 +440,7 @@ def VerifyConfigs(
       _VerifyFileExistsInSource(source, skaffold_file or 'skaffold.yaml')
       return False
     except c_exceptions.BadFileException:
-      _VerifyFileExistsInSource(source, config_file)
+      _VerifyReleaseConfigFileExists(config_file)
       return True
   return False
 
@@ -428,7 +454,7 @@ def _StageGcsObject(
     actual_source: str,
     kubernetes_manifest: str | None,
     cloud_run_manifest: str | None,
-    pipeline_obj: typing.Any,
+    pipeline_obj: cd_messages.DeliveryPipeline,
     hide_logs: bool = False,
 ) -> str:
   """Processes GCS source and uploads to GCS.
@@ -558,7 +584,7 @@ def _StageGcsObject(
 
 def _StageSourceObjectToGcs(
     *,
-    release_config: typing.Any,
+    release_config: cd_messages.Release,
     source: str | None,
     gcs_source_staging_dir: str | None,
     ignore_file: str | None,
@@ -567,10 +593,10 @@ def _StageSourceObjectToGcs(
     kubernetes_manifest: str | None,
     cloud_run_manifest: str | None,
     skaffold_file: str | None,
-    pipeline_obj: typing.Any,
+    pipeline_obj: cd_messages.DeliveryPipeline,
     native_config_used: bool,
     hide_logs: bool = False,
-) -> typing.Any:
+) -> cd_messages.Release:
   """Processes the source for the release config.
 
   Creates a default Cloud Storage bucket with location for staging if
@@ -609,10 +635,9 @@ def _StageSourceObjectToGcs(
       pipeline_obj=pipeline_obj,
       hide_logs=hide_logs,
   )
+  messages = client_util.GetMessagesModule(client_util.GetClientInstance())
   if native_config_used:
-    if hasattr(release_config, 'source'):
-      # TODO(b/481723398): Set Release.source.
-      pass
+    _SetStorageSource(release_config, messages, gcs_uri)
   else:
     skaffold_is_generated = bool(kubernetes_manifest or cloud_run_manifest)
     release_config = _SetSkaffoldConfigPath(
@@ -624,7 +649,7 @@ def _StageSourceObjectToGcs(
 
 
 def _GetProfileToTargetMapping(pipeline_obj):
-  """Get mapping of profile to list of targets where the profile is activated."""
+  """Gets mapping of profile to targets where the profile is activated."""
   profile_to_targets = {}
   for stage in pipeline_obj.serialPipeline.stages:
     for profile in stage.profiles:
@@ -635,7 +660,7 @@ def _GetProfileToTargetMapping(pipeline_obj):
 
 
 def _GetUniqueProfilesToTargetMapping(profile_to_targets):
-  """Get mapping of profile to target that is only activated in a single target."""
+  """Gets mapping of profile to target only activated in a single target."""
   target_to_unique_profile = {}
   for profile, targets in profile_to_targets.items():
     if len(targets) == 1:
@@ -770,6 +795,34 @@ def _VerifyFileExistsInSource(source: str, file_path: str | None):
     _VerifyFileIsInFolder(source, file_path)
 
 
+def _VerifyReleaseConfigFileExists(file_path: str):
+  """Checks if the release config file exists.
+
+  This is different from the _VerifyFileExistsInSource function in that it
+  will only verify the release config file without checking the source.
+  The release config file is required for creating a release.
+
+  Args:
+    file_path: the path of the release config file.
+
+  Raises:
+    BadFileException: If the release config file can't be found.
+  """
+
+  if not file_path:
+    raise c_exceptions.BadFileException(
+        'release config file path is not specified.'
+    )
+  try:
+    with files.FileReader(file_path):
+      # Successfully opened the file, so it exists and is readable.
+      pass
+  except Exception as e:
+    raise c_exceptions.BadFileException(
+        f'could not access release config file [{file_path}]: {e}'
+    )
+
+
 def _VerifyFileIsInArchive(source: str, file_path: str):
   """Verifies the config file is in the archive.
 
@@ -779,9 +832,8 @@ def _VerifyFileIsInArchive(source: str, file_path: str):
 
   Raises:
     BadFileException: If the config file is not a readable compressed file or
-      can't be found.
+    can't be found.
   """
-
   _, ext = os.path.splitext(source)
   if ext not in _ALLOWED_SOURCE_EXT:
     raise c_exceptions.BadFileException(
@@ -827,7 +879,7 @@ def _SetImages(messages, release_config, images, build_artifacts):
 
 
 def _SetSkaffoldConfigPath(release_config, skaffold_file, is_generated):
-  """Set the path for skaffold configuration file relative to source directory."""
+  """Sets the path for skaffold configuration file relative to source dir."""
   if skaffold_file:
     release_config.skaffoldConfigPath = skaffold_file
   if is_generated:
@@ -882,7 +934,7 @@ def ListCurrentDeployedTargets(release_ref, targets):
 
 
 def DiffSnappedPipeline(release_ref, release_obj, to_target=None):
-  """Detects the differences between current delivery pipeline and target definitions, from those associated with the release being promoted.
+  """Detects differences between current and snapped delivery pipelines.
 
   Changes are determined through etag value differences.
 
@@ -956,7 +1008,7 @@ def DiffSnappedPipeline(release_ref, release_obj, to_target=None):
 
 
 def PrintDiff(release_ref, release_obj, target_id=None, prompt=''):
-  """Prints differences between current and snapped delivery pipeline and target definitions.
+  """Prints differences between current and snapped pipelines and targets.
 
   Args:
     release_ref: protorpc.messages.Message, release resource object.
@@ -1158,3 +1210,90 @@ def _GetToolVersionSupportState(release_obj, tool):
           release_obj.condition.skaffoldVersionSupportedCondition.toolVersionSupportState
       )
   return None
+
+
+def _SetStorageSource(
+    release_config: cd_messages.Release, messages: cd_messages, gcs_uri: str
+):
+  """Sets the storageSource in the Release config from a GCS URI.
+
+  Args:
+    release_config: The Release config to set the storageSource in.
+    messages: The messages module to use.
+    gcs_uri: The GCS URI to set the storageSource to.
+
+  Raises:
+    googlecloudsdk.calliope.exceptions.InvalidArgumentException: If the
+      provided GCS URI is invalid or not a GCS URI.
+  """
+  try:
+    storage_object = storage_url.CloudUrl.from_url_string(gcs_uri)
+  except storage_errors.InvalidUrlError as e:
+    raise c_exceptions.InvalidArgumentException(
+        parameter_name='staged gcs uri',
+        message=f'invalid gcs uri format: {gcs_uri}',
+    ) from e
+
+  if storage_object.scheme is not storage_url.ProviderPrefix.GCS:
+    raise c_exceptions.InvalidArgumentException(
+        parameter_name='staged gcs uri',
+        message=f'storageSource must start with "gs://", got {gcs_uri}',
+    )
+  storage_source = messages.GoogleCloudStorageSource(
+      bucket=storage_object.bucket_name,
+      object=storage_object.resource_name,
+      generation=storage_object.generation,
+  )
+  if not release_config.source:
+    release_config.source = messages.Source(storageSource=storage_source)
+  else:
+    release_config.source.storageSource = storage_source
+
+
+def _GcsUriFromStorageSource(
+    storage_source: cd_messages.GoogleCloudStorageSource,
+) -> str:
+  """Converts a source object to a GCS URI.
+
+  Args:
+    storage_source: The storageSource field from a Release source object.
+
+  Returns:
+    The GCS URI.
+  """
+  gcs_uri = f'gs://{storage_source.bucket}/{storage_source.object}'
+  if storage_source.generation:
+    gcs_uri += f'#{storage_source.generation}'
+  return gcs_uri
+
+
+def _ParseReleaseConfig(
+    config_file: str, messages: cd_messages
+) -> cd_messages.Release:
+  """Parses TargetConfigs from a release config file.
+
+  Args:
+    config_file: The path to the release config file.
+    messages: The messages module.
+
+  Returns:
+    The parsed TargetConfigs.
+
+  Raises:
+    c_exceptions.InvalidArgumentException: If the config file is invalid or
+      cannot be parsed.
+  """
+  try:
+    parsed_yaml = yaml.load_path(config_file)
+  except yaml.Error as e:
+    raise c_exceptions.InvalidArgumentException(
+        parameter_name='--config-file',
+        message=f'failed to parse config file: {e}',
+    ) from e
+
+  if parsed_yaml is None:
+    raise c_exceptions.InvalidArgumentException(
+        parameter_name='--config-file',
+        message=f'config file [{config_file}] is empty',
+    )
+  return manifest_util.ParseReleaseConfig(parsed_yaml, messages)

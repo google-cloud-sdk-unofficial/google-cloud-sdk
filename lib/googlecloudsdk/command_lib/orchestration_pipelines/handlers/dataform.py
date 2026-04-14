@@ -24,6 +24,12 @@ from googlecloudsdk.core import log
 class DataformRepositoryHandler(base.GcpResourceHandler):
   """Handler for Dataform Repository resources."""
 
+  _documentation_uri = (
+      "https://cloud.google.com/dataform/reference/rest/"
+      "v1beta1/projects.locations.repositories"
+  )
+  description = "Dataform Repository resources."
+
   def build_get_request(self) -> messages.Message:
     return self.messages.DataformProjectsLocationsRepositoriesGetRequest(
         name=self._get_resource_name()
@@ -54,6 +60,17 @@ class DataformRepositoryHandler(base.GcpResourceHandler):
 
 class DataformReleaseConfigHandler(base.GcpResourceHandler):
   """Handler for Dataform ReleaseConfig resources."""
+
+  _documentation_uri = (
+      "https://cloud.google.com/dataform/reference/rest/"
+      "v1beta1/projects.locations.repositories.releaseConfigs"
+  )
+  description = (
+      "Dataform ReleaseConfig resources.\n"
+      "Special handling:\n"
+      " - releaseCompilationResult: setting to 'auto' in definition triggers "
+      "compilation after resource creation or update"
+  )
 
   def build_get_request(self) -> messages.Message:
     return self.messages.DataformProjectsLocationsRepositoriesReleaseConfigsGetRequest(
@@ -117,6 +134,17 @@ class DataformReleaseConfigHandler(base.GcpResourceHandler):
 class DataformWorkflowConfigHandler(base.GcpResourceHandler):
   """Handler for Dataform WorkflowConfig resources."""
 
+  _documentation_uri = (
+      "https://cloud.google.com/dataform/reference/rest/"
+      "v1beta1/projects.locations.repositories.workflowConfigs"
+  )
+  description = (
+      "Dataform WorkflowConfig resources.\n"
+      "Definition handling:\n"
+      " - releaseConfig: accepts short ID of config within the same "
+      "repository instead of full URI"
+  )
+
   def build_get_request(self) -> messages.Message:
     return self.messages.DataformProjectsLocationsRepositoriesWorkflowConfigsGetRequest(
         name=self._get_resource_name()
@@ -157,6 +185,12 @@ class DataformWorkflowConfigHandler(base.GcpResourceHandler):
 
 class DataformWorkspaceHandler(base.GcpResourceHandler):
   """Handler for Dataform Workspace resources."""
+
+  _documentation_uri = (
+      "https://cloud.google.com/dataform/reference/rest/"
+      "v1beta1/projects.locations.repositories.workspaces"
+  )
+  description = "Dataform Workspace resources."
 
   def build_get_request(self) -> messages.Message:
     req_cls = (

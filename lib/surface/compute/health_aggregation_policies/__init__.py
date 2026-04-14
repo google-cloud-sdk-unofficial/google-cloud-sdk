@@ -24,9 +24,20 @@ class HealthAggregationPolicies(base.Group):
   """Manage health aggregation policies."""
 
 
+@base.Hidden
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class HealthAggregationPoliciesGa(HealthAggregationPolicies):
+  """Manage health aggregation policies."""
+
+
 HealthAggregationPolicies.category = base.COMPUTE_CATEGORY
 HealthAggregationPolicies.detailed_help = {
     'DESCRIPTION': """
         Manage health aggregation policies.
     """,
 }
+HealthAggregationPoliciesGa.category = base.COMPUTE_CATEGORY
+HealthAggregationPoliciesGa.detailed_help = (
+    HealthAggregationPolicies.detailed_help
+)

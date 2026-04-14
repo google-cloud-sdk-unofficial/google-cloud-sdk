@@ -789,89 +789,6 @@ class Condition(_messages.Message):
   values = _messages.StringField(5, repeated=True)
 
 
-class ConfigChange(_messages.Message):
-  r"""ConfigChange defines one specific operation (defined by UpdateType) of a
-  given configuration type. The content of the update is encoded in JSON
-  format in config_body.
-
-  Enums:
-    UpdateTypeValueValuesEnum: Specify the type of the config change.
-
-  Fields:
-    assetType: Indicates the type of the config change. The type of the asset.
-      Example: `compute.googleapis.com/Firewall` See [Supported asset
-      types](https://cloud.google.com/asset-inventory/docs/supported-asset-
-      types) for more information. Currently only supports: (1)
-      compute.googleapis.com/Firewall
-    baseConfigBody: Output only. Specifies original configuration in
-      stringified JSON format. Base configuration which is populated by
-      backend when simulation is run or rerun.
-    configBody: Deprecated: Specifies the detailed configuration in JSON
-      format. Alternate Solution: Please use proposed_config_body field
-      instead.
-    configId: Deprecated: Config identifier (for DELETE operation).If fetching
-      data please extract config_id or selfLink from the base_config_body. If
-      passing data in request body please pass config_id/selfLink in the
-      proposed_config_body.
-    proposedConfigBody: Specifies proposed configuration in stringified JSON
-      format.
-    updateType: Specify the type of the config change.
-  """
-
-  class UpdateTypeValueValuesEnum(_messages.Enum):
-    r"""Specify the type of the config change.
-
-    Values:
-      UPDATE_TYPE_UNSPECIFIED: Default update type.
-      INSERT: Indicates the update type is insertion.
-      DELETE: Indicates the update type is deletion.
-      UPDATE: Indicates the update type is modification.
-    """
-    UPDATE_TYPE_UNSPECIFIED = 0
-    INSERT = 1
-    DELETE = 2
-    UPDATE = 3
-
-  assetType = _messages.StringField(1)
-  baseConfigBody = _messages.StringField(2)
-  configBody = _messages.StringField(3)
-  configId = _messages.StringField(4)
-  proposedConfigBody = _messages.StringField(5)
-  updateType = _messages.EnumField('UpdateTypeValueValuesEnum', 6)
-
-
-class ConnectivityTestSimulationData(_messages.Message):
-  r"""Message for simulation data of connectivity test."""
-
-
-class ConnectivityTestSimulationResult(_messages.Message):
-  r"""ConnectivityTestSimulationResult contains results for a single
-  connectivity test from two network configurations, i.e. original and
-  proposed network configurations.
-
-  Fields:
-    baseConfigResult: Reachability details (result+traces) for the base
-      config.
-    destination: Destination endpoint.
-    proposedConfigResult: Reachability details (result+traces) for the
-      proposed config.
-    protocol: Protocol name.
-    resultsDiffer: Whether base and proposed config results are different.
-    source: Source endpoint.
-    testUri: Full resource path (i.e. uri) of the connectivity test using the
-      form: `projects/{project}/locations/{location}/connectivityTestSimulatio
-      nResults/{result}`
-  """
-
-  baseConfigResult = _messages.MessageField('ReachabilityDetails', 1)
-  destination = _messages.MessageField('Endpoint', 2)
-  proposedConfigResult = _messages.MessageField('ReachabilityDetails', 3)
-  protocol = _messages.StringField(4)
-  resultsDiffer = _messages.BooleanField(5)
-  source = _messages.MessageField('Endpoint', 6)
-  testUri = _messages.StringField(7)
-
-
 class CounterOptions(_messages.Message):
   r"""Increment a streamz counter with the specified metric and field names.
   Metric names should start with a '/', generally be lowercase-only, and end
@@ -2577,21 +2494,6 @@ class ListOperationsResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
-class ListSimulationsResponse(_messages.Message):
-  r"""Message for response to listing Simulations
-
-  Fields:
-    nextPageToken: A token identifying a page of results the server should
-      return.
-    simulations: The list of Simulation
-    unreachable: Locations that could not be reached.
-  """
-
-  nextPageToken = _messages.StringField(1)
-  simulations = _messages.MessageField('Simulation', 2, repeated=True)
-  unreachable = _messages.StringField(3, repeated=True)
-
-
 class ListWebPathsResponse(_messages.Message):
   r"""Message for response to listing WebPaths
 
@@ -2890,6 +2792,8 @@ class MonitoringPoint(_messages.Message):
   Enums:
     ConnectionStatusValueValuesEnum: Output only. Connection status of the
       MonitoringPoint.
+    DeploymentTypeValueValuesEnum: Output only. The deployment type of the
+      MonitoringPoint.
     ErrorsValueListEntryValuesEnum:
     UpgradeTypeValueValuesEnum: Output only. The type of upgrade available for
       the MonitoringPoint.
@@ -2899,6 +2803,7 @@ class MonitoringPoint(_messages.Message):
       location is enabled for the MonitoringPoint.
     connectionStatus: Output only. Connection status of the MonitoringPoint.
     createTime: Output only. The time the MonitoringPoint was created.
+    deploymentType: Output only. The deployment type of the MonitoringPoint.
     displayName: Output only. Display name of the MonitoringPoint.
     errors: Output only. The codes of errors detected in the MonitoringPoint.
     geoLocation: Output only. The geographical location of the
@@ -2937,6 +2842,21 @@ class MonitoringPoint(_messages.Message):
     ONLINE = 1
     OFFLINE = 2
 
+  class DeploymentTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The deployment type of the MonitoringPoint.
+
+    Values:
+      DEPLOYMENT_TYPE_UNSPECIFIED: The default value. This value is used if
+        the type is omitted.
+      DOCKER: Deployed as a Docker container.
+      PODMAN: Deployed as a Podman container.
+      HELM: Deployed as a Helm chart.
+    """
+    DEPLOYMENT_TYPE_UNSPECIFIED = 0
+    DOCKER = 1
+    PODMAN = 2
+    HELM = 3
+
   class ErrorsValueListEntryValuesEnum(_messages.Enum):
     r"""ErrorsValueListEntryValuesEnum enum type.
 
@@ -2974,21 +2894,22 @@ class MonitoringPoint(_messages.Message):
   autoGeoLocationEnabled = _messages.BooleanField(1)
   connectionStatus = _messages.EnumField('ConnectionStatusValueValuesEnum', 2)
   createTime = _messages.StringField(3)
-  displayName = _messages.StringField(4)
-  errors = _messages.EnumField('ErrorsValueListEntryValuesEnum', 5, repeated=True)
-  geoLocation = _messages.MessageField('GeoLocation', 6)
-  guid = _messages.StringField(7)
-  host = _messages.MessageField('Host', 8)
-  hostname = _messages.StringField(9)
-  name = _messages.StringField(10)
-  networkInterfaces = _messages.MessageField('NetworkInterface', 11, repeated=True)
-  originatingIp = _messages.StringField(12)
-  providerTags = _messages.MessageField('ProviderTag', 13, repeated=True)
-  type = _messages.StringField(14)
-  updateTime = _messages.StringField(15)
-  upgradeAvailable = _messages.BooleanField(16)
-  upgradeType = _messages.EnumField('UpgradeTypeValueValuesEnum', 17)
-  version = _messages.StringField(18)
+  deploymentType = _messages.EnumField('DeploymentTypeValueValuesEnum', 4)
+  displayName = _messages.StringField(5)
+  errors = _messages.EnumField('ErrorsValueListEntryValuesEnum', 6, repeated=True)
+  geoLocation = _messages.MessageField('GeoLocation', 7)
+  guid = _messages.StringField(8)
+  host = _messages.MessageField('Host', 9)
+  hostname = _messages.StringField(10)
+  name = _messages.StringField(11)
+  networkInterfaces = _messages.MessageField('NetworkInterface', 12, repeated=True)
+  originatingIp = _messages.StringField(13)
+  providerTags = _messages.MessageField('ProviderTag', 14, repeated=True)
+  type = _messages.StringField(15)
+  updateTime = _messages.StringField(16)
+  upgradeAvailable = _messages.BooleanField(17)
+  upgradeType = _messages.EnumField('UpgradeTypeValueValuesEnum', 18)
+  version = _messages.StringField(19)
 
 
 class NatInfo(_messages.Message):
@@ -3770,174 +3691,6 @@ class NetworkmanagementProjectsLocationsOperationsListRequest(_messages.Message)
   returnPartialSuccess = _messages.BooleanField(5)
 
 
-class NetworkmanagementProjectsLocationsSimulationsCreateRequest(_messages.Message):
-  r"""A NetworkmanagementProjectsLocationsSimulationsCreateRequest object.
-
-  Fields:
-    parent: Required. The parent resource of the Simulation:
-      `projects/{project_id}/locations/global`
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes since the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if original operation with the
-      same request ID was received, and if so, will ignore the second request.
-      This prevents clients from accidentally creating duplicate commitments.
-      The request ID must be a valid UUID with the exception that zero UUID is
-      not supported (00000000-0000-0000-0000-000000000000).
-    simulation: A Simulation resource to be passed as the request body.
-  """
-
-  parent = _messages.StringField(1, required=True)
-  requestId = _messages.StringField(2)
-  simulation = _messages.MessageField('Simulation', 3)
-
-
-class NetworkmanagementProjectsLocationsSimulationsDeleteRequest(_messages.Message):
-  r"""A NetworkmanagementProjectsLocationsSimulationsDeleteRequest object.
-
-  Fields:
-    name: Required. Name of the resource
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes after the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if original operation with the
-      same request ID was received, and if so, will ignore the second request.
-      This prevents clients from accidentally creating duplicate commitments.
-      The request ID must be a valid UUID with the exception that zero UUID is
-      not supported (00000000-0000-0000-0000-000000000000).
-  """
-
-  name = _messages.StringField(1, required=True)
-  requestId = _messages.StringField(2)
-
-
-class NetworkmanagementProjectsLocationsSimulationsGetIamPolicyRequest(_messages.Message):
-  r"""A NetworkmanagementProjectsLocationsSimulationsGetIamPolicyRequest
-  object.
-
-  Fields:
-    options_requestedPolicyVersion: Optional. The maximum policy version that
-      will be used to format the policy. Valid values are 0, 1, and 3.
-      Requests specifying an invalid value will be rejected. Requests for
-      policies with any conditional role bindings must specify version 3.
-      Policies with no conditional role bindings may specify any valid value
-      or leave the field unset. The policy in the response might use the
-      policy version that you specified, or it might use a lower policy
-      version. For example, if you specify version 3, but the policy has no
-      conditional role bindings, the response uses version 1. To learn which
-      resources support conditions in their IAM policies, see the [IAM
-      documentation](https://cloud.google.com/iam/help/conditions/resource-
-      policies).
-    resource: REQUIRED: The resource for which the policy is being requested.
-      See [Resource
-      names](https://cloud.google.com/apis/design/resource_names) for the
-      appropriate value for this field.
-  """
-
-  options_requestedPolicyVersion = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  resource = _messages.StringField(2, required=True)
-
-
-class NetworkmanagementProjectsLocationsSimulationsGetRequest(_messages.Message):
-  r"""A NetworkmanagementProjectsLocationsSimulationsGetRequest object.
-
-  Fields:
-    name: Required. Name of the resource
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
-class NetworkmanagementProjectsLocationsSimulationsListRequest(_messages.Message):
-  r"""A NetworkmanagementProjectsLocationsSimulationsListRequest object.
-
-  Fields:
-    filter: Filtering results
-    orderBy: Hint for how to order the results
-    pageSize: Requested page size. Server may return fewer items than
-      requested. If unspecified, server will pick an appropriate default.
-    pageToken: A token identifying a page of results the server should return.
-    parent: Required. Parent value for ListSimulationsRequest
-  """
-
-  filter = _messages.StringField(1)
-  orderBy = _messages.StringField(2)
-  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(4)
-  parent = _messages.StringField(5, required=True)
-
-
-class NetworkmanagementProjectsLocationsSimulationsPatchRequest(_messages.Message):
-  r"""A NetworkmanagementProjectsLocationsSimulationsPatchRequest object.
-
-  Fields:
-    name: Unique name of the resource using the form:
-      `projects/{project_id}/locations/global/simulations/{simulation_id}`
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes since the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if original operation with the
-      same request ID was received, and if so, will ignore the second request.
-      This prevents clients from accidentally creating duplicate commitments.
-      The request ID must be a valid UUID with the exception that zero UUID is
-      not supported (00000000-0000-0000-0000-000000000000).
-    simulation: A Simulation resource to be passed as the request body.
-    updateMask: Required. Field mask is used to specify the fields to be
-      overwritten in the Simulation resource by the update. The fields
-      specified in the update_mask are relative to the resource, not the full
-      request. A field will be overwritten if it is in the mask. If the user
-      does not provide a mask then all fields will be overwritten.
-  """
-
-  name = _messages.StringField(1, required=True)
-  requestId = _messages.StringField(2)
-  simulation = _messages.MessageField('Simulation', 3)
-  updateMask = _messages.StringField(4)
-
-
-class NetworkmanagementProjectsLocationsSimulationsSetIamPolicyRequest(_messages.Message):
-  r"""A NetworkmanagementProjectsLocationsSimulationsSetIamPolicyRequest
-  object.
-
-  Fields:
-    resource: REQUIRED: The resource for which the policy is being specified.
-      See [Resource
-      names](https://cloud.google.com/apis/design/resource_names) for the
-      appropriate value for this field.
-    setIamPolicyRequest: A SetIamPolicyRequest resource to be passed as the
-      request body.
-  """
-
-  resource = _messages.StringField(1, required=True)
-  setIamPolicyRequest = _messages.MessageField('SetIamPolicyRequest', 2)
-
-
-class NetworkmanagementProjectsLocationsSimulationsTestIamPermissionsRequest(_messages.Message):
-  r"""A NetworkmanagementProjectsLocationsSimulationsTestIamPermissionsRequest
-  object.
-
-  Fields:
-    resource: REQUIRED: The resource for which the policy detail is being
-      requested. See [Resource
-      names](https://cloud.google.com/apis/design/resource_names) for the
-      appropriate value for this field.
-    testIamPermissionsRequest: A TestIamPermissionsRequest resource to be
-      passed as the request body.
-  """
-
-  resource = _messages.StringField(1, required=True)
-  testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
-
-
 class NgfwPacketInspectionInfo(_messages.Message):
   r"""For display only. Metadata associated with a layer 7 packet inspection
   by the firewall.
@@ -4662,158 +4415,6 @@ class SetIamPolicyRequest(_messages.Message):
   updateMask = _messages.StringField(2)
 
 
-class ShadowedFirewallSimulationData(_messages.Message):
-  r"""Message for simulation data of shadowed firewall analysis."""
-
-
-class ShadowedFirewallSimulationResult(_messages.Message):
-  r"""ShadowedFirewallSimulationResult contains results for shadowed firewall
-  analysis from two network configurations, i.e. original and proposed network
-  configurations.
-
-  Fields:
-    baseConfigResults: Results for simulating shadowed firewall analysis with
-      original network configurations. There can be more than one shadowing
-      relation for a particular shadowing firewall.
-    firewall: Relative resource path (i.e. uri) of the firewall rule that is
-      getting shadowed:
-      'projects/{project_id}/{location}/firewalls/{firewall_name}'
-    network: Relative resource path (i.e. uri) of the network in which the
-      shadowed firewall belongs:
-      'projects/{project_id}/{location}/networks/{network_name}'
-    proposedConfigResults: Results for simulating shadowed firewall analysis
-      with proposed network configurations. There can be more than one
-      shadowing relation for a particular shadowing firewall.
-    resultsDiffer: Indicates if the results from running shadowed firewall
-      analysis with the original network configurations and with the proposed
-      network configurations differ.
-  """
-
-  baseConfigResults = _messages.MessageField('ShadowingInfo', 1, repeated=True)
-  firewall = _messages.StringField(2)
-  network = _messages.StringField(3)
-  proposedConfigResults = _messages.MessageField('ShadowingInfo', 4, repeated=True)
-  resultsDiffer = _messages.BooleanField(5)
-
-
-class ShadowingInfo(_messages.Message):
-  r"""ShadowingInfo defines a list of firewalls that are causing shadowing for
-  a particular firewall.
-
-  Fields:
-    shadowingFirewalls: Relative resource path (i.e. uri) of the resource that
-      is causing shadowing:
-      'projects/{project_id}/{location}/firewalls/{firewall_name}'
-  """
-
-  shadowingFirewalls = _messages.StringField(1, repeated=True)
-
-
-class Simulation(_messages.Message):
-  r"""Message describing Simulation object
-
-  Messages:
-    LabelsValue: Labels as key value pairs.
-
-  Fields:
-    baseConfig: Deprecated: Base configuration which is populated by backend
-      when simulation is run or rerun. Please use config_changes field
-      instead.
-    configChanges: Group of resource configuration changes that needs to be
-      simulated together.
-    connectivityTestSimulationData: Connectivity test data to simulate.
-    createTime: Output only. Creation timestamp.
-    creationOnly: Only creates a simulation resource without triggering the
-      simulation analysis.
-    labels: Labels as key value pairs.
-    name: Unique name of the resource using the form:
-      `projects/{project_id}/locations/global/simulations/{simulation_id}`
-    proposedConfig: Deprecated: Proposed configuration diff which defines a
-      group of resource configuration changes that need to be simulated
-      together. Please use config_changes field instead.
-    shadowedFirewallSimulationData: Shadowed firewall test data to simulate.
-    simulationResult: Simulation result.
-    updateTime: Output only. Update timestamp.
-  """
-
-  @encoding.MapUnrecognizedFields('additionalProperties')
-  class LabelsValue(_messages.Message):
-    r"""Labels as key value pairs.
-
-    Messages:
-      AdditionalProperty: An additional property for a LabelsValue object.
-
-    Fields:
-      additionalProperties: Additional properties of type LabelsValue
-    """
-
-    class AdditionalProperty(_messages.Message):
-      r"""An additional property for a LabelsValue object.
-
-      Fields:
-        key: Name of the additional property.
-        value: A string attribute.
-      """
-
-      key = _messages.StringField(1)
-      value = _messages.StringField(2)
-
-    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
-
-  baseConfig = _messages.MessageField('ConfigChange', 1, repeated=True)
-  configChanges = _messages.MessageField('ConfigChange', 2, repeated=True)
-  connectivityTestSimulationData = _messages.MessageField('ConnectivityTestSimulationData', 3)
-  createTime = _messages.StringField(4)
-  creationOnly = _messages.BooleanField(5)
-  labels = _messages.MessageField('LabelsValue', 6)
-  name = _messages.StringField(7)
-  proposedConfig = _messages.MessageField('ConfigChange', 8, repeated=True)
-  shadowedFirewallSimulationData = _messages.MessageField('ShadowedFirewallSimulationData', 9)
-  simulationResult = _messages.MessageField('SimulationResult', 10)
-  updateTime = _messages.StringField(11)
-
-
-class SimulationResult(_messages.Message):
-  r"""SimulationResult provides the simulation result for corresponding
-  simulation resource.
-
-  Enums:
-    OperationStateValueValuesEnum: Specify the Simulation state.
-
-  Fields:
-    connectivityTestSimulationResult: Connectivity test simulation results
-      showing diff for each test with pagination.
-    executionDuration: Simulation execution duration including a start time
-      and an end time.
-    operationState: Specify the Simulation state.
-    shadowedFirewallSimulationResult: Shadowed firewall simulation results
-      showing diff with pagination.
-    snapshotTime: Timestamp for data model snapshot used for simulation.
-  """
-
-  class OperationStateValueValuesEnum(_messages.Enum):
-    r"""Specify the Simulation state.
-
-    Values:
-      OPERATION_STATE_UNSPECIFIED: Default operation state.
-      INITIALIZED: Indicates simulation was just initialized.
-      SUCCEEDED: Indicates simulation succeeded.
-      FAILED: Indicates simulation failed.
-      ABORTED: Indicates simulation was aborted.
-    """
-    OPERATION_STATE_UNSPECIFIED = 0
-    INITIALIZED = 1
-    SUCCEEDED = 2
-    FAILED = 3
-    ABORTED = 4
-
-  connectivityTestSimulationResult = _messages.MessageField('ConnectivityTestSimulationResult', 1, repeated=True)
-  executionDuration = _messages.StringField(2)
-  operationState = _messages.EnumField('OperationStateValueValuesEnum', 3)
-  shadowedFirewallSimulationResult = _messages.MessageField('ShadowedFirewallSimulationResult', 4, repeated=True)
-  snapshotTime = _messages.StringField(5)
-
-
 class StandardQueryParameters(_messages.Message):
   r"""Query parameters accepted by all methods.
 
@@ -5452,5 +5053,3 @@ encoding.AddCustomJsonFieldMapping(
     NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPointsDownloadInstallScriptRequest, 'timeZone_id', 'timeZone.id')
 encoding.AddCustomJsonFieldMapping(
     NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPointsDownloadInstallScriptRequest, 'timeZone_version', 'timeZone.version')
-encoding.AddCustomJsonFieldMapping(
-    NetworkmanagementProjectsLocationsSimulationsGetIamPolicyRequest, 'options_requestedPolicyVersion', 'options.requestedPolicyVersion')

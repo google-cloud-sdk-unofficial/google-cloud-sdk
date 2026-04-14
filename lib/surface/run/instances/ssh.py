@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to SSH into a Cloud Run Instance."""
+"""Command to SSH into a Cloud Run instance."""
 
 from googlecloudsdk.api_lib.run import ssh as run_ssh
 from googlecloudsdk.calliope import base
@@ -28,12 +28,12 @@ class Ssh(ssh_command.BaseSshCommand):
   detailed_help = {
       'DESCRIPTION': (
           """\
-          Starts a secure, interactive shell session with a Cloud Run Instance.
+          Starts a secure, interactive shell session with a Cloud Run instance.
           """
       ),
       'EXAMPLES': (
           """\
-          To start an interactive shell session with a Cloud Run Instance:
+          To start an interactive shell session with a Cloud Run instance:
 
               $ {command} my-instance
           """
@@ -50,6 +50,6 @@ class Ssh(ssh_command.BaseSshCommand):
     )
 
   def Run(self, args):
-    """Connect to a running Cloud Run Instance deployment."""
+    """Connect to a running Cloud Run instance deployment."""
     # For instances, the positional 'instance' is the deployment name.
     self.RunSsh(args, run_ssh.Ssh.WorkloadType.INSTANCE, args.instance)

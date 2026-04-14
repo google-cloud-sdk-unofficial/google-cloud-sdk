@@ -35,57 +35,32 @@ _ENTRYPOINT_FILE_URI = base.Argument(
     help='The Ray job entrypoint Python file Google Cloud Storage URI.',
 )
 
-_ENTRYPOINT_JOB_FILE_ARGS = base.Argument(
-    '--entrypoint-file-args',
-    metavar='ARG',
-    type=arg_parsers.ArgList(),
-    action=arg_parsers.UpdateAction,
-    help=(
-        'Comma-separated arguments passed to Ray job python file. e.g.'
-        ' --entrypoint-file-args=arg1,arg2'
-    ),
-)
-
-_ARCHIVE_URIS = base.Argument(
-    '--archive-uris',
-    metavar='ARG',
-    hidden=True,
-    type=arg_parsers.ArgList(),
-    action=arg_parsers.UpdateAction,
-    help=(
-        'Comma-separated archive URIs that will be copy to the Ray nodes. e.g.'
-        ' --archive-uris=gs://test-bucket/test.tar.gz,gs://test-bucket/test2.tar.gz'
-    ),
-)
-
 _CONTAINER_IMAGE_URI = base.Argument(
     '--container-image-uri',
     metavar='CONTAINER_IMAGE_URI',
     help='The container image URI to use for the Ray worker node.',
 )
 
-_RESOURCE_SPEC = base.Argument(
-    '--resource-spec',
+_WORKER_POOL_SPEC = base.Argument(
+    '--worker-pool-spec',
     type=arg_parsers.ArgDict(
         spec={
-            'resource-unit': int,
             'disk-size': int,
             'max-node-count': int,
         }
     ),
-    metavar='RESOURCE_SPEC',
+    metavar='WORKER_POOL_SPEC',
     help=textwrap.dedent("""\
       Define the worker pool resource spec for the serverless ray job.
 
       The spec can contain the following fields:
 
-      *resource-unit*::: Optional. Default to 1. Define how many compute resources(CPU, memory) on each worker node. By default we are using machine e2-standard series, and each resource unit allocates 4 vCPUs and 16GB memory. The resource-unit value can only be 1,2,4,8.
       *disk-size*::: Optional, default to 100. Disk size in GB on one worker node.
       *max-node-count*::: Optional, default to 2000. The max number of worker nodes this job can occupy while running.
 
       ::::
       Example:
-      --resource-spec=resource-unit=2,disk-size=100,max-node-count=10
+      --worker-pool-spec=disk-size=100,max-node-count=10
       """),
 )
 
@@ -115,9 +90,7 @@ def AddCreateServerlessRayJobFlags(parser):
 
   _SERVERLESS_RAY_JOB_SERVICE_ACCOUNT.AddToParser(parser)
   _ENTRYPOINT_FILE_URI.AddToParser(parser)
-  _RESOURCE_SPEC.AddToParser(parser)
-  _ARCHIVE_URIS.AddToParser(parser)
-  _ENTRYPOINT_JOB_FILE_ARGS.AddToParser(parser)
+  _WORKER_POOL_SPEC.AddToParser(parser)
   _CONTAINER_IMAGE_URI.AddToParser(parser)
 
 

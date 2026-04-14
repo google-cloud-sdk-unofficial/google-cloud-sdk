@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to SSH into a Cloud Run Job."""
+"""Command to SSH into a Cloud Run job."""
 
 from googlecloudsdk.api_lib.run import ssh as run_ssh
 from googlecloudsdk.calliope import base
@@ -24,17 +24,17 @@ from googlecloudsdk.command_lib.run import ssh_command
 @base.Hidden
 @base.DefaultUniverseOnly
 class Ssh(ssh_command.BaseSshCommand):
-  """SSH into a Job instance."""
+  """SSH into a job instance."""
 
   detailed_help = {
       'DESCRIPTION': (
           """\
-          Starts a secure, interactive shell session with an instance of a Cloud Run Job.
+          Starts a secure, interactive shell session with an instance of a Cloud Run job.
           """
       ),
       'EXAMPLES': (
           """\
-          To start an interactive shell session with a Cloud Run Job:
+          To start an interactive shell session with a Cloud Run job:
 
               $ {command} my-job --instance=my-instance-id
           """

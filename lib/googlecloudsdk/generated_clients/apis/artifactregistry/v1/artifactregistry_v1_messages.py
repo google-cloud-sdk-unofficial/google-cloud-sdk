@@ -245,6 +245,23 @@ class ArtifactregistryProjectsLocationsRepositoriesAttachmentsListRequest(_messa
   parent = _messages.StringField(4, required=True)
 
 
+class ArtifactregistryProjectsLocationsRepositoriesCheckPrewarmedArtifactRequest(_messages.Message):
+  r"""A
+  ArtifactregistryProjectsLocationsRepositoriesCheckPrewarmedArtifactRequest
+  object.
+
+  Fields:
+    checkPrewarmedArtifactRequest: A CheckPrewarmedArtifactRequest resource to
+      be passed as the request body.
+    repository: Required. The name of the repository, for example:
+      `projects/p1/locations/us-central1/repositories/repo1`. If the package
+      or version ID parts contain slashes, the slashes are escaped.
+  """
+
+  checkPrewarmedArtifactRequest = _messages.MessageField('CheckPrewarmedArtifactRequest', 1)
+  repository = _messages.StringField(2, required=True)
+
+
 class ArtifactregistryProjectsLocationsRepositoriesCopyRepositoryRequest(_messages.Message):
   r"""A ArtifactregistryProjectsLocationsRepositoriesCopyRepositoryRequest
   object.
@@ -1022,6 +1039,44 @@ class ArtifactregistryProjectsLocationsRepositoriesPatchRequest(_messages.Messag
   updateMask = _messages.StringField(3)
 
 
+class ArtifactregistryProjectsLocationsRepositoriesPrewarmArtifactRequest(_messages.Message):
+  r"""A ArtifactregistryProjectsLocationsRepositoriesPrewarmArtifactRequest
+  object.
+
+  Fields:
+    prewarmArtifactRequest: A PrewarmArtifactRequest resource to be passed as
+      the request body.
+    repository: Required. The repository name, for example:
+      `projects/p1/locations/us-central1/repositories/repo1`. If the package
+      or version ID parts contain slashes, the slashes are escaped.
+  """
+
+  prewarmArtifactRequest = _messages.MessageField('PrewarmArtifactRequest', 1)
+  repository = _messages.StringField(2, required=True)
+
+
+class ArtifactregistryProjectsLocationsRepositoriesPrewarmedArtifactsListRequest(_messages.Message):
+  r"""A
+  ArtifactregistryProjectsLocationsRepositoriesPrewarmedArtifactsListRequest
+  object.
+
+  Fields:
+    filter: Optional. Filter should only support The location of the prewarmed
+      artifacts. multi-region is not supported for this field.
+    pageSize: Optional. The maximum number of prewarmed artifacts to return.
+      Maximum page size is 1,000. Default page size is 100.
+    pageToken: Optional. The next_page_token value returned from a previous
+      list request, if any.
+    parent: Required. The repository of the artifact to list. Format:
+      projects/{project}/locations/{location}/repositories/{repository}
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+
+
 class ArtifactregistryProjectsLocationsRepositoriesPythonPackagesGetRequest(_messages.Message):
   r"""A ArtifactregistryProjectsLocationsRepositoriesPythonPackagesGetRequest
   object.
@@ -1062,6 +1117,22 @@ class ArtifactregistryProjectsLocationsRepositoriesReindexRequest(_messages.Mess
 
   name = _messages.StringField(1, required=True)
   reindexRepositoryRequest = _messages.MessageField('ReindexRepositoryRequest', 2)
+
+
+class ArtifactregistryProjectsLocationsRepositoriesRemovePrewarmedArtifactRequest(_messages.Message):
+  r"""A
+  ArtifactregistryProjectsLocationsRepositoriesRemovePrewarmedArtifactRequest
+  object.
+
+  Fields:
+    removePrewarmedArtifactRequest: A RemovePrewarmedArtifactRequest resource
+      to be passed as the request body.
+    repository: Required. The repository name, for example:
+      `projects/p1/locations/us-central1/repositories/repo1`.
+  """
+
+  removePrewarmedArtifactRequest = _messages.MessageField('RemovePrewarmedArtifactRequest', 1)
+  repository = _messages.StringField(2, required=True)
 
 
 class ArtifactregistryProjectsLocationsRepositoriesRulesCreateRequest(_messages.Message):
@@ -1473,6 +1544,33 @@ class CancelOperationRequest(_messages.Message):
   r"""The request message for Operations.CancelOperation."""
 
 
+class CheckPrewarmedArtifactRequest(_messages.Message):
+  r"""The request for checking an artifact for streaming.
+
+  Fields:
+    streamLocation: Optional. The location of the prewarmed artifact. multi-
+      region is not supported for this field.
+    tag: The artifact tag Format:projects/{project}/locations/{location}/repos
+      itories/{repository}/packages/{package}/tags/{tag}
+    version: The artifact version Format: projects/{project}/locations/{locati
+      on}/repositories/{repository}/packages/{package}/versions/{version}
+  """
+
+  streamLocation = _messages.StringField(1)
+  tag = _messages.StringField(2)
+  version = _messages.StringField(3)
+
+
+class CheckPrewarmedArtifactResponse(_messages.Message):
+  r"""The response for checking an artifact for streaming.
+
+  Fields:
+    prewarmedArtifact: The prewarmed artifact that was checked.
+  """
+
+  prewarmedArtifact = _messages.MessageField('PrewarmedArtifact', 1)
+
+
 class CleanupPolicy(_messages.Message):
   r"""Artifact policy configuration for repository cleanup policies.
 
@@ -1515,6 +1613,9 @@ class CleanupPolicyCondition(_messages.Message):
 
   Fields:
     moreStaleThan: Match versions that have not been pulled in the duration.
+      Note that the staleness is calculated by tracking requests to AR. Any
+      caches outside of the AR and Riptide services (like GKE-native cache)
+      are not considered.
     newerThan: Match versions newer than a duration.
     olderThan: Match versions older than a duration.
     packageNamePrefixes: Match versions by package prefix. Applied on any
@@ -2562,6 +2663,19 @@ class ListPackagesResponse(_messages.Message):
   packages = _messages.MessageField('Package', 2, repeated=True)
 
 
+class ListPrewarmedArtifactsResponse(_messages.Message):
+  r"""The response for listing artifacts for streaming.
+
+  Fields:
+    nextPageToken: The token to retrieve the next page of prewarmed artifacts,
+      or empty if there are no more streamings to return.
+    prewarmedArtifacts: The prewarmed artifacts.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  prewarmedArtifacts = _messages.MessageField('PrewarmedArtifact', 2, repeated=True)
+
+
 class ListPythonPackagesResponse(_messages.Message):
   r"""The response from listing python packages.
 
@@ -3188,6 +3302,56 @@ class Policy(_messages.Message):
   version = _messages.IntegerField(3, variant=_messages.Variant.INT32)
 
 
+class PrewarmArtifactRequest(_messages.Message):
+  r"""The request for prewarming an artifact for streaming.
+
+  Fields:
+    force: Optional. If true, old artifact will be evicted to make room for
+      the new artifact.
+    retentionDays: Optional. The retention days of the prewarmed artifact. If
+      not specified, the artifact will be cached for 3 days.
+    streamLocation: Optional. The location to cache the artifact in. If not
+      specified, the artifact will be cached in the same location as the
+      artifact. multi-region is not supported for this field.
+    tag: The artifact tag Format:projects/{project}/locations/{location}/repos
+      itories/{repository}/packages/{package}/tags/{tag}
+    version: The artifact version Format: projects/{project}/locations/{locati
+      on}/repositories/{repository}/packages/{package}/versions/{version}
+  """
+
+  force = _messages.BooleanField(1)
+  retentionDays = _messages.IntegerField(2)
+  streamLocation = _messages.StringField(3)
+  tag = _messages.StringField(4)
+  version = _messages.StringField(5)
+
+
+class PrewarmArtifactResponse(_messages.Message):
+  r"""The response for prewarming an artifact for streaming.
+
+  Fields:
+    prewarmedArtifact: The prewarmed artifact that was prewarmed.
+  """
+
+  prewarmedArtifact = _messages.MessageField('PrewarmedArtifact', 1)
+
+
+class PrewarmedArtifact(_messages.Message):
+  r"""PrewarmedArtifact represents a streamed artifact.
+
+  Fields:
+    expirationTime: The expiration time of the prewarmed artifact.
+    location: The location of the prewarmed artifact.
+    uri: URL to access the image. Example: us-west4-docker.pkg.dev/test-
+      project/test-repo/nginx@sha256:e9954c1fc875017be1c3e36eca16be2d9e9bccc4b
+      f072163515467d6a823c7cf
+  """
+
+  expirationTime = _messages.StringField(1)
+  location = _messages.StringField(2)
+  uri = _messages.StringField(3)
+
+
 class ProjectConfig(_messages.Message):
   r"""The Artifact Registry logging configurations that apply to a Project.
 
@@ -3372,6 +3536,33 @@ class RemoteRepositoryConfig(_messages.Message):
   serviceDirectoryConfig = _messages.MessageField('ServiceDirectoryConfig', 14)
   upstreamCredentials = _messages.MessageField('UpstreamCredentials', 15)
   yumRepository = _messages.MessageField('YumRepository', 16)
+
+
+class RemovePrewarmedArtifactRequest(_messages.Message):
+  r"""The request for removing an artifact from streaming.
+
+  Fields:
+    streamLocation: Optional. The location of the prewarmed artifact. multi-
+      region is not supported for this field.
+    tag: The artifact tag Format:projects/{project}/locations/{location}/repos
+      itories/{repository}/packages/{package}/tags/{tag}
+    version: The artifact version Format: projects/{project}/locations/{locati
+      on}/repositories/{repository}/packages/{package}/versions/{version}
+  """
+
+  streamLocation = _messages.StringField(1)
+  tag = _messages.StringField(2)
+  version = _messages.StringField(3)
+
+
+class RemovePrewarmedArtifactResponse(_messages.Message):
+  r"""The response for removing an artifact from streaming.
+
+  Fields:
+    prewarmedArtifact: The prewarmed artifact that was removed.
+  """
+
+  prewarmedArtifact = _messages.MessageField('PrewarmedArtifact', 1)
 
 
 class Repository(_messages.Message):

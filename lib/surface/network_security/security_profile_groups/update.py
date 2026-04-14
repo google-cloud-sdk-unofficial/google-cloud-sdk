@@ -14,6 +14,7 @@
 # limitations under the License.
 """Update command to update a security profile group resource."""
 
+import textwrap
 import types
 
 from googlecloudsdk.api_lib.network_security.security_profile_groups import spg_api
@@ -22,6 +23,7 @@ from googlecloudsdk.command_lib.network_security import spg_flags
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
+
 
 _detailed_help = {
     'DESCRIPTION': """
@@ -36,10 +38,6 @@ _detailed_help = {
 
         """,
 }
-
-_URL_FILTERING_SUPPORTED = (
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
-)
 
 _WILDFIRE_ANALYSIS_SUPPORTED = (
     base.ReleaseTrack.ALPHA,
@@ -72,17 +70,14 @@ class UpdateProfileGroup(base.UpdateCommand):
         parser, cls.ReleaseTrack(), project_scope_supported
     )
     spg_flags.AddProfileGroupDescription(parser)
-    # TODO: b/349671332 - Remove this conditional once the group is released.
-    threat_prevention_group = None
-    if cls.ReleaseTrack() in _URL_FILTERING_SUPPORTED:
-      threat_prevention_group = parser.add_group(mutex=True)
-      threat_prevention_group.add_argument(
-          '--clear-threat-prevention-profile',
-          action='store_true',
-          help='''\
-            Clear the threat-prevention-profile field.
-          ''',
-      )
+    threat_prevention_group = parser.add_group(mutex=True)
+    threat_prevention_group.add_argument(
+        '--clear-threat-prevention-profile',
+        action='store_true',
+        help=textwrap.dedent("""\
+          Clear the threat-prevention-profile field.
+        """),
+    )
     spg_flags.AddSecurityProfileResource(
         parser,
         cls.ReleaseTrack(),
@@ -93,33 +88,31 @@ class UpdateProfileGroup(base.UpdateCommand):
         help_text='Path to Threat Prevention Profile resource.',
         project_scope_supported=project_scope_supported,
     )
-    # TODO: b/349671332 - Remove this conditional once the group is released.
-    if cls.ReleaseTrack() in _URL_FILTERING_SUPPORTED:
-      url_filtering_group = parser.add_group(mutex=True)
-      url_filtering_group.add_argument(
-          '--clear-url-filtering-profile',
-          action='store_true',
-          help='''\
-            Clear the url-filtering-profile field.
-          ''',
-      )
-      spg_flags.AddSecurityProfileResource(
-          parser,
-          cls.ReleaseTrack(),
-          'url-filtering-profile',
-          group=url_filtering_group,
-          required=False,
-          help_text='Path to URL Filtering Profile resource.',
-          project_scope_supported=project_scope_supported,
-      )
+    url_filtering_group = parser.add_group(mutex=True)
+    url_filtering_group.add_argument(
+        '--clear-url-filtering-profile',
+        action='store_true',
+        help=textwrap.dedent("""\
+          Clear the url-filtering-profile field.
+        """),
+    )
+    spg_flags.AddSecurityProfileResource(
+        parser,
+        cls.ReleaseTrack(),
+        'url-filtering-profile',
+        group=url_filtering_group,
+        required=False,
+        help_text='Path to URL Filtering Profile resource.',
+        project_scope_supported=project_scope_supported,
+    )
     if cls.ReleaseTrack() in _WILDFIRE_ANALYSIS_SUPPORTED:
       wildfire_analysis_group = parser.add_group(mutex=True)
       wildfire_analysis_group.add_argument(
           '--clear-wildfire-analysis-profile',
           action='store_true',
-          help='''\
+          help=textwrap.dedent("""\
             Clear the wildfire-analysis-profile field.
-          ''',
+          """),
       )
       spg_flags.AddSecurityProfileResource(
           parser,
@@ -160,12 +153,10 @@ class UpdateProfileGroup(base.UpdateCommand):
 
     update_mask = []
     if (profiles.threat_prevention_profile is not None
-        or self.ReleaseTrack() in _URL_FILTERING_SUPPORTED
-        and args.clear_threat_prevention_profile):
+        or args.clear_threat_prevention_profile):
       update_mask.append('threatPreventionProfile')
     if (profiles.url_filtering_profile is not None
-        or self.ReleaseTrack() in _URL_FILTERING_SUPPORTED
-        and args.clear_url_filtering_profile):
+        or args.clear_url_filtering_profile):
       update_mask.append('urlFilteringProfile')
     if (profiles.wildfire_analysis_profile is not None
         or self.ReleaseTrack() in _WILDFIRE_ANALYSIS_SUPPORTED

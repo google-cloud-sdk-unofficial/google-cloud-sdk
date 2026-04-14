@@ -23,6 +23,7 @@ from googlecloudsdk.command_lib.orchestration_pipelines.handlers import base
 class StorageBucketHandler(base.GcpResourceHandler):
   """Handler for Storage Bucket resources."""
 
+  description = "Storage Bucket resources."
   api_prefix = ""
 
   def build_get_request(self) -> messages.Message:
@@ -59,6 +60,17 @@ class StorageBucketHandler(base.GcpResourceHandler):
 class StorageNotificationHandler(base.GcpResourceHandler):
   """Handler for Storage Notification resources."""
 
+  description = (
+      "Storage Notification resources.\n"
+      "Special handling:\n"
+      " - updates: in-place updates are not supported by the API; resources "
+      "must be recreated\n"
+      " - dynamic ID resolution: resource ID is resolved dynamically from "
+      "matching topic in API list output\n"
+      "Definition handling:\n"
+      " - topic: prefix `//pubsub.[DOMAIN]/` is ignored during "
+      "comparison against API state"
+  )
   api_prefix = ""
   api_client_collection_path = "notifications"
 
@@ -138,6 +150,7 @@ class StorageNotificationHandler(base.GcpResourceHandler):
 class StorageBucketIamPolicyHandler(base.GcpResourceHandler):
   """Handler for Storage Bucket IAM Policy resources."""
 
+  description = "Storage Bucket IAM Policy resources."
   api_prefix = ""
   api_client_collection_path = "buckets"
 

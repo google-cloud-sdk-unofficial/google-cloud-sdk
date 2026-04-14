@@ -43,8 +43,12 @@ class CloudaicompanionV1(base_api.BaseApiClient):
     self.projects_locations_codeToolsSettings = self.ProjectsLocationsCodeToolsSettingsService(self)
     self.projects_locations_dataSharingWithGoogleSettings_settingBindings = self.ProjectsLocationsDataSharingWithGoogleSettingsSettingBindingsService(self)
     self.projects_locations_dataSharingWithGoogleSettings = self.ProjectsLocationsDataSharingWithGoogleSettingsService(self)
+    self.projects_locations_gdaObservabilitySettings_settingBindings = self.ProjectsLocationsGdaObservabilitySettingsSettingBindingsService(self)
+    self.projects_locations_gdaObservabilitySettings = self.ProjectsLocationsGdaObservabilitySettingsService(self)
     self.projects_locations_geminiGcpEnablementSettings_settingBindings = self.ProjectsLocationsGeminiGcpEnablementSettingsSettingBindingsService(self)
     self.projects_locations_geminiGcpEnablementSettings = self.ProjectsLocationsGeminiGcpEnablementSettingsService(self)
+    self.projects_locations_gibqObservabilitySettings_settingBindings = self.ProjectsLocationsGibqObservabilitySettingsSettingBindingsService(self)
+    self.projects_locations_gibqObservabilitySettings = self.ProjectsLocationsGibqObservabilitySettingsService(self)
     self.projects_locations_loggingSettings_settingBindings = self.ProjectsLocationsLoggingSettingsSettingBindingsService(self)
     self.projects_locations_loggingSettings = self.ProjectsLocationsLoggingSettingsService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
@@ -1004,6 +1008,296 @@ class CloudaicompanionV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsGdaObservabilitySettingsSettingBindingsService(base_api.BaseApiService):
+    """Service class for the projects_locations_gdaObservabilitySettings_settingBindings resource."""
+
+    _NAME = 'projects_locations_gdaObservabilitySettings_settingBindings'
+
+    def __init__(self, client):
+      super(CloudaicompanionV1.ProjectsLocationsGdaObservabilitySettingsSettingBindingsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new SettingBinding in a given project and location.
+
+      Args:
+        request: (CloudaicompanionProjectsLocationsGdaObservabilitySettingsSettingBindingsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/gdaObservabilitySettings/{gdaObservabilitySettingsId}/settingBindings',
+        http_method='POST',
+        method_id='cloudaicompanion.projects.locations.gdaObservabilitySettings.settingBindings.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['requestId', 'settingBindingId'],
+        relative_path='v1/{+parent}/settingBindings',
+        request_field='settingBinding',
+        request_type_name='CloudaicompanionProjectsLocationsGdaObservabilitySettingsSettingBindingsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single SettingBinding.
+
+      Args:
+        request: (CloudaicompanionProjectsLocationsGdaObservabilitySettingsSettingBindingsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/gdaObservabilitySettings/{gdaObservabilitySettingsId}/settingBindings/{settingBindingsId}',
+        http_method='DELETE',
+        method_id='cloudaicompanion.projects.locations.gdaObservabilitySettings.settingBindings.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='CloudaicompanionProjectsLocationsGdaObservabilitySettingsSettingBindingsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single SettingBinding.
+
+      Args:
+        request: (CloudaicompanionProjectsLocationsGdaObservabilitySettingsSettingBindingsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SettingBinding) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/gdaObservabilitySettings/{gdaObservabilitySettingsId}/settingBindings/{settingBindingsId}',
+        http_method='GET',
+        method_id='cloudaicompanion.projects.locations.gdaObservabilitySettings.settingBindings.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='CloudaicompanionProjectsLocationsGdaObservabilitySettingsSettingBindingsGetRequest',
+        response_type_name='SettingBinding',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists SettingBindings in a given project and location.
+
+      Args:
+        request: (CloudaicompanionProjectsLocationsGdaObservabilitySettingsSettingBindingsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListSettingBindingsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/gdaObservabilitySettings/{gdaObservabilitySettingsId}/settingBindings',
+        http_method='GET',
+        method_id='cloudaicompanion.projects.locations.gdaObservabilitySettings.settingBindings.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/settingBindings',
+        request_field='',
+        request_type_name='CloudaicompanionProjectsLocationsGdaObservabilitySettingsSettingBindingsListRequest',
+        response_type_name='ListSettingBindingsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single SettingBinding.
+
+      Args:
+        request: (CloudaicompanionProjectsLocationsGdaObservabilitySettingsSettingBindingsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/gdaObservabilitySettings/{gdaObservabilitySettingsId}/settingBindings/{settingBindingsId}',
+        http_method='PATCH',
+        method_id='cloudaicompanion.projects.locations.gdaObservabilitySettings.settingBindings.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1/{+name}',
+        request_field='settingBinding',
+        request_type_name='CloudaicompanionProjectsLocationsGdaObservabilitySettingsSettingBindingsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsGdaObservabilitySettingsService(base_api.BaseApiService):
+    """Service class for the projects_locations_gdaObservabilitySettings resource."""
+
+    _NAME = 'projects_locations_gdaObservabilitySettings'
+
+    def __init__(self, client):
+      super(CloudaicompanionV1.ProjectsLocationsGdaObservabilitySettingsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new GdaObservabilitySetting in a given project and location.
+
+      Args:
+        request: (CloudaicompanionProjectsLocationsGdaObservabilitySettingsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GdaObservabilitySetting) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/gdaObservabilitySettings',
+        http_method='POST',
+        method_id='cloudaicompanion.projects.locations.gdaObservabilitySettings.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['gdaObservabilitySettingId', 'requestId'],
+        relative_path='v1/{+parent}/gdaObservabilitySettings',
+        request_field='gdaObservabilitySetting',
+        request_type_name='CloudaicompanionProjectsLocationsGdaObservabilitySettingsCreateRequest',
+        response_type_name='GdaObservabilitySetting',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single GdaObservabilitySetting.
+
+      Args:
+        request: (CloudaicompanionProjectsLocationsGdaObservabilitySettingsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/gdaObservabilitySettings/{gdaObservabilitySettingsId}',
+        http_method='DELETE',
+        method_id='cloudaicompanion.projects.locations.gdaObservabilitySettings.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='CloudaicompanionProjectsLocationsGdaObservabilitySettingsDeleteRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single GdaObservabilitySetting.
+
+      Args:
+        request: (CloudaicompanionProjectsLocationsGdaObservabilitySettingsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GdaObservabilitySetting) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/gdaObservabilitySettings/{gdaObservabilitySettingsId}',
+        http_method='GET',
+        method_id='cloudaicompanion.projects.locations.gdaObservabilitySettings.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='CloudaicompanionProjectsLocationsGdaObservabilitySettingsGetRequest',
+        response_type_name='GdaObservabilitySetting',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists GdaObservabilitySettings in a given project and location.
+
+      Args:
+        request: (CloudaicompanionProjectsLocationsGdaObservabilitySettingsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListGdaObservabilitySettingsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/gdaObservabilitySettings',
+        http_method='GET',
+        method_id='cloudaicompanion.projects.locations.gdaObservabilitySettings.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/gdaObservabilitySettings',
+        request_field='',
+        request_type_name='CloudaicompanionProjectsLocationsGdaObservabilitySettingsListRequest',
+        response_type_name='ListGdaObservabilitySettingsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single GdaObservabilitySetting.
+
+      Args:
+        request: (CloudaicompanionProjectsLocationsGdaObservabilitySettingsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GdaObservabilitySetting) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/gdaObservabilitySettings/{gdaObservabilitySettingsId}',
+        http_method='PATCH',
+        method_id='cloudaicompanion.projects.locations.gdaObservabilitySettings.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1/{+name}',
+        request_field='gdaObservabilitySetting',
+        request_type_name='CloudaicompanionProjectsLocationsGdaObservabilitySettingsPatchRequest',
+        response_type_name='GdaObservabilitySetting',
+        supports_download=False,
+    )
+
   class ProjectsLocationsGeminiGcpEnablementSettingsSettingBindingsService(base_api.BaseApiService):
     """Service class for the projects_locations_geminiGcpEnablementSettings_settingBindings resource."""
 
@@ -1291,6 +1585,296 @@ class CloudaicompanionV1(base_api.BaseApiClient):
         request_field='geminiGcpEnablementSetting',
         request_type_name='CloudaicompanionProjectsLocationsGeminiGcpEnablementSettingsPatchRequest',
         response_type_name='GeminiGcpEnablementSetting',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsGibqObservabilitySettingsSettingBindingsService(base_api.BaseApiService):
+    """Service class for the projects_locations_gibqObservabilitySettings_settingBindings resource."""
+
+    _NAME = 'projects_locations_gibqObservabilitySettings_settingBindings'
+
+    def __init__(self, client):
+      super(CloudaicompanionV1.ProjectsLocationsGibqObservabilitySettingsSettingBindingsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new SettingBinding in a given project and location.
+
+      Args:
+        request: (CloudaicompanionProjectsLocationsGibqObservabilitySettingsSettingBindingsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/gibqObservabilitySettings/{gibqObservabilitySettingsId}/settingBindings',
+        http_method='POST',
+        method_id='cloudaicompanion.projects.locations.gibqObservabilitySettings.settingBindings.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['requestId', 'settingBindingId'],
+        relative_path='v1/{+parent}/settingBindings',
+        request_field='settingBinding',
+        request_type_name='CloudaicompanionProjectsLocationsGibqObservabilitySettingsSettingBindingsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single SettingBinding.
+
+      Args:
+        request: (CloudaicompanionProjectsLocationsGibqObservabilitySettingsSettingBindingsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/gibqObservabilitySettings/{gibqObservabilitySettingsId}/settingBindings/{settingBindingsId}',
+        http_method='DELETE',
+        method_id='cloudaicompanion.projects.locations.gibqObservabilitySettings.settingBindings.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='CloudaicompanionProjectsLocationsGibqObservabilitySettingsSettingBindingsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single SettingBinding.
+
+      Args:
+        request: (CloudaicompanionProjectsLocationsGibqObservabilitySettingsSettingBindingsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SettingBinding) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/gibqObservabilitySettings/{gibqObservabilitySettingsId}/settingBindings/{settingBindingsId}',
+        http_method='GET',
+        method_id='cloudaicompanion.projects.locations.gibqObservabilitySettings.settingBindings.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='CloudaicompanionProjectsLocationsGibqObservabilitySettingsSettingBindingsGetRequest',
+        response_type_name='SettingBinding',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists SettingBindings in a given project and location.
+
+      Args:
+        request: (CloudaicompanionProjectsLocationsGibqObservabilitySettingsSettingBindingsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListSettingBindingsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/gibqObservabilitySettings/{gibqObservabilitySettingsId}/settingBindings',
+        http_method='GET',
+        method_id='cloudaicompanion.projects.locations.gibqObservabilitySettings.settingBindings.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/settingBindings',
+        request_field='',
+        request_type_name='CloudaicompanionProjectsLocationsGibqObservabilitySettingsSettingBindingsListRequest',
+        response_type_name='ListSettingBindingsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single SettingBinding.
+
+      Args:
+        request: (CloudaicompanionProjectsLocationsGibqObservabilitySettingsSettingBindingsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/gibqObservabilitySettings/{gibqObservabilitySettingsId}/settingBindings/{settingBindingsId}',
+        http_method='PATCH',
+        method_id='cloudaicompanion.projects.locations.gibqObservabilitySettings.settingBindings.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1/{+name}',
+        request_field='settingBinding',
+        request_type_name='CloudaicompanionProjectsLocationsGibqObservabilitySettingsSettingBindingsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsGibqObservabilitySettingsService(base_api.BaseApiService):
+    """Service class for the projects_locations_gibqObservabilitySettings resource."""
+
+    _NAME = 'projects_locations_gibqObservabilitySettings'
+
+    def __init__(self, client):
+      super(CloudaicompanionV1.ProjectsLocationsGibqObservabilitySettingsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new GibqObservabilitySetting in a given project and location.
+
+      Args:
+        request: (CloudaicompanionProjectsLocationsGibqObservabilitySettingsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GibqObservabilitySetting) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/gibqObservabilitySettings',
+        http_method='POST',
+        method_id='cloudaicompanion.projects.locations.gibqObservabilitySettings.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['gibqObservabilitySettingId', 'requestId'],
+        relative_path='v1/{+parent}/gibqObservabilitySettings',
+        request_field='gibqObservabilitySetting',
+        request_type_name='CloudaicompanionProjectsLocationsGibqObservabilitySettingsCreateRequest',
+        response_type_name='GibqObservabilitySetting',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single GibqObservabilitySetting.
+
+      Args:
+        request: (CloudaicompanionProjectsLocationsGibqObservabilitySettingsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/gibqObservabilitySettings/{gibqObservabilitySettingsId}',
+        http_method='DELETE',
+        method_id='cloudaicompanion.projects.locations.gibqObservabilitySettings.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='CloudaicompanionProjectsLocationsGibqObservabilitySettingsDeleteRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single GibqObservabilitySetting.
+
+      Args:
+        request: (CloudaicompanionProjectsLocationsGibqObservabilitySettingsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GibqObservabilitySetting) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/gibqObservabilitySettings/{gibqObservabilitySettingsId}',
+        http_method='GET',
+        method_id='cloudaicompanion.projects.locations.gibqObservabilitySettings.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='CloudaicompanionProjectsLocationsGibqObservabilitySettingsGetRequest',
+        response_type_name='GibqObservabilitySetting',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists GibqObservabilitySettings in a given project and location.
+
+      Args:
+        request: (CloudaicompanionProjectsLocationsGibqObservabilitySettingsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListGibqObservabilitySettingsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/gibqObservabilitySettings',
+        http_method='GET',
+        method_id='cloudaicompanion.projects.locations.gibqObservabilitySettings.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/gibqObservabilitySettings',
+        request_field='',
+        request_type_name='CloudaicompanionProjectsLocationsGibqObservabilitySettingsListRequest',
+        response_type_name='ListGibqObservabilitySettingsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single GibqObservabilitySetting.
+
+      Args:
+        request: (CloudaicompanionProjectsLocationsGibqObservabilitySettingsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GibqObservabilitySetting) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/gibqObservabilitySettings/{gibqObservabilitySettingsId}',
+        http_method='PATCH',
+        method_id='cloudaicompanion.projects.locations.gibqObservabilitySettings.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1/{+name}',
+        request_field='gibqObservabilitySetting',
+        request_type_name='CloudaicompanionProjectsLocationsGibqObservabilitySettingsPatchRequest',
+        response_type_name='GibqObservabilitySetting',
         supports_download=False,
     )
 

@@ -603,6 +603,7 @@ def ParseCreateOptionsBase(
       node_architecture_taint_behavior=get_default(
           'node_architecture_taint_behavior'
       ),
+      enable_scheduled_upgrades=get_default('enable_scheduled_upgrades'),
   )
 
 
@@ -1134,6 +1135,7 @@ flags_to_add = {
         'linkedRunnersMode': lambda p: flags.AddLinkedRunnersModeFlag(
             p, hidden=True
         ),
+        'enableScheduledUpgrades': flags.AddEnableScheduledUpgradesFlag,
     },
     ALPHA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -1384,6 +1386,7 @@ flags_to_add = {
         'linkedRunnersMode': lambda p: flags.AddLinkedRunnersModeFlag(
             p, hidden=True
         ),
+        'enableScheduledUpgrades': flags.AddEnableScheduledUpgradesFlag,
     },
 }
 # LINT.ThenChange(create_auto.py:auto_flags)

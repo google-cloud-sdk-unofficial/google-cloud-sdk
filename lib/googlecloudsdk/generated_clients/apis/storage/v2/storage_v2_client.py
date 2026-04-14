@@ -48,6 +48,7 @@ class StorageV2(base_api.BaseApiClient):
     self.projects_buckets = self.ProjectsBucketsService(self)
     self.projects_locations_intelligenceFindings_revisions = self.ProjectsLocationsIntelligenceFindingsRevisionsService(self)
     self.projects_locations_intelligenceFindings = self.ProjectsLocationsIntelligenceFindingsService(self)
+    self.projects_locations_objectIndexes = self.ProjectsLocationsObjectIndexesService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects = self.ProjectsService(self)
 
@@ -460,13 +461,13 @@ class StorageV2(base_api.BaseApiClient):
 
     DeleteRecursive.method_config = lambda: base_api.ApiMethodInfo(
         flat_path='v2/projects/{projectsId}/buckets/{bucketsId}/folders/{foldersId}:deleteRecursive',
-        http_method='DELETE',
+        http_method='POST',
         method_id='storage.projects.buckets.folders.deleteRecursive',
         ordered_params=['name'],
         path_params=['name'],
-        query_params=['ifMetagenerationMatch', 'ifMetagenerationNotMatch', 'requestId'],
+        query_params=[],
         relative_path='v2/{+name}:deleteRecursive',
-        request_field='',
+        request_field='deleteFolderRecursiveRequest',
         request_type_name='StorageProjectsBucketsFoldersDeleteRecursiveRequest',
         response_type_name='Operation',
         supports_download=False,
@@ -887,6 +888,178 @@ class StorageV2(base_api.BaseApiClient):
         request_field='',
         request_type_name='StorageProjectsLocationsIntelligenceFindingsSummarizeRequest',
         response_type_name='SummarizeIntelligenceFindingsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsObjectIndexesService(base_api.BaseApiService):
+    """Service class for the projects_locations_objectIndexes resource."""
+
+    _NAME = 'projects_locations_objectIndexes'
+
+    def __init__(self, client):
+      super(StorageV2.ProjectsLocationsObjectIndexesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new ObjectIndex in a given project and location.
+
+      Args:
+        request: (StorageProjectsLocationsObjectIndexesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/objectIndexes',
+        http_method='POST',
+        method_id='storage.projects.locations.objectIndexes.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['objectIndexId', 'requestId'],
+        relative_path='v2/{+parent}/objectIndexes',
+        request_field='objectIndex',
+        request_type_name='StorageProjectsLocationsObjectIndexesCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single ObjectIndex.
+
+      Args:
+        request: (StorageProjectsLocationsObjectIndexesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/objectIndexes/{objectIndexesId}',
+        http_method='DELETE',
+        method_id='storage.projects.locations.objectIndexes.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v2/{+name}',
+        request_field='',
+        request_type_name='StorageProjectsLocationsObjectIndexesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single ObjectIndex.
+
+      Args:
+        request: (StorageProjectsLocationsObjectIndexesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ObjectIndex) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/objectIndexes/{objectIndexesId}',
+        http_method='GET',
+        method_id='storage.projects.locations.objectIndexes.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v2/{+name}',
+        request_field='',
+        request_type_name='StorageProjectsLocationsObjectIndexesGetRequest',
+        response_type_name='ObjectIndex',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists ObjectIndexes in a given project and location.
+
+      Args:
+        request: (StorageProjectsLocationsObjectIndexesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListObjectIndexesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/objectIndexes',
+        http_method='GET',
+        method_id='storage.projects.locations.objectIndexes.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v2/{+parent}/objectIndexes',
+        request_field='',
+        request_type_name='StorageProjectsLocationsObjectIndexesListRequest',
+        response_type_name='ListObjectIndexesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single ObjectIndex.
+
+      Args:
+        request: (StorageProjectsLocationsObjectIndexesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/objectIndexes/{objectIndexesId}',
+        http_method='PATCH',
+        method_id='storage.projects.locations.objectIndexes.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v2/{+name}',
+        request_field='objectIndex',
+        request_type_name='StorageProjectsLocationsObjectIndexesPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Search(self, request, global_params=None):
+      r"""Searches the specified ObjectIndex.
+
+      Args:
+        request: (StorageProjectsLocationsObjectIndexesSearchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SearchObjectIndexResponse) The response message.
+      """
+      config = self.GetMethodConfig('Search')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Search.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/objectIndexes/{objectIndexesId}:search',
+        http_method='GET',
+        method_id='storage.projects.locations.objectIndexes.search',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['filter', 'pageSize', 'pageToken', 'textQuery'],
+        relative_path='v2/{+name}:search',
+        request_field='',
+        request_type_name='StorageProjectsLocationsObjectIndexesSearchRequest',
+        response_type_name='SearchObjectIndexResponse',
         supports_download=False,
     )
 

@@ -399,6 +399,24 @@ def IsOnlySOAIncrement(change, api_version='v1'):
                            api_version) == change.additions[0])
 
 
+def IsNoopChange(change, api_version='v1') -> bool:
+  """Returns True if the change contains no additions or deletions.
+
+  This includes both truly empty changes (0 additions/deletions) and changes
+  that only contain an SOA increment.
+
+  Args:
+    change: Change, the change to be checked
+    api_version: str, the api version to use for creating the records.
+
+  Returns:
+    True if the change is a no-op, False otherwise.
+  """
+  if not change.additions and not change.deletions:
+    return True
+  return IsOnlySOAIncrement(change, api_version=api_version)
+
+
 def _NameAndType(record):
   return '{0} {1}'.format(record.name, record.type)
 
@@ -484,8 +502,7 @@ def ComputeChange(
   if not change.additions and not change.deletions:
     return None
 
-  # If the only change is an SOA increment, there is nothing to be done.
-  if IsOnlySOAIncrement(change, api_version):
+  if IsNoopChange(change, api_version):
     return None
 
   change.additions.sort(key=_NameAndType)

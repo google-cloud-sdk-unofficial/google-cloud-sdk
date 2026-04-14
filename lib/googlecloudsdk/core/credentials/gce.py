@@ -94,7 +94,9 @@ def _HandleMissingMetadataServer(return_list=False):
       except CannotConnectToMetadataServerException as e:
         log.debug('Metadata server not reachable (%s); refreshing cache.', e)
         with _metadata_lock:
-          self.connected = gce_cache.ForceCacheRefresh()
+          # pylint:disable=protected-access
+          self.connected = gce_cache.ForceCacheRefresh(
+              gce_cache_instance=self._gce_cache)
         return [] if return_list else None
 
     return Inner
@@ -109,8 +111,9 @@ class _GCEMetadata(object):
       connected: bool, True if the metadata server is available.
   """
 
-  def __init__(self):
-    self.connected = gce_cache.GetOnGCE()
+  def __init__(self, gce_cache_instance=None):
+    self._gce_cache = gce_cache_instance
+    self.connected = gce_cache.GetOnGCE(gce_cache_instance=self._gce_cache)
 
   @_HandleMissingMetadataServer()
   def DefaultAccount(self):

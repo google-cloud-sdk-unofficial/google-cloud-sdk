@@ -1011,7 +1011,7 @@ def GetReservationReference(
   if not reservation_id:
     raise bq_error.BigqueryError('Reservation name not specified.')
   else:
-    return bq_id_utils.ApiClientHelper.ReservationReference(
+    return bq_id_utils.ApiClientHelper.ReservationReference.Create(
         projectId=project_id, location=location, reservationId=reservation_id
     )
 
@@ -1175,7 +1175,7 @@ def GetReservationGroupReference(
   if not reservation_group_id:
     raise bq_error.BigqueryError('Reservation group id not specified.')
   else:
-    return bq_id_utils.ApiClientHelper.ReservationGroupReference(
+    return bq_id_utils.ApiClientHelper.ReservationGroupReference.Create(
         projectId=project_id,
         location=location,
         reservationGroupId=reservation_group_id,

@@ -1349,7 +1349,6 @@ def GetOsloginState(
     return oslogin_state
 
   oslogin_state.oslogin_enabled = oslogin_enabled
-  oslogin_state.third_party_user = IsThirdPartyUser()
   oslogin_state.is_default_universe = properties.IsDefaultUniverse()
 
   if cloud_run_params:
@@ -1357,6 +1356,7 @@ def GetOsloginState(
     oslogin_state.security_keys_enabled = False
     oslogin_state.require_certificates = True
   else:
+    oslogin_state.third_party_user = IsThirdPartyUser()
     oslogin_state.oslogin_2fa_enabled = FeatureEnabledInMetadata(
         instance,
         project,

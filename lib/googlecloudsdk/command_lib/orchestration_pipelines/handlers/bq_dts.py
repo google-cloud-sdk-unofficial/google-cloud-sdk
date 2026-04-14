@@ -26,6 +26,15 @@ class BqDataTransferConfigHandler(base.GcpResourceHandler):
   """Handler for migrating BigQuery DTS configurations."""
 
   allowed_metadata = ["service_account_name"]
+  _documentation_uri = "https://cloud.google.com/bigquery/docs/reference/datatransfer/rest/v1/projects.locations.transferConfigs"
+  description = (
+      "BigQuery Data Transfer Service configurations.\n"
+      "Metadata:\n"
+      " - service_account_name: authorization service account\n"
+      "Definition handling:\n"
+      " - displayName: used to find existing resource instead of exact ID "
+      "match"
+  )
 
   def find_existing_resource(self) -> Any:
     request = self.messages.BigquerydatatransferProjectsLocationsTransferConfigsListRequest(

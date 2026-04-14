@@ -14,11 +14,12 @@
 # limitations under the License.
 """The gcloud.run.compose group."""
 
-
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.DefaultUniverseOnly
 class Compose(base.Group):
   """Support Docker Compose workflows on Cloud Run.

@@ -15,41 +15,53 @@ class AuditReport(_messages.Message):
   r"""An audit report.
 
   Enums:
-    ReportGenerationStateValueValuesEnum: Output only. The state of Audit
-      Report Generation.
+    ReportGenerationStateValueValuesEnum: Output only. The state of audit
+      report generation.
 
   Fields:
-    complianceFramework: Output only. Compliance Framework of Audit Report
-    complianceStandard: Output only. Compliance Standard.
-    controlDetails: Output only. The overall status of controls
-    createTime: Output only. Creation time of the audit report.
-    destinationDetails: Output only. The location where the generated report
-      will be uploaded.
-    name: Identifier. The name of this Audit Report, in the format of scope
-      given in request.
-    operationId: Output only. ClientOperationId
-    reportGenerationState: Output only. The state of Audit Report Generation.
-    reportSummary: Output only. Report summary with compliance, violation
-      counts etc.
-    scope: Output only. The parent scope on which the report was generated.
-    scopeId: Output only. The ID/ Number for the scope on which the audit
-      report was generated.
+    complianceFramework: Output only. The compliance framework to use for the
+      audit report. For example, `CIS_GCP_FOUNDATIONS_V1_2_0`. To find the
+      list of supported frameworks, use the ListBuiltinComplianceFrameworks
+      method.
+    complianceStandard: Output only. Deprecated. The compliance standard to be
+      audited against. Use the `compliance_framework` field instead.
+    controlDetails: Output only. The overall status of the controls.
+    createTime: Output only. The creation time of the audit report.
+    destinationDetails: Output only. The Cloud Storage bucket where the audit
+      report is uploaded to.
+    name: Identifier. The name of the audit report, in one of the following
+      formats: *
+      `projects/{project}/locations/{location}/auditReports/{audit_report}` *
+      `folders/{folder}/locations/{location}/auditReports/{audit_report}` * `o
+      rganizations/{organization}/locations/{location}/auditReports/{audit_rep
+      ort}`
+    operationId: Output only. The client operation ID for the audit report.
+    reportGenerationState: Output only. The state of audit report generation.
+    reportSummary: Output only. A report summary that includes information
+      about compliance and violation counts.
+    scope: Output only. The organization, folder, or project that the report
+      is generated for, in one of the following formats: *
+      `projects/{project}/locations/{location}` *
+      `folders/{folder}/locations/{location}` *
+      `organizations/{organization}/locations/{location}`
+    scopeId: Output only. The project number, folder ID, or organization ID
+      that the audit report was generated for.
   """
 
   class ReportGenerationStateValueValuesEnum(_messages.Enum):
-    r"""Output only. The state of Audit Report Generation.
+    r"""Output only. The state of audit report generation.
 
     Values:
-      REPORT_GENERATION_STATE_UNSPECIFIED: Unspecified. Invalid state.
-      IN_PROGRESS: Audit report generation process is in progress, ie.
-        operation state is neither OPERATION_STATE_DONE nor
-        OPERATION_STATE_FAILED.
-      COMPLETED: Audit report generation process is completed. Operation state
-        is OPERATION_STATE_DONE.
-      FAILED: Audit report generation process has failed. Operation state is
-        OPERATION_STATE_FAILED.
-      SUMMARY_UNKNOWN: Audit report generation process has completed. But
-        report summary is unknown. This is valid for older reports.
+      REPORT_GENERATION_STATE_UNSPECIFIED: Default value. This value is
+        unused.
+      IN_PROGRESS: The process is in progress. The operation can have any
+        state except for `OPERATION_STATE_DONE` or `OPERATION_STATE_FAILED`.
+      COMPLETED: The process is completed. The operation state is
+        `OPERATION_STATE_DONE`.
+      FAILED: The process has failed. The operation state is
+        `OPERATION_STATE_FAILED`.
+      SUMMARY_UNKNOWN: The process completed, but the report summary's status
+        is unknown. This state isn't used for new reports.
     """
     REPORT_GENERATION_STATE_UNSPECIFIED = 0
     IN_PROGRESS = 1
@@ -74,8 +86,10 @@ class AuditScopeReport(_messages.Message):
   r"""The audit scope report.
 
   Fields:
-    name: Identifier. The name of this Audit Report, in the format of scope
-      given in request.
+    name: Identifier. The name for the audit scope report, in one of the
+      following formats: * `projects/{project}/locations/{location}/auditScope
+      Reports/{audit_scope_report}` * `folders/{folder}/locations/{location}/a
+      uditScopeReports/{audit_scope_report}`
     scopeReportContents: The audit scope report content in byte format.
   """
 
@@ -89,11 +103,11 @@ class AuditmanagerFoldersLocationsAuditReportsGenerateRequest(_messages.Message)
   Fields:
     generateAuditReportRequest: A GenerateAuditReportRequest resource to be
       passed as the request body.
-    scope: Required. Scope for which the AuditScopeReport is required. Must be
-      of format resource_type/resource_identifier Eg:
-      projects/{project}/locations/{location},
-      folders/{folder}/locations/{location}
-      organizations/{organization}/locations/{location}
+    scope: Required. The organization, folder, or project that the audit
+      applies to, in one of the following formats: *
+      `projects/{project}/locations/{location}` *
+      `folders/{folder}/locations/{location}` *
+      `organizations/{organization}/locations/{location}`
   """
 
   generateAuditReportRequest = _messages.MessageField('GenerateAuditReportRequest', 1)
@@ -104,9 +118,12 @@ class AuditmanagerFoldersLocationsAuditReportsGetRequest(_messages.Message):
   r"""A AuditmanagerFoldersLocationsAuditReportsGetRequest object.
 
   Fields:
-    name: Required. Format
-      projects/{project}/locations/{location}/auditReports/{audit_report},
-      folders/{folder}/locations/{location}/auditReports/{audit_report}
+    name: Required. The name of the audit report, in one of the following
+      formats: *
+      `projects/{project}/locations/{location}/auditReports/{audit_report}` *
+      `folders/{folder}/locations/{location}/auditReports/{audit_report}` * `o
+      rganizations/{organization}/locations/{location}/auditReports/{audit_rep
+      ort}`
   """
 
   name = _messages.StringField(1, required=True)
@@ -116,10 +133,17 @@ class AuditmanagerFoldersLocationsAuditReportsListRequest(_messages.Message):
   r"""A AuditmanagerFoldersLocationsAuditReportsListRequest object.
 
   Fields:
-    pageSize: Optional. The maximum number of resources to return.
-    pageToken: Optional. The next_page_token value returned from a previous
-      List request, if any.
-    parent: Required. The parent scope for which to list the reports.
+    pageSize: Optional. The maximum number of items to return in a single
+      page. The service might return fewer items than this value. If
+      unspecified, the service picks an appropriate default. The maximum value
+      is 100; values above 100 are reduced to 100.
+    pageToken: Optional. A page token, received from a previous call, to
+      retrieve the next page of results.
+    parent: Required. The parent organization, folder, or project to list
+      reports for, in one of the following formats: *
+      `projects/{project}/locations/{location}` *
+      `folders/{folder}/locations/{location}` *
+      `organizations/{organization}/locations/{location}`
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -133,10 +157,11 @@ class AuditmanagerFoldersLocationsAuditScopeReportsGenerateRequest(_messages.Mes
   Fields:
     generateAuditScopeReportRequest: A GenerateAuditScopeReportRequest
       resource to be passed as the request body.
-    scope: Required. Scope for which the AuditScopeReport is required. Must be
-      of format resource_type/resource_identifier Eg:
-      projects/{project}/locations/{location},
-      folders/{folder}/locations/{location}
+    scope: Required. The project or folder that the audit scope report is
+      generated for, in one of the following formats: *
+      `projects/{project}/locations/{location}` *
+      `folders/{folder}/locations/{location}` *
+      `organizations/{organization}/locations/{location}`
   """
 
   generateAuditScopeReportRequest = _messages.MessageField('GenerateAuditScopeReportRequest', 1)
@@ -149,11 +174,11 @@ class AuditmanagerFoldersLocationsEnrollResourceRequest(_messages.Message):
   Fields:
     enrollResourceRequest: A EnrollResourceRequest resource to be passed as
       the request body.
-    scope: Required. The resource to be enrolled to the audit manager. Scope
-      format should be resource_type/resource_identifier Eg:
-      projects/{project}/locations/{location},
-      folders/{folder}/locations/{location}
-      organizations/{organization}/locations/{location}
+    scope: Required. The organization, folder, or project to enroll in Audit
+      Manager, in one of the following formats: *
+      `projects/{project}/locations/{location}` *
+      `folders/{folder}/locations/{location}` *
+      `organizations/{organization}/locations/{location}`
   """
 
   enrollResourceRequest = _messages.MessageField('EnrollResourceRequest', 1)
@@ -185,11 +210,12 @@ class AuditmanagerFoldersLocationsResourceEnrollmentStatusesGetRequest(_messages
   object.
 
   Fields:
-    name: Required. Format folders/{folder}/locations/{location}/resourceEnrol
-      lmentStatuses/{resource_enrollment_status}, projects/{project}/locations
-      /{location}/resourceEnrollmentStatuses/{resource_enrollment_status}, org
-      anizations/{organization}/locations/{location}/resourceEnrollmentStatuse
-      s/{resource_enrollment_status}
+    name: Required. The name of the resource enrollment status, in one of the
+      following formats: * `folders/{folder}/locations/{location}/resourceEnro
+      llmentStatuses/{resource_enrollment_status}` * `projects/{project}/locat
+      ions/{location}/resourceEnrollmentStatuses/{resource_enrollment_status}`
+      * `organizations/{organization}/locations/{location}/resourceEnrollmentS
+      tatuses/{resource_enrollment_status}`
   """
 
   name = _messages.StringField(1, required=True)
@@ -200,11 +226,16 @@ class AuditmanagerFoldersLocationsResourceEnrollmentStatusesListRequest(_message
   object.
 
   Fields:
-    pageSize: Optional. The maximum number of resources to return.
-    pageToken: Optional. The next_page_token value returned from a previous
-      List request, if any.
-    parent: Required. The parent scope for which the list of resources with
-      enrollments are required.
+    pageSize: Optional. The maximum number of items to return in a single
+      page. The service might return fewer items than this value. If
+      unspecified, the service picks an appropriate default. The maximum value
+      is 100; values above 100 are reduced to 100.
+    pageToken: Optional. A page token, received from a previous call, to
+      retrieve the next page of results.
+    parent: Required. The parent organization or folder to list enrollment
+      statuses for, in one of the following formats: *
+      `folders/{folder}/locations/{location}` *
+      `organizations/{organization}/locations/{location}`
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -216,12 +247,17 @@ class AuditmanagerFoldersLocationsStandardsControlsListRequest(_messages.Message
   r"""A AuditmanagerFoldersLocationsStandardsControlsListRequest object.
 
   Fields:
-    pageSize: Optional. The maximum number of resources to return.
-    pageToken: Optional. The next_page_token value returned from a previous
-      List request, if any.
-    parent: Required. Format
-      projects/{project}/locations/{location}/standards/{standard},
-      folders/{folder}/locations/{location}/standards/{standard}
+    pageSize: Optional. The maximum number of items to return in a single
+      page. The service might return fewer items than this value. If
+      unspecified, the service picks an appropriate default. The maximum value
+      is 100; values above 100 are reduced to 100.
+    pageToken: Optional. A page token, received from a previous call, to
+      retrieve the next page of results.
+    parent: Required. The standard to list controls for, in one of the
+      following formats: *
+      `projects/{project}/locations/{location}/standards/{standard}` *
+      `folders/{folder}/locations/{location}/standards/{standard}` *
+      `organizations/{organization}/locations/{location}/standards/{standard}`
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -235,30 +271,70 @@ class AuditmanagerOrganizationsLocationsAuditReportsGenerateRequest(_messages.Me
   Fields:
     generateAuditReportRequest: A GenerateAuditReportRequest resource to be
       passed as the request body.
-    scope: Required. Scope for which the AuditScopeReport is required. Must be
-      of format resource_type/resource_identifier Eg:
-      projects/{project}/locations/{location},
-      folders/{folder}/locations/{location}
-      organizations/{organization}/locations/{location}
+    scope: Required. The organization, folder, or project that the audit
+      applies to, in one of the following formats: *
+      `projects/{project}/locations/{location}` *
+      `folders/{folder}/locations/{location}` *
+      `organizations/{organization}/locations/{location}`
   """
 
   generateAuditReportRequest = _messages.MessageField('GenerateAuditReportRequest', 1)
   scope = _messages.StringField(2, required=True)
 
 
+class AuditmanagerOrganizationsLocationsAuditReportsGetRequest(_messages.Message):
+  r"""A AuditmanagerOrganizationsLocationsAuditReportsGetRequest object.
+
+  Fields:
+    name: Required. The name of the audit report, in one of the following
+      formats: *
+      `projects/{project}/locations/{location}/auditReports/{audit_report}` *
+      `folders/{folder}/locations/{location}/auditReports/{audit_report}` * `o
+      rganizations/{organization}/locations/{location}/auditReports/{audit_rep
+      ort}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
 class AuditmanagerOrganizationsLocationsAuditReportsListRequest(_messages.Message):
   r"""A AuditmanagerOrganizationsLocationsAuditReportsListRequest object.
 
   Fields:
-    pageSize: Optional. The maximum number of resources to return.
-    pageToken: Optional. The next_page_token value returned from a previous
-      List request, if any.
-    parent: Required. The parent scope for which to list the reports.
+    pageSize: Optional. The maximum number of items to return in a single
+      page. The service might return fewer items than this value. If
+      unspecified, the service picks an appropriate default. The maximum value
+      is 100; values above 100 are reduced to 100.
+    pageToken: Optional. A page token, received from a previous call, to
+      retrieve the next page of results.
+    parent: Required. The parent organization, folder, or project to list
+      reports for, in one of the following formats: *
+      `projects/{project}/locations/{location}` *
+      `folders/{folder}/locations/{location}` *
+      `organizations/{organization}/locations/{location}`
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
+
+
+class AuditmanagerOrganizationsLocationsAuditScopeReportsGenerateRequest(_messages.Message):
+  r"""A AuditmanagerOrganizationsLocationsAuditScopeReportsGenerateRequest
+  object.
+
+  Fields:
+    generateAuditScopeReportRequest: A GenerateAuditScopeReportRequest
+      resource to be passed as the request body.
+    scope: Required. The project or folder that the audit scope report is
+      generated for, in one of the following formats: *
+      `projects/{project}/locations/{location}` *
+      `folders/{folder}/locations/{location}` *
+      `organizations/{organization}/locations/{location}`
+  """
+
+  generateAuditScopeReportRequest = _messages.MessageField('GenerateAuditScopeReportRequest', 1)
+  scope = _messages.StringField(2, required=True)
 
 
 class AuditmanagerOrganizationsLocationsEnrollResourceRequest(_messages.Message):
@@ -267,11 +343,11 @@ class AuditmanagerOrganizationsLocationsEnrollResourceRequest(_messages.Message)
   Fields:
     enrollResourceRequest: A EnrollResourceRequest resource to be passed as
       the request body.
-    scope: Required. The resource to be enrolled to the audit manager. Scope
-      format should be resource_type/resource_identifier Eg:
-      projects/{project}/locations/{location},
-      folders/{folder}/locations/{location}
-      organizations/{organization}/locations/{location}
+    scope: Required. The organization, folder, or project to enroll in Audit
+      Manager, in one of the following formats: *
+      `projects/{project}/locations/{location}` *
+      `folders/{folder}/locations/{location}` *
+      `organizations/{organization}/locations/{location}`
   """
 
   enrollResourceRequest = _messages.MessageField('EnrollResourceRequest', 1)
@@ -360,11 +436,12 @@ class AuditmanagerOrganizationsLocationsResourceEnrollmentStatusesGetRequest(_me
   object.
 
   Fields:
-    name: Required. Format folders/{folder}/locations/{location}/resourceEnrol
-      lmentStatuses/{resource_enrollment_status}, projects/{project}/locations
-      /{location}/resourceEnrollmentStatuses/{resource_enrollment_status}, org
-      anizations/{organization}/locations/{location}/resourceEnrollmentStatuse
-      s/{resource_enrollment_status}
+    name: Required. The name of the resource enrollment status, in one of the
+      following formats: * `folders/{folder}/locations/{location}/resourceEnro
+      llmentStatuses/{resource_enrollment_status}` * `projects/{project}/locat
+      ions/{location}/resourceEnrollmentStatuses/{resource_enrollment_status}`
+      * `organizations/{organization}/locations/{location}/resourceEnrollmentS
+      tatuses/{resource_enrollment_status}`
   """
 
   name = _messages.StringField(1, required=True)
@@ -376,11 +453,16 @@ class AuditmanagerOrganizationsLocationsResourceEnrollmentStatusesListRequest(_m
   object.
 
   Fields:
-    pageSize: Optional. The maximum number of resources to return.
-    pageToken: Optional. The next_page_token value returned from a previous
-      List request, if any.
-    parent: Required. The parent scope for which the list of resources with
-      enrollments are required.
+    pageSize: Optional. The maximum number of items to return in a single
+      page. The service might return fewer items than this value. If
+      unspecified, the service picks an appropriate default. The maximum value
+      is 100; values above 100 are reduced to 100.
+    pageToken: Optional. A page token, received from a previous call, to
+      retrieve the next page of results.
+    parent: Required. The parent organization or folder to list enrollment
+      statuses for, in one of the following formats: *
+      `folders/{folder}/locations/{location}` *
+      `organizations/{organization}/locations/{location}`
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -392,12 +474,17 @@ class AuditmanagerOrganizationsLocationsStandardsControlsListRequest(_messages.M
   r"""A AuditmanagerOrganizationsLocationsStandardsControlsListRequest object.
 
   Fields:
-    pageSize: Optional. The maximum number of resources to return.
-    pageToken: Optional. The next_page_token value returned from a previous
-      List request, if any.
-    parent: Required. Format
-      projects/{project}/locations/{location}/standards/{standard},
-      folders/{folder}/locations/{location}/standards/{standard}
+    pageSize: Optional. The maximum number of items to return in a single
+      page. The service might return fewer items than this value. If
+      unspecified, the service picks an appropriate default. The maximum value
+      is 100; values above 100 are reduced to 100.
+    pageToken: Optional. A page token, received from a previous call, to
+      retrieve the next page of results.
+    parent: Required. The standard to list controls for, in one of the
+      following formats: *
+      `projects/{project}/locations/{location}/standards/{standard}` *
+      `folders/{folder}/locations/{location}/standards/{standard}` *
+      `organizations/{organization}/locations/{location}/standards/{standard}`
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -411,11 +498,11 @@ class AuditmanagerProjectsLocationsAuditReportsGenerateRequest(_messages.Message
   Fields:
     generateAuditReportRequest: A GenerateAuditReportRequest resource to be
       passed as the request body.
-    scope: Required. Scope for which the AuditScopeReport is required. Must be
-      of format resource_type/resource_identifier Eg:
-      projects/{project}/locations/{location},
-      folders/{folder}/locations/{location}
-      organizations/{organization}/locations/{location}
+    scope: Required. The organization, folder, or project that the audit
+      applies to, in one of the following formats: *
+      `projects/{project}/locations/{location}` *
+      `folders/{folder}/locations/{location}` *
+      `organizations/{organization}/locations/{location}`
   """
 
   generateAuditReportRequest = _messages.MessageField('GenerateAuditReportRequest', 1)
@@ -426,9 +513,12 @@ class AuditmanagerProjectsLocationsAuditReportsGetRequest(_messages.Message):
   r"""A AuditmanagerProjectsLocationsAuditReportsGetRequest object.
 
   Fields:
-    name: Required. Format
-      projects/{project}/locations/{location}/auditReports/{audit_report},
-      folders/{folder}/locations/{location}/auditReports/{audit_report}
+    name: Required. The name of the audit report, in one of the following
+      formats: *
+      `projects/{project}/locations/{location}/auditReports/{audit_report}` *
+      `folders/{folder}/locations/{location}/auditReports/{audit_report}` * `o
+      rganizations/{organization}/locations/{location}/auditReports/{audit_rep
+      ort}`
   """
 
   name = _messages.StringField(1, required=True)
@@ -438,10 +528,17 @@ class AuditmanagerProjectsLocationsAuditReportsListRequest(_messages.Message):
   r"""A AuditmanagerProjectsLocationsAuditReportsListRequest object.
 
   Fields:
-    pageSize: Optional. The maximum number of resources to return.
-    pageToken: Optional. The next_page_token value returned from a previous
-      List request, if any.
-    parent: Required. The parent scope for which to list the reports.
+    pageSize: Optional. The maximum number of items to return in a single
+      page. The service might return fewer items than this value. If
+      unspecified, the service picks an appropriate default. The maximum value
+      is 100; values above 100 are reduced to 100.
+    pageToken: Optional. A page token, received from a previous call, to
+      retrieve the next page of results.
+    parent: Required. The parent organization, folder, or project to list
+      reports for, in one of the following formats: *
+      `projects/{project}/locations/{location}` *
+      `folders/{folder}/locations/{location}` *
+      `organizations/{organization}/locations/{location}`
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -455,10 +552,11 @@ class AuditmanagerProjectsLocationsAuditScopeReportsGenerateRequest(_messages.Me
   Fields:
     generateAuditScopeReportRequest: A GenerateAuditScopeReportRequest
       resource to be passed as the request body.
-    scope: Required. Scope for which the AuditScopeReport is required. Must be
-      of format resource_type/resource_identifier Eg:
-      projects/{project}/locations/{location},
-      folders/{folder}/locations/{location}
+    scope: Required. The project or folder that the audit scope report is
+      generated for, in one of the following formats: *
+      `projects/{project}/locations/{location}` *
+      `folders/{folder}/locations/{location}` *
+      `organizations/{organization}/locations/{location}`
   """
 
   generateAuditScopeReportRequest = _messages.MessageField('GenerateAuditScopeReportRequest', 1)
@@ -471,11 +569,11 @@ class AuditmanagerProjectsLocationsEnrollResourceRequest(_messages.Message):
   Fields:
     enrollResourceRequest: A EnrollResourceRequest resource to be passed as
       the request body.
-    scope: Required. The resource to be enrolled to the audit manager. Scope
-      format should be resource_type/resource_identifier Eg:
-      projects/{project}/locations/{location},
-      folders/{folder}/locations/{location}
-      organizations/{organization}/locations/{location}
+    scope: Required. The organization, folder, or project to enroll in Audit
+      Manager, in one of the following formats: *
+      `projects/{project}/locations/{location}` *
+      `folders/{folder}/locations/{location}` *
+      `organizations/{organization}/locations/{location}`
   """
 
   enrollResourceRequest = _messages.MessageField('EnrollResourceRequest', 1)
@@ -598,11 +696,12 @@ class AuditmanagerProjectsLocationsResourceEnrollmentStatusesGetRequest(_message
   object.
 
   Fields:
-    name: Required. Format folders/{folder}/locations/{location}/resourceEnrol
-      lmentStatuses/{resource_enrollment_status}, projects/{project}/locations
-      /{location}/resourceEnrollmentStatuses/{resource_enrollment_status}, org
-      anizations/{organization}/locations/{location}/resourceEnrollmentStatuse
-      s/{resource_enrollment_status}
+    name: Required. The name of the resource enrollment status, in one of the
+      following formats: * `folders/{folder}/locations/{location}/resourceEnro
+      llmentStatuses/{resource_enrollment_status}` * `projects/{project}/locat
+      ions/{location}/resourceEnrollmentStatuses/{resource_enrollment_status}`
+      * `organizations/{organization}/locations/{location}/resourceEnrollmentS
+      tatuses/{resource_enrollment_status}`
   """
 
   name = _messages.StringField(1, required=True)
@@ -612,12 +711,17 @@ class AuditmanagerProjectsLocationsStandardsControlsListRequest(_messages.Messag
   r"""A AuditmanagerProjectsLocationsStandardsControlsListRequest object.
 
   Fields:
-    pageSize: Optional. The maximum number of resources to return.
-    pageToken: Optional. The next_page_token value returned from a previous
-      List request, if any.
-    parent: Required. Format
-      projects/{project}/locations/{location}/standards/{standard},
-      folders/{folder}/locations/{location}/standards/{standard}
+    pageSize: Optional. The maximum number of items to return in a single
+      page. The service might return fewer items than this value. If
+      unspecified, the service picks an appropriate default. The maximum value
+      is 100; values above 100 are reduced to 100.
+    pageToken: Optional. A page token, received from a previous call, to
+      retrieve the next page of results.
+    parent: Required. The standard to list controls for, in one of the
+      following formats: *
+      `projects/{project}/locations/{location}/standards/{standard}` *
+      `folders/{folder}/locations/{location}/standards/{standard}` *
+      `organizations/{organization}/locations/{location}/standards/{standard}`
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -633,52 +737,52 @@ class Control(_messages.Message):
   r"""A control.
 
   Enums:
-    FamilyValueValuesEnum: Output only. Group where the control belongs. E.g.
-      Access Control.
+    FamilyValueValuesEnum: Output only. The category that the control belongs
+      to.
 
   Fields:
-    controlFamily: Output only. Regulatory Family of the control E.g. Access
-      Control
-    customerResponsibilityDescription: Output only. Description of the
-      customer responsibility for implementing this control.
-    customerResponsibilityImplementation: Output only. Implementation of the
-      customer responsibility for implementing this control.
-    description: Output only. Regulatory control ask of the control
-    displayName: Output only. Display name of the control.
-    family: Output only. Group where the control belongs. E.g. Access Control.
-    googleResponsibilityDescription: Output only. Description of the google
-      responsibility for implementing this control.
-    googleResponsibilityImplementation: Output only. Implementation of the
-      google responsibility for implementing this control.
-    id: Output only. The control identifier used to fetch the findings. This
-      is same as the control report name.
-    responsibilityType: Output only. The type of responsibility for
-      implementing this control. It can be google, customer or shared.
+    controlFamily: Output only. The regulatory family of the control.
+    customerResponsibilityDescription: Output only. A description of your
+      responsibility for this control.
+    customerResponsibilityImplementation: Output only. A description of how
+      you can implement your responsibility for this control.
+    description: Output only. The description of the control.
+    displayName: Output only. The display name of the control.
+    family: Output only. The category that the control belongs to.
+    googleResponsibilityDescription: Output only. A description of Google's
+      responsibility for this control.
+    googleResponsibilityImplementation: Output only. A description of how
+      Google implements its responsibility for this control.
+    id: Output only. The control identifier that's used to fetch the findings.
+      The identifier is the same as the control report name.
+    responsibilityType: Output only. Who is responsible for implementing this
+      control. Set to one of the following values: `GOOGLE`, `CUSTOMER`, or
+      `SHARED`.
   """
 
   class FamilyValueValuesEnum(_messages.Enum):
-    r"""Output only. Group where the control belongs. E.g. Access Control.
+    r"""Output only. The category that the control belongs to.
 
     Values:
-      FAMILY_UNSPECIFIED: Unspecified. Invalid state.
-      AC: Access Control
-      AT: Awareness and Training
-      AU: Audit and Accountability
-      CA: Certification, Accreditation and Security Assessments
-      CM: Configuration Management
-      CP: Contingency Planning
-      IA: Identification and Authentication
-      IR: Incident Response
-      MA: Maintenance
-      MP: Media Protection
-      PE: Physical and Environmental Protection
-      PL: Security Planning
-      PS: Personnel Security
-      RA: Risk Assessment
-      SA: System Services and Acquisition
-      SC: System and Communications Protection
-      SI: System and Information Integrity
-      SR: Supply Chain Risk Management
+      FAMILY_UNSPECIFIED: Default value. This value is unused.
+      AC: Access control.
+      AT: Awareness and training.
+      AU: Audit and accountability.
+      CA: Certification, accreditation and security assessments.
+      CM: Configuration management and change control.
+      CP: Contingency planning and disaster recovery.
+      IA: Identification and authentication.
+      IR: Incident response.
+      MA: Maintenance.
+      MP: Media protection.
+      PE: Physical and environmental protection.
+      PL: Security planning.
+      PS: Personnel security.
+      RA: Risk assessment.
+      SA: System services and acquisition.
+      SC: System and communications protection.
+      SI: System and information integrity.
+      SR: Supply chain risk management.
     """
     FAMILY_UNSPECIFIED = 0
     AC = 1
@@ -716,27 +820,29 @@ class ControlDetails(_messages.Message):
   r"""The evaluation details for a control.
 
   Enums:
-    ComplianceStateValueValuesEnum: Output only. Overall status of the
+    ComplianceStateValueValuesEnum: Output only. The overall status of the
       findings for the control.
 
   Fields:
-    complianceState: Output only. Overall status of the findings for the
+    complianceState: Output only. The overall status of the findings for the
       control.
-    control: The control for which the findings are being reported.
-    controlReportSummary: Report summary with compliance, violation counts
-      etc.
+    control: The control that the findings are being reported for.
+    controlReportSummary: A control report summary that provides a high-level
+      overview of the compliance controls, the assessment status, and a
+      responsibilities matrix.
   """
 
   class ComplianceStateValueValuesEnum(_messages.Enum):
-    r"""Output only. Overall status of the findings for the control.
+    r"""Output only. The overall status of the findings for the control.
 
     Values:
-      COMPLIANCE_STATE_UNSPECIFIED: Unspecified. Invalid state.
-      COMPLIANT: Compliant.
-      VIOLATION: Violation.
-      MANUAL_REVIEW_NEEDED: MANUAL_REVIEW_NEEDED, requires manual review
-      ERROR: Error while computing status.
-      AUDIT_NOT_SUPPORTED: Cannot be audited
+      COMPLIANCE_STATE_UNSPECIFIED: Default value. This value is unused.
+      COMPLIANT: The resource is compliant.
+      VIOLATION: The resource isn't compliant.
+      MANUAL_REVIEW_NEEDED: You must complete a manual review.
+      ERROR: An error was encountered during the evaluation or evidence
+        gathering process.
+      AUDIT_NOT_SUPPORTED: The resource can't be audited.
     """
     COMPLIANCE_STATE_UNSPECIFIED = 0
     COMPLIANT = 1
@@ -755,7 +861,9 @@ class ControlFamily(_messages.Message):
 
   Fields:
     displayName: The display name of the regulatory control family.
-    familyId: The ID of the regulatory control family.
+    familyId: The ID of the regulatory control family. To find the list of
+      supported control families, use the ListControls method and review the
+      `control_family` field in the response.
   """
 
   displayName = _messages.StringField(1)
@@ -763,22 +871,22 @@ class ControlFamily(_messages.Message):
 
 
 class DestinationDetails(_messages.Message):
-  r"""The locations where the generated reports are saved.
+  r"""The Cloud Storage bucket where the audit report is uploaded to.
 
   Fields:
-    gcsBucketUri: The Cloud Storage bucket where the audit report is/will be
-      uploaded.
+    gcsBucketUri: The URI for the Cloud Storage bucket, in the format
+      `gs://{bucket_name}`.
   """
 
   gcsBucketUri = _messages.StringField(1)
 
 
 class EligibleDestination(_messages.Message):
-  r"""The destination details where the audit report must be uploaded.
+  r"""The details about the bucket where you want to upload the audit report.
 
   Fields:
-    eligibleGcsBucket: The Cloud Storage bucket location where the audit
-      report and evidences can be uploaded during the `GenerateAuditReport`
+    eligibleGcsBucket: The location of the Cloud Storage bucket where you want
+      to upload the audit report and evidences during the GenerateAuditReport
       API call.
   """
 
@@ -795,30 +903,32 @@ class Empty(_messages.Message):
 
 
 class EnrollResourceRequest(_messages.Message):
-  r"""Request message to subscribe the Audit Manager service for given
-  resource.
+  r"""The request message for EnrollResource.
 
   Fields:
-    destinations: Required. List of destination among which customer can
-      choose to upload their reports during the audit process. While enrolling
-      at a organization/folder level, customer can choose Cloud storage bucket
-      in any project. If the audit is triggered at project level using the
-      service agent at organization/folder level, all the destination options
-      associated with respective organization/folder level service agent will
-      be available to auditing projects.
+    destinations: Required. The Cloud Storage buckets that you can upload your
+      audit reports to during the audit process. When you enroll an
+      organization or folder, you can choose a Cloud Storage bucket from any
+      project in the organization or folder. If you run an audit at the
+      project level using the service agent at the organization or folder
+      level, all the buckets that are associated with the service agent are
+      available.
   """
 
   destinations = _messages.MessageField('EligibleDestination', 1, repeated=True)
 
 
 class Enrollment(_messages.Message):
-  r"""The enrollment resource.
+  r"""The organization, folder, or project to enroll for audit reports.
 
   Fields:
-    destinationDetails: Output only. The locations where the generated reports
-      can be uploaded.
-    name: Identifier. The name of this Enrollment, in the format of scope
-      given in request.
+    destinationDetails: Output only. The Cloud Storage buckets where you want
+      to upload the audit reports.
+    name: Identifier. The name of the enrollment, in one of the following
+      formats: *
+      `projects/{project}/locations/{location}/enrollments/{enrollment}` *
+      `folders/{folder}/locations/{location}/enrollments/{enrollment}` * `orga
+      nizations/{organization}/locations/{location}/enrollments/{enrollment}`
   """
 
   destinationDetails = _messages.MessageField('DestinationDetails', 1, repeated=True)
@@ -826,30 +936,29 @@ class Enrollment(_messages.Message):
 
 
 class GenerateAuditReportRequest(_messages.Message):
-  r"""Message for requesting the Audit Report.
+  r"""The request message for GenerateAuditReport.
 
   Enums:
-    ReportFormatValueValuesEnum: Required. The format in which the audit
-      report should be created.
+    ReportFormatValueValuesEnum: Required. The format for the audit report.
 
   Fields:
-    complianceFramework: Required. Compliance framework against which the
-      Report must be generated.
-    complianceStandard: Required. Compliance Standard against which the Scope
-      Report must be generated. Eg: FEDRAMP_MODERATE
-    gcsUri: Destination Cloud storage bucket where report and evidence must be
-      uploaded. The Cloud storage bucket provided here must be selected among
-      the buckets entered during the enrollment process.
-    reportFormat: Required. The format in which the audit report should be
-      created.
+    complianceFramework: Required. The framework that's used for the audit
+      report. For example, `NIST_800_53`. To find the list of supported
+      frameworks, use the ListBuiltinComplianceFrameworks method.
+    complianceStandard: Optional. Deprecated. The compliance standard for the
+      audit report. Use the `compliance_framework` field instead.
+    gcsUri: The URL for the Cloud Storage bucket where the report and evidence
+      is uploaded. You must select a bucket that was provided during the
+      enrollment process.
+    reportFormat: Required. The format for the audit report.
   """
 
   class ReportFormatValueValuesEnum(_messages.Enum):
-    r"""Required. The format in which the audit report should be created.
+    r"""Required. The format for the audit report.
 
     Values:
-      AUDIT_REPORT_FORMAT_UNSPECIFIED: Unspecified. Invalid state.
-      AUDIT_REPORT_FORMAT_ODF: Audit Report creation format is Open Document.
+      AUDIT_REPORT_FORMAT_UNSPECIFIED: Default value. This value is unused.
+      AUDIT_REPORT_FORMAT_ODF: Open Document format.
     """
     AUDIT_REPORT_FORMAT_UNSPECIFIED = 0
     AUDIT_REPORT_FORMAT_ODF = 1
@@ -861,29 +970,30 @@ class GenerateAuditReportRequest(_messages.Message):
 
 
 class GenerateAuditScopeReportRequest(_messages.Message):
-  r"""Message for requesting audit scope report.
+  r"""The request message for GenerateAuditScopeReport.
 
   Enums:
-    ReportFormatValueValuesEnum: Required. The format in which the Scope
-      report bytes should be returned.
+    ReportFormatValueValuesEnum: Required. The format for the audit scope
+      report.
 
   Fields:
-    complianceFramework: Required. Compliance framework against which the
-      Scope Report must be generated.
-    complianceStandard: Required. Compliance Standard against which the Scope
-      Report must be generated. Eg: FEDRAMP_MODERATE
-    reportFormat: Required. The format in which the Scope report bytes should
-      be returned.
+    complianceFramework: Required. The framework (set of controls) that the
+      audit scope report is generated against. For example, `NIST_800_53`. To
+      find the list of supported frameworks, use the
+      ListBuiltinComplianceFrameworks method.
+    complianceStandard: Optional. Deprecated. The standard (industry or
+      regulatory requirements) that the audit scope report is run against. Use
+      the `compliance_framework` field instead.
+    reportFormat: Required. The format for the audit scope report.
   """
 
   class ReportFormatValueValuesEnum(_messages.Enum):
-    r"""Required. The format in which the Scope report bytes should be
-    returned.
+    r"""Required. The format for the audit scope report.
 
     Values:
-      AUDIT_SCOPE_REPORT_FORMAT_UNSPECIFIED: Unspecified. Invalid format.
-      AUDIT_SCOPE_REPORT_FORMAT_ODF: Audit Scope Report creation format is
-        Open Document.
+      AUDIT_SCOPE_REPORT_FORMAT_UNSPECIFIED: Default value. This value is
+        unused.
+      AUDIT_SCOPE_REPORT_FORMAT_ODF: Open Document format.
     """
     AUDIT_SCOPE_REPORT_FORMAT_UNSPECIFIED = 0
     AUDIT_SCOPE_REPORT_FORMAT_ODF = 1
@@ -894,12 +1004,13 @@ class GenerateAuditScopeReportRequest(_messages.Message):
 
 
 class ListAuditReportsResponse(_messages.Message):
-  r"""Response message with all the audit reports.
+  r"""The response message for ListAuditReports.
 
   Fields:
     auditReports: Output only. The audit reports.
-    nextPageToken: Output only. The token to retrieve the next page of
-      results.
+    nextPageToken: Output only. A token that you can send as the `page_token`
+      in a subsequent request to retrieve the next page of results. If this
+      field is empty, there are no subsequent pages.
   """
 
   auditReports = _messages.MessageField('AuditReport', 1, repeated=True)
@@ -907,12 +1018,13 @@ class ListAuditReportsResponse(_messages.Message):
 
 
 class ListControlsResponse(_messages.Message):
-  r"""Response message with all the controls for a compliance standard.
+  r"""The response message for ListControls.
 
   Fields:
-    controls: Output only. The controls for the compliance standard.
-    nextPageToken: Output only. The token to retrieve the next page of
-      results.
+    controls: Output only. The controls for a given regulatory standard.
+    nextPageToken: Output only. A token that you can send as the `page_token`
+      in a subsequent request to retrieve the next page of results. If this
+      field is empty, there are no subsequent pages.
   """
 
   controls = _messages.MessageField('Control', 1, repeated=True)
@@ -951,11 +1063,12 @@ class ListOperationsResponse(_messages.Message):
 
 
 class ListResourceEnrollmentStatusesResponse(_messages.Message):
-  r"""Response message with all the descendent resources with enrollment.
+  r"""The response message for ListResourceEnrollmentStatuses.
 
   Fields:
-    nextPageToken: Output only. The token to retrieve the next page of
-      results.
+    nextPageToken: Output only. A token that you can send as the `page_token`
+      in a subsequent request to retrieve the next page of results. If this
+      field is empty, there are no subsequent pages.
     resourceEnrollmentStatuses: The resources with their enrollment status.
   """
 
@@ -1152,21 +1265,22 @@ class Operation(_messages.Message):
 
 
 class OperationMetadata(_messages.Message):
-  r"""The metadata of the long-running operation.
+  r"""The metadata for the long-running operation.
 
   Fields:
-    apiVersion: Output only. API version used to start the operation.
-    createTime: Output only. The time the operation was created.
-    endTime: Output only. The time the operation finished running.
-    requestedCancellation: Output only. Identifies whether the user has
-      requested cancellation of the operation. Operations that have been
-      cancelled successfully have Operation.error value with a
-      google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.
-    statusMessage: Output only. Human-readable status of the operation, if
+    apiVersion: Output only. The API version used to start the operation. For
+      example, `v1`.
+    createTime: Output only. The time that the operation was created.
+    endTime: Output only. The time that the operation finished running.
+    requestedCancellation: Output only. Whether you requested that the
+      operation be cancelled. Operations that were cancelled successfully have
+      an Operation.error value with a status code Code.CANCELLED.
+    statusMessage: Output only. A human-readable status of the operation, if
       any.
-    target: Output only. Server-defined resource path for the target of the
+    target: Output only. A server-defined resource path for the target of the
       operation.
-    verb: Output only. Name of the verb executed by the operation.
+    verb: Output only. The name of the verb that was executed by the
+      operation.
   """
 
   apiVersion = _messages.StringField(1)
@@ -1179,8 +1293,7 @@ class OperationMetadata(_messages.Message):
 
 
 class ReportGenerationProgress(_messages.Message):
-  r"""The `ReportGenerationProgress` is part of google.longrunning.Operation
-  returned to the client for every `GetOperation` request.
+  r"""Details about the current status of the report-generation process.
 
   Enums:
     StateValueValuesEnum: Output only. The current state of execution for
@@ -1189,24 +1302,18 @@ class ReportGenerationProgress(_messages.Message):
   Fields:
     auditReport: Output only. The name of the audit report.
     destinationGcsBucket: Output only. The Cloud Storage bucket where the
-      audit report will be uploaded once the evaluation process is completed.
-    evaluationPercentComplete: Shows the progress of the CESS service
-      evaluation process. The progress is defined in terms of percentage
-      complete and is being fetched from the CESS service.
-    failureReason: Output only. States the reason of failure during the audit
-      report generation process. This field is set only if the state attribute
-      is OPERATION_STATE_FAILED.
-    reportGenerationPercentComplete: Shows the report generation progress of
-      the CESS Result Processor Service. The // progress is defined in terms
-      of percentage complete and is being fetched from the CESS service. If
-      report_generation_in_progress is non zero then
-      evaluation_percent_complete will be 100%.
-    reportUploadingPercentComplete: Shows the report uploading progress of the
-      CESS Result Processor Service. The progress is defined in terms of
-      percentage complete and is being fetched from the CESS service. If
-      report_uploading_in_progress is non zero then
-      evaluation_percent_complete and report_generation_percent_complete will
-      be 100%.
+      audit report is uploaded to after the evaluation process is completed.
+    evaluationPercentComplete: The progress of the evaluation process. The
+      progress is defined in terms of percentage complete.
+    failureReason: Output only. The reason for failure during the audit report
+      generation process. This field is set only if the `OperationState`
+      attribute is `OPERATION_STATE_FAILED`.
+    reportGenerationPercentComplete: The report generation progress, defined
+      in terms of percentage complete. Until evaluation is complete, this
+      value is always `0`.
+    reportUploadingPercentComplete: The report uploading progress, defined in
+      terms of percentage complete. Until evaluation and report generation are
+      complete, this value is always `0`.
     state: Output only. The current state of execution for report generation.
   """
 
@@ -1214,21 +1321,21 @@ class ReportGenerationProgress(_messages.Message):
     r"""Output only. The current state of execution for report generation.
 
     Values:
-      OPERATION_STATE_UNSPECIFIED: Unspecified. Invalid state.
-      OPERATION_STATE_NOT_STARTED: Audit report generation process has not
+      OPERATION_STATE_UNSPECIFIED: Default value. This value is unused.
+      OPERATION_STATE_NOT_STARTED: The audit generation process hasn't
         started.
-      OPERATION_STATE_EVALUATION_IN_PROGRESS: Audit Manager is currently
-        evaluating the workloads against specific standard.
-      OPERATION_STATE_EVALUATION_DONE: Audit Manager has completed Evaluation
-        for the workload.
-      OPERATION_STATE_EVIDENCE_REPORT_GENERATION_IN_PROGRESS: Audit Manager is
-        creating audit report from the evaluated data.
-      OPERATION_STATE_EVIDENCE_REPORT_GENERATION_DONE: Audit Manager has
-        completed generation of the audit report.
-      OPERATION_STATE_EVIDENCE_UPLOAD_IN_PROGRESS: Audit Manager is uploading
-        the audit report and evidences to the customer provided destination.
-      OPERATION_STATE_DONE: Audit report generation process is completed.
-      OPERATION_STATE_FAILED: Audit report generation process has failed.
+      OPERATION_STATE_EVALUATION_IN_PROGRESS: The evaluation process is in
+        progress.
+      OPERATION_STATE_EVALUATION_DONE: The evaluation process is completed.
+      OPERATION_STATE_EVIDENCE_REPORT_GENERATION_IN_PROGRESS: The report
+        generation process is in progress.
+      OPERATION_STATE_EVIDENCE_REPORT_GENERATION_DONE: The report generation
+        process is completed.
+      OPERATION_STATE_EVIDENCE_UPLOAD_IN_PROGRESS: The audit report and
+        evidences are being uploaded to your bucket.
+      OPERATION_STATE_DONE: The audit reports and evidences are uploaded to
+        your bucket.
+      OPERATION_STATE_FAILED: The audit report generation process failed.
     """
     OPERATION_STATE_UNSPECIFIED = 0
     OPERATION_STATE_NOT_STARTED = 1
@@ -1250,15 +1357,16 @@ class ReportGenerationProgress(_messages.Message):
 
 
 class ReportSummary(_messages.Message):
-  r"""The additional information for an audit operation.
+  r"""Additional information about the number of checks that were made during
+  an audit operation.
 
   Fields:
-    compliantCount: Number of compliant checks.
-    errorCount: Number of checks that could not be performed due to errors.
-    manualReviewNeededCount: Number of checks with "manual review needed"
-      status.
-    totalCount: Total number of checks.
-    violationCount: Number of checks with violations.
+    compliantCount: The number of compliant checks.
+    errorCount: The number of checks that can't be performed due to errors.
+    manualReviewNeededCount: The number of checks that require a manual
+      review.
+    totalCount: The total number of evaluated checks.
+    violationCount: The number of checks with violations.
   """
 
   compliantCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -1269,29 +1377,39 @@ class ReportSummary(_messages.Message):
 
 
 class ResourceEnrollmentStatus(_messages.Message):
-  r"""A resource with its enrollment status.
+  r"""An organization, folder, or project with its enrollment status.
 
   Enums:
-    EnrollmentStateValueValuesEnum: Output only. Enrollment state of the
-      resource.
+    EnrollmentStateValueValuesEnum: Output only. The enrollment state of the
+      organization, folder, or project.
 
   Fields:
-    displayName: Output only. Display name of the project/folder/organization.
-    enrolled: Output only. Is resource enrolled.
-    enrollment: Output only. Enrollment which contains enrolled destination
-      details for a resource
-    enrollmentState: Output only. Enrollment state of the resource.
-    name: Identifier. The name of this resource.
+    displayName: Output only. The display name for the organization, folder,
+      or project.
+    enrolled: Output only. Deprecated. Whether the organization, folder, or
+      project is enrolled. Use `enrollment_state` instead.
+    enrollment: Output only. The enrolled destination details for the
+      organization, folder, or project.
+    enrollmentState: Output only. The enrollment state of the organization,
+      folder, or project.
+    name: Identifier. The name of the resource enrollment status, in one of
+      the following formats: * `folders/{folder}/locations/{location}/resource
+      EnrollmentStatuses/{resource_enrollment_status}` * `projects/{project}/l
+      ocations/{location}/resourceEnrollmentStatuses/{resource_enrollment_stat
+      us}` * `organizations/{organization}/locations/{location}/resourceEnroll
+      mentStatuses/{resource_enrollment_status}`
   """
 
   class EnrollmentStateValueValuesEnum(_messages.Enum):
-    r"""Output only. Enrollment state of the resource.
+    r"""Output only. The enrollment state of the organization, folder, or
+    project.
 
     Values:
-      RESOURCE_ENROLLMENT_STATE_UNSPECIFIED: Unspecified. Invalid state.
-      NOT_ENROLLED: Not enrolled.
-      INHERITED: Resource is not enrolled but the parent is enrolled.
-      ENROLLED: Enrolled.
+      RESOURCE_ENROLLMENT_STATE_UNSPECIFIED: Default value. This value is
+        unused.
+      NOT_ENROLLED: The resource isn't enrolled.
+      INHERITED: The resource isn't enrolled but the parent is enrolled.
+      ENROLLED: The resource is enrolled.
     """
     RESOURCE_ENROLLMENT_STATE_UNSPECIFIED = 0
     NOT_ENROLLED = 1

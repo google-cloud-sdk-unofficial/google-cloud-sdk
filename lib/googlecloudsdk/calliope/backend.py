@@ -37,6 +37,7 @@ from googlecloudsdk.calliope import usage_text
 from googlecloudsdk.calliope.concepts import handlers
 from googlecloudsdk.core import log
 from googlecloudsdk.core import metrics
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import text
 import six
 
@@ -343,6 +344,16 @@ class CommandCommon(object):
         category=base.COMMONLY_USED_FLAGS,
         help='Display detailed help.',
     )
+    if properties.VALUES.core.display_hints.GetBool():
+      self.ai.add_argument(
+          '--agent-hints',
+          action=actions.RenderHintAction(self, '--agent-hints'),
+          is_replicated=True,
+          nargs=0,
+          help='Display hint.',
+          hidden=True,
+      )
+
     self.ai.add_argument(
         '--document',
         action=actions.RenderDocumentAction(self),

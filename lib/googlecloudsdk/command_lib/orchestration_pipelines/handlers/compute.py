@@ -23,6 +23,7 @@ from googlecloudsdk.core import exceptions
 class ComputeNetworkHandler(base.GcpResourceHandler):
   """Handler for Compute Network resources."""
 
+  description = "Compute Network resources."
   api_prefix = ""
 
   def build_get_request(self) -> messages.Message:
@@ -60,6 +61,11 @@ class ComputeNetworkHandler(base.GcpResourceHandler):
 class ComputeSubnetworkHandler(base.GcpResourceHandler):
   """Handler for Compute Subnetwork resources."""
 
+  description = (
+      "Compute Subnetwork resources.\n"
+      "Special handling:\n"
+      " - network: ignored during update API calls"
+  )
   api_prefix = ""
 
   def build_get_request(self) -> messages.Message:
@@ -110,6 +116,7 @@ class ComputeSubnetworkHandler(base.GcpResourceHandler):
 class ComputeFirewallHandler(base.GcpResourceHandler):
   """Handler for Compute Firewall resources."""
 
+  description = "Compute Firewall resources."
   api_prefix = ""
 
   def build_get_request(self) -> messages.Message:
@@ -147,6 +154,7 @@ class ComputeFirewallHandler(base.GcpResourceHandler):
 class ComputeRouterHandler(base.GcpResourceHandler):
   """Handler for Compute Router resources."""
 
+  description = "Compute Router resources."
   api_prefix = ""
 
   def build_get_request(self) -> messages.Message:
@@ -191,6 +199,11 @@ class ComputeRouterNatHandler(base.GcpResourceHandler):
   Note: NATs are updated via patch to the Router.
   """
 
+  description = (
+      "Compute Router NAT resources.\n"
+      "Special handling:\n"
+      " - lifecycle: created and updated by patching the parent Router"
+  )
   api_prefix = ""
 
   def build_get_request(self) -> messages.Message:
@@ -224,6 +237,12 @@ class ComputeRouterNatHandler(base.GcpResourceHandler):
 class ComputeForwardingRuleHandler(base.GcpResourceHandler):
   """Handler for Compute Forwarding Rule resources."""
 
+  description = (
+      "Compute Forwarding Rule resources.\n"
+      "Special handling:\n"
+      " - portRange: automatically normalized during comparison (e.g., '80' "
+      "becomes '80-80')"
+  )
   api_prefix = ""
 
   def compare(
@@ -280,6 +299,11 @@ class ComputeForwardingRuleHandler(base.GcpResourceHandler):
 class ComputeAddressHandler(base.GcpResourceHandler):
   """Handler for Compute Address resources."""
 
+  description = (
+      "Compute Address resources.\n"
+      "Special handling:\n"
+      " - updates: in-place updates are not supported"
+  )
   api_prefix = ""
   api_client_collection_path = "addresses"
 
@@ -313,10 +337,25 @@ class ComputeAddressHandler(base.GcpResourceHandler):
     # if properties change drastically.
     raise NotImplementedError("Compute Addresses update not fully supported.")
 
+  def build_delete_request(
+      self, existing_resource: messages.Message
+  ) -> messages.Message:
+    return self.messages.ComputeAddressesDeleteRequest(
+        project=self.environment.project,
+        region=self.environment.region,
+        address=self.get_resource_id(),
+    )
+
 
 class ComputeInstanceHandler(base.GcpResourceHandler):
   """Handler for Compute Instance resources."""
 
+  description = (
+      "Compute Instance resources.\n"
+      "Special handling:\n"
+      " - zone: derived from metadata.location if omitted\n"
+      " - disks[].initializeParams: ignored during comparison"
+  )
   api_prefix = ""
 
   @property
@@ -404,6 +443,11 @@ class ComputeInstanceHandler(base.GcpResourceHandler):
 class ComputeInstanceTemplateHandler(base.GcpResourceHandler):
   """Handler for Compute Instance Template resources."""
 
+  description = (
+      "Compute Instance Template resources.\n"
+      "Special handling:\n"
+      " - updates: in-place updates are not supported"
+  )
   api_prefix = ""
 
   def build_get_request(self) -> messages.Message:
@@ -433,10 +477,23 @@ class ComputeInstanceTemplateHandler(base.GcpResourceHandler):
         "Compute Instance Templates cannot be updated in-place."
     )
 
+  def build_delete_request(
+      self, existing_resource: messages.Message
+  ) -> messages.Message:
+    return self.messages.ComputeInstanceTemplatesDeleteRequest(
+        project=self.environment.project,
+        instanceTemplate=self.get_resource_id(),
+    )
+
 
 class ComputeInstanceGroupManagerHandler(base.GcpResourceHandler):
   """Handler for Compute Instance Group Manager resources."""
 
+  description = (
+      "Compute Instance Group Manager resources.\n"
+      "Special handling:\n"
+      " - zone: derived from metadata.location if omitted"
+  )
   api_prefix = ""
 
   @property
@@ -506,6 +563,11 @@ class ComputeInstanceGroupManagerHandler(base.GcpResourceHandler):
 class ComputeRouteHandler(base.GcpResourceHandler):
   """Handler for Compute Route resources."""
 
+  description = (
+      "Compute Route resources.\n"
+      "Special handling:\n"
+      " - updates: in-place updates are not supported"
+  )
   api_prefix = ""
 
   def build_get_request(self) -> messages.Message:
@@ -533,6 +595,14 @@ class ComputeRouteHandler(base.GcpResourceHandler):
     # Cannot patch routes
     raise NotImplementedError("Compute Routes update not fully supported.")
 
+  def build_delete_request(
+      self, existing_resource: messages.Message
+  ) -> messages.Message:
+    return self.messages.ComputeRoutesDeleteRequest(
+        project=self.environment.project,
+        route=self.get_resource_id(),
+    )
+
 
 class ComputeNetworkPeeringHandler(base.GcpResourceHandler):
   """Handler for Compute Network Peering resources.
@@ -540,6 +610,12 @@ class ComputeNetworkPeeringHandler(base.GcpResourceHandler):
   Note: Peerings are managed via network patch/methods.
   """
 
+  description = (
+      "Compute Network Peering resources.\n"
+      "Special handling:\n"
+      " - lifecycle: managed via parent Network peering methods (AddPeering, "
+      "UpdatePeering)"
+  )
   api_prefix = ""
   api_client_collection_path = "networks"
 
@@ -598,6 +674,11 @@ class ComputeNetworkPeeringHandler(base.GcpResourceHandler):
 class ComputeTargetInstanceHandler(base.GcpResourceHandler):
   """Handler for Compute Target Instance resources."""
 
+  description = (
+      "Compute Target Instance resources.\n"
+      "Special handling:\n"
+      " - updates: in-place updates are not supported"
+  )
   api_prefix = ""
   api_client_collection_path = "targetInstances"
 
@@ -630,3 +711,12 @@ class ComputeTargetInstanceHandler(base.GcpResourceHandler):
 
   def get_update_method(self) -> Any:
     return getattr(self._api_client_collection, "Patch", None)
+
+  def build_delete_request(
+      self, existing_resource: messages.Message
+  ) -> messages.Message:
+    return self.messages.ComputeTargetInstancesDeleteRequest(
+        project=self.environment.project,
+        zone=self.location,
+        targetInstance=self.get_resource_id(),
+    )

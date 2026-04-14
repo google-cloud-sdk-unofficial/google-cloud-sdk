@@ -305,3 +305,75 @@ multicastGroupProducerActivation:
     parameter_name: multicastGroupProducerActivationsId
     attribute_name: multicast_group_producer_activation
     help: Id of the multicast group producer activation.
+
+regionalMulticastDomainActivation:
+  name: regional multicast domain activation
+  collection: networkservices.projects.locations.regionalMulticastDomainActivations
+  request_id_field: regionalMulticastDomainActivationId
+  attributes:
+  - *project
+  - *location
+  - &regionalMulticastDomainActivation
+    parameter_name: regionalMulticastDomainActivationsId
+    attribute_name: regional_multicast_domain_activation
+    help: Id of the regional multicast domain activation.
+
+regionalMulticastGroupRangeActivation:
+  name: regional multicast group range activation
+  collection: networkservices.projects.locations.regionalMulticastGroupRangeActivations
+  request_id_field: regionalMulticastGroupRangeActivationId
+  attributes:
+  - *project
+  - *location
+  - &regionalMulticastGroupRangeActivation
+    parameter_name: regionalMulticastGroupRangeActivationsId
+    attribute_name: regional_multicast_group_range_activation
+    help: Id of the regional multicast group range activation.
+
+regionalMulticastProducerAssociation:
+  name: regional multicast producer association
+  collection: networkservices.projects.locations.regionalMulticastProducerAssociations
+  request_id_field: regionalMulticastProducerAssociationId
+  attributes:
+  - *project
+  - *location
+  - &regionalMulticastProducerAssociation
+    parameter_name: regionalMulticastProducerAssociationsId
+    attribute_name: regional_multicast_producer_association
+    help: Id of the regional multicast producer association.
+
+regionalMulticastGroupProducerActivation:
+  name: regional multicast group producer activation
+  collection: networkservices.projects.locations.regionalMulticastGroupProducerActivations
+  request_id_field: regionalMulticastGroupProducerActivationId
+  attributes:
+  - *project
+  - *location
+  - &regionalMulticastGroupProducerActivation
+    parameter_name: regionalMulticastGroupProducerActivationsId
+    attribute_name: regional_multicast_group_producer_activation
+    help: Id of the regional multicast group producer activation.
+
+regionalMulticastConsumerAssociation:
+  name: regional multicast consumer association
+  collection: networkservices.projects.locations.regionalMulticastConsumerAssociations
+  request_id_field: regionalMulticastConsumerAssociationId
+  attributes:
+  - *project
+  - *location
+  - &regionalMulticastConsumerAssociation
+    parameter_name: regionalMulticastConsumerAssociationsId
+    attribute_name: regional_multicast_consumer_association
+    help: Id of the regional multicast consumer association.
+
+regionalMulticastGroupConsumerActivation:
+  name: regional multicast group consumer activation
+  collection: networkservices.projects.locations.regionalMulticastGroupConsumerActivations
+  request_id_field: regionalMulticastGroupConsumerActivationId
+  attributes:
+  - *project
+  - *location
+  - &regionalMulticastGroupConsumerActivation
+    parameter_name: regionalMulticastGroupConsumerActivationsId
+    attribute_name: regional_multicast_group_consumer_activation
+    help: Id of the regional multicast group consumer activation.

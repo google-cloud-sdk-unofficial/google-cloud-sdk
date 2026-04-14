@@ -95,6 +95,7 @@ class ComputeV1(base_api.BaseApiClient):
     self.publicAdvertisedPrefixes = self.PublicAdvertisedPrefixesService(self)
     self.publicDelegatedPrefixes = self.PublicDelegatedPrefixesService(self)
     self.regionAutoscalers = self.RegionAutoscalersService(self)
+    self.regionBackendBuckets = self.RegionBackendBucketsService(self)
     self.regionBackendServices = self.RegionBackendServicesService(self)
     self.regionCommitments = self.RegionCommitmentsService(self)
     self.regionCompositeHealthChecks = self.RegionCompositeHealthChecksService(self)
@@ -774,6 +775,36 @@ bucket.
         supports_download=False,
     )
 
+    def AggregatedList(self, request, global_params=None):
+      r"""Retrieves the list of all BackendBucket resources, regional and global,.
+available to the specified project.
+
+To prevent failure, it is recommended that you set the
+`returnPartialSuccess` parameter to `true`.
+
+      Args:
+        request: (ComputeBackendBucketsAggregatedListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (BackendBucketAggregatedList) The response message.
+      """
+      config = self.GetMethodConfig('AggregatedList')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.backendBuckets.aggregatedList',
+        ordered_params=['project'],
+        path_params=['project'],
+        query_params=['filter', 'includeAllScopes', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess', 'serviceProjectNumber'],
+        relative_path='projects/{project}/aggregated/backendBuckets',
+        request_field='',
+        request_type_name='ComputeBackendBucketsAggregatedListRequest',
+        response_type_name='BackendBucketAggregatedList',
+        supports_download=False,
+    )
+
     def Delete(self, request, global_params=None):
       r"""Deletes the specified BackendBucket resource.
 
@@ -931,6 +962,32 @@ project.
         request_field='',
         request_type_name='ComputeBackendBucketsListRequest',
         response_type_name='BackendBucketList',
+        supports_download=False,
+    )
+
+    def ListUsable(self, request, global_params=None):
+      r"""Retrieves a list of all usable backend buckets in the specified project.
+
+      Args:
+        request: (ComputeBackendBucketsListUsableRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (BackendBucketListUsable) The response message.
+      """
+      config = self.GetMethodConfig('ListUsable')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ListUsable.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.backendBuckets.listUsable',
+        ordered_params=['project'],
+        path_params=['project'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
+        relative_path='projects/{project}/global/backendBuckets/listUsable',
+        request_field='',
+        request_type_name='ComputeBackendBucketsListUsableRequest',
+        response_type_name='BackendBucketListUsable',
         supports_download=False,
     )
 
@@ -2335,7 +2392,7 @@ encryption key to the latest version for the specified persistent disk.
         path_params=['disk', 'project', 'zone'],
         query_params=['requestId'],
         relative_path='projects/{project}/zones/{zone}/disks/{disk}/updateKmsKey',
-        request_field='',
+        request_field='diskUpdateKmsKeyRequest',
         request_type_name='ComputeDisksUpdateKmsKeyRequest',
         response_type_name='Operation',
         supports_download=False,
@@ -14795,6 +14852,258 @@ the data included in the request.
         supports_download=False,
     )
 
+  class RegionBackendBucketsService(base_api.BaseApiService):
+    """Service class for the regionBackendBuckets resource."""
+
+    _NAME = 'regionBackendBuckets'
+
+    def __init__(self, client):
+      super(ComputeV1.RegionBackendBucketsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes the specified regional BackendBucket resource.
+
+      Args:
+        request: (ComputeRegionBackendBucketsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='DELETE',
+        method_id='compute.regionBackendBuckets.delete',
+        ordered_params=['project', 'region', 'backendBucket'],
+        path_params=['backendBucket', 'project', 'region'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/regions/{region}/backendBuckets/{backendBucket}',
+        request_field='',
+        request_type_name='ComputeRegionBackendBucketsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Returns the specified regional BackendBucket resource.
+
+      Args:
+        request: (ComputeRegionBackendBucketsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (BackendBucket) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.regionBackendBuckets.get',
+        ordered_params=['project', 'region', 'backendBucket'],
+        path_params=['backendBucket', 'project', 'region'],
+        query_params=[],
+        relative_path='projects/{project}/regions/{region}/backendBuckets/{backendBucket}',
+        request_field='',
+        request_type_name='ComputeRegionBackendBucketsGetRequest',
+        response_type_name='BackendBucket',
+        supports_download=False,
+    )
+
+    def GetIamPolicy(self, request, global_params=None):
+      r"""Gets the access control policy for a resource. May be empty if no such.
+policy or resource exists.
+
+      Args:
+        request: (ComputeRegionBackendBucketsGetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('GetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.regionBackendBuckets.getIamPolicy',
+        ordered_params=['project', 'region', 'resource'],
+        path_params=['project', 'region', 'resource'],
+        query_params=['optionsRequestedPolicyVersion'],
+        relative_path='projects/{project}/regions/{region}/backendBuckets/{resource}/getIamPolicy',
+        request_field='',
+        request_type_name='ComputeRegionBackendBucketsGetIamPolicyRequest',
+        response_type_name='Policy',
+        supports_download=False,
+    )
+
+    def Insert(self, request, global_params=None):
+      r"""Creates a RegionBackendBucket in the specified project in the given scope.
+using the parameters that are included in the request.
+
+      Args:
+        request: (ComputeRegionBackendBucketsInsertRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Insert')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Insert.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.regionBackendBuckets.insert',
+        ordered_params=['project', 'region'],
+        path_params=['project', 'region'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/regions/{region}/backendBuckets',
+        request_field='backendBucket',
+        request_type_name='ComputeRegionBackendBucketsInsertRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Retrieves the list of BackendBucket resources available to the specified.
+project in the given region.
+
+      Args:
+        request: (ComputeRegionBackendBucketsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (BackendBucketList) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.regionBackendBuckets.list',
+        ordered_params=['project', 'region'],
+        path_params=['project', 'region'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
+        relative_path='projects/{project}/regions/{region}/backendBuckets',
+        request_field='',
+        request_type_name='ComputeRegionBackendBucketsListRequest',
+        response_type_name='BackendBucketList',
+        supports_download=False,
+    )
+
+    def ListUsable(self, request, global_params=None):
+      r"""Retrieves a list of all usable backend buckets in the specified project in.
+the given region.
+
+      Args:
+        request: (ComputeRegionBackendBucketsListUsableRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (BackendBucketListUsable) The response message.
+      """
+      config = self.GetMethodConfig('ListUsable')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ListUsable.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.regionBackendBuckets.listUsable',
+        ordered_params=['project', 'region'],
+        path_params=['project', 'region'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
+        relative_path='projects/{project}/regions/{region}/backendBuckets/listUsable',
+        request_field='',
+        request_type_name='ComputeRegionBackendBucketsListUsableRequest',
+        response_type_name='BackendBucketListUsable',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the specified  BackendBucket resource with the data included in the.
+request. This method supportsPATCH
+semantics and uses theJSON merge
+patch format and processing rules.
+
+      Args:
+        request: (ComputeRegionBackendBucketsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='PATCH',
+        method_id='compute.regionBackendBuckets.patch',
+        ordered_params=['project', 'region', 'backendBucket'],
+        path_params=['backendBucket', 'project', 'region'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/regions/{region}/backendBuckets/{backendBucket}',
+        request_field='backendBucketResource',
+        request_type_name='ComputeRegionBackendBucketsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def SetIamPolicy(self, request, global_params=None):
+      r"""Sets the access control policy on the specified resource.
+Replaces any existing policy.
+
+      Args:
+        request: (ComputeRegionBackendBucketsSetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('SetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.regionBackendBuckets.setIamPolicy',
+        ordered_params=['project', 'region', 'resource'],
+        path_params=['project', 'region', 'resource'],
+        query_params=[],
+        relative_path='projects/{project}/regions/{region}/backendBuckets/{resource}/setIamPolicy',
+        request_field='regionSetPolicyRequest',
+        request_type_name='ComputeRegionBackendBucketsSetIamPolicyRequest',
+        response_type_name='Policy',
+        supports_download=False,
+    )
+
+    def TestIamPermissions(self, request, global_params=None):
+      r"""Returns permissions that a caller has on the specified resource.
+
+      Args:
+        request: (ComputeRegionBackendBucketsTestIamPermissionsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TestPermissionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('TestIamPermissions')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.regionBackendBuckets.testIamPermissions',
+        ordered_params=['project', 'region', 'resource'],
+        path_params=['project', 'region', 'resource'],
+        query_params=[],
+        relative_path='projects/{project}/regions/{region}/backendBuckets/{resource}/testIamPermissions',
+        request_field='testPermissionsRequest',
+        request_type_name='ComputeRegionBackendBucketsTestIamPermissionsRequest',
+        response_type_name='TestPermissionsResponse',
+        supports_download=False,
+    )
+
   class RegionBackendServicesService(base_api.BaseApiService):
     """Service class for the regionBackendServices resource."""
 
@@ -15369,6 +15678,33 @@ To prevent failure, it is recommended that you set the
         request_field='',
         request_type_name='ComputeRegionCompositeHealthChecksGetRequest',
         response_type_name='CompositeHealthCheck',
+        supports_download=False,
+    )
+
+    def GetHealth(self, request, global_params=None):
+      r"""Gets the most recent health check results for this.
+regional CompositeHealthCheck.
+
+      Args:
+        request: (ComputeRegionCompositeHealthChecksGetHealthRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (CompositeHealthCheckHealth) The response message.
+      """
+      config = self.GetMethodConfig('GetHealth')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetHealth.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.regionCompositeHealthChecks.getHealth',
+        ordered_params=['project', 'region', 'compositeHealthCheck'],
+        path_params=['compositeHealthCheck', 'project', 'region'],
+        query_params=[],
+        relative_path='projects/{project}/regions/{region}/compositeHealthChecks/{compositeHealthCheck}/getHealth',
+        request_field='',
+        request_type_name='ComputeRegionCompositeHealthChecksGetHealthRequest',
+        response_type_name='CompositeHealthCheckHealth',
         supports_download=False,
     )
 
@@ -16032,7 +16368,7 @@ encryption key to the latest version for the specified persistent disk.
         path_params=['disk', 'project', 'region'],
         query_params=['requestId'],
         relative_path='projects/{project}/regions/{region}/disks/{disk}/updateKmsKey',
-        request_field='',
+        request_field='regionDiskUpdateKmsKeyRequest',
         request_type_name='ComputeRegionDisksUpdateKmsKeyRequest',
         response_type_name='Operation',
         supports_download=False,
@@ -16726,6 +17062,33 @@ To prevent failure, Google recommends that you set the
         request_field='',
         request_type_name='ComputeRegionHealthSourcesGetRequest',
         response_type_name='HealthSource',
+        supports_download=False,
+    )
+
+    def GetHealth(self, request, global_params=None):
+      r"""Gets the most recent health check results for this.
+regional HealthSource.
+
+      Args:
+        request: (ComputeRegionHealthSourcesGetHealthRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (HealthSourceHealth) The response message.
+      """
+      config = self.GetMethodConfig('GetHealth')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetHealth.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.regionHealthSources.getHealth',
+        ordered_params=['project', 'region', 'healthSource'],
+        path_params=['healthSource', 'project', 'region'],
+        query_params=[],
+        relative_path='projects/{project}/regions/{region}/healthSources/{healthSource}/getHealth',
+        request_field='',
+        request_type_name='ComputeRegionHealthSourcesGetHealthRequest',
+        response_type_name='HealthSourceHealth',
         supports_download=False,
     )
 
@@ -23191,7 +23554,7 @@ encryption key to the latest version for the specified snapshot.
         path_params=['project', 'snapshot'],
         query_params=['requestId'],
         relative_path='projects/{project}/global/snapshots/{snapshot}/updateKmsKey',
-        request_field='',
+        request_field='snapshotUpdateKmsKeyRequest',
         request_type_name='ComputeSnapshotsUpdateKmsKeyRequest',
         response_type_name='Operation',
         supports_download=False,

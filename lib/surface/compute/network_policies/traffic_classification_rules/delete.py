@@ -14,7 +14,6 @@
 # limitations under the License.
 """Command for deleting network policy rules."""
 
-
 from typing import ClassVar
 
 from googlecloudsdk.api_lib.compute import base_classes
@@ -26,7 +25,7 @@ from googlecloudsdk.command_lib.compute.network_policies import rules_utils
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Deletes a Compute Engine network policy rule.
 
@@ -58,11 +57,13 @@ class Delete(base.DeleteCommand):
 
 
 Delete.detailed_help = {
-    'EXAMPLES': """\
+    'EXAMPLES': (
+        """\
     To delete a rule with priority ``10'' in a network policy
     with name ``my-policy'', in region ``region-a'', run:
 
       $ {command} --priority=10 --network-policy=my-policy \
         --network-policy-region=region-a
-    """,
+    """
+    ),
 }

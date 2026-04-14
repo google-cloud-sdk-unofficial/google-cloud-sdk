@@ -594,8 +594,8 @@ class CloudkmsFoldersGetKajPolicyConfigRequest(_messages.Message):
   r"""A CloudkmsFoldersGetKajPolicyConfigRequest object.
 
   Fields:
-    name: Required. The name of the KeyAccessJustificationsPolicyConfig to
-      get.
+    name: Required. Specifies the name of the
+      KeyAccessJustificationsPolicyConfig to get.
   """
 
   name = _messages.StringField(1, required=True)
@@ -624,10 +624,10 @@ class CloudkmsFoldersUpdateKajPolicyConfigRequest(_messages.Message):
   Fields:
     keyAccessJustificationsPolicyConfig: A KeyAccessJustificationsPolicyConfig
       resource to be passed as the request body.
-    name: Identifier. The resource name for this
+    name: Identifier. Represents the resource name for this
       KeyAccessJustificationsPolicyConfig in the format of
       "{organizations|folders|projects}/*/kajPolicyConfig".
-    updateMask: Optional. The list of fields to update.
+    updateMask: Optional. Specifies the list of fields to update.
   """
 
   keyAccessJustificationsPolicyConfig = _messages.MessageField('KeyAccessJustificationsPolicyConfig', 1)
@@ -639,8 +639,8 @@ class CloudkmsOrganizationsGetKajPolicyConfigRequest(_messages.Message):
   r"""A CloudkmsOrganizationsGetKajPolicyConfigRequest object.
 
   Fields:
-    name: Required. The name of the KeyAccessJustificationsPolicyConfig to
-      get.
+    name: Required. Specifies the name of the
+      KeyAccessJustificationsPolicyConfig to get.
   """
 
   name = _messages.StringField(1, required=True)
@@ -652,10 +652,10 @@ class CloudkmsOrganizationsUpdateKajPolicyConfigRequest(_messages.Message):
   Fields:
     keyAccessJustificationsPolicyConfig: A KeyAccessJustificationsPolicyConfig
       resource to be passed as the request body.
-    name: Identifier. The resource name for this
+    name: Identifier. Represents the resource name for this
       KeyAccessJustificationsPolicyConfig in the format of
       "{organizations|folders|projects}/*/kajPolicyConfig".
-    updateMask: Optional. The list of fields to update.
+    updateMask: Optional. Specifies the list of fields to update.
   """
 
   keyAccessJustificationsPolicyConfig = _messages.MessageField('KeyAccessJustificationsPolicyConfig', 1)
@@ -679,8 +679,8 @@ class CloudkmsProjectsGetKajPolicyConfigRequest(_messages.Message):
   r"""A CloudkmsProjectsGetKajPolicyConfigRequest object.
 
   Fields:
-    name: Required. The name of the KeyAccessJustificationsPolicyConfig to
-      get.
+    name: Required. Specifies the name of the
+      KeyAccessJustificationsPolicyConfig to get.
   """
 
   name = _messages.StringField(1, required=True)
@@ -1984,8 +1984,8 @@ class CloudkmsProjectsShowEffectiveKeyAccessJustificationsEnrollmentConfigReques
   object.
 
   Fields:
-    project: Required. The number or id of the project to get the effective
-      KeyAccessJustificationsEnrollmentConfig for.
+    project: Required. Specifies the number or id of the project to get the
+      effective KeyAccessJustificationsEnrollmentConfig for.
   """
 
   project = _messages.StringField(1, required=True)
@@ -1997,8 +1997,9 @@ class CloudkmsProjectsShowEffectiveKeyAccessJustificationsPolicyConfigRequest(_m
   object.
 
   Fields:
-    project: Required. The number or id of the project to get the effective
-      KeyAccessJustificationsPolicyConfig. In the format of "projects/{|}"
+    project: Required. Specifies the number or id of the project to get the
+      effective KeyAccessJustificationsPolicyConfig. In the format of
+      "projects/{|}"
   """
 
   project = _messages.StringField(1, required=True)
@@ -2027,10 +2028,10 @@ class CloudkmsProjectsUpdateKajPolicyConfigRequest(_messages.Message):
   Fields:
     keyAccessJustificationsPolicyConfig: A KeyAccessJustificationsPolicyConfig
       resource to be passed as the request body.
-    name: Identifier. The resource name for this
+    name: Identifier. Represents the resource name for this
       KeyAccessJustificationsPolicyConfig in the format of
       "{organizations|folders|projects}/*/kajPolicyConfig".
-    updateMask: Optional. The list of fields to update.
+    updateMask: Optional. Specifies the list of fields to update.
   """
 
   keyAccessJustificationsPolicyConfig = _messages.MessageField('KeyAccessJustificationsPolicyConfig', 1)
@@ -2078,7 +2079,10 @@ class CryptoKey(_messages.Message):
       specifying zero or more allowed justification codes.
       https://cloud.google.com/assured-workloads/key-access-
       justifications/docs/justification-codes By default, this field is
-      absent, and all justification codes are allowed.
+      absent, and all justification codes are allowed. If the
+      `key_access_justifications_policy.allowed_access_reasons` is empty (zero
+      allowed justification code), all encrypt, decrypt, and sign operations
+      will fail.
     labels: Labels with user-defined metadata. For more information, see
       [Labeling Keys](https://cloud.google.com/kms/docs/labeling-keys).
     name: Output only. The resource name for this CryptoKey in the format
@@ -3559,12 +3563,12 @@ class ImportJob(_messages.Message):
 
 
 class KeyAccessJustificationsEnrollmentConfig(_messages.Message):
-  r"""The configuration of a protection level for a project's Key Access
-  Justifications enrollment.
+  r"""Represents the configuration of a protection level for a project's Key
+  Access Justifications enrollment.
 
   Fields:
-    auditLogging: Whether the project has KAJ logging enabled.
-    policyEnforcement: Whether the project is enrolled in KAJ policy
+    auditLogging: Indicates whether the project has KAJ logging enabled.
+    policyEnforcement: Indicates whether the project is enrolled in KAJ policy
       enforcement.
   """
 
@@ -3574,16 +3578,19 @@ class KeyAccessJustificationsEnrollmentConfig(_messages.Message):
 
 class KeyAccessJustificationsPolicy(_messages.Message):
   r"""A KeyAccessJustificationsPolicy specifies zero or more allowed
-  AccessReason values for encrypt, decrypt, and sign operations on a
-  CryptoKey.
+  AccessReason values for encrypt, decrypt, and sign operations on a CryptoKey
+  or KeyAccessJustificationsPolicyConfig (the default Key Access
+  Justifications policy).
 
   Enums:
     AllowedAccessReasonsValueListEntryValuesEnum:
 
   Fields:
     allowedAccessReasons: The list of allowed reasons for access to a
-      CryptoKey. Zero allowed access reasons means all encrypt, decrypt, and
-      sign operations for the CryptoKey associated with this policy will fail.
+      CryptoKey. Note that empty allowed_access_reasons has a different
+      meaning depending on where this message appears. If this is under
+      KeyAccessJustificationsPolicyConfig, it means allow-all. If this is
+      under CryptoKey, it means deny-all.
   """
 
   class AllowedAccessReasonsValueListEntryValuesEnum(_messages.Enum):
@@ -3655,15 +3662,19 @@ class KeyAccessJustificationsPolicy(_messages.Message):
 
 
 class KeyAccessJustificationsPolicyConfig(_messages.Message):
-  r"""A singleton configuration for Key Access Justifications policies.
+  r"""Represents a singleton configuration for Key Access Justifications
+  policies.
 
   Fields:
-    defaultKeyAccessJustificationPolicy: Optional. The default key access
-      justification policy used when a CryptoKey is created in this folder.
-      This is only used when a Key Access Justifications policy is not
-      provided in the CreateCryptoKeyRequest. This overrides any default
-      policies in its ancestry.
-    name: Identifier. The resource name for this
+    defaultKeyAccessJustificationPolicy: Optional. Specifies the default key
+      access justifications (KAJ) policy used when a CryptoKey is created in
+      this folder. This is only used when a Key Access Justifications policy
+      is not provided in the CreateCryptoKeyRequest. This overrides any
+      default policies in its ancestry. If this field is unset, or is set but
+      contains an empty allowed_access_reasons list, no default Key Access
+      Justifications (KAJ) policy configuration is active. In this scenario,
+      all newly created keys will default to an "allow-all" policy.
+    name: Identifier. Represents the resource name for this
       KeyAccessJustificationsPolicyConfig in the format of
       "{organizations|folders|projects}/*/kajPolicyConfig".
   """
@@ -5146,16 +5157,16 @@ class ShowEffectiveAutokeyConfigResponse(_messages.Message):
 
 
 class ShowEffectiveKeyAccessJustificationsEnrollmentConfigResponse(_messages.Message):
-  r"""Response message for KeyAccessJustificationsConfig.ShowEffectiveKeyAcces
-  sJustificationsEnrollmentConfig
+  r"""Represents a response message for KeyAccessJustificationsConfig.ShowEffe
+  ctiveKeyAccessJustificationsEnrollmentConfig
 
   Fields:
-    externalConfig: The effective KeyAccessJustificationsEnrollmentConfig for
-      external keys.
-    hardwareConfig: The effective KeyAccessJustificationsEnrollmentConfig for
-      hardware keys.
-    softwareConfig: The effective KeyAccessJustificationsEnrollmentConfig for
-      software keys.
+    externalConfig: Contains the effective
+      KeyAccessJustificationsEnrollmentConfig for external keys.
+    hardwareConfig: Contains the effective
+      KeyAccessJustificationsEnrollmentConfig for hardware keys.
+    softwareConfig: Contains the effective
+      KeyAccessJustificationsEnrollmentConfig for software keys.
   """
 
   externalConfig = _messages.MessageField('KeyAccessJustificationsEnrollmentConfig', 1)
@@ -5164,11 +5175,12 @@ class ShowEffectiveKeyAccessJustificationsEnrollmentConfigResponse(_messages.Mes
 
 
 class ShowEffectiveKeyAccessJustificationsPolicyConfigResponse(_messages.Message):
-  r"""Response message for KeyAccessJustificationsConfig.ShowEffectiveKeyAcces
-  sJustificationsPolicyConfig.
+  r"""Represents a response message for KeyAccessJustificationsConfig.ShowEffe
+  ctiveKeyAccessJustificationsPolicyConfig.
 
   Fields:
-    effectiveKajPolicy: The effective KeyAccessJustificationsPolicyConfig.
+    effectiveKajPolicy: Contains the effective
+      KeyAccessJustificationsPolicyConfig.
   """
 
   effectiveKajPolicy = _messages.MessageField('KeyAccessJustificationsPolicyConfig', 1)

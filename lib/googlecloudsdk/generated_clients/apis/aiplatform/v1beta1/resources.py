@@ -275,6 +275,24 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  EVALUATIONMETRICS = (
+      'evaluationMetrics',
+      'evaluationMetrics/{evaluationMetricsId}',
+      {},
+      ['evaluationMetricsId'],
+      True
+  )
+  EVALUATIONMETRICS_OPERATIONS = (
+      'evaluationMetrics.operations',
+      '{+name}',
+      {
+          '':
+              'evaluationMetrics/{evaluationMetricsId}/operations/'
+              '{operationsId}',
+      },
+      ['name'],
+      True
+  )
   EVALUATIONRUNS = (
       'evaluationRuns',
       'evaluationRuns/{evaluationRunsId}',
@@ -1153,6 +1171,29 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_EVALUATIONMETRICS = (
+      'projects.locations.evaluationMetrics',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'evaluationMetrics/{evaluationMetricsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_EVALUATIONMETRICS_OPERATIONS = (
+      'projects.locations.evaluationMetrics.operations',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'evaluationMetrics/{evaluationMetricsId}/operations/'
+              '{operationsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_EVALUATIONRUNS = (
       'projects.locations.evaluationRuns',
       '{+name}',
@@ -1959,6 +2000,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_RAGCORPORA_RAGDATASCHEMAS = (
+      'projects.locations.ragCorpora.ragDataSchemas',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/ragCorpora/'
+              '{ragCorporaId}/ragDataSchemas/{ragDataSchemasId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_RAGCORPORA_RAGFILES = (
       'projects.locations.ragCorpora.ragFiles',
       '{+name}',
@@ -1977,6 +2029,18 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/ragCorpora/'
               '{ragCorporaId}/ragFiles/{ragFilesId}/operations/{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_RAGCORPORA_RAGFILES_RAGMETADATA = (
+      'projects.locations.ragCorpora.ragFiles.ragMetadata',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/ragCorpora/'
+              '{ragCorporaId}/ragFiles/{ragFilesId}/ragMetadata/'
+              '{ragMetadataId}',
       },
       ['name'],
       True
@@ -2003,6 +2067,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_REASONINGENGINES_A2ATASKS = (
+      'projects.locations.reasoningEngines.a2aTasks',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'reasoningEngines/{reasoningEnginesId}/a2aTasks/{a2aTasksId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_REASONINGENGINES_EXAMPLES = (
       'projects.locations.reasoningEngines.examples',
       'projects/{projectsId}/locations/{locationsId}/reasoningEngines/'
@@ -2019,6 +2094,26 @@ class Collections(enum.Enum):
               'projects/{projectsId}/locations/{locationsId}/'
               'reasoningEngines/{reasoningEnginesId}/examples/{examplesId}/'
               'operations/{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_REASONINGENGINES_FEEDBACKENTRIES = (
+      'projects.locations.reasoningEngines.feedbackEntries',
+      'projects/{projectsId}/locations/{locationsId}/reasoningEngines/'
+      '{reasoningEnginesId}/feedbackEntries/{feedbackEntriesId}',
+      {},
+      ['projectsId', 'locationsId', 'reasoningEnginesId', 'feedbackEntriesId'],
+      True
+  )
+  PROJECTS_LOCATIONS_REASONINGENGINES_FEEDBACKENTRIES_OPERATIONS = (
+      'projects.locations.reasoningEngines.feedbackEntries.operations',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'reasoningEngines/{reasoningEnginesId}/feedbackEntries/'
+              '{feedbackEntriesId}/operations/{operationsId}',
       },
       ['name'],
       True
@@ -2066,6 +2161,26 @@ class Collections(enum.Enum):
               'projects/{projectsId}/locations/{locationsId}/'
               'reasoningEngines/{reasoningEnginesId}/operations/'
               '{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_REASONINGENGINES_RUNTIMEREVISIONS = (
+      'projects.locations.reasoningEngines.runtimeRevisions',
+      'projects/{projectsId}/locations/{locationsId}/reasoningEngines/'
+      '{reasoningEnginesId}/runtimeRevisions/{runtimeRevisionsId}',
+      {},
+      ['projectsId', 'locationsId', 'reasoningEnginesId', 'runtimeRevisionsId'],
+      True
+  )
+  PROJECTS_LOCATIONS_REASONINGENGINES_RUNTIMEREVISIONS_OPERATIONS = (
+      'projects.locations.reasoningEngines.runtimeRevisions.operations',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'reasoningEngines/{reasoningEnginesId}/runtimeRevisions/'
+              '{runtimeRevisionsId}/operations/{operationsId}',
       },
       ['name'],
       True
@@ -2135,6 +2250,17 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/schedules/'
               '{schedulesId}/operations/{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_SEMANTICGOVERNANCEPOLICIES = (
+      'projects.locations.semanticGovernancePolicies',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'semanticGovernancePolicies/{semanticGovernancePoliciesId}',
       },
       ['name'],
       True
@@ -2450,6 +2576,25 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  REASONINGENGINES_FEEDBACKENTRIES = (
+      'reasoningEngines.feedbackEntries',
+      'reasoningEngines/{reasoningEnginesId}/feedbackEntries/'
+      '{feedbackEntriesId}',
+      {},
+      ['reasoningEnginesId', 'feedbackEntriesId'],
+      True
+  )
+  REASONINGENGINES_FEEDBACKENTRIES_OPERATIONS = (
+      'reasoningEngines.feedbackEntries.operations',
+      '{+name}',
+      {
+          '':
+              'reasoningEngines/{reasoningEnginesId}/feedbackEntries/'
+              '{feedbackEntriesId}/operations/{operationsId}',
+      },
+      ['name'],
+      True
+  )
   REASONINGENGINES_MEMORIES = (
       'reasoningEngines.memories',
       '{+name}',
@@ -2489,6 +2634,25 @@ class Collections(enum.Enum):
           '':
               'reasoningEngines/{reasoningEnginesId}/operations/'
               '{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  REASONINGENGINES_RUNTIMEREVISIONS = (
+      'reasoningEngines.runtimeRevisions',
+      'reasoningEngines/{reasoningEnginesId}/runtimeRevisions/'
+      '{runtimeRevisionsId}',
+      {},
+      ['reasoningEnginesId', 'runtimeRevisionsId'],
+      True
+  )
+  REASONINGENGINES_RUNTIMEREVISIONS_OPERATIONS = (
+      'reasoningEngines.runtimeRevisions.operations',
+      '{+name}',
+      {
+          '':
+              'reasoningEngines/{reasoningEnginesId}/runtimeRevisions/'
+              '{runtimeRevisionsId}/operations/{operationsId}',
       },
       ['name'],
       True

@@ -1058,11 +1058,13 @@ class GoogleDevtoolsRemotebuildbotCommandEvents(_messages.Message):
       MOUNT_READ_ONLY: The input tree was mounted as a read-only bind mount,
         with a separate writable directories mounted where outputs are
         expected.
+      MOUNT_CARTFS: The input tree was mounted from a CartFS directory.
     """
     MOUNT_UNSPECIFIED = 0
     MOUNT_OVERLAY = 1
     MOUNT_WRITABLE = 2
     MOUNT_READ_ONLY = 3
+    MOUNT_CARTFS = 4
 
   class OutputLocationValueValuesEnum(_messages.Enum):
     r"""Indicates whether output files and/or output directories were found

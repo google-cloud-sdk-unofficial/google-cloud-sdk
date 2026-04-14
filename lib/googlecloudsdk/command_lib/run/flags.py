@@ -448,7 +448,16 @@ def AddContainerArg(parser):
   parser.add_argument(
       '--container',
       required=False,
-      help='name of a specific container to SSH into.',
+      help='Name of a specific container to SSH into.',
+  )
+
+
+def AddRevisionArg(parser):
+  """Add a revision arg for SSH."""
+  parser.add_argument(
+      '--revision',
+      required=False,
+      help='Name of a specific revision to SSH into.',
   )
 
 

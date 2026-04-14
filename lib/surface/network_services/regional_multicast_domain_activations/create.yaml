@@ -1,0 +1,44 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    Create a regional multicast domain activation.
+  description: |
+    Create a regional multicast domain activation in the specified location of the current project.
+  examples: |
+    Create a regional multicast domain activation with the name 'my-rmda',
+    multicast-domain 'path-to-md',
+    and location 'region'.
+
+      $ {command} my-rmda --multicast-domain=path-to-md --location=region
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:regionalMulticastDomainActivation
+    help_text: |
+      Name of the regional multicast domain activation to be created.
+  params:
+  - arg_name: multicast-domain
+    api_field: regionalMulticastDomainActivation.multicastDomain
+    help_text: The multicast domain to be used.
+    required: true
+  - arg_name: description
+    api_field: regionalMulticastDomainActivation.description
+    help_text: The description for the regional multicast domain activation.
+  - arg_name: pim-mode
+    api_field: regionalMulticastDomainActivation.pimSpec.pimMode
+    help_text: The PIM mode for the regional multicast domain activation.
+  - arg_name: rp-ip-address
+    api_field: regionalMulticastDomainActivation.pimSpec.rpIpAddress
+    help_text: The Rendezvous Point IP address for the regional multicast domain activation.
+  - arg_name: multicast-source-location
+    api_field: regionalMulticastDomainActivation.pimSpec.multicastSourceLocation
+    help_text: The location of the multicast source.
+  labels:
+    api_field: regionalMulticastDomainActivation.labels
+async:
+  collection: networkservices.projects.locations.operations
+request:
+  ALPHA:
+    api_version: v1alpha1
+  collection: networkservices.projects.locations.regionalMulticastDomainActivations
+  method: create

@@ -1,0 +1,25 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    List regional multicast domain activations.
+  description: |
+    List all regional multicast domain activations in the specified location of the current project.
+  examples: |
+    To list regional multicast domain activations in the current project and location, run:
+
+      $ {command} --location=region
+request:
+  ALPHA:
+    api_version: v1alpha1
+  collection: networkservices.projects.locations.regionalMulticastDomainActivations
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:location
+    help_text: The location of the regional multicast domain activations to display.
+response:
+  id_field: name
+output:
+  format: |
+     table(
+        name.basename():label=NAME, create_time, multicast_domain
+      )

@@ -95,3 +95,15 @@ def AddCatalogsCreateArgs(parser):
           ' cost.'
       ),
   )
+
+
+def AddServiceDirectoryNameArg(parser):
+  """Adds argument for service directory name."""
+  parser.add_argument(
+      '--service-directory-name',
+      hidden=True,
+      help=(
+          'The service directory resource name for request routing. See'
+          ' cross-cloud interconnect documentation for more details.'
+      ),
+  )

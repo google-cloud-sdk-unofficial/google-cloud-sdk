@@ -14,12 +14,11 @@
 # limitations under the License.
 """Commands for reading and manipulating network policies."""
 
-
 from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class NetworkPolicies(base.Group):
   """Manage Compute Engine network policies.
 

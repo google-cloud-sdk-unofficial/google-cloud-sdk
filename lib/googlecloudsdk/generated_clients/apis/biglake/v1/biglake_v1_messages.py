@@ -767,6 +767,52 @@ class FailoverIcebergCatalogResponse(_messages.Message):
   replicationTime = _messages.StringField(1)
 
 
+class FederatedCatalogOptions(_messages.Message):
+  r"""Configuration options for federated catalog.
+
+  Fields:
+    glue_catalog_info: Optional. Info specific to an AWS Glue Catalog.
+    refresh_options: Optional. Refresh configuration.
+    secret_name: Required. The secret resource name in Secret Manager, in the
+      format `projects/{project_id}/locations/{location}/secrets/{secret_id}`
+      or `projects/{project_id}/locations/{location}/secrets/{secret_id}/versi
+      ons/{version_id}`. The project ID must match the catalog's project and
+      location must match the catalog's location. If the version is not
+      specified, the latest version will be used.
+    service_directory_name: Optional. The service directory resource name in
+      the format `projects/{project_id}/locations/{location_id}/namespaces/{na
+      mespace_id}/services/{service_id}`.
+    unity_catalog_info: Optional. Info specific to a Unity Catalog by
+      Databricks.
+  """
+
+  glue_catalog_info = _messages.MessageField('GlueCatalogInfo', 1)
+  refresh_options = _messages.MessageField('RefreshOptions', 2)
+  secret_name = _messages.StringField(3)
+  service_directory_name = _messages.StringField(4)
+  unity_catalog_info = _messages.MessageField('UnityCatalogInfo', 5)
+
+
+class GlueCatalogInfo(_messages.Message):
+  r"""AWS Glue Catalog info.
+
+  Fields:
+    aws_region: Required. The AWS region of the Glue catalog to connect to.
+      The region should be in the same geographical region and jurisdiction as
+      the BigLake Federated Catalog. Must be non-empty.
+    aws_role_arn: Required. The AWS role ARN of the Glue catalog that the
+      BigLake federated catalog will assume to access the catalog.
+    warehouse: Required. The warehouse to connect to in AWS Glue Iceberg REST
+      Catalog. Must be non-empty. For top level access, use the AWS account ID
+      (e.g. 1112223333444). The URL to access catalog will be https://glue.{aw
+      s_region}.amazonaws.com/iceberg/v1?warehouse={warehouse}.
+  """
+
+  aws_region = _messages.StringField(1)
+  aws_role_arn = _messages.StringField(2)
+  warehouse = _messages.StringField(3)
+
+
 class HttpBody(_messages.Message):
   r"""Message that represents an arbitrary HTTP body. It should only be used
   for payload formats that can't be represented as JSON, such as raw binary or
@@ -862,10 +908,19 @@ class IcebergCatalog(_messages.Message):
     description: Optional. A user-provided description of the catalog. The
       description must be a UTF-8 string with a maximum length of 1024
       characters.
+    federated_catalog_options: Optional. Configuration options for federated
+      catalogs.
     name: Identifier. The catalog name, `projects/my-project/catalogs/my-
       catalog`. This field is immutable. This field is ignored for
       CreateIcebergCatalog.
     replicas: Output only. The replicas for the catalog metadata.
+    restricted_locations_config: Optional. Restricted locations configuration.
+      If this field is unset, or if
+      `restricted_locations_config.restricted_locations` is empty, all
+      accessible locations are allowed. If
+      `restricted_locations_config.restricted_locations` is not empty, only
+      locations in `default_location` and
+      `restricted_locations_config.restricted_locations` are allowed.
     storage_regions: Output only. The GCP region(s) of the default location's
       bucket, e.g. `us-central1`, `nam4` or `us`. This will contain one value
       for all locations, except for the catalogs that are configured to use
@@ -882,10 +937,13 @@ class IcebergCatalog(_messages.Message):
       CATALOG_TYPE_BIGLAKE: BigLake Iceberg catalog. Catalog type which allows
         namespaces and tables within a catalog to be mapped to locations
         beyond the catalog's designated default.
+      CATALOG_TYPE_FEDERATED: BigLake federated catalog mirroring a remote
+        catalog.
     """
     CATALOG_TYPE_UNSPECIFIED = 0
     CATALOG_TYPE_GCS_BUCKET = 1
     CATALOG_TYPE_BIGLAKE = 2
+    CATALOG_TYPE_FEDERATED = 3
 
   class CredentialModeValueValuesEnum(_messages.Enum):
     r"""Optional. The credential mode for the catalog.
@@ -918,10 +976,12 @@ class IcebergCatalog(_messages.Message):
   credential_mode = _messages.EnumField('CredentialModeValueValuesEnum', 6)
   default_location = _messages.StringField(7)
   description = _messages.StringField(8)
-  name = _messages.StringField(9)
-  replicas = _messages.MessageField('Replica', 10, repeated=True)
-  storage_regions = _messages.StringField(11, repeated=True)
-  update_time = _messages.StringField(12)
+  federated_catalog_options = _messages.MessageField('FederatedCatalogOptions', 9)
+  name = _messages.StringField(10)
+  replicas = _messages.MessageField('Replica', 11, repeated=True)
+  restricted_locations_config = _messages.MessageField('RestrictedLocationsConfig', 12)
+  storage_regions = _messages.StringField(13, repeated=True)
+  update_time = _messages.StringField(14)
 
 
 class IcebergCatalogConfig(_messages.Message):
@@ -1209,6 +1269,45 @@ class Policy(_messages.Message):
   version = _messages.IntegerField(4, variant=_messages.Variant.INT32)
 
 
+class RefreshOptions(_messages.Message):
+  r"""Refresh configuration.
+
+  Fields:
+    refresh_schedule: Optional. Schedule defines if and when metadata refresh
+      should be scheduled.
+    refresh_scope: Optional. Refresh scope configurations.
+  """
+
+  refresh_schedule = _messages.MessageField('RefreshSchedule', 1)
+  refresh_scope = _messages.MessageField('RefreshScope', 2)
+
+
+class RefreshSchedule(_messages.Message):
+  r"""Schedule defines if and when metadata refresh should be scheduled.
+
+  Fields:
+    refresh_interval: Optional. The interval for refreshing metadata from the
+      remote catalog. A value <= 0 disables periodic refresh. A default value
+      will be used if not specified.
+  """
+
+  refresh_interval = _messages.StringField(1)
+
+
+class RefreshScope(_messages.Message):
+  r"""The scope defines a subset of namespaces to be refreshed.
+
+  Fields:
+    namespace_filters: Optional. Filters to determine which namespaces are
+      included in the refresh process. - empty list means include all
+      namespaces. - "[namespaces]" means include the specified namespaces.
+      ['ns1', 'ns2'] : Discover only namespaces 'ns1' and 'ns2'. The maximum
+      number of namespace filters allowed is 32.
+  """
+
+  namespace_filters = _messages.StringField(1, repeated=True)
+
+
 class RegisterIcebergTableRequest(_messages.Message):
   r"""The request message for the `RegisterIcebergTable` API.
 
@@ -1252,6 +1351,22 @@ class Replica(_messages.Message):
 
   region = _messages.StringField(1)
   state = _messages.EnumField('StateValueValuesEnum', 2)
+
+
+class RestrictedLocationsConfig(_messages.Message):
+  r"""Configuration of location restrictions.
+
+  Fields:
+    restricted_locations: Optional. Additional Google Cloud Storage buckets
+      and locations (e.g., `gs://my-other-bucket/...`) that are permitted for
+      use by resources within a catalog. If `restricted_locations` is empty,
+      all accessible locations are allowed. If `restricted_locations` is not
+      empty, only `default_location` and locations in this list are allowed.
+      This field is currently used only for BigLake Iceberg catalogs. It will
+      be empty for other catalog types.
+  """
+
+  restricted_locations = _messages.StringField(1, repeated=True)
 
 
 class SetIamPolicyRequest(_messages.Message):
@@ -1417,6 +1532,21 @@ class TestIamPermissionsResponse(_messages.Message):
   permissions = _messages.StringField(1, repeated=True)
 
 
+class UnityCatalogInfo(_messages.Message):
+  r"""Unity Catalog info.
+
+  Fields:
+    catalog_name: Required. Name of the catalog in Unity Catalog.
+    instance_name: Required. The instance name is the first part of the URL
+      when you log into your Databricks deployment. For example, for a
+      Databricks on GCP workspace URL https://1.1.gcp.databricks.com, the
+      instance name is 1.1.gcp.databricks.com.
+  """
+
+  catalog_name = _messages.StringField(1)
+  instance_name = _messages.StringField(2)
+
+
 class UpdateIcebergNamespaceResponse(_messages.Message):
   r"""The response message for the `UpdateIcebergNamespace` API.
 
@@ -1443,6 +1573,20 @@ class UpdateIcebergTableRequest(_messages.Message):
 
 
 encoding.AddCustomJsonFieldMapping(
+    FederatedCatalogOptions, 'glue_catalog_info', 'glue-catalog-info')
+encoding.AddCustomJsonFieldMapping(
+    FederatedCatalogOptions, 'refresh_options', 'refresh-options')
+encoding.AddCustomJsonFieldMapping(
+    FederatedCatalogOptions, 'secret_name', 'secret-name')
+encoding.AddCustomJsonFieldMapping(
+    FederatedCatalogOptions, 'service_directory_name', 'service-directory-name')
+encoding.AddCustomJsonFieldMapping(
+    FederatedCatalogOptions, 'unity_catalog_info', 'unity-catalog-info')
+encoding.AddCustomJsonFieldMapping(
+    GlueCatalogInfo, 'aws_region', 'aws-region')
+encoding.AddCustomJsonFieldMapping(
+    GlueCatalogInfo, 'aws_role_arn', 'aws-role-arn')
+encoding.AddCustomJsonFieldMapping(
     IcebergCatalog, 'additional_locations', 'additional-locations')
 encoding.AddCustomJsonFieldMapping(
     IcebergCatalog, 'biglake_service_account', 'biglake-service-account')
@@ -1456,6 +1600,10 @@ encoding.AddCustomJsonFieldMapping(
     IcebergCatalog, 'credential_mode', 'credential-mode')
 encoding.AddCustomJsonFieldMapping(
     IcebergCatalog, 'default_location', 'default-location')
+encoding.AddCustomJsonFieldMapping(
+    IcebergCatalog, 'federated_catalog_options', 'federated-catalog-options')
+encoding.AddCustomJsonFieldMapping(
+    IcebergCatalog, 'restricted_locations_config', 'restricted-locations-config')
 encoding.AddCustomJsonFieldMapping(
     IcebergCatalog, 'storage_regions', 'storage-regions')
 encoding.AddCustomJsonFieldMapping(
@@ -1471,7 +1619,21 @@ encoding.AddCustomJsonFieldMapping(
 encoding.AddCustomJsonFieldMapping(
     LoadIcebergTableCredentialsResponse, 'storage_credentials', 'storage-credentials')
 encoding.AddCustomJsonFieldMapping(
+    RefreshOptions, 'refresh_schedule', 'refresh-schedule')
+encoding.AddCustomJsonFieldMapping(
+    RefreshOptions, 'refresh_scope', 'refresh-scope')
+encoding.AddCustomJsonFieldMapping(
+    RefreshSchedule, 'refresh_interval', 'refresh-interval')
+encoding.AddCustomJsonFieldMapping(
+    RefreshScope, 'namespace_filters', 'namespace-filters')
+encoding.AddCustomJsonFieldMapping(
     RegisterIcebergTableRequest, 'metadata_location', 'metadata-location')
+encoding.AddCustomJsonFieldMapping(
+    RestrictedLocationsConfig, 'restricted_locations', 'restricted-locations')
+encoding.AddCustomJsonFieldMapping(
+    UnityCatalogInfo, 'catalog_name', 'catalog-name')
+encoding.AddCustomJsonFieldMapping(
+    UnityCatalogInfo, 'instance_name', 'instance-name')
 encoding.AddCustomJsonFieldMapping(
     StandardQueryParameters, 'f__xgafv', '$.xgafv')
 encoding.AddCustomJsonEnumMapping(

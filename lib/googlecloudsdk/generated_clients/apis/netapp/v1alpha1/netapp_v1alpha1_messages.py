@@ -3880,9 +3880,8 @@ class StoragePool(_messages.Message):
     StateValueValuesEnum: Output only. State of the storage pool
     TypeValueValuesEnum: Optional. Type of the storage pool. This field is
       used to control whether the pool supports `FILE` based volumes only or
-      `UNIFIED` (both `FILE` and `BLOCK`) volumes or `UNIFIED_LARGE_CAPACITY`
-      (both `FILE` and `BLOCK`) volumes with large capacity. If not specified
-      during creation, it defaults to `FILE`.
+      `UNIFIED` (both `FILE` and `BLOCK`) volumes. If not specified during
+      creation, it defaults to `FILE`.
 
   Messages:
     LabelsValue: Optional. Labels as key value pairs
@@ -3947,9 +3946,8 @@ class StoragePool(_messages.Message):
       pool (in MiBps)
     type: Optional. Type of the storage pool. This field is used to control
       whether the pool supports `FILE` based volumes only or `UNIFIED` (both
-      `FILE` and `BLOCK`) volumes or `UNIFIED_LARGE_CAPACITY` (both `FILE` and
-      `BLOCK`) volumes with large capacity. If not specified during creation,
-      it defaults to `FILE`.
+      `FILE` and `BLOCK`) volumes. If not specified during creation, it
+      defaults to `FILE`.
     unifiedPool: Optional. Flag indicating if the pool has unified storage.
     volumeCapacityGib: Output only. Allocated size of all volumes in GIB in
       the storage pool
@@ -3977,11 +3975,9 @@ class StoragePool(_messages.Message):
     defaults to `DEFAULT`.
 
     Values:
-      MODE_UNSPECIFIED: The `StoragePool` `Mode` is not specified.
-      DEFAULT: The `StoragePool` and its resources are managed by the GCNV
-        APIs.
-      ONTAP: The `StoragePool` and its resources are managed by the GCNV ONTAP
-        Mode APIs.
+      MODE_UNSPECIFIED: The `Mode` is not specified.
+      DEFAULT: The resource is managed by the GCNV APIs.
+      ONTAP: The resource is managed by the GCNV ONTAP Mode APIs.
     """
     MODE_UNSPECIFIED = 0
     DEFAULT = 1
@@ -4059,21 +4055,17 @@ class StoragePool(_messages.Message):
   class TypeValueValuesEnum(_messages.Enum):
     r"""Optional. Type of the storage pool. This field is used to control
     whether the pool supports `FILE` based volumes only or `UNIFIED` (both
-    `FILE` and `BLOCK`) volumes or `UNIFIED_LARGE_CAPACITY` (both `FILE` and
-    `BLOCK`) volumes with large capacity. If not specified during creation, it
-    defaults to `FILE`.
+    `FILE` and `BLOCK`) volumes. If not specified during creation, it defaults
+    to `FILE`.
 
     Values:
       STORAGE_POOL_TYPE_UNSPECIFIED: Storage pool type is not specified.
       FILE: Storage pool type is file.
       UNIFIED: Storage pool type is unified.
-      UNIFIED_LARGE_CAPACITY: Deprecated: UNIFIED_LARGE_CAPACITY was
-        previously tag 3.
     """
     STORAGE_POOL_TYPE_UNSPECIFIED = 0
     FILE = 1
     UNIFIED = 2
-    UNIFIED_LARGE_CAPACITY = 3
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
@@ -4278,6 +4270,8 @@ class Volume(_messages.Message):
   Enums:
     EncryptionTypeValueValuesEnum: Output only. Specified the current volume
       encryption key source.
+    ModeValueValuesEnum: Output only. `mode` indicates whether the volume is
+      managed by GCNV APIs or GCNV ONTAP Mode APIs.
     ProtocolsValueListEntryValuesEnum:
     RestrictedActionsValueListEntryValuesEnum:
     SecurityStyleValueValuesEnum: Optional. Security Style of the Volume
@@ -4324,6 +4318,8 @@ class Volume(_messages.Message):
     largeCapacityConfig: Optional. Large capacity config for the volume.
     ldapEnabled: Output only. Flag indicating if the volume is NFS LDAP
       enabled or not.
+    mode: Output only. `mode` indicates whether the volume is managed by GCNV
+      APIs or GCNV ONTAP Mode APIs.
     mountOptions: Output only. Mount options of this volume
     multipleEndpoints: Optional. Flag indicating if the volume will have an IP
       address per node for volumes supporting multiple IP endpoints. Only the
@@ -4374,6 +4370,19 @@ class Volume(_messages.Message):
     ENCRYPTION_TYPE_UNSPECIFIED = 0
     SERVICE_MANAGED = 1
     CLOUD_KMS = 2
+
+  class ModeValueValuesEnum(_messages.Enum):
+    r"""Output only. `mode` indicates whether the volume is managed by GCNV
+    APIs or GCNV ONTAP Mode APIs.
+
+    Values:
+      VOLUME_MODE_UNSPECIFIED: The `VolumeMode` is not specified.
+      DEFAULT: The resource is managed by the GCNV APIs.
+      ONTAP: The resource is managed by the GCNV ONTAP Mode APIs.
+    """
+    VOLUME_MODE_UNSPECIFIED = 0
+    DEFAULT = 1
+    ONTAP = 2
 
   class ProtocolsValueListEntryValuesEnum(_messages.Enum):
     r"""ProtocolsValueListEntryValuesEnum enum type.
@@ -4530,30 +4539,31 @@ class Volume(_messages.Message):
   largeCapacity = _messages.BooleanField(19)
   largeCapacityConfig = _messages.MessageField('LargeCapacityConfig', 20)
   ldapEnabled = _messages.BooleanField(21)
-  mountOptions = _messages.MessageField('MountOption', 22, repeated=True)
-  multipleEndpoints = _messages.BooleanField(23)
-  name = _messages.StringField(24)
-  network = _messages.StringField(25)
-  protocols = _messages.EnumField('ProtocolsValueListEntryValuesEnum', 26, repeated=True)
-  psaRange = _messages.StringField(27)
-  replicaZone = _messages.StringField(28)
-  restoreParameters = _messages.MessageField('RestoreParameters', 29)
-  restrictedActions = _messages.EnumField('RestrictedActionsValueListEntryValuesEnum', 30, repeated=True)
-  securityStyle = _messages.EnumField('SecurityStyleValueValuesEnum', 31)
-  serviceLevel = _messages.EnumField('ServiceLevelValueValuesEnum', 32)
-  shareName = _messages.StringField(33)
-  smbSettings = _messages.EnumField('SmbSettingsValueListEntryValuesEnum', 34, repeated=True)
-  snapReserve = _messages.FloatField(35)
-  snapshotDirectory = _messages.BooleanField(36)
-  snapshotPolicy = _messages.MessageField('SnapshotPolicy', 37)
-  state = _messages.EnumField('StateValueValuesEnum', 38)
-  stateDetails = _messages.StringField(39)
-  storagePool = _messages.StringField(40)
-  throughputMibps = _messages.FloatField(41)
-  tieringPolicy = _messages.MessageField('TieringPolicy', 42)
-  unixPermissions = _messages.StringField(43)
-  usedGib = _messages.IntegerField(44)
-  zone = _messages.StringField(45)
+  mode = _messages.EnumField('ModeValueValuesEnum', 22)
+  mountOptions = _messages.MessageField('MountOption', 23, repeated=True)
+  multipleEndpoints = _messages.BooleanField(24)
+  name = _messages.StringField(25)
+  network = _messages.StringField(26)
+  protocols = _messages.EnumField('ProtocolsValueListEntryValuesEnum', 27, repeated=True)
+  psaRange = _messages.StringField(28)
+  replicaZone = _messages.StringField(29)
+  restoreParameters = _messages.MessageField('RestoreParameters', 30)
+  restrictedActions = _messages.EnumField('RestrictedActionsValueListEntryValuesEnum', 31, repeated=True)
+  securityStyle = _messages.EnumField('SecurityStyleValueValuesEnum', 32)
+  serviceLevel = _messages.EnumField('ServiceLevelValueValuesEnum', 33)
+  shareName = _messages.StringField(34)
+  smbSettings = _messages.EnumField('SmbSettingsValueListEntryValuesEnum', 35, repeated=True)
+  snapReserve = _messages.FloatField(36)
+  snapshotDirectory = _messages.BooleanField(37)
+  snapshotPolicy = _messages.MessageField('SnapshotPolicy', 38)
+  state = _messages.EnumField('StateValueValuesEnum', 39)
+  stateDetails = _messages.StringField(40)
+  storagePool = _messages.StringField(41)
+  throughputMibps = _messages.FloatField(42)
+  tieringPolicy = _messages.MessageField('TieringPolicy', 43)
+  unixPermissions = _messages.StringField(44)
+  usedGib = _messages.IntegerField(45)
+  zone = _messages.StringField(46)
 
 
 class WeeklySchedule(_messages.Message):

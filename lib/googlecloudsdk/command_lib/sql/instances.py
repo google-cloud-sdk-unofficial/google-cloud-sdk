@@ -1293,9 +1293,7 @@ class _BaseInstances(object):
     ):
       api_util.InstancesV1Beta4.PrintAndConfirmSimulatedMaintenanceEvent()
 
-    if IsBetaOrNewer(release_track) and args.IsSpecified(
-        'reconcile_psa_networking'
-    ):
+    if args.IsSpecified('reconcile_psa_networking'):
       if instance_resource.settings.ipConfiguration is None:
         instance_resource.settings.ipConfiguration = (
             sql_messages.IpConfiguration()

@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class ListAttestationRules(base.ListCommand):
   """List the attestation rules on a workload identity pool."""
 

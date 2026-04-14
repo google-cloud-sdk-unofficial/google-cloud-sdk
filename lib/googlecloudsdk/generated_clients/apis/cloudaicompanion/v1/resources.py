@@ -112,6 +112,29 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_GDAOBSERVABILITYSETTINGS = (
+      'projects.locations.gdaObservabilitySettings',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'gdaObservabilitySettings/{gdaObservabilitySettingsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_GDAOBSERVABILITYSETTINGS_SETTINGBINDINGS = (
+      'projects.locations.gdaObservabilitySettings.settingBindings',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'gdaObservabilitySettings/{gdaObservabilitySettingsId}/'
+              'settingBindings/{settingBindingsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_GEMINIGCPENABLEMENTSETTINGS = (
       'projects.locations.geminiGcpEnablementSettings',
       '{+name}',
@@ -130,6 +153,29 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/'
               'geminiGcpEnablementSettings/{geminiGcpEnablementSettingsId}/'
+              'settingBindings/{settingBindingsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_GIBQOBSERVABILITYSETTINGS = (
+      'projects.locations.gibqObservabilitySettings',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'gibqObservabilitySettings/{gibqObservabilitySettingsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_GIBQOBSERVABILITYSETTINGS_SETTINGBINDINGS = (
+      'projects.locations.gibqObservabilitySettings.settingBindings',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'gibqObservabilitySettings/{gibqObservabilitySettingsId}/'
               'settingBindings/{settingBindingsId}',
       },
       ['name'],

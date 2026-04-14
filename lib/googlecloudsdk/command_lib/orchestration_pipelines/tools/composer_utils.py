@@ -14,7 +14,6 @@
 # limitations under the License.
 """Utilities for interacting with the Composer DAG API."""
 
-import datetime
 import json
 import pathlib
 from googlecloudsdk.api_lib.composer import dags_util
@@ -26,25 +25,6 @@ from googlecloudsdk.core import resources
 
 
 DEPLOYMENT_FILE = 'deployment.yaml'
-PLACEHOLDER_DAG_DOC_MD = """{
-    "op_bundle": "example-bundle",
-    "op_version": "a1b2c3d4e5f67890abcdef1234567890abcdef01",
-    "op_pipeline": "example-pipeline",
-    "op_owner": "cloud-composer",
-    "op_origination": "GIT_CI_CD",
-    "op_deployment_details": {
-        "op_repository": "cloud-composer-samples",
-        "op_branch": "main",
-        "op_commit_sha": "a1b2c3d4e5f67890abcdef1234567890abcdef01"
-    },
-    "op_is_paused": true,
-    "op_schedule": "every day 10:00"
-}"""
-PLACEHOLDER_TASK_DOC_MD = """{
-    "op_action_name": "example-action"
-}"""
-PLACEHOLDER_RETRIES = 0
-PLACEHOLDER_EXECUTION_TIMEOUT = datetime.timedelta(hours=1)
 
 
 def _build_triggers(dag):
@@ -193,13 +173,11 @@ def list_pipelines_with_filter(list_filter, environment, runner, api_version):
   return dags_list
 
 
-def parse_metadata_json(metadata_json, default_metadata_json=None):
+def parse_metadata_json(metadata_json):
   """Parses the metadata JSON string.
 
   Args:
     metadata_json: The metadata JSON string.
-    default_metadata_json: The default metadata JSON string to use if the
-      metadata_json is empty.
 
   Returns:
     A dictionary representing the metadata JSON string, or an empty dictionary
@@ -207,9 +185,9 @@ def parse_metadata_json(metadata_json, default_metadata_json=None):
   """
 
   try:
-    return json.loads(metadata_json if metadata_json else default_metadata_json)
-  except json.JSONDecodeError:
-    log.warning('Could not parse metadata for resource.')
+    return json.loads(metadata_json)
+  except (json.JSONDecodeError, TypeError) as e:
+    log.warning('Could not parse metadata for resource: %s', e)
     return {}
 
 
@@ -225,7 +203,7 @@ def get_pipeline_paused_status(dag):
   Returns:
     True if pipeline is paused, False otherwise.
   """
-  doc_md = parse_metadata_json(dag.docMd, PLACEHOLDER_DAG_DOC_MD)
+  doc_md = parse_metadata_json(dag.docMd)
   return doc_md.get('op_is_paused', False) and (
       dag.cronSchedule is None and dag.durationSchedule is None
   )
@@ -242,7 +220,7 @@ def convert_dags_to_pipelines(dags):
   """
   pipelines = []
   for dag in dags:
-    doc_md = parse_metadata_json(dag.docMd, PLACEHOLDER_DAG_DOC_MD)
+    doc_md = parse_metadata_json(dag.docMd)
     is_paused = get_pipeline_paused_status(dag) or dag.state.name == 'PAUSED'
     metadata = {
         'airflow_dag_id': dag.dagId,
@@ -272,6 +250,13 @@ def convert_dags_to_pipelines(dags):
         'metadata': metadata,
     })
 
+    if dag.dagId.startswith('ERROR__'):
+      pipelines[-1].update({
+          'error': {
+              'message': doc_md.get('op_error'),
+          }
+      })
+
     # Only add triggers for active pipelines.
     if not is_paused:
       pipelines[-1].update({'triggers': _build_triggers(dag)})
@@ -294,7 +279,7 @@ def convert_tasks_to_actions(tasks):
   task_id_to_action_name = {}
   action_tasks = {}
   for task in tasks:
-    doc_md = parse_metadata_json(task.docMd, PLACEHOLDER_TASK_DOC_MD)
+    doc_md = parse_metadata_json(task.docMd)
     action_name = doc_md.get('op_action_name')
     task_id_to_action_name[task.id] = action_name
     action_tasks.setdefault(action_name, []).append(task)
@@ -320,8 +305,8 @@ def convert_tasks_to_actions(tasks):
         'name': action_name,
         'upstream_actions': sorted(list(upstream_actions)),
         'downstream_actions': sorted(list(downstream_actions)),
-        'execution_timeout': PLACEHOLDER_EXECUTION_TIMEOUT.total_seconds(),
-        'retries': PLACEHOLDER_RETRIES,
+        'execution_timeout': first_task.executionTimeout,
+        'retries': first_task.retries,
         'metadata': {'airflow_dag_id': first_task.dagId},
     }
   return sorted(actions_dict.values(), key=lambda x: x['name'])
@@ -339,7 +324,7 @@ def convert_dag_runs_to_pipeline_runs(dag_runs):
 
   pipeline_runs = []
   for dag_run in dag_runs:
-    note = parse_metadata_json(dag_run.note, PLACEHOLDER_DAG_DOC_MD)
+    note = parse_metadata_json(dag_run.note)
     metadata = {
         'airflow_dag_id': dag_run.dagId,
     }
@@ -373,7 +358,7 @@ def aggregate_task_instances_to_actions(task_instances):
   task_instance_id_to_action_name = {}
   action_task_instances = {}
   for task_instance in task_instances:
-    note = parse_metadata_json(task_instance.note, PLACEHOLDER_TASK_DOC_MD)
+    note = parse_metadata_json(task_instance.note)
     action_name = note.get('op_action_name')
     task_instance_id_to_action_name[task_instance.id] = action_name
     action_task_instances.setdefault(action_name, []).append(task_instance)

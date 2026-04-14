@@ -241,7 +241,7 @@ class SharedProcessContext:
 
 @crash_handling.CrashManager
 def _thread_worker(task_queue, task_output_queue, task_status_queue,
-                   idle_thread_count):
+                   idle_thread_count, abort_event):
   """A consumer thread run in a child process.
 
   Args:
@@ -252,8 +252,9 @@ def _thread_worker(task_queue, task_output_queue, task_status_queue,
       progress to a central location.
     idle_thread_count (multiprocessing.Semaphore): Keeps track of how many
       threads are busy. Useful for spawning new workers if all threads are busy.
+    abort_event (multiprocessing.Event): Global signal to abort.
   """
-  while True:
+  while not abort_event.is_set():
     with _task_queue_lock():
       task_wrapper = task_queue.get()
     if task_wrapper == _SHUTDOWN:
@@ -299,7 +300,8 @@ def _process_worker(
     thread_count,
     idle_thread_count,
     shared_process_context,
-    stack_trace_file_path
+    stack_trace_file_path,
+    abort_event,
 ):
   """Starts a consumer thread pool.
 
@@ -314,6 +316,7 @@ def _process_worker(
     shared_process_context (SharedProcessContext): Holds values from global
       state that need to be replicated in child processes.
     stack_trace_file_path (str): File path to write stack traces to.
+    abort_event (multiprocessing.Event): Global signal to abort.
   """
   threads = []
   with shared_process_context:
@@ -325,6 +328,7 @@ def _process_worker(
               task_output_queue,
               task_status_queue,
               idle_thread_count,
+              abort_event,
           ),
       )
       thread.start()
@@ -353,7 +357,8 @@ def _process_factory(
     idle_thread_count,
     signal_queue,
     shared_process_context,
-    stack_trace_file_path
+    stack_trace_file_path,
+    abort_event,
 ):
   """Create worker processes.
 
@@ -375,11 +380,13 @@ def _process_factory(
     shared_process_context (SharedProcessContext): Holds values from global
       state that need to be replicated in child processes.
     stack_trace_file_path (str): File path to write stack traces to.
+    abort_event (multiprocessing.Event): Global signal to abort.
   """
   processes = []
-  while True:
+  while not abort_event.is_set():
     # We receive one signal message for each process to be created.
     signal = signal_queue.get()
+
     if signal == _SHUTDOWN:
       for _ in processes:
         for _ in range(thread_count):
@@ -399,8 +406,10 @@ def _process_factory(
               idle_thread_count,
               shared_process_context,
               stack_trace_file_path,
+              abort_event,
           ),
       )
+
       processes.append(process)
       log.debug('Adding 1 process with {} threads.'
                 ' Total processes: {}. Total threads: {}.'.format(
@@ -505,6 +514,9 @@ class TaskGraphExecutor:
     # Holds tasks without any dependencies.
     self._executable_tasks = task_buffer.TaskBuffer()
 
+    # System-wide signal to abort operations on fatal failure.
+    self._abort_event = multiprocessing_context.Event()
+
     # For storing exceptions.
     self.thread_exception = None
     self.thread_exception_lock = threading.Lock()
@@ -538,7 +550,7 @@ class TaskGraphExecutor:
     and adding them to self._executable_tasks.
     """
 
-    while self._accepting_new_tasks:
+    while self._accepting_new_tasks and not self._abort_event.is_set():
       try:
         task_object = next(self._task_iterator)
       except StopIteration:
@@ -557,7 +569,7 @@ class TaskGraphExecutor:
   def _add_executable_tasks_to_queue(self):
     """Sends executable tasks to consumer threads in child processes."""
     task_wrapper = None
-    while True:
+    while not self._abort_event.is_set():
       if task_wrapper is None:
         task_wrapper = self._executable_tasks.get()
         if task_wrapper == _SHUTDOWN:
@@ -578,7 +590,7 @@ class TaskGraphExecutor:
   @_store_exception
   def _handle_task_output(self):
     """Updates a dependency graph based on information from executed tasks."""
-    while True:
+    while not self._abort_event.is_set():
       output = self._task_output_queue.get()
       if output == _SHUTDOWN:
         break
@@ -633,7 +645,8 @@ class TaskGraphExecutor:
             self._idle_thread_count,
             self._signal_queue,
             shared_process_context,
-            self.stack_trace_file_path
+            self.stack_trace_file_path,
+            self._abort_event,
         ),
     )
 

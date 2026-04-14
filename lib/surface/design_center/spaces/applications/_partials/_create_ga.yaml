@@ -99,6 +99,119 @@
           type: arg_json
           help_text: |-
             The value of the parameter.
+      - api_field: applicationInfo
+        help_text: |-
+          The application associated with the component.
+        spec:
+        - api_field: apphubApplicationId
+          help_text: |-
+            The application ID of the apphub application. The ID must be 1-63
+            characters long and should match the regular expression
+            `^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$`.
+        - api_field: displayName
+          help_text: |-
+            Display name for the application. The number of characters should be less
+            than 64 characters.
+        - api_field: scope
+          help_text: |-
+            Scope of apphub application.
+          spec:
+          - api_field: type
+            help_text: |-
+              Scope Type.
+        - api_field: attributes
+          help_text: |-
+            Attributes of apphub application.
+          spec:
+          - api_field: criticality
+            help_text: |-
+              User-defined criticality information.
+            spec:
+            - api_field: level
+              help_text: |-
+                Criticality level.
+                Can contain only lowercase letters, numeric characters,
+                underscores, and dashes. Can have a maximum length of 63 characters.
+                Deprecated: Please refer to type instead.
+            - api_field: missionCritical
+              help_text: |-
+                Indicates mission-critical Application, Service, or Workload.
+                Deprecated: Please refer to type instead.
+            - api_field: type
+              help_text: |-
+                Criticality Type.
+          - api_field: environment
+            help_text: |-
+              User-defined environment information.
+            spec:
+            - api_field: environment
+              help_text: |-
+                Environment name.
+                Can contain only lowercase letters, numeric characters,
+                underscores, and dashes. Can have a maximum length of 63 characters.
+                Deprecated: Please refer to type instead.
+            - api_field: type
+              help_text: |-
+                Environment Type.
+          - api_field: developerOwners
+            help_text: |-
+              Developer team that owns development and coding.
+            spec:
+            - api_field: displayName
+              help_text: |-
+                Contact's name.
+                Can have a maximum length of 63 characters.
+            - api_field: email
+              help_text: |-
+                Email address of the contacts.
+            - api_field: channel
+              help_text: |-
+                Communication channel of the contacts.
+              spec:
+              - api_field: uri
+                help_text: |-
+                  URI of the channel.
+          - api_field: operatorOwners
+            help_text: |-
+              Operator team that ensures runtime and operations.
+            spec:
+            - api_field: displayName
+              help_text: |-
+                Contact's name.
+                Can have a maximum length of 63 characters.
+            - api_field: email
+              help_text: |-
+                Email address of the contacts.
+            - api_field: channel
+              help_text: |-
+                Communication channel of the contacts.
+              spec:
+              - api_field: uri
+                help_text: |-
+                  URI of the channel.
+          - api_field: businessOwners
+            help_text: |-
+              Business team that ensures user needs are met and value is delivered
+            spec:
+            - api_field: displayName
+              help_text: |-
+                Contact's name.
+                Can have a maximum length of 63 characters.
+            - api_field: email
+              help_text: |-
+                Email address of the contacts.
+            - api_field: channel
+              help_text: |-
+                Communication channel of the contacts.
+              spec:
+              - api_field: uri
+                help_text: |-
+                  URI of the channel.
+        - api_field: deploymentRegion
+          help_text: |-
+            Deployment region for the component. If the scope is set to REGIONAL,
+            then the apphub application is created in this region, e.g.
+            `us-central1`.
     - arg_name: service-account
       api_field: application.serviceAccount
       required: false
@@ -403,6 +516,36 @@
                     If false, the KSA is expected to already exist in the namespace provided
                     above.
                   default: null
+    - group:
+        api_field: application.compositeApplicationParameters
+        required: false
+        help_text: |-
+          Holds parameters that are specific to composite applications.
+        params:
+        - arg_name: composite-application-parameters-service-account-map
+          api_field: application.compositeApplicationParameters.serviceAccountMap
+          required: false
+          repeated: true
+          help_text: |-
+            A map from a component's URI to the deployment service account for
+            composite application. key format:
+            projects/{project}/locations/{location}/spaces/{space}/applicationTemplates/{application_template}/components/{component}
+            value format:
+            projects/{project}/serviceAccounts/{email_address}
+          spec:
+          - api_field: key
+          - api_field: value
+    - arg_name: params-update-strategy
+      api_field: application.paramsUpdateStrategy
+      required: false
+      help_text: |-
+        Specifies the strategy to use when updating the application parameters
+        while updating the application template revision.
+      choices:
+      - arg_value: replace
+        enum_value: REPLACE
+        help_text: |-
+          Replaces the existing field values with the provided ones.
   request:
     api_version: v1
     collection:

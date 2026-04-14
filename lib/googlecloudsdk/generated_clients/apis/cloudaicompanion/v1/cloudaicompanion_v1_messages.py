@@ -1098,6 +1098,244 @@ class CloudaicompanionProjectsLocationsDataSharingWithGoogleSettingsSettingBindi
   updateMask = _messages.StringField(4)
 
 
+class CloudaicompanionProjectsLocationsGdaObservabilitySettingsCreateRequest(_messages.Message):
+  r"""A CloudaicompanionProjectsLocationsGdaObservabilitySettingsCreateRequest
+  object.
+
+  Fields:
+    gdaObservabilitySetting: A GdaObservabilitySetting resource to be passed
+      as the request body.
+    gdaObservabilitySettingId: Required. Id of the requesting object. If auto-
+      generating Id server-side, remove this field and
+      gda_observability_setting_id from the method_signature of Create RPC.
+    parent: Required. Value for parent.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  gdaObservabilitySetting = _messages.MessageField('GdaObservabilitySetting', 1)
+  gdaObservabilitySettingId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class CloudaicompanionProjectsLocationsGdaObservabilitySettingsDeleteRequest(_messages.Message):
+  r"""A CloudaicompanionProjectsLocationsGdaObservabilitySettingsDeleteRequest
+  object.
+
+  Fields:
+    name: Required. Name of the resource.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class CloudaicompanionProjectsLocationsGdaObservabilitySettingsGetRequest(_messages.Message):
+  r"""A CloudaicompanionProjectsLocationsGdaObservabilitySettingsGetRequest
+  object.
+
+  Fields:
+    name: Required. Name of the resource.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class CloudaicompanionProjectsLocationsGdaObservabilitySettingsListRequest(_messages.Message):
+  r"""A CloudaicompanionProjectsLocationsGdaObservabilitySettingsListRequest
+  object.
+
+  Fields:
+    filter: Optional. Filtering results.
+    orderBy: Optional. Hint for how to order the results.
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Parent value for ListGdaObservabilitySettingsRequest.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class CloudaicompanionProjectsLocationsGdaObservabilitySettingsPatchRequest(_messages.Message):
+  r"""A CloudaicompanionProjectsLocationsGdaObservabilitySettingsPatchRequest
+  object.
+
+  Fields:
+    gdaObservabilitySetting: A GdaObservabilitySetting resource to be passed
+      as the request body.
+    name: Identifier. Name of the resource. Format:projects/{project}/location
+      s/{location}/gdaObservabilitySettings/{gda_observability_setting}
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the GdaObservabilitySetting resource by the update. The
+      fields specified in the update_mask are relative to the resource, not
+      the full request. A field will be overwritten if it is in the mask. If
+      the user does not provide a mask then all fields present in the request
+      will be overwritten.
+  """
+
+  gdaObservabilitySetting = _messages.MessageField('GdaObservabilitySetting', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
+
+
+class CloudaicompanionProjectsLocationsGdaObservabilitySettingsSettingBindingsCreateRequest(_messages.Message):
+  r"""A CloudaicompanionProjectsLocationsGdaObservabilitySettingsSettingBindin
+  gsCreateRequest object.
+
+  Fields:
+    parent: Required. Value for parent.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    settingBinding: A SettingBinding resource to be passed as the request
+      body.
+    settingBindingId: Required. Id of the requesting object. If auto-
+      generating Id server-side, remove this field and setting_id from the
+      method_signature of Create RPC.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  settingBinding = _messages.MessageField('SettingBinding', 3)
+  settingBindingId = _messages.StringField(4)
+
+
+class CloudaicompanionProjectsLocationsGdaObservabilitySettingsSettingBindingsDeleteRequest(_messages.Message):
+  r"""A CloudaicompanionProjectsLocationsGdaObservabilitySettingsSettingBindin
+  gsDeleteRequest object.
+
+  Fields:
+    name: Required. Name of the resource.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class CloudaicompanionProjectsLocationsGdaObservabilitySettingsSettingBindingsGetRequest(_messages.Message):
+  r"""A CloudaicompanionProjectsLocationsGdaObservabilitySettingsSettingBindin
+  gsGetRequest object.
+
+  Fields:
+    name: Required. Name of the resource.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class CloudaicompanionProjectsLocationsGdaObservabilitySettingsSettingBindingsListRequest(_messages.Message):
+  r"""A CloudaicompanionProjectsLocationsGdaObservabilitySettingsSettingBindin
+  gsListRequest object.
+
+  Fields:
+    filter: Optional. Filtering results.
+    orderBy: Optional. Hint for how to order the results.
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Parent value for ListSettingBindingsRequest.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class CloudaicompanionProjectsLocationsGdaObservabilitySettingsSettingBindingsPatchRequest(_messages.Message):
+  r"""A CloudaicompanionProjectsLocationsGdaObservabilitySettingsSettingBindin
+  gsPatchRequest object.
+
+  Fields:
+    name: Identifier. Name of the resource. Format:projects/{project}/location
+      s/{location}/{settingType}/{setting}/settingBindings/{setting_binding}
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    settingBinding: A SettingBinding resource to be passed as the request
+      body.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the SettingBinding resource by the update. The fields
+      specified in the update_mask are relative to the resource, not the full
+      request. A field will be overwritten if it is in the mask. If the user
+      does not provide a mask then all fields present in the request will be
+      overwritten.
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  settingBinding = _messages.MessageField('SettingBinding', 3)
+  updateMask = _messages.StringField(4)
+
+
 class CloudaicompanionProjectsLocationsGeminiGcpEnablementSettingsCreateRequest(_messages.Message):
   r"""A
   CloudaicompanionProjectsLocationsGeminiGcpEnablementSettingsCreateRequest
@@ -1348,6 +1586,246 @@ class CloudaicompanionProjectsLocationsGetRequest(_messages.Message):
   """
 
   name = _messages.StringField(1, required=True)
+
+
+class CloudaicompanionProjectsLocationsGibqObservabilitySettingsCreateRequest(_messages.Message):
+  r"""A
+  CloudaicompanionProjectsLocationsGibqObservabilitySettingsCreateRequest
+  object.
+
+  Fields:
+    gibqObservabilitySetting: A GibqObservabilitySetting resource to be passed
+      as the request body.
+    gibqObservabilitySettingId: Required. Id of the requesting object. If
+      auto-generating Id server-side, remove this field and
+      gibq_observability_setting_id from the method_signature of Create RPC.
+    parent: Required. Value for parent.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  gibqObservabilitySetting = _messages.MessageField('GibqObservabilitySetting', 1)
+  gibqObservabilitySettingId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class CloudaicompanionProjectsLocationsGibqObservabilitySettingsDeleteRequest(_messages.Message):
+  r"""A
+  CloudaicompanionProjectsLocationsGibqObservabilitySettingsDeleteRequest
+  object.
+
+  Fields:
+    name: Required. Name of the resource.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class CloudaicompanionProjectsLocationsGibqObservabilitySettingsGetRequest(_messages.Message):
+  r"""A CloudaicompanionProjectsLocationsGibqObservabilitySettingsGetRequest
+  object.
+
+  Fields:
+    name: Required. Name of the resource.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class CloudaicompanionProjectsLocationsGibqObservabilitySettingsListRequest(_messages.Message):
+  r"""A CloudaicompanionProjectsLocationsGibqObservabilitySettingsListRequest
+  object.
+
+  Fields:
+    filter: Optional. Filtering results.
+    orderBy: Optional. Hint for how to order the results.
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Parent value for ListGibqObservabilitySettingsRequest.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class CloudaicompanionProjectsLocationsGibqObservabilitySettingsPatchRequest(_messages.Message):
+  r"""A CloudaicompanionProjectsLocationsGibqObservabilitySettingsPatchRequest
+  object.
+
+  Fields:
+    gibqObservabilitySetting: A GibqObservabilitySetting resource to be passed
+      as the request body.
+    name: Identifier. Name of the resource. Format:projects/{project}/location
+      s/{location}/gibqObservabilitySettings/{gibq_observability_setting}
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the GibqObservabilitySetting resource by the update. The
+      fields specified in the update_mask are relative to the resource, not
+      the full request. A field will be overwritten if it is in the mask. If
+      the user does not provide a mask then all fields present in the request
+      will be overwritten.
+  """
+
+  gibqObservabilitySetting = _messages.MessageField('GibqObservabilitySetting', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
+
+
+class CloudaicompanionProjectsLocationsGibqObservabilitySettingsSettingBindingsCreateRequest(_messages.Message):
+  r"""A CloudaicompanionProjectsLocationsGibqObservabilitySettingsSettingBindi
+  ngsCreateRequest object.
+
+  Fields:
+    parent: Required. Value for parent.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    settingBinding: A SettingBinding resource to be passed as the request
+      body.
+    settingBindingId: Required. Id of the requesting object. If auto-
+      generating Id server-side, remove this field and setting_id from the
+      method_signature of Create RPC.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  settingBinding = _messages.MessageField('SettingBinding', 3)
+  settingBindingId = _messages.StringField(4)
+
+
+class CloudaicompanionProjectsLocationsGibqObservabilitySettingsSettingBindingsDeleteRequest(_messages.Message):
+  r"""A CloudaicompanionProjectsLocationsGibqObservabilitySettingsSettingBindi
+  ngsDeleteRequest object.
+
+  Fields:
+    name: Required. Name of the resource.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class CloudaicompanionProjectsLocationsGibqObservabilitySettingsSettingBindingsGetRequest(_messages.Message):
+  r"""A CloudaicompanionProjectsLocationsGibqObservabilitySettingsSettingBindi
+  ngsGetRequest object.
+
+  Fields:
+    name: Required. Name of the resource.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class CloudaicompanionProjectsLocationsGibqObservabilitySettingsSettingBindingsListRequest(_messages.Message):
+  r"""A CloudaicompanionProjectsLocationsGibqObservabilitySettingsSettingBindi
+  ngsListRequest object.
+
+  Fields:
+    filter: Optional. Filtering results.
+    orderBy: Optional. Hint for how to order the results.
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Parent value for ListSettingBindingsRequest.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class CloudaicompanionProjectsLocationsGibqObservabilitySettingsSettingBindingsPatchRequest(_messages.Message):
+  r"""A CloudaicompanionProjectsLocationsGibqObservabilitySettingsSettingBindi
+  ngsPatchRequest object.
+
+  Fields:
+    name: Identifier. Name of the resource. Format:projects/{project}/location
+      s/{location}/{settingType}/{setting}/settingBindings/{setting_binding}
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    settingBinding: A SettingBinding resource to be passed as the request
+      body.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the SettingBinding resource by the update. The fields
+      specified in the update_mask are relative to the resource, not the full
+      request. A field will be overwritten if it is in the mask. If the user
+      does not provide a mask then all fields present in the request will be
+      overwritten.
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  settingBinding = _messages.MessageField('SettingBinding', 3)
+  updateMask = _messages.StringField(4)
 
 
 class CloudaicompanionProjectsLocationsLoggingSettingsCreateRequest(_messages.Message):
@@ -2352,6 +2830,65 @@ class Expr(_messages.Message):
   title = _messages.StringField(4)
 
 
+class GdaObservabilitySetting(_messages.Message):
+  r"""Message describing GdaObservabilitySetting object
+
+  Messages:
+    LabelsValue: Optional. Labels as key value pairs.
+
+  Fields:
+    conversationalAnalyticsSetting: Optional. Settings for Conversational
+      Analytics, which can be used to enable observability features.
+    createTime: Output only. [Output only] Create time stamp.
+    labels: Optional. Labels as key value pairs.
+    name: Identifier. Name of the resource. Format:projects/{project}/location
+      s/{location}/gdaObservabilitySettings/{gda_observability_setting}
+    updateTime: Output only. [Output only] Update time stamp.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels as key value pairs.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  conversationalAnalyticsSetting = _messages.MessageField('GeminiDataAnalyticsConversationalAnalyticsSetting', 1)
+  createTime = _messages.StringField(2)
+  labels = _messages.MessageField('LabelsValue', 3)
+  name = _messages.StringField(4)
+  updateTime = _messages.StringField(5)
+
+
+class GeminiDataAnalyticsConversationalAnalyticsSetting(_messages.Message):
+  r"""Message describing Setting for Conversational Analytics.
+
+  Fields:
+    metricsEnabled: Optional. Whether to enable metrics.
+    tracesEnabled: Optional. Whether to enable traces.
+  """
+
+  metricsEnabled = _messages.BooleanField(1)
+  tracesEnabled = _messages.BooleanField(2)
+
+
 class GeminiGcpEnablementSetting(_messages.Message):
   r"""Message describing GeminiGcpEnablementSetting object
 
@@ -2375,6 +2912,8 @@ class GeminiGcpEnablementSetting(_messages.Message):
       setting. Format: projects/{project} The `{project}` segment can be the
       project ID or project number.
     labels: Optional. Labels as key value pairs.
+    mutationsEnabled: Optional. Indicates whether resource mutations are
+      enabled. If not set, resource mutations are disabled.
     name: Identifier. Name of the resource. Format:projects/{project}/location
       s/{location}/geminiGcpEnablementSettings/{geminiGcpEnablementSetting}
     proactiveAgentsEnabled: Optional. Indicates whether proactive agents are
@@ -2443,11 +2982,71 @@ class GeminiGcpEnablementSetting(_messages.Message):
   enableCustomerDataSharing = _messages.BooleanField(4)
   geminiEnterpriseProject = _messages.StringField(5)
   labels = _messages.MessageField('LabelsValue', 6)
-  name = _messages.StringField(7)
-  proactiveAgentsEnabled = _messages.BooleanField(8)
-  releaseChannel = _messages.EnumField('ReleaseChannelValueValuesEnum', 9)
-  updateTime = _messages.StringField(10)
-  webGroundingType = _messages.EnumField('WebGroundingTypeValueValuesEnum', 11)
+  mutationsEnabled = _messages.BooleanField(7)
+  name = _messages.StringField(8)
+  proactiveAgentsEnabled = _messages.BooleanField(9)
+  releaseChannel = _messages.EnumField('ReleaseChannelValueValuesEnum', 10)
+  updateTime = _messages.StringField(11)
+  webGroundingType = _messages.EnumField('WebGroundingTypeValueValuesEnum', 12)
+
+
+class GeminiInBigQueryConversationalAnalyticsSetting(_messages.Message):
+  r"""Message describing Setting for Conversational Analytics.
+
+  Fields:
+    metricsEnabled: Optional. Whether to enable metrics.
+    tracesEnabled: Optional. Whether to enable traces.
+  """
+
+  metricsEnabled = _messages.BooleanField(1)
+  tracesEnabled = _messages.BooleanField(2)
+
+
+class GibqObservabilitySetting(_messages.Message):
+  r"""Message describing GibqObservabilitySetting object
+
+  Messages:
+    LabelsValue: Optional. Labels as key value pairs.
+
+  Fields:
+    conversationalAnalyticsSetting: Optional. Settings for Conversational
+      Analytics, which can be used to enable observability features.
+    createTime: Output only. [Output only] Create time stamp.
+    labels: Optional. Labels as key value pairs.
+    name: Identifier. Name of the resource. Format:projects/{project}/location
+      s/{location}/gibqObservabilitySettings/{gibq_observability_setting}
+    updateTime: Output only. [Output only] Update time stamp.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels as key value pairs.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  conversationalAnalyticsSetting = _messages.MessageField('GeminiInBigQueryConversationalAnalyticsSetting', 1)
+  createTime = _messages.StringField(2)
+  labels = _messages.MessageField('LabelsValue', 3)
+  name = _messages.StringField(4)
+  updateTime = _messages.StringField(5)
 
 
 class IntParameterArray(_messages.Message):
@@ -2821,6 +3420,21 @@ class ListDataSharingWithGoogleSettingsResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListGdaObservabilitySettingsResponse(_messages.Message):
+  r"""Message for response to listing GdaObservabilitySettings
+
+  Fields:
+    gdaObservabilitySettings: The list of GdaObservabilitySettings.
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  gdaObservabilitySettings = _messages.MessageField('GdaObservabilitySetting', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListGeminiGcpEnablementSettingsResponse(_messages.Message):
   r"""Message for response to listing GeminiGcpEnablementSettings
 
@@ -2832,6 +3446,21 @@ class ListGeminiGcpEnablementSettingsResponse(_messages.Message):
   """
 
   geminiGcpEnablementSettings = _messages.MessageField('GeminiGcpEnablementSetting', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListGibqObservabilitySettingsResponse(_messages.Message):
+  r"""Message for response to listing GibqObservabilitySettings
+
+  Fields:
+    gibqObservabilitySettings: The list of GibqObservabilitySettings.
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  gibqObservabilitySettings = _messages.MessageField('GibqObservabilitySetting', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
   unreachable = _messages.StringField(3, repeated=True)
 

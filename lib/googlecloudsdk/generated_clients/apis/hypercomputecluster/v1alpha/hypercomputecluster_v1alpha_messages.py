@@ -17,33 +17,33 @@ class AnalyzerReport(_messages.Message):
   r"""A detailed report from a specific analyzer.
 
   Enums:
-    AnalyzerIdentityValueValuesEnum: Required. The identity of the analyzer
-      that found the issue.
+    DetectionStateValueValuesEnum: Output only. Detection state produced by
+      the analyzer.
 
   Fields:
-    analyzerIdentity: Required. The identity of the analyzer that found the
-      issue.
-    confidenceScore: Optional. Confidence score of the analysis. The value is
-      between 0.0 and 1.0.
+    analyzer: Required. Name of the system executed analyzer. Example -
+      "Thermal Throttling Analyzer"
+    details: Optional. A summary details of the analyzer findings.
+    detectionState: Output only. Detection state produced by the analyzer.
     recommendedActions: Optional. Recommended actions to take.
-    rootCauseFound: Optional. Indicates whether a root cause was found for the
-      event.
-    thermalDetails: Optional. Thermal analysis details.
   """
 
-  class AnalyzerIdentityValueValuesEnum(_messages.Enum):
-    r"""Required. The identity of the analyzer that found the issue.
+  class DetectionStateValueValuesEnum(_messages.Enum):
+    r"""Output only. Detection state produced by the analyzer.
 
     Values:
-      ANALYZER_IDENTITY_UNSPECIFIED: Analyzer identity is not specified.
+      DETECTION_STATE_UNSPECIFIED: Status is not specified.
+      DETECTED: Analyzer detected an issue.
+      NOT_DETECTED: Analyzer did not detect an issue.
     """
-    ANALYZER_IDENTITY_UNSPECIFIED = 0
+    DETECTION_STATE_UNSPECIFIED = 0
+    DETECTED = 1
+    NOT_DETECTED = 2
 
-  analyzerIdentity = _messages.EnumField('AnalyzerIdentityValueValuesEnum', 1)
-  confidenceScore = _messages.FloatField(2, variant=_messages.Variant.FLOAT)
-  recommendedActions = _messages.MessageField('RecommendedAction', 3, repeated=True)
-  rootCauseFound = _messages.BooleanField(4)
-  thermalDetails = _messages.MessageField('ThermalAnalysisDetails', 5)
+  analyzer = _messages.StringField(1)
+  details = _messages.StringField(2)
+  detectionState = _messages.EnumField('DetectionStateValueValuesEnum', 3)
+  recommendedActions = _messages.MessageField('RecommendedAction', 4, repeated=True)
 
 
 class Artifacts(_messages.Message):
@@ -156,10 +156,13 @@ class Cluster(_messages.Message):
       [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034) (lower-case,
       alphanumeric, and at most 63 characters).
     createTime: Output only. Time that the cluster was originally created.
-    description: Optional. User-provided description of the cluster.
+    description: Optional. User-provided description of the cluster. Maximum
+      of 2048 characters.
     labels: Optional. [Labels](https://cloud.google.com/compute/docs/labeling-
       resources) applied to the cluster. Labels can be used to organize
       clusters and to filter them in queries.
+    maintenancePolicy: Optional. Policy controlling how system-initiated
+      maintenance should be conducted on the cluster.
     name: Identifier. [Relative resource name](https://google.aip.dev/122) of
       the cluster, in the format
       `projects/{project}/locations/{location}/clusters/{cluster}`.
@@ -302,14 +305,15 @@ class Cluster(_messages.Message):
   createTime = _messages.StringField(3)
   description = _messages.StringField(4)
   labels = _messages.MessageField('LabelsValue', 5)
-  name = _messages.StringField(6)
-  networkResources = _messages.MessageField('NetworkResourcesValue', 7)
-  networks = _messages.MessageField('Network', 8, repeated=True)
-  orchestrator = _messages.MessageField('Orchestrator', 9)
-  reconciling = _messages.BooleanField(10)
-  storageResources = _messages.MessageField('StorageResourcesValue', 11)
-  storages = _messages.MessageField('Storage', 12, repeated=True)
-  updateTime = _messages.StringField(13)
+  maintenancePolicy = _messages.MessageField('MaintenancePolicy', 6)
+  name = _messages.StringField(7)
+  networkResources = _messages.MessageField('NetworkResourcesValue', 8)
+  networks = _messages.MessageField('Network', 9, repeated=True)
+  orchestrator = _messages.MessageField('Orchestrator', 10)
+  reconciling = _messages.BooleanField(11)
+  storageResources = _messages.MessageField('StorageResourcesValue', 12)
+  storages = _messages.MessageField('Storage', 13, repeated=True)
+  updateTime = _messages.StringField(14)
 
 
 class Compute(_messages.Message):
@@ -428,12 +432,14 @@ class Configs(_messages.Message):
   Messages:
     HardwareConfigsValue: Optional. Hardware configs.
     SoftwareConfigsValue: Optional. Software configs.
-    UserConfigsValue: Optional. User defined configs.
+    UserConfigsValue: Optional. Deprecated: userConfigs will be stored in
+      Cloud Logging. User defined configs.
 
   Fields:
     hardwareConfigs: Optional. Hardware configs.
     softwareConfigs: Optional. Software configs.
-    userConfigs: Optional. User defined configs.
+    userConfigs: Optional. Deprecated: userConfigs will be stored in Cloud
+      Logging. User defined configs.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -488,7 +494,8 @@ class Configs(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class UserConfigsValue(_messages.Message):
-    r"""Optional. User defined configs.
+    r"""Optional. Deprecated: userConfigs will be stored in Cloud Logging.
+    User defined configs.
 
     Messages:
       AdditionalProperty: An additional property for a UserConfigsValue
@@ -855,60 +862,6 @@ class FileShareConfig(_messages.Message):
   fileShare = _messages.StringField(2)
 
 
-class FilestoreInitializeParams(_messages.Message):
-  r"""Message describing initialize params for filestore
-
-  Enums:
-    ProtocolValueValuesEnum: Optional. The protocol of the filestore
-    TierValueValuesEnum: Required. The service tier of the filestore
-
-  Fields:
-    description: Optional. Description of the filestore
-    fileShares: Required. File share configuration
-    filestore: Required. Name of the filestore
-    protocol: Optional. The protocol of the filestore
-    tier: Required. The service tier of the filestore
-  """
-
-  class ProtocolValueValuesEnum(_messages.Enum):
-    r"""Optional. The protocol of the filestore
-
-    Values:
-      PROTOCOL_UNSPECIFIED: Unspecified filestore protocol
-      PROTOCOL_NFSV3: NFSv3
-      PROTOCOL_NFSV41: NFSv4.1
-    """
-    PROTOCOL_UNSPECIFIED = 0
-    PROTOCOL_NFSV3 = 1
-    PROTOCOL_NFSV41 = 2
-
-  class TierValueValuesEnum(_messages.Enum):
-    r"""Required. The service tier of the filestore
-
-    Values:
-      TIER_UNSPECIFIED: Unspecified filestore tier
-      TIER_BASIC_HDD: Basic HDD filestore tier
-      TIER_BASIC_SSD: Basic SSD filestore tier
-      TIER_HIGH_SCALE_SSD: High scale SSD filestore tier
-      TIER_ZONAL: Zonal filestore tier
-      TIER_ENTERPRISE: Enterprise filestore tier
-      TIER_REGIONAL: Regional filestore tier
-    """
-    TIER_UNSPECIFIED = 0
-    TIER_BASIC_HDD = 1
-    TIER_BASIC_SSD = 2
-    TIER_HIGH_SCALE_SSD = 3
-    TIER_ZONAL = 4
-    TIER_ENTERPRISE = 5
-    TIER_REGIONAL = 6
-
-  description = _messages.StringField(1)
-  fileShares = _messages.MessageField('FileShareConfig', 2, repeated=True)
-  filestore = _messages.StringField(3)
-  protocol = _messages.EnumField('ProtocolValueValuesEnum', 4)
-  tier = _messages.EnumField('TierValueValuesEnum', 5)
-
-
 class FilestoreReference(_messages.Message):
   r"""A reference to a [Filestore](https://cloud.google.com/filestore)
   instance.
@@ -933,7 +886,8 @@ class GKEWorkloadDetails(_messages.Message):
       projects//locations//clusters/
     createTime: Optional. Time when the workload was created.
     id: Required. The identifier of the workload. Example - jobset-abcd
-    kind: Required. The kind of the workload. Example - JobSet
+    kind: Required. The kind of the workload. Possible values are JobSet,
+      LeaderWorkerSet, RayCluster, RayJob, and Deployment.
     labels: Optional. labels for the workload. Example: {"type": "workload",
       "app": "simulation"}.
     namespace: Required. The namespace of the workload. Example - default
@@ -1016,43 +970,6 @@ class GcsHierarchicalNamespaceConfig(_messages.Message):
   """
 
   enabled = _messages.BooleanField(1)
-
-
-class GcsInitializeParams(_messages.Message):
-  r"""Message describing initialize params for Google Cloud Storage
-
-  Enums:
-    StorageClassValueValuesEnum: Default storage class for objects in the
-      bucket.
-
-  Fields:
-    autoclass: Autoclass configuration for objects in the bucket.
-    bucket: Required. Name of the bucket
-    hierarchicalNamespace: Optional. The hierarchical namespace configuration
-      of the bucket
-    storageClass: Default storage class for objects in the bucket.
-  """
-
-  class StorageClassValueValuesEnum(_messages.Enum):
-    r"""Default storage class for objects in the bucket.
-
-    Values:
-      STORAGE_CLASS_UNSPECIFIED: Unspecified storage class
-      STORAGE_CLASS_STANDARD: Standard storage class
-      STORAGE_CLASS_NEARLINE: Nearline storage class
-      STORAGE_CLASS_COLDLINE: Coldline storage class
-      STORAGE_CLASS_ARCHIVE: Archive storage class
-    """
-    STORAGE_CLASS_UNSPECIFIED = 0
-    STORAGE_CLASS_STANDARD = 1
-    STORAGE_CLASS_NEARLINE = 2
-    STORAGE_CLASS_COLDLINE = 3
-    STORAGE_CLASS_ARCHIVE = 4
-
-  autoclass = _messages.MessageField('GcsAutoclassConfig', 1)
-  bucket = _messages.StringField(2)
-  hierarchicalNamespace = _messages.MessageField('GcsHierarchicalNamespaceConfig', 3)
-  storageClass = _messages.EnumField('StorageClassValueValuesEnum', 4)
 
 
 class HypercomputeclusterProjectsLocationsClustersCreateRequest(_messages.Message):
@@ -1788,22 +1705,6 @@ class Location(_messages.Message):
   name = _messages.StringField(5)
 
 
-class LustreInitializeParams(_messages.Message):
-  r"""Message describing initialize params for lustre
-
-  Fields:
-    capacityGb: Required. Size of the lustre instance in GB
-    description: Optional. Description of the lustre instance
-    filesystem: Required. Immutable. Filesystem of the lustre instance
-    lustre: Required. Name of the lustre instance
-  """
-
-  capacityGb = _messages.IntegerField(1)
-  description = _messages.StringField(2)
-  filesystem = _messages.StringField(3)
-  lustre = _messages.StringField(4)
-
-
 class LustreReference(_messages.Message):
   r"""A reference to a [Managed
   Lustre](https://cloud.google.com/products/managed-lustre) instance.
@@ -1840,13 +1741,10 @@ class MachineLearningRun(_messages.Message):
       the run is failed.
     etag: Optional. ETag for the run. It must be provided for update/delete
       operations and must match the server's etag.
-    kmsKey: Optional. Customer managed encryption key (CMEK) to use for
-      encrypting the `MachineLearningRun`. `Cloud KMS CryptoKeys` must reside
-      in the same location as the `MachineLearningRun`. The expected format is
-      `projects/*/locations/*/keyRings/*/cryptoKeys/*`.
     labels: Optional. Any custom labels for this run Example: type:workload,
       type:simulation etc.
-    metrics: Optional. Metrics for the run.
+    metrics: Optional. Deprecated: Use Cloud Logging to retrieve metrics
+      information. Metrics for the run.
     name: Identifier. The name of the Machine Learning run.
     orchestrator: Required. The orchestrator used for the run.
     runGroup: Optional. Allows grouping of similar runs. * Helps improving UI
@@ -1935,22 +1833,81 @@ class MachineLearningRun(_messages.Message):
   endTime = _messages.StringField(5)
   errorDetails = _messages.StringField(6)
   etag = _messages.StringField(7)
-  kmsKey = _messages.StringField(8)
-  labels = _messages.MessageField('LabelsValue', 9)
-  metrics = _messages.MessageField('Metrics', 10)
-  name = _messages.StringField(11)
-  orchestrator = _messages.EnumField('OrchestratorValueValuesEnum', 12)
-  runGroup = _messages.StringField(13)
-  runPhase = _messages.EnumField('RunPhaseValueValuesEnum', 14)
-  runSet = _messages.StringField(15)
-  state = _messages.EnumField('StateValueValuesEnum', 16)
-  tools = _messages.MessageField('Tool', 17, repeated=True)
-  updateTime = _messages.StringField(18)
-  workloadDetails = _messages.MessageField('WorkloadDetails', 19)
+  labels = _messages.MessageField('LabelsValue', 8)
+  metrics = _messages.MessageField('Metrics', 9)
+  name = _messages.StringField(10)
+  orchestrator = _messages.EnumField('OrchestratorValueValuesEnum', 11)
+  runGroup = _messages.StringField(12)
+  runPhase = _messages.EnumField('RunPhaseValueValuesEnum', 13)
+  runSet = _messages.StringField(14)
+  state = _messages.EnumField('StateValueValuesEnum', 15)
+  tools = _messages.MessageField('Tool', 16, repeated=True)
+  updateTime = _messages.StringField(17)
+  workloadDetails = _messages.MessageField('WorkloadDetails', 18)
+
+
+class MaintenancePolicy(_messages.Message):
+  r"""Policy controlling how system-initiated maintenance should be conducted
+  on the cluster.
+
+  Fields:
+    windows: Optional. Periods during which the system may perform maintenance
+      operations on the cluster that might carry a risk of disruption. The
+      system will make a best-effort attempt to only perform maintenance
+      within these windows. If no windows are specified, the system may
+      perform maintenance at any time. All windows must have same start_time
+      and duration.
+  """
+
+  windows = _messages.MessageField('MaintenanceWindow', 1, repeated=True)
+
+
+class MaintenanceWindow(_messages.Message):
+  r"""A window of time in which maintenance is allowed.
+
+  Enums:
+    DayValueValuesEnum: Required. Day of the week on which maintenance may be
+      performed.
+
+  Fields:
+    day: Required. Day of the week on which maintenance may be performed.
+    duration: Required. Duration of the maintenance window. The system will
+      attempt to complete maintenance within this duration from start_time.
+      Must be between 4 and 24 hours.
+    startTime: Required. Time in UTC during the given day when the system is
+      allowed to start performing maintenance.
+  """
+
+  class DayValueValuesEnum(_messages.Enum):
+    r"""Required. Day of the week on which maintenance may be performed.
+
+    Values:
+      DAY_OF_WEEK_UNSPECIFIED: The day of the week is unspecified.
+      MONDAY: Monday
+      TUESDAY: Tuesday
+      WEDNESDAY: Wednesday
+      THURSDAY: Thursday
+      FRIDAY: Friday
+      SATURDAY: Saturday
+      SUNDAY: Sunday
+    """
+    DAY_OF_WEEK_UNSPECIFIED = 0
+    MONDAY = 1
+    TUESDAY = 2
+    WEDNESDAY = 3
+    THURSDAY = 4
+    FRIDAY = 5
+    SATURDAY = 6
+    SUNDAY = 7
+
+  day = _messages.EnumField('DayValueValuesEnum', 1)
+  duration = _messages.StringField(2)
+  startTime = _messages.MessageField('TimeOfDay', 3)
 
 
 class Metrics(_messages.Message):
-  r"""Metrics for a Machine Learning run.
+  r"""Deprecated: Use Cloud Logging to retrieve metrics information. Metrics
+  for a Machine Learning run.
 
   Fields:
     avgHbmUtilization: Output only. Average HBM (High Bandwidth Memory)
@@ -1976,10 +1933,11 @@ class MonitoredEvent(_messages.Message):
   r"""Represents a single Monitored Event (Incident) detected by the system.
 
   Enums:
-    SeverityValueValuesEnum: Optional. Severity of the event.
     TypeValueValuesEnum: Optional. High-level type of the event.
 
   Fields:
+    analyzerInsightFound: Output only. Identifies if any of the analyzer found
+      an insight for this event.
     analyzerReports: Optional. Detailed reports from one or more analyzers
       regarding this event.
     displayName: Optional. Display name of the event. If not provided, this
@@ -1989,29 +1947,9 @@ class MonitoredEvent(_messages.Message):
     name: Identifier. Resource name of the monitored event. Format: projects/{
       project}/locations/{location}/machineLearningRuns/{machine_learning_run}
       /monitoredEvents/{monitored_event}
-    performanceDegradation: Optional. Performance degradation event details.
-    severity: Optional. Severity of the event.
     startTime: Optional. Inclusive timestamp when the event started.
-    summary: Optional. High-level summary (e.g., "Thermal Throttling
-      Detected"). The summary can be up to 512 characters long.
     type: Optional. High-level type of the event.
   """
-
-  class SeverityValueValuesEnum(_messages.Enum):
-    r"""Optional. Severity of the event.
-
-    Values:
-      SEVERITY_UNSPECIFIED: Severity is not specified.
-      LOW: Low severity.
-      MEDIUM: Medium severity.
-      HIGH: High severity.
-      CRITICAL: Critical severity.
-    """
-    SEVERITY_UNSPECIFIED = 0
-    LOW = 1
-    MEDIUM = 2
-    HIGH = 3
-    CRITICAL = 4
 
   class TypeValueValuesEnum(_messages.Enum):
     r"""Optional. High-level type of the event.
@@ -2023,15 +1961,13 @@ class MonitoredEvent(_messages.Message):
     EVENT_TYPE_UNSPECIFIED = 0
     PERFORMANCE_DEGRADATION = 1
 
-  analyzerReports = _messages.MessageField('AnalyzerReport', 1, repeated=True)
-  displayName = _messages.StringField(2)
-  endTime = _messages.StringField(3)
-  name = _messages.StringField(4)
-  performanceDegradation = _messages.MessageField('PerformanceDegradationEvent', 5)
-  severity = _messages.EnumField('SeverityValueValuesEnum', 6)
-  startTime = _messages.StringField(7)
-  summary = _messages.StringField(8)
-  type = _messages.EnumField('TypeValueValuesEnum', 9)
+  analyzerInsightFound = _messages.BooleanField(1)
+  analyzerReports = _messages.MessageField('AnalyzerReport', 2, repeated=True)
+  displayName = _messages.StringField(3)
+  endTime = _messages.StringField(4)
+  name = _messages.StringField(5)
+  startTime = _messages.StringField(6)
+  type = _messages.EnumField('TypeValueValuesEnum', 7)
 
 
 class Network(_messages.Message):
@@ -2183,12 +2119,10 @@ class NewFilestoreConfig(_messages.Message):
         suitable for high-performance computing application requirements.
       REGIONAL: Offers features and availability needed for mission-critical,
         high-performance computing workloads.
-      BASIC_HDD: Deprecated: Use a different tier instead.
     """
     TIER_UNSPECIFIED = 0
     ZONAL = 1
     REGIONAL = 2
-    BASIC_HDD = 3
 
   description = _messages.StringField(1)
   fileShares = _messages.MessageField('FileShareConfig', 2, repeated=True)
@@ -2202,10 +2136,6 @@ class NewFlexStartInstancesConfig(_messages.Message):
   be created using [Flex
   Start](https://cloud.google.com/compute/docs/instances/provisioning-models).
 
-  Enums:
-    TerminationActionValueValuesEnum: Optional. Immutable. Deprecated: Do not
-      use.
-
   Messages:
     AtmTagsValue: Optional. Immutable. Unstable: Contact hypercompute-service-
       eng@ before using.
@@ -2218,23 +2148,10 @@ class NewFlexStartInstancesConfig(_messages.Message):
       e.g. `n2-standard-2`.
     maxDuration: Required. Immutable. Specifies the time limit for created
       instances. Instances will be terminated at the end of this duration.
-    terminationAction: Optional. Immutable. Deprecated: Do not use.
     zone: Required. Immutable. Name of the zone in which VM instances should
       run, e.g., `us-central1-a`. Must be in the same region as the cluster,
       and must match the zone of any other resources specified in the cluster.
   """
-
-  class TerminationActionValueValuesEnum(_messages.Enum):
-    r"""Optional. Immutable. Deprecated: Do not use.
-
-    Values:
-      TERMINATION_ACTION_UNSPECIFIED: Deprecated: Do not use.
-      STOP: Deprecated: Do not use.
-      DELETE: Deprecated: Do not use.
-    """
-    TERMINATION_ACTION_UNSPECIFIED = 0
-    STOP = 1
-    DELETE = 2
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AtmTagsValue(_messages.Message):
@@ -2264,8 +2181,7 @@ class NewFlexStartInstancesConfig(_messages.Message):
   atmTags = _messages.MessageField('AtmTagsValue', 1)
   machineType = _messages.StringField(2)
   maxDuration = _messages.StringField(3)
-  terminationAction = _messages.EnumField('TerminationActionValueValuesEnum', 4)
-  zone = _messages.StringField(5)
+  zone = _messages.StringField(4)
 
 
 class NewLustreConfig(_messages.Message):
@@ -2367,9 +2283,6 @@ class NewReservedInstancesConfig(_messages.Message):
   [reservation](https://cloud.google.com/compute/docs/instances/reservations-
   overview).
 
-  Enums:
-    TypeValueValuesEnum: Optional. Immutable. Deprecated: Do not use.
-
   Messages:
     AtmTagsValue: Optional. Immutable. Unstable: Contact hypercompute-service-
       eng@ before using.
@@ -2391,23 +2304,8 @@ class NewReservedInstancesConfig(_messages.Message):
       block from which VM instances should be created, in the format `projects
       /{project}/zones/{zone}/reservations/{reservation}/reservationBlocks/{re
       servation_block}/reservationSubBlocks/{reservation_sub_block}`.
-    type: Optional. Immutable. Deprecated: Do not use.
     zone: Optional. Immutable. Deprecated: Do not use.
   """
-
-  class TypeValueValuesEnum(_messages.Enum):
-    r"""Optional. Immutable. Deprecated: Do not use.
-
-    Values:
-      RESERVATION_TYPE_UNSPECIFIED: Deprecated: Do not use.
-      NO_RESERVATION: Deprecated: Do not use.
-      ANY_RESERVATION: Deprecated: Do not use.
-      SPECIFIC_RESERVATION: Deprecated: Do not use.
-    """
-    RESERVATION_TYPE_UNSPECIFIED = 0
-    NO_RESERVATION = 1
-    ANY_RESERVATION = 2
-    SPECIFIC_RESERVATION = 3
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AtmTagsValue(_messages.Message):
@@ -2440,8 +2338,7 @@ class NewReservedInstancesConfig(_messages.Message):
   reservation = _messages.StringField(4)
   reservationBlock = _messages.StringField(5)
   reservationSubBlock = _messages.StringField(6)
-  type = _messages.EnumField('TypeValueValuesEnum', 7)
-  zone = _messages.StringField(8)
+  zone = _messages.StringField(7)
 
 
 class NewSpotInstancesConfig(_messages.Message):
@@ -2776,13 +2673,6 @@ class Orchestrator(_messages.Message):
   slurm = _messages.MessageField('SlurmOrchestrator', 1)
 
 
-class PerformanceDegradationEvent(_messages.Message):
-  r"""Metadata specific to Performance Degradation events. Reserved for future
-  degradation-specific metadata.
-  """
-
-
-
 class ProfileSession(_messages.Message):
   r"""Represents a single profiling session.
 
@@ -2815,6 +2705,7 @@ class ProfilerSession(_messages.Message):
     HostTracerLevelValueValuesEnum: Optional. Host tracer level for the
       session. If the field is not set or unspecified, the default is
       `HOST_TRACER_LEVEL_INFO`.
+    KindValueValuesEnum: Optional. Profiler session kind.
     PythonTracerLevelValueValuesEnum: Optional. Python tracer level for the
       session. If the field is not set or unspecified, the default is
       `PYTHON_TRACER_LEVEL_DISABLED`.
@@ -2833,6 +2724,7 @@ class ProfilerSession(_messages.Message):
       is not set or unspecified, the default is `HOST_TRACER_LEVEL_INFO`.
     isTraceEnabled: Optional. Customer setting to enable trace level details
       for the session.
+    kind: Optional. Profiler session kind.
     name: Identifier. The name of the profiler session. Format: projects/{proj
       ect}/locations/{location}/machineLearningRuns/{machine_learning_run}/pro
       filerSessions/{profiler_session}
@@ -2875,6 +2767,23 @@ class ProfilerSession(_messages.Message):
     HOST_TRACER_LEVEL_INFO = 3
     HOST_TRACER_LEVEL_VERBOSE = 4
 
+  class KindValueValuesEnum(_messages.Enum):
+    r"""Optional. Profiler session kind.
+
+    Values:
+      KIND_UNSPECIFIED: Profiler session kind is unspecified.
+      KIND_ON_DEMAND: Profiler session created via Command Line Interface / UI
+        / API on demand request.
+      KIND_PROGRAMMATIC: Profiler session created via SDK start() and stop()
+        calls within workload code.
+      KIND_SCANNED: Profiler session is scanned from Google Cloud Storage
+        bucket.
+    """
+    KIND_UNSPECIFIED = 0
+    KIND_ON_DEMAND = 1
+    KIND_PROGRAMMATIC = 2
+    KIND_SCANNED = 3
+
   class PythonTracerLevelValueValuesEnum(_messages.Enum):
     r"""Optional. Python tracer level for the session. If the field is not set
     or unspecified, the default is `PYTHON_TRACER_LEVEL_DISABLED`.
@@ -2895,10 +2804,11 @@ class ProfilerSession(_messages.Message):
   etag = _messages.StringField(5)
   hostTracerLevel = _messages.EnumField('HostTracerLevelValueValuesEnum', 6)
   isTraceEnabled = _messages.BooleanField(7)
-  name = _messages.StringField(8)
-  profilerTargets = _messages.StringField(9, repeated=True)
-  pythonTracerLevel = _messages.EnumField('PythonTracerLevelValueValuesEnum', 10)
-  storageFolderUri = _messages.StringField(11)
+  kind = _messages.EnumField('KindValueValuesEnum', 8)
+  name = _messages.StringField(9)
+  profilerTargets = _messages.StringField(10, repeated=True)
+  pythonTracerLevel = _messages.EnumField('PythonTracerLevelValueValuesEnum', 11)
+  storageFolderUri = _messages.StringField(12)
 
 
 class ProfilerTarget(_messages.Message):
@@ -3498,34 +3408,11 @@ class SlurmPartition(_messages.Message):
 class Smon(_messages.Message):
   r"""Smon Tool Metadata
 
-  Enums:
-    WorstSeverityValueValuesEnum: Output only. The worst severity among all
-      active monitored events.
-
   Fields:
     monitoringSummary: Output only. A summary of the monitoring findings.
-    worstSeverity: Output only. The worst severity among all active monitored
-      events.
   """
 
-  class WorstSeverityValueValuesEnum(_messages.Enum):
-    r"""Output only. The worst severity among all active monitored events.
-
-    Values:
-      SEVERITY_UNSPECIFIED: Severity is not specified.
-      LOW: Low severity.
-      MEDIUM: Medium severity.
-      HIGH: High severity.
-      CRITICAL: Critical severity.
-    """
-    SEVERITY_UNSPECIFIED = 0
-    LOW = 1
-    MEDIUM = 2
-    HIGH = 3
-    CRITICAL = 4
-
   monitoringSummary = _messages.StringField(1)
-  worstSeverity = _messages.EnumField('WorstSeverityValueValuesEnum', 2)
 
 
 class StandardQueryParameters(_messages.Message):
@@ -3647,15 +3534,11 @@ class Storage(_messages.Message):
 
   Fields:
     id: Required. Storage id
-    initializeParams: Immutable. Parameters to initialize the storage
     storage: Output only. Storage name
-    storageSource: Immutable. Reference of existing storage
   """
 
   id = _messages.StringField(1)
-  initializeParams = _messages.MessageField('StorageInitializeParams', 2)
-  storage = _messages.StringField(3)
-  storageSource = _messages.MessageField('StorageSource', 4)
+  storage = _messages.StringField(2)
 
 
 class StorageConfig(_messages.Message):
@@ -3671,20 +3554,6 @@ class StorageConfig(_messages.Message):
 
   id = _messages.StringField(1)
   localMount = _messages.StringField(2)
-
-
-class StorageInitializeParams(_messages.Message):
-  r"""Message describing initialize params for storage object
-
-  Fields:
-    filestore: FileStore initialize params
-    gcs: Google Cloud Storage initialize params
-    lustre: Lustre initialize params
-  """
-
-  filestore = _messages.MessageField('FilestoreInitializeParams', 1)
-  gcs = _messages.MessageField('GcsInitializeParams', 2)
-  lustre = _messages.MessageField('LustreInitializeParams', 3)
 
 
 class StorageResource(_messages.Message):
@@ -3739,25 +3608,28 @@ class StorageResourceConfig(_messages.Message):
   newLustre = _messages.MessageField('NewLustreConfig', 6)
 
 
-class StorageSource(_messages.Message):
-  r"""Message describing source of storage
+class TimeOfDay(_messages.Message):
+  r"""Represents a time of day. The date and time zone are either not
+  significant or are specified elsewhere. An API may choose to allow leap
+  seconds. Related types are google.type.Date and `google.protobuf.Timestamp`.
 
   Fields:
-    bucket: Name of the existing Google Cloud Storage bucket
-    filestore: Name of the existing filestore
-    lustre: Name of the existing Lustre instance
+    hours: Hours of a day in 24 hour format. Must be greater than or equal to
+      0 and typically must be less than or equal to 23. An API may choose to
+      allow the value "24:00:00" for scenarios like business closing time.
+    minutes: Minutes of an hour. Must be greater than or equal to 0 and less
+      than or equal to 59.
+    nanos: Fractions of seconds, in nanoseconds. Must be greater than or equal
+      to 0 and less than or equal to 999,999,999.
+    seconds: Seconds of a minute. Must be greater than or equal to 0 and
+      typically must be less than or equal to 59. An API may allow the value
+      60 if it allows leap-seconds.
   """
 
-  bucket = _messages.StringField(1)
-  filestore = _messages.StringField(2)
-  lustre = _messages.StringField(3)
-
-
-class ThermalAnalysisDetails(_messages.Message):
-  r"""Metadata specific to Thermal Analysis. Placeholder for thermal sensor
-  readings and thresholds.
-  """
-
+  hours = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  minutes = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  nanos = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  seconds = _messages.IntegerField(4, variant=_messages.Variant.INT32)
 
 
 class Tool(_messages.Message):

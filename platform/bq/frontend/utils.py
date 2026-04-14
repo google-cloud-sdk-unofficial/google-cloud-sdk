@@ -87,6 +87,7 @@ def ValidateGlobalFlags():
     )
 
 
+
 def ValidateAtMostOneSelected(*args: Any) -> bool:
   """Validates that at most one of the argument flags is selected.
 
@@ -1457,9 +1458,17 @@ def PrintObjectsArray(object_infos, objects_type):
     if not object_infos:
       return
     formatter = utils_flags.get_formatter_from_flags()
-    utils_formatting.configure_formatter(
-        formatter, objects_type, print_format='list'
-    )
+    if (
+        objects_type
+        is bq_id_utils.ApiClientHelper.ReservationAssignmentReference
+    ):
+      utils_formatting.configure_formatter(
+          formatter, objects_type, print_format='list', object_info=object_infos
+      )
+    else:
+      utils_formatting.configure_formatter(
+          formatter, objects_type, print_format='list'
+      )
     formatted_infos = list(
         map(
             functools.partial(

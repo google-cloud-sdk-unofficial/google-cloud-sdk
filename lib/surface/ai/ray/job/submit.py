@@ -52,7 +52,7 @@ class CreateGA(base.CreateCommand):
   ``us-central1'', run:
 
     $ {command} --region=us-central1 --project=example
-    --resource-spec=resource-unit=1,disk-size=100
+    --worker-pool-spec=disk-size=100
     --entrypoint='gs://test-project/ray_job.py'
     --display-name=test
   """
@@ -77,12 +77,10 @@ class CreateGA(base.CreateCommand):
   def _PrepareJobSpec(self, args, api_client):
     job_spec = serverless_ray_jobs_util.ConstructServerlessRayJobSpec(
         api_client,
-        main_python_file_uri=args.entrypoint,
-        entrypoint_file_args=args.entrypoint_file_args,
-        archive_uris=args.archive_uris,
+        entrypoint=args.entrypoint,
         service_account=args.service_account,
         container_image_uri=args.container_image_uri,
-        resource_spec=args.resource_spec,
+        worker_pool_spec=args.worker_pool_spec,
     )
 
     return job_spec

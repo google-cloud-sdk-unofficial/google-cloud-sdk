@@ -56,6 +56,7 @@ class ResourceModel:
   api_version: str | None = None
   definition: dict[str, Any] = dataclasses.field(default_factory=dict)
   metadata: MetadataModel = dataclasses.field(default_factory=MetadataModel)
+  update_action: Literal['patch', 'skip', 'recreate'] = 'patch'
 
 
 AnyResource = ResourceProfileModel | ResourceModel
@@ -86,6 +87,7 @@ class EnvironmentModel:
   artifact_storage: ArtifactStorageModel | None = None
   pipelines: list[PipelineModel] | None = None
   variables: dict[str, str] | None = None
+  secrets: dict[str, str] = dataclasses.field(default_factory=dict)
 
 
 def _build_metadata(
@@ -121,6 +123,7 @@ def build_resource(resource_def: Mapping[str, Any]) -> AnyResource:
       parent=resource_def.get('parent'),
       api_version=resource_def.get('apiVersion'),
       metadata=_build_metadata(resource_def.get('metadata')),
+      update_action=resource_def.get('updateAction', 'patch'),
   )
 
 
@@ -152,6 +155,7 @@ def _build_environment(env_def: Mapping[str, Any]) -> EnvironmentModel:
       artifact_storage=artifact_storage,
       pipelines=pipelines,
       variables=env_def.get('variables'),
+      secrets=env_def.get('secrets') or {},
   )
 
 

@@ -24,6 +24,12 @@ class BqDatasetHandler(base.GcpResourceHandler):
   """Handler for migrating BigQuery Dataset configurations."""
 
   api_prefix = ""
+  description = (
+      "BigQuery Dataset configurations.\n"
+      "Definition handling:\n"
+      " - datasetReference: automatically populated with project "
+      "and dataset IDs"
+  )
 
   def get_create_method(self) -> Any:
     return self._api_client_collection.Insert
@@ -67,6 +73,12 @@ class BqTableHandler(base.GcpResourceHandler):
   """Handler for migrating BigQuery Table configurations."""
 
   api_prefix = ""
+  description = (
+      "BigQuery Table configurations.\n"
+      "Definition handling:\n"
+      " - tableReference: automatically populated with project, "
+      "dataset, and table IDs"
+  )
 
   def get_create_method(self) -> Any:
     return self._api_client_collection.Insert
@@ -112,6 +124,7 @@ class BqTableHandler(base.GcpResourceHandler):
 class BqRoutineHandler(base.GcpResourceHandler):
   """Handler for migrating BigQuery Routine configurations."""
 
+  description = "BigQuery Routine configurations."
   api_prefix = ""
 
   def get_create_method(self) -> Any:

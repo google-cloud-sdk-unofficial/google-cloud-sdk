@@ -912,6 +912,7 @@ class CreateClusterOptions(object):
       linked_runners_mode=None,
       node_architecture_taint_behavior=None,
       node_pool_upgrade_concurrency_config=None,
+      enable_scheduled_upgrades=None,
   ):
     self.node_machine_type = node_machine_type
     self.node_source_image = node_source_image
@@ -1236,6 +1237,7 @@ class CreateClusterOptions(object):
     self.node_pool_upgrade_concurrency_config = (
         node_pool_upgrade_concurrency_config
     )
+    self.enable_scheduled_upgrades = enable_scheduled_upgrades
 
 
 class UpdateClusterOptions(object):
@@ -1439,6 +1441,8 @@ class UpdateClusterOptions(object):
       autopilot_general_profile=None,
       node_pool_upgrade_concurrency_config=None,
       linked_runners_mode=None,
+      enable_scheduled_upgrades=None,
+      disable_scheduled_upgrades=None,
   ):
     self.version = version
     self.update_master = bool(update_master)
@@ -1687,6 +1691,8 @@ class UpdateClusterOptions(object):
         node_pool_upgrade_concurrency_config
     )
     self.linked_runners_mode = linked_runners_mode
+    self.enable_scheduled_upgrades = enable_scheduled_upgrades
+    self.disable_scheduled_upgrades = disable_scheduled_upgrades
 
 
 class SetMasterAuthOptions(object):
@@ -1825,6 +1831,9 @@ class CreateNodePoolOptions(object):
       subnetwork=None,
       node_architecture_taint_behavior=None,
       capacity_wait_duration=None,
+      enable_system_telemetry_collection=None,
+      enable_otlp_ingestion_endpoint=None,
+      enable_workload_log_collection=None,
   ):
     self.machine_type = machine_type
     self.disk_size_gb = disk_size_gb
@@ -1944,6 +1953,9 @@ class CreateNodePoolOptions(object):
     self.enable_lustre_multi_nic = enable_lustre_multi_nic
     self.subnetwork = subnetwork
     self.capacity_wait_duration = capacity_wait_duration
+    self.enable_system_telemetry_collection = enable_system_telemetry_collection
+    self.enable_otlp_ingestion_endpoint = enable_otlp_ingestion_endpoint
+    self.enable_workload_log_collection = enable_workload_log_collection
 
 
 class UpdateNodePoolOptions(object):
@@ -2138,6 +2150,9 @@ class UpdateNodePoolOptions(object):
         or self.respect_pdb_during_node_pool_deletion is not None
         or self.enable_lustre_multi_nic is not None
         or self.datapath_provider is not None
+        or self.enable_system_telemetry_collection is not None
+        or self.enable_otlp_ingestion_endpoint is not None
+        or self.enable_workload_log_collection is not None
     )
 
 
@@ -3648,6 +3663,11 @@ class APIAdapter(object):
         _AddKernelModuleSignatureEnforcementToNodeConfig(
             cluster.nodePoolAutoConfig, options, self.messages
         )
+
+    if options.enable_scheduled_upgrades is not None:
+      if cluster.scheduleUpgradeConfig is None:
+        cluster.scheduleUpgradeConfig = self.messages.ScheduleUpgradeConfig()
+      cluster.scheduleUpgradeConfig.enabled = options.enable_scheduled_upgrades
 
     return cluster
 
@@ -5959,6 +5979,19 @@ class APIAdapter(object):
       config.mode = modes[options.control_plane_egress_mode]
       update = self.messages.ClusterUpdate(desiredControlPlaneEgress=config)
 
+    if options.enable_scheduled_upgrades is not None:
+      update = self.messages.ClusterUpdate(
+          desiredScheduleUpgradeConfig=self.messages.ScheduleUpgradeConfig(
+              enabled=True
+          )
+      )
+    if options.disable_scheduled_upgrades is not None:
+      update = self.messages.ClusterUpdate(
+          desiredScheduleUpgradeConfig=self.messages.ScheduleUpgradeConfig(
+              enabled=False
+          )
+      )
+
     return update
 
   def UpdateCluster(self, cluster_ref, options):
@@ -6702,6 +6735,9 @@ class APIAdapter(object):
         or options.enable_attestation
         or options.tee_policy
         or options.security_mode
+        or options.enable_system_telemetry_collection
+        or options.enable_otlp_ingestion_endpoint
+        or options.enable_workload_log_collection
     ):
       node_config.runnerPoolConfig = self.messages.RunnerPoolConfig(
           controlNodePool=(
@@ -6739,6 +6775,31 @@ class APIAdapter(object):
                 options.security_mode.upper()
             )
         )
+
+      if (
+          options.enable_system_telemetry_collection is not None
+          or options.enable_otlp_ingestion_endpoint is not None
+          or options.enable_workload_log_collection is not None
+      ):
+        node_config.runnerPoolConfig.runnerTelemetryConfig = (
+            self.messages.RunnerTelemetryConfig()
+        )
+        if options.enable_system_telemetry_collection is not None:
+          node_config.runnerPoolConfig.runnerTelemetryConfig.systemTelemetryConfig = (
+              self.messages.SystemTelemetryConfig(
+                  enableSystemTelemetryCollection=options.enable_system_telemetry_collection
+              )
+          )
+        if (
+            options.enable_otlp_ingestion_endpoint is not None
+            or options.enable_workload_log_collection is not None
+        ):
+          node_config.runnerPoolConfig.runnerTelemetryConfig.applicationTelemetryConfig = (
+              self.messages.ApplicationTelemetryConfig(
+                  enableOtlpIngestionEndpoint=options.enable_otlp_ingestion_endpoint,
+                  enableWorkloadLogCollection=options.enable_workload_log_collection,
+              )
+          )
 
     # if we are creating a multi-host TPU (tpu_topology or a resource policy
     # is specified) and num_nodes is not specified, calculate the
@@ -10021,6 +10082,18 @@ class V1Beta1Adapter(V1Adapter):
           )
       )
 
+    if options.enable_scheduled_upgrades is not None:
+      update = self.messages.ClusterUpdate(
+          desiredScheduleUpgradeConfig=self.messages.ScheduleUpgradeConfig(
+              enabled=True
+          )
+      )
+    if options.disable_scheduled_upgrades is not None:
+      update = self.messages.ClusterUpdate(
+          desiredScheduleUpgradeConfig=self.messages.ScheduleUpgradeConfig(
+              enabled=False
+          )
+      )
     return update
 
   def UpdateCluster(self, cluster_ref, options):

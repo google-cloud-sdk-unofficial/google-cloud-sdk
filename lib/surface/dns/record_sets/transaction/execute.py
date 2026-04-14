@@ -26,6 +26,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
+@base.UniverseCompatible
 class Execute(base.ListCommand):
   """Execute the transaction on Cloud DNS.
 
@@ -58,10 +59,9 @@ class Execute(base.ListCommand):
       change = transaction_util.ChangeFromYamlFile(
           trans_file, api_version=api_version)
 
-    if import_util.IsOnlySOAIncrement(change, api_version=api_version):
+    if import_util.IsNoopChange(change, api_version=api_version):
       log.status.Print(
-          'Nothing to do, empty transaction [{0}]'.format(
-              args.transaction_file))
+          f'Nothing to do, empty transaction [{args.transaction_file}]')
       os.remove(args.transaction_file)
       return None
 
@@ -79,8 +79,8 @@ class Execute(base.ListCommand):
     change_ref = util.GetRegistry(api_version).Create(
         collection='dns.changes', project=zone_ref.project,
         managedZone=zone_ref.Name(), changeId=result.id)
-    msg = 'Executed transaction [{0}] for managed-zone [{1}].'.format(
-        args.transaction_file, zone_ref.Name())
+    msg = (f'Executed transaction [{args.transaction_file}] for managed-zone '
+           f'[{zone_ref.Name()}].')
     log.status.Print(msg)
     log.CreatedResource(change_ref)
     os.remove(args.transaction_file)

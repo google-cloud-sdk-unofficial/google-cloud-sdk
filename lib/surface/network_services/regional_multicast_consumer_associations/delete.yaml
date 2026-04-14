@@ -1,0 +1,20 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    Delete a regional multicast consumer association.
+  description: |
+    Delete a regional multicast consumer association in the specified location of the current project.
+  examples: |
+    To delete a regional multicast consumer association in the current project, run:
+
+      $ {command} my-rmca --location=region
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:regionalMulticastConsumerAssociation
+    help_text: The regional multicast consumer association to delete.
+async:
+  collection: networkservices.projects.locations.operations
+request:
+  ALPHA:
+    api_version: v1alpha1
+  collection: networkservices.projects.locations.regionalMulticastConsumerAssociations

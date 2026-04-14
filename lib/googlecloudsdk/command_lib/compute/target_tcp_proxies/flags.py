@@ -78,3 +78,22 @@ def AddProxyBind(parser):
       sidecar proxy). The Envoy proxy listens for inbound requests and handles
       requests when it receives them.
       """)
+
+
+def AddLoadBalancingScheme(parser):
+  """Adds the --load-balancing-scheme argument."""
+  parser.add_argument(
+      '--load-balancing-scheme',
+      choices={
+          'EXTERNAL': 'Classic Proxy Network Load Balancers.',
+          'INTERNAL_MANAGED': (
+              'Envoy-based cross-region and regional internal Proxy Network'
+              ' Load Balancer.'
+          ),
+          'EXTERNAL_MANAGED': (
+              'Envoy-based global and regional external Proxy Network Load'
+              ' Balancer.'
+          ),
+      },
+      help='Specifies the load balancing scheme for the target TCP proxy.',
+  )

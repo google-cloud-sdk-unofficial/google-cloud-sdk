@@ -112,6 +112,17 @@ class Collections(enum.Enum):
       ['project', 'location', 'key_ring', 'crypto_key'],
       True
   )
+  PROJECTS_LOCATIONS_OBJECTINDEXES = (
+      'projects.locations.objectIndexes',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/objectIndexes/'
+              '{objectIndexesId}',
+      },
+      ['name'],
+      True
+  )
 
   def __init__(self, collection_name, path, flat_paths, params,
                enable_uri_parsing):

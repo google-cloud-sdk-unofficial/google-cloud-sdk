@@ -27,33 +27,32 @@ _PIPELINE_YAML = """\
 pipelineId: orchestration-pipeline
 description: 'Test deployment pipeline for Dataproc Serverless PySpark job'
 runner: 'airflow'
+modelVersion: v2
 owner: 'data-eng-team'
-model_version: 'v1'
 
 defaults:
-  project: ${project}
-  region: ${region}
+  projectId: {{ project }}
+  location: {{ region }}
   executionConfig:
     retries: 1
 
 triggers:
-  - type: schedule
-    scheduleInterval: '0 2 * * *'  # 2 AM daily
-    startTime: '2025-11-01T00:00:00'
-    endTime: '2026-12-01T00:00:00'
-    catchup: false
-    timezone: 'UTC'
+  - schedule:
+      interval: '0 2 * * *'  # 2 AM daily
+      startTime: '2025-11-01T00:00:00'
+      endTime: '2026-12-01T00:00:00'
+      catchup: false
+      timezone: 'UTC'
 
 actions:
-  - name: test_job
-    type: pyspark
-    engine:
-      engineType: 'dataproc-serverless'
-    region: ${region}
-    config:
-      resourceProfile:
-        path: './resources/profiles/serverless-standard.yaml'
-    filename: 'jobs/job.py'
+  - pyspark:
+      name: test_job
+      mainFilePath: 'jobs/job.py'
+      engine:
+        dataprocServerless:
+          location: {{ region }}
+          resourceProfile:
+            path: './resources/profiles/serverless-standard.yaml'
 """
 
 _DEPLOYMENT_YAML = """\

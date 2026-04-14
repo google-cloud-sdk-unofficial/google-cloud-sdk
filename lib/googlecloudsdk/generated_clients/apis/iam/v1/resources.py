@@ -153,6 +153,36 @@ class Collections(enum.Enum):
       ['organizationsId'],
       True
   )
+  ORGANIZATIONS_LOCATIONS = (
+      'organizations.locations',
+      'organizations/{organizationsId}/locations/{locationsId}',
+      {},
+      ['organizationsId', 'locationsId'],
+      True
+  )
+  ORGANIZATIONS_LOCATIONS_WORKLOADIDENTITYPOOLS = (
+      'organizations.locations.workloadIdentityPools',
+      '{+name}',
+      {
+          '':
+              'organizations/{organizationsId}/locations/{locationsId}/'
+              'workloadIdentityPools/{workloadIdentityPoolsId}',
+      },
+      ['name'],
+      True
+  )
+  ORGANIZATIONS_LOCATIONS_WORKLOADIDENTITYPOOLS_OPERATIONS = (
+      'organizations.locations.workloadIdentityPools.operations',
+      '{+name}',
+      {
+          '':
+              'organizations/{organizationsId}/locations/{locationsId}/'
+              'workloadIdentityPools/{workloadIdentityPoolsId}/operations/'
+              '{operationsId}',
+      },
+      ['name'],
+      True
+  )
   ORGANIZATIONS_ROLES = (
       'organizations.roles',
       '{+name}',

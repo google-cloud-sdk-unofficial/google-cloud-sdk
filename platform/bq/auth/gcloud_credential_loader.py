@@ -37,9 +37,9 @@ def LoadCredential() -> google_oauth2.Credentials:
   refresh_handler = (
       _ServiceAccountRefreshHandler if is_service_account else None
   )
-  fallback_quota_project_id = _GetFallbackQuotaProjectId(
+  fallback_quota_project_id = bq_utils.GetFallbackQuotaProject(
       is_service_account=is_service_account,
-      has_refresh_token=refresh_token is not None,
+      fallback_project_id=bq_flags.PROJECT_ID.value,
   )
 
   return google_oauth2.Credentials(
@@ -160,20 +160,6 @@ def _UpdateReauthMessage(message: str) -> str:
       '$ gcloud auth login',
       '$ gcloud auth login --enable-gdrive-access',
   )
-
-
-def _GetFallbackQuotaProjectId(
-    is_service_account: bool, has_refresh_token: bool
-) -> Optional[str]:
-  # When the credential type is not a service account - determined by the
-  # account name or whether we can get a non-empty refresh token - set a
-  # fallback quota project ID to be the resource project ID. When the credential
-  # type is a service account, don't set any fallback quota project ID.
-  if is_service_account:
-    return None
-  if not has_refresh_token:
-    return None
-  return bq_flags.PROJECT_ID.value
 
 
 def _ServiceAccountRefreshHandler(request, scopes):

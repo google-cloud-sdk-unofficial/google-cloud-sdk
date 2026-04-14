@@ -172,3 +172,16 @@ Supported keys within a configuration:
 - `uri`: String, e.g., `{REGION}-docker.pkg.dev/my-project/my-repo/my-image`
 """,
   )
+
+
+def AddSourceConfigArgument(parser):
+  """Creates source config argument."""
+  parser.add_argument(
+      '--source-config',
+      metavar='SOURCE_CONFIG',
+      type=arg_parsers.ArgDict(spec={'git-repository-link': str}),
+      dest='source_config',
+      help=(
+          'The source config of the git repository link.'
+      ),
+  )

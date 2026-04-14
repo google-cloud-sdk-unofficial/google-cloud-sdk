@@ -106,6 +106,18 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_SPACES_APPLICATIONTEMPLATES_POLICIES = (
+      'projects.locations.spaces.applicationTemplates.policies',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/spaces/'
+              '{spacesId}/applicationTemplates/{applicationTemplatesId}/'
+              'policies/{policiesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_SPACES_APPLICATIONTEMPLATES_REVISIONS = (
       'projects.locations.spaces.applicationTemplates.revisions',
       '{+name}',

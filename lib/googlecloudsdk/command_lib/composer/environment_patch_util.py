@@ -480,10 +480,15 @@ def _ConstructPrivateEnvironmentPatch(
   config = messages.EnvironmentConfig(
       privateEnvironmentConfig=private_environment_config
   )
-  update_mask = 'config.private_environment_config.enable_private_environment'
-  private_environment_config.enablePrivateEnvironment = bool(
-      enable_private_environment
-  )
+  update_mask = 'config.private_environment_config.networking_type'
+  if enable_private_environment:
+    private_environment_config.networkingType = (
+        messages.PrivateEnvironmentConfig.NetworkingTypeValueValuesEnum.PRIVATE
+    )
+  else:
+    private_environment_config.networkingType = (
+        messages.PrivateEnvironmentConfig.NetworkingTypeValueValuesEnum.PUBLIC
+    )
 
   return (
       update_mask,

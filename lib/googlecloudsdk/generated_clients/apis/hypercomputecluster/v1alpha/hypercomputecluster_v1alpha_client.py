@@ -209,7 +209,7 @@ class HypercomputeclusterV1alpha(base_api.BaseApiClient):
         request: (HypercomputeclusterProjectsLocationsMachineLearningRunsMonitoredEventsCreateRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
       Returns:
-        (MonitoredEvent) The response message.
+        (Operation) The response message.
       """
       config = self.GetMethodConfig('Create')
       return self._RunMethod(
@@ -225,7 +225,7 @@ class HypercomputeclusterV1alpha(base_api.BaseApiClient):
         relative_path='v1alpha/{+parent}/monitoredEvents',
         request_field='monitoredEvent',
         request_type_name='HypercomputeclusterProjectsLocationsMachineLearningRunsMonitoredEventsCreateRequest',
-        response_type_name='MonitoredEvent',
+        response_type_name='Operation',
         supports_download=False,
     )
 
@@ -236,7 +236,7 @@ class HypercomputeclusterV1alpha(base_api.BaseApiClient):
         request: (HypercomputeclusterProjectsLocationsMachineLearningRunsMonitoredEventsDeleteRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
       Returns:
-        (Empty) The response message.
+        (Operation) The response message.
       """
       config = self.GetMethodConfig('Delete')
       return self._RunMethod(
@@ -252,7 +252,7 @@ class HypercomputeclusterV1alpha(base_api.BaseApiClient):
         relative_path='v1alpha/{+name}',
         request_field='',
         request_type_name='HypercomputeclusterProjectsLocationsMachineLearningRunsMonitoredEventsDeleteRequest',
-        response_type_name='Empty',
+        response_type_name='Operation',
         supports_download=False,
     )
 
@@ -317,7 +317,7 @@ class HypercomputeclusterV1alpha(base_api.BaseApiClient):
         request: (HypercomputeclusterProjectsLocationsMachineLearningRunsMonitoredEventsPatchRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
       Returns:
-        (MonitoredEvent) The response message.
+        (Operation) The response message.
       """
       config = self.GetMethodConfig('Patch')
       return self._RunMethod(
@@ -333,7 +333,7 @@ class HypercomputeclusterV1alpha(base_api.BaseApiClient):
         relative_path='v1alpha/{+name}',
         request_field='monitoredEvent',
         request_type_name='HypercomputeclusterProjectsLocationsMachineLearningRunsMonitoredEventsPatchRequest',
-        response_type_name='MonitoredEvent',
+        response_type_name='Operation',
         supports_download=False,
     )
 

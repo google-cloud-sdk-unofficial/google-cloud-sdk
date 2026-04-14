@@ -16,6 +16,7 @@
 
 from googlecloudsdk.api_lib.biglake import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.biglake import arguments
 from googlecloudsdk.command_lib.biglake import flags
 from googlecloudsdk.core import log
 
@@ -25,7 +26,9 @@ from googlecloudsdk.core import log
 class UpdateCatalog(base.UpdateCommand):
   """Update a BigLake Iceberg REST catalog."""
 
+  # Not supported in beta yet.
   _support_catalog_type_biglake = False
+  _support_service_directory_name = False
 
   @classmethod
   def Args(cls, parser):
@@ -38,6 +41,8 @@ class UpdateCatalog(base.UpdateCommand):
           base.ReleaseTrack.ALPHA
       ).choice_arg.AddToParser(parser)
       util.AddAdditionalLocationsArg(parser)
+    if cls._support_service_directory_name:
+      arguments.AddServiceDirectoryNameArg(parser)
 
   def Run(self, args):
     client = util.GetClientInstance(self.ReleaseTrack())
@@ -75,6 +80,14 @@ class UpdateCatalog(base.UpdateCommand):
         credential_mode=credential_mode,
     )
 
+    if self._support_service_directory_name and args.IsSpecified(
+        'service_directory_name'
+    ):
+      update_mask.append('federated_catalog_options.service_directory_name')
+      catalog.federated_catalog_options = messages.FederatedCatalogOptions(
+          service_directory_name=args.service_directory_name
+      )
+
     if self._support_catalog_type_biglake:
       catalog.additional_locations = additional_locations
     request = messages.BiglakeIcebergV1RestcatalogExtensionsProjectsCatalogsPatchRequest(
@@ -92,3 +105,4 @@ class UpdateCatalog(base.UpdateCommand):
 class UpdateAlpha(UpdateCatalog):
   """Update a BigLake Iceberg REST catalog."""
   _support_catalog_type_biglake = True
+  _support_service_directory_name = True

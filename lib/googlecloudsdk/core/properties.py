@@ -1361,8 +1361,12 @@ class _SectionApiEndpointOverrides(_Section):
     self.gkerecommender = self._Add('gkerecommender', hidden=True)
     self.hypercomputecluster = self._Add(
         'hypercomputecluster', command='gcloud cluster-director')
+    self.iamconnectors = self._Add(
+        'iamconnectors', command='gcloud agent-identity')
     self.observability = self._Add(
         'observability', command='gcloud observability')
+    self.servicehealth = self._Add(
+        'servicehealth', command='gcloud servicehealth', hidden=True)
     self.transcoder = self._Add(
         'transcoder', command='gcloud transcoder', hidden=True
     )
@@ -1508,6 +1512,8 @@ class _SectionApiEndpointOverrides(_Section):
         'workflowexecutions', command='gcloud workflows executions')
     self.workflows = self._Add('workflows', command='gcloud workflows')
     self.workloadcertificate = self._Add('workloadcertificate', hidden=True)
+    self.workloadidentity = self._Add(
+        'workloadidentity', hidden=True)
     self.workstations = self._Add('workstations', command='gcloud workstations')
 
   def EndpointValidator(self, value):
@@ -2252,6 +2258,11 @@ class _SectionCore(_Section):
         '`--quiet` flag or setting the environment variable '
         '`CLOUDSDK_CORE_DISABLE_PROMPTS` to 1. Setting this property is '
         'useful when scripting with `gcloud`.')
+    self.display_hints = self._AddBool(
+        'display_hints',
+        default=False,
+        hidden=True,
+        help_text='If True, the `--agent-hints` flag will be active.')
     self.disable_usage_reporting = self._AddBool(
         'disable_usage_reporting',
         help_text='If True, anonymous statistics on SDK usage will not be '

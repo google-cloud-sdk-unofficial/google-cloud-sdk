@@ -18,6 +18,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class NetworkPolicyAssociations(base.Group):
   """Read and manipulate Compute Engine network policy associations."""

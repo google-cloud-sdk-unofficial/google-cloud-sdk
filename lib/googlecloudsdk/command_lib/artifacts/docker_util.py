@@ -529,7 +529,7 @@ class DockerRepo(object):
     return "{}-docker.{}/{}/{}".format(
         self.location,
         _GetArtifactRegistryDomain(),
-        self.project,
+        self.project.replace(":", "/"),
         self.repo,
     )
 
@@ -582,7 +582,7 @@ class DockerImage(object):
         properties.VALUES.artifacts.registry_endpoint_prefix.Get(),
         self.docker_repo.location,
         _GetArtifactRegistryDomain(),
-        self.docker_repo.project,
+        self.docker_repo.project.replace(":", "/"),
         self.docker_repo.repo,
         self.pkg.replace("%2F", "/"),
     )

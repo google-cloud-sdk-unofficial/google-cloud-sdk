@@ -33,3 +33,17 @@ hive_database:
     attribute_name: database
     help: |
       Name of the Hive database to use.
+
+hive_table:
+  name: hive_table
+  collection: biglake.hive.v1beta.projects.catalogs.databases.tables
+  request_id_field: hiveTableId
+  attributes:
+  - *project
+  - *catalog
+  - *database
+  - &table
+    parameter_name: tablesId
+    attribute_name: table
+    help: |
+      Name of the Hive table to use.

@@ -40,6 +40,7 @@ class DesigncenterV1alpha(base_api.BaseApiClient):
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
     self.projects_locations_spaces_applicationTemplates_components_connections = self.ProjectsLocationsSpacesApplicationTemplatesComponentsConnectionsService(self)
     self.projects_locations_spaces_applicationTemplates_components = self.ProjectsLocationsSpacesApplicationTemplatesComponentsService(self)
+    self.projects_locations_spaces_applicationTemplates_policies = self.ProjectsLocationsSpacesApplicationTemplatesPoliciesService(self)
     self.projects_locations_spaces_applicationTemplates_revisions = self.ProjectsLocationsSpacesApplicationTemplatesRevisionsService(self)
     self.projects_locations_spaces_applicationTemplates_systemRevisions = self.ProjectsLocationsSpacesApplicationTemplatesSystemRevisionsService(self)
     self.projects_locations_spaces_applicationTemplates = self.ProjectsLocationsSpacesApplicationTemplatesService(self)
@@ -462,6 +463,151 @@ class DesigncenterV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsSpacesApplicationTemplatesPoliciesService(base_api.BaseApiService):
+    """Service class for the projects_locations_spaces_applicationTemplates_policies resource."""
+
+    _NAME = 'projects_locations_spaces_applicationTemplates_policies'
+
+    def __init__(self, client):
+      super(DesigncenterV1alpha.ProjectsLocationsSpacesApplicationTemplatesPoliciesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a policy for an application template.
+
+      Args:
+        request: (DesigncenterProjectsLocationsSpacesApplicationTemplatesPoliciesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (DesignCenterPolicy) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/spaces/{spacesId}/applicationTemplates/{applicationTemplatesId}/policies',
+        http_method='POST',
+        method_id='designcenter.projects.locations.spaces.applicationTemplates.policies.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['policyId'],
+        relative_path='v1alpha/{+parent}/policies',
+        request_field='designCenterPolicy',
+        request_type_name='DesigncenterProjectsLocationsSpacesApplicationTemplatesPoliciesCreateRequest',
+        response_type_name='DesignCenterPolicy',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a policy.
+
+      Args:
+        request: (DesigncenterProjectsLocationsSpacesApplicationTemplatesPoliciesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/spaces/{spacesId}/applicationTemplates/{applicationTemplatesId}/policies/{policiesId}',
+        http_method='DELETE',
+        method_id='designcenter.projects.locations.spaces.applicationTemplates.policies.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='DesigncenterProjectsLocationsSpacesApplicationTemplatesPoliciesDeleteRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Policy related APIs. Get a policy for an application template.
+
+      Args:
+        request: (DesigncenterProjectsLocationsSpacesApplicationTemplatesPoliciesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (DesignCenterPolicy) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/spaces/{spacesId}/applicationTemplates/{applicationTemplatesId}/policies/{policiesId}',
+        http_method='GET',
+        method_id='designcenter.projects.locations.spaces.applicationTemplates.policies.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='DesigncenterProjectsLocationsSpacesApplicationTemplatesPoliciesGetRequest',
+        response_type_name='DesignCenterPolicy',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""List policies for an application template.
+
+      Args:
+        request: (DesigncenterProjectsLocationsSpacesApplicationTemplatesPoliciesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListPoliciesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/spaces/{spacesId}/applicationTemplates/{applicationTemplatesId}/policies',
+        http_method='GET',
+        method_id='designcenter.projects.locations.spaces.applicationTemplates.policies.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/policies',
+        request_field='',
+        request_type_name='DesigncenterProjectsLocationsSpacesApplicationTemplatesPoliciesListRequest',
+        response_type_name='ListPoliciesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates a policy.
+
+      Args:
+        request: (DesigncenterProjectsLocationsSpacesApplicationTemplatesPoliciesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (DesignCenterPolicy) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/spaces/{spacesId}/applicationTemplates/{applicationTemplatesId}/policies/{policiesId}',
+        http_method='PATCH',
+        method_id='designcenter.projects.locations.spaces.applicationTemplates.policies.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1alpha/{+name}',
+        request_field='designCenterPolicy',
+        request_type_name='DesigncenterProjectsLocationsSpacesApplicationTemplatesPoliciesPatchRequest',
+        response_type_name='DesignCenterPolicy',
+        supports_download=False,
+    )
+
   class ProjectsLocationsSpacesApplicationTemplatesRevisionsService(base_api.BaseApiService):
     """Service class for the projects_locations_spaces_applicationTemplates_revisions resource."""
 
@@ -759,6 +905,33 @@ class DesigncenterV1alpha(base_api.BaseApiClient):
         request_field='generateApplicationTemplateIaCRequest',
         request_type_name='DesigncenterProjectsLocationsSpacesApplicationTemplatesGenerateRequest',
         response_type_name='GenerateApplicationTemplateIaCResponse',
+        supports_download=False,
+    )
+
+    def GenerateAssessmentReport(self, request, global_params=None):
+      r"""Generate Assessment Reports of an application template.
+
+      Args:
+        request: (DesigncenterProjectsLocationsSpacesApplicationTemplatesGenerateAssessmentReportRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('GenerateAssessmentReport')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GenerateAssessmentReport.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/spaces/{spacesId}/applicationTemplates/{applicationTemplatesId}:generateAssessmentReport',
+        http_method='POST',
+        method_id='designcenter.projects.locations.spaces.applicationTemplates.generateAssessmentReport',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:generateAssessmentReport',
+        request_field='generateApplicationTemplateAssessmentReportRequest',
+        request_type_name='DesigncenterProjectsLocationsSpacesApplicationTemplatesGenerateAssessmentReportRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 
@@ -1922,6 +2095,33 @@ class DesigncenterV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def GenerateAssessmentReport(self, request, global_params=None):
+      r"""Generate a best practice report for a given Terraform plan.
+
+      Args:
+        request: (DesigncenterProjectsLocationsSpacesGenerateAssessmentReportRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('GenerateAssessmentReport')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GenerateAssessmentReport.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/spaces/{spacesId}:generateAssessmentReport',
+        http_method='POST',
+        method_id='designcenter.projects.locations.spaces.generateAssessmentReport',
+        ordered_params=['spaceName'],
+        path_params=['spaceName'],
+        query_params=[],
+        relative_path='v1alpha/{+spaceName}:generateAssessmentReport',
+        request_field='generateAssessmentReportRequest',
+        request_type_name='DesigncenterProjectsLocationsSpacesGenerateAssessmentReportRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Gets details about a space.
 
@@ -2201,6 +2401,33 @@ class DesigncenterV1alpha(base_api.BaseApiClient):
       super(DesigncenterV1alpha.ProjectsLocationsService, self).__init__(client)
       self._upload_configs = {
           }
+
+    def FetchFrameworks(self, request, global_params=None):
+      r"""Fetches all frameworks for assessment report.
+
+      Args:
+        request: (DesigncenterProjectsLocationsFetchFrameworksRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (FetchFrameworksResponse) The response message.
+      """
+      config = self.GetMethodConfig('FetchFrameworks')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    FetchFrameworks.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}:fetchFrameworks',
+        http_method='GET',
+        method_id='designcenter.projects.locations.fetchFrameworks',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken', 'projects'],
+        relative_path='v1alpha/{+parent}:fetchFrameworks',
+        request_field='',
+        request_type_name='DesigncenterProjectsLocationsFetchFrameworksRequest',
+        response_type_name='FetchFrameworksResponse',
+        supports_download=False,
+    )
 
     def Get(self, request, global_params=None):
       r"""Gets information about a location.

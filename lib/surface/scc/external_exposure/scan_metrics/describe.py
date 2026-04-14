@@ -24,22 +24,22 @@ from googlecloudsdk.command_lib.scc.external_exposure import utils
 @base.Hidden
 @base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
-  """Describe the scan metrics for a given parent resource and location."""
+  """Describe the scan metrics for a given parent resource."""
 
   detailed_help = {
       'DESCRIPTION': (
           """\
-      Returns the scan metrics for a given organization, folder, or project and location.
+      Returns the scan metrics for a given organization, folder, or project.
       """
       ),
       'EXAMPLES': (
           """\
         To describe the scan metrics for an organization, run:
-          $ {command} --organization=12345 --location=global \n
+          $ {command} --organization=12345 \n
         To describe the scan metrics for a folder, run:
-          $ {command} --folder=12345 --location=global \n
+          $ {command} --folder=12345 \n
         To describe the scan metrics for a project, run:
-          $ {command} --project=12345 --location=global \n
+          $ {command} --project=12345 \n
       """
       ),
   }

@@ -51,6 +51,7 @@ class ArtifactregistryV1(base_api.BaseApiClient):
     self.projects_locations_repositories_packages_tags = self.ProjectsLocationsRepositoriesPackagesTagsService(self)
     self.projects_locations_repositories_packages_versions = self.ProjectsLocationsRepositoriesPackagesVersionsService(self)
     self.projects_locations_repositories_packages = self.ProjectsLocationsRepositoriesPackagesService(self)
+    self.projects_locations_repositories_prewarmedArtifacts = self.ProjectsLocationsRepositoriesPrewarmedArtifactsService(self)
     self.projects_locations_repositories_pythonPackages = self.ProjectsLocationsRepositoriesPythonPackagesService(self)
     self.projects_locations_repositories_rules = self.ProjectsLocationsRepositoriesRulesService(self)
     self.projects_locations_repositories_yumArtifacts = self.ProjectsLocationsRepositoriesYumArtifactsService(self)
@@ -1326,6 +1327,43 @@ class ArtifactregistryV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsRepositoriesPrewarmedArtifactsService(base_api.BaseApiService):
+    """Service class for the projects_locations_repositories_prewarmedArtifacts resource."""
+
+    _NAME = 'projects_locations_repositories_prewarmedArtifacts'
+
+    def __init__(self, client):
+      super(ArtifactregistryV1.ProjectsLocationsRepositoriesPrewarmedArtifactsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def List(self, request, global_params=None):
+      r"""Lists all streamed artifacts in a repository.
+
+      Args:
+        request: (ArtifactregistryProjectsLocationsRepositoriesPrewarmedArtifactsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListPrewarmedArtifactsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/repositories/{repositoriesId}/prewarmedArtifacts',
+        http_method='GET',
+        method_id='artifactregistry.projects.locations.repositories.prewarmedArtifacts.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/prewarmedArtifacts',
+        request_field='',
+        request_type_name='ArtifactregistryProjectsLocationsRepositoriesPrewarmedArtifactsListRequest',
+        response_type_name='ListPrewarmedArtifactsResponse',
+        supports_download=False,
+    )
+
   class ProjectsLocationsRepositoriesPythonPackagesService(base_api.BaseApiService):
     """Service class for the projects_locations_repositories_pythonPackages resource."""
 
@@ -1621,6 +1659,33 @@ class ArtifactregistryV1(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+    def CheckPrewarmedArtifact(self, request, global_params=None):
+      r"""Checks an artifact streaming.
+
+      Args:
+        request: (ArtifactregistryProjectsLocationsRepositoriesCheckPrewarmedArtifactRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (CheckPrewarmedArtifactResponse) The response message.
+      """
+      config = self.GetMethodConfig('CheckPrewarmedArtifact')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    CheckPrewarmedArtifact.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/repositories/{repositoriesId}:checkPrewarmedArtifact',
+        http_method='POST',
+        method_id='artifactregistry.projects.locations.repositories.checkPrewarmedArtifact',
+        ordered_params=['repository'],
+        path_params=['repository'],
+        query_params=[],
+        relative_path='v1/{+repository}:checkPrewarmedArtifact',
+        request_field='checkPrewarmedArtifactRequest',
+        request_type_name='ArtifactregistryProjectsLocationsRepositoriesCheckPrewarmedArtifactRequest',
+        response_type_name='CheckPrewarmedArtifactResponse',
+        supports_download=False,
+    )
+
     def CopyRepository(self, request, global_params=None):
       r"""Copies all artifacts from one repository to another.
 
@@ -1837,6 +1902,33 @@ class ArtifactregistryV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def PrewarmArtifact(self, request, global_params=None):
+      r"""Prewarms an artifact for streaming.
+
+      Args:
+        request: (ArtifactregistryProjectsLocationsRepositoriesPrewarmArtifactRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('PrewarmArtifact')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    PrewarmArtifact.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/repositories/{repositoriesId}:prewarmArtifact',
+        http_method='POST',
+        method_id='artifactregistry.projects.locations.repositories.prewarmArtifact',
+        ordered_params=['repository'],
+        path_params=['repository'],
+        query_params=[],
+        relative_path='v1/{+repository}:prewarmArtifact',
+        request_field='prewarmArtifactRequest',
+        request_type_name='ArtifactregistryProjectsLocationsRepositoriesPrewarmArtifactRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Reindex(self, request, global_params=None):
       r"""Updates the index files for an OS repository. Intended for use on remote repositories to check if the upstream has been updated, and if so pull the new index files.
 
@@ -1861,6 +1953,33 @@ class ArtifactregistryV1(base_api.BaseApiClient):
         request_field='reindexRepositoryRequest',
         request_type_name='ArtifactregistryProjectsLocationsRepositoriesReindexRequest',
         response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def RemovePrewarmedArtifact(self, request, global_params=None):
+      r"""Removes an artifact from streaming.
+
+      Args:
+        request: (ArtifactregistryProjectsLocationsRepositoriesRemovePrewarmedArtifactRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (RemovePrewarmedArtifactResponse) The response message.
+      """
+      config = self.GetMethodConfig('RemovePrewarmedArtifact')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    RemovePrewarmedArtifact.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/repositories/{repositoriesId}:removePrewarmedArtifact',
+        http_method='POST',
+        method_id='artifactregistry.projects.locations.repositories.removePrewarmedArtifact',
+        ordered_params=['repository'],
+        path_params=['repository'],
+        query_params=[],
+        relative_path='v1/{+repository}:removePrewarmedArtifact',
+        request_field='removePrewarmedArtifactRequest',
+        request_type_name='ArtifactregistryProjectsLocationsRepositoriesRemovePrewarmedArtifactRequest',
+        response_type_name='RemovePrewarmedArtifactResponse',
         supports_download=False,
     )
 

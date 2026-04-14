@@ -105,6 +105,22 @@
       - api_field: componentUri
         help_text: |-
           Component to which this variable belongs.
+    - group:
+        api_field: applicationTemplate.saasRuntimeContext
+        arg_name: saas-runtime-context
+        clearable: true
+        required: false
+        help_text: |-
+          SaaS runtime context.
+        params:
+        - arg_name: saas-runtime-context-names
+          api_field: applicationTemplate.saasRuntimeContext.saasNames
+          required: false
+          repeated: true
+          help_text: |-
+            The SaaS names. Format for each SaaS:
+            projects/{project}/locations/{location}/saas/{saas}
+          clearable: true
   request:
     api_version: v1
     collection:

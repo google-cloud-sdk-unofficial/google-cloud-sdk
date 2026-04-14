@@ -1022,6 +1022,11 @@ class GoogleDevtoolsCloudbuildV1Artifacts(_messages.Message):
       generation of the uploaded objects will be stored in the Build
       resource's results field. If any objects fail to be pushed, the build is
       marked FAILURE.
+    oci: Optional. A list of OCI images to be uploaded to Artifact Registry
+      upon successful completion of all build steps. OCI images in the
+      specified paths will be uploaded to the specified Artifact Registry
+      repository using the builder service account's credentials. If any
+      images fail to be pushed, the build is marked FAILURE.
     pythonPackages: A list of Python packages to be uploaded to Artifact
       Registry upon successful completion of all build steps. The build
       service account credentials will be used to perform the upload. If any
@@ -1033,7 +1038,8 @@ class GoogleDevtoolsCloudbuildV1Artifacts(_messages.Message):
   mavenArtifacts = _messages.MessageField('GoogleDevtoolsCloudbuildV1MavenArtifact', 3, repeated=True)
   npmPackages = _messages.MessageField('GoogleDevtoolsCloudbuildV1NpmPackage', 4, repeated=True)
   objects = _messages.MessageField('GoogleDevtoolsCloudbuildV1ArtifactObjects', 5)
-  pythonPackages = _messages.MessageField('GoogleDevtoolsCloudbuildV1PythonPackage', 6, repeated=True)
+  oci = _messages.MessageField('GoogleDevtoolsCloudbuildV1Oci', 6, repeated=True)
+  pythonPackages = _messages.MessageField('GoogleDevtoolsCloudbuildV1PythonPackage', 7, repeated=True)
 
 
 class GoogleDevtoolsCloudbuildV1Build(_messages.Message):
@@ -1629,20 +1635,43 @@ class GoogleDevtoolsCloudbuildV1BuildStep(_messages.Message):
 class GoogleDevtoolsCloudbuildV1BuiltImage(_messages.Message):
   r"""An image built by the pipeline.
 
+  Enums:
+    OciMediaTypeValueValuesEnum: Output only. The OCI media type of the
+      artifact. Non-OCI images, such as Docker images, will have an
+      unspecified value.
+
   Fields:
     artifactRegistryPackage: Output only. Path to the artifact in Artifact
       Registry.
     digest: Docker Registry 2.0 digest.
     name: Name used to push the container image to Google Container Registry,
       as presented to `docker push`.
+    ociMediaType: Output only. The OCI media type of the artifact. Non-OCI
+      images, such as Docker images, will have an unspecified value.
     pushTiming: Output only. Stores timing information for pushing the
       specified image.
   """
 
+  class OciMediaTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The OCI media type of the artifact. Non-OCI images, such
+    as Docker images, will have an unspecified value.
+
+    Values:
+      OCI_MEDIA_TYPE_UNSPECIFIED: Default value.
+      IMAGE_MANIFEST: The artifact is an image manifest, which represents a
+        single image with all its layers.
+      IMAGE_INDEX: The artifact is an image index, which can contain a list of
+        image manifests.
+    """
+    OCI_MEDIA_TYPE_UNSPECIFIED = 0
+    IMAGE_MANIFEST = 1
+    IMAGE_INDEX = 2
+
   artifactRegistryPackage = _messages.StringField(1)
   digest = _messages.StringField(2)
   name = _messages.StringField(3)
-  pushTiming = _messages.MessageField('GoogleDevtoolsCloudbuildV1TimeSpan', 4)
+  ociMediaType = _messages.EnumField('OciMediaTypeValueValuesEnum', 4)
+  pushTiming = _messages.MessageField('GoogleDevtoolsCloudbuildV1TimeSpan', 5)
 
 
 class GoogleDevtoolsCloudbuildV1ConnectedRepository(_messages.Message):
@@ -1988,6 +2017,23 @@ class GoogleDevtoolsCloudbuildV1NpmPackage(_messages.Message):
 
   packagePath = _messages.StringField(1)
   repository = _messages.StringField(2)
+
+
+class GoogleDevtoolsCloudbuildV1Oci(_messages.Message):
+  r"""OCI image to upload to Artifact Registry upon successful completion of
+  all build steps.
+
+  Fields:
+    file: Required. Path on the local file system where to find the container
+      to upload. e.g. /workspace/my-image.tar
+    registryPath: Required. Registry path to upload the container to. e.g. us-
+      east1-docker.pkg.dev/my-project/my-repo/my-image
+    tags: Optional. Tags to apply to the uploaded image. e.g. latest, 1.0.0
+  """
+
+  file = _messages.StringField(1)
+  registryPath = _messages.StringField(2)
+  tags = _messages.StringField(3, repeated=True)
 
 
 class GoogleDevtoolsCloudbuildV1PoolOption(_messages.Message):
@@ -6207,7 +6253,8 @@ class VolumeMount(_messages.Message):
     readOnly: Sets the mount to be read-only or read-write. Not used by Cloud
       Run.
     subPath: Path within the volume from which the container's volume should
-      be mounted. Defaults to "" (volume's root).
+      be mounted. Defaults to "" (volume's root). This field is currently
+      ignored for Secret volumes.
   """
 
   mountPath = _messages.StringField(1)

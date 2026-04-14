@@ -731,8 +731,7 @@ class FileShareConfig(_messages.Message):
       that this file share has been restored from.
     sourceBackupdrBackup: The resource name of the BackupDR backup, in the
       format `projects/{project_id}/locations/{location_id}/backupVaults/{back
-      upvault_id}/dataSources/{datasource_id}/backups/{backup_id}`, TODO
-      (b/443690479) - Remove visibility restrictions once the feature is ready
+      upvault_id}/dataSources/{datasource_id}/backups/{backup_id}`,
   """
 
   capacityGb = _messages.IntegerField(1)

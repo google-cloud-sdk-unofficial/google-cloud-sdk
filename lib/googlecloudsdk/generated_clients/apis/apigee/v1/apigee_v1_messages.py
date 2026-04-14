@@ -1681,11 +1681,14 @@ class ApigeeOrganizationsDevelopersAppsListRequest(_messages.Message):
       1000.
     expand: Optional. Specifies whether to expand the results. Set to `true`
       to expand the results. This query parameter is not valid if you use the
-      `count` or `startKey` query parameters.
+      `count` or `startKey` query parameters. **Note**: If set to `true`, the
+      `apigee.developerapps.get` permission is required.
     parent: Required. Name of the developer. Use the following structure in
       your request: `organizations/{org}/developers/{developer_email}`
     shallowExpand: Optional. Specifies whether to expand the results in
       shallow mode. Set to `true` to expand the results in shallow mode.
+      **Note**: If set to `true`, the `apigee.developerapps.get` permission is
+      required.
     startKey: **Note**: Must be used in conjunction with the `count`
       parameter. Name of the developer app from which to start displaying the
       list of developer apps. For example, if you're returning 50 developer
@@ -9490,7 +9493,7 @@ class GoogleCloudApigeeV1EnvironmentClientIPResolutionConfigHeaderIndexAlgorithm
       indices 0, 1, 2, 3 chooses indices from the left (first ips) Negative
       indices -1, -2, -3 chooses indices from the right (last ips)
     ipHeaderName: Required. The name of the header to extract the client ip
-      from. We are currently only supporting the X-Forwarded-For header.
+      from.
   """
 
   ipHeaderIndex = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -13005,14 +13008,19 @@ class GoogleCloudApigeeV1RuntimeTraceConfig(_messages.Message):
 
     Values:
       EXPORTER_UNSPECIFIED: Exporter unspecified
-      JAEGER: Jaeger exporter
-      CLOUD_TRACE: Cloudtrace exporter
-      OPEN_TELEMETRY_COLLECTOR: Open Telemetry Collector
+      JAEGER: Exports events to Jaeger. Compatible with OpenCensus protocol.
+      CLOUD_TRACE: Exports events to Cloud Trace. Compatible with OpenCensus
+        protocol.
+      OPEN_TELEMETRY_COLLECTOR: OpenTelemetry Collector. Compatible with
+        OpenTelemetry protocol.
+      OPEN_TELEMETRY_CLOUD_TRACE: Exports events to Cloud Trace. Compatible
+        with OpenTelemetry protocol.
     """
     EXPORTER_UNSPECIFIED = 0
     JAEGER = 1
     CLOUD_TRACE = 2
     OPEN_TELEMETRY_COLLECTOR = 3
+    OPEN_TELEMETRY_CLOUD_TRACE = 4
 
   class TraceProtocolValueValuesEnum(_messages.Enum):
     r"""Optional. The trace protocol to use.
@@ -14857,9 +14865,9 @@ class GoogleCloudApigeeV1TraceConfig(_messages.Message):
 
   Enums:
     ExporterValueValuesEnum: Required. Exporter that is used to view the
-      distributed trace captured using OpenCensus. An exporter sends traces to
-      any backend that is capable of consuming them. Recorded spans can be
-      exported by registered exporters.
+      distributed trace captured using the chosen trace protocol. An exporter
+      sends traces to any backend that is capable of consuming them. Recorded
+      spans can be exported by registered exporters.
     TraceProtocolValueValuesEnum: Optional. The trace protocol to use.
       Configuration Requirements (if trace_protocol is OTLP): - Allowed
       Exporters: CLOUD_TRACE or OPEN_TELEMETRY_COLLECTOR. - If Exporter is
@@ -14870,9 +14878,9 @@ class GoogleCloudApigeeV1TraceConfig(_messages.Message):
   Fields:
     endpoint: Required. Endpoint of the exporter.
     exporter: Required. Exporter that is used to view the distributed trace
-      captured using OpenCensus. An exporter sends traces to any backend that
-      is capable of consuming them. Recorded spans can be exported by
-      registered exporters.
+      captured using the chosen trace protocol. An exporter sends traces to
+      any backend that is capable of consuming them. Recorded spans can be
+      exported by registered exporters.
     openTelemetryProtocolEnabled: Optional. Deprecated: Use trace_protocol
       instead.
     samplingConfig: Distributed trace configuration for all API proxies in an
@@ -14888,19 +14896,25 @@ class GoogleCloudApigeeV1TraceConfig(_messages.Message):
 
   class ExporterValueValuesEnum(_messages.Enum):
     r"""Required. Exporter that is used to view the distributed trace captured
-    using OpenCensus. An exporter sends traces to any backend that is capable
-    of consuming them. Recorded spans can be exported by registered exporters.
+    using the chosen trace protocol. An exporter sends traces to any backend
+    that is capable of consuming them. Recorded spans can be exported by
+    registered exporters.
 
     Values:
       EXPORTER_UNSPECIFIED: Exporter unspecified
-      JAEGER: Jaeger exporter
-      CLOUD_TRACE: Cloudtrace exporter
-      OPEN_TELEMETRY_COLLECTOR: Open Telemetry Collector
+      JAEGER: Exports events to Jaeger. Compatible with OpenCensus protocol.
+      CLOUD_TRACE: Exports events to Cloud Trace. Compatible with OpenCensus
+        protocol.
+      OPEN_TELEMETRY_COLLECTOR: OpenTelemetry Collector. Compatible with
+        OpenTelemetry protocol.
+      OPEN_TELEMETRY_CLOUD_TRACE: Exports events to Cloud Trace. Compatible
+        with OpenTelemetry protocol.
     """
     EXPORTER_UNSPECIFIED = 0
     JAEGER = 1
     CLOUD_TRACE = 2
     OPEN_TELEMETRY_COLLECTOR = 3
+    OPEN_TELEMETRY_CLOUD_TRACE = 4
 
   class TraceProtocolValueValuesEnum(_messages.Enum):
     r"""Optional. The trace protocol to use. Configuration Requirements (if

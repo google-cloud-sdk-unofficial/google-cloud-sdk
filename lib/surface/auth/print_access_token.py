@@ -19,22 +19,16 @@
 import textwrap
 import time
 
-from google.auth import credentials
 from google.auth import exceptions as google_auth_exceptions
 from googlecloudsdk.api_lib.auth import exceptions as auth_exceptions
-from googlecloudsdk.api_lib.auth import util as auth_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
+from googlecloudsdk.command_lib.auth import auth_util as auth_command_util
+from googlecloudsdk.command_lib.auth import flags as auth_flags
 from googlecloudsdk.core import config
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core.credentials import creds as c_creds
-from googlecloudsdk.core.credentials import store as c_store
-
-
-# bq needs this as part of its auth flow to support the Drive scope.
-_TRUSTED_SCOPES = list(config.CLOUDSDK_SCOPES) + [auth_util.GOOGLE_DRIVE_SCOPE]
 _MTLS_WARNING_INTERVAL_SECONDS = 24 * 60 * 60  # Seconds in a day
 _MTLS_WARNING_LAST_SHOWN_CONFIG_KEY = 'mtls_warning_last_shown'
 
@@ -157,21 +151,7 @@ class AccessToken(base.Command):
             '`--impersonate-service-account` flag.'
         ),
     )
-    parser.add_argument(
-        '--scopes',
-        hidden=True,
-        type=arg_parsers.ArgList(min_length=1),
-        metavar='SCOPE',
-        help=(
-            'The scopes to authorize for. This flag is supported for user'
-            ' accounts and service accounts only. The list of possible scopes'
-            ' can be found at:'
-            ' https://developers.google.com/identity/protocols/googlescopes.\n\nFor'
-            ' end-user accounts the provided scopes must from [{0}]'.format(
-                _TRUSTED_SCOPES
-            )
-        ),
-    )
+    auth_flags.AddScopesFlag(parser, hidden=True)
     parser.display_info.AddFormat('value(token)')
 
   @c_exc.RaiseErrorInsteadOf(
@@ -193,58 +173,12 @@ class AccessToken(base.Command):
           'used together with the --impersonate-service-account flag.',
       )
 
-    # Do not auto cache the custom scoped access token. Otherwise, it'll
-    # affect other gcloud CLIs that depends on cloud-platform scopes.
-    cache_only_rapt = True if args.scopes else False
-
-    cred = c_store.Load(
-        args.account,
-        allow_account_impersonation=True,
-        cache_only_rapt=cache_only_rapt,
+    cred = auth_command_util.LoadCredentialsWithScopes(
+        account=args.account,
+        scopes=args.scopes,
+        trusted_scopes=auth_command_util.GetTrustedScopesWithDrive(),
+        impersonation_lifetime=args.lifetime,
     )
-
-    # c_store.Load already refreshed the cred, so we don't need to refresh the
-    # cred unless we need to alter the cred in the code below, for example,
-    # changing the scopes.
-    should_refresh_again = False
-
-    if args.scopes:
-      # refresh again due to altered scopes
-      should_refresh_again = True
-      cred_type = c_creds.CredentialTypeGoogleAuth.FromCredentials(cred)
-      if cred_type not in [
-          c_creds.CredentialTypeGoogleAuth.USER_ACCOUNT,
-          c_creds.CredentialTypeGoogleAuth.SERVICE_ACCOUNT,
-      ]:
-        # TODO(b/223649175): Add support for other credential types(e.g GCE).
-        log.warning(
-            '`--scopes` flag may not work as expected and will be ignored '
-            'for account type {}.'.format(cred_type.key)
-        )
-      scopes = args.scopes + [auth_util.OPENID, auth_util.USER_EMAIL_SCOPE]
-
-      # non user account credential types
-      if isinstance(cred, credentials.Scoped):
-        cred = cred.with_scopes(scopes)
-      else:
-        requested_scopes = set(args.scopes)
-        trusted_scopes = set(_TRUSTED_SCOPES)
-        if not requested_scopes.issubset(trusted_scopes):
-          raise c_exc.InvalidArgumentException(
-              '--scopes',
-              'Invalid scopes value. Please make sure the scopes are from [{0}]'
-              .format(config.CLOUDSDK_SCOPES),
-          )
-        # pylint:disable=protected-access
-        cred._scopes = scopes
-
-    if c_creds.IsImpersonatedAccountCredentials(cred) and args.lifetime:
-      # refresh again due to altered lifetime
-      should_refresh_again = True
-      cred._lifetime = args.lifetime  # pylint: disable=protected-access
-
-    if should_refresh_again:
-      c_store.Refresh(cred)
 
     token = cred.token
     if not token:

@@ -28,13 +28,10 @@ def get_action_processor(
     requirements_path=None,
 ) -> base.ActionProcessor:
   """Returns the appropriate ActionProcessor for the given action."""
-  engine = action.get("engine", "dataproc-serverless")
-  if isinstance(engine, dict):
-    engine_type = engine.get("engineType", "dataproc-serverless")
-  else:
-    engine_type = engine
+  engine = action.get("engine", {})
+  engine_type = list(engine.keys())[0] if engine else None
 
-  if engine_type == "dataproc-serverless":
+  if engine_type == "dataprocServerless":
     return dataproc_serverless.DataprocServerlessActionProcessor(
         action,
         work_dir,
@@ -43,7 +40,7 @@ def get_action_processor(
         defaults,
         requirements_path,
     )
-  if engine_type == "dataproc-gce":
+  if engine_type == "dataprocOnGce":
     return dataproc_gce.DataprocGCEActionProcessor(
         action,
         work_dir,
@@ -52,12 +49,3 @@ def get_action_processor(
         defaults,
         requirements_path,
     )
-  # TODO: b/474620155 - Support other actions.
-  return dataproc_serverless.DataprocServerlessActionProcessor(
-      action,
-      work_dir,
-      artifact_base_uri,
-      subprocess_mod,
-      defaults,
-      requirements_path,
-  )

@@ -3636,6 +3636,8 @@ class Node(_messages.Message):
     id: Output only. The identifier of the VM e.g. "test-read-0601-407e52be-
       ms3l".
     ip: Output only. The private IP address of the VM e.g. "10.57.0.34".
+    isHotStandby: Output only. Indicates whether the node set up to be
+      configured as a hot standby.
     state: Output only. Determined by state of the compute VM and postgres-
       service health. Compute VM state can have values listed in
       https://cloud.google.com/compute/docs/instances/instance-life-cycle and
@@ -3646,8 +3648,9 @@ class Node(_messages.Message):
 
   id = _messages.StringField(1)
   ip = _messages.StringField(2)
-  state = _messages.StringField(3)
-  zoneId = _messages.StringField(4)
+  isHotStandby = _messages.BooleanField(3)
+  state = _messages.StringField(4)
+  zoneId = _messages.StringField(5)
 
 
 class ObservabilityInstanceConfig(_messages.Message):
@@ -5516,7 +5519,7 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceId(_messages.Message)
 
 
 class StorageDatabasecenterPartnerapiV1mainDatabaseResourceMetadata(_messages.Message):
-  r"""Common model for database resource instance metadata. Next ID: 31
+  r"""Common model for database resource instance metadata. Next ID: 32
 
   Enums:
     CurrentStateValueValuesEnum: Current state of the instance.
@@ -5528,6 +5531,7 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceMetadata(_messages.Me
       wrong patch update, while the expected state will remain at the HEALTHY.
     InstanceTypeValueValuesEnum: The type of the instance. Specified at
       creation time.
+    ModesValueListEntryValuesEnum:
     SuspensionReasonValueValuesEnum: Optional. Suspension reason for the
       resource.
 
@@ -5555,6 +5559,7 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceMetadata(_messages.Me
     location: The resource location. REQUIRED
     machineConfiguration: Machine configuration for this resource.
     maintenanceInfo: Optional. Maintenance info for the resource.
+    modes: Optional. The modes of the database resource.
     primaryResourceId: Identifier for this resource's immediate parent/primary
       resource if the current resource is a replica or derived form of another
       Database resource. Else it would be NULL. REQUIRED if the immediate
@@ -5659,6 +5664,8 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceMetadata(_messages.Me
       SUB_RESOURCE_TYPE_EXTERNAL_PRIMARY: An instance acting as an external
         primary.
       SUB_RESOURCE_TYPE_READ_POOL: An instance acting as Read Pool.
+      SUB_RESOURCE_TYPE_RESERVATION: Represents a reservation resource.
+      SUB_RESOURCE_TYPE_DATASET: Represents a dataset resource.
       SUB_RESOURCE_TYPE_OTHER: For rest of the other categories.
     """
     INSTANCE_TYPE_UNSPECIFIED = 0
@@ -5672,7 +5679,21 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceMetadata(_messages.Me
     SUB_RESOURCE_TYPE_READ_REPLICA = 8
     SUB_RESOURCE_TYPE_EXTERNAL_PRIMARY = 9
     SUB_RESOURCE_TYPE_READ_POOL = 10
-    SUB_RESOURCE_TYPE_OTHER = 11
+    SUB_RESOURCE_TYPE_RESERVATION = 11
+    SUB_RESOURCE_TYPE_DATASET = 12
+    SUB_RESOURCE_TYPE_OTHER = 13
+
+  class ModesValueListEntryValuesEnum(_messages.Enum):
+    r"""ModesValueListEntryValuesEnum enum type.
+
+    Values:
+      MODE_UNSPECIFIED: Default mode.
+      MODE_NATIVE: Native mode.
+      MODE_MONGODB_COMPATIBLE: MongoDB compatible mode.
+    """
+    MODE_UNSPECIFIED = 0
+    MODE_NATIVE = 1
+    MODE_MONGODB_COMPATIBLE = 2
 
   class SuspensionReasonValueValuesEnum(_messages.Enum):
     r"""Optional. Suspension reason for the resource.
@@ -5712,17 +5733,18 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceMetadata(_messages.Me
   location = _messages.StringField(15)
   machineConfiguration = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainMachineConfiguration', 16)
   maintenanceInfo = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainResourceMaintenanceInfo', 17)
-  primaryResourceId = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainDatabaseResourceId', 18)
-  primaryResourceLocation = _messages.StringField(19)
-  product = _messages.MessageField('StorageDatabasecenterProtoCommonProduct', 20)
-  resourceContainer = _messages.StringField(21)
-  resourceFlags = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainResourceFlags', 22, repeated=True)
-  resourceName = _messages.StringField(23)
-  suspensionReason = _messages.EnumField('SuspensionReasonValueValuesEnum', 24)
-  tagsSet = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainTags', 25)
-  updationTime = _messages.StringField(26)
-  userLabelSet = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainUserLabels', 27)
-  zone = _messages.StringField(28)
+  modes = _messages.EnumField('ModesValueListEntryValuesEnum', 18, repeated=True)
+  primaryResourceId = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainDatabaseResourceId', 19)
+  primaryResourceLocation = _messages.StringField(20)
+  product = _messages.MessageField('StorageDatabasecenterProtoCommonProduct', 21)
+  resourceContainer = _messages.StringField(22)
+  resourceFlags = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainResourceFlags', 23, repeated=True)
+  resourceName = _messages.StringField(24)
+  suspensionReason = _messages.EnumField('SuspensionReasonValueValuesEnum', 25)
+  tagsSet = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainTags', 26)
+  updationTime = _messages.StringField(27)
+  userLabelSet = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainUserLabels', 28)
+  zone = _messages.StringField(29)
 
 
 class StorageDatabasecenterPartnerapiV1mainDatabaseResourceRecommendationSignalData(_messages.Message):

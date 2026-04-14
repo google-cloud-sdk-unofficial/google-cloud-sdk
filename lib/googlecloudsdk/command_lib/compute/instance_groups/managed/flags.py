@@ -825,10 +825,10 @@ def AddTargetSizePolicyModeFlag(parser):
   help_text = 'Specifies the mode in which the MIG creates VMs in the group.'
   choices = {
       'individual': (
-          '(Default) MIG creates VMs individually. If the MIG cannot create any'
-          ' VM to meet the specified ``size``, then the MIG creates the VMs for'
-          ' which resources are available. The MIG then attempts to create the'
-          ' remaining VMs until the resources become available.'
+          '(Default) MIG creates VMs individually. If the MIG cannot create'
+          ' all VMs to meet the specified ``size``, then it creates VMs for'
+          ' which resources are available and continues to attempt to create'
+          ' the remaining ones until the target size is met.'
       ),
       'bulk': (
           'MIG creates VMs all at once. If the MIG cannot create any VM to meet'

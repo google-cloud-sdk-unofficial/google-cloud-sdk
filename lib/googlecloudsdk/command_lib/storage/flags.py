@@ -151,6 +151,23 @@ pairs, i.e. (key1, value1) and (key2, value2):
 Note: Currently object contexts only supports string format for values.
 """
 
+_REWRITE_OBJECT_HELP_TEXT = textwrap.dedent("""\
+Rewrites object and the specified metadata. Currently only supports
+rewriting kms-key and storage-class. To rewrite the Cloud KMS key
+that will be used to encrypt the object, specify the key-value pair
+`kms-key={KEY}`. To rewrite the object storage classes, specify the
+key-value pair `storage-class={STORAGE_CLASS}` where storage-class
+can be one of `STANDARD`, `NEARLINE`, `COLDLINE`, or `ARCHIVE`. If
+an object's storage class is set to a different value than it
+currently has, a full byte copy of the object will be made. If
+Autoclass is enabled on the bucket, storage class changes will be
+ignored by Cloud Storage. A metadata field MUST be specified,
+and multiple key-value pairs can be specified by separating them
+with commas. For example:
+
+  * `--rewrite-object=kms-key=projects/PROJECT_ID/locations/LOCATION/keyRings/KEY_RING/cryptoKeys/CRYPTO_KEY,storage-class=STANDARD`
+""")
+
 
 class ReplicationStrategy(enum.Enum):
   """Enum class for specifying the replication setting."""
@@ -1451,13 +1468,7 @@ def add_batch_jobs_flags(parser, track=calliope_base.ReleaseTrack.GA):
   )
   transformation.add_argument(
       '--rewrite-object',
-      help=(
-          'Rewrites object and the specified metadata. Currently only supports'
-          ' rewriting kms-key. A metadata field MUST be specified. For example,'
-          ' `--rewrite-object=kms-key=projects/PROJECT_ID/locations/LOCATION/keyRings/KEY_RING/cryptoKeys/CRYPTO_KEY`'
-          ' will rewrite the Cloud KMS key that will be used to encrypt the'
-          ' object.'
-      ),
+      help=_REWRITE_OBJECT_HELP_TEXT,
       type=arg_parsers.ArgDict(min_length=1),
       default={},
       metavar='KEY=VALUE',

@@ -47,6 +47,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
     self.folders_locations = self.FoldersLocationsService(self)
     self.folders = self.FoldersService(self)
     self.organizations_locations_auditReports = self.OrganizationsLocationsAuditReportsService(self)
+    self.organizations_locations_auditScopeReports = self.OrganizationsLocationsAuditScopeReportsService(self)
     self.organizations_locations_operationDetails = self.OrganizationsLocationsOperationDetailsService(self)
     self.organizations_locations_operationIds = self.OrganizationsLocationsOperationIdsService(self)
     self.organizations_locations_operations = self.OrganizationsLocationsOperationsService(self)
@@ -77,7 +78,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
           }
 
     def Generate(self, request, global_params=None):
-      r"""Register the Audit Report generation requests and returns the OperationId using which the customer can track the report generation progress.
+      r"""Registers audit report generation requests. This method returns the operation identifier that you can use to track the report generation progress.
 
       Args:
         request: (AuditmanagerFoldersLocationsAuditReportsGenerateRequest) input message
@@ -104,7 +105,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Get the overall audit report.
+      r"""Gets the full metadata and findings for an audit report.
 
       Args:
         request: (AuditmanagerFoldersLocationsAuditReportsGetRequest) input message
@@ -131,7 +132,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists audit reports in the selected parent scope.
+      r"""Lists the audit reports for the organization, folder, or project that you specify as the parent scope.
 
       Args:
         request: (AuditmanagerFoldersLocationsAuditReportsListRequest) input message
@@ -168,7 +169,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
           }
 
     def Generate(self, request, global_params=None):
-      r"""Generates a demo report highlighting different responsibilities (Google/Customer/ shared) required to be fulfilled for the customer's workload to be compliant with the given standard.
+      r"""Generates the following: * A responsibility matrix that describes Google's responsibilities, your responsibilities, and shared responsibilities. These responsibilities must be fulfilled before your workload can be compliant with a given standard. * The technical attributes and constraints that Audit Manager uses to verify your compliance with a framework. * A list of Google Cloud services and resources that are within the scope of the framework.
 
       Args:
         request: (AuditmanagerFoldersLocationsAuditScopeReportsGenerateRequest) input message
@@ -205,7 +206,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Get details about generate audit report operation.
+      r"""Gets details about the long-running operation to generate audit reports.
 
       Args:
         request: (AuditmanagerFoldersLocationsOperationDetailsGetRequest) input message
@@ -242,7 +243,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Get details about generate audit report operation.
+      r"""Gets details about the long-running operation to generate audit reports.
 
       Args:
         request: (AuditmanagerFoldersLocationsOperationIdsGetRequest) input message
@@ -279,7 +280,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Get a resource along with its enrollment status.
+      r"""Gets a resource and its enrollment status.
 
       Args:
         request: (AuditmanagerFoldersLocationsResourceEnrollmentStatusesGetRequest) input message
@@ -306,7 +307,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Fetches all resources under the parent along with their enrollment.
+      r"""Lists all the folders and projects in an organization or folder, along with their enrollments.
 
       Args:
         request: (AuditmanagerFoldersLocationsResourceEnrollmentStatusesListRequest) input message
@@ -343,7 +344,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Gets controls needed to be implemented to be compliant to a standard.
+      r"""Lists the controls that you must implement to become compliant to a regulatory standard.
 
       Args:
         request: (AuditmanagerFoldersLocationsStandardsControlsListRequest) input message
@@ -390,7 +391,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
           }
 
     def EnrollResource(self, request, global_params=None):
-      r"""Enrolls the customer resource(folder/project/organization) to the audit manager service by creating the audit managers Service Agent in customers workload and granting required permissions to the Service Agent. Please note that if enrollment request is made on the already enrolled workload then enrollment is executed overriding the existing set of destinations.
+      r"""Adds your project, folder, or organization to Audit Manager. This method creates the Audit Manager service agent in your workload and grants required permissions to the service agent. If you make this request on a workload that's already enrolled, then this method overrides the existing set of destinations.
 
       Args:
         request: (AuditmanagerFoldersLocationsEnrollResourceRequest) input message
@@ -437,7 +438,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
           }
 
     def Generate(self, request, global_params=None):
-      r"""Register the Audit Report generation requests and returns the OperationId using which the customer can track the report generation progress.
+      r"""Registers audit report generation requests. This method returns the operation identifier that you can use to track the report generation progress.
 
       Args:
         request: (AuditmanagerOrganizationsLocationsAuditReportsGenerateRequest) input message
@@ -463,8 +464,35 @@ class AuditmanagerV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Get(self, request, global_params=None):
+      r"""Gets the full metadata and findings for an audit report.
+
+      Args:
+        request: (AuditmanagerOrganizationsLocationsAuditReportsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AuditReport) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/organizations/{organizationsId}/locations/{locationsId}/auditReports/{auditReportsId}',
+        http_method='GET',
+        method_id='auditmanager.organizations.locations.auditReports.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='AuditmanagerOrganizationsLocationsAuditReportsGetRequest',
+        response_type_name='AuditReport',
+        supports_download=False,
+    )
+
     def List(self, request, global_params=None):
-      r"""Lists audit reports in the selected parent scope.
+      r"""Lists the audit reports for the organization, folder, or project that you specify as the parent scope.
 
       Args:
         request: (AuditmanagerOrganizationsLocationsAuditReportsListRequest) input message
@@ -490,6 +518,43 @@ class AuditmanagerV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class OrganizationsLocationsAuditScopeReportsService(base_api.BaseApiService):
+    """Service class for the organizations_locations_auditScopeReports resource."""
+
+    _NAME = 'organizations_locations_auditScopeReports'
+
+    def __init__(self, client):
+      super(AuditmanagerV1.OrganizationsLocationsAuditScopeReportsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Generate(self, request, global_params=None):
+      r"""Generates the following: * A responsibility matrix that describes Google's responsibilities, your responsibilities, and shared responsibilities. These responsibilities must be fulfilled before your workload can be compliant with a given standard. * The technical attributes and constraints that Audit Manager uses to verify your compliance with a framework. * A list of Google Cloud services and resources that are within the scope of the framework.
+
+      Args:
+        request: (AuditmanagerOrganizationsLocationsAuditScopeReportsGenerateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AuditScopeReport) The response message.
+      """
+      config = self.GetMethodConfig('Generate')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Generate.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/organizations/{organizationsId}/locations/{locationsId}/auditScopeReports:generate',
+        http_method='POST',
+        method_id='auditmanager.organizations.locations.auditScopeReports.generate',
+        ordered_params=['scope'],
+        path_params=['scope'],
+        query_params=[],
+        relative_path='v1/{+scope}/auditScopeReports:generate',
+        request_field='generateAuditScopeReportRequest',
+        request_type_name='AuditmanagerOrganizationsLocationsAuditScopeReportsGenerateRequest',
+        response_type_name='AuditScopeReport',
+        supports_download=False,
+    )
+
   class OrganizationsLocationsOperationDetailsService(base_api.BaseApiService):
     """Service class for the organizations_locations_operationDetails resource."""
 
@@ -501,7 +566,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Get details about generate audit report operation.
+      r"""Gets details about the long-running operation to generate audit reports.
 
       Args:
         request: (AuditmanagerOrganizationsLocationsOperationDetailsGetRequest) input message
@@ -538,7 +603,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Get details about generate audit report operation.
+      r"""Gets details about the long-running operation to generate audit reports.
 
       Args:
         request: (AuditmanagerOrganizationsLocationsOperationIdsGetRequest) input message
@@ -693,7 +758,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Get a resource along with its enrollment status.
+      r"""Gets a resource and its enrollment status.
 
       Args:
         request: (AuditmanagerOrganizationsLocationsResourceEnrollmentStatusesGetRequest) input message
@@ -720,7 +785,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Fetches all resources under the parent along with their enrollment.
+      r"""Lists all the folders and projects in an organization or folder, along with their enrollments.
 
       Args:
         request: (AuditmanagerOrganizationsLocationsResourceEnrollmentStatusesListRequest) input message
@@ -757,7 +822,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Gets controls needed to be implemented to be compliant to a standard.
+      r"""Lists the controls that you must implement to become compliant to a regulatory standard.
 
       Args:
         request: (AuditmanagerOrganizationsLocationsStandardsControlsListRequest) input message
@@ -804,7 +869,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
           }
 
     def EnrollResource(self, request, global_params=None):
-      r"""Enrolls the customer resource(folder/project/organization) to the audit manager service by creating the audit managers Service Agent in customers workload and granting required permissions to the Service Agent. Please note that if enrollment request is made on the already enrolled workload then enrollment is executed overriding the existing set of destinations.
+      r"""Adds your project, folder, or organization to Audit Manager. This method creates the Audit Manager service agent in your workload and grants required permissions to the service agent. If you make this request on a workload that's already enrolled, then this method overrides the existing set of destinations.
 
       Args:
         request: (AuditmanagerOrganizationsLocationsEnrollResourceRequest) input message
@@ -851,7 +916,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
           }
 
     def Generate(self, request, global_params=None):
-      r"""Register the Audit Report generation requests and returns the OperationId using which the customer can track the report generation progress.
+      r"""Registers audit report generation requests. This method returns the operation identifier that you can use to track the report generation progress.
 
       Args:
         request: (AuditmanagerProjectsLocationsAuditReportsGenerateRequest) input message
@@ -878,7 +943,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Get the overall audit report.
+      r"""Gets the full metadata and findings for an audit report.
 
       Args:
         request: (AuditmanagerProjectsLocationsAuditReportsGetRequest) input message
@@ -905,7 +970,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists audit reports in the selected parent scope.
+      r"""Lists the audit reports for the organization, folder, or project that you specify as the parent scope.
 
       Args:
         request: (AuditmanagerProjectsLocationsAuditReportsListRequest) input message
@@ -942,7 +1007,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
           }
 
     def Generate(self, request, global_params=None):
-      r"""Generates a demo report highlighting different responsibilities (Google/Customer/ shared) required to be fulfilled for the customer's workload to be compliant with the given standard.
+      r"""Generates the following: * A responsibility matrix that describes Google's responsibilities, your responsibilities, and shared responsibilities. These responsibilities must be fulfilled before your workload can be compliant with a given standard. * The technical attributes and constraints that Audit Manager uses to verify your compliance with a framework. * A list of Google Cloud services and resources that are within the scope of the framework.
 
       Args:
         request: (AuditmanagerProjectsLocationsAuditScopeReportsGenerateRequest) input message
@@ -979,7 +1044,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Get details about generate audit report operation.
+      r"""Gets details about the long-running operation to generate audit reports.
 
       Args:
         request: (AuditmanagerProjectsLocationsOperationDetailsGetRequest) input message
@@ -1016,7 +1081,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Get details about generate audit report operation.
+      r"""Gets details about the long-running operation to generate audit reports.
 
       Args:
         request: (AuditmanagerProjectsLocationsOperationIdsGetRequest) input message
@@ -1171,7 +1236,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Get a resource along with its enrollment status.
+      r"""Gets a resource and its enrollment status.
 
       Args:
         request: (AuditmanagerProjectsLocationsResourceEnrollmentStatusesGetRequest) input message
@@ -1208,7 +1273,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Gets controls needed to be implemented to be compliant to a standard.
+      r"""Lists the controls that you must implement to become compliant to a regulatory standard.
 
       Args:
         request: (AuditmanagerProjectsLocationsStandardsControlsListRequest) input message
@@ -1255,7 +1320,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
           }
 
     def EnrollResource(self, request, global_params=None):
-      r"""Enrolls the customer resource(folder/project/organization) to the audit manager service by creating the audit managers Service Agent in customers workload and granting required permissions to the Service Agent. Please note that if enrollment request is made on the already enrolled workload then enrollment is executed overriding the existing set of destinations.
+      r"""Adds your project, folder, or organization to Audit Manager. This method creates the Audit Manager service agent in your workload and grants required permissions to the service agent. If you make this request on a workload that's already enrolled, then this method overrides the existing set of destinations.
 
       Args:
         request: (AuditmanagerProjectsLocationsEnrollResourceRequest) input message

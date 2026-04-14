@@ -243,6 +243,15 @@ def ParseCreateNodePoolOptionsBase(args):
       subnetwork=args.subnetwork,
       node_architecture_taint_behavior=args.node_architecture_taint_behavior,
       capacity_wait_duration=args.capacity_wait_duration,
+      enable_system_telemetry_collection=getattr(
+          args, 'enable_system_telemetry_collection', None
+      ),
+      enable_otlp_ingestion_endpoint=getattr(
+          args, 'enable_otlp_ingestion_endpoint', None
+      ),
+      enable_workload_log_collection=getattr(
+          args, 'enable_workload_log_collection', None
+      ),
   )
 
 
@@ -692,6 +701,9 @@ class CreateAlpha(Create):
         help='Settings for attestation.')
     flags.AddEnableAttestationFlag(attestation_group, hidden=True)
     flags.AddTeePolicyFlag(attestation_group, hidden=True)
+    flags.AddEnableSystemTelemetryCollectionFlag(runner_pool_group, hidden=True)
+    flags.AddEnableOtlpIngestionEndpointFlag(runner_pool_group, hidden=True)
+    flags.AddEnableWorkloadLogCollectionFlag(runner_pool_group, hidden=True)
     flags.AddNodeDrainSettingsFlag(parser)
 
 Create.detailed_help = DETAILED_HELP

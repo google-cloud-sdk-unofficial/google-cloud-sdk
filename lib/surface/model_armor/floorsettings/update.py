@@ -45,7 +45,7 @@ def _GetServicesConfig(messages):
   """Returns a list of service configurations."""
   return [
       ServiceConfig(
-          name='VERTEX_AI',
+          name='AI_PLATFORM',
           enum=(
               messages.FloorSetting.IntegratedServicesValueListEntryValuesEnum.AI_PLATFORM
           ),
@@ -78,7 +78,9 @@ def _GetServicesConfig(messages):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Update(base.Command):
   """Update a Model Armor floor setting.
 
@@ -108,9 +110,16 @@ class Update(base.Command):
     model_armor_args.AddVertexAiFloorSetting(parser)
     model_armor_args.AddGoogleMcpServerFloorSetting(parser)
     model_armor_args.AddMultiLanguageDetection(parser)
+    model_armor_args.AddGoogleMcpServerApiFlags(parser)
 
   def _GetEnumValue(self, value):
     return value.upper().replace('-', '_')
+
+  def _GetCanonicalServiceName(self, service_name: str) -> str:
+    """Returns the canonical service name, handling aliases like VERTEX_AI."""
+    if service_name.upper() == 'VERTEX_AI':
+      return 'AI_PLATFORM'
+    return self._GetEnumValue(service_name)
 
   def _updateMaskForEnforcementType(
       self, *, service_floor_setting_arg, arg_enforcement_type, update_mask
@@ -180,13 +189,12 @@ class Update(base.Command):
 
   def _validateIntegratedServices(self, messages, services):
     for service in services:
-      if service == 'VERTEX_AI':
-        service = 'AI_PLATFORM'
+      canonical_service = self._GetCanonicalServiceName(service)
       model_armor_util.ValidateEnum(
-          service,
+          canonical_service,
           messages.FloorSetting.IntegratedServicesValueListEntryValuesEnum,
           'integrated-services',
-          f'{service}',
+          canonical_service,
       )
 
   def _validateRemoveIntegratedServices(self, messages, args):
@@ -198,17 +206,18 @@ class Update(base.Command):
         for service_config in services_config
     }
     for service_name in args.remove_integrated_services:
-      if service_name in services_config_by_name:
-        service_config = services_config_by_name[service_name]
-        if service_name == service_config.name:
+      canonical_service_name = self._GetCanonicalServiceName(service_name)
+      if canonical_service_name in services_config_by_name:
+        service_config = services_config_by_name[canonical_service_name]
+        if canonical_service_name == service_config.name:
           if args.IsSpecified(service_config.enforcement_type_arg):
             raise exceptions.ConflictingArgumentsException(
-                f'--remove-integrated-services={service_config.name}',
+                f'--remove-integrated-services={service_name}',
                 f'--{service_config.cli_name}-enforcement-type',
             )
           if args.IsSpecified(service_config.cloud_logging_arg):
             raise exceptions.ConflictingArgumentsException(
-                f'--remove-integrated-services={service_config.name}',
+                f'--remove-integrated-services={service_name}',
                 f'--enable-{service_config.cli_name}-cloud-logging',
             )
 
@@ -315,6 +324,7 @@ class Update(base.Command):
     messages = api_client.GetMessages()
     self._validateArgs(messages, args)
     floor_setting_updated = original
+    defaulted_enforcement = []
 
     if floor_setting_updated.filterConfig is None:
       floor_setting_updated.filterConfig = messages.FilterConfig()
@@ -364,10 +374,7 @@ class Update(base.Command):
       update_mask.append('ai_platform_floor_setting.enable_cloud_logging')
     if args.IsSpecified('enable_google_mcp_server_cloud_logging'):
       update_mask.append('google_mcp_server_floor_setting.enable_cloud_logging')
-    if self.ReleaseTrack() in [
-        base.ReleaseTrack.ALPHA,
-        base.ReleaseTrack.BETA,
-    ] and (
+    if (
         args.IsSpecified('google_mcp_server_apis')
         or args.IsSpecified('add_google_mcp_server_apis')
         or args.IsSpecified('remove_google_mcp_server_apis')
@@ -398,17 +405,11 @@ class Update(base.Command):
           '--enable-google-mcp-server-cloud-logging',
           '--google-mcp-server-enforcement-type',
           '--enable-multi-language-detection',
+          '--google-mcp-server-apis',
+          '--add-google-mcp-server-apis',
+          '--remove-google-mcp-server-apis',
+          '--clear-google-mcp-server-apis',
       ]
-      if self.ReleaseTrack() in [
-          base.ReleaseTrack.ALPHA,
-          base.ReleaseTrack.BETA,
-      ]:
-        possible_args.extend([
-            '--google-mcp-server-apis',
-            '--add-google-mcp-server-apis',
-            '--remove-google-mcp-server-apis',
-            '--clear-google-mcp-server-apis',
-        ])
 
       raise exceptions.MinimumArgumentException(
           possible_args,
@@ -427,15 +428,15 @@ class Update(base.Command):
     if 'filter_config.sdp_settings' in update_mask:
       self._UpdateSdpSettings(messages, args, floor_setting_updated)
 
-    defaulted_enforcement = {}
     if (
         args.IsSpecified('add_integrated_services')
         or args.IsSpecified('remove_integrated_services')
         or args.IsSpecified('clear_integrated_services')
     ):
-      defaulted_enforcement = self._UpdateIntegratedServices(
+      default_enforcement = self._UpdateIntegratedServices(
           messages, args, floor_setting_updated, update_mask
       )
+      defaulted_enforcement.extend(default_enforcement.keys())
 
     # Handle Service Specific FloorSettings
     # (e.g., Cloud Logging, Enforcement Type).
@@ -621,10 +622,7 @@ class Update(base.Command):
           service_config.enforcement_type_arg
       )
       is_google_mcp_server_apis_specified = False
-      if service_config.name == 'GOOGLE_MCP_SERVER' and self.ReleaseTrack() in [
-          base.ReleaseTrack.ALPHA,
-          base.ReleaseTrack.BETA,
-      ]:
+      if service_config.name == 'GOOGLE_MCP_SERVER':
         is_google_mcp_server_apis_specified = (
             args.IsSpecified('google_mcp_server_apis')
             or args.IsSpecified('add_google_mcp_server_apis')
@@ -684,7 +682,7 @@ class Update(base.Command):
       }
       if args.IsSpecified('add_integrated_services'):
         for service in args.add_integrated_services:
-          arg_service = self._GetEnumValue(service)
+          arg_service = self._GetCanonicalServiceName(service)
           if arg_service in services_config_by_name:
             found_config = services_config_by_name[arg_service]
             if found_config.enum in integrated_services:
@@ -722,7 +720,7 @@ class Update(base.Command):
 
       if args.IsSpecified('remove_integrated_services'):
         for service in args.remove_integrated_services:
-          arg_service = self._GetEnumValue(service)
+          arg_service = self._GetCanonicalServiceName(service)
           if arg_service in services_config_by_name:
             found_config = services_config_by_name[arg_service]
             if found_config.enum in integrated_services:
@@ -828,16 +826,15 @@ class Update(base.Command):
     original = model_armor_api.FloorSettings(api_version=api_version).Get(
         full_uri
     )
-    (res, defaulted_enforcement) = self._RunUpdate(original, args)
-    defaulted_enforcement_services_flags = []
+    res, defaulted_enforcement = self._RunUpdate(original, args)
+    defaulted_enforcement_services_flags = set()
     if defaulted_enforcement:
-      for service in defaulted_enforcement.items():
-        defaulted_enforcement_services_flags.append(
-            f'{service[0]}=INSPECT_AND_BLOCK'
-        )
+      for service in defaulted_enforcement:
+        defaulted_enforcement_services_flags.add(f'{service}=INSPECT_AND_BLOCK')
 
+      sorted_flags = sorted(defaulted_enforcement_services_flags)
       defaulted_services_str = ' and '.join(
-          [f'"{service}"' for service in defaulted_enforcement_services_flags]
+          f'"{service}"' for service in sorted_flags
       )
       message = (
           'Enforcement type defaulted to INSPECT_ONLY. This means that traffic'
@@ -846,14 +843,3 @@ class Update(base.Command):
       )
       log.status.Print(message)
     return res
-
-
-@base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class UpdateAlphaBeta(Update):
-  """Update a Model Armor floor setting."""
-
-  @staticmethod
-  def Args(parser):
-    Update.Args(parser)
-    model_armor_args.AddGoogleMcpServerApiFlags(parser)

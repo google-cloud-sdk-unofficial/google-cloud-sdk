@@ -28,6 +28,7 @@ class AccountConnector(_messages.Message):
       data.
     createTime: Output only. The timestamp when the accountConnector was
       created.
+    customOauthConfig: Custom OAuth config.
     etag: Optional. This checksum is computed by the server based on the value
       of other fields, and may be sent on update and delete requests to ensure
       the client has an up-to-date value before proceeding.
@@ -37,6 +38,7 @@ class AccountConnector(_messages.Message):
       ector_id}`.
     oauthStartUri: Output only. Start OAuth flow by clicking on this URL.
     providerOauthConfig: Optional. Provider OAuth config.
+    proxyConfig: Optional. Configuration for the http and git proxy features.
     updateTime: Output only. The timestamp when the accountConnector was
       updated.
   """
@@ -92,12 +94,14 @@ class AccountConnector(_messages.Message):
 
   annotations = _messages.MessageField('AnnotationsValue', 1)
   createTime = _messages.StringField(2)
-  etag = _messages.StringField(3)
-  labels = _messages.MessageField('LabelsValue', 4)
-  name = _messages.StringField(5)
-  oauthStartUri = _messages.StringField(6)
-  providerOauthConfig = _messages.MessageField('ProviderOAuthConfig', 7)
-  updateTime = _messages.StringField(8)
+  customOauthConfig = _messages.MessageField('CustomOAuthConfig', 3)
+  etag = _messages.StringField(4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  name = _messages.StringField(6)
+  oauthStartUri = _messages.StringField(7)
+  providerOauthConfig = _messages.MessageField('ProviderOAuthConfig', 8)
+  proxyConfig = _messages.MessageField('ProxyConfig', 9)
+  updateTime = _messages.StringField(10)
 
 
 class AppHubService(_messages.Message):
@@ -404,6 +408,63 @@ class CryptoKeyConfig(_messages.Message):
   keyReference = _messages.StringField(1)
 
 
+class CustomOAuthConfig(_messages.Message):
+  r"""Message for a customized OAuth config.
+
+  Enums:
+    ScmProviderValueValuesEnum: Required. The type of the SCM provider.
+
+  Fields:
+    authUri: Required. Immutable. The OAuth2 authorization server URL.
+    clientId: Required. The client ID of the OAuth application.
+    clientSecret: Required. Input only. The client secret of the OAuth
+      application. It will be provided as plain text, but encrypted and stored
+      in developer connect. As INPUT_ONLY field, it will not be included in
+      the output.
+    hostUri: Required. The host URI of the OAuth application.
+    pkceDisabled: Optional. Disable PKCE for this OAuth config. PKCE is
+      enabled by default.
+    scmProvider: Required. The type of the SCM provider.
+    scopes: Required. The scopes to be requested during OAuth.
+    serverVersion: Output only. SCM server version installed at the host URI.
+    serviceDirectoryConfig: Optional. Configuration for using Service
+      Directory to connect to a private service.
+    sslCaCertificate: Optional. SSL certificate to use for requests to a
+      private service.
+    tokenUri: Required. Immutable. The OAuth2 token request URL.
+  """
+
+  class ScmProviderValueValuesEnum(_messages.Enum):
+    r"""Required. The type of the SCM provider.
+
+    Values:
+      SCM_PROVIDER_UNKNOWN: The SCM is not specified or BYO Account Connector
+        is not an SCM.
+      GITHUB_ENTERPRISE: BYO Account Connector is an instance of GitHub
+        Enterprise.
+      GITLAB_ENTERPRISE: BYO Account Connector is an instance of GitLab
+        Enterprise.
+      BITBUCKET_DATA_CENTER: BYO Account Connector is an instance of Bitbucket
+        Data Center.
+    """
+    SCM_PROVIDER_UNKNOWN = 0
+    GITHUB_ENTERPRISE = 1
+    GITLAB_ENTERPRISE = 2
+    BITBUCKET_DATA_CENTER = 3
+
+  authUri = _messages.StringField(1)
+  clientId = _messages.StringField(2)
+  clientSecret = _messages.StringField(3)
+  hostUri = _messages.StringField(4)
+  pkceDisabled = _messages.BooleanField(5)
+  scmProvider = _messages.EnumField('ScmProviderValueValuesEnum', 6)
+  scopes = _messages.StringField(7, repeated=True)
+  serverVersion = _messages.StringField(8)
+  serviceDirectoryConfig = _messages.MessageField('ServiceDirectoryConfig', 9)
+  sslCaCertificate = _messages.StringField(10)
+  tokenUri = _messages.StringField(11)
+
+
 class DeploymentEvent(_messages.Message):
   r"""The DeploymentEvent resource represents the deployment of the artifact
   within the InsightsConfig resource.
@@ -528,6 +589,27 @@ class DeveloperconnectProjectsLocationsAccountConnectorsDeleteRequest(_messages.
   name = _messages.StringField(3, required=True)
   requestId = _messages.StringField(4)
   validateOnly = _messages.BooleanField(5)
+
+
+class DeveloperconnectProjectsLocationsAccountConnectorsFetchUserRepositoriesRequest(_messages.Message):
+  r"""A DeveloperconnectProjectsLocationsAccountConnectorsFetchUserRepositorie
+  sRequest object.
+
+  Fields:
+    accountConnector: Required. The name of the Account Connector resource in
+      the format: `projects/*/locations/*/accountConnectors/*`.
+    pageSize: Optional. Number of results to return in the list. Defaults to
+      20.
+    pageToken: Optional. Page start.
+    repository: Optional. The name of the repository. When specified, only the
+      UserRepository with this name will be returned if the repository is
+      accessible under this Account Connector for the calling user.
+  """
+
+  accountConnector = _messages.StringField(1, required=True)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  repository = _messages.StringField(4)
 
 
 class DeveloperconnectProjectsLocationsAccountConnectorsGetRequest(_messages.Message):
@@ -1409,6 +1491,20 @@ class FetchReadWriteTokenResponse(_messages.Message):
   expirationTime = _messages.StringField(1)
   gitUsername = _messages.StringField(2)
   token = _messages.StringField(3)
+
+
+class FetchUserRepositoriesResponse(_messages.Message):
+  r"""Response message for FetchUserRepositories.
+
+  Fields:
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    userRepos: The repositories that the user can access with this account
+      connector.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  userRepos = _messages.MessageField('UserRepository', 2, repeated=True)
 
 
 class FinishOAuthResponse(_messages.Message):
@@ -2368,6 +2464,18 @@ class ProviderOAuthConfig(_messages.Message):
   systemProviderId = _messages.EnumField('SystemProviderIdValueValuesEnum', 2)
 
 
+class ProxyConfig(_messages.Message):
+  r"""The proxy configuration.
+
+  Fields:
+    enabled: Optional. Setting this to true allows the git and http proxies to
+      perform actions on behalf of the user configured under the account
+      connector.
+  """
+
+  enabled = _messages.BooleanField(1)
+
+
 class RuntimeConfig(_messages.Message):
   r"""RuntimeConfig represents the runtimes where the application is deployed.
 
@@ -2637,6 +2745,27 @@ class UserCredential(_messages.Message):
 
   userTokenSecretVersion = _messages.StringField(1)
   username = _messages.StringField(2)
+
+
+class UserRepository(_messages.Message):
+  r"""A user repository that can be linked to the account connector. Consists
+  of the repo name and the git proxy URL to forward requests to this repo.
+
+  Fields:
+    cloneUri: Output only. The git clone URL of the repo. For example:
+      https://github.com/myuser/myrepo.git
+    displayName: Output only. The user friendly repo name (e.g.,
+      myuser/myrepo)
+    gitProxyUri: Output only. The Git proxy URL for this repo. For example:
+      https://us-west1-git.developerconnect.dev/a/my-proj/my-
+      ac/myuser/myrepo.git. Populated only when `proxy_config.enabled` is set
+      to `true` in the Account Connector. This URL is used by other Google
+      services that integrate with Developer Connect.
+  """
+
+  cloneUri = _messages.StringField(1)
+  displayName = _messages.StringField(2)
+  gitProxyUri = _messages.StringField(3)
 
 
 encoding.AddCustomJsonFieldMapping(

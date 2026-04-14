@@ -2128,12 +2128,9 @@ class ExportAppImageRequest(_messages.Message):
       projects/{project}/locations/{location}/repositories/gae-standard in the
       same region as the app. The default repository will be created if it
       does not exist.
-    serviceAccount: Optional. Optional: A service account to use for
-      authenticating to Artifact Registry.
   """
 
   destinationRepository = _messages.StringField(1)
-  serviceAccount = _messages.StringField(2)
 
 
 class FeatureSettings(_messages.Message):

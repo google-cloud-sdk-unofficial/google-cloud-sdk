@@ -7077,10 +7077,12 @@ class ServiceMeshFeatureSpec(_messages.Message):
       MODERNIZATION_UNSPECIFIED: Unspecified.
       AUTOMATICALLY_MODERNIZED: Google should start modernization.
       BEFORE_MODERNIZATION: Google should rollback fleet.
+      COMPATIBILITY_VALIDATION_ENABLED: Validates compatibility for the fleet.
     """
     MODERNIZATION_UNSPECIFIED = 0
     AUTOMATICALLY_MODERNIZED = 1
     BEFORE_MODERNIZATION = 2
+    COMPATIBILITY_VALIDATION_ENABLED = 3
 
   modernization = _messages.EnumField('ModernizationValueValuesEnum', 1)
 

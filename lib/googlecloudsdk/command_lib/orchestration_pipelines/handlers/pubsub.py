@@ -33,6 +33,8 @@ class PubsubBaseHandler(base.GcpResourceHandler):
 class PubsubTopicHandler(PubsubBaseHandler):
   """Handler for Pubsub Topic resources."""
 
+  description = "Pubsub Topic resources."
+
   def build_get_request(self) -> messages.Message:
     return self.messages.PubsubProjectsTopicsGetRequest(
         topic=self._get_resource_name()
@@ -65,6 +67,8 @@ class PubsubTopicHandler(PubsubBaseHandler):
 
 class PubsubSubscriptionHandler(PubsubBaseHandler):
   """Handler for Pubsub Subscription resources."""
+
+  description = "Pubsub Subscription resources."
 
   def build_get_request(self) -> messages.Message:
     return self.messages.PubsubProjectsSubscriptionsGetRequest(
@@ -99,6 +103,12 @@ class PubsubSubscriptionHandler(PubsubBaseHandler):
 class PubsubSchemaHandler(PubsubBaseHandler):
   """Handler for Pubsub Schema resources."""
 
+  description = (
+      "Pubsub Schema resources.\n"
+      "Special handling:\n"
+      " - updates: in-place updates are not fully supported yet"
+  )
+
   def build_get_request(self) -> messages.Message:
     return self.messages.PubsubProjectsSchemasGetRequest(
         name=self._get_resource_name()
@@ -122,4 +132,11 @@ class PubsubSchemaHandler(PubsubBaseHandler):
     # Schemas rarely updatable in-place, but some APIs support patch.
     raise NotImplementedError(
         "PubSub Schema update is not fully supported yet."
+    )
+
+  def build_delete_request(
+      self, existing_resource: messages.Message
+  ) -> messages.Message:
+    return self.messages.PubsubProjectsSchemasDeleteRequest(
+        name=self._get_resource_name()
     )

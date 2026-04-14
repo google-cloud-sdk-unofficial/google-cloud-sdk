@@ -1,0 +1,40 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    Create a regional multicast consumer association.
+  description: |
+    Create a regional multicast consumer association in the specified location of the current project.
+  examples: |
+    Create a regional multicast consumer association with the name 'my-rmca',
+    multicast-domain-activation 'path-to-rmda',
+    network 'path-to-network',
+    and location 'region'.
+
+      $ {command} my-rmca --regional-multicast-domain-activation=path-to-rmda --network=path-to-network --location=region
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:regionalMulticastConsumerAssociation
+    help_text: |
+      Name of the regional multicast consumer association to be created.
+  params:
+  - arg_name: regional-multicast-domain-activation
+    api_field: regionalMulticastConsumerAssociation.regionalMulticastDomainActivation
+    help_text: The regional multicast domain activation to be used.
+    required: true
+  - arg_name: network
+    api_field: regionalMulticastConsumerAssociation.network
+    help_text: The network to be used.
+    required: true
+  - arg_name: description
+    api_field: regionalMulticastConsumerAssociation.description
+    help_text: The description for the regional multicast consumer association.
+  labels:
+    api_field: regionalMulticastConsumerAssociation.labels
+async:
+  collection: networkservices.projects.locations.operations
+request:
+  ALPHA:
+    api_version: v1alpha1
+  collection: networkservices.projects.locations.regionalMulticastConsumerAssociations
+  method: create

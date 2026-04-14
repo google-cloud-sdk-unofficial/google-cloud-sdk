@@ -32,7 +32,6 @@ import six
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class SetAttestationRules(base.Command):
   """Set attestation rules on a workload identity pool."""
 

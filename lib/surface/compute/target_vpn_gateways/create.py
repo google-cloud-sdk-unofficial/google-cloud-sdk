@@ -39,7 +39,7 @@ class Create(base.CreateCommand):
 
   NETWORK_ARG = None
   TARGET_VPN_GATEWAY_ARG = None
-  _support_tagging_at_creation = False
+  _support_tagging_at_creation = True
 
   @classmethod
   def Args(cls, parser):
@@ -155,8 +155,6 @@ class CreateBeta(Create):
   gateway is responsible for routing.
   """
 
-  _support_tagging_at_creation = True
-
   @classmethod
   def Args(cls, parser):
     """Set up arguments for this command."""
@@ -177,8 +175,6 @@ class CreateAlpha(Create):
   one or more forwarding rules that define which packets the
   gateway is responsible for routing.
   """
-
-  _support_tagging_at_creation = True
 
   @classmethod
   def Args(cls, parser):

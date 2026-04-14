@@ -1963,11 +1963,15 @@ class MountDatastoreRequest(_messages.Message):
     requestId: Optional. The request ID must be a valid UUID with the
       exception that zero UUID is not supported
       (00000000-0000-0000-0000-000000000000).
+    validateOnly: Optional. If set to `true`, only validates the request but
+      doesn't execute the request. If set to `false`, validates and executes
+      the request.
   """
 
   datastoreMountConfig = _messages.MessageField('DatastoreMountConfig', 1)
   ignoreColocation = _messages.BooleanField(2)
   requestId = _messages.StringField(3)
+  validateOnly = _messages.BooleanField(4)
 
 
 class NetworkConfig(_messages.Message):
@@ -3542,10 +3546,14 @@ class UnmountDatastoreRequest(_messages.Message):
     requestId: Optional. The request ID must be a valid UUID with the
       exception that zero UUID is not supported
       (00000000-0000-0000-0000-000000000000).
+    validateOnly: Optional. If set to `true`, only validates the request but
+      doesn't execute the request. If set to `false`, validates and executes
+      the request.
   """
 
   datastore = _messages.StringField(1)
   requestId = _messages.StringField(2)
+  validateOnly = _messages.BooleanField(3)
 
 
 class Upgrade(_messages.Message):
@@ -4321,12 +4329,16 @@ class VmwareengineProjectsLocationsNetworkPeeringsCreateRequest(_messages.Messag
       creating duplicate commitments. The request ID must be a valid UUID with
       the exception that zero UUID is not supported
       (00000000-0000-0000-0000-000000000000).
+    validateOnly: Optional. If set to `true`, only validates the request but
+      doesn't execute the request. If set to `false`, validates and executes
+      the request.
   """
 
   networkPeering = _messages.MessageField('NetworkPeering', 1)
   networkPeeringId = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
   requestId = _messages.StringField(4)
+  validateOnly = _messages.BooleanField(5)
 
 
 class VmwareengineProjectsLocationsNetworkPeeringsDeleteRequest(_messages.Message):
@@ -4438,12 +4450,16 @@ class VmwareengineProjectsLocationsNetworkPeeringsPatchRequest(_messages.Message
       specified in the `update_mask` are relative to the resource, not the
       full request. A field will be overwritten if it is in the mask. If the
       user does not provide a mask then all fields will be overwritten.
+    validateOnly: Optional. If set to `true`, only validates the request but
+      doesn't execute the request. If set to `false`, validates and executes
+      the request.
   """
 
   name = _messages.StringField(1, required=True)
   networkPeering = _messages.MessageField('NetworkPeering', 2)
   requestId = _messages.StringField(3)
   updateMask = _messages.StringField(4)
+  validateOnly = _messages.BooleanField(5)
 
 
 class VmwareengineProjectsLocationsNetworkPeeringsPeeringRoutesListRequest(_messages.Message):
@@ -4506,12 +4522,16 @@ class VmwareengineProjectsLocationsNetworkPoliciesCreateRequest(_messages.Messag
       creating duplicate commitments. The request ID must be a valid UUID with
       the exception that zero UUID is not supported
       (00000000-0000-0000-0000-000000000000).
+    validateOnly: Optional. If set to `true`, only validates the request but
+      doesn't execute the request. If set to `false`, validates and executes
+      the request.
   """
 
   networkPolicy = _messages.MessageField('NetworkPolicy', 1)
   networkPolicyId = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
   requestId = _messages.StringField(4)
+  validateOnly = _messages.BooleanField(5)
 
 
 class VmwareengineProjectsLocationsNetworkPoliciesDeleteRequest(_messages.Message):
@@ -4573,12 +4593,16 @@ class VmwareengineProjectsLocationsNetworkPoliciesExternalAccessRulesCreateReque
       request. This prevents clients from accidentally creating duplicate
       commitments. The request ID must be a valid UUID with the exception that
       zero UUID is not supported (00000000-0000-0000-0000-000000000000).
+    validateOnly: Optional. If set to `true`, only validates the request but
+      doesn't execute the request. If set to `false`, validates and executes
+      the request.
   """
 
   externalAccessRule = _messages.MessageField('ExternalAccessRule', 1)
   externalAccessRuleId = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
   requestId = _messages.StringField(4)
+  validateOnly = _messages.BooleanField(5)
 
 
 class VmwareengineProjectsLocationsNetworkPoliciesExternalAccessRulesDeleteRequest(_messages.Message):
@@ -4701,12 +4725,16 @@ class VmwareengineProjectsLocationsNetworkPoliciesExternalAccessRulesPatchReques
       fields specified in the `update_mask` are relative to the resource, not
       the full request. A field will be overwritten if it is in the mask. If
       the user does not provide a mask then all fields will be overwritten.
+    validateOnly: Optional. If set to `true`, only validates the request but
+      doesn't execute the// request. If set to `false`, validates and executes
+      the request.
   """
 
   externalAccessRule = _messages.MessageField('ExternalAccessRule', 1)
   name = _messages.StringField(2, required=True)
   requestId = _messages.StringField(3)
   updateMask = _messages.StringField(4)
+  validateOnly = _messages.BooleanField(5)
 
 
 class VmwareengineProjectsLocationsNetworkPoliciesFetchExternalAddressesRequest(_messages.Message):
@@ -4817,12 +4845,16 @@ class VmwareengineProjectsLocationsNetworkPoliciesPatchRequest(_messages.Message
       specified in the `update_mask` are relative to the resource, not the
       full request. A field will be overwritten if it is in the mask. If the
       user does not provide a mask then all fields will be overwritten.
+    validateOnly: Optional. If set to `true`, only validates the request but
+      doesn't execute the request. If set to `false`, validates and executes
+      the request.
   """
 
   name = _messages.StringField(1, required=True)
   networkPolicy = _messages.MessageField('NetworkPolicy', 2)
   requestId = _messages.StringField(3)
   updateMask = _messages.StringField(4)
+  validateOnly = _messages.BooleanField(5)
 
 
 class VmwareengineProjectsLocationsNodeTypesGetRequest(_messages.Message):
@@ -4938,8 +4970,9 @@ class VmwareengineProjectsLocationsPrivateCloudsClustersCreateRequest(_messages.
     requestId: Optional. The request ID must be a valid UUID with the
       exception that zero UUID is not supported
       (00000000-0000-0000-0000-000000000000).
-    validateOnly: Optional. True if you want the request to be validated and
-      not executed; false otherwise.
+    validateOnly: Optional. If set to `true`, only validates the request but
+      doesn't execute the request. If set to `false`, validates and executes
+      the request.
   """
 
   cluster = _messages.MessageField('Cluster', 1)
@@ -5118,8 +5151,9 @@ class VmwareengineProjectsLocationsPrivateCloudsClustersPatchRequest(_messages.M
       specified in the `updateMask` are relative to the resource, not the full
       request. A field will be overwritten if it is in the mask. If the user
       does not provide a mask then all fields will be overwritten.
-    validateOnly: Optional. True if you want the request to be validated and
-      not executed; false otherwise.
+    validateOnly: Optional. If set to `true`, only validates the request but
+      doesn't execute the request. If set to `false`, validates and executes
+      the request.
   """
 
   cluster = _messages.MessageField('Cluster', 1)
@@ -5203,8 +5237,9 @@ class VmwareengineProjectsLocationsPrivateCloudsCreateRequest(_messages.Message)
     requestId: Optional. The request ID must be a valid UUID with the
       exception that zero UUID is not supported
       (00000000-0000-0000-0000-000000000000).
-    validateOnly: Optional. True if you want the request to be validated and
-      not executed; false otherwise.
+    validateOnly: Optional. If set to `true`, only validates the request but
+      doesn't execute the request. If set to `false`, validates and executes
+      the request.
   """
 
   parent = _messages.StringField(1, required=True)
@@ -5279,12 +5314,16 @@ class VmwareengineProjectsLocationsPrivateCloudsExternalAddressesCreateRequest(_
       creating duplicate commitments. The request ID must be a valid UUID with
       the exception that zero UUID is not supported
       (00000000-0000-0000-0000-000000000000).
+    validateOnly: Optional. If set to `true`, only validates the request but
+      doesn't execute the request. If set to `false`, validates and executes
+      the request.
   """
 
   externalAddress = _messages.MessageField('ExternalAddress', 1)
   externalAddressId = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
   requestId = _messages.StringField(4)
+  validateOnly = _messages.BooleanField(5)
 
 
 class VmwareengineProjectsLocationsPrivateCloudsExternalAddressesDeleteRequest(_messages.Message):
@@ -5404,12 +5443,16 @@ class VmwareengineProjectsLocationsPrivateCloudsExternalAddressesPatchRequest(_m
       specified in the `update_mask` are relative to the resource, not the
       full request. A field will be overwritten if it is in the mask. If the
       user does not provide a mask then all fields will be overwritten.
+    validateOnly: Optional. If set to `true`, only validates the request but
+      doesn't execute the request. If set to `false`, validates and executes
+      the request.
   """
 
   externalAddress = _messages.MessageField('ExternalAddress', 1)
   name = _messages.StringField(2, required=True)
   requestId = _messages.StringField(3)
   updateMask = _messages.StringField(4)
+  validateOnly = _messages.BooleanField(5)
 
 
 class VmwareengineProjectsLocationsPrivateCloudsGetDnsForwardingRequest(_messages.Message):
@@ -5638,8 +5681,9 @@ class VmwareengineProjectsLocationsPrivateCloudsIdentitySourcesCreateRequest(_me
       request. This prevents clients from accidentally creating duplicate
       commitments. The request ID must be a valid UUID with the exception that
       zero UUID is not supported (00000000-0000-0000-0000-000000000000).
-    validateOnly: Optional. True if you want the request to be validated and
-      not executed; false otherwise.
+    validateOnly: Optional. If set to `true`, only validates the request but
+      doesn't execute the request. If set to `false`, validates and executes
+      the request.
   """
 
   identitySource = _messages.MessageField('IdentitySource', 1)
@@ -5778,8 +5822,9 @@ class VmwareengineProjectsLocationsPrivateCloudsIdentitySourcesPatchRequest(_mes
       fields specified in the `updateMask` are relative to the resource, not
       the full request. A field will be overwritten if it is in the mask. If
       the user does not provide a mask then all fields will be overwritten.
-    validateOnly: Optional. True if you want the request to be validated and
-      not executed; false otherwise.
+    validateOnly: Optional. If set to `true`, only validates the request but
+      doesn't execute the request. If set to `false`, validates and executes
+      the request.
   """
 
   identitySource = _messages.MessageField('IdentitySource', 1)
@@ -6221,12 +6266,16 @@ class VmwareengineProjectsLocationsPrivateCloudsPatchRequest(_messages.Message):
       specified in `updateMask` are relative to the resource, not the full
       request. A field will be overwritten if it is in the mask. If the user
       does not provide a mask then all fields will be overwritten.
+    validateOnly: Optional. If set to `true`, only validates the request but
+      doesn't execute the request. If set to `false`, validates and executes
+      the request.
   """
 
   name = _messages.StringField(1, required=True)
   privateCloud = _messages.MessageField('PrivateCloud', 2)
   requestId = _messages.StringField(3)
   updateMask = _messages.StringField(4)
+  validateOnly = _messages.BooleanField(5)
 
 
 class VmwareengineProjectsLocationsPrivateCloudsPrivateCloudDeletionNowRequest(_messages.Message):
@@ -6682,12 +6731,16 @@ class VmwareengineProjectsLocationsPrivateConnectionsCreateRequest(_messages.Mes
       creating duplicate commitments. The request ID must be a valid UUID with
       the exception that zero UUID is not supported
       (00000000-0000-0000-0000-000000000000).
+    validateOnly: Optional. If set to `true`, only validates the request but
+      doesn't execute the request. If set to `false`, validates and executes
+      the request.
   """
 
   parent = _messages.StringField(1, required=True)
   privateConnection = _messages.MessageField('PrivateConnection', 2)
   privateConnectionId = _messages.StringField(3)
   requestId = _messages.StringField(4)
+  validateOnly = _messages.BooleanField(5)
 
 
 class VmwareengineProjectsLocationsPrivateConnectionsDeleteRequest(_messages.Message):
@@ -6801,12 +6854,16 @@ class VmwareengineProjectsLocationsPrivateConnectionsPatchRequest(_messages.Mess
       fields specified in the `update_mask` are relative to the resource, not
       the full request. A field will be overwritten if it is in the mask. If
       the user does not provide a mask then all fields will be overwritten.
+    validateOnly: Optional. If set to `true`, only validates the request but
+      doesn't execute the request. If set to `false`, validates and executes
+      the request.
   """
 
   name = _messages.StringField(1, required=True)
   privateConnection = _messages.MessageField('PrivateConnection', 2)
   requestId = _messages.StringField(3)
   updateMask = _messages.StringField(4)
+  validateOnly = _messages.BooleanField(5)
 
 
 class VmwareengineProjectsLocationsPrivateConnectionsPeeringRoutesListRequest(_messages.Message):
@@ -6857,6 +6914,9 @@ class VmwareengineProjectsLocationsVmwareEngineNetworksCreateRequest(_messages.M
       creating duplicate commitments. The request ID must be a valid UUID with
       the exception that zero UUID is not supported
       (00000000-0000-0000-0000-000000000000).
+    validateOnly: Optional. If set to `true`, only validates the request but
+      doesn't execute the request. If set to `false`, validates and executes
+      the request.
     vmwareEngineNetwork: A VmwareEngineNetwork resource to be passed as the
       request body.
     vmwareEngineNetworkId: Required. The user-provided identifier of the new
@@ -6874,8 +6934,9 @@ class VmwareengineProjectsLocationsVmwareEngineNetworksCreateRequest(_messages.M
 
   parent = _messages.StringField(1, required=True)
   requestId = _messages.StringField(2)
-  vmwareEngineNetwork = _messages.MessageField('VmwareEngineNetwork', 3)
-  vmwareEngineNetworkId = _messages.StringField(4)
+  validateOnly = _messages.BooleanField(3)
+  vmwareEngineNetwork = _messages.MessageField('VmwareEngineNetwork', 4)
+  vmwareEngineNetworkId = _messages.StringField(5)
 
 
 class VmwareengineProjectsLocationsVmwareEngineNetworksDeleteRequest(_messages.Message):
@@ -6991,6 +7052,9 @@ class VmwareengineProjectsLocationsVmwareEngineNetworksPatchRequest(_messages.Me
       the full request. A field will be overwritten if it is in the mask. If
       the user does not provide a mask then all fields will be overwritten.
       Only the following fields can be updated: `description`.
+    validateOnly: Optional. If set to `true`, only validates the request but
+      doesn't execute the request. If set to `false`, validates and executes
+      the request.
     vmwareEngineNetwork: A VmwareEngineNetwork resource to be passed as the
       request body.
   """
@@ -6998,7 +7062,8 @@ class VmwareengineProjectsLocationsVmwareEngineNetworksPatchRequest(_messages.Me
   name = _messages.StringField(1, required=True)
   requestId = _messages.StringField(2)
   updateMask = _messages.StringField(3)
-  vmwareEngineNetwork = _messages.MessageField('VmwareEngineNetwork', 4)
+  validateOnly = _messages.BooleanField(4)
+  vmwareEngineNetwork = _messages.MessageField('VmwareEngineNetwork', 5)
 
 
 class VpcNetwork(_messages.Message):

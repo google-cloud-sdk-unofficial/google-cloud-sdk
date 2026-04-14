@@ -874,10 +874,6 @@ class RolloutKind(_messages.Message):
   built-in policies across GCP and GDC, and customizable policies.
 
   Enums:
-    MaintenancePolicyEnforcementValueValuesEnum: Optional. Value among strict
-      (enforcing maintenance policy and only looking at Units with maintenance
-      policy), ignore (ignoring maintenance policy) and skip (skipping Units
-      with maintenance policy)
     UpdateUnitKindStrategyValueValuesEnum: Optional. The config for updating
       the unit kind. By default, the unit kind will be updated on the rollout
       start.
@@ -907,10 +903,6 @@ class RolloutKind(_messages.Message):
       server agree on the ordering of a resource being written.
     labels: Optional. The labels on the resource, which can be used for
       categorization. similar to Kubernetes resource labels.
-    maintenancePolicyEnforcement: Optional. Value among strict (enforcing
-      maintenance policy and only looking at Units with maintenance policy),
-      ignore (ignoring maintenance policy) and skip (skipping Units with
-      maintenance policy)
     name: Identifier. The resource name (full URI of the resource) following
       the standard naming scheme:
       "projects/{project}/locations/{location}/rolloutKinds/{rollout_kind_id}"
@@ -939,22 +931,6 @@ class RolloutKind(_messages.Message):
     updateUnitKindStrategy: Optional. The config for updating the unit kind.
       By default, the unit kind will be updated on the rollout start.
   """
-
-  class MaintenancePolicyEnforcementValueValuesEnum(_messages.Enum):
-    r"""Optional. Value among strict (enforcing maintenance policy and only
-    looking at Units with maintenance policy), ignore (ignoring maintenance
-    policy) and skip (skipping Units with maintenance policy)
-
-    Values:
-      MAINTENANCE_POLICY_ENFORCEMENT_UNSPECIFIED: <no description>
-      MAINTENANCE_POLICY_ENFORCEMENT_STRICT: <no description>
-      MAINTENANCE_POLICY_ENFORCEMENT_IGNORED: <no description>
-      MAINTENANCE_POLICY_ENFORCEMENT_SKIPPED: <no description>
-    """
-    MAINTENANCE_POLICY_ENFORCEMENT_UNSPECIFIED = 0
-    MAINTENANCE_POLICY_ENFORCEMENT_STRICT = 1
-    MAINTENANCE_POLICY_ENFORCEMENT_IGNORED = 2
-    MAINTENANCE_POLICY_ENFORCEMENT_SKIPPED = 3
 
   class UpdateUnitKindStrategyValueValuesEnum(_messages.Enum):
     r"""Optional. The config for updating the unit kind. By default, the unit
@@ -1028,20 +1004,21 @@ class RolloutKind(_messages.Message):
   errorBudget = _messages.MessageField('ErrorBudget', 3)
   etag = _messages.StringField(4)
   labels = _messages.MessageField('LabelsValue', 5)
-  maintenancePolicyEnforcement = _messages.EnumField('MaintenancePolicyEnforcementValueValuesEnum', 6)
-  name = _messages.StringField(7)
-  rolloutOrchestrationStrategy = _messages.StringField(8)
-  uid = _messages.StringField(9)
-  unitFilter = _messages.StringField(10)
-  unitKind = _messages.StringField(11)
-  updateTime = _messages.StringField(12)
-  updateUnitKindStrategy = _messages.EnumField('UpdateUnitKindStrategyValueValuesEnum', 13)
+  name = _messages.StringField(6)
+  rolloutOrchestrationStrategy = _messages.StringField(7)
+  uid = _messages.StringField(8)
+  unitFilter = _messages.StringField(9)
+  unitKind = _messages.StringField(10)
+  updateTime = _messages.StringField(11)
+  updateUnitKindStrategy = _messages.EnumField('UpdateUnitKindStrategyValueValuesEnum', 12)
 
 
 class RolloutStats(_messages.Message):
   r"""RolloutStats contains information about the progress of a rollout.
 
   Fields:
+    estimatedTotalUnitCount: Optional. Output only. Estimated number of units
+      based. The estimation is computed upon creation of the rollout.
     operationsByState: Optional. Output only. Unordered list. A breakdown of
       the progress of operations triggered by the rollout. Provides a count of
       Operations by their state. This can be used to determine the number of
@@ -1051,7 +1028,8 @@ class RolloutStats(_messages.Message):
       "FAILED" - "CANCELLED"
   """
 
-  operationsByState = _messages.MessageField('Aggregate', 1, repeated=True)
+  estimatedTotalUnitCount = _messages.IntegerField(1)
+  operationsByState = _messages.MessageField('Aggregate', 2, repeated=True)
 
 
 class RunRolloutActionParams(_messages.Message):
@@ -2611,8 +2589,7 @@ class Unit(_messages.Message):
     pendingOperations: Optional. Output only. List of pending (wait to be
       executed) UnitOperations for this unit.
     release: Optional. Output only. The current Release object for this Unit.
-    satisfiesPzi: Output only. Indicates whether the resource location
-      satisfies Zone Isolation constraints. This is false by default.
+    satisfiesPzi: Output only. Reserved for future use.
     satisfiesPzs: Output only. Indicates whether the resource location
       satisfies Zone Separation constraints. This is false by default.
     scheduledOperations: Optional. Output only. List of scheduled

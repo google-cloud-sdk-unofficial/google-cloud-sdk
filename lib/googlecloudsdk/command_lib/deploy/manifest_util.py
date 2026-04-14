@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import collections
+from collections.abc import Mapping, MutableMapping, Sequence
 import dataclasses
 import datetime
 import enum
@@ -33,14 +34,20 @@ from googlecloudsdk.command_lib.deploy import delivery_pipeline_util
 from googlecloudsdk.command_lib.deploy import deploy_policy_util
 from googlecloudsdk.command_lib.deploy import exceptions
 from googlecloudsdk.command_lib.deploy import target_util
+from googlecloudsdk.command_lib.storage import errors as storage_errors
+from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.resource import resource_property
+from googlecloudsdk.generated_clients.apis.clouddeploy.v1 import clouddeploy_v1_messages as cd_messages
 import jsonschema
 
 PIPELINE_UPDATE_MASK = '*,labels'
 API_VERSION_V1BETA1 = 'deploy.cloud.google.com/v1beta1'
 API_VERSION_V1 = 'deploy.cloud.google.com/v1'
+API_VERSION_FIELD = 'apiVersion'
+KIND_FIELD = 'kind'
+DESCRIPTION_FIELD = 'description'
 # If changing these fields also change them in the UI code.
 NAME_FIELD = 'name'
 ADVANCE_ROLLOUT_FIELD = 'advanceRollout'
@@ -88,6 +95,39 @@ KUBECTL_FIELD = 'kubectl'
 FLAGS_FIELD = 'flags'
 KUBERNETES_NAMESPACE_FIELD = 'kubernetesNamespace'
 APPLY_FLAGS_FIELD = 'applyFlags'
+RAW_YAML_FIELD = 'rawYaml'
+HELM_CHART_FIELD = 'helmChart'
+KUSTOMIZE_FIELD = 'kustomize'
+MATCH_LABELS_FIELD = 'matchLabels'
+VALUES_FROM_FILE_FIELD = 'valuesFromFile'
+SET_FILES_VALUES_FIELD = 'setFilesValues'
+EXCLUDE_TESTS_FIELD = 'excludeTests'
+TESTS_EXCLUDED_FIELD = 'testsExcluded'
+EXCLUDE_HOOKS_FIELD = 'excludeHooks'
+HOOKS_EXCLUDED_FIELD = 'hooksExcluded'
+EXCLUDE_CRDS_FIELD = 'excludeCRDs'
+CRDS_EXCLUDED_FIELD = 'crdsExcluded'
+HELM_RELEASE_NAME_FIELD = 'helmReleaseName'
+HELM_RELEASE_FIELD = 'helmRelease'
+CONFIG_FIELD = 'config'
+RUNTIME_CONFIG_FIELD = 'runtimeConfig'
+SOURCE_FIELD = 'source'
+TARGETS_FIELD = 'targets'
+STORAGE_URI_FIELD = 'storageURI'
+STORAGE_FIELD = 'storage'
+STORAGE_SOURCE_FIELD = 'storageSource'
+GENERATION_FIELD = 'generation'
+BUCKET_FIELD = 'bucket'
+OBJECT_FIELD = 'object'
+TARGET_CONFIGS_FIELD = 'targetConfigs'
+TARGET_CONFIGS_TYPES = (RAW_YAML_FIELD, HELM_CHART_FIELD, KUSTOMIZE_FIELD)
+COMMON_FIELDS = (
+    API_VERSION_FIELD,
+    KIND_FIELD,
+    DESCRIPTION_FIELD,
+    labels_field,
+    ANNOTATIONS_FIELD,
+)
 
 
 @enum.unique
@@ -97,6 +137,7 @@ class ResourceKind(enum.Enum):
   AUTOMATION = 'Automation'
   CUSTOM_TARGET_TYPE = 'CustomTargetType'
   DEPLOY_POLICY = 'DeployPolicy'
+  RELEASE = 'Release'
 
   def __str__(self):
     return self.value
@@ -108,7 +149,7 @@ class _TransformContext:
   name: str
   project: str
   region: str
-  manifest: dict[str, Any]
+  manifest: MutableMapping[str, Any]
   field: str
 
 
@@ -123,7 +164,7 @@ class TaskType(enum.Enum):
 
 
 def ParseDeployConfig(
-    messages: list[Any], manifests: list[dict[str, Any]], region: str
+    messages: list[Any], manifests: Sequence[Mapping[str, Any]], region: str
 ) -> dict[ResourceKind, list[Any]]:
   """Parses the declarative definition of the resources into message.
 
@@ -158,9 +199,9 @@ def ParseDeployConfig(
   return resources_by_kind
 
 
-def _GetKind(manifest: dict[str, Any], doc_index: int) -> ResourceKind:
+def _GetKind(manifest: Mapping[str, Any], doc_index: int) -> ResourceKind:
   """Parses the kind of a resource."""
-  api_version = manifest.get('apiVersion')
+  api_version = manifest.get(API_VERSION_FIELD)
   if not api_version:
     raise exceptions.CloudDeployConfigError.for_unnamed_manifest(
         doc_index, 'missing required field "apiVersion"'
@@ -169,7 +210,7 @@ def _GetKind(manifest: dict[str, Any], doc_index: int) -> ResourceKind:
     raise exceptions.CloudDeployConfigError.for_unnamed_manifest(
         doc_index, f'api version "{api_version}" not supported'
     )
-  kind = manifest.get('kind')
+  kind = manifest.get(KIND_FIELD)
   if kind is None:
     raise exceptions.CloudDeployConfigError.for_unnamed_manifest(
         doc_index, 'missing required field "kind"'
@@ -182,7 +223,7 @@ def _GetKind(manifest: dict[str, Any], doc_index: int) -> ResourceKind:
   return ResourceKind(kind)
 
 
-def _GetName(manifest: dict[str, Any], doc_index: int) -> str:
+def _GetName(manifest: Mapping[str, Any], doc_index: int) -> str:
   """Parses the name of a resource."""
   metadata = manifest.get('metadata')
   if not metadata or not metadata.get(NAME_FIELD):
@@ -193,7 +234,9 @@ def _GetName(manifest: dict[str, Any], doc_index: int) -> str:
 
 
 def _CheckDuplicateResourceNames(
-    manifests_by_name_and_kind: dict[tuple[ResourceKind, str], list[Any]],
+    manifests_by_name_and_kind: Mapping[
+        tuple[ResourceKind, str], Sequence[Any]
+    ],
 ) -> None:
   """Checks if there are any duplicate resource names per resource type."""
   dups = collections.defaultdict(list)
@@ -208,16 +251,16 @@ def _CheckDuplicateResourceNames(
 
 
 def _RemoveApiVersionAndKind(
-    value: dict[str, Any], transform_context: _TransformContext
+    value: Mapping[str, Any], transform_context: _TransformContext
 ) -> None:
   """Removes the apiVersion and kind fields from the manifest."""
   del value  # Unused by _RemoveApiVersionAndKind().
-  del transform_context.manifest['apiVersion']
-  del transform_context.manifest['kind']
+  del transform_context.manifest[API_VERSION_FIELD]
+  del transform_context.manifest[KIND_FIELD]
 
 
 def _MetadataYamlToProto(
-    metadata: dict[str, Any], transform_context: _TransformContext
+    metadata: Mapping[str, Any], transform_context: _TransformContext
 ) -> None:
   """Moves the fields in metadata to the top level of the manifest."""
   manifest = transform_context.manifest
@@ -226,8 +269,8 @@ def _MetadataYamlToProto(
   # I think allowing description in metadata was an accident, not intentional...
   # It's supposed to be a top level field. But even some of our own tests do
   # this, so I think we have to assume customers might have too.
-  if 'description' in metadata:
-    manifest['description'] = metadata['description']
+  if DESCRIPTION_FIELD in metadata:
+    manifest[DESCRIPTION_FIELD] = metadata[DESCRIPTION_FIELD]
   name = metadata.get(NAME_FIELD)
   resource_ref = _ref_creators[transform_context.kind](
       name, transform_context.project, transform_context.region
@@ -248,8 +291,8 @@ def _MetadataYamlToProto(
 
 
 def _ConvertLabelsToSnakeCase(
-    labels: dict[str, str], transform_context: _TransformContext
-) -> dict[str, str]:
+    labels: Mapping[str, str], transform_context: _TransformContext
+) -> Mapping[str, str]:
   """Convert labels from camelCase to snake_case."""
   del transform_context  # Unused by _ConvertLabelsToSnakeCase().
   # See go/unified-cloud-labels-proposal.
@@ -257,8 +300,8 @@ def _ConvertLabelsToSnakeCase(
 
 
 def _UpdateOldAutomationSelector(
-    selector: dict[str, Any], transform_context: _TransformContext
-) -> dict[str, Any]:
+    selector: Mapping[str, Any], transform_context: _TransformContext
+) -> None:
   """Converts an old automation selector to the new format."""
   targets = []
   for target in selector:
@@ -267,8 +310,8 @@ def _UpdateOldAutomationSelector(
 
 
 def _RenameOldAutomationRules(
-    rule: dict[str, Any], transform_context: _TransformContext
-) -> dict[str, Any]:
+    rule: MutableMapping[str, Any], transform_context: _TransformContext
+) -> MutableMapping[str, Any]:
   """Renames the old automation rule fields to the new format."""
   del transform_context  # Unused by _RenameOldAutomationRules().
   if PROMOTE_RELEASE_FIELD in rule:
@@ -284,8 +327,8 @@ def _RenameOldAutomationRules(
 
 
 def _ConvertAutomationRuleNameFieldToId(
-    rule: dict[str, Any], transform_context: _TransformContext
-) -> dict[str, Any]:
+    rule: MutableMapping[str, Any], transform_context: _TransformContext
+) -> MutableMapping[str, Any]:
   """Move the name field to the id field."""
   if rule is not None and NAME_FIELD in rule:
     if ID_FIELD in rule:
@@ -300,9 +343,9 @@ def _ConvertAutomationRuleNameFieldToId(
 
 
 def _AddEmptyRepairAutomationRetryMessage(
-    repair_phase: dict[str, Any], transform_context: _TransformContext
-) -> dict[str, Any]:
-  """Add an empty retry field if it's defined in the manifest but set to None."""
+    repair_phase: MutableMapping[str, Any], transform_context: _TransformContext
+) -> MutableMapping[str, Any]:
+  """Adds empty retry field if defined in the manifest but set to None."""
   del transform_context  # Unused by _AddEmptyRepairAutomationRetryMessage().
   if RETRY_FIELD in repair_phase and repair_phase[RETRY_FIELD] is None:
     repair_phase[RETRY_FIELD] = {}
@@ -333,8 +376,8 @@ def _ConvertAutomationWaitMinToSec(
 
 
 def _ConvertPolicyOneTimeWindowToProtoFormat(
-    value: dict[str, Any], transform_context: _TransformContext
-) -> dict[str, Any]:
+    value: Mapping[str, Any], transform_context: _TransformContext
+) -> MutableMapping[str, Any]:
   """Converts the one time window to proto format."""
   proto_format = {}
   if value.get('start'):
@@ -349,7 +392,7 @@ def _ConvertPolicyOneTimeWindowToProtoFormat(
 def _SetDateTimeFields(
     date_str: str,
     field_name: str,
-    proto_format: dict[str, str],
+    proto_format: MutableMapping[str, str],
     transform_context: _TransformContext,
 ) -> None:
   """Convert the date string to proto format and set those fields in proto_format."""
@@ -400,7 +443,7 @@ def _SetDateTimeFields(
 
 def _ConvertPolicyWeeklyWindowTimes(
     value: str, transform_context: _TransformContext
-) -> dict[str, str]:
+) -> Mapping[str, Any]:
   """Convert the weekly window times to proto format."""
   # First, check if the hour is 24. If so replace with 00, because
   # fromisoformat() doesn't support 24.
@@ -456,9 +499,9 @@ def _ReplaceCustomTargetType(
 
 
 def _ConvertStageDeploymentOptions(
-    stage: dict[str, Any],
+    stage: MutableMapping[str, Any],
     transform_context: _TransformContext,
-) -> dict[str, Any]:
+) -> MutableMapping[str, Any]:
   """Converts deployment options in stage to proto format."""
   if KUBERNETES_FIELD in stage and CLOUD_RUN_FIELD in stage:
     raise exceptions.CloudDeployConfigError.for_resource_field(
@@ -501,8 +544,8 @@ def _ConvertStageDeploymentOptions(
 
 
 def _ConvertYamlTaskToProto(
-    task: dict[str, Any], transform_context: _TransformContext
-) -> dict[str, Any]:
+    task: Mapping[str, Any], transform_context: _TransformContext
+) -> MutableMapping[str, Any]:
   """Transforms a task in YAML format to proto-compatible format."""
   # Schema validation verifies the presence of the 'type' key so we
   # can just grab the value without supplying a default value.
@@ -524,8 +567,8 @@ def _ConvertYamlTaskToProto(
 
 
 def _ConvertYamlVerifyConfigToProto(
-    strategy: dict[str, Any], transform_context: _TransformContext
-) -> dict[str, Any]:
+    strategy: MutableMapping[str, Any], transform_context: _TransformContext
+) -> MutableMapping[str, Any]:
   """Transforms a verifyConfig in YAML format to proto-compatible format."""
   verify = strategy.get('verify', None)
   if isinstance(verify, dict):
@@ -542,8 +585,8 @@ def _ConvertYamlVerifyConfigToProto(
 
 
 def _ConvertProtoVerifyConfigToYaml(
-    strategy: dict[str, Any], transform_context: _TransformContext
-) -> dict[str, Any]:
+    strategy: MutableMapping[str, Any], transform_context: _TransformContext
+) -> MutableMapping[str, Any]:
   """Transforms a verifyConfig in YAML format to proto-compatible format."""
   del transform_context
   if 'verifyConfig' not in strategy:
@@ -587,7 +630,7 @@ class TransformConfig:
 _PARSE_TRANSFORMS = [
     TransformConfig(
         kinds=set(ResourceKind),
-        fields=['apiVersion'],
+        fields=[API_VERSION_FIELD],
         move=_RemoveApiVersionAndKind,
     ),
     TransformConfig(
@@ -749,13 +792,14 @@ _message_types = {
     ResourceKind.DELIVERY_PIPELINE: lambda messages: messages.DeliveryPipeline,
     ResourceKind.DEPLOY_POLICY: lambda messages: messages.DeployPolicy,
     ResourceKind.TARGET: lambda messages: messages.Target,
+    ResourceKind.RELEASE: lambda messages: messages.Release,
 }
 
 
 def _ParseManifest(
-    kind: ResourceKind,
+    kind: ResourceKind,  # Changed from str
     name: str,
-    manifest: dict[str, Any],
+    manifest: MutableMapping[str, Any],
     project: str,
     region: str,
     messages: list[Any],
@@ -802,8 +846,8 @@ def AddApiVersionAndKind(
 ) -> None:
   """Adds the API version and kind to the manifest."""
   del value  # Unused by AddApiVersionAndKind.
-  transform_context.manifest['apiVersion'] = API_VERSION_V1
-  transform_context.manifest['kind'] = transform_context.kind.value
+  transform_context.manifest[API_VERSION_FIELD] = API_VERSION_V1
+  transform_context.manifest[KIND_FIELD] = transform_context.kind.value
 
 
 def _RemoveField(value: Any, transform_context: _TransformContext) -> None:
@@ -813,7 +857,7 @@ def _RemoveField(value: Any, transform_context: _TransformContext) -> None:
 
 
 def _MetadataProtoToYaml(
-    value: Any, transform_context: _TransformContext
+    value: Any, transform_context: _TransformContext  # Value is unused
 ) -> None:
   """Converts the metadata proto to YAML."""
   del value  # Unused by _MetadataProtoToYaml.
@@ -838,8 +882,8 @@ def _ConvertAutomationWaitSecToMin(
 
 
 def _ConvertProtoTaskToYaml(
-    task: dict[str, Any], transform_context: _TransformContext
-) -> dict[str, Any]:
+    task: Mapping[str, Any], transform_context: _TransformContext
+) -> MutableMapping[str, Any]:
   """Converts a proto task to YAML format suitable for export."""
   del transform_context  # Unused by _ConvertProtoTaskToYaml.
   new_task = {}
@@ -853,8 +897,8 @@ def _ConvertProtoTaskToYaml(
 
 
 def ConvertPolicyOneTimeWindowToYamlFormat(
-    one_time_window: dict[str, Any], transform_context: _TransformContext
-) -> dict[str, Any]:
+    one_time_window: Mapping[str, Any], transform_context: _TransformContext
+) -> MutableMapping[str, Any]:
   """Exports the oneTimeWindows field of the Deploy Policy resource."""
   one_time = {}
   start_date_time = _DateTimeIsoString(
@@ -871,8 +915,8 @@ def ConvertPolicyOneTimeWindowToYamlFormat(
 
 
 def _DateTimeIsoString(
-    date_obj: dict[str, str],
-    time_obj: dict[str, str],
+    date_obj: Mapping[str, str],
+    time_obj: Mapping[str, str],
     transform_context: _TransformContext,
 ) -> str:
   """Converts a date and time to a string."""
@@ -881,13 +925,13 @@ def _DateTimeIsoString(
   return f'{date_str} {time_str}'
 
 
-def _FormatDate(date: dict[str, str]) -> str:
+def _FormatDate(date: Mapping[str, str]) -> str:
   """Converts a date object to a string."""
   return f"{date['year']:04}-{date['month']:02}-{date['day']:02}"
 
 
 def ConvertTimeProtoToString(
-    time_obj: dict[str, str], transform_context: _TransformContext
+    time_obj: Mapping[str, Any], transform_context: _TransformContext
 ) -> str:
   """Converts a time object to a string."""
   del transform_context  # Unused by ConvertTimeProtoToString.
@@ -1015,7 +1059,7 @@ _EXPORT_TRANSFORMS = [
 
 def ProtoToManifest(
     resource: Any, resource_ref: resources.Resource, kind: ResourceKind
-) -> dict[str, Any]:
+) -> MutableMapping[str, Any]:
   """Converts a resource message to a cloud deploy resource manifest.
 
   The manifest can be applied by 'deploy apply' command.
@@ -1041,9 +1085,9 @@ def ProtoToManifest(
 
 
 def ApplyTransforms(
-    manifest: dict[str, Any],
+    manifest: MutableMapping[str, Any],
     transforms: list[TransformConfig],
-    kind: str,
+    kind: ResourceKind,
     name: str,
     project: str,
     region: str,
@@ -1084,7 +1128,7 @@ def ApplyTransforms(
           transform.move(value, transform_context)
 
 
-def _GetValue(path: str, manifest: dict[str, Any]) -> Any:
+def _GetValue(path: str, manifest: Mapping[str, Any]) -> Any:
   """Gets the value at a dot-separated path in a dictionary.
 
   If the path contains [], it returns a list of values at the path. If the path
@@ -1167,7 +1211,9 @@ def _TransformNestedListData(
     return func(data)
 
 
-def _SetValue(manifest: dict[str, Any], path: str, value: Any) -> None:
+def _SetValue(
+    manifest: MutableMapping[str, Any], path: str, value: Any
+) -> None:
   """Sets the value at a dot-separated path in a dictionary.
 
   If value is None, deletes the value at path.
@@ -1251,3 +1297,245 @@ def _GetFinalFieldName(path: str) -> str:
   if final_field_name.endswith('[]'):
     final_field_name = final_field_name.removesuffix('[]')
   return final_field_name
+
+
+def _ParseStorageURI(value: Any, transform_context: _TransformContext) -> None:
+  """Parses a storage URI into bucket, object, and generation.
+
+  Args:
+    value: The storage URI string.
+    transform_context: The context for the transformation.
+
+  Raises:
+    exceptions.CloudDeployConfigError: If the storage URI is invalid.
+  """
+  uri_str = str(value)
+  try:
+    # Note that the function is designed for multiple
+    # purposes, and therefore, it supports a high degree of format flexibility,
+    # which might cause unexpected behavior. We might need to add more
+    # validations in the future, but the current validation is ensuring only gs
+    # schemes are allowed.
+    storage_object = storage_url.CloudUrl.from_url_string(uri_str)
+  except storage_errors.InvalidUrlError as e:
+    raise exceptions.CloudDeployConfigError.for_resource_field(
+        transform_context.kind,
+        transform_context.name,
+        transform_context.field,
+        f'invalid storageURI format: {uri_str}',
+    ) from e
+
+  if storage_object.scheme is not storage_url.ProviderPrefix.GCS:
+    raise exceptions.CloudDeployConfigError.for_resource_field(
+        transform_context.kind,
+        transform_context.name,
+        transform_context.field,
+        f'storageURI must start with "gs://", got {uri_str}',
+    )
+  res = {
+      BUCKET_FIELD: storage_object.bucket_name,
+      OBJECT_FIELD: storage_object.resource_name,
+      GENERATION_FIELD: storage_object.generation,
+  }
+  source = transform_context.manifest.setdefault(SOURCE_FIELD, {})
+  if STORAGE_URI_FIELD in source:
+    source.pop(STORAGE_URI_FIELD)
+  source[STORAGE_SOURCE_FIELD] = res
+
+
+def _StorageSourceFromStorage(
+    value: Mapping[str, Any], transform_context: _TransformContext
+) -> None:
+  """Renames storage to storageSource.
+
+  Args:
+    value: The value of the field.
+    transform_context: The context for the transformation.
+  """
+  del value  # Unused.
+  source = transform_context.manifest.setdefault(SOURCE_FIELD, {})
+  if STORAGE_FIELD in source:
+    if GENERATION_FIELD in source[STORAGE_FIELD]:
+      source[STORAGE_FIELD][GENERATION_FIELD] = str(
+          source[STORAGE_FIELD][GENERATION_FIELD]
+      )
+    source[STORAGE_SOURCE_FIELD] = source.pop(STORAGE_FIELD)
+
+
+def _ConvertReleaseTargetConfig(
+    target: MutableMapping[str, Any], transform_context: _TransformContext
+) -> MutableMapping[str, Any]:
+  """Converts a release target into a TargetConfig.
+
+  Args:
+    target: The target dictionary.
+    transform_context: The context for the transformation.
+
+  Returns:
+    The converted target dictionary.
+
+  Raises:
+    exceptions.CloudDeployConfigError: If the target is invalid.
+  """
+  runtime_config = {}
+  for key in target:
+    if key not in TARGET_CONFIGS_TYPES + (ID_FIELD, MATCH_LABELS_FIELD):
+      raise exceptions.CloudDeployConfigError.for_resource_field(
+          transform_context.kind,
+          transform_context.name,
+          transform_context.field,
+          f'unsupported target config field: {key}',
+      )
+  found_keys = [k for k in TARGET_CONFIGS_TYPES if k in target]
+  if len(found_keys) == 0:
+    raise exceptions.CloudDeployConfigError.for_resource_field(
+        transform_context.kind,
+        transform_context.name,
+        transform_context.field,
+        f'A target must have one of {", ".join(TARGET_CONFIGS_TYPES)}',
+    )
+  if len(found_keys) > 1:
+    raise exceptions.CloudDeployConfigError.for_resource_field(
+        transform_context.kind,
+        transform_context.name,
+        transform_context.field,
+        f'A target can only have one of {", ".join(TARGET_CONFIGS_TYPES)}',
+    )
+  if ID_FIELD not in target and MATCH_LABELS_FIELD not in target:
+    raise exceptions.CloudDeployConfigError.for_resource_field(
+        transform_context.kind,
+        transform_context.name,
+        transform_context.field,
+        'A target must have either id or matchLabels defined',
+    )
+  if ID_FIELD in target and MATCH_LABELS_FIELD in target:
+    raise exceptions.CloudDeployConfigError.for_resource_field(
+        transform_context.kind,
+        transform_context.name,
+        transform_context.field,
+        'A target cannot have both id and matchLabels defined',
+    )
+
+  # found_keys is guaranteed to have exactly one element.
+  k = found_keys[0]
+  runtime_config[k] = target.pop(k)
+
+  if HELM_CHART_FIELD in runtime_config:
+    helm = runtime_config[HELM_CHART_FIELD]
+    if isinstance(helm, dict):
+      if VALUES_FROM_FILE_FIELD in helm:
+        helm[SET_FILES_VALUES_FIELD] = helm.pop(VALUES_FROM_FILE_FIELD)
+      if EXCLUDE_TESTS_FIELD in helm:
+        helm[TESTS_EXCLUDED_FIELD] = helm.pop(EXCLUDE_TESTS_FIELD)
+      if EXCLUDE_HOOKS_FIELD in helm:
+        helm[HOOKS_EXCLUDED_FIELD] = helm.pop(EXCLUDE_HOOKS_FIELD)
+      if EXCLUDE_CRDS_FIELD in helm:
+        helm[CRDS_EXCLUDED_FIELD] = helm.pop(EXCLUDE_CRDS_FIELD)
+      if HELM_RELEASE_NAME_FIELD in helm:
+        helm[HELM_RELEASE_FIELD] = helm.pop(HELM_RELEASE_NAME_FIELD)
+
+  target[CONFIG_FIELD] = {RUNTIME_CONFIG_FIELD: runtime_config}
+  if MATCH_LABELS_FIELD in target:
+    target[MATCH_LABELS_FIELD] = {labels_field: target.pop(MATCH_LABELS_FIELD)}
+  return target
+
+
+def _TargetConfigsFromTargets(
+    value: Any, transform_context: _TransformContext
+) -> None:
+  """Renames targets to targetConfigs.
+
+  Args:
+    value: The value of the field.
+    transform_context: The context for the transformation.
+  """
+  del value  # Unused.
+  if TARGETS_FIELD in transform_context.manifest:
+    transform_context.manifest[TARGET_CONFIGS_FIELD] = (
+        transform_context.manifest.pop(TARGETS_FIELD)
+    )
+
+
+_RELEASE_CONFIG_TRANSFORMS = (
+    TransformConfig(
+        kinds={ResourceKind.RELEASE},
+        fields=['source.storageURI'],
+        move=_ParseStorageURI,
+    ),
+    TransformConfig(
+        kinds={ResourceKind.RELEASE},
+        fields=['source.storage'],
+        move=_StorageSourceFromStorage,
+    ),
+    TransformConfig(
+        kinds={ResourceKind.RELEASE},
+        fields=['targets[]'],
+        replace=_ConvertReleaseTargetConfig,
+    ),
+    TransformConfig(
+        kinds={ResourceKind.RELEASE},
+        fields=['targets'],
+        move=_TargetConfigsFromTargets,
+    ),
+)
+
+
+def ParseReleaseConfig(
+    manifest: MutableMapping[str, Any], messages: cd_messages
+) -> cd_messages.Release:
+  """Parses a release configuration.
+
+  Args:
+    manifest: The parsed release.yaml definition.
+    messages: Module containing the definitions of messages for Cloud Deploy.
+
+  Returns:
+    The parsed resource as a messages.Release object.
+
+  Raises:
+    exceptions.CloudDeployConfigError: If the definition is incorrect.
+  """
+  # Normalize root if `targets` is missing but runtime configs exist
+  if TARGETS_FIELD not in manifest:
+    target = {ID_FIELD: '*'}
+    valid_fields = TARGET_CONFIGS_TYPES + (SOURCE_FIELD,) + COMMON_FIELDS
+    for key in manifest:
+      if key not in valid_fields:
+        raise exceptions.CloudDeployConfigError.for_resource_field(
+            ResourceKind.RELEASE,
+            '',
+            key,
+            f'unsupported target config field: {key}',
+        )
+    # Move runtime configs to target
+    for key in TARGET_CONFIGS_TYPES:
+      if key in manifest:
+        target[key] = manifest.pop(key)
+    if len(target) > 1:
+      manifest[TARGETS_FIELD] = [target]
+
+  if SOURCE_FIELD in manifest:
+    source = manifest.get(SOURCE_FIELD)
+    if STORAGE_FIELD in source and STORAGE_URI_FIELD in source:
+      raise exceptions.CloudDeployConfigError.for_resource_field(
+          ResourceKind.RELEASE,
+          '',
+          SOURCE_FIELD,
+          'storage and storageUri are mutually exclusive',
+      )
+
+  # Apply transformations
+  ApplyTransforms(
+      manifest,
+      _RELEASE_CONFIG_TRANSFORMS,
+      ResourceKind.RELEASE,
+      'release.yaml',
+      '',
+      '',
+  )
+  try:
+    return messages_util.DictToMessageWithErrorCheck(manifest, messages.Release)
+  except messages_util.DecodeError as e:
+    raise exceptions.CloudDeployConfigError.for_resource(
+        ResourceKind.RELEASE, 'release.yaml', str(e)
+    ) from e

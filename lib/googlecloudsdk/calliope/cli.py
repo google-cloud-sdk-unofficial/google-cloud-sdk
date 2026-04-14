@@ -50,6 +50,22 @@ import six
 _COMMAND_SUFFIX = '.py'
 _FLAG_FILE_LINE_NAME = '---flag-file-line-'
 
+# In Python 3.13, **kwargs was removed from ArgumentParser.__init__.
+# Simultaneously, Python 3.14's unittest passes `color=True` to its parser,
+# crashing strict wrappers. This patch proactively protects >=3.13 from
+# any unexpected kwargs while fixing the explicit 3.14 testing crash.
+if sys.version_info[:2] >= (3, 13):
+  import inspect
+  _argparse_init = argparse.ArgumentParser.__init__
+  _argparse_params = inspect.signature(_argparse_init).parameters
+
+  def OverrideArgparseInit(*args, **kwargs):
+    if 'color' not in _argparse_params:
+      kwargs.pop('color', None)
+    _argparse_init(*args, **kwargs)
+
+  argparse.ArgumentParser.__init__ = OverrideArgparseInit
+
 
 class _FlagLocation(object):
   """--flags-file (file,line_col) location."""

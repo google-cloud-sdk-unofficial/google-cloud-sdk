@@ -17,6 +17,7 @@
 
 from collections.abc import Mapping, Sequence
 import os
+from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.common import util
 
 
 def translate_add_required_flags(
@@ -36,15 +37,18 @@ def translate_add_required_flags(
     A sequence of strings representing the required flags.
   """
   required_flags = [f'--labels={_get_labels()}']
-  base_image = runtime_base_image or input_data['runtime']
-  if source_path and _check_dockerfile_exists(source_path):
-    required_flags.extend([
-        '--clear-base-image',
-    ])
-  else:
-    if base_image:
-      required_flags.append(f'--base-image={base_image}')
+
+  if not util.is_flex_env(input_data):
+    base_image = runtime_base_image or input_data['runtime']
+    if source_path and _check_dockerfile_exists(source_path):
+      required_flags.extend([
+          '--clear-base-image',
+      ])
+    else:
+      if base_image:
+        required_flags.append(f'--base-image={base_image}')
   required_flags.append('--no-cpu-throttling')
+
   return required_flags
 
 

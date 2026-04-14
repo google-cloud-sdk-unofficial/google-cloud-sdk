@@ -204,6 +204,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_FRAMEWORKS = (
+      'projects.locations.frameworks',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/frameworks/'
+              '{frameworksId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_OPERATIONDETAILS = (
       'projects.locations.operationDetails',
       '{+name}',

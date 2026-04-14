@@ -95,8 +95,8 @@
           required: true
           repeated: false
           help_text: |-
-            A valid Oracle GoldenGate version. For a list of supported versions, use
-            the ListGoldenGateDeployments operation.
+            A valid GoldenGate Deployment type. For a list of supported types, use
+            the `ListGoldenGateDeploymentTypes` operation.
         - group:
             api_field: goldenGateDeployment.properties.oggData
             required: true

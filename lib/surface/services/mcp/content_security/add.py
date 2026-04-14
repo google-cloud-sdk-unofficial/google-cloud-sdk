@@ -14,11 +14,9 @@
 # limitations under the License.
 """services mcp content-security add command."""
 
-from googlecloudsdk.api_lib.services import services_util
-from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.services import common_flags
-from googlecloudsdk.core import properties
+from googlecloudsdk.core import log
 
 _PROJECT_RESOURCE = 'projects/%s'
 _CONTENT_SECURITY_POLICY_DEFAULT = '/contentSecurityPolicies/%s'
@@ -59,19 +57,8 @@ class Add(base.Command):
       The content security providers for a project.
     """
 
-    if args.IsSpecified('project'):
-      resource_name = _PROJECT_RESOURCE % args.project
-    else:
-      project = properties.VALUES.core.project.Get(required=True)
-      resource_name = _PROJECT_RESOURCE % project
-
-    op = serviceusage.AddContentSecurityProvider(
-        args.mcp_content_security_provider,
-        resource_name + _CONTENT_SECURITY_POLICY_DEFAULT % 'default',
+    log.warning(
+        'This command is not required. Please use gcloud model-armor'
+        ' floorsettings update instead and enable the floor settings.'
     )
-
-    if op is None:
-      return None
-
-    op = services_util.WaitOperation(op.name, serviceusage.GetOperationV2Beta)
-    services_util.PrintOperation(op)
+    return None

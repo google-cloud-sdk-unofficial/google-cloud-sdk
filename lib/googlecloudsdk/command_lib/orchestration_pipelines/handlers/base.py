@@ -38,6 +38,10 @@ class GcpResourceHandler(abc.ABC):
   collection_name = None
   allowed_metadata = []
 
+  # Documentation and Discoverability
+  _parent_resource_type = None
+  _documentation_uri = None
+
   def __init__(
       self,
       resource: deployment_model.ResourceModel,
@@ -172,7 +176,8 @@ class GcpResourceHandler(abc.ABC):
     """Returns the unique identifier for the resource."""
     return self.resource.name
 
-  def _pluralize(self, word: str) -> str:
+  @classmethod
+  def _pluralize(cls, word: str) -> str:
     """Returns the pluralized form of a word."""
     if word.endswith("y") and word[-2:-1].lower() not in "aeiouy":
       return word[:-1] + "ies"
@@ -213,6 +218,56 @@ class GcpResourceHandler(abc.ABC):
       return self.get_get_method()(request)
     except apitools_exceptions.HttpNotFoundError:
       return None
+
+  def get_parent_resource_type(self) -> str:
+    """Returns the type of the parent resource, or None if top-level."""
+    if self._parent_resource_type is not None:
+      return self._parent_resource_type
+
+    type_name = self.resource.type
+    parts = type_name.split(".")
+    if len(parts) > 2:
+      parent_type = ".".join(parts[:-1])
+    else:
+      parent_type = None
+
+    return parent_type
+
+  def get_documentation_uri(self) -> str:
+    """Returns a link to the REST API documentation for this resource."""
+    if self._documentation_uri is not None:
+      return self._documentation_uri
+
+    try:
+      resource_type = self.resource.type
+      api_name = self.api_name if self.api_name else resource_type.split(".")[0]
+      api_version = self.api_version
+      if not api_version:
+        api_version = apis.ResolveVersion(api_name)
+
+      if self.api_client_collection_path:
+        collection_path = self.api_client_collection_path
+      else:
+        parts = resource_type.split(".")[1:]
+        pluralized_parts = []
+        for i, part in enumerate(parts):
+          if i == len(parts) - 1 and self.collection_name is not None:
+            pluralized_parts.append(self.collection_name)
+          else:
+            pluralized_parts.append(self._pluralize(part))
+
+        if self.api_prefix:
+          collection_path = "_".join([self.api_prefix] + pluralized_parts)
+        else:
+          collection_path = "_".join(pluralized_parts)
+
+      collection_path = collection_path.replace("_", ".")
+      return (
+          f"https://cloud.google.com/{api_name}/docs/reference/rest/"
+          f"{api_version}/{collection_path}"
+      )
+    except Exception:  # pylint: disable=broad-exception-caught
+      return "N/A"
 
   @abc.abstractmethod
   def build_get_request(self) -> messages.Message:
@@ -276,6 +331,10 @@ class GcpResourceHandler(abc.ABC):
   def get_get_method(self) -> Any:
     """Returns the client method used to get the resource."""
     return self._api_client_collection.Get
+
+  def get_delete_method(self) -> Any:
+    """Returns the client method used to delete the resource."""
+    return self._api_client_collection.Delete
 
   def compare(
       self, existing_resource: Any, local_definition: dict[str, Any]

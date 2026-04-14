@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,7 +28,8 @@
   arguments:
     params:
     - help_text: |-
-        Parent value for ListMcpServersRequest
+        Parent value for ListMcpServersRequest. Format:
+        `projects/{project}/locations/{location}`.
       is_positional: false
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.agent_registry.v1alpha_resources:projects_locations

@@ -41,18 +41,14 @@ import six
 from six.moves import map
 
 
-GROUPS_PAGE_URL = ('https://groups.google.com/forum/?fromgroups#!forum/'
-                   'google-cloud-dev')
-
+SUPPORT_PAGE_URL = ('https://docs.cloud.google.com/sdk/docs/getting-support')
 
 FEEDBACK_MESSAGE = """\
 
 We appreciate your feedback.
 
-For general feedback, use our groups page
-[{0}],
-or send a mail to [google-cloud-dev@googlegroups.com].
-""".format(GROUPS_PAGE_URL)
+If you are experiencing a problem, please consult our support page: [{0}].
+""".format(SUPPORT_PAGE_URL)
 
 
 FEEDBACK_PROMPT = """\
@@ -75,15 +71,13 @@ def _PrintQuiet(info_str, log_data):
 
   log.Print(textwrap.dedent("""\
 
-      For general feedback, use our groups page
-      [{0}], or
-      send a mail to [google-cloud-dev@googlegroups.com].
+      For general support, consult our support page: [{0}].
 
       If you have found a bug, file it using our issue tracker site at
       [{1}].
 
       Please include the following information when filing a bug report:\
-      """).format(GROUPS_PAGE_URL, feedback_util.ISSUE_TRACKER_URL))
+      """).format(SUPPORT_PAGE_URL, feedback_util.ISSUE_TRACKER_URL))
   divider = feedback_util.GetDivider()
   log.Print(divider)
   if log_data and log_data.traceback:
@@ -117,8 +111,8 @@ class Feedback(base.Command):
 
   The Google Cloud CLI team offers support through a number of channels:
 
+  * Paid Google Cloud support packages
   * Google Cloud CLI Issue Tracker
-  * google-cloud-dev Google group
 
   This command lists the available channels and facilitates getting help through
   one of them by opening a web browser to the relevant page, possibly with

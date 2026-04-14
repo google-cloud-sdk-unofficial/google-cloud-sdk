@@ -15,14 +15,15 @@
 
 """Support library for the auth command."""
 
-
 import json
 import os
 import textwrap
 
+from google.auth import credentials as google_auth_creds
 from google.auth import environment_vars as auth_env_vars
 from google.auth import jwt
 from googlecloudsdk.api_lib.auth import exceptions as auth_exceptions
+from googlecloudsdk.api_lib.auth import util as api_auth_util
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
 from googlecloudsdk.api_lib.iamcredentials import util as impersonation_util
 from googlecloudsdk.calliope import exceptions as c_exc
@@ -32,11 +33,101 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.credentials import creds as c_creds
+from googlecloudsdk.core.credentials import store as c_store
 from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import platforms
 
 
 SERVICEUSAGE_PERMISSION = 'serviceusage.services.use'
+
+
+def GetTrustedScopesWithDrive():
+  """Returns the list of trusted scopes including Google Drive."""
+  # bq needs this as part of its auth flow to support the Drive scope.
+  return list(config.CLOUDSDK_SCOPES) + [api_auth_util.GOOGLE_DRIVE_SCOPE]
+
+
+def LoadCredentialsWithScopes(
+    account,
+    scopes,
+    trusted_scopes,
+    impersonation_lifetime=None,
+    force_refresh=False,
+    min_expiry=None,
+):
+  """Loads credentials with specified scopes and lifetime.
+
+  Args:
+    account: str, The account to get the access token for.
+    scopes: [str], The scopes to authorize for.
+    trusted_scopes: [str], The list of trusted scopes to validate against.
+    impersonation_lifetime: int, Access token lifetime for impersonation.
+    force_refresh: bool, Whether to force a refresh of the credentials.
+    min_expiry: str, Duration representing the amount of time between now and
+      token_expiry_time to compare against for refresh.
+
+  Returns:
+    The loaded credentials.
+  """
+  # Do not auto cache the custom scoped access token. Otherwise, it'll affect
+  # other gcloud CLIs that depends on cloud-platform scopes.
+  cache_only_rapt = True if scopes else False
+
+  cred = c_store.Load(
+      account,
+      allow_account_impersonation=True,
+      cache_only_rapt=cache_only_rapt,
+  )
+
+  # c_store.Load already refreshed the cred, so we don't need to refresh the
+  # cred unless we need to alter the cred in the code below, for example,
+  # changing the scopes.
+  should_refresh_again = False
+
+  if scopes:
+    # refresh again due to altered scopes
+    should_refresh_again = True
+    cred_type = c_creds.CredentialTypeGoogleAuth.FromCredentials(cred)
+    if cred_type not in [
+        c_creds.CredentialTypeGoogleAuth.USER_ACCOUNT,
+        c_creds.CredentialTypeGoogleAuth.SERVICE_ACCOUNT,
+    ]:
+      # TODO(b/223649175): Add support for other credential types(e.g GCE).
+      log.warning(
+          '`--scopes` flag may not work as expected and will be ignored '
+          'for account type {}.'.format(cred_type.key)
+      )
+    full_scopes = scopes + [
+        api_auth_util.OPENID,
+        api_auth_util.USER_EMAIL_SCOPE,
+    ]
+
+    # non user account credential types
+    if isinstance(cred, google_auth_creds.Scoped):
+      cred = cred.with_scopes(full_scopes)
+    else:
+      requested_scopes = set(scopes)
+      trusted_scopes_set = set(trusted_scopes)
+      if not requested_scopes.issubset(trusted_scopes_set):
+        raise c_exc.InvalidArgumentException(
+            '--scopes',
+            'Invalid scopes value. Please make sure the scopes are from [{0}]'
+            .format(trusted_scopes),
+        )
+      # pylint:disable=protected-access
+      cred._scopes = full_scopes
+
+  if c_creds.IsImpersonatedAccountCredentials(cred) and impersonation_lifetime:
+    # refresh again due to altered lifetime
+    should_refresh_again = True
+    cred._lifetime = impersonation_lifetime  # pylint: disable=protected-access
+
+  if force_refresh or should_refresh_again:
+    c_store.Refresh(cred)
+  elif min_expiry is not None:
+    c_store.RefreshIfExpireWithinWindow(cred, min_expiry)
+
+  return cred
 
 
 class MissingPermissionOnQuotaProjectError(c_creds.ADCError):
@@ -67,21 +158,25 @@ def IsServiceAccountCredential(cred):
 
 def IsImpersonationCredential(cred):
   """Checks if the credential is an impersonated service account credential."""
-  return (impersonation_util.
-          ImpersonationAccessTokenProvider.IsImpersonationCredential(cred))
+  return impersonation_util.ImpersonationAccessTokenProvider.IsImpersonationCredential(
+      cred
+  )
 
 
 def ValidIdTokenCredential(cred):
-  return (IsImpersonationCredential(cred) or
-          IsServiceAccountCredential(cred) or
-          IsGceAccountCredentials(cred))
+  return (
+      IsImpersonationCredential(cred)
+      or IsServiceAccountCredential(cred)
+      or IsGceAccountCredentials(cred)
+  )
 
 
 def PromptIfADCEnvVarIsSet():
   """Warns users if ADC environment variable is set."""
   override_file = config.ADCEnvVariable()
   if override_file:
-    message = textwrap.dedent("""
+    message = textwrap.dedent(
+        """
           The environment variable [{envvar}] is set to:
             [{override_file}]
           Credentials will still be generated to the default location:
@@ -89,27 +184,34 @@ def PromptIfADCEnvVarIsSet():
           To use these credentials, unset this environment variable before
           running your application.
           """.format(
-              envvar=auth_env_vars.CREDENTIALS,
-              override_file=override_file,
-              default_file=config.ADCFilePath()))
+            envvar=auth_env_vars.CREDENTIALS,
+            override_file=override_file,
+            default_file=config.ADCFilePath(),
+        )
+    )
     console_io.PromptContinue(
-        message=message, throw_if_unattended=True, cancel_on_no=True)
+        message=message, throw_if_unattended=True, cancel_on_no=True
+    )
 
 
 def WriteGcloudCredentialsToADC(creds, add_quota_project=False):
   """Writes gclouds's credential from auth login to ADC json."""
   # TODO(b/190114370): We will also support writing service account creds.
-  if (not c_creds.IsUserAccountCredentials(creds) and
-      not c_creds.IsExternalAccountCredentials(creds)):
-    log.warning('Credentials cannot be written to application default '
-                'credentials because it is not a user or external account '
-                'credential.')
+  if not c_creds.IsUserAccountCredentials(
+      creds
+  ) and not c_creds.IsExternalAccountCredentials(creds):
+    log.warning(
+        'Credentials cannot be written to application default '
+        'credentials because it is not a user or external account '
+        'credential.'
+    )
     return
   # Quota project ID should not be added to non-user credentials.
   if c_creds.IsExternalAccountCredentials(creds) and add_quota_project:
     raise AddQuotaProjectError(
         'The application default credentials are external account credentials, '
-        'quota project cannot be added.')
+        'quota project cannot be added.'
+    )
 
   PromptIfADCEnvVarIsSet()
   if add_quota_project:
@@ -140,16 +242,19 @@ def AssertADCExists():
   if not os.path.isfile(adc_path):
     raise c_exc.BadFileException(
         'Application default credentials have not been set up. '
-        'Run $ gcloud auth application-default login to set it up first.')
+        'Run $ gcloud auth application-default login to set it up first.'
+    )
 
 
 def ADCIsUserAccount():
   """Returns whether the ADC credentials correspond to a user account or not."""
   cred_file = config.ADCFilePath()
   creds, _ = c_creds.GetGoogleAuthDefault().load_credentials_from_file(
-      cred_file)
-  return (c_creds.IsUserAccountCredentials(creds) or
-          c_creds.IsExternalAccountUserCredentials(creds))
+      cred_file
+  )
+  return c_creds.IsUserAccountCredentials(
+      creds
+  ) or c_creds.IsExternalAccountUserCredentials(creds)
 
 
 def AdcHasGivenPermissionOnProject(project_id, permissions):
@@ -163,7 +268,8 @@ def _AdcHasGivenPermissionOnProjectHelper(project_ref, permissions):
   try:
     properties.VALUES.auth.credential_file_override.Set(config.ADCFilePath())
     granted_permissions = projects_api.TestIamPermissions(
-        project_ref, permissions).permissions
+        project_ref, permissions
+    ).permissions
     return set(permissions) == set(granted_permissions)
   finally:
     properties.VALUES.auth.credential_file_override.Set(cred_file_override_old)
@@ -182,34 +288,40 @@ def LogADCIsWritten(adc_path):
   log.status.Print('\nCredentials saved to file: [{}]'.format(real_path))
   log.status.Print(
       '\nThese credentials will be used by any library that requests '
-      'Application Default Credentials (ADC).')
+      'Application Default Credentials (ADC).'
+  )
   # See https://bugs.python.org/issue40377 for the issue with python
   # from Microsoft store. The ADC file is transparently redirected to a
   # different path which client libraries do not expect, so cannot locate.
   if real_path != adc_path:
-    log.warning('You may be running gcloud with a python interpreter installed '
-                'from Microsoft Store which is not supported by this command. '
-                'Run `gcloud topic startup` for instructions to select a '
-                'different python interpreter. Otherwise, you have to '
-                'set the environment variable `GOOGLE_APPLICATION_CREDENTIALS` '
-                'to the file path `{}`. See '
-                'https://cloud.google.com/docs/authentication/'
-                'getting-started#setting_the_environment_variable '
-                'for more information.'.format(real_path))
+    log.warning(
+        'You may be running gcloud with a python interpreter installed '
+        'from Microsoft Store which is not supported by this command. '
+        'Run `gcloud topic startup` for instructions to select a '
+        'different python interpreter. Otherwise, you have to '
+        'set the environment variable `GOOGLE_APPLICATION_CREDENTIALS` '
+        'to the file path `{}`. See '
+        'https://cloud.google.com/docs/authentication/'
+        'getting-started#setting_the_environment_variable '
+        'for more information.'.format(real_path)
+    )
 
 
 def LogQuotaProjectAdded(quota_project):
   log.status.Print(
       '\nQuota project "{}" was added to ADC which can be used by Google '
       'client libraries for billing and quota. Note that some services may '
-      'still bill the project owning the resource.'.format(quota_project))
+      'still bill the project owning the resource.'.format(quota_project)
+  )
 
 
 def LogQuotaProjectNotFound():
-  log.warning('\nCannot find a quota project to add to ADC. You might receive '
-              'a "quota exceeded" or "API not enabled" error. Run $ gcloud '
-              'auth application-default set-quota-project to add '
-              'a quota project.')
+  log.warning(
+      '\nCannot find a quota project to add to ADC. You might receive '
+      'a "quota exceeded" or "API not enabled" error. Run $ gcloud '
+      'auth application-default set-quota-project to add '
+      'a quota project.'
+  )
 
 
 def LogMissingPermissionOnQuotaProject(quota_project):
@@ -218,14 +330,16 @@ def LogMissingPermissionOnQuotaProject(quota_project):
       'account in ADC does not have the "{}" permission on this project. '
       'You might receive a "quota_exceeded" or "API not enabled" error. '
       'Run $ gcloud auth application-default set-quota-project to add a quota '
-      'project.'.format(quota_project, SERVICEUSAGE_PERMISSION))
+      'project.'.format(quota_project, SERVICEUSAGE_PERMISSION)
+  )
 
 
 def LogQuotaProjectDisabled():
   log.warning(
       '\nQuota project is disabled. You might receive a "quota exceeded" or '
       '"API not enabled" error. Run $ gcloud auth application-default '
-      'set-quota-project to add a quota project.')
+      'set-quota-project to add a quota project.'
+  )
 
 
 def DumpADC(credentials, quota_project_disabled=False):
@@ -256,11 +370,13 @@ def DumpADCOptionalQuotaProject(credentials):
   LogADCIsWritten(adc_path)
 
   quota_project = c_creds.GetQuotaProject(
-      credentials, force_resource_quota=True)
+      credentials, force_resource_quota=True
+  )
   if not quota_project:
     LogQuotaProjectNotFound()
   elif AdcHasGivenPermissionOnProject(
-      quota_project, permissions=[SERVICEUSAGE_PERMISSION]):
+      quota_project, permissions=[SERVICEUSAGE_PERMISSION]
+  ):
     c_creds.ADC(credentials).DumpExtendedADCToFile(quota_project=quota_project)
     LogQuotaProjectAdded(quota_project)
   else:
@@ -323,12 +439,12 @@ def AddQuotaProjectToADC(quota_project):
   LogQuotaProjectAdded(quota_project)
 
 
-def DumpImpersonatedServiceAccountToADC(credentials,
-                                        target_principal,
-                                        delegates,
-                                        scopes=None):
-  adc_path = c_creds.ADC(credentials, target_principal,
-                         delegates, scopes).DumpADCToFile()
+def DumpImpersonatedServiceAccountToADC(
+    credentials, target_principal, delegates, scopes=None
+):
+  adc_path = c_creds.ADC(
+      credentials, target_principal, delegates, scopes
+  ).DumpADCToFile()
   LogADCIsWritten(adc_path)
 
 

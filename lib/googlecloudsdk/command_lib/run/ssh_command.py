@@ -36,16 +36,32 @@ class BaseSshCommand(base.Command):
         ),
     )
 
-  def RunSsh(self, args, workload_type, deployment_name, instance_id=None):
+  def RunSsh(
+      self,
+      args,
+      workload_type,
+      deployment_name,
+      instance_id=None,
+  ):
     """Common Run logic for SSH commands."""
     args.project = flags.GetProjectID(args)
     args.region = flags.GetRegion(args, prompt=False)
+    args.deployment_name = deployment_name
+    args.instance = instance_id
+    args.release_track = self.ReleaseTrack()
+
     if not args.region:
       raise exceptions.ArgumentError(
           'Missing required argument [region]. Set --region flag or set'
           ' run/region property.'
       )
-    args.deployment_name = deployment_name
-    args.instance = instance_id
-    args.release_track = self.ReleaseTrack()
+    if (
+        args.release_track != base.ReleaseTrack.ALPHA
+        and instance_id
+        and getattr(args, 'revision', None) is None
+    ):
+      raise exceptions.ArgumentError(
+          'Revision must be specified with instance. Set --revision flag when'
+          ' --instance flag is set.'
+      )
     run_ssh.Ssh(args, workload_type).Run()

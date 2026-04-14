@@ -6009,6 +6009,7 @@ class GoogleCloudDialogflowCxV3Intent(_messages.Message):
       characters.
     displayName: Required. The human-readable name of the intent, unique
       within the agent.
+    dtmfPattern: Optional. Matching DTMF pattern for the intent.
     isFallback: Indicates whether this is a fallback intent. Currently only
       default fallback intent is allowed in the agent, which is added upon
       agent creation. Adding training phrases to fallback intent is useful in
@@ -6071,12 +6072,13 @@ class GoogleCloudDialogflowCxV3Intent(_messages.Message):
 
   description = _messages.StringField(1)
   displayName = _messages.StringField(2)
-  isFallback = _messages.BooleanField(3)
-  labels = _messages.MessageField('LabelsValue', 4)
-  name = _messages.StringField(5)
-  parameters = _messages.MessageField('GoogleCloudDialogflowCxV3IntentParameter', 6, repeated=True)
-  priority = _messages.IntegerField(7, variant=_messages.Variant.INT32)
-  trainingPhrases = _messages.MessageField('GoogleCloudDialogflowCxV3IntentTrainingPhrase', 8, repeated=True)
+  dtmfPattern = _messages.StringField(3)
+  isFallback = _messages.BooleanField(4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  name = _messages.StringField(6)
+  parameters = _messages.MessageField('GoogleCloudDialogflowCxV3IntentParameter', 7, repeated=True)
+  priority = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+  trainingPhrases = _messages.MessageField('GoogleCloudDialogflowCxV3IntentTrainingPhrase', 9, repeated=True)
 
 
 class GoogleCloudDialogflowCxV3IntentInput(_messages.Message):
@@ -8987,6 +8989,7 @@ class GoogleCloudDialogflowCxV3beta1Intent(_messages.Message):
       characters.
     displayName: Required. The human-readable name of the intent, unique
       within the agent.
+    dtmfPattern: Optional. Matching DTMF pattern for the intent.
     isFallback: Indicates whether this is a fallback intent. Currently only
       default fallback intent is allowed in the agent, which is added upon
       agent creation. Adding training phrases to fallback intent is useful in
@@ -9049,12 +9052,13 @@ class GoogleCloudDialogflowCxV3beta1Intent(_messages.Message):
 
   description = _messages.StringField(1)
   displayName = _messages.StringField(2)
-  isFallback = _messages.BooleanField(3)
-  labels = _messages.MessageField('LabelsValue', 4)
-  name = _messages.StringField(5)
-  parameters = _messages.MessageField('GoogleCloudDialogflowCxV3beta1IntentParameter', 6, repeated=True)
-  priority = _messages.IntegerField(7, variant=_messages.Variant.INT32)
-  trainingPhrases = _messages.MessageField('GoogleCloudDialogflowCxV3beta1IntentTrainingPhrase', 8, repeated=True)
+  dtmfPattern = _messages.StringField(3)
+  isFallback = _messages.BooleanField(4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  name = _messages.StringField(6)
+  parameters = _messages.MessageField('GoogleCloudDialogflowCxV3beta1IntentParameter', 7, repeated=True)
+  priority = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+  trainingPhrases = _messages.MessageField('GoogleCloudDialogflowCxV3beta1IntentTrainingPhrase', 9, repeated=True)
 
 
 class GoogleCloudDialogflowCxV3beta1IntentInput(_messages.Message):
@@ -12106,6 +12110,8 @@ class GoogleCloudDialogflowV2Conversation(_messages.Message):
   Messages:
     IngestedContextReferencesValue: Output only. The context reference updates
       provided by external systems.
+    InitialGeneratorContextsValue: Output only. A map with generator name as
+      key and generator context as value.
 
   Fields:
     conversationProfile: Required. The Conversation Profile to be used to
@@ -12125,6 +12131,12 @@ class GoogleCloudDialogflowV2Conversation(_messages.Message):
     endTime: Output only. The time the conversation was finished.
     ingestedContextReferences: Output only. The context reference updates
       provided by external systems.
+    initialConversationProfile: Optional. Output only. The initial
+      conversation profile to be used to configure this conversation, which is
+      a copy of the conversation profile config read at conversation creation
+      time.
+    initialGeneratorContexts: Output only. A map with generator name as key
+      and generator context as value.
     lifecycleState: Output only. The current state of the Conversation.
     name: Output only. Identifier. The unique identifier of this conversation.
       Format: `projects//locations//conversations/`.
@@ -12199,15 +12211,45 @@ class GoogleCloudDialogflowV2Conversation(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class InitialGeneratorContextsValue(_messages.Message):
+    r"""Output only. A map with generator name as key and generator context as
+    value.
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        InitialGeneratorContextsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        InitialGeneratorContextsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a InitialGeneratorContextsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A GoogleCloudDialogflowV2ConversationGeneratorContext
+          attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('GoogleCloudDialogflowV2ConversationGeneratorContext', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   conversationProfile = _messages.StringField(1)
   conversationStage = _messages.EnumField('ConversationStageValueValuesEnum', 2)
   endTime = _messages.StringField(3)
   ingestedContextReferences = _messages.MessageField('IngestedContextReferencesValue', 4)
-  lifecycleState = _messages.EnumField('LifecycleStateValueValuesEnum', 5)
-  name = _messages.StringField(6)
-  phoneNumber = _messages.MessageField('GoogleCloudDialogflowV2ConversationPhoneNumber', 7)
-  startTime = _messages.StringField(8)
-  telephonyConnectionInfo = _messages.MessageField('GoogleCloudDialogflowV2ConversationTelephonyConnectionInfo', 9)
+  initialConversationProfile = _messages.MessageField('GoogleCloudDialogflowV2ConversationProfile', 5)
+  initialGeneratorContexts = _messages.MessageField('InitialGeneratorContextsValue', 6)
+  lifecycleState = _messages.EnumField('LifecycleStateValueValuesEnum', 7)
+  name = _messages.StringField(8)
+  phoneNumber = _messages.MessageField('GoogleCloudDialogflowV2ConversationPhoneNumber', 9)
+  startTime = _messages.StringField(10)
+  telephonyConnectionInfo = _messages.MessageField('GoogleCloudDialogflowV2ConversationTelephonyConnectionInfo', 11)
 
 
 class GoogleCloudDialogflowV2ConversationContext(_messages.Message):
@@ -12385,6 +12427,39 @@ class GoogleCloudDialogflowV2ConversationEvent(_messages.Message):
   newMessagePayload = _messages.MessageField('GoogleCloudDialogflowV2Message', 3)
   newRecognitionResultPayload = _messages.MessageField('GoogleCloudDialogflowV2StreamingRecognitionResult', 4)
   type = _messages.EnumField('TypeValueValuesEnum', 5)
+
+
+class GoogleCloudDialogflowV2ConversationGeneratorContext(_messages.Message):
+  r"""Represents the context of a generator.
+
+  Enums:
+    GeneratorTypeValueValuesEnum: Output only. The type of the generator.
+
+  Fields:
+    generatorType: Output only. The type of the generator.
+  """
+
+  class GeneratorTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The type of the generator.
+
+    Values:
+      GENERATOR_TYPE_UNSPECIFIED: Unspecified generator type.
+      FREE_FORM: Free form generator type.
+      AGENT_COACHING: Agent coaching generator type.
+      SUMMARIZATION: Summarization generator type.
+      TRANSLATION: Translation generator type.
+      AGENT_FEEDBACK: Agent feedback generator type.
+      CUSTOMER_MESSAGE_GENERATION: Customer message generation generator type.
+    """
+    GENERATOR_TYPE_UNSPECIFIED = 0
+    FREE_FORM = 1
+    AGENT_COACHING = 2
+    SUMMARIZATION = 3
+    TRANSLATION = 4
+    AGENT_FEEDBACK = 5
+    CUSTOMER_MESSAGE_GENERATION = 6
+
+  generatorType = _messages.EnumField('GeneratorTypeValueValuesEnum', 1)
 
 
 class GoogleCloudDialogflowV2ConversationInfo(_messages.Message):

@@ -307,8 +307,10 @@ class Create(base.CreateCommand):
       bucket_ref = storage.ValidateBucketForCertificateAuthority(args.bucket)
       new_ca.gcsBucket = bucket_ref.bucket
 
-    p4sa_email = p4sa.GetOrCreate(project_ref)
-    p4sa.AddResourceRoleBindings(p4sa_email, kms_key_ref, bucket_ref)
+    # P4SA is needed only if user specifies any resource.
+    if kms_key_ref or bucket_ref:
+      p4sa_email = p4sa.GetOrCreate(project_ref)
+      p4sa.AddResourceRoleBindings(p4sa_email, kms_key_ref, bucket_ref)
 
     operations.Await(
         self.client.projects_locations_caPools_certificateAuthorities.Create(

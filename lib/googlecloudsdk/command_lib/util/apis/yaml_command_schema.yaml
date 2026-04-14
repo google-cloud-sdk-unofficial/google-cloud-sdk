@@ -496,7 +496,23 @@ properties:
   # Determines whether the command is available in univserse or not.
   universe_compatible: {type: boolean}
 
-  # Determines which release tracks this command implementation will apply to.
+  # Correponds to the agent-hints attribute on the command class.
+  # This is used to output static metadata describing
+  # the command's execution behavior and side effects.
+  hints:
+    description: |
+      Static metadata describing the command's execution behavior and side effects.
+    type: object
+    properties:
+      read_only:
+        type: boolean
+      destructive:
+        type: boolean
+      idempotent:
+        type: boolean
+      open_world:
+        type: boolean
+
   release_tracks:
     type: array
     items: {enum: [ALPHA, BETA, GA]}

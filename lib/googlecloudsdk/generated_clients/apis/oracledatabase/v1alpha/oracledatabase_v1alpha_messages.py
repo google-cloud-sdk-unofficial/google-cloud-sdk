@@ -957,6 +957,20 @@ class AutonomousDatabaseRefreshableClone(_messages.Message):
   region = _messages.StringField(2)
 
 
+class AutonomousDatabaseRefreshableClones(_messages.Message):
+  r"""Response message for getting the Autonomous Database refreshable clones.
+
+  Fields:
+    autonomousDatabaseRefreshableClones: The list of Autonomous Database
+      refreshable clones.
+    nextPageToken: Optional. A token identifying a page of results the server
+      should return.
+  """
+
+  autonomousDatabaseRefreshableClones = _messages.MessageField('AutonomousDatabaseRefreshableClone', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
 class AutonomousDatabaseStandbySummary(_messages.Message):
   r"""Autonomous Data Guard standby database details.
   https://docs.oracle.com/en-us/iaas/api/#/en/database/20160918/datatypes/Auto
@@ -4277,8 +4291,8 @@ class GoldenGateDeploymentProperties(_messages.Message):
       the GoldenGateDeployment.
     deploymentRole: Output only. The deployment role of the
       GoldenGateDeployment.
-    deploymentType: Required. A valid Oracle GoldenGate version. For a list of
-      supported versions, use the ListGoldenGateDeployments operation.
+    deploymentType: Required. A valid GoldenGate Deployment type. For a list
+      of supported types, use the `ListGoldenGateDeploymentTypes` operation.
     deploymentUrl: Output only. The deployment url of the
       GoldenGateDeployment.
     description: Optional. The description of the GoldenGateDeployment.
@@ -6060,20 +6074,6 @@ class ListAutonomousDatabaseCharacterSetsResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
-class ListAutonomousDatabaseRefreshableClonesResponse(_messages.Message):
-  r"""Response message for listing the Autonomous Database refreshable clones.
-
-  Fields:
-    autonomousDatabaseRefreshableClones: The list of Autonomous Database
-      refreshable clones.
-    nextPageToken: Optional. A token identifying a page of results the server
-      should return.
-  """
-
-  autonomousDatabaseRefreshableClones = _messages.MessageField('AutonomousDatabaseRefreshableClone', 1, repeated=True)
-  nextPageToken = _messages.StringField(2)
-
-
 class ListAutonomousDatabasesResponse(_messages.Message):
   r"""The response for `AutonomousDatabase.List`.
 
@@ -7205,6 +7205,24 @@ class OracledatabaseProjectsLocationsAutonomousDatabasesGenerateWalletRequest(_m
   name = _messages.StringField(2, required=True)
 
 
+class OracledatabaseProjectsLocationsAutonomousDatabasesGetRefreshableClonesRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsAutonomousDatabasesGetRefreshableClones
+  Request object.
+
+  Fields:
+    name: Required. The Autonomous Database resource whose refreshable clones
+      are to be listed. Format: projects/{project}/locations/{location}/autono
+      mousDatabases/{autonomous_database}
+    pageSize: Optional. The maximum number of items to return.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+  """
+
+  name = _messages.StringField(1, required=True)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+
+
 class OracledatabaseProjectsLocationsAutonomousDatabasesGetRequest(_messages.Message):
   r"""A OracledatabaseProjectsLocationsAutonomousDatabasesGetRequest object.
 
@@ -7215,24 +7233,6 @@ class OracledatabaseProjectsLocationsAutonomousDatabasesGetRequest(_messages.Mes
   """
 
   name = _messages.StringField(1, required=True)
-
-
-class OracledatabaseProjectsLocationsAutonomousDatabasesListRefreshableClonesRequest(_messages.Message):
-  r"""A OracledatabaseProjectsLocationsAutonomousDatabasesListRefreshableClone
-  sRequest object.
-
-  Fields:
-    pageSize: Optional. The maximum number of items to return.
-    pageToken: Optional. A token identifying a page of results the server
-      should return.
-    parent: Required. The Autonomous Database parent resource whose
-      refreshable clones are to be listed. Format: projects/{project}/location
-      s/{location}/autonomousDatabases/{autonomous_database}
-  """
-
-  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
 
 
 class OracledatabaseProjectsLocationsAutonomousDatabasesListRequest(_messages.Message):
@@ -8426,8 +8426,8 @@ class OracledatabaseProjectsLocationsGoldenGateConnectionAssignmentsListRequest(
       subsequent page. When paginating, all other parameters provided to
       `ListGoldenGateConnectionAssignments` must match the call that provided
       the page token.
-    parent: Required. The parent resource where this
-      GoldenGateConnectionAssignment will be created. Format:
+    parent: Required. The parent value for the
+      GoldenGateConnectionAssignments. Format:
       projects/{project}/locations/{location}
   """
 

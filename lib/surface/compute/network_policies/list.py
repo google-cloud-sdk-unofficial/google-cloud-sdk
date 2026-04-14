@@ -14,7 +14,6 @@
 # limitations under the License.
 """Command for listing network policies."""
 
-
 import itertools
 
 from apitools.base.py import list_pager
@@ -26,7 +25,7 @@ from googlecloudsdk.core import properties
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List Compute Engine network policies.
 
@@ -96,7 +95,8 @@ def _GetListPage(client, request):
 
 
 List.detailed_help = {
-    'EXAMPLES': """\
+    'EXAMPLES': (
+        """\
     To list regional network policies under project ``my-project'',
     specify a list of regions with ``--regions'':
 
@@ -106,5 +106,6 @@ List.detailed_help = {
     ``my-project'', omit ``--regions'':
 
       $ {command} --project=my-project
-    """,
+    """
+    ),
 }

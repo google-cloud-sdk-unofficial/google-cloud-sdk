@@ -152,17 +152,22 @@ def AddIntegratedServices(parser):
       _ArgOrFlag('add-integrated-services', False),
       metavar='INTEGRATED_SERVICE',
       type=arg_parsers.ArgList(),
+      action=arg_parsers.FlattenAction(),
       help=(
           'Set the list of integrated services for the floor setting. This can'
           ' be used to enable project-wide Model Armor sanitization for the'
-          ' respective services.'
+          ' respective services. This flag can be repeated to specify'
+          ' multiple services, or a comma-separated list can be provided.'
       ),
   )
   group.add_argument(
       _ArgOrFlag('remove-integrated-services', False),
       metavar='INTEGRATED_SERVICE',
       type=arg_parsers.ArgList(),
-      help='Remove specified service(s) from the list of integrated services.',
+      action=arg_parsers.FlattenAction(),
+      help='Remove specified service(s) from the list of integrated services.'
+           ' This flag can be repeated to specify multiple services, or a'
+           ' comma-separated list can be provided.',
   )
   group.add_argument(
       _ArgOrFlag('clear-integrated-services', False),

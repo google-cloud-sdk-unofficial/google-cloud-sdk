@@ -16,11 +16,13 @@
 
 import argparse
 from collections.abc import Sequence
+import dataclasses
 import enum
 import json
 import subprocess
 
 from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import iap_tunnel
 from googlecloudsdk.command_lib.compute import ssh_utils
 from googlecloudsdk.command_lib.util.ssh import ssh
@@ -92,6 +94,19 @@ def CreateSshTunnelArgs(
   return res
 
 
+# Double quotes around the type hint are used to avoid circular dependency
+@dataclasses.dataclass(frozen=True)
+class SshCommandComponents:
+  """The components of an SSH command."""
+
+  env: "ssh.Environment"
+  remote: "ssh.Remote"
+  cert_file: str
+  iap_tunnel_args: "iap_tunnel.SshTunnelArgs"
+  options: dict[str, str]
+  identity_file: str
+
+
 class Ssh:
   """SSH into a Cloud Run Deployment."""
 
@@ -111,12 +126,33 @@ class Ssh:
     self.project_number = ProjectIdToProjectNumber(args.project)
     self.instance = getattr(args, "instance", None)
     self.container = getattr(args, "container", None)
+    self.revision = getattr(args, "revision", None)
     self.region = args.region
     self.release_track = args.release_track
     self.iap_tunnel_url_override = getattr(
         args, "iap_tunnel_url_override", None
     )
     self.service_account = self._GetServiceAccountFromWorkload()
+
+    self.workload_type = (
+        self.WorkloadType.SERVICE
+        if self.workload_type == self.WorkloadType.INSTANCE
+        else self.workload_type
+    )
+
+    if self._UseCloudRunDomainOverride():
+      self.iap_tunnel_url_override = f"wss://{self.region}.ssh.run.app/v4"
+
+  def _UseCloudRunDomainOverride(self):
+    """Returns whether to use the Cloud Run domain override."""
+    if self.iap_tunnel_url_override:
+      return False
+    if (
+        self.release_track == base.ReleaseTrack.ALPHA
+        and self.workload_type == self.WorkloadType.SERVICE
+    ):
+      return False
+    return True
 
   def _GetServiceAccountFromWorkload(self):
     """Retrieves the service account from the Cloud Run workload."""
@@ -150,15 +186,22 @@ class Ssh:
       ) from e
     else:
       service_data = json.loads(output)
-      template = service_data.get("spec", {}).get("template", {})
-      execution_environment = (
-          template.get("metadata", {})
-          .get("annotations", {})
-          .get("run.googleapis.com/execution-environment")
-      )
-      if execution_environment == "gen1":
-        raise ValueError("SSH is not supported for Cloud Run gen1 deployments.")
-      service_account = template.get("spec", {}).get("serviceAccountName")
+      if self.workload_type == self.WorkloadType.INSTANCE:
+        service_account = service_data.get("spec", {}).get("serviceAccountName")
+      else:
+        template = service_data.get("spec", {}).get("template", {})
+        execution_environment = (
+            template.get("metadata", {})
+            .get("annotations", {})
+            .get("run.googleapis.com/execution-environment")
+        )
+        if execution_environment == "gen1":
+          raise ValueError(
+              "SSH is not supported for Cloud Run gen1 deployments. If you"
+              " already switched the execution environment to gen2, please wait"
+              " a few minutes for the deployment to be updated. "
+          )
+        service_account = template.get("spec", {}).get("serviceAccountName")
       if not service_account:
         raise ValueError("Service account not found for workload.")
       return service_account
@@ -167,8 +210,8 @@ class Ssh:
     """Returns the host key alias for the SSH connection."""
     return "cloud-run-default"
 
-  def Run(self):
-    """Run the SSH command."""
+  def GetSshCommandComponents(self):
+    """Returns the SSH command components."""
     env = ssh.Environment.Current()
     env.RequireSSH()
     keys = ssh.Keys.FromFilename()
@@ -208,11 +251,12 @@ class Ssh:
       )
       known_hosts.Write()
 
+    deployment_name = self.revision if self.revision else self.deployment_name
     iap_tunnel_args = CreateSshTunnelArgs(
         self.release_track,
         self.project_number,
         self.project,
-        self.deployment_name,
+        deployment_name,
         self.workload_type,
         self.region,
         self.instance,
@@ -226,13 +270,27 @@ class Ssh:
         strict_host_key_checking="no",
     )
 
-    return ssh.SSHCommand(
+    return SshCommandComponents(
+        env=env,
         remote=remote,
         cert_file=cert_file,
         iap_tunnel_args=iap_tunnel_args,
         options=ssh_options,
         identity_file=keys.key_file,
-    ).Run(env)
+    )
+
+  def Run(self):
+    """Run the SSH command."""
+
+    cmd_components = self.GetSshCommandComponents()
+
+    return ssh.SSHCommand(
+        remote=cmd_components.remote,
+        cert_file=cmd_components.cert_file,
+        iap_tunnel_args=cmd_components.iap_tunnel_args,
+        options=cmd_components.options,
+        identity_file=cmd_components.identity_file,
+    ).Run(cmd_components.env)
 
   def _FetchSshCaPublicKeys(self) -> Sequence[str] | None:
     """Retrieves the CA public keys for the current region from a gstatic URL.

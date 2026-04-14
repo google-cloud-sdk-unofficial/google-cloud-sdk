@@ -139,6 +139,7 @@ class CreateGA(base.CreateCommand):
     )
     managed_flags.AddStandbyPolicyFlags(parser)
     managed_flags.AddWorkloadPolicyFlag(parser)
+    managed_flags.AddTargetSizePolicyModeFlag(parser)
     # When adding RMIG-specific flag, update REGIONAL_FLAGS constant.
 
   def _HandleStatefulArgs(self, instance_group_manager, args, client):
@@ -481,7 +482,6 @@ class CreateBeta(CreateGA):
   @classmethod
   def Args(cls, parser):
     managed_flags.AddMigActionOnVmFailedHealthCheck(parser)
-    managed_flags.AddTargetSizePolicyModeFlag(parser)
     managed_flags.AddOnRepairFlags(parser)
     super(CreateBeta, cls).Args(parser)
 

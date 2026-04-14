@@ -22,7 +22,9 @@ from googlecloudsdk.command_lib.orchestration_pipelines.handlers import base
 class SecretManagerSecretHandler(base.GcpResourceHandler):
   """Handler for SecretManager Secret resources."""
 
+  description = "SecretManager Secret resources."
   api_prefix = "projects"
+  _documentation_uri = "https://cloud.google.com/secret-manager/docs/reference/rest/v1/projects.secrets"
 
   def _get_parent_path(self) -> str:
     """Secret Manager resources use project-level parents, not locations."""

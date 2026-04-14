@@ -47,19 +47,16 @@ def check_for_urlmap_conditions(
     if (
         input_type == feature_helper.InputType.ADMIN_API
         and (
-            url_map.get('urlRegex') == '.*'
-            or url_map.get('urlRegex') == '/.*'
+            url_map.get('urlRegex') == '.*' or url_map.get('urlRegex') == '/.*'
         )
-        and url_map.get('script', {}).get('scriptPath') == 'auto'
+        and url_map.get('script', {}).get('scriptPath')
+        in ['auto', 'PLACEHOLDER']
     ):
       continue
     elif (
         input_type == feature_helper.InputType.APP_YAML
-        and (
-            url_map.get('url') == '.*'
-            or url_map.get('url') == '/.*'
-        )
-        and url_map.get('script') == 'auto'
+        and (url_map.get('url') == '.*' or url_map.get('url') == '/.*')
+        and url_map.get('script') in ['auto', 'PLACEHOLDER']
     ):
       continue
     else:
@@ -80,7 +77,11 @@ def get_length(val: any) -> int:
 
 
 def list_incompatible_features(
-    appyaml: str, service: str, version: str
+    input_data: Mapping[str, any],
+    input_type: feature_helper.InputType,
+    appyaml: str,
+    service: str,
+    version: str,
 ) -> None:
   """Lists incompatible features for GAE to Cloud Run migration.
 
@@ -88,15 +89,15 @@ def list_incompatible_features(
   or a deployed App Engine version.
 
   Args:
+      input_data: The input data, containing Message objects.
+      input_type: The input type of the input data.
       appyaml: The path to the app.yaml file.
       service: The service name.
       version: The version name.
   """
-  input_type, input_data = util.validate_input(appyaml, service, version)
   if not input_type or not input_data:
     return
   incompatible_list = _check_for_incompatibility(input_data, input_type)
-  appyaml = 'app.yaml' if appyaml is None else appyaml
   input_name = _generate_input_name(input_type, appyaml, service, version)
   _generate_output(incompatible_list, input_type, input_name)
 
@@ -196,7 +197,8 @@ def _check_for_incompatibility(
       if not range_limited_features[key].validate(val):
         incompatible_list.append(range_limited_features[key])
     # Check for value_restricted features.
-    if key in value_restricted_features:
+    # TODO(b/493877807): Skip the check for flex environment.
+    if key in value_restricted_features and not util.is_flex_env(input_data):
       if not value_restricted_features[key].validate(key, val):
         incompatible_list.append(value_restricted_features[key])
   return incompatible_list

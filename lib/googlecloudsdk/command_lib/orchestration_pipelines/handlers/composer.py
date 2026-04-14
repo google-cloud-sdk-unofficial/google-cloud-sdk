@@ -23,6 +23,8 @@ from googlecloudsdk.command_lib.orchestration_pipelines.handlers import base
 class ComposerEnvironmentHandler(base.GcpResourceHandler):
   """Handler for migrating Composer Environment configurations."""
 
+  description = "Composer Environment configurations."
+
   def build_get_request(self) -> messages.Message:
     return self.messages.ComposerProjectsLocationsEnvironmentsGetRequest(
         name=self._get_resource_name()

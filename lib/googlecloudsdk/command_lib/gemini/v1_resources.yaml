@@ -66,6 +66,18 @@ projects_locations_data_sharing_with_google_settings:
     attribute_name: data_sharing_with_google_setting
     help: The dataSharingWithGoogleSetting id of the {resource} resource.
   disable_auto_completers: true
+projects_locations_gda_observability_settings:
+  name: gdaObservabilitySetting
+  plural_name: gdaObservabilitySettings
+  collection: cloudaicompanion.projects.locations.gdaObservabilitySettings
+  attributes:
+  - *project
+  - *location
+  - &gdaObservabilitySetting
+    parameter_name: gdaObservabilitySettingsId
+    attribute_name: gda_observability_setting
+    help: The gdaObservabilitySetting id of the {resource} resource.
+  disable_auto_completers: true
 projects_locations_gemini_gcp_enablement_settings:
   name: geminiGcpEnablementSetting
   plural_name: geminiGcpEnablementSettings
@@ -77,6 +89,18 @@ projects_locations_gemini_gcp_enablement_settings:
     parameter_name: geminiGcpEnablementSettingsId
     attribute_name: gemini_gcp_enablement_setting
     help: The geminiGcpEnablementSetting id of the {resource} resource.
+  disable_auto_completers: true
+projects_locations_gibq_observability_settings:
+  name: gibqObservabilitySetting
+  plural_name: gibqObservabilitySettings
+  collection: cloudaicompanion.projects.locations.gibqObservabilitySettings
+  attributes:
+  - *project
+  - *location
+  - &gibqObservabilitySetting
+    parameter_name: gibqObservabilitySettingsId
+    attribute_name: gibq_observability_setting
+    help: The gibqObservabilitySetting id of the {resource} resource.
   disable_auto_completers: true
 projects_locations_logging_settings:
   name: loggingSetting
@@ -102,20 +126,21 @@ projects_locations_release_channel_settings:
     attribute_name: release_channel_setting
     help: The releaseChannelSetting id of the {resource} resource.
   disable_auto_completers: true
-? projects_locations_behavior_settings_or_chat_history_settings_or_code_tools_settings_or_data_control_settings_or_data_sharing_with_google_settings_or_gemini_code_assist_settings_or_gemini_gcp_enablement_settings_or_logging_settings_or_release_channel_settings_or_security_settings_setting_bindings
+? projects_locations_ai_dev_tools_settings_or_behavior_settings_or_chat_history_settings_or_code_tools_settings_or_data_control_settings_or_data_sharing_with_google_settings_or_gda_o11_y_settings_or_gda_observability_settings_or_gemini_code_assist_settings_or_gemini_gcp_enablement_settings_or_gemini_in_big_query_o11_y_settings_or_gemini_in_looker_o11_y_settings_or_gibq_observability_settings_or_logging_settings_or_release_channel_settings_or_security_settings_setting_bindings
 : name: settingBinding
   plural_name: settingBindings
   resources:
   - name: settingBinding
     plural_name: settingBindings
-    collection: cloudaicompanion.projects.locations.behaviorSettings.settingBindings
+    collection:
+      cloudaicompanion.projects.locations.aiDevToolsSettings.settingBindings
     attributes:
     - *project
     - *location
-    - &behaviorSetting
-      parameter_name: behaviorSettingsId
-      attribute_name: behavior_setting
-      help: The behaviorSetting id of the {resource} resource.
+    - &aiDevToolsSetting
+      parameter_name: aiDevToolsSettingsId
+      attribute_name: ai_dev_tools_setting
+      help: The aiDevToolsSetting id of the {resource} resource.
     - &settingBinding
       parameter_name: settingBindingsId
       attribute_name: setting_binding
@@ -123,7 +148,21 @@ projects_locations_release_channel_settings:
     disable_auto_completers: true
   - name: settingBinding
     plural_name: settingBindings
-    collection: cloudaicompanion.projects.locations.chatHistorySettings.settingBindings
+    collection:
+      cloudaicompanion.projects.locations.behaviorSettings.settingBindings
+    attributes:
+    - *project
+    - *location
+    - &behaviorSetting
+      parameter_name: behaviorSettingsId
+      attribute_name: behavior_setting
+      help: The behaviorSetting id of the {resource} resource.
+    - *settingBinding
+    disable_auto_completers: true
+  - name: settingBinding
+    plural_name: settingBindings
+    collection:
+      cloudaicompanion.projects.locations.chatHistorySettings.settingBindings
     attributes:
     - *project
     - *location
@@ -135,7 +174,8 @@ projects_locations_release_channel_settings:
     disable_auto_completers: true
   - name: settingBinding
     plural_name: settingBindings
-    collection: cloudaicompanion.projects.locations.codeToolsSettings.settingBindings
+    collection:
+      cloudaicompanion.projects.locations.codeToolsSettings.settingBindings
     attributes:
     - *project
     - *location
@@ -144,7 +184,8 @@ projects_locations_release_channel_settings:
     disable_auto_completers: true
   - name: settingBinding
     plural_name: settingBindings
-    collection: cloudaicompanion.projects.locations.dataControlSettings.settingBindings
+    collection:
+      cloudaicompanion.projects.locations.dataControlSettings.settingBindings
     attributes:
     - *project
     - *location
@@ -156,7 +197,8 @@ projects_locations_release_channel_settings:
     disable_auto_completers: true
   - name: settingBinding
     plural_name: settingBindings
-    collection: cloudaicompanion.projects.locations.dataSharingWithGoogleSettings.settingBindings
+    collection:
+      cloudaicompanion.projects.locations.dataSharingWithGoogleSettings.settingBindings
     attributes:
     - *project
     - *location
@@ -165,7 +207,31 @@ projects_locations_release_channel_settings:
     disable_auto_completers: true
   - name: settingBinding
     plural_name: settingBindings
-    collection: cloudaicompanion.projects.locations.geminiCodeAssistSettings.settingBindings
+    collection:
+      cloudaicompanion.projects.locations.gdaO11YSettings.settingBindings
+    attributes:
+    - *project
+    - *location
+    - &gdaO11ySetting
+      parameter_name: gdaO11YSettingsId
+      attribute_name: gda_o11y_setting
+      help: The gdaO11ySetting id of the {resource} resource.
+    - *settingBinding
+    disable_auto_completers: true
+  - name: settingBinding
+    plural_name: settingBindings
+    collection:
+      cloudaicompanion.projects.locations.gdaObservabilitySettings.settingBindings
+    attributes:
+    - *project
+    - *location
+    - *gdaObservabilitySetting
+    - *settingBinding
+    disable_auto_completers: true
+  - name: settingBinding
+    plural_name: settingBindings
+    collection:
+      cloudaicompanion.projects.locations.geminiCodeAssistSettings.settingBindings
     attributes:
     - *project
     - *location
@@ -177,7 +243,8 @@ projects_locations_release_channel_settings:
     disable_auto_completers: true
   - name: settingBinding
     plural_name: settingBindings
-    collection: cloudaicompanion.projects.locations.geminiGcpEnablementSettings.settingBindings
+    collection:
+      cloudaicompanion.projects.locations.geminiGcpEnablementSettings.settingBindings
     attributes:
     - *project
     - *location
@@ -186,7 +253,44 @@ projects_locations_release_channel_settings:
     disable_auto_completers: true
   - name: settingBinding
     plural_name: settingBindings
-    collection: cloudaicompanion.projects.locations.loggingSettings.settingBindings
+    collection:
+      cloudaicompanion.projects.locations.geminiInBigQueryO11YSettings.settingBindings
+    attributes:
+    - *project
+    - *location
+    - &geminiInBigQueryO11ySetting
+      parameter_name: geminiInBigQueryO11YSettingsId
+      attribute_name: gemini_in_big_query_o11y_setting
+      help: The geminiInBigQueryO11ySetting id of the {resource} resource.
+    - *settingBinding
+    disable_auto_completers: true
+  - name: settingBinding
+    plural_name: settingBindings
+    collection:
+      cloudaicompanion.projects.locations.geminiInLookerO11YSettings.settingBindings
+    attributes:
+    - *project
+    - *location
+    - &geminiInLookerO11ySetting
+      parameter_name: geminiInLookerO11YSettingsId
+      attribute_name: gemini_in_looker_o11y_setting
+      help: The geminiInLookerO11ySetting id of the {resource} resource.
+    - *settingBinding
+    disable_auto_completers: true
+  - name: settingBinding
+    plural_name: settingBindings
+    collection:
+      cloudaicompanion.projects.locations.gibqObservabilitySettings.settingBindings
+    attributes:
+    - *project
+    - *location
+    - *gibqObservabilitySetting
+    - *settingBinding
+    disable_auto_completers: true
+  - name: settingBinding
+    plural_name: settingBindings
+    collection:
+      cloudaicompanion.projects.locations.loggingSettings.settingBindings
     attributes:
     - *project
     - *location
@@ -195,7 +299,8 @@ projects_locations_release_channel_settings:
     disable_auto_completers: true
   - name: settingBinding
     plural_name: settingBindings
-    collection: cloudaicompanion.projects.locations.releaseChannelSettings.settingBindings
+    collection:
+      cloudaicompanion.projects.locations.releaseChannelSettings.settingBindings
     attributes:
     - *project
     - *location
@@ -204,7 +309,8 @@ projects_locations_release_channel_settings:
     disable_auto_completers: true
   - name: settingBinding
     plural_name: settingBindings
-    collection: cloudaicompanion.projects.locations.securitySettings.settingBindings
+    collection:
+      cloudaicompanion.projects.locations.securitySettings.settingBindings
     attributes:
     - *project
     - *location
@@ -217,7 +323,8 @@ projects_locations_release_channel_settings:
 projects_locations_code_repository_indexes_repository_groups:
   name: repositoryGroup
   plural_name: repositoryGroups
-  collection: cloudaicompanion.projects.locations.codeRepositoryIndexes.repositoryGroups
+  collection:
+    cloudaicompanion.projects.locations.codeRepositoryIndexes.repositoryGroups
   attributes:
   - *project
   - *location
@@ -230,7 +337,8 @@ projects_locations_code_repository_indexes_repository_groups:
 projects_locations_code_tools_settings_setting_bindings:
   name: settingBinding
   plural_name: settingBindings
-  collection: cloudaicompanion.projects.locations.codeToolsSettings.settingBindings
+  collection:
+    cloudaicompanion.projects.locations.codeToolsSettings.settingBindings
   attributes:
   - *project
   - *location
@@ -240,27 +348,52 @@ projects_locations_code_tools_settings_setting_bindings:
 projects_locations_data_sharing_with_google_settings_setting_bindings:
   name: settingBinding
   plural_name: settingBindings
-  collection: cloudaicompanion.projects.locations.dataSharingWithGoogleSettings.settingBindings
+  collection:
+    cloudaicompanion.projects.locations.dataSharingWithGoogleSettings.settingBindings
   attributes:
   - *project
   - *location
   - *dataSharingWithGoogleSetting
   - *settingBinding
   disable_auto_completers: false
+projects_locations_gda_observability_settings_setting_bindings:
+  name: settingBinding
+  plural_name: settingBindings
+  collection:
+    cloudaicompanion.projects.locations.gdaObservabilitySettings.settingBindings
+  attributes:
+  - *project
+  - *location
+  - *gdaObservabilitySetting
+  - *settingBinding
+  disable_auto_completers: false
 projects_locations_gemini_gcp_enablement_settings_setting_bindings:
   name: settingBinding
   plural_name: settingBindings
-  collection: cloudaicompanion.projects.locations.geminiGcpEnablementSettings.settingBindings
+  collection:
+    cloudaicompanion.projects.locations.geminiGcpEnablementSettings.settingBindings
   attributes:
   - *project
   - *location
   - *geminiGcpEnablementSetting
   - *settingBinding
   disable_auto_completers: false
+projects_locations_gibq_observability_settings_setting_bindings:
+  name: settingBinding
+  plural_name: settingBindings
+  collection:
+    cloudaicompanion.projects.locations.gibqObservabilitySettings.settingBindings
+  attributes:
+  - *project
+  - *location
+  - *gibqObservabilitySetting
+  - *settingBinding
+  disable_auto_completers: false
 projects_locations_logging_settings_setting_bindings:
   name: settingBinding
   plural_name: settingBindings
-  collection: cloudaicompanion.projects.locations.loggingSettings.settingBindings
+  collection:
+    cloudaicompanion.projects.locations.loggingSettings.settingBindings
   attributes:
   - *project
   - *location
@@ -270,7 +403,8 @@ projects_locations_logging_settings_setting_bindings:
 projects_locations_release_channel_settings_setting_bindings:
   name: settingBinding
   plural_name: settingBindings
-  collection: cloudaicompanion.projects.locations.releaseChannelSettings.settingBindings
+  collection:
+    cloudaicompanion.projects.locations.releaseChannelSettings.settingBindings
   attributes:
   - *project
   - *location

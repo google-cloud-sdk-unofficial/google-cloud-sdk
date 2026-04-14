@@ -1020,10 +1020,13 @@ class GrafeasV1FileLocation(_messages.Message):
       indicate the path to war file combined with the path to jar file.
     layerDetails: Each package found in a file should have its own layer
       metadata (that is, information from the origin layer of the package).
+    lineNumber: Line number in the file where the package was found. Optional
+      field that only applies to source repository scanning.
   """
 
   filePath = _messages.StringField(1)
   layerDetails = _messages.MessageField('GrafeasV1LayerDetails', 2)
+  lineNumber = _messages.IntegerField(3, variant=_messages.Variant.INT32)
 
 
 class GrafeasV1LayerDetails(_messages.Message):

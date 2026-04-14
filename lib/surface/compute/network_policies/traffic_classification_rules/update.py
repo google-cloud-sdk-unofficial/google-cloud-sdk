@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   r"""Updates a Compute Engine network policy rule.
 
@@ -163,7 +163,8 @@ class Update(base.UpdateCommand):
 
 
 Update.detailed_help = {
-    'EXAMPLES': """\
+    'EXAMPLES': (
+        """\
     To update a rule with priority ``10'' in a network policy with name
     ``my-policy'' to change the description to ``new example rule'', run:
 
@@ -171,5 +172,6 @@ Update.detailed_help = {
           --priority=10 \
           --network-policy=my-policy \
           --description="new example rule"
-    """,
+    """
+    ),
 }

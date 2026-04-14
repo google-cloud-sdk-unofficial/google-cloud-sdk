@@ -27,6 +27,9 @@ BUILD_READY = 'BuildReady'
 UPLOAD_SOURCE = 'UploadSource'
 CREATE_REPO = 'CreateRepo'
 VALIDATE_SERVICE = 'ValidateService'
+SYNC_RULES = 'SyncRules'
+FETCH_PROJECT_DETAILS = 'FetchProjectDetails'
+ESTABLISH_CONNECTION = 'EstablishConnection'
 
 _RESOURCES_AVAILABLE = 'ResourcesAvailable'
 _STARTED = 'Started'
@@ -228,3 +231,17 @@ def WorkerPoolStages(
   if include_create_revision:
     stages.append(progress_tracker.Stage('Creating Revision...', key=READY))
   return stages
+
+
+def SyncStages():
+  """Return the progress tracker Stages for conditions of a Dev Sync session."""
+  return [
+      progress_tracker.Stage('Generating sync rules...', key=SYNC_RULES),
+      progress_tracker.Stage(
+          'Fetching Project details...', key=FETCH_PROJECT_DETAILS
+      ),
+      progress_tracker.Stage(
+          'Establishing SSH connection to the container...',
+          key=ESTABLISH_CONNECTION,
+      ),
+  ]

@@ -82,7 +82,26 @@ class JobBase(six.with_metaclass(abc.ABCMeta, object)):
     if self.files_to_stage:
       log.info('Staging local files {0} to {1}.'.format(self.files_to_stage,
                                                         self._staging_dir))
-      storage_helpers.Upload(self.files_to_stage, self._staging_dir)
+      generation_by_basename = storage_helpers.Upload(
+          self.files_to_stage, self._staging_dir
+      )
+
+      def _AppendGeneration(uri):
+        if not uri.startswith(self._staging_dir):
+          return uri
+        basename = uri[len(self._staging_dir) :]
+        generation = generation_by_basename.get(basename)
+        if generation is not None:
+          return f'{uri}#{generation}'
+        return uri
+
+      for file_type, file_or_files in six.iteritems(self.files_by_type):
+        if isinstance(file_or_files, six.string_types):
+          self.files_by_type[file_type] = _AppendGeneration(file_or_files)
+        elif file_or_files:
+          self.files_by_type[file_type] = [
+              _AppendGeneration(f) for f in file_or_files
+          ]
 
   def GetStagingDir(self, cluster, cluster_pool, job_id, bucket=None):
     """Determine the GCS directory to stage job resources in."""

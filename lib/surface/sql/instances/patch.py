@@ -374,6 +374,7 @@ def AddBaseArgs(parser):
   flags.AddServerCaPool(parser)
   flags.AddReadPoolAutoScaleConfig(parser)
   flags.AddDataApiAccess(parser)
+  flags.AddReconcilePsaNetworking(parser)
 
 
 def AddBetaArgs(parser):
@@ -382,7 +383,6 @@ def AddBetaArgs(parser):
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
-  flags.AddReconcilePsaNetworking(parser)
   flags.AddEnableAcceleratedReplicaMode(parser)
   unc_mappings_group = parser.add_mutually_exclusive_group(hidden=True)
   flags.AddUncMappings(unc_mappings_group)
@@ -395,14 +395,6 @@ def AddBetaArgs(parser):
 def AddAlphaArgs(unused_parser):
   """Adds alpha args and flags to the parser."""
   pass
-
-
-def IsBetaOrNewer(release_track):
-  """Returns true if the release track is beta or newer."""
-  return (
-      release_track == base.ReleaseTrack.BETA
-      or release_track == base.ReleaseTrack.ALPHA
-  )
 
 
 def RunBasePatchCommand(args, release_track):
@@ -507,9 +499,7 @@ def RunBasePatchCommand(args, release_track):
               ' https://cloud.google.com/sql/docs/mysql/maintenance'
           )
 
-  if IsBetaOrNewer(release_track) and args.IsSpecified(
-      'reconcile_psa_networking'
-  ):
+  if args.IsSpecified('reconcile_psa_networking'):
     if (
         not original_instance_resource.settings.ipConfiguration
         or not original_instance_resource.settings.ipConfiguration.privateNetwork

@@ -1005,10 +1005,12 @@ class IpamAdminScope(_messages.Message):
 
     Values:
       ADD_ON_PLATFORM_UNSPECIFIED: Unspecified add-on platform.
-      GCE: Google Compute Engine.
+      COMPUTE_ENGINE: Google Compute Engine.
+      GCE: Deprecated: Use COMPUTE_ENGINE instead.
     """
     ADD_ON_PLATFORM_UNSPECIFIED = 0
-    GCE = 1
+    COMPUTE_ENGINE = 1
+    GCE = 2
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. State of resource discovery pipeline.

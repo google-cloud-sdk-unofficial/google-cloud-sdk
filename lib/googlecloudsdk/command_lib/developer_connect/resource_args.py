@@ -50,3 +50,37 @@ def AddInsightConfigResourceArg(parser, verb):
       'The insights config to {}.'.format(verb),
       required=True,
   ).AddToParser(parser)
+
+
+def ConnectionAttributeConfig():
+  return concepts.ResourceParameterAttributeConfig(
+      name='connection',
+      help_text='The connection ID.')
+
+
+def GitRepositoryLinkAttributeConfig():
+  return concepts.ResourceParameterAttributeConfig(
+      name='git_repository_link',
+      help_text='The git repository link ID.')
+
+
+def GetGitRepositoryLinkSpec():
+  return concepts.ResourceSpec(
+      'developerconnect.projects.locations.connections.gitRepositoryLinks',
+      resource_name='git_repository_link',
+      projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+      locationsId=RegionAttributeConfig(),
+      connectionsId=ConnectionAttributeConfig(),
+      gitRepositoryLinksId=GitRepositoryLinkAttributeConfig(),
+      disable_auto_completers=False,
+  )
+
+
+def AddGitRepositoryLinkResourceArg(parser, verb):
+  """Adds a git repository link resource argument to the parser."""
+  concept_parsers.ConceptParser.ForResource(
+      'git_repository_link',
+      GetGitRepositoryLinkSpec(),
+      'The git repository link to {}.'.format(verb),
+      required=True,
+  ).AddToParser(parser)

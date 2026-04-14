@@ -234,7 +234,7 @@ class Create(base.CreateCommand):
     delivery_pipeline_util.ThrowIfPipelineSuspended(
         pipeline_obj, failed_activity_msg
     )
-    actual_source = release_util.GetActualSource(args)
+    actual_source, native_source_specified = release_util.GetActualSource(args)
     # Only when the skaffold file is an absolute path needs to be handled
     # here.
     if args.skaffold_file and os.path.isabs(args.skaffold_file):
@@ -279,7 +279,9 @@ class Create(base.CreateCommand):
         from_run_manifest=args.from_run_manifest,
         pipeline_obj=pipeline_obj,
         deploy_parameters=args.deploy_parameters,
+        config_file=args.config_file,
         native_config_used=native_config_used,
+        native_source_specified=native_source_specified,
     )
 
     deploy_util.SetMetadata(

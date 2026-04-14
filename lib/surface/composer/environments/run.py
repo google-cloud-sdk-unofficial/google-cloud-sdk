@@ -305,10 +305,9 @@ class Run(base.Command):
           'with Airflow version 1.10.14 or higher.')
 
   def ConvertKubectlError(self, error, env_obj):
-    is_private = (
-        env_obj.config.privateEnvironmentConfig and
-        env_obj.config.privateEnvironmentConfig.enablePrivateEnvironment)
-    if is_private:
+    if command_util.IsPrivateIpEnvironment(
+        env_obj, release_track=self.ReleaseTrack()
+    ):
       return command_util.Error(
           str(error)
           + ' Make sure you have followed'

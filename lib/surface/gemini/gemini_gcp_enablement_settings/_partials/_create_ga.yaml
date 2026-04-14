@@ -75,6 +75,53 @@
         enum_value: WEB_GROUNDING_FOR_ENTERPRISE
         help_text: |-
           Grounding with Google Search for Enterprise.
+    - arg_name: gemini-enterprise-project
+      api_field: geminiGcpEnablementSetting.geminiEnterpriseProject
+      required: false
+      repeated: false
+      help_text: |-
+        The Gemini enterprise project for this setting.
+        Format: projects/{project}
+        The `{project}` segment can be the project ID or project number.
+    - arg_name: release-channel
+      api_field: geminiGcpEnablementSetting.releaseChannel
+      required: false
+      help_text: |-
+        Specifies the release channel for Gemini features. The release channel
+        determines which set of features are available to the user.
+      choices:
+      - arg_value: stable
+        enum_value: STABLE
+        help_text: |-
+          Stable channel.
+      - arg_value: experimental
+        enum_value: EXPERIMENTAL
+        help_text: |-
+          Experimental release channel.
+    - arg_name: proactive-agents-enabled
+      api_field: geminiGcpEnablementSetting.proactiveAgentsEnabled
+      action: store_true
+      required: false
+      type: bool
+      help_text: |-
+        Indicates whether proactive agents are enabled.
+        If not set, proactive agents are disabled.
+      default: null
+    - arg_name: custom-instructions
+      api_field: geminiGcpEnablementSetting.customInstructions
+      required: false
+      repeated: false
+      help_text: |-
+        Contains custom instructions to be applied to the GCA agent.
+    - arg_name: mutations-enabled
+      api_field: geminiGcpEnablementSetting.mutationsEnabled
+      action: store_true
+      required: false
+      type: bool
+      help_text: |-
+        Indicates whether resource mutations are enabled.
+        If not set, resource mutations are disabled.
+      default: null
     - arg_name: request-id
       api_field: requestId
       required: false

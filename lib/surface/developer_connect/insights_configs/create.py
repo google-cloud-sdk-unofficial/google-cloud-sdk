@@ -60,6 +60,7 @@ class Create(base.CreateCommand):
     flags.AddAppHubApplicationArgument(source_group)
     flags.AddTargetProjectsArgument(source_group)
     flags.AddArtifactConfigsArgument(parser)
+    flags.AddSourceConfigArgument(parser)
 
   def Run(self, args):
     max_wait = datetime.timedelta(seconds=30)
@@ -71,6 +72,7 @@ class Create(base.CreateCommand):
           app_hub=args.app_hub_application,
           target_projects=args.target_projects,
           user_artifact_configs=args.artifact_configs,
+          source_config=args.source_config,
       )
     except exceptions.HttpException as e:
       log.status.Print('Failed to create the insight config {}.'.format(

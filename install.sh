@@ -45,7 +45,7 @@ order_python() {
   for python_version in "$@"
   do
     if [ -z "$selected_version" ]; then
-      if "$python_version" -c "import sys; sys.exit(0 if ((3,8) <= (sys.version_info.major, sys.version_info.minor) <= (3,13)) else 1)" > /dev/null 2>&1; then
+      if "$python_version" -c "import sys; sys.exit(0 if ((3,9) <= (sys.version_info.major, sys.version_info.minor) <= (3,14)) else 1)" > /dev/null 2>&1; then
         selected_version=$python_version
       fi
     fi
@@ -131,7 +131,7 @@ setup_cloudsdk_python() {
         fi
       fi
       primary_python=python3.13
-      CLOUDSDK_PYTHON=$(order_python "$primary_python" python3 python3.12 python3.14 python3.11 python3.10 python3.9 python)
+      CLOUDSDK_PYTHON=$(order_python "$primary_python" python3.12 python3 python3.14 python3.11 python3.10 python)
       if [ -z "$CLOUDSDK_PYTHON" ]; then
         CLOUDSDK_PYTHON=$(order_python_no_check python3 python)
       fi

@@ -9,12 +9,11 @@ import re
 import ssl
 import sys
 import textwrap
-from typing import Dict, List, Literal, Optional, TextIO
+from typing import Any, Dict, List, Literal, Optional, TextIO
 
 from absl import app
 from absl import flags
 from google.auth import version as google_auth_version
-from google.oauth2 import credentials as google_oauth2
 import httplib2
 import requests
 import urllib3
@@ -29,6 +28,36 @@ _BIGQUERY_SCOPE = 'https://www.googleapis.com/auth/bigquery'
 _CLOUD_PLATFORM_SCOPE = 'https://www.googleapis.com/auth/cloud-platform'
 _REAUTH_SCOPE = 'https://www.googleapis.com/auth/accounts.reauth'
 
+
+
+# Boolean flag names that correspond to resources for the user agent header.
+_RESOURCE_FLAG_NAMES = frozenset([
+    'capacity_commitment',
+    'connection',
+    'dataset',
+    'datasets',
+    'encryption_service_account',
+    'job',
+    'jobs',
+    'materialized_view',
+    'migration_workflow',
+    'model',
+    'models',
+    'reservation',
+    'reservation_assignment',
+    'reservation_group',
+    'routine',
+    'routines',
+    'row_access_policies',
+    'row_access_policy',
+    'table',
+    'transfer_config',
+    'transfer_run',
+    'view',
+])
+
+_BQ_CLI_COMMAND: Optional[str] = None
+_BQ_CLI_RESOURCE: Optional[str] = None
 
 _VERSION_FILENAME = 'VERSION'
 
@@ -186,7 +215,15 @@ def GetResolvedQuotaProjectID(
     quota_project_id: Optional[str],
     fallback_project_id: Optional[str],
 ) -> Optional[str]:
-  """Return the final resolved quota project ID after cross-referencing gcloud properties."""
+  """Returns the final resolved quota project ID.
+
+  This function cross-references gcloud properties to determine the effective
+  quota project ID.
+
+  Args:
+    quota_project_id: The quota project ID provided by the user.
+    fallback_project_id: The project ID to use as a fallback.
+  """
   if not quota_project_id and fallback_project_id:
     return fallback_project_id
   return _GetResolvedGcloudQuotaProjectID(
@@ -199,11 +236,14 @@ def _GetResolvedGcloudQuotaProjectID(
     quota_project_id: Optional[str],
     fallback_project_id: Optional[str],
 ) -> Optional[str]:
-  """Return the resolved quota project ID after cross-referencing gcloud properties.
+  """Resolves the quota project ID using gcloud properties.
 
   Args:
     quota_project_id: The quota project ID to resolve.
     fallback_project_id: The fallback project ID to use.
+
+  Returns:
+    The resolved quota project ID, or None if no quota project is applicable.
   """
   if quota_project_id and quota_project_id in (
       'CURRENT_PROJECT',
@@ -215,17 +255,93 @@ def _GetResolvedGcloudQuotaProjectID(
   return quota_project_id
 
 
+def GetFallbackQuotaProject(
+    is_service_account: bool,
+    fallback_project_id: Optional[str],
+) -> Optional[str]:
+  """Return the fallback quota project ID.
+
+  Args:
+    is_service_account: True if the credentials belong to a service account.
+    fallback_project_id: The project ID to use as a fallback.
+
+  Returns:
+    The fallback quota project ID, or None if not applicable.
+  """
+
+  if is_service_account:
+    return None
+  return fallback_project_id
+
+
+def IsCredentialServiceAccount(credentials: Any) -> bool:
+  """Returns if the oauth2client credentials belong to a service account."""
+  class_name = credentials.__class__.__name__
+
+  if class_name == 'WrappedCredentials':
+    base = getattr(credentials, '_base', None)
+    if base:
+      # google-auth external account credentials have an is_user property.
+      # Workload identities (machine) have is_user=False.
+      # Workforce identities (human) have is_user=True.
+      return not getattr(base, 'is_user', True)
+
+  if class_name in (
+      'ServiceAccountCredentials',
+      'AppAssertionCredentials',  # for GCE service accounts
+      'RobotCredentials',
+      'OwnedTestingAccountCredentials',
+      'ServiceAccountImpersonationCredential',
+  ):
+    return True
+
+  # Use full class name for 'Credential' as it is too generic and avoid
+  # collisions with other 'Credential' classes.
+  if class_name == 'Credential' and credentials.__class__.__module__.endswith(
+      'service_account_impersonation'
+  ):
+    return True
+
+  if getattr(credentials, 'type', None) in (
+      'service_account',
+      'external_account',
+  ):
+    return True
+
+  # Check for explicit service_account_email attribute
+  service_account_email = getattr(credentials, 'service_account_email', None)
+  if service_account_email:
+    return True
+  # Check for signer_email (sometimes used in service account credentials)
+  signer_email = getattr(credentials, 'signer_email', None)
+  if signer_email:
+    return True
+
+  account = getattr(credentials, 'account', None)
+  if account and IsServiceAccount(account):
+    return True
+
+  return False
+
+
 def GetEffectiveQuotaProjectIDForHTTPHeader(
     quota_project_id: str,
     project_id: str,
     use_google_auth: bool,
-    credentials: 'google_oauth2.Credentials',
+    credentials: Any,
 ) -> Optional[str]:
   """Return the effective quota project ID to be set in the API HTTP header."""
   if use_google_auth and hasattr(credentials, '_quota_project_id'):
     return credentials._quota_project_id  # pylint: disable=protected-access
-  return _GetResolvedGcloudQuotaProjectID(
-      quota_project_id=quota_project_id, fallback_project_id=project_id
+
+  is_service_account = IsCredentialServiceAccount(credentials)
+  fallback_project_id = GetFallbackQuotaProject(
+      is_service_account=is_service_account,
+      fallback_project_id=project_id,
+  )
+
+  return GetResolvedQuotaProjectID(
+      quota_project_id=quota_project_id, fallback_project_id=fallback_project_id
   )
 
 
@@ -389,8 +505,60 @@ def ParseTagKeys(tag_keys: str) -> List[str]:
   return list(tags_set)
 
 
+def SetBqCliUserAgentCommand(command: Optional[str]):
+  """Sets the BQ CLI user agent command."""
+  global _BQ_CLI_COMMAND
+  _BQ_CLI_COMMAND = command
+
+
+def SetBqCliUserAgentResource(resource: Optional[str], overwrite: bool = True):
+  """Sets the BQ CLI user agent resource.
+
+  Args:
+    resource: The resource string.
+    overwrite: If True, overwrite the existing resource. If False, only set it
+      if it is currently None.
+  """
+  global _BQ_CLI_RESOURCE
+  if overwrite or _BQ_CLI_RESOURCE is None:
+    _BQ_CLI_RESOURCE = resource
+
+
+def GetBqCliUserAgentComponent() -> Optional[str]:
+  """Returns the BQ CLI specific part of the user agent."""
+  if not _BQ_CLI_COMMAND:
+    return None
+  return f'bq.{_BQ_CLI_COMMAND}.{_BQ_CLI_RESOURCE or "unknown"}'
+
+
+def Pluralize(name: str) -> str:
+  """Get pluralized resource name from typename for the user agent string.
+
+  Replaces spaces with underscores and applies basic pluralization rules.
+
+  Args:
+    name: The name to pluralize.
+
+  Returns:
+    The pluralized name.
+  """
+  if not name:
+    return name
+  name = name.replace(' ', '_')
+  if name.endswith('s'):
+    return name
+  if name.endswith('y'):
+    return name[:-1] + 'ies'
+  return name + 's'
+
+
+def GetResourceFlagNames() -> frozenset[str]:
+  """Returns the set of boolean flags that correspond to resources."""
+  return _RESOURCE_FLAG_NAMES
+
+
 def GetUserAgent() -> str:
-  """Returns the user agent for BigQuery API requests based on environment and version."""
+  """Returns the user agent for BigQuery API requests."""
   google_python_client_name = 'google-api-python-client'
   if os.environ.get('CLOUDSDK_WRAPPER') == '1':
     return (
@@ -405,5 +573,11 @@ def GetUserAgent() -> str:
 
 # See go/cloud-iam-service-account-types.
 def IsServiceAccount(account: str) -> bool:
-  """Returns whether the account may be a service account based on the user-created or system-created account name."""
+  """Returns whether the account may be a service account.
+
+  This is based on the user-created or system-created account name.
+
+  Args:
+    account: The account string to check.
+  """
   return re.fullmatch(r'^.+@(.+)(\.gserviceaccount\.com)$', account) is not None

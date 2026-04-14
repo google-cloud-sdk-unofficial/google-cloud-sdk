@@ -15,10 +15,10 @@
 
 """Implementations of installers for different component types."""
 
-
 import os
 import re
 import stat
+import sys
 import tarfile
 
 from googlecloudsdk.core import exceptions
@@ -30,8 +30,8 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.credentials import exceptions as creds_exceptions
 from googlecloudsdk.core.util import files as file_utils
 from googlecloudsdk.core.util import http_encoding
+from googlecloudsdk.core.util import platforms
 from googlecloudsdk.core.util import retry
-
 import requests
 import six
 
@@ -40,11 +40,12 @@ UPDATE_MANAGER_COMMAND_PATH = 'UPDATE_MANAGER'
 
 TIMEOUT_IN_SEC = 60
 UPDATE_MANAGER_TIMEOUT_IN_SEC = 3
-WRITE_BUFFER_SIZE = 16*1024
+WRITE_BUFFER_SIZE = 16 * 1024
 
 
 class Error(exceptions.Error):
   """Base exception for the installers module."""
+
   pass
 
 
@@ -54,11 +55,15 @@ class ComponentDownloadFailedError(Error):
   def __init__(self, component_id, e):
     super(ComponentDownloadFailedError, self).__init__(
         'The component [{component_id}] failed to download.\n\n'.format(
-            component_id=component_id) + six.text_type(e))
+            component_id=component_id
+        )
+        + six.text_type(e)
+    )
 
 
 class URLFetchError(Error):
   """Exception for problems fetching via HTTP."""
+
   pass
 
 
@@ -71,6 +76,7 @@ class AuthenticationError(Error):
 
 class UnsupportedSourceError(Error):
   """An exception when trying to install a component with an unknown source."""
+
   pass
 
 
@@ -96,13 +102,16 @@ def MakeRequest(url, command_path):
   from googlecloudsdk.core.credentials import store
   # pylint: enable=g-import-not-at-top
   if url.startswith(ComponentInstaller.GCS_BROWSER_DL_URL):
-    url = url.replace(ComponentInstaller.GCS_BROWSER_DL_URL,
-                      ComponentInstaller.GCS_API_DL_URL, 1)
+    url = url.replace(
+        ComponentInstaller.GCS_BROWSER_DL_URL,
+        ComponentInstaller.GCS_API_DL_URL,
+        1,
+    )
   headers = {
-      b'Cache-Control':
-          b'no-cache',
-      b'User-Agent':
-          http_encoding.Encode(transport.MakeUserAgentString(command_path))
+      b'Cache-Control': b'no-cache',
+      b'User-Agent': http_encoding.Encode(
+          transport.MakeUserAgentString(command_path)
+      ),
   }
   timeout = TIMEOUT_IN_SEC
   if command_path == UPDATE_MANAGER_COMMAND_PATH:
@@ -112,7 +121,8 @@ def MakeRequest(url, command_path):
     return _RawRequest(url, headers=headers, timeout=timeout)
   except requests.exceptions.HTTPError as e:
     if e.response.status_code != 403 or not e.response.url.startswith(
-        ComponentInstaller.GCS_API_DL_URL):
+        ComponentInstaller.GCS_API_DL_URL
+    ):
       raise e
     try:
       creds = store.LoadFreshCredential()
@@ -121,7 +131,8 @@ def MakeRequest(url, command_path):
       # If we fail here, it is because there are no active credentials or the
       # credentials are bad.
       raise AuthenticationError(
-          'This component requires valid credentials to install.', e)
+          'This component requires valid credentials to install.', e
+      )
     try:
       # Retry the download using the credentials.
       return _RawRequest(url, headers=headers, timeout=timeout)
@@ -138,15 +149,20 @@ ensure that this account should have access or run:
 $ gcloud config set account `ACCOUNT`
 
 to choose another account.""".format(
-    account=properties.VALUES.core.account.Get()), e)
+              account=properties.VALUES.core.account.Get()
+          ),
+          e,
+      )
 
 
 def _RawRequest(*args, **kwargs):
   """Executes an HTTP request."""
 
   def RetryIf(exc_type, exc_value, unused_traceback, unused_state):
-    return (exc_type == requests.exceptions.HTTPError and
-            exc_value.response.status_code == 404)
+    return (
+        exc_type == requests.exceptions.HTTPError
+        and exc_value.response.status_code == 404
+    )
 
   def StatusUpdate(unused_result, unused_state):
     log.debug('Retrying request...')
@@ -155,14 +171,16 @@ def _RawRequest(*args, **kwargs):
       max_retrials=3,
       exponential_sleep_multiplier=2,
       jitter_ms=100,
-      status_update_func=StatusUpdate)
+      status_update_func=StatusUpdate,
+  )
   try:
     return retryer.RetryOnException(
         _ExecuteRequestAndRaiseExceptions,
         args,
         kwargs,
         should_retry_if=RetryIf,
-        sleep_ms=500)
+        sleep_ms=500,
+    )
   except retry.RetryException as e:
     # last_result is (return value, sys.exc_info)
     if e.last_result[1]:
@@ -191,13 +209,15 @@ def _ExecuteRequestAndRaiseExceptions(url, headers, timeout):
   if url.startswith('file://'):
     requests_session.mount('file://', local_file_adapter.LocalFileAdapter())
   response = requests_session.get(
-      url, headers=headers, timeout=timeout, stream=True)
+      url, headers=headers, timeout=timeout, stream=True
+  )
   response.raise_for_status()
   return response
 
 
-def DownloadTar(url, download_dir, progress_callback=None,
-                command_path='unknown'):
+def DownloadTar(
+    url, download_dir, progress_callback=None, command_path='unknown'
+):
   """Download the given tar file.
 
   Args:
@@ -255,17 +275,31 @@ def ExtractTar(downloaded_archive, extract_dir, progress_callback=None):
 
   with tarfile.open(name=downloaded_archive) as tar:
     members = tar.getmembers()
-    total_files = len(members)
+    # Tarfile module has a bug where it does not properly apply the "inherit
+    # permissions" bit on Windows machines when extracting files from a tar
+    # file on Python 3.12 and 3.13.
+    if (
+        sys.version_info >= (3, 12)
+        and sys.version_info < (3, 14)
+        and platforms.OperatingSystem.IsWindows()
+    ):
+      tar.extractall(path=extract_dir, filter='data')
+      files = [
+          member.name + '/' if member.isdir() else member.name
+          for member in members
+      ]
+    else:
+      total_files = len(members)
 
-    files = []
-    for num, member in enumerate(members, start=1):
-      files.append(member.name + '/' if member.isdir() else member.name)
-      tar.extract(member, extract_dir)
-      full_path = os.path.join(extract_dir, member.name)
-      # Ensure read-and-write permission for all files
-      if os.path.isfile(full_path) and not os.access(full_path, os.W_OK):
-        os.chmod(full_path, stat.S_IWUSR|stat.S_IREAD)
-      progress_callback(num / total_files)
+      files = []
+      for num, member in enumerate(members, start=1):
+        files.append(member.name + '/' if member.isdir() else member.name)
+        tar.extract(member, extract_dir)
+        full_path = os.path.join(extract_dir, member.name)
+        # Ensure read-and-write permission for all files
+        if os.path.isfile(full_path) and not os.access(full_path, os.W_OK):
+          os.chmod(full_path, stat.S_IWUSR | stat.S_IREAD)
+        progress_callback(num / total_files)
 
     progress_callback(1)
 
@@ -298,7 +332,8 @@ class ComponentInstaller(object):
     self.__sdk_root = sdk_root
     self.__state_directory = state_directory
     self.__download_directory = os.path.join(
-        self.__state_directory, ComponentInstaller.DOWNLOAD_DIR_NAME)
+        self.__state_directory, ComponentInstaller.DOWNLOAD_DIR_NAME
+    )
 
   def Download(self, component, progress_callback=None, command_path='unknown'):
     """Downloads the given component for whatever source type it has.
@@ -328,12 +363,16 @@ class ComponentInstaller(object):
 
     if data.type == 'tar':
       return self._DownloadTar(
-          component, progress_callback=progress_callback,
-          command_path=command_path)
+          component,
+          progress_callback=progress_callback,
+          command_path=command_path,
+      )
 
     raise UnsupportedSourceError(
         'tar is the only supported source format [{datatype}]'.format(
-            datatype=data.type))
+            datatype=data.type
+        )
+    )
 
   def Extract(self, downloaded_archive, progress_callback=None):
     """Extracts the archive previously downloaded from self.Download().
@@ -352,11 +391,12 @@ class ComponentInstaller(object):
       return []
 
     return ExtractTar(
-        downloaded_archive, self.__sdk_root,
-        progress_callback=progress_callback)
+        downloaded_archive, self.__sdk_root, progress_callback=progress_callback
+    )
 
-  def _DownloadTar(self, component, progress_callback=None,
-                   command_path='unknown'):
+  def _DownloadTar(
+      self, component, progress_callback=None, command_path='unknown'
+  ):
     """Download implementation for a component with source in a .tar.gz.
 
     Downloads the .tar for the component and returns its path.
@@ -384,13 +424,19 @@ class ComponentInstaller(object):
       return None
 
     if not re.search(r'^\w+://', url):
-      raise ValueError('Cannot install component [{0}] from a relative path '
-                       'because the base URL of the snapshot is not defined.'
-                       .format(component.id))
+      raise ValueError(
+          'Cannot install component [{0}] from a relative path '
+          'because the base URL of the snapshot is not defined.'.format(
+              component.id
+          )
+      )
 
     try:
       return DownloadTar(
-          url, self.__download_directory, progress_callback=progress_callback,
-          command_path=command_path)
+          url,
+          self.__download_directory,
+          progress_callback=progress_callback,
+          command_path=command_path,
+      )
     except (URLFetchError, AuthenticationError) as e:
       raise ComponentDownloadFailedError(component.id, e)

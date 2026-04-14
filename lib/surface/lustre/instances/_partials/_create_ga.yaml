@@ -92,6 +92,9 @@
         See [Performance tiers and maximum storage
         capacities](https://cloud.google.com/managed-lustre/docs/create-instance#performance-tiers)
         for more information.
+
+        If the instance is using the Dynamic tier, this field must not be set or
+        must be set to zero.
     - arg_name: gke-support-enabled
       api_field: instance.gkeSupportEnabled
       action: store_true
@@ -325,7 +328,7 @@
           - arg_value: default-cache
             enum_value: DEFAULT_CACHE
             help_text: |-
-              The dynamic tier is enabled with a default cache configuration.
+              The dynamic tier is enabled.
     - arg_name: request-id
       api_field: requestId
       required: false

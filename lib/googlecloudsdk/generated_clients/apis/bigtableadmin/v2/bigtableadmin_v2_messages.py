@@ -2938,7 +2938,14 @@ class GoogleBigtableAdminV2MaterializedViewClusterState(_messages.Message):
 
 
 class GoogleBigtableAdminV2MemoryLayerMemoryConfig(_messages.Message):
-  r"""Configuration of a memory layer."""
+  r"""Configuration of a memory layer.
+
+  Fields:
+    storageSizeGib: Output only. Reporting the current size of the memory
+      layer in GiB.
+  """
+
+  storageSizeGib = _messages.IntegerField(1, variant=_messages.Variant.INT32)
 
 
 class GoogleBigtableAdminV2TypeAggregate(_messages.Message):
@@ -3011,7 +3018,18 @@ class GoogleBigtableAdminV2TypeArray(_messages.Message):
 
 
 class GoogleBigtableAdminV2TypeBool(_messages.Message):
-  r"""bool Values of type `Bool` are stored in `Value.bool_value`."""
+  r"""bool Values of type `Bool` are stored in `Value.bool_value`.
+
+  Fields:
+    encoding: Specifies the encoding to use when converting to or from lower
+      level types.
+  """
+
+  encoding = _messages.MessageField('GoogleBigtableAdminV2TypeBoolEncoding', 1)
+
+
+class GoogleBigtableAdminV2TypeBoolEncoding(_messages.Message):
+  r"""Defines rules used to convert to or from lower level types."""
 
 
 class GoogleBigtableAdminV2TypeBytes(_messages.Message):

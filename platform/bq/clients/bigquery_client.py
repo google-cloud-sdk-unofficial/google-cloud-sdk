@@ -74,28 +74,38 @@ AuthorizedHttp: TypeAlias = Union[
 ]
 
 
-def CreateHttp() -> httplib2.Http:
+def CreateHttp(
+    proxy_info: Optional[httplib2.ProxyInfo] = None,
+    ca_certs: Optional[str] = None,
+    disable_ssl_validation: Optional[bool] = None,
+) -> httplib2.Http:
   """Returns the httplib2 Http to use."""
-  proxy_info = httplib2.proxy_info_from_environment
-  if flags.FLAGS.proxy_address and flags.FLAGS.proxy_port:
-    try:
-      port = int(flags.FLAGS.proxy_port)
-    except ValueError as e:
-      raise ValueError(
-          'Invalid value for proxy_port: {}'.format(flags.FLAGS.proxy_port)
-      ) from e
-    proxy_info = httplib2.ProxyInfo(
-        proxy_type=3,
-        proxy_host=flags.FLAGS.proxy_address,
-        proxy_port=port,
-        proxy_user=flags.FLAGS.proxy_username or None,
-        proxy_pass=flags.FLAGS.proxy_password or None,
-    )
+  if not proxy_info:
+    proxy_info = httplib2.proxy_info_from_environment
+    if flags.FLAGS.proxy_address and flags.FLAGS.proxy_port:
+      try:
+        port = int(flags.FLAGS.proxy_port)
+      except ValueError as e:
+        raise ValueError(
+            'Invalid value for proxy_port: {}'.format(flags.FLAGS.proxy_port)
+        ) from e
+      proxy_info = httplib2.ProxyInfo(
+          proxy_type=3,
+          proxy_host=flags.FLAGS.proxy_address,
+          proxy_port=port,
+          proxy_user=flags.FLAGS.proxy_username or None,
+          proxy_pass=flags.FLAGS.proxy_password or None,
+      )
+
+  if not ca_certs:
+    ca_certs = flags.FLAGS.ca_certificates_file or certifi.where()
+  if disable_ssl_validation is None:
+    disable_ssl_validation = flags.FLAGS.disable_ssl_validation
 
   http = httplib2.Http(
       proxy_info=proxy_info,
-      ca_certs=flags.FLAGS.ca_certificates_file or certifi.where(),
-      disable_ssl_certificate_validation=flags.FLAGS.disable_ssl_validation,
+      ca_certs=ca_certs,
+      disable_ssl_certificate_validation=disable_ssl_validation,
   )
 
   if hasattr(http, 'redirect_codes'):
@@ -223,14 +233,32 @@ class BigqueryClient:
   ) -> AuthorizedHttp:
     """Returns the httplib2 Http to use."""
 
-    http = CreateHttp()
+    proxy_info = None
+    disable_ssl = flags.FLAGS.disable_ssl_validation
+    use_ecp = False
 
-    if flags.FLAGS.mtls:
+
+    # Let CreateHttp handle command-line proxy flags only if ECP is NOT active.
+    if not use_ecp:
+      logging.info('Configured httplib2 with manual proxy')
+
+    http = CreateHttp(proxy_info=proxy_info, disable_ssl_validation=disable_ssl)
+
+    # Apply mTLS credentials ONLY if NOT using the ECP proxy.
+    # The ECP proxy handles the mTLS handshake.
+    if flags.FLAGS.mtls and not use_ecp:
+      logging.info('mTLS enabled, adding mTLS credentials to Http.')
       _, self._cert_file = tempfile.mkstemp()
       _, self._key_file = tempfile.mkstemp()
       discovery.add_mtls_creds(
           http, discovery.get_client_options(), self._cert_file, self._key_file
       )
+    elif flags.FLAGS.mtls and use_ecp:
+      logging.info(
+          'mTLS enabled, but using ECP HTTP Proxy. Skipping direct mTLS creds'
+          ' in httplib2.'
+      )
+
     return http
 
   def GetDiscoveryUrl(
@@ -482,6 +510,7 @@ class BigqueryClient:
     bq_request_builder = bigquery_http.BigqueryHttp.Factory(
         bigquery_model,
     )
+
     # Clean up quota project ID from Google Auth credentials.
     # This is specifically needed to construct a http object used for discovery
     # requests below as quota project ID shouldn't participate in discovery

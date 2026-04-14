@@ -1227,7 +1227,7 @@ MAP = {
                 default_version=True,
                 enable_mtls=True,
                 mtls_endpoint_override='',
-                regional_endpoints={'europe-west3': 'https://cloudkms.europe-west3.rep.googleapis.com/', 'europe-west8': 'https://cloudkms.europe-west8.rep.googleapis.com/', 'europe-west9': 'https://cloudkms.europe-west9.rep.googleapis.com/', 'me-central2': 'https://cloudkms.me-central2.rep.googleapis.com/', 'us-east1': 'https://cloudkms.us-east1.rep.googleapis.com/', 'us-east4': 'https://cloudkms.us-east4.rep.googleapis.com/', 'us-west2': 'https://cloudkms.us-west2.rep.googleapis.com/', 'us-west1': 'https://cloudkms.us-west1.rep.googleapis.com/', 'us-central1': 'https://cloudkms.us-central1.rep.googleapis.com/', 'us-west3': 'https://cloudkms.us-west3.rep.googleapis.com/', 'us-central2': 'https://cloudkms.us-central2.rep.googleapis.com/', 'us-west4': 'https://cloudkms.us-west4.rep.googleapis.com/', 'us-west8': 'https://cloudkms.us-west8.rep.googleapis.com/', 'us-east5': 'https://cloudkms.us-east5.rep.googleapis.com/', 'us-south1': 'https://cloudkms.us-south1.rep.googleapis.com/', 'us-east7': 'https://cloudkms.us-east7.rep.googleapis.com/', 'northamerica-northeast1': 'https://cloudkms.northamerica-northeast1.rep.googleapis.com/', 'northamerica-northeast2': 'https://cloudkms.northamerica-northeast2.rep.googleapis.com/', 'us': 'https://cloudkms.us.rep.googleapis.com/', 'in': 'https://cloudkms.in.rep.googleapis.com/', 'ca': 'https://cloudkms.ca.rep.googleapis.com/'}),
+                regional_endpoints={'europe-west8': 'https://cloudkms.europe-west8.rep.googleapis.com/', 'europe-west9': 'https://cloudkms.europe-west9.rep.googleapis.com/', 'me-central2': 'https://cloudkms.me-central2.rep.googleapis.com/', 'us-east1': 'https://cloudkms.us-east1.rep.googleapis.com/', 'us-east4': 'https://cloudkms.us-east4.rep.googleapis.com/', 'us-west2': 'https://cloudkms.us-west2.rep.googleapis.com/', 'us-west1': 'https://cloudkms.us-west1.rep.googleapis.com/', 'us-central1': 'https://cloudkms.us-central1.rep.googleapis.com/', 'us-west3': 'https://cloudkms.us-west3.rep.googleapis.com/', 'us-central2': 'https://cloudkms.us-central2.rep.googleapis.com/', 'us-west4': 'https://cloudkms.us-west4.rep.googleapis.com/', 'us-east5': 'https://cloudkms.us-east5.rep.googleapis.com/', 'us-south1': 'https://cloudkms.us-south1.rep.googleapis.com/', 'us-east7': 'https://cloudkms.us-east7.rep.googleapis.com/', 'northamerica-northeast1': 'https://cloudkms.northamerica-northeast1.rep.googleapis.com/', 'northamerica-northeast2': 'https://cloudkms.northamerica-northeast2.rep.googleapis.com/', 'europe-west3': 'https://cloudkms.europe-west3.rep.googleapis.com/', 'us-west8': 'https://cloudkms.us-west8.rep.googleapis.com/', 'us': 'https://cloudkms.us.rep.googleapis.com/', 'in': 'https://cloudkms.in.rep.googleapis.com/', 'ca': 'https://cloudkms.ca.rep.googleapis.com/'}),
     },
     'cloudlocationfinder': {
         'v1':
@@ -1415,7 +1415,7 @@ MAP = {
                 default_version=True,
                 enable_mtls=True,
                 mtls_endpoint_override='',
-                regional_endpoints={}),
+                regional_endpoints={'us': 'https://cloudsecuritycompliance.us.rep.googleapis.com/'}),
     },
     'cloudshell': {
         'v1':
@@ -2523,7 +2523,7 @@ MAP = {
                 default_version=True,
                 enable_mtls=True,
                 mtls_endpoint_override='',
-                regional_endpoints={}),
+                regional_endpoints={'asia-south1': 'https://gkehub.asia-south1.rep.googleapis.com/', 'asia-south2': 'https://gkehub.asia-south2.rep.googleapis.com/'}),
         'v1alpha':
             APIDef(
                 apitools=ApitoolsClientDef(
@@ -2534,7 +2534,7 @@ MAP = {
                 default_version=False,
                 enable_mtls=True,
                 mtls_endpoint_override='',
-                regional_endpoints={}),
+                regional_endpoints={'asia-south1': 'https://gkehub.asia-south1.rep.googleapis.com/', 'asia-south2': 'https://gkehub.asia-south2.rep.googleapis.com/'}),
         'v1alpha1':
             APIDef(
                 apitools=ApitoolsClientDef(
@@ -2545,7 +2545,7 @@ MAP = {
                 default_version=False,
                 enable_mtls=True,
                 mtls_endpoint_override='',
-                regional_endpoints={}),
+                regional_endpoints={'asia-south1': 'https://gkehub.asia-south1.rep.googleapis.com/', 'asia-south2': 'https://gkehub.asia-south2.rep.googleapis.com/'}),
         'v1alpha2':
             APIDef(
                 apitools=ApitoolsClientDef(
@@ -2567,7 +2567,7 @@ MAP = {
                 default_version=False,
                 enable_mtls=True,
                 mtls_endpoint_override='',
-                regional_endpoints={}),
+                regional_endpoints={'asia-south1': 'https://gkehub.asia-south1.rep.googleapis.com/', 'asia-south2': 'https://gkehub.asia-south2.rep.googleapis.com/'}),
         'v1beta1':
             APIDef(
                 apitools=ApitoolsClientDef(
@@ -2578,7 +2578,7 @@ MAP = {
                 default_version=False,
                 enable_mtls=True,
                 mtls_endpoint_override='',
-                regional_endpoints={}),
+                regional_endpoints={'asia-south1': 'https://gkehub.asia-south1.rep.googleapis.com/', 'asia-south2': 'https://gkehub.asia-south2.rep.googleapis.com/'}),
         'v2':
             APIDef(
                 apitools=ApitoolsClientDef(
@@ -2589,7 +2589,7 @@ MAP = {
                 default_version=False,
                 enable_mtls=True,
                 mtls_endpoint_override='',
-                regional_endpoints={}),
+                regional_endpoints={'asia-south1': 'https://gkehub.asia-south1.rep.googleapis.com/', 'asia-south2': 'https://gkehub.asia-south2.rep.googleapis.com/'}),
         'v2alpha':
             APIDef(
                 apitools=ApitoolsClientDef(
@@ -2600,7 +2600,7 @@ MAP = {
                 default_version=False,
                 enable_mtls=True,
                 mtls_endpoint_override='',
-                regional_endpoints={}),
+                regional_endpoints={'asia-south1': 'https://gkehub.asia-south1.rep.googleapis.com/', 'asia-south2': 'https://gkehub.asia-south2.rep.googleapis.com/'}),
         'v2beta':
             APIDef(
                 apitools=ApitoolsClientDef(
@@ -2611,7 +2611,7 @@ MAP = {
                 default_version=False,
                 enable_mtls=True,
                 mtls_endpoint_override='',
-                regional_endpoints={}),
+                regional_endpoints={'asia-south1': 'https://gkehub.asia-south1.rep.googleapis.com/', 'asia-south2': 'https://gkehub.asia-south2.rep.googleapis.com/'}),
     },
     'gkemulticloud': {
         'v1':
@@ -2832,6 +2832,19 @@ MAP = {
                     base_url='https://iam.googleapis.com/',
                     messages_modulepath='iam_v3beta_messages'),
                 default_version=False,
+                enable_mtls=True,
+                mtls_endpoint_override='',
+                regional_endpoints={}),
+    },
+    'iamconnectors': {
+        'v1alpha':
+            APIDef(
+                apitools=ApitoolsClientDef(
+                    class_path='googlecloudsdk.generated_clients.apis.iamconnectors.v1alpha',
+                    client_classpath='iamconnectors_v1alpha_client.IamconnectorsV1alpha',
+                    base_url='https://iamconnectors.googleapis.com/',
+                    messages_modulepath='iamconnectors_v1alpha_messages'),
+                default_version=True,
                 enable_mtls=True,
                 mtls_endpoint_override='',
                 regional_endpoints={}),
@@ -3523,7 +3536,7 @@ MAP = {
                 default_version=True,
                 enable_mtls=True,
                 mtls_endpoint_override='',
-                regional_endpoints={'us-central1': 'https://observability.us-central1.rep.googleapis.com/'}),
+                regional_endpoints={'us-central1': 'https://observability.us-central1.rep.googleapis.com/', 'us': 'https://observability.us.rep.googleapis.com/', 'eu': 'https://observability.eu.rep.googleapis.com/'}),
     },
     'ondemandscanning': {
         'v1':
@@ -3560,7 +3573,7 @@ MAP = {
                 default_version=True,
                 enable_mtls=True,
                 mtls_endpoint_override='',
-                regional_endpoints={}),
+                regional_endpoints={'asia-northeast2': 'https://oracledatabase.asia-northeast2.rep.googleapis.com/', 'asia-south2': 'https://oracledatabase.asia-south2.rep.googleapis.com/', 'asia-south1': 'https://oracledatabase.asia-south1.rep.googleapis.com/', 'australia-southeast2': 'https://oracledatabase.australia-southeast2.rep.googleapis.com/', 'europe-west8': 'https://oracledatabase.europe-west8.rep.googleapis.com/', 'northamerica-northeast2': 'https://oracledatabase.northamerica-northeast2.rep.googleapis.com/'}),
         'v1alpha':
             APIDef(
                 apitools=ApitoolsClientDef(
@@ -4376,6 +4389,19 @@ MAP = {
                 mtls_endpoint_override='',
                 regional_endpoints={}),
     },
+    'servicehealth': {
+        'v1beta':
+            APIDef(
+                apitools=ApitoolsClientDef(
+                    class_path='googlecloudsdk.generated_clients.apis.servicehealth.v1beta',
+                    client_classpath='servicehealth_v1beta_client.ServicehealthV1beta',
+                    base_url='https://servicehealth.googleapis.com/',
+                    messages_modulepath='servicehealth_v1beta_messages'),
+                default_version=True,
+                enable_mtls=True,
+                mtls_endpoint_override='',
+                regional_endpoints={}),
+    },
     'servicemanagement': {
         'v1':
             APIDef(
@@ -5006,6 +5032,19 @@ MAP = {
                     base_url='https://workflows.googleapis.com/',
                     messages_modulepath='workflows_v1beta_messages'),
                 default_version=False,
+                enable_mtls=True,
+                mtls_endpoint_override='',
+                regional_endpoints={}),
+    },
+    'workloadidentity': {
+        'v1alpha':
+            APIDef(
+                apitools=ApitoolsClientDef(
+                    class_path='googlecloudsdk.generated_clients.apis.workloadidentity.v1alpha',
+                    client_classpath='workloadidentity_v1alpha_client.WorkloadidentityV1alpha',
+                    base_url='https://workloadidentity.googleapis.com/',
+                    messages_modulepath='workloadidentity_v1alpha_messages'),
+                default_version=True,
                 enable_mtls=True,
                 mtls_endpoint_override='',
                 regional_endpoints={}),

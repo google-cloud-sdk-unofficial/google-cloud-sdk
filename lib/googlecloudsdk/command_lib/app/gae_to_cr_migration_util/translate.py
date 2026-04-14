@@ -20,6 +20,7 @@ deployed version to Cloud Run.
 """
 
 from collections.abc import Mapping, Sequence
+import os
 import re
 from typing import Any
 
@@ -52,39 +53,42 @@ def _to_snake_case(name: str) -> str:
 
 
 def translate_from_source(
-    appyaml: str, service: str, version: str, entrypoint_command: str
+    input_data: Mapping[str, any],
+    input_type: feature_helper.InputType,
+    appyaml: str,
+    service: str,
+    entrypoint_command: str,
 ) -> Sequence[str]:
   """Translates GAE app config to a Cloud Run deploy command.
 
-  This function converts an App Engine app.yaml or a deployed version's
-  configuration into a `gcloud run deploy` command.
+  This function converts an App Engine app.yaml configuration into a
+  `gcloud run deploy` command.
 
   Args:
+    input_data: The original input data, either from app.yaml or the Admin API.
+    input_type: The input type of the input data.
     appyaml: The path to the app.yaml file.
     service: The App Engine service to migrate.
-    version: The App Engine version to migrate.
     entrypoint_command: The entrypoint command for the Cloud Run service.
 
   Returns:
     A sequence of strings representing the gcloud run deploy command.
   """
-  input_type, input_data = util.validate_input(appyaml, service, version)
-  if not input_type or not input_data:
+  if not input_data:
     return []
   target_service = (
       service or _get_service_name(input_data)
   )
-  input_flatten_as_appyaml = (
-      util.flatten_keys(input_data, parent_path='')
-      if input_type == feature_helper.InputType.APP_YAML
-      else _convert_admin_api_input_to_app_yaml(input_data)
-  )
-  source_path = _get_source_path(input_type, appyaml)
+  if input_type == feature_helper.InputType.ADMIN_API:
+    input_flatten_as_appyaml = _convert_admin_api_input_to_app_yaml(input_data)
+  else:
+    input_flatten_as_appyaml = util.flatten_keys(input_data, parent_path='')
+
+  source_path = _get_source_path(feature_helper.InputType.APP_YAML, appyaml)
 
   flags: Sequence[str] = _get_cloud_run_flags(
       input_data=input_data,
       input_flatten_as_appyaml=input_flatten_as_appyaml,
-      input_type=input_type,
       entrypoint_command=entrypoint_command,
       source_path=source_path,
       runtime_base_image=None,
@@ -92,17 +96,17 @@ def translate_from_source(
   return _generate_output(target_service, flags, source_path, None)
 
 
-def translate_from_image(
+def translate_from_exported_image(
+    input_data: Mapping[str, any],
     service: str,
-    version: str,
     entrypoint_command: str,
     export_image_response: ExportImageResult,
 ) -> Sequence[str]:
   """Translates a deployed GAE version to Cloud Run command via image export.
 
   Args:
+    input_data: The original input data, either from app.yaml or the Admin API.
     service: The App Engine service to migrate.
-    version: The App Engine version to migrate.
     entrypoint_command: The entrypoint command for the Cloud Run service.
     export_image_response: An ExportImageResult object containing the exported
       image URI, runtime ID, and runtime base image.
@@ -110,8 +114,7 @@ def translate_from_image(
   Returns:
     A sequence of strings representing the gcloud run deploy command.
   """
-  input_type, input_data = util.validate_input(None, service, version)
-  if not input_type or not input_data:
+  if not input_data:
     return []
   target_service = (
       service or _get_service_name(input_data)
@@ -125,10 +128,46 @@ def translate_from_image(
   flags: Sequence[str] = _get_cloud_run_flags(
       input_data=input_data,
       input_flatten_as_appyaml=input_flatten_as_appyaml,
-      input_type=input_type,
       entrypoint_command=entrypoint_command,
       source_path=None,
       runtime_base_image=runtime_base_image,
+  )
+  return _generate_output(
+      target_service,
+      flags,
+      None,
+      image,
+  )
+
+
+def translate_from_image(
+    input_data: Mapping[str, any],
+    service: str,
+) -> Sequence[str]:
+  """Translates a GAE app config to a Cloud Run deploy command via AR image.
+
+  Args:
+    input_data: The original input data, either from app.yaml or the Admin API.
+    service: The App Engine service to migrate.
+
+  Returns:
+    A sequence of strings representing the gcloud run deploy command.
+  """
+
+  if not input_data:
+    return []
+  target_service = service or _get_service_name(input_data)
+  image = input_data.get(
+      'deployment'
+  ).container.image  # Get image before flattening
+  input_flatten_as_appyaml = _convert_admin_api_input_to_app_yaml(input_data)
+
+  flags = _get_cloud_run_flags(
+      input_data=input_data,
+      input_flatten_as_appyaml=input_flatten_as_appyaml,
+      entrypoint_command=None,
+      source_path=None,
+      runtime_base_image=None,
   )
   return _generate_output(
       target_service,
@@ -143,10 +182,11 @@ def _get_source_path(
 ) -> str:
   """Gets the source path for the Cloud Run deploy command."""
   if input_type == feature_helper.InputType.APP_YAML:
-    source_path = appyaml.rsplit('app.yaml', 1)[0] if appyaml else ''
-    if not source_path:
-      source_path = '.'
-    return source_path
+    if appyaml:
+      source_path = os.path.dirname(appyaml)
+      # os.path.dirname('') returns '', so default to '.' in that case.
+      return source_path if source_path else '.'
+    return '.'
   else:
     return input(
         'Is the source code located in the current directory? If not, please'
@@ -197,7 +237,6 @@ def _convert_admin_api_input_to_app_yaml(
 def _get_cloud_run_flags(
     input_data: Mapping[str, any],
     input_flatten_as_appyaml: Mapping[str, any],
-    input_type: feature_helper.InputType,
     entrypoint_command: str, *,
     source_path: str | None,
     runtime_base_image: str | None,
@@ -208,7 +247,6 @@ def _get_cloud_run_flags(
     input_data: The original input data, either from app.yaml or the Admin API.
     input_flatten_as_appyaml: A flattened mapping of the input data, with keys
       translated to their app.yaml equivalents.
-    input_type: The type of the input source (APP_YAML or ADMIN_API).
     entrypoint_command: The command to use as the container entrypoint.
     source_path: The path to the application's source code, if deploying from
       source. None if deploying from an image.
@@ -238,7 +276,6 @@ def _get_cloud_run_flags(
       )
       + timeout.translate_timeout_features(input_flatten_as_appyaml)
       + supported_features.translate_supported_features(
-          input_type,
           input_flatten_as_appyaml,
           supported_features_app_yaml,
           project,

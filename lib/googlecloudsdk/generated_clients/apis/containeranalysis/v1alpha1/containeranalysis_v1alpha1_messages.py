@@ -1096,6 +1096,11 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1Artifacts(_messages.Message):
       generation of the uploaded objects will be stored in the Build
       resource's results field. If any objects fail to be pushed, the build is
       marked FAILURE.
+    oci: Optional. A list of OCI images to be uploaded to Artifact Registry
+      upon successful completion of all build steps. OCI images in the
+      specified paths will be uploaded to the specified Artifact Registry
+      repository using the builder service account's credentials. If any
+      images fail to be pushed, the build is marked FAILURE.
     pythonPackages: A list of Python packages to be uploaded to Artifact
       Registry upon successful completion of all build steps. The build
       service account credentials will be used to perform the upload. If any
@@ -1107,7 +1112,8 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1Artifacts(_messages.Message):
   mavenArtifacts = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1ArtifactsMavenArtifact', 3, repeated=True)
   npmPackages = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1ArtifactsNpmPackage', 4, repeated=True)
   objects = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1ArtifactsArtifactObjects', 5)
-  pythonPackages = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1ArtifactsPythonPackage', 6, repeated=True)
+  oci = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1ArtifactsOci', 6, repeated=True)
+  pythonPackages = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1ArtifactsPythonPackage', 7, repeated=True)
 
 
 class ContaineranalysisGoogleDevtoolsCloudbuildV1ArtifactsArtifactObjects(_messages.Message):
@@ -1211,6 +1217,23 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1ArtifactsNpmPackage(_messages.M
 
   packagePath = _messages.StringField(1)
   repository = _messages.StringField(2)
+
+
+class ContaineranalysisGoogleDevtoolsCloudbuildV1ArtifactsOci(_messages.Message):
+  r"""OCI image to upload to Artifact Registry upon successful completion of
+  all build steps.
+
+  Fields:
+    file: Required. Path on the local file system where to find the container
+      to upload. e.g. /workspace/my-image.tar
+    registryPath: Required. Registry path to upload the container to. e.g. us-
+      east1-docker.pkg.dev/my-project/my-repo/my-image
+    tags: Optional. Tags to apply to the uploaded image. e.g. latest, 1.0.0
+  """
+
+  file = _messages.StringField(1)
+  registryPath = _messages.StringField(2)
+  tags = _messages.StringField(3, repeated=True)
 
 
 class ContaineranalysisGoogleDevtoolsCloudbuildV1ArtifactsPythonPackage(_messages.Message):
@@ -1896,20 +1919,43 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1BuildWarning(_messages.Message)
 class ContaineranalysisGoogleDevtoolsCloudbuildV1BuiltImage(_messages.Message):
   r"""An image built by the pipeline.
 
+  Enums:
+    OciMediaTypeValueValuesEnum: Output only. The OCI media type of the
+      artifact. Non-OCI images, such as Docker images, will have an
+      unspecified value.
+
   Fields:
     artifactRegistryPackage: Output only. Path to the artifact in Artifact
       Registry.
     digest: Docker Registry 2.0 digest.
     name: Name used to push the container image to Google Container Registry,
       as presented to `docker push`.
+    ociMediaType: Output only. The OCI media type of the artifact. Non-OCI
+      images, such as Docker images, will have an unspecified value.
     pushTiming: Output only. Stores timing information for pushing the
       specified image.
   """
 
+  class OciMediaTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The OCI media type of the artifact. Non-OCI images, such
+    as Docker images, will have an unspecified value.
+
+    Values:
+      OCI_MEDIA_TYPE_UNSPECIFIED: Default value.
+      IMAGE_MANIFEST: The artifact is an image manifest, which represents a
+        single image with all its layers.
+      IMAGE_INDEX: The artifact is an image index, which can contain a list of
+        image manifests.
+    """
+    OCI_MEDIA_TYPE_UNSPECIFIED = 0
+    IMAGE_MANIFEST = 1
+    IMAGE_INDEX = 2
+
   artifactRegistryPackage = _messages.StringField(1)
   digest = _messages.StringField(2)
   name = _messages.StringField(3)
-  pushTiming = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1TimeSpan', 4)
+  ociMediaType = _messages.EnumField('OciMediaTypeValueValuesEnum', 4)
+  pushTiming = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1TimeSpan', 5)
 
 
 class ContaineranalysisGoogleDevtoolsCloudbuildV1ConnectedRepository(_messages.Message):
@@ -3753,10 +3799,13 @@ class FileLocation(_messages.Message):
       indicate the path to war file combined with the path to jar file.
     layerDetails: Each package found in a file should have its own layer
       metadata (that is, information from the origin layer of the package).
+    lineNumber: Line number in the file where the package is found. Optional
+      field that only applies to source repository scanning.
   """
 
   filePath = _messages.StringField(1)
   layerDetails = _messages.MessageField('LayerDetails', 2)
+  lineNumber = _messages.IntegerField(3, variant=_messages.Variant.INT32)
 
 
 class FileNote(_messages.Message):

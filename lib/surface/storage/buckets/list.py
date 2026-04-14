@@ -60,6 +60,13 @@ class List(base.ListCommand):
       """,
   }
 
+  hints = base.CommandHint(
+      read_only=True,
+      idempotent=True,
+      destructive=False,
+      open_world=True,
+  )
+
   @staticmethod
   def Args(parser):
     _add_common_args(parser)

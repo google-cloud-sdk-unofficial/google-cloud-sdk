@@ -1,0 +1,25 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    List regional multicast group range activations.
+  description: |
+    List all regional multicast group range activations in the specified location of the current project.
+  examples: |
+    To list regional multicast group range activations in the current project and location, run:
+
+      $ {command} --location=region
+request:
+  ALPHA:
+    api_version: v1alpha1
+  collection: networkservices.projects.locations.regionalMulticastGroupRangeActivations
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:location
+    help_text: The location of the regional multicast group range activations to display.
+response:
+  id_field: name
+output:
+  format: |
+     table(
+        name.basename():label=NAME, create_time, multicast_group_range, regional_multicast_domain_activation
+      )

@@ -42,7 +42,7 @@ class GetIamPolicy(base.ListCommand):
   @staticmethod
   def Args(parser):
     flags.AddNamespaceResourceArg(
-        parser, 'to get the IAM policy for', namespace_type='Hive Database'
+        parser, 'to get the IAM policy for', namespace_type='Hive'
     )
     base.URI_FLAG.RemoveFromParser(parser)
 

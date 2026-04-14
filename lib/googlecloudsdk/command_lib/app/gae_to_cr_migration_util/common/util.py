@@ -13,8 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """This module contains common utility function for GAE to CR migration."""
+from collections.abc import Mapping, Sequence
 import logging
-from typing import Mapping, Sequence, Tuple, cast
+from typing import Any, cast
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.config import feature_helper
@@ -52,7 +53,7 @@ _FLATTEN_EXCLUDE_KEYS: Sequence[str] = ['env_variables', 'envVariables']
 _ALLOW_FLEX_ENV_VALUES = ('flex', 'flexible')
 
 
-def is_flex_env(input_data: Mapping[str, any]) -> bool:
+def is_flex_env(input_data: Mapping[str, Any]) -> bool:
   """Detect whether input app.yaml is for flex environment."""
 
   return input_data.get('env') in _ALLOW_FLEX_ENV_VALUES
@@ -66,7 +67,7 @@ def generate_output_flags(flags: Sequence[str], value: str) -> Sequence[str]:
 
 
 def get_feature_key_from_input(
-    input_key_value_pairs: Mapping[str, any], allow_keys: Sequence[str]
+    input_key_value_pairs: Mapping[str, Any], allow_keys: Sequence[str]
 ) -> str:
   """Get feature key from input based on list of allowed keys."""
   allow_keys_from_input = [
@@ -96,9 +97,9 @@ def get_features_by_prefix(
 
 
 def flatten_keys(
-    input_data: Mapping[str, any],
+    input_data: Mapping[str, Any],
     parent_path: str,
-) -> Mapping[str, any]:
+) -> Mapping[str, Any]:
   """Flatten nested paths (root to leaf) of a dictionary to a single level.
 
   Args:
@@ -129,23 +130,32 @@ def flatten_keys(
   return paths
 
 
-def validate_input(
-    appyaml: str, service: str, version: str
-) -> Tuple[feature_helper.InputType, Mapping[str, any]]:
-  r"""Validate the input for cli commands.
+def get_version_data(
+    *,
+    appyaml: str | None = None,
+    service: str | None = None,
+    version: str | None = None,
+) -> tuple[Mapping[str, Any], feature_helper.InputType]:
+  """Retrieves input data as Python objects.
 
-  could be used as an input at any given time.
-  Return the input type and input data (as python objects) if validation passes.
+  This function fetches input data either from an `app.yaml` file or
+  by calling the App Engine Admin API, depending on whether `appyaml` or
+  both `service` and `version` are provided.
+
   Args:
-    appyaml: The app.yaml file path.
-    service: The service name.
-    version: The version name.
+    appyaml: The path to the app.yaml file. If provided, data is read from here.
+    service: The service name. Required along with `version` to fetch from the
+      App Engine Admin API.
+    version: The version name. Required along with `service` to fetch from the
+      App Engine Admin API.
+
   Returns:
-    A tuple of (input type, input data).
+    A tuple containing:
+    -   A mapping of the input data as Python objects, or None if the
+        input data could not be retrieved.
+    -   The feature_helper.InputType (either ADMIN_API or APP_YAML).
   """
-  # `gcloud app migrate app-engine-to-cloudrun --service=XXX --version=XXX
-  # --source=XXX` is invalid,
-  # because both appyaml and deployed version are specified.
+
   appyaml_param_specified = appyaml is not None
   deployed_version_specified = service is not None and version is not None
   if appyaml_param_specified and deployed_version_specified:
@@ -156,6 +166,7 @@ def validate_input(
         '     to specify the deployed version.'
     )
     return (None, None)
+
   # If user runs `gcloud app migrate app-engine-to-cloudrun`
   # without providing any parameters,
   # it assumes the current directory has an `app.yaml` file by default.
@@ -166,35 +177,27 @@ def validate_input(
       if deployed_version_specified
       else feature_helper.InputType.APP_YAML
   )
-  input_data = get_input_data_by_input_type(
-      input_type, appyaml, service, version
+
+  return (
+      _get_input_data_by_input_type(
+          input_type=input_type,
+          appyaml=appyaml,
+          service=service,
+          version=version,
+      ),
+      input_type,
   )
-  if input_data is None:
-    logging.error('[Error] Failed to read input data.')
-  return (input_type, input_data)
 
 
-def get_input_data_by_input_type(
+def _get_input_data_by_input_type(
+    *,
     input_type: feature_helper.InputType,
     appyaml: str,
-    service: str = None,
-    version: str = None,
-) -> Mapping[str, any]:
-  """Retrieves input data as Python objects.
+    service: str,
+    version: str,
+) -> Mapping[str, Any]:
+  """Gets the input data by input type."""
 
-  This function fetches input data either from an `app.yaml` file or
-  by calling the App Engine Admin API, depending on the `input_type`.
-
-  Args:
-    input_type: The type of input source (ADMIN_API or APP_YAML).
-    appyaml: The path to the app.yaml file.
-    service: The service name, used when input_type is ADMIN_API.
-    version: The version name, used when input_type is ADMIN_API.
-
-  Returns:
-    A mapping containing the input data as Python objects, or None if the
-    input data could not be retrieved or is empty.
-  """
   # deployed version is input type
   if input_type == feature_helper.InputType.ADMIN_API:
     api_client = appengine_api_client.GetApiClientForTrack(base.ReleaseTrack.GA)

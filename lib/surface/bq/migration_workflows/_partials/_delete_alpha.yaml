@@ -38,3 +38,4 @@
     api_version: v2
     collection:
     - bigquerymigration.projects.locations.workflows
+    regional_endpoint_compatibility: SUPPORTED

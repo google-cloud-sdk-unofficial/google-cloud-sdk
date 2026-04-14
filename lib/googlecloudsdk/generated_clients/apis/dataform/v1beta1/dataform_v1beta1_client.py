@@ -1434,7 +1434,7 @@ class DataformV1beta1(base_api.BaseApiClient):
         method_id='dataform.projects.locations.repositories.workspaces.queryDirectoryContents',
         ordered_params=['workspace'],
         path_params=['workspace'],
-        query_params=['pageSize', 'pageToken', 'path'],
+        query_params=['pageSize', 'pageToken', 'path', 'view'],
         relative_path='v1beta1/{+workspace}:queryDirectoryContents',
         request_field='',
         request_type_name='DataformProjectsLocationsRepositoriesWorkspacesQueryDirectoryContentsRequest',

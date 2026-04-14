@@ -791,8 +791,6 @@ class AutotuningConfig(_messages.Message):
     ScenariosValueListEntryValuesEnum:
 
   Fields:
-    cohort: Optional. Autotuning cohort identifier. Identifies families of the
-      workloads that have the same shape, for example, daily ETL jobs.
     scenarios: Optional. Scenarios for which tunings are applied.
   """
 
@@ -802,7 +800,6 @@ class AutotuningConfig(_messages.Message):
     Values:
       SCENARIO_UNSPECIFIED: Default value.
       SCALING: Scaling recommendations such as initialExecutors.
-      BHJ: Adding hints for potential relation broadcasts.
       BROADCAST_HASH_JOIN: Adding hints for potential relation broadcasts.
       MEMORY: Memory management for workloads.
       NONE: No autotuning.
@@ -810,14 +807,12 @@ class AutotuningConfig(_messages.Message):
     """
     SCENARIO_UNSPECIFIED = 0
     SCALING = 1
-    BHJ = 2
-    BROADCAST_HASH_JOIN = 3
-    MEMORY = 4
-    NONE = 5
-    AUTO = 6
+    BROADCAST_HASH_JOIN = 2
+    MEMORY = 3
+    NONE = 4
+    AUTO = 5
 
-  cohort = _messages.StringField(1)
-  scenarios = _messages.EnumField('ScenariosValueListEntryValuesEnum', 2, repeated=True)
+  scenarios = _messages.EnumField('ScenariosValueListEntryValuesEnum', 1, repeated=True)
 
 
 class AuxiliaryNodeGroup(_messages.Message):
@@ -6419,7 +6414,17 @@ class InstanceFlexibilityPolicy(_messages.Message):
   r"""Instance flexibility Policy allowing a mixture of VM shapes and
   provisioning models.
 
+  Messages:
+    InstanceMachineTypesValue: Output only. A map of instance short name to
+      machine type. The key is the short name of the Compute Engine instance,
+      and the value is the full machine-type name (e.g., 'n1-standard-16').
+      See Machine types for more information on valid machine type strings.
+
   Fields:
+    instanceMachineTypes: Output only. A map of instance short name to machine
+      type. The key is the short name of the Compute Engine instance, and the
+      value is the full machine-type name (e.g., 'n1-standard-16'). See
+      Machine types for more information on valid machine type strings.
     instanceSelectionList: Optional. List of instance selection options that
       the group will use when creating new VMs.
     instanceSelectionResults: Output only. A list of instance selection
@@ -6428,9 +6433,39 @@ class InstanceFlexibilityPolicy(_messages.Message):
       provisioning model to ensure required reliability.
   """
 
-  instanceSelectionList = _messages.MessageField('InstanceSelection', 1, repeated=True)
-  instanceSelectionResults = _messages.MessageField('InstanceSelectionResult', 2, repeated=True)
-  provisioningModelMix = _messages.MessageField('ProvisioningModelMix', 3)
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class InstanceMachineTypesValue(_messages.Message):
+    r"""Output only. A map of instance short name to machine type. The key is
+    the short name of the Compute Engine instance, and the value is the full
+    machine-type name (e.g., 'n1-standard-16'). See Machine types for more
+    information on valid machine type strings.
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        InstanceMachineTypesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        InstanceMachineTypesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a InstanceMachineTypesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  instanceMachineTypes = _messages.MessageField('InstanceMachineTypesValue', 1)
+  instanceSelectionList = _messages.MessageField('InstanceSelection', 2, repeated=True)
+  instanceSelectionResults = _messages.MessageField('InstanceSelectionResult', 3, repeated=True)
+  provisioningModelMix = _messages.MessageField('ProvisioningModelMix', 4)
 
 
 class InstanceGroupAutoscalingPolicyConfig(_messages.Message):

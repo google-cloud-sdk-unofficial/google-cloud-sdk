@@ -52,7 +52,7 @@ DETAILED_HELP_ALPHA = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class GetProtectedResourcesSummary(base.Command):
   """Gets the protected resources summary."""
@@ -67,7 +67,7 @@ class GetProtectedResourcesSummary(base.Command):
     return inventory.GetProtectedResourcesSummary(keyname)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class GetProtectedResourcesSummaryWithFallback(base.Command):
   """Gets the protected resources summary."""

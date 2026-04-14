@@ -104,7 +104,7 @@ def SetRoutineIAMPolicy(
     apiclient: discovery.Resource,
     reference: bq_id_utils.ApiClientHelper.RoutineReference,
     policy: str,
-) -> ...:
+):
   """Sets IAM policy for the given routine resource.
 
   Arguments:
@@ -134,7 +134,7 @@ def SetRoutineIAMPolicy(
 def GetRoutineIAMPolicy(
     apiclient: discovery.Resource,
     reference: bq_id_utils.ApiClientHelper.RoutineReference,
-) -> ...:
+):
   """Gets IAM policy for the given routine resource.
 
   Arguments:

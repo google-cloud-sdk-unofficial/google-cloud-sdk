@@ -2467,7 +2467,7 @@ encryption key to the latest version for the specified persistent disk.
         path_params=['disk', 'project', 'zone'],
         query_params=['requestId'],
         relative_path='projects/{project}/zones/{zone}/disks/{disk}/updateKmsKey',
-        request_field='',
+        request_field='diskUpdateKmsKeyRequest',
         request_type_name='ComputeDisksUpdateKmsKeyRequest',
         response_type_name='Operation',
         supports_download=False,
@@ -16738,6 +16738,33 @@ To prevent failure, it is recommended that you set the
         supports_download=False,
     )
 
+    def GetHealth(self, request, global_params=None):
+      r"""Gets the most recent health check results for this.
+regional CompositeHealthCheck.
+
+      Args:
+        request: (ComputeRegionCompositeHealthChecksGetHealthRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (CompositeHealthCheckHealth) The response message.
+      """
+      config = self.GetMethodConfig('GetHealth')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetHealth.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.regionCompositeHealthChecks.getHealth',
+        ordered_params=['project', 'region', 'compositeHealthCheck'],
+        path_params=['compositeHealthCheck', 'project', 'region'],
+        query_params=[],
+        relative_path='projects/{project}/regions/{region}/compositeHealthChecks/{compositeHealthCheck}/getHealth',
+        request_field='',
+        request_type_name='ComputeRegionCompositeHealthChecksGetHealthRequest',
+        response_type_name='CompositeHealthCheckHealth',
+        supports_download=False,
+    )
+
     def Insert(self, request, global_params=None):
       r"""Create a CompositeHealthCheck in the specified project in the given region.
 using the parameters that are included in the request.
@@ -17460,7 +17487,7 @@ encryption key to the latest version for the specified persistent disk.
         path_params=['disk', 'project', 'region'],
         query_params=['requestId'],
         relative_path='projects/{project}/regions/{region}/disks/{disk}/updateKmsKey',
-        request_field='',
+        request_field='regionDiskUpdateKmsKeyRequest',
         request_type_name='ComputeRegionDisksUpdateKmsKeyRequest',
         response_type_name='Operation',
         supports_download=False,
@@ -18154,6 +18181,33 @@ To prevent failure, Google recommends that you set the
         request_field='',
         request_type_name='ComputeRegionHealthSourcesGetRequest',
         response_type_name='HealthSource',
+        supports_download=False,
+    )
+
+    def GetHealth(self, request, global_params=None):
+      r"""Gets the most recent health check results for this.
+regional HealthSource.
+
+      Args:
+        request: (ComputeRegionHealthSourcesGetHealthRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (HealthSourceHealth) The response message.
+      """
+      config = self.GetMethodConfig('GetHealth')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetHealth.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.regionHealthSources.getHealth',
+        ordered_params=['project', 'region', 'healthSource'],
+        path_params=['healthSource', 'project', 'region'],
+        query_params=[],
+        relative_path='projects/{project}/regions/{region}/healthSources/{healthSource}/getHealth',
+        request_field='',
+        request_type_name='ComputeRegionHealthSourcesGetHealthRequest',
+        response_type_name='HealthSourceHealth',
         supports_download=False,
     )
 
@@ -22193,7 +22247,7 @@ encryption key to the latest version for the specified snapshot.
         path_params=['project', 'region', 'snapshot'],
         query_params=['requestId'],
         relative_path='projects/{project}/regions/{region}/snapshots/{snapshot}/updateKmsKey',
-        request_field='',
+        request_field='regionSnapshotUpdateKmsKeyRequest',
         request_type_name='ComputeRegionSnapshotsUpdateKmsKeyRequest',
         response_type_name='Operation',
         supports_download=False,
@@ -26679,7 +26733,7 @@ encryption key to the latest version for the specified snapshot.
         path_params=['project', 'snapshot'],
         query_params=['requestId'],
         relative_path='projects/{project}/global/snapshots/{snapshot}/updateKmsKey',
-        request_field='',
+        request_field='snapshotUpdateKmsKeyRequest',
         request_type_name='ComputeSnapshotsUpdateKmsKeyRequest',
         response_type_name='Operation',
         supports_download=False,

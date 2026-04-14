@@ -161,7 +161,7 @@ def load_config() -> Dict[str, Dict[str, str]]:
 
   try:
     process = gcloud_runner.run_gcloud_command(
-        ['config', 'list', '--format=json', '--quiet'], stderr=subprocess.PIPE
+        ['config', 'config-helper', '--format=json'], stderr=subprocess.PIPE
     )
     out, err = process.communicate()
   except FileNotFoundError as e:
@@ -172,7 +172,7 @@ def load_config() -> Dict[str, Dict[str, str]]:
     return _config_cache
 
   if err:
-    logging.warning('Stderr message from gcloud config list: %s', err)
+    logging.warning('Stderr message from gcloud config config-helper: %s', err)
 
   if process.returncode != 0:
     logging.warning(
@@ -185,7 +185,8 @@ def load_config() -> Dict[str, Dict[str, str]]:
     return _config_cache
 
   try:
-    _config_cache = json.loads(out)
+    full_config = json.loads(out)
+    _config_cache = full_config.get('configuration', {}).get('properties', {})
   except json.JSONDecodeError as e:
     logging.warning(
         'Continuing with empty gcloud config data due to invalid config'

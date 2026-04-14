@@ -15,7 +15,6 @@
 
 """Command to update snapshot recycle bin policy."""
 
-import collections
 import json
 
 from apitools.base.py import encoding as apitools_encoding
@@ -31,7 +30,7 @@ from googlecloudsdk.core import resources
 
 def _RulesValueEncoder(message, unused_encoder=None):
   """Encoder for SnapshotRecycleBinPolicy.RulesValue to support rule removal."""
-  py_object = collections.OrderedDict()
+  py_object = {}
   for item in message.additionalProperties:
     if item.value is None:
       py_object[item.key] = None
@@ -111,7 +110,7 @@ class Update(base.UpdateCommand):
     client = holder.client
     messages = holder.client.messages
 
-    rules_dict = collections.OrderedDict()
+    rules_dict = {}
 
     if args.remove_rule:
       rules_dict[args.remove_rule] = None

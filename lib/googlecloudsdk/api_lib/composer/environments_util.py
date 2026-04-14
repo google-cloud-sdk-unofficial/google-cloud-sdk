@@ -560,14 +560,18 @@ def _CreateConfig(messages, flags, is_composer_v1):
           connectionType=connection_type)
 
     if flags.enable_private_environment:
-      enable_private_environment = True
+      networking_type = (
+          messages.PrivateEnvironmentConfig.NetworkingTypeValueValuesEnum.PRIVATE
+      )
     elif flags.disable_private_environment:
-      enable_private_environment = False
+      networking_type = (
+          messages.PrivateEnvironmentConfig.NetworkingTypeValueValuesEnum.PUBLIC
+      )
     else:
-      enable_private_environment = None
+      networking_type = None
 
     private_env_config_args = {
-        'enablePrivateEnvironment': enable_private_environment,
+        'networkingType': networking_type,
         'privateClusterConfig': private_cluster_config,
         'networkingConfig': networking_config,
     }

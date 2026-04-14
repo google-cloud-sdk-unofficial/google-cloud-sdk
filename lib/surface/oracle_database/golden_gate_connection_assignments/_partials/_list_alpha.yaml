@@ -29,8 +29,8 @@
   arguments:
     params:
     - help_text: |-
-        The parent resource where this GoldenGateConnectionAssignment will be
-        created. Format: projects/{project}/locations/{location}
+        The parent value for the GoldenGateConnectionAssignments.
+        Format: projects/{project}/locations/{location}
       is_positional: false
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations

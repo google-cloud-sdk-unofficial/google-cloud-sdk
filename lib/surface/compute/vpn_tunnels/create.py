@@ -100,7 +100,7 @@ class CreateGA(base.CreateCommand):
       vpn_gateway_flags.GetPeerVpnGatewayArgumentForOtherResource(
           required=False))
 
-  _support_tagging_at_creation = False
+  _support_tagging_at_creation = True
   _support_capacity_tier = False
 
   @classmethod
@@ -515,7 +515,6 @@ class CreateBeta(CreateGA):
   gateway.
   """
 
-  _support_tagging_at_creation = True
   _support_capacity_tier = True
 
 
@@ -529,4 +528,3 @@ class CreateAlpha(CreateBeta):
   Highly Available VPN tunnel between HA VPN gateway and an external VPN
   gateway.
   """
-  _support_capacity_tier = True

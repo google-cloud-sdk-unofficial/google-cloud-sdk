@@ -136,6 +136,13 @@ class AwsKinesis(_messages.Message):
         control#pubsub.publisher)
       STREAM_NOT_FOUND: The Kinesis stream does not exist.
       CONSUMER_NOT_FOUND: The Kinesis consumer does not exist.
+      CONFLICTING_REGION_CONSTRAINTS: Indicates an error state where the
+        ingestion source cannot be processed. This occurs because there is no
+        overlap between the regions allowed by the topic's
+        `MessageStoragePolicy` and the regions permitted by the Regional
+        Access Boundary (RAB) restrictions on the project's Pub/Sub service
+        account. A common, allowed region is required to determine a valid
+        ingestion region.
     """
     STATE_UNSPECIFIED = 0
     ACTIVE = 1
@@ -143,6 +150,7 @@ class AwsKinesis(_messages.Message):
     PUBLISH_PERMISSION_DENIED = 3
     STREAM_NOT_FOUND = 4
     CONSUMER_NOT_FOUND = 5
+    CONFLICTING_REGION_CONSTRAINTS = 6
 
   awsRoleArn = _messages.StringField(1)
   consumerArn = _messages.StringField(2)
@@ -188,6 +196,13 @@ class AwsMsk(_messages.Message):
         publishing to the topic.
       CLUSTER_NOT_FOUND: The provided MSK cluster wasn't found.
       TOPIC_NOT_FOUND: The provided topic wasn't found.
+      CONFLICTING_REGION_CONSTRAINTS: Indicates an error state where the
+        ingestion source cannot be processed. This occurs because there is no
+        overlap between the regions allowed by the topic's
+        `MessageStoragePolicy` and the regions permitted by the Regional
+        Access Boundary (RAB) restrictions on the project's Pub/Sub service
+        account. A common, allowed region is required to determine a valid
+        ingestion region.
     """
     STATE_UNSPECIFIED = 0
     ACTIVE = 1
@@ -195,6 +210,7 @@ class AwsMsk(_messages.Message):
     PUBLISH_PERMISSION_DENIED = 3
     CLUSTER_NOT_FOUND = 4
     TOPIC_NOT_FOUND = 5
+    CONFLICTING_REGION_CONSTRAINTS = 6
 
   awsRoleArn = _messages.StringField(1)
   clusterArn = _messages.StringField(2)
@@ -246,6 +262,13 @@ class AzureEventHubs(_messages.Message):
         found.
       RESOURCE_GROUP_NOT_FOUND: The provided Event Hubs resource group
         couldn't be found.
+      CONFLICTING_REGION_CONSTRAINTS: Indicates an error state where the
+        ingestion source cannot be processed. This occurs because there is no
+        overlap between the regions allowed by the topic's
+        `MessageStoragePolicy` and the regions permitted by the Regional
+        Access Boundary (RAB) restrictions on the project's Pub/Sub service
+        account. A common, allowed region is required to determine a valid
+        ingestion region.
     """
     STATE_UNSPECIFIED = 0
     ACTIVE = 1
@@ -255,6 +278,7 @@ class AzureEventHubs(_messages.Message):
     EVENT_HUB_NOT_FOUND = 5
     SUBSCRIPTION_NOT_FOUND = 6
     RESOURCE_GROUP_NOT_FOUND = 7
+    CONFLICTING_REGION_CONSTRAINTS = 8
 
   clientId = _messages.StringField(1)
   eventHub = _messages.StringField(2)
@@ -558,6 +582,13 @@ class CloudStorage(_messages.Message):
       BUCKET_NOT_FOUND: The provided Cloud Storage bucket doesn't exist.
       TOO_MANY_OBJECTS: The Cloud Storage bucket has too many objects,
         ingestion will be paused.
+      CONFLICTING_REGION_CONSTRAINTS: Indicates an error state where the
+        ingestion source cannot be processed. This occurs because there is no
+        overlap between the regions allowed by the topic's
+        `MessageStoragePolicy` and the regions permitted by the Regional
+        Access Boundary (RAB) restrictions on the project's Pub/Sub service
+        account. A common, allowed region is required to determine a valid
+        ingestion region.
     """
     STATE_UNSPECIFIED = 0
     ACTIVE = 1
@@ -565,6 +596,7 @@ class CloudStorage(_messages.Message):
     PUBLISH_PERMISSION_DENIED = 3
     BUCKET_NOT_FOUND = 4
     TOO_MANY_OBJECTS = 5
+    CONFLICTING_REGION_CONSTRAINTS = 6
 
   avroFormat = _messages.MessageField('AvroFormat', 1)
   bucket = _messages.StringField(2)
@@ -711,6 +743,13 @@ class ConfluentCloud(_messages.Message):
         unreachable.
       CLUSTER_NOT_FOUND: The provided cluster wasn't found.
       TOPIC_NOT_FOUND: The provided topic wasn't found.
+      CONFLICTING_REGION_CONSTRAINTS: Indicates an error state where the
+        ingestion source cannot be processed. This occurs because there is no
+        overlap between the regions allowed by the topic's
+        `MessageStoragePolicy` and the regions permitted by the Regional
+        Access Boundary (RAB) restrictions on the project's Pub/Sub service
+        account. A common, allowed region is required to determine a valid
+        ingestion region.
     """
     STATE_UNSPECIFIED = 0
     ACTIVE = 1
@@ -719,6 +758,7 @@ class ConfluentCloud(_messages.Message):
     UNREACHABLE_BOOTSTRAP_SERVER = 4
     CLUSTER_NOT_FOUND = 5
     TOPIC_NOT_FOUND = 6
+    CONFLICTING_REGION_CONSTRAINTS = 7
 
   bootstrapServer = _messages.StringField(1)
   clusterId = _messages.StringField(2)

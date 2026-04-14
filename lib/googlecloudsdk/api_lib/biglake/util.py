@@ -104,7 +104,7 @@ def GetCatalogTypeEnumMapper(release_track):
   return arg_utils.ChoiceEnumMapper(
       '--catalog-type',
       catalog_type_enum,
-      hidden_choices=['biglake'],
+      hidden_choices=['biglake', 'federated'],
       required=True,
       help_str='Catalog type to create the catalog with.',
       custom_mappings={
@@ -119,6 +119,10 @@ def GetCatalogTypeEnumMapper(release_track):
                   ' namespaces and tables within a catalog to be mapped to'
                   " locations beyond the catalog's designated default."
               ),
+          ),
+          'CATALOG_TYPE_FEDERATED': (
+              'federated',
+              'BigLake federated catalog mirroring a remote catalog.',
           ),
       },
   )
@@ -144,6 +148,10 @@ def GetUpdateCatalogTypeEnumMapper(release_track):
                   ' namespaces and tables within a catalog to be mapped to'
                   " locations beyond the catalog's designated default."
               ),
+          ),
+          'CATALOG_TYPE_FEDERATED': (
+              'federated',
+              'A federated catalog.',
           ),
       },
   )
@@ -322,6 +330,12 @@ def CreateCatalog(catalog_id, catalog_msg, primary_location=None):
       and catalog_msg.additional_locations
   ):
     body['additional-locations'] = catalog_msg.additional_locations
+  if catalog_msg.federated_catalog_options is not None:
+    body['federated-catalog-options'] = {
+        'service-directory-name': (
+            catalog_msg.federated_catalog_options.service_directory_name
+        )
+    }
   headers = {'Content-Type': 'application/json'}
   response = requests.GetSession().request(
       'POST', url, data=json.dumps(body), headers=headers

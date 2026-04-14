@@ -14,6 +14,9 @@
 # limitations under the License.
 """Defines arguments for gcloud auth."""
 
+from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.command_lib.auth import auth_util
+
 
 def AddAccountArg(parser):
   parser.add_argument(
@@ -234,5 +237,24 @@ def AddCommonEnterpriseCertConfigFlags(parser):
       help=(
           'Override the file path that the enterprise-certificate-proxy'
           ' configuration is written to.'
+      ),
+  )
+
+
+def AddScopesFlag(parser, hidden=False):
+  """Add the --scopes flag to the parser."""
+  parser.add_argument(
+      '--scopes',
+      hidden=hidden,
+      type=arg_parsers.ArgList(min_length=1),
+      metavar='SCOPE',
+      help=(
+          'The scopes to authorize for. This flag is supported for user'
+          ' accounts and service accounts only. The list of possible scopes'
+          ' can be found at:'
+          ' https://developers.google.com/identity/protocols/googlescopes.\n\nFor'
+          ' end-user accounts the provided scopes must from [{0}]'.format(
+              auth_util.GetTrustedScopesWithDrive()
+          )
       ),
   )

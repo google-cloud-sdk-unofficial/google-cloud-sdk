@@ -1,0 +1,48 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    Create a regional multicast group consumer activation.
+  description: |
+    Create a regional multicast group consumer activation in the specified location of the current project.
+  examples: |
+    Create a regional multicast group consumer activation with the name 'my-rmgca',
+    regional-multicast-group-range-activation 'path-to-rmgra',
+    multicast-consumer-association 'path-to-rmca',
+    and location 'region'.
+
+      $ {command} my-rmgca --regional-multicast-group-range-activation=path-to-rmgra --regional-multicast-consumer-association=path-to-rmca --location=region
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:regionalMulticastGroupConsumerActivation
+    help_text: |
+      Name of the regional multicast group consumer activation to be created.
+  params:
+  - arg_name: regional-multicast-group-range-activation
+    api_field: regionalMulticastGroupConsumerActivation.regionalMulticastGroupRangeActivation
+    help_text: The regional multicast group range activation to be used.
+    required: true
+  - arg_name: regional-multicast-consumer-association
+    api_field: regionalMulticastGroupConsumerActivation.regionalMulticastConsumerAssociation
+    help_text: The regional multicast consumer association to be used.
+    required: true
+  - arg_name: interconnect-attachments
+    api_field: regionalMulticastGroupConsumerActivation.interconnectAttachments
+    repeated: true
+    help_text: The interconnect attachments to be used.
+  - arg_name: description
+    api_field: regionalMulticastGroupConsumerActivation.description
+    help_text: The description for the regional multicast group consumer activation.
+  - arg_name: enable-logging
+    api_field: regionalMulticastGroupConsumerActivation.logConfig.enabled
+    action: store_true
+    help_text: Enable logging for the regional multicast group consumer activation.
+  labels:
+    api_field: regionalMulticastGroupConsumerActivation.labels
+async:
+  collection: networkservices.projects.locations.operations
+request:
+  ALPHA:
+    api_version: v1alpha1
+  collection: networkservices.projects.locations.regionalMulticastGroupConsumerActivations
+  method: create

@@ -179,7 +179,7 @@ def CreateBigqueryError(
     )
   if reason == 'notFound':
     return BigqueryNotFoundError(message, error, error_ls, job_ref=job_ref)
-  if reason == 'duplicate':
+  if reason == 'duplicate' or reason == 'alreadyExists':
     return BigqueryDuplicateError(message, error, error_ls, job_ref=job_ref)
   if reason == 'accessDenied':
     return BigqueryAccessDeniedError(message, error, error_ls, job_ref=job_ref)

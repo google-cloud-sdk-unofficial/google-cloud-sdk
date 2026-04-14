@@ -14,33 +14,38 @@
 # limitations under the License.
 """Deploy command for Orchestration Pipelines."""
 
+import argparse
 import datetime
 import getpass
+import io
 import os
 import pathlib
 import re
 import subprocess
+import time
+from typing import Any
 
+from apitools.base.py import exceptions as api_exceptions
+from apitools.base.py import transfer
+from googlecloudsdk.api_lib.composer import dags_util as composer_dags_util
+from googlecloudsdk.api_lib.composer import environments_util
+from googlecloudsdk.api_lib.composer import util
+from googlecloudsdk.api_lib.storage import storage_api
+from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.orchestration_pipelines import gcp_deployer
 from googlecloudsdk.command_lib.orchestration_pipelines import git_context
-from googlecloudsdk.command_lib.orchestration_pipelines.handlers import bq
-from googlecloudsdk.command_lib.orchestration_pipelines.handlers import bq_dts
-from googlecloudsdk.command_lib.orchestration_pipelines.handlers import composer
-from googlecloudsdk.command_lib.orchestration_pipelines.handlers import compute
-from googlecloudsdk.command_lib.orchestration_pipelines.handlers import dataform
-from googlecloudsdk.command_lib.orchestration_pipelines.handlers import dataproc
-from googlecloudsdk.command_lib.orchestration_pipelines.handlers import iam
-from googlecloudsdk.command_lib.orchestration_pipelines.handlers import pubsub
-from googlecloudsdk.command_lib.orchestration_pipelines.handlers import secretmanager
-from googlecloudsdk.command_lib.orchestration_pipelines.handlers import storage
+from googlecloudsdk.command_lib.orchestration_pipelines.handlers import base as handlers_base
+from googlecloudsdk.command_lib.orchestration_pipelines.handlers import registry
 from googlecloudsdk.command_lib.orchestration_pipelines.processors import action_processor
-from googlecloudsdk.command_lib.orchestration_pipelines.tools import gcs_utils
+from googlecloudsdk.command_lib.orchestration_pipelines.tools import composer_utils
 from googlecloudsdk.command_lib.orchestration_pipelines.tools import yaml_processor
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 from googlecloudsdk.core import yaml
 from googlecloudsdk.core.util import files
 
@@ -50,84 +55,14 @@ MANIFEST_FILE_NAME = "manifest.yml"
 ENV_PACK_FILE = "environment.tar.gz"
 
 # Auto-generated DAG boilerplate
-DAG_TEMPLATE = (
-    """\"\"\"Generates a Composer DAG from a declarative pipeline definition.
+DAG_TEMPLATE = """import os
 
-This script reads pipeline configuration from YAML files located in a 'data'
-folder, based on a manifest file, and uses it to generate an Airflow DAG
-using `composer_declarative_dags`.
-\"\"\"
+from orchestration_pipelines_lib.api import generate_dags
 
-import os
-import pathlib
-from pathlib import Path
-
-from declarative_pipelines_lib.api import generate_dag
+# Generate airflow DAG from pipeline definition
+pipeline_name = os.path.splitext(os.path.basename(__file__))[0]
+generate_dags("/home/airflow/gcs/data", "{bundle_id}", pipeline_name)
 """
-    + "import yaml"
-    + """
-
-Path = pathlib.Path
-MANIFEST_FILE_NAME = "manifest.yml"
-ORCHESTRATION_PIPELINES_DIR = "orchestration_pipelines"
-
-
-def _get_definition_file_path():
-  \"\"\"Reads the pipeline definition from the GCS /data folder relative to the DAG.\"\"\"
-
-  # 1. Identify where we are:
-  # {gcs_root}/dags/declarative_pipelines/{bundle_name}/orchestration-pipeline.py
-  current_file_path = Path(__file__).resolve()
-  bundle_name = current_file_path.parent.name
-  pipeline_filename = current_file_path.stem
-
-  # 2. Navigate to the GCS root (usually /home/airflow/gcs/)
-  # Moving up 3 levels: {bundle_name} -> declarative_pipelines -> dags
-  gcs_root = current_file_path.parents[3]
-  data_dir = gcs_root / "data"
-
-  # 3. Locate the manifest in
-  # /data/declarative_pipelines/{bundle_name}/manifest.yaml
-  manifest_path = (
-      data_dir / ORCHESTRATION_PIPELINES_DIR / bundle_name / MANIFEST_FILE_NAME
-  )
-
-  if not manifest_path.exists():
-    raise FileNotFoundError(f"Manifest not found at: {manifest_path}")
-
-  # Use read_text() to bypass gcloud CLI linters
-  manifest_data = yaml.safe_load(manifest_path.read_text(encoding='utf-8'))
-  version_id = manifest_data.get("default_version")
-  if not version_id:
-    raise ValueError(f"No 'default_version' in {manifest_path}")
-
-  # 4. Locate the version-specific YAML
-  # /data/declarative_pipelines/{bundle_name}/versions/{versionid}/orchestration-pipeline.yaml
-  config_path = (
-      data_dir
-      / ORCHESTRATION_PIPELINES_DIR
-      / bundle_name
-      / "versions"
-      / str(version_id)
-      / f"{pipeline_filename}.yaml"
-  )
-
-  if not config_path.exists():
-    raise FileNotFoundError(f"Pipeline config not found at: {config_path}")
-
-  return config_path
-
-
-def define():
-  pipeline_definition_path = _get_definition_file_path()
-  # Use read_text() to bypass gcloud CLI linters
-  definition = yaml.safe_load(pipeline_definition_path.read_text(encoding='utf-8'))
-  return generate_dag(definition)
-
-
-dag = define()
-"""
-)
 
 
 class DeployError(exceptions.Error):
@@ -135,16 +70,7 @@ class DeployError(exceptions.Error):
   pass
 
 
-def _CollectEnvironmentVariables():
-  """Collects variables from environment variables with _DEPLOY_VAR_ prefix."""
-  env_vars = {}
-  for key, value in os.environ.items():
-    if key.startswith("_DEPLOY_VAR_"):
-      env_vars[key[len("_DEPLOY_VAR_") :]] = value
-  return env_vars
-
-
-def _GetRepoName(subprocess_mod):
+def _GetRepoName(subprocess_mod: Any) -> str:
   """Gets the repository name from git remote origin or falls back to CWD."""
   try:
     url = subprocess_mod.check_output(
@@ -160,51 +86,123 @@ def _GetRepoName(subprocess_mod):
     return pathlib.Path.cwd().name
 
 
-def _GetComposerBucket(subprocess_mod, env_name, location):
+def _GetComposerBucket(env_name: str, location: str) -> str:
   """Retrieves the GCS bucket for the Composer environment."""
   try:
-    out = subprocess_mod.check_output(
-        [
-            "gcloud",
-            "composer",
-            "environments",
-            "describe",
-            env_name,
-            "--location",
-            location,
-            "--format",
-            "value(config.dagGcsPrefix)",
-        ],
-        text=True,
-    ).strip()
-    if not out:
+    env_ref = resources.REGISTRY.Parse(
+        env_name,
+        params={
+            "projectsId": properties.VALUES.core.project.Get(required=True),
+            "locationsId": location,
+        },
+        collection="composer.projects.locations.environments",
+    )
+    env_obj = environments_util.Get(env_ref)
+    if not env_obj.config or not env_obj.config.dagGcsPrefix:
       raise DeployError(
           f"Failed to retrieve Composer bucket from environment '{env_name}'."
           " Ensure the environment exists and is fully initialized."
       )
-    bucket = out.replace("gs://", "").split("/")[0]
+    bucket = env_obj.config.dagGcsPrefix.replace("gs://", "").split("/")[0]
     return bucket
-  except subprocess_mod.CalledProcessError as e:
+  except Exception as e:
     raise DeployError(f"Failed to find Composer bucket: {e}") from e
 
 
-def _RunGcloudStorage(subprocess_mod, args):
-  """Runs gcloud storage commands and captures errors."""
+def _UploadDirToGcs(local_dir: pathlib.Path, dest_uri: str) -> None:
+  """Uploads a local directory recursively to GCS.
+
+  Args:
+    local_dir: pathlib.Path, the local directory to upload.
+    dest_uri: str, the destination GCS URI.
+  """
+
+  storage_client = storage_api.StorageClient()
+  dest_ref = storage_util.ObjectReference.FromUrl(
+      dest_uri, allow_empty_object=True
+  )
+
+  for root, _, dirs in os.walk(local_dir):
+    for f in dirs:
+      local_path = os.path.join(root, f)
+      rel_path = os.path.relpath(local_path, local_dir)
+      # Ensure GCS paths use forward slashes
+      gcs_path = rel_path.replace(os.path.sep, "/")
+
+      obj_ref = storage_util.ObjectReference.FromName(
+          dest_ref.bucket,
+          f"{dest_ref.object.rstrip('/')}/{gcs_path}".lstrip("/"),
+      )
+      storage_client.CopyFileToGCS(local_path, obj_ref)
+
+
+def _UploadFile(
+    content: str | bytes,
+    dest: str,
+    file_name: str,
+    if_generation_match: int | None = None,
+) -> None:
+  """Uploads files to GCS, optionally with optimistic locking."""
+
+  storage_client = storage_api.StorageClient()
+  dest_ref = storage_util.ObjectReference.FromUrl(dest)
+
+  content_bytes = (
+      content.encode("utf-8") if isinstance(content, str) else content
+  )
+  stream = io.BytesIO(content_bytes)
+
+  upload = transfer.Upload.FromStream(stream, mime_type="text/plain")
+  insert_req = storage_client.messages.StorageObjectsInsertRequest(
+      bucket=dest_ref.bucket,
+      name=dest_ref.object,
+      object=storage_client.messages.Object(size=len(content_bytes)),
+  )
+
+  if if_generation_match is not None:
+    insert_req.ifGenerationMatch = int(if_generation_match)
+
   try:
-    subprocess_mod.run(
-        ["gcloud", "storage"] + args,
-        capture_output=True,
-        text=True,
-        check=True,
-    )
-  except subprocess_mod.CalledProcessError as e:
-    log.error("GCS Operation Failed: %s", e.stderr)
-    raise DeployError(
-        f"GCS Upload failed. Check the error: {e}"
+    storage_client.client.objects.Insert(insert_req, upload=upload)
+  except api_exceptions.HttpConflictError as e:
+    # 412 Precondition Failed can act like HttpConflictError for optimistic
+    # locking.
+    raise calliope_exceptions.HttpException(
+        "Precondition Failed (Optimistic Lock Mismatch)"
     ) from e
+  except api_exceptions.HttpError as e:
+    if e.status_code == 412:
+      raise calliope_exceptions.HttpException(
+          "Precondition Failed (Optimistic Lock Mismatch)"
+      )
+    log.error("Failed to upload %s to %s: %s", file_name, dest, e)
+    raise DeployError("File upload to GCS failed.") from e
 
 
-def _NormalizeArtifactPath(path):
+def _FetchManifest(
+    bucket: str, manifest_dir_path: str
+) -> tuple[dict[str, Any] | None, int]:
+  """Fetches manifest content and its GCS generation ID from a specific path."""
+
+  storage_client = storage_api.StorageClient()
+  manifest_path = f"gs://{bucket}/{manifest_dir_path}/{MANIFEST_FILE_NAME}"
+  manifest_ref = storage_util.ObjectReference.FromUrl(manifest_path)
+
+  try:
+    obj = storage_client.GetObject(manifest_ref)
+    generation = obj.generation
+  except api_exceptions.HttpNotFoundError:
+    return None, 0
+
+  try:
+    with storage_client.ReadObject(manifest_ref) as content_stream:
+      content = content_stream.read()
+    return yaml.load(content), generation
+  except (exceptions.Error, api_exceptions.HttpError):
+    return None, 0
+
+
+def _NormalizeArtifactPath(path: str | None) -> str | None:
   """Normalizes artifact path to be either absolute or gs path."""
   if path and isinstance(path, str):
     if not path.startswith("gs://") and not path.startswith("/"):
@@ -212,7 +210,7 @@ def _NormalizeArtifactPath(path):
   return path
 
 
-def _GetRelativePath(path):
+def _GetRelativePath(path: str) -> str:
   """Returns path relative to bundle dir, removing leading '/' and './'."""
   path = path.lstrip("/")
   if path.startswith("./"):
@@ -220,7 +218,12 @@ def _GetRelativePath(path):
   return path
 
 
-def _DeployGcpResources(deployment_file, env, dry_run, external_vars=None):
+def _DeployGcpResources(
+    deployment_file: pathlib.Path,
+    env: str,
+    dry_run: bool,
+    external_vars: dict[str, str] | None = None,
+) -> int:
   """Deploys GCP resources based on a deployment file.
 
   Args:
@@ -247,69 +250,36 @@ def _DeployGcpResources(deployment_file, env, dry_run, external_vars=None):
         deployment_file, env, external_vars
     )
     yaml_processor.validate_environment(environment, env)
-
-    for resource in environment.resources:
-      if resource.type == "resourceProfile":
-        log.status.Print(f"Skipping resource profile '{resource.name}'.")
-        continue
-      handler = _GetHandler(resource, environment, dry_run)
-      gcp_deployer.deploy_gcp_resource(handler)
-      resources_deployed_count += 1
   except Exception as e:
     raise DeployError(
         f"Failed to deploy resources for environment '{env}' "
         f"from file '{deployment_file.name}':\n{e}"
     ) from e
+
+  for resource in environment.resources:
+    if resource.type == "resourceProfile":
+      log.status.Print(f"Skipping resource profile '{resource.name}'.")
+      continue
+    try:
+      handler = _GetHandler(resource, environment, dry_run)
+      gcp_deployer.deploy_gcp_resource(handler)
+      resources_deployed_count += 1
+    except Exception as e:
+      raise DeployError(
+          f"Failed to deploy resources for environment '{env}' "
+          f"from file '{deployment_file.name}':\n{e}"
+      ) from e
   return resources_deployed_count
 
 
-_RESOURCE_HANDLERS = {
-    # go/keep-sorted start
-    "bigquery.dataset": bq.BqDatasetHandler,
-    "bigquery.routine": bq.BqRoutineHandler,
-    "bigquery.table": bq.BqTableHandler,
-    "bigquerydatatransfer.transferConfig": bq_dts.BqDataTransferConfigHandler,
-    "composer.environment": composer.ComposerEnvironmentHandler,
-    "compute.address": compute.ComputeAddressHandler,
-    "compute.firewall": compute.ComputeFirewallHandler,
-    "compute.forwardingRule": compute.ComputeForwardingRuleHandler,
-    "compute.instance": compute.ComputeInstanceHandler,
-    "compute.instanceGroupManager": compute.ComputeInstanceGroupManagerHandler,
-    "compute.instanceTemplate": compute.ComputeInstanceTemplateHandler,
-    "compute.network": compute.ComputeNetworkHandler,
-    "compute.network.networkPeering": compute.ComputeNetworkPeeringHandler,
-    "compute.route": compute.ComputeRouteHandler,
-    "compute.router": compute.ComputeRouterHandler,
-    "compute.subnetwork": compute.ComputeSubnetworkHandler,
-    "compute.targetInstance": compute.ComputeTargetInstanceHandler,
-    "dataform.repository": dataform.DataformRepositoryHandler,
-    "dataform.repository.releaseConfig": dataform.DataformReleaseConfigHandler,
-    "dataform.repository.workflowConfig": (
-        dataform.DataformWorkflowConfigHandler
-    ),
-    "dataproc.autoscalingPolicy": dataproc.DataprocAutoscalingPolicyHandler,
-    "dataproc.cluster": dataproc.DataprocClusterHandler,
-    "dataproc.workflowTemplate": dataproc.DataprocWorkflowTemplateHandler,
-    "iam.serviceAccount": iam.IamServiceAccountHandler,
-    "iam.serviceAccountIamPolicy": iam.IamServiceAccountIamPolicyHandler,
-    "iam.workloadIdentityPool": iam.IamWorkloadIdentityPoolHandler,
-    "iam.workloadIdentityPoolProvider": (
-        iam.IamWorkloadIdentityPoolProviderHandler
-    ),
-    "pubsub.schema": pubsub.PubsubSchemaHandler,
-    "pubsub.subscription": pubsub.PubsubSubscriptionHandler,
-    "pubsub.topic": pubsub.PubsubTopicHandler,
-    "secretmanager.secret": secretmanager.SecretManagerSecretHandler,
-    "storage.bucket": storage.StorageBucketHandler,
-    "storage.bucket.iamPolicy": storage.StorageBucketIamPolicyHandler,
-    "storage.bucket.notification": storage.StorageNotificationHandler,
-    # go/keep-sorted end
-}
-
-
 def _GetHandler(
-    resource, environment, dry_run, *, debug=False, show_requests=False
-):
+    resource: Any,
+    environment: Any,
+    dry_run: bool,
+    *,
+    debug: bool = False,
+    show_requests: bool = False,
+) -> handlers_base.GcpResourceHandler:
   """Gets the appropriate handler for a given resource.
 
   Args:
@@ -325,21 +295,44 @@ def _GetHandler(
   Raises:
     DeployError: If the resource type is not supported.
   """
-  handler_class = _RESOURCE_HANDLERS.get(resource.type)
+  handler_class = registry.RESOURCE_HANDLERS.get(resource.type)
   if not handler_class:
     raise DeployError(f"Unsupported resource type: {resource.type}")
 
   return handler_class(resource, environment, dry_run, debug, show_requests)
 
 
-def _ArtifactsExist(subprocess_mod, artifact_uri):
-  """Checks if artifacts already exist in GCS (optimization for rollbacks)."""
+def _ArtifactsExist(artifact_uri: str) -> bool:
+  """Checks if any artifacts already exist in GCS for the given URI prefix.
+
+  This is used as an optimization for rollbacks to skip re-uploading if
+  artifacts for the specific version are already present.
+
+  Args:
+    artifact_uri: The base GCS URI for the artifacts.
+
+  Returns:
+    True if at least one object exists under the artifact_uri prefix, False
+    otherwise.
+  """
+
+  storage_client = storage_api.StorageClient()
   try:
-    subprocess_mod.check_call(
-        ["gcloud", "storage", "ls", artifact_uri],
+    obj_ref = storage_util.ObjectReference.FromUrl(
+        artifact_uri, allow_empty_object=True
     )
-    return True
-  except subprocess_mod.CalledProcessError:
+    bucket_ref = storage_util.BucketReference.FromArgument(
+        f"gs://{obj_ref.bucket}"
+    )
+    prefix = obj_ref.object
+  except exceptions.Error:
+    return False
+
+  try:
+    return any(
+        True for _ in storage_client.ListBucket(bucket_ref, prefix=prefix)
+    )
+  except api_exceptions.HttpError:
     return False
 
 
@@ -349,16 +342,15 @@ def _ArtifactsExist(subprocess_mod, artifact_uri):
 class Deploy(calliope_base.Command):
   """Deploy a pipeline."""
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args, subprocess_mod=subprocess, **kwargs):
     super().__init__(*args, **kwargs)
-    self._subprocess = subprocess
+    self._subprocess = subprocess_mod
 
   @staticmethod
-  def Args(parser):
+  def Args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--environment",
         required=True,
-        choices=["dev", "stage", "prod"],
         help="The target environment for the deployment.",
     )
     parser.add_argument(
@@ -374,7 +366,8 @@ class Deploy(calliope_base.Command):
     parser.add_argument(
         "--version",
         help=(
-            "The git SHA version to rollback to. Required if --rollback is set."
+            "The git SHA version to rollback to. Required if `--rollback` is"
+            " set."
         ),
     )
     parser.add_argument(
@@ -389,7 +382,26 @@ class Deploy(calliope_base.Command):
         "--pipeline",
         help=(
             "Deploy a specific pipeline by ID, name, or source file. "
-            "Particularly useful for speeding up --local deployments."
+            "Particularly useful for speeding up `--local` deployments."
+        ),
+    )
+    parser.add_argument(
+        "--paused",
+        action=arg_parsers.StoreTrueFalseAction,
+        help=(
+            "Adds the deployed pipelines to the paused_pipelines list. Defaults"
+            " to true for local deployments, meaning the pipeline will be"
+            " automatically paused. Use `--no-paused` to explicitly unpause."
+            " Currently only supported when using the `--local` flag."
+        ),
+    )
+    parser.add_argument(
+        "--async",
+        dest="async_",
+        action="store_true",
+        help=(
+            "If set, deploys asynchronously without waiting for the information"
+            " about all the pipelines in the bundle to become available."
         ),
     )
     parser.add_argument(
@@ -406,7 +418,7 @@ class Deploy(calliope_base.Command):
         ),
     )
 
-  def Run(self, args):
+  def Run(self, args: argparse.Namespace) -> None:
     work_dir = pathlib.Path.cwd()
     status = {
         "resource_deployment": "SKIPPED",
@@ -431,7 +443,7 @@ class Deploy(calliope_base.Command):
             f"Error parsing substitutions file {args.substitutions_file}: {e}"
         ) from e
 
-    env_vars = _CollectEnvironmentVariables()
+    env_vars = yaml_processor.collect_environment_variables()
 
     # 3. Apply precedence: built-ins <- env vars <- file <- flags
     external_vars.update(env_vars)
@@ -440,6 +452,17 @@ class Deploy(calliope_base.Command):
       external_vars.update(args.substitutions)
 
     explicit_version = None
+
+    is_paused = getattr(args, "paused", None)
+
+    if is_paused is not None and not getattr(args, "local", False):
+      raise DeployError(
+          "Invalid Arguments: --paused is currently only allowed "
+          "when using --local mode."
+      )
+    # For --local, default to True if omitted.
+    if getattr(args, "local", False) and is_paused is None:
+      is_paused = True
 
     if args.version:
       if args.rollback:
@@ -478,11 +501,6 @@ class Deploy(calliope_base.Command):
             "Invalid Arguments: --rollback is not available when "
             "using --local mode. Local deployments use ephemeral version IDs."
         )
-      if args.environment == "prod" or args.environment == "stage":
-        raise DeployError(
-            "Invalid Arguments: --local mode is not available for prod "
-            "environment. Please use dev environment."
-        )
 
     if args.rollback:
       if not args.version:
@@ -499,6 +517,7 @@ class Deploy(calliope_base.Command):
             f"Rollback failed: Could not rollback to version {args.version}. "
             f"Git error: {e}"
         ) from e
+
     bundle_dir = work_dir
     deployment_path = bundle_dir / DEPLOYMENT_FILE
     try:
@@ -518,8 +537,11 @@ class Deploy(calliope_base.Command):
     parsed_deployment = yaml_processor.parse_deployment(
         deployment_path, args.environment, external_vars
     )
+
     pipelines = parsed_deployment.get("pipelines", [])
+    single_pipeline_source = None
     if getattr(args, "pipeline", None):
+      single_pipeline_source = args.pipeline
       filtered_pipelines = []
       for p in pipelines:
 
@@ -540,22 +562,90 @@ class Deploy(calliope_base.Command):
       bundle_name = f"bundle-local-{clean_user}-{clean_dir}"
     else:
       bundle_name = _GetRepoName(self._subprocess)
-    for pipeline in pipelines:
-      yaml_path = bundle_dir / pipeline.source
 
-      version_id = self._DeployPipeline(
-          args,
-          bundle_dir,
-          yaml_path,
-          deployment_path,
-          git_context_obj,
-          rollback=args.rollback,
-          bundle_name=bundle_name,
-          external_vars=external_vars,
-      )
-      status["pipeline_deployment"] = "SUCCESS"
+    version_id = None
+    if pipelines:
+      for pipeline in pipelines:
+        yaml_path = bundle_dir / pipeline.source
+
+        version_id = self._DeployPipeline(
+            args,
+            bundle_dir,
+            yaml_path,
+            deployment_path,
+            git_context_obj,
+            rollback=args.rollback,
+            bundle_name=bundle_name,
+            external_vars=external_vars,
+            is_paused=is_paused,
+        )
       status["version"] = version_id
-    success_states = ["SUCCESS"]
+      if getattr(args, "async_", False):
+        status["pipeline_deployment"] = "SUCCESS"
+        log.status.Print(
+            f"\nAsynchronous mode complete.\nBundle ID: {bundle_name}\nVersion"
+            f" ID: {status['version']}\n"
+        )
+      else:
+        try:
+          single_pipeline_id = None
+          if single_pipeline_source:
+            single_pipeline_id = pathlib.Path(single_pipeline_source).stem
+          wait_result = self._WaitForPipelines(
+              bundle_name=bundle_name,
+              expected_pipelines_count=len(pipelines),
+              composer_env_name=parsed_deployment["composer_env"],
+              location=parsed_deployment["region"],
+              project=parsed_deployment["project"],
+              version_id=status["version"],
+              single_pipeline_name=single_pipeline_id
+          )
+          deployed_pipelines = wait_result.get("pipelines", [])
+          all_healthy = True
+          log.status.Print(
+              f"\nSync mode complete.\nBundle ID: {bundle_name}\nVersion"
+              f" ID: {status['version']}\n"
+          )
+          if not deployed_pipelines:
+            log.status.Print("\n--- Pipeline Deployment Status ---")
+            log.status.Print("No pipelines deployed successfully.")
+            all_healthy = False
+          else:
+            log.status.Print("\n--- Pipeline Deployment Status ---")
+            for p in deployed_pipelines:
+              p_id = p.get("pipeline_id", "Unknown")
+              p_status = p.get("status", "unknown").upper()
+              if p_status == "HEALTHY":
+                log.status.Print(
+                    f"Pipeline '{p_id}': [OK] (Status: {p_status})"
+                )
+              else:
+                log.error(f"Pipeline '{p_id}': [FAILED] (Status: {p_status})")
+                all_healthy = False
+          log.status.Print("\n--- Pipeline Deployment full details ---")
+          log.status.Print(f"Deployed pipelines: {deployed_pipelines}")
+
+          if not all_healthy:
+            status["pipeline_deployment"] = "FAILED"
+          else:
+            status["pipeline_deployment"] = "SUCCESS"
+
+        except DeployError as e:
+          status["pipeline_deployment"] = "FAILED"
+          log.error(
+              "Failed to wait for pipelines to be parsed in Composer. "
+              "Error: %s",
+              e,
+          )
+
+    if status["pipeline_deployment"] == "FAILED":
+      raise DeployError(
+          "Deployment failed: One or more pipelines are in an UNHEALTHY state. "
+          "Check Airflow logs for parsing errors."
+      )
+
+    success_states = ["SUCCESS", "SKIPPED"]
+
     if (
         status["resource_deployment"] not in success_states
         and status["pipeline_deployment"] not in success_states
@@ -572,37 +662,200 @@ class Deploy(calliope_base.Command):
     ):
       log.status.Print(
           "Resource and pipeline deployment successful for version"
-          f" {status['version']}"
+          f" {status['version']} in bundle '{bundle_name}'"
       )
     elif status["pipeline_deployment"] == "SUCCESS":
       log.status.Print(
-          f"Pipeline deployment successful for version {status['version']}"
+          f"Pipeline deployment successful for version {status['version']} in"
+          f" bundle '{bundle_name}'"
       )
     elif status["resource_deployment"] == "SUCCESS":
       log.status.Print("Resource deployment successful.")
 
+  def _WaitForPipelines(
+      self,
+      bundle_name,
+      expected_pipelines_count,
+      composer_env_name,
+      location,
+      project,
+      version_id: str,
+      single_pipeline_name=None
+  ):
+    """Waits for pipelines to be parsed in Composer."""
+    timeout = 300
+    sleep_time = 10
+    start_time = time.time()
+    dags = []
+
+    api_version = util.GetApiVersion(self.ReleaseTrack())
+    environment_resource_name = f"projects/{project}/locations/{location}/environments/{composer_env_name}"
+    environment_ref = resources.REGISTRY.ParseRelativeName(
+        environment_resource_name,
+        collection="composer.projects.locations.environments",
+        api_version=api_version,
+    )
+    log.status.Print(
+        f"Waiting up to 5 minutes for {expected_pipelines_count} pipeline(s) in"
+        f" bundle '{bundle_name}' to become available in Composer..."
+    )
+
+    while time.time() - start_time < timeout:
+      try:
+        list_filter = composer_utils.build_dags_filter_tags(
+            bundle=bundle_name,
+            pipeline=single_pipeline_name,
+            is_current=True,
+            version=version_id,
+        )
+
+        response = composer_dags_util.ListDags(
+            environment_ref,
+            list_filter=list_filter,
+        )
+        dags = getattr(response, "dags", []) or []
+
+        if single_pipeline_name:
+          if len(dags) == 1:
+            dag_ref = resources.REGISTRY.ParseRelativeName(
+                dags[0].name,
+                collection="composer.projects.locations.environments.dags",
+                api_version=api_version,
+            )
+            list_tasks_response = composer_dags_util.ListTasks(dag_ref)
+            tasks = getattr(list_tasks_response, "tasks", [])
+
+            if tasks:
+              log.status.Print(
+                  "Sync mode complete: Single pipeline DAG and tasks"
+                  " successfully registered."
+              )
+              pipelines_result = composer_utils.convert_dags_to_pipelines(dags)
+              pipelines_result[0]["actions"] = (
+                  composer_utils.convert_tasks_to_actions(tasks)
+              )
+              return {"pipelines": pipelines_result}
+        else:
+          if len(dags) == expected_pipelines_count:
+            log.status.Print(
+                "Sync mode complete: Multiple pipeline DAGs successfully"
+                " registered."
+            )
+            return {"pipelines": composer_utils.convert_dags_to_pipelines(dags)}
+      except DeployError as e:
+        log.error(
+            "Failed to retrieve pipeline status from Composer, retrying..."
+            " Error: %s",
+            e,
+        )
+
+      elapsed_time = int(time.time() - start_time)
+      log.status.Print(f"Waiting... ({elapsed_time}s elapsed)")
+      time.sleep(sleep_time)
+
+    log.warning(
+        "Timeout waiting 5 minutes for pipelines to register. "
+        f"Found {len(dags)} / {expected_pipelines_count} expected pipelines."
+    )
+    return {}
+
+  def _ResolveAndQueuePath(
+      self,
+      raw_path: Any,
+      rewrite_to_gcs: bool,
+      artifact_base_uri: str,
+      action_filenames_to_upload: set[str],
+  ) -> Any:
+    """Queues a path for upload and returns the final path for the YAML."""
+    if not raw_path or not isinstance(raw_path, str):
+      return raw_path
+
+    if raw_path.startswith("gs://"):
+      if rewrite_to_gcs:
+        action_filenames_to_upload.add(raw_path)
+      return raw_path
+
+    clean_path = _GetRelativePath(raw_path)
+    parent_dir = str(pathlib.Path(clean_path).parent)
+
+    queue_target = (
+        parent_dir if parent_dir and parent_dir != "." else clean_path
+    )
+    action_filenames_to_upload.add(queue_target)
+
+    return f"{artifact_base_uri}{clean_path}" if rewrite_to_gcs else clean_path
+
   def _ProcessAndUploadArtifacts(
       self,
-      resolved_pipeline,
-      bundle_dir,
-      composer_bucket,
-      bundle_dag_prefix,
-      artifact_base_uri,
-  ):
+      resolved_pipeline: dict[str, Any],
+      bundle_dir: pathlib.Path,
+      composer_bucket: str,
+      bundle_data_prefix: str,
+      version_id,
+      artifact_base_uri: str,
+  ) -> None:
     """Processes actions and uploads artifacts to GCS."""
-    uploaded_dag_projects = set()
-    action_filenames_to_upload = set()
-    env_pack_files_to_upload = set()
+    uploaded_framework_projects = set[str]()
+    action_filenames_to_upload = set[str]()
+    env_pack_files_to_upload = set[str]()
 
     defaults = resolved_pipeline.get("defaults", {})
     default_reqs_path = defaults.get("requirementsPath")
 
-    for action in resolved_pipeline.get("actions", []):
-      filename = action.get("filename")
-      if filename and isinstance(filename, str):
-        filename = _NormalizeArtifactPath(filename)
-        action["filename"] = filename
-        action_filenames_to_upload.add(filename)
+    for action_item in resolved_pipeline.get("actions", []):
+      action = action_item
+      action_type = None
+      if isinstance(action_item, dict):
+        if "pipeline" in action_item and isinstance(
+            action_item["pipeline"], dict
+        ):
+          action = action_item["pipeline"]
+          action_type = "pipeline"
+        elif "pyspark" in action_item and isinstance(
+            action_item["pyspark"], dict
+        ):
+          action = action_item["pyspark"]
+          action_type = "pyspark"
+        elif "notebook" in action_item and isinstance(
+            action_item["notebook"], dict
+        ):
+          action = action_item["notebook"]
+          action_type = "notebook"
+        elif "sql" in action_item and isinstance(action_item["sql"], dict):
+          action = action_item["sql"]
+          action_type = "sql"
+        elif "python" in action_item and isinstance(
+            action_item["python"], dict
+        ):
+          action = action_item["python"]
+          action_type = "python"
+        elif len(action_item) == 1:
+          first_key = next(iter(action_item.keys()))
+          if isinstance(action_item[first_key], dict):
+            action = action_item[first_key]
+            action_type = first_key
+
+      if "mainFilePath" in action:
+        needs_gcs_rewrite = action_type in ["pyspark", "notebook"]
+        action["mainFilePath"] = self._ResolveAndQueuePath(
+            raw_path=action["mainFilePath"],
+            rewrite_to_gcs=needs_gcs_rewrite,
+            artifact_base_uri=artifact_base_uri,
+            action_filenames_to_upload=action_filenames_to_upload,
+        )
+      if (
+          action_type == "sql"
+          and isinstance(action.get("query"), dict)
+          and "path" in action["query"]
+      ):
+        engine_dict = action.get("engine", {})
+        is_serverless = "dataprocServerless" in engine_dict
+        action["query"]["path"] = self._ResolveAndQueuePath(
+            raw_path=action["query"]["path"],
+            rewrite_to_gcs=is_serverless,
+            artifact_base_uri=artifact_base_uri,
+            action_filenames_to_upload=action_filenames_to_upload,
+        )
 
       py_files = action.get("pyFiles")
       if py_files and isinstance(py_files, list):
@@ -610,36 +863,25 @@ class Deploy(calliope_base.Command):
         action_filenames_to_upload.update(normalized)
         action["pyFiles"] = normalized
 
-      clean_path = action.pop("_local_dag_upload_path", None)
-      if clean_path and clean_path not in uploaded_dag_projects:
-        uploaded_dag_projects.add(clean_path)
+      clean_path = action_item.pop("_local_framework_upload_path", None)
+      if clean_path and clean_path not in uploaded_framework_projects:
+        uploaded_framework_projects.add(clean_path)
         local_project_path = bundle_dir / clean_path
 
-        if local_project_path.exists() and local_project_path.is_dir():
-          dags_dest_uri = (
-              f"gs://{composer_bucket}/{bundle_dag_prefix}/{clean_path}/"
-          )
-
-          engine_raw = action.get("engine")
-          engine_str = (
-              engine_raw.get("engineType")
-              if isinstance(engine_raw, dict)
-              else engine_raw
-          )
-
+        if local_project_path.exists():
           log.status.Print(
-              f"Uploading {engine_str.upper()} project '{clean_path}' to"
-              " DAGs folder..."
+              f"Uploading '{clean_path}' to pipeline data folder..."
           )
-          _RunGcloudStorage(
-              self._subprocess,
-              ["cp", "-r", str(local_project_path / "*"), dags_dest_uri],
-          )
+          data_dest_uri = f"gs://{composer_bucket}/{bundle_data_prefix}/versions/{version_id}/{clean_path}"
+          if local_project_path.is_dir():
+            _UploadDirToGcs(local_project_path, data_dest_uri)
+          else:
+            dest_ref = storage_util.ObjectReference.FromUrl(data_dest_uri)
+            storage_client = storage_api.StorageClient()
+            storage_client.CopyFileToGCS(str(local_project_path), dest_ref)
         else:
-          log.warning(f"Project path not found locally: {clean_path}")
+          log.warning(f"Path not found locally: {clean_path}")
 
-      # Resolve requirements path for this action
-      # Priority: Action Config > Defaults > None
       reqs_path_str = action.get("requirementsPath")
       if not reqs_path_str and default_reqs_path:
         reqs_path_str = default_reqs_path
@@ -664,14 +906,16 @@ class Deploy(calliope_base.Command):
           defaults,
           requirements_path=resolved_reqs_path,
       )
-      processor.process_action()
+      if processor:
+        processor.process_action()
+        env_pack_file = processor.env_pack_file
+        if env_pack_file:
+          env_pack_files_to_upload.add(env_pack_file)
 
-      env_pack_file = processor.env_pack_file
-      if env_pack_file:
-        env_pack_files_to_upload.add(env_pack_file)
+      if "requirementsPath" in action:
+        del action["requirementsPath"]
 
     self._UploadArtifacts(
-        subprocess_mod=self._subprocess,
         work_dir=bundle_dir,
         artifact_uri=artifact_base_uri,
         action_filenames=action_filenames_to_upload,
@@ -684,10 +928,10 @@ class Deploy(calliope_base.Command):
       bundle_data_prefix,
       version_id,
       git_context_obj,
-      environment,
       rollback,
       pipeline_path,
       bundle_name,
+      is_paused=False,
   ):
     """Updates the manifest file in GCS with retry logic."""
     manifest_dest = (
@@ -698,20 +942,19 @@ class Deploy(calliope_base.Command):
 
     metadata = git_context_obj.GetDeploymentMetadata(version_id)
     while attempts < max_retries:
-      manifest_data, read_generation_id = gcs_utils.FetchManifest(
-          self._subprocess, manifest_dest
+      manifest_data, read_generation_id = _FetchManifest(
+          composer_bucket, bundle_data_prefix
       )
       if manifest_data is None:
         manifest_data = {
             "bundle": bundle_name,
-            "paused_pipelines": [],
-            "versions_history": [],
+            "pausedPipelines": [],
+            "versionsHistory": [],
         }
 
       bypass = rollback
       git_context_obj.ValidateAncestryOrRaise(
-          manifest_data.get("default_version"),
-          environment,
+          manifest_data.get("defaultVersion"),
           bypass=bypass,
       )
       current_time = datetime.datetime.now(datetime.timezone.utc).isoformat(
@@ -719,19 +962,30 @@ class Deploy(calliope_base.Command):
       ).replace("+00:00", "Z")
       pipeline_name = pipeline_path.stem
 
+      paused_pipelines = manifest_data.get("pausedPipelines", [])
+      if not isinstance(paused_pipelines, list):
+        paused_pipelines = []
+
+      if is_paused is not None:
+        if is_paused and pipeline_name not in paused_pipelines:
+          paused_pipelines.append(pipeline_name)
+        elif not is_paused and pipeline_name in paused_pipelines:
+          paused_pipelines.remove(pipeline_name)
+
       new_manifest_payload = manifest_data.copy() | {
           "bundle": bundle_name,
-          "default_version": str(version_id),
-          "updated_at": current_time,
+          "defaultVersion": str(version_id),
+          "updatedAt": current_time,
+          "pausedPipelines": paused_pipelines,
       }
 
-      history = new_manifest_payload.get("versions_history", [])
+      history = new_manifest_payload.get("versionsHistory", [])
 
       existing_entry = next(
           (
               item
               for item in history
-              if item.get("version_id") == str(version_id)
+              if item.get("versionId") == str(version_id)
           ),
           None,
       )
@@ -745,22 +999,21 @@ class Deploy(calliope_base.Command):
       else:
         new_entry = {
             "timestamp": current_time,
-            "version_id": str(version_id),
+            "versionId": str(version_id),
             "pipelines": [pipeline_name],
         }
         if metadata:
           new_entry["metadata"] = metadata
         history.insert(0, new_entry)
 
-      new_manifest_payload["versions_history"] = history
+      new_manifest_payload["versionsHistory"] = history
 
       try:
         log.status.Print(
             "Attempting to update manifest (Generation match:"
             f" {read_generation_id})..."
         )
-        gcs_utils.UploadFile(
-            self._subprocess,
+        _UploadFile(
             yaml.dump(new_manifest_payload),
             manifest_dest,
             MANIFEST_FILE_NAME,
@@ -794,6 +1047,7 @@ class Deploy(calliope_base.Command):
       rollback=False,
       bundle_name=None,
       external_vars=None,
+      is_paused=False,
   ):
     """Deploys the pipeline using the dynamic context and concurrency control.
 
@@ -806,6 +1060,8 @@ class Deploy(calliope_base.Command):
       rollback: If True, this is a rollback operation.
       bundle_name: The name of the bundle.
       external_vars: Optional dict of external variables to substitute.
+      is_paused: If True, the pipeline will be added to the paused_pipelines
+        list in the manifest.
 
     Returns:
       The version ID (git commit hash) of the deployed pipeline.
@@ -822,15 +1078,14 @@ class Deploy(calliope_base.Command):
         deployment_path, args.environment, external_vars
     )
     composer_bucket = _GetComposerBucket(
-        self._subprocess,
         parsed_deployment["composer_env"],
         parsed_deployment["region"],
     )
-    bundle_data_prefix = f"data/orchestration_pipelines/{bundle_name}"
+    bundle_data_prefix = f"data/{bundle_name}"
     artifact_base_uri = (
         f"gs://{parsed_deployment['artifact_storage']['bucket']}/"
         f"{parsed_deployment['artifact_storage']['path_prefix']}/"
-        f"{bundle_dir.name}/versions/{version_id}/"
+        f"{bundle_name}/versions/{version_id}/"
     )
     dag_path = pipeline_path.with_suffix(".py")
     bundle_dag_prefix = f"dags/orchestration_pipelines/{bundle_name}"
@@ -853,10 +1108,9 @@ class Deploy(calliope_base.Command):
         deployment_path=deployment_path,
         env=args.environment,
         external_variables=external_vars,
-        bundle_dag_prefix=bundle_dag_prefix,
     )
 
-    if rollback and _ArtifactsExist(self._subprocess, artifact_base_uri):
+    if rollback and _ArtifactsExist(artifact_base_uri):
       log.status.Print(
           f"Rollback optimization: Artifacts for version {version_id} "
           "already found in GCS. Skipping build and upload."
@@ -866,24 +1120,25 @@ class Deploy(calliope_base.Command):
           resolved_pipeline,
           bundle_dir,
           composer_bucket,
-          bundle_dag_prefix,
+          bundle_data_prefix,
+          version_id,
           artifact_base_uri,
       )
 
     resolved_yaml_content = yaml.dump(resolved_pipeline)
-    yaml_dest = f"gs://{composer_bucket}/{bundle_data_prefix}/versions/{version_id}/{pipeline_path.name}"
-    gcs_utils.UploadFile(
-        self._subprocess,
+    safe_name = pipeline_path.stem + ".yml"
+    yaml_dest = f"gs://{composer_bucket}/{bundle_data_prefix}/versions/{version_id}/{safe_name}"
+    dag_content = DAG_TEMPLATE.format(bundle_id=bundle_name)
+
+    _UploadFile(
+        dag_content,
+        dag_dest,
+        dag_path.name,
+    )
+    _UploadFile(
         resolved_yaml_content,
         yaml_dest,
         pipeline_path.name,
-    )
-
-    gcs_utils.UploadFile(
-        self._subprocess,
-        DAG_TEMPLATE,
-        dag_dest,
-        dag_path.name,
     )
 
     self._UpdateManifest(
@@ -891,10 +1146,10 @@ class Deploy(calliope_base.Command):
         bundle_data_prefix,
         version_id,
         git_context_obj,
-        args.environment,
         rollback,
         pipeline_path,
         bundle_name,
+        is_paused=is_paused,
     )
 
     return version_id
@@ -902,20 +1157,22 @@ class Deploy(calliope_base.Command):
   def _UploadArtifacts(
       self,
       *,
-      subprocess_mod,
-      work_dir,
-      artifact_uri,
-      action_filenames=None,
-      env_pack_files=None,
-  ):
+      work_dir: pathlib.Path,
+      artifact_uri: str,
+      action_filenames: set[str] | None = None,
+      env_pack_files: set[str] | None = None,
+  ) -> None:
     """Uploads pipeline artifacts to the GCS artifact bucket."""
+    storage_client = storage_api.StorageClient()
+
     if env_pack_files:
       for env_file in env_pack_files:
         env_pack_path = work_dir / env_file
         if env_pack_path.exists():
-          _RunGcloudStorage(
-              subprocess_mod, ["cp", str(env_pack_path), artifact_uri]
+          dest_ref = storage_util.ObjectReference.FromUrl(
+              f"{artifact_uri}{env_file}"
           )
+          storage_client.CopyFileToGCS(str(env_pack_path), dest_ref)
           env_pack_path.unlink()
 
     if action_filenames:
@@ -937,16 +1194,16 @@ class Deploy(calliope_base.Command):
         )
 
         if local_path.is_dir():
-          _RunGcloudStorage(
-              subprocess_mod, ["cp", "-r", str(local_path / "*"), dest_uri]
-          )
+          _UploadDirToGcs(local_path, dest_uri)
         else:
-          _RunGcloudStorage(subprocess_mod, ["cp", str(local_path), dest_uri])
+          dest_ref = storage_util.ObjectReference.FromUrl(dest_uri)
+          storage_client.CopyFileToGCS(str(local_path), dest_ref)
 
     init_action_path = work_dir / "python_environment_unpack.sh"
     if init_action_path.exists():
-      _RunGcloudStorage(
-          subprocess_mod, ["cp", str(init_action_path), artifact_uri]
+      dest_ref = storage_util.ObjectReference.FromUrl(
+          f"{artifact_uri}python_environment_unpack.sh"
       )
+      storage_client.CopyFileToGCS(str(init_action_path), dest_ref)
       log.debug("Copied init action to %s", artifact_uri)
       init_action_path.unlink()

@@ -3856,6 +3856,128 @@ class ForeignViewDefinition(_messages.Message):
   query = _messages.StringField(2)
 
 
+class GenAiErrorStats(_messages.Message):
+  r"""Provides error statistics for the query job across all AI function
+  calls.
+
+  Fields:
+    errors: A list of unique errors at query level (up to 5, truncated to 100
+      chars)
+  """
+
+  errors = _messages.StringField(1, repeated=True)
+
+
+class GenAiFunctionCostOptimizationStats(_messages.Message):
+  r"""Provides cost optimization statistics for a GenAi function call.
+
+  Fields:
+    message: System generated message to provide insights into cost
+      optimization state.
+    numCostOptimizedRows: Number of rows inferred via cost optimized workflow.
+  """
+
+  message = _messages.StringField(1)
+  numCostOptimizedRows = _messages.IntegerField(2)
+
+
+class GenAiFunctionErrorStats(_messages.Message):
+  r"""Provides error statistics for a GenAi function call.
+
+  Fields:
+    errors: A list of unique errors at function level (up to 5, truncated to
+      100 chars).
+    numFailedRows: Number of failed rows processed by the function
+  """
+
+  errors = _messages.StringField(1, repeated=True)
+  numFailedRows = _messages.IntegerField(2)
+
+
+class GenAiFunctionStats(_messages.Message):
+  r"""Provides statistics for each Ai function call within a query.
+
+  Fields:
+    costOptimizationStats: Cost optimization stats if applied on the rows
+      processed by the function.
+    errorStats: Error stats for the function.
+    functionName: Name of the function.
+    numProcessedRows: Number of rows processed by this GenAi function. This
+      includes all cost_optimized, llm_inferred and failed_rows.
+    prompt: User input prompt of the function (truncated to 20 chars).
+  """
+
+  costOptimizationStats = _messages.MessageField('GenAiFunctionCostOptimizationStats', 1)
+  errorStats = _messages.MessageField('GenAiFunctionErrorStats', 2)
+  functionName = _messages.StringField(3)
+  numProcessedRows = _messages.IntegerField(4)
+  prompt = _messages.StringField(5)
+
+
+class GenAiStats(_messages.Message):
+  r"""GenAi stats for the query job.
+
+  Fields:
+    errorStats: Job level error stats across all GenAi functions
+    functionStats: Function level stats for GenAi Functions. See
+      https://docs.cloud.google.com/bigquery/docs/generative-ai-overview
+  """
+
+  errorStats = _messages.MessageField('GenAiErrorStats', 1)
+  functionStats = _messages.MessageField('GenAiFunctionStats', 2, repeated=True)
+
+
+class GeneratedColumn(_messages.Message):
+  r"""Optional. Definition of how values are generated for the field. Only
+  valid for top-level schema fields (not nested fields).
+
+  Enums:
+    GeneratedModeValueValuesEnum: Optional. Dictates when system generated
+      values are used to populate the field.
+
+  Fields:
+    generatedExpressionInfo: Definition of the expression used to generate the
+      field.
+    generatedMode: Optional. Dictates when system generated values are used to
+      populate the field.
+  """
+
+  class GeneratedModeValueValuesEnum(_messages.Enum):
+    r"""Optional. Dictates when system generated values are used to populate
+    the field.
+
+    Values:
+      GENERATED_MODE_UNSPECIFIED: Unspecified GeneratedMode will default to
+        GENERATED_ALWAYS.
+      GENERATED_ALWAYS: Field can only have system generated values. Users
+        cannot manually insert values into the field.
+      GENERATED_BY_DEFAULT: Use system generated values only if the user does
+        not explicitly provide a value.
+    """
+    GENERATED_MODE_UNSPECIFIED = 0
+    GENERATED_ALWAYS = 1
+    GENERATED_BY_DEFAULT = 2
+
+  generatedExpressionInfo = _messages.MessageField('GeneratedExpressionInfo', 1)
+  generatedMode = _messages.EnumField('GeneratedModeValueValuesEnum', 2)
+
+
+class GeneratedExpressionInfo(_messages.Message):
+  r"""Definition of the expression used to generate the field.
+
+  Fields:
+    asynchronous: Optional. Whether the column generation is done
+      asynchronously.
+    generationExpression: Optional. The generation expression (e.g.
+      AI.EMBED(...)) used to generated the field.
+    stored: Optional. Whether the generated column is stored in the table.
+  """
+
+  asynchronous = _messages.BooleanField(1)
+  generationExpression = _messages.StringField(2)
+  stored = _messages.BooleanField(3)
+
+
 class GetIamPolicyRequest(_messages.Message):
   r"""Request message for `GetIamPolicy` method.
 
@@ -5566,6 +5688,7 @@ class JobStatistics2(_messages.Message):
     exportDataStatistics: Output only. Stats for EXPORT DATA statement.
     externalServiceCosts: Output only. Job cost breakdown as bigquery internal
       cost and external service costs.
+    genAiStats: Output only. Statistics related to GenAI usage in the query.
     incrementalResultStats: Output only. Statistics related to incremental
       query results, if enabled for the query. This feature is not yet
       available.
@@ -5767,36 +5890,37 @@ class JobStatistics2(_messages.Message):
   estimatedBytesProcessed = _messages.IntegerField(15)
   exportDataStatistics = _messages.MessageField('ExportDataStatistics', 16)
   externalServiceCosts = _messages.MessageField('ExternalServiceCost', 17, repeated=True)
-  incrementalResultStats = _messages.MessageField('IncrementalResultStats', 18)
-  loadQueryStatistics = _messages.MessageField('LoadQueryStatistics', 19)
-  materializedViewStatistics = _messages.MessageField('MaterializedViewStatistics', 20)
-  metadataCacheStatistics = _messages.MessageField('MetadataCacheStatistics', 21)
-  mlStatistics = _messages.MessageField('MlStatistics', 22)
-  modelTraining = _messages.MessageField('BigQueryModelTraining', 23)
-  modelTrainingCurrentIteration = _messages.IntegerField(24, variant=_messages.Variant.INT32)
-  modelTrainingExpectedTotalIteration = _messages.IntegerField(25)
-  numDmlAffectedRows = _messages.IntegerField(26)
-  performanceInsights = _messages.MessageField('PerformanceInsights', 27)
-  queryInfo = _messages.MessageField('QueryInfo', 28)
-  queryPlan = _messages.MessageField('ExplainQueryStage', 29, repeated=True)
-  referencedPropertyGraphs = _messages.MessageField('PropertyGraphReference', 30, repeated=True)
-  referencedRoutines = _messages.MessageField('RoutineReference', 31, repeated=True)
-  referencedTables = _messages.MessageField('TableReference', 32, repeated=True)
-  reservationUsage = _messages.MessageField('ReservationUsageValueListEntry', 33, repeated=True)
-  schema = _messages.MessageField('TableSchema', 34)
-  searchStatistics = _messages.MessageField('SearchStatistics', 35)
-  sparkStatistics = _messages.MessageField('SparkStatistics', 36)
-  statementType = _messages.StringField(37)
-  timeline = _messages.MessageField('QueryTimelineSample', 38, repeated=True)
-  totalBytesBilled = _messages.IntegerField(39)
-  totalBytesProcessed = _messages.IntegerField(40)
-  totalBytesProcessedAccuracy = _messages.StringField(41)
-  totalPartitionsProcessed = _messages.IntegerField(42)
-  totalServicesSkuSlotMs = _messages.IntegerField(43)
-  totalSlotMs = _messages.IntegerField(44)
-  transferredBytes = _messages.IntegerField(45)
-  undeclaredQueryParameters = _messages.MessageField('QueryParameter', 46, repeated=True)
-  vectorSearchStatistics = _messages.MessageField('VectorSearchStatistics', 47)
+  genAiStats = _messages.MessageField('GenAiStats', 18)
+  incrementalResultStats = _messages.MessageField('IncrementalResultStats', 19)
+  loadQueryStatistics = _messages.MessageField('LoadQueryStatistics', 20)
+  materializedViewStatistics = _messages.MessageField('MaterializedViewStatistics', 21)
+  metadataCacheStatistics = _messages.MessageField('MetadataCacheStatistics', 22)
+  mlStatistics = _messages.MessageField('MlStatistics', 23)
+  modelTraining = _messages.MessageField('BigQueryModelTraining', 24)
+  modelTrainingCurrentIteration = _messages.IntegerField(25, variant=_messages.Variant.INT32)
+  modelTrainingExpectedTotalIteration = _messages.IntegerField(26)
+  numDmlAffectedRows = _messages.IntegerField(27)
+  performanceInsights = _messages.MessageField('PerformanceInsights', 28)
+  queryInfo = _messages.MessageField('QueryInfo', 29)
+  queryPlan = _messages.MessageField('ExplainQueryStage', 30, repeated=True)
+  referencedPropertyGraphs = _messages.MessageField('PropertyGraphReference', 31, repeated=True)
+  referencedRoutines = _messages.MessageField('RoutineReference', 32, repeated=True)
+  referencedTables = _messages.MessageField('TableReference', 33, repeated=True)
+  reservationUsage = _messages.MessageField('ReservationUsageValueListEntry', 34, repeated=True)
+  schema = _messages.MessageField('TableSchema', 35)
+  searchStatistics = _messages.MessageField('SearchStatistics', 36)
+  sparkStatistics = _messages.MessageField('SparkStatistics', 37)
+  statementType = _messages.StringField(38)
+  timeline = _messages.MessageField('QueryTimelineSample', 39, repeated=True)
+  totalBytesBilled = _messages.IntegerField(40)
+  totalBytesProcessed = _messages.IntegerField(41)
+  totalBytesProcessedAccuracy = _messages.StringField(42)
+  totalPartitionsProcessed = _messages.IntegerField(43)
+  totalServicesSkuSlotMs = _messages.IntegerField(44)
+  totalSlotMs = _messages.IntegerField(45)
+  transferredBytes = _messages.IntegerField(46)
+  undeclaredQueryParameters = _messages.MessageField('QueryParameter', 47, repeated=True)
+  vectorSearchStatistics = _messages.MessageField('VectorSearchStatistics', 48)
 
 
 class JobStatistics3(_messages.Message):
@@ -7611,6 +7735,9 @@ class Routine(_messages.Message):
 
   Fields:
     arguments: Optional.
+    buildStatus: Output only. The build status of the routine. This field is
+      only applicable to Python UDFs.
+      [Preview](https://cloud.google.com/products/#product-launch-stages)
     creationTime: Output only. The time when this routine was created, in
       milliseconds since the epoch.
     dataGovernanceType: Optional. If set to `DATA_MASKING`, the function is
@@ -7768,25 +7895,66 @@ class Routine(_messages.Message):
     INVOKER = 2
 
   arguments = _messages.MessageField('Argument', 1, repeated=True)
-  creationTime = _messages.IntegerField(2)
-  dataGovernanceType = _messages.EnumField('DataGovernanceTypeValueValuesEnum', 3)
-  definitionBody = _messages.StringField(4)
-  description = _messages.StringField(5)
-  determinismLevel = _messages.EnumField('DeterminismLevelValueValuesEnum', 6)
-  etag = _messages.StringField(7)
-  externalRuntimeOptions = _messages.MessageField('ExternalRuntimeOptions', 8)
-  importedLibraries = _messages.StringField(9, repeated=True)
-  language = _messages.EnumField('LanguageValueValuesEnum', 10)
-  lastModifiedTime = _messages.IntegerField(11)
-  pythonOptions = _messages.MessageField('PythonOptions', 12)
-  remoteFunctionOptions = _messages.MessageField('RemoteFunctionOptions', 13)
-  returnTableType = _messages.MessageField('StandardSqlTableType', 14)
-  returnType = _messages.MessageField('StandardSqlDataType', 15)
-  routineReference = _messages.MessageField('RoutineReference', 16)
-  routineType = _messages.EnumField('RoutineTypeValueValuesEnum', 17)
-  securityMode = _messages.EnumField('SecurityModeValueValuesEnum', 18)
-  sparkOptions = _messages.MessageField('SparkOptions', 19)
-  strictMode = _messages.BooleanField(20)
+  buildStatus = _messages.MessageField('RoutineBuildStatus', 2)
+  creationTime = _messages.IntegerField(3)
+  dataGovernanceType = _messages.EnumField('DataGovernanceTypeValueValuesEnum', 4)
+  definitionBody = _messages.StringField(5)
+  description = _messages.StringField(6)
+  determinismLevel = _messages.EnumField('DeterminismLevelValueValuesEnum', 7)
+  etag = _messages.StringField(8)
+  externalRuntimeOptions = _messages.MessageField('ExternalRuntimeOptions', 9)
+  importedLibraries = _messages.StringField(10, repeated=True)
+  language = _messages.EnumField('LanguageValueValuesEnum', 11)
+  lastModifiedTime = _messages.IntegerField(12)
+  pythonOptions = _messages.MessageField('PythonOptions', 13)
+  remoteFunctionOptions = _messages.MessageField('RemoteFunctionOptions', 14)
+  returnTableType = _messages.MessageField('StandardSqlTableType', 15)
+  returnType = _messages.MessageField('StandardSqlDataType', 16)
+  routineReference = _messages.MessageField('RoutineReference', 17)
+  routineType = _messages.EnumField('RoutineTypeValueValuesEnum', 18)
+  securityMode = _messages.EnumField('SecurityModeValueValuesEnum', 19)
+  sparkOptions = _messages.MessageField('SparkOptions', 20)
+  strictMode = _messages.BooleanField(21)
+
+
+class RoutineBuildStatus(_messages.Message):
+  r"""The status of a routine build.
+
+  Enums:
+    BuildStateValueValuesEnum: Output only. The current build state of the
+      routine.
+
+  Fields:
+    buildDuration: Output only. The time taken for the image build. Populated
+      only after the build succeeds or fails.
+    buildState: Output only. The current build state of the routine.
+    buildStateUpdateTime: Output only. The time when the build state was
+      updated last.
+    errorResult: Output only. A result object that will be present only if the
+      build has failed.
+    imageSizeBytes: Output only. The size of the image in bytes. Populated
+      only after the build succeeds.
+  """
+
+  class BuildStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current build state of the routine.
+
+    Values:
+      BUILD_STATE_UNSPECIFIED: Default value.
+      IN_PROGRESS: The build is in progress.
+      SUCCEEDED: The build has succeeded.
+      FAILED: The build has failed.
+    """
+    BUILD_STATE_UNSPECIFIED = 0
+    IN_PROGRESS = 1
+    SUCCEEDED = 2
+    FAILED = 3
+
+  buildDuration = _messages.StringField(1)
+  buildState = _messages.EnumField('BuildStateValueValuesEnum', 2)
+  buildStateUpdateTime = _messages.StringField(3)
+  errorResult = _messages.MessageField('ErrorProto', 4)
+  imageSizeBytes = _messages.IntegerField(5)
 
 
 class RoutineReference(_messages.Message):
@@ -9229,6 +9397,8 @@ class TableFieldSchema(_messages.Message):
     foreignTypeDefinition: Optional. Definition of the foreign data type. Only
       valid for top-level schema fields (not nested fields). If the type is
       FOREIGN, this field is required.
+    generatedColumn: Optional. Definition of how values are generated for the
+      field. Only valid for top-level schema fields (not nested fields).
     maxLength: Optional. Maximum length of values of this field for STRINGS or
       BYTES. If max_length is not specified, no maximum length constraint is
       imposed on this field. If type = "STRING", then max_length represents
@@ -9333,16 +9503,17 @@ class TableFieldSchema(_messages.Message):
   description = _messages.StringField(5)
   fields = _messages.MessageField('TableFieldSchema', 6, repeated=True)
   foreignTypeDefinition = _messages.StringField(7)
-  maxLength = _messages.IntegerField(8)
-  mode = _messages.StringField(9)
-  name = _messages.StringField(10)
-  policyTags = _messages.MessageField('PolicyTagsValue', 11)
-  precision = _messages.IntegerField(12)
-  rangeElementType = _messages.MessageField('RangeElementTypeValue', 13)
-  roundingMode = _messages.EnumField('RoundingModeValueValuesEnum', 14)
-  scale = _messages.IntegerField(15)
-  timestampPrecision = _messages.IntegerField(16, default=6)
-  type = _messages.StringField(17)
+  generatedColumn = _messages.MessageField('GeneratedColumn', 8)
+  maxLength = _messages.IntegerField(9)
+  mode = _messages.StringField(10)
+  name = _messages.StringField(11)
+  policyTags = _messages.MessageField('PolicyTagsValue', 12)
+  precision = _messages.IntegerField(13)
+  rangeElementType = _messages.MessageField('RangeElementTypeValue', 14)
+  roundingMode = _messages.EnumField('RoundingModeValueValuesEnum', 15)
+  scale = _messages.IntegerField(16)
+  timestampPrecision = _messages.IntegerField(17, default=6)
+  type = _messages.StringField(18)
 
 
 class TableList(_messages.Message):

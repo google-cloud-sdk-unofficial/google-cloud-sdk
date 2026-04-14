@@ -30,7 +30,7 @@ please see https://cloud.google.com/iap/docs/using-tcp-forwarding#increasing_the
 
 @base.Hidden
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class StartIapTunnel(base.Command):
   """Starts an IAP tunnel to a Cloud Run instance."""
 

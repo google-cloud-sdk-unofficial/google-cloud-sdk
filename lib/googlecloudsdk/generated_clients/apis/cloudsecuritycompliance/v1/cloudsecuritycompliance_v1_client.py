@@ -71,6 +71,7 @@ class CloudsecuritycomplianceV1(base_api.BaseApiClient):
     self.projects_locations_frameworkComplianceReports = self.ProjectsLocationsFrameworkComplianceReportsService(self)
     self.projects_locations_frameworkComplianceSummaries = self.ProjectsLocationsFrameworkComplianceSummariesService(self)
     self.projects_locations_frameworkDeployments = self.ProjectsLocationsFrameworkDeploymentsService(self)
+    self.projects_locations_frameworks = self.ProjectsLocationsFrameworksService(self)
     self.projects_locations_operationDetails = self.ProjectsLocationsOperationDetailsService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
@@ -2087,6 +2088,70 @@ class CloudsecuritycomplianceV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='CloudsecuritycomplianceProjectsLocationsFrameworkDeploymentsListRequest',
         response_type_name='ListFrameworkDeploymentsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsFrameworksService(base_api.BaseApiService):
+    """Service class for the projects_locations_frameworks resource."""
+
+    _NAME = 'projects_locations_frameworks'
+
+    def __init__(self, client):
+      super(CloudsecuritycomplianceV1.ProjectsLocationsFrameworksService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets details about a framework. This method retrieves the latest major version of the framework. To retrieve a specific major version, include `major_revision_id` in the request.
+
+      Args:
+        request: (CloudsecuritycomplianceProjectsLocationsFrameworksGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Framework) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/frameworks/{frameworksId}',
+        http_method='GET',
+        method_id='cloudsecuritycompliance.projects.locations.frameworks.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['majorRevisionId'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='CloudsecuritycomplianceProjectsLocationsFrameworksGetRequest',
+        response_type_name='Framework',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists the frameworks (both built-in and custom) that are available within the parent resource. The latest major version of each framework is returned. This method supports pagination.
+
+      Args:
+        request: (CloudsecuritycomplianceProjectsLocationsFrameworksListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListFrameworksResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/frameworks',
+        http_method='GET',
+        method_id='cloudsecuritycompliance.projects.locations.frameworks.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/frameworks',
+        request_field='',
+        request_type_name='CloudsecuritycomplianceProjectsLocationsFrameworksListRequest',
+        response_type_name='ListFrameworksResponse',
         supports_download=False,
     )
 

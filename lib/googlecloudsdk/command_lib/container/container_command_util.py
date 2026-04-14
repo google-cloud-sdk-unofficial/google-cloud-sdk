@@ -458,6 +458,12 @@ def ParseUpdateOptionsBase(args, locations):
       enable_pod_snapshots=getattr(args, 'pod_snapshots_enabled', None),
       enable_agent_sandbox=getattr(args, 'enable_agent_sandbox', None),
       enable_slice_controller=getattr(args, 'enable_slice_controller', None),
+      enable_scheduled_upgrades=getattr(
+          args, 'enable_scheduled_upgrades', None
+      ),
+      disable_scheduled_upgrades=getattr(
+          args, 'disable_scheduled_upgrades', None
+      ),
   )
 
   if (args.disable_addons and

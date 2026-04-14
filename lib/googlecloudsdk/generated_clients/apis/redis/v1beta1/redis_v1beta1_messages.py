@@ -1661,7 +1661,7 @@ class DatabaseResourceId(_messages.Message):
 
 
 class DatabaseResourceMetadata(_messages.Message):
-  r"""Common model for database resource instance metadata. Next ID: 31
+  r"""Common model for database resource instance metadata. Next ID: 32
 
   Enums:
     CurrentStateValueValuesEnum: Current state of the instance.
@@ -1673,6 +1673,7 @@ class DatabaseResourceMetadata(_messages.Message):
       wrong patch update, while the expected state will remain at the HEALTHY.
     InstanceTypeValueValuesEnum: The type of the instance. Specified at
       creation time.
+    ModesValueListEntryValuesEnum:
     SuspensionReasonValueValuesEnum: Optional. Suspension reason for the
       resource.
 
@@ -1700,6 +1701,7 @@ class DatabaseResourceMetadata(_messages.Message):
     location: The resource location. REQUIRED
     machineConfiguration: Machine configuration for this resource.
     maintenanceInfo: Optional. Maintenance info for the resource.
+    modes: Optional. The modes of the database resource.
     primaryResourceId: Identifier for this resource's immediate parent/primary
       resource if the current resource is a replica or derived form of another
       Database resource. Else it would be NULL. REQUIRED if the immediate
@@ -1804,6 +1806,8 @@ class DatabaseResourceMetadata(_messages.Message):
       SUB_RESOURCE_TYPE_EXTERNAL_PRIMARY: An instance acting as an external
         primary.
       SUB_RESOURCE_TYPE_READ_POOL: An instance acting as Read Pool.
+      SUB_RESOURCE_TYPE_RESERVATION: Represents a reservation resource.
+      SUB_RESOURCE_TYPE_DATASET: Represents a dataset resource.
       SUB_RESOURCE_TYPE_OTHER: For rest of the other categories.
     """
     INSTANCE_TYPE_UNSPECIFIED = 0
@@ -1817,7 +1821,21 @@ class DatabaseResourceMetadata(_messages.Message):
     SUB_RESOURCE_TYPE_READ_REPLICA = 8
     SUB_RESOURCE_TYPE_EXTERNAL_PRIMARY = 9
     SUB_RESOURCE_TYPE_READ_POOL = 10
-    SUB_RESOURCE_TYPE_OTHER = 11
+    SUB_RESOURCE_TYPE_RESERVATION = 11
+    SUB_RESOURCE_TYPE_DATASET = 12
+    SUB_RESOURCE_TYPE_OTHER = 13
+
+  class ModesValueListEntryValuesEnum(_messages.Enum):
+    r"""ModesValueListEntryValuesEnum enum type.
+
+    Values:
+      MODE_UNSPECIFIED: Default mode.
+      MODE_NATIVE: Native mode.
+      MODE_MONGODB_COMPATIBLE: MongoDB compatible mode.
+    """
+    MODE_UNSPECIFIED = 0
+    MODE_NATIVE = 1
+    MODE_MONGODB_COMPATIBLE = 2
 
   class SuspensionReasonValueValuesEnum(_messages.Enum):
     r"""Optional. Suspension reason for the resource.
@@ -1857,17 +1875,18 @@ class DatabaseResourceMetadata(_messages.Message):
   location = _messages.StringField(15)
   machineConfiguration = _messages.MessageField('MachineConfiguration', 16)
   maintenanceInfo = _messages.MessageField('ResourceMaintenanceInfo', 17)
-  primaryResourceId = _messages.MessageField('DatabaseResourceId', 18)
-  primaryResourceLocation = _messages.StringField(19)
-  product = _messages.MessageField('Product', 20)
-  resourceContainer = _messages.StringField(21)
-  resourceFlags = _messages.MessageField('ResourceFlags', 22, repeated=True)
-  resourceName = _messages.StringField(23)
-  suspensionReason = _messages.EnumField('SuspensionReasonValueValuesEnum', 24)
-  tagsSet = _messages.MessageField('Tags', 25)
-  updationTime = _messages.StringField(26)
-  userLabelSet = _messages.MessageField('UserLabels', 27)
-  zone = _messages.StringField(28)
+  modes = _messages.EnumField('ModesValueListEntryValuesEnum', 18, repeated=True)
+  primaryResourceId = _messages.MessageField('DatabaseResourceId', 19)
+  primaryResourceLocation = _messages.StringField(20)
+  product = _messages.MessageField('Product', 21)
+  resourceContainer = _messages.StringField(22)
+  resourceFlags = _messages.MessageField('ResourceFlags', 23, repeated=True)
+  resourceName = _messages.StringField(24)
+  suspensionReason = _messages.EnumField('SuspensionReasonValueValuesEnum', 25)
+  tagsSet = _messages.MessageField('Tags', 26)
+  updationTime = _messages.StringField(27)
+  userLabelSet = _messages.MessageField('UserLabels', 28)
+  zone = _messages.StringField(29)
 
 
 class DatabaseResourceRecommendationSignalData(_messages.Message):
@@ -2800,11 +2819,12 @@ class Instance(_messages.Message):
   Messages:
     LabelsValue: Resource labels to represent user provided metadata
     RedisConfigsValue: Optional. Redis configuration parameters, according to
-      http://redis.io/topics/config. Currently, the only supported parameters
-      are: Redis version 3.2 and newer: * maxmemory-policy * notify-keyspace-
-      events Redis version 4.0 and newer: * activedefrag * lfu-decay-time *
-      lfu-log-factor * maxmemory-gb Redis version 5.0 and newer: * stream-
-      node-max-bytes * stream-node-max-entries
+      [Redis configuration](https://redis.io/docs/latest/operate/oss_and_stack
+      /management/config/). Currently, the only supported parameters are:
+      Redis version 3.2 and newer: * maxmemory-policy * notify-keyspace-events
+      Redis version 4.0 and newer: * activedefrag * lfu-decay-time * lfu-log-
+      factor * maxmemory-gb Redis version 5.0 and newer: * stream-node-max-
+      bytes * stream-node-max-entries
     TagsValue: Optional. Input only. Immutable. Tag keys/values directly bound
       to this resource. For example: "123/environment": "production",
       "123/costCenter": "marketing"
@@ -2873,11 +2893,12 @@ class Instance(_messages.Message):
     readReplicasMode: Optional. Read replicas mode for the instance. Defaults
       to READ_REPLICAS_DISABLED.
     redisConfigs: Optional. Redis configuration parameters, according to
-      http://redis.io/topics/config. Currently, the only supported parameters
-      are: Redis version 3.2 and newer: * maxmemory-policy * notify-keyspace-
-      events Redis version 4.0 and newer: * activedefrag * lfu-decay-time *
-      lfu-log-factor * maxmemory-gb Redis version 5.0 and newer: * stream-
-      node-max-bytes * stream-node-max-entries
+      [Redis configuration](https://redis.io/docs/latest/operate/oss_and_stack
+      /management/config/). Currently, the only supported parameters are:
+      Redis version 3.2 and newer: * maxmemory-policy * notify-keyspace-events
+      Redis version 4.0 and newer: * activedefrag * lfu-decay-time * lfu-log-
+      factor * maxmemory-gb Redis version 5.0 and newer: * stream-node-max-
+      bytes * stream-node-max-entries
     redisVersion: Optional. The version of Redis software. If not provided,
       latest supported version will be used. Currently, the supported values
       are: * `REDIS_3_2` for Redis 3.2 compatibility * `REDIS_4_0` for Redis
@@ -3046,12 +3067,13 @@ class Instance(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class RedisConfigsValue(_messages.Message):
-    r"""Optional. Redis configuration parameters, according to
-    http://redis.io/topics/config. Currently, the only supported parameters
-    are: Redis version 3.2 and newer: * maxmemory-policy * notify-keyspace-
-    events Redis version 4.0 and newer: * activedefrag * lfu-decay-time * lfu-
-    log-factor * maxmemory-gb Redis version 5.0 and newer: * stream-node-max-
-    bytes * stream-node-max-entries
+    r"""Optional. Redis configuration parameters, according to [Redis configur
+    ation](https://redis.io/docs/latest/operate/oss_and_stack/management/confi
+    g/). Currently, the only supported parameters are: Redis version 3.2 and
+    newer: * maxmemory-policy * notify-keyspace-events Redis version 4.0 and
+    newer: * activedefrag * lfu-decay-time * lfu-log-factor * maxmemory-gb
+    Redis version 5.0 and newer: * stream-node-max-bytes * stream-node-max-
+    entries
 
     Messages:
       AdditionalProperty: An additional property for a RedisConfigsValue

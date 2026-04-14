@@ -322,7 +322,7 @@ class Backup(_messages.Message):
     database: Required for the CreateBackup operation. Name of the database
       from which this backup was created. This needs to be in the same
       instance as the backup. Values are of the form
-      `projects//instances//databases/`.
+      `projects/{project}/instances/{instance}/databases/{database}`.
     databaseDialect: Output only. The database dialect information for the
       backup.
     encryptionInfo: Output only. The encryption information for the backup.
@@ -373,11 +373,12 @@ class Backup(_messages.Message):
     name: Output only for the CreateBackup operation. Required for the
       UpdateBackup operation. A globally unique identifier for the backup
       which cannot be changed. Values are of the form
-      `projects//instances//backups/a-z*[a-z0-9]` The final segment of the
-      name must be between 2 and 60 characters in length. The backup is stored
-      in the location(s) specified in the instance configuration of the
-      instance containing the backup, identified by the prefix of the backup
-      name of the form `projects//instances/`.
+      `projects/{project}/instances/{instance}/backups/a-z*[a-z0-9]` The final
+      segment of the name must be between 2 and 60 characters in length. The
+      backup is stored in the location(s) specified in the instance
+      configuration of the instance containing the backup, identified by the
+      prefix of the backup name of the form
+      `projects/{project}/instances/{instance}`.
     oldestVersionTime: Output only. Data deleted at a time older than this is
       guaranteed not to be retained in order to support this backup. For a
       backup in an incremental backup chain, this is the version time of the
@@ -386,17 +387,19 @@ class Backup(_messages.Message):
       to understand what data is being retained by the backup system.
     referencingBackups: Output only. The names of the destination backups
       being created by copying this source backup. The backup names are of the
-      form `projects//instances//backups/`. Referencing backups may exist in
-      different instances. The existence of any referencing backup prevents
-      the backup from being deleted. When the copy operation is done (either
-      successfully completed or cancelled or the destination backup is
-      deleted), the reference to the backup is removed.
+      form `projects/{project}/instances/{instance}/backups/{backup}`.
+      Referencing backups may exist in different instances. The existence of
+      any referencing backup prevents the backup from being deleted. When the
+      copy operation is done (either successfully completed or cancelled or
+      the destination backup is deleted), the reference to the backup is
+      removed.
     referencingDatabases: Output only. The names of the restored databases
       that reference the backup. The database names are of the form
-      `projects//instances//databases/`. Referencing databases may exist in
-      different instances. The existence of any referencing database prevents
-      the backup from being deleted. When a restored database from the backup
-      enters the `READY` state, the reference to the backup is removed.
+      `projects/{project}/instances/{instance}/databases/{database}`.
+      Referencing databases may exist in different instances. The existence of
+      any referencing database prevents the backup from being deleted. When a
+      restored database from the backup enters the `READY` state, the
+      reference to the backup is removed.
     sizeBytes: Output only. Size of the backup in bytes. For a backup in an
       incremental backup chain, this is the sum of the `exclusive_size_bytes`
       of itself and all older backups in the chain.
@@ -494,7 +497,8 @@ class BackupInstancePartition(_messages.Message):
 
   Fields:
     instancePartition: A unique identifier for the instance partition. Values
-      are of the form `projects//instances//instancePartitions/`
+      are of the form `projects/{project}/instances/{instance}/instancePartiti
+      ons/{instance_partition_id}`
   """
 
   instancePartition = _messages.StringField(1)
@@ -1022,20 +1026,22 @@ class CopyBackupEncryptionConfig(_messages.Message):
       database instance must also be in `us-central1` or `nam3`. The Cloud KMS
       key that is used to encrypt and decrypt the restored database. Set this
       field only when encryption_type is `CUSTOMER_MANAGED_ENCRYPTION`. Values
-      are of the form `projects//locations//keyRings//cryptoKeys/`.
+      are of the form `projects/{project}/locations/{location}/keyRings/{key_r
+      ing}/cryptoKeys/{kms_key_name}`.
     kmsKeyNames: Optional. Specifies the KMS configuration for the one or more
-      keys used to protect the backup. Values are of the form
-      `projects//locations//keyRings//cryptoKeys/`. KMS keys specified can be
-      in any order. The keys referenced by `kms_key_names` must fully cover
-      all regions of the backup's instance configuration. Some examples: * For
-      regional (single-region) instance configurations, specify a regional
-      location KMS key. * For multi-region instance configurations of type
-      `GOOGLE_MANAGED`, either specify a multi-region location KMS key or
-      multiple regional location KMS keys that cover all regions in the
-      instance configuration. * For an instance configuration of type
-      `USER_MANAGED`, specify only regional location KMS keys to cover each
-      region in the instance configuration. Multi-region location KMS keys
-      aren't supported for `USER_MANAGED` type instance configurations.
+      keys used to protect the backup. Values are of the form `projects/{proje
+      ct}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{kms_key_name}`.
+      KMS keys specified can be in any order. The keys referenced by
+      `kms_key_names` must fully cover all regions of the backup's instance
+      configuration. Some examples: * For regional (single-region) instance
+      configurations, specify a regional location KMS key. * For multi-region
+      instance configurations of type `GOOGLE_MANAGED`, either specify a
+      multi-region location KMS key or multiple regional location KMS keys
+      that cover all regions in the instance configuration. * For an instance
+      configuration of type `USER_MANAGED`, specify only regional location KMS
+      keys to cover each region in the instance configuration. Multi-region
+      location KMS keys aren't supported for `USER_MANAGED` type instance
+      configurations.
   """
 
   class EncryptionTypeValueValuesEnum(_messages.Enum):
@@ -1076,10 +1082,12 @@ class CopyBackupMetadata(_messages.Message):
       instead, it becomes an operation with an Operation.error value with a
       google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.
     name: The name of the backup being created through the copy operation.
-      Values are of the form `projects//instances//backups/`.
+      Values are of the form
+      `projects/{project}/instances/{instance}/backups/{backup}`.
     progress: The progress of the CopyBackup operation.
     sourceBackup: The name of the source backup that is being copied. Values
-      are of the form `projects//instances//backups/`.
+      are of the form
+      `projects/{project}/instances/{instance}/backups/{backup}`.
   """
 
   cancelTime = _messages.StringField(1)
@@ -1094,7 +1102,7 @@ class CopyBackupRequest(_messages.Message):
   Fields:
     backupId: Required. The id of the backup copy. The `backup_id` appended to
       `parent` forms the full backup_uri of the form
-      `projects//instances//backups/`.
+      `projects/{project}/instances/{instance}/backups/{backup}`.
     encryptionConfig: Optional. The encryption configuration used to encrypt
       the backup. If this field is not specified, the backup will use the same
       encryption configuration as the source backup by default, namely
@@ -1108,7 +1116,7 @@ class CopyBackupRequest(_messages.Message):
       needs to be in READY state for it to be copied. Once CopyBackup is in
       progress, the source backup cannot be deleted or cleaned up on
       expiration until CopyBackup is finished. Values are of the form:
-      `projects//instances//backups/`.
+      `projects/{project}/instances/{instance}/backups/{backup}`.
   """
 
   backupId = _messages.StringField(1)
@@ -1134,20 +1142,21 @@ class CreateBackupEncryptionConfig(_messages.Message):
       database instance must also be in `us-central1` or `nam3`. The Cloud KMS
       key that is used to encrypt and decrypt the restored database. Set this
       field only when encryption_type is `CUSTOMER_MANAGED_ENCRYPTION`. Values
-      are of the form `projects//locations//keyRings//cryptoKeys/`.
+      are of the form `projects/{project}/locations/{location}/keyRings/{key_r
+      ing}/cryptoKeys/{kms_key_name}`.
     kmsKeyNames: Optional. Specifies the KMS configuration for the one or more
-      keys used to protect the backup. Values are of the form
-      `projects//locations//keyRings//cryptoKeys/`. The keys referenced by
-      `kms_key_names` must fully cover all regions of the backup's instance
-      configuration. Some examples: * For regional (single-region) instance
-      configurations, specify a regional location KMS key. * For multi-region
-      instance configurations of type `GOOGLE_MANAGED`, either specify a
-      multi-region location KMS key or multiple regional location KMS keys
-      that cover all regions in the instance configuration. * For an instance
-      configuration of type `USER_MANAGED`, specify only regional location KMS
-      keys to cover each region in the instance configuration. Multi-region
-      location KMS keys aren't supported for `USER_MANAGED` type instance
-      configurations.
+      keys used to protect the backup. Values are of the form `projects/{proje
+      ct}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{kms_key_name}`.
+      The keys referenced by `kms_key_names` must fully cover all regions of
+      the backup's instance configuration. Some examples: * For regional
+      (single-region) instance configurations, specify a regional location KMS
+      key. * For multi-region instance configurations of type
+      `GOOGLE_MANAGED`, either specify a multi-region location KMS key or
+      multiple regional location KMS keys that cover all regions in the
+      instance configuration. * For an instance configuration of type
+      `USER_MANAGED`, specify only regional location KMS keys to cover each
+      region in the instance configuration. Multi-region location KMS keys
+      aren't supported for `USER_MANAGED` type instance configurations.
   """
 
   class EncryptionTypeValueValuesEnum(_messages.Enum):
@@ -4952,17 +4961,17 @@ class ReadWrite(_messages.Message):
   transaction type has no options.
 
   Enums:
-    ReadLockModeValueValuesEnum: Read lock mode for the transaction.
+    ReadLockModeValueValuesEnum: The read lock mode for the transaction.
 
   Fields:
     multiplexedSessionPreviousTransactionId: Optional. Clients should pass the
       transaction ID of the previous transaction attempt that was aborted if
       this transaction is being executed on a multiplexed session.
-    readLockMode: Read lock mode for the transaction.
+    readLockMode: The read lock mode for the transaction.
   """
 
   class ReadLockModeValueValuesEnum(_messages.Enum):
-    r"""Read lock mode for the transaction.
+    r"""The read lock mode for the transaction.
 
     Values:
       READ_LOCK_MODE_UNSPECIFIED: Default value. * If isolation level is
@@ -5988,7 +5997,7 @@ class SpannerProjectsInstancesBackupOperationsListRequest(_messages.Message):
       from a previous ListBackupOperationsResponse to the same `parent` and
       with the same `filter`.
     parent: Required. The instance of the backup operations. Values are of the
-      form `projects//instances/`.
+      form `projects/{project}/instances/{instance}`.
   """
 
   filter = _messages.StringField(1)
@@ -6004,7 +6013,8 @@ class SpannerProjectsInstancesBackupsCopyRequest(_messages.Message):
     copyBackupRequest: A CopyBackupRequest resource to be passed as the
       request body.
     parent: Required. The name of the destination instance that will contain
-      the backup copy. Values are of the form: `projects//instances/`.
+      the backup copy. Values are of the form:
+      `projects/{project}/instances/{instance}`.
   """
 
   copyBackupRequest = _messages.MessageField('CopyBackupRequest', 1)
@@ -6022,7 +6032,7 @@ class SpannerProjectsInstancesBackupsCreateRequest(_messages.Message):
     backup: A Backup resource to be passed as the request body.
     backupId: Required. The id of the backup to be created. The `backup_id`
       appended to `parent` forms the full backup name of the form
-      `projects//instances//backups/`.
+      `projects/{project}/instances/{instance}/backups/{backup_id}`.
     encryptionConfig_encryptionType: Required. The encryption type of the
       backup.
     encryptionConfig_kmsKeyName: Optional. This field is maintained for
@@ -6033,26 +6043,26 @@ class SpannerProjectsInstancesBackupsCreateRequest(_messages.Message):
       or `nam3`, then the database instance must also be in `us-central1` or
       `nam3`. The Cloud KMS key that is used to encrypt and decrypt the
       restored database. Set this field only when encryption_type is
-      `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
-      `projects//locations//keyRings//cryptoKeys/`.
+      `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form `projects/{project
+      }/locations/{location}/keyRings/{key_ring}/cryptoKeys/{kms_key_name}`.
     encryptionConfig_kmsKeyNames: Optional. Specifies the KMS configuration
       for the one or more keys used to protect the backup. Values are of the
-      form `projects//locations//keyRings//cryptoKeys/`. The keys referenced
-      by `kms_key_names` must fully cover all regions of the backup's instance
-      configuration. Some examples: * For regional (single-region) instance
-      configurations, specify a regional location KMS key. * For multi-region
-      instance configurations of type `GOOGLE_MANAGED`, either specify a
-      multi-region location KMS key or multiple regional location KMS keys
-      that cover all regions in the instance configuration. * For an instance
-      configuration of type `USER_MANAGED`, specify only regional location KMS
-      keys to cover each region in the instance configuration. Multi-region
-      location KMS keys aren't supported for `USER_MANAGED` type instance
-      configurations.
+      form `projects/{project}/locations/{location}/keyRings/{key_ring}/crypto
+      Keys/{kms_key_name}`. The keys referenced by `kms_key_names` must fully
+      cover all regions of the backup's instance configuration. Some examples:
+      * For regional (single-region) instance configurations, specify a
+      regional location KMS key. * For multi-region instance configurations of
+      type `GOOGLE_MANAGED`, either specify a multi-region location KMS key or
+      multiple regional location KMS keys that cover all regions in the
+      instance configuration. * For an instance configuration of type
+      `USER_MANAGED`, specify only regional location KMS keys to cover each
+      region in the instance configuration. Multi-region location KMS keys
+      aren't supported for `USER_MANAGED` type instance configurations.
     parent: Required. The name of the instance in which the backup is created.
       This must be the same instance that contains the database the backup is
       created from. The backup will be stored in the locations specified in
       the instance configuration of this instance. Values are of the form
-      `projects//instances/`.
+      `projects/{project}/instances/{instance}`.
   """
 
   class EncryptionConfigEncryptionTypeValueValuesEnum(_messages.Enum):
@@ -6086,7 +6096,7 @@ class SpannerProjectsInstancesBackupsDeleteRequest(_messages.Message):
 
   Fields:
     name: Required. Name of the backup to delete. Values are of the form
-      `projects//instances//backups/`.
+      `projects/{project}/instances/{instance}/backups/{backup}`.
   """
 
   name = _messages.StringField(1, required=True)
@@ -6112,7 +6122,7 @@ class SpannerProjectsInstancesBackupsGetRequest(_messages.Message):
 
   Fields:
     name: Required. Name of the backup. Values are of the form
-      `projects//instances//backups/`.
+      `projects/{project}/instances/{instance}/backups/{backup}`.
   """
 
   name = _messages.StringField(1, required=True)
@@ -6152,7 +6162,7 @@ class SpannerProjectsInstancesBackupsListRequest(_messages.Message):
       from a previous ListBackupsResponse to the same `parent` and with the
       same `filter`.
     parent: Required. The instance to list backups from. Values are of the
-      form `projects//instances/`.
+      form `projects/{project}/instances/{instance}`.
   """
 
   filter = _messages.StringField(1)
@@ -6223,11 +6233,12 @@ class SpannerProjectsInstancesBackupsPatchRequest(_messages.Message):
     name: Output only for the CreateBackup operation. Required for the
       UpdateBackup operation. A globally unique identifier for the backup
       which cannot be changed. Values are of the form
-      `projects//instances//backups/a-z*[a-z0-9]` The final segment of the
-      name must be between 2 and 60 characters in length. The backup is stored
-      in the location(s) specified in the instance configuration of the
-      instance containing the backup, identified by the prefix of the backup
-      name of the form `projects//instances/`.
+      `projects/{project}/instances/{instance}/backups/a-z*[a-z0-9]` The final
+      segment of the name must be between 2 and 60 characters in length. The
+      backup is stored in the location(s) specified in the instance
+      configuration of the instance containing the backup, identified by the
+      prefix of the backup name of the form
+      `projects/{project}/instances/{instance}`.
     updateMask: Required. A mask specifying which fields (for example,
       `expire_time`) in the backup resource should be updated. This mask is
       relative to the backup resource, not to the request message. The field

@@ -82,11 +82,11 @@ class ActionProcessor:
 
         # Add to archives
         env_pack_uri = f"{self._artifact_base_uri}{self._env_pack_file}#{self.LIBS_EXTRACT_DIR}"
-        self.action.setdefault("archives", [])
-        if not any(env_pack_uri in arch for arch in self.action["archives"]):
-          self.action["archives"].append(env_pack_uri)
+        self.action.setdefault("archiveUris", [])
+        if not any(env_pack_uri in arch for arch in self.action["archiveUris"]):
+          self.action["archiveUris"].append(env_pack_uri)
 
-    self._resolve_filename()
+    self._resolve_main_file_path()
     self._resolve_py_files()
 
     self._update_yaml_properties(self.action)
@@ -96,21 +96,24 @@ class ActionProcessor:
     """Returns the name of the generated environment pack file."""
     return self._env_pack_file
 
-  def _resolve_filename(self) -> bool:
-    """Checks for presence of and resolves filename to GCS URI.
+  def _resolve_main_file_path(self) -> bool:
+    """Checks for presence of and resolves mainFilePath to GCS URI.
 
     Returns:
-      True if filename is present in action, False otherwise.
+      True if mainFilePath is present in action, False otherwise.
     """
-    if "filename" not in self.action:
+    if "mainFilePath" not in self.action:
       return False
 
-    raw_path = self.action["filename"]
+    raw_path = self.action["mainFilePath"]
     if not isinstance(raw_path, str):
       raise exceptions.BadFileException(
-          "The value of 'filename' in the action must be a string, found type "
-          f"{type(raw_path).__name__}: {raw_path}"
+          "The value of 'mainFilePath' in the action must be a string, found"
+          f" type {type(raw_path).__name__}: {raw_path}"
       )
+
+    if raw_path.startswith("gs://"):
+      return True
 
     local_path = pathlib.Path(raw_path.lstrip("/"))
 
@@ -120,7 +123,7 @@ class ActionProcessor:
           f"File in YAML does not exist locally: {local_path}"
       )
 
-    self.action["filename"] = (
+    self.action["mainFilePath"] = (
         f"{self._artifact_base_uri}{local_path.as_posix()}"
     )
     return True
@@ -143,6 +146,10 @@ class ActionProcessor:
 
     resolved_py_files = []
     for raw_path in py_files:
+      if raw_path.startswith("gs://"):
+        resolved_py_files.append(raw_path)
+        continue
+
       local_path = pathlib.Path(raw_path.lstrip("/"))
       absolute_local_path = self._work_dir / local_path
 
@@ -182,7 +189,14 @@ class ActionProcessor:
   def _get_nested_dict(
       d: MutableMapping[str, Any], keys: Sequence[str]
   ) -> MutableMapping[str, Any]:
-    """Gets a nested dictionary from `d`, creating keys with empty dictionaries if they don't exist."""
+    """Gets a nested dictionary from `d`.
+
+    Creates keys with empty dictionaries if they don't exist.
+
+    Args:
+      d: The dictionary to traverse.
+      keys: A sequence of keys to follow to reach the nested dictionary.
+    """
     current = d
     for key in keys:
       current = current.setdefault(key, {})

@@ -24,6 +24,12 @@ from googlecloudsdk.core import log
 class DataprocClusterHandler(base.GcpResourceHandler):
   """Handler for Dataproc Cluster resources."""
   api_prefix = "projects_regions"
+  description = (
+      "Dataproc Cluster resources.\n"
+      "Definition handling:\n"
+      " - config.autoDeleteTtl: ignored during comparison\n"
+      " - config.softwareConfig: ignored during comparison"
+  )
 
   def build_get_request(self) -> messages.Message:
     return self.messages.DataprocProjectsRegionsClustersGetRequest(
@@ -154,6 +160,12 @@ class DataprocClusterHandler(base.GcpResourceHandler):
 class DataprocWorkflowTemplateHandler(base.GcpResourceHandler):
   """Handler for Dataproc Workflow Templates."""
 
+  description = (
+      "Dataproc Workflow Templates.\n"
+      "Definition handling:\n"
+      " - id: automatically populated with the logical name of the "
+      "resource"
+  )
   api_prefix = "projects_regions"
 
   def _get_location_path(self) -> str:
@@ -202,6 +214,7 @@ class DataprocWorkflowTemplateHandler(base.GcpResourceHandler):
 class DataprocAutoscalingPolicyHandler(base.GcpResourceHandler):
   """Handler for Dataproc Autoscaling Policies."""
 
+  description = "Dataproc Autoscaling Policies."
   api_prefix = "projects_regions"
 
   def _get_location_path(self) -> str:

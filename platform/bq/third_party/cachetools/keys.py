@@ -12,7 +12,7 @@ class _HashedTuple(tuple):
 
     """
 
-    __hashvalue = None
+    __hashvalue = None  # default value, set in instance on first use
 
     def __hash__(self, hash=tuple.__hash__):
         hashvalue = self.__hashvalue
@@ -52,10 +52,13 @@ def methodkey(self, *args, **kwargs):
 def typedkey(*args, **kwargs):
     """Return a typed cache key for the specified hashable arguments."""
 
-    key = hashkey(*args, **kwargs)
+    if kwargs:
+        sorted_kwargs = tuple(sorted(kwargs.items()))
+        key = _HashedTuple(args + _kwmark + sorted_kwargs)
+        key += tuple(type(v) for _, v in sorted_kwargs)
+    else:
+        key = _HashedTuple(args)
     key += tuple(type(v) for v in args)
-    # TODO: avoid iterating twice over kwargs
-    key += tuple(type(v) for _, v in sorted(kwargs.items()))
     return key
 
 

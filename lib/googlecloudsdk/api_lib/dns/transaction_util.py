@@ -107,15 +107,17 @@ def ChangeFromYamlFile(yaml_file, api_version='v1'):
     change_dict = yaml.load(yaml_file) or {}
   except yaml.YAMLParseError:
     raise CorruptedTransactionFileError()
-  if (change_dict.get('additions') is None or
-      change_dict.get('deletions') is None):
+
+  if not isinstance(change_dict, dict):
     raise CorruptedTransactionFileError()
-  change = messages.Change()
-  change.additions = _RecordSetsFromDictionaries(
-      messages, change_dict['additions'])
-  change.deletions = _RecordSetsFromDictionaries(
-      messages, change_dict['deletions'])
-  return change
+
+  # Allow additions and deletions to be missing or None
+  # (e.g. from an empty file)
+  return messages.Change(
+      additions=_RecordSetsFromDictionaries(
+          messages, change_dict.get('additions') or []),
+      deletions=_RecordSetsFromDictionaries(
+          messages, change_dict.get('deletions') or []))
 
 
 class TransactionFile(object):

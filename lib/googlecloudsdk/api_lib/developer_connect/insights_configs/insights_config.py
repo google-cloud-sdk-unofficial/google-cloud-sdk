@@ -45,6 +45,7 @@ _EXCLUDED_PROJECTS = ['cloudrun']
 _MAX_WAIT_TIME_IN_MS = 20 * 1000
 VERSION_MAP = {
     base.ReleaseTrack.ALPHA: 'v1',
+    base.ReleaseTrack.BETA: 'v1',
 }
 
 
@@ -108,16 +109,22 @@ class InsightsConfigClient(object):
     self.p4sa_email = None
 
   def create(
-      self, insight_config_ref, app_hub, target_projects, user_artifact_configs
+      self,
+      insight_config_ref,
+      app_hub,
+      target_projects,
+      user_artifact_configs,
+      source_config,
   ):
     """Creates the insight config."""
     if app_hub:
       create_request = self.create_apphub_insights_config_request(
-          insight_config_ref, app_hub, user_artifact_configs
+          insight_config_ref, app_hub, user_artifact_configs, source_config,
       )
     else:
       create_request = self.create_project_scope_insights_config_request(
-          insight_config_ref, target_projects, user_artifact_configs
+          insight_config_ref, target_projects, user_artifact_configs,
+          source_config,
       )
 
     try:
@@ -132,7 +139,11 @@ class InsightsConfigClient(object):
       )
 
   def create_apphub_insights_config_request(
-      self, insight_config_ref, app_hub, user_artifact_configs
+      self,
+      insight_config_ref,
+      app_hub,
+      user_artifact_configs,
+      source_config,
   ) -> (
       get_messages_module().DeveloperconnectProjectsLocationsInsightsConfigsCreateRequest
   ):
@@ -187,19 +198,36 @@ class InsightsConfigClient(object):
           sorted(dependent_projects),
           management_project=False,
       )
-
-    return self.messages.DeveloperconnectProjectsLocationsInsightsConfigsCreateRequest(
-        parent=insight_config_ref.Parent().RelativeName(),
-        insightsConfigId=insight_config_ref.insightsConfigsId,
-        insightsConfig=self.messages.InsightsConfig(
-            name=insight_config_ref.RelativeName(),
-            appHubApplication=app_hub_application.resource_name(),
-            artifactConfigs=artifact_configs,
-        ),
-    )
+    if source_config:
+      return self.messages.DeveloperconnectProjectsLocationsInsightsConfigsCreateRequest(
+          parent=insight_config_ref.Parent().RelativeName(),
+          insightsConfigId=insight_config_ref.insightsConfigsId,
+          insightsConfig=self.messages.InsightsConfig(
+              name=insight_config_ref.RelativeName(),
+              appHubApplication=app_hub_application.resource_name(),
+              artifactConfigs=artifact_configs,
+              sourceConfigs=[self.messages.SourceConfig(
+                  gitRepositoryLink=source_config.get('git-repository-link'),
+              )],
+          ),
+      )
+    else:
+      return self.messages.DeveloperconnectProjectsLocationsInsightsConfigsCreateRequest(
+          parent=insight_config_ref.Parent().RelativeName(),
+          insightsConfigId=insight_config_ref.insightsConfigsId,
+          insightsConfig=self.messages.InsightsConfig(
+              name=insight_config_ref.RelativeName(),
+              appHubApplication=app_hub_application.resource_name(),
+              artifactConfigs=artifact_configs,
+          ),
+      )
 
   def create_project_scope_insights_config_request(
-      self, insight_config_ref, target_projects, user_artifact_configs
+      self,
+      insight_config_ref,
+      target_projects,
+      user_artifact_configs,
+      source_config,
   ) -> (
       get_messages_module().DeveloperconnectProjectsLocationsInsightsConfigsCreateRequest
   ):
@@ -234,16 +262,29 @@ class InsightsConfigClient(object):
           sorted(dependent_projects),
           management_project=False,
       )
-
-    return self.messages.DeveloperconnectProjectsLocationsInsightsConfigsCreateRequest(
-        parent=insight_config_ref.Parent().RelativeName(),
-        insightsConfigId=insight_config_ref.insightsConfigsId,
-        insightsConfig=self.messages.InsightsConfig(
-            name=insight_config_ref.RelativeName(),
-            projects=self.messages.Projects(projectIds=projects),
-            artifactConfigs=artifact_configs,
-        ),
-    )
+    if source_config:
+      return self.messages.DeveloperconnectProjectsLocationsInsightsConfigsCreateRequest(
+          parent=insight_config_ref.Parent().RelativeName(),
+          insightsConfigId=insight_config_ref.insightsConfigsId,
+          insightsConfig=self.messages.InsightsConfig(
+              name=insight_config_ref.RelativeName(),
+              projects=self.messages.Projects(projectIds=projects),
+              artifactConfigs=artifact_configs,
+              sourceConfigs=[self.messages.SourceConfig(
+                  gitRepositoryLink=source_config.get('git-repository-link'),
+              )],
+          ),
+      )
+    else:
+      return self.messages.DeveloperconnectProjectsLocationsInsightsConfigsCreateRequest(
+          parent=insight_config_ref.Parent().RelativeName(),
+          insightsConfigId=insight_config_ref.insightsConfigsId,
+          insightsConfig=self.messages.InsightsConfig(
+              name=insight_config_ref.RelativeName(),
+              projects=self.messages.Projects(projectIds=projects),
+              artifactConfigs=artifact_configs,
+          ),
+      )
 
   def merge_artifact_configs(
       self,

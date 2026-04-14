@@ -426,7 +426,7 @@ class CustomOAuthConfig(_messages.Message):
     ScmProviderValueValuesEnum: Required. The type of the SCM provider.
 
   Fields:
-    authUri: Required. Immutable. The OAuth2 authrization server URL.
+    authUri: Required. Immutable. The OAuth2 authorization server URL.
     clientId: Required. The client ID of the OAuth application.
     clientSecret: Required. Input only. The client secret of the OAuth
       application. It will be provided as plain text, but encrypted and stored
@@ -438,6 +438,10 @@ class CustomOAuthConfig(_messages.Message):
     scmProvider: Required. The type of the SCM provider.
     scopes: Required. The scopes to be requested during OAuth.
     serverVersion: Output only. SCM server version installed at the host URI.
+    serviceDirectoryConfig: Optional. Configuration for using Service
+      Directory to connect to a private service.
+    sslCaCertificate: Optional. SSL certificate to use for requests to a
+      private service.
     tokenUri: Required. Immutable. The OAuth2 token request URL.
   """
 
@@ -467,7 +471,9 @@ class CustomOAuthConfig(_messages.Message):
   scmProvider = _messages.EnumField('ScmProviderValueValuesEnum', 6)
   scopes = _messages.StringField(7, repeated=True)
   serverVersion = _messages.StringField(8)
-  tokenUri = _messages.StringField(9)
+  serviceDirectoryConfig = _messages.MessageField('ServiceDirectoryConfig', 9)
+  sslCaCertificate = _messages.StringField(10)
+  tokenUri = _messages.StringField(11)
 
 
 class DeploymentEvent(_messages.Message):
@@ -2056,6 +2062,8 @@ class InsightsConfig(_messages.Message):
       or maintenance.
     runtimeConfigs: Output only. The runtime configurations where the
       application is deployed.
+    sourceConfigs: Optional. The source configurations that store the source
+      code of the application, that is deployed in the runtime.
     state: Optional. Output only. The state of the InsightsConfig.
     updateTime: Output only. Update timestamp.
   """
@@ -2136,8 +2144,9 @@ class InsightsConfig(_messages.Message):
   projects = _messages.MessageField('Projects', 8)
   reconciling = _messages.BooleanField(9)
   runtimeConfigs = _messages.MessageField('RuntimeConfig', 10, repeated=True)
-  state = _messages.EnumField('StateValueValuesEnum', 11)
-  updateTime = _messages.StringField(12)
+  sourceConfigs = _messages.MessageField('SourceConfig', 11, repeated=True)
+  state = _messages.EnumField('StateValueValuesEnum', 12)
+  updateTime = _messages.StringField(13)
 
 
 class Installation(_messages.Message):
@@ -2741,6 +2750,19 @@ class ServiceDirectoryConfig(_messages.Message):
   """
 
   service = _messages.StringField(1)
+
+
+class SourceConfig(_messages.Message):
+  r"""SourceConfig represents the source code of the application, that is
+  deployed in the runtime.
+
+  Fields:
+    gitRepositoryLink: Required. The name of the git repo link where the
+      source code resides. Format: projects/my-project-id/locations/us-
+      central1/connections/my-connection/gitRepositoryLinks/my-repo-link
+  """
+
+  gitRepositoryLink = _messages.StringField(1)
 
 
 class SourceConnection(_messages.Message):

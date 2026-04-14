@@ -14,11 +14,8 @@
 # limitations under the License.
 """services mcp content-security get command."""
 
-import collections
-
-from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
+from googlecloudsdk.core import log
 
 _PROJECT_RESOURCE = 'projects/%s'
 _CONTENT_SECURITY_POLICY_DEFAULT = '/contentSecurityPolicies/default'
@@ -61,24 +58,8 @@ class Get(base.Command):
       The content security providers for a project.
     """
 
-    if args.IsSpecified('project'):
-      resource_name = _PROJECT_RESOURCE % args.project
-    else:
-      project = properties.VALUES.core.project.Get(required=True)
-      resource_name = _PROJECT_RESOURCE % project
-
-    mcp_content_security = serviceusage.GetContentSecurityPolicy(
-        resource_name + _CONTENT_SECURITY_POLICY_DEFAULT,
-    ).mcpContentSecurity
-
-    content_security_providers = []
-    results = collections.namedtuple(
-        'ContentSecurityProvider', ['contentSecurityProvider']
+    log.warning(
+        'This command is not required. Please use gcloud model-armor'
+        ' floorsettings describe instead and get the floor settings.'
     )
-
-    for (
-        content_security_provider
-    ) in mcp_content_security.contentSecurityProviders:
-      content_security_providers.append(results(content_security_provider.name))
-
-    return content_security_providers
+    return None

@@ -14,7 +14,6 @@
 # limitations under the License.
 """Command for updating network policies."""
 
-
 import argparse
 from typing import ClassVar
 
@@ -26,7 +25,7 @@ from googlecloudsdk.command_lib.compute.network_policies import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Update a Compute Engine network policy.
 
@@ -59,12 +58,14 @@ class Update(base.UpdateCommand):
 
 
 Update.detailed_help = {
-    'EXAMPLES': """\
+    'EXAMPLES': (
+        """\
     To update a network policy with name ``my-policy'',
     to change the description to ``New description'', run:
 
       $ {command} my-policy \
           --description='New description' \
           --region=my-region
-    """,
+    """
+    ),
 }

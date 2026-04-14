@@ -5499,13 +5499,20 @@ class GoogleCloudDocumentaiV1TrainProcessorVersionRequestFoundationModelTuningOp
     learningRateMultiplier: Optional. The multiplier to apply to the
       recommended learning rate. Valid values are between 0.1 and 10. If not
       provided, recommended learning rate will be used.
+    previousFineTunedProcessorVersionName: Optional. Resource name of a
+      previously fine tuned version id to copy the overwritten configs from.
+      The base_processor_version should be newer than the base processor
+      version used to fine tune this provided processor version. Format: `proj
+      ects/{project}/locations/{location}/processors/{processor}/processorVers
+      ions/{processorVersion}`.
     trainSteps: Optional. The number of steps to run for model tuning. Valid
       values are between 1 and 400. If not provided, recommended steps will be
       used.
   """
 
   learningRateMultiplier = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
-  trainSteps = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  previousFineTunedProcessorVersionName = _messages.StringField(2)
+  trainSteps = _messages.IntegerField(3, variant=_messages.Variant.INT32)
 
 
 class GoogleCloudDocumentaiV1TrainProcessorVersionRequestInputData(_messages.Message):

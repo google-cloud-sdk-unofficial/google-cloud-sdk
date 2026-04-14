@@ -14,7 +14,6 @@
 # limitations under the License.
 """Command for creating network policy rules."""
 
-
 from typing import ClassVar
 
 from googlecloudsdk.api_lib.compute import base_classes
@@ -27,7 +26,7 @@ from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   r"""Creates a Compute Engine network policy rule.
 
@@ -136,7 +135,8 @@ class Create(base.CreateCommand):
 
 
 Create.detailed_help = {
-    'EXAMPLES': """\
+    'EXAMPLES': (
+        """\
     To create a traffic classification rule with priority ``10'' in a network
     policy with name ``my-policy'' and description ``example rule'', in
     region ``region-a'', run:
@@ -152,5 +152,6 @@ Create.detailed_help = {
         --dscp-mode custom
         --dscp-value 3
         --layer4-configs=tcp:80,udp
-    """,
+    """
+    ),
 }

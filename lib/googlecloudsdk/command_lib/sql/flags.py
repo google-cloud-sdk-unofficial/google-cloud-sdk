@@ -43,6 +43,7 @@ from googlecloudsdk.core import properties
 
 messages = apis.GetMessagesModule('sql', 'v1beta4')
 DEFAULT_INSTANCE_DATABASE_VERSION = 'MYSQL_8_0'
+_BACKUPDR_MAX_RETENTION_DAYS = 3653
 
 _IP_ADDRESS_PART = r'(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})'  # Match decimal 0-255
 _CIDR_PREFIX_PART = r'([0-9]|[1-2][0-9]|3[0-2])'  # Match decimal 0-32
@@ -410,14 +411,19 @@ def AddFinalbackupRetentionDays(parser, hidden=False):
   help_text = (
       'Specifies number of days to retain final backup. The valid range is'
       ' between 1 and 365. For instances managed by BackupDR, the valid range'
-      ' is between 1 day and 99 years. Default value is 30 days.'
+      ' is between 1 day and 10 years ({_BACKUPDR_MAX_RETENTION_DAYS} days).'
+      ' Default value is 30 days.'
   )
   parser.add_argument(
       '--final-backup-retention-days',
-      type=arg_parsers.BoundedInt(1, 365 * 99, unlimited=False),
+      type=arg_parsers.BoundedInt(
+          1, _BACKUPDR_MAX_RETENTION_DAYS, unlimited=False
+      ),
       required=False,
       hidden=hidden,
-      help=help_text,
+      help=help_text.format(
+          _BACKUPDR_MAX_RETENTION_DAYS=_BACKUPDR_MAX_RETENTION_DAYS
+      ),
   )
 
 
@@ -464,8 +470,9 @@ def AddFinalBackupExpiryTimeArgument(parser):
       help=(
           'Specifies the time at which the final backup will expire. Maximum'
           ' time allowed is 365 days. For instances managed by BackupDR, the'
-          ' maximum time allowed is 99 years. Format: YYYY-MM-DDTHH:MM:SS.'
-      ),
+          ' maximum time allowed is 10 years ({_BACKUPDR_MAX_RETENTION_DAYS}'
+          ' days). Format: YYYY-MM-DDTHH:MM:SS.'
+      ).format(_BACKUPDR_MAX_RETENTION_DAYS=_BACKUPDR_MAX_RETENTION_DAYS),
   )
 
 

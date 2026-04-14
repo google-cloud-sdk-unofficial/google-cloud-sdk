@@ -5098,7 +5098,7 @@ class GooglePrivacyDlpV2CustomInfoType(_messages.Message):
     likelihood: Likelihood to return for this CustomInfoType. This base value
       can be altered by a detection rule if the finding meets the criteria
       specified by the rule. Defaults to `VERY_LIKELY` if not specified.
-    metadataKeyValueExpression: key-value pairs to detect in the metadata.
+    metadataKeyValueExpression: Key-value pair to detect in the metadata.
     regex: Regular expression based CustomInfoType.
     sensitivityScore: Sensitivity for this CustomInfoType. If this
       CustomInfoType extends an existing InfoType, the sensitivity here will
@@ -8951,11 +8951,8 @@ class GooglePrivacyDlpV2KeyValueMetadataLabel(_messages.Message):
 
   Fields:
     key: The metadata key. The format depends on the source of the metadata.
-      Examples: - Microsoft Purview Information Protection keys look like
-      'MSIP_Label_122709e3-8f6b-4860-985f-7f722a94f61e_Enabled',
-      'MSIP_Label_122709e3-8f6b-4860-985f-7f722a94f61e_Method',
-      'MSIP_Label_122709e3-8f6b-4860-985f-7f722a94f61e_Name'. - General
-      metadata keys look like 'Author', 'Title', 'Description'.
+      Example: - `MSIP_Label_122709e3-8f6b-4860-985f-7f722a94f61e_Enabled` (a
+      Microsoft Purview Information Protection key example)
   """
 
   key = _messages.StringField(1)
@@ -9361,8 +9358,8 @@ class GooglePrivacyDlpV2Manual(_messages.Message):
 
 
 class GooglePrivacyDlpV2MetadataKeyValueExpression(_messages.Message):
-  r"""Configuration for a custom infoType that detects given expression of
-  key-value pair in the metadata.
+  r"""Configuration for a custom infoType that detects key-value pairs in the
+  metadata matching the specified regular expressions.
 
   Fields:
     keyRegex: The regular expression for the key. Key should be non-empty.

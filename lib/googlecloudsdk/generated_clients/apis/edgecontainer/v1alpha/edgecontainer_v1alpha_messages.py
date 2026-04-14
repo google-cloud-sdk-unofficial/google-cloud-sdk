@@ -3705,6 +3705,7 @@ class ZonalService(_messages.Message):
       STATE_ENABLING: The service is being enabled on the project.
       STATE_DISABLING: The service is being disabled on the project.
       STATE_REPAIRING: The service is being repaired.
+      STATE_ERROR: The service is in ERROR state.
     """
     STATE_UNSPECIFIED = 0
     STATE_ENABLED = 1
@@ -3712,6 +3713,7 @@ class ZonalService(_messages.Message):
     STATE_ENABLING = 3
     STATE_DISABLING = 4
     STATE_REPAIRING = 5
+    STATE_ERROR = 6
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):

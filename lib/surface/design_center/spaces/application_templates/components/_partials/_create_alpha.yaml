@@ -96,6 +96,207 @@
       repeated: false
       help_text: |-
         The component display name.
+    - group:
+        api_field: component.applicationInfo
+        required: false
+        help_text: |-
+          This captures the apphub application details associated with the component.
+        params:
+        - arg_name: application-info-apphub-id
+          api_field: component.applicationInfo.apphubApplicationId
+          required: true
+          repeated: false
+          help_text: |-
+            The application ID of the apphub application. The ID must be 1-63
+            characters long and should match the regular expression
+            `^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$`.
+        - arg_name: application-info-display-name
+          api_field: component.applicationInfo.displayName
+          required: false
+          repeated: false
+          help_text: |-
+            Display name for the application. The number of characters should be less
+            than 64 characters.
+        - group:
+            api_field: component.applicationInfo.scope
+            required: false
+            help_text: |-
+              Scope of an application.
+            params:
+            - arg_name: scope-type
+              api_field: component.applicationInfo.scope.type
+              required: true
+              help_text: |-
+                Scope Type.
+              choices:
+              - arg_value: regional
+                enum_value: REGIONAL
+                help_text: |-
+                  Regional type.
+              - arg_value: global
+                enum_value: GLOBAL
+                help_text: |-
+                  Global type.
+        - group:
+            api_field: component.applicationInfo.attributes
+            required: false
+            help_text: |-
+              Consumer provided attributes.
+            params:
+            - group:
+                api_field: component.applicationInfo.attributes.criticality
+                required: false
+                help_text: |-
+                  Criticality of the Application, Service, or Workload
+                params:
+                - arg_name: criticality-level
+                  api_field: component.applicationInfo.attributes.criticality.level
+                  required: false
+                  repeated: false
+                  help_text: |-
+                    Criticality level.
+                    Can contain only lowercase letters, numeric characters,
+                    underscores, and dashes. Can have a maximum length of 63 characters.
+                    Deprecated: Please refer to type instead.
+                - arg_name: criticality-mission-critical
+                  api_field: component.applicationInfo.attributes.criticality.missionCritical
+                  action: store_true
+                  required: false
+                  type: bool
+                  help_text: |-
+                    Indicates mission-critical Application, Service, or Workload.
+                    Deprecated: Please refer to type instead.
+                  default: null
+                - arg_name: criticality-type
+                  api_field: component.applicationInfo.attributes.criticality.type
+                  required: true
+                  help_text: |-
+                    Criticality Type.
+                  choices:
+                  - arg_value: mission-critical
+                    enum_value: MISSION_CRITICAL
+                    help_text: |-
+                      Mission critical service, application or workload.
+                  - arg_value: high
+                    enum_value: HIGH
+                    help_text: |-
+                      High impact.
+                  - arg_value: medium
+                    enum_value: MEDIUM
+                    help_text: |-
+                      Medium impact.
+                  - arg_value: low
+                    enum_value: LOW
+                    help_text: |-
+                      Low impact.
+            - group:
+                api_field: component.applicationInfo.attributes.environment
+                required: false
+                help_text: |-
+                  Environment of the Application, Service, or Workload
+                params:
+                - arg_name: environment
+                  api_field: component.applicationInfo.attributes.environment.environment
+                  required: false
+                  repeated: false
+                  help_text: |-
+                    Environment name.
+                    Can contain only lowercase letters, numeric characters,
+                    underscores, and dashes. Can have a maximum length of 63 characters.
+                    Deprecated: Please refer to type instead.
+                - arg_name: environment-type
+                  api_field: component.applicationInfo.attributes.environment.type
+                  required: true
+                  help_text: |-
+                    Environment Type.
+                  choices:
+                  - arg_value: production
+                    enum_value: PRODUCTION
+                    help_text: |-
+                      Production environment.
+                  - arg_value: staging
+                    enum_value: STAGING
+                    help_text: |-
+                      Staging environment.
+                  - arg_value: test
+                    enum_value: TEST
+                    help_text: |-
+                      Test environment.
+                  - arg_value: development
+                    enum_value: DEVELOPMENT
+                    help_text: |-
+                      Development environment.
+            - arg_name: attributes-developer-owners
+              api_field: component.applicationInfo.attributes.developerOwners
+              required: false
+              repeated: true
+              help_text: |-
+                Developer team that owns development and coding.
+              spec:
+              - api_field: displayName
+                help_text: |-
+                  Contact's name.
+                  Can have a maximum length of 63 characters.
+              - api_field: email
+                help_text: |-
+                  Email address of the contacts.
+              - api_field: channel
+                help_text: |-
+                  Communication channel of the contacts.
+                spec:
+                - api_field: uri
+                  help_text: |-
+                    URI of the channel.
+            - arg_name: attributes-operator-owners
+              api_field: component.applicationInfo.attributes.operatorOwners
+              required: false
+              repeated: true
+              help_text: |-
+                Operator team that ensures runtime and operations.
+              spec:
+              - api_field: displayName
+                help_text: |-
+                  Contact's name.
+                  Can have a maximum length of 63 characters.
+              - api_field: email
+                help_text: |-
+                  Email address of the contacts.
+              - api_field: channel
+                help_text: |-
+                  Communication channel of the contacts.
+                spec:
+                - api_field: uri
+                  help_text: |-
+                    URI of the channel.
+            - arg_name: attributes-business-owners
+              api_field: component.applicationInfo.attributes.businessOwners
+              required: false
+              repeated: true
+              help_text: |-
+                Business team that ensures user needs are met and value is delivered
+              spec:
+              - api_field: displayName
+                help_text: |-
+                  Contact's name.
+                  Can have a maximum length of 63 characters.
+              - api_field: email
+                help_text: |-
+                  Email address of the contacts.
+              - api_field: channel
+                help_text: |-
+                  Communication channel of the contacts.
+                spec:
+                - api_field: uri
+                  help_text: |-
+                    URI of the channel.
+        - arg_name: application-info-deployment-region
+          api_field: component.applicationInfo.deploymentRegion
+          required: false
+          repeated: false
+          help_text: |-
+            Deployment region for the component. If the scope is set to REGIONAL,
+            then the apphub application is created in this region, e.g.
+            `us-central1`.
   request:
     api_version: v1alpha
     collection:

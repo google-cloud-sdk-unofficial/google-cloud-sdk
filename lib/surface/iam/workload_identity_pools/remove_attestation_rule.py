@@ -28,7 +28,6 @@ from googlecloudsdk.core import resources as sdkresources
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class RemoveAttestationRule(base.Command):
   """Remove an attestation rule on a workload identity pool."""
 

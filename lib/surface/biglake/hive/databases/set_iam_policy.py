@@ -43,7 +43,7 @@ class SetIamPolicy(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddNamespaceResourceArg(
-        parser, 'to set the IAM policy for', namespace_type='Hive Database'
+        parser, 'to set the IAM policy for', namespace_type='Hive'
     )
     iam_util.AddArgForPolicyFile(parser)
 

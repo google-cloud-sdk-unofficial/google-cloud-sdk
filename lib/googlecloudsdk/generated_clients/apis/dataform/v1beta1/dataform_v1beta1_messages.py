@@ -531,11 +531,13 @@ class ComputeRepositoryAccessTokenStatusResponse(_messages.Message):
         remote.
       VALID: The token was used successfully to authenticate against the Git
         remote.
+      PERMISSION_DENIED: The token is not accessible due to permission issues.
     """
     TOKEN_STATUS_UNSPECIFIED = 0
     NOT_FOUND = 1
     INVALID = 2
     VALID = 3
+    PERMISSION_DENIED = 4
 
   tokenStatus = _messages.EnumField('TokenStatusValueValuesEnum', 1)
 
@@ -1712,6 +1714,13 @@ class DataformProjectsLocationsRepositoriesWorkspacesQueryDirectoryContentsReque
   DataformProjectsLocationsRepositoriesWorkspacesQueryDirectoryContentsRequest
   object.
 
+  Enums:
+    ViewValueValuesEnum: Optional. Specifies the metadata to return for each
+      directory entry. If unspecified, the default is
+      `DIRECTORY_CONTENTS_VIEW_BASIC`. Currently the
+      `DIRECTORY_CONTENTS_VIEW_METADATA` view is not supported by CMEK-
+      protected workspaces.
+
   Fields:
     pageSize: Optional. Maximum number of paths to return. The server may
       return fewer items than requested. If unspecified, the server will pick
@@ -1724,13 +1733,36 @@ class DataformProjectsLocationsRepositoriesWorkspacesQueryDirectoryContentsReque
     path: Optional. The directory's full path including directory name,
       relative to the workspace root. If left unset, the workspace root is
       used.
+    view: Optional. Specifies the metadata to return for each directory entry.
+      If unspecified, the default is `DIRECTORY_CONTENTS_VIEW_BASIC`.
+      Currently the `DIRECTORY_CONTENTS_VIEW_METADATA` view is not supported
+      by CMEK-protected workspaces.
     workspace: Required. The workspace's name.
   """
+
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. Specifies the metadata to return for each directory entry.
+    If unspecified, the default is `DIRECTORY_CONTENTS_VIEW_BASIC`. Currently
+    the `DIRECTORY_CONTENTS_VIEW_METADATA` view is not supported by CMEK-
+    protected workspaces.
+
+    Values:
+      DIRECTORY_CONTENTS_VIEW_UNSPECIFIED: The default / unset value. Defaults
+        to DIRECTORY_CONTENTS_VIEW_BASIC.
+      DIRECTORY_CONTENTS_VIEW_BASIC: Includes only the file or directory name.
+        This is the default behavior.
+      DIRECTORY_CONTENTS_VIEW_METADATA: Includes all metadata for each file or
+        directory. Currently not supported by CMEK-protected workspaces.
+    """
+    DIRECTORY_CONTENTS_VIEW_UNSPECIFIED = 0
+    DIRECTORY_CONTENTS_VIEW_BASIC = 1
+    DIRECTORY_CONTENTS_VIEW_METADATA = 2
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(2)
   path = _messages.StringField(3)
-  workspace = _messages.StringField(4, required=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 4)
+  workspace = _messages.StringField(5, required=True)
 
 
 class DataformProjectsLocationsRepositoriesWorkspacesReadFileRequest(_messages.Message):
@@ -2070,10 +2102,12 @@ class DirectoryEntry(_messages.Message):
   Fields:
     directory: A child directory in the directory.
     file: A file in the directory.
+    metadata: Entry with metadata.
   """
 
   directory = _messages.StringField(1)
   file = _messages.StringField(2)
+  metadata = _messages.MessageField('FilesystemEntryMetadata', 3)
 
 
 class DirectorySearchResult(_messages.Message):
@@ -2222,6 +2256,20 @@ class FileSearchResult(_messages.Message):
   """
 
   path = _messages.StringField(1)
+
+
+class FilesystemEntryMetadata(_messages.Message):
+  r"""Represents metadata for a single entry in a filesystem.
+
+  Fields:
+    sizeBytes: Output only. Provides the size of the entry in bytes. For
+      directories, this will be 0.
+    updateTime: Output only. Represents the time of the last modification of
+      the entry.
+  """
+
+  sizeBytes = _messages.IntegerField(1)
+  updateTime = _messages.StringField(2)
 
 
 class Folder(_messages.Message):

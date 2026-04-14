@@ -1,0 +1,23 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: List BigLake Hive tables in a database.
+    description: |
+      List BigLake Hive tables in a database.
+    examples: |-
+        To list all BigLake Hive tables in database `my-database` and catalog `my-catalog`, run:
+
+          $ {command} --database=my-database --catalog=my-catalog
+
+  request:
+    collection: biglake.hive.v1beta.projects.catalogs.databases.tables
+    api_version: v1beta
+    method: list
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that specify the Hive database to list tables from.
+      spec: !REF googlecloudsdk.command_lib.biglake.resources:hive_database

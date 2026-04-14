@@ -283,6 +283,9 @@ class AuthzPolicy(_messages.Message):
       any of the `ALLOW` policies match the request, the request is allowed.
       4. Else the request is denied by default if none of the configured
       AuthzPolicies with `ALLOW` action match the request.
+    PolicyProfileValueValuesEnum: Optional. Immutable. Defines the type of
+      authorization being performed. If not specified, `REQUEST_AUTHZ` is
+      applied. This field cannot be changed once AuthzPolicy is created.
 
   Messages:
     LabelsValue: Optional. Set of labels associated with the `AuthzPolicy`
@@ -319,6 +322,9 @@ class AuthzPolicy(_messages.Message):
     name: Required. Identifier. Name of the `AuthzPolicy` resource in the
       following format:
       `projects/{project}/locations/{location}/authzPolicies/{authz_policy}`.
+    policyProfile: Optional. Immutable. Defines the type of authorization
+      being performed. If not specified, `REQUEST_AUTHZ` is applied. This
+      field cannot be changed once AuthzPolicy is created.
     target: Required. Specifies the set of resources to which this policy
       should be applied to.
     updateTime: Output only. The timestamp when the resource was updated.
@@ -350,6 +356,28 @@ class AuthzPolicy(_messages.Message):
     ALLOW = 1
     DENY = 2
     CUSTOM = 3
+
+  class PolicyProfileValueValuesEnum(_messages.Enum):
+    r"""Optional. Immutable. Defines the type of authorization being
+    performed. If not specified, `REQUEST_AUTHZ` is applied. This field cannot
+    be changed once AuthzPolicy is created.
+
+    Values:
+      POLICY_PROFILE_UNSPECIFIED: Unspecified policy profile.
+      REQUEST_AUTHZ: Applies to request authorization. `CUSTOM` authorization
+        policies with Authz extensions will be allowed with `EXT_AUTHZ_GRPC`
+        or `EXT_PROC_GRPC` protocols. Extensions are invoked only for request
+        header events.
+      CONTENT_AUTHZ: Applies to content security, sanitization, etc. Only
+        `CUSTOM` action is allowed in this policy profile. AuthzExtensions in
+        the custom provider must support `EXT_PROC_GRPC` protocol only and be
+        capable of receiving all `EXT_PROC_GRPC` events (REQUEST_HEADERS,
+        REQUEST_BODY, REQUEST_TRAILERS, RESPONSE_HEADERS, RESPONSE_BODY,
+        RESPONSE_TRAILERS) with `FULL_DUPLEX_STREAMED` body send mode.
+    """
+    POLICY_PROFILE_UNSPECIFIED = 0
+    REQUEST_AUTHZ = 1
+    CONTENT_AUTHZ = 2
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
@@ -384,8 +412,9 @@ class AuthzPolicy(_messages.Message):
   httpRules = _messages.MessageField('AuthzPolicyAuthzRule', 5, repeated=True)
   labels = _messages.MessageField('LabelsValue', 6)
   name = _messages.StringField(7)
-  target = _messages.MessageField('AuthzPolicyTarget', 8)
-  updateTime = _messages.StringField(9)
+  policyProfile = _messages.EnumField('PolicyProfileValueValuesEnum', 8)
+  target = _messages.MessageField('AuthzPolicyTarget', 9)
+  updateTime = _messages.StringField(10)
 
 
 class AuthzPolicyAuthzRule(_messages.Message):
@@ -619,6 +648,10 @@ class AuthzPolicyAuthzRuleToRequestOperation(_messages.Message):
       one of exact, prefix, suffix, or contains (substring match). Matches are
       always case sensitive unless the ignoreCase is set. Limited to 10 hosts
       per Authorization Policy.
+    mcp: Optional. Defines the MCP protocol attributes to match on. If the MCP
+      payload in the request body cannot be successfully parsed, the request
+      will be denied. This field can be set only for AuthzPolicies targeting
+      AgentGateway resources.
     methods: Optional. A list of HTTP methods to match against. Each entry
       must be a valid HTTP method name (GET, PUT, POST, HEAD, PATCH, DELETE,
       OPTIONS). It only allows exact match and is always case sensitive.
@@ -633,8 +666,9 @@ class AuthzPolicyAuthzRuleToRequestOperation(_messages.Message):
 
   headerSet = _messages.MessageField('AuthzPolicyAuthzRuleToRequestOperationHeaderSet', 1)
   hosts = _messages.MessageField('AuthzPolicyAuthzRuleStringMatch', 2, repeated=True)
-  methods = _messages.StringField(3, repeated=True)
-  paths = _messages.MessageField('AuthzPolicyAuthzRuleStringMatch', 4, repeated=True)
+  mcp = _messages.MessageField('AuthzPolicyAuthzRuleToRequestOperationMCP', 3)
+  methods = _messages.StringField(4, repeated=True)
+  paths = _messages.MessageField('AuthzPolicyAuthzRuleStringMatch', 5, repeated=True)
 
 
 class AuthzPolicyAuthzRuleToRequestOperationHeaderSet(_messages.Message):
@@ -649,6 +683,70 @@ class AuthzPolicyAuthzRuleToRequestOperationHeaderSet(_messages.Message):
   """
 
   headers = _messages.MessageField('AuthzPolicyAuthzRuleHeaderMatch', 1, repeated=True)
+
+
+class AuthzPolicyAuthzRuleToRequestOperationMCP(_messages.Message):
+  r"""Describes a set of MCP protocol attributes to match against for a given
+  MCP request.
+
+  Enums:
+    BaseProtocolMethodsOptionValueValuesEnum: Optional. If specified, matches
+      on the MCP protocol's non-access specific methods namely: * initialize *
+      completion/ * logging/ * notifications/ * ping Defaults to
+      SKIP_BASE_PROTOCOL_METHODS if not specified.
+
+  Fields:
+    baseProtocolMethodsOption: Optional. If specified, matches on the MCP
+      protocol's non-access specific methods namely: * initialize *
+      completion/ * logging/ * notifications/ * ping Defaults to
+      SKIP_BASE_PROTOCOL_METHODS if not specified.
+    methods: Optional. A list of MCP methods and associated parameters to
+      match on. It is recommended to use this field to match on tools, prompts
+      and resource accesses while setting the baseProtocolMethodsOption to
+      MATCH_BASE_PROTOCOL_METHODS to match on all the other MCP protocol
+      methods. Limited to 10 MCP methods per Authorization Policy.
+  """
+
+  class BaseProtocolMethodsOptionValueValuesEnum(_messages.Enum):
+    r"""Optional. If specified, matches on the MCP protocol's non-access
+    specific methods namely: * initialize * completion/ * logging/ *
+    notifications/ * ping Defaults to SKIP_BASE_PROTOCOL_METHODS if not
+    specified.
+
+    Values:
+      BASE_PROTOCOL_METHODS_OPTION_UNSPECIFIED: Unspecified option. Defaults
+        to SKIP_BASE_PROTOCOL_METHODS.
+      SKIP_BASE_PROTOCOL_METHODS: Skip matching on the base MCP protocol
+        methods.
+      MATCH_BASE_PROTOCOL_METHODS: Match on the base MCP protocol methods.
+    """
+    BASE_PROTOCOL_METHODS_OPTION_UNSPECIFIED = 0
+    SKIP_BASE_PROTOCOL_METHODS = 1
+    MATCH_BASE_PROTOCOL_METHODS = 2
+
+  baseProtocolMethodsOption = _messages.EnumField('BaseProtocolMethodsOptionValueValuesEnum', 1)
+  methods = _messages.MessageField('AuthzPolicyAuthzRuleToRequestOperationMCPMethod', 2, repeated=True)
+
+
+class AuthzPolicyAuthzRuleToRequestOperationMCPMethod(_messages.Message):
+  r"""Describes a set of MCP methods to match against.
+
+  Fields:
+    name: Required. The MCP method to match against. Allowed values are as
+      follows: 1. `tools`, `prompts`, `resources` - these will match against
+      all sub methods under the respective methods. 2. `prompts/list`,
+      `tools/list`, `resources/list`, `resources/templates/list` 3.
+      `prompts/get`, `tools/call`, `resources/subscribe`,
+      `resources/unsubscribe`, `resources/read` Params cannot be specified for
+      categories 1 and 2.
+    params: Optional. A list of MCP method parameters to match against. The
+      match can be one of exact, prefix, suffix, or contains (substring
+      match). Matches are always case sensitive unless the ignoreCase is set.
+      Limited to 10 MCP method parameters per Authorization Policy.
+  """
+
+  name = _messages.StringField(1)
+  params = _messages.MessageField('AuthzPolicyAuthzRuleStringMatch', 2, repeated=True)
 
 
 class AuthzPolicyCustomProvider(_messages.Message):
@@ -699,14 +797,14 @@ class AuthzPolicyTarget(_messages.Message):
   r"""Specifies the set of targets to which this policy should be applied to.
 
   Enums:
-    LoadBalancingSchemeValueValuesEnum: Required. All gateways and forwarding
+    LoadBalancingSchemeValueValuesEnum: Optional. All gateways and forwarding
       rules referenced by this policy and extensions must share the same load
       balancing scheme. Supported values: `INTERNAL_MANAGED` and
       `EXTERNAL_MANAGED`. For more information, refer to [Backend services
       overview](https://cloud.google.com/load-balancing/docs/backend-service).
 
   Fields:
-    loadBalancingScheme: Required. All gateways and forwarding rules
+    loadBalancingScheme: Optional. All gateways and forwarding rules
       referenced by this policy and extensions must share the same load
       balancing scheme. Supported values: `INTERNAL_MANAGED` and
       `EXTERNAL_MANAGED`. For more information, refer to [Backend services
@@ -716,7 +814,7 @@ class AuthzPolicyTarget(_messages.Message):
   """
 
   class LoadBalancingSchemeValueValuesEnum(_messages.Enum):
-    r"""Required. All gateways and forwarding rules referenced by this policy
+    r"""Optional. All gateways and forwarding rules referenced by this policy
     and extensions must share the same load balancing scheme. Supported
     values: `INTERNAL_MANAGED` and `EXTERNAL_MANAGED`. For more information,
     refer to [Backend services overview](https://cloud.google.com/load-
@@ -1129,7 +1227,9 @@ class FirewallEndpoint(_messages.Message):
     associations: Output only. List of FirewallEndpointAssociations that are
       associated to this endpoint. An association will only appear in this
       list after traffic routing is fully configured.
-    billingProjectId: Required. Project to bill on endpoint uptime usage.
+    billingProjectId: Optional. Project to charge for the deployed firewall
+      endpoint. This field must be specified when creating the endpoint in the
+      organization scope, and should be omitted otherwise.
     createTime: Output only. Create time stamp.
     description: Optional. Description of the firewall endpoint. Max length
       2048 characters.

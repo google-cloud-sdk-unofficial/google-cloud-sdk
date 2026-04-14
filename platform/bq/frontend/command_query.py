@@ -14,6 +14,7 @@ from absl import app
 from absl import flags
 
 import bq_flags
+import bq_utils
 from clients import bigquery_client
 from clients import bigquery_client_extended
 from clients import client_data_transfer
@@ -415,6 +416,7 @@ class Query(bigquery_command.BigqueryCmd):
     To cancel a query job, run `bq cancel job_id`.
     """
     logging.debug('In _Query.RunWithArgs: %s', args)
+    bq_utils.SetBqCliUserAgentResource('jobs', overwrite=True)
     # Set up the params that are the same for rpc-style and jobs.insert()-style
     # queries.
     kwds = {
@@ -501,6 +503,7 @@ class Query(bigquery_command.BigqueryCmd):
       }
 
     if self.schedule or self.no_auto_scheduling:
+      bq_utils.SetBqCliUserAgentResource('scheduled_queries', overwrite=True)
       transfer_client = client.GetTransferV1ApiClient()
       reference = 'projects/' + (
           bq_client_utils.GetProjectReference(id_fallbacks=client).projectId

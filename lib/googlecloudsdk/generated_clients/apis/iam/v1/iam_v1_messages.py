@@ -1145,6 +1145,41 @@ class IamLocationsWorkforcePoolsProvidersScimTenantsPatchRequest(_messages.Messa
   workforcePoolProviderScimTenant = _messages.MessageField('WorkforcePoolProviderScimTenant', 3)
 
 
+class IamLocationsWorkforcePoolsProvidersScimTenantsSuggestClaimMappingRequest(_messages.Message):
+  r"""A
+  IamLocationsWorkforcePoolsProvidersScimTenantsSuggestClaimMappingRequest
+  object.
+
+  Enums:
+    IntendedScimUsageValueValuesEnum: Required. The intended usage of the SCIM
+      tenant, which determines the suggested mappings.
+
+  Fields:
+    intendedScimUsage: Required. The intended usage of the SCIM tenant, which
+      determines the suggested mappings.
+    parent: Required. The parent of the SCIM tenant. Format: 'locations/{locat
+      ion}/workforcePools/{workforce_pool}/providers/{provider}'
+  """
+
+  class IntendedScimUsageValueValuesEnum(_messages.Enum):
+    r"""Required. The intended usage of the SCIM tenant, which determines the
+    suggested mappings.
+
+    Values:
+      SCIM_USAGE_UNSPECIFIED: The SCIM usage is not specified.
+      ENABLED_FOR_GROUPS: Mappings are suggested for 'google.subject' and
+        'google.group'.
+      ENABLED_FOR_USERS_GROUPS: Mappings are suggested for all attributes
+        present in the provider's `attribute_mapping`.
+    """
+    SCIM_USAGE_UNSPECIFIED = 0
+    ENABLED_FOR_GROUPS = 1
+    ENABLED_FOR_USERS_GROUPS = 2
+
+  intendedScimUsage = _messages.EnumField('IntendedScimUsageValueValuesEnum', 1)
+  parent = _messages.StringField(2, required=True)
+
+
 class IamLocationsWorkforcePoolsProvidersScimTenantsTokensCreateRequest(_messages.Message):
   r"""A IamLocationsWorkforcePoolsProvidersScimTenantsTokensCreateRequest
   object.
@@ -1386,6 +1421,47 @@ class IamLocationsWorkforcePoolsUndeleteRequest(_messages.Message):
 
   name = _messages.StringField(1, required=True)
   undeleteWorkforcePoolRequest = _messages.MessageField('UndeleteWorkforcePoolRequest', 2)
+
+
+class IamOrganizationsLocationsWorkloadIdentityPoolsGetRequest(_messages.Message):
+  r"""A IamOrganizationsLocationsWorkloadIdentityPoolsGetRequest object.
+
+  Fields:
+    name: Required. The name of the pool to retrieve.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class IamOrganizationsLocationsWorkloadIdentityPoolsListRequest(_messages.Message):
+  r"""A IamOrganizationsLocationsWorkloadIdentityPoolsListRequest object.
+
+  Fields:
+    pageSize: The maximum number of pools to return. If unspecified, at most
+      50 pools are returned. The maximum value is 1000; values above are 1000
+      truncated to 1000.
+    pageToken: A page token, received from a previous
+      `ListWorkloadIdentityPools` call. Provide this to retrieve the
+      subsequent page.
+    parent: Required. The parent resource to list pools for.
+    showDeleted: Whether to return soft-deleted pools.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  showDeleted = _messages.BooleanField(4)
+
+
+class IamOrganizationsLocationsWorkloadIdentityPoolsOperationsGetRequest(_messages.Message):
+  r"""A IamOrganizationsLocationsWorkloadIdentityPoolsOperationsGetRequest
+  object.
+
+  Fields:
+    name: The name of the operation resource.
+  """
+
+  name = _messages.StringField(1, required=True)
 
 
 class IamOrganizationsRolesCreateRequest(_messages.Message):
@@ -5398,6 +5474,53 @@ class Status(_messages.Message):
   message = _messages.StringField(3)
 
 
+class SuggestScimTenantClaimMappingResponse(_messages.Message):
+  r"""Response message for SuggestScimTenantClaimMapping.
+
+  Messages:
+    ClaimMappingValue: A map of proposed SCIM tenant claim mappings. Key: The
+      attribute (e.g., "google.subject"). Value: Proposed SCIM claim mapping
+      CEL expression (e.g., "user.externalId").
+
+  Fields:
+    claimMapping: A map of proposed SCIM tenant claim mappings. Key: The
+      attribute (e.g., "google.subject"). Value: Proposed SCIM claim mapping
+      CEL expression (e.g., "user.externalId").
+    unmappedAttributes: Keys of attributes that could not be automatically
+      mapped.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ClaimMappingValue(_messages.Message):
+    r"""A map of proposed SCIM tenant claim mappings. Key: The attribute
+    (e.g., "google.subject"). Value: Proposed SCIM claim mapping CEL
+    expression (e.g., "user.externalId").
+
+    Messages:
+      AdditionalProperty: An additional property for a ClaimMappingValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type ClaimMappingValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ClaimMappingValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  claimMapping = _messages.MessageField('ClaimMappingValue', 1)
+  unmappedAttributes = _messages.StringField(2, repeated=True)
+
+
 class TestIamPermissionsRequest(_messages.Message):
   r"""Request message for `TestIamPermissions` method.
 
@@ -6172,6 +6295,10 @@ class WorkloadIdentityPool(_messages.Message):
   Enums:
     ModeValueValuesEnum: Immutable. The mode the pool is operating in.
     StateValueValuesEnum: Output only. The state of the pool.
+    TypeValueValuesEnum: Output only. Indicates the intended use case for the
+      workload identity pool. AGENT type pools cannot be used by workloads and
+      WORKLOAD type pools cannot be used by agents. By default, all pools not
+      used for agents are WORKLOAD type.
 
   Fields:
     description: Optional. A description of the pool. Cannot exceed 256
@@ -6207,6 +6334,10 @@ class WorkloadIdentityPool(_messages.Message):
       allowed session_duration value using the iam-
       workloadIdentitySessionDuration Resource Setting.
     state: Output only. The state of the pool.
+    type: Output only. Indicates the intended use case for the workload
+      identity pool. AGENT type pools cannot be used by workloads and WORKLOAD
+      type pools cannot be used by agents. By default, all pools not used for
+      agents are WORKLOAD type.
   """
 
   class ModeValueValuesEnum(_messages.Enum):
@@ -6256,6 +6387,21 @@ class WorkloadIdentityPool(_messages.Message):
     ACTIVE = 1
     DELETED = 2
 
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""Output only. Indicates the intended use case for the workload identity
+    pool. AGENT type pools cannot be used by workloads and WORKLOAD type pools
+    cannot be used by agents. By default, all pools not used for agents are
+    WORKLOAD type.
+
+    Values:
+      TYPE_UNSPECIFIED: Unspecified type.
+      WORKLOAD: The pool is used for workloads.
+      AGENT: The pool is used for agents.
+    """
+    TYPE_UNSPECIFIED = 0
+    WORKLOAD = 1
+    AGENT = 2
+
   description = _messages.StringField(1)
   disabled = _messages.BooleanField(2)
   displayName = _messages.StringField(3)
@@ -6267,6 +6413,7 @@ class WorkloadIdentityPool(_messages.Message):
   name = _messages.StringField(9)
   sessionDuration = _messages.StringField(10)
   state = _messages.EnumField('StateValueValuesEnum', 11)
+  type = _messages.EnumField('TypeValueValuesEnum', 12)
 
 
 class WorkloadIdentityPoolManagedIdentity(_messages.Message):

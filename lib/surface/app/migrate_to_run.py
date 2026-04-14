@@ -17,7 +17,7 @@
 
 import collections
 import re
-from typing import Any
+from typing import Any, Mapping, Sequence
 
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.run import k8s_object
@@ -26,6 +26,8 @@ from googlecloudsdk.command_lib.app import gae_to_cr_migration_util
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util import export_image
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util import list_incompatible_features
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util import translate
+from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.common import util
+from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.config import feature_helper
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.core import log
@@ -118,16 +120,16 @@ class AppEngineToCloudRun(deploy.Deploy):
     self.release_track = self.ReleaseTrack()
     original_flag_is_explicitly_set = flags.FlagIsExplicitlySet
     try:
-      flags.FlagIsExplicitlySet = self._FlagIsExplicitlySetWrapper
-      self.StartMigration(args)
+      flags.FlagIsExplicitlySet = self._flag_is_explicitly_set_wrapper
+      self._start_migration(args)
       # Execute the gcloud run deploy command using the arguments prepared in
       # StartMigration.
       super().Run(args)
-      self.PrintMigrationSummary(args)
+      self._print_migration_summary(args)
     finally:
       flags.FlagIsExplicitlySet = original_flag_is_explicitly_set
 
-  def _FlagIsExplicitlySetWrapper(self, unused_args, flag) -> bool:
+  def _flag_is_explicitly_set_wrapper(self, unused_args, flag) -> bool:
     """Wrapper function to check if a flag is explicitly set.
 
     This wrapper checks for flags added during the migration process,
@@ -142,7 +144,7 @@ class AppEngineToCloudRun(deploy.Deploy):
     """
     return hasattr(self, '_migration_flags') and flag in self._migration_flags
 
-  def _GetBaseChanges(self, args):
+  def _get_base_changes(self, args):
     """Returns the service config changes with some default settings."""
     changes = flags.GetServiceConfigurationChanges(args, self.ReleaseTrack())
     changes.insert(
@@ -156,7 +158,7 @@ class AppEngineToCloudRun(deploy.Deploy):
     )
     return changes
 
-  def StartMigration(self, args) -> None:
+  def _start_migration(self, args) -> None:
     """Starts the migration process.
 
     This method translates App Engine configuration to Cloud Run deployment
@@ -170,32 +172,22 @@ class AppEngineToCloudRun(deploy.Deploy):
     """
 
     # List incompatible features.
+    input_data, input_type = util.get_version_data(
+        appyaml=args.appyaml, service=args.service, version=args.version
+    )
     list_incompatible_features.list_incompatible_features(
-        args.appyaml, args.service, args.version
+        input_data, input_type, args.appyaml, args.service, args.version
     )
 
-    if self.release_track is base.ReleaseTrack.ALPHA and args.from_image:
-      project = properties.VALUES.core.project.Get()
-
-      export_image_response = export_image.export_image(
-          project,
-          args.service,
-          args.version,
-          args.destination_repository,
-          api_client=self.api_client,
-          export_service_account=None,
-      )
-
-      cloud_run_deploy_command = translate.translate_from_image(
-          args.service,
-          args.version,
-          args.entrypoint,
-          export_image_response,
+    if util.is_flex_env(input_data):
+      cloud_run_deploy_command = self._run_deploy_command_for_flex(
+          args, input_data, input_type
       )
     else:
-      cloud_run_deploy_command = translate.translate_from_source(
-          args.appyaml, args.service, args.version, args.entrypoint
+      cloud_run_deploy_command = self._run_deploy_command_for_standard(
+          args, input_data, input_type
       )
+
     print_deploy_command = ' '.join(cloud_run_deploy_command) + ' '
     if args.entrypoint:
       setattr(
@@ -231,7 +223,9 @@ class AppEngineToCloudRun(deploy.Deploy):
           setattr(args, command_args[0], command_args[1])
           continue
         if command_args[0] == 'set_env_vars':
-          args.__setattr__(command_args[0], self.ParseSetEnvVars(command_str))
+          args.__setattr__(
+              command_args[0], self._parse_set_env_vars(command_str)
+          )
           continue
         if command_args[0] == 'timeout':
           if command_args[1] == '600':
@@ -254,7 +248,7 @@ class AppEngineToCloudRun(deploy.Deploy):
           args.__setattr__(command_args[0], True)
     return
 
-  def PrintMigrationSummary(self, args):
+  def _print_migration_summary(self, args):
     """Prints the migration summary."""
     log.status.Print(
         '\n'
@@ -283,7 +277,7 @@ class AppEngineToCloudRun(deploy.Deploy):
           f' --region={region} --project={project}"\n'
       )
 
-  def ParseSetEnvVars(
+  def _parse_set_env_vars(
       self, input_str: str
   ) -> collections.OrderedDict[str, str]:
     """Parses a 'set-env-vars' string and converts it into an OrderedDict.
@@ -308,6 +302,54 @@ class AppEngineToCloudRun(deploy.Deploy):
         pair.split('=', 1) for pair in vars_string.split(',')
     )
     return env_vars
+
+  def _run_deploy_command_for_flex(
+      self,
+      args,
+      input_data: Mapping[str, any],
+      input_type: feature_helper.InputType,
+  ) -> Sequence[str]:
+    """Handles the flex environment."""
+    if getattr(args, 'from_image', False):
+      return translate.translate_from_image(
+          input_data,
+          args.service,
+      )
+    else:
+      return translate.translate_from_source(
+          input_data, input_type, args.appyaml, args.service, args.entrypoint
+      )
+
+  def _run_deploy_command_for_standard(
+      self,
+      args,
+      input_data: Mapping[str, any],
+      input_type: feature_helper.InputType,
+  ) -> Sequence[str]:
+    """Handles the standard environment."""
+
+    if self.release_track is base.ReleaseTrack.ALPHA and args.from_image:
+      project = properties.VALUES.core.project.Get()
+
+      export_image_response = export_image.export_image(
+          project,
+          args.service,
+          args.version,
+          args.destination_repository,
+          api_client=self.api_client,
+          export_service_account=None,
+      )
+
+      return translate.translate_from_exported_image(
+          input_data,
+          args.service,
+          args.entrypoint,
+          export_image_response,
+      )
+    else:
+      return translate.translate_from_source(
+          input_data, input_type, args.appyaml, args.service, args.entrypoint
+      )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

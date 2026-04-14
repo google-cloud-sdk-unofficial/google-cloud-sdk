@@ -13,7 +13,7 @@ __all__ = (
     "cachedmethod",
 )
 
-__version__ = "6.2.5"
+__version__ = "7.0.1"
 
 import collections
 import collections.abc
@@ -24,8 +24,13 @@ import time
 
 from . import keys
 
+# Typing stubs for this package are provided by typeshed:
+# https://github.com/python/typeshed/tree/main/stubs/cachetools
+
 
 class _DefaultSize:
+    """A minimal "fake" dict that returns a constant size 1 for any key."""
+
     __slots__ = ()
 
     def __getitem__(self, _key):
@@ -541,6 +546,8 @@ class TTLCache(_TimedCache):
 class TLRUCache(_TimedCache):
     """Time aware Least Recently Used (TLRU) cache implementation."""
 
+    __HEAP_CLEANUP_FACTOR = 2  # clean up the heap if size > N * len(items)
+
     @functools.total_ordering
     class _Item:
         __slots__ = ("key", "expires", "removed")
@@ -626,7 +633,7 @@ class TLRUCache(_TimedCache):
         items = self.__items
         order = self.__order
         # clean up the heap if too many items are marked as removed
-        if len(order) > len(items) * 2:
+        if len(order) > len(items) * self.__HEAP_CLEANUP_FACTOR:
             self.__order = order = [item for item in order if not item.removed]
             heapq.heapify(order)
         expired = []
@@ -672,17 +679,6 @@ def cached(cache, key=keys.hashkey, lock=None, condition=None, info=False):
     """
     from ._cached import _wrapper
 
-    if isinstance(condition, bool):
-        from warnings import warn
-
-        warn(
-            "passing `info` as positional parameter is deprecated",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        info = condition
-        condition = None
-
     def decorator(func):
         if info:
             if isinstance(cache, Cache):
@@ -707,7 +703,7 @@ def cached(cache, key=keys.hashkey, lock=None, condition=None, info=False):
     return decorator
 
 
-def cachedmethod(cache, key=keys.methodkey, lock=None, condition=None):
+def cachedmethod(cache, key=keys.methodkey, lock=None, condition=None, info=False):
     """Decorator to wrap a class or instance method with a memoizing
     callable that saves results in a cache.
 
@@ -715,6 +711,18 @@ def cachedmethod(cache, key=keys.methodkey, lock=None, condition=None):
     from ._cachedmethod import _wrapper
 
     def decorator(method):
-        return _wrapper(method, cache, key, lock, condition)
+        if info:
+
+            def make_info(cache, hits, misses):
+                if isinstance(cache, Cache):
+                    return _CacheInfo(hits, misses, cache.maxsize, cache.currsize)
+                elif isinstance(cache, collections.abc.Mapping):
+                    return _CacheInfo(hits, misses, None, len(cache))
+                else:
+                    raise TypeError("cache(self) must return a mutable mapping")
+
+            return _wrapper(method, cache, key, lock, condition, info=make_info)
+        else:
+            return _wrapper(method, cache, key, lock, condition)
 
     return decorator

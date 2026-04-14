@@ -439,6 +439,19 @@ class ApplicationTemplateSystemRevision(_messages.Message):
   snapshot = _messages.MessageField('SerializedApplicationTemplate', 4)
 
 
+class ApplyCondition(_messages.Message):
+  r"""Condition for applying the policy. Condition accepts AppTemplate
+  parameters like criticality, environment only.
+
+  Fields:
+    conditionKey: Required. The key of the parameter for the condition.
+    conditionValue: Required. The value of the parameter for the condition.
+  """
+
+  conditionKey = _messages.StringField(1)
+  conditionValue = _messages.StringField(2)
+
+
 class ArtifactLocation(_messages.Message):
   r"""Defines the location for storing an artifact, such as generated IaC.
 
@@ -900,6 +913,40 @@ class Channel(_messages.Message):
   """
 
   uri = _messages.StringField(1)
+
+
+class CloudControl(_messages.Message):
+  r"""Cloud control for a framework.
+
+  Enums:
+    EnforcementModeValueValuesEnum: Optional. The enforcement mode of the
+      cloud control.
+
+  Fields:
+    description: Optional. The description of the cloud control.
+    enforcementMode: Optional. The enforcement mode of the cloud control.
+    majorRevisionId: Required. The major revision id of the cloud control.
+    name: Required. The name of the cloud control.
+  """
+
+  class EnforcementModeValueValuesEnum(_messages.Enum):
+    r"""Optional. The enforcement mode of the cloud control.
+
+    Values:
+      ENFORCEMENT_MODE_UNSPECIFIED: Enforcement type unspecified.
+      PREVENTIVE: The cloud control is enforced to prevent non-compliance.
+      DETECTIVE: The cloud control is enforced to detect non-compliance.
+      AUDIT: The cloud control is enforced to audit for non-compliance.
+    """
+    ENFORCEMENT_MODE_UNSPECIFIED = 0
+    PREVENTIVE = 1
+    DETECTIVE = 2
+    AUDIT = 3
+
+  description = _messages.StringField(1)
+  enforcementMode = _messages.EnumField('EnforcementModeValueValuesEnum', 2)
+  majorRevisionId = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  name = _messages.StringField(4)
 
 
 class CodePosition(_messages.Message):
@@ -1582,6 +1629,78 @@ class DeploymentTarget(_messages.Message):
   gkeDeploymentTarget = _messages.MessageField('GKEDeploymentTarget', 1)
 
 
+class DesignCenterPolicy(_messages.Message):
+  r"""A Policy is a resource within an Application Template that refers to a
+  Policy that is authored and managed outside of the ADC and attached to an
+  Application Template.
+
+  Enums:
+    PolicyTypeValueValuesEnum: Required. The policy type. Policy type will be
+      used to determine the domain of the policy.
+
+  Fields:
+    applyConditions: Optional. Conditions for applying the policy. Condition
+      accepts AppTemplate parameters like criticality, environment only.
+    createTime: Output only. The policy creation timestamp.
+    description: Optional. The policy description.
+    displayName: Optional. The policy display name.
+    name: Identifier. The policy name in the following format: projects/$proje
+      ct/locations/$location/spaces/$space/applicationTemplates/$applicationTe
+      mplate/policies/$policy
+    policyRevisionUri: Optional. URI of the policy revision.
+    policyType: Required. The policy type. Policy type will be used to
+      determine the domain of the policy.
+    policyUri: Optional. URI of the policy.
+    updateTime: Output only. The policy update timestamp.
+  """
+
+  class PolicyTypeValueValuesEnum(_messages.Enum):
+    r"""Required. The policy type. Policy type will be used to determine the
+    domain of the policy.
+
+    Values:
+      POLICY_TYPE_UNSPECIFIED: Default.
+      COMPLIANCE_FRAMEWORK: Compliance framework policy.
+    """
+    POLICY_TYPE_UNSPECIFIED = 0
+    COMPLIANCE_FRAMEWORK = 1
+
+  applyConditions = _messages.MessageField('ApplyCondition', 1, repeated=True)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  displayName = _messages.StringField(4)
+  name = _messages.StringField(5)
+  policyRevisionUri = _messages.StringField(6)
+  policyType = _messages.EnumField('PolicyTypeValueValuesEnum', 7)
+  policyUri = _messages.StringField(8)
+  updateTime = _messages.StringField(9)
+
+
+class DesigncenterProjectsLocationsFetchFrameworksRequest(_messages.Message):
+  r"""A DesigncenterProjectsLocationsFetchFrameworksRequest object.
+
+  Fields:
+    filter: Optional. Filter for frameworks list.
+    pageSize: Optional. The maximum number of results to return from this
+      request. Non-positive values are ignored. The presence of nextPageToken
+      in the response indicates that more results might be available.
+    pageToken: Optional. If present, then retrieve the next batch of results
+      from the preceding call to this method. pageToken must be the value of
+      nextPageToken from the previous response. The values of other method
+      parameters should be identical to those in the previous call.
+    parent: Required. The parent resource name. Format:
+      projects/{project}/locations/{location}
+    projects: Optional. Projects to fetch frameworks for. Format:
+      projects/{project}
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+  projects = _messages.StringField(5, repeated=True)
+
+
 class DesigncenterProjectsLocationsGetRequest(_messages.Message):
   r"""A DesigncenterProjectsLocationsGetRequest object.
 
@@ -1883,6 +2002,23 @@ class DesigncenterProjectsLocationsSpacesApplicationTemplatesDeleteRequest(_mess
   name = _messages.StringField(2, required=True)
 
 
+class DesigncenterProjectsLocationsSpacesApplicationTemplatesGenerateAssessmentReportRequest(_messages.Message):
+  r"""A DesigncenterProjectsLocationsSpacesApplicationTemplatesGenerateAssessm
+  entReportRequest object.
+
+  Fields:
+    generateApplicationTemplateAssessmentReportRequest: A
+      GenerateApplicationTemplateAssessmentReportRequest resource to be passed
+      as the request body.
+    name: Required. The application template name in the following format: pro
+      jects/$project/locations/$location/spaces/$space/applicationTemplates/$a
+      pplicationTemplate
+  """
+
+  generateApplicationTemplateAssessmentReportRequest = _messages.MessageField('GenerateApplicationTemplateAssessmentReportRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class DesigncenterProjectsLocationsSpacesApplicationTemplatesGenerateRequest(_messages.Message):
   r"""A DesigncenterProjectsLocationsSpacesApplicationTemplatesGenerateRequest
   object.
@@ -1979,6 +2115,102 @@ class DesigncenterProjectsLocationsSpacesApplicationTemplatesPatchRequest(_messa
   """
 
   applicationTemplate = _messages.MessageField('ApplicationTemplate', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
+
+
+class DesigncenterProjectsLocationsSpacesApplicationTemplatesPoliciesCreateRequest(_messages.Message):
+  r"""A
+  DesigncenterProjectsLocationsSpacesApplicationTemplatesPoliciesCreateRequest
+  object.
+
+  Fields:
+    designCenterPolicy: A DesignCenterPolicy resource to be passed as the
+      request body.
+    parent: Required. The parent resource in which to create the policy in the
+      following format: projects/$project/locations/$location/spaces/$space/ap
+      plicationTemplates/$applicationTemplate
+    policyId: Required. The ID of the policy to create.
+  """
+
+  designCenterPolicy = _messages.MessageField('DesignCenterPolicy', 1)
+  parent = _messages.StringField(2, required=True)
+  policyId = _messages.StringField(3)
+
+
+class DesigncenterProjectsLocationsSpacesApplicationTemplatesPoliciesDeleteRequest(_messages.Message):
+  r"""A
+  DesigncenterProjectsLocationsSpacesApplicationTemplatesPoliciesDeleteRequest
+  object.
+
+  Fields:
+    name: Required. The policy name in the following format: projects/$project
+      /locations/$location/spaces/$space/applicationTemplates/$applicationTemp
+      late/policies/$policy
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class DesigncenterProjectsLocationsSpacesApplicationTemplatesPoliciesGetRequest(_messages.Message):
+  r"""A
+  DesigncenterProjectsLocationsSpacesApplicationTemplatesPoliciesGetRequest
+  object.
+
+  Fields:
+    name: Required. The policy name in the following format: projects/$project
+      /locations/$location/spaces/$space/applicationTemplates/$applicationTemp
+      late/policies/$policy
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class DesigncenterProjectsLocationsSpacesApplicationTemplatesPoliciesListRequest(_messages.Message):
+  r"""A
+  DesigncenterProjectsLocationsSpacesApplicationTemplatesPoliciesListRequest
+  object.
+
+  Fields:
+    filter: Optional. A filter that chooses which policies to return.
+    orderBy: Optional. How the results should be sorted.
+    pageSize: Optional. The maximum number of results to return from this
+      request. Non-positive values are ignored. The presence of nextPageToken
+      in the response indicates that more results might be available.
+    pageToken: Optional. If present, retrieve the next batch of results from
+      the preceding call to this method. pageToken must be the value of
+      nextPageToken from the previous response. The values of other method
+      parameters should be identical to those in the previous call.
+    parent: Required. The parent application template from which policies are
+      listed in the following format: projects/$project/locations/$location/sp
+      aces/$space/applicationTemplates/$applicationTemplate
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class DesigncenterProjectsLocationsSpacesApplicationTemplatesPoliciesPatchRequest(_messages.Message):
+  r"""A
+  DesigncenterProjectsLocationsSpacesApplicationTemplatesPoliciesPatchRequest
+  object.
+
+  Fields:
+    designCenterPolicy: A DesignCenterPolicy resource to be passed as the
+      request body.
+    name: Identifier. The policy name in the following format: projects/$proje
+      ct/locations/$location/spaces/$space/applicationTemplates/$applicationTe
+      mplate/policies/$policy
+    updateMask: Optional. The fields to overwrite in the policy update. The
+      fields specified in the update_mask are relative to the resource, not
+      the full request. A field will be overwritten if it is in the mask. If
+      you don't provide a mask, all fields are overwritten.
+  """
+
+  designCenterPolicy = _messages.MessageField('DesignCenterPolicy', 1)
   name = _messages.StringField(2, required=True)
   updateMask = _messages.StringField(3)
 
@@ -2568,6 +2800,22 @@ class DesigncenterProjectsLocationsSpacesDeleteRequest(_messages.Message):
   name = _messages.StringField(2, required=True)
 
 
+class DesigncenterProjectsLocationsSpacesGenerateAssessmentReportRequest(_messages.Message):
+  r"""A DesigncenterProjectsLocationsSpacesGenerateAssessmentReportRequest
+  object.
+
+  Fields:
+    generateAssessmentReportRequest: A GenerateAssessmentReportRequest
+      resource to be passed as the request body.
+    spaceName: Required. The name of the space at which Generate Assessment
+      Report is called. Format:
+      projects/$project/locations/$location/spaces/$space
+  """
+
+  generateAssessmentReportRequest = _messages.MessageField('GenerateAssessmentReportRequest', 1)
+  spaceName = _messages.StringField(2, required=True)
+
+
 class DesigncenterProjectsLocationsSpacesGetIamPolicyRequest(_messages.Message):
   r"""A DesigncenterProjectsLocationsSpacesGetIamPolicyRequest object.
 
@@ -2933,6 +3181,25 @@ class DisplayVariableToggle(_messages.Message):
   variableValues = _messages.StringField(3, repeated=True)
 
 
+class Domain(_messages.Message):
+  r"""Domain for assessment.
+
+  Fields:
+    description: Optional. The domain description.
+    displayName: Optional. The domain display name is user friendly name used
+      for UI.
+    domainName: Required. The domain name. Uniquely identifies the domain.
+    frameworks: Optional. The frameworks that are applicable in this domain.
+    inactive: Optional. Whether the domain is inactive. Default: false.
+  """
+
+  description = _messages.StringField(1)
+  displayName = _messages.StringField(2)
+  domainName = _messages.StringField(3)
+  frameworks = _messages.MessageField('Framework', 4, repeated=True)
+  inactive = _messages.BooleanField(5)
+
+
 class Empty(_messages.Message):
   r"""A generic empty message that you can re-use to avoid defining duplicated
   empty messages in your APIs. A typical example is to use it as the request
@@ -3011,6 +3278,62 @@ class Expr(_messages.Message):
   title = _messages.StringField(4)
 
 
+class FetchFrameworksResponse(_messages.Message):
+  r"""Response for FetchFrameworks rpc
+
+  Fields:
+    frameworks: The list of frameworks.
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+  """
+
+  frameworks = _messages.MessageField('Framework', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
+class Framework(_messages.Message):
+  r"""Framework for assessment.
+
+  Enums:
+    DeploymentStatusValueValuesEnum: Optional. The deployment status of the
+      framework.
+
+  Fields:
+    active: Optional. Whether the framework is active.
+    cloudControlDetails: Optional. The cloud controls that are associated with
+      the framework.
+    deploymentStatus: Optional. The deployment status of the framework.
+    description: Optional. The framework description.
+    displayName: Optional. The framework display name.
+    majorRevisionId: Optional. The major revision id of the framework.
+    name: Required. The framework name.
+    parentDomain: Required. The domain to which this framework belongs.
+    url: Optional. The URL to a framework.
+  """
+
+  class DeploymentStatusValueValuesEnum(_messages.Enum):
+    r"""Optional. The deployment status of the framework.
+
+    Values:
+      DEPLOYMENT_STATUS_UNSPECIFIED: Deployment status unspecified.
+      DEPLOYED: Framework is deployed.
+      UNDEPLOYED: Framework is undeployed.
+    """
+    DEPLOYMENT_STATUS_UNSPECIFIED = 0
+    DEPLOYED = 1
+    UNDEPLOYED = 2
+
+  active = _messages.BooleanField(1)
+  cloudControlDetails = _messages.MessageField('CloudControl', 2, repeated=True)
+  deploymentStatus = _messages.EnumField('DeploymentStatusValueValuesEnum', 3)
+  description = _messages.StringField(4)
+  displayName = _messages.StringField(5)
+  majorRevisionId = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  name = _messages.StringField(7)
+  parentDomain = _messages.MessageField('Domain', 8)
+  url = _messages.StringField(9)
+
+
 class GKEDeploymentTarget(_messages.Message):
   r"""The GKE deployment target.
 
@@ -3076,6 +3399,20 @@ class GenerateApplicationIaCResponse(_messages.Message):
   artifactLocation = _messages.MessageField('ArtifactLocation', 1)
   gcsUri = _messages.StringField(2)
   rootModulesMetadata = _messages.MessageField('RootModulesMetadata', 3)
+
+
+class GenerateApplicationTemplateAssessmentReportRequest(_messages.Message):
+  r"""Message for generate assessment report application template.
+
+  Fields:
+    serviceAccount: Optional. The email address of the service account to use
+      for this preview operation. - This service account will be used to
+      execute the preview process. - The caller must have the
+      'iam.serviceAccounts.actAs' permission on this service account. Format:
+      projects/{PROJECT}/serviceAccounts/{EMAIL_ADDRESS}
+  """
+
+  serviceAccount = _messages.StringField(1)
 
 
 class GenerateApplicationTemplateIaCRequest(_messages.Message):
@@ -3163,6 +3500,21 @@ class GenerateApplicationTemplateRevisionIaCResponse(_messages.Message):
 
   artifactLocation = _messages.MessageField('ArtifactLocation', 1)
   rootModulesMetadata = _messages.MessageField('RootModulesMetadata', 2)
+
+
+class GenerateAssessmentReportRequest(_messages.Message):
+  r"""Message for the request to generate a best practice report for a given
+  Terraform plan.
+
+  Fields:
+    additionalFrameworks: Optional. Additional Frameworks to run assessment
+      against. If empty, run against default frameworks. Frameworks refers to
+      the policies.
+    terraformPlan: Required. Terraform plan bytes.
+  """
+
+  additionalFrameworks = _messages.StringField(1, repeated=True)
+  terraformPlan = _messages.BytesField(2)
 
 
 class GitReference(_messages.Message):
@@ -3734,6 +4086,21 @@ class ListOperationsResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListPoliciesResponse(_messages.Message):
+  r"""Message for response to listing policies.
+
+  Fields:
+    nextPageToken: If there might be more results than those appearing in this
+      response, then nextPageToken is included. To get the next set of
+      results, call this method again using the value of nextPageToken as
+      pageToken.
+    policies: A list of policies.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  policies = _messages.MessageField('DesignCenterPolicy', 2, repeated=True)
+
+
 class ListSharedTemplateRevisionsResponse(_messages.Message):
   r"""Message for response to listing shared templates.
 
@@ -4081,7 +4448,7 @@ class Parameter(_messages.Message):
 
   Fields:
     key: Required. The key of the parameter.
-    value: Required. The value of the parameter.
+    value: Optional. The value of the parameter.
   """
 
   key = _messages.StringField(1)

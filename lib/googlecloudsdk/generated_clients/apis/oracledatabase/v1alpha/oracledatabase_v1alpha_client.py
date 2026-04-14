@@ -318,6 +318,33 @@ class OracledatabaseV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def GetRefreshableClones(self, request, global_params=None):
+      r"""Gets the refreshable clones for a given Autonomous Database.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsAutonomousDatabasesGetRefreshableClonesRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AutonomousDatabaseRefreshableClones) The response message.
+      """
+      config = self.GetMethodConfig('GetRefreshableClones')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetRefreshableClones.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/autonomousDatabases/{autonomousDatabasesId}:getRefreshableClones',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.autonomousDatabases.getRefreshableClones',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1alpha/{+name}:getRefreshableClones',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsAutonomousDatabasesGetRefreshableClonesRequest',
+        response_type_name='AutonomousDatabaseRefreshableClones',
+        supports_download=False,
+    )
+
     def List(self, request, global_params=None):
       r"""Lists the Autonomous Databases in a given project and location.
 
@@ -342,33 +369,6 @@ class OracledatabaseV1alpha(base_api.BaseApiClient):
         request_field='',
         request_type_name='OracledatabaseProjectsLocationsAutonomousDatabasesListRequest',
         response_type_name='ListAutonomousDatabasesResponse',
-        supports_download=False,
-    )
-
-    def ListRefreshableClones(self, request, global_params=None):
-      r"""Lists the refreshable clones for a given Autonomous Database.
-
-      Args:
-        request: (OracledatabaseProjectsLocationsAutonomousDatabasesListRefreshableClonesRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (ListAutonomousDatabaseRefreshableClonesResponse) The response message.
-      """
-      config = self.GetMethodConfig('ListRefreshableClones')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    ListRefreshableClones.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/autonomousDatabases/{autonomousDatabasesId}:listRefreshableClones',
-        http_method='GET',
-        method_id='oracledatabase.projects.locations.autonomousDatabases.listRefreshableClones',
-        ordered_params=['parent'],
-        path_params=['parent'],
-        query_params=['pageSize', 'pageToken'],
-        relative_path='v1alpha/{+parent}:listRefreshableClones',
-        request_field='',
-        request_type_name='OracledatabaseProjectsLocationsAutonomousDatabasesListRefreshableClonesRequest',
-        response_type_name='ListAutonomousDatabaseRefreshableClonesResponse',
         supports_download=False,
     )
 

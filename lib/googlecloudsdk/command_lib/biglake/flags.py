@@ -50,20 +50,21 @@ def GetNamespaceResourceSpec(
   )
 
 
-def GetTableResourceSpec():
-  """Gets the resource spec for a BigLake Iceberg table."""
+def GetTableResourceSpec(catalog_type='Iceberg', namespace_type='namespace'):
+  """Gets the resource spec for a BigLake Iceberg/Hive table."""
   return concepts.ResourceSpec(
       'biglake.iceberg.v1.restcatalog.v1.projects.catalogs.namespaces.tables',
       resource_name='table',
       projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
       catalogsId=concepts.ResourceParameterAttributeConfig(
-          'catalog', 'The Iceberg Catalog for the resource.'
+          'catalog', f'The {catalog_type} Catalog for the resource.'
       ),
       namespacesId=concepts.ResourceParameterAttributeConfig(
-          'namespace', 'The Iceberg Namespace for the resource.'
+          namespace_type,
+          f'The {catalog_type} {namespace_type.capitalize()} for the resource.',
       ),
       tablesId=concepts.ResourceParameterAttributeConfig(
-          'table', 'The Iceberg Table for the resource.'
+          'table', f'The {catalog_type} Table for the resource.'
       ),
   )
 
@@ -88,7 +89,7 @@ def AddCatalogResourceArg(
 
 
 def AddNamespaceResourceArg(
-    parser, verb, positional=True, namespace_type='Iceberg Namespace'
+    parser, verb, positional=True, namespace_type='Iceberg'
 ):
   """Adds a resource argument for a BigLake Hive/Iceberg namespace/database.
 
@@ -99,33 +100,45 @@ def AddNamespaceResourceArg(
     namespace_type: The type of namespace/database to add the resource argument
       for.
   """
-  if namespace_type == 'Hive Database':
+  if namespace_type == 'Hive':
     resource_spec = GetNamespaceResourceSpec(
         catalog_type='Hive', namespace_type='database'
     )
     positional_argument = 'database' if positional else '--database'
+    help_text = f'The {namespace_type} Database {verb}.'
   else:
     resource_spec = GetNamespaceResourceSpec()
     positional_argument = 'namespace' if positional else '--namespace'
+    help_text = f'The {namespace_type} Namespace {verb}.'
   concept_parsers.ConceptParser.ForResource(
       positional_argument,
       resource_spec,
-      f'The {namespace_type} {verb}.',
+      help_text,
       required=True,
   ).AddToParser(parser)
 
 
-def AddTableResourceArg(parser, verb, positional=True):
-  """Adds a resource argument for a BigLake Iceberg table.
+def AddTableResourceArg(
+    parser, verb, positional=True, table_type='Iceberg'
+):
+  """Adds a resource argument for a BigLake Iceberg/Hive table.
 
   Args:
     parser: The argparse parser.
     verb: The verb to describe the resource, e.g., "to list tables from".
     positional: Whether the argument should be positional or a flag.
+    table_type: The type of table to add the resource argument for.
   """
+  if table_type == 'Hive':
+    resource_spec = GetTableResourceSpec(
+        catalog_type='Hive', namespace_type='database'
+    )
+  else:
+    resource_spec = GetTableResourceSpec()
+
   concept_parsers.ConceptParser.ForResource(
       'table' if positional else '--table',
-      GetTableResourceSpec(),
-      f'The Iceberg Table {verb}.',
+      resource_spec,
+      f'The {table_type} Table {verb}.',
       required=True,
   ).AddToParser(parser)

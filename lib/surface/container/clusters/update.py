@@ -1358,6 +1358,10 @@ class UpdateBeta(Update):
     flags.AddLinkedRunnersModeFlag(group, hidden=True)
     flags.AddNodePoolUpgradeConcurrencyConfigFlag(group, hidden=True)
 
+    group_scheduled_upgrade_flags = group.add_group(mutex=True)
+    flags.AddEnableScheduledUpgradesFlag(group_scheduled_upgrade_flags)
+    flags.AddDisableScheduledUpgradesFlag(group_scheduled_upgrade_flags)
+
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
     flags.ValidateNotificationConfigFlag(args)
@@ -1763,6 +1767,10 @@ class UpdateAlpha(Update):
     flags.AddAutopilotGeneralProfileFlag(group)
     flags.AddLinkedRunnersModeFlag(group, hidden=True)
     flags.AddNodePoolUpgradeConcurrencyConfigFlag(group, hidden=True)
+
+    group_scheduled_upgrade_flags = group.add_group(mutex=True)
+    flags.AddEnableScheduledUpgradesFlag(group_scheduled_upgrade_flags)
+    flags.AddDisableScheduledUpgradesFlag(group_scheduled_upgrade_flags)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)

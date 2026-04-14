@@ -18,10 +18,11 @@
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.auth import auth_util as auth_command_util
+from googlecloudsdk.command_lib.auth import flags as auth_flags
 from googlecloudsdk.command_lib.config import config_helper
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.configurations import named_configs
-from googlecloudsdk.core.credentials import store
 
 
 @base.DefaultUniverseOnly
@@ -92,14 +93,16 @@ class ConfigurationHelper(base.Command):
         help='If given, refresh the credentials if they are within MIN_EXPIRY '
              'from expiration.',
         default='0s')
+    auth_flags.AddScopesFlag(parser, hidden=True)
 
   def Run(self, args):
-    cred = store.Load()
-
-    if args.force_auth_refresh:
-      store.Refresh(cred)
-    else:
-      store.RefreshIfExpireWithinWindow(cred, '{}'.format(args.min_expiry))
+    cred = auth_command_util.LoadCredentialsWithScopes(
+        account=None,
+        scopes=args.scopes,
+        trusted_scopes=auth_command_util.GetTrustedScopesWithDrive(),
+        force_refresh=args.force_auth_refresh,
+        min_expiry='{}'.format(args.min_expiry),
+    )
 
     config_name = named_configs.ConfigurationStore.ActiveConfig().name
     props = properties.VALUES.AllValues()

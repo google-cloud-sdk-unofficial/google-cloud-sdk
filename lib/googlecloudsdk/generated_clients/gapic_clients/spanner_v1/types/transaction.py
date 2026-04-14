@@ -141,7 +141,7 @@ class TransactionOptions(proto.Message):
 
         Attributes:
             read_lock_mode (googlecloudsdk.generated_clients.gapic_clients.spanner_v1.types.TransactionOptions.ReadWrite.ReadLockMode):
-                Read lock mode for the transaction.
+                The read lock mode for the transaction.
             multiplexed_session_previous_transaction_id (bytes):
                 Optional. Clients should pass the transaction
                 ID of the previous transaction attempt that was

@@ -12,6 +12,7 @@ from absl import flags
 from typing_extensions import override
 
 import bq_flags
+import bq_utils
 from clients import client_connection
 from clients import client_data_transfer
 from clients import client_dataset
@@ -659,16 +660,25 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
       object_type = bq_id_utils.ApiClientHelper.DatasetReference
     elif self.p or reference is None:
       object_type = bq_id_utils.ApiClientHelper.ProjectReference
+    elif isinstance(reference, bq_id_utils.ApiClientHelper.ProjectReference):
+      object_type = bq_id_utils.ApiClientHelper.DatasetReference
+    else:  # isinstance(reference, DatasetReference):
+      object_type = bq_id_utils.ApiClientHelper.TableReference
+
+    if object_type and getattr(object_type, 'typename', None):
+      resource = bq_id_utils.ApiClientHelper.get_resource_name_from_type_name(
+          object_type.typename
+      )
+      bq_utils.SetBqCliUserAgentResource(resource, overwrite=True)
+
+    if object_type is bq_id_utils.ApiClientHelper.ProjectReference:
       self.PossiblyDelegateToGcloudAndExit('projects', 'ls')
       results = client_project.list_projects(
           apiclient=client.apiclient,
           max_results=self.max_results,
           page_token=page_token,
       )
-    elif isinstance(reference, bq_id_utils.ApiClientHelper.ProjectReference):
-      object_type = bq_id_utils.ApiClientHelper.DatasetReference
-    else:  # isinstance(reference, DatasetReference):
-      object_type = bq_id_utils.ApiClientHelper.TableReference
+    elif object_type is bq_id_utils.ApiClientHelper.TableReference:
       results = client_table.list_tables(
           apiclient=client.apiclient,
           reference=reference,
@@ -687,6 +697,7 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
           filter_expression=self.filter,
       )
       results = objects_metadata.pop('datasets')
+
     if results or self.print_last_token or self.print_unreachable:
       assert object_type is not None
       frontend_utils.PrintObjectsArrayWithMetadata(

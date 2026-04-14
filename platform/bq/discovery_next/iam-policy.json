@@ -5,7 +5,7 @@
   "name": "bigquery",
   "canonicalName": "Bigquery",
   "version": "v2",
-  "revision": "20260226",
+  "revision": "20260317",
   "title": "BigQuery API",
   "description": "A data platform for customers to create, manage, share and query data.",
   "ownerDomain": "google.com",
@@ -263,7 +263,12 @@
           "type": "boolean"
         },
         "type": {
-          "description": "Output only. Same as `type` in `ListFormatDataset`. The type of the dataset, one of: * DEFAULT - only accessible by owner and authorized accounts, * PUBLIC - accessible by everyone, * LINKED - linked dataset, * EXTERNAL - dataset with definition in external metadata catalog.",
+          "description": "Output only. Same as `type` in `ListFormatDataset`. The type of the dataset, one of: * DEFAULT - only accessible by owner and authorized accounts, * PUBLIC - accessible by everyone, * LINKED - linked dataset, * EXTERNAL - dataset with definition in external metadata catalog, * BIGLAKE_ICEBERG - a Biglake dataset accessible through the Iceberg API, * BIGLAKE_HIVE - a Biglake dataset accessible through the Hive API.",
+          "readOnly": true,
+          "type": "string"
+        },
+        "catalogSource": {
+          "description": "Output only. The origin of the dataset, one of: * (Unset) - Native BigQuery Dataset * BIGLAKE - Dataset is backed by a namespace stored natively in Biglake",
           "readOnly": true,
           "type": "string"
         },
@@ -614,6 +619,16 @@
               },
               "location": {
                 "description": "The geographic location where the dataset resides.",
+                "type": "string"
+              },
+              "type": {
+                "description": "Output only. Same as `type` in `Dataset`. The type of the dataset, one of: * DEFAULT - only accessible by owner and authorized accounts, * PUBLIC - accessible by everyone, * LINKED - linked dataset, * EXTERNAL - dataset with definition in external metadata catalog, * BIGLAKE_ICEBERG - a Biglake dataset accessible through the Iceberg API, * BIGLAKE_HIVE - a Biglake dataset accessible through the Hive API.",
+                "readOnly": true,
+                "type": "string"
+              },
+              "catalogSource": {
+                "description": "Output only. The origin of the dataset, one of: * (Unset) - Native BigQuery Dataset. * BIGLAKE - Dataset is backed by a namespace stored natively in Biglake.",
+                "readOnly": true,
                 "type": "string"
               },
               "externalDatasetReference": {
@@ -3708,7 +3723,7 @@
           "type": "string"
         },
         "timestampTargetPrecision": {
-          "description": "Precisions (maximum number of total digits in base 10) for seconds of TIMESTAMP types that are allowed to the destination table for autodetection mode. Available for the formats: CSV. For the CSV Format, Possible values include: Not Specified, [], or [6]: timestamp(6) for all auto detected TIMESTAMP columns [6, 12]: timestamp(6) for all auto detected TIMESTAMP columns that have less than 6 digits of subseconds. timestamp(12) for all auto detected TIMESTAMP columns that have more than 6 digits of subseconds. [12]: timestamp(12) for all auto detected TIMESTAMP columns. The order of the elements in this array is ignored. Inputs that have higher precision than the highest target precision in this array will be truncated.",
+          "description": "Precisions (maximum number of total digits in base 10) for seconds of TIMESTAMP types that are allowed to the destination table for autodetection mode. Available for the formats: CSV, PARQUET, and AVRO. Possible values include: Not Specified, [], or [6]: timestamp(6) for all auto detected TIMESTAMP columns [6, 12]: timestamp(6) for all auto detected TIMESTAMP columns that have less than 6 digits of subseconds. timestamp(12) for all auto detected TIMESTAMP columns that have more than 6 digits of subseconds. [12]: timestamp(12) for all auto detected TIMESTAMP columns. The order of the elements in this array is ignored. Inputs that have higher precision than the highest target precision in this array will be truncated.",
           "type": "array",
           "items": {
             "type": "integer",
@@ -3833,6 +3848,10 @@
         "foreignTypeDefinition": {
           "description": "Optional. Definition of the foreign data type. Only valid for top-level schema fields (not nested fields). If the type is FOREIGN, this field is required.",
           "type": "string"
+        },
+        "generatedColumn": {
+          "description": "Optional. Definition of how values are generated for the field. Only valid for top-level schema fields (not nested fields).",
+          "$ref": "GeneratedColumn"
         }
       }
     },
@@ -3855,6 +3874,50 @@
         "type": {
           "description": "Required. The type of a field element. For more information, see TableFieldSchema.type.",
           "type": "string"
+        }
+      }
+    },
+    "GeneratedColumn": {
+      "id": "GeneratedColumn",
+      "description": "Optional. Definition of how values are generated for the field. Only valid for top-level schema fields (not nested fields).",
+      "type": "object",
+      "properties": {
+        "generatedMode": {
+          "description": "Optional. Dictates when system generated values are used to populate the field.",
+          "type": "string",
+          "enumDescriptions": [
+            "Unspecified GeneratedMode will default to GENERATED_ALWAYS.",
+            "Field can only have system generated values. Users cannot manually insert values into the field.",
+            "Use system generated values only if the user does not explicitly provide a value."
+          ],
+          "enum": [
+            "GENERATED_MODE_UNSPECIFIED",
+            "GENERATED_ALWAYS",
+            "GENERATED_BY_DEFAULT"
+          ]
+        },
+        "generatedExpressionInfo": {
+          "description": "Definition of the expression used to generate the field.",
+          "$ref": "GeneratedExpressionInfo"
+        }
+      }
+    },
+    "GeneratedExpressionInfo": {
+      "id": "GeneratedExpressionInfo",
+      "description": "Definition of the expression used to generate the field.",
+      "type": "object",
+      "properties": {
+        "generationExpression": {
+          "description": "Optional. The generation expression (e.g. AI.EMBED(...)) used to generated the field.",
+          "type": "string"
+        },
+        "asynchronous": {
+          "description": "Optional. Whether the column generation is done asynchronously.",
+          "type": "boolean"
+        },
+        "stored": {
+          "description": "Optional. Whether the generated column is stored in the table.",
+          "type": "boolean"
         }
       }
     },
@@ -4657,7 +4720,7 @@
           ]
         },
         "timestampTargetPrecision": {
-          "description": "Precisions (maximum number of total digits in base 10) for seconds of TIMESTAMP types that are allowed to the destination table for autodetection mode. Available for the formats: CSV. For the CSV Format, Possible values include: Not Specified, [], or [6]: timestamp(6) for all auto detected TIMESTAMP columns [6, 12]: timestamp(6) for all auto detected TIMESTAMP columns that have less than 6 digits of subseconds. timestamp(12) for all auto detected TIMESTAMP columns that have more than 6 digits of subseconds. [12]: timestamp(12) for all auto detected TIMESTAMP columns. The order of the elements in this array is ignored. Inputs that have higher precision than the highest target precision in this array will be truncated.",
+          "description": "Precisions (maximum number of total digits in base 10) for seconds of TIMESTAMP types that are allowed to the destination table for autodetection mode. Available for the formats: CSV, PARQUET, and AVRO. Possible values include: Not Specified, [], or [6]: timestamp(6) for all auto detected TIMESTAMP columns [6, 12]: timestamp(6) for all auto detected TIMESTAMP columns that have less than 6 digits of subseconds. timestamp(12) for all auto detected TIMESTAMP columns that have more than 6 digits of subseconds. [12]: timestamp(12) for all auto detected TIMESTAMP columns. The order of the elements in this array is ignored. Inputs that have higher precision than the highest target precision in this array will be truncated.",
           "type": "array",
           "items": {
             "type": "integer",
@@ -5314,6 +5377,11 @@
           "description": "Output only. Statistics related to incremental query results, if enabled for the query. This feature is not yet available.",
           "readOnly": true,
           "$ref": "IncrementalResultStats"
+        },
+        "genAiStats": {
+          "description": "Output only. Statistics related to GenAI usage in the query.",
+          "readOnly": true,
+          "$ref": "GenAiStats"
         }
       }
     },
@@ -6607,6 +6675,101 @@
         }
       }
     },
+    "GenAiStats": {
+      "id": "GenAiStats",
+      "description": "GenAi stats for the query job.",
+      "type": "object",
+      "properties": {
+        "errorStats": {
+          "description": "Job level error stats across all GenAi functions",
+          "$ref": "GenAiErrorStats"
+        },
+        "functionStats": {
+          "description": "Function level stats for GenAi Functions. See https:\/\/docs.cloud.google.com\/bigquery\/docs\/generative-ai-overview",
+          "type": "array",
+          "items": {
+            "$ref": "GenAiFunctionStats"
+          }
+        }
+      }
+    },
+    "GenAiErrorStats": {
+      "id": "GenAiErrorStats",
+      "description": "Provides error statistics for the query job across all AI function calls.",
+      "type": "object",
+      "properties": {
+        "errors": {
+          "description": "A list of unique errors at query level (up to 5, truncated to 100 chars)",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "GenAiFunctionStats": {
+      "id": "GenAiFunctionStats",
+      "description": "Provides statistics for each Ai function call within a query.",
+      "type": "object",
+      "properties": {
+        "functionName": {
+          "description": "Name of the function.",
+          "type": "string"
+        },
+        "prompt": {
+          "description": "User input prompt of the function (truncated to 20 chars).",
+          "type": "string"
+        },
+        "numProcessedRows": {
+          "description": "Number of rows processed by this GenAi function. This includes all cost_optimized, llm_inferred and failed_rows.",
+          "type": "string",
+          "format": "int64"
+        },
+        "errorStats": {
+          "description": "Error stats for the function.",
+          "$ref": "GenAiFunctionErrorStats"
+        },
+        "costOptimizationStats": {
+          "description": "Cost optimization stats if applied on the rows processed by the function.",
+          "$ref": "GenAiFunctionCostOptimizationStats"
+        }
+      }
+    },
+    "GenAiFunctionErrorStats": {
+      "id": "GenAiFunctionErrorStats",
+      "description": "Provides error statistics for a GenAi function call.",
+      "type": "object",
+      "properties": {
+        "errors": {
+          "description": "A list of unique errors at function level (up to 5, truncated to 100 chars).",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "numFailedRows": {
+          "description": "Number of failed rows processed by the function",
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "GenAiFunctionCostOptimizationStats": {
+      "id": "GenAiFunctionCostOptimizationStats",
+      "description": "Provides cost optimization statistics for a GenAi function call.",
+      "type": "object",
+      "properties": {
+        "numCostOptimizedRows": {
+          "description": "Number of rows inferred via cost optimized workflow.",
+          "type": "string",
+          "format": "int64"
+        },
+        "message": {
+          "description": "System generated message to provide insights into cost optimization state.",
+          "type": "string"
+        }
+      }
+    },
     "JobStatistics3": {
       "id": "JobStatistics3",
       "description": "Statistics for a load job.",
@@ -7543,6 +7706,11 @@
         "externalRuntimeOptions": {
           "description": "Optional. Options for the runtime of the external system executing the routine. This field is only applicable for Python UDFs. [Preview](https:\/\/cloud.google.com\/products\/#product-launch-stages)",
           "$ref": "ExternalRuntimeOptions"
+        },
+        "buildStatus": {
+          "description": "Output only. The build status of the routine. This field is only applicable to Python UDFs. [Preview](https:\/\/cloud.google.com\/products\/#product-launch-stages)",
+          "readOnly": true,
+          "$ref": "RoutineBuildStatus"
         }
       }
     },
@@ -7742,6 +7910,53 @@
         "runtimeVersion": {
           "description": "Optional. Language runtime version. Example: `python-3.11`.",
           "type": "string"
+        }
+      }
+    },
+    "RoutineBuildStatus": {
+      "id": "RoutineBuildStatus",
+      "description": "The status of a routine build.",
+      "type": "object",
+      "properties": {
+        "buildState": {
+          "description": "Output only. The current build state of the routine.",
+          "readOnly": true,
+          "type": "string",
+          "enumDescriptions": [
+            "Default value.",
+            "The build is in progress.",
+            "The build has succeeded.",
+            "The build has failed."
+          ],
+          "enum": [
+            "BUILD_STATE_UNSPECIFIED",
+            "IN_PROGRESS",
+            "SUCCEEDED",
+            "FAILED"
+          ]
+        },
+        "errorResult": {
+          "description": "Output only. A result object that will be present only if the build has failed.",
+          "readOnly": true,
+          "$ref": "ErrorProto"
+        },
+        "buildStateUpdateTime": {
+          "description": "Output only. The time when the build state was updated last.",
+          "readOnly": true,
+          "type": "string",
+          "format": "google-datetime"
+        },
+        "buildDuration": {
+          "description": "Output only. The time taken for the image build. Populated only after the build succeeds or fails.",
+          "readOnly": true,
+          "type": "string",
+          "format": "google-duration"
+        },
+        "imageSizeBytes": {
+          "description": "Output only. The size of the image in bytes. Populated only after the build succeeds.",
+          "readOnly": true,
+          "type": "string",
+          "format": "int64"
         }
       }
     },

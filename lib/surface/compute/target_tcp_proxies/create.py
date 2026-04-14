@@ -19,10 +19,12 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import target_proxies_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.backend_services import (
     flags as backend_service_flags)
 from googlecloudsdk.command_lib.compute.target_tcp_proxies import flags
+from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
 @base.UniverseCompatible
@@ -32,6 +34,7 @@ class Create(base.CreateCommand):
 
   BACKEND_SERVICE_ARG = None
   TARGET_TCP_PROXY_ARG = None
+  enable_load_balancing_scheme = False
 
   @classmethod
   def Args(cls, parser):
@@ -39,7 +42,7 @@ class Create(base.CreateCommand):
 
     cls.BACKEND_SERVICE_ARG = (
         backend_service_flags.BackendServiceArgumentForTargetTcpProxy(
-            allow_regional=True
+            allow_regional=True, required=False
         )
     )
     cls.BACKEND_SERVICE_ARG.AddArgument(parser)
@@ -55,6 +58,20 @@ class Create(base.CreateCommand):
     parser.display_info.AddCacheUpdater(flags.TargetTcpProxiesCompleter)
 
   def Run(self, args):
+    if self.enable_load_balancing_scheme:
+      if not args.backend_service and not args.IsSpecified(
+          'load_balancing_scheme'
+      ):
+        raise exceptions.MinimumArgumentException(
+            ['--backend-service', '--load-balancing-scheme'],
+            'Either [--backend-service] or [--load-balancing-scheme] must be'
+            ' specified',
+        )
+    else:
+      if not args.backend_service:
+        raise exceptions.RequiredArgumentException(
+            '--backend-service', 'Must be specified.'
+        )
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
 
     if not (args.backend_service_region or args.global_backend_service):
@@ -62,8 +79,11 @@ class Create(base.CreateCommand):
       args.backend_service_region = getattr(args, 'region', None)
       args.global_backend_service = getattr(args, 'global', None)
 
-    backend_service_ref = self.BACKEND_SERVICE_ARG.ResolveAsResource(
-        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
+    backend_service_ref = None
+    if args.backend_service:
+      backend_service_ref = self.BACKEND_SERVICE_ARG.ResolveAsResource(
+          args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL
+      )
 
     target_tcp_proxy_ref = self.TARGET_TCP_PROXY_ARG.ResolveAsResource(
         args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
@@ -79,10 +99,21 @@ class Create(base.CreateCommand):
         description=args.description,
         name=target_tcp_proxy_ref.Name(),
         proxyHeader=proxy_header,
-        service=backend_service_ref.SelfLink())
+    )
+
+    if backend_service_ref:
+      target_tcp_proxy.service = backend_service_ref.SelfLink()
 
     if args.proxy_bind is not None:
       target_tcp_proxy.proxyBind = args.proxy_bind
+
+    if hasattr(args, 'load_balancing_scheme') and args.IsSpecified(
+        'load_balancing_scheme'
+    ):
+      target_tcp_proxy.loadBalancingScheme = arg_utils.ChoiceToEnum(
+          args.load_balancing_scheme,
+          holder.client.messages.TargetTcpProxy.LoadBalancingSchemeValueValuesEnum,
+      )
 
     return self._MakeRequest(target_tcp_proxy_ref, target_tcp_proxy, holder)
 
@@ -128,7 +159,14 @@ class Create(base.CreateCommand):
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class CreateAlphaBeta(Create):
-  pass
+  """Create a target TCP proxy."""
+
+  enable_load_balancing_scheme = True
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateAlphaBeta, cls).Args(parser)
+    flags.AddLoadBalancingScheme(parser)
 
 
 Create.detailed_help = {

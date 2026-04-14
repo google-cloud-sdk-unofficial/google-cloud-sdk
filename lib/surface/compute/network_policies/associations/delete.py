@@ -14,7 +14,6 @@
 # limitations under the License.
 """Command for deleting network policy associations."""
 
-
 from typing import ClassVar
 
 from googlecloudsdk.api_lib.compute import base_classes
@@ -25,7 +24,7 @@ from googlecloudsdk.command_lib.compute.network_policies import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete an association between a network policy and a network.
 
@@ -58,7 +57,8 @@ class Delete(base.DeleteCommand):
 
 
 Delete.detailed_help = {
-    'EXAMPLES': """\
+    'EXAMPLES': (
+        """\
     To delete an association named ``my-association'' from a network policy
     with name ``my-policy'' in region ``region-a'', run:
 
@@ -66,5 +66,6 @@ Delete.detailed_help = {
           --network-policy=my-policy \\
           --name=my-association \\
           --network-policy-region=region-a
-    """,
+    """
+    ),
 }

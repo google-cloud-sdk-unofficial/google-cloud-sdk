@@ -244,8 +244,8 @@ def CreateReservation(
 
 
 def ListReservations(
-    client: ...,
-    reference: ...,
+    client,
+    reference,
     page_size: int,
     page_token: Optional[str],
     reservation_group: Optional[str] = None,
@@ -330,7 +330,7 @@ def GetReservation(client, reference):
 
 def DeleteReservation(
     client,
-    reference: ...
+    reference
 ):
   """Deletes a reservation with the given reservation reference.
 
@@ -393,8 +393,8 @@ def UpdateBiReservation(client, reference, reservation_size: str):
 
 
 def GetParamsForUpdateReservation(
-    client: ...,
-    reference: ...,
+    client,
+    reference,
     api_version: str,  # pylint: disable=unused-argument Cleanup is error prone.
     slots: int,
     ignore_idle_slots: bool,
@@ -1070,7 +1070,7 @@ def ListReservationGroups(
     reference: bq_id_utils.ApiClientHelper.ReservationGroupReference,
     page_size: int,
     page_token: str,
-) -> ...:
+):
   """Lists reservation groups in the project and location for the given reference.
 
   Arguments:
@@ -1098,7 +1098,7 @@ def ListReservationGroups(
 def GetReservationGroup(
     reservation_group_client: discovery.Resource,
     reference: bq_id_utils.ApiClientHelper.ReservationGroupReference,
-) -> ...:
+):
   """Gets a reservation group with the given reservation group reference.
 
   Arguments:
@@ -1120,7 +1120,7 @@ def GetReservationGroup(
 def DeleteReservationGroup(
     reservation_group_client: discovery.Resource,
     reference: bq_id_utils.ApiClientHelper.ReservationGroupReference,
-) -> ...:
+):
   """Deletes a reservation group with the given reservation group reference.
 
   Arguments:
@@ -1136,7 +1136,7 @@ def SetReservationIAMPolicy(
     apiclient: discovery.Resource,
     reference: bq_id_utils.ApiClientHelper.ReservationReference,
     policy: str,
-) -> ...:
+):
   """Sets IAM policy for the given reservation resource.
 
   Arguments:
@@ -1168,7 +1168,7 @@ def SetReservationIAMPolicy(
 def GetReservationIAMPolicy(
     apiclient: discovery.Resource,
     reference: bq_id_utils.ApiClientHelper.ReservationReference,
-) -> ...:
+):
   """Gets IAM policy for the given reservation resource.
 
   Arguments:

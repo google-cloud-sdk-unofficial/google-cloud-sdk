@@ -139,8 +139,7 @@ class DynamicTierOptions(_messages.Message):
     Values:
       MODE_UNSPECIFIED: Unspecified dynamic tier mode.
       DISABLED: The dynamic tier is explicitly disabled.
-      DEFAULT_CACHE: The dynamic tier is enabled with a default cache
-        configuration.
+      DEFAULT_CACHE: The dynamic tier is enabled.
     """
     MODE_UNSPECIFIED = 0
     DISABLED = 1
@@ -230,9 +229,10 @@ class Instance(_messages.Message):
       sizes for each performance tier.
     createTime: Output only. Timestamp when the instance was created.
     description: Optional. A user-readable description of the instance.
-    dynamicTierOptions: Optional. Dynamic tier options for the instance. If
-      the instance is using the Dynamic tier, `per_unit_storage_throughput`
-      must not be set or must be set to zero.
+    dynamicTierOptions: Optional. Specifies whether the instance is on the
+      Dynamic tier. See [Performance tiers and maximum storage
+      capacities](https://cloud.google.com/managed-lustre/docs/create-
+      instance#performance-tiers) for more information.
     filesystem: Required. Immutable. The filesystem name for this instance.
       This name is used by client-side tools, including when mounting the
       instance. Must be eight characters or less and can only contain letters
@@ -259,7 +259,9 @@ class Instance(_messages.Message):
     perUnitStorageThroughput: Optional. The throughput of the instance in MBps
       per TiB. Valid values are 125, 250, 500, 1000. See [Performance tiers
       and maximum storage capacities](https://cloud.google.com/managed-
-      lustre/docs/create-instance#performance-tiers) for more information.
+      lustre/docs/create-instance#performance-tiers) for more information. If
+      the instance is using the Dynamic tier, this field must not be set or
+      must be set to zero.
     placementPolicy: Optional. The placement policy name for the instance in
       the format of projects/{project}/locations/{location}/resourcePolicies/{
       resource_policy}

@@ -1,0 +1,19 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    Describe a regional multicast consumer association.
+  description: |
+    Show details of a regional multicast consumer association in the specified location of the current project.
+  examples: |
+    To describe details of a regional multicast consumer association in the current project and location, run:
+
+      $ {command} my-rmca --location=region
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:regionalMulticastConsumerAssociation
+    help_text: |
+      The regional multicast consumer association to display.
+request:
+  ALPHA:
+    api_version: v1alpha1
+  collection: networkservices.projects.locations.regionalMulticastConsumerAssociations

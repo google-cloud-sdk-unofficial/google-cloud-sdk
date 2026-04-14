@@ -500,6 +500,8 @@ class Backup(_messages.Message):
     etag: Optional. Server specified ETag to prevent updates from overwriting
       each other.
     expireTime: Optional. When this backup is automatically expired.
+    filestoreInstanceBackupProperties: Output only. Filestore specific backup
+      properties.
     gcpBackupPlanInfo: Output only. Configuration for a Google Cloud resource.
     gcpResource: Output only. Unique identifier of the GCP resource that is
       being backed up.
@@ -615,17 +617,18 @@ class Backup(_messages.Message):
   enforcedRetentionEndTime = _messages.StringField(12)
   etag = _messages.StringField(13)
   expireTime = _messages.StringField(14)
-  gcpBackupPlanInfo = _messages.MessageField('GCPBackupPlanInfo', 15)
-  gcpResource = _messages.MessageField('BackupGcpResource', 16)
-  kmsKeyVersions = _messages.StringField(17, repeated=True)
-  labels = _messages.MessageField('LabelsValue', 18)
-  name = _messages.StringField(19)
-  resourceSizeBytes = _messages.IntegerField(20)
-  satisfiesPzi = _messages.BooleanField(21)
-  satisfiesPzs = _messages.BooleanField(22)
-  serviceLocks = _messages.MessageField('BackupLock', 23, repeated=True)
-  state = _messages.EnumField('StateValueValuesEnum', 24)
-  updateTime = _messages.StringField(25)
+  filestoreInstanceBackupProperties = _messages.MessageField('FilestoreInstanceBackupProperties', 15)
+  gcpBackupPlanInfo = _messages.MessageField('GCPBackupPlanInfo', 16)
+  gcpResource = _messages.MessageField('BackupGcpResource', 17)
+  kmsKeyVersions = _messages.StringField(18, repeated=True)
+  labels = _messages.MessageField('LabelsValue', 19)
+  name = _messages.StringField(20)
+  resourceSizeBytes = _messages.IntegerField(21)
+  satisfiesPzi = _messages.BooleanField(22)
+  satisfiesPzs = _messages.BooleanField(23)
+  serviceLocks = _messages.MessageField('BackupLock', 24, repeated=True)
+  state = _messages.EnumField('StateValueValuesEnum', 25)
+  updateTime = _messages.StringField(26)
 
 
 class BackupApplianceBackupConfig(_messages.Message):
@@ -3571,6 +3574,9 @@ class DataSourceGcpResource(_messages.Message):
       Datasource level.
     diskDatasourceProperties: DiskDataSourceProperties has a subset of Disk
       properties that are useful at the Datasource level.
+    filestoreInstanceDatasourceProperties: Output only.
+      FilestoreInstanceDataSourceProperties has a subset of FileStore instance
+      properties that are useful at the Datasource level.
     gcpResourcename: Output only. Full resource pathname URL of the source
       Google Cloud resource.
     location: Location of the resource: //"global"/"unspecified".
@@ -3582,9 +3588,10 @@ class DataSourceGcpResource(_messages.Message):
   cloudSqlInstanceDatasourceProperties = _messages.MessageField('CloudSqlInstanceDataSourceProperties', 2)
   computeInstanceDatasourceProperties = _messages.MessageField('ComputeInstanceDataSourceProperties', 3)
   diskDatasourceProperties = _messages.MessageField('DiskDataSourceProperties', 4)
-  gcpResourcename = _messages.StringField(5)
-  location = _messages.StringField(6)
-  type = _messages.StringField(7)
+  filestoreInstanceDatasourceProperties = _messages.MessageField('FilestoreInstanceDataSourceProperties', 5)
+  gcpResourcename = _messages.StringField(6)
+  location = _messages.StringField(7)
+  type = _messages.StringField(8)
 
 
 class DataSourceGcpResourceInfo(_messages.Message):
@@ -4203,6 +4210,43 @@ class FilestoreInstanceBackupPlanAssociationProperties(_messages.Message):
   """
 
   instanceCreateTime = _messages.StringField(1)
+
+
+class FilestoreInstanceBackupProperties(_messages.Message):
+  r"""FilestoreInstanceBackupProperties represents the properties of a
+  Filestore instance that are backed up by the datasource. .
+
+  Fields:
+    capacityGb: Output only. The capacity of the FileStore instance in GB.
+    downloadBytes: Output only. Amount of bytes that will be downloaded if the
+      backup is restored.
+    fileSystemProtocol: Output only. The file system protocol of the FileStore
+      instance that this backup is created from.
+    instanceCreateTime: Output only. The instance creation timestamp.
+    instanceTier: Output only. The tier of the FileStore instance.
+    sourceInstance: Output only. The source instance of the backup.
+  """
+
+  capacityGb = _messages.IntegerField(1)
+  downloadBytes = _messages.IntegerField(2)
+  fileSystemProtocol = _messages.StringField(3)
+  instanceCreateTime = _messages.StringField(4)
+  instanceTier = _messages.StringField(5)
+  sourceInstance = _messages.StringField(6)
+
+
+class FilestoreInstanceDataSourceProperties(_messages.Message):
+  r"""FilestoreInstanceDataSourceProperties represents the properties of a
+  Filestore resource that are stored in the DataSource. .
+
+  Fields:
+    instanceCreateTime: Output only. The instance creation timestamp.
+    name: Output only. Name of the Filestore instance backed up by the
+      datasource.
+  """
+
+  instanceCreateTime = _messages.StringField(1)
+  name = _messages.StringField(2)
 
 
 class FilestoreInstanceDataSourceReferenceProperties(_messages.Message):
@@ -4869,7 +4913,9 @@ class LocationMetadata(_messages.Message):
       CLOUD_SQL: <no description>
       ALLOY_DB: <no description>
       FILESTORE: <no description>
-      SAAS_PLATFORM: <no description>
+      CEP_METRICS: <no description>
+      CEP_MONITORING_COMPUTE_INSTANCE: <no description>
+      CEP_MONITORING_DISK: <no description>
     """
     FEATURE_UNSPECIFIED = 0
     MANAGEMENT_SERVER = 1
@@ -4879,7 +4925,9 @@ class LocationMetadata(_messages.Message):
     CLOUD_SQL = 5
     ALLOY_DB = 6
     FILESTORE = 7
-    SAAS_PLATFORM = 8
+    CEP_METRICS = 8
+    CEP_MONITORING_COMPUTE_INSTANCE = 9
+    CEP_MONITORING_DISK = 10
 
   unsupportedFeatures = _messages.EnumField('UnsupportedFeaturesValueListEntryValuesEnum', 1, repeated=True)
 
@@ -5524,12 +5572,14 @@ class ResourceBackupConfig(_messages.Message):
       COMPUTE_ENGINE_VM: Compute Engine VM.
       COMPUTE_ENGINE_DISK: Compute Engine Disk.
       COMPUTE_ENGINE_REGIONAL_DISK: Compute Engine Regional Disk.
+      FILESTORE_INSTANCE: Filestore Instance.
     """
     RESOURCE_TYPE_UNSPECIFIED = 0
     CLOUD_SQL_INSTANCE = 1
     COMPUTE_ENGINE_VM = 2
     COMPUTE_ENGINE_DISK = 3
     COMPUTE_ENGINE_REGIONAL_DISK = 4
+    FILESTORE_INSTANCE = 5
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class TargetResourceLabelsValue(_messages.Message):
