@@ -38,6 +38,17 @@ class Collections(enum.Enum):
       ['projectsId', 'locationsId'],
       True
   )
+  PROJECTS_LOCATIONS_ACCELERATORNETWORKPROFILES = (
+      'projects.locations.acceleratorNetworkProfiles',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'acceleratorNetworkProfiles/{acceleratorNetworkProfilesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_CLUSTERS = (
       'projects.locations.clusters',
       '{+name}',

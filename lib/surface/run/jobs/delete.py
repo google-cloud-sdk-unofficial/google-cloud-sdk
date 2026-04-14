@@ -14,6 +14,7 @@
 # limitations under the License.
 """Command for deleting jobs."""
 
+import copy
 
 from googlecloudsdk.api_lib.run import execution
 from googlecloudsdk.calliope import base
@@ -30,18 +31,23 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.Command):
   """Delete a job."""
 
   detailed_help = {
-      'DESCRIPTION': """
+      'DESCRIPTION': (
+          """
           {description}
-          """,
-      'EXAMPLES': """
+          """
+      ),
+      'EXAMPLES': (
+          """
           To delete a job:
 
               $ {command} job-name
-          """,
+          """
+      ),
   }
 
   @staticmethod
@@ -53,9 +59,7 @@ class Delete(base.Command):
         required=True,
         prefixes=False,
     )
-    flags.AddAsyncFlag(
-        parser, default_async_for_cluster=True
-    )
+    flags.AddAsyncFlag(parser, default_async_for_cluster=True)
     concept_parsers.ConceptParser([job_presentation]).AddToParser(parser)
 
   @staticmethod
@@ -98,3 +102,11 @@ class Delete(base.Command):
     ):
       return True
     return False
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.RegionalEndpointsSupported
+class BetaDelete(Delete):
+  """Delete a job."""
+
+  detailed_help = copy.deepcopy(Delete.detailed_help)

@@ -70,6 +70,21 @@ def AddAvailabilityType(parser):
   )
 
 
+def AddBackupDRBackupPlan(parser: argparse.ArgumentParser) -> None:
+  """Adds a --backupdr-backup-plan flag to the parser."""
+  parser.add_argument(
+      '--backupdr-backup-plan',
+      required=False,
+      type=str,
+      help=(
+          'The resource name of the BackupDR backup plan to associate with the'
+          ' cluster. The format should be'
+          ' projects/{project}/locations/{location}/backupPlans/{backupPlanId}.'
+          ' This flag cannot be used with the --async flag.'
+      ),
+  )
+
+
 def AddBackup(parser):
   """Adds a positional backup argument to parser.
 
@@ -2643,4 +2658,3 @@ def AddTargetInstances(parser, required=True):
           'For WRITE endpoint, only one target instance is allowed.'
       ),
   )
-

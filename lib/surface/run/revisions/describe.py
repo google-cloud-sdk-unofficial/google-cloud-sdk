@@ -14,6 +14,7 @@
 # limitations under the License.
 """Command for obtaining details about revisions."""
 
+import copy
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
@@ -29,18 +30,23 @@ from googlecloudsdk.core.resource import resource_printer
 
 
 @base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Obtain details about revisions."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION': (
+          """\
           {description}
-          """,
-      'EXAMPLES': """\
+          """
+      ),
+      'EXAMPLES': (
+          """\
           To describe a revision `my-service-00001-abc`in us-central1:
 
               $ {command} --region=us-central1 my-service-00001-abc
-          """,
+          """
+      ),
   }
 
   @staticmethod
@@ -50,17 +56,18 @@ class Describe(base.DescribeCommand):
         resource_args.GetRevisionResourceSpec(),
         'Revision to describe.',
         required=True,
-        prefixes=False)
-    concept_parsers.ConceptParser([
-        revision_presentation]).AddToParser(parser)
+        prefixes=False,
+    )
+    concept_parsers.ConceptParser([revision_presentation]).AddToParser(parser)
 
     resource_printer.RegisterFormatter(
         revision_printer.REVISION_PRINTER_FORMAT,
-        revision_printer.RevisionPrinter)
+        revision_printer.RevisionPrinter,
+    )
     parser.display_info.AddFormat(revision_printer.REVISION_PRINTER_FORMAT)
     resource_printer.RegisterFormatter(
-        export_printer.EXPORT_PRINTER_FORMAT,
-        export_printer.ExportPrinter)
+        export_printer.EXPORT_PRINTER_FORMAT, export_printer.ExportPrinter
+    )
 
   @staticmethod
   def Args(parser):
@@ -69,7 +76,8 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     """Show details about a revision."""
     conn_context = connection_context.GetConnectionContext(
-        args, flags.Product.RUN, self.ReleaseTrack())
+        args, flags.Product.RUN, self.ReleaseTrack()
+    )
     revision_ref = args.CONCEPTS.revision.Parse()
 
     with serverless_operations.Connect(conn_context) as client:
@@ -77,6 +85,15 @@ class Describe(base.DescribeCommand):
 
     # If the revision is a worker pool revision, we should not show it.
     if not wrapped_revision or wrapped_revision.worker_pool_name is not None:
-      raise exceptions.ArgumentError('Cannot find revision [{}]'.format(
-          revision_ref.revisionsId))
+      raise exceptions.ArgumentError(
+          'Cannot find revision [{}]'.format(revision_ref.revisionsId)
+      )
     return wrapped_revision
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.RegionalEndpointsSupported
+class BetaDescribe(Describe):
+  """Obtain details about revisions."""
+
+  detailed_help = copy.deepcopy(Describe.detailed_help)

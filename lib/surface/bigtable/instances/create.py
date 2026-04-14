@@ -64,6 +64,7 @@ class CreateInstance(base.CreateCommand):
         .AddClusterStorage()
         .AddAsync()
         .AddDeprecatedInstanceType()
+        .AddInstanceEdition()
     )
 
     if cls._support_tags:
@@ -103,9 +104,11 @@ class CreateInstance(base.CreateCommand):
           msgs.CreateInstanceRequest.ClustersValue.AdditionalProperty(
               key=cluster_id, value=cluster))
 
-    edition = None
-    if hasattr(args, 'edition') and args.edition:
-      edition = msgs.Instance.EditionValueValuesEnum(args.edition)
+    edition = (
+        msgs.Instance.EditionValueValuesEnum(args.edition)
+        if args.edition is not None
+        else None
+    )
 
     msg = msgs.CreateInstanceRequest(
         instanceId=ref.Name(),
@@ -283,4 +286,3 @@ class CreateInstanceAlpha(CreateInstance):
   @classmethod
   def Args(cls, parser):
     super(CreateInstanceAlpha, cls).Args(parser)
-    arguments.ArgAdder(parser).AddInstanceEdition()

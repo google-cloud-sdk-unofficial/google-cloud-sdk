@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,6 +30,18 @@ projects_locations:
     attribute_name: location
     help: The location id of the {resource} resource.
   disable_auto_completers: true
+projects_locations_acl_policies:
+  name: aclPolicy
+  plural_name: aclPolicies
+  collection: memorystore.projects.locations.aclPolicies
+  attributes:
+  - *project
+  - *location
+  - &aclPolicy
+    parameter_name: aclPoliciesId
+    attribute_name: acl_policy
+    help: The aclPolicy id of the {resource} resource.
+  disable_auto_completers: false
 projects_locations_backup_collections:
   name: backupCollection
   plural_name: backupCollections
@@ -41,6 +53,18 @@ projects_locations_backup_collections:
     parameter_name: backupCollectionsId
     attribute_name: backup_collection
     help: The backupCollection id of the {resource} resource.
+  disable_auto_completers: true
+projects_locations_ca_pools:
+  name: caPool
+  plural_name: caPools
+  collection: memorystore.projects.locations.caPools
+  attributes:
+  - *project
+  - *location
+  - &caPool
+    parameter_name: caPoolsId
+    attribute_name: ca_pool
+    help: The caPool id of the {resource} resource.
   disable_auto_completers: true
 projects_locations_instances:
   name: instance
@@ -105,6 +129,19 @@ projects_locations_backup_collections_backups:
     attribute_name: backup
     help: The backup id of the {resource} resource.
   disable_auto_completers: false
+projects_locations_instances_token_auth_users:
+  name: tokenAuthUser
+  plural_name: tokenAuthUsers
+  collection: memorystore.projects.locations.instances.tokenAuthUsers
+  attributes:
+  - *project
+  - *location
+  - *instance
+  - &tokenAuthUser
+    parameter_name: tokenAuthUsersId
+    attribute_name: token_auth_user
+    help: The tokenAuthUser id of the {resource} resource.
+  disable_auto_completers: true
 projects_locations_key_rings_crypto_keys:
   name: cryptoKey
   plural_name: cryptoKeys
@@ -121,3 +158,17 @@ projects_locations_key_rings_crypto_keys:
     attribute_name: crypto_key
     help: The cryptoKey id of the {resource} resource.
   disable_auto_completers: true
+projects_locations_instances_token_auth_users_auth_tokens:
+  name: authToken
+  plural_name: authTokens
+  collection: memorystore.projects.locations.instances.tokenAuthUsers.authTokens
+  attributes:
+  - *project
+  - *location
+  - *instance
+  - *tokenAuthUser
+  - &authToken
+    parameter_name: authTokensId
+    attribute_name: auth_token
+    help: The authToken id of the {resource} resource.
+  disable_auto_completers: false

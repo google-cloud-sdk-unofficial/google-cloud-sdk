@@ -30,6 +30,7 @@ ORG_RESOURCE_TYPE = 'organization'
 FOLDER_RESOURCE_TYPE = 'folder'
 FORWARDING_RULE_RESOURCE_TYPE = 'forwarding-rule'
 CLOUD_RUN_RESOURCE_TYPE = 'cloud-run'
+AGENT_REGISTRY_RESOURCE_TYPE = 'agent-registry'
 WEB_ENABLE_DISABLE_RESOURCE_TYPE_ENUM = (
     APP_ENGINE_RESOURCE_TYPE,
     BACKEND_SERVICES_RESOURCE_TYPE,
@@ -39,6 +40,13 @@ IAM_RESOURCE_TYPE_ENUM = (
     BACKEND_SERVICES_RESOURCE_TYPE,
     FORWARDING_RULE_RESOURCE_TYPE,
     CLOUD_RUN_RESOURCE_TYPE,
+)
+IAM_RESOURCE_TYPE_ENUM_WITH_AGENT_REGISTRY = (
+    APP_ENGINE_RESOURCE_TYPE,
+    BACKEND_SERVICES_RESOURCE_TYPE,
+    FORWARDING_RULE_RESOURCE_TYPE,
+    CLOUD_RUN_RESOURCE_TYPE,
+    AGENT_REGISTRY_RESOURCE_TYPE,
 )
 SETTING_RESOURCE_TYPE_ENUM = (
     APP_ENGINE_RESOURCE_TYPE,
@@ -137,19 +145,27 @@ def AddDestGroupListRegionArgs(parser):
 
 
 def AddIapIamResourceArgs(
-    parser
+    parser, support_agent_registry=False
 ):
   """Adds flags for an IAP IAM resource.
 
   Args:
     parser: An argparse.ArgumentParser-like object. It is mocked out in order to
       capture some information, but behaves like an ArgumentParser.
+    support_agent_registry: bool, whether to support agent registry.
   """
   group = parser.add_group()
 
+  choices = (
+      IAM_RESOURCE_TYPE_ENUM_WITH_AGENT_REGISTRY
+      if support_agent_registry
+      else IAM_RESOURCE_TYPE_ENUM
+  )
   group.add_argument(
       '--resource-type',
-      choices=IAM_RESOURCE_TYPE_ENUM,
+      choices=choices,
+      hidden_choices=[AGENT_REGISTRY_RESOURCE_TYPE] if support_agent_registry
+      else None,
       help='Resource type of the IAP resource.',
   )
   group.add_argument('--service', help='Service name.')
@@ -170,6 +186,30 @@ def AddIapIamResourceArgs(
           '`--resource-type=app-engine`.'
       ),
   )
+
+  if support_agent_registry:
+    agent_group = group.add_mutually_exclusive_group(hidden=True)
+    agent_group.add_argument(
+        '--agent',
+        hidden=True,
+        help=(
+            'Agent ID for the agent-registry resource type.'
+        ),
+    )
+    agent_group.add_argument(
+        '--mcp-server',
+        hidden=True,
+        help=(
+            'MCP server address for the agent-registry resource type.'
+        ),
+    )
+    agent_group.add_argument(
+        '--endpoint',
+        hidden=True,
+        help=(
+            'Endpoint for the agent-registry resource type.'
+        ),
+    )
 
 
 def AddIapResourceArgs(parser):
@@ -378,6 +418,7 @@ applicationSettings:
 def ParseIapIamResource(
     release_track,
     args,
+    support_agent_registry=False
 ):
   """Parse an IAP IAM resource from the input arguments.
 
@@ -385,6 +426,7 @@ def ParseIapIamResource(
     release_track: base.ReleaseTrack, release track of command.
     args: an argparse namespace. All the arguments that were provided to this
       command invocation.
+    support_agent_registry: bool, whether to support agent registry.
 
   Raises:
     calliope_exc.InvalidArgumentException: if a provided argument does not apply
@@ -476,6 +518,49 @@ def ParseIapIamResource(
       return iap_api.CloudRun(release_track, project, args.region, args.service)
     else:
       return iap_api.CloudRuns(release_track, project, args.region)
+  elif (
+      support_agent_registry
+      and args.resource_type == AGENT_REGISTRY_RESOURCE_TYPE
+  ):
+    if args.version:
+      raise calliope_exc.InvalidArgumentException(
+          '--version',
+          '`--version` cannot be specified for '
+          '`--resource-type=agent-registry`.',
+      )
+    if args.service:
+      raise calliope_exc.InvalidArgumentException(
+          '--service',
+          '`--service` cannot be specified for '
+          '`--resource-type=agent-registry`.',
+      )
+    if args.agent:
+      return iap_api.AgentRegistryAgent(
+          release_track,
+          project,
+          agent_id=args.agent,
+          location_id=args.region,
+      )
+    elif args.mcp_server:
+      return iap_api.AgentRegistryMcpServer(
+          release_track,
+          project,
+          mcp_server_id=args.mcp_server,
+          location_id=args.region,
+      )
+    elif args.endpoint:
+      return iap_api.AgentRegistryEndpoint(
+          release_track,
+          project,
+          endpoint_id=args.endpoint,
+          location_id=args.region,
+      )
+    else:
+      return iap_api.AgentRegistry(
+          release_track,
+          project,
+          location_id=args.region,
+      )
 
   # This shouldn't be reachable, based on the IAP IAM resource parsing logic.
   raise iap_exc.InvalidIapIamResourceError('Could not parse IAP IAM resource.')

@@ -14,7 +14,6 @@
 # limitations under the License.
 """Utilities for the cloudbuild API."""
 
-
 import enum
 import re
 
@@ -27,7 +26,6 @@ from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.core import yaml
 from googlecloudsdk.core.resource import resource_property
 from googlecloudsdk.core.util import files
-
 import six
 
 _API_NAME = 'cloudbuild'
@@ -66,8 +64,9 @@ def GetMessagesModule(release_track=base.ReleaseTrack.GA):
   Returns:
     Module containing the definitions of messages for Cloud Build.
   """
-  return apis.GetMessagesModule(_API_NAME,
-                                RELEASE_TRACK_TO_API_VERSION[release_track])
+  return apis.GetMessagesModule(
+      _API_NAME, RELEASE_TRACK_TO_API_VERSION[release_track]
+  )
 
 
 def GetClientClass(release_track=base.ReleaseTrack.GA):
@@ -80,14 +79,16 @@ def GetClientClass(release_track=base.ReleaseTrack.GA):
   Returns:
     base_api.BaseApiClient, Client class for Cloud Build.
   """
-  return apis.GetClientClass(_API_NAME,
-                             RELEASE_TRACK_TO_API_VERSION[release_track])
+  return apis.GetClientClass(
+      _API_NAME, RELEASE_TRACK_TO_API_VERSION[release_track]
+  )
 
 
 def GetClientInstance(
     release_track=base.ReleaseTrack.GA,
     use_http=True,
     skip_activation_prompt=False,
+    location=None,
 ):
   """Returns an instance of the Cloud Build client.
 
@@ -98,6 +99,8 @@ def GetClientInstance(
     skip_activation_prompt: bool, True to skip prompting for service activation.
       Should be used only if service activation was checked earlier in the
       command.
+    location: str, The location to create the client for. Used to create a REP
+      client when regional endpoints are enabled.
 
   Returns:
     base_api.BaseApiClient, An instance of the Cloud Build client.
@@ -107,6 +110,7 @@ def GetClientInstance(
       RELEASE_TRACK_TO_API_VERSION[release_track],
       no_http=(not use_http),
       skip_activation_prompt=skip_activation_prompt,
+      location=location,
   )
 
 
@@ -115,7 +119,8 @@ def EncodeSubstitutions(substitutions, messages):
     return None
   # Sort for tests
   return apitools_encoding.DictToAdditionalPropertyMessage(
-      substitutions, messages.Build.SubstitutionsValue, sort_items=True)
+      substitutions, messages.Build.SubstitutionsValue, sort_items=True
+  )
 
 
 def EncodeTriggerSubstitutions(substitutions, value_type):
@@ -124,12 +129,14 @@ def EncodeTriggerSubstitutions(substitutions, value_type):
   substitution_properties = []
   for key, value in sorted(six.iteritems(substitutions)):  # Sort for tests
     substitution_properties.append(
-        value_type.AdditionalProperty(key=key, value=value))
+        value_type.AdditionalProperty(key=key, value=value)
+    )
   return value_type(additionalProperties=substitution_properties)
 
 
-def EncodeUpdatedTriggerSubstitutions(old_substitutions, substitutions,
-                                      messages):
+def EncodeUpdatedTriggerSubstitutions(
+    old_substitutions, substitutions, messages
+):
   """Encodes the trigger substitutions for the update command.
 
   Args:
@@ -255,8 +262,9 @@ def SnakeToCamel(msg, skip=None):
     skip = []
   if isinstance(msg, dict):
     return {
-        SnakeToCamelString(key):
-        (SnakeToCamel(val, skip) if key not in skip else val)
+        SnakeToCamelString(key): (
+            SnakeToCamel(val, skip) if key not in skip else val
+        )
         for key, val in six.iteritems(msg)
     }
   elif isinstance(msg, list):
@@ -349,11 +357,9 @@ def _UnpackCheckUnused(obj, msg_type):
   return msg
 
 
-def LoadMessageFromStream(stream,
-                          msg_type,
-                          msg_friendly_name,
-                          skip_camel_case=None,
-                          path=None):
+def LoadMessageFromStream(
+    stream, msg_type, msg_friendly_name, skip_camel_case=None, path=None
+):
   """Load a proto message from a stream of JSON or YAML text.
 
   Args:
@@ -381,18 +387,18 @@ def LoadMessageFromStream(stream,
   except yaml.Error as e:
     raise cloudbuild_exceptions.ParserError(path, e.inner_error)
   if not isinstance(structured_data, dict):
-    raise cloudbuild_exceptions.ParserError(path,
-                                            'Could not parse as a dictionary.')
+    raise cloudbuild_exceptions.ParserError(
+        path, 'Could not parse as a dictionary.'
+    )
 
-  return _YamlToMessage(structured_data, msg_type, msg_friendly_name,
-                        skip_camel_case, path)
+  return _YamlToMessage(
+      structured_data, msg_type, msg_friendly_name, skip_camel_case, path
+  )
 
 
-def LoadMessagesFromStream(stream,
-                           msg_type,
-                           msg_friendly_name,
-                           skip_camel_case=None,
-                           path=None):
+def LoadMessagesFromStream(
+    stream, msg_type, msg_friendly_name, skip_camel_case=None, path=None
+):
   """Load multiple proto message from a stream of JSON or YAML text.
 
   Args:
@@ -426,11 +432,13 @@ def LoadMessagesFromStream(stream,
   ]
 
 
-def _YamlToMessage(structured_data,
-                   msg_type,
-                   msg_friendly_name,
-                   skip_camel_case=None,
-                   path=None):
+def _YamlToMessage(
+    structured_data,
+    msg_type,
+    msg_friendly_name,
+    skip_camel_case=None,
+    path=None,
+):
   """Load a proto message from a file containing JSON or YAML text.
 
   Args:
@@ -460,16 +468,16 @@ def _YamlToMessage(structured_data,
     # Catch all exceptions here because a valid YAML can sometimes not be a
     # valid message, so we need to catch all errors in the dict to message
     # conversion.
-    raise cloudbuild_exceptions.ParseProtoException(path, msg_friendly_name,
-                                                    '%s' % e)
+    raise cloudbuild_exceptions.ParseProtoException(
+        path, msg_friendly_name, '%s' % e
+    )
 
   return msg
 
 
-def LoadMessageFromPath(path,
-                        msg_type,
-                        msg_friendly_name,
-                        skip_camel_case=None):
+def LoadMessageFromPath(
+    path, msg_type, msg_friendly_name, skip_camel_case=None
+):
   """Load a proto message from a file containing JSON or YAML text.
 
   Args:
@@ -490,14 +498,14 @@ def LoadMessageFromPath(path,
     Proto message, The message that got decoded.
   """
   with files.FileReader(path) as f:  # Returns user-friendly error messages
-    return LoadMessageFromStream(f, msg_type, msg_friendly_name,
-                                 skip_camel_case, path)
+    return LoadMessageFromStream(
+        f, msg_type, msg_friendly_name, skip_camel_case, path
+    )
 
 
-def LoadMessagesFromPath(path,
-                         msg_type,
-                         msg_friendly_name,
-                         skip_camel_case=None):
+def LoadMessagesFromPath(
+    path, msg_type, msg_friendly_name, skip_camel_case=None
+):
   """Load a proto message from a file containing JSON or YAML text.
 
   Args:
@@ -517,8 +525,9 @@ def LoadMessagesFromPath(path,
     Proto message list of the messages that got decoded.
   """
   with files.FileReader(path) as f:  # Returns user-friendly error messages
-    return LoadMessagesFromStream(f, msg_type, msg_friendly_name,
-                                  skip_camel_case, path)
+    return LoadMessagesFromStream(
+        f, msg_type, msg_friendly_name, skip_camel_case, path
+    )
 
 
 def IsWorkerPool(resource_name):
@@ -550,8 +559,10 @@ def WorkerPoolShortName(resource_name):
   match = re.search(WORKERPOOL_NAME_SELECTOR, resource_name)
   if match:
     return match.group(1)
-  raise ValueError('The worker pool resource name must match "%s"' %
-                   (WORKERPOOL_NAME_MATCHER,))
+  raise ValueError(
+      'The worker pool resource name must match "%s"'
+      % (WORKERPOOL_NAME_MATCHER,)
+  )
 
 
 def WorkerPoolRegion(resource_name):
@@ -571,8 +582,10 @@ def WorkerPoolRegion(resource_name):
   match = re.search(WORKERPOOL_REGION_SELECTOR, resource_name)
   if match:
     return match.group(1)
-  raise ValueError('The worker pool resource name must match "%s"' %
-                   (WORKERPOOL_NAME_MATCHER,))
+  raise ValueError(
+      'The worker pool resource name must match "%s"'
+      % (WORKERPOOL_NAME_MATCHER,)
+  )
 
 
 def GitHubEnterpriseConfigFromArgs(args, update=False):
@@ -580,7 +593,7 @@ def GitHubEnterpriseConfigFromArgs(args, update=False):
 
   Args:
     args: An argparse namespace. All the arguments that were provided to this
-        command invocation.
+      command invocation.
       update: bool, if the args are for an update.
 
   Returns:

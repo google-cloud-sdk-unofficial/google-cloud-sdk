@@ -159,13 +159,16 @@ class Backup(_messages.Message):
     name: Identifier. The resource name of the backup. Format: `projects/{proj
       ect_id}/locations/{location}/backupVaults/{backup_vault_id}/backups/{bac
       kup_id}`.
+    ontapSource: Optional. Represents source details for ONTAP backups. Either
+      source_volume or ontap_source should be provided.
     satisfiesPzi: Output only. Reserved for future use
     satisfiesPzs: Output only. Reserved for future use
     sourceSnapshot: If specified, backup will be created from the given
       snapshot. If not specified, there will be a new snapshot taken to
       initiate the backup creation. Format: `projects/{project_id}/locations/{
       location}/volumes/{volume_id}/snapshots/{snapshot_id}`
-    sourceVolume: Volume full name of this backup belongs to. Format:
+    sourceVolume: Volume full name of this backup belongs to. Either
+      source_volume or ontap_source should be provided. Format:
       `projects/{projects_id}/locations/{location}/volumes/{volume_id}`
     state: Output only. The backup state.
     volumeRegion: Output only. Region of the volume from which the backup was
@@ -244,13 +247,14 @@ class Backup(_messages.Message):
   enforcedRetentionEndTime = _messages.StringField(6)
   labels = _messages.MessageField('LabelsValue', 7)
   name = _messages.StringField(8)
-  satisfiesPzi = _messages.BooleanField(9)
-  satisfiesPzs = _messages.BooleanField(10)
-  sourceSnapshot = _messages.StringField(11)
-  sourceVolume = _messages.StringField(12)
-  state = _messages.EnumField('StateValueValuesEnum', 13)
-  volumeRegion = _messages.StringField(14)
-  volumeUsageBytes = _messages.IntegerField(15)
+  ontapSource = _messages.MessageField('OntapSource', 9)
+  satisfiesPzi = _messages.BooleanField(10)
+  satisfiesPzs = _messages.BooleanField(11)
+  sourceSnapshot = _messages.StringField(12)
+  sourceVolume = _messages.StringField(13)
+  state = _messages.EnumField('StateValueValuesEnum', 14)
+  volumeRegion = _messages.StringField(15)
+  volumeUsageBytes = _messages.IntegerField(16)
 
 
 class BackupConfig(_messages.Message):
@@ -1464,7 +1468,7 @@ class KmsConfig(_messages.Message):
 
 class LargeCapacityConfig(_messages.Message):
   r"""Configuration for a Large Capacity Volume. A Large Capacity Volume
-  supports sizes ranging from 12 TiB to 20 PiB, it is composed of multiple
+  supports sizes ranging from 4.8 TiB to 20 PiB, it is composed of multiple
   internal constituents, and must be created in a large capacity pool.
 
   Fields:
@@ -1848,12 +1852,14 @@ class MountOption(_messages.Message):
       NFSV4: NFS V4 protocol
       SMB: SMB protocol
       ISCSI: ISCSI protocol
+      NVME: NVMe protocol
     """
     PROTOCOLS_UNSPECIFIED = 0
     NFSV3 = 1
     NFSV4 = 2
     SMB = 3
     ISCSI = 4
+    NVME = 5
 
   export = _messages.StringField(1)
   exportFull = _messages.StringField(2)
@@ -3059,6 +3065,22 @@ class NetappProjectsLocationsVolumesSnapshotsPatchRequest(_messages.Message):
   updateMask = _messages.StringField(3)
 
 
+class OntapSource(_messages.Message):
+  r"""Represents ONTAP source details.
+
+  Fields:
+    snapshotUuid: Optional. The UUID of the ONTAP source snapshot.
+    storagePool: Required. Name of the storage pool. This must be specified
+      for creating backups for ONTAP mode volumes. Format: `projects/{projects
+      _id}/locations/{location}/storagePools/{storage_pool_id}`
+    volumeUuid: Required. The UUID of the ONTAP source volume.
+  """
+
+  snapshotUuid = _messages.StringField(1)
+  storagePool = _messages.StringField(2)
+  volumeUuid = _messages.StringField(3)
+
+
 class Operation(_messages.Message):
   r"""This resource represents a long-running operation that is the result of
   a network API call.
@@ -3506,11 +3528,13 @@ class RestoreParameters(_messages.Message):
   r"""The RestoreParameters if volume is created from a snapshot or backup.
 
   Fields:
-    sourceBackup: Full name of the backup resource. Format: projects/{project}
-      /locations/{location}/backupVaults/{backup_vault_id}/backups/{backup_id}
-    sourceBackupdrBackup: Full name of the BackupDR backup resource. Format: p
-      rojects/{project}/locations/{location}/backupVaults/{backup_vault}/dataS
-      ources/{data_source}/backups/{backup}
+    sourceBackup: Full name of the backup resource. Format for standard
+      backup: projects/{project}/locations/{location}/backupVaults/{backup_vau
+      lt_id}/backups/{backup_id} Format for BackupDR backup: projects/{project
+      }/locations/{location}/backupVaults/{backup_vault}/dataSources/{data_sou
+      rce}/backups/{backup}
+    sourceBackupdrBackup: Deprecated: Please use the `source_backup` field
+      instead.
     sourceSnapshot: Full name of the snapshot resource. Format: projects/{proj
       ect}/locations/{location}/volumes/{volume}/snapshots/{snapshot}
   """
@@ -3873,9 +3897,11 @@ class StoragePool(_messages.Message):
       creation, it defaults to `DEFAULT`.
     QosTypeValueValuesEnum: Optional. QoS (Quality of Service) Type of the
       storage pool
-    ScaleTierValueValuesEnum: Optional. The effective scale tier of the
-      storage pool. If `scale_tier` is not specified during creation, this
-      defaults to `SCALE_TIER_STANDARD`.
+    ScaleTierValueValuesEnum: Optional. Deprecated: Use scale_type instead.
+      The effective scale tier of the storage pool. If `scale_tier` is not
+      specified during creation, this defaults to `SCALE_TIER_STANDARD`.
+    ScaleTypeValueValuesEnum: Optional. The scale type of the storage pool.
+      Defaults to `SCALE_TYPE_DEFAULT` if not specified.
     ServiceLevelValueValuesEnum: Required. Service level of the storage pool
     StateValueValuesEnum: Output only. State of the storage pool
     TypeValueValuesEnum: Optional. Type of the storage pool. This field is
@@ -3934,9 +3960,11 @@ class StoragePool(_messages.Message):
       storagePool.
     satisfiesPzi: Output only. Reserved for future use
     satisfiesPzs: Output only. Reserved for future use
-    scaleTier: Optional. The effective scale tier of the storage pool. If
-      `scale_tier` is not specified during creation, this defaults to
-      `SCALE_TIER_STANDARD`.
+    scaleTier: Optional. Deprecated: Use scale_type instead. The effective
+      scale tier of the storage pool. If `scale_tier` is not specified during
+      creation, this defaults to `SCALE_TIER_STANDARD`.
+    scaleType: Optional. The scale type of the storage pool. Defaults to
+      `SCALE_TYPE_DEFAULT` if not specified.
     serviceLevel: Required. Service level of the storage pool
     state: Output only. State of the storage pool
     stateDetails: Output only. State details of the storage pool
@@ -3996,20 +4024,36 @@ class StoragePool(_messages.Message):
     MANUAL = 2
 
   class ScaleTierValueValuesEnum(_messages.Enum):
-    r"""Optional. The effective scale tier of the storage pool. If
-    `scale_tier` is not specified during creation, this defaults to
-    `SCALE_TIER_STANDARD`.
+    r"""Optional. Deprecated: Use scale_type instead. The effective scale tier
+    of the storage pool. If `scale_tier` is not specified during creation,
+    this defaults to `SCALE_TIER_STANDARD`.
 
     Values:
-      SCALE_TIER_UNSPECIFIED: The default value. This value is unused.
-      SCALE_TIER_STANDARD: The standard capacity and performance tier.
-        Suitable for general purpose workloads.
-      SCALE_TIER_ENTERPRISE: A higher capacity and performance tier. Suitable
-        for more demanding workloads.
+      SCALE_TIER_UNSPECIFIED: Deprecated: Use ScaleType instead. The default
+        value. This value is unused.
+      SCALE_TIER_STANDARD: Deprecated: Use ScaleType instead. The standard
+        capacity and performance tier. Suitable for general purpose workloads.
+      SCALE_TIER_ENTERPRISE: Deprecated: Use ScaleType instead. A higher
+        capacity and performance tier. Suitable for more demanding workloads.
     """
     SCALE_TIER_UNSPECIFIED = 0
     SCALE_TIER_STANDARD = 1
     SCALE_TIER_ENTERPRISE = 2
+
+  class ScaleTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The scale type of the storage pool. Defaults to
+    `SCALE_TYPE_DEFAULT` if not specified.
+
+    Values:
+      SCALE_TYPE_UNSPECIFIED: Unspecified scale type.
+      SCALE_TYPE_DEFAULT: Represents standard capacity and performance scale-
+        type. Suitable for general purpose workloads.
+      SCALE_TYPE_SCALEOUT: Represents higher capacity and performance scale-
+        type. Suitable for more demanding workloads.
+    """
+    SCALE_TYPE_UNSPECIFIED = 0
+    SCALE_TYPE_DEFAULT = 1
+    SCALE_TYPE_SCALEOUT = 2
 
   class ServiceLevelValueValuesEnum(_messages.Enum):
     r"""Required. Service level of the storage pool
@@ -4116,16 +4160,17 @@ class StoragePool(_messages.Message):
   satisfiesPzi = _messages.BooleanField(23)
   satisfiesPzs = _messages.BooleanField(24)
   scaleTier = _messages.EnumField('ScaleTierValueValuesEnum', 25)
-  serviceLevel = _messages.EnumField('ServiceLevelValueValuesEnum', 26)
-  state = _messages.EnumField('StateValueValuesEnum', 27)
-  stateDetails = _messages.StringField(28)
-  totalIops = _messages.IntegerField(29)
-  totalThroughputMibps = _messages.IntegerField(30)
-  type = _messages.EnumField('TypeValueValuesEnum', 31)
-  unifiedPool = _messages.BooleanField(32)
-  volumeCapacityGib = _messages.IntegerField(33)
-  volumeCount = _messages.IntegerField(34, variant=_messages.Variant.INT32)
-  zone = _messages.StringField(35)
+  scaleType = _messages.EnumField('ScaleTypeValueValuesEnum', 26)
+  serviceLevel = _messages.EnumField('ServiceLevelValueValuesEnum', 27)
+  state = _messages.EnumField('StateValueValuesEnum', 28)
+  stateDetails = _messages.StringField(29)
+  totalIops = _messages.IntegerField(30)
+  totalThroughputMibps = _messages.IntegerField(31)
+  type = _messages.EnumField('TypeValueValuesEnum', 32)
+  unifiedPool = _messages.BooleanField(33)
+  volumeCapacityGib = _messages.IntegerField(34)
+  volumeCount = _messages.IntegerField(35, variant=_messages.Variant.INT32)
+  zone = _messages.StringField(36)
 
 
 class SwitchActiveReplicaZoneRequest(_messages.Message):
@@ -4393,12 +4438,14 @@ class Volume(_messages.Message):
       NFSV4: NFS V4 protocol
       SMB: SMB protocol
       ISCSI: ISCSI protocol
+      NVME: NVMe protocol
     """
     PROTOCOLS_UNSPECIFIED = 0
     NFSV3 = 1
     NFSV4 = 2
     SMB = 3
     ISCSI = 4
+    NVME = 5
 
   class RestrictedActionsValueListEntryValuesEnum(_messages.Enum):
     r"""RestrictedActionsValueListEntryValuesEnum enum type.

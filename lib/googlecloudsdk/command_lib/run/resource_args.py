@@ -174,6 +174,18 @@ class ExecutionPromptFallthrough(ResourcePromptFallthrough):
     super(ExecutionPromptFallthrough, self).__init__('execution')
 
 
+class ProjectPromptFallthrough(PromptFallthrough):
+  """Fall through to reading the project ID from an interactive prompt."""
+
+  def __init__(self):
+    super(ProjectPromptFallthrough, self).__init__(
+        'specify the project ID from an interactive prompt'
+    )
+
+  def _Prompt(self, parsed_args):
+    return console_io.PromptWithDefault(message='Please specify a project ID')
+
+
 class DefaultFallthrough(deps.Fallthrough):
   """Use the namespace "default".
 
@@ -182,7 +194,7 @@ class DefaultFallthrough(deps.Fallthrough):
   For Cloud Run, raises an ArgumentError if project not set.
   """
 
-  def __init__(self):
+  def __init__(self, allow_prompt=False):
     super(DefaultFallthrough, self).__init__(
         function=None,
         hint=(
@@ -190,6 +202,7 @@ class DefaultFallthrough(deps.Fallthrough):
             'Otherwise, defaults to project ID.'
         ),
     )
+    self.allow_prompt = allow_prompt
 
   def _Call(self, parsed_args):
     if (
@@ -201,6 +214,8 @@ class DefaultFallthrough(deps.Fallthrough):
         getattr(parsed_args, 'project', None)
         or properties.VALUES.core.project.Get()
     ):
+      if self.allow_prompt and console_io.CanPrompt():
+        return None
       # HACK: Compensate for how "namespace" is actually "project" in Cloud Run
       # by providing an error message explicitly early here.
       raise exceptions.ArgumentError(
@@ -211,29 +226,34 @@ class DefaultFallthrough(deps.Fallthrough):
     return None
 
 
-def NamespaceAttributeConfig():
+def NamespaceAttributeConfig(allow_project_prompt=False):
+  fallthroughs = [
+      deps.PropertyFallthrough(properties.VALUES.run.namespace),
+      DefaultFallthrough(allow_prompt=allow_project_prompt),
+      deps.ArgFallthrough('project'),
+      deps.PropertyFallthrough(properties.VALUES.core.project),
+  ]
+  if allow_project_prompt:
+    fallthroughs.append(ProjectPromptFallthrough())
   return concepts.ResourceParameterAttributeConfig(
       name='namespace',
       help_text=(
           'Specific to Cloud Run for Anthos: '
           'Kubernetes namespace for the {resource}.'
       ),
-      fallthroughs=[
-          deps.PropertyFallthrough(properties.VALUES.run.namespace),
-          DefaultFallthrough(),
-          deps.ArgFallthrough('project'),
-          deps.PropertyFallthrough(properties.VALUES.core.project),
-      ],
+      fallthroughs=fallthroughs,
   )
 
 
-def ProjectAttributeConfig():
+def ProjectAttributeConfig(allow_project_prompt=False):
   project_attribute_config = copy.deepcopy(
       concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG
   )
   fallthroughs = [
-      DefaultFallthrough()
+      DefaultFallthrough(allow_prompt=allow_project_prompt)
   ] + concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG.fallthroughs
+  if allow_project_prompt:
+    fallthroughs.append(ProjectPromptFallthrough())
   project_attribute_config.fallthroughs = fallthroughs
   return project_attribute_config
 
@@ -544,10 +564,10 @@ def GetClusterResourceSpec():
   )
 
 
-def GetServiceResourceSpec(prompt=False):
+def GetServiceResourceSpec(prompt=False, allow_project_prompt=False):
   return concepts.ResourceSpec(
       'run.namespaces.services',
-      namespacesId=NamespaceAttributeConfig(),
+      namespacesId=NamespaceAttributeConfig(allow_project_prompt),
       servicesId=ServiceAttributeConfig(prompt),
       resource_name='service',
   )
@@ -572,10 +592,12 @@ def GetRouteResourceSpec():
 
 
 # For Worker Pool revisions, we don't use the namespace attribute.
-def GetRevisionResourceSpec(is_worker_pool_revision=False):
+def GetRevisionResourceSpec(
+    is_worker_pool_revision=False, allow_project_prompt=False
+):
   return concepts.ResourceSpec(
       'run.namespaces.revisions',
-      namespacesId=NamespaceAttributeConfig()
+      namespacesId=NamespaceAttributeConfig(allow_project_prompt)
       if not is_worker_pool_revision
       else concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
       revisionsId=RevisionAttributeConfig(),
@@ -589,6 +611,15 @@ def GetDomainMappingResourceSpec():
       namespacesId=NamespaceAttributeConfig(),
       domainmappingsId=DomainAttributeConfig(),
       resource_name='DomainMapping',
+  )
+
+
+def GetDomainResourceSpec():
+  return concepts.ResourceSpec(
+      'run.namespaces.domainmappings',
+      namespacesId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+      domainmappingsId=DomainAttributeConfig(),
+      resource_name='domain',
   )
 
 
@@ -665,11 +696,11 @@ def GetV2WorkerPoolRevisionResourceSpec(prompt=False):
   )
 
 
-def GetProjectResourceSpec():
+def GetProjectResourceSpec(allow_project_prompt=False):
   return concepts.ResourceSpec(
       'run.projects',
       resource_name='project',
-      projectsId=ProjectAttributeConfig(),
+      projectsId=ProjectAttributeConfig(allow_project_prompt),
   )
 
 

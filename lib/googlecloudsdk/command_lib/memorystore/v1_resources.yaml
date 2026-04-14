@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,6 +30,18 @@ projects_locations:
     attribute_name: location
     help: The location id of the {resource} resource.
   disable_auto_completers: true
+projects_locations_acl_policies:
+  name: aclPolicy
+  plural_name: aclPolicies
+  collection: memorystore.projects.locations.aclPolicies
+  attributes:
+  - *project
+  - *location
+  - &aclPolicy
+    parameter_name: aclPoliciesId
+    attribute_name: acl_policy
+    help: The aclPolicy id of the {resource} resource.
+  disable_auto_completers: false
 projects_locations_backup_collections:
   name: backupCollection
   plural_name: backupCollections
@@ -42,6 +54,18 @@ projects_locations_backup_collections:
     attribute_name: backup_collection
     help: The backupCollection id of the {resource} resource.
   disable_auto_completers: false
+projects_locations_ca_pools:
+  name: caPool
+  plural_name: caPools
+  collection: memorystore.projects.locations.caPools
+  attributes:
+  - *project
+  - *location
+  - &caPool
+    parameter_name: caPoolsId
+    attribute_name: ca_pool
+    help: The caPool id of the {resource} resource.
+  disable_auto_completers: true
 projects_locations_instances:
   name: instance
   plural_name: instances

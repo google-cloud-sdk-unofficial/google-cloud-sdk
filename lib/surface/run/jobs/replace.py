@@ -14,6 +14,7 @@
 # limitations under the License.
 """Command for updating env vars and other configuration info."""
 
+import copy
 
 from googlecloudsdk.api_lib.run import global_methods
 from googlecloudsdk.api_lib.run import job
@@ -37,21 +38,25 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import progress_tracker
 
 
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Replace(base.Command):
   """Create or replace a job from a YAML job specification."""
 
   detailed_help = {
-      'DESCRIPTION':
+      'DESCRIPTION': (
           """\
           Creates or replaces a job from a YAML job specification.
-          """,
-      'EXAMPLES':
+          """
+      ),
+      'EXAMPLES': (
           """\
           To replace the specification for a job defined in myjob.yaml
 
               $ {command} myjob.yaml
 
-         """,
+         """
+      ),
   }
 
   @staticmethod
@@ -62,24 +67,30 @@ class Replace(base.Command):
         'FILE',
         action='store',
         type=arg_parsers.YAMLFileContents(),
-        help='The absolute path to the YAML file with a Cloud Run '
-        'job definition for the job to update or create.')
+        help=(
+            'The absolute path to the YAML file with a Cloud Run '
+            'job definition for the job to update or create.'
+        ),
+    )
     # No output by default, can be overridden by --format
     parser.display_info.AddFormat('none')
 
   def Run(self, args):
     """Create or Update job from YAML."""
-    run_messages = apis.GetMessagesModule(global_methods.SERVERLESS_API_NAME,
-                                          global_methods.SERVERLESS_API_VERSION)
+    run_messages = apis.GetMessagesModule(
+        global_methods.SERVERLESS_API_NAME,
+        global_methods.SERVERLESS_API_VERSION,
+    )
     job_dict = dict(args.FILE)
     # Clear the status field since it is ignored by Cloud Run APIs and can cause
     # issues trying to convert to a message.
     if 'status' in job_dict:
       del job_dict['status']
-    if ('spec' not in job_dict or 'template' not in job_dict['spec']):
+    if 'spec' not in job_dict or 'template' not in job_dict['spec']:
       raise exceptions.ConfigurationError(
           'spec.template is required but missing. '
-          'Please check the content in your yaml file.')
+          'Please check the content in your yaml file.'
+      )
     # If spec.template.metadata is not set, add an empty one so that client
     # annotations can be added.
     if 'metadata' not in job_dict['spec']['template']:
@@ -93,80 +104,120 @@ class Replace(base.Command):
 
     try:
       raw_job = messages_util.DictToMessageWithErrorCheck(
-          job_dict, run_messages.Job)
+          job_dict, run_messages.Job
+      )
       new_job = job.Job(raw_job, run_messages)
     except messages_util.ScalarTypeMismatchError as e:
       exceptions.MaybeRaiseCustomFieldMismatch(
           e,
-          help_text='Please make sure that the YAML file matches the Cloud Run '
-          'job definition spec in https://cloud.google.com/run/docs/reference'
-          '/rest/v1/namespaces.jobs#Job')
+          help_text=(
+              'Please make sure that the YAML file matches the Cloud Run '
+              'job definition spec in'
+              ' https://cloud.google.com/run/docs/reference'
+              '/rest/v1/namespaces.jobs#Job'
+          ),
+      )
 
     # Namespace must match project (or will default to project if
     # not specified).
     namespace = properties.VALUES.core.project.Get()
     if new_job.metadata.namespace is not None:
       project = namespace
-      project_number = projects_util.GetProjectNumber(namespace)
       namespace = new_job.metadata.namespace
-      if namespace != project and namespace != str(project_number):
-        raise exceptions.ConfigurationError(
-            'Namespace must be project ID [{}] or quoted number [{}] for '
-            'Cloud Run (fully managed).'.format(project, project_number))
+      endpoint_mode = properties.VALUES.regional.endpoint_mode.Get()
+      if (
+          properties.VALUES.regional.endpoint_compatibility
+          and endpoint_mode == properties.VALUES.regional.REGIONAL
+      ):
+        if namespace != project:
+          raise exceptions.ConfigurationError(
+              'Namespace must be project ID [{}] for Cloud Run with regional'
+              ' endpoints.'.format(project)
+          )
+      else:
+        project_number = projects_util.GetProjectNumber(namespace)
+        if namespace != project and namespace != str(project_number):
+          raise exceptions.ConfigurationError(
+              'Namespace must be project ID [{}] or quoted number [{}] for '
+              'Cloud Run (fully managed).'.format(project, project_number)
+          )
     new_job.metadata.namespace = namespace
 
-    is_either_specified = (
-        args.IsSpecified('client_name') or args.IsSpecified('client_version'))
+    is_either_specified = args.IsSpecified('client_name') or args.IsSpecified(
+        'client_version'
+    )
     changes = [
         config_changes.ReplaceJobChange(new_job),
         config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack()),
         config_changes.SetClientNameAndVersionAnnotationChange(
             args.client_name if is_either_specified else 'gcloud',
             args.client_version
-            if is_either_specified else config.CLOUD_SDK_VERSION,
-            set_on_template=True)
+            if is_either_specified
+            else config.CLOUD_SDK_VERSION,
+            set_on_template=True,
+        ),
     ]
 
     job_ref = resources.REGISTRY.Parse(
         new_job.metadata.name,
         params={'namespacesId': new_job.metadata.namespace},
-        collection='run.namespaces.jobs')
+        collection='run.namespaces.jobs',
+    )
 
     region_label = new_job.region if new_job.is_managed else None
     conn_context = connection_context.GetConnectionContext(
-        args, flags.Product.RUN, self.ReleaseTrack(), region_label=region_label)
+        args, flags.Product.RUN, self.ReleaseTrack(), region_label=region_label
+    )
 
     with serverless_operations.Connect(conn_context) as client:
       job_obj = client.GetJob(job_ref)
 
       is_create = not job_obj
-      operation = ('Creating' if is_create else 'Updating')
+      operation = 'Creating' if is_create else 'Updating'
       pretty_print.Info(
-          run_messages_util.GetStartDeployMessage(conn_context, job_ref,
-                                                  operation, 'job'))
+          run_messages_util.GetStartDeployMessage(
+              conn_context, job_ref, operation, 'job'
+          )
+      )
 
       header = operation + ' job...'
       with progress_tracker.StagedProgressTracker(
           header,
           stages.JobStages(),
-          failure_message=('Job failed to deploy'),
-          suppress_output=args.async_) as tracker:
+          failure_message='Job failed to deploy',
+          suppress_output=args.async_,
+      ) as tracker:
         if job_obj:
           job_obj = client.UpdateJob(
-              job_ref, changes, tracker, asyn=args.async_)
+              job_ref, changes, tracker, asyn=args.async_
+          )
         else:
           job_obj = client.CreateJob(
-              job_ref, changes, tracker, asyn=args.async_)
+              job_ref, changes, tracker, asyn=args.async_
+          )
 
-      operation = ('created' if is_create else 'updated')
+      operation = 'created' if is_create else 'updated'
       if args.async_:
         pretty_print.Success(
             'Job [{{bold}}{job}{{reset}}] is being {operation} '
-            'asynchronously.'.format(job=job_obj.name, operation=operation))
+            'asynchronously.'.format(job=job_obj.name, operation=operation)
+        )
       else:
-        pretty_print.Success('Job [{{bold}}{job}{{reset}}] has been '
-                             'successfully {operation}.'.format(
-                                 job=job_obj.name, operation=operation))
+        pretty_print.Success(
+            'Job [{{bold}}{job}{{reset}}] has been '
+            'successfully {operation}.'.format(
+                job=job_obj.name, operation=operation
+            )
+        )
       log.status.Print(
-          run_messages_util.GetRunJobMessage(self.ReleaseTrack(), job_obj.name))
+          run_messages_util.GetRunJobMessage(self.ReleaseTrack(), job_obj.name)
+      )
       return job_obj
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.RegionalEndpointsSupported
+class BetaReplace(Replace):
+  """Create or replace a job from a YAML job specification."""
+
+  detailed_help = copy.deepcopy(Replace.detailed_help)

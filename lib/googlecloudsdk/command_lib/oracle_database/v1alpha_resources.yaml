@@ -230,29 +230,29 @@ projects_locations_golden_gate_deployment_types:
     attribute_name: golden_gate_deployment_type
     help: The goldenGateDeploymentType id of the {resource} resource.
   disable_auto_completers: false
-projects_locations_golden_gate_deployment_versions:
-  name: goldenGateDeploymentVersion
-  plural_name: goldenGateDeploymentVersions
-  collection: oracledatabase.projects.locations.goldenGateDeploymentVersions
+projects_locations_goldengate_deployment_versions:
+  name: goldengateDeploymentVersion
+  plural_name: goldengateDeploymentVersions
+  collection: oracledatabase.projects.locations.goldengateDeploymentVersions
   attributes:
   - *project
   - *location
-  - &goldenGateDeploymentVersion
-    parameter_name: goldenGateDeploymentVersionsId
-    attribute_name: golden_gate_deployment_version
-    help: The goldenGateDeploymentVersion id of the {resource} resource.
+  - &goldengateDeploymentVersion
+    parameter_name: goldengateDeploymentVersionsId
+    attribute_name: goldengate_deployment_version
+    help: The goldengateDeploymentVersion id of the {resource} resource.
   disable_auto_completers: false
-projects_locations_golden_gate_deployments:
-  name: goldenGateDeployment
-  plural_name: goldenGateDeployments
-  collection: oracledatabase.projects.locations.goldenGateDeployments
+projects_locations_goldengate_deployments:
+  name: goldengateDeployment
+  plural_name: goldengateDeployments
+  collection: oracledatabase.projects.locations.goldengateDeployments
   attributes:
   - *project
   - *location
-  - &goldenGateDeployment
-    parameter_name: goldenGateDeploymentsId
-    attribute_name: golden_gate_deployment
-    help: The goldenGateDeployment id of the {resource} resource.
+  - &goldengateDeployment
+    parameter_name: goldengateDeploymentsId
+    attribute_name: goldengate_deployment
+    help: The goldengateDeployment id of the {resource} resource.
   disable_auto_completers: false
 projects_locations_odb_networks:
   name: odbNetwork

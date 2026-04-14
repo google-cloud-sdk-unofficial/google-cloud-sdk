@@ -14,31 +14,40 @@
 # limitations under the License.
 """Command for listing Jobs."""
 
+import copy
+
 from googlecloudsdk.api_lib.run import global_methods
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core import properties
 
 
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(commands.List):
   """List jobs."""
 
   detailed_help = {
-      'DESCRIPTION':
+      'DESCRIPTION': (
           """
           {description}
-          """,
-      'EXAMPLES':
+          """
+      ),
+      'EXAMPLES': (
           """
           To list all jobs in all regions:
 
               $ {command}
-         """,
+         """
+      ),
   }
 
   @classmethod
@@ -76,13 +85,29 @@ class List(commands.List):
     # Use the mixer for global request if there's no --region flag.
     namespace_ref = args.CONCEPTS.namespace.Parse()
     if not args.IsSpecified('region'):
+      endpoint_mode = properties.VALUES.regional.endpoint_mode.Get()
+      if endpoint_mode == properties.VALUES.regional.REGIONAL:
+        raise exceptions.ArgumentError(
+            'You must specify a region using the `--region` flag when '
+            'regional endpoints are enabled.'
+        )
+
       client = global_methods.GetServerlessClientInstance(api_version='v1')
       self.SetPartialApiEndpoint(client.url)
       # Don't consider region property here, we'll default to all regions
       return commands.SortByName(global_methods.ListJobs(client, namespace_ref))
 
     conn_context = connection_context.GetConnectionContext(
-        args, flags.Product.RUN, self.ReleaseTrack())
+        args, flags.Product.RUN, self.ReleaseTrack()
+    )
     with serverless_operations.Connect(conn_context) as client:
       self.SetCompleteApiEndpoint(conn_context.endpoint)
       return commands.SortByName(client.ListJobs(namespace_ref))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.RegionalEndpointsSupported
+class BetaList(List):
+  """List jobs."""
+
+  detailed_help = copy.deepcopy(List.detailed_help)

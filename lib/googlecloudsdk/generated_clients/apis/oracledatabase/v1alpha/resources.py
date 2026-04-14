@@ -318,23 +318,23 @@ class Collections(enum.Enum):
       True
   )
   PROJECTS_LOCATIONS_GOLDENGATEDEPLOYMENTVERSIONS = (
-      'projects.locations.goldenGateDeploymentVersions',
+      'projects.locations.goldengateDeploymentVersions',
       '{+name}',
       {
           '':
               'projects/{projectsId}/locations/{locationsId}/'
-              'goldenGateDeploymentVersions/{goldenGateDeploymentVersionsId}',
+              'goldengateDeploymentVersions/{goldengateDeploymentVersionsId}',
       },
       ['name'],
       True
   )
   PROJECTS_LOCATIONS_GOLDENGATEDEPLOYMENTS = (
-      'projects.locations.goldenGateDeployments',
+      'projects.locations.goldengateDeployments',
       '{+name}',
       {
           '':
               'projects/{projectsId}/locations/{locationsId}/'
-              'goldenGateDeployments/{goldenGateDeploymentsId}',
+              'goldengateDeployments/{goldengateDeploymentsId}',
       },
       ['name'],
       True

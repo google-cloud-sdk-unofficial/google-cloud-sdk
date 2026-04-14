@@ -14,6 +14,7 @@
 # limitations under the License.
 """Command for deleting revisions."""
 
+import copy
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
@@ -29,21 +30,23 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.Command):
   """Delete a revision."""
 
   detailed_help = {
-      'DESCRIPTION':
+      'DESCRIPTION': (
           """\
           {description}
-          """,
-      'EXAMPLES':
+          """
+      ),
+      'EXAMPLES': (
           """\
           To delete a revision:
 
               $ {command} <revision-name>
-          """,
+          """
+      ),
   }
 
   @staticmethod
@@ -53,7 +56,8 @@ class Delete(base.Command):
         resource_args.GetRevisionResourceSpec(),
         'Revision to delete.',
         required=True,
-        prefixes=False)
+        prefixes=False,
+    )
     concept_parsers.ConceptParser([revision_presentation]).AddToParser(parser)
     flags.AddAsyncFlag(parser, default_async_for_cluster=True)
 
@@ -64,14 +68,17 @@ class Delete(base.Command):
   def Run(self, args):
     """Delete a revision."""
     conn_context = connection_context.GetConnectionContext(
-        args, flags.Product.RUN, self.ReleaseTrack())
+        args, flags.Product.RUN, self.ReleaseTrack()
+    )
     revision_ref = args.CONCEPTS.revision.Parse()
 
     console_io.PromptContinue(
         message='Revision [{}] will be deleted.'.format(
-            revision_ref.revisionsId),
+            revision_ref.revisionsId
+        ),
         throw_if_unattended=True,
-        cancel_on_no=True)
+        cancel_on_no=True,
+    )
 
     async_ = deletion.AsyncOrDefault(args.async_)
     with serverless_operations.Connect(conn_context) as client:
@@ -86,8 +93,16 @@ class Delete(base.Command):
       log.DeletedResource(revision_ref.revisionsId, 'revision')
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.RegionalEndpointsSupported
+class BetaDelete(Delete):
+  """Delete a revision."""
+
+  detailed_help = copy.deepcopy(Delete.detailed_help)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaDelete(Delete):
+class AlphaDelete(BetaDelete):
   """Delete a revision."""
 
   @staticmethod

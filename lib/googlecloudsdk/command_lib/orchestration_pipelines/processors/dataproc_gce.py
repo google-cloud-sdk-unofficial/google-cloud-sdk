@@ -50,7 +50,7 @@ class DataprocGCEActionProcessor(base.ActionProcessor):
 
     job_props = self._get_nested_dict(
         action,
-        ["engine", "dataprocOnGce", "ephemeralCluster", "job", "properties"],
+        ["engine", "dataprocOnGce", "ephemeralCluster", "properties"],
     )
     deploy_mode = job_props.get("spark.submit.deployMode", "client")
     job_props["spark.executorEnv.PYTHONPATH"] = self.full_python_path

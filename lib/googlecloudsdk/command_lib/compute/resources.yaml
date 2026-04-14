@@ -424,3 +424,19 @@ rollout:
   - parameter_name: rollout
     attribute_name: rollout
     help: The name of the Google Compute Engine rollout.
+
+host:
+  name: host
+  collection: compute.hosts
+  attributes:
+  - *compute_project
+  - *zone
+  - parameter_name: association
+    attribute_name: association
+    help: The association of the host.
+    fallthroughs:
+    - value: '""'
+      hint: 'Fallback for association'
+  - parameter_name: host
+    attribute_name: host_name
+    help: The name of the Google Compute Engine host.

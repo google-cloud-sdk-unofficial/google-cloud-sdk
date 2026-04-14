@@ -20,9 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iap import util as iap_util
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class SetIamPolicy(base.Command):
   """Set the IAM policy for an IAP IAM resource.
@@ -92,6 +90,8 @@ class SetIamPolicy(base.Command):
   """,
   }
 
+  _support_agent_registry = False
+
   @classmethod
   def Args(cls, parser):
     """Register flags for this command.
@@ -101,7 +101,7 @@ class SetIamPolicy(base.Command):
           to capture some information, but behaves like an ArgumentParser.
     """
     iap_util.AddIapIamResourceArgs(
-        parser,
+        parser, support_agent_registry=cls._support_agent_registry
     )
     iap_util.AddIAMPolicyFileArg(parser)
     base.URI_FLAG.RemoveFromParser(parser)
@@ -119,5 +119,23 @@ class SetIamPolicy(base.Command):
     iap_iam_ref = iap_util.ParseIapIamResource(
         self.ReleaseTrack(),
         args,
+        self._support_agent_registry
     )
     return iap_iam_ref.SetIamPolicy(args.policy_file)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SetIamPolicyAlpha(SetIamPolicy):
+  """Set the IAM policy for an IAP IAM resource.
+
+  This command replaces the existing IAM policy for an IAP IAM resource, given
+  a file encoded in JSON or YAML that contains the IAM policy. If the given
+  policy file specifies an "etag" value, then the replacement will succeed only
+  if the policy already in place matches that etag. (An etag obtained via
+  $ {parent_command} get-iam-policy will prevent the replacement if
+  the policy for the resource has been subsequently updated.) A policy
+  file that does not contain an etag value will replace any existing policy for
+  the resource.
+  """
+
+  _support_agent_registry = True

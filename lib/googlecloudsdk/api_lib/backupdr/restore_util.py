@@ -108,7 +108,7 @@ class ComputeUtil(object):
         )
       if "aliases" in network_interface:
         message.aliasIpRanges = (
-            alias_ip_range_utils.CreateAliasIpRangeMessagesFromString(
+            alias_ip_range_utils.CreateAliasIpRangeMessagesFromStringOld(
                 client_messages,
                 True,
                 network_interface["aliases"],

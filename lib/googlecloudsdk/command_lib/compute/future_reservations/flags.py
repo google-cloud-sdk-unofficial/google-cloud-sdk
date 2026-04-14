@@ -318,6 +318,19 @@ def GetSchedulingTypeFlag():
   )
 
 
+def GetResourceMangerTagsFlag():
+  """Gets the --resource-manager-tags flag."""
+  help_text = """\
+  Resource manager tags to be bound to the commitment.
+  """
+  return base.Argument(
+      '--resource-manager-tags',
+      metavar='KEY=VALUE',
+      type=arg_parsers.ArgDict(),
+      help=help_text,
+  )
+
+
 def GetReservationModeFlag():
   """--reservation-mode flag."""
   help_text = """\
@@ -371,6 +384,7 @@ def AddCreateFlags(
     support_cuds=False,
     support_dws_gpu=False,
     support_dws_tpu=False,
+    support_resource_manager_tags=False,
 ):
   """Adds all flags needed for the create command."""
   GetNamePrefixFlag().AddToParser(parser)
@@ -459,6 +473,9 @@ def AddCreateFlags(
 
   if support_dws_gpu:
     GetReservationModeFlag().AddToParser(parser)
+
+  if support_resource_manager_tags:
+    GetResourceMangerTagsFlag().AddToParser(parser)
 
 
 def AddUpdateFlags(

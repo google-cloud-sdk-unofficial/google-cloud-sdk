@@ -14,6 +14,7 @@
 # limitations under the License.
 """Command for obtaining details about a given service."""
 
+import copy
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
@@ -29,25 +30,29 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core.resource import resource_printer
 
 
-def _GetFormatter(is_multi_region, is_alpha):
+def _GetFormatter(is_multi_region, release_track):
   if is_multi_region:
     return service_printer.MultiRegionServicePrinter
-  elif is_alpha:
+  if release_track == base.ReleaseTrack.ALPHA:
     return service_printer.ServicePrinterAlpha
-  else:
-    return service_printer.ServicePrinter
+  if release_track == base.ReleaseTrack.BETA:
+    return service_printer.ServicePrinterBeta
+  return service_printer.ServicePrinter
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.Command):
   """Obtain details about a given service."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION': (
+          """\
           {description}
-          """,
-      'EXAMPLES': """\
+          """
+      ),
+      'EXAMPLES': (
+          """\
           To obtain details about a given service:
 
               $ {command} <service-name>
@@ -60,11 +65,14 @@ class Describe(base.Command):
           specific to this deployment and status info):
 
               $ {command} <service-name> --format=export
-          """,
+          """
+      ),
   }
 
   @staticmethod
-  def CommonArgs(parser, is_multi_region=False, is_alpha=False):
+  def CommonArgs(
+      parser, is_multi_region=False, release_track=base.ReleaseTrack.GA
+  ):
     service_presentation = presentation_specs.ResourcePresentationSpec(
         'SERVICE',
         resource_args.GetServiceResourceSpec(),
@@ -74,7 +82,7 @@ class Describe(base.Command):
     )
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
 
-    formatter = _GetFormatter(is_multi_region, is_alpha)
+    formatter = _GetFormatter(is_multi_region, release_track)
     resource_printer.RegisterFormatter(
         service_printer.SERVICE_PRINTER_FORMAT, formatter
     )
@@ -86,7 +94,7 @@ class Describe(base.Command):
 
   @staticmethod
   def Args(parser):
-    Describe.CommonArgs(parser, is_alpha=False)
+    Describe.CommonArgs(parser, release_track=base.ReleaseTrack.GA)
 
   def _ConnectionContext(self, args):
     return connection_context.GetConnectionContext(
@@ -108,11 +116,19 @@ class Describe(base.Command):
     return serv
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.RegionalEndpointsSupported
+class DescribeBeta(Describe):
+  """Obtain details about a given service."""
+
+  detailed_help = copy.deepcopy(Describe.detailed_help)
+
+
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(Describe):
+class DescribeAlpha(DescribeBeta):
   """Obtain details about a given service."""
 
   @staticmethod
   def Args(parser):
-    Describe.CommonArgs(parser, is_alpha=True)
+    Describe.CommonArgs(parser, release_track=base.ReleaseTrack.ALPHA)

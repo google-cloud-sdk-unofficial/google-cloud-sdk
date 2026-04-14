@@ -41,7 +41,10 @@ def ResolveOrganizationSecurityPolicyId(
       parent_id=organization_id, only_generate_request=False)
   sp_id = None
   for sp in response[0].items:
-    if sp.displayName == short_name or sp.shortName == short_name:
+    if (
+        getattr(sp, 'shortName', None) == short_name
+        or getattr(sp, 'displayName', None) == short_name
+    ):
       sp_id = sp.name
       break
   if sp_id is None:

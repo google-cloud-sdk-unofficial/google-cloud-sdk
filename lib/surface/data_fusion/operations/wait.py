@@ -22,6 +22,7 @@ from googlecloudsdk.command_lib.data_fusion import operation_poller
 from googlecloudsdk.command_lib.data_fusion import resource_args
 
 
+@base.RegionalEndpointsSupported
 class Wait(base.SilentCommand):
   """Wait for asynchronous operation to complete.
 
@@ -40,8 +41,8 @@ class Wait(base.SilentCommand):
     resource_args.AddOperationResourceArg(parser, 'The operation to wait for.')
 
   def Run(self, args):
-    datafusion = df.Datafusion()
     operation_ref = args.CONCEPTS.operation.Parse()
+    datafusion = df.Datafusion(location=operation_ref.locationsId)
 
     req = datafusion.messages.DatafusionProjectsLocationsOperationsGetRequest(
         name=operation_ref.RelativeName())
@@ -49,7 +50,7 @@ class Wait(base.SilentCommand):
     operation = datafusion.client.projects_locations_operations.Get(req)
 
     waiter.WaitFor(
-        operation_poller.OperationPoller(),
+        operation_poller.OperationPoller(datafusion),
         operation.name,
         'Waiting for [{}] to complete.'.format(operation.name),
         wait_ceiling_ms=self.WAIT_CEILING_MS)

@@ -105,3 +105,16 @@ properties:
       te/v1/projects/project/regions/region/su bnetworks/subnetwork  -
       regions/region/subnetworks/subnetwork
     type: string
+  vlan:
+    type: integer
+    description: |-
+      VLAN tag of a dynamic network interface, must be an integer in the
+      range from 2 to 255 inclusively.
+  igmpQuery:
+    type: string
+    enum:
+    - IGMP_QUERY_V2
+    - IGMP_QUERY_DISABLED
+    description: |-
+      Indicate whether igmp query is enabled on the network interface
+      or not. If enabled, also indicates the version of IGMP supported.

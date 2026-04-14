@@ -487,7 +487,8 @@ class AutonomousDatabaseProperties(_messages.Message):
       of seconds of data loss during a Data Guard failover.
     isAutoScalingEnabled: Optional. Immutable. This field indicates if auto
       scaling is enabled for the Autonomous Database CPU core count.
-    isLocalDataGuardEnabled: Output only. This field indicates whether the
+    isLocalDataGuardEnabled: Output only. Deprecated: Please use
+      `local_data_guard_enabled` instead. This field indicates whether the
       Autonomous Database has local (in-region) Data Guard enabled.
     isStorageAutoScalingEnabled: Optional. Immutable. This field indicates if
       auto scaling is enabled for the Autonomous Database storage.
@@ -495,8 +496,16 @@ class AutonomousDatabaseProperties(_messages.Message):
       Database.
     lifecycleDetails: Output only. The details of the current lifestyle state
       of the Autonomous Database.
-    localAdgAutoFailoverMaxDataLossLimit: Output only. This field indicates
-      the maximum data loss limit for an Autonomous Database, in seconds.
+    localAdgAutoFailoverMaxDataLossLimit: Output only. Deprecated: Please use
+      `local_adg_auto_failover_max_data_loss_limit_duration` instead. This
+      field indicates the maximum data loss limit for an Autonomous Database,
+      in seconds.
+    localAdgAutoFailoverMaxDataLossLimitDuration: Optional. This field
+      indicates the maximum data loss limit for an Autonomous Database, in
+      seconds.
+    localDataGuardEnabled: Optional. Indicates whether the Autonomous Database
+      has a local (in-region) standby database. Not applicable to cross-region
+      Data Guard or dedicated Exadata infrastructure.
     localDisasterRecoveryType: Output only. This field indicates the local
       disaster recovery (DR) type of an Autonomous Database.
     localStandbyDb: Output only. The details of the Autonomous Data Guard
@@ -858,37 +867,39 @@ class AutonomousDatabaseProperties(_messages.Message):
   licenseType = _messages.EnumField('LicenseTypeValueValuesEnum', 30)
   lifecycleDetails = _messages.StringField(31)
   localAdgAutoFailoverMaxDataLossLimit = _messages.IntegerField(32, variant=_messages.Variant.INT32)
-  localDisasterRecoveryType = _messages.EnumField('LocalDisasterRecoveryTypeValueValuesEnum', 33)
-  localStandbyDb = _messages.MessageField('AutonomousDatabaseStandbySummary', 34)
-  maintenanceBeginTime = _messages.StringField(35)
-  maintenanceEndTime = _messages.StringField(36)
-  maintenanceScheduleType = _messages.EnumField('MaintenanceScheduleTypeValueValuesEnum', 37)
-  memoryPerOracleComputeUnitGbs = _messages.IntegerField(38, variant=_messages.Variant.INT32)
-  memoryTableGbs = _messages.IntegerField(39, variant=_messages.Variant.INT32)
-  mtlsConnectionRequired = _messages.BooleanField(40)
-  nCharacterSet = _messages.StringField(41)
-  nextLongTermBackupTime = _messages.StringField(42)
-  ociUrl = _messages.StringField(43)
-  ocid = _messages.StringField(44)
-  openMode = _messages.EnumField('OpenModeValueValuesEnum', 45)
-  operationsInsightsState = _messages.EnumField('OperationsInsightsStateValueValuesEnum', 46)
-  peerDbIds = _messages.StringField(47, repeated=True)
-  permissionLevel = _messages.EnumField('PermissionLevelValueValuesEnum', 48)
-  privateEndpoint = _messages.StringField(49)
-  privateEndpointIp = _messages.StringField(50)
-  privateEndpointLabel = _messages.StringField(51)
-  refreshableMode = _messages.EnumField('RefreshableModeValueValuesEnum', 52)
-  refreshableState = _messages.EnumField('RefreshableStateValueValuesEnum', 53)
-  role = _messages.EnumField('RoleValueValuesEnum', 54)
-  scheduledOperationDetails = _messages.MessageField('ScheduledOperationDetails', 55, repeated=True)
-  secretId = _messages.StringField(56)
-  serviceAgentEmail = _messages.StringField(57)
-  sqlWebDeveloperUrl = _messages.StringField(58)
-  state = _messages.EnumField('StateValueValuesEnum', 59)
-  supportedCloneRegions = _messages.StringField(60, repeated=True)
-  totalAutoBackupStorageSizeGbs = _messages.FloatField(61, variant=_messages.Variant.FLOAT)
-  usedDataStorageSizeTbs = _messages.IntegerField(62, variant=_messages.Variant.INT32)
-  vaultId = _messages.StringField(63)
+  localAdgAutoFailoverMaxDataLossLimitDuration = _messages.IntegerField(33, variant=_messages.Variant.INT32)
+  localDataGuardEnabled = _messages.BooleanField(34)
+  localDisasterRecoveryType = _messages.EnumField('LocalDisasterRecoveryTypeValueValuesEnum', 35)
+  localStandbyDb = _messages.MessageField('AutonomousDatabaseStandbySummary', 36)
+  maintenanceBeginTime = _messages.StringField(37)
+  maintenanceEndTime = _messages.StringField(38)
+  maintenanceScheduleType = _messages.EnumField('MaintenanceScheduleTypeValueValuesEnum', 39)
+  memoryPerOracleComputeUnitGbs = _messages.IntegerField(40, variant=_messages.Variant.INT32)
+  memoryTableGbs = _messages.IntegerField(41, variant=_messages.Variant.INT32)
+  mtlsConnectionRequired = _messages.BooleanField(42)
+  nCharacterSet = _messages.StringField(43)
+  nextLongTermBackupTime = _messages.StringField(44)
+  ociUrl = _messages.StringField(45)
+  ocid = _messages.StringField(46)
+  openMode = _messages.EnumField('OpenModeValueValuesEnum', 47)
+  operationsInsightsState = _messages.EnumField('OperationsInsightsStateValueValuesEnum', 48)
+  peerDbIds = _messages.StringField(49, repeated=True)
+  permissionLevel = _messages.EnumField('PermissionLevelValueValuesEnum', 50)
+  privateEndpoint = _messages.StringField(51)
+  privateEndpointIp = _messages.StringField(52)
+  privateEndpointLabel = _messages.StringField(53)
+  refreshableMode = _messages.EnumField('RefreshableModeValueValuesEnum', 54)
+  refreshableState = _messages.EnumField('RefreshableStateValueValuesEnum', 55)
+  role = _messages.EnumField('RoleValueValuesEnum', 56)
+  scheduledOperationDetails = _messages.MessageField('ScheduledOperationDetails', 57, repeated=True)
+  secretId = _messages.StringField(58)
+  serviceAgentEmail = _messages.StringField(59)
+  sqlWebDeveloperUrl = _messages.StringField(60)
+  state = _messages.EnumField('StateValueValuesEnum', 61)
+  supportedCloneRegions = _messages.StringField(62, repeated=True)
+  totalAutoBackupStorageSizeGbs = _messages.FloatField(63, variant=_messages.Variant.FLOAT)
+  usedDataStorageSizeTbs = _messages.IntegerField(64, variant=_messages.Variant.INT32)
+  vaultId = _messages.StringField(65)
 
 
 class AutonomousDatabaseStandbySummary(_messages.Message):
@@ -1571,7 +1582,7 @@ class Database(_messages.Message):
       Insights for this Database.
 
   Fields:
-    adminPassword: Required. The password for the default ADMIN user.
+    adminPassword: Optional. The password for the default ADMIN user.
     characterSet: Optional. The character set for the database. The default is
       AL32UTF8.
     createTime: Output only. The date and time that the Database was created.

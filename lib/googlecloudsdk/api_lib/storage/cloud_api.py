@@ -766,7 +766,13 @@ class CloudApi(object):
     """
     raise NotImplementedError('list_objects must be overridden.')
 
-  def move_object(self, source_url, destination_url, request_config):
+  def move_object(
+      self,
+      source_url,
+      destination_url,
+      request_config,
+      progress_callback=None,
+  ):
     """Moves source object to destination object in the same bucket.
 
     Args:
@@ -774,6 +780,9 @@ class CloudApi(object):
       destination_url (storage_url.CloudUrl): Url of object to move to.
       request_config (RequestConfig): Object containing general API function
         arguments. Subclasses for specific cloud providers are available.
+      progress_callback (function): Optional callback function for progress
+        notifications. Receives calls with arguments (bytes_transferred,
+        total_size).
     """
     raise NotImplementedError('move_object must be overridden.')
 

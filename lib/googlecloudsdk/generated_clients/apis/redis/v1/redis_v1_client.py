@@ -13,7 +13,7 @@ class RedisV1(base_api.BaseApiClient):
   MTLS_BASE_URL = 'https://redis.mtls.googleapis.com/'
 
   _PACKAGE = 'redis'
-  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform']
+  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/redis.read-only', 'https://www.googleapis.com/auth/redis.read-write']
   _VERSION = 'v1'
   _CLIENT_ID = 'CLIENT_ID'
   _CLIENT_SECRET = 'CLIENT_SECRET'
@@ -40,6 +40,8 @@ class RedisV1(base_api.BaseApiClient):
     self.projects_locations_aclPolicies = self.ProjectsLocationsAclPoliciesService(self)
     self.projects_locations_backupCollections_backups = self.ProjectsLocationsBackupCollectionsBackupsService(self)
     self.projects_locations_backupCollections = self.ProjectsLocationsBackupCollectionsService(self)
+    self.projects_locations_clusters_tokenAuthUsers_authTokens = self.ProjectsLocationsClustersTokenAuthUsersAuthTokensService(self)
+    self.projects_locations_clusters_tokenAuthUsers = self.ProjectsLocationsClustersTokenAuthUsersService(self)
     self.projects_locations_clusters = self.ProjectsLocationsClustersService(self)
     self.projects_locations_instances = self.ProjectsLocationsInstancesService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
@@ -373,6 +375,215 @@ class RedisV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsClustersTokenAuthUsersAuthTokensService(base_api.BaseApiService):
+    """Service class for the projects_locations_clusters_tokenAuthUsers_authTokens resource."""
+
+    _NAME = 'projects_locations_clusters_tokenAuthUsers_authTokens'
+
+    def __init__(self, client):
+      super(RedisV1.ProjectsLocationsClustersTokenAuthUsersAuthTokensService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Delete(self, request, global_params=None):
+      r"""Removes a auth token for a user of a token based auth enabled instance.
+
+      Args:
+        request: (RedisProjectsLocationsClustersTokenAuthUsersAuthTokensDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}/tokenAuthUsers/{tokenAuthUsersId}/authTokens/{authTokensId}',
+        http_method='DELETE',
+        method_id='redis.projects.locations.clusters.tokenAuthUsers.authTokens.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='RedisProjectsLocationsClustersTokenAuthUsersAuthTokensDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets a specific auth token for a specific token auth user.
+
+      Args:
+        request: (RedisProjectsLocationsClustersTokenAuthUsersAuthTokensGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AuthToken) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}/tokenAuthUsers/{tokenAuthUsersId}/authTokens/{authTokensId}',
+        http_method='GET',
+        method_id='redis.projects.locations.clusters.tokenAuthUsers.authTokens.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='RedisProjectsLocationsClustersTokenAuthUsersAuthTokensGetRequest',
+        response_type_name='AuthToken',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists all the auth tokens for a specific token auth user.
+
+      Args:
+        request: (RedisProjectsLocationsClustersTokenAuthUsersAuthTokensListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListAuthTokensResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}/tokenAuthUsers/{tokenAuthUsersId}/authTokens',
+        http_method='GET',
+        method_id='redis.projects.locations.clusters.tokenAuthUsers.authTokens.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/authTokens',
+        request_field='',
+        request_type_name='RedisProjectsLocationsClustersTokenAuthUsersAuthTokensListRequest',
+        response_type_name='ListAuthTokensResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsClustersTokenAuthUsersService(base_api.BaseApiService):
+    """Service class for the projects_locations_clusters_tokenAuthUsers resource."""
+
+    _NAME = 'projects_locations_clusters_tokenAuthUsers'
+
+    def __init__(self, client):
+      super(RedisV1.ProjectsLocationsClustersTokenAuthUsersService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def AddAuthToken(self, request, global_params=None):
+      r"""Adds a auth token for a user of a token based auth enabled cluster.
+
+      Args:
+        request: (RedisProjectsLocationsClustersTokenAuthUsersAddAuthTokenRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('AddAuthToken')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    AddAuthToken.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}/tokenAuthUsers/{tokenAuthUsersId}:addAuthToken',
+        http_method='POST',
+        method_id='redis.projects.locations.clusters.tokenAuthUsers.addAuthToken',
+        ordered_params=['tokenAuthUser'],
+        path_params=['tokenAuthUser'],
+        query_params=[],
+        relative_path='v1/{+tokenAuthUser}:addAuthToken',
+        request_field='addAuthTokenRequest',
+        request_type_name='RedisProjectsLocationsClustersTokenAuthUsersAddAuthTokenRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a token auth user for a token based auth enabled cluster.
+
+      Args:
+        request: (RedisProjectsLocationsClustersTokenAuthUsersDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}/tokenAuthUsers/{tokenAuthUsersId}',
+        http_method='DELETE',
+        method_id='redis.projects.locations.clusters.tokenAuthUsers.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['force', 'requestId'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='RedisProjectsLocationsClustersTokenAuthUsersDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets a specific token auth user for a basic auth enabled cluster.
+
+      Args:
+        request: (RedisProjectsLocationsClustersTokenAuthUsersGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TokenAuthUser) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}/tokenAuthUsers/{tokenAuthUsersId}',
+        http_method='GET',
+        method_id='redis.projects.locations.clusters.tokenAuthUsers.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='RedisProjectsLocationsClustersTokenAuthUsersGetRequest',
+        response_type_name='TokenAuthUser',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists all the token auth users for a token based auth enabled cluster.
+
+      Args:
+        request: (RedisProjectsLocationsClustersTokenAuthUsersListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListTokenAuthUsersResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}/tokenAuthUsers',
+        http_method='GET',
+        method_id='redis.projects.locations.clusters.tokenAuthUsers.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/tokenAuthUsers',
+        request_field='',
+        request_type_name='RedisProjectsLocationsClustersTokenAuthUsersListRequest',
+        response_type_name='ListTokenAuthUsersResponse',
+        supports_download=False,
+    )
+
   class ProjectsLocationsClustersService(base_api.BaseApiService):
     """Service class for the projects_locations_clusters resource."""
 
@@ -382,6 +593,33 @@ class RedisV1(base_api.BaseApiClient):
       super(RedisV1.ProjectsLocationsClustersService, self).__init__(client)
       self._upload_configs = {
           }
+
+    def AddTokenAuthUser(self, request, global_params=None):
+      r"""Adds a token auth user for a token based auth enabled cluster.
+
+      Args:
+        request: (RedisProjectsLocationsClustersAddTokenAuthUserRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('AddTokenAuthUser')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    AddTokenAuthUser.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}:addTokenAuthUser',
+        http_method='POST',
+        method_id='redis.projects.locations.clusters.addTokenAuthUser',
+        ordered_params=['cluster'],
+        path_params=['cluster'],
+        query_params=[],
+        relative_path='v1/{+cluster}:addTokenAuthUser',
+        request_field='addTokenAuthUserRequest',
+        request_type_name='RedisProjectsLocationsClustersAddTokenAuthUserRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
 
     def Backup(self, request, global_params=None):
       r"""Backup Redis Cluster. If this is the first time a backup is being created, a backup collection will be created at the backend, and this backup belongs to this collection. Both collection and backup will have a resource name. Backup will be executed for each shard. A replica (primary if nonHA) will be selected to perform the execution. Backup call will be rejected if there is an ongoing backup or update operation. Be aware that during preview, if the cluster's internal software version is too old, critical update will be performed before actual backup. Once the internal software version is updated to the minimum version required by the backup feature, subsequent backups will not require critical update. After preview, there will be no critical update needed for backup.

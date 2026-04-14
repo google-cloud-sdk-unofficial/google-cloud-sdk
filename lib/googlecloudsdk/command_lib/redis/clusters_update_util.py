@@ -189,6 +189,13 @@ def UpdateAclPolicy(unused_cluster_ref, args, patch_request):
   return patch_request
 
 
+def UpdateAuthMode(unused_cluster_ref, args, patch_request):
+  """Hook to add auth mode to the redis cluster update request."""
+  if args.IsSpecified('auth_mode'):
+    patch_request = AddFieldToUpdateMask('auth_mode', patch_request)
+  return patch_request
+
+
 def UpdateAutomatedBackupConfig(unused_cluster_ref, args, patch_request):
   """Hook to add automated backup config to the redis cluster update request."""
   if (

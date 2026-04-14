@@ -14,6 +14,7 @@
 # limitations under the License.
 """Command for obtaining details about executions."""
 
+import copy
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
@@ -28,20 +29,24 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core.resource import resource_printer
 
 
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Obtain details about executions."""
 
   detailed_help = {
-      'DESCRIPTION':
+      'DESCRIPTION': (
           """
           {description}
-          """,
-      'EXAMPLES':
+          """
+      ),
+      'EXAMPLES': (
           """
           To describe an execution:
 
               $ {command} my-execution
-          """,
+          """
+      ),
   }
 
   @staticmethod
@@ -51,7 +56,8 @@ class Describe(base.DescribeCommand):
         resource_args.GetExecutionResourceSpec(),
         'Execution to describe.',
         required=True,
-        prefixes=False)
+        prefixes=False,
+    )
     concept_parsers.ConceptParser([execution_presentation]).AddToParser(parser)
 
     resource_printer.RegisterFormatter(
@@ -71,13 +77,23 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     """Show details about a job execution."""
     conn_context = connection_context.GetConnectionContext(
-        args, flags.Product.RUN, self.ReleaseTrack(), version_override='v1')
+        args, flags.Product.RUN, self.ReleaseTrack(), version_override='v1'
+    )
     execution_ref = args.CONCEPTS.execution.Parse()
 
     with serverless_operations.Connect(conn_context) as client:
       execution = client.GetExecution(execution_ref)
 
     if not execution:
-      raise exceptions.ArgumentError('Cannot find execution [{}].'.format(
-          execution_ref.Name()))
+      raise exceptions.ArgumentError(
+          'Cannot find execution [{}].'.format(execution_ref.Name())
+      )
     return execution
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.RegionalEndpointsSupported
+class BetaDescribe(Describe):
+  """Obtain details about executions."""
+
+  detailed_help = copy.deepcopy(Describe.detailed_help)

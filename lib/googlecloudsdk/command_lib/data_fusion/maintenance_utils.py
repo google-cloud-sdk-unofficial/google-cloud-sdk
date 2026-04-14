@@ -15,7 +15,6 @@
 """Command utilities for maintenance."""
 
 
-from googlecloudsdk.api_lib.data_fusion import datafusion as df
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -94,7 +93,7 @@ def UpdateArgumentsGroup(parser):
   CLEAR_MAINTENANCE_WINDOW_FLAG.AddToParser(update_group)
 
 
-def SetMaintenanceWindow(args, instance):
+def SetMaintenanceWindow(args, instance, datafusion_client):
   """Validates maintenance window flags and sets the maintenance window value.
   """
   maintenance_window_start = args.maintenance_window_start
@@ -116,11 +115,10 @@ def SetMaintenanceWindow(args, instance):
           '--maintenance-window-recurrence',
           'must be specified.')
 
-    datafusion = df.Datafusion()
-    instance.maintenancePolicy = datafusion.messages.MaintenancePolicy(
-        maintenanceWindow=datafusion.messages.MaintenanceWindow(
-            recurringTimeWindow=datafusion.messages.RecurringTimeWindow(
-                window=datafusion.messages.TimeWindow(
+    instance.maintenancePolicy = datafusion_client.messages.MaintenancePolicy(
+        maintenanceWindow=datafusion_client.messages.MaintenanceWindow(
+            recurringTimeWindow=datafusion_client.messages.RecurringTimeWindow(
+                window=datafusion_client.messages.TimeWindow(
                     startTime=maintenance_window_start.isoformat().
                     replace('+00:00', 'Z'),
                     endTime=maintenance_window_end.isoformat().
@@ -132,10 +130,10 @@ def SetMaintenanceWindow(args, instance):
     )
 
 
-def UpdateMaintenanceWindow(args, instance):
+def UpdateMaintenanceWindow(args, instance, datafusion_client):
   """Validates maintenance window flags and sets the maintenance window value.
   """
   if args.clear_maintenance_window:
     instance.maintenancePolicy = None
   else:
-    SetMaintenanceWindow(args, instance)
+    SetMaintenanceWindow(args, instance, datafusion_client)

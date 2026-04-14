@@ -14,6 +14,7 @@
 # limitations under the License.
 """Command for running jobs."""
 
+import copy
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
@@ -51,14 +52,18 @@ class Execute(base.Command):
   """Execute a job."""
 
   detailed_help = {
-      'DESCRIPTION': """
+      'DESCRIPTION': (
+          """
           {description}
-          """,
-      'EXAMPLES': """
+          """
+      ),
+      'EXAMPLES': (
+          """
           To execute a job:
 
               $ {command} my-job
-          """,
+          """
+      ),
   }
 
   container_flags_text = '`--update-env-vars`, `--args`'
@@ -160,7 +165,7 @@ class Execute(base.Command):
             args.wait,
             args.async_,
             self.ReleaseTrack(),
-            overrides
+            overrides,
         )
 
       if args.async_:
@@ -185,8 +190,11 @@ class Execute(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.RegionalEndpointsSupported
 class BetaExecute(Execute):
   """Execute a job."""
+
+  detailed_help = copy.deepcopy(Execute.detailed_help)
 
   @classmethod
   def Args(cls, parser):

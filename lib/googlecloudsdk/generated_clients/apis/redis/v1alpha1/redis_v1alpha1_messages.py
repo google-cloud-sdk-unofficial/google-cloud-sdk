@@ -666,10 +666,12 @@ class Cluster(_messages.Message):
       AUTH_MODE_UNSPECIFIED: Not set.
       AUTH_MODE_IAM_AUTH: IAM basic authorization mode
       AUTH_MODE_DISABLED: Authorization disabled mode
+      AUTH_MODE_TOKEN_AUTH: Token based authorization mode
     """
     AUTH_MODE_UNSPECIFIED = 0
     AUTH_MODE_IAM_AUTH = 1
     AUTH_MODE_DISABLED = 2
+    AUTH_MODE_TOKEN_AUTH = 3
 
   class NodeTypeValueValuesEnum(_messages.Enum):
     r"""Optional. The type of a redis node in the cluster. NodeType determines

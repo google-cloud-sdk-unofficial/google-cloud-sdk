@@ -30,7 +30,7 @@ from googlecloudsdk.generated_clients.apis.gkehub.v1beta import gkehub_v1beta_me
 _EXAMPLES = """
 To update a rollout sequence, run:
 
-$ {command} ROLLOUT_SEQUENCE_NAME --stage-config=path/to/config.yaml
+$ {command} ROLLOUT_SEQUENCE_NAME --stage-config=path/to/config.yaml --display-name=my-display-name"
 """
 
 
@@ -52,6 +52,7 @@ class Update(base.UpdateCommand):
     flags.AddDisplayName()
     flags.AddLabels()
     flags.AddStageConfig()
+    flags.AddIgnoredClustersSelectorFlags(is_update=True)
     flags.AddAsync()
 
   def Run(
@@ -70,6 +71,10 @@ class Update(base.UpdateCommand):
       mask.append('labels')
     if args.IsKnownAndSpecified('stage_config'):
       mask.append('stages')
+    if args.IsKnownAndSpecified(
+        'ignored_clusters_selector'
+    ) or args.IsKnownAndSpecified('clear_ignored_clusters_selector'):
+      mask.append('ignored_clusters_selector')
 
     # if there's nothing to update, then return
     if not mask:

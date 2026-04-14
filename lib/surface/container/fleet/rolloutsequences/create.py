@@ -50,7 +50,8 @@ class Create(base.CreateCommand):
     flags.AddRolloutSequenceResourceArg()
     flags.AddDisplayName()
     flags.AddLabels()
-    flags.AddStageConfig()
+    flags.AddStageConfig(required=True)
+    flags.AddIgnoredClustersSelectorFlags()
     flags.AddAsync()
 
   def Run(

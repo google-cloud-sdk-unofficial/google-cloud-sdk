@@ -66,8 +66,6 @@ environments:
       service_account: "{service_account}"
       # TODO: Replace with your network URI
       network_uri: projects/{project_id}/global/networks/default
-      # TODO: Replace with your subnetwork URI
-      subnetwork_uri: projects/{project_id}/regions/{region}/subnetworks/default
 
     pipelines:
       - source: {pipeline_file}
@@ -91,16 +89,28 @@ jobs:
       - uses: google-github-actions/setup-gcloud@v1
       - run: gcloud components update --quiet
       - uses: astral-sh/setup-uv@v7
-      - run: gcloud orchestration-pipelines deploy --env={environment}
+      - run: gcloud beta orchestration-pipelines deploy --environment={environment}
 """
 
 _VALIDATE_WORKFLOW_TEMPLATE = """\
-# This workflow is supposed to run on pull requests to validate the pipelines.
-#
-# Steps:
-# - Checkout code
-# - Authenticate to GCP
-# - Validate all pipelines listed in deployment.yaml
+name: Validate Pipelines
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: "${{{{ secrets.GCP_SA_KEY }}}}"
+      - uses: google-github-actions/setup-gcloud@v1
+      - run: gcloud components update --quiet
+      - uses: astral-sh/setup-uv@v7
+      - run: gcloud beta orchestration-pipelines validate --pipeline-paths={pipeline_file} --environment={environment}
 """
 
 
@@ -157,7 +167,12 @@ def InitProject(args):
   # Ensure dir exists
   files.MakeDir(str(workflows_dir))
 
-  files.WriteFileContents(validate_path, _VALIDATE_WORKFLOW_TEMPLATE)
+  files.WriteFileContents(
+      validate_path,
+      _VALIDATE_WORKFLOW_TEMPLATE.format(
+          pipeline_file=pipeline_file, environment=args.environment
+      ),
+  )
 
   files.WriteFileContents(
       deploy_path,

@@ -33,7 +33,6 @@ from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from surface.run import deploy
-from typing_extensions import override
 
 
 class _HiddenParserProxy:
@@ -442,7 +441,6 @@ class AppEngineToCloudRunAlpha(AppEngineToCloudRun):
         ),
     )
 
-  @override
   def _ValidateAndGeDeployFromSource(self, containers: Any) -> dict[Any, Any]:
     if hasattr(self, '_migration_flags') and 'image' in self._migration_flags:
       # If an image is provided, we are not deploying from source, so we return

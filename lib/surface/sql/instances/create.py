@@ -190,6 +190,8 @@ def AddBetaArgs(parser):
   flags.AddEnableAcceleratedReplicaMode(parser)
   flags.AddPerformanceCaptureConfig(parser, hidden=False)
   flags.AddUncMappings(parser)
+  flags.AddEnablePscAutoDns(parser, hidden=True)
+  flags.AddEnablePscWriteEndpointDns(parser, hidden=True)
 
 
 def AddAlphaArgs(unused_parser):
@@ -365,6 +367,28 @@ def RunBaseCreateCommand(args, release_track):
   ) and not args.IsKnownAndSpecified('enable_private_service_connect'):
     raise sql_exceptions.ArgumentError(
         '`--psc-auto-connections` requires `--enable-private-service-connect`'
+    )
+
+  if args.IsKnownAndSpecified(
+      'enable_psc_auto_dns'
+  ) and not args.IsKnownAndSpecified('enable_private_service_connect'):
+    raise sql_exceptions.ArgumentError(
+        '`--enable-psc-auto-dns` requires `--enable-private-service-connect`'
+    )
+
+  if args.IsKnownAndSpecified(
+      'enable_psc_write_endpoint_dns'
+  ) and not args.IsKnownAndSpecified('enable_private_service_connect'):
+    raise sql_exceptions.ArgumentError(
+        '`--enable-psc-write-endpoint-dns` requires'
+        ' `--enable-private-service-connect`'
+    )
+
+  if args.IsKnownAndSpecified(
+      'enable_psc_write_endpoint_dns'
+  ) and not args.IsKnownAndSpecified('enable_psc_auto_dns'):
+    raise sql_exceptions.ArgumentError(
+        '`--enable-psc-write-endpoint-dns` requires `--enable-psc-auto-dns`'
     )
 
   # TODO(b/372040396): Add the check for server_ca_mode when it is supported.

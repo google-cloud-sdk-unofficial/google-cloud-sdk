@@ -1,0 +1,29 @@
+- help_text:
+    brief: Describe a Google Compute Engine host.
+    description: Describe a Google Compute Engine host.
+    examples: |
+      To describe a host named `my-host` in zone `us-central1-a`:
+
+        $ {command} my-host --zone=us-central1-a
+
+  request:
+    api_version: alpha
+    collection: compute.hosts
+    method: get
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.compute.hosts.util:CreateAssociationHook
+
+  arguments:
+    resource:
+      help_text: The name of the host to describe.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:host
+
+    params:
+    - arg_name: reservation
+      required: false
+      help_text: |
+        Name of the reservation the host is associated with.
+    - arg_name: reservation-block
+      required: false
+      help_text: |
+        Name of the reservation block the host is associated with.

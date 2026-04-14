@@ -5,6 +5,83 @@ Copyright 2014-2026 Google Inc. All rights reserved.
 Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
 
 
+## 564.0.0 (2026-04-07)
+
+### Breaking Changes
+
+*   **(Saas Runtime)** Deprecated `gcloud saas-runtime` command group. Use `gcloud app-lifecycle-manager` instead.
+
+
+### Google Cloud CLI
+
+* Updated Linux bundled Python for the `gcloud` CLI to 3.13.11 with grpcio v1.80.0.
+* Updated Windows bundled Python for the `gcloud` CLI with grpcio v1.80.0 and setuptools v80.10.2 which fixed CVE-2026-23949.
+* Added `--check-certs` flag to `gcloud info --run-diagnostics` to troubleshoot
+  certificate validation failures when using proxy servers and custom CA certs.
+  * For example, to troubleshoot certificate verification failures for
+    `compute.googleapis.com`, run:
+    `gcloud info --run-diagnostics --check-certs=compute.googleapis.com`
+
+### App Lifecycle Manager
+
+* Added `gcloud app-lifecycle-manager` command group to replace `gcloud saas-runtime`.
+
+### BigLake
+
+*   Added list pagination to `gcloud biglake iceberg catalogs`.
+*   Added `--description` flag to `gcloud biglake iceberg catalogs create/update`.
+
+### Cloud Data Fusion
+
+* Added regional endpoint support for `gcloud beta data-fusion`. Specify
+  `--endpoint-mode=regional` or `--endpoint-mode=regional-preferred` to make API
+  requests with regional endpoints.
+
+### Cloud Firestore
+
+* Added support for search indexes in `gcloud firestore indexes composite` and `gcloud firestore indexes describe`.
+
+### Cloud Run
+
+* Added support for volumes with type=ephemeral-disk to `gcloud run deploy`,
+  `gcloud run services update`, `gcloud run jobs deploy`,
+  `gcloud run jobs update`, `gcloud run worker-pools deploy`
+  and `gcloud run worker-pools update` in beta.
+* Added regional endpoint support for the following `gcloud beta run` commands:
+  * `gcloud beta run deploy`
+  * `gcloud beta run services`
+  * `gcloud beta run revisions`
+  * `gcloud beta run jobs`
+  * `gcloud beta run executions`
+  Specify `--endpoint-mode=regional` or `--endpoint-mode=regional-preferred` to
+   make API requests with regional endpoints.
+* Supported build arguments in `gcloud run compose up`.
+
+### Cloud Storage
+
+* Promoted `--destination-kms-key-name` flag of `gcloud storage buckets relocate` to GA.
+
+### Compute Engine
+
+* Promoted `service-class-id` sub-argument of `--network-interface` flag on `gcloud compute instances create` to GA.
+* Promoted `service-class-id` sub-argument of `--network-interface` flag on `gcloud compute instance-templates create` to GA.
+* Promoted `--service-class-id` flag on `gcloud compute instances network-interfaces add` to GA.
+*   Promoted `gcloud compute health-sources get-health` and `gcloud compute composite-health-checks get-health` to beta and GA.
+*   Removed client-side validation for `--disk's size` field in `gcloud compute sole-tenancy node-templates create`. The API will now perform server-side validation for disk size.
+* Promoted `--resource-manager-tags` flag for `gcloud compute reservations create` to beta and GA.
+* Promoted `gcloud compute reservations slots get-version` to GA.
+* Promoted `gcloud compute reservations sub-blocks get-version` to GA.
+
+### Network Connectivity
+
+*   Added `--bandwidth=BANDWIDTH` flag to `gcloud beta network-connectivity transports update`.
+*   Added `--stack-type=STACK_TYPE` flag to `gcloud beta network-connectivity transports update`.
+*   Removed default behaviour of `--auto-accept` flag for `gcloud beta network-connectivity transports create`.
+
+
+Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
+
+
 ## 563.0.0 (2026-03-31)
 
 ### Google Cloud CLI

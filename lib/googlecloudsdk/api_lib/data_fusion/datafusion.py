@@ -27,16 +27,18 @@ class Datafusion(object):
   support API version switching in future.
   """
 
-  def __init__(self):
+  def __init__(self, location=None):
     super(Datafusion, self).__init__()
     self._api_version = 'v1beta1'
     self._client = None
     self._resources = None
+    self._location = location
 
   @property
   def client(self):
     if self._client is None:
-      self._client = apis.GetClientInstance('datafusion', self._api_version)
+      self._client = apis.GetClientInstance(
+          'datafusion', self._api_version, location=self._location)
     return self._client
 
   @property

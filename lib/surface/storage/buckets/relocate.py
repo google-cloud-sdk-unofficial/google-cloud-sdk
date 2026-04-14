@@ -208,19 +208,18 @@ class Relocate(base.Command):
         ),
     )
     flags.add_placement_flag(bucket_relocate_group)
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      bucket_relocate_group.add_argument(
-          '--destination-kms-key-name',
-          type=str,
-          help=textwrap.dedent("""\
-              This is only required when relocating a bucket that uses
-              Customer-Managed Encryption Keys (CMEK). The full resource name of
-              the Cloud KMS key to use for encrypting objects in the destination
-              bucket. This key will be set as the default bucket encryption key.
-              The key must exist in the destination location. Format:
-              projects/PROJECT/locations/LOCATION/keyRings/RING/cryptoKeys/KEY
-          """),
-      )
+    bucket_relocate_group.add_argument(
+        '--destination-kms-key-name',
+        type=str,
+        help=textwrap.dedent("""\
+            This is only required when relocating a bucket that uses
+            Customer-Managed Encryption Keys (CMEK). The full resource name of
+            the Cloud KMS key to use for encrypting objects in the destination
+            bucket. This key will be set as the default bucket encryption key.
+            The key must exist in the destination location. Format:
+            projects/PROJECT/locations/LOCATION/keyRings/RING/cryptoKeys/KEY
+        """),
+    )
     bucket_relocate_group.add_argument(
         '--dry-run',
         action='store_true',

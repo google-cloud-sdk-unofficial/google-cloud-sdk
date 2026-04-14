@@ -123,6 +123,12 @@ CREATE_INSTANCE = _SERVERLESS_PREFIX + 'create_instance'
 # Time to delete an instance
 DELETE_INSTANCE = _SERVERLESS_PREFIX + 'delete_instance'
 
+# Time to stop an instance
+STOP_INSTANCE = _SERVERLESS_PREFIX + 'stop_instance'
+
+# Time to start an instance
+START_INSTANCE = _SERVERLESS_PREFIX + 'start_instance'
+
 # Time to wait for an operation
 WAIT_OPERATION = _SERVERLESS_PREFIX + 'wait_operation'
 

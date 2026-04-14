@@ -152,3 +152,36 @@ def UpdateGetSharedRegionalCertificateAuthorityRequestPath(
 ):
   req.name = req.name + '/sharedRegionalCertificateAuthority'
   return req
+
+
+def UpdateAclPolicyRulesHook(resource_ref, args, req):
+  """Hook to merge add-rules/remove-rules into the request."""
+  if not getattr(args, 'add_rules', None) and not getattr(
+      args, 'remove_rules', None
+  ):
+    return req
+
+  messages = GetMessagesForResource(resource_ref)
+  existing_rules = req.aclPolicy.rules or []
+
+  # Index existing rules by username
+  rules_dict = {r.username: r.rule for r in existing_rules}
+
+  if getattr(args, 'add_rules', None):
+    for r in args.add_rules:
+      rules_dict[r['username']] = r['rule']
+
+  if getattr(args, 'remove_rules', None):
+    for r in args.remove_rules:
+      name = r['username']
+      if name in rules_dict:
+        del rules_dict[name]
+
+  # Convert back to message list using whatever the type of rules is
+  new_rules = []
+  # Attempt to use AclRule as type
+  for username, rule_str in rules_dict.items():
+    new_rules.append(messages.AclRule(username=username, rule=rule_str))
+
+  req.aclPolicy.rules = new_rules
+  return req

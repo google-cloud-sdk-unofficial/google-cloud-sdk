@@ -22,17 +22,15 @@ import json
 import subprocess
 from typing import Any
 
+from googlecloudsdk.api_lib.run import constants
+from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import iap_tunnel
 from googlecloudsdk.command_lib.compute import ssh_utils
 from googlecloudsdk.command_lib.util.ssh import ssh
 from googlecloudsdk.core import log
 from googlecloudsdk.core import requests as core_requests
-
-
-SSH_CA_PUBLIC_KEY_URL_TEMPLATE = (
-    "https://www.gstatic.com/cloud-run/ssh-ca-public-keys/keys-{region}.pub"
-)
+from googlecloudsdk.core.console import console_io
 
 
 def _GetProjectNumberFromWorkloadJson(
@@ -49,7 +47,9 @@ def _GetProjectNumberFromWorkloadJson(
   Raises:
     ValueError: If the project number is not found in the workload JSON.
   """
-  project_number = workload_json.get("metadata", {}).get("namespace")
+  project_number = workload_json.get(constants.METADATA, {}).get(
+      constants.NAMESPACE
+  )
   if not project_number:
     raise ValueError("Project number not found in workload.")
   return project_number
@@ -64,13 +64,13 @@ def _ValidateGen2(workload_json: dict[str, Any]) -> None:
   Raises:
     ValueError: If the workload is a gen1 deployment.
   """
-  template = workload_json.get("spec", {}).get("template", {})
+  template = workload_json.get(constants.SPEC, {}).get(constants.TEMPLATE, {})
   execution_environment = (
-      template.get("metadata", {})
-      .get("annotations", {})
-      .get("run.googleapis.com/execution-environment")
+      template.get(constants.METADATA, {})
+      .get(constants.ANNOTATIONS, {})
+      .get(k8s_object.EXECUTION_ENVIRONMENT_ANNOTATION)
   )
-  if execution_environment == "gen1":
+  if execution_environment == constants.GEN1:
     raise ValueError(
         "SSH is not supported for Cloud Run gen1 deployments. If you"
         " already switched the execution environment to gen2, please wait a"
@@ -95,7 +95,8 @@ def CreateSshTunnelArgs(
     track: ReleaseTrack, The currently running release track.
     project_number: str, the project number (string with digits).
     project: str, the project id.
-    deployment_name: str, the name of the deployment.
+    deployment_name: str, the name of the deployment. For services this will be
+        of the form {service-name}/revisions/{revision-id}.
     workload_type: Ssh.WorkloadType, the type of the workload.
     region: str, the region of the deployment.
     instance_id: str, the instance id (optional).
@@ -166,6 +167,13 @@ class Ssh:
 
     workload_json = self._GetWorkloadJson()
     _ValidateGen2(workload_json)
+
+    if (
+        self.workload_type == self.WorkloadType.SERVICE
+        and self.release_track != base.ReleaseTrack.ALPHA
+    ):
+      self.revision = self._GetOrValidateRevision(workload_json)
+
     self.service_account = self._GetServiceAccountFromWorkloadJson(
         workload_json
     )
@@ -178,7 +186,64 @@ class Ssh:
     )
 
     if self._UseCloudRunDomainOverride():
-      self.iap_tunnel_url_override = f"wss://{self.region}.ssh.run.app/v4"
+      self.iap_tunnel_url_override = constants.SSH_URL_TEMPLATE.format(
+          region=self.region
+      )
+
+  def _GetOrValidateRevision(self, workload_json):
+    """Returns a valid revision or raises an error.
+
+    Args:
+      workload_json: dict, The JSON representation of the Cloud Run workload.
+
+    Returns:
+      str, The revision name.
+
+    Raises:
+      ValueError: If the revision is invalid, or if there is a traffic split and
+        the user does not specify a revision when prompted.
+    """
+    revisions_serving_traffic = workload_json.get(constants.STATUS, {}).get(
+        constants.TRAFFIC, []
+    )
+    active_revisions = [
+        t.get(constants.REVISION_NAME)
+        for t in revisions_serving_traffic
+        if t.get(constants.PERCENT, 0) > 0
+    ]
+
+    if not active_revisions:
+      raise ValueError("No serving revisions found for the service.")
+
+    if self.revision and self.revision in active_revisions:
+      return self.revision
+    if self.revision:
+      raise ValueError(
+          f"Revision {self.revision} is invalid, or it is not serving"
+          " traffic. Please specify one of the following revisions:"
+          f" {active_revisions} using the --revision flag."
+      )
+
+    # The user did not specify a revision, and there is a traffic split.
+    if len(active_revisions) > 1:
+      if not console_io.CanPrompt():
+        raise ValueError(
+            "There is a traffic split. Please specify a revision from the"
+            f" following list: {active_revisions} using the --revision flag."
+        )
+
+      idx = console_io.PromptChoice(
+          active_revisions,
+          message=(
+              "There is a traffic split. Please specify which revision to SSH"
+              " into:\n"
+          ),
+          cancel_option=True,
+      )
+      return active_revisions[idx]
+    # The user did not specify a revision, and there is only one active
+    # revision.
+    return active_revisions[0]
 
   def _UseCloudRunDomainOverride(self):
     """Returns whether to use the Cloud Run domain override."""
@@ -238,17 +303,23 @@ class Ssh:
       ValueError: If the service account is not found in the workload JSON.
     """
     if self.workload_type == self.WorkloadType.INSTANCE:
-      service_account = workload_json.get("spec", {}).get("serviceAccountName")
+      service_account = workload_json.get(constants.SPEC, {}).get(
+          constants.SERVICE_ACCOUNT_NAME
+      )
     else:
-      template = workload_json.get("spec", {}).get("template", {})
-      service_account = template.get("spec", {}).get("serviceAccountName")
+      template = workload_json.get(constants.SPEC, {}).get(
+          constants.TEMPLATE, {}
+      )
+      service_account = template.get(constants.SPEC, {}).get(
+          constants.SERVICE_ACCOUNT_NAME
+      )
     if not service_account:
       raise ValueError("Service account not found for workload.")
     return service_account
 
   def HostKeyAlias(self):
     """Returns the host key alias for the SSH connection."""
-    return "cloud-run-default"
+    return constants.SSH_HOST_KEY_ALIAS
 
   def GetSshCommandComponents(self):
     """Returns the SSH command components."""
@@ -256,7 +327,7 @@ class Ssh:
     env.RequireSSH()
     keys = ssh.Keys.FromFilename()
     keys.EnsureKeysExist(overwrite=False)
-    user = "root"
+    user = constants.SSH_ROOT_USER
 
     # Note: this actually creates the certificate.
     ssh.GetOsloginState(
@@ -291,7 +362,11 @@ class Ssh:
       )
       known_hosts.Write()
 
-    deployment_name = self.revision if self.revision else self.deployment_name
+    deployment_name = (
+        f"{self.deployment_name}/revisions/{self.revision}"
+        if self.revision
+        else self.deployment_name
+    )
     iap_tunnel_args = CreateSshTunnelArgs(
         self.release_track,
         self.project_number,
@@ -340,7 +415,9 @@ class Ssh:
       the keys could not be fetched.
     """
 
-    endpoint = SSH_CA_PUBLIC_KEY_URL_TEMPLATE.format(region=self.region)
+    endpoint = constants.SSH_CA_PUBLIC_KEY_URL_TEMPLATE.format(
+        region=self.region
+    )
     try:
       with core_requests.GetSession() as session:
         response = session.get(endpoint, timeout=10)

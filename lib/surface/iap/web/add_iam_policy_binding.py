@@ -21,9 +21,7 @@ from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.iap import util as iap_util
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class AddIamPolicyBinding(base.Command):
   """Add IAM policy binding to an IAP IAM resource.
@@ -74,6 +72,8 @@ class AddIamPolicyBinding(base.Command):
   """,
   }
 
+  _support_agent_registry = False
+
   @classmethod
   def Args(cls, parser):
     """Register flags for this command.
@@ -84,6 +84,7 @@ class AddIamPolicyBinding(base.Command):
     """
     iap_util.AddIapIamResourceArgs(
         parser,
+        support_agent_registry=cls._support_agent_registry
     )
     iap_util.AddAddIamPolicyBindingArgs(parser)
     base.URI_FLAG.RemoveFromParser(parser)
@@ -102,5 +103,18 @@ class AddIamPolicyBinding(base.Command):
     iap_iam_ref = iap_util.ParseIapIamResource(
         self.ReleaseTrack(),
         args,
+        self._support_agent_registry
     )
     return iap_iam_ref.AddIamPolicyBinding(args.member, args.role, condition)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AddIamPolicyBindingAlpha(AddIamPolicyBinding):
+  """Add IAM policy binding to an IAP IAM resource.
+
+  Adds a policy binding to the IAM policy of an IAP IAM resource. One binding
+  consists of a member, a role, and an optional condition.
+  See $ {parent_command} get-iam-policy for examples of how to specify an IAP
+  IAM resource.
+  """
+  _support_agent_registry = True

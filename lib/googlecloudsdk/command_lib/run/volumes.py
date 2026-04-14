@@ -171,7 +171,7 @@ class _VolumeType(abc.ABC):
 
   @classmethod
   @abc.abstractmethod
-  def create_volume_v2(cls, volume):
+  def create_volume_v2(cls, volume: VolumeDict, types):
     """Creates the volume (V2) from the provided volume dict."""
     pass
 
@@ -332,7 +332,7 @@ class _TempDiskVolume(_VolumeType):
 
   @classmethod
   def release_tracks(cls):
-    return [base.ReleaseTrack.ALPHA]
+    return [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]
 
   @classmethod
   def required_fields(cls, release_track):
@@ -355,7 +355,7 @@ class _TempDiskVolume(_VolumeType):
         ),
         'size': (
             'A quantity representing the amount of disk space allocated to'
-            ' this volume, such as "512Mi" or "3G".'
+            ' this volume, such as "10Gi" or "100G".'
         )
     }
 
@@ -368,6 +368,18 @@ class _TempDiskVolume(_VolumeType):
     else:
       src = messages.EmptyDirVolumeSource(medium='Disk')
     new_vol.emptyDir = src
+
+  @classmethod
+  def create_volume_v2(cls, volume, types):
+    source = types.EmptyDirVolumeSource(
+        medium=types.EmptyDirVolumeSource.Medium.DISK
+    )
+    if 'size' in volume:
+      source.size_limit = volume['size']
+    return types.Volume(
+        name=volume['name'],
+        empty_dir=source,
+    )
 
 
 @_registered_volume_type

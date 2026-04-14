@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- #
 #
-# Copyright 2013 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -142,6 +142,17 @@ def CreateCLI(surfaces, translator=None):
   for dot_path, dir_path in surfaces:
     loader.AddModule(dot_path, dir_path, component=None)
 
+  # TODO(b/497928442): Remove cloned saas-runtime commands after a suitable
+  # deprecation period.
+  # Clone 'app-lifecycle-manager' surface into 'saas-runtime'.
+  loader.AddModule(
+      'saas_runtime', os.path.join(pkg_root, 'surface', 'app_lifecycle_manager')
+  )
+  loader.RegisterPreRunHook(
+      _IssueAppLifecycleManagerAliasWarning,
+      include_commands=r'gcloud\..*saas-runtime\..*',
+  )
+
   # Clone 'container/hub' surface into 'container/fleet'
   # for backward compatibility.
   loader.AddModule(
@@ -169,6 +180,14 @@ def CreateCLI(surfaces, translator=None):
   loader.RegisterPostRunHook(SurveyPromptCheck)
   generated_cli = loader.Generate()
   return generated_cli
+
+
+def _IssueAppLifecycleManagerAliasWarning(command_path=None):
+  del command_path
+  log.warning(
+      'The `gcloud saas-runtime` commands have been renamed and will soon be '
+      'removed. Please use `gcloud app-lifecycle-manager` instead.'
+  )
 
 
 @crash_handling.CrashManager

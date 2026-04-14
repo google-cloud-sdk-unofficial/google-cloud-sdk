@@ -41,6 +41,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_ACLPOLICIES = (
+      'projects.locations.aclPolicies',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/aclPolicies/'
+              '{aclPoliciesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_BACKUPCOLLECTIONS = (
       'projects.locations.backupCollections',
       '{+name}',
@@ -61,6 +72,13 @@ class Collections(enum.Enum):
               'backupCollections/{backupCollectionsId}/backups/{backupsId}',
       },
       ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_CAPOOLS = (
+      'projects.locations.caPools',
+      'projects/{projectsId}/locations/{locationsId}/caPools/{caPoolsId}',
+      {},
+      ['projectsId', 'locationsId', 'caPoolsId'],
       True
   )
   PROJECTS_LOCATIONS_INSTANCES = (

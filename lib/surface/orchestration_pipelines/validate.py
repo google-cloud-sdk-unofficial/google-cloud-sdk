@@ -151,7 +151,7 @@ class Validate(calliope_base.Command):
       for resource in environment.resources:
         if resource.type == "resourceProfile":
           continue
-        handler = registry.GetHandler(resource, environment, dry_run=True)
+        handler = registry.GetHandler(resource, environment)
         gcp_deployer.validate_gcp_resource_l1(handler)
 
       print(
@@ -177,7 +177,7 @@ class Validate(calliope_base.Command):
       for resource in environment.resources:
         if resource.type == "resourceProfile":
           continue
-        handler = registry.GetHandler(resource, environment, dry_run=True)
+        handler = registry.GetHandler(resource, environment)
         gcp_deployer.validate_gcp_resource_l2(handler)
 
       print(

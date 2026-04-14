@@ -1,0 +1,36 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: List BigLake Delta Sharing tables.
+    description: |
+      List BigLake Delta Sharing tables.
+  request:
+    collection: biglake.deltasharing.v1.projects.catalogs.shares.schemas.tables
+    api_version: delta_v1
+    method: list
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.biglake.delta_sharing:SetParentForList
+  arguments:
+    resource:
+      help_text: The schema to list tables from.
+      spec:
+        name: schema
+        collection: biglake.deltasharing.v1.projects.catalogs.shares.schemas
+        attributes:
+        - attribute_name: project
+          parameter_name: projectsId
+          property: core/project
+          help: The project.
+        - attribute_name: catalog
+          parameter_name: catalogsId
+          help: The BigQuery catalog ID.
+        - attribute_name: share
+          parameter_name: sharesId
+          help: The share ID.
+        - attribute_name: schema
+          parameter_name: schemasId
+          help: The schema ID.
+  output:
+    format: |
+      table(
+        name.basename():label=ID
+      )

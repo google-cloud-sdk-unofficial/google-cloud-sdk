@@ -24,6 +24,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+@base.RegionalEndpointsSupported
 class Delete(base.DeleteCommand):
   """Deletes a Cloud Data Fusion instance.
 
@@ -46,8 +47,8 @@ class Delete(base.DeleteCommand):
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
-    datafusion = df.Datafusion()
     instance_ref = args.CONCEPTS.instance.Parse()
+    datafusion = df.Datafusion(location=instance_ref.locationsId)
 
     name = instance_ref.RelativeName()
     req = datafusion.messages.DatafusionProjectsLocationsInstancesDeleteRequest(
@@ -68,6 +69,6 @@ class Delete(base.DeleteCommand):
       return operation
     else:
       waiter.WaitFor(
-          operation_poller.OperationPoller(), operation.name,
+          operation_poller.OperationPoller(datafusion), operation.name,
           'Waiting for [{}] to complete. This may take several minutes'.format(
               operation.name))

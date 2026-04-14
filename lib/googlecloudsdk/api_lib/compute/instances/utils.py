@@ -14,7 +14,6 @@
 # limitations under the License.
 """Convenience functions for dealing with instances."""
 
-
 import ipaddress
 from googlecloudsdk.api_lib.compute import alias_ip_range_utils
 from googlecloudsdk.api_lib.compute import constants
@@ -38,6 +37,7 @@ def CreateNetworkInterfaceMessage(
     address=None,
     private_network_ip=None,
     alias_ip_ranges_string=None,
+    alias_ipv6_ranges_string=None,
     network_tier=None,
     no_public_dns=None,
     public_dns=None,
@@ -61,6 +61,7 @@ def CreateNetworkInterfaceMessage(
     igmp_query=None,
     enable_vpc_scoped_dns=None,
     service_class_id=None,
+    support_alias_ipv6_ranges=False,
 ):
   """Returns a new NetworkInterface message."""
   # TODO(b/30460572): instance reference should have zone name, not zone URI.
@@ -128,12 +129,26 @@ def CreateNetworkInterfaceMessage(
   if queue_count is not None:
     network_interface.queueCount = queue_count
 
-  if alias_ip_ranges_string:
-    network_interface.aliasIpRanges = (
-        alias_ip_range_utils.CreateAliasIpRangeMessagesFromString(
-            messages, True, alias_ip_ranges_string
-        )
-    )
+  if support_alias_ipv6_ranges:
+    if alias_ip_ranges_string:
+      network_interface.aliasIpRanges = (
+          alias_ip_range_utils.CreateAliasIpRangeMessagesFromString(
+              messages, True, alias_ip_ranges_string
+          )
+      )
+    if alias_ipv6_ranges_string:
+      network_interface.aliasIpv6Ranges = (
+          alias_ip_range_utils.CreateAliasIpv6RangeMessagesFromString(
+              messages, True, alias_ipv6_ranges_string
+          )
+      )
+  else:
+    if alias_ip_ranges_string:
+      network_interface.aliasIpRanges = (
+          alias_ip_range_utils.CreateAliasIpRangeMessagesFromStringOld(
+              messages, True, alias_ip_ranges_string
+          )
+      )
 
   if stack_type is not None:
     network_interface.stackType = (

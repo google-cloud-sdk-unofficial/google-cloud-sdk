@@ -217,8 +217,8 @@ class Run(base.Command):
     parser.add_argument(
         '--launcher-machine-type',
         help=(
-            'The machine type to use for launching the job. The default is '
-            'n1-standard-1.'
+            'The machine type to use for launching the job. If not set, '
+            'Dataflow will select a default machine type.'
         ),
     )
 

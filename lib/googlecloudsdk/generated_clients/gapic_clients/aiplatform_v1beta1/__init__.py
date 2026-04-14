@@ -20,6 +20,8 @@ __version__ = package_version.__version__
 
 from .services.prediction_service import PredictionServiceClient
 from .services.prediction_service import PredictionServiceAsyncClient
+from .services.semantic_governance_policy_service import SemanticGovernancePolicyServiceClient
+from .services.semantic_governance_policy_service import SemanticGovernancePolicyServiceAsyncClient
 
 from .types.api_auth import ApiAuth
 from .types.auth import AuthConfig
@@ -91,8 +93,12 @@ from .types.io import JiraSource
 from .types.io import SharePointSources
 from .types.io import SlackSource
 from .types.io import TFRecordDestination
+from .types.io import VertexMultimodalDatasetDestination
+from .types.io import VertexMultimodalDatasetSource
 from .types.openapi import Schema
 from .types.openapi import Type
+from .types.operation import DeleteOperationMetadata
+from .types.operation import GenericOperationMetadata
 from .types.prediction_service import ChatCompletionsRequest
 from .types.prediction_service import CountTokensRequest
 from .types.prediction_service import CountTokensResponse
@@ -124,6 +130,16 @@ from .types.prediction_service import StreamingPredictResponse
 from .types.prediction_service import StreamingRawPredictRequest
 from .types.prediction_service import StreamingRawPredictResponse
 from .types.prediction_service import StreamRawPredictRequest
+from .types.semantic_governance_policy_service import CreateSemanticGovernancePolicyOperationMetadata
+from .types.semantic_governance_policy_service import CreateSemanticGovernancePolicyRequest
+from .types.semantic_governance_policy_service import DeleteSemanticGovernancePolicyOperationMetadata
+from .types.semantic_governance_policy_service import DeleteSemanticGovernancePolicyRequest
+from .types.semantic_governance_policy_service import GetSemanticGovernancePolicyRequest
+from .types.semantic_governance_policy_service import ListSemanticGovernancePoliciesRequest
+from .types.semantic_governance_policy_service import ListSemanticGovernancePoliciesResponse
+from .types.semantic_governance_policy_service import SemanticGovernancePolicy
+from .types.semantic_governance_policy_service import UpdateSemanticGovernancePolicyOperationMetadata
+from .types.semantic_governance_policy_service import UpdateSemanticGovernancePolicyRequest
 from .types.tool import CodeExecutionResult
 from .types.tool import DynamicRetrievalConfig
 from .types.tool import EnterpriseWebSearch
@@ -157,8 +173,11 @@ from .types.usage_metadata import UsageMetadata
 from .types.vertex_rag_data import CorpusStatus
 from .types.vertex_rag_data import FileStatus
 from .types.vertex_rag_data import ImportRagFilesConfig
+from .types.vertex_rag_data import MetadataList
+from .types.vertex_rag_data import MetadataValue
 from .types.vertex_rag_data import RagChunk
 from .types.vertex_rag_data import RagCorpus
+from .types.vertex_rag_data import RagDataSchema
 from .types.vertex_rag_data import RagEmbeddingModelConfig
 from .types.vertex_rag_data import RagEngineConfig
 from .types.vertex_rag_data import RagFile
@@ -167,12 +186,16 @@ from .types.vertex_rag_data import RagFileMetadataConfig
 from .types.vertex_rag_data import RagFileParsingConfig
 from .types.vertex_rag_data import RagFileTransformationConfig
 from .types.vertex_rag_data import RagManagedDbConfig
+from .types.vertex_rag_data import RagMetadata
+from .types.vertex_rag_data import RagMetadataSchemaDetails
 from .types.vertex_rag_data import RagVectorDbConfig
 from .types.vertex_rag_data import UploadRagFileConfig
+from .types.vertex_rag_data import UserSpecifiedMetadata
 from .types.vertex_rag_data import VertexAiSearchConfig
 
 __all__ = (
     'PredictionServiceAsyncClient',
+    'SemanticGovernancePolicyServiceAsyncClient',
 'ApiAuth',
 'Attribution',
 'AuthConfig',
@@ -193,8 +216,13 @@ __all__ = (
 'CorpusStatus',
 'CountTokensRequest',
 'CountTokensResponse',
+'CreateSemanticGovernancePolicyOperationMetadata',
+'CreateSemanticGovernancePolicyRequest',
 'CsvDestination',
 'CsvSource',
+'DeleteOperationMetadata',
+'DeleteSemanticGovernancePolicyOperationMetadata',
+'DeleteSemanticGovernancePolicyRequest',
 'DirectPredictRequest',
 'DirectPredictResponse',
 'DirectRawPredictRequest',
@@ -236,6 +264,8 @@ __all__ = (
 'GenerateContentResponse',
 'GenerateVideoResponse',
 'GenerationConfig',
+'GenericOperationMetadata',
+'GetSemanticGovernancePolicyRequest',
 'GoogleDriveSource',
 'GoogleMaps',
 'GoogleSearchRetrieval',
@@ -250,7 +280,11 @@ __all__ = (
 'IntegratedGradientsAttribution',
 'InvokeRequest',
 'JiraSource',
+'ListSemanticGovernancePoliciesRequest',
+'ListSemanticGovernancePoliciesResponse',
 'LogprobsResult',
+'MetadataList',
+'MetadataValue',
 'Modality',
 'ModalityTokenCount',
 'ModelArmorConfig',
@@ -270,6 +304,7 @@ __all__ = (
 'ProactivityConfig',
 'RagChunk',
 'RagCorpus',
+'RagDataSchema',
 'RagEmbeddingModelConfig',
 'RagEngineConfig',
 'RagFile',
@@ -278,6 +313,8 @@ __all__ = (
 'RagFileParsingConfig',
 'RagFileTransformationConfig',
 'RagManagedDbConfig',
+'RagMetadata',
+'RagMetadataSchemaDetails',
 'RagRetrievalConfig',
 'RagVectorDbConfig',
 'RawPredictRequest',
@@ -291,6 +328,8 @@ __all__ = (
 'Schema',
 'SearchEntryPoint',
 'Segment',
+'SemanticGovernancePolicy',
+'SemanticGovernancePolicyServiceClient',
 'SharePointSources',
 'SlackSource',
 'SmoothGradConfig',
@@ -312,13 +351,18 @@ __all__ = (
 'ToolConfig',
 'ToolUseExample',
 'Type',
+'UpdateSemanticGovernancePolicyOperationMetadata',
+'UpdateSemanticGovernancePolicyRequest',
 'UploadRagFileConfig',
 'UrlContext',
 'UrlContextMetadata',
 'UrlMetadata',
 'UsageMetadata',
+'UserSpecifiedMetadata',
 'VertexAISearch',
 'VertexAiSearchConfig',
+'VertexMultimodalDatasetDestination',
+'VertexMultimodalDatasetSource',
 'VertexRagStore',
 'VideoMetadata',
 'VoiceConfig',

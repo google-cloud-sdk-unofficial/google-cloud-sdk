@@ -20,7 +20,9 @@ from googlecloudsdk.command_lib.compute.health_sources import flags
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class GetHealth(base.DescribeCommand):
   """Get health status of a health source."""
 
@@ -29,7 +31,7 @@ class GetHealth(base.DescribeCommand):
           """
       To get health status of a single health source, run:
 
-        $ {command} <HEALTH_SOURCE> --region=<REGION>
+        $ {command} HEALTH_SOURCE --region=REGION
       """
       ),
   }

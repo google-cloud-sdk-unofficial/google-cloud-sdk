@@ -14,6 +14,7 @@
 # limitations under the License.
 """Command for deleting a service."""
 
+import copy
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
@@ -29,21 +30,23 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.Command):
   """Delete a service."""
 
   detailed_help = {
-      'DESCRIPTION':
+      'DESCRIPTION': (
           """\
           {description}
-          """,
-      'EXAMPLES':
+          """
+      ),
+      'EXAMPLES': (
           """\
           To delete a service:
 
               $ {command} <service-name>
-          """,
+          """
+      ),
   }
 
   @staticmethod
@@ -53,7 +56,8 @@ class Delete(base.Command):
         resource_args.GetServiceResourceSpec(),
         'Service to delete.',
         required=True,
-        prefixes=False)
+        prefixes=False,
+    )
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
     flags.AddAsyncFlag(parser, default_async_for_cluster=True)
 
@@ -73,9 +77,11 @@ class Delete(base.Command):
     flags.ValidateResource(service_ref)
     console_io.PromptContinue(
         message='Service [{service}] will be deleted.'.format(
-            service=service_ref.servicesId),
+            service=service_ref.servicesId
+        ),
         throw_if_unattended=True,
-        cancel_on_no=True)
+        cancel_on_no=True,
+    )
 
     async_ = deletion.AsyncOrDefault(args.async_)
     with serverless_operations.Connect(conn_context) as client:
@@ -90,8 +96,16 @@ class Delete(base.Command):
       log.DeletedResource(service_ref.servicesId, 'service')
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.RegionalEndpointsSupported
+class BetaDelete(Delete):
+  """Delete a service."""
+
+  detailed_help = copy.deepcopy(Delete.detailed_help)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaDelete(Delete):
+class AlphaDelete(BetaDelete):
   """Delete a service."""
 
   @staticmethod

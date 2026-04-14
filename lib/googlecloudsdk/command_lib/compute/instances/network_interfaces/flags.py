@@ -134,6 +134,41 @@ def AddAliasesArg(parser, add_network_interface=False):
   )
 
 
+def AddIpv6AliasesArg(parser, add_network_interface=False):
+  """Adds --ipv6-aliases argument to the parser for alias IPv6 ranges."""
+  if add_network_interface:
+    help_text = """
+        The IPv6 alias ranges to allocate for this interface. If there are
+        multiple IPv6 alias ranges, they are separated by semicolons.
+
+        For example:
+
+            --ipv6-aliases="2001:db8:1234::/80;range1=/96"
+
+        Each IPv6 alias range consists of an optional range name and an IPv6 range
+        separated by an equal sign, or just the IPv6 range.
+        The range name is the name of the range within the network
+        interface's subnet from which to allocate an IPv6 alias range. If
+        unspecified, it defaults to the primary IPv6 range of the subnet.
+        The IPv6 range can be a CIDR range (e.g. `2001:db8:abcd::/80`) or a
+        prefix length (e.g. `/96`).
+      """
+  else:
+    help_text = """
+        The IPv6 alias ranges to allocate for this interface. If there are
+        multiple IPv6 alias ranges, they are separated by semicolons.
+
+        For example:
+
+            --ipv6-aliases="2001:db8:abcd::/80;r1=/96"
+      """
+  parser.add_argument(
+      '--ipv6-aliases',
+      type=str,
+      help=help_text,
+  )
+
+
 def AddStackTypeArg(parser):
   parser.add_argument(
       '--stack-type',

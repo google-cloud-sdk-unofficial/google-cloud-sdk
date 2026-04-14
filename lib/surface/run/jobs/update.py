@@ -14,6 +14,7 @@
 # limitations under the License.
 """Update a Cloud Run Job."""
 
+import copy
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import config_changes
@@ -52,9 +53,11 @@ Container Flags
   group.AddArgument(flags.MemoryFlag())
   group.AddArgument(flags.CpuFlag())
   group.AddArgument(flags.GpuFlag())
-  group.AddArgument(flags.ArgsFlag())
-  group.AddArgument(flags.SecretsFlags())
   group.AddArgument(flags.CommandFlag())
+  group.AddArgument(flags.ArgsFlag())
+  if release_track != base.ReleaseTrack.GA:
+    group.AddArgument(flags.WorkdirFlag())
+  group.AddArgument(flags.SecretsFlags())
   group.AddArgument(flags.DependsOnFlag())
   group.AddArgument(flags.AddVolumeMountFlag())
   group.AddArgument(flags.RemoveVolumeMountFlag())
@@ -70,14 +73,18 @@ class Update(base.Command):
   """Update a Cloud Run Job."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION': (
+          """\
           Updates a Cloud Run job.
-          """,
-      'EXAMPLES': """\
+          """
+      ),
+      'EXAMPLES': (
+          """\
           To update the container image of Cloud Run job `my-job`:
 
               $ {command} my-job --image=us-docker.pkg.dev/project/image
-          """,
+          """
+      ),
   }
 
   @classmethod
@@ -113,7 +120,8 @@ class Update(base.Command):
     polling_group = parser.add_mutually_exclusive_group()
     flags.AddAsyncFlag(polling_group)
     execute_group = polling_group.add_argument_group(
-        help='--async cannot be used if executing the job after the update.')
+        help='--async cannot be used if executing the job after the update.'
+    )
     flags.AddWaitForCompletionFlag(execute_group, implies_execute_now=True)
 
     flags.AddExecuteNowFlag(execute_group)
@@ -125,7 +133,7 @@ class Update(base.Command):
   @staticmethod
   def Args(parser):
     Update.CommonArgs(parser)
-    container_args = ContainerArgGroup()
+    container_args = ContainerArgGroup(base.ReleaseTrack.GA)
     container_parser.AddContainerFlags(parser, container_args)
     flags.RemoveContainersFlag().AddToParser(parser)
 
@@ -138,8 +146,8 @@ class Update(base.Command):
         args, flags.Product.RUN, self.ReleaseTrack()
     )
     changes = flags.GetJobConfigurationChanges(
-        args,
-        release_track=self.ReleaseTrack())
+        args, release_track=self.ReleaseTrack()
+    )
     changes.append(
         config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack())
     )
@@ -156,6 +164,7 @@ class Update(base.Command):
         header_msg = 'Updating and running job...'
       else:
         header_msg = 'Updating job...'
+
       def _UpdateJob(changes_):
         with progress_tracker.StagedProgressTracker(
             header_msg,
@@ -222,8 +231,11 @@ class Update(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.RegionalEndpointsSupported
 class BetaUpdate(Update):
   """Update a Cloud Run Job."""
+
+  detailed_help = copy.deepcopy(Update.detailed_help)
 
   @classmethod
   def Args(cls, parser):

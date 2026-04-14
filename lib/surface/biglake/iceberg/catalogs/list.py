@@ -14,6 +14,7 @@
 # limitations under the License.
 """The list command for BigLake Iceberg REST catalogs."""
 
+from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.biglake import util
 from googlecloudsdk.calliope import base
 
@@ -51,7 +52,12 @@ class ListIcebergCatalogs(base.ListCommand):
         parent=parent_name
     )
 
-    response = client.iceberg_v1_restcatalog_extensions_projects_catalogs.List(
-        request
+    return list_pager.YieldFromList(
+        client.iceberg_v1_restcatalog_extensions_projects_catalogs,
+        request,
+        current_token_attribute='page_token',
+        next_token_attribute='next_page_token',
+        batch_size_attribute='page_size',
+        batch_size=args.page_size,
+        field='iceberg_catalogs',
     )
-    return response.iceberg_catalogs

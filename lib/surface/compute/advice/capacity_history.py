@@ -56,7 +56,6 @@ DETAILED_HELP = {
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class CapacityHistory(base.Command):
   """Show historical data on Spot VMs preemption and price."""
 

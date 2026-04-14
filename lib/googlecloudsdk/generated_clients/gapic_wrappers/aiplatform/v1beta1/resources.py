@@ -106,6 +106,14 @@ class Collections(enum.Enum):
       ['project', 'location', 'rag_corpus'],
       True
   )
+  PROJECTS_LOCATIONS_RAGCORPORA_RAGDATASCHEMAS = (
+      'projects.locations.ragCorpora.ragDataSchemas',
+      'projects/{project}/locations/{location}/ragCorpora/{rag_corpus}/'
+      'ragDataSchemas/{rag_data_schema}',
+      {},
+      ['project', 'location', 'rag_corpus', 'rag_data_schema'],
+      True
+  )
   PROJECTS_LOCATIONS_RAGCORPORA_RAGFILES = (
       'projects.locations.ragCorpora.ragFiles',
       'projects/{project}/locations/{location}/ragCorpora/{rag_corpus}/'
@@ -114,11 +122,35 @@ class Collections(enum.Enum):
       ['project', 'location', 'rag_corpus', 'rag_file'],
       True
   )
+  PROJECTS_LOCATIONS_RAGCORPORA_RAGFILES_RAGMETADATA = (
+      'projects.locations.ragCorpora.ragFiles.ragMetadata',
+      'projects/{project}/locations/{location}/ragCorpora/{rag_corpus}/'
+      'ragFiles/{rag_file}/ragMetadata/{rag_metadata}',
+      {},
+      ['project', 'location', 'rag_corpus', 'rag_file', 'rag_metadata'],
+      True
+  )
   PROJECTS_LOCATIONS_RAGENGINECONFIG = (
       'projects.locations.ragEngineConfig',
       'projects/{project}/locations/{location}/ragEngineConfig',
       {},
       ['project', 'location'],
+      True
+  )
+  PROJECTS_LOCATIONS_SEMANTICGOVERNANCEPOLICIES = (
+      'projects.locations.semanticGovernancePolicies',
+      'projects/{project}/locations/{location}/semanticGovernancePolicies/'
+      '{semantic_governance_policy}',
+      {},
+      ['project', 'location', 'semantic_governance_policy'],
+      True
+  )
+  PROJECTS_LOCATIONS_SEMANTICGOVERNANCEPOLICIES_OPERATIONS = (
+      'projects.locations.semanticGovernancePolicies.operations',
+      'projects/{project}/locations/{location}/semanticGovernancePolicies/'
+      '{semantic_governance_policy}/operations/{operation}',
+      {},
+      ['project', 'location', 'semantic_governance_policy', 'operation'],
       True
   )
 

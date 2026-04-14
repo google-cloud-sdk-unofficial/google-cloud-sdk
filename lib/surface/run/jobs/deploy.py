@@ -14,7 +14,7 @@
 # limitations under the License.
 """Deploy a container to Cloud Run that will run to completion."""
 
-
+import copy
 import enum
 import os.path
 
@@ -67,6 +67,8 @@ Container Flags
   group.AddArgument(flags.CpuFlag())
   group.AddArgument(flags.GpuFlag())
   group.AddArgument(flags.ArgsFlag())
+  if release_track != base.ReleaseTrack.GA:
+    group.AddArgument(flags.WorkdirFlag())
   group.AddArgument(flags.SecretsFlags())
   group.AddArgument(flags.CommandFlag())
   group.AddArgument(flags.DependsOnFlag())
@@ -84,10 +86,13 @@ class Deploy(base.Command):
   """Create or update a Cloud Run job."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION': (
+          """\
           Creates or updates a Cloud Run job.
-          """,
-      'EXAMPLES': """\
+          """
+      ),
+      'EXAMPLES': (
+          """\
           To deploy a new job `my-data-transformation` to Cloud Run:
 
               $ {command} my-data-transformation --image=us-docker.pkg.dev/project/image
@@ -96,7 +101,8 @@ class Deploy(base.Command):
           with a suggested default value:
 
               $ {command} --image=us-docker.pkg.dev/project/image
-          """,
+          """
+      ),
   }
 
   @classmethod
@@ -132,7 +138,8 @@ class Deploy(base.Command):
     flags.AddAsyncFlag(polling_group)
 
     execute_group = polling_group.add_argument_group(
-        help='--async cannot be used if executing the job after the update.')
+        help='--async cannot be used if executing the job after the update.'
+    )
     flags.AddWaitForCompletionFlag(execute_group, implies_execute_now=True)
 
     flags.AddExecuteNowFlag(execute_group)
@@ -144,7 +151,7 @@ class Deploy(base.Command):
   @staticmethod
   def Args(parser):
     Deploy.CommonArgs(parser)
-    container_args = ContainerArgGroup()
+    container_args = ContainerArgGroup(base.ReleaseTrack.GA)
     container_parser.AddContainerFlags(parser, container_args)
     flags.RemoveContainersFlag().AddToParser(parser)
 
@@ -263,8 +270,8 @@ class Deploy(base.Command):
       )
 
     changes = flags.GetJobConfigurationChanges(
-        args,
-        release_track=self.ReleaseTrack())
+        args, release_track=self.ReleaseTrack()
+    )
     changes.append(
         config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack())
     )
@@ -367,9 +374,12 @@ class Deploy(base.Command):
       return job
 
 
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class BetaDeploy(Deploy):
   """Create or update a Cloud Run job."""
+
+  detailed_help = copy.deepcopy(Deploy.detailed_help)
 
   @classmethod
   def Args(cls, parser):

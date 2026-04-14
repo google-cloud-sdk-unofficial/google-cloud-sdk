@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -137,6 +137,22 @@
           type: bool
           help_text: |-
             Rotate the server certificates.
+    - group:
+        mutex: true
+        help_text: |-
+          Arguments for the  acl policy.
+        params:
+        - arg_name: acl-policy
+          help_text: |-
+            The ACL policy for the instance.
+            Format: projects/{project}/locations/{location}/aclPolicies/{acl_policy}
+          is_positional: false
+          is_primary_resource: false
+          resource_spec: !REF googlecloudsdk.command_lib.memorystore.v1alpha_resources:projects_locations_acl_policies
+          resource_method_params:
+            instance.aclPolicy: '{__relative_name__}'
+          required: false
+          clearable: true
     - help_text: |-
         Identifier. Unique name of the instance.
         Format: projects/{project}/locations/{location}/instances/{instance}
@@ -154,6 +170,20 @@
       spec:
       - api_field: key
       - api_field: value
+    - arg_name: auth-mode
+      api_field: instance.authorizationMode
+      required: false
+      help_text: |-
+        Authorization mode of the instance.
+      choices:
+      - arg_value: auth-disabled
+        enum_value: AUTH_DISABLED
+        help_text: |-
+          Authorization disabled.
+      - arg_value: token-auth
+        enum_value: TOKEN_AUTH
+        help_text: |-
+          Token based authorization.
     - arg_name: shard-count
       api_field: instance.shardCount
       required: false
@@ -598,6 +628,8 @@
         not supported (00000000-0000-0000-0000-000000000000).
   request:
     api_version: v1alpha
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.memorystore.instances_update_util:UpdateAuthMode
     collection:
     - memorystore.projects.locations.instances
   async:

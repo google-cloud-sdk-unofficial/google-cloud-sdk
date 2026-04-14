@@ -642,6 +642,24 @@ class ContainerArgsChange(ContainerConfigChanger):
     container.args = self.args
 
 
+@dataclasses.dataclass(init=False, frozen=True)
+class ContainerWorkdirChange(ContainerConfigChanger):
+  """Represents the user intent to change the 'workingDir' for the container.
+
+  Attributes:
+    workdir: The working directory to set in the adjusted container.
+  """
+
+  workdir: str
+
+  def __init__(self, workdir, **kwargs):
+    super().__init__(**kwargs)
+    object.__setattr__(self, 'workdir', workdir)
+
+  def AdjustContainer(self, container: k8s_min.Container):
+    container.working_dir = self.workdir
+
+
 @dataclasses.dataclass(frozen=True)
 class EnvVarLiteralChanges(ContainerConfigChanger):
   """Represents the user intent to modify environment variables string literals.

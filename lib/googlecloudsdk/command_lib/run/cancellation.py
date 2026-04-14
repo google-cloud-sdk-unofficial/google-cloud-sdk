@@ -14,10 +14,24 @@
 # limitations under the License.
 """Wrapper around serverless_operations CancelFoo for surfaces."""
 
+import dataclasses
+from typing import Literal, TypeAlias
 
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.command_lib.run import exceptions as serverless_exceptions
 from googlecloudsdk.core.console import progress_tracker
+
+# The cancellation reason that will appear in the resource's terminal condition
+_Reason: TypeAlias = Literal['Cancelled', 'Stopped']
+
+
+@dataclasses.dataclass(frozen=True)
+class _ProgressStatusMessages:
+  """Progress status messages."""
+
+  header: str
+  failed: str
+  already_done: str
 
 
 class CancellationPoller(waiter.OperationPoller):
@@ -44,33 +58,50 @@ class CancellationPoller(waiter.OperationPoller):
     return obj
 
 
-def Cancel(ref, getter, canceller, async_):
+def Cancel(
+    ref, getter, canceller, async_, expected_reason: _Reason = 'Cancelled'
+):
   """Cancels a resource for a surface, including a pretty progress tracker."""
   if async_:
     canceller(ref)
     return
   poller = CancellationPoller(getter)
+  messages = _ProgressMessages(ref.Name(), expected_reason)
   with progress_tracker.ProgressTracker(
-      message='Cancelling [{}]'.format(ref.Name()),
+      message=messages.header,
       detail_message_callback=poller.GetMessage,
   ):
     canceller(ref)
     res = waiter.PollUntilDone(poller, ref)
     if not res:
-      raise serverless_exceptions.CancellationFailedError(
-          'Failed to cancel [{}].'.format(ref.Name())
-      )
+      raise serverless_exceptions.CancellationFailedError(messages.failed)
     if res.conditions.IsReady():
-      raise serverless_exceptions.CancellationFailedError(
-          '[{}] has completed successfully before it could be cancelled.'
-          .format(ref.Name())
-      )
-    if res.conditions.TerminalConditionReason() != 'Cancelled':
+      raise serverless_exceptions.CancellationFailedError(messages.already_done)
+    if res.conditions.TerminalConditionReason() != expected_reason:
       if poller.GetMessage():
         raise serverless_exceptions.CancellationFailedError(
-            'Failed to cancel [{}]: {}'.format(ref.Name(), poller.GetMessage())
+            f'{messages.failed[:-1]}: {poller.GetMessage()}'
         )
       else:
-        raise serverless_exceptions.CancellationFailedError(
-            'Failed to cancel [{}].'.format(ref.Name())
-        )
+        raise serverless_exceptions.CancellationFailedError(messages.failed)
+
+
+def _ProgressMessages(
+    name: str, expected_reason: _Reason
+) -> _ProgressStatusMessages:
+  """Status messages to be printed by the progress tracker."""
+  if expected_reason == 'Stopped':
+    return _ProgressStatusMessages(
+        header=f'Stopping [{name}]',
+        failed=f'Failed to stop [{name}].',
+        already_done=(
+            f'[{name}] has completed successfully before it could be stopped.'
+        ),
+    )
+  return _ProgressStatusMessages(
+      header=f'Cancelling [{name}]',
+      failed=f'Failed to cancel [{name}].',
+      already_done=(
+          f'[{name}] has completed successfully before it could be cancelled.'
+      ),
+  )

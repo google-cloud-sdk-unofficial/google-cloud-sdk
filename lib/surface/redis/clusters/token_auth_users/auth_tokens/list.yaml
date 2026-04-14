@@ -1,0 +1,38 @@
+release_tracks: [ALPHA, BETA]
+hidden: true
+
+help_text:
+  brief: |
+    List auth tokens for a token auth user.
+  description: |
+    List auth tokens for a token auth user.
+
+  examples: |
+    To list up to 2 auth tokens for a token auth user named 'my-token-auth-user' on a cluster named 'my-cluster' in the us-central1 region, run:
+
+    $ {command} --cluster=my-cluster --token-auth-user=my-token-auth-user --region=us-central1 --limit=2
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.redis.resources:token_auth_user
+    help_text: |
+      The token auth user to whom the auth tokens belong.
+
+request:
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  collection: redis.projects.locations.clusters.tokenAuthUsers.authTokens
+
+response:
+  id_field: name
+
+output:
+  format: |
+    table(
+      name.basename():label=AUTH_TOKEN_NAME,
+      token:label=TOKEN,
+      createTime:label=CREATE_TIME:sort=1,
+      state:label=STATE
+    )

@@ -16,15 +16,22 @@
 """A module for diagnosing common network and proxy problems."""
 
 
+import datetime
+import re
+import sys
+import warnings
+
+import certifi
 from googlecloudsdk.core import config
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import requests as core_requests
 from googlecloudsdk.core.diagnostics import check_base
 from googlecloudsdk.core.diagnostics import diagnostic_base
 from googlecloudsdk.core.diagnostics import http_proxy_setup
-
+from googlecloudsdk.core.util import files
 import requests
 from six.moves import urllib
+import urllib3.exceptions
 
 _NETWORK_TIMEOUT = 60  # Timeout in seconds when testing GET requests
 
@@ -32,18 +39,16 @@ _NETWORK_TIMEOUT = 60  # Timeout in seconds when testing GET requests
 class NetworkDiagnostic(diagnostic_base.Diagnostic):
   """Diagnose and fix local network connection issues."""
 
-  def __init__(self):
+  def __init__(self, check_certs_host=None):
     intro = ('Network diagnostic detects and fixes local network connection '
              'issues.')
+    checklist = []
+    if check_certs_host:
+      checklist.append(CertChecker(check_certs_host))
+    checklist.append(ReachabilityChecker())
     super(NetworkDiagnostic, self).__init__(
-        intro=intro, title='Network diagnostic',
-        checklist=[ReachabilityChecker()])
-
-  def RunChecks(self):
-    if not properties.IsDefaultUniverse():
-      # Skip network reachability checks on non-default universes.
-      return True
-    return super().RunChecks()
+        intro=intro, title='Network diagnostic', checklist=checklist
+    )
 
 
 def DefaultUrls():
@@ -84,7 +89,15 @@ class ReachabilityChecker(check_base.Checker):
         with no applicable fix.
     """
     if urls is None:
-      urls = DefaultUrls()
+      if properties.IsDefaultUniverse():
+        urls = DefaultUrls()
+      else:
+        result = check_base.Result(
+            passed=True,
+            message=(
+                'Skipping reachability check for default URLs on non-default'
+                ' universe.'))
+        return result, None
 
     failures = []
     # Check reachability using requests
@@ -127,3 +140,147 @@ def ConstructMessageFromFailures(failures, first_run):
                 'firewall settings.\n')
 
   return message
+
+
+class CertChecker(check_base.Checker):
+  """Checks the certificate chain for a given host."""
+
+  def __init__(self, host):
+    self.host = host
+
+  @property
+  def issue(self):
+    return 'certificate verification'
+
+  def Check(self, first_run=True):
+    if sys.version_info < (3, 13):
+      result = check_base.Result(
+          passed=False,
+          message=(
+              'Certificate diagnostics are only supported in Python 3.13 or'
+              ' newer.'
+          ),
+      )
+      return result, None
+    try:
+      from cryptography import x509  # pylint: disable=g-import-not-at-top
+      from cryptography.x509 import verification  # pylint: disable=g-import-not-at-top
+    except ImportError:
+      result = check_base.Result(
+          passed=False,
+          message='Certificate diagnostics require the cryptography library.',
+      )
+      return result, None
+
+    ca_certs_file = properties.VALUES.core.custom_ca_certs_file.Get()
+    if not ca_certs_file:
+      ca_certs_file = certifi.where()
+    pem_data = files.ReadBinaryFileContents(ca_certs_file)
+    local_certs = x509.load_pem_x509_certificates(pem_data)
+    store = verification.Store(local_certs)
+    url = (
+        'https://' + self.host
+        if not re.match('https?://', self.host)
+        else self.host
+    )
+    parsed_url = urllib.parse.urlparse(url)
+    hostname = parsed_url.hostname
+
+    session = core_requests.GetSession(timeout=_NETWORK_TIMEOUT)
+    captured_chain = None
+
+    def CaptureHook(r, **unused_kwargs):
+      nonlocal captured_chain
+      sock = r.raw.connection.sock
+      captured_chain = sock.get_unverified_chain()
+      return r
+
+    try:
+      with warnings.catch_warnings():
+        # We set verify=False in order to get the unverified chain ourselves;
+        # this is intentional so we suppress this warning.
+        warnings.simplefilter(
+            'ignore', urllib3.exceptions.InsecureRequestWarning)
+        with session.request(
+            'GET',
+            url,
+            stream=True,  # Keep connection and socket alive for response hook.
+            verify=False,
+            hooks={'response': CaptureHook},
+        ):
+          # The CaptureHook populates captured_chain. The 'with' statement
+          # ensures the connection is closed.
+          pass
+    except requests.exceptions.RequestException:
+      return (
+          check_base.Result(
+              passed=False, message='Failed to connect to {}'.format(url)
+          ),
+          None,
+      )
+
+    assert captured_chain is not None
+    server_certs = [
+        x509.load_der_x509_certificate(der) for der in captured_chain]
+    peer = server_certs[0]
+    untrusted_intermediates = server_certs[1:]
+    builder = (
+        verification.PolicyBuilder()
+        .store(store)
+        .time(datetime.datetime.now(datetime.timezone.utc))
+    )
+    verifier = builder.build_server_verifier(x509.DNSName(hostname))
+    try:
+      verifier.verify(peer, untrusted_intermediates)
+    except verification.VerificationError as ve:
+      local_subjects = {cert.subject for cert in local_certs}
+      top_cert = server_certs[-1]
+      message = ['Certificate verification failed for {}.'.format(hostname)]
+      message.append('Reason: {}'.format(ve))
+      message.append('Server presented the following chain:')
+      for i, cert in enumerate(server_certs):
+        message.append(
+            '  [{}] Subject: {}'.format(i, cert.subject.rfc4514_string())
+        )
+        message.append('      Issuer:  {}'.format(cert.issuer.rfc4514_string()))
+      if (
+          top_cert.subject == top_cert.issuer
+          and top_cert.subject not in local_subjects
+      ):
+        missing_message = (
+            'The root certificate ({}) is missing from your local CA file.'
+            '\n'
+            'Please obtain this missing certificate and append it to {}.'
+            .format(top_cert.subject.rfc4514_string(), ca_certs_file)
+        )
+      elif (
+          top_cert.subject != top_cert.issuer
+          and top_cert.issuer not in local_subjects
+      ):
+        missing_message = (
+            'The intermediary issuer certificate ({issuer}) is missing from the'
+            ' server handshake and is missing from your local CA file.'
+            '\n'
+            'NOTE: Your network proxy is failing to present the full'
+            ' certificate chain. This usually indicates a proxy'
+            ' server implementation that is noncompliant with TLS standards.'
+            '\n'
+            'Either your network administrator needs to update your proxy'
+            ' server to serve the entire intermediate chain, or you will need'
+            ' to obtain the missing intermediate certificate and append it to'
+            ' {ca_file}.'
+        ).format(issuer=top_cert.issuer.rfc4514_string(), ca_file=ca_certs_file)
+      else:
+        missing_message = ''
+      if missing_message:
+        message.append('\nAnalysis: ' + missing_message)
+      result = check_base.Result(passed=False, message='\n'.join(message))
+      return result, None
+    else:
+      result = check_base.Result(
+          passed=True,
+          message='Certificate chain for {} verified successfully.'.format(
+              hostname
+          ),
+      )
+      return result, None

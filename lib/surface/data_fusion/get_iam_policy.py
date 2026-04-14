@@ -20,6 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.data_fusion import resource_args
 
 
+@base.RegionalEndpointsSupported
 class Get(base.ListCommand):
   r"""Gets the IAM policy for a Cloud Data Fusion instance.
 
@@ -46,8 +47,8 @@ class Get(base.ListCommand):
         'For example: `--namespace=my-namespace`.')
 
   def Run(self, args):
-    datafusion = df.Datafusion()
     instance_ref = args.CONCEPTS.instance.Parse()
+    datafusion = df.Datafusion(location=instance_ref.locationsId)
 
     if not args.namespace:
       request = datafusion.messages.DatafusionProjectsLocationsInstancesGetIamPolicyRequest(

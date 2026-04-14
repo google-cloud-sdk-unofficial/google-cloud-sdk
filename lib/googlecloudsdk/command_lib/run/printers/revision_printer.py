@@ -121,7 +121,7 @@ class RevisionPrinter(cp.CustomPrinterBase):
         ('Service account', record.spec.serviceAccountName),
         ('Concurrency', record.concurrency)]
     if not manual_scaling_enabled:
-      labels.extend([
+      autoscaling_labels = [
           ('Min instances', RevisionPrinter.GetMinInstances(record)),
           ('Max instances', RevisionPrinter.GetMaxInstances(record)),
           (
@@ -132,7 +132,8 @@ class RevisionPrinter(cp.CustomPrinterBase):
               'Target concurrency utilization',
               RevisionPrinter.GetTargetConcurrencyUtilization(record),
           ),
-      ])
+      ]
+      labels.extend([('Scaling', cp.Labeled(autoscaling_labels))])
     labels.extend([
         (
             'SQL connections',

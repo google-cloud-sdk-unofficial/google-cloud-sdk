@@ -14,7 +14,6 @@
 # limitations under the License.
 """Utilities for checking and enabling necessary APIs."""
 
-
 import urllib.parse as urlparse
 
 from googlecloudsdk.api_lib.services import enable_api
@@ -43,6 +42,13 @@ def check_and_enable_apis(project_id, required_apis):
   """Ensure the given APIs are enabled for the specified project."""
   if not properties.VALUES.core.should_prompt_to_enable_api.GetBool():
     # no need to even check if prompting is disabled.
+    return False
+  endpoint_mode = properties.VALUES.regional.endpoint_mode.Get()
+  if (
+      properties.VALUES.regional.endpoint_compatibility.Get()
+      and endpoint_mode == properties.VALUES.regional.REGIONAL
+  ):
+    # Service usage API does not support regional endpoints.
     return False
   try:
     apis_not_enabled = get_disabled_apis(project_id, required_apis)

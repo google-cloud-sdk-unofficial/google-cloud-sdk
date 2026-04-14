@@ -21,6 +21,14 @@ from googlecloudsdk.calliope import arg_parsers
 # to this file.
 
 
+def AddDescriptionArg(parser):
+  """Adds argument for description."""
+  parser.add_argument(
+      '--description',
+      help='Description of the resource being created.',
+  )
+
+
 def AddPropertiesArg(parser):
   """Adds argument for creating properties."""
   parser.add_argument(

@@ -317,7 +317,7 @@ def AddBaseArgs(parser):
   flags.AddStorageType(parser)
   flags.AddTier(parser, is_patch=True)
   flags.AddEdition(parser)
-  flags.AddEnablePointInTimeRecovery(parser)
+  flags.AddEnablePointInTimeRecovery(parser, show_negated_in_help=True)
   flags.AddNetwork(parser)
   flags.AddMaintenanceVersion(parser)
   flags.AddSqlServerAudit(parser)
@@ -390,6 +390,8 @@ def AddBetaArgs(parser):
   flags.AddUncMappings(unc_mappings_group)
   flags.AddClearUncMappings(unc_mappings_group)
   flags.AddPerformanceCaptureConfig(parser, hidden=False)
+  flags.AddEnablePscAutoDns(parser, hidden=True)
+  flags.AddEnablePscWriteEndpointDns(parser, hidden=True)
 
 
 def AddAlphaArgs(unused_parser):
@@ -465,6 +467,79 @@ def RunBasePatchCommand(args, release_track):
   original_instance_resource = sql_client.instances.Get(
       sql_messages.SqlInstancesGetRequest(
           project=instance_ref.project, instance=instance_ref.instance))
+
+  if args.IsKnownAndSpecified('enable_psc_auto_dns'):
+    if (
+        args.IsKnownAndSpecified('enable_private_service_connect')
+        and not args.enable_private_service_connect
+    ):
+      raise exceptions.ArgumentError(
+          '`--enable-psc-auto-dns` and `--no-enable-psc-auto-dns` require'
+          ' Private Service Connect to be enabled.'
+      )
+    if args.IsKnownAndSpecified('enable_private_service_connect'):
+      effective_psc_enabled = args.enable_private_service_connect
+    else:
+      effective_psc_enabled = (
+          original_instance_resource.settings
+          and original_instance_resource.settings.ipConfiguration
+          and original_instance_resource.settings.ipConfiguration.pscConfig
+          and original_instance_resource.settings.ipConfiguration.pscConfig.pscEnabled
+      )
+    if not effective_psc_enabled:
+      raise exceptions.ArgumentError(
+          '`--enable-psc-auto-dns` and `--no-enable-psc-auto-dns` require'
+          ' Private Service Connect to be enabled.'
+      )
+  if args.IsKnownAndSpecified('enable_psc_write_endpoint_dns'):
+    if (
+        args.IsKnownAndSpecified('enable_private_service_connect')
+        and not args.enable_private_service_connect
+    ):
+      raise exceptions.ArgumentError(
+          '`--enable-psc-write-endpoint-dns` and'
+          ' `--no-enable-psc-write-endpoint-dns` require Private Service'
+          ' Connect to be enabled.'
+      )
+    if args.IsKnownAndSpecified('enable_private_service_connect'):
+      effective_psc_enabled = args.enable_private_service_connect
+    else:
+      effective_psc_enabled = (
+          original_instance_resource.settings
+          and original_instance_resource.settings.ipConfiguration
+          and original_instance_resource.settings.ipConfiguration.pscConfig
+          and original_instance_resource.settings.ipConfiguration.pscConfig.pscEnabled
+      )
+    if not effective_psc_enabled:
+      raise exceptions.ArgumentError(
+          '`--enable-psc-write-endpoint-dns` and'
+          ' `--no-enable-psc-write-endpoint-dns` require Private Service'
+          ' Connect to be enabled.'
+      )
+    if (
+        args.IsKnownAndSpecified('enable_psc_auto_dns')
+        and not args.enable_psc_auto_dns
+    ):
+      raise exceptions.ArgumentError(
+          '`--enable-psc-write-endpoint-dns` and'
+          ' `--no-enable-psc-write-endpoint-dns` cannot be used with'
+          ' --no-enable-psc-auto-dns.'
+      )
+    if args.IsKnownAndSpecified('enable_psc_auto_dns'):
+      effective_psc_auto_dns_enabled = args.enable_psc_auto_dns
+    else:
+      effective_psc_auto_dns_enabled = (
+          original_instance_resource.settings
+          and original_instance_resource.settings.ipConfiguration
+          and original_instance_resource.settings.ipConfiguration.pscConfig
+          and original_instance_resource.settings.ipConfiguration.pscConfig.pscAutoDnsEnabled
+      )
+    if not effective_psc_auto_dns_enabled:
+      raise exceptions.ArgumentError(
+          '`--enable-psc-write-endpoint-dns` and'
+          ' `--no-enable-psc-write-endpoint-dns` require PSC auto DNS to be'
+          ' enabled.'
+      )
 
   if args.IsKnownAndSpecified(
       'performance_capture_config'

@@ -12,6 +12,8 @@
     collection: biglake.hive.v1beta.projects.catalogs.databases
     api_version: v1beta
     method: patch
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.biglake.hooks:ValidateDatabaseUpdateArgs
 
   arguments:
     params:
@@ -31,11 +33,11 @@
       api_field: hiveDatabase.description
       help_text: |
         The description of the Hive database.
-    - arg_name: properties
+    - arg_name: parameters
       api_field: hiveDatabase.parameters.additionalProperties
       metavar: KEY=VALUE
       help_text: |
-        Additional properties associated with the database.
+        Additional parameters associated with the Hive database.
       type:
         arg_dict:
           flatten: true

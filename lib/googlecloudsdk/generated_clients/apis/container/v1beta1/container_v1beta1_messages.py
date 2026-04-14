@@ -13,6 +13,30 @@ from apitools.base.py import extra_types
 package = 'container'
 
 
+class AcceleratorAutoConfig(_messages.Message):
+  r"""Settings for automatic network configuration based on machine type.
+
+  Fields:
+    autoCreateLocalMrdmaNetwork: Optional. If true, automatically creates non-
+      shareable VPCs for MRDMA. User must either provide mrdma_network or set
+      auto_create_local_mrdma_network to true.
+    hostNicSameVpc: Optional. Whether to place all Host NICs in the default
+      network of the cluster.
+    machineType: Optional. The target machine type (e.g., "a3-highgpu-8g").
+    mrdmaNetwork: Optional. Existing Compute Engine VPC to be used by all
+      MRDMA NICs. User must either provide mrdma_network or set
+      auto_create_local_mrdma_network to true.
+    mrdmaNetworkProfile: Optional. Compute Engine Network Profile for MRDMA
+      accelerator NICs.
+  """
+
+  autoCreateLocalMrdmaNetwork = _messages.BooleanField(1)
+  hostNicSameVpc = _messages.BooleanField(2)
+  machineType = _messages.StringField(3)
+  mrdmaNetwork = _messages.StringField(4)
+  mrdmaNetworkProfile = _messages.StringField(5)
+
+
 class AcceleratorConfig(_messages.Message):
   r"""AcceleratorConfig represents a Hardware Accelerator request.
 
@@ -38,6 +62,165 @@ class AcceleratorConfig(_messages.Message):
   gpuPartitionSize = _messages.StringField(4)
   gpuSharingConfig = _messages.MessageField('GPUSharingConfig', 5)
   maxTimeSharedClientsPerGpu = _messages.IntegerField(6)
+
+
+class AcceleratorNetworkProfile(_messages.Message):
+  r"""Represents a network configuration profile for accelerator-optimized
+  VMs, enabling features like multi-NIC, RDMA, etc. This resource is currently
+  associated with a single GKE cluster.
+
+  Enums:
+    LifecycleStateValueValuesEnum: Output only. [Output Only] The current
+      lifecycle state of this profile.
+
+  Messages:
+    AnnotationsValue: Optional. Annotations for client tools to store
+      arbitrary metadata.
+    LabelsValue: Optional. Labels for organizing and filtering resources.
+    TagsValue: Optional. Input only. Immutable. Tag keys/values directly bound
+      to this resource. For example: "123/environment": "production",
+      "123/costCenter": "marketing"
+
+  Fields:
+    annotations: Optional. Annotations for client tools to store arbitrary
+      metadata.
+    autoConfig: Optional. Configuration for automatically generated network
+      settings based on the machine type.
+    cluster: Optional. Immutable. The name of the GKE cluster this profile is
+      associated with.
+    createTime: Output only. [Output Only] Timestamp when this resource was
+      created.
+    description: Optional. A human-readable description of the profile.
+      Maximum length is 256 characters.
+    errorMessage: Output only. [Output Only] A human-readable message
+      indicating details about the current state. This field is only used to
+      save the reason why the resource is in a failed state.
+    id: Output only. A server-assigned unique identifier for this resource.
+    labels: Optional. Labels for organizing and filtering resources.
+    lifecycleState: Output only. [Output Only] The current lifecycle state of
+      this profile.
+    maxNodeCount: Optional. The maximum number of nodes that may use this
+      profile. Guides the sizing of underlying network resources like subnets.
+      If not specified, defaults to 65,536.
+    name: Identifier. The resource name of the AcceleratorNetworkProfile. The
+      identifier component (the final part of the name) must be unique within
+      the specified location. Format: projects/{project}/locations/{location}/
+      acceleratorNetworkProfiles/{accelerator_network_profile}
+    nicConfigs: Optional. The list of network configurations that matches the
+      NIC of the node VM.
+    tags: Optional. Input only. Immutable. Tag keys/values directly bound to
+      this resource. For example: "123/environment": "production",
+      "123/costCenter": "marketing"
+    updateTime: Output only. [Output Only] Timestamp when this resource was
+      last updated.
+  """
+
+  class LifecycleStateValueValuesEnum(_messages.Enum):
+    r"""Output only. [Output Only] The current lifecycle state of this
+    profile.
+
+    Values:
+      STATE_UNSPECIFIED: Default value indicating state is not set.
+      CREATING: The profile is being created.
+      ACTIVE: The profile is active.
+      DELETING: The profile is being deleted.
+      FAILED: The profile creation or deletion failed.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    DELETING = 3
+    FAILED = 4
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AnnotationsValue(_messages.Message):
+    r"""Optional. Annotations for client tools to store arbitrary metadata.
+
+    Messages:
+      AdditionalProperty: An additional property for a AnnotationsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type AnnotationsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AnnotationsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels for organizing and filtering resources.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class TagsValue(_messages.Message):
+    r"""Optional. Input only. Immutable. Tag keys/values directly bound to
+    this resource. For example: "123/environment": "production",
+    "123/costCenter": "marketing"
+
+    Messages:
+      AdditionalProperty: An additional property for a TagsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type TagsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a TagsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  annotations = _messages.MessageField('AnnotationsValue', 1)
+  autoConfig = _messages.MessageField('AcceleratorAutoConfig', 2)
+  cluster = _messages.StringField(3)
+  createTime = _messages.StringField(4)
+  description = _messages.StringField(5)
+  errorMessage = _messages.StringField(6)
+  id = _messages.StringField(7)
+  labels = _messages.MessageField('LabelsValue', 8)
+  lifecycleState = _messages.EnumField('LifecycleStateValueValuesEnum', 9)
+  maxNodeCount = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  name = _messages.StringField(11)
+  nicConfigs = _messages.MessageField('NicConfig', 12, repeated=True)
+  tags = _messages.MessageField('TagsValue', 13)
+  updateTime = _messages.StringField(14)
 
 
 class AccurateTimeConfig(_messages.Message):
@@ -559,7 +742,7 @@ class AutopilotCompatibilityIssue(_messages.Message):
 
 class AutopilotConfig(_messages.Message):
   r"""AutopilotConfig contains configuration of autopilot feature for this
-  nodepool.
+  node pool.
 
   Fields:
     enabled: Denotes that nodes belonging to this node pool are Autopilot
@@ -870,7 +1053,7 @@ class BlueGreenSettings(_messages.Message):
 
 
 class BootDisk(_messages.Message):
-  r"""BootDisk specifies the boot disk configuration for nodepools.
+  r"""BootDisk specifies the boot disk configuration for node pools.
 
   Fields:
     diskType: Disk type of the boot disk. (i.e. Hyperdisk-Balanced, PD-
@@ -2422,6 +2605,91 @@ class ContainerProjectsAggregatedUsableSubnetworksListRequest(_messages.Message)
   parent = _messages.StringField(4, required=True)
 
 
+class ContainerProjectsLocationsAcceleratorNetworkProfilesCreateRequest(_messages.Message):
+  r"""A ContainerProjectsLocationsAcceleratorNetworkProfilesCreateRequest
+  object.
+
+  Fields:
+    acceleratorNetworkProfile: A AcceleratorNetworkProfile resource to be
+      passed as the request body.
+    acceleratorNetworkProfileId: Required. The ID to use for the
+      AcceleratorNetworkProfile, which will become the final component of the
+      profile's resource name. This ID must be unique within the project and
+      location across all clusters.
+    parent: Required. The parent resource in which this profile will be
+      created. Format: projects/{project}/locations/{location}
+  """
+
+  acceleratorNetworkProfile = _messages.MessageField('AcceleratorNetworkProfile', 1)
+  acceleratorNetworkProfileId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class ContainerProjectsLocationsAcceleratorNetworkProfilesDeleteRequest(_messages.Message):
+  r"""A ContainerProjectsLocationsAcceleratorNetworkProfilesDeleteRequest
+  object.
+
+  Fields:
+    name: Required. The name of the AcceleratorNetworkProfile to delete.
+      Format: projects/{project}/locations/{location}/acceleratorNetworkProfil
+      es/{accelerator_network_profile}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class ContainerProjectsLocationsAcceleratorNetworkProfilesGetRequest(_messages.Message):
+  r"""A ContainerProjectsLocationsAcceleratorNetworkProfilesGetRequest object.
+
+  Fields:
+    name: Required. The name of the AcceleratorNetworkProfile to retrieve.
+      Format: projects/{project}/locations/{location}/acceleratorNetworkProfil
+      es/{accelerator_network_profile}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class ContainerProjectsLocationsAcceleratorNetworkProfilesListRequest(_messages.Message):
+  r"""A ContainerProjectsLocationsAcceleratorNetworkProfilesListRequest
+  object.
+
+  Fields:
+    pageSize: Optional. The maximum number of profiles to return. The service
+      may return fewer than this value. If unspecified, at most 50 profiles
+      will be returned. The maximum value is 1000; values above 1000 will be
+      coerced to 1000.
+    pageToken: Optional. A page token, received from a previous
+      `ListAcceleratorNetworkProfiles` call.
+    parent: Required. The parent resource in which to list the profiles.
+      Format: projects/{project}/locations/{location}
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class ContainerProjectsLocationsAcceleratorNetworkProfilesPatchRequest(_messages.Message):
+  r"""A ContainerProjectsLocationsAcceleratorNetworkProfilesPatchRequest
+  object.
+
+  Fields:
+    acceleratorNetworkProfile: A AcceleratorNetworkProfile resource to be
+      passed as the request body.
+    name: Identifier. The resource name of the AcceleratorNetworkProfile. The
+      identifier component (the final part of the name) must be unique within
+      the specified location. Format: projects/{project}/locations/{location}/
+      acceleratorNetworkProfiles/{accelerator_network_profile}
+    updateMask: Optional. The list of fields to be updated. Currently
+      supported fields: "labels", "description", "annotations".
+  """
+
+  acceleratorNetworkProfile = _messages.MessageField('AcceleratorNetworkProfile', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
+
+
 class ContainerProjectsLocationsClustersCheckAutopilotCompatibilityRequest(_messages.Message):
   r"""A ContainerProjectsLocationsClustersCheckAutopilotCompatibilityRequest
   object.
@@ -2610,8 +2878,8 @@ class ContainerProjectsLocationsClustersNodePoolsFetchNodePoolUpgradeInfoRequest
   object.
 
   Fields:
-    name: Required. The name (project, location, cluster, nodepool) of the
-      nodepool to get. Specified in the format
+    name: Required. The name (project, location, cluster, node pool) of the
+      node pool to get. Specified in the format
       `projects/*/locations/*/clusters/*/nodePools/*` or
       `projects/*/zones/*/clusters/*/nodePools/*`.
     version: API request version that initiates this operation.
@@ -2898,8 +3166,8 @@ class ContainerProjectsZonesClustersNodePoolsFetchNodePoolUpgradeInfoRequest(_me
   object.
 
   Fields:
-    name: Required. The name (project, location, cluster, nodepool) of the
-      nodepool to get. Specified in the format
+    name: Required. The name (project, location, cluster, node pool) of the
+      node pool to get. Specified in the format
       `projects/*/locations/*/clusters/*/nodePools/*` or
       `projects/*/zones/*/clusters/*/nodePools/*`.
     version: API request version that initiates this operation.
@@ -3215,6 +3483,17 @@ class CustomImageConfig(_messages.Message):
   image = _messages.StringField(1)
   imageFamily = _messages.StringField(2)
   imageProject = _messages.StringField(3)
+
+
+class CustomImageInfo(_messages.Message):
+  r"""Contains the custom image info for a node pool.
+
+  Fields:
+    upgradeMessage: Output only. The human-readable upgrade message for the
+      custom image.
+  """
+
+  upgradeMessage = _messages.StringField(1)
 
 
 class CustomNodeInit(_messages.Message):
@@ -4692,7 +4971,7 @@ class InitScript(_messages.Message):
       gs://BUCKET_NAME/OBJECT_NAME --format="value(generation)"` or from the
       "Version history" tab of the object in the Cloud Console UI.
     gcsUri: The Cloud Storage URI for storing the init script. Format:
-      gs://BUCKET_NAME/OBJECT_NAME The service account on the nodepool must
+      gs://BUCKET_NAME/OBJECT_NAME The service account on the node pool must
       have read access to the object. User can't configure both gcs_uri and
       gcp_secret_manager_secret_uri.
   """
@@ -4990,6 +5269,8 @@ class LinuxNodeConfig(_messages.Message):
       on nodes. When enabled, the node pool will be provisioned with a
       Container-Optimized OS image that enforces kernel module signature
       verification.
+    nodeVfioConfig: Optional. Contains VFIO-related configurations for this
+      node.
     swapConfig: Optional. Enables and configures swap space on nodes. If
       omitted, swap is disabled.
     sysctls: The Linux kernel parameters to be applied to the nodes and all
@@ -5157,11 +5438,26 @@ class LinuxNodeConfig(_messages.Message):
   hugepages = _messages.MessageField('HugepagesConfig', 7)
   kernelOverrides = _messages.MessageField('KernelOverrides', 8)
   nodeKernelModuleLoading = _messages.MessageField('NodeKernelModuleLoading', 9)
-  swapConfig = _messages.MessageField('SwapConfig', 10)
-  sysctls = _messages.MessageField('SysctlsValue', 11)
-  timeZone = _messages.StringField(12)
-  transparentHugepageDefrag = _messages.EnumField('TransparentHugepageDefragValueValuesEnum', 13)
-  transparentHugepageEnabled = _messages.EnumField('TransparentHugepageEnabledValueValuesEnum', 14)
+  nodeVfioConfig = _messages.MessageField('NodeVfioConfig', 10)
+  swapConfig = _messages.MessageField('SwapConfig', 11)
+  sysctls = _messages.MessageField('SysctlsValue', 12)
+  timeZone = _messages.StringField(13)
+  transparentHugepageDefrag = _messages.EnumField('TransparentHugepageDefragValueValuesEnum', 14)
+  transparentHugepageEnabled = _messages.EnumField('TransparentHugepageEnabledValueValuesEnum', 15)
+
+
+class ListAcceleratorNetworkProfilesResponse(_messages.Message):
+  r"""Response message for listing AcceleratorNetworkProfiles.
+
+  Fields:
+    acceleratorNetworkProfiles: A list of AcceleratorNetworkProfile resources
+      in the specified parent.
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+  """
+
+  acceleratorNetworkProfiles = _messages.MessageField('AcceleratorNetworkProfile', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
 
 
 class ListClustersResponse(_messages.Message):
@@ -6139,6 +6435,69 @@ class NetworkTierConfig(_messages.Message):
   networkTier = _messages.EnumField('NetworkTierValueValuesEnum', 1)
 
 
+class NicConfig(_messages.Message):
+  r"""Configuration for each network interface.
+
+  Enums:
+    StackTypeValueValuesEnum: Optional. IP stack type for the NIC. This field
+      is OUTPUT_ONLY in the current phase as the network configuration is
+      automatically managed based on the AcceleratorAutoConfig settings.
+
+  Fields:
+    internalRange: Optional. The full resource name of the Compute Engine
+      Internal Range for allocating the subnet's primary range. This field is
+      OUTPUT_ONLY in the current phase as the network configuration is
+      automatically managed based on the AcceleratorAutoConfig settings.
+    mtu: Optional. MTU of the NIC. This field is OUTPUT_ONLY in the current
+      phase as the network configuration is automatically managed based on the
+      AcceleratorAutoConfig settings.
+    network: Optional. The full resource name of the Compute Engine VPC to
+      attach this NIC to. This field is OUTPUT_ONLY in the current phase as
+      the network configuration is automatically managed based on the
+      AcceleratorAutoConfig settings.
+    networkProfile: Optional. Compute Engine Network Profile URL/ID attached
+      to the network. This field is OUTPUT_ONLY in the current phase as the
+      network configuration is automatically managed based on the
+      AcceleratorAutoConfig settings.
+    stackType: Optional. IP stack type for the NIC. This field is OUTPUT_ONLY
+      in the current phase as the network configuration is automatically
+      managed based on the AcceleratorAutoConfig settings.
+    subnetwork: Optional. The full resource name of the Compute Engine
+      subnetwork to attach this NIC to. This field is OUTPUT_ONLY in the
+      current phase as the network configuration is automatically managed
+      based on the AcceleratorAutoConfig settings.
+    type: Optional. The type of the NIC. Currently supports GVNIC, IRDMA,
+      MRDMA and IDPF. This field is OUTPUT_ONLY in the current phase as the
+      network configuration is automatically managed based on the
+      AcceleratorAutoConfig settings.
+  """
+
+  class StackTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. IP stack type for the NIC. This field is OUTPUT_ONLY in the
+    current phase as the network configuration is automatically managed based
+    on the AcceleratorAutoConfig settings.
+
+    Values:
+      IP_STACK_TYPE_UNSPECIFIED: Default value indicating IP stack type is not
+        set.
+      IPV4_ONLY: IP stack type is IPv4 only.
+      IPV4_IPV6: IP stack type is IPv4 and IPv6.
+      IPV6_ONLY: IP stack type is IPv6 only.
+    """
+    IP_STACK_TYPE_UNSPECIFIED = 0
+    IPV4_ONLY = 1
+    IPV4_IPV6 = 2
+    IPV6_ONLY = 3
+
+  internalRange = _messages.StringField(1)
+  mtu = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  network = _messages.StringField(3)
+  networkProfile = _messages.StringField(4)
+  stackType = _messages.EnumField('StackTypeValueValuesEnum', 5)
+  subnetwork = _messages.StringField(6)
+  type = _messages.StringField(7)
+
+
 class NodeAffinity(_messages.Message):
   r"""Specifies the NodeAffinity key, values, and affinity operator according
   to [shared sole tenant node group
@@ -6185,14 +6544,18 @@ class NodeConfig(_messages.Message):
       used for encrypting the Local SSDs attached to the node.
 
   Messages:
-    LabelsValue: The map of Kubernetes labels (key/value pairs) to be applied
-      to each node. These will added in addition to any default label(s) that
-      Kubernetes may apply to the node. In case of conflict in label keys, the
-      applied set may differ depending on the Kubernetes version -- it's best
-      to assume the behavior is undefined and conflicts should be avoided. For
-      more information, including usage and the valid values, see:
-      https://kubernetes.io/docs/concepts/overview/working-with-
-      objects/labels/
+    LabelsValue: The Kubernetes labels (key/value pairs) to apply to each
+      node. The values in this field are added to the set of default labels
+      Kubernetes applies to nodes. This field has the following restrictions:
+      * Labels must use a valid Kubernetes syntax and character set, as
+      defined in https://kubernetes.io/docs/concepts/overview/working-with-
+      objects/labels/#syntax-and-character-set. * This field supports up to
+      1,024 total characters in a single request. Depending on the Kubernetes
+      version, keys in this field might conflict with the keys of the default
+      labels, which might change which of your labels are applied to the
+      nodes. Assume that the behavior is unpredictable and avoid label key
+      conflicts. For more information about the default labels, see:
+      https://kubernetes.io/docs/reference/labels-annotations-taints/
     MetadataValue: The metadata key/value pairs assigned to instances in the
       cluster. Keys must conform to the regexp `[a-zA-Z0-9-_]+` and be less
       than 128 bytes in length. These are reflected as part of a URL in the
@@ -6267,14 +6630,18 @@ class NodeConfig(_messages.Message):
       https://cloud.google.com/kubernetes-engine/docs/concepts/node-images for
       available image types.
     kubeletConfig: Node kubelet configs.
-    labels: The map of Kubernetes labels (key/value pairs) to be applied to
-      each node. These will added in addition to any default label(s) that
-      Kubernetes may apply to the node. In case of conflict in label keys, the
-      applied set may differ depending on the Kubernetes version -- it's best
-      to assume the behavior is undefined and conflicts should be avoided. For
-      more information, including usage and the valid values, see:
+    labels: The Kubernetes labels (key/value pairs) to apply to each node. The
+      values in this field are added to the set of default labels Kubernetes
+      applies to nodes. This field has the following restrictions: * Labels
+      must use a valid Kubernetes syntax and character set, as defined in
       https://kubernetes.io/docs/concepts/overview/working-with-
-      objects/labels/
+      objects/labels/#syntax-and-character-set. * This field supports up to
+      1,024 total characters in a single request. Depending on the Kubernetes
+      version, keys in this field might conflict with the keys of the default
+      labels, which might change which of your labels are applied to the
+      nodes. Assume that the behavior is unpredictable and avoid label key
+      conflicts. For more information about the default labels, see:
+      https://kubernetes.io/docs/reference/labels-annotations-taints/
     linuxNodeConfig: Parameters that can be configured on Linux nodes.
     localNvmeSsdBlockConfig: Parameters for using raw-block Local NVMe SSDs.
     localSsdCount: The number of local SSD disks to be attached to the node.
@@ -6412,13 +6779,18 @@ class NodeConfig(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""The map of Kubernetes labels (key/value pairs) to be applied to each
-    node. These will added in addition to any default label(s) that Kubernetes
-    may apply to the node. In case of conflict in label keys, the applied set
-    may differ depending on the Kubernetes version -- it's best to assume the
-    behavior is undefined and conflicts should be avoided. For more
-    information, including usage and the valid values, see:
-    https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+    r"""The Kubernetes labels (key/value pairs) to apply to each node. The
+    values in this field are added to the set of default labels Kubernetes
+    applies to nodes. This field has the following restrictions: * Labels must
+    use a valid Kubernetes syntax and character set, as defined in
+    https://kubernetes.io/docs/concepts/overview/working-with-
+    objects/labels/#syntax-and-character-set. * This field supports up to
+    1,024 total characters in a single request. Depending on the Kubernetes
+    version, keys in this field might conflict with the keys of the default
+    labels, which might change which of your labels are applied to the nodes.
+    Assume that the behavior is unpredictable and avoid label key conflicts.
+    For more information about the default labels, see:
+    https://kubernetes.io/docs/reference/labels-annotations-taints/
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.
@@ -6615,7 +6987,7 @@ class NodeCreationConfig(_messages.Message):
 
 class NodeDrainConfig(_messages.Message):
   r"""NodeDrainConfig contains the node drain related configurations for this
-  nodepool.
+  node pool.
 
   Fields:
     graceTerminationDuration: The duration of the grace termination period for
@@ -6930,7 +7302,7 @@ class NodeNetworkConfig(_messages.Message):
       immutable throughout the node pool's lifecycle, including during
       upgrades.
     podCidrOverprovisionConfig: [PRIVATE FIELD] Pod CIDR size overprovisioning
-      config for the nodepool. Pod CIDR size per node depends on
+      config for the node pool. Pod CIDR size per node depends on
       max_pods_per_node. By default, the value of max_pods_per_node is rounded
       off to next power of 2 and we then double that to get the size of pod
       CIDR block per node. Example: max_pods_per_node of 30 would result in 64
@@ -7175,13 +7547,13 @@ class NodePoolAutoscaling(_messages.Message):
   to adjust the size of the node pool to the current cluster usage.
 
   Enums:
-    LocationPolicyValueValuesEnum: Location policy used when scaling up a
-      nodepool.
+    LocationPolicyValueValuesEnum: Location policy used when scaling up a node
+      pool.
 
   Fields:
     autoprovisioned: Can this node pool be deleted automatically.
     enabled: Is autoscaling enabled for this node pool.
-    locationPolicy: Location policy used when scaling up a nodepool.
+    locationPolicy: Location policy used when scaling up a node pool.
     maxNodeCount: Maximum number of nodes for one location in the node pool.
       Must be >= min_node_count. There has to be enough quota to scale up the
       cluster.
@@ -7199,7 +7571,7 @@ class NodePoolAutoscaling(_messages.Message):
   """
 
   class LocationPolicyValueValuesEnum(_messages.Enum):
-    r"""Location policy used when scaling up a nodepool.
+    r"""Location policy used when scaling up a node pool.
 
     Values:
       LOCATION_POLICY_UNSPECIFIED: Not set.
@@ -7231,7 +7603,7 @@ class NodePoolDefaults(_messages.Message):
 
 
 class NodePoolLoggingConfig(_messages.Message):
-  r"""NodePoolLoggingConfig specifies logging configuration for nodepools.
+  r"""NodePoolLoggingConfig specifies logging configuration for node pools.
 
   Fields:
     variantConfig: Logging variant configuration.
@@ -7264,7 +7636,7 @@ class NodePoolUpgradeConcurrencyConfig(_messages.Message):
 
 
 class NodePoolUpgradeInfo(_messages.Message):
-  r"""NodePoolUpgradeInfo contains the upgrade information of a nodepool.
+  r"""NodePoolUpgradeInfo contains the upgrade information of a node pool.
 
   Enums:
     AutoUpgradeStatusValueListEntryValuesEnum:
@@ -7272,9 +7644,11 @@ class NodePoolUpgradeInfo(_messages.Message):
 
   Fields:
     autoUpgradeStatus: The auto upgrade status.
-    endOfExtendedSupportTimestamp: The nodepool's current minor version's end
+    customImageInfo: Output only. Upgrade info for the node pool specific to
+      the usage of custom images.
+    endOfExtendedSupportTimestamp: The node pool's current minor version's end
       of extended support timestamp.
-    endOfStandardSupportTimestamp: The nodepool's current minor version's end
+    endOfStandardSupportTimestamp: The node pool's current minor version's end
       of standard support timestamp.
     minorTargetVersion: minor_target_version indicates the target version for
       minor upgrade.
@@ -7324,12 +7698,13 @@ class NodePoolUpgradeInfo(_messages.Message):
     SYSTEM_CONFIG = 4
 
   autoUpgradeStatus = _messages.EnumField('AutoUpgradeStatusValueListEntryValuesEnum', 1, repeated=True)
-  endOfExtendedSupportTimestamp = _messages.StringField(2)
-  endOfStandardSupportTimestamp = _messages.StringField(3)
-  minorTargetVersion = _messages.StringField(4)
-  patchTargetVersion = _messages.StringField(5)
-  pausedReason = _messages.EnumField('PausedReasonValueListEntryValuesEnum', 6, repeated=True)
-  upgradeDetails = _messages.MessageField('UpgradeDetails', 7, repeated=True)
+  customImageInfo = _messages.MessageField('CustomImageInfo', 2)
+  endOfExtendedSupportTimestamp = _messages.StringField(3)
+  endOfStandardSupportTimestamp = _messages.StringField(4)
+  minorTargetVersion = _messages.StringField(5)
+  patchTargetVersion = _messages.StringField(6)
+  pausedReason = _messages.EnumField('PausedReasonValueListEntryValuesEnum', 7, repeated=True)
+  upgradeDetails = _messages.MessageField('UpgradeDetails', 8, repeated=True)
 
 
 class NodeReadinessConfig(_messages.Message):
@@ -7388,6 +7763,26 @@ class NodeTaints(_messages.Message):
   """
 
   taints = _messages.MessageField('NodeTaint', 1, repeated=True)
+
+
+class NodeVfioConfig(_messages.Message):
+  r"""Configuration settings for VFIO (Virtual Function I/O) on a node. VFIO
+  allows safe, unprivileged, userspace drivers to access I/O devices.
+
+  Fields:
+    dmaEntryLimit: Optional. Specifies the maximum number of DMA entries
+      (pages) that can be mapped by the VFIO IOMMU type 1 driver for a
+      container. This limit affects the total amount of host memory that can
+      be pinned for direct device access, which is often critical for high-
+      performance devices like TPUs and GPUs. This setting corresponds to the
+      kernel parameter at:
+      `/sys/module/vfio_iommu_type1/parameters/dma_entry_limit`. The default
+      value in the kernel is `65535`. Higher values may be needed for
+      workloads mapping large memory regions. Supported values are integers
+      between `65535` and `4194304`.
+  """
+
+  dmaEntryLimit = _messages.IntegerField(1, variant=_messages.Variant.INT32)
 
 
 class NotificationConfig(_messages.Message):
@@ -8008,7 +8403,7 @@ class QueuedProvisioning(_messages.Message):
   pool.
 
   Fields:
-    enabled: Denotes that this nodepool is QRM specific, meaning nodes can be
+    enabled: Denotes that this node pool is QRM specific, meaning nodes can be
       only obtained through queuing via the Cluster Autoscaler
       ProvisioningRequest API.
   """
@@ -8555,6 +8950,7 @@ class RunnerPoolConfig(_messages.Message):
     attestation: Attestation config for the runner pool.
     controlNodePool: The name of the node pool that the runner pool is linked
       to.
+    networkConfig: Optional. The network configuration for the runner pool.
     runnerTelemetryConfig: Optional. Telemetry configuration for the runner
       pool.
     securityMode: Optional. The security mode of the runner pool node image.
@@ -8578,8 +8974,9 @@ class RunnerPoolConfig(_messages.Message):
 
   attestation = _messages.MessageField('AttestationConfig', 1)
   controlNodePool = _messages.StringField(2)
-  runnerTelemetryConfig = _messages.MessageField('RunnerTelemetryConfig', 3)
-  securityMode = _messages.EnumField('SecurityModeValueValuesEnum', 4)
+  networkConfig = _messages.MessageField('RunnerPoolNetworkConfig', 3)
+  runnerTelemetryConfig = _messages.MessageField('RunnerTelemetryConfig', 4)
+  securityMode = _messages.EnumField('SecurityModeValueValuesEnum', 5)
 
 
 class RunnerPoolControl(_messages.Message):
@@ -8591,6 +8988,8 @@ class RunnerPoolControl(_messages.Message):
 
   Fields:
     mode: The mode of the runner pool control.
+    networkConfig: Optional. The network configuration for the runner pool
+      control.
   """
 
   class ModeValueValuesEnum(_messages.Enum):
@@ -8610,6 +9009,18 @@ class RunnerPoolControl(_messages.Message):
     STANDARD = 3
 
   mode = _messages.EnumField('ModeValueValuesEnum', 1)
+  networkConfig = _messages.MessageField('RunnerPoolNetworkConfig', 2)
+
+
+class RunnerPoolNetworkConfig(_messages.Message):
+  r"""RunnerPoolNetworkConfig contains the configuration for the network of
+  the runner pool.
+
+  Fields:
+    subnetwork: Required. The subnetwork to use for the runner pool.
+  """
+
+  subnetwork = _messages.StringField(1)
 
 
 class RunnerTelemetryConfig(_messages.Message):
@@ -10433,11 +10844,11 @@ class UpgradeSettings(_messages.Message):
       SURGE: SURGE is the traditional way of upgrading a node pool. max_surge
         and max_unavailable determines the level of upgrade parallelism.
       QUEUED_PROVISIONING: QUEUED_PROVISIONING is the dedicated upgrade
-        strategy for QueuedProvisioning nodepools scaled up only by enqueueing
-        to the Dynamic Workload Scheduler (DWS). Deprecated; Use SHORT_LIVED
-        instead.
+        strategy for QueuedProvisioning node pools scaled up only by
+        enqueueing to the Dynamic Workload Scheduler (DWS). Deprecated; Use
+        SHORT_LIVED instead.
       SHORT_LIVED: SHORT_LIVED is the dedicated upgrade strategy for
-        QueuedProvisioning and flex start nodepools scaled up only by
+        QueuedProvisioning and flex start node pools scaled up only by
         enqueueing to the Dynamic Workload Scheduler (DWS).
     """
     NODE_POOL_UPDATE_STRATEGY_UNSPECIFIED = 0

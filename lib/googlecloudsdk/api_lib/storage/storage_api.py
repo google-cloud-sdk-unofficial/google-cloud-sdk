@@ -84,8 +84,18 @@ def _GetFileSize(local_path):
 class StorageClient(object):
   """Client for Google Cloud Storage API."""
 
-  def __init__(self, client=None, messages=None):
-    self.client = client or storage_util.GetClient()
+  def __init__(self, client=None, messages=None, location=None):
+    """Initializes the storage client.
+
+    Args:
+      client: The storage client to use for the API request. If None,
+        storage_util.GetClient() is used.
+      messages: The storage messages to use for the API request. If None,
+        storage_util.GetMessages() is used.
+      location: The location to create a client for. Used to create a REP client
+        when regional endpoints are enabled.
+    """
+    self.client = client or storage_util.GetClient(location=location)
     self.messages = messages or storage_util.GetMessages()
 
   def _GetChunkSize(self):

@@ -14,6 +14,7 @@
 # limitations under the License.
 """Command for listing available reivions."""
 
+import copy
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import commands
@@ -29,19 +30,23 @@ from googlecloudsdk.core import log
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(commands.List):
   """List available revisions."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION': (
+          """\
           {description}
-          """,
-      'EXAMPLES': """\
+          """
+      ),
+      'EXAMPLES': (
+          """\
           To list all revisions for the provided service:
 
               $ {command} --service=foo
-         """,
+         """
+      ),
   }
 
   @classmethod
@@ -122,8 +127,16 @@ class List(commands.List):
         yield rev
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.RegionalEndpointsSupported
+class BetaList(List):
+  """List available revisions."""
+
+  detailed_help = copy.deepcopy(List.detailed_help)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaList(List):
+class AlphaList(BetaList):
   """List available revisions."""
 
   @classmethod

@@ -103,6 +103,9 @@ apis:
         projects.locations.indexEndpoints.operations:
           path: 
             projects/{projectsId}/locations/{locationsId}/indexEndpoints/{indexEndpointsId}/operations/{operationsId}
+        projects.locations.semanticGovernancePolicies.operations:
+          path: 
+            projects/{project}/locations/{location}/semanticGovernancePolicies/{semantic_governance_policy}/operations/{operation}
     v1:
       discovery_doc: aiplatform_v1.json
       gcloud_gapic_library: google/cloud/aiplatform/v1:aiplatform_v1_py
@@ -233,6 +236,17 @@ apis:
     delta_v1:
       discovery_doc: biglake_delta_v1.json
       default: false
+      resources:
+        deltasharing.v1.projects:
+          path: projects/{projectsId}
+        deltasharing.v1.projects.catalogs:
+          path: projects/{projectsId}/catalogs/{catalogsId}
+        deltasharing.v1.projects.catalogs.shares:
+          path: projects/{projectsId}/catalogs/{catalogsId}/shares/{sharesId}
+        deltasharing.v1.projects.catalogs.shares.schemas:
+          path: projects/{projectsId}/catalogs/{catalogsId}/shares/{sharesId}/schemas/{schemasId}
+        deltasharing.v1.projects.catalogs.shares.schemas.tables:
+          path: projects/{projectsId}/catalogs/{catalogsId}/shares/{sharesId}/schemas/{schemasId}/tables/{tablesId}
   bigtableadmin:
     v2:
       discovery_doc: bigtableadmin_v2.json
@@ -741,8 +755,6 @@ apis:
             projects/{projectsId}/locations/{locationsId}/pipelines/{pipelinesId}/jobs/{jobsId}
   dataplex:
     v1:
-      skip:
-        bug: b/489397520
       discovery_doc: dataplex_v1.json
       default: true
       resources:
@@ -755,9 +767,6 @@ apis:
         projects.locations.lakes.zones.assets.actions:
           path: 
             projects/{projectsId}/locations/{locationsId}/lakes/{lakesId}/zones/{zonesId}/assets/{assetsId}/actions/{actionsId}
-        projects.locations.lakes.environments.sessions:
-          path: 
-            projects/{projectsId}/locations/{locationsId}/lakes/{lakesId}/environments/{environmentId}/sessions/{sessionId}
   dataproc:
     v1:
       discovery_doc: dataproc_v1.json
@@ -1331,20 +1340,29 @@ apis:
       default: true
       resources:
         projects.locations.keyRings.cryptoKeys:
-          path: 
+          path:
             projects/{projectsId}/locations/{locationsId}/keyRings/{keyRingsId}/cryptoKeys/{cryptoKeysId}
+        projects.locations.caPools:
+          path:
+            projects/{projectsId}/locations/{locationsId}/caPools/{caPoolsId}
     v1alpha:
       discovery_doc: memorystore_v1alpha.json
       resources:
         projects.locations.keyRings.cryptoKeys:
-          path: 
+          path:
             projects/{projectsId}/locations/{locationsId}/keyRings/{keyRingsId}/cryptoKeys/{cryptoKeysId}
+        projects.locations.caPools:
+          path:
+            projects/{projectsId}/locations/{locationsId}/caPools/{caPoolsId}
     v1beta:
       discovery_doc: memorystore_v1beta.json
       resources:
         projects.locations.keyRings.cryptoKeys:
-          path: 
+          path:
             projects/{projectsId}/locations/{locationsId}/keyRings/{keyRingsId}/cryptoKeys/{cryptoKeysId}
+        projects.locations.caPools:
+          path:
+            projects/{projectsId}/locations/{locationsId}/caPools/{caPoolsId}
   metastore:
     v1alpha:
       discovery_doc: metastore_v1alpha.json
@@ -2751,7 +2769,7 @@ canonical_surfaces:
     command: service-directory
   servicehealth:
     name: servicehealth
-    command: servicehealth
+    command: service-health
     hidden: true
   servicemanagement:
     name: servicemanagement

@@ -727,7 +727,7 @@ def AddEnablePointInTimeRecovery(
       required=False,
       help=(
           'Allows for data recovery from a specific point in time, down to a '
-          'fraction of a second, via write-ahead logs. Must have automatic '
+          'fraction of a second, using write-ahead logs. Must have automatic '
           'backups enabled to use. Make sure storage can support at least 7 '
           'days of logs.'
       ),
@@ -1357,7 +1357,9 @@ def AddStorageSizeForStorageShrink(parser):
       ),
       help=(
           'The target storage size must be an integer that represents the'
-          ' number of GB. For example, --storage-size=10GB'
+          ' number of GB.  For example, --storage-size=10GB. Only supported for'
+          ' primary or standalone instances. You can\'t set a target storage'
+          ' size for a replica instance.'
       ),
   )
 
@@ -2838,6 +2840,31 @@ def AddPscAutoConnections(parser, hidden=False):
       ),
       hidden=hidden,
       action=arg_parsers.FlattenAction(),
+  )
+
+
+def AddEnablePscAutoDns(parser, hidden=True):
+  """Adds --enable-psc-auto-dns flag."""
+  parser.add_argument(
+      '--enable-psc-auto-dns',
+      required=False,
+      hidden=hidden,
+      help='Enable per instance DNS records for PSC auto-connections.',
+      action=arg_parsers.StoreTrueFalseAction,
+  )
+
+
+def AddEnablePscWriteEndpointDns(parser, hidden=True):
+  """Adds --enable-psc-write-endpoint-dns flag."""
+  parser.add_argument(
+      '--enable-psc-write-endpoint-dns',
+      required=False,
+      hidden=hidden,
+      help=(
+          'Enable the global DNS record pointing to the primary, for Enterprise'
+          ' Plus edition only.'
+      ),
+      action=arg_parsers.StoreTrueFalseAction,
   )
 
 

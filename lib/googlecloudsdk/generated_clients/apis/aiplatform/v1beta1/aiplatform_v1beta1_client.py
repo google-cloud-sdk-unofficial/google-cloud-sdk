@@ -235,6 +235,7 @@ class AiplatformV1beta1(base_api.BaseApiClient):
     self.projects_locations_notebookRuntimeTemplates = self.ProjectsLocationsNotebookRuntimeTemplatesService(self)
     self.projects_locations_notebookRuntimes_operations = self.ProjectsLocationsNotebookRuntimesOperationsService(self)
     self.projects_locations_notebookRuntimes = self.ProjectsLocationsNotebookRuntimesService(self)
+    self.projects_locations_onlineEvaluators = self.ProjectsLocationsOnlineEvaluatorsService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
     self.projects_locations_persistentResources_operations = self.ProjectsLocationsPersistentResourcesOperationsService(self)
     self.projects_locations_persistentResources = self.ProjectsLocationsPersistentResourcesService(self)
@@ -251,6 +252,12 @@ class AiplatformV1beta1(base_api.BaseApiClient):
     self.projects_locations_ragCorpora = self.ProjectsLocationsRagCorporaService(self)
     self.projects_locations_ragEngineConfig_operations = self.ProjectsLocationsRagEngineConfigOperationsService(self)
     self.projects_locations_ragEngineConfig = self.ProjectsLocationsRagEngineConfigService(self)
+    self.projects_locations_reasoningEngines_a2a_tasks_pushNotificationConfigs = self.ProjectsLocationsReasoningEnginesA2aTasksPushNotificationConfigsService(self)
+    self.projects_locations_reasoningEngines_a2a_tasks = self.ProjectsLocationsReasoningEnginesA2aTasksService(self)
+    self.projects_locations_reasoningEngines_a2a_v1_tasks_pushNotificationConfigs = self.ProjectsLocationsReasoningEnginesA2aV1TasksPushNotificationConfigsService(self)
+    self.projects_locations_reasoningEngines_a2a_v1_tasks = self.ProjectsLocationsReasoningEnginesA2aV1TasksService(self)
+    self.projects_locations_reasoningEngines_a2a_v1 = self.ProjectsLocationsReasoningEnginesA2aV1Service(self)
+    self.projects_locations_reasoningEngines_a2a = self.ProjectsLocationsReasoningEnginesA2aService(self)
     self.projects_locations_reasoningEngines_a2aTasks_events = self.ProjectsLocationsReasoningEnginesA2aTasksEventsService(self)
     self.projects_locations_reasoningEngines_a2aTasks = self.ProjectsLocationsReasoningEnginesA2aTasksService(self)
     self.projects_locations_reasoningEngines_examples_operations = self.ProjectsLocationsReasoningEnginesExamplesOperationsService(self)
@@ -271,6 +278,7 @@ class AiplatformV1beta1(base_api.BaseApiClient):
     self.projects_locations_reasoningEngines = self.ProjectsLocationsReasoningEnginesService(self)
     self.projects_locations_schedules_operations = self.ProjectsLocationsSchedulesOperationsService(self)
     self.projects_locations_schedules = self.ProjectsLocationsSchedulesService(self)
+    self.projects_locations_semanticGovernancePolicies_operations = self.ProjectsLocationsSemanticGovernancePoliciesOperationsService(self)
     self.projects_locations_semanticGovernancePolicies = self.ProjectsLocationsSemanticGovernancePoliciesService(self)
     self.projects_locations_serverlessRayJobs = self.ProjectsLocationsServerlessRayJobsService(self)
     self.projects_locations_solvers_operations = self.ProjectsLocationsSolversOperationsService(self)
@@ -306,6 +314,12 @@ class AiplatformV1beta1(base_api.BaseApiClient):
     self.ragCorpora = self.RagCorporaService(self)
     self.ragEngineConfig_operations = self.RagEngineConfigOperationsService(self)
     self.ragEngineConfig = self.RagEngineConfigService(self)
+    self.reasoningEngines_a2a_tasks_pushNotificationConfigs = self.ReasoningEnginesA2aTasksPushNotificationConfigsService(self)
+    self.reasoningEngines_a2a_tasks = self.ReasoningEnginesA2aTasksService(self)
+    self.reasoningEngines_a2a_v1_tasks_pushNotificationConfigs = self.ReasoningEnginesA2aV1TasksPushNotificationConfigsService(self)
+    self.reasoningEngines_a2a_v1_tasks = self.ReasoningEnginesA2aV1TasksService(self)
+    self.reasoningEngines_a2a_v1 = self.ReasoningEnginesA2aV1Service(self)
+    self.reasoningEngines_a2a = self.ReasoningEnginesA2aService(self)
     self.reasoningEngines_examples_operations = self.ReasoningEnginesExamplesOperationsService(self)
     self.reasoningEngines_examples = self.ReasoningEnginesExamplesService(self)
     self.reasoningEngines_feedbackEntries_operations = self.ReasoningEnginesFeedbackEntriesOperationsService(self)
@@ -324,6 +338,8 @@ class AiplatformV1beta1(base_api.BaseApiClient):
     self.reasoningEngines = self.ReasoningEnginesService(self)
     self.schedules_operations = self.SchedulesOperationsService(self)
     self.schedules = self.SchedulesService(self)
+    self.semanticGovernancePolicies_operations = self.SemanticGovernancePoliciesOperationsService(self)
+    self.semanticGovernancePolicies = self.SemanticGovernancePoliciesService(self)
     self.solvers_operations = self.SolversOperationsService(self)
     self.solvers = self.SolversService(self)
     self.specialistPools_operations = self.SpecialistPoolsOperationsService(self)
@@ -2746,7 +2762,7 @@ class AiplatformV1beta1(base_api.BaseApiClient):
     )
 
     def Predict(self, request, global_params=None):
-      r"""Perform an online prediction.
+      r"""Predict method for the endpoints service.
 
       Args:
         request: (AiplatformEndpointsPredictRequest) input message
@@ -11742,7 +11758,7 @@ class AiplatformV1beta1(base_api.BaseApiClient):
     )
 
     def Predict(self, request, global_params=None):
-      r"""Perform an online prediction.
+      r"""Predict method for the projects_locations_endpoints service.
 
       Args:
         request: (AiplatformProjectsLocationsEndpointsPredictRequest) input message
@@ -22988,6 +23004,205 @@ class AiplatformV1beta1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsOnlineEvaluatorsService(base_api.BaseApiService):
+    """Service class for the projects_locations_onlineEvaluators resource."""
+
+    _NAME = 'projects_locations_onlineEvaluators'
+
+    def __init__(self, client):
+      super(AiplatformV1beta1.ProjectsLocationsOnlineEvaluatorsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Activate(self, request, global_params=None):
+      r"""Activates an OnlineEvaluator.
+
+      Args:
+        request: (AiplatformProjectsLocationsOnlineEvaluatorsActivateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Activate')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Activate.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/onlineEvaluators/{onlineEvaluatorsId}:activate',
+        http_method='POST',
+        method_id='aiplatform.projects.locations.onlineEvaluators.activate',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}:activate',
+        request_field='googleCloudAiplatformV1beta1ActivateOnlineEvaluatorRequest',
+        request_type_name='AiplatformProjectsLocationsOnlineEvaluatorsActivateRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def Create(self, request, global_params=None):
+      r"""Creates an OnlineEvaluator in the given project and location.
+
+      Args:
+        request: (AiplatformProjectsLocationsOnlineEvaluatorsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/onlineEvaluators',
+        http_method='POST',
+        method_id='aiplatform.projects.locations.onlineEvaluators.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1beta1/{+parent}/onlineEvaluators',
+        request_field='googleCloudAiplatformV1beta1OnlineEvaluator',
+        request_type_name='AiplatformProjectsLocationsOnlineEvaluatorsCreateRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes an OnlineEvaluator.
+
+      Args:
+        request: (AiplatformProjectsLocationsOnlineEvaluatorsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/onlineEvaluators/{onlineEvaluatorsId}',
+        http_method='DELETE',
+        method_id='aiplatform.projects.locations.onlineEvaluators.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsOnlineEvaluatorsDeleteRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of an OnlineEvaluator.
+
+      Args:
+        request: (AiplatformProjectsLocationsOnlineEvaluatorsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAiplatformV1beta1OnlineEvaluator) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/onlineEvaluators/{onlineEvaluatorsId}',
+        http_method='GET',
+        method_id='aiplatform.projects.locations.onlineEvaluators.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsOnlineEvaluatorsGetRequest',
+        response_type_name='GoogleCloudAiplatformV1beta1OnlineEvaluator',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists the OnlineEvaluators for the given project and location.
+
+      Args:
+        request: (AiplatformProjectsLocationsOnlineEvaluatorsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAiplatformV1beta1ListOnlineEvaluatorsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/onlineEvaluators',
+        http_method='GET',
+        method_id='aiplatform.projects.locations.onlineEvaluators.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1beta1/{+parent}/onlineEvaluators',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsOnlineEvaluatorsListRequest',
+        response_type_name='GoogleCloudAiplatformV1beta1ListOnlineEvaluatorsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the fields of an OnlineEvaluator.
+
+      Args:
+        request: (AiplatformProjectsLocationsOnlineEvaluatorsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/onlineEvaluators/{onlineEvaluatorsId}',
+        http_method='PATCH',
+        method_id='aiplatform.projects.locations.onlineEvaluators.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1beta1/{+name}',
+        request_field='googleCloudAiplatformV1beta1OnlineEvaluator',
+        request_type_name='AiplatformProjectsLocationsOnlineEvaluatorsPatchRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def Suspend(self, request, global_params=None):
+      r"""Suspends an OnlineEvaluator. When an OnlineEvaluator is suspended, it won't run any evaluations until it is activated again.
+
+      Args:
+        request: (AiplatformProjectsLocationsOnlineEvaluatorsSuspendRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Suspend')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Suspend.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/onlineEvaluators/{onlineEvaluatorsId}:suspend',
+        http_method='POST',
+        method_id='aiplatform.projects.locations.onlineEvaluators.suspend',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}:suspend',
+        request_field='googleCloudAiplatformV1beta1SuspendOnlineEvaluatorRequest',
+        request_type_name='AiplatformProjectsLocationsOnlineEvaluatorsSuspendRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
   class ProjectsLocationsOperationsService(base_api.BaseApiService):
     """Service class for the projects_locations_operations resource."""
 
@@ -24058,7 +24273,7 @@ class AiplatformV1beta1(base_api.BaseApiClient):
     )
 
     def Predict(self, request, global_params=None):
-      r"""Perform an online prediction.
+      r"""Predict method for the projects_locations_publishers_models service.
 
       Args:
         request: (AiplatformProjectsLocationsPublishersModelsPredictRequest) input message
@@ -25335,6 +25550,120 @@ class AiplatformV1beta1(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+  class ProjectsLocationsReasoningEnginesA2aTasksPushNotificationConfigsService(base_api.BaseApiService):
+    """Service class for the projects_locations_reasoningEngines_a2a_tasks_pushNotificationConfigs resource."""
+
+    _NAME = 'projects_locations_reasoningEngines_a2a_tasks_pushNotificationConfigs'
+
+    def __init__(self, client):
+      super(AiplatformV1beta1.ProjectsLocationsReasoningEnginesA2aTasksPushNotificationConfigsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def A2aDeleteReasoningEngine(self, request, global_params=None):
+      r"""Delete request for reasoning engine instance via the A2A delete protocol apis.
+
+      Args:
+        request: (AiplatformProjectsLocationsReasoningEnginesA2aTasksPushNotificationConfigsA2aDeleteReasoningEngineRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleProtobufEmpty) The response message.
+      """
+      config = self.GetMethodConfig('A2aDeleteReasoningEngine')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    A2aDeleteReasoningEngine.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/reasoningEngines/{reasoningEnginesId}/a2a/tasks/{tasksId}/pushNotificationConfigs/{pushNotificationConfigsId}',
+        http_method='DELETE',
+        method_id='aiplatform.projects.locations.reasoningEngines.a2a.tasks.pushNotificationConfigs.a2aDeleteReasoningEngine',
+        ordered_params=['name', 'a2aEndpoint'],
+        path_params=['a2aEndpoint', 'name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}/a2a/{+a2aEndpoint}',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsReasoningEnginesA2aTasksPushNotificationConfigsA2aDeleteReasoningEngineRequest',
+        response_type_name='GoogleProtobufEmpty',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsReasoningEnginesA2aTasksService(base_api.BaseApiService):
+    """Service class for the projects_locations_reasoningEngines_a2a_tasks resource."""
+
+    _NAME = 'projects_locations_reasoningEngines_a2a_tasks'
+
+    def __init__(self, client):
+      super(AiplatformV1beta1.ProjectsLocationsReasoningEnginesA2aTasksService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class ProjectsLocationsReasoningEnginesA2aV1TasksPushNotificationConfigsService(base_api.BaseApiService):
+    """Service class for the projects_locations_reasoningEngines_a2a_v1_tasks_pushNotificationConfigs resource."""
+
+    _NAME = 'projects_locations_reasoningEngines_a2a_v1_tasks_pushNotificationConfigs'
+
+    def __init__(self, client):
+      super(AiplatformV1beta1.ProjectsLocationsReasoningEnginesA2aV1TasksPushNotificationConfigsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def A2aDeleteReasoningEngine(self, request, global_params=None):
+      r"""Delete request for reasoning engine instance via the A2A delete protocol apis.
+
+      Args:
+        request: (AiplatformProjectsLocationsReasoningEnginesA2aV1TasksPushNotificationConfigsA2aDeleteReasoningEngineRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleProtobufEmpty) The response message.
+      """
+      config = self.GetMethodConfig('A2aDeleteReasoningEngine')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    A2aDeleteReasoningEngine.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/reasoningEngines/{reasoningEnginesId}/a2a/v1/tasks/{tasksId}/pushNotificationConfigs/{pushNotificationConfigsId}',
+        http_method='DELETE',
+        method_id='aiplatform.projects.locations.reasoningEngines.a2a.v1.tasks.pushNotificationConfigs.a2aDeleteReasoningEngine',
+        ordered_params=['name', 'a2aEndpoint'],
+        path_params=['a2aEndpoint', 'name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}/a2a/{+a2aEndpoint}',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsReasoningEnginesA2aV1TasksPushNotificationConfigsA2aDeleteReasoningEngineRequest',
+        response_type_name='GoogleProtobufEmpty',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsReasoningEnginesA2aV1TasksService(base_api.BaseApiService):
+    """Service class for the projects_locations_reasoningEngines_a2a_v1_tasks resource."""
+
+    _NAME = 'projects_locations_reasoningEngines_a2a_v1_tasks'
+
+    def __init__(self, client):
+      super(AiplatformV1beta1.ProjectsLocationsReasoningEnginesA2aV1TasksService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class ProjectsLocationsReasoningEnginesA2aV1Service(base_api.BaseApiService):
+    """Service class for the projects_locations_reasoningEngines_a2a_v1 resource."""
+
+    _NAME = 'projects_locations_reasoningEngines_a2a_v1'
+
+    def __init__(self, client):
+      super(AiplatformV1beta1.ProjectsLocationsReasoningEnginesA2aV1Service, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class ProjectsLocationsReasoningEnginesA2aService(base_api.BaseApiService):
+    """Service class for the projects_locations_reasoningEngines_a2a resource."""
+
+    _NAME = 'projects_locations_reasoningEngines_a2a'
+
+    def __init__(self, client):
+      super(AiplatformV1beta1.ProjectsLocationsReasoningEnginesA2aService, self).__init__(client)
+      self._upload_configs = {
+          }
+
   class ProjectsLocationsReasoningEnginesA2aTasksEventsService(base_api.BaseApiService):
     """Service class for the projects_locations_reasoningEngines_a2aTasks_events resource."""
 
@@ -25433,6 +25762,33 @@ class AiplatformV1beta1(base_api.BaseApiClient):
         request_field='googleCloudAiplatformV1beta1A2aTask',
         request_type_name='AiplatformProjectsLocationsReasoningEnginesA2aTasksCreateRequest',
         response_type_name='GoogleCloudAiplatformV1beta1A2aTask',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes an A2aTask.
+
+      Args:
+        request: (AiplatformProjectsLocationsReasoningEnginesA2aTasksDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleProtobufEmpty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/reasoningEngines/{reasoningEnginesId}/a2aTasks/{a2aTasksId}',
+        http_method='DELETE',
+        method_id='aiplatform.projects.locations.reasoningEngines.a2aTasks.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsReasoningEnginesA2aTasksDeleteRequest',
+        response_type_name='GoogleProtobufEmpty',
         supports_download=False,
     )
 
@@ -27827,6 +28183,151 @@ class AiplatformV1beta1(base_api.BaseApiClient):
         request_field='googleCloudAiplatformV1beta1ResumeScheduleRequest',
         request_type_name='AiplatformProjectsLocationsSchedulesResumeRequest',
         response_type_name='GoogleProtobufEmpty',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsSemanticGovernancePoliciesOperationsService(base_api.BaseApiService):
+    """Service class for the projects_locations_semanticGovernancePolicies_operations resource."""
+
+    _NAME = 'projects_locations_semanticGovernancePolicies_operations'
+
+    def __init__(self, client):
+      super(AiplatformV1beta1.ProjectsLocationsSemanticGovernancePoliciesOperationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Cancel(self, request, global_params=None):
+      r"""Starts asynchronous cancellation on a long-running operation. The server makes a best effort to cancel the operation, but success is not guaranteed. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`. Clients can use Operations.GetOperation or other methods to check whether the cancellation succeeded or whether the operation completed despite cancellation. On successful cancellation, the operation is not deleted; instead, it becomes an operation with an Operation.error value with a google.rpc.Status.code of `1`, corresponding to `Code.CANCELLED`.
+
+      Args:
+        request: (AiplatformProjectsLocationsSemanticGovernancePoliciesOperationsCancelRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleProtobufEmpty) The response message.
+      """
+      config = self.GetMethodConfig('Cancel')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Cancel.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/semanticGovernancePolicies/{semanticGovernancePoliciesId}/operations/{operationsId}:cancel',
+        http_method='POST',
+        method_id='aiplatform.projects.locations.semanticGovernancePolicies.operations.cancel',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}:cancel',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsSemanticGovernancePoliciesOperationsCancelRequest',
+        response_type_name='GoogleProtobufEmpty',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a long-running operation. This method indicates that the client is no longer interested in the operation result. It does not cancel the operation. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`.
+
+      Args:
+        request: (AiplatformProjectsLocationsSemanticGovernancePoliciesOperationsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleProtobufEmpty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/semanticGovernancePolicies/{semanticGovernancePoliciesId}/operations/{operationsId}',
+        http_method='DELETE',
+        method_id='aiplatform.projects.locations.semanticGovernancePolicies.operations.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsSemanticGovernancePoliciesOperationsDeleteRequest',
+        response_type_name='GoogleProtobufEmpty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.
+
+      Args:
+        request: (AiplatformProjectsLocationsSemanticGovernancePoliciesOperationsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/semanticGovernancePolicies/{semanticGovernancePoliciesId}/operations/{operationsId}',
+        http_method='GET',
+        method_id='aiplatform.projects.locations.semanticGovernancePolicies.operations.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsSemanticGovernancePoliciesOperationsGetRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists operations that match the specified filter in the request. If the server doesn't support this method, it returns `UNIMPLEMENTED`.
+
+      Args:
+        request: (AiplatformProjectsLocationsSemanticGovernancePoliciesOperationsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningListOperationsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/semanticGovernancePolicies/{semanticGovernancePoliciesId}/operations',
+        http_method='GET',
+        method_id='aiplatform.projects.locations.semanticGovernancePolicies.operations.list',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['filter', 'pageSize', 'pageToken', 'returnPartialSuccess'],
+        relative_path='v1beta1/{+name}/operations',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsSemanticGovernancePoliciesOperationsListRequest',
+        response_type_name='GoogleLongrunningListOperationsResponse',
+        supports_download=False,
+    )
+
+    def Wait(self, request, global_params=None):
+      r"""Waits until the specified long-running operation is done or reaches at most a specified timeout, returning the latest state. If the operation is already done, the latest state is immediately returned. If the timeout specified is greater than the default HTTP/RPC timeout, the HTTP/RPC timeout is used. If the server does not support this method, it returns `google.rpc.Code.UNIMPLEMENTED`. Note that this method is on a best-effort basis. It may return the latest state before the specified timeout (including immediately), meaning even an immediate response is no guarantee that the operation is done.
+
+      Args:
+        request: (AiplatformProjectsLocationsSemanticGovernancePoliciesOperationsWaitRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Wait')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Wait.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/semanticGovernancePolicies/{semanticGovernancePoliciesId}/operations/{operationsId}:wait',
+        http_method='POST',
+        method_id='aiplatform.projects.locations.semanticGovernancePolicies.operations.wait',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['timeout'],
+        relative_path='v1beta1/{+name}:wait',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsSemanticGovernancePoliciesOperationsWaitRequest',
+        response_type_name='GoogleLongrunningOperation',
         supports_download=False,
     )
 
@@ -31408,6 +31909,33 @@ class AiplatformV1beta1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def GenerateLossClusters(self, request, global_params=None):
+      r"""Generates loss clusters from evaluation results. This is a statelss API method that would not modify the EvaluationSet resource.
+
+      Args:
+        request: (AiplatformProjectsLocationsGenerateLossClustersRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('GenerateLossClusters')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GenerateLossClusters.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}:generateLossClusters',
+        http_method='POST',
+        method_id='aiplatform.projects.locations.generateLossClusters',
+        ordered_params=['location'],
+        path_params=['location'],
+        query_params=[],
+        relative_path='v1beta1/{+location}:generateLossClusters',
+        request_field='googleCloudAiplatformV1beta1GenerateLossClustersRequest',
+        request_type_name='AiplatformProjectsLocationsGenerateLossClustersRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
     def GenerateSyntheticData(self, request, global_params=None):
       r"""Generates synthetic (artificial) data based on a description.
 
@@ -31544,7 +32072,7 @@ class AiplatformV1beta1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method can be called in two ways: * **List all public locations:** Use the path `GET /v1/locations`. * **List project-visible locations:** Use the path `GET /v1/projects/{project_id}/locations`. This may include public locations as well as private or other locations specifically visible to the project.
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
       Args:
         request: (AiplatformProjectsLocationsListRequest) input message
@@ -32080,7 +32608,7 @@ class AiplatformV1beta1(base_api.BaseApiClient):
     )
 
     def Predict(self, request, global_params=None):
-      r"""Perform an online prediction.
+      r"""Predict method for the publishers_models service.
 
       Args:
         request: (AiplatformPublishersModelsPredictRequest) input message
@@ -32632,6 +33160,120 @@ class AiplatformV1beta1(base_api.BaseApiClient):
 
     def __init__(self, client):
       super(AiplatformV1beta1.RagEngineConfigService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class ReasoningEnginesA2aTasksPushNotificationConfigsService(base_api.BaseApiService):
+    """Service class for the reasoningEngines_a2a_tasks_pushNotificationConfigs resource."""
+
+    _NAME = 'reasoningEngines_a2a_tasks_pushNotificationConfigs'
+
+    def __init__(self, client):
+      super(AiplatformV1beta1.ReasoningEnginesA2aTasksPushNotificationConfigsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def A2aDeleteReasoningEngine(self, request, global_params=None):
+      r"""Delete request for reasoning engine instance via the A2A delete protocol apis.
+
+      Args:
+        request: (AiplatformReasoningEnginesA2aTasksPushNotificationConfigsA2aDeleteReasoningEngineRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleProtobufEmpty) The response message.
+      """
+      config = self.GetMethodConfig('A2aDeleteReasoningEngine')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    A2aDeleteReasoningEngine.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/reasoningEngines/{reasoningEnginesId}/a2a/tasks/{tasksId}/pushNotificationConfigs/{pushNotificationConfigsId}',
+        http_method='DELETE',
+        method_id='aiplatform.reasoningEngines.a2a.tasks.pushNotificationConfigs.a2aDeleteReasoningEngine',
+        ordered_params=['name', 'a2aEndpoint'],
+        path_params=['a2aEndpoint', 'name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}/a2a/{+a2aEndpoint}',
+        request_field='',
+        request_type_name='AiplatformReasoningEnginesA2aTasksPushNotificationConfigsA2aDeleteReasoningEngineRequest',
+        response_type_name='GoogleProtobufEmpty',
+        supports_download=False,
+    )
+
+  class ReasoningEnginesA2aTasksService(base_api.BaseApiService):
+    """Service class for the reasoningEngines_a2a_tasks resource."""
+
+    _NAME = 'reasoningEngines_a2a_tasks'
+
+    def __init__(self, client):
+      super(AiplatformV1beta1.ReasoningEnginesA2aTasksService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class ReasoningEnginesA2aV1TasksPushNotificationConfigsService(base_api.BaseApiService):
+    """Service class for the reasoningEngines_a2a_v1_tasks_pushNotificationConfigs resource."""
+
+    _NAME = 'reasoningEngines_a2a_v1_tasks_pushNotificationConfigs'
+
+    def __init__(self, client):
+      super(AiplatformV1beta1.ReasoningEnginesA2aV1TasksPushNotificationConfigsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def A2aDeleteReasoningEngine(self, request, global_params=None):
+      r"""Delete request for reasoning engine instance via the A2A delete protocol apis.
+
+      Args:
+        request: (AiplatformReasoningEnginesA2aV1TasksPushNotificationConfigsA2aDeleteReasoningEngineRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleProtobufEmpty) The response message.
+      """
+      config = self.GetMethodConfig('A2aDeleteReasoningEngine')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    A2aDeleteReasoningEngine.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/reasoningEngines/{reasoningEnginesId}/a2a/v1/tasks/{tasksId}/pushNotificationConfigs/{pushNotificationConfigsId}',
+        http_method='DELETE',
+        method_id='aiplatform.reasoningEngines.a2a.v1.tasks.pushNotificationConfigs.a2aDeleteReasoningEngine',
+        ordered_params=['name', 'a2aEndpoint'],
+        path_params=['a2aEndpoint', 'name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}/a2a/{+a2aEndpoint}',
+        request_field='',
+        request_type_name='AiplatformReasoningEnginesA2aV1TasksPushNotificationConfigsA2aDeleteReasoningEngineRequest',
+        response_type_name='GoogleProtobufEmpty',
+        supports_download=False,
+    )
+
+  class ReasoningEnginesA2aV1TasksService(base_api.BaseApiService):
+    """Service class for the reasoningEngines_a2a_v1_tasks resource."""
+
+    _NAME = 'reasoningEngines_a2a_v1_tasks'
+
+    def __init__(self, client):
+      super(AiplatformV1beta1.ReasoningEnginesA2aV1TasksService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class ReasoningEnginesA2aV1Service(base_api.BaseApiService):
+    """Service class for the reasoningEngines_a2a_v1 resource."""
+
+    _NAME = 'reasoningEngines_a2a_v1'
+
+    def __init__(self, client):
+      super(AiplatformV1beta1.ReasoningEnginesA2aV1Service, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class ReasoningEnginesA2aService(base_api.BaseApiService):
+    """Service class for the reasoningEngines_a2a resource."""
+
+    _NAME = 'reasoningEngines_a2a'
+
+    def __init__(self, client):
+      super(AiplatformV1beta1.ReasoningEnginesA2aService, self).__init__(client)
       self._upload_configs = {
           }
 
@@ -34700,6 +35342,161 @@ class AiplatformV1beta1(base_api.BaseApiClient):
 
     def __init__(self, client):
       super(AiplatformV1beta1.SchedulesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class SemanticGovernancePoliciesOperationsService(base_api.BaseApiService):
+    """Service class for the semanticGovernancePolicies_operations resource."""
+
+    _NAME = 'semanticGovernancePolicies_operations'
+
+    def __init__(self, client):
+      super(AiplatformV1beta1.SemanticGovernancePoliciesOperationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Cancel(self, request, global_params=None):
+      r"""Starts asynchronous cancellation on a long-running operation. The server makes a best effort to cancel the operation, but success is not guaranteed. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`. Clients can use Operations.GetOperation or other methods to check whether the cancellation succeeded or whether the operation completed despite cancellation. On successful cancellation, the operation is not deleted; instead, it becomes an operation with an Operation.error value with a google.rpc.Status.code of `1`, corresponding to `Code.CANCELLED`.
+
+      Args:
+        request: (AiplatformSemanticGovernancePoliciesOperationsCancelRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleProtobufEmpty) The response message.
+      """
+      config = self.GetMethodConfig('Cancel')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Cancel.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/semanticGovernancePolicies/{semanticGovernancePoliciesId}/operations/{operationsId}:cancel',
+        http_method='POST',
+        method_id='aiplatform.semanticGovernancePolicies.operations.cancel',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}:cancel',
+        request_field='',
+        request_type_name='AiplatformSemanticGovernancePoliciesOperationsCancelRequest',
+        response_type_name='GoogleProtobufEmpty',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a long-running operation. This method indicates that the client is no longer interested in the operation result. It does not cancel the operation. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`.
+
+      Args:
+        request: (AiplatformSemanticGovernancePoliciesOperationsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleProtobufEmpty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/semanticGovernancePolicies/{semanticGovernancePoliciesId}/operations/{operationsId}',
+        http_method='DELETE',
+        method_id='aiplatform.semanticGovernancePolicies.operations.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='AiplatformSemanticGovernancePoliciesOperationsDeleteRequest',
+        response_type_name='GoogleProtobufEmpty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.
+
+      Args:
+        request: (AiplatformSemanticGovernancePoliciesOperationsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/semanticGovernancePolicies/{semanticGovernancePoliciesId}/operations/{operationsId}',
+        http_method='GET',
+        method_id='aiplatform.semanticGovernancePolicies.operations.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='AiplatformSemanticGovernancePoliciesOperationsGetRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists operations that match the specified filter in the request. If the server doesn't support this method, it returns `UNIMPLEMENTED`.
+
+      Args:
+        request: (AiplatformSemanticGovernancePoliciesOperationsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningListOperationsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/semanticGovernancePolicies/{semanticGovernancePoliciesId}/operations',
+        http_method='GET',
+        method_id='aiplatform.semanticGovernancePolicies.operations.list',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['filter', 'pageSize', 'pageToken', 'returnPartialSuccess'],
+        relative_path='v1beta1/{+name}/operations',
+        request_field='',
+        request_type_name='AiplatformSemanticGovernancePoliciesOperationsListRequest',
+        response_type_name='GoogleLongrunningListOperationsResponse',
+        supports_download=False,
+    )
+
+    def Wait(self, request, global_params=None):
+      r"""Waits until the specified long-running operation is done or reaches at most a specified timeout, returning the latest state. If the operation is already done, the latest state is immediately returned. If the timeout specified is greater than the default HTTP/RPC timeout, the HTTP/RPC timeout is used. If the server does not support this method, it returns `google.rpc.Code.UNIMPLEMENTED`. Note that this method is on a best-effort basis. It may return the latest state before the specified timeout (including immediately), meaning even an immediate response is no guarantee that the operation is done.
+
+      Args:
+        request: (AiplatformSemanticGovernancePoliciesOperationsWaitRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Wait')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Wait.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/semanticGovernancePolicies/{semanticGovernancePoliciesId}/operations/{operationsId}:wait',
+        http_method='POST',
+        method_id='aiplatform.semanticGovernancePolicies.operations.wait',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['timeout'],
+        relative_path='v1beta1/{+name}:wait',
+        request_field='',
+        request_type_name='AiplatformSemanticGovernancePoliciesOperationsWaitRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+  class SemanticGovernancePoliciesService(base_api.BaseApiService):
+    """Service class for the semanticGovernancePolicies resource."""
+
+    _NAME = 'semanticGovernancePolicies'
+
+    def __init__(self, client):
+      super(AiplatformV1beta1.SemanticGovernancePoliciesService, self).__init__(client)
       self._upload_configs = {
           }
 

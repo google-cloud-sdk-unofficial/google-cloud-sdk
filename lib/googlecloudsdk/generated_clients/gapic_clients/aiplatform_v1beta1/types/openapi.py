@@ -81,7 +81,12 @@ class Schema(proto.Message):
         title (str):
             Optional. Title for the schema.
         description (str):
-            Optional. Description of the schema.
+            Optional. Describes the data. The model uses
+            this field to understand the purpose of the
+            schema and how to use it. It is a best practice
+            to provide a clear and descriptive explanation
+            for the schema and its properties here, rather
+            than in the prompt.
         nullable (bool):
             Optional. Indicates if the value of this
             field can be null.

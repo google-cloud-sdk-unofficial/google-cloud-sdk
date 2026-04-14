@@ -81,7 +81,7 @@ def CreateImage(
   if kms_key:
     tracker.UpdateHeaderMessage('Using the source from the specified bucket.')
     _ValidateCmekDeployment(build_source, build_image, kms_key)
-    source = sources.GetGcsObject(build_source)
+    source = sources.GetGcsObject(build_source, location=region)
   else:
     tracker.UpdateHeaderMessage('Uploading sources.')
     source = sources.Upload(build_source, region, resource_ref, source_bucket)
@@ -105,6 +105,7 @@ def CreateImage(
     response_dict, build_log_url, base_image_from_build = _SubmitBuild(
         tracker,
         submit_build_request,
+        region=region,
     )
   except apitools_exceptions.HttpNotFoundError as e:
     # This happens if user didn't have permission to access the builds API.
@@ -328,7 +329,7 @@ def _BuildFromSource(
       ),
   )
 
-  response_dict = _PollUntilBuildCompletes(build_op_ref)
+  response_dict = _PollUntilBuildCompletes(build_op_ref, build_region)
   return response_dict, build_log_url
 
 
@@ -421,12 +422,14 @@ def _GetBuildTags(resource_ref):
 def _SubmitBuild(
     tracker,
     submit_build_request,
+    region,
 ):
   """Call Build API to submit a build.
 
   Arguments:
     tracker: StagedProgressTracker, to report on the progress of releasing.
     submit_build_request: SubmitBuildRequest, the request to submit build.
+    region: The region to submit the build in.
 
   Returns:
     response_dict: Build resource returned by Cloud build.
@@ -434,7 +437,9 @@ def _SubmitBuild(
     build_response.baseImageUri: The rectified uri of the base image that should
     be used in automatic base image update.
   """
-  run_client = apis.GetClientInstance(global_methods.SERVERLESS_API_NAME, 'v2')
+  run_client = apis.GetClientInstance(
+      global_methods.SERVERLESS_API_NAME, 'v2', location=region
+  )
   build_messages = cloudbuild_util.GetMessagesModule()
 
   build_response = run_client.projects_locations_builds.Submit(
@@ -462,17 +467,19 @@ def _SubmitBuild(
           build_log_url=build_log_url
       ),
   )
-  response_dict = _PollUntilBuildCompletes(build_op_ref)
+  response_dict = _PollUntilBuildCompletes(build_op_ref, region)
   return response_dict, build_log_url, build_response.baseImageUri
 
 
 def _PollUntilBuildCompletes(
     build_op_ref: resources.Resource,
+    region: str,
 ) -> dict[str, Any]:
   """Poll the build operation until it completes.
 
   Args:
     build_op_ref: The resource reference for the Cloud Build operation.
+    region: The region to poll the build operation in.
 
   Returns:
     A dictionary representation of the completed build operation's response.
@@ -481,7 +488,7 @@ def _PollUntilBuildCompletes(
     waiter.TimeoutError: If the build operation does not complete within the
       maximum wait time.
   """
-  client = cloudbuild_util.GetClientInstance()
+  client = cloudbuild_util.GetClientInstance(location=region)
   poller = waiter.CloudOperationPoller(
       client.projects_builds, client.operations
   )

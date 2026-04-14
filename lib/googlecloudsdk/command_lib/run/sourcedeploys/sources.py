@@ -13,11 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Sources for Cloud Run Functions."""
+
 import enum
 import os
 import uuid
 
 from apitools.base.py import exceptions as api_exceptions
+from apitools.base.py import transfer  # pytype: disable=import-error
+from googlecloudsdk.api_lib.cloudbuild import snapshot as snapshot_lib
+from googlecloudsdk.api_lib.run import run_util
 from googlecloudsdk.api_lib.storage import storage_api
 from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.command_lib.builds import staging_bucket_util
@@ -27,8 +31,8 @@ from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
+from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import times
-
 
 _GCS_PREFIX = 'gs://'
 _MAX_BUCKET_NAME_LENGTH = 63
@@ -41,6 +45,66 @@ class BucketNameError(core_exceptions.Error):
 class ArchiveType(enum.Enum):
   ZIP = 'Zip'
   TAR = 'Tar'
+
+
+def UploadThroughCloudRun(
+    source_to_upload,
+    region,
+    service_ref,
+    release_track,
+    kms_key=None,
+):
+  """Upload source code through Cloud Run API.
+
+  Args:
+    source_to_upload: The source to upload.
+    region: The region to upload to.
+    service_ref: The Cloud Run service resource reference.
+    release_track: The release track to use for the upload.
+    kms_key: Optional. The KMS key to use for encryption.
+
+  Returns:
+    The GCS object name.
+  """
+  parent = 'projects/{project}/locations/{region}'.format(
+      project=properties.VALUES.core.project.Get(required=True), region=region
+  )
+
+  messages = run_util.GetMessagesModule(release_track)
+  run_client = run_util.GetClientInstance(release_track)
+  request = messages.RunProjectsLocationsSourceUploadsUploadRequest(
+      parent=parent,
+      googleCloudRunV2UploadSourceRequest=messages.GoogleCloudRunV2UploadSourceRequest(
+          service=service_ref.servicesId,
+          encryptionKey=kms_key,
+      ),
+  )
+  if os.path.isdir(source_to_upload):
+    with files.TemporaryDirectory() as tmpdir:
+      archive_path = os.path.join(tmpdir, 'source.tar.gz')
+      snapshot_lib.Snapshot(
+          source_to_upload, include_gitignore=False
+      ).MakeTarball(archive_path)
+      upload = transfer.Upload.FromFile(
+          archive_path, mime_type='application/gzip'
+      )
+      response = run_client.projects_locations_sourceUploads.Upload(
+          request, upload=upload
+      )
+  else:
+    archive_path = source_to_upload
+    upload = transfer.Upload.FromFile(
+        archive_path, mime_type='application/gzip'
+    )
+    response = run_client.projects_locations_sourceUploads.Upload(
+        request, upload=upload
+    )
+
+  return 'gs://{}/{}#{}'.format(
+      response.cloudStorageSource.bucket,
+      response.cloudStorageSource.object,
+      response.cloudStorageSource.generation,
+  )
 
 
 def Upload(
@@ -66,7 +130,7 @@ def Upload(
   Returns:
     storage_v1_messages.Object, The written GCS object.
   """
-  gcs_client = storage_api.StorageClient()
+  gcs_client = storage_api.StorageClient(location=region)
 
   bucket_name = _GetOrCreateBucket(gcs_client, region, source_bucket)
   object_name = _GetObject(source, resource_ref, archive_type)
@@ -87,17 +151,19 @@ def Upload(
   )
 
 
-def GetGcsObject(source: str):
+def GetGcsObject(source: str, location: str):
   """Retrieves the GCS object corresponding to the source location string.
 
   Args:
     source: The source location string in the format `gs://<bucket>/<object>`.
+    location: The location of the GCS object. Used to create a REP client when
+      regional endpoints are enabled.
 
   Returns:
     storage_v1_messages.Object, The GCS object.
   """
   object_ref = storage_util.ObjectReference.FromUrl(source)
-  return storage_api.StorageClient().GetObject(object_ref)
+  return storage_api.StorageClient(location=location).GetObject(object_ref)
 
 
 def IsGcsObject(source: str) -> bool:

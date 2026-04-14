@@ -63,6 +63,7 @@ def GetContainer(
       ('Base Image', GetBaseImage(annotations, container_name)),
       ('Command', ' '.join(container.command)),
       ('Args', ' '.join(container.args)),
+      ('Working Directory', container.workingDir),
       (
           'Port',
           ' '.join(str(p.containerPort) for p in container.ports),

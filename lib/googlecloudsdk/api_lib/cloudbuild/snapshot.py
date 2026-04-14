@@ -76,6 +76,16 @@ class Snapshot(storage_util.Snapshot):
       log.debug('Added [%s]', path)
     return tf
 
+  def MakeTarball(self, archive_path):
+    """Constructs a tarball of snapshot contents.
+
+    Args:
+      archive_path: Path to place tar file.
+    """
+    with files.ChDir(self.src_dir):
+      tf = self._MakeTarball(archive_path)
+      tf.close()
+
   def _MakeZipFile(self, archive_path):
     zip_file = zipfile.ZipFile(archive_path, 'w', zipfile.ZIP_DEFLATED)
     try:

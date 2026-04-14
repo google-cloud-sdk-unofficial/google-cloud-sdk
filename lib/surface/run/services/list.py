@@ -14,11 +14,13 @@
 # limitations under the License.
 """Command for listing available services."""
 
+import copy
 
 from googlecloudsdk.api_lib.run import global_methods
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.command_lib.run import pretty_print
@@ -27,24 +29,27 @@ from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(commands.List):
   """List available services."""
 
   detailed_help = {
-      'DESCRIPTION':
+      'DESCRIPTION': (
           """\
           {description}
-          """,
-      'EXAMPLES':
+          """
+      ),
+      'EXAMPLES': (
           """\
           To list available services:
 
               $ {command}
-          """,
+          """
+      ),
   }
 
   @classmethod
@@ -56,9 +61,9 @@ class List(commands.List):
         'Namespace to list services in.',
         required=True,
         prefixes=False,
-        hidden=True)
-    concept_parsers.ConceptParser([namespace_presentation
-                                  ]).AddToParser(parser)
+        hidden=True,
+    )
+    concept_parsers.ConceptParser([namespace_presentation]).AddToParser(parser)
 
     parser.display_info.AddUriFunc(cls._GetResourceUri)
 
@@ -66,12 +71,14 @@ class List(commands.List):
   def Args(cls, parser):
     cls.CommonArgs(parser)
 
-  def _SetFormat(self,
-                 args,
-                 show_region=False,
-                 show_namespace=False,
-                 show_description=False,
-                 is_multi_region=False):
+  def _SetFormat(
+      self,
+      args,
+      show_region=False,
+      show_namespace=False,
+      show_description=False,
+      is_multi_region=False,
+  ):
     """Set display format for output.
 
     Args:
@@ -86,8 +93,9 @@ class List(commands.List):
         'firstof(id,metadata.name):label=SERVICE',
     ]
     if show_region:
-      columns.append('region:label={}'
-                     .format('REGIONS' if is_multi_region else 'REGION'))
+      columns.append(
+          'region:label={}'.format('REGIONS' if is_multi_region else 'REGION')
+      )
     if show_namespace:
       columns.append('namespace:label=NAMESPACE')
     if show_description:
@@ -112,6 +120,12 @@ class List(commands.List):
     """List available services."""
     is_managed = platforms.GetPlatform() == platforms.PLATFORM_MANAGED
     if is_managed and not args.IsSpecified('region'):
+      endpoint_mode = properties.VALUES.regional.endpoint_mode.Get()
+      if endpoint_mode == properties.VALUES.regional.REGIONAL:
+        raise exceptions.ArgumentError(
+            'You must specify a region using the `--region` flag when '
+            'regional endpoints are enabled.'
+        )
       client = global_methods.GetServerlessClientInstance()
       self.SetPartialApiEndpoint(client.url)
       args.CONCEPTS.namespace.Parse()  # Error if no proj.
@@ -119,9 +133,11 @@ class List(commands.List):
       return commands.SortByName(self._GlobalList(client, args))
     else:
       conn_context = connection_context.GetConnectionContext(
-          args, flags.Product.RUN, self.ReleaseTrack())
+          args, flags.Product.RUN, self.ReleaseTrack()
+      )
       self._SetFormat(
-          args, show_region=is_managed, show_namespace=(not is_managed))
+          args, show_region=is_managed, show_namespace=(not is_managed)
+      )
       namespace_ref = args.CONCEPTS.namespace.Parse()
       with serverless_operations.Connect(conn_context) as client:
         self.SetCompleteApiEndpoint(conn_context.endpoint)
@@ -132,16 +148,28 @@ class List(commands.List):
             location_msg = ' in [{}]'.format(conn_context.cluster_location)
           if hasattr(conn_context, 'cluster_project'):
             project_msg = ' in project [{}]'.format(
-                conn_context.cluster_project)
-          log.status.Print('For cluster [{cluster}]{zone}{project}:'.format(
-              cluster=conn_context.cluster_name,
-              zone=location_msg,
-              project=project_msg))
+                conn_context.cluster_project
+            )
+          log.status.Print(
+              'For cluster [{cluster}]{zone}{project}:'.format(
+                  cluster=conn_context.cluster_name,
+                  zone=location_msg,
+                  project=project_msg,
+              )
+          )
         return commands.SortByName(client.ListServices(namespace_ref))
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.RegionalEndpointsSupported
+class BetaList(List):
+  """List available services."""
+
+  detailed_help = copy.deepcopy(List.detailed_help)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaList(List):
+class AlphaList(BetaList):
   """List available services."""
 
   @classmethod

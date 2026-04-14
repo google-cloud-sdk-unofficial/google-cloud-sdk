@@ -21,6 +21,7 @@ See go/parallel-processing-in-gcloud-storage for more information.
 import contextlib
 import functools
 import multiprocessing
+import os
 import signal as signal_lib
 import sys
 import tempfile
@@ -360,7 +361,13 @@ def _process_worker(
       )
 
     for thread in threads:
-      thread.join()
+      timeout = 1.0 if abort_event.is_set() else None
+      thread.join(timeout=timeout)
+
+    if abort_event.is_set():
+      for thread in threads:
+        if thread.is_alive():
+          os._exit(1)  # pylint: disable=protected-access
 
 
 @crash_handling.CrashManager
@@ -646,6 +653,18 @@ class TaskGraphExecutor:
       except queue.Full:
         pass
       worker_process_spawner.join()
+
+    if self._abort_event.is_set():
+      if hasattr(self._task_queue, 'cancel_join_thread'):
+        self._task_queue.cancel_join_thread()
+      if hasattr(self._task_output_queue, 'cancel_join_thread'):
+        self._task_output_queue.cancel_join_thread()
+      if hasattr(self._signal_queue, 'cancel_join_thread'):
+        self._signal_queue.cancel_join_thread()
+      if self._task_status_queue and hasattr(
+          self._task_status_queue, 'cancel_join_thread'
+      ):
+        self._task_status_queue.cancel_join_thread()
 
     # Restore the debug signal handler.
     self._debug_handler.terminate()

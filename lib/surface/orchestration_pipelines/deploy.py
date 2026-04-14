@@ -23,6 +23,7 @@ import pathlib
 import re
 import subprocess
 import time
+import types
 from typing import Any
 
 from apitools.base.py import exceptions as api_exceptions
@@ -40,6 +41,7 @@ from googlecloudsdk.command_lib.orchestration_pipelines import git_context
 from googlecloudsdk.command_lib.orchestration_pipelines.handlers import registry
 from googlecloudsdk.command_lib.orchestration_pipelines.processors import action_processor
 from googlecloudsdk.command_lib.orchestration_pipelines.tools import composer_utils
+from googlecloudsdk.command_lib.orchestration_pipelines.tools import gcs_utils
 from googlecloudsdk.command_lib.orchestration_pipelines.tools import yaml_processor
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
@@ -88,10 +90,11 @@ def _GetRepoName(subprocess_mod: Any) -> str:
 def _GetComposerBucket(env_name: str, location: str) -> str:
   """Retrieves the GCS bucket for the Composer environment."""
   try:
+    project = properties.VALUES.core.project.Get(required=True)
     env_ref = resources.REGISTRY.Parse(
         env_name,
         params={
-            "projectsId": properties.VALUES.core.project.Get(required=True),
+            "projectsId": project,
             "locationsId": location,
         },
         collection="composer.projects.locations.environments",
@@ -105,7 +108,15 @@ def _GetComposerBucket(env_name: str, location: str) -> str:
     bucket = env_obj.config.dagGcsPrefix.replace("gs://", "").split("/")[0]
     return bucket
   except Exception as e:
-    raise DeployError(f"Failed to find Composer bucket: {e}") from e
+    current_project = properties.VALUES.core.project.Get() or "[NOT SET]"
+    raise DeployError(
+        f"Failed to find Composer environment '{env_name}' in region"
+        f" '{location}' for project '{current_project}'. Please verify you are"
+        " authenticated to the correct Google Cloud project"
+        " (`gcloud config set project <PROJECT_ID>`) and the environment"
+        " exists.\nDetails: {e}"
+        f"and the environment exists.\nDetails: {e}"
+    ) from e
 
 
 def _UploadDirToGcs(local_dir: pathlib.Path, dest_uri: str) -> None:
@@ -217,57 +228,28 @@ def _GetRelativePath(path: str) -> str:
   return path
 
 
-def _DeployGcpResources(
-    deployment_file: pathlib.Path,
-    env: str,
-    dry_run: bool,
-    external_vars: dict[str, str] | None = None,
-) -> int:
-  """Deploys GCP resources based on a deployment file.
+def _DeployGcpResources(parsed_deployment: dict[str, Any]) -> int:
+  """Deploys GCP resources based on a deployment dict.
 
   Args:
-    deployment_file: The path to the deployment definition file.
-    env: The target environment for the deployment.
-    dry_run: If True, performs a dry run.
-    external_vars: Optional dict of external variables to substitute.
-
-  Raises:
-    DeployError: If the specified environment is not found in the
-      deployment file, or if any error occurs during the resource deployment
-      process.
+    parsed_deployment: The already parsed deployment dict.
 
   Returns:
     The number of resources deployed.
   """
-  log.status.Print(
-      f"Deployment file {deployment_file.name} found, deploying resources..."
-  )
   resources_deployed_count = 0
-  try:
-    # Load environment with variable substitution
-    environment = yaml_processor.load_environment(
-        deployment_file, env, external_vars
-    )
-    yaml_processor.validate_environment(environment, env)
-  except Exception as e:
-    raise DeployError(
-        f"Failed to deploy resources for environment '{env}' "
-        f"from file '{deployment_file.name}':\n{e}"
-    ) from e
+  deployment_resources = parsed_deployment.get("resources", [])
 
-  for resource in environment.resources:
+  environment_obj = types.SimpleNamespace(**parsed_deployment)
+
+  for resource in deployment_resources:
     if resource.type == "resourceProfile":
       log.status.Print(f"Skipping resource profile '{resource.name}'.")
       continue
-    try:
-      handler = registry.GetHandler(resource, environment, dry_run=dry_run)
-      gcp_deployer.deploy_gcp_resource(handler)
-      resources_deployed_count += 1
-    except Exception as e:
-      raise DeployError(
-          f"Failed to deploy resources for environment '{env}' "
-          f"from file '{deployment_file.name}':\n{e}"
-      ) from e
+    handler = registry.GetHandler(resource, environment_obj)
+    gcp_deployer.validate_gcp_resource_l1(handler)
+    gcp_deployer.deploy_gcp_resource(handler)
+    resources_deployed_count += 1
   return resources_deployed_count
 
 
@@ -318,14 +300,14 @@ class Deploy(calliope_base.Command):
   @staticmethod
   def Args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
+        "--validate",
+        action="store_true",
+        help="If set, performs full validation for resources and pipelines.",
+    )
+    parser.add_argument(
         "--environment",
         required=True,
         help="The target environment for the deployment.",
-    )
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="If set, performs a dry run of the deployment.",
     )
     parser.add_argument(
         "--rollback",
@@ -489,198 +471,202 @@ class Deploy(calliope_base.Command):
 
     bundle_dir = work_dir
     deployment_path = bundle_dir / DEPLOYMENT_FILE
-    try:
-      resources_deployed_count = _DeployGcpResources(
-          deployment_path, args.environment, args.dry_run, external_vars
-      )
-      if resources_deployed_count > 0:
 
-        status["resource_deployment"] = "SUCCESS"
-      else:
-        status["resource_deployment"] = "SKIPPED"
+    try:
+      parsed_deployment, combined_variables = yaml_processor.parse_deployment(
+          deployment_path, args.environment, external_vars
+      )
     except (yaml.FileLoadError, yaml.YAMLParseError) as e:
       raise calliope_exceptions.BadFileException(
           "Deployment file not found or failed to parse: "
           f"{deployment_path.name}"
       ) from e
-    parsed_deployment = yaml_processor.parse_deployment(
-        deployment_path, args.environment, external_vars
-    )
-
-    pipelines = parsed_deployment.get("pipelines", [])
-    single_pipeline_source = None
-    if getattr(args, "pipeline", None):
-      single_pipeline_source = args.pipeline
-      filtered_pipelines = []
-      for p in pipelines:
-
-        if args.pipeline == p.source:
-          filtered_pipelines.append(p)
-      if not filtered_pipelines:
-        raise DeployError(
-            f"Pipeline '{args.pipeline}' not found in {DEPLOYMENT_FILE}."
-        )
-      pipelines = filtered_pipelines
-    if args.local:
-      try:
-        raw_user = getpass.getuser()
-      except (OSError, ImportError, KeyError):
-        raw_user = "localdev"
-      clean_user = re.sub(r"[^a-z0-9]", "", raw_user.lower())
-      clean_dir = re.sub(r"[^a-z0-9]", "", bundle_dir.name.lower())
-      bundle_name = f"bundle-local-{clean_user}-{clean_dir}"
-    else:
-      bundle_name = _GetRepoName(self._subprocess)
-
-    version_id = None
-    if pipelines:
-      composer_bucket = _GetComposerBucket(
-          parsed_deployment["composer_env"],
-          parsed_deployment["region"],
-      )
-      for pipeline in pipelines:
-        yaml_path = bundle_dir / pipeline.source
-
-        version_id = self._DeployPipeline(
-            args,
-            bundle_dir,
-            yaml_path,
-            deployment_path,
-            git_context_obj,
-            rollback=args.rollback,
-            bundle_name=bundle_name,
-            external_vars=external_vars,
-            is_paused=is_paused,
-            composer_bucket=composer_bucket,
-            is_local=getattr(args, "local", False),
-        )
-      status["version"] = version_id
-      if getattr(args, "async_", False):
-        status["pipeline_deployment"] = "SUCCESS"
-        log.status.Print(
-            f"\nAsynchronous mode complete.\nBundle ID: {bundle_name}\nVersion"
-            f" ID: {status['version']}\n"
-        )
-      else:
-        try:
-          single_pipeline_id = None
-          if single_pipeline_source:
-            single_pipeline_id = pathlib.Path(single_pipeline_source).stem
-          wait_result = self._WaitForPipelines(
-              bundle_name=bundle_name,
-              expected_pipelines_count=len(pipelines),
-              composer_env_name=parsed_deployment["composer_env"],
-              location=parsed_deployment["region"],
-              project=parsed_deployment["project"],
-              version_id=status["version"],
-              single_pipeline_name=single_pipeline_id
-          )
-          deployed_pipelines = wait_result.get("pipelines", [])
-          all_healthy = True
-          log.status.Print(
-              f"\nSync mode complete.\nBundle ID: {bundle_name}\nVersion"
-              f" ID: {status['version']}\n"
-          )
-          if not deployed_pipelines:
-            log.status.Print("\n--- Pipeline Deployment Status ---")
-            log.status.Print("No pipelines deployed successfully.")
-            all_healthy = False
-          else:
-            log.status.Print("\n--- Pipeline Deployment Status ---")
-            for p in deployed_pipelines:
-              p_id = p.get("pipeline_id", "Unknown")
-              p_status = p.get("status", "unknown").upper()
-              if p_status == "HEALTHY":
-                log.status.Print(
-                    f"Pipeline '{p_id}': [OK] (Status: {p_status})"
-                )
-              else:
-                log.error(f"Pipeline '{p_id}': [FAILED] (Status: {p_status})")
-                all_healthy = False
-          log.status.Print("\n--- Pipeline Deployment full details ---")
-          log.status.Print(f"Deployed pipelines: {deployed_pipelines}")
-
-          if not all_healthy:
-            status["pipeline_deployment"] = "FAILED"
-          else:
-            status["pipeline_deployment"] = "SUCCESS"
-
-        except DeployError as e:
-          status["pipeline_deployment"] = "FAILED"
-          log.error(
-              "Failed to wait for pipelines to be parsed in Composer. "
-              "Error: %s",
-              e,
-          )
-
-    if status["pipeline_deployment"] == "FAILED":
+    except yaml_processor.BadFileError as e:
       raise DeployError(
-          "Deployment failed: One or more pipelines are in an UNHEALTHY state. "
-          "Check Airflow logs for parsing errors."
-      )
+          f"Failed to process deployment for environment '{args.environment}' "
+          f"from file '{deployment_path.name}':\n{e}"
+      ) from e
 
-    success_states = ["SUCCESS", "SKIPPED"]
+    env_project = parsed_deployment.get("project")
+    orig_project = properties.VALUES.core.project.Get()
+    if env_project:
+      properties.VALUES.core.project.Set(env_project)
 
-    if (
-        status["resource_deployment"] not in success_states
-        and status["pipeline_deployment"] not in success_states
-    ):
-      raise DeployError(
-          f"Failed to deploy. Searched recursively in {work_dir}, but found no"
-          " valid bundles containing both a pipeline YAML (with pipelineId)"
-          f" and a {DEPLOYMENT_FILE} for environment '{args.environment}'."
-      )
-
-    if (
-        status["pipeline_deployment"] == "SUCCESS"
-        and status["resource_deployment"] == "SUCCESS"
-    ):
-      log.status.Print(
-          "Resource and pipeline deployment successful for version"
-          f" {status['version']} in bundle '{bundle_name}'"
-      )
-    elif status["pipeline_deployment"] == "SUCCESS":
-      log.status.Print(
-          f"Pipeline deployment successful for version {status['version']} in"
-          f" bundle '{bundle_name}'"
-      )
-    elif status["resource_deployment"] == "SUCCESS":
-      log.status.Print("Resource deployment successful.")
-
-  def _CleanupObsoleteDags(
-      self,
-      composer_bucket: str,
-      parsed_deployment: dict[str, Any],
-      bundle_name: str,
-  ) -> None:
-    """Cleans up DAGs in GCS that are no longer present in deployment.yaml."""
     try:
-      bundle_dag_prefix = f"dags/orchestration_pipelines/{bundle_name}/"
-      bucket_ref = storage_util.BucketReference.FromArgument(
-          f"gs://{composer_bucket}"
-      )
-      storage_client = storage_api.StorageClient()
+      try:
+        log.status.Print(
+            f"Deployment file {deployment_path.name} found, deploying "
+            "resources..."
+        )
+        resources_deployed_count = _DeployGcpResources(parsed_deployment)
+        if resources_deployed_count > 0:
+          status["resource_deployment"] = "SUCCESS"
+        else:
+          status["resource_deployment"] = "SKIPPED"
+      except Exception as e:
+        raise DeployError(
+            f"Failed to deploy resources for environment '{args.environment}' "
+            f"from file '{deployment_path.name}':\n{e}"
+        ) from e
 
-      expected_dags = {
-          pathlib.Path(p.source).with_suffix(".py").name
-          for p in parsed_deployment.get("pipelines", [])
-      }
-
-      for obj in storage_client.ListBucket(
-          bucket_ref, prefix=bundle_dag_prefix
-      ):
-        basename = obj.name.split("/")[-1]
-        if basename.endswith(".py") and basename not in expected_dags:
-          log.status.Print(f"Cleaning up obsolete pipeline DAG: {basename}")
-          del_req = storage_client.messages.StorageObjectsDeleteRequest(
-              bucket=composer_bucket, object=obj.name
+      pipelines = [
+          pipeline.source
+          for pipeline in parsed_deployment.get("pipelines", [])
+          if pipeline.source
+      ]
+      single_pipeline_source = None
+      if getattr(args, "pipeline", None):
+        single_pipeline_source = args.pipeline
+        filtered_pipelines = []
+        for p in pipelines:
+          if args.pipeline == p:
+            filtered_pipelines.append(p)
+        if not filtered_pipelines:
+          raise DeployError(
+              f"Pipeline '{args.pipeline}' not found in {DEPLOYMENT_FILE}."
           )
+        pipelines = filtered_pipelines
+      if args.local:
+        try:
+          raw_user = getpass.getuser()
+        except (OSError, ImportError, KeyError):
+          raw_user = "localdev"
+        clean_user = re.sub(r"[^a-z0-9]", "", raw_user.lower())
+        clean_dir = re.sub(r"[^a-z0-9]", "", bundle_dir.name.lower())
+        bundle_name = f"bundle-local-{clean_user}-{clean_dir}"
+      else:
+        bundle_name = _GetRepoName(self._subprocess)
+
+      version_id = None
+      if pipelines:
+      # TODO(b/497670530): Re-enable L1 validation next week after backend is
+      # ready.
+      # yaml_processor.validate_pipeline_l1(
+      #     bundle_dir, pipelines, combined_variables
+      # )
+        composer_bucket = _GetComposerBucket(
+            parsed_deployment["composer_env"],
+            parsed_deployment["region"],
+        )
+        for pipeline in pipelines:
+          yaml_path = bundle_dir / pipeline
+          version_id = self._DeployPipeline(
+              bundle_dir,
+              yaml_path,
+              git_context_obj,
+              rollback=args.rollback,
+              bundle_name=bundle_name,
+              is_paused=is_paused,
+              composer_bucket=composer_bucket,
+              is_local=getattr(args, "local", False),
+              parsed_deployment=parsed_deployment,
+              combined_variables=combined_variables,
+          )
+        status["version"] = version_id
+
+        if getattr(args, "async_", False):
+          status["pipeline_deployment"] = "SUCCESS"
+          log.status.Print(
+              f"\nAsynchronous mode complete.\nBundle ID: {bundle_name}\n"
+              f"Version ID: {status['version']}\n"
+          )
+        else:
           try:
-            storage_client.client.objects.Delete(del_req)
-          except api_exceptions.HttpError as e:
-            log.warning(f"Failed to delete obsolete DAG {obj.name}: {e}")
-    except api_exceptions.HttpError as e:
-      log.warning(f"Failed to clean up obsolete pipelines: {e}")
+            single_pipeline_id = None
+            if single_pipeline_source:
+              single_pipeline_id = pathlib.Path(single_pipeline_source).stem
+            wait_result = self._WaitForPipelines(
+                bundle_name=bundle_name,
+                expected_pipelines_count=len(pipelines),
+                composer_env_name=parsed_deployment["composer_env"],
+                location=parsed_deployment["region"],
+                project=parsed_deployment["project"],
+                version_id=status["version"],
+                single_pipeline_name=single_pipeline_id,
+                is_paused=is_paused,
+            )
+            deployed_pipelines = wait_result.get("pipelines", [])
+            all_healthy = True
+            log.status.Print(
+                f"\nSync mode complete.\nBundle ID: {bundle_name}\nVersion"
+                f" ID: {status['version']}\n"
+            )
+            if not deployed_pipelines:
+              log.status.Print("\n--- Pipeline Deployment Status ---")
+              log.status.Print("No pipelines deployed successfully.")
+              all_healthy = False
+            else:
+              log.status.Print("\n--- Pipeline Deployment Status ---")
+              for p in deployed_pipelines:
+                p_id = p.get("pipeline_id", "Unknown")
+                p_status = p.get("status", "unknown").upper()
+                if p_status == "HEALTHY":
+                  log.status.Print(
+                      f"Pipeline '{p_id}': [OK] (Status: {p_status})"
+                  )
+                else:
+                  log.error(f"Pipeline '{p_id}': [FAILED] (Status: {p_status})")
+                  all_healthy = False
+            log.status.Print("\n--- Pipeline Deployment full details ---")
+            log.status.Print(f"Deployed pipelines: {deployed_pipelines}")
+
+            if not all_healthy:
+              status["pipeline_deployment"] = "FAILED"
+            else:
+              status["pipeline_deployment"] = "SUCCESS"
+
+          except DeployError as e:
+            status["pipeline_deployment"] = "FAILED"
+            log.error(
+                "Failed to wait for pipelines to be parsed in Composer. "
+                "Error: %s",
+                e,
+            )
+
+      if status["pipeline_deployment"] == "FAILED":
+        raise DeployError(
+            "Deployment failed: One or more pipelines are in an UNHEALTHY "
+            "state. Check Airflow logs for parsing errors."
+        )
+      if args.validate:
+        environment_model = yaml_processor.load_environment(
+            deployment_path, args.environment, external_vars
+        )
+        yaml_processor.validate_pipeline_l2(
+            bundle_dir, pipelines, combined_variables, environment_model
+        )
+
+      success_states = ["SUCCESS", "SKIPPED"]
+
+      if (
+          status["resource_deployment"] not in success_states
+          and status["pipeline_deployment"] not in success_states
+      ):
+        raise DeployError(
+            f"Failed to deploy. Searched recursively in {work_dir}, "
+            "but found no valid bundles containing both a pipeline YAML "
+            f"(with pipelineId) and a {DEPLOYMENT_FILE} for environment "
+            f"'{args.environment}'."
+        )
+
+      if (
+          status["pipeline_deployment"] == "SUCCESS"
+          and status["resource_deployment"] == "SUCCESS"
+      ):
+        log.status.Print(
+            "Resource and pipeline deployment successful for version"
+            f" {status['version']} in bundle '{bundle_name}'"
+        )
+      elif status["pipeline_deployment"] == "SUCCESS":
+        log.status.Print(
+            f"Pipeline deployment successful for version {status['version']} in"
+            f" bundle '{bundle_name}'"
+        )
+      elif status["resource_deployment"] == "SUCCESS":
+        log.status.Print("Resource deployment successful.")
+    finally:
+      if env_project:
+        properties.VALUES.core.project.Set(orig_project)
 
   def _WaitForPipelines(
       self,
@@ -690,7 +676,8 @@ class Deploy(calliope_base.Command):
       location,
       project,
       version_id: str,
-      single_pipeline_name=None
+      single_pipeline_name=None,
+      is_paused=None,
   ):
     """Waits for pipelines to be parsed in Composer."""
     timeout = 300
@@ -725,8 +712,25 @@ class Deploy(calliope_base.Command):
         )
         dags = getattr(response, "dags", []) or []
 
-        if single_pipeline_name:
-          if len(dags) == 1:
+        dags_ready = (
+            (len(dags) == 1)
+            if single_pipeline_name
+            else (len(dags) == expected_pipelines_count)
+        )
+
+        if dags_ready:
+          if not is_paused:
+            for d in dags:
+              dag_ref = resources.REGISTRY.ParseRelativeName(
+                  d.name,
+                  collection="composer.projects.locations.environments.dags",
+                  api_version=api_version,
+              )
+              pipeline_id = d.name.split("/")[-1]
+              log.status.Print(f"Activating pipeline {pipeline_id}...")
+              composer_dags_util.ActivateDag(dag_ref)
+
+          if single_pipeline_name:
             dag_ref = resources.REGISTRY.ParseRelativeName(
                 dags[0].name,
                 collection="composer.projects.locations.environments.dags",
@@ -745,8 +749,7 @@ class Deploy(calliope_base.Command):
                   composer_utils.convert_tasks_to_actions(tasks)
               )
               return {"pipelines": pipelines_result}
-        else:
-          if len(dags) == expected_pipelines_count:
+          else:
             log.status.Print(
                 "Sync mode complete: Multiple pipeline DAGs successfully"
                 " registered."
@@ -810,7 +813,6 @@ class Deploy(calliope_base.Command):
     env_pack_files_to_upload = set[str]()
 
     defaults = resolved_pipeline.get("defaults", {})
-    default_reqs_path = defaults.get("requirementsPath")
     allowed_processor_engines = {"dataprocServerless", "dataprocOnGce"}
 
     for action_item in resolved_pipeline.get("actions", []):
@@ -894,10 +896,13 @@ class Deploy(calliope_base.Command):
         else:
           log.warning(f"Path not found locally: {clean_path}")
 
-      reqs_path_str = action.get("requirementsPath")
-      if not reqs_path_str and default_reqs_path:
-        reqs_path_str = default_reqs_path
-        action["requirementsPath"] = reqs_path_str
+      reqs_path_str = None
+      if action_type in ["pyspark", "notebook"]:
+        env = action.get("environment")
+        if isinstance(env, dict):
+          reqs = env.get("requirements")
+          if isinstance(reqs, dict):
+            reqs_path_str = reqs.get("path")
 
       resolved_reqs_path = None
 
@@ -910,9 +915,22 @@ class Deploy(calliope_base.Command):
               f"Requirements file not found: {resolved_reqs_path}"
           )
 
-      if engine_dict and all(
-          engine in allowed_processor_engines for engine in engine_dict
-      ):
+      provided_engines = []
+      if engine_dict:
+        if isinstance(engine_dict, dict):
+          provided_engines = list(engine_dict.keys())
+          is_allowed = all(
+              engine in allowed_processor_engines for engine in provided_engines
+          )
+        else:
+          raise DeployError(
+              "The 'engine' block is formatted incorrectly. Expected a"
+              f" dictionary, but got: {engine_dict}"
+          )
+      else:
+        is_allowed = False
+
+      if is_allowed:
         processor = action_processor.get_action_processor(
             action,
             bundle_dir,
@@ -927,14 +945,10 @@ class Deploy(calliope_base.Command):
           if env_pack_file:
             env_pack_files_to_upload.add(env_pack_file)
       else:
-        provided_engines = list(engine_dict.keys()) if engine_dict else "None"
         log.warning(
             f"Skipping requirements processing. Engine(s) {provided_engines} "
             f"are not supported. Allowed engines: {allowed_processor_engines}."
         )
-
-      if "requirementsPath" in action:
-        del action["requirementsPath"]
 
     self._UploadArtifacts(
         work_dir=bundle_dir,
@@ -1061,33 +1075,31 @@ class Deploy(calliope_base.Command):
 
   def _DeployPipeline(
       self,
-      args,
       bundle_dir,
       pipeline_path,
-      deployment_path,
       git_context_obj,
       rollback=False,
       bundle_name=None,
-      external_vars=None,
       is_paused=False,
       composer_bucket=None,
       is_local=False,
+      combined_variables=None,
+      parsed_deployment=None,
   ):
     """Deploys the pipeline using the dynamic context and concurrency control.
 
     Args:
-      args: The parsed command-line arguments.
       bundle_dir: The directory containing the pipeline bundle.
       pipeline_path: The path to the pipeline YAML file.
-      deployment_path: The path to the deployment YAML file.
       git_context_obj: The GitContext object.
       rollback: If True, this is a rollback operation.
       bundle_name: The name of the bundle.
-      external_vars: Optional dict of external variables to substitute.
       is_paused: If True, the pipeline will be added to the paused_pipelines
         list in the manifest.
       composer_bucket: The GCS bucket of the Composer environment.
       is_local: If True, the deployment is a local deployment.
+      combined_variables: Dictionary of combined variables for substitution.
+      parsed_deployment: dict[str, Any], the parsed deployment configuration.
 
     Returns:
       The version ID (git commit hash) of the deployed pipeline.
@@ -1100,17 +1112,18 @@ class Deploy(calliope_base.Command):
     git_context_obj.EnforceClean()
     version_id = git_context_obj.CalculateVersionId()
 
-    parsed_deployment = yaml_processor.parse_deployment(
-        deployment_path, args.environment, external_vars
+    bundle_data_prefix = (
+        f"{gcs_utils.ORCHESTRATION_PIPELINES_DATA_DIRECTORY}/{bundle_name}"
     )
-    bundle_data_prefix = f"data/{bundle_name}"
     artifact_base_uri = (
         f"gs://{parsed_deployment['artifact_storage']['bucket']}/"
         f"{parsed_deployment['artifact_storage']['path_prefix']}/"
         f"{bundle_name}/versions/{version_id}/"
     )
     dag_path = pipeline_path.with_suffix(".py")
-    bundle_dag_prefix = f"dags/orchestration_pipelines/{bundle_name}"
+    bundle_dag_prefix = (
+        f"{gcs_utils.ORCHESTRATION_PIPELINES_DAGS_DIRECTORY}/{bundle_name}"
+    )
     dag_dest = f"gs://{composer_bucket}/{bundle_dag_prefix}/{dag_path.name}"
 
     if not pipeline_path.exists():
@@ -1127,9 +1140,8 @@ class Deploy(calliope_base.Command):
 
     resolved_pipeline = yaml_processor.resolve_dynamic_variables(
         yaml_content=yaml_content,
-        deployment_path=deployment_path,
-        env=args.environment,
-        external_variables=external_vars,
+        combined_variables=combined_variables,
+        deployment=parsed_deployment,
     )
 
     if rollback and _ArtifactsExist(artifact_base_uri):

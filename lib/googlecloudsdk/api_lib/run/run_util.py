@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Utilities for the Cloud Run API."""
+
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 
@@ -37,19 +38,24 @@ def GetMessagesModule(release_track=base.ReleaseTrack.GA):
   Returns:
     Module containing the definitions of messages for Run.
   """
-  return apis.GetMessagesModule(_API_NAME,
-                                RELEASE_TRACK_TO_API_VERSION[release_track])
+  return apis.GetMessagesModule(
+      _API_NAME, RELEASE_TRACK_TO_API_VERSION[release_track]
+  )
 
 
-def GetClientInstance(release_track=base.ReleaseTrack.GA):
+def GetClientInstance(
+    location: str, release_track: base.ReleaseTrack = base.ReleaseTrack.GA
+):
   """Returns the client instance for Run.
 
   Args:
+    location: The location of the client instance.
     release_track: The desired value of the enum
       googlecloudsdk.calliope.base.ReleaseTrack.
 
   Returns:
     base_api.BaseApiClient, Client instance for Run.
   """
-  return apis.GetClientInstance(_API_NAME,
-                                RELEASE_TRACK_TO_API_VERSION[release_track])
+  return apis.GetClientInstance(
+      _API_NAME, RELEASE_TRACK_TO_API_VERSION[release_track], location=location
+  )

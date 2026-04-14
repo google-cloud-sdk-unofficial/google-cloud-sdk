@@ -1,0 +1,36 @@
+release_tracks: [ALPHA, BETA]
+hidden: true
+
+help_text:
+  brief: |
+    List token auth users of a Redis cluster in a region.
+  description: |
+    List token auth users of a Redis cluster in a region.
+
+  examples: |
+    To list up to 5 token auth users for a cluster named 'my-cluster' in the us-central1 region, run:
+
+    $ {command} --cluster=my-cluster --region=us-central1 --limit=5
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.redis.resources:cluster
+    help_text: |
+      The cluster of the token auth users to display.
+
+request:
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  collection: redis.projects.locations.clusters.tokenAuthUsers
+
+response:
+  id_field: name
+
+output:
+  format: |
+    table(
+      name.basename():label=TOKEN_AUTH_USER_NAME,
+      state:label=STATE
+    )

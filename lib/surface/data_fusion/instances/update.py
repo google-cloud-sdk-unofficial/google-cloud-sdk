@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
+@base.RegionalEndpointsSupported
 @base.DefaultUniverseOnly
 class Update(base.UpdateCommand):
   # pylint:disable=line-too-long
@@ -90,8 +91,8 @@ class Update(base.UpdateCommand):
     maintenance_utils.UpdateArgumentsGroup(parser)
 
   def Run(self, args):
-    datafusion = df.Datafusion()
     instance_ref = args.CONCEPTS.instance.Parse()
+    datafusion = df.Datafusion(location=instance_ref.locationsId)
 
     labels = args.labels or {}
     enable_stackdriver_logging = None
@@ -130,7 +131,7 @@ class Update(base.UpdateCommand):
         or args.IsSpecified('maintenance_window_start')
         or args.IsSpecified('maintenance_window_end')
         or args.IsSpecified('maintenance_window_recurrence')):
-      maintenance_utils.UpdateMaintenanceWindow(args, instance)
+      maintenance_utils.UpdateMaintenanceWindow(args, instance, datafusion)
       fields_to_update.append(self.FIELD_PATH_MAINTENANCE_POLICY)
 
     request = datafusion.messages.DatafusionProjectsLocationsInstancesPatchRequest(
@@ -146,7 +147,7 @@ class Update(base.UpdateCommand):
       return operation
     else:
       waiter.WaitFor(
-          operation_poller.OperationPoller(),
+          operation_poller.OperationPoller(datafusion),
           operation.name,
           'Waiting for [{}] to complete. This may take several minutes.'.format(
               operation.name),

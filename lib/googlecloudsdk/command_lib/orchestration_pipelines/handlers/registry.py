@@ -92,19 +92,14 @@ def GetHandlerClasses():
 def GetHandler(
     resource: Any,
     environment: Any,
-    dry_run: bool = False,
-    *,
     debug: bool = False,
-    show_requests: bool = False,
 ) -> handlers_base.GcpResourceHandler:
   """Gets the appropriate handler for a given resource.
 
   Args:
     resource: The resource object from the deployment model.
     environment: The environment object from the deployment model.
-    dry_run: Whether to perform a dry run.
     debug: Whether to enable debug logging.
-    show_requests: Whether to show API requests.
 
   Returns:
     A handler object for the specified resource type.
@@ -121,7 +116,5 @@ def GetHandler(
   return handler_class(
       resource,
       environment,
-      dry_run=dry_run,
       debug=debug,
-      show_requests=show_requests,
   )

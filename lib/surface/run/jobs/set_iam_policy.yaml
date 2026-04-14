@@ -24,6 +24,10 @@
     collection: run.projects.locations.jobs
     modify_request_hooks:
     - googlecloudsdk.command_lib.run.platforms:ValidatePlatformIsManaged
+    ALPHA:
+      regional_endpoint_compatibility: SUPPORTED
+    BETA:
+      regional_endpoint_compatibility: SUPPORTED
 
   arguments:
     resource:

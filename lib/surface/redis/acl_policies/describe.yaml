@@ -1,0 +1,32 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: |
+      Show metadata for a Memorystore for Redis Cluster ACL policy.
+    description: |
+      Show metadata for a Memorystore for Redis Cluster ACL policy.
+
+      Displays all metadata associated with an ACL policy given a valid ACL policy name.
+
+      This command can fail for the following reasons:
+        * The ACL policy specified does not exist.
+        * The active account does not have permission to access the given
+          ACL policy.
+    examples: |
+      To display the metadata for a ACL policy named `my-acl-policy`,in `us-central1` region, run:
+
+      $ {command} my-acl-policy --region=us-central1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.redis.resources:acl_policy
+      help_text: |
+        Arguments and flags that specify the ACL policy you want to describe.
+
+  request:
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+    collection: redis.projects.locations.aclPolicies

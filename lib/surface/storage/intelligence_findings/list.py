@@ -26,7 +26,6 @@ if TYPE_CHECKING:
   from googlecloudsdk.generated_clients.apis.storage.v2 import storage_v2_messages  # pylint: disable=g-import-not-at-top
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class List(base.ListCommand):
@@ -47,7 +46,10 @@ class List(base.ListCommand):
   @classmethod
   def Args(cls, parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
-        '--location', default='global', help='Location of the finding(s).'
+        '--location',
+        default='global',
+        help='Location of the finding(s).',
+        hidden=True,
     )
     parser.display_info.AddUriFunc(lambda resource: resource.name)
 

@@ -1248,7 +1248,13 @@ class JsonClient(cloud_api.CloudApi):
         break
 
   @error_util.catch_http_error_raise_gcs_api_error()
-  def move_object(self, source_url, destination_url, request_config):
+  def move_object(
+      self,
+      source_url,
+      destination_url,
+      request_config,
+      progress_callback=None,
+  ):
     if source_url.bucket_name != destination_url.bucket_name:
       raise cloud_errors.GcsApiError(
           'Move operation is only supported within the same bucket. Source:'

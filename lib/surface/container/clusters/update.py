@@ -109,6 +109,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.RAYOPERATOR: _ParseAddonDisabled,
                     api_adapter.SLURMOPERATOR: _ParseAddonDisabled,
                     api_adapter.KUEUE: _ParseAddonDisabled,
+                    api_adapter.NODEREADINESSCONTROLLER: _ParseAddonDisabled,
                 },
                 **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS}
             ),
@@ -129,7 +130,8 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {nodelocaldns}=ENABLED|DISABLED
 {gcepdcsidriver}=ENABLED|DISABLED
 {gcpfilestoredriver}=ENABLED|DISABLED
-{gcsfusecsidriver}=ENABLED|DISABLED""".format(
+{gcsfusecsidriver}=ENABLED|DISABLED
+{nodereadinesscontroller}=ENABLED|DISABLED""".format(
             hpa=api_adapter.HPA,
             ingress=api_adapter.INGRESS,
             dashboard=api_adapter.DASHBOARD,
@@ -143,6 +145,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
             gcepdcsidriver=api_adapter.GCEPDCSIDRIVER,
             gcpfilestoredriver=api_adapter.GCPFILESTORECSIDRIVER,
             gcsfusecsidriver=api_adapter.GCSFUSECSIDRIVER,
+            nodereadinesscontroller=api_adapter.NODEREADINESSCONTROLLER,
         ),
     )
 
@@ -171,6 +174,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.RAYOPERATOR: _ParseAddonDisabled,
                     api_adapter.SLURMOPERATOR: _ParseAddonDisabled,
                     api_adapter.KUEUE: _ParseAddonDisabled,
+                    api_adapter.NODEREADINESSCONTROLLER: _ParseAddonDisabled,
                 },
                 **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS}
             ),
@@ -190,7 +194,8 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {nodelocaldns}=ENABLED|DISABLED
 {gcepdcsidriver}=ENABLED|DISABLED
 {gcpfilestoredriver}=ENABLED|DISABLED
-{gcsfusecsidriver}=ENABLED|DISABLED""".format(
+{gcsfusecsidriver}=ENABLED|DISABLED
+{nodereadinesscontroller}=ENABLED|DISABLED""".format(
             hpa=api_adapter.HPA,
             ingress=api_adapter.INGRESS,
             dashboard=api_adapter.DASHBOARD,
@@ -203,6 +208,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
             gcepdcsidriver=api_adapter.GCEPDCSIDRIVER,
             gcpfilestoredriver=api_adapter.GCPFILESTORECSIDRIVER,
             gcsfusecsidriver=api_adapter.GCSFUSECSIDRIVER,
+            nodereadinesscontroller=api_adapter.NODEREADINESSCONTROLLER,
         ),
     )
 
@@ -229,6 +235,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.RAYOPERATOR: _ParseAddonDisabled,
                     api_adapter.SLURMOPERATOR: _ParseAddonDisabled,
                     api_adapter.KUEUE: _ParseAddonDisabled,
+                    api_adapter.NODEREADINESSCONTROLLER: _ParseAddonDisabled,
                 },
                 **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS}
             ),
@@ -247,7 +254,8 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {nodelocaldns}=ENABLED|DISABLED
 {gcepdcsidriver}=ENABLED|DISABLED
 {gcpfilestoredriver}=ENABLED|DISABLED
-{gcsfusecsidriver}=ENABLED|DISABLED""".format(
+{gcsfusecsidriver}=ENABLED|DISABLED
+{nodereadinesscontroller}=ENABLED|DISABLED""".format(
             hpa=api_adapter.HPA,
             ingress=api_adapter.INGRESS,
             dashboard=api_adapter.DASHBOARD,
@@ -259,6 +267,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
             gcepdcsidriver=api_adapter.GCEPDCSIDRIVER,
             gcpfilestoredriver=api_adapter.GCPFILESTORECSIDRIVER,
             gcsfusecsidriver=api_adapter.GCSFUSECSIDRIVER,
+            nodereadinesscontroller=api_adapter.NODEREADINESSCONTROLLER,
         ),
     )
 
@@ -1231,7 +1240,7 @@ class UpdateBeta(Update):
         group_logging_monitoring_config, hidden=False
     )
     flags.AddManagedMLDiagnosticsFlags(
-        group_logging_monitoring_config, hidden=True
+        group_logging_monitoring_config, hidden=False
     )
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddEnableLoggingMonitoringSystemOnlyFlag(group)
@@ -1642,7 +1651,7 @@ class UpdateAlpha(Update):
         group_logging_monitoring_config, hidden=False
     )
     flags.AddManagedMLDiagnosticsFlags(
-        group_logging_monitoring_config, hidden=True
+        group_logging_monitoring_config, hidden=False
     )
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddEnableLoggingMonitoringSystemOnlyFlag(group)

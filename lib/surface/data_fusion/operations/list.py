@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.data_fusion import resource_args
 
 
+@base.RegionalEndpointsSupported
 class List(base.ListCommand):
   """Lists instance operations.
 
@@ -47,8 +48,8 @@ class List(base.ListCommand):
         ')')
 
   def Run(self, args):
-    datafusion = df.Datafusion()
     location_ref = args.CONCEPTS.location.Parse()
+    datafusion = df.Datafusion(location=location_ref.locationsId)
 
     req = datafusion.messages.DatafusionProjectsLocationsOperationsListRequest(
         name=location_ref.RelativeName())

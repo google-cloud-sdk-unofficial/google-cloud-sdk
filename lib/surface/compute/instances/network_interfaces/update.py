@@ -49,6 +49,7 @@ class Update(base.UpdateCommand):
   """
 
   support_ipv6_assignment = False
+  support_alias_ipv6_ranges = False
 
   SECURITY_POLICY_ARG = None
 
@@ -60,6 +61,8 @@ class Update(base.UpdateCommand):
     network_interfaces_flags.AddSubnetworkArg(parser)
     network_interfaces_flags.AddPrivateNetworkIpArg(parser)
     network_interfaces_flags.AddAliasesArg(parser)
+    if cls.support_alias_ipv6_ranges:
+      network_interfaces_flags.AddIpv6AliasesArg(parser)
     network_interfaces_flags.AddStackTypeArg(parser)
     network_interfaces_flags.AddIpv6NetworkTierArg(parser)
     network_interfaces_flags.AddExternalIpv6AddressArg(parser)
@@ -223,21 +226,46 @@ class Update(base.UpdateCommand):
           internal_ipv6_address = instances_flags.GetAddressRef(
               resources, internal_ipv6_address, region
           ).SelfLink()
-      patch_network_interface = messages.NetworkInterface(
-          aliasIpRanges=(
-              alias_ip_range_utils.CreateAliasIpRangeMessagesFromString(
-                  messages, True, args.aliases
-              )
-          ),
-          network=network_uri,
-          subnetwork=subnetwork_uri,
-          networkIP=getattr(args, 'private_network_ip', None),
-          stackType=stack_type_enum,
-          ipv6AccessConfigs=ipv6_access_configs,
-          fingerprint=fingerprint,
-          ipv6Address=internal_ipv6_address,
-          internalIpv6PrefixLength=internal_ipv6_prefix_length,
-      )
+      if self.support_alias_ipv6_ranges:
+        alias_ip_ranges = (
+            alias_ip_range_utils.CreateAliasIpRangeMessagesFromString(
+                messages, True, args.aliases
+            )
+        )
+        alias_ipv6_ranges = (
+            alias_ip_range_utils.CreateAliasIpv6RangeMessagesFromString(
+                messages, True, args.ipv6_aliases
+            )
+        )
+        patch_network_interface = messages.NetworkInterface(
+            aliasIpRanges=alias_ip_ranges,
+            aliasIpv6Ranges=alias_ipv6_ranges,
+            network=network_uri,
+            subnetwork=subnetwork_uri,
+            networkIP=getattr(args, 'private_network_ip', None),
+            stackType=stack_type_enum,
+            ipv6AccessConfigs=ipv6_access_configs,
+            fingerprint=fingerprint,
+            ipv6Address=internal_ipv6_address,
+            internalIpv6PrefixLength=internal_ipv6_prefix_length,
+        )
+      else:
+        alias_ip_ranges = (
+            alias_ip_range_utils.CreateAliasIpRangeMessagesFromStringOld(
+                messages, True, args.aliases
+            )
+        )
+        patch_network_interface = messages.NetworkInterface(
+            aliasIpRanges=alias_ip_ranges,
+            network=network_uri,
+            subnetwork=subnetwork_uri,
+            networkIP=getattr(args, 'private_network_ip', None),
+            stackType=stack_type_enum,
+            ipv6AccessConfigs=ipv6_access_configs,
+            fingerprint=fingerprint,
+            ipv6Address=internal_ipv6_address,
+            internalIpv6PrefixLength=internal_ipv6_prefix_length,
+        )
     elif igmp_query is not None:
       igmp_query_enum = messages.NetworkInterface.IgmpQueryValueValuesEnum(
           igmp_query
@@ -249,17 +277,38 @@ class Update(base.UpdateCommand):
           fingerprint=fingerprint,
       )
     else:
-      patch_network_interface = messages.NetworkInterface(
-          aliasIpRanges=(
-              alias_ip_range_utils.CreateAliasIpRangeMessagesFromString(
-                  messages, True, args.aliases
-              )
-          ),
-          network=network_uri,
-          subnetwork=subnetwork_uri,
-          networkIP=getattr(args, 'private_network_ip', None),
-          fingerprint=fingerprint,
-      )
+      if self.support_alias_ipv6_ranges:
+        alias_ip_ranges = (
+            alias_ip_range_utils.CreateAliasIpRangeMessagesFromString(
+                messages, True, args.aliases
+            )
+        )
+        alias_ipv6_ranges = (
+            alias_ip_range_utils.CreateAliasIpv6RangeMessagesFromString(
+                messages, True, args.ipv6_aliases
+            )
+        )
+        patch_network_interface = messages.NetworkInterface(
+            aliasIpRanges=alias_ip_ranges,
+            aliasIpv6Ranges=alias_ipv6_ranges,
+            network=network_uri,
+            subnetwork=subnetwork_uri,
+            networkIP=getattr(args, 'private_network_ip', None),
+            fingerprint=fingerprint,
+        )
+      else:
+        alias_ip_ranges = (
+            alias_ip_range_utils.CreateAliasIpRangeMessagesFromStringOld(
+                messages, True, args.aliases
+            )
+        )
+        patch_network_interface = messages.NetworkInterface(
+            aliasIpRanges=alias_ip_ranges,
+            network=network_uri,
+            subnetwork=subnetwork_uri,
+            networkIP=getattr(args, 'private_network_ip', None),
+            fingerprint=fingerprint,
+        )
 
     request = messages.ComputeInstancesUpdateNetworkInterfaceRequest(
         project=instance_ref.project,
@@ -272,6 +321,11 @@ class Update(base.UpdateCommand):
     cleared_fields = []
     if not patch_network_interface.aliasIpRanges:
       cleared_fields.append('aliasIpRanges')
+    if (
+        self.support_alias_ipv6_ranges
+        and not patch_network_interface.aliasIpv6Ranges
+    ):
+      cleared_fields.append('aliasIpv6Ranges')
     with client.IncludeFields(cleared_fields):
       operation = client.instances.UpdateNetworkInterface(request)
     operation_ref = holder.resources.Parse(
@@ -303,6 +357,7 @@ class UpdateBeta(Update):
 
   support_ipv6_assignment = False
   support_igmp_query = True
+  support_alias_ipv6_ranges = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -320,3 +375,4 @@ class UpdateAlpha(UpdateBeta):
 
   support_ipv6_assignment = True
   support_igmp_query = True
+  support_alias_ipv6_ranges = True

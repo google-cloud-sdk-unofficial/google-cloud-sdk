@@ -84,6 +84,34 @@
         help_text: |-
           The properties of an Autonomous Database.
         params:
+        - group:
+            mutex: true
+            help_text: |-
+              Arguments for the  local data guard enabled.
+            params:
+            - arg_name: properties-local-data-guard-enabled
+              api_field: autonomousDatabase.properties.localDataGuardEnabled
+              action: store_true
+              required: false
+              type: bool
+              help_text: |-
+                Indicates whether the Autonomous Database has a local (in-region) standby
+                database. Not applicable to cross-region Data Guard or dedicated Exadata
+                infrastructure.
+              default: null
+        - group:
+            mutex: true
+            help_text: |-
+              Arguments for the  local adg auto failover max data loss limit duration.
+            params:
+            - arg_name: properties-local-adg-auto-failover-max-data-loss-limit-duration
+              api_field: autonomousDatabase.properties.localAdgAutoFailoverMaxDataLossLimitDuration
+              required: false
+              repeated: false
+              type: int
+              help_text: |-
+                This field indicates the maximum data loss limit for an Autonomous
+                Database, in seconds.
         - arg_name: properties-compute-count
           api_field: autonomousDatabase.properties.computeCount
           required: false

@@ -15,10 +15,8 @@
 
 """Command to update snapshot recycle bin policy."""
 
-import json
-
-from apitools.base.py import encoding as apitools_encoding
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import snapshot_recycle_bin_policy_utils
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import arg_parsers
@@ -26,22 +24,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
-
-
-def _RulesValueEncoder(message, unused_encoder=None):
-  """Encoder for SnapshotRecycleBinPolicy.RulesValue to support rule removal."""
-  py_object = {}
-  for item in message.additionalProperties:
-    if item.value is None:
-      py_object[item.key] = None
-    else:
-      py_object[item.key] = apitools_encoding.MessageToDict(item.value)
-  return json.dumps(py_object)
-
-
-def _RulesValueDecoder(unused_data, unused_decoder=None):
-  """Decoder for SnapshotRecycleBinPolicy.RulesValue to support rule removal."""
-  return None
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -114,9 +96,7 @@ class Update(base.UpdateCommand):
 
     if args.remove_rule:
       rules_dict[args.remove_rule] = None
-      apitools_encoding.RegisterCustomMessageCodec(
-          encoder=_RulesValueEncoder, decoder=_RulesValueDecoder
-      )(messages.SnapshotRecycleBinPolicy.RulesValue)
+      snapshot_recycle_bin_policy_utils.RegisterRulesValueCodec(messages)
     else:
       rule_key = args.set_rule
       retention_days = args.standard_snapshots_retention_duration_days

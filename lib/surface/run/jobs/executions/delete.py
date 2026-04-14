@@ -14,6 +14,7 @@
 # limitations under the License.
 """Command for deleting executions."""
 
+import copy
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
@@ -29,18 +30,23 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.Command):
   """Delete an execution."""
 
   detailed_help = {
-      'DESCRIPTION': """
+      'DESCRIPTION': (
+          """
           {description}
-          """,
-      'EXAMPLES': """
+          """
+      ),
+      'EXAMPLES': (
+          """
           To delete an execution:
 
               $ {command} my-execution
-          """,
+          """
+      ),
   }
 
   @staticmethod
@@ -52,9 +58,7 @@ class Delete(base.Command):
         required=True,
         prefixes=False,
     )
-    flags.AddAsyncFlag(
-        parser, default_async_for_cluster=True
-    )
+    flags.AddAsyncFlag(parser, default_async_for_cluster=True)
     concept_parsers.ConceptParser([execution_presentation]).AddToParser(parser)
 
   @staticmethod
@@ -84,3 +88,11 @@ class Delete(base.Command):
       )
     else:
       log.DeletedResource(ex_ref.executionsId, 'execution')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.RegionalEndpointsSupported
+class BetaDelete(Delete):
+  """Delete an execution."""
+
+  detailed_help = copy.deepcopy(Delete.detailed_help)

@@ -53,6 +53,10 @@ IAP_TCP_TUNNEL_TYPES_LOCATIONS_COLLECTION = (
 IAP_TCP_TUNNEL_TYPES_LOCATIONS_SERVICES_COLLECTION = (
     'iap.projects.iap_tunnel.tunnel_types.locations.services'
 )
+LOCATION_IAP_WEB_COLLECTION = 'iap.projects.locations.iap_web'
+LOCATION_IAP_WEB_AGENTS_COLLECTION = 'iap.projects.locations.iap_web.agents'
+LOCATION_IAP_WEB_MCPSERVERS_COLLECTION = 'iap.projects.locations.iap_web.mcpServers'
+LOCATION_IAP_WEB_ENDPOINTS_COLLECTION = 'iap.projects.locations.iap_web.endpoints'
 
 
 def _ApiVersion(release_track):
@@ -546,6 +550,121 @@ class CloudRun(IapIamResource):
             'serviceId': self.service_id,
         },
         collection=IAP_WEB_SERVICES_COLLECTION)
+
+
+AGENT_REGISTRY = 'agentRegistry'
+
+
+class AgentRegistry(IapIamResource):
+  """IAP IAM Agent Registry resource."""
+
+  def __init__(self, release_track, project, *, location_id=None):
+    super(AgentRegistry, self).__init__(release_track, project)
+    self.location_id = 'global' if location_id is None else location_id
+    self.iap_web_id = AGENT_REGISTRY
+
+  def _Name(self):
+    return 'Agent Registry'
+
+  def _Parse(self):
+    project = _GetProject(self.project)
+    return self.registry.Parse(
+        None,
+        params={
+            'project': project.projectNumber,
+            'location': self.location_id,
+            'iapWebId': self.iap_web_id,
+        },
+        collection=LOCATION_IAP_WEB_COLLECTION,
+    )
+
+
+class AgentRegistryAgent(IapIamResource):
+  """IAP IAM Agent Registry Agent resource."""
+
+  def __init__(
+      self, release_track, project, *, agent_id, location_id=None
+  ):
+    super(AgentRegistryAgent, self).__init__(release_track, project)
+    self.location_id = 'global' if location_id is None else location_id
+    self.agent_id = agent_id
+    self.iap_web_id = AGENT_REGISTRY
+
+  def _Name(self):
+    return 'Agent Registry Agent'
+
+  def _Parse(self):
+    project = _GetProject(self.project)
+    return self.registry.Parse(
+        None,
+        params={
+            'project': project.projectNumber,
+            'location': self.location_id,
+            'iapWebId': self.iap_web_id,
+            'agentId': self.agent_id,
+        },
+        collection=LOCATION_IAP_WEB_AGENTS_COLLECTION,
+    )
+
+
+class AgentRegistryMcpServer(IapIamResource):
+  """IAP IAM Agent Registry McpServer resource."""
+
+  def __init__(
+      self,
+      release_track,
+      project,
+      *,
+      mcp_server_id,
+      location_id=None
+  ):
+    super(AgentRegistryMcpServer, self).__init__(release_track, project)
+    self.location_id = 'global' if location_id is None else location_id
+    self.mcp_server_id = mcp_server_id
+    self.iap_web_id = AGENT_REGISTRY
+
+  def _Name(self):
+    return 'Agent Registry McpServer'
+
+  def _Parse(self):
+    project = _GetProject(self.project)
+    return self.registry.Parse(
+        None,
+        params={
+            'project': project.projectNumber,
+            'location': self.location_id,
+            'iapWebId': self.iap_web_id,
+            'mcpServerId': self.mcp_server_id,
+        },
+        collection=LOCATION_IAP_WEB_MCPSERVERS_COLLECTION,
+    )
+
+
+class AgentRegistryEndpoint(IapIamResource):
+  """IAP IAM Agent Registry Endpoint resource."""
+
+  def __init__(
+      self, release_track, project, *, endpoint_id, location_id=None
+  ):
+    super(AgentRegistryEndpoint, self).__init__(release_track, project)
+    self.location_id = 'global' if location_id is None else location_id
+    self.endpoint_id = endpoint_id
+    self.iap_web_id = AGENT_REGISTRY
+
+  def _Name(self):
+    return 'Agent Registry Endpoint'
+
+  def _Parse(self):
+    project = _GetProject(self.project)
+    return self.registry.Parse(
+        None,
+        params={
+            'project': project.projectNumber,
+            'location': self.location_id,
+            'iapWebId': self.iap_web_id,
+            'endpointId': self.endpoint_id,
+        },
+        collection=LOCATION_IAP_WEB_ENDPOINTS_COLLECTION)
 
 
 def _MakeIAPKwargs(is_backend_service, existing_iap_settings, enabled,

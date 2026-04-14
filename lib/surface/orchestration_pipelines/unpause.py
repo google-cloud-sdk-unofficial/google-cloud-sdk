@@ -30,7 +30,6 @@ from googlecloudsdk.core import resources
 
 DEFAULT_POLLING_TIME_SECONDS = datetime.timedelta(seconds=2)
 POLL_JITTER_SECONDS = datetime.timedelta(seconds=0.5)
-ORCHESTRATION_PIPELINES_DIRECTORY = "orchestration_pipelines"
 
 
 @calliope_base.Hidden
@@ -134,7 +133,7 @@ class Unpause(calliope_base.Command):
       }
     manifest_gcs_path = "gs://{}/{}/{}/{}".format(
         environment.storageConfig.bucket,
-        ORCHESTRATION_PIPELINES_DIRECTORY,
+        gcs_utils.ORCHESTRATION_PIPELINES_DATA_DIRECTORY,
         args.bundle,
         gcs_utils.MANIFEST_FILE_NAME,
     )
@@ -149,9 +148,9 @@ class Unpause(calliope_base.Command):
 
       # 4. Touch the pipeline's python file to trigger the Airflow scheduler to
       # pick up the changes in the next run.
-      pipeline_gcs_path = "gs://{}/dags/{}/{}/{}.py".format(
+      pipeline_gcs_path = "gs://{}/{}/{}/{}.py".format(
           environment.storageConfig.bucket,
-          ORCHESTRATION_PIPELINES_DIRECTORY,
+          gcs_utils.ORCHESTRATION_PIPELINES_DAGS_DIRECTORY,
           args.bundle,
           args.pipeline,
       )

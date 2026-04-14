@@ -14,6 +14,7 @@
 # limitations under the License.
 """Command for proxying to a given service."""
 
+import copy
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.config import config_helper
@@ -32,6 +33,7 @@ from googlecloudsdk.core.credentials import store
 
 
 @base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Proxy(base.BinaryBackedCommand):
   """Proxy a service to localhost authenticating as the active account or with the specified token.
 
@@ -47,10 +49,13 @@ class Proxy(base.BinaryBackedCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION': (
+          """\
           {description}
-          """,
-      'EXAMPLES': """\
+          """
+      ),
+      'EXAMPLES': (
+          """\
           To proxy the service 'my-service' at localhost port 8080:
 
               $ {command} my-service --port=8080
@@ -58,7 +63,8 @@ class Proxy(base.BinaryBackedCommand):
           To proxy the existing traffic tag 'my-tag' on the service 'my-service:
 
               $ {command} my-service --tag=my-tag
-          """,
+          """
+      ),
   }
 
   @staticmethod
@@ -167,6 +173,14 @@ class Proxy(base.BinaryBackedCommand):
           'URL for service [{}] is not ready'.format(serv_id)
       )
     return serv.status.url
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.RegionalEndpointsSupported
+class BetaProxy(Proxy):
+  """Proxy a service to localhost authenticating as the active account or with the specified token."""
+
+  detailed_help = copy.deepcopy(Proxy.detailed_help)
 
 
 def _GetFreshIdToken():

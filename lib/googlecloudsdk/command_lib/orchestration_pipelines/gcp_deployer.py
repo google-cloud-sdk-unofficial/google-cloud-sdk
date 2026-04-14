@@ -21,12 +21,6 @@ from googlecloudsdk.command_lib.orchestration_pipelines.handlers import base as 
 from googlecloudsdk.core import log
 
 
-def _print_padded_request(request: Any) -> None:
-  """Prints a multi-line request object with consistent indentation."""
-  for line in str(request).splitlines():
-    log.status.Print(f"     {line}")
-
-
 def _delete_resource(
     handler: handlers_base.GcpResourceHandler,
     existing_resource: Any,
@@ -34,17 +28,9 @@ def _delete_resource(
 ) -> None:
   """Deletes a GCP resource and waits for the operation to complete."""
   delete_request = handler.build_delete_request(existing_resource)
-  if handler.dry_run:
-    log.status.Print(f"     [DRY RUN] Would delete {resource_type_name}")
-    if handler.show_requests:
-      _print_padded_request(delete_request)
-  else:
-    if handler.show_requests:
-      log.error("--- GCP API DELETE REQUEST ---")
-      _print_padded_request(delete_request)
-    api_response = handler.get_delete_method()(request=delete_request)
-    handler.wait_for_operation(api_response)
-    log.status.Print(f"     Successfully deleted {resource_type_name}.")
+  api_response = handler.get_delete_method()(request=delete_request)
+  handler.wait_for_operation(api_response)
+  log.status.Print(f"     Successfully deleted {resource_type_name}.")
 
 
 def _update_resource(
@@ -61,21 +47,13 @@ def _update_resource(
         existing_resource, resource_message, changed_fields
     )
 
-    if handler.dry_run:
-      log.status.Print(f"     [DRY RUN] Would update {resource_type_name}")
-      if handler.show_requests:
-        _print_padded_request(request)
-    else:
-      if handler.show_requests:
-        log.error("--- GCP API UPDATE REQUEST ---")
-        _print_padded_request(request)
-      api_response = handler.get_update_method()(request=request)
-      api_response = handler.wait_for_operation(api_response)
-      handler.post_deploy(api_response, created=False)
-      success_message = handler.get_success_deployment_message(api_response)
-      log.status.Print(
-          f"     Successfully updated {resource_type_name}: {success_message}"
-      )
+    api_response = handler.get_update_method()(request=request)
+    api_response = handler.wait_for_operation(api_response)
+    handler.post_deploy(api_response, created=False)
+    success_message = handler.get_success_deployment_message(api_response)
+    log.status.Print(
+        f"     Successfully updated {resource_type_name}: {success_message}"
+    )
   except NotImplementedError as e:
     raise ValueError(
         "This resource does not support patch updates. "
@@ -93,21 +71,13 @@ def _create_resource(
   resource_message = handler.to_resource_message(local_definition)
   request = handler.build_create_request(resource_message)
 
-  if handler.dry_run:
-    log.status.Print(f"     [DRY RUN] Would create {resource_type_name}")
-    if handler.show_requests:
-      _print_padded_request(request)
-  else:
-    if handler.show_requests:
-      log.error("--- GCP API CREATE REQUEST ---")
-      _print_padded_request(request)
-    api_response = handler.get_create_method()(request=request)
-    api_response = handler.wait_for_operation(api_response)
-    handler.post_deploy(api_response, created=True)
-    success_message = handler.get_success_deployment_message(api_response)
-    log.status.Print(
-        f"     Successfully created {resource_type_name}: {success_message}"
-    )
+  api_response = handler.get_create_method()(request=request)
+  api_response = handler.wait_for_operation(api_response)
+  handler.post_deploy(api_response, created=True)
+  success_message = handler.get_success_deployment_message(api_response)
+  log.status.Print(
+      f"     Successfully created {resource_type_name}: {success_message}"
+  )
 
 
 def _handle_existing_resource(

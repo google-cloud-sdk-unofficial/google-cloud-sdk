@@ -14,7 +14,6 @@
 # limitations under the License.
 """bigtable instances update command."""
 
-
 import textwrap
 
 from googlecloudsdk.api_lib.bigtable import util as bigtable_util
@@ -40,7 +39,7 @@ class UpdateInstance(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    arguments.ArgAdder(parser).AddInstanceDisplayName()
+    arguments.ArgAdder(parser).AddInstanceDisplayName().AddInstanceEdition()
     arguments.AddInstanceResourceArg(parser, 'to update', positional=True)
 
   def Run(self, args):
@@ -63,7 +62,7 @@ class UpdateInstance(base.UpdateCommand):
       instance.displayName = args.display_name
       update_mask.append('display_name')
 
-    if hasattr(args, 'edition') and args.edition:
+    if args.edition is not None:
       instance.edition = msgs.Instance.EditionValueValuesEnum(args.edition)
       update_mask.append('edition')
 
@@ -88,4 +87,3 @@ class UpdateInstanceAlpha(UpdateInstance):
   @staticmethod
   def Args(parser):
     super(UpdateInstanceAlpha, UpdateInstanceAlpha).Args(parser)
-    arguments.ArgAdder(parser).AddInstanceEdition()

@@ -22,6 +22,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+@base.RegionalEndpointsSupported
 class Delete(base.DeleteCommand):
   """Delete a completed Data Fusion operation.
 
@@ -38,8 +39,8 @@ class Delete(base.DeleteCommand):
     resource_args.AddOperationResourceArg(parser, 'The operation to delete.')
 
   def Run(self, args):
-    datafusion = df.Datafusion()
     op_ref = args.CONCEPTS.operation.Parse()
+    datafusion = df.Datafusion(location=op_ref.locationsId)
 
     console_io.PromptContinue(
         message="'{0}' will be deleted".format(op_ref.Name()),

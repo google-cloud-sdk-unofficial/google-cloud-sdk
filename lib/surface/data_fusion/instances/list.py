@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.data_fusion import resource_args
 
 
+@base.RegionalEndpointsSupported
 class List(base.ListCommand):
   """Lists all Data Fusion instances in a project given a location.
 
@@ -50,8 +51,8 @@ class List(base.ListCommand):
         ')')
 
   def Run(self, args):
-    datafusion = df.Datafusion()
     location_ref = args.CONCEPTS.location.Parse()
+    datafusion = df.Datafusion(location=location_ref.locationsId)
 
     request = datafusion.messages.DatafusionProjectsLocationsInstancesListRequest(
         parent=location_ref.RelativeName())

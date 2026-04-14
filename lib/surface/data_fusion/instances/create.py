@@ -30,6 +30,7 @@ from googlecloudsdk.core import log
 _EDITIONS = ['basic', 'enterprise', 'developer']
 
 
+@base.RegionalEndpointsSupported
 @base.DefaultUniverseOnly
 class Create(base.Command):
   # pylint:disable=line-too-long
@@ -93,8 +94,8 @@ class Create(base.Command):
     resource_args.GetTagsArg().AddToParser(parser)
 
   def Run(self, args):
-    datafusion = df.Datafusion()
     instance_ref = args.CONCEPTS.instance.Parse()
+    datafusion = df.Datafusion(location=instance_ref.locationsId)
 
     # Prompt for zone if it is not specified
     version = args.version
@@ -119,7 +120,7 @@ class Create(base.Command):
     if not enable_rbac:
       enable_rbac = False
     edition_mapper = arg_utils.ChoiceEnumMapper(
-        'edition_enum', df.Datafusion().messages.Instance.TypeValueValuesEnum)
+        'edition_enum', datafusion.messages.Instance.TypeValueValuesEnum)
     edition = edition_mapper.GetEnumForChoice(args.edition)
     instance = datafusion.messages.Instance(
         zone=zone,
@@ -139,7 +140,7 @@ class Create(base.Command):
             args, datafusion.messages.Instance.TagsValue
         ),
     )
-    maintenance_utils.SetMaintenanceWindow(args, instance)
+    maintenance_utils.SetMaintenanceWindow(args, instance, datafusion)
 
     req = datafusion.messages.DatafusionProjectsLocationsInstancesCreateRequest(
         instance=instance,
@@ -154,7 +155,7 @@ class Create(base.Command):
       return operation
     else:
       waiter.WaitFor(
-          operation_poller.OperationPoller(),
+          operation_poller.OperationPoller(datafusion),
           operation.name,
           'Waiting for [{}] to complete. This may take several minutes.'.format(
               operation.name),

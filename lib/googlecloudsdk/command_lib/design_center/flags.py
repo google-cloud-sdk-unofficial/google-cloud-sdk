@@ -12,10 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Design Center Command Lib Flags."""
+"""Design Center Command Lib added Flags."""
 
 
-import re
+import argparse
 import textwrap
 
 from googlecloudsdk.calliope import arg_parsers
@@ -318,6 +318,46 @@ def AddRegisterWithApphubFlags(parser):
   parser.add_argument(
       '--tfstate-location',
       help='Path to the Terraform state file (e.g., `terraform.tfstate`).',
+  )
+  base.ASYNC_FLAG.AddToParser(parser)
+
+
+def AddRegisterAppHubApplicationResourcesFlags(parser: argparse.ArgumentParser) -> None:
+  """Adds all flags for the register app hub application resources command.
+
+  Args:
+    parser: An argparse.ArgumentParser-like object. It is mocked out in tests.
+  """
+  concept_parsers.ConceptParser.ForResource(
+      '--location',
+      GetLocationResourceSpec(),
+      'The location to register resources in.',
+      required=True,
+  ).AddToParser(parser)
+  tfstate_group = parser.add_group(mutex=True)
+  tfstate_group.add_argument(
+      '--tfstate-content',
+      required=False,
+      help=textwrap.dedent("""\
+          The Terraform state (tfstate) content as a raw string.
+          For large state files exceeding 10MB, use the `tfstate-signed-gcs-uri`
+          field instead."""),
+  )
+  tfstate_group.add_argument(
+      '--tfstate-signed-gcs-uri',
+      required=False,
+      help=textwrap.dedent("""\
+          A securely signed Cloud Storage URI pointing to the tfstate file.
+          The URI must be signed to grant the service temporary read access to the
+          state file. ADC imposes a limit on the maximum size of the state file
+          accessed via this URI."""),
+  )
+  parser.add_argument(
+      '--apphub-application',
+      required=True,
+      help="""The name of the AppHub Application.
+      Format:
+      `projects/{project}/locations/{location}/applications/{application}`""",
   )
   base.ASYNC_FLAG.AddToParser(parser)
 

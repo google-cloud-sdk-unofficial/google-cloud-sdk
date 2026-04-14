@@ -1,0 +1,47 @@
+- release_tracks: [ALPHA, BETA]
+  hidden: true
+
+  help_text:
+    brief: |
+      Delete a Memorystore for Redis Cluster token auth user.
+    description: |
+      Delete a Memorystore for Redis Cluster token auth user.
+
+      This command can fail for the following reasons:
+        * The token auth user specified does not exist.
+        * The active account does not have permission to access the given
+          token auth user.
+    examples: |
+      To delete a token auth user with the name `my-token-auth-user` for cluster `my-cluster`
+      in `us-central1` region, run:
+
+      $ {command} my-token-auth-user --cluster=my-cluster --region=us-central1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.redis.resources:token_auth_user
+      help_text:
+        Arguments and flags that specify the Redis token auth user you want to delete.
+      is_positional: true
+    params:
+    - arg_name: force
+      api_field: force
+      type: bool
+      default: true
+      help_text: |
+        If set to true, the token auth user and its nested resources will be deleted.
+
+  async:
+    collection: redis.projects.locations.operations
+
+  input:
+    confirmation_prompt: |
+      You are about to delete token auth user [{__name__}] in [{locationsId}].
+      Any associated data will be lost.
+
+  request:
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
+    collection: redis.projects.locations.clusters.tokenAuthUsers

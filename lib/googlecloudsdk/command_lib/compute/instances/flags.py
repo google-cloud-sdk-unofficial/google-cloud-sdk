@@ -1546,7 +1546,7 @@ def AddAddressArgs(
     support_ipv6_only=False,
     support_igmp_query=False,
     support_enable_vpc_scoped_dns=False,
-    support_service_class_id=False,
+    support_alias_ipv6_ranges=False,
 ):
   """Adds address arguments for instances and instance-templates.
 
@@ -1567,7 +1567,7 @@ def AddAddressArgs(
       interfaces is supported.
     support_enable_vpc_scoped_dns: indicates whether setting enable vpc scoped
       dns on network interfaces is supported.
-    support_service_class_id: indicates whether setting service class id on
+    support_alias_ipv6_ranges: indicates whether setting alias ipv6 ranges on
       network interfaces is supported.
   """
   addresses = parser.add_mutually_exclusive_group()
@@ -1591,6 +1591,7 @@ def AddAddressArgs(
       'subnet': str,
       'private-network-ip': str,
       'aliases': str,
+      'ipv6-aliases': str,
       'network-attachment': str,
       'ipv6-address': str,
       'ipv6-prefix-length': int,
@@ -1599,6 +1600,7 @@ def AddAddressArgs(
       'internal-ipv6-address': str,
       'internal-ipv6-prefix-length': int,
       'enable-vpc-scoped-dns': None,
+      'service-class-id': str,
   }
 
   multiple_network_interface_cards_spec['network-tier'] = _ValidateNetworkTier
@@ -1748,10 +1750,16 @@ def AddAddressArgs(
           --aliases="10.128.1.0/24;range1:/32"
 
       """)
+
+  separated_by_str = 'a colon'
+
+  if support_alias_ipv6_ranges:
+    separated_by_str += ' or an equals sign'
+
   if instances:
-    network_interface_help_texts.append("""
+    network_interface_help_texts.append(f"""
       Each IP alias range consists of a range name and an IP range
-      separated by a colon, or just the IP range.
+      separated by {separated_by_str}, or just the IP range.
       The range name is the name of the range within the network
       interface's subnet from which to allocate an IP alias range. If
       unspecified, it defaults to the primary IP range of the subnet.
@@ -1764,15 +1772,53 @@ def AddAddressArgs(
       and allocate it to this network interface.
       """)
   else:
-    network_interface_help_texts.append("""
+    network_interface_help_texts.append(f"""
       Each IP alias range consists of a range name and a CIDR netmask
-      (e.g. `/24`) separated by a colon or just the netmask.
+      (e.g. `/24`) separated by {separated_by_str} or just the netmask.
       The range name is the name of the range within the network
       interface's subnet from which to allocate an IP alias range. If
       unspecified, it defaults to the primary IP range of the subnet.
       The IP allocator will pick an available range with the specified
       netmask and allocate it to this network interface.
       """)
+
+  if support_alias_ipv6_ranges:
+    network_interface_help_texts.append("""
+        *ipv6-aliases*::: Specifies the IPv6 alias ranges to allocate for this
+        interface. If there are multiple IPv6 alias ranges, they are separated
+        by semicolons.
+
+        For example:
+
+          --ipv6-aliases="/80;range1=/96;range2=2001:db8:1234:5678::/96"
+
+
+        """)
+
+    if instances:
+      network_interface_help_texts.append("""
+        Each IPv6 alias range consists of a range name and an IPv6 range
+        separated by an equals sign (=), or just the IPv6 range.
+        The range name is the name of the range within the network
+        interface's subnet from which to allocate an IPv6 alias range. If
+        unspecified, it defaults to the primary IPv6 range of the subnet.
+        The IPv6 range can be an IPv6 CIDR range (e.g., `2001:db8:1:1::/96`)
+        or a netmask in CIDR format (e.g., `/96`). If the IPv6 range is
+        specified by a CIDR range, it must belong to the CIDR range
+        specified by the range name on the subnet. If the IPv6 range is
+        specified by netmask, the IP allocator will pick an available range
+        with the specified netmask and allocate it to this network interface.
+        """)
+    else:
+      network_interface_help_texts.append("""
+        Each IPv6 alias range consists of a range name and a CIDR netmask
+        (e.g., `/96`) separated by an equals sign (=), or just the netmask.
+        The range name is the name of the range within the network
+        interface's subnet from which to allocate an IPv6 alias range. If
+        unspecified, it defaults to the primary IPv6 range of the subnet.
+        The IP allocator will pick an available range with the specified
+        netmask and allocate it to this network interface.
+        """)
 
   network_interface_help_texts.append("""
       *network-attachment*::: Specifies the network attachment that this
@@ -1786,9 +1832,7 @@ def AddAddressArgs(
       resolution will be enabled over this interface.
       """)
 
-  if support_service_class_id:
-    multiple_network_interface_cards_spec['service-class-id'] = str
-    network_interface_help_texts.append("""
+  network_interface_help_texts.append("""
       *service-class-id*::: The regional Service Class ID for the producer
       service associated with this network interface. Can only be used with
       network_attachment. It is not possible to use on its own;

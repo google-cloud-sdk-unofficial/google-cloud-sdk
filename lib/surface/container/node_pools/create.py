@@ -484,6 +484,18 @@ class CreateBeta(Create):
     flags.AddResourceManagerTagsCreate(parser, for_node_pool=True)
     flags.AddSecondaryBootDisksArgs(parser)
     flags.AddAcceleratorNetworkProfileFlag(parser, hidden=False)
+    linked_runner_group = parser.add_group(mutex=True, hidden=True)
+    flags.AddRunnerPoolControlModeFlag(linked_runner_group, hidden=True)
+    runner_pool_group = linked_runner_group.add_group()
+    flags.AddControlNodePoolFlag(runner_pool_group, hidden=True)
+    flags.AddSecurityModeFlag(runner_pool_group, hidden=True)
+    attestation_group = runner_pool_group.add_group(
+        help='Settings for attestation.')
+    flags.AddEnableAttestationFlag(attestation_group, hidden=True)
+    flags.AddTeePolicyFlag(attestation_group, hidden=True)
+    flags.AddEnableSystemTelemetryCollectionFlag(runner_pool_group, hidden=True)
+    flags.AddEnableOtlpIngestionEndpointFlag(runner_pool_group, hidden=True)
+    flags.AddEnableWorkloadLogCollectionFlag(runner_pool_group, hidden=True)
     flags.AddNodeDrainSettingsFlag(parser)
 
   def ParseCreateNodePoolOptions(self, args):
@@ -535,6 +547,41 @@ class CreateBeta(Create):
     ops.local_ssd_encryption_mode = args.local_ssd_encryption_mode
     ops.data_cache_count = args.data_cache_count
     ops.subnetwork = args.subnetwork
+
+    if args.tee_policy and not args.enable_attestation:
+      raise exceptions.InvalidArgumentException(
+          '--tee-policy',
+          'The --enable-attestation flag must be provided when --tee-policy is'
+          ' specified.',
+      )
+    security_mode = args.security_mode
+    # Default to security mode hardened to be secure by default when
+    # attestation is enabled.
+    if args.enable_attestation and security_mode is None:
+      security_mode = 'hardened'
+
+    if args.enable_attestation and security_mode == 'none':
+      raise exceptions.InvalidArgumentException(
+          '--enable-attestation',
+          'The --security-mode flag must be set to "debug" or "hardened" when'
+          ' --enable-attestation is specified.',
+      )
+    if (
+        not args.enable_attestation
+        and security_mode != 'none'
+        and security_mode is not None
+    ):
+      raise exceptions.InvalidArgumentException(
+          '--security-mode',
+          'The --security-mode flag cannot be set to "debug" or "hardened" when'
+          ' --enable-attestation is not specified.',
+      )
+    ops.runner_pool_control_mode = args.runner_pool_control_mode
+    ops.control_node_pool = args.control_node_pool
+    ops.enable_attestation = args.enable_attestation
+    ops.tee_policy = args.tee_policy
+    ops.security_mode = args.security_mode
+
     return ops
 
 

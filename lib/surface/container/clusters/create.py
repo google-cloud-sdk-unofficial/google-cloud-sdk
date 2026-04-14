@@ -14,7 +14,6 @@
 # limitations under the License.
 """Create cluster command."""
 
-
 import functools
 import string
 
@@ -1118,7 +1117,7 @@ flags_to_add = {
             p, hidden=False
         ),
         'managedMLDiagnostics': lambda p: flags.AddManagedMLDiagnosticsFlags(
-            p, hidden=True
+            p, hidden=False
         ),
         'autopilotPrivilegedAdmission': (
             flags.AddAutopilotPrivilegedAdmissionFlag
@@ -1370,7 +1369,7 @@ flags_to_add = {
             p, hidden=False
         ),
         'managedMLDiagnostics': lambda p: flags.AddManagedMLDiagnosticsFlags(
-            p, hidden=True
+            p, hidden=False
         ),
         'autopilotPrivilegedAdmission': (
             flags.AddAutopilotPrivilegedAdmissionFlag
@@ -1427,11 +1426,13 @@ class Create(base.CreateCommand):
 
   detailed_help = {
       'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
+      'EXAMPLES': (
+          """\
           To create a cluster with the default configuration, run:
 
             $ {command} sample-cluster
-          """,
+          """
+      ),
   }
 
   autopilot = False
@@ -1547,7 +1548,8 @@ class Create(base.CreateCommand):
     # Checking whether the API has been enabled, and warning if not.
     if options.enable_image_streaming:
       util.CheckForContainerFileSystemApiEnablementWithPrompt(
-          cluster_ref.projectId)
+          cluster_ref.projectId
+      )
 
     if options.logging == ['NONE']:
       if console_io.CanPrompt():
@@ -1652,10 +1654,12 @@ class CreateBeta(Create):
     ops.max_surge_upgrade = get_default('max_surge_upgrade')
     ops.max_unavailable_upgrade = get_default('max_unavailable_upgrade')
     ops.autoscaling_profile = get_default('autoscaling_profile')
-    ops.enable_tpu_service_networking = (
-        get_default('enable_tpu_service_networking'))
-    ops.enable_logging_monitoring_system_only = (
-        get_default('enable_logging_monitoring_system_only'))
+    ops.enable_tpu_service_networking = get_default(
+        'enable_tpu_service_networking'
+    )
+    ops.enable_logging_monitoring_system_only = get_default(
+        'enable_logging_monitoring_system_only'
+    )
     ops.gvnic = get_default('enable_gvnic')
     ops.system_config_from_file = get_default('system_config_from_file')
     ops.datapath_provider = get_default('datapath_provider')
@@ -1665,11 +1669,14 @@ class CreateBeta(Create):
     ops.enable_confidential_nodes = get_default('enable_confidential_nodes')
     ops.confidential_node_type = get_default('confidential_node_type')
     ops.enable_nested_virtualization = get_default(
-        'enable_nested_virtualization')
-    ops.kubernetes_objects_changes_target = (
-        getattr(args, 'kubernetes_objects_changes_target', None))
-    ops.kubernetes_objects_snapshots_target = (
-        getattr(args, 'kubernetes_objects_snapshots_target', None))
+        'enable_nested_virtualization'
+    )
+    ops.kubernetes_objects_changes_target = getattr(
+        args, 'kubernetes_objects_changes_target', None
+    )
+    ops.kubernetes_objects_snapshots_target = getattr(
+        args, 'kubernetes_objects_snapshots_target', None
+    )
     ops.enable_gcfs = get_default('enable_gcfs')
     ops.enable_image_streaming = get_default('enable_image_streaming')
     ops.enable_workload_certificates = getattr(
@@ -1677,12 +1684,11 @@ class CreateBeta(Create):
     )
     ops.enable_alts = getattr(args, 'enable_alts', None)
     ops.ephemeral_storage = ephemeral_storage
-    ops.enable_workload_monitoring_eap = (
-        get_default('enable_workload_monitoring_eap'))
-    ops.private_endpoint_subnetwork = (
-        get_default('private_endpoint_subnetwork'))
-    ops.cross_connect_subnetworks = (
-        get_default('cross_connect_subnetworks'))
+    ops.enable_workload_monitoring_eap = get_default(
+        'enable_workload_monitoring_eap'
+    )
+    ops.private_endpoint_subnetwork = get_default('private_endpoint_subnetwork')
+    ops.cross_connect_subnetworks = get_default('cross_connect_subnetworks')
     ops.enable_service_externalips = get_default('enable_service_externalips')
     ops.enable_managed_prometheus = get_default('enable_managed_prometheus')
     ops.enable_managed_mldiagnostics = get_default(
@@ -1807,23 +1813,28 @@ class CreateAlpha(Create):
     ops.enable_private_nodes = get_default('enable_private_nodes')
     ops.enable_private_endpoint = get_default('enable_private_endpoint')
     ops.master_ipv4_cidr = get_default('master_ipv4_cidr')
-    ops.enable_tpu_service_networking = (
-        get_default('enable_tpu_service_networking'))
+    ops.enable_tpu_service_networking = get_default(
+        'enable_tpu_service_networking'
+    )
     ops.istio_config = get_default('istio_config')
     ops.security_group = get_default('security_group')
-    ops.enable_vertical_pod_autoscaling = (
-        get_default('enable_vertical_pod_autoscaling'))
+    ops.enable_vertical_pod_autoscaling = get_default(
+        'enable_vertical_pod_autoscaling'
+    )
     ops.enable_experimental_vertical_pod_autoscaling = get_default(
         'enable_experimental_vertical_pod_autoscaling'
     )
     ops.security_profile = get_default('security_profile')
-    ops.security_profile_runtime_rules = (
-        get_default('security_profile_runtime_rules'))
+    ops.security_profile_runtime_rules = get_default(
+        'security_profile_runtime_rules'
+    )
     ops.node_pool_name = get_default('node_pool_name')
-    ops.enable_network_egress_metering = (
-        get_default('enable_network_egress_metering'))
-    ops.enable_resource_consumption_metering = (
-        get_default('enable_resource_consumption_metering'))
+    ops.enable_network_egress_metering = get_default(
+        'enable_network_egress_metering'
+    )
+    ops.enable_resource_consumption_metering = get_default(
+        'enable_resource_consumption_metering'
+    )
     ops.enable_private_ipv6_access = get_default('enable_private_ipv6_access')
     ops.max_surge_upgrade = get_default('max_surge_upgrade')
     ops.max_unavailable_upgrade = get_default('max_unavailable_upgrade')
@@ -1831,8 +1842,9 @@ class CreateAlpha(Create):
     ops.disable_default_snat = get_default('disable_default_snat')
     ops.system_config_from_file = get_default('system_config_from_file')
     ops.enable_cost_allocation = get_default('enable_cost_allocation')
-    ops.enable_logging_monitoring_system_only = (
-        get_default('enable_logging_monitoring_system_only'))
+    ops.enable_logging_monitoring_system_only = get_default(
+        'enable_logging_monitoring_system_only'
+    )
     ops.datapath_provider = get_default('datapath_provider')
     ops.gvnic = get_default('enable_gvnic')
     ops.enable_master_metrics = get_default('enable_master_metrics')
@@ -1840,23 +1852,25 @@ class CreateAlpha(Create):
     ops.enable_confidential_nodes = get_default('enable_confidential_nodes')
     ops.confidential_node_type = get_default('confidential_node_type')
     ops.enable_nested_virtualization = get_default(
-        'enable_nested_virtualization')
-    ops.kubernetes_objects_changes_target = (
-        getattr(args, 'kubernetes_objects_changes_target', None))
-    ops.kubernetes_objects_snapshots_target = (
-        getattr(args, 'kubernetes_objects_snapshots_target', None))
+        'enable_nested_virtualization'
+    )
+    ops.kubernetes_objects_changes_target = getattr(
+        args, 'kubernetes_objects_changes_target', None
+    )
+    ops.kubernetes_objects_snapshots_target = getattr(
+        args, 'kubernetes_objects_snapshots_target', None
+    )
     ops.enable_gcfs = get_default('enable_gcfs')
     ops.enable_image_streaming = get_default('enable_image_streaming')
     ops.enable_workload_certificates = getattr(
         args, 'enable_workload_certificates', None
     )
     ops.enable_alts = getattr(args, 'enable_alts', None)
-    ops.enable_workload_monitoring_eap = (
-        get_default('enable_workload_monitoring_eap'))
-    ops.private_endpoint_subnetwork = (
-        get_default('private_endpoint_subnetwork'))
-    ops.cross_connect_subnetworks = (
-        get_default('cross_connect_subnetworks'))
+    ops.enable_workload_monitoring_eap = get_default(
+        'enable_workload_monitoring_eap'
+    )
+    ops.private_endpoint_subnetwork = get_default('private_endpoint_subnetwork')
+    ops.cross_connect_subnetworks = get_default('cross_connect_subnetworks')
     ops.enable_service_externalips = get_default('enable_service_externalips')
     ops.enable_managed_prometheus = get_default('enable_managed_prometheus')
     ops.enable_managed_mldiagnostics = get_default(

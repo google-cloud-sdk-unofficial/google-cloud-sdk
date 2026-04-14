@@ -42,6 +42,20 @@
         hidden: true
       - enum_value: REDIS_SHARED_CORE_NANO
         arg_value: redis-shared-core-nano
+    - arg_name: auth-mode
+      api_field: cluster.authorizationMode
+      release_tracks: [ALPHA, BETA]
+      help_text: |
+        Available authorization mode of a Redis cluster.
+      choices:
+      - enum_value: AUTH_MODE_DISABLED
+        arg_value: disabled
+        help_text: |
+            Authorization is disabled for the cluster.
+      - enum_value: AUTH_MODE_TOKEN_AUTH
+        arg_value: token-auth
+        help_text: |
+            Token based authorization is enabled for the cluster.
     - arg_name: replica-count
       api_field: cluster.replicaCount
       type: int
@@ -191,8 +205,7 @@
       type: bool
     - arg_name: acl-policy
       api_field: cluster.aclPolicy
-      release_tracks: [ALPHA]
-      hidden: true
+      release_tracks: [ALPHA, BETA, GA]
       help_text: |
         The ACL policy to use for the cluster.
     additional_arguments_hook: googlecloudsdk.command_lib.redis.cluster_util:AdditionalClusterUpdateArguments
@@ -219,6 +232,7 @@
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateNodeType
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceVersion
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateAclPolicy
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateAuthMode
     BETA:
       api_version: v1beta1
       modify_request_hooks:
@@ -235,6 +249,7 @@
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateAutomatedBackupConfig
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateNodeType
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceVersion
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateAuthMode
     GA:
       api_version: v1
       modify_request_hooks:

@@ -324,6 +324,15 @@ def _GetContainerConfigurationChanges(
             non_ingress_type=non_ingress_type,
         )
     )
+  if container_args.IsSpecified('workdir'):
+    # Allow passing an empty string here to reset the field
+    changes.append(
+        config_changes.ContainerWorkdirChange(
+            container_args.workdir,
+            container_name=container_name,
+            non_ingress_type=non_ingress_type,
+        )
+    )
   if flags.FlagIsExplicitlySet(
       container_args, 'remove_volume_mount'
   ) or flags.FlagIsExplicitlySet(container_args, 'clear_volume_mounts'):
@@ -398,6 +407,12 @@ def _GetTemplateConfigurationChanges(
     changes.append(
         config_changes.ContainerArgsChange(
             args.args, non_ingress_type=non_ingress_type
+        )
+    )
+  if 'workdir' in args and args.workdir is not None:
+    changes.append(
+        config_changes.ContainerWorkdirChange(
+            args.workdir, non_ingress_type=non_ingress_type
         )
     )
   if flags.HasEnvChanges(args):

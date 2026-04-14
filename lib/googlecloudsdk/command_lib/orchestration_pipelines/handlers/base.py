@@ -46,15 +46,11 @@ class GcpResourceHandler(abc.ABC):
       self,
       resource: deployment_model.ResourceModel,
       environment: deployment_model.EnvironmentModel,
-      dry_run: bool,
       debug: bool = False,
-      show_requests: bool = False,
   ):
     self.resource = resource
     self.environment = environment
-    self.dry_run = dry_run
     self.debug = debug
-    self.show_requests = show_requests
     self.client = self._get_client()
     self.messages = self._get_messages()
     self._validate_metadata()

@@ -96,6 +96,62 @@ class AclRule(_messages.Message):
   username = _messages.StringField(2)
 
 
+class AddAuthTokenRequest(_messages.Message):
+  r"""Request message for AddAuthToken.
+
+  Fields:
+    authToken: Required. The auth token to add.
+  """
+
+  authToken = _messages.MessageField('AuthToken', 1)
+
+
+class AddTokenAuthUserRequest(_messages.Message):
+  r"""Request message for AddTokenAuthUser.
+
+  Fields:
+    tokenAuthUser: Required. The id of the token auth user to add.
+  """
+
+  tokenAuthUser = _messages.StringField(1)
+
+
+class AuthToken(_messages.Message):
+  r"""Auth token for the cluster.
+
+  Enums:
+    StateValueValuesEnum: Output only. State of the auth token.
+
+  Fields:
+    createTime: Output only. Create time of the auth token.
+    name: Identifier. Name of the auth token. Format: projects/{project}/locat
+      ions/{location}/clusters/{cluster}/tokenAuthUsers/{token_auth_user}/auth
+      Tokens/{auth_token}
+    state: Output only. State of the auth token.
+    token: Output only. The service generated authentication token used to
+      connect to the Redis cluster.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. State of the auth token.
+
+    Values:
+      STATE_UNSPECIFIED: Not set.
+      ACTIVE: The auth token is active.
+      CREATING: The auth token is being created.
+      DELETING: The auth token is being deleted.
+    """
+    STATE_UNSPECIFIED = 0
+    ACTIVE = 1
+    CREATING = 2
+    DELETING = 3
+
+  createTime = _messages.StringField(1)
+  name = _messages.StringField(2)
+  state = _messages.EnumField('StateValueValuesEnum', 3)
+  token = _messages.StringField(4)
+
+
 class AutomatedBackupConfig(_messages.Message):
   r"""The automated backup config for a cluster.
 
@@ -574,10 +630,12 @@ class Cluster(_messages.Message):
       AUTH_MODE_UNSPECIFIED: Not set.
       AUTH_MODE_IAM_AUTH: IAM basic authorization mode
       AUTH_MODE_DISABLED: Authorization disabled mode
+      AUTH_MODE_TOKEN_AUTH: Token based authorization mode
     """
     AUTH_MODE_UNSPECIFIED = 0
     AUTH_MODE_IAM_AUTH = 1
     AUTH_MODE_DISABLED = 2
+    AUTH_MODE_TOKEN_AUTH = 3
 
   class NodeTypeValueValuesEnum(_messages.Enum):
     r"""Optional. The type of a redis node in the cluster. NodeType determines
@@ -3224,6 +3282,21 @@ class ListAclPoliciesResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListAuthTokensResponse(_messages.Message):
+  r"""Response message for ListAuthTokens.
+
+  Fields:
+    authTokens: A list of auth tokens in the project.
+    nextPageToken: Token to retrieve the next page of results, or empty if
+      there are no more results in the list.
+    unreachable: Unordered list. Auth tokens that could not be reached.
+  """
+
+  authTokens = _messages.MessageField('AuthToken', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListBackupCollectionsResponse(_messages.Message):
   r"""Response for [ListBackupCollections].
 
@@ -3336,6 +3409,21 @@ class ListOperationsResponse(_messages.Message):
 
   nextPageToken = _messages.StringField(1)
   operations = _messages.MessageField('Operation', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListTokenAuthUsersResponse(_messages.Message):
+  r"""Response message for ListTokenAuthUsers.
+
+  Fields:
+    nextPageToken: Token to retrieve the next page of results, or empty if
+      there are no more results in the list.
+    tokenAuthUsers: A list of token auth users in the project.
+    unreachable: Unordered list. Token auth users that could not be reached.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  tokenAuthUsers = _messages.MessageField('TokenAuthUser', 2, repeated=True)
   unreachable = _messages.StringField(3, repeated=True)
 
 
@@ -4455,6 +4543,21 @@ class RedisProjectsLocationsBackupCollectionsListRequest(_messages.Message):
   parent = _messages.StringField(3, required=True)
 
 
+class RedisProjectsLocationsClustersAddTokenAuthUserRequest(_messages.Message):
+  r"""A RedisProjectsLocationsClustersAddTokenAuthUserRequest object.
+
+  Fields:
+    addTokenAuthUserRequest: A AddTokenAuthUserRequest resource to be passed
+      as the request body.
+    cluster: Required. The cluster resource that this token auth user will be
+      added for. Format:
+      projects/{project}/locations/{location}/clusters/{cluster}
+  """
+
+  addTokenAuthUserRequest = _messages.MessageField('AddTokenAuthUserRequest', 1)
+  cluster = _messages.StringField(2, required=True)
+
+
 class RedisProjectsLocationsClustersBackupRequest(_messages.Message):
   r"""A RedisProjectsLocationsClustersBackupRequest object.
 
@@ -4587,6 +4690,142 @@ class RedisProjectsLocationsClustersRescheduleClusterMaintenanceRequest(_message
 
   name = _messages.StringField(1, required=True)
   rescheduleClusterMaintenanceRequest = _messages.MessageField('RescheduleClusterMaintenanceRequest', 2)
+
+
+class RedisProjectsLocationsClustersTokenAuthUsersAddAuthTokenRequest(_messages.Message):
+  r"""A RedisProjectsLocationsClustersTokenAuthUsersAddAuthTokenRequest
+  object.
+
+  Fields:
+    addAuthTokenRequest: A AddAuthTokenRequest resource to be passed as the
+      request body.
+    tokenAuthUser: Required. The name of the token auth user resource that
+      this auth token will be added for. Format: projects/{project}/locations/
+      {location}/clusters/{cluster}/tokenAuthUsers/{token_auth_user}
+  """
+
+  addAuthTokenRequest = _messages.MessageField('AddAuthTokenRequest', 1)
+  tokenAuthUser = _messages.StringField(2, required=True)
+
+
+class RedisProjectsLocationsClustersTokenAuthUsersAuthTokensDeleteRequest(_messages.Message):
+  r"""A RedisProjectsLocationsClustersTokenAuthUsersAuthTokensDeleteRequest
+  object.
+
+  Fields:
+    name: Required. The name of the token auth user resource that this auth
+      token will be deleted from. Format: projects/{project}/locations/{locati
+      on}/clusters/{cluster}/tokenAuthUsers/{token_auth_user}/authTokens/{auth
+      _token}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class RedisProjectsLocationsClustersTokenAuthUsersAuthTokensGetRequest(_messages.Message):
+  r"""A RedisProjectsLocationsClustersTokenAuthUsersAuthTokensGetRequest
+  object.
+
+  Fields:
+    name: Required. The name of auth token for a token based auth enabled
+      cluster. Format: projects/{project}/locations/{location}/clusters/{clust
+      er}/tokenAuthUsers/{token_auth_user}/authTokens/{auth_token}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class RedisProjectsLocationsClustersTokenAuthUsersAuthTokensListRequest(_messages.Message):
+  r"""A RedisProjectsLocationsClustersTokenAuthUsersAuthTokensListRequest
+  object.
+
+  Fields:
+    filter: Optional. Expression for filtering results.
+    orderBy: Optional. Sort results by a defined order.
+    pageSize: Optional. The maximum number of items to return. The maximum
+      value is 1000; values above 1000 will be coerced to 1000. If not
+      specified, a default value of 1000 will be used by the service.
+      Regardless of the page_size value, the response may include a partial
+      list and a caller should only rely on response's `next_page_token` to
+      determine if there are more clusters left to be queried.
+    pageToken: Optional. The `next_page_token` value returned from a previous
+      [ListTokenAuthUsers] request, if any.
+    parent: Required. The parent resource that this auth token will be listed
+      for. Format: projects/{project}/locations/{location}/clusters/{cluster}/
+      tokenAuthUsers/{token_auth_user}
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class RedisProjectsLocationsClustersTokenAuthUsersDeleteRequest(_messages.Message):
+  r"""A RedisProjectsLocationsClustersTokenAuthUsersDeleteRequest object.
+
+  Fields:
+    force: Optional. If set to true, any child auth tokens of this user will
+      also be deleted. Otherwise, the request will only work if the user has
+      no auth tokens.
+    name: Required. The name of the token auth user to delete. Format: project
+      s/{project}/locations/{location}/clusters/{cluster}/tokenAuthUsers/{toke
+      n_auth_user}
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  force = _messages.BooleanField(1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+
+
+class RedisProjectsLocationsClustersTokenAuthUsersGetRequest(_messages.Message):
+  r"""A RedisProjectsLocationsClustersTokenAuthUsersGetRequest object.
+
+  Fields:
+    name: Required. The name of token auth user for a token based auth enabled
+      cluster. Format: projects/{project}/locations/{location}/clusters/{clust
+      er}/tokenAuthUsers/{token_auth_user}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class RedisProjectsLocationsClustersTokenAuthUsersListRequest(_messages.Message):
+  r"""A RedisProjectsLocationsClustersTokenAuthUsersListRequest object.
+
+  Fields:
+    filter: Optional. Expression for filtering results.
+    orderBy: Optional. Sort results by a defined order.
+    pageSize: Optional. The maximum number of items to return. If not
+      specified, a default value of 1000 will be used by the service.
+      Regardless of the page_size value, the response may include a partial
+      list and a caller should only rely on response's The maximum value is
+      1000; values above 1000 will be coerced to 1000. `next_page_token` to
+      determine if there are more clusters left to be queried.
+    pageToken: Optional. The `next_page_token` value returned from a previous
+      [ListTokenAuthUsers] request, if any.
+    parent: Required. The parent resource that this token based auth user will
+      be listed for. Format:
+      projects/{project}/locations/{location}/clusters/{cluster}
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
 
 
 class RedisProjectsLocationsGetRequest(_messages.Message):
@@ -5413,6 +5652,39 @@ class TlsCertificate(_messages.Message):
   expireTime = _messages.StringField(3)
   serialNumber = _messages.StringField(4)
   sha1Fingerprint = _messages.StringField(5)
+
+
+class TokenAuthUser(_messages.Message):
+  r"""Represents a token based auth user for the cluster.
+
+  Enums:
+    StateValueValuesEnum: Output only. The state of the token based auth user.
+
+  Fields:
+    name: Identifier. The resource name of the token based auth user. Format:
+      projects/{project}/locations/{location}/clusters/{cluster}/tokenAuthUser
+      s/{token_auth_user}
+    state: Output only. The state of the token based auth user.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the token based auth user.
+
+    Values:
+      STATE_UNSPECIFIED: Not set.
+      ACTIVE: The auth user is active.
+      CREATING: The auth user is being created.
+      UPDATING: The auth user is being updated.
+      DELETING: The auth user is being deleted.
+    """
+    STATE_UNSPECIFIED = 0
+    ACTIVE = 1
+    CREATING = 2
+    UPDATING = 3
+    DELETING = 4
+
+  name = _messages.StringField(1)
+  state = _messages.EnumField('StateValueValuesEnum', 2)
 
 
 class TypedValue(_messages.Message):

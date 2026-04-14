@@ -1,0 +1,90 @@
+- release_tracks: [ALPHA, BETA]
+  help_text:
+    brief: Create Flag Release
+    description: Create a Flag Release.
+    examples: |-
+      To create a Flag Release, run:
+
+          $ {command}
+  arguments:
+    params:
+    - help_text: |-
+        ID of the Flag Release:
+
+          "projects/{project}/locations/{location}/flagReleases/{flag_release_id}"
+
+        This follows the standard Google Cloud naming scheme (URI).
+      is_positional: true
+      request_id_field: flagReleaseId
+      resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:flag_release
+      required: true
+      repeated: false
+
+    - group:
+        mutex: true
+        required: false
+        help_text: "Flags for specifying the content of the release. You can use only one of the following flags."
+        params:
+        - arg_name: revisions
+          help_text: |-
+            Flag Revisions (IDs) to be rolled out.
+          is_positional: false
+          resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:flag_revision
+          resource_method_params:
+            flagRelease.flagRevisionsRelease.revisions: '{__relative_name__}'
+          required: false
+          repeated: true
+        - arg_name: flag-sets
+          api_field: flagRelease.flagSetsRelease.sets
+          is_positional: false
+          required: false
+          repeated: true
+          help_text: |-
+            Flag sets to be rolled out. All flags in provided flag sets that are in
+            the flag release's unit kind will be included to be rolled out.
+        - arg_name: all-flags
+          api_field: flagRelease.allFlagsRelease
+          is_positional: false
+          required: false
+          type: bool
+          default: null
+          action: store_true
+          help_text: |-
+            All flags in the flag release's unit kind will be included to be rolled out.
+
+    - arg_name: unit-kind
+      help_text: |-
+        UnitKind (ID) this Flag Release applies to.
+      is_positional: false
+      resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:unit_kind
+      resource_method_params:
+        flagRelease.unitKind: '{__relative_name__}'
+      required: true
+      repeated: false
+
+    - arg_name: labels
+      api_field: flagRelease.labels
+      required: false
+      repeated: true
+      help_text: |-
+        Labels on the resource, which can be used for categorization.
+      spec:
+      - api_field: key
+      - api_field: value
+
+    - arg_name: annotations
+      api_field: flagRelease.annotations
+      required: false
+      repeated: true
+      help_text: |-
+        Unstructured key-value map stored with a resource that may be set by
+        external tools to store and retrieve arbitrary metadata. Annotations
+        are not queryable and should be preserved when modifying objects.
+      spec:
+      - api_field: key
+      - api_field: value
+
+  request:
+    api_version: v1beta1
+    collection:
+    - saasservicemgmt.projects.locations.flagReleases

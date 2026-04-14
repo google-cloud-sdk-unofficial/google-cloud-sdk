@@ -1697,6 +1697,24 @@ class ContainerArgsChange(ContainerConfigChanger):
     container.args = self.args
 
 
+@dataclasses.dataclass(init=False, frozen=True)
+class ContainerWorkdirChange(ContainerConfigChanger):
+  """Represents the user intent to change the 'workingDir' for the container.
+
+  Attributes:
+    workdir: The working directory to set in the adjusted container.
+  """
+
+  workdir: str
+
+  def __init__(self, workdir, **kwargs):
+    super().__init__(**kwargs)
+    object.__setattr__(self, 'workdir', workdir)
+
+  def AdjustContainer(self, container, messages_mod):
+    container.workingDir = self.workdir
+
+
 _HTTP2_NAME = 'h2c'
 _DEFAULT_PORT = 8080
 

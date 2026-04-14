@@ -164,14 +164,14 @@ def AddDiskArgToParser(parser):
       type=arg_parsers.ArgDict(
           spec={
               'type': _Choice(['local-ssd']),
-              'size': _BinarySize(
-                  'GB', lower_bound='375GB', upper_bound='375GB'),
+              'size': _BinarySize('GB'),
               'count': int,
           },
           required_keys=[
               'type',
               'count',
-          ]),
+          ],
+      ),
       help="""\
 Option to specify disk properties. It is mutually exclusive with
 '--node-requirements=[localSSD=LOCALSSD]' but
@@ -181,12 +181,12 @@ Option to specify disk properties. It is mutually exclusive with
 local storage type. This should be the name of the disk type. Currently
 only `local-ssd` is allowed.
 
-*size*::: The size of the disk in GiB. Currently you can specify only 375 GiB
-or no value at all.
+*size*::: The size of the disk in GiB.
 
 *count*::: Specifies the number of such disks. Set to `16` or `24`.
 
-""")
+""",
+  )
 
 
 def GetServerBindingMapperFlag(messages):

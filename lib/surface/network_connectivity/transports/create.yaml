@@ -6,13 +6,19 @@
       To create a transport that generates a key to ``aws-us-east-1''.
 
         $ gcloud beta network-connectivity transports create my-cci-aws \
-             --bandwidth 1G --profile aws-us-east-1 --network default \
-             --advertised-routes '10.128.0.0/9'
+             --bandwidth 1G --profile aws-us-east-1 --remote-account-id 12345 \
+             --network default --advertised-routes '10.128.0.0/9'
 
       To accept a key:
 
         $ gcloud beta network-connectivity transports create my-cci-aws \
-            --activation-key ABC1234
+            --activation-key ABC1234 --network default
+
+      To create a transport using NCC Hubs to ``aws-us-east-1''.
+
+        $ gcloud beta network-connectivity transports create my-cci-aws \
+            --bandwidth 1G --remote-profile aws-us-east-1 --remote-account-id 12345 \
+            --hub my-hub --auto-accept
 
   output:
     format: yaml
@@ -113,7 +119,6 @@
       type: bool
       api_field: googleCloudNetworkconnectivityV1betaTransport.autoAccept
       help_text: Whether to auto-accept NCC proposals.
-      default: true
     - arg_name: psc-routing-enabled
       type: bool
       api_field: googleCloudNetworkconnectivityV1betaTransport.pscRoutingEnabled

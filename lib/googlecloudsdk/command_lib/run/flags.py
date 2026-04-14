@@ -110,9 +110,7 @@ _TO_ANNOTATION_AMBIENT_NETWORKING_STR = {
 AMBIENT_NETWORKING_FLAG = base.ChoiceArgument(
     '--ambient-networking',
     choices=_AMBIENT_NETWORKING_CHOICES,
-    help_str=(
-        'Configures ambient networking mode used by the resource.'
-    ),
+    help_str='Configures ambient networking mode used by the resource.',
     hidden=True,
 )
 
@@ -1584,10 +1582,11 @@ class UtilizationValue:
     if not self.restore_default:
       try:
         self.utilization = float(value)
-      except (TypeError, ValueError):
+      except (TypeError, ValueError) as e:
         raise serverless_exceptions.ArgumentError(
-            "Utilization value %s is not an decimal or 'default'." % value
-        )
+            "Utilization value %s is not a decimal, 'default', or 'disabled'."
+            % value
+        ) from e
 
       if self.utilization != 0.0 and self.utilization < 0.1:
         raise serverless_exceptions.ArgumentError(
@@ -1803,6 +1802,23 @@ def CommandFlag():
 def AddCommandFlag(parser):
   """Add flags for specifying container's startup command."""
   CommandFlag().AddToParser(parser)
+
+
+def WorkdirFlag():
+  """Create a flag for specifying a container's working directory."""
+  return base.Argument(
+      '--workdir',
+      help=(
+          'Working directory of the container process. '
+          "If not specified, the container image's default working directory "
+          'is used. To reset this field to its default, pass an empty string.'
+      ),
+  )
+
+
+def AddWorkdirFlag(parser):
+  """Add a flag for specifying a container's working directory."""
+  WorkdirFlag().AddToParser(parser)
 
 
 def ArgsFlag(for_execution_overrides=False):
@@ -2336,10 +2352,12 @@ def AddCpuUtilizationFlag(parser):
       '--scaling-cpu-target',
       type=UtilizationValue,
       help=(
-          'A value between 0.1 and 0.95 that indicates the target CPU'
-          ' utilization where a new instance should be started.  Also accepts '
-          '"default" to restore the default value or "disabled" to disable '
-          'CPU utilization scaling. If not set, the default value is 0.6.'
+          'This represents the CPU utilization target threshold for scaling up'
+          ' new instances. Set any value between 0.1 and 0.95 inclusive. To'
+          ' unset this field, pass the special value "default". To disable this'
+          ' scaling factor, pass the value "disabled". Please note that values'
+          ' are rounded at the second decimal place, and that CPU and'
+          ' concurrency scaling cannot both be disabled.'
       ),
   )
 
@@ -2350,11 +2368,12 @@ def AddConcurrencyUtilizationFlag(parser):
       '--scaling-concurrency-target',
       type=UtilizationValue,
       help=(
-          'A value between 0.1 and 0.95 that indicates the target concurrency'
-          ' utilization where a new instance should be started. Also accepts '
-          '"default" to restore the default value or "disabled" to disable '
-          'concurrency utilization scaling. If not set, the default value is'
-          ' 0.6.'
+          'This represents the concurrency utilization target threshold for'
+          ' scaling up new instances. Set any value between 0.1 and 0.95'
+          ' inclusive. To unset this field, pass the special value "default".'
+          ' To disable this scaling factor, pass the value "disabled". Please'
+          ' note that values are rounded at the second decimal place, and that'
+          ' CPU and concurrency scaling cannot both be disabled.'
       ),
   )
 
@@ -3043,6 +3062,9 @@ def _GetConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
   if 'args' in args and args.args is not None:
     # Allow passing an empty string here to reset the field
     changes.append(config_changes.ContainerArgsChange(args.args))
+  if 'workdir' in args and args.workdir is not None:
+    # Allow passing an empty string here to reset the field
+    changes.append(config_changes.ContainerWorkdirChange(args.workdir))
   if FlagIsExplicitlySet(args, 'binary_authorization'):
     changes.append(
         config_changes.SetAnnotationChange(
@@ -4836,6 +4858,20 @@ def NoBuildArg():
   )
 
 
+def UploadFlag():
+  """Create the --upload flag."""
+  return base.Argument(
+      '--upload',
+      action='store_true',
+      hidden=True,
+      help=(
+          'Specifies that the source should be uploaded via Cloud Run'
+          ' UploadSource API. This flag can only be used when `--no-build` is'
+          ' also specified.'
+      ),
+  )
+
+
 def SourceAndImageFlags(
     image='us-docker.pkg.dev/cloudrun/container/hello:latest',
     mutex=True,
@@ -4846,9 +4882,16 @@ def SourceAndImageFlags(
   group = base.ArgumentGroup(mutex=mutex)
   group.AddArgument(ImageArg(required=False, image=image, mutex=mutex))
   group.AddArgument(SourceArg())
-  if no_build_enabled and release_track != base.ReleaseTrack.GA:
-    group.AddArgument(NoBuildArg())
+  if no_build_enabled:
+    if release_track != base.ReleaseTrack.GA:
+      group.AddArgument(NoBuildArg())
+    if IsUploadLaunchStage(release_track):
+      group.AddArgument(UploadFlag())
   return group
+
+
+def IsUploadLaunchStage(release_track):
+  return release_track == base.ReleaseTrack.ALPHA
 
 
 def ContainerFlag():

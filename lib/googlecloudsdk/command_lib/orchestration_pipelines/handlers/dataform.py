@@ -17,6 +17,7 @@
 from typing import Any, Dict
 
 from apitools.base.protorpclite import messages
+from apitools.base.py import encoding
 from googlecloudsdk.command_lib.orchestration_pipelines.handlers import base
 from googlecloudsdk.core import log
 
@@ -107,27 +108,103 @@ class DataformReleaseConfigHandler(base.GcpResourceHandler):
       )
     return definition
 
+  def compare(
+      self, existing_resource: Any, local_definition: dict[str, Any]
+  ) -> list[str]:
+    diffs = super().compare(existing_resource, local_definition)
+    if diffs:
+      return diffs
+
+    if getattr(self, "_release_compilation_result", None) == "auto":
+      existing_dict = existing_resource
+      if not isinstance(existing_resource, dict):
+        existing_dict = encoding.MessageToDict(existing_resource)
+
+      compilation_result_name = existing_dict.get("releaseCompilationResult")
+      if not compilation_result_name:
+        log.status.Print(
+            "     [+] Server has no compilation result. Forcing compilation..."
+        )
+        return ["releaseCompilationResult"]
+
+      # Fetch compilation result to verify commit
+      try:
+        get_request_type = (
+            self.messages.DataformProjectsLocationsRepositoriesCompilationResultsGetRequest
+        )
+        get_request = get_request_type(name=compilation_result_name)
+        compilation_result = (
+            self.client.projects_locations_repositories_compilationResults.Get(
+                get_request
+            )
+        )
+
+        if compilation_result.compilationErrors:
+          log.status.Print(
+              f"     [+] Found {len(compilation_result.compilationErrors)} "
+              "compilation errors in existing results. Forcing recompilation..."
+          )
+          return ["releaseCompilationResult"]
+
+        expected_commit = local_definition.get("gitCommitish")
+        server_commit = compilation_result.resolvedGitCommitSha
+
+        # Clever compare (match short vs full)
+        if server_commit and expected_commit:
+          if (not server_commit.startswith(expected_commit) and
+              not expected_commit.startswith(server_commit)):
+            log.status.Print(
+                f"     [+] Compilation commit {server_commit} != expected "
+                f"{expected_commit}. Forcing recompilation..."
+            )
+            return ["releaseCompilationResult"]
+      except Exception as e:  # pylint: disable=broad-except
+        log.status.Print(
+            f"     [!] Failed to verify compilation result: {e}. "
+            "Forcing recompilation..."
+        )
+        return ["releaseCompilationResult"]
+
+    return []
+
   def post_deploy(self, api_response: Any, created: bool) -> None:
     if getattr(self, "_release_compilation_result", None) == "auto":
       log.status.Print(
           f"     [+] Triggering compilation for release config "
           f"'{self.resource.name}'..."
       )
-      if self.dry_run:
-        log.status.Print(
-            f"     [DRY RUN] Would compile release config "
-            f"'{self.resource.name}'"
-        )
-        return
-
       request = self.messages.DataformProjectsLocationsRepositoriesCompilationResultsCreateRequest(
           parent=self._get_parent_path(),
           compilationResult=self.messages.CompilationResult(
               releaseConfig=self._get_resource_name()
           ),
       )
-      self.client.projects_locations_repositories_compilationResults.Create(
-          request=request
+      compilation_result = (
+          self.client.projects_locations_repositories_compilationResults.Create(
+              request=request
+          )
+      )
+      if compilation_result.compilationErrors:
+        error_details = "\n".join([
+            f"  - {err.path or 'Unknown file'}: {err.message}"
+            for err in compilation_result.compilationErrors
+        ])
+        raise ValueError(
+            "Dataform compilation failed with following errors:\n"
+            f"{error_details}\nStopping deployment."
+        )
+      local_def = self.get_local_definition()
+      git_commitish = local_def.get("gitCommitish")
+      patch_request = self.messages.DataformProjectsLocationsRepositoriesReleaseConfigsPatchRequest(
+          name=self._get_resource_name(),
+          releaseConfig=self.messages.ReleaseConfig(
+              releaseCompilationResult=compilation_result.name,
+              gitCommitish=git_commitish
+          ),
+          updateMask="releaseCompilationResult",
+      )
+      self.client.projects_locations_repositories_releaseConfigs.Patch(
+          request=patch_request
       )
 
 

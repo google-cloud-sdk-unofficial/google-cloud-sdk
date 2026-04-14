@@ -13,6 +13,8 @@
     ALPHA:
       api_version: v1beta
     method: patch
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.biglake.hooks:ValidateCatalogUpdateArgs
 
   arguments:
     params:

@@ -14,6 +14,7 @@
 # limitations under the License.
 """Deploy a container to Cloud Run."""
 
+import copy
 import enum
 import json
 import logging
@@ -32,6 +33,7 @@ from googlecloudsdk.command_lib.run import build_util
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import container_parser
+from googlecloudsdk.command_lib.run import domain_mapping_util
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import iap_util
@@ -48,6 +50,7 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
+from googlecloudsdk.core.resource import resource_printer
 
 
 _PROJECT_TOML_FILE_NAME = 'project.toml'
@@ -77,6 +80,8 @@ they will apply to the primary ingress container.
   group.AddArgument(flags.MemoryFlag())
   group.AddArgument(flags.CpuFlag())
   group.AddArgument(flags.ArgsFlag())
+  if release_track != base.ReleaseTrack.GA:
+    group.AddArgument(flags.WorkdirFlag())
   group.AddArgument(flags.SecretsFlags())
   group.AddArgument(flags.DependsOnFlag())
   group.AddArgument(flags.AddVolumeMountFlag())
@@ -106,10 +111,13 @@ class Deploy(base.Command):
   """Create or update a Cloud Run service."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION': (
+          """\
           Creates or updates a Cloud Run service.
-          """,
-      'EXAMPLES': """\
+          """
+      ),
+      'EXAMPLES': (
+          """\
           To deploy a container to the service `my-backend` on Cloud Run:
 
               $ {command} my-backend --image=us-docker.pkg.dev/project/image
@@ -122,7 +130,8 @@ class Deploy(base.Command):
           To deploy to Cloud Run on Kubernetes Engine, you need to specify a cluster:
 
               $ {command} --image=us-docker.pkg.dev/project/image --cluster=my-cluster
-          """,
+          """
+      ),
   }
 
   @classmethod
@@ -162,7 +171,10 @@ class Deploy(base.Command):
     # Flags not specific to any platform
     service_presentation = presentation_specs.ResourcePresentationSpec(
         'SERVICE',
-        resource_args.GetServiceResourceSpec(prompt=True),
+        resource_args.GetServiceResourceSpec(
+            prompt=True,
+            allow_project_prompt=cls.ReleaseTrack() == base.ReleaseTrack.ALPHA,
+        ),
         'Service to deploy to.',
         required=True,
         prefixes=False,
@@ -342,8 +354,23 @@ class Deploy(base.Command):
               '--image',
               message,
           )
+    self._ValidateUploadThroughRunApi(deploy_from_source)
     self._ValidateNoBuildFromSource(deploy_from_source)
     return deploy_from_source
+
+  def _ValidateUploadThroughRunApi(self, deploy_from_source):
+    if not deploy_from_source or len(deploy_from_source) != 1:
+      return False
+    container = next(iter(deploy_from_source.items()))[1]
+    if not flags.IsUploadLaunchStage(
+        self.ReleaseTrack()
+    ) or not container.IsSpecified('upload'):
+      return
+    if not _IsNoBuildFromSource(self.ReleaseTrack(), deploy_from_source):
+      raise c_exceptions.InvalidArgumentException(
+          '--upload',
+          'Upload through Run API is only supported when --no-build is set.',
+      )
 
   def _ValidateNoBuildFromSource(self, deploy_from_source):
     """Extra validation for Zip deployments.
@@ -775,6 +802,7 @@ class Deploy(base.Command):
         include_build=requires_build,
         include_create_repo=repo_to_create is not None,
         include_iap=iap is not None,
+        include_domain_mapping=getattr(args, 'domain', None) is not None,
         regions_list=self._GetRegionsForMultiRegion(),
     )
     if requires_build:
@@ -812,7 +840,7 @@ class Deploy(base.Command):
       apis.append('cloudbuild.googleapis.com')
     return apis
 
-  def _DisplaySuccessMessage(self, service, args):
+  def _DisplaySuccessMessage(self, service, args, records=None):
     if self._IsMultiRegion() and not args.async_:
       pretty_print.Success(
           messages_util.GetSuccessMessageForMultiRegionSynchronousDeploy(
@@ -829,6 +857,16 @@ class Deploy(base.Command):
           messages_util.GetSuccessMessageForSynchronousDeploy(
               service, args.no_traffic
           )
+      )
+    if records:
+      pretty_print.Info(
+          '\nConfigure your DNS record for the domain mapping to take effect '
+          'and certificate to start provisioning:\n'
+      )
+      resource_printer.Print(
+          records,
+          'table(name:label=NAME, type:label="RECORD TYPE", '
+          'rrdata:label=CONTENTS)',
       )
 
   def _GetIap(self, args):
@@ -852,6 +890,24 @@ class Deploy(base.Command):
 
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
+
+    domain_mapping_ref = None
+    if getattr(args, 'domain', None):
+      if not platforms.IsManaged():
+        raise exceptions.ArgumentError(
+            'The --domain flag is only supported for Cloud Run (fully managed).'
+        )
+      endpoint_mode = properties.VALUES.regional.endpoint_mode.Get()
+      if endpoint_mode in (
+          properties.VALUES.regional.REGIONAL,
+          properties.VALUES.regional.REGIONAL_PREFERRED,
+      ):
+        raise exceptions.ArgumentError(
+            'The `--domain` flag is not supported when regional endpoints are'
+            ' enabled.'
+        )
+      domain_mapping_ref = args.CONCEPTS.domain.Parse()
+      domain_mapping_util.VerifyDomain(domain_mapping_ref)
     project_id = properties.VALUES.core.project.Get(required=True)
 
     required_apis = self._GetRequiredApis(
@@ -885,6 +941,7 @@ class Deploy(base.Command):
     enable_automatic_updates = None
     source_bucket = None
     skip_build = False
+    upload_through_run_api = False
     with serverless_operations.Connect(
         conn_context, already_activated_services
     ) as operations:
@@ -904,6 +961,10 @@ class Deploy(base.Command):
         source = container_args.source
         source_bucket = self._GetSourceBucketFromZipDeploySourceLocation(
             service
+        )
+        upload_through_run_api = (
+            flags.IsUploadLaunchStage(self.ReleaseTrack())
+            and container_args.upload
         )
         container_args.image = 'scratch'
       elif deploy_from_source:
@@ -966,10 +1027,9 @@ class Deploy(base.Command):
       iap = self._GetIap(args)
 
       if iap:
-        if (
-            iap_util.IsOrglessProject(project_id)
-            and not iap_util.IsIapAlreadyEnabled(self)
-        ):
+        if iap_util.IsOrglessProject(
+            project_id
+        ) and not iap_util.IsIapAlreadyEnabled(self):
           pretty_print.Info(
               '\n {bold}**[Warning]**{reset} Deploying services with IAP'
               ' enabled in a project outside of an Organization and may require'
@@ -990,7 +1050,7 @@ class Deploy(base.Command):
             iap,
             skip_build,
         ) as tracker:
-          return operations.ReleaseService(
+          released_service = operations.ReleaseService(
               service_ref,
               changes_,
               self.ReleaseTrack(),
@@ -1024,10 +1084,30 @@ class Deploy(base.Command):
               kms_key=kms_key,
               iap_enabled=iap,
               skip_build=skip_build,
+              upload_through_run_api=upload_through_run_api,
           )
+          records = []
+          if domain_mapping_ref:
+            mapping = domain_mapping_util.GetDomainMapping(
+                operations, domain_mapping_ref
+            )
+            if not mapping:
+              mapping = operations.CreateDomainMapping(
+                  domain_mapping_ref,
+                  service_ref.servicesId,
+                  [],
+                  force_override=False,
+                  tracker=tracker,
+                  stage_key=stages.DOMAIN_MAPPING_READY,
+                  show_ready_message=False,
+              )
+            records = mapping.records
+            for record in records:
+              record.name = record.name or mapping.route_name
+          return released_service, records
 
       try:
-        service = _ReleaseService(changes)
+        service, records = _ReleaseService(changes)
       except exceptions.HttpError as e:
         if flags.ShouldRetryNoZonalRedundancy(args, str(e)):
           changes.append(
@@ -1035,11 +1115,11 @@ class Deploy(base.Command):
                   gpu_zonal_redundancy=False
               )
           )
-          service = _ReleaseService(changes)
+          service, records = _ReleaseService(changes)
         else:
           raise e
 
-      self._DisplaySuccessMessage(service, args)
+      self._DisplaySuccessMessage(service, args, records)
       return service
 
 
@@ -1211,8 +1291,11 @@ def _ShouldClearBuildServiceAccount(args, build_service_account):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.RegionalEndpointsSupported
 class BetaDeploy(Deploy):
   """Create or update a Cloud Run service."""
+
+  detailed_help = copy.deepcopy(Deploy.detailed_help)
 
   def _ValidateNoAutomaticUpdatesForContainers(
       self, deploy_from_source, containers
@@ -1267,6 +1350,16 @@ class AlphaDeploy(BetaDeploy):
     flags.AddCpuUtilizationFlag(parser)
     flags.AddConcurrencyUtilizationFlag(parser)
     flags.AddPresetFlags(parser)
+    concept_parsers.ConceptParser([
+        presentation_specs.ResourcePresentationSpec(
+            '--domain',
+            resource_args.GetDomainResourceSpec(),
+            'The domain name to map to this Cloud Run service. '
+            'For example, example.com or subdomain.example.com.',
+            prefixes=False,
+            flag_name_overrides={'project': ''},
+        )
+    ]).AddToParser(parser)
 
 
 AlphaDeploy.__doc__ = Deploy.__doc__

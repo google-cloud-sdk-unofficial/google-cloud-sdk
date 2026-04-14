@@ -1327,6 +1327,7 @@ class ClusterConfig(_messages.Message):
   Enums:
     ClusterTierValueValuesEnum: Optional. The cluster tier.
     ClusterTypeValueValuesEnum: Optional. The type of the cluster.
+    EngineValueValuesEnum: Optional. The cluster engine.
 
   Fields:
     autoscalingConfig: Optional. Autoscaling config for the policy associated
@@ -1354,6 +1355,7 @@ class ClusterConfig(_messages.Message):
       name, not a gs://... URI to a Cloud Storage bucket.
     encryptionConfig: Optional. Encryption settings for the cluster.
     endpointConfig: Optional. Port/endpoint configuration for this cluster
+    engine: Optional. The cluster engine.
     gceClusterConfig: Optional. The shared Compute Engine config settings for
       all instances in a cluster.
     gkeClusterConfig: Optional. BETA. The Kubernetes Engine config for
@@ -1426,6 +1428,20 @@ class ClusterConfig(_messages.Message):
     SINGLE_NODE = 2
     ZERO_SCALE = 3
 
+  class EngineValueValuesEnum(_messages.Enum):
+    r"""Optional. The cluster engine.
+
+    Values:
+      ENGINE_UNSPECIFIED: The engine is not specified. Works the same as
+        DEFAULT.
+      DEFAULT: The cluster is a default engine cluster.
+      LIGHTNING: The cluster is a lightning engine cluster.
+    """
+
+    ENGINE_UNSPECIFIED = 0
+    DEFAULT = 1
+    LIGHTNING = 2
+
   autoscalingConfig = _messages.MessageField('AutoscalingConfig', 1)
   auxiliaryNodeGroups = _messages.MessageField('AuxiliaryNodeGroup', 2, repeated=True)
   clusterTier = _messages.EnumField('ClusterTierValueValuesEnum', 3)
@@ -1435,18 +1451,21 @@ class ClusterConfig(_messages.Message):
   diagnosticBucket = _messages.StringField(7)
   encryptionConfig = _messages.MessageField('EncryptionConfig', 8)
   endpointConfig = _messages.MessageField('EndpointConfig', 9)
-  gceClusterConfig = _messages.MessageField('GceClusterConfig', 10)
-  gkeClusterConfig = _messages.MessageField('GkeClusterConfig', 11)
-  initializationActions = _messages.MessageField('NodeInitializationAction', 12, repeated=True)
-  lifecycleConfig = _messages.MessageField('LifecycleConfig', 13)
-  masterConfig = _messages.MessageField('InstanceGroupConfig', 14)
-  metastoreConfig = _messages.MessageField('MetastoreConfig', 15)
-  schedulingConfig = _messages.MessageField('SchedulingConfig', 16)
-  secondaryWorkerConfig = _messages.MessageField('InstanceGroupConfig', 17)
-  securityConfig = _messages.MessageField('SecurityConfig', 18)
-  softwareConfig = _messages.MessageField('SoftwareConfig', 19)
-  tempBucket = _messages.StringField(20)
-  workerConfig = _messages.MessageField('InstanceGroupConfig', 21)
+  engine = _messages.EnumField('EngineValueValuesEnum', 10)
+  gceClusterConfig = _messages.MessageField('GceClusterConfig', 11)
+  gkeClusterConfig = _messages.MessageField('GkeClusterConfig', 12)
+  initializationActions = _messages.MessageField(
+      'NodeInitializationAction', 13, repeated=True
+  )
+  lifecycleConfig = _messages.MessageField('LifecycleConfig', 14)
+  masterConfig = _messages.MessageField('InstanceGroupConfig', 15)
+  metastoreConfig = _messages.MessageField('MetastoreConfig', 16)
+  schedulingConfig = _messages.MessageField('SchedulingConfig', 17)
+  secondaryWorkerConfig = _messages.MessageField('InstanceGroupConfig', 18)
+  securityConfig = _messages.MessageField('SecurityConfig', 19)
+  softwareConfig = _messages.MessageField('SoftwareConfig', 20)
+  tempBucket = _messages.StringField(21)
+  workerConfig = _messages.MessageField('InstanceGroupConfig', 22)
 
 
 class ClusterMetrics(_messages.Message):
@@ -5117,7 +5136,6 @@ class Empty(_messages.Message):
   or the response type of an API method. For instance: service Foo { rpc
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
-
 
 
 class EncryptionConfig(_messages.Message):

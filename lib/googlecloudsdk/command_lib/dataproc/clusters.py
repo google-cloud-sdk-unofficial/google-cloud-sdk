@@ -299,6 +299,14 @@ def ArgsForClusterRef(
       help='Cluster tier',
   )
 
+  parser.add_argument(
+      '--engine',
+      hidden=True,
+      metavar='ENGINE',
+      choices=['default', 'lightning'],
+      help='Cluster engine',
+  )
+
   image_parser = parser.add_mutually_exclusive_group()
   # TODO(b/73291743): Add external doc link to --image
   image_parser.add_argument(
@@ -1488,6 +1496,7 @@ def GetClusterConfig(
       tempBucket=args.temp_bucket,
       clusterType=_GetCusterType(dataproc, args.cluster_type),
       clusterTier=_GetClusterTier(dataproc, args.tier),
+      engine=_GetEngine(dataproc, args.engine),
       gceClusterConfig=gce_cluster_config,
       masterConfig=dataproc.messages.InstanceGroupConfig(
           numInstances=args.num_masters,
@@ -2021,6 +2030,28 @@ def _GetClusterTier(dataproc, cluster_tier):
   raise exceptions.ArgumentError(
       'Unsupported --cluster-tier flag value: ' + cluster_tier
   )
+
+
+def _GetEngine(dataproc, engine):
+  """Get Engine enum value.
+
+  Converts engine argument value to
+  Engine API enum value.
+
+  Args:
+    dataproc: Dataproc API definition
+    engine: argument value
+
+  Returns:
+    Engine API enum value
+  """
+  if engine == 'default':
+    return dataproc.messages.ClusterConfig.EngineValueValuesEnum('DEFAULT')
+  if engine == 'lightning':
+    return dataproc.messages.ClusterConfig.EngineValueValuesEnum('LIGHTNING')
+  if engine is None:
+    return None
+  raise exceptions.ArgumentError('Unsupported --engine flag value: ' + engine)
 
 
 def _GetPrivateIpv6GoogleAccess(dataproc, private_ipv6_google_access_type):

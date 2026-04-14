@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Build utils."""
+
 import re
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
@@ -27,7 +28,7 @@ _LEGACY_BUILD_SA_FORMAT = r'^\d+@cloudbuild\.gserviceaccount\.com$'
 
 def _GetDefaultBuildServiceAccount(project_id, region='global'):
   """Gets the default build service account for a project."""
-  client = cloudbuild_util.GetClientInstance()
+  client = cloudbuild_util.GetClientInstance(location=region)
   name = f'projects/{project_id}/locations/{region}/defaultServiceAccount'
   return client.projects_locations.GetDefaultServiceAccount(
       client.MESSAGES_MODULE.CloudbuildProjectsLocationsGetDefaultServiceAccountRequest(

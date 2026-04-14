@@ -16,7 +16,6 @@
 """A command that prints out information about your gcloud environment."""
 
 
-
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib import info_holder
 from googlecloudsdk.core import exceptions
@@ -25,14 +24,17 @@ from googlecloudsdk.core.diagnostics import network_diagnostics
 from googlecloudsdk.core.diagnostics import property_diagnostics
 
 
-def _RunDiagnostics(ignore_hidden_property_allowlist):
-  passed_network = network_diagnostics.NetworkDiagnostic().RunChecks()
+def _RunDiagnostics(ignore_hidden_property_allowlist, check_certs_host=None):
+  passed_network = network_diagnostics.NetworkDiagnostic(
+      check_certs_host=check_certs_host
+  ).RunChecks()
   passed_props = property_diagnostics.PropertyDiagnostic(
       ignore_hidden_property_allowlist).RunChecks()
   return passed_network and passed_props
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Info(base.Command):
   """Display information about the current gcloud environment."""
 
@@ -47,6 +49,12 @@ class Info(base.Command):
           To check network connectivity and hidden properties, run:
 
             $ {command} --run-diagnostics
+
+          To troubleshoot certificate verification failures for a given host
+          e.g. `compute.googleapis.com` when using a proxy and custom CA
+          certs, run:
+
+            $ {command} --run-diagnostics --check-certs=compute.googleapis.com
 
           To print the contents of the most recent log file, run:
 
@@ -67,12 +75,19 @@ class Info(base.Command):
     diagnostics.add_argument(
         '--run-diagnostics',
         action='store_true',
+        required=True,
         help='Run diagnostics on your installation of the Google Cloud CLI.')
+    diagnostics.add_argument(
+        '--check-certs',
+        metavar='HOSTNAME',
+        help='Run diagnostics on the certificate chain for a given host.',
+    )
     diagnostics.add_argument(
         '--ignore-hidden-property-allowlist',
         action='store_true',
         hidden=True,
-        help='Ignore the hidden property allowlist.')
+        help='Ignore the hidden property allowlist.',
+    )
     parser.add_argument(
         '--anonymize',
         action='store_true',
@@ -81,7 +96,9 @@ class Info(base.Command):
 
   def Run(self, args):
     if args.run_diagnostics:
-      passed = _RunDiagnostics(args.ignore_hidden_property_allowlist)
+      passed = _RunDiagnostics(
+          args.ignore_hidden_property_allowlist, args.check_certs
+      )
       if passed:
         return None
       else:

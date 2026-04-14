@@ -31,6 +31,29 @@ class Collections(enum.Enum):
       ['projectsId'],
       True
   )
+  DELTASHARING_V1_PROJECTS_CATALOGS_SHARES = (
+      'deltasharing.v1.projects.catalogs.shares',
+      'projects/{projectsId}/catalogs/{catalogsId}/shares/{sharesId}',
+      {},
+      ['projectsId', 'catalogsId', 'sharesId'],
+      True
+  )
+  DELTASHARING_V1_PROJECTS_CATALOGS_SHARES_SCHEMAS = (
+      'deltasharing.v1.projects.catalogs.shares.schemas',
+      'projects/{projectsId}/catalogs/{catalogsId}/shares/{sharesId}/schemas/'
+      '{schemasId}',
+      {},
+      ['projectsId', 'catalogsId', 'sharesId', 'schemasId'],
+      True
+  )
+  DELTASHARING_V1_PROJECTS_CATALOGS_SHARES_SCHEMAS_TABLES = (
+      'deltasharing.v1.projects.catalogs.shares.schemas.tables',
+      'projects/{projectsId}/catalogs/{catalogsId}/shares/{sharesId}/schemas/'
+      '{schemasId}/tables/{tablesId}',
+      {},
+      ['projectsId', 'catalogsId', 'sharesId', 'schemasId', 'tablesId'],
+      True
+  )
   DELTASHARING_V1_PROJECTS_CATALOGS = (
       'deltasharing.v1.projects.catalogs',
       '{+name}',

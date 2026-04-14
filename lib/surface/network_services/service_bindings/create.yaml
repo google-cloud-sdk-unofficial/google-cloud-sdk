@@ -32,17 +32,14 @@ arguments:
     help_text: |
       List of service URIs to which the ServiceBinding resource is bound.
     type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
-  - arg_name: matches
+  - arg_name: matches-hostname
     api_field: serviceBinding.matches
     release_tracks: [ALPHA]
     repeated: true
+    type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
     help_text: |
-      List of matches define conditions used to match requests to destination
-      services.
-    spec:
-    - api_field: hostname
-      help_text: |
-        Specifies the hostname to match against the HTTP request host header.
+      List of hostnames to match against the HTTP request host header.
+    processor: googlecloudsdk.command_lib.network_services.util:ServiceBindingMatchesHook:api_version=v1alpha1
 
 async:
   collection: networkservices.projects.locations.operations

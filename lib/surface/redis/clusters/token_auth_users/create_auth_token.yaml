@@ -1,0 +1,31 @@
+- release_tracks: [ALPHA, BETA]
+  hidden: true
+
+  help_text:
+    brief: |
+      Create an auth token for a token auth user of a Redis cluster.
+    description: |
+      Create an auth token for a token auth user of a token auth enabled Redis cluster.
+
+    example: |
+      To create a new auth token, run:
+
+      $ {command} my-user --cluster=my-cluster --region=us-central1
+
+  arguments:
+    resource:
+      arg_name: user
+      spec: !REF googlecloudsdk.command_lib.redis.resources:token_auth_user
+      help_text: |
+        Arguments and flags that specify the Memorystore Redis token auth user to create an auth token for.
+
+  async:
+    collection: redis.projects.locations.operations
+
+  request:
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
+    collection: redis.projects.locations.clusters.tokenAuthUsers
+    method: addAuthToken

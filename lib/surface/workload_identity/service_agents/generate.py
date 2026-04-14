@@ -14,7 +14,10 @@
 # limitations under the License.
 """Command to generate service agents for Workload Identity."""
 
+from apitools.base.py import encoding
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.api_lib.workloadidentity import service_agents
+from googlecloudsdk.api_lib.workloadidentity import util as api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
@@ -29,10 +32,8 @@ class Generate(base.CreateCommand):
 
   It can be generated in a project, folder, or organization and location.
 
-  `{command} ` generates
-  service agents for a given service producer in a specific project, folder, or
-  organization and
-  location.
+  `{command}` generates service agents for a given service producer in a
+  specific project, folder, or organization and location.
 
   ## EXAMPLES
 
@@ -95,19 +96,26 @@ class Generate(base.CreateCommand):
     """Run the generating command."""
     location = args.location
     service = args.service
+    scope_type = None
+    scope_id = None
 
     if args.project:
-      parent = f'projects/{args.project}/locations/{location}/serviceProducers/{service}'
+      scope_type = 'projects'
+      scope_id = args.project
     elif args.folder:
-      parent = f'folders/{args.folder}/locations/{location}/serviceProducers/{service}'
+      scope_type = 'folders'
+      scope_id = args.folder
     elif args.organization:
-      parent = f'organizations/{args.organization}/locations/{location}/serviceProducers/{service}'
-    else:
-      # This should not be reachable due to the required
-      # mutually exclusive group.
-      raise exceptions.Error(
-          'Must specify one of --project, --folder, or --organization.'
-      )
+      scope_type = 'organizations'
+      scope_id = args.organization
+    # No else is needed here because the argument group is required.
+
+    container = f'{scope_type}/{scope_id}'
+    parent = f'{container}/locations/{location}/serviceProducers/{service}'
+    msg = (
+        f'Generating service agents for {service} in {location} '
+        f'under {container}'
+    )
 
     op = service_agents.GenerateServiceAgents(parent, self.ReleaseTrack())
 
@@ -115,20 +123,21 @@ class Generate(base.CreateCommand):
       raise exceptions.Error(
           'Service agents generation did not complete successfully.'
       )
-    else:
-      if args.project:
-        log.status.Print(
-            f'Service agents generating for {service} in {location} '
-            f'under project {args.project}.'
-        )
-      elif args.folder:
-        log.status.Print(
-            f'Service agents generating for {service} in {location} '
-            f'under folder {args.folder}.'
-        )
-      elif args.organization:
-        log.status.Print(
-            f'Service agents generating for {service} in {location} '
-            f'under organization {args.organization}.'
-        )
-      return op
+
+    client = api_util.GetClientInstance(self.ReleaseTrack())
+    poller = waiter.CloudOperationPollerNoResources(
+        client.projects_locations_operations, get_name_func=lambda x: x
+    )
+    result = waiter.WaitFor(poller, op.name, msg)
+    response_dict = encoding.MessageToPyValue(result) if result else {}
+    service_agents_list = response_dict.get('serviceAgents', [])
+
+    log.status.Print(
+        f'\nProvisioned service agents for {service} under {container}:\n'
+    )
+    for sa_dict in service_agents_list:
+      for key, value in sa_dict.items():
+        log.status.Print(f'{key}: {value}')
+      log.status.Print('----')
+
+    return result

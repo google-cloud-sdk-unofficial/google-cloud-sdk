@@ -23,6 +23,9 @@ _BQ_API_VERSION = 'v2'
 _BQ_MIGRATION_API = 'bigquerymigration'
 _BQ_MIGRATION_API_VERSION = 'v2'
 
+TOOL_TAG_HEADER = 'tool-tag'
+GCLOUD_TOOL_TAG = 'gcloud_cli'
+
 
 def GetApiMessage(message_name, api=_BQ_API, api_version=_BQ_API_VERSION):
   """Return apitools message object for give message name."""

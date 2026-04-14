@@ -40,6 +40,7 @@ def CreateNetworkInterfaceMessage(
     subnet,
     address,
     alias_ip_ranges_string=None,
+    alias_ipv6_ranges_string=None,
     network_tier=None,
     stack_type=None,
     ipv6_network_tier=None,
@@ -57,6 +58,7 @@ def CreateNetworkInterfaceMessage(
     igmp_query=None,
     enable_vpc_scoped_dns=None,
     service_class_id=None,
+    support_alias_ipv6_ranges=False,
 ):
   """Creates and returns a new NetworkInterface message.
 
@@ -73,6 +75,8 @@ def CreateNetworkInterfaceMessage(
       fetched from GCE API.
     alias_ip_ranges_string: command line string specifying a list of alias IP
       ranges.
+    alias_ipv6_ranges_string: command line string specifying a list of alias IP
+      v6 ranges.
     network_tier: specify network tier for instance template * None - no network
       tier * PREMIUM - network tier being PREMIUM * SELECT - network tier being
       SELECT * STANDARD - network tier being STANDARD
@@ -105,6 +109,8 @@ def CreateNetworkInterfaceMessage(
       used to send DNS queries to the VPC network's scope.
     service_class_id: Producer Service's Service class Id for the region of this
       network interface. Can only be used with network_attachment.
+    support_alias_ipv6_ranges: Indicates whether setting alias IPv6 ranges on
+      network interfaces is supported.
 
   Returns:
     network_interface: a NetworkInterface message object
@@ -204,10 +210,26 @@ def CreateNetworkInterfaceMessage(
   if internal_ipv6_prefix_length is not None:
     network_interface.internalIpv6PrefixLength = internal_ipv6_prefix_length
 
-  if alias_ip_ranges_string:
-    network_interface.aliasIpRanges = (
-        alias_ip_range_utils.CreateAliasIpRangeMessagesFromString(
-            messages, False, alias_ip_ranges_string))
+  if support_alias_ipv6_ranges:
+    if alias_ip_ranges_string:
+      network_interface.aliasIpRanges = (
+          alias_ip_range_utils.CreateAliasIpRangeMessagesFromString(
+              messages, False, alias_ip_ranges_string
+          )
+      )
+    if alias_ipv6_ranges_string:
+      network_interface.aliasIpv6Ranges = (
+          alias_ip_range_utils.CreateAliasIpv6RangeMessagesFromString(
+              messages, False, alias_ipv6_ranges_string
+          )
+      )
+  else:
+    if alias_ip_ranges_string:
+      network_interface.aliasIpRanges = (
+          alias_ip_range_utils.CreateAliasIpRangeMessagesFromStringOld(
+              messages, False, alias_ip_ranges_string
+          )
+      )
 
   if nic_type is not None:
     network_interface.nicType = (
@@ -243,7 +265,7 @@ def CreateNetworkInterfaceMessages(
     network_interface_arg,
     subnet_region,
     support_enable_vpc_scoped_dns=False,
-    support_service_class_id=False,
+    support_alias_ipv6_ranges=False,
 ):
   """Create network interface messages.
 
@@ -255,7 +277,7 @@ def CreateNetworkInterfaceMessages(
     subnet_region: region of the subnetwork.
     support_enable_vpc_scoped_dns: Indicates whether setting enable vpc scoped
       dns on network interfaces is supported.
-    support_service_class_id: Indicates whether setting service class id on
+    support_alias_ipv6_ranges: Indicates whether setting alias IPv6 ranges on
       network interfaces is supported.
 
   Returns:
@@ -278,9 +300,7 @@ def CreateNetworkInterfaceMessages(
       enable_vpc_scoped_dns = None
       if support_enable_vpc_scoped_dns:
         enable_vpc_scoped_dns = 'enable-vpc-scoped-dns' in interface
-      service_class_id = None
-      if support_service_class_id:
-        service_class_id = interface.get('service-class-id', None)
+      service_class_id = interface.get('service-class-id', None)
 
       result.append(
           CreateNetworkInterfaceMessage(
@@ -293,6 +313,7 @@ def CreateNetworkInterfaceMessages(
               interface.get('subnet', None),
               address,
               interface.get('aliases', None),
+              interface.get('ipv6-aliases', None),
               network_tier,
               nic_type=nic_type,
               stack_type=interface.get('stack-type', None),
@@ -320,6 +341,7 @@ def CreateNetworkInterfaceMessages(
               igmp_query=interface.get('igmp-query', None),
               enable_vpc_scoped_dns=enable_vpc_scoped_dns,
               service_class_id=service_class_id,
+              support_alias_ipv6_ranges=support_alias_ipv6_ranges,
           )
       )
   return result

@@ -16,6 +16,7 @@
 
 
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import resource_manager_tags_utils
 from googlecloudsdk.command_lib.compute.reservations import util as reservation_util
 from googlecloudsdk.core.util import times
 
@@ -114,6 +115,12 @@ def MakeFutureReservationMessageFromArgs(messages, resources, args,
         args, 'enable_emergent_maintenance', None
     )
 
+  resource_manager_tags = None
+  if args.IsKnownAndSpecified('resource_manager_tags'):
+    resource_manager_tags = MakeResourceManagerTags(
+        messages, getattr(args, 'resource_manager_tags', None)
+    )
+
   return MakeFutureReservationMessage(
       messages,
       future_reservation_ref.Name(),
@@ -132,6 +139,7 @@ def MakeFutureReservationMessageFromArgs(messages, resources, args,
       scheduling_type,
       reservation_mode,
       enable_emergent_maintenance,
+      resource_manager_tags,
   )
 
 
@@ -368,6 +376,25 @@ def MakeReservationMode(messages, reservation_mode):
   return None
 
 
+def MakeResourceManagerTags(messages, resource_manager_tags):
+  """Creates a future reservation params object for resource manager tags."""
+  if resource_manager_tags is None:
+    return None
+  resource_manager_tags_map = (
+      resource_manager_tags_utils.GetResourceManagerTags(resource_manager_tags)
+  )
+  params = messages.FutureReservationParams
+  additional_properties = [
+      params.ResourceManagerTagsValue.AdditionalProperty(key=key, value=value)
+      for key, value in sorted(resource_manager_tags_map.items())
+  ]
+  return params(
+      resourceManagerTags=params.ResourceManagerTagsValue(
+          additionalProperties=additional_properties
+      )
+  )
+
+
 def MakeFutureReservationMessage(
     messages,
     future_reservation_name,
@@ -386,6 +413,7 @@ def MakeFutureReservationMessage(
     scheduling_type=None,
     reservation_mode=None,
     enable_emergent_maintenance=None,
+    resource_manager_tags=None,
 ):
   """Constructs a future reservation message object."""
   future_reservation_message = messages.FutureReservation(
@@ -436,5 +464,7 @@ def MakeFutureReservationMessage(
     future_reservation_message.enableEmergentMaintenance = (
         enable_emergent_maintenance
     )
+  if resource_manager_tags is not None:
+    future_reservation_message.params = resource_manager_tags
 
   return future_reservation_message

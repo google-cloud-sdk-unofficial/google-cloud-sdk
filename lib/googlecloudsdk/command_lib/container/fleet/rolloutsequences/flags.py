@@ -58,7 +58,7 @@ class RolloutSequenceFlags:
         '--display-name',
         type=str,
         help=textwrap.dedent("""\
-            Display name of the rollout sequence to be created (optional).
+            Display name of the rollout sequence.
         """),
     )
 
@@ -70,11 +70,11 @@ class RolloutSequenceFlags:
         type=arg_parsers.ArgDict(),
     )
 
-  def AddStageConfig(self) -> None:
+  def AddStageConfig(self, required: bool = False) -> None:
     self.parser.add_argument(
         '--stage-config',
         type=arg_parsers.FileContents(),
-        required=True,
+        required=required,
         help="""\
             Path to the YAML file containing the stage configurations. The YAML
             file should contain a list of stages. Fleet projects and soak_duration are required.
@@ -100,6 +100,35 @@ class RolloutSequenceFlags:
               soak-duration: 30m
               ```
         """,
+    )
+
+  def AddIgnoredClustersSelectorFlags(self, is_update: bool = False):
+    """Add flags for ignored clusters selector."""
+    if is_update:
+      group = self.parser.add_mutually_exclusive_group(hidden=True)
+      self._AddIgnoredClustersSelectorFlag(group)
+      self._AddClearIgnoredClustersSelectorFlag(group)
+    else:
+      self._AddIgnoredClustersSelectorFlag(self.parser)
+
+  def _AddIgnoredClustersSelectorFlag(self, group):
+    group.add_argument(
+        '--ignored-clusters-selector',
+        type=str,
+        help="""\
+            Selector for clusters to exclude from the Rollout Sequence.
+            Must be a valid Common Expression Language (CEL) expression.
+            Example: "resource.labels.ignored=='true'"
+            """,
+        hidden=True,
+    )
+
+  def _AddClearIgnoredClustersSelectorFlag(self, group):
+    group.add_argument(
+        '--clear-ignored-clusters-selector',
+        action='store_true',
+        help='Clear the ignored clusters selector.',
+        hidden=True,
     )
 
   def AddRolloutSequenceResourceArg(self):
@@ -143,11 +172,17 @@ class RolloutSequenceFlagParser:
       fleet_messages_alpha.RolloutSequence
       | fleet_messages_beta.RolloutSequence
   ):
+    """Parse the arguments into a RolloutSequence message.
+
+    Returns:
+      A RolloutSequence message.
+    """
     rollout_sequence = self.messages.RolloutSequence()
     rollout_sequence.name = util.RolloutSequenceName(self.args)
     rollout_sequence.displayName = self._DisplayName()
     rollout_sequence.labels = self._Labels()
     rollout_sequence.stages = self._Stages()
+    rollout_sequence.ignoredClustersSelector = self._IgnoredClustersSelector()
     return rollout_sequence
 
   def _DisplayName(self) -> str:
@@ -228,6 +263,22 @@ class RolloutSequenceFlagParser:
 
   def Location(self) -> str:
     return self.args.location
+
+  def _IgnoredClustersSelector(
+      self,
+  ) -> (
+      fleet_messages_alpha.ClusterSelector
+      | fleet_messages_beta.ClusterSelector
+      | None
+  ):
+    """Parses --ignored-clusters-selector flag."""
+    if getattr(self.args, 'clear_ignored_clusters_selector', False):
+      return None
+
+    ignored_clusters_selector = self.messages.ClusterSelector(
+        labelSelector=self.args.ignored_clusters_selector
+    )
+    return self.TrimEmpty(ignored_clusters_selector)
 
   def Async(self) -> bool:
     """Parses --async flag.

@@ -20,7 +20,9 @@ from googlecloudsdk.command_lib.compute.composite_health_checks import flags
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class GetHealth(base.DescribeCommand):
   """Get health status of a composite health check."""
 
@@ -29,7 +31,7 @@ class GetHealth(base.DescribeCommand):
           """
       To get health of a composite health check, run:
 
-        $ {command} <COMPOSITE_HEALTH> --region=<REGION>
+        $ {command} COMPOSITE_HEALTH_CHECK --region=REGION
       """
       ),
   }

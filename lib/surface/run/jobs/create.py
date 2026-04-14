@@ -14,6 +14,7 @@
 # limitations under the License.
 """Deploy a container to Cloud Run that will run to completion."""
 
+import copy
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
@@ -53,6 +54,8 @@ Container Flags
   group.AddArgument(flags.CpuFlag())
   group.AddArgument(flags.GpuFlag())
   group.AddArgument(flags.ArgsFlag())
+  if release_track != base.ReleaseTrack.GA:
+    group.AddArgument(flags.WorkdirFlag())
   group.AddArgument(flags.SecretsFlags())
   group.AddArgument(flags.CommandFlag())
   group.AddArgument(flags.DependsOnFlag())
@@ -70,10 +73,13 @@ class Create(base.Command):
   """Create a Cloud Run job."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION': (
+          """\
           Creates a new Cloud Run job.
-          """,
-      'EXAMPLES': """\
+          """
+      ),
+      'EXAMPLES': (
+          """\
           To deploy a new job `my-data-transformation` on Cloud Run:
 
               $ {command} my-data-transformation --image=us-docker.pkg.dev/project/image
@@ -82,7 +88,8 @@ class Create(base.Command):
           with a suggested default value:
 
               $ {command} --image=us-docker.pkg.dev/project/image
-          """,
+          """
+      ),
   }
 
   @classmethod
@@ -132,7 +139,7 @@ class Create(base.Command):
   @staticmethod
   def Args(parser):
     Create.CommonArgs(parser)
-    container_args = ContainerArgGroup()
+    container_args = ContainerArgGroup(base.ReleaseTrack.GA)
     container_parser.AddContainerFlags(parser, container_args)
 
   def Run(self, args):
@@ -160,8 +167,8 @@ class Create(base.Command):
         args, flags.Product.RUN, self.ReleaseTrack()
     )
     changes = flags.GetJobConfigurationChanges(
-        args,
-        release_track=self.ReleaseTrack())
+        args, release_track=self.ReleaseTrack()
+    )
     changes.append(
         config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack())
     )
@@ -246,8 +253,11 @@ class Create(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.RegionalEndpointsSupported
 class BetaCreate(Create):
   """Create a Cloud Run job."""
+
+  detailed_help = copy.deepcopy(Create.detailed_help)
 
   @classmethod
   def Args(cls, parser):

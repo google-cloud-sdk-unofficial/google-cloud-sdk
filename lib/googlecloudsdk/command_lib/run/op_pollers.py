@@ -16,10 +16,17 @@
 # pylint: disable=raise-missing-from
 """Pollers for Serverless operations."""
 
+from typing import TYPE_CHECKING
 
+from googlecloudsdk.api_lib.run import instance
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.command_lib.run import exceptions as serverless_exceptions
 from googlecloudsdk.core import exceptions
+from googlecloudsdk.core import resources
+
+# pylint: disable=g-bad-import-order
+if TYPE_CHECKING:
+  from googlecloudsdk.command_lib.run import serverless_operations  # pylint: disable=g-import-not-at-top
 
 
 class DomainMappingResourceRecordPoller(waiter.OperationPoller):
@@ -319,6 +326,32 @@ class InstanceConditionPoller(ConditionPoller):
   def __init__(self, getter, tracker, dependencies=None, instance_obj=None):
     super().__init__(getter, tracker, dependencies)
     self._resource_fail_type = serverless_exceptions.DeploymentFailedError
+
+
+class InstanceStartPoller(waiter.OperationPoller):
+  """A Poller for starting instances."""
+
+  def __init__(self, operations: 'serverless_operations.ServerlessOperations'):
+    """Supply getter as the resource getter."""
+    self._operations = operations
+    self._ret = None
+
+  def IsDone(self, obj: instance.Instance) -> bool:
+    return obj is None or obj.conditions.IsTerminal()
+
+  def Poll(self, ref: resources.Resource) -> instance.Instance | None:
+    self._ret = self._operations.GetInstance(ref)
+    return self._ret
+
+  def GetMessage(self) -> str:
+    if self._ret and self._ret.conditions:
+      return self._ret.conditions.DescriptiveMessage() or ''
+    return ''
+
+  def GetResult(
+      self, obj: instance.Instance | None
+  ) -> instance.Instance | None:
+    return obj
 
 
 class RevisionNameBasedPoller(waiter.OperationPoller):

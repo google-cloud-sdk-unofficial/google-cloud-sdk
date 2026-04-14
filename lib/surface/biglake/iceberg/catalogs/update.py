@@ -37,6 +37,7 @@ class UpdateCatalog(base.UpdateCommand):
   @classmethod
   def Args(cls, parser):
     flags.AddCatalogResourceArg(parser, 'to update')
+    arguments.AddDescriptionArg(parser)
     util.GetCredentialModeEnumMapper(
         cls.ReleaseTrack()
     ).choice_arg.AddToParser(parser)
@@ -103,6 +104,10 @@ class UpdateCatalog(base.UpdateCommand):
       credential_mode = util.GetCredentialModeEnumMapper(
           self.ReleaseTrack()
       ).GetEnumForChoice(args.credential_mode)
+    description = None
+    if args.IsSpecified('description'):
+      update_mask.append('description')
+      description = args.description
 
     get_request = messages.BiglakeIcebergV1RestcatalogExtensionsProjectsCatalogsGetRequest(
         name=catalog_name
@@ -134,6 +139,7 @@ class UpdateCatalog(base.UpdateCommand):
         name=catalog_name,
         catalog_type=catalog_type,
         credential_mode=credential_mode,
+        description=description,
     )
 
     if self._support_federated_catalog:

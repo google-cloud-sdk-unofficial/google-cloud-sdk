@@ -22,6 +22,7 @@ from googlecloudsdk.command_lib.data_fusion import resource_args
 from googlecloudsdk.command_lib.iam import iam_util
 
 
+@base.RegionalEndpointsSupported
 class RemoveIamPolicyBinding(base.Command):
   r"""Removes an IAM policy binding to a Cloud Data Fusion instance.
 
@@ -54,8 +55,8 @@ class RemoveIamPolicyBinding(base.Command):
         'For example: `--namespace=my-namespace`.')
 
   def Run(self, args):
-    datafusion = df.Datafusion()
     instance_ref = args.CONCEPTS.instance.Parse()
+    datafusion = df.Datafusion(location=instance_ref.locationsId)
 
     if not args.namespace:
       get_request = datafusion.messages.DatafusionProjectsLocationsInstancesGetIamPolicyRequest(

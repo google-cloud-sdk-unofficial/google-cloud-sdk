@@ -254,11 +254,13 @@ class FilePartUploadTask(file_part_task.FilePartTask):
         def _handle_resumable_upload_error(exc_type, exc_value, exc_traceback,
                                            state):
           """Returns true if resumable upload should retry on error argument."""
-          del exc_traceback  # Unused.
-          if not (exc_type is api_errors.NotFoundError or
-                  getattr(exc_value, 'status_code', None) == 410):
+          del exc_traceback, exc_type  # Unused.
+          if not (
+              isinstance(exc_value, api_errors.NotFoundError)
+              or getattr(exc_value, 'status_code', None) == 410
+          ):
 
-            if exc_type is api_errors.ResumableUploadAbortError:
+            if isinstance(exc_value, api_errors.ResumableUploadAbortError):
               tracker_file_util.delete_tracker_file(tracker_file_path)
 
             # Otherwise the error is probably a persistent network issue

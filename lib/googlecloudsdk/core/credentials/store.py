@@ -993,7 +993,11 @@ def _Load(
         return cred
 
   if not prevent_refresh:
-    RefreshIfAlmostExpire(cred)
+    # When loading ADC credentials, set for_adc=True to ensure that error
+    # messages on refresh failure suggest ADC login commands.
+    cred_file_override = properties.VALUES.auth.credential_file_override.Get()
+    for_adc = cred_file_override == config.ADCFilePath()
+    RefreshIfAlmostExpire(cred, for_adc=for_adc)
 
   return cred
 
@@ -1002,7 +1006,8 @@ def Refresh(credentials,
             is_impersonated_credential=False,
             include_email=False,
             gce_token_format='standard',
-            gce_include_license=False):
+            gce_include_license=False,
+            for_adc=False):
   """Refreshes google-auth credentials.
 
   Args:
@@ -1020,6 +1025,7 @@ def Refresh(credentials,
       "full".
     gce_include_license: bool, Specifies whether or not license codes for images
       associated with GCE instance are included in their identity tokens.
+    for_adc: bool, Whether or not the credentials are for ADC.
 
   Raises:
     AccountImpersonationError: if impersonation support is not available for
@@ -1037,7 +1043,7 @@ def Refresh(credentials,
   # pylint: enable=g-import-not-at-top
   request_client = requests.GoogleAuthRequest()
   with HandleGoogleAuthCredentialsRefreshError(
-      account=account, is_service_account=is_service_account
+      for_adc=for_adc, account=account, is_service_account=is_service_account
   ):
     # If this cred is a service account cred, we may need to enable self signed
     # jwt if applicable. Depending on how this cred is created:
@@ -1237,7 +1243,7 @@ def _RefreshGoogleAuthIdToken(
       credentials.id_tokenb64 = id_token
 
 
-def RefreshIfExpireWithinWindow(credentials, window):
+def RefreshIfExpireWithinWindow(credentials, window, for_adc=False):
   """Refreshes credentials if they will expire within a time window.
 
   Args:
@@ -1245,15 +1251,18 @@ def RefreshIfExpireWithinWindow(credentials, window):
       refresh.
     window: string, The threshold of the remaining lifetime of the token which
       can trigger the refresh.
+    for_adc: bool, Whether or not the credentials are for ADC.
   """
   expiry = credentials.expiry
   almost_expire = (not expiry) or _TokenExpiresWithinWindow(window, expiry)
   if almost_expire:
-    Refresh(credentials)
+    Refresh(credentials, for_adc=for_adc)
 
 
-def RefreshIfAlmostExpire(credentials):
-  RefreshIfExpireWithinWindow(credentials, window=_CREDENTIALS_EXPIRY_WINDOW)
+def RefreshIfAlmostExpire(credentials, for_adc=False):
+  RefreshIfExpireWithinWindow(
+      credentials, window=_CREDENTIALS_EXPIRY_WINDOW, for_adc=for_adc
+  )
 
 
 def _RefreshImpersonatedAccountIdToken(cred, include_email):

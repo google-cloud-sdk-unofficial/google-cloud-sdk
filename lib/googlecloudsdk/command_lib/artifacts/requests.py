@@ -14,7 +14,6 @@
 # limitations under the License.
 """Utility for making API calls."""
 
-
 from apitools.base.py import exceptions as apitools_exceptions
 from apitools.base.py import http_wrapper
 from apitools.base.py import list_pager
@@ -52,71 +51,81 @@ def SkipRetryOn500Errors(response):
   return http_wrapper.CheckResponse(response)
 
 
-def GetClient(skip_activation_prompt=False):
+def GetClient(skip_activation_prompt=False, location=None):
   client = apis.GetClientInstance(
       ARTIFACTREGISTRY_API_NAME,
       ARTIFACTREGISTRY_API_VERSION,
       skip_activation_prompt=skip_activation_prompt,
+      location=location,
   )
   client.check_response_func = SkipRetryOn500Errors
   return client
 
 
 def GetMessages():
-  return apis.GetMessagesModule(ARTIFACTREGISTRY_API_NAME,
-                                ARTIFACTREGISTRY_API_VERSION)
+  return apis.GetMessagesModule(
+      ARTIFACTREGISTRY_API_NAME, ARTIFACTREGISTRY_API_VERSION
+  )
 
 
 def GetClientV1beta2():
-  return apis.GetClientInstance(ARTIFACTREGISTRY_API_NAME,
-                                "v1beta2")
+  return apis.GetClientInstance(ARTIFACTREGISTRY_API_NAME, "v1beta2")
 
 
 def GetMessagesV1beta2():
-  return apis.GetMessagesModule(ARTIFACTREGISTRY_API_NAME,
-                                "v1beta2")
+  return apis.GetMessagesModule(ARTIFACTREGISTRY_API_NAME, "v1beta2")
 
 
 def DeleteTag(client, messages, tag):
   """Deletes a tag by its name."""
   delete_tag_req = messages.ArtifactregistryProjectsLocationsRepositoriesPackagesTagsDeleteRequest(
-      name=tag)
+      name=tag
+  )
   err = client.projects_locations_repositories_packages_tags.Delete(
-      delete_tag_req)
+      delete_tag_req
+  )
   if not isinstance(err, messages.Empty):
     raise ar_exceptions.ArtifactRegistryError(
-        "Failed to delete tag {}: {}".format(tag, err))
+        "Failed to delete tag {}: {}".format(tag, err)
+    )
 
 
 def CreateDockerTag(client, messages, docker_tag, docker_version):
   """Creates a tag associated with the given docker version."""
   tag = messages.Tag(
-      name=docker_tag.GetTagName(), version=docker_version.GetVersionName())
+      name=docker_tag.GetTagName(), version=docker_version.GetVersionName()
+  )
   create_tag_req = messages.ArtifactregistryProjectsLocationsRepositoriesPackagesTagsCreateRequest(
-      parent=docker_tag.GetPackageName(), tag=tag, tagId=docker_tag.tag)
+      parent=docker_tag.GetPackageName(), tag=tag, tagId=docker_tag.tag
+  )
   return client.projects_locations_repositories_packages_tags.Create(
-      create_tag_req)
+      create_tag_req
+  )
 
 
 def GetTag(client, messages, tag):
   """Gets a tag by its name."""
   get_tag_req = messages.ArtifactregistryProjectsLocationsRepositoriesPackagesTagsGetRequest(
-      name=tag)
+      name=tag
+  )
   return client.projects_locations_repositories_packages_tags.Get(get_tag_req)
 
 
 def DeleteVersion(client, messages, version):
   """Deletes a version by its name."""
   delete_ver_req = messages.ArtifactregistryProjectsLocationsRepositoriesPackagesVersionsDeleteRequest(
-      name=version)
+      name=version
+  )
   return client.projects_locations_repositories_packages_versions.Delete(
-      delete_ver_req)
+      delete_ver_req
+  )
 
 
 def DeletePackage(client, messages, package):
   """Deletes a package by its name."""
   delete_pkg_req = messages.ArtifactregistryProjectsLocationsRepositoriesPackagesDeleteRequest(
-      name=package)
+      name=package
+  )
   return client.projects_locations_repositories_packages.Delete(delete_pkg_req)
 
 
@@ -124,57 +133,74 @@ def GetVersion(client, messages, version):
   """Gets a version by its name."""
   client = GetClient()
   messages = GetMessages()
-  get_ver_req = (
-      messages
-      .ArtifactregistryProjectsLocationsRepositoriesPackagesTagsGetRequest(
-          name=version))
+  get_ver_req = messages.ArtifactregistryProjectsLocationsRepositoriesPackagesTagsGetRequest(
+      name=version
+  )
   return client.projects_locations_repositories_packages_tags.Get(get_ver_req)
 
 
 def GetVersionFromTag(client, messages, tag):
   """Gets a version name by a tag name."""
   get_tag_req = messages.ArtifactregistryProjectsLocationsRepositoriesPackagesTagsGetRequest(
-      name=tag)
+      name=tag
+  )
   get_tag_res = client.projects_locations_repositories_packages_tags.Get(
-      get_tag_req)
+      get_tag_req
+  )
   if not get_tag_res.version or len(get_tag_res.version.split("/")) != 10:
     raise ar_exceptions.ArtifactRegistryError(
-        "Internal error. Corrupted tag: {}".format(tag))
+        "Internal error. Corrupted tag: {}".format(tag)
+    )
   return get_tag_res.version.split("/")[-1]
 
 
 def ListTags(client, messages, package, page_size=None, server_filter=None):
   """Lists all tags under a package with the given package name."""
   list_tags_req = messages.ArtifactregistryProjectsLocationsRepositoriesPackagesTagsListRequest(
-      parent=package, filter=server_filter)
+      parent=package, filter=server_filter
+  )
   return list(
       list_pager.YieldFromList(
           client.projects_locations_repositories_packages_tags,
           list_tags_req,
           batch_size=page_size,
           batch_size_attribute="pageSize",
-          field="tags"))
+          field="tags",
+      )
+  )
 
 
 def ListVersionTags(client, messages, package, version, page_size=None):
   """Lists tags associated with the given version."""
   list_tags_req = messages.ArtifactregistryProjectsLocationsRepositoriesPackagesTagsListRequest(
-      parent=package, filter="version=\"{}\"".format(version))
+      parent=package, filter='version="{}"'.format(version)
+  )
   return list(
       list_pager.YieldFromList(
           client.projects_locations_repositories_packages_tags,
           list_tags_req,
           batch_size=page_size,
           batch_size_attribute="pageSize",
-          field="tags"))
+          field="tags",
+      )
+  )
 
 
-def ListPackages(client, messages, repo, page_size=None,
-                 order_by=None, limit=None, server_filter=None):
+def ListPackages(
+    client,
+    messages,
+    repo,
+    page_size=None,
+    order_by=None,
+    limit=None,
+    server_filter=None,
+):
   """Lists all packages under a repository."""
   list_pkgs_req = (
       messages.ArtifactregistryProjectsLocationsRepositoriesPackagesListRequest(
-          parent=repo, orderBy=order_by, filter=server_filter))
+          parent=repo, orderBy=order_by, filter=server_filter
+      )
+  )
   return list(
       list_pager.YieldFromList(
           client.projects_locations_repositories_packages,
@@ -182,18 +208,29 @@ def ListPackages(client, messages, repo, page_size=None,
           limit=limit,
           batch_size=page_size,
           batch_size_attribute="pageSize",
-          field="packages"))
+          field="packages",
+      )
+  )
 
 
-def ListVersions(client, messages, pkg, version_view=None,
-                 page_size=None, order_by=None, limit=None, server_filter=None):
+def ListVersions(
+    client,
+    messages,
+    pkg,
+    version_view=None,
+    page_size=None,
+    order_by=None,
+    limit=None,
+    server_filter=None,
+):
   """Lists all versions under a package."""
   page_limit = limit
   if limit is None or (page_size is not None and page_size < limit):
     page_limit = page_size
 
   list_vers_req = messages.ArtifactregistryProjectsLocationsRepositoriesPackagesVersionsListRequest(
-      parent=pkg, view=version_view, orderBy=order_by, filter=server_filter)
+      parent=pkg, view=version_view, orderBy=order_by, filter=server_filter
+  )
   return list(
       list_pager.YieldFromList(
           client.projects_locations_repositories_packages_versions,
@@ -201,47 +238,62 @@ def ListVersions(client, messages, pkg, version_view=None,
           limit=limit,
           batch_size=page_limit,
           batch_size_attribute="pageSize",
-          field="versions"))
+          field="versions",
+      )
+  )
 
 
-def ListRepositories(project, page_size=None,
-                     order_by=None, server_filter=None):
+def ListRepositories(
+    project, page_size=None, order_by=None, server_filter=None
+):
   """Lists all repositories under a project."""
   client = GetClient()
   messages = GetMessages()
   list_repos_req = (
       messages.ArtifactregistryProjectsLocationsRepositoriesListRequest(
-          parent=project, orderBy=order_by, filter=server_filter))
+          parent=project, orderBy=order_by, filter=server_filter
+      )
+  )
   return list(
       list_pager.YieldFromList(
           client.projects_locations_repositories,
           list_repos_req,
           batch_size=page_size,
           batch_size_attribute="pageSize",
-          field="repositories"))
+          field="repositories",
+      )
+  )
 
 
-def ListFiles(client, messages, repo, server_filter=None,
-              page_size=None, order_by=None):
+def ListFiles(
+    client, messages, repo, server_filter=None, page_size=None, order_by=None
+):
   """Lists all files under a repository."""
   list_files_req = (
       messages.ArtifactregistryProjectsLocationsRepositoriesFilesListRequest(
-          parent=repo, filter=server_filter, orderBy=order_by))
+          parent=repo, filter=server_filter, orderBy=order_by
+      )
+  )
   return list(
       list_pager.YieldFromList(
           client.projects_locations_repositories_files,
           list_files_req,
           batch_size=page_size,
           batch_size_attribute="pageSize",
-          field="files"))
+          field="files",
+      )
+  )
 
 
-def GetRepository(repo, skip_activation_prompt=False):
+def GetRepository(repo, skip_activation_prompt=False, location=None):
   """Gets the repository given its name."""
-  client = GetClient(skip_activation_prompt)
+  client = GetClient(skip_activation_prompt, location=location)
   messages = GetMessages()
-  get_repo_req = messages.ArtifactregistryProjectsLocationsRepositoriesGetRequest(
-      name=repo)
+  get_repo_req = (
+      messages.ArtifactregistryProjectsLocationsRepositoriesGetRequest(
+          name=repo
+      )
+  )
   get_repo_res = client.projects_locations_repositories.Get(get_repo_req)
   return get_repo_res
 
@@ -250,10 +302,14 @@ def GetIamPolicy(repo_res):
   """Gets the IAM policy for the specified repository."""
   client = GetClient()
   messages = GetMessages()
-  get_iam_policy_req = messages.ArtifactregistryProjectsLocationsRepositoriesGetIamPolicyRequest(
-      resource=repo_res)
+  get_iam_policy_req = (
+      messages.ArtifactregistryProjectsLocationsRepositoriesGetIamPolicyRequest(
+          resource=repo_res
+      )
+  )
   get_iam_policy_res = client.projects_locations_repositories.GetIamPolicy(
-      get_iam_policy_req)
+      get_iam_policy_req
+  )
   return get_iam_policy_res
 
 
@@ -285,12 +341,13 @@ def CreateRepository(
   Returns:
     The resulting operation from the create request.
   """
-  client = GetClient(skip_activation_prompt)
+  client = GetClient(skip_activation_prompt, location=location)
   messages = GetMessages()
   request = messages.ArtifactregistryProjectsLocationsRepositoriesCreateRequest(
       parent="projects/{}/locations/{}".format(project, location),
       repositoryId=repository.name.split("/")[-1],
-      repository=repository)
+      repository=repository,
+  )
   return client.projects_locations_repositories.Create(request)
 
 
@@ -298,10 +355,14 @@ def GetPackage(package):
   """Gets the package given its name."""
   client = GetClient()
   messages = GetMessages()
-  get_package_req = messages.ArtifactregistryProjectsLocationsRepositoriesPackagesGetRequest(
-      name=package)
+  get_package_req = (
+      messages.ArtifactregistryProjectsLocationsRepositoriesPackagesGetRequest(
+          name=package
+      )
+  )
   get_package_res = client.projects_locations_repositories_packages.Get(
-      get_package_req)
+      get_package_req
+  )
   return get_package_res
 
 
@@ -310,13 +371,15 @@ def ListLocations(project_id, page_size=None):
   client = GetClientV1beta2()
   messages = GetMessagesV1beta2()
   list_locs_req = messages.ArtifactregistryProjectsLocationsListRequest(
-      name="projects/" + project_id)
+      name="projects/" + project_id
+  )
   locations = list_pager.YieldFromList(
       client.projects_locations,
       list_locs_req,
       batch_size=page_size,
       batch_size_attribute="pageSize",
-      field="locations")
+      field="locations",
+  )
   return sorted([loc.locationId for loc in locations])
 
 
@@ -325,24 +388,29 @@ def TestStorageIAMPermission(bucket, project):
   client = GetStorageClient()
   messages = GetStorageMessages()
   test_req = messages.StorageBucketsTestIamPermissionsRequest(
-      bucket=bucket, permissions=_GCR_PERMISSION, userProject=project)
+      bucket=bucket, permissions=_GCR_PERMISSION, userProject=project
+  )
   return client.buckets.TestIamPermissions(test_req)
 
 
 def GetCryptoKeyPolicy(kms_key):
   """Gets the IAM policy for a given crypto key."""
   crypto_key_ref = resources.REGISTRY.ParseRelativeName(
-      relative_name=kms_key, collection=CRYPTO_KEY_COLLECTION)
+      relative_name=kms_key, collection=CRYPTO_KEY_COLLECTION
+  )
   return kms_iam.GetCryptoKeyIamPolicy(crypto_key_ref)
 
 
 def AddCryptoKeyPermission(kms_key, service_account):
   """Adds Encrypter/Decrypter role to the given service account."""
   crypto_key_ref = resources.REGISTRY.ParseRelativeName(
-      relative_name=kms_key, collection=CRYPTO_KEY_COLLECTION)
+      relative_name=kms_key, collection=CRYPTO_KEY_COLLECTION
+  )
   return kms_iam.AddPolicyBindingToCryptoKey(
-      crypto_key_ref, service_account,
-      "roles/cloudkms.cryptoKeyEncrypterDecrypter")
+      crypto_key_ref,
+      service_account,
+      "roles/cloudkms.cryptoKeyEncrypterDecrypter",
+  )
 
 
 def GetServiceAccount(service_account):
@@ -386,9 +454,15 @@ def GetVPCSCConfig(project_id, location_id):
   """Gets VPC SC Config on the project and location."""
   client = GetClient()
   messages = GetMessages()
-  get_vpcsc_req = messages.ArtifactregistryProjectsLocationsGetVpcscConfigRequest(
-      name="projects/" + project_id + "/locations/" + location_id +
-      "/vpcscConfig")
+  get_vpcsc_req = (
+      messages.ArtifactregistryProjectsLocationsGetVpcscConfigRequest(
+          name="projects/"
+          + project_id
+          + "/locations/"
+          + location_id
+          + "/vpcscConfig"
+      )
+  )
   return client.projects_locations.GetVpcscConfig(get_vpcsc_req)
 
 
@@ -397,13 +471,23 @@ def AllowVPCSCConfig(project_id, location_id):
   client = GetClient()
   messages = GetMessages()
   vc = messages.VPCSCConfig(
-      name="projects/" + project_id + "/locations/" + location_id +
-      "/vpcscConfig",
-      vpcscPolicy=messages.VPCSCConfig.VpcscPolicyValueValuesEnum.ALLOW)
-  update_vpcsc_req = messages.ArtifactregistryProjectsLocationsUpdateVpcscConfigRequest(
-      name="projects/" + project_id + "/locations/" + location_id +
-      "/vpcscConfig",
-      vPCSCConfig=vc)
+      name="projects/"
+      + project_id
+      + "/locations/"
+      + location_id
+      + "/vpcscConfig",
+      vpcscPolicy=messages.VPCSCConfig.VpcscPolicyValueValuesEnum.ALLOW,
+  )
+  update_vpcsc_req = (
+      messages.ArtifactregistryProjectsLocationsUpdateVpcscConfigRequest(
+          name="projects/"
+          + project_id
+          + "/locations/"
+          + location_id
+          + "/vpcscConfig",
+          vPCSCConfig=vc,
+      )
+  )
   return client.projects_locations.UpdateVpcscConfig(update_vpcsc_req)
 
 
@@ -412,35 +496,48 @@ def DenyVPCSCConfig(project_id, location_id):
   client = GetClient()
   messages = GetMessages()
   vc = messages.VPCSCConfig(
-      name="projects/" + project_id + "/locations/" + location_id +
-      "/vpcscConfig",
-      vpcscPolicy=messages.VPCSCConfig.VpcscPolicyValueValuesEnum.DENY)
-  get_vpcsc_req = messages.ArtifactregistryProjectsLocationsUpdateVpcscConfigRequest(
-      name="projects/" + project_id + "/locations/" + location_id +
-      "/vpcscConfig",
-      vPCSCConfig=vc)
+      name="projects/"
+      + project_id
+      + "/locations/"
+      + location_id
+      + "/vpcscConfig",
+      vpcscPolicy=messages.VPCSCConfig.VpcscPolicyValueValuesEnum.DENY,
+  )
+  get_vpcsc_req = (
+      messages.ArtifactregistryProjectsLocationsUpdateVpcscConfigRequest(
+          name="projects/"
+          + project_id
+          + "/locations/"
+          + location_id
+          + "/vpcscConfig",
+          vPCSCConfig=vc,
+      )
+  )
   return client.projects_locations.UpdateVpcscConfig(get_vpcsc_req)
 
 
 def EnableUpgradeRedirection(project_id):
   messages = GetMessages()
   return SetUpgradeRedirectionState(
-      project_id, messages.ProjectSettings.LegacyRedirectionStateValueValuesEnum
-      .REDIRECTION_FROM_GCR_IO_ENABLED)
+      project_id,
+      messages.ProjectSettings.LegacyRedirectionStateValueValuesEnum.REDIRECTION_FROM_GCR_IO_ENABLED,
+  )
 
 
 def DisableUpgradeRedirection(project_id):
   messages = GetMessages()
   return SetUpgradeRedirectionState(
-      project_id, messages.ProjectSettings.LegacyRedirectionStateValueValuesEnum
-      .REDIRECTION_FROM_GCR_IO_DISABLED)
+      project_id,
+      messages.ProjectSettings.LegacyRedirectionStateValueValuesEnum.REDIRECTION_FROM_GCR_IO_DISABLED,
+  )
 
 
 def FinalizeUpgradeRedirection(project_id):
   messages = GetMessages()
   return SetUpgradeRedirectionState(
-      project_id, messages.ProjectSettings.LegacyRedirectionStateValueValuesEnum
-      .REDIRECTION_FROM_GCR_IO_FINALIZED)
+      project_id,
+      messages.ProjectSettings.LegacyRedirectionStateValueValuesEnum.REDIRECTION_FROM_GCR_IO_FINALIZED,
+  )
 
 
 def SetUpgradeRedirectionState(
@@ -450,7 +547,8 @@ def SetUpgradeRedirectionState(
   client = GetClient()
   messages = GetMessages()
   project_settings = messages.ProjectSettings(
-      legacyRedirectionState=redirection_state)
+      legacyRedirectionState=redirection_state
+  )
   update_mask = "legacy_redirection_state"
   if pull_percent:
     project_settings.pullPercent = pull_percent

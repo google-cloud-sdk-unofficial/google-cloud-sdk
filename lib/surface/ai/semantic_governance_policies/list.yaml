@@ -1,0 +1,37 @@
+release_tracks: [BETA]
+hidden: true
+help_text:
+  brief: List semantic governance policies.
+  description: List semantic governance policies.
+  examples: |-
+    To list semantic governance policies in location `us-central1`, run:
+
+      $ {command} --location=us-central1
+arguments:
+  resource:
+    help_text: |-
+      The location of the policies to list.
+    spec:
+      name: location
+      collection: aiplatform.projects.locations
+      attributes:
+      - parameter_name: projectsId
+        attribute_name: project
+        help: The project containing the policies.
+      - parameter_name: locationsId
+        attribute_name: location
+        help: The location containing the policies.
+request:
+  api_version: v1beta1
+  collection: aiplatform.projects.locations.semanticGovernancePolicies
+  method: list
+  resource_method_params:
+    parent: projects/{projectsId}/locations/{locationsId}
+output:
+  format: |
+    table(
+      name.basename():label=ID,
+      displayName,
+      createTime:label=CREATE_TIME,
+      updateTime:label=UPDATE_TIME
+    )

@@ -14,8 +14,10 @@
 # limitations under the License.
 """Command for listing job executions."""
 
+import copy
 
 from googlecloudsdk.api_lib.run import execution
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
@@ -56,20 +58,24 @@ def _ByStartAndCreationTime(ex):
   )
 
 
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(commands.List):
   """List executions."""
 
   detailed_help = {
-      'DESCRIPTION':
+      'DESCRIPTION': (
           """
           {description}
-          """,
-      'EXAMPLES':
+          """
+      ),
+      'EXAMPLES': (
           """
           To list all executions in all regions:
 
               $ {command}
-         """,
+         """
+      ),
   }
 
   @classmethod
@@ -111,14 +117,16 @@ class List(commands.List):
     return sorted(
         commands.SortByName(executions),
         key=_ByStartAndCreationTime,
-        reverse=True)
+        reverse=True,
+    )
 
   def Run(self, args):
     """List executions of a job."""
     job_name = args.job
     namespace_ref = args.CONCEPTS.namespace.Parse()
     conn_context = connection_context.GetConnectionContext(
-        args, flags.Product.RUN, self.ReleaseTrack())
+        args, flags.Product.RUN, self.ReleaseTrack()
+    )
     with serverless_operations.Connect(conn_context) as client:
       self.SetCompleteApiEndpoint(conn_context.endpoint)
       label_selector = None
@@ -129,3 +137,11 @@ class List(commands.List):
       return self._SortExecutions(
           client.ListExecutions(namespace_ref, label_selector)
       )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.RegionalEndpointsSupported
+class BetaList(List):
+  """List executions."""
+
+  detailed_help = copy.deepcopy(List.detailed_help)

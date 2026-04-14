@@ -15,15 +15,21 @@
 """Command to summarize intelligence findings."""
 
 import argparse
+from collections.abc import Iterator
 import textwrap
+from googlecloudsdk.api_lib.storage import intelligence_finding_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
+from googlecloudsdk.generated_clients.apis.storage.v2 import storage_v2_messages
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class Summarize(base.ListCommand):
   """Intelligence findings summary."""
+  _client_factory: type[intelligence_finding_api.IntelligenceFindingApi] = (
+      intelligence_finding_api.IntelligenceFindingApi
+  )
 
   detailed_help = {
       'DESCRIPTION': textwrap.dedent("""
@@ -38,7 +44,7 @@ class Summarize(base.ListCommand):
 
   @classmethod
   def Args(cls, parser: argparse.ArgumentParser) -> None:
-    scope_group = parser.add_mutually_exclusive_group(required=True)
+    scope_group = parser.add_mutually_exclusive_group()
     scope_group.add_argument(
         '--project', help='The project to scope the summary to.'
     )
@@ -49,14 +55,40 @@ class Summarize(base.ListCommand):
         '--organization', help='The organization to scope the summary to.'
     )
     parser.add_argument(
-        '--resource-scope', help='The resource scope for the summary.'
+        '--resource-scope',
+        type=str.upper,
+        choices=['PROJECT', 'PARENT'],
+        help=(
+            'The resource scope for the summary. If not specified, summaries'
+            ' are aggregated at the level of the parent resource.'
+        ),
     )
     parser.add_argument(
-        '--location', help='The location to scope the summary to.'
+        '--location',
+        default='global',
+        help='The location to scope the summary to.',
+        hidden=True,
     )
+    parser.display_info.AddUriFunc(lambda resource: resource.targetResource)
 
-  def Run(self, args: argparse.Namespace) -> None:
-    del self  # Unused.
-    raise NotImplementedError(
-        'The intelligence-findings surface is not yet implemented.'
+  def Run(
+      self, args: argparse.Namespace
+  ) -> Iterator[storage_v2_messages.FindingSummary]:
+    location = args.location
+    if args.organization:
+      parent = f'organizations/{args.organization}/locations/{location}'
+    elif args.sub_folder:
+      parent = f'folders/{args.sub_folder}/locations/{location}'
+    else:
+      project = (
+          args.project
+          if args.project
+          else properties.VALUES.core.project.GetOrFail()
+      )
+      parent = f'projects/{project}/locations/{location}'
+
+    return self._client_factory().summarize_findings(
+        parent=parent,
+        resource_scope=args.resource_scope,
+        page_size=args.page_size,
     )

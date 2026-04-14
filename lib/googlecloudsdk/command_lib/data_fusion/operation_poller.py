@@ -15,7 +15,6 @@
 """Operation Poller."""
 
 
-from googlecloudsdk.api_lib.data_fusion import datafusion as df
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.core import exceptions as core_exceptions
 
@@ -23,9 +22,9 @@ from googlecloudsdk.core import exceptions as core_exceptions
 class OperationPoller(waiter.CloudOperationPollerNoResources):
   """Class for polling Data Fusion long running Operations."""
 
-  def __init__(self):
+  def __init__(self, datafusion_client):
     super(OperationPoller, self).__init__(
-        df.Datafusion().client.projects_locations_operations, lambda x: x)
+        datafusion_client.client.projects_locations_operations, lambda x: x)
 
   def IsDone(self, operation):
     if operation.done:

@@ -196,7 +196,11 @@ class Part(proto.Message):
 
     Attributes:
         text (str):
-            Optional. The text content of the part.
+            Optional. The text content of the part. When sent from the
+            VSCode Gemini Code Assist extension, references to
+            @mentioned items will be converted to markdown boldface
+            text. For example ``@my-repo`` will be converted to and sent
+            as ``**my-repo**`` by the IDE agent.
 
             This field is a member of `oneof`_ ``data``.
         inline_data (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.Blob):
@@ -682,6 +686,13 @@ class ImageConfig(proto.Message):
             model will use default value ``1K``.
 
             This field is a member of `oneof`_ ``_image_size``.
+        prominent_people (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.ImageConfig.ProminentPeople):
+            Optional. Controls whether prominent people (celebrities)
+            generation is allowed. If used with personGeneration,
+            personGeneration enum would take precedence. For instance,
+            if ALLOW_NONE is set, all person generation would be
+            blocked. If this field is unspecified, the default behavior
+            is to allow prominent people.
     """
     class PersonGeneration(proto.Enum):
         r"""Enum for controlling the generation of people in images.
@@ -705,6 +716,26 @@ class ImageConfig(proto.Message):
         ALLOW_ALL = 1
         ALLOW_ADULT = 2
         ALLOW_NONE = 3
+
+    class ProminentPeople(proto.Enum):
+        r"""Enum for controlling whether the model can generate images of
+        prominent people (celebrities).
+
+        Values:
+            PROMINENT_PEOPLE_UNSPECIFIED (0):
+                Unspecified value. The model will proceed
+                with the default behavior, which is to allow
+                generation of prominent people.
+            ALLOW_PROMINENT_PEOPLE (1):
+                Allows the model to generate images of
+                prominent people.
+            BLOCK_PROMINENT_PEOPLE (2):
+                Prevents the model from generating images of
+                prominent people.
+        """
+        PROMINENT_PEOPLE_UNSPECIFIED = 0
+        ALLOW_PROMINENT_PEOPLE = 1
+        BLOCK_PROMINENT_PEOPLE = 2
 
     class ImageOutputOptions(proto.Message):
         r"""The image output format for generated images.
@@ -756,6 +787,11 @@ class ImageConfig(proto.Message):
         proto.STRING,
         number=4,
         optional=True,
+    )
+    prominent_people: ProminentPeople = proto.Field(
+        proto.ENUM,
+        number=5,
+        enum=ProminentPeople,
     )
 
 
@@ -880,8 +916,7 @@ class GenerationConfig(proto.Message):
             include 'text/plain' (default) and
             'application/json'. The model needs to be
             prompted to output the appropriate response
-            type, otherwise the behavior is undefined. This
-            is a preview feature.
+            type, otherwise the behavior is undefined.
         response_schema (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.Schema):
             Optional. Lets you to specify a schema for the model's
             response, ensuring that the output conforms to a particular
@@ -1977,6 +2012,11 @@ class GroundingChunk(proto.Message):
             Search. See the ``Web`` message for details.
 
             This field is a member of `oneof`_ ``chunk_type``.
+        image (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.GroundingChunk.Image):
+            A grounding chunk from an image search result. See the
+            ``Image`` message for details.
+
+            This field is a member of `oneof`_ ``chunk_type``.
         retrieved_context (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.GroundingChunk.RetrievedContext):
             A grounding chunk from a data source retrieved by a
             retrieval tool, such as Vertex AI Search. See the
@@ -2031,6 +2071,55 @@ class GroundingChunk(proto.Message):
         domain: str = proto.Field(
             proto.STRING,
             number=3,
+            optional=True,
+        )
+
+    class Image(proto.Message):
+        r"""An ``Image`` chunk is a piece of evidence that comes from an image
+        search result. It contains the URI of the image search result and
+        the URI of the image. This is used to provide the user with a link
+        to the source of the information.
+
+
+        .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
+        Attributes:
+            source_uri (str):
+                The URI of the image search result page.
+
+                This field is a member of `oneof`_ ``_source_uri``.
+            image_uri (str):
+                The URI of the image.
+
+                This field is a member of `oneof`_ ``_image_uri``.
+            title (str):
+                The title of the image search result page.
+
+                This field is a member of `oneof`_ ``_title``.
+            domain (str):
+                The domain of the image search result page.
+
+                This field is a member of `oneof`_ ``_domain``.
+        """
+
+        source_uri: str = proto.Field(
+            proto.STRING,
+            number=1,
+            optional=True,
+        )
+        image_uri: str = proto.Field(
+            proto.STRING,
+            number=2,
+            optional=True,
+        )
+        title: str = proto.Field(
+            proto.STRING,
+            number=3,
+            optional=True,
+        )
+        domain: str = proto.Field(
+            proto.STRING,
+            number=4,
             optional=True,
         )
 
@@ -2099,10 +2188,9 @@ class GroundingChunk(proto.Message):
         )
 
     class Maps(proto.Message):
-        r"""A ``Maps`` chunk is a piece of evidence that comes from Google Maps.
-        It contains information about a place, such as its name, address,
-        and reviews. This is used to provide the user with rich,
-        location-based information.
+        r"""A ``Maps`` chunk is a piece of evidence that comes from Google Maps,
+        containing information about places or routes. This is used to
+        provide the user with rich, location-based information.
 
 
         .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
@@ -2131,6 +2219,8 @@ class GroundingChunk(proto.Message):
                 place answer. This includes review snippets and
                 photos that were used to generate the answer, as
                 well as URIs to flag content.
+            route (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.GroundingChunk.Maps.Route):
+                Output only. Route information.
         """
 
         class PlaceAnswerSources(proto.Message):
@@ -2176,6 +2266,33 @@ class GroundingChunk(proto.Message):
                 message='GroundingChunk.Maps.PlaceAnswerSources.ReviewSnippet',
             )
 
+        class Route(proto.Message):
+            r"""Route information from Google Maps.
+
+            Attributes:
+                distance_meters (int):
+                    The total distance of the route, in meters.
+                duration (google.protobuf.duration_pb2.Duration):
+                    The total duration of the route.
+                encoded_polyline (str):
+                    An encoded polyline of the route. See
+                    https://developers.google.com/maps/documentation/utilities/polylinealgorithm
+            """
+
+            distance_meters: int = proto.Field(
+                proto.INT32,
+                number=1,
+            )
+            duration: duration_pb2.Duration = proto.Field(
+                proto.MESSAGE,
+                number=2,
+                message=duration_pb2.Duration,
+            )
+            encoded_polyline: str = proto.Field(
+                proto.STRING,
+                number=3,
+            )
+
         uri: str = proto.Field(
             proto.STRING,
             number=1,
@@ -2201,12 +2318,23 @@ class GroundingChunk(proto.Message):
             number=5,
             message='GroundingChunk.Maps.PlaceAnswerSources',
         )
+        route: 'GroundingChunk.Maps.Route' = proto.Field(
+            proto.MESSAGE,
+            number=6,
+            message='GroundingChunk.Maps.Route',
+        )
 
     web: Web = proto.Field(
         proto.MESSAGE,
         number=1,
         oneof='chunk_type',
         message=Web,
+    )
+    image: Image = proto.Field(
+        proto.MESSAGE,
+        number=5,
+        oneof='chunk_type',
+        message=Image,
     )
     retrieved_context: RetrievedContext = proto.Field(
         proto.MESSAGE,
@@ -2223,8 +2351,8 @@ class GroundingChunk(proto.Message):
 
 
 class GroundingSupport(proto.Message):
-    r"""A collection of supporting references for a segment of the
-    model's response.
+    r"""A collection of supporting references for a segment or part
+    of the model's response.
 
 
     .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
@@ -2255,6 +2383,10 @@ class GroundingSupport(proto.Message):
             For Gemini 2.0 and before, this list has the same size as
             ``grounding_chunk_indices``. For Gemini 2.5 and later, this
             list is empty and should be ignored.
+        rendered_parts (MutableSequence[int]):
+            Indices into the ``rendered_parts`` field of the
+            ``GroundingMetadata`` message. These indices specify which
+            rendered parts are associated with this support message.
     """
 
     segment: 'Segment' = proto.Field(
@@ -2270,6 +2402,10 @@ class GroundingSupport(proto.Message):
     confidence_scores: MutableSequence[float] = proto.RepeatedField(
         proto.FLOAT,
         number=3,
+    )
+    rendered_parts: MutableSequence[int] = proto.RepeatedField(
+        proto.INT32,
+        number=4,
     )
 
 
@@ -2289,6 +2425,11 @@ class GroundingMetadata(proto.Message):
             used to generate the content. This field is
             populated only when the grounding source is
             Google Search.
+        image_search_queries (MutableSequence[str]):
+            Optional. The image search queries that were used to
+            generate the content. This field is populated only when the
+            grounding source is Google Search with the Image Search
+            search_type enabled.
         search_entry_point (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.SearchEntryPoint):
             Optional. A web search entry point that can
             be used to display search results. This field is
@@ -2355,6 +2496,10 @@ class GroundingMetadata(proto.Message):
     web_search_queries: MutableSequence[str] = proto.RepeatedField(
         proto.STRING,
         number=1,
+    )
+    image_search_queries: MutableSequence[str] = proto.RepeatedField(
+        proto.STRING,
+        number=11,
     )
     search_entry_point: 'SearchEntryPoint' = proto.Field(
         proto.MESSAGE,

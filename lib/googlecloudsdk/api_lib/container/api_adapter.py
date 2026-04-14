@@ -383,6 +383,7 @@ ISTIO = 'Istio'
 NETWORK_POLICY = 'NetworkPolicy'
 NODELOCALDNS = 'NodeLocalDNS'
 APPLICATIONMANAGER = 'ApplicationManager'
+NODEREADINESSCONTROLLER = 'NodeReadinessController'
 RESOURCE_LIMITS = 'resourceLimits'
 SERVICE_ACCOUNT = 'serviceAccount'
 MIN_CPU_PLATFORM = 'minCpuPlatform'
@@ -420,6 +421,7 @@ ADDONS_OPTIONS = DEFAULT_ADDONS + [
     RAYOPERATOR,
     SLURMOPERATOR,
     KUEUE,
+    NODEREADINESSCONTROLLER,
 ]
 BETA_ADDONS_OPTIONS = ADDONS_OPTIONS + [
     ISTIO,
@@ -2686,6 +2688,9 @@ class APIAdapter(object):
           enable_ray_operator=options.addons.get(RAYOPERATOR, False),
           enable_slurm_operator=options.addons.get(SLURMOPERATOR, False),
           enable_kueue=options.addons.get(KUEUE),
+          enable_node_readiness_controller=options.addons.get(
+              NODEREADINESSCONTROLLER
+          ),
       )
       # CONFIGCONNECTOR is disabled by default.
       if CONFIGCONNECTOR in options.addons:
@@ -5013,6 +5018,10 @@ class APIAdapter(object):
         addons.kueueConfig = self.messages.KueueConfig(
             enabled=not options.disable_addons.get(KUEUE)
         )
+      if options.disable_addons.get(NODEREADINESSCONTROLLER) is not None:
+        addons.nodeReadinessConfig = self.messages.NodeReadinessConfig(
+            enabled=not options.disable_addons.get(NODEREADINESSCONTROLLER)
+        )
       update = self.messages.ClusterUpdate(desiredAddonsConfig=addons)
     elif (
         options.enable_ray_cluster_logging is not None
@@ -6152,6 +6161,7 @@ class APIAdapter(object):
       enable_slice_controller=None,
       enable_agent_sandbox=None,
       enable_kueue=None,
+      enable_node_readiness_controller=None,
   ):
     """Generates an AddonsConfig object given specific parameters.
 
@@ -6177,6 +6187,8 @@ class APIAdapter(object):
       enable_slice_controller: whether to enable SliceController.
       enable_agent_sandbox: whether to enable AgentSandbox.
       enable_kueue: whether to enable Kueue.
+      enable_node_readiness_controller: whether to enable
+        NodeReadinessController.
 
     Returns:
       An AddonsConfig object that contains the options defining what addons to
@@ -6258,6 +6270,10 @@ class APIAdapter(object):
       )
     if enable_kueue is not None:
       addons.kueueConfig = self.messages.KueueConfig(enabled=enable_kueue)
+    if enable_node_readiness_controller is not None:
+      addons.nodeReadinessConfig = self.messages.NodeReadinessConfig(
+          enabled=enable_node_readiness_controller
+      )
 
     return addons
 
@@ -9172,6 +9188,10 @@ class V1Beta1Adapter(V1Adapter):
       if disable_addons.get(KUEUE) is not None:
         addons.kueueConfig = self.messages.KueueConfig(
             enabled=not disable_addons.get(KUEUE)
+        )
+      if disable_addons.get(NODEREADINESSCONTROLLER) is not None:
+        addons.nodeReadinessConfig = self.messages.NodeReadinessConfig(
+            enabled=not disable_addons.get(NODEREADINESSCONTROLLER)
         )
       update = self.messages.ClusterUpdate(desiredAddonsConfig=addons)
     elif (

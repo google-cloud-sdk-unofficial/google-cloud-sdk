@@ -87,3 +87,45 @@ backup:
     attribute_name: backup
     help: The name of the Redis cluster backup.
   disable_auto_completers: false
+
+acl_policy:
+  name: acl policy
+  collection: redis.projects.locations.aclPolicies
+  request_id_field: aclPolicyId
+  attributes:
+  - *region
+  - parameter_name: aclPoliciesId
+    attribute_name: acl_policy
+    help: The ID of the ACL Policy.
+  disable_auto_completers: false
+
+token_auth_user:
+  name: token auth user
+  collection: redis.projects.locations.clusters.tokenAuthUsers
+  request_id_field: tokenAuthUserId
+  attributes:
+  - *region
+  - parameter_name: clustersId
+    attribute_name: cluster
+    help: The name of the Redis cluster.
+  - parameter_name: tokenAuthUsersId
+    attribute_name: token-auth-user
+    help: The name of the Redis cluster token auth user.
+  disable_auto_completers: false
+
+auth_token:
+  name: auth token
+  collection: redis.projects.locations.clusters.tokenAuthUsers.authTokens
+  request_id_field: authTokenId
+  attributes:
+  - *region
+  - parameter_name: clustersId
+    attribute_name: cluster
+    help: The name of the Redis cluster.
+  - parameter_name: tokenAuthUsersId
+    attribute_name: token-auth-user
+    help: The name of the Redis cluster token auth user.
+  - parameter_name: authTokensId
+    attribute_name: auth-token
+    help: The name of the Redis cluster auth token.
+  disable_auto_completers: false

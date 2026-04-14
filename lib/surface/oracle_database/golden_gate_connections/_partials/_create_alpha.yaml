@@ -171,17 +171,17 @@
                   repeated: false
                   help_text: |-
                     The technology type.
-                - arg_name: golden-gate-connection-properties-deployment-id
+                - arg_name: golden-gate-connection-properties-goldengate-deployment-id
                   help_text: |-
                     The name of the GoldenGateDeployment associated with the
                     GoldenGateConnection.
                     Format:
-                    projects/{project}/locations/{location}/goldenGateDeployments/{golden_gate_deployment}
+                    projects/{project}/locations/{location}/goldengateDeployments/{golden_gate_deployment}
                   is_positional: false
                   is_primary_resource: false
-                  resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_golden_gate_deployments
+                  resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_goldengate_deployments
                   resource_method_params:
-                    goldenGateConnection.properties.goldenGateConnectionProperties.goldenGateDeploymentId: '{__relative_name__}'
+                    goldenGateConnection.properties.goldenGateConnectionProperties.goldengateDeploymentId: '{__relative_name__}'
                   required: false
                 - arg_name: golden-gate-connection-properties-host
                   api_field: goldenGateConnection.properties.goldenGateConnectionProperties.host

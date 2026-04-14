@@ -454,6 +454,24 @@ class _BaseInstances(object):
           args.allowed_psc_projects
       )
 
+    if args.IsKnownAndSpecified('enable_psc_auto_dns'):
+      if not settings.ipConfiguration:
+        settings.ipConfiguration = sql_messages.IpConfiguration()
+      if not settings.ipConfiguration.pscConfig:
+        settings.ipConfiguration.pscConfig = sql_messages.PscConfig()
+      settings.ipConfiguration.pscConfig.pscAutoDnsEnabled = (
+          args.enable_psc_auto_dns
+      )
+
+    if args.IsKnownAndSpecified('enable_psc_write_endpoint_dns'):
+      if not settings.ipConfiguration:
+        settings.ipConfiguration = sql_messages.IpConfiguration()
+      if not settings.ipConfiguration.pscConfig:
+        settings.ipConfiguration.pscConfig = sql_messages.PscConfig()
+      settings.ipConfiguration.pscConfig.pscWriteEndpointDnsEnabled = (
+          args.enable_psc_write_endpoint_dns
+      )
+
     if args.IsKnownAndSpecified('clear_allowed_psc_projects'):
       if not settings.ipConfiguration:
         settings.ipConfiguration = sql_messages.IpConfiguration()
@@ -993,6 +1011,24 @@ class _BaseInstances(object):
       if not settings.ipConfiguration.pscConfig:
         settings.ipConfiguration.pscConfig = sql_messages.PscConfig()
       settings.ipConfiguration.pscConfig.pscAutoConnections = []
+
+    if args.IsKnownAndSpecified('enable_psc_auto_dns'):
+      if not settings.ipConfiguration:
+        settings.ipConfiguration = sql_messages.IpConfiguration()
+      if not settings.ipConfiguration.pscConfig:
+        settings.ipConfiguration.pscConfig = sql_messages.PscConfig()
+      settings.ipConfiguration.pscConfig.pscAutoDnsEnabled = (
+          args.enable_psc_auto_dns
+      )
+
+    if args.IsKnownAndSpecified('enable_psc_write_endpoint_dns'):
+      if not settings.ipConfiguration:
+        settings.ipConfiguration = sql_messages.IpConfiguration()
+      if not settings.ipConfiguration.pscConfig:
+        settings.ipConfiguration.pscConfig = sql_messages.PscConfig()
+      settings.ipConfiguration.pscConfig.pscWriteEndpointDnsEnabled = (
+          args.enable_psc_write_endpoint_dns
+      )
 
     read_pool_auto_scale_config = reducers.ReadPoolAutoScaleConfig(
         sql_messages,

@@ -63,14 +63,17 @@ class GetVersionPoller(poller.Poller):
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class GetVersion(base.Command):
   """Get the version of a reservation sub-block."""
 
   @staticmethod
   def Args(parser):
     resource_args.GetReservationResourceArg().AddArgument(
-        parser, operation_type='get-version')
+        parser, operation_type='get-version'
+    )
     flags.AddGetVersionFlags(parser)
 
   def Run(self, args):

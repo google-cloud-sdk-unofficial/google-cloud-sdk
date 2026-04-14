@@ -48,6 +48,9 @@ actions:
   - pyspark:
       name: test_job
       mainFilePath: 'jobs/job.py'
+      environment:
+        requirements:
+          path: 'jobs/requirements.txt'
       engine:
         dataprocServerless:
           location: {{ region }}
@@ -73,8 +76,6 @@ environments:
       service_account: YOUR_SERVICE_ACCOUNT
       # TODO: Replace with your network URI
       network_uri: projects/YOUR_PROJECT_ID/global/networks/default
-      # TODO: Replace with your subnetwork URI
-      subnetwork_uri: projects/YOUR_PROJECT_ID/regions/us-central1/subnetworks/default
     pipelines:
       - source: orchestration-pipeline.yaml
   production:
@@ -93,8 +94,6 @@ environments:
       service_account: YOUR_SERVICE_ACCOUNT
       # TODO: Replace with your network URI
       network_uri: projects/YOUR_PROJECT_ID/global/networks/default
-      # TODO: Replace with your subnetwork URI
-      subnetwork_uri: projects/YOUR_PROJECT_ID/regions/us-central1/subnetworks/default
     pipelines:
       - source: orchestration-pipeline.yaml
 """
@@ -181,7 +180,8 @@ jobs:
       - uses: google-github-actions/setup-gcloud@v1
       - run: gcloud components update --quiet
       - uses: astral-sh/setup-uv@v7
-      - run: gcloud orchestration-pipelines validate
+      - run: gcloud beta orchestration-pipelines validate --pipeline-paths=orchestration-pipeline.yaml --environment=dev
+      - run: gcloud beta orchestration-pipelines validate --pipeline-paths=orchestration-pipeline.yaml --environment=production
 """
 
 _DEPLOY_WORKFLOW_TEMPLATE = """\
@@ -202,7 +202,7 @@ jobs:
       - uses: google-github-actions/setup-gcloud@v1
       - run: gcloud components update --quiet
       - uses: astral-sh/setup-uv@v7
-      - run: gcloud orchestration-pipelines deploy --env={environment}
+      - run: gcloud beta orchestration-pipelines deploy --environment={environment}
 """
 
 
@@ -247,14 +247,12 @@ class InitDemo(calliope_base.Command):
     files.MakeDir(str(profiles_dir))
     self._WriteFile(profiles_dir / 'serverless-standard.yaml', _PROFILE_YAML)
 
-    self._WriteFile(demo_dir / 'environment.tar.gz', '')
-
     # Create GitHub workflows
     workflows_dir = demo_dir / '.github' / 'workflows'
     files.MakeDir(str(workflows_dir))
 
     self._WriteFile(
-        workflows_dir / 'validate.yaml', _VALIDATE_WORKFLOW_TEMPLATE
+        workflows_dir / 'validate.yaml', _VALIDATE_WORKFLOW_TEMPLATE.format()
     )
 
     self._WriteFile(

@@ -15,11 +15,11 @@
 """Surface for creating domain mappings."""
 
 
-from googlecloudsdk.api_lib.run import global_methods
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import deletion
+from googlecloudsdk.command_lib.run import domain_mapping_util
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import platforms
@@ -103,23 +103,7 @@ class Create(base.Command):
 
     # Check if the provided domain has already been verified
     # if mapping to a non-CRoGKE service
-    if platforms.GetPlatform() == platforms.PLATFORM_MANAGED:
-      client = global_methods.GetServerlessClientInstance()
-      all_domains = global_methods.ListVerifiedDomains(client)
-      # If not already verified, explain and error out
-      if all(d.id not in domain_mapping_ref.Name() for d in all_domains):
-        if not all_domains:
-          domains_text = 'You currently have no verified domains.'
-        else:
-          domains = ['* {}'.format(d.id) for d in all_domains]
-          domains_text = ('Currently verified domains:\n{}'.format(
-              '\n'.join(domains)))
-        raise exceptions.DomainMappingCreationError(
-            'The provided domain does not appear to be verified '
-            'for the current account so a domain mapping '
-            'cannot be created. Visit [{help}] for more information.'
-            '\n{domains}'.format(
-                help=DOMAIN_MAPPINGS_HELP_DOCS_URL, domains=domains_text))
+    domain_mapping_util.VerifyDomain(domain_mapping_ref)
 
     with serverless_operations.Connect(conn_context) as client:
       try:

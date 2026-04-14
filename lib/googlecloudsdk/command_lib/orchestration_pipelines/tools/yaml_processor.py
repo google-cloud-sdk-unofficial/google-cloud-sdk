@@ -14,6 +14,7 @@
 # limitations under the License.
 """Common utilities for Orchestration Pipelines commands."""
 
+from collections.abc import Mapping
 import os
 import pathlib
 import re
@@ -50,9 +51,8 @@ class InvalidPathError(exceptions.Error):
 
 def resolve_dynamic_variables(
     yaml_content: str,
-    deployment_path: str,
-    env: str,
-    external_variables: Optional[Dict[str, Any]] = None,
+    combined_variables: Mapping[str, Any],
+    deployment: Mapping[str, Any],
 ) -> Any:
   """Resolves dynamic variables in the YAML content.
 
@@ -61,40 +61,27 @@ def resolve_dynamic_variables(
 
   Args:
     yaml_content: The content of the YAML file to be resolved.
-    deployment_path: The path to the deployment configuration YAML file.
-    env: The environment to use (e.g., "dev", "staging", "prod").
-    external_variables: Optional dict of external variables to substitute.
+    combined_variables: Dict of combined variables to substitute.
+    deployment: The parsed deployment configuration as a dictionary.
 
   Returns:
-    The resolved_yaml_content YAML file content as a string.
+    The resolved YAML content as a Python object (e.g., dict or list).
   """
-
-  parsed_deployment = parse_deployment(deployment_path, env, external_variables)
-
-  combined_variables = {
-      "project": parsed_deployment["project"],
-      "region": parsed_deployment["region"],
-      **parsed_deployment.get(VARIABLES_KEY, {}),
-  }
 
   resolved_yaml_content = resolve_string_templates(
       yaml_content, combined_variables
   )
   try:
-    resolved_yaml_content = yaml.load(resolved_yaml_content)
+    parsed_yaml_content = yaml.load(resolved_yaml_content)
   except yaml.Error as e:
     raise BadFileError(
-        f"Failed to parse pipeline YAML after variable substitution:: {e}"
+        f"Failed to parse pipeline YAML after variable substitution: {e}"
     ) from e
-
-  if (
-      isinstance(resolved_yaml_content, dict)
-      and "actions" in resolved_yaml_content
-  ):
-    resolved_yaml_content = _resolve_pipeline_yaml(
-        resolved_yaml_content, combined_variables, parsed_deployment
+  if isinstance(parsed_yaml_content, dict) and "actions" in parsed_yaml_content:
+    return _resolve_pipeline_yaml(
+        parsed_yaml_content, combined_variables, deployment
     )
-  return resolved_yaml_content
+  return parsed_yaml_content
 
 
 def _resolve_resource_profile(
@@ -209,13 +196,13 @@ def _resolve_pipeline_yaml(yaml_content, combined_variables, deployment):
     if "dbt" in framework:
       raw_upload_path = (
           framework["dbt"]
-          .setdefault("airflowWorker", {})
+          .get("airflowWorker", {})
           .get("projectDirectoryPath", "")
       )
     elif "dataform" in framework:
       raw_upload_path = (
           framework["dataform"]
-          .setdefault("airflowWorker", {})
+          .get("airflowWorker", {})
           .get("projectDirectoryPath", "")
       )
     elif action_type == "sql":
@@ -261,7 +248,7 @@ def _load_resource_profile(
     profile_data = yaml.load(raw_content)
   except (IOError, OSError, yaml.Error) as e:
     raise BadFileError(
-        f"Error reading or parsing resource profile '{path}': {e}"
+        f"Error reading or parsing resource profile '{path}'"
     ) from e
 
   if isinstance(profile_data, list):
@@ -396,6 +383,8 @@ def _extract_paths_from_nested_data(data: Any) -> list[str]:
       # they may include fields with "path" that are not relevant to the
       # actual file paths used in the pipeline.
       if k == "job":
+        continue
+      if k == "properties":
         continue
       if isinstance(k, str) and (k.lower().endswith("path")):
         if isinstance(v, str):
@@ -739,9 +728,9 @@ def check_for_missing_variables(content):
   if match:
     var_name = match.group(1)
     raise BadFileError(
-        f"Variable '{var_name}' not found in deployment file 'deployment.yaml' "
-        "variables section, nor in environment variables "
-        f"(as _DEPLOY_VAR_{var_name})."
+        f"Variable '{var_name}' is not resolved in the content. Please ensure"
+        " that all variables are defined using deployment file, environment"
+        " variables, or substitutions argument."
     )
 
 
@@ -889,7 +878,7 @@ def parse_deployment(
     deployment_path: str,
     env: str,
     external_variables: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
+) -> tuple[Dict[str, Any], Dict[str, Any]]:
   """Extracts storage and environment specific configuration."""
   environment = load_environment(deployment_path, env, external_variables)
   environment = validate_environment(environment, env)
@@ -915,7 +904,13 @@ def parse_deployment(
   if getattr(environment, "secrets", None):
     result["secrets"] = environment.secrets
 
-  return result
+  combined_variables = {
+      "project": result.get("project"),
+      "region": result.get("region"),
+      **result.get("variables", {}),
+  }
+
+  return result, combined_variables
 
 
 def collect_environment_variables() -> dict[str, str]:
@@ -974,6 +969,17 @@ def validate_pipeline_l1(
       ) from e
 
     _build_orchestration_pipelines_model(resolved_pipeline)
+
+    # Check if pipeline ID matches pipeline file name
+    pipeline_id = resolved_pipeline.get("pipelineId") or resolved_pipeline.get(
+        "pipeline_id"
+    )
+    pipeline_stem = pathlib.Path(pipeline_path).stem
+    if pipeline_id != pipeline_stem:
+      raise BadFileError(
+          f"Pipeline ID {pipeline_id!r} does not match pipeline file name"
+          f" {pathlib.Path(pipeline_path).stem!r} in {pipeline_path!r}."
+      )
 
 
 def _validate_single_pipeline(

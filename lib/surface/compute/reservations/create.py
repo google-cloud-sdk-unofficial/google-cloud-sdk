@@ -57,7 +57,7 @@ class Create(base.CreateCommand):
   _support_folder_share_setting = False
   _support_reservation_sharing_policy = True
   _support_ssd_count = True
-  _support_resource_manager_tags = False
+  _support_resource_manager_tags = True
 
   @classmethod
   def Args(cls, parser):
@@ -82,7 +82,7 @@ class CreateBeta(Create):
   _support_auto_delete = True
   _support_folder_share_setting = False
   _support_reservation_sharing_policy = True
-  _support_resource_manager_tags = False
+  _support_resource_manager_tags = True
 
   @classmethod
   def Args(cls, parser):

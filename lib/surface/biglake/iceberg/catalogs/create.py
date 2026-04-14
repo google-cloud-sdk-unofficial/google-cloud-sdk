@@ -63,7 +63,6 @@ def _BuildFederatedCatalogMessage(args, messages):
   return federated_catalog_options
 
 
-# TODO(b/496225715): Support description field for all kinds of catalogs.
 @base.ReleaseTracks(
     base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
@@ -83,6 +82,7 @@ class CreateCatalog(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     flags.AddCatalogResourceArg(parser, 'to create')
+    arguments.AddDescriptionArg(parser)
     util.GetCredentialModeEnumMapper(
         cls.ReleaseTrack()
     ).choice_arg.AddToParser(parser)
@@ -122,6 +122,8 @@ class CreateCatalog(base.CreateCommand):
         ).GetEnumForChoice(args.catalog_type),
         credential_mode=credential_mode,
     )
+    if args.IsSpecified('description'):
+      catalog.description = args.description
     if self._support_catalog_type_biglake:
       catalog.default_location = args.default_location
       catalog.additional_locations = args.additional_locations or []

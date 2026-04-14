@@ -34,11 +34,11 @@
       api_field: hiveDatabase.description
       help_text: |
         Description of the Hive database.
-    - arg_name: properties
+    - arg_name: parameters
       api_field: hiveDatabase.parameters.additionalProperties
       metavar: KEY=VALUE
       help_text: |
-        Additional properties associated with the database.
+        Additional parameters associated with the database.
       type:
         arg_dict:
           flatten: true

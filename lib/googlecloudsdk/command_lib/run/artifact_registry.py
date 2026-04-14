@@ -14,7 +14,6 @@
 # limitations under the License.
 """Utilities for working with Artifact Registry repositories."""
 
-
 from apitools.base.py import exceptions as base_exceptions
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.command_lib.artifacts import requests
@@ -59,12 +58,13 @@ def RepoRegion(args, cluster_location=None):
 
   raise exceptions.ArgumentError(
       'To deploy from source with this platform, you must set run/region via '
-      '"gcloud config set run/region REGION".')
+      '"gcloud config set run/region REGION".'
+  )
 
 
-def ShouldCreateRepository(repo,
-                           skip_activation_prompt=False,
-                           skip_console_prompt=False):
+def ShouldCreateRepository(
+    repo, skip_activation_prompt=False, skip_console_prompt=False
+):
   """Checks for the existence of the provided repository.
 
   If the provided repository does not exist, the user will be prompted
@@ -75,18 +75,24 @@ def ShouldCreateRepository(repo,
       the repository.
     skip_activation_prompt: bool determining if the client should prompt if the
       API isn't activated.
-    skip_console_prompt: bool determining if the client should prompt the
-      user if the repository doesn't exist.
+    skip_console_prompt: bool determining if the client should prompt the user
+      if the repository doesn't exist.
 
   Returns:
     A boolean indicating whether a repository needs to be created.
   """
   try:
-    requests.GetRepository(repo.GetRepositoryName(), skip_activation_prompt)
+    requests.GetRepository(
+        repo.GetRepositoryName(),
+        skip_activation_prompt,
+        location=repo.location,
+    )
     return False
   except base_exceptions.HttpForbiddenError:
-    log.error('Permission denied while accessing Artifact Registry. Artifact '
-              'Registry access is required to deploy from source.')
+    log.error(
+        'Permission denied while accessing Artifact Registry. Artifact '
+        'Registry access is required to deploy from source.'
+    )
     raise
   except base_exceptions.HttpBadRequestError:
     log.error('Error in retrieving repository from Artifact Registry.')
@@ -94,10 +100,13 @@ def ShouldCreateRepository(repo,
   except base_exceptions.HttpNotFoundError:
     if skip_console_prompt:
       return True
-    message = ('Deploying from source requires an Artifact Registry Docker '
-               'repository to store built containers. A repository named '
-               '[{name}] in region [{location}] will be created.'.format(
-                   name=repo.repo, location=repo.location))
+    message = (
+        'Deploying from source requires an Artifact Registry Docker '
+        'repository to store built containers. A repository named '
+        '[{name}] in region [{location}] will be created.'.format(
+            name=repo.repo, location=repo.location
+        )
+    )
 
     console_io.PromptContinue(message, cancel_on_no=True)
 
@@ -123,10 +132,14 @@ def CreateRepository(repo, skip_activation_prompt=False):
       repo.project, repo.location, repository_message, skip_activation_prompt
   )
   op_resource = resources.REGISTRY.ParseRelativeName(
-      op.name, collection='artifactregistry.projects.locations.operations')
+      op.name, collection='artifactregistry.projects.locations.operations'
+  )
 
-  client = requests.GetClient()
+  client = requests.GetClient(location=repo.location)
   waiter.WaitFor(
-      waiter.CloudOperationPoller(client.projects_locations_repositories,
-                                  client.projects_locations_operations),
-      op_resource)
+      waiter.CloudOperationPoller(
+          client.projects_locations_repositories,
+          client.projects_locations_operations,
+      ),
+      op_resource,
+  )

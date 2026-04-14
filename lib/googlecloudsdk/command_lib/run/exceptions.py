@@ -58,6 +58,10 @@ class DeletionFailedError(exceptions.Error):
   """Indicates failure to delete."""
 
 
+class StartFailedError(exceptions.Error):
+  """Indicates failure to start."""
+
+
 class ConfigurationError(exceptions.Error):
   """Indicates an error in configuration."""
 

@@ -39,7 +39,7 @@ def _UpdateMemoryLayer(cluster_ref, args):
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class UpdateMemoryLayer(base.UpdateCommand):
   """Update a Bigtable memory layer."""
 

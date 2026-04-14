@@ -81,8 +81,9 @@ def _AppProfileChecks(
     transactional_writes=None,
     row_affinity=False,
     data_boost=False,
+    create=False,
 ):
-  """Create an app profile.
+  """Validates app profile arguments.
 
   Args:
     cluster: string, The cluster id for the new app profile to route to using
@@ -96,6 +97,8 @@ def _AppProfileChecks(
     row_affinity: bool, Whether to use row affinity sticky routing.
     data_boost: bool, If the app profile should use Data Boost Read-only
       Isolation.
+    create: bool, Whether the app profile is being created. If true, validates
+      fields that must exist for creation but not for other operations.
 
   Raises:
     ConflictingArgumentsException:
@@ -111,7 +114,7 @@ def _AppProfileChecks(
   """
   if multi_cluster and cluster:
     raise exceptions.ConflictingArgumentsException('--route-to', '--route-any')
-  if not multi_cluster and not cluster:
+  if create and not multi_cluster and not cluster:
     raise exceptions.OneOfArgumentsRequiredException(
         ['--route-to', '--route-any'],
         'Either --route-to or --route-any must be specified.',
@@ -191,6 +194,7 @@ def Create(
       transactional_writes=transactional_writes,
       row_affinity=row_affinity,
       data_boost=data_boost,
+      create=True,
   )
 
   client = util.GetAdminClient()
@@ -301,6 +305,7 @@ def Update(
       transactional_writes=transactional_writes,
       row_affinity=row_affinity,
       data_boost=data_boost,
+      create=False,
   )
 
   client = util.GetAdminClient()

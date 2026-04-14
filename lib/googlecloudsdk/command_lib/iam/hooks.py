@@ -14,7 +14,6 @@
 # limitations under the License.
 """The python hooks for IAM surface."""
 
-
 import re
 
 from googlecloudsdk.api_lib.iam import util
@@ -331,3 +330,22 @@ def EraseProjectHook(unused_ref, unused_args, request):
   """
   request.name = re.sub('projects/[^/]+/', 'projects/-/', request.name)
   return request
+
+
+def ClearScimUsage(
+    flag_value: bool,
+) -> 'apis.GetMessagesModule("iam", "v1").WorkforcePoolProvider.ScimUsageValueValuesEnum | None':
+  """Clears the SCIM usage by explicitly setting it to SCIM_USAGE_UNSPECIFIED.
+
+  Args:
+    flag_value: bool, if True, returns SCIM_USAGE_UNSPECIFIED enum.
+
+  Returns:
+    SCIM_USAGE_UNSPECIFIED if flag_value is True, else None.
+  """
+  if flag_value:
+    messages = apis.GetMessagesModule('iam', 'v1')
+    return (
+        messages.WorkforcePoolProvider.ScimUsageValueValuesEnum.SCIM_USAGE_UNSPECIFIED
+    )
+  return None

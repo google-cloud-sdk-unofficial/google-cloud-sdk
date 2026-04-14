@@ -548,6 +548,11 @@ class Instance(_messages.Message):
     LabelsValue: Optional. Labels to represent user-provided metadata.
 
   Fields:
+    aclPolicy: Optional. The ACL policy for the instance. Format:
+      projects/{project}/locations/{location}/aclPolicies/{acl_policy}
+    aclPolicyInSync: Output only. Whether the ACL rules applied to the
+      instance are in sync with the latest ACL policy rules. This field is
+      only applicable if the ACL policy is set for the instance.
     allowFewerZonesDeployment: Optional. Immutable. Deprecated, do not use.
     asyncInstanceEndpointsDeletionEnabled: Optional. If true, instance
       endpoints that are created and registered by customers can be deleted
@@ -795,51 +800,53 @@ class Instance(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  allowFewerZonesDeployment = _messages.BooleanField(1)
-  asyncInstanceEndpointsDeletionEnabled = _messages.BooleanField(2)
-  authorizationMode = _messages.EnumField('AuthorizationModeValueValuesEnum', 3)
-  automatedBackupConfig = _messages.MessageField('AutomatedBackupConfig', 4)
-  availableMaintenanceVersions = _messages.StringField(5, repeated=True)
-  backupCollection = _messages.StringField(6)
-  createTime = _messages.StringField(7)
-  crossInstanceReplicationConfig = _messages.MessageField('CrossInstanceReplicationConfig', 8)
-  deletionProtectionEnabled = _messages.BooleanField(9)
-  discoveryEndpoints = _messages.MessageField('DiscoveryEndpoint', 10, repeated=True)
-  effectiveMaintenanceVersion = _messages.StringField(11)
-  encryptionInfo = _messages.MessageField('EncryptionInfo', 12)
-  endpoints = _messages.MessageField('InstanceEndpoint', 13, repeated=True)
-  engineConfigs = _messages.MessageField('EngineConfigsValue', 14)
-  engineVersion = _messages.StringField(15)
-  gcsSource = _messages.MessageField('GcsBackupSource', 16)
-  kmsKey = _messages.StringField(17)
-  labels = _messages.MessageField('LabelsValue', 18)
-  maintenancePolicy = _messages.MessageField('MaintenancePolicy', 19)
-  maintenanceSchedule = _messages.MessageField('MaintenanceSchedule', 20)
-  maintenanceVersion = _messages.StringField(21)
-  managedBackupSource = _messages.MessageField('ManagedBackupSource', 22)
-  migrationConfig = _messages.MessageField('MigrationConfig', 23)
-  mode = _messages.EnumField('ModeValueValuesEnum', 24)
-  name = _messages.StringField(25)
-  nodeConfig = _messages.MessageField('NodeConfig', 26)
-  nodeType = _messages.EnumField('NodeTypeValueValuesEnum', 27)
-  ondemandMaintenance = _messages.BooleanField(28)
-  persistenceConfig = _messages.MessageField('PersistenceConfig', 29)
-  pscAttachmentDetails = _messages.MessageField('PscAttachmentDetail', 30, repeated=True)
-  pscAutoConnections = _messages.MessageField('PscAutoConnection', 31, repeated=True)
-  replicaCount = _messages.IntegerField(32, variant=_messages.Variant.INT32)
-  rotateServerCertificate = _messages.BooleanField(33)
-  satisfiesPzi = _messages.BooleanField(34)
-  satisfiesPzs = _messages.BooleanField(35)
-  serverCaMode = _messages.EnumField('ServerCaModeValueValuesEnum', 36)
-  serverCaPool = _messages.StringField(37)
-  shardCount = _messages.IntegerField(38, variant=_messages.Variant.INT32)
-  simulateMaintenanceEvent = _messages.BooleanField(39)
-  state = _messages.EnumField('StateValueValuesEnum', 40)
-  stateInfo = _messages.MessageField('StateInfo', 41)
-  transitEncryptionMode = _messages.EnumField('TransitEncryptionModeValueValuesEnum', 42)
-  uid = _messages.StringField(43)
-  updateTime = _messages.StringField(44)
-  zoneDistributionConfig = _messages.MessageField('ZoneDistributionConfig', 45)
+  aclPolicy = _messages.StringField(1)
+  aclPolicyInSync = _messages.BooleanField(2)
+  allowFewerZonesDeployment = _messages.BooleanField(3)
+  asyncInstanceEndpointsDeletionEnabled = _messages.BooleanField(4)
+  authorizationMode = _messages.EnumField('AuthorizationModeValueValuesEnum', 5)
+  automatedBackupConfig = _messages.MessageField('AutomatedBackupConfig', 6)
+  availableMaintenanceVersions = _messages.StringField(7, repeated=True)
+  backupCollection = _messages.StringField(8)
+  createTime = _messages.StringField(9)
+  crossInstanceReplicationConfig = _messages.MessageField('CrossInstanceReplicationConfig', 10)
+  deletionProtectionEnabled = _messages.BooleanField(11)
+  discoveryEndpoints = _messages.MessageField('DiscoveryEndpoint', 12, repeated=True)
+  effectiveMaintenanceVersion = _messages.StringField(13)
+  encryptionInfo = _messages.MessageField('EncryptionInfo', 14)
+  endpoints = _messages.MessageField('InstanceEndpoint', 15, repeated=True)
+  engineConfigs = _messages.MessageField('EngineConfigsValue', 16)
+  engineVersion = _messages.StringField(17)
+  gcsSource = _messages.MessageField('GcsBackupSource', 18)
+  kmsKey = _messages.StringField(19)
+  labels = _messages.MessageField('LabelsValue', 20)
+  maintenancePolicy = _messages.MessageField('MaintenancePolicy', 21)
+  maintenanceSchedule = _messages.MessageField('MaintenanceSchedule', 22)
+  maintenanceVersion = _messages.StringField(23)
+  managedBackupSource = _messages.MessageField('ManagedBackupSource', 24)
+  migrationConfig = _messages.MessageField('MigrationConfig', 25)
+  mode = _messages.EnumField('ModeValueValuesEnum', 26)
+  name = _messages.StringField(27)
+  nodeConfig = _messages.MessageField('NodeConfig', 28)
+  nodeType = _messages.EnumField('NodeTypeValueValuesEnum', 29)
+  ondemandMaintenance = _messages.BooleanField(30)
+  persistenceConfig = _messages.MessageField('PersistenceConfig', 31)
+  pscAttachmentDetails = _messages.MessageField('PscAttachmentDetail', 32, repeated=True)
+  pscAutoConnections = _messages.MessageField('PscAutoConnection', 33, repeated=True)
+  replicaCount = _messages.IntegerField(34, variant=_messages.Variant.INT32)
+  rotateServerCertificate = _messages.BooleanField(35)
+  satisfiesPzi = _messages.BooleanField(36)
+  satisfiesPzs = _messages.BooleanField(37)
+  serverCaMode = _messages.EnumField('ServerCaModeValueValuesEnum', 38)
+  serverCaPool = _messages.StringField(39)
+  shardCount = _messages.IntegerField(40, variant=_messages.Variant.INT32)
+  simulateMaintenanceEvent = _messages.BooleanField(41)
+  state = _messages.EnumField('StateValueValuesEnum', 42)
+  stateInfo = _messages.MessageField('StateInfo', 43)
+  transitEncryptionMode = _messages.EnumField('TransitEncryptionModeValueValuesEnum', 44)
+  uid = _messages.StringField(45)
+  updateTime = _messages.StringField(46)
+  zoneDistributionConfig = _messages.MessageField('ZoneDistributionConfig', 47)
 
 
 class InstanceEndpoint(_messages.Message):
@@ -853,6 +860,24 @@ class InstanceEndpoint(_messages.Message):
   """
 
   connections = _messages.MessageField('ConnectionDetail', 1, repeated=True)
+
+
+class ListAclPoliciesResponse(_messages.Message):
+  r"""Response for ListAclPolicies.
+
+  Fields:
+    aclPolicies: A list of ACL policies in the project in the specified
+      location, or across all locations. If the `location` in the parent field
+      of the request is "-", all regions available to the project are queried,
+      and the results aggregated.
+    nextPageToken: Token to retrieve the next page of results, or empty if
+      there are no more results in the list.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  aclPolicies = _messages.MessageField('AclPolicy', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
 
 
 class ListBackupCollectionsResponse(_messages.Message):
@@ -1090,6 +1115,97 @@ class Membership(_messages.Message):
 
   primaryInstance = _messages.MessageField('RemoteInstance', 1)
   secondaryInstances = _messages.MessageField('RemoteInstance', 2, repeated=True)
+
+
+class MemorystoreProjectsLocationsAclPoliciesCreateRequest(_messages.Message):
+  r"""A MemorystoreProjectsLocationsAclPoliciesCreateRequest object.
+
+  Fields:
+    aclPolicy: A AclPolicy resource to be passed as the request body.
+    aclPolicyId: Required. The logical name of the ACL Policy in the customer
+      project with the following restrictions: * Must contain only lowercase
+      letters, numbers, and hyphens. * Must start with a letter. * Must be
+      between 1-63 characters. * Must end with a number or a letter. * Must be
+      unique within the customer project / location
+    parent: Required. The resource name of the cluster location using the
+      form: `projects/{project}/locations/{location}` where `location` refers
+      to a Google Cloud region.
+    requestId: Optional. Idempotent request UUID. .
+  """
+
+  aclPolicy = _messages.MessageField('AclPolicy', 1)
+  aclPolicyId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class MemorystoreProjectsLocationsAclPoliciesDeleteRequest(_messages.Message):
+  r"""A MemorystoreProjectsLocationsAclPoliciesDeleteRequest object.
+
+  Fields:
+    etag: Optional. Etag of the ACL policy. If this is different from the
+      server's etag, the request will fail with an ABORTED error.
+    name: Required. Redis ACL Policy resource name using the form:
+      `projects/{project}/locations/{location}/aclPolicies/{acl_policy_id}`
+      where `location` refers to a GCP region.
+    requestId: Optional. Idempotent request UUID.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+
+
+class MemorystoreProjectsLocationsAclPoliciesGetRequest(_messages.Message):
+  r"""A MemorystoreProjectsLocationsAclPoliciesGetRequest object.
+
+  Fields:
+    name: Required. Redis ACL Policy resource name using the form:
+      `projects/{project}/locations/{location}/aclPolicies/{acl_policy_id}`
+      where `location` refers to a GCP region.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class MemorystoreProjectsLocationsAclPoliciesListRequest(_messages.Message):
+  r"""A MemorystoreProjectsLocationsAclPoliciesListRequest object.
+
+  Fields:
+    pageSize: Optional. The maximum number of items to return. If not
+      specified, a default value of 1000 will be used by the service.
+      Regardless of the page_size value, the response may include a partial
+      list and a caller should only rely on response's `next_page_token` to
+      determine if there are more ACL policies left to be queried. The maximum
+      value is 1000; values above 1000 will be coerced to 1000.
+    pageToken: Optional. The `next_page_token` value returned from a previous
+      ListAclPolicies request, if any.
+    parent: Required. The resource name of the cluster location using the
+      form: `projects/{project}/locations/{location}` where `location` refers
+      to a Google Cloud region.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class MemorystoreProjectsLocationsAclPoliciesPatchRequest(_messages.Message):
+  r"""A MemorystoreProjectsLocationsAclPoliciesPatchRequest object.
+
+  Fields:
+    aclPolicy: A AclPolicy resource to be passed as the request body.
+    name: Identifier. Full resource path of the ACL policy.
+    requestId: Optional. Idempotent request UUID.
+    updateMask: Optional. Mask of fields to be updated. At least one path must
+      be supplied in this field. The elements of the repeated paths field may
+      only include these fields from AclPolicy: * `rules`
+  """
+
+  aclPolicy = _messages.MessageField('AclPolicy', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
 
 
 class MemorystoreProjectsLocationsBackupCollectionsBackupsDeleteRequest(_messages.Message):

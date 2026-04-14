@@ -307,7 +307,9 @@ class GoogleCloudVectorsearchV1Collection(_messages.Message):
 
   Messages:
     DataSchemaValue: Optional. JSON Schema for data. Field names must contain
-      only alphanumeric characters, underscores, and hyphens.
+      only alphanumeric characters, underscores, and hyphens. The schema must
+      be compliant with [JSON Schema Draft 7](https://json-
+      schema.org/draft-07/schema).
     LabelsValue: Optional. Labels as key value pairs.
     VectorSchemaValue: Optional. Schema for vector fields. Only vector fields
       in this schema will be searchable. Field names must contain only
@@ -316,7 +318,9 @@ class GoogleCloudVectorsearchV1Collection(_messages.Message):
   Fields:
     createTime: Output only. [Output only] Create time stamp
     dataSchema: Optional. JSON Schema for data. Field names must contain only
-      alphanumeric characters, underscores, and hyphens.
+      alphanumeric characters, underscores, and hyphens. The schema must be
+      compliant with [JSON Schema Draft 7](https://json-
+      schema.org/draft-07/schema).
     description: Optional. User-specified description of the collection
     displayName: Optional. User-specified display name of the collection
     labels: Optional. Labels as key value pairs.
@@ -330,7 +334,9 @@ class GoogleCloudVectorsearchV1Collection(_messages.Message):
   @encoding.MapUnrecognizedFields('additionalProperties')
   class DataSchemaValue(_messages.Message):
     r"""Optional. JSON Schema for data. Field names must contain only
-    alphanumeric characters, underscores, and hyphens.
+    alphanumeric characters, underscores, and hyphens. The schema must be
+    compliant with [JSON Schema Draft 7](https://json-
+    schema.org/draft-07/schema).
 
     Messages:
       AdditionalProperty: An additional property for a DataSchemaValue object.

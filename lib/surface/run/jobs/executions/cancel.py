@@ -14,6 +14,7 @@
 # limitations under the License.
 """Command for canceling executions."""
 
+import copy
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import cancellation
@@ -28,18 +29,23 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Cancel(base.Command):
   """Cancel an execution."""
 
   detailed_help = {
-      'DESCRIPTION': """
+      'DESCRIPTION': (
+          """
           {description}
-          """,
-      'EXAMPLES': """
+          """
+      ),
+      'EXAMPLES': (
+          """
           To cancel an execution:
 
               $ {command} my-execution
-          """,
+          """
+      ),
   }
 
   @staticmethod
@@ -51,9 +57,7 @@ class Cancel(base.Command):
         required=True,
         prefixes=False,
     )
-    flags.AddAsyncFlag(
-        parser, default_async_for_cluster=True
-    )
+    flags.AddAsyncFlag(parser, default_async_for_cluster=True)
     concept_parsers.ConceptParser([execution_presentation]).AddToParser(parser)
 
   @staticmethod
@@ -85,3 +89,11 @@ class Cancel(base.Command):
       pretty_print.Success(
           'Cancelled execution [{}].'.format(ex_ref.executionsId)
       )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.RegionalEndpointsSupported
+class BetaCancel(Cancel):
+  """Cancel an execution."""
+
+  detailed_help = copy.deepcopy(Cancel.detailed_help)

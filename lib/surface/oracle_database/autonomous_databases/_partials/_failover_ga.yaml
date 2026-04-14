@@ -38,13 +38,14 @@
       required: true
     - arg_name: peer-autonomous-database
       help_text: |-
-        The peer database name to fail over to.
+        The peer database name to fail over to. Required for cross-region
+        standby, and must be omitted for in-region Data Guard.
       is_positional: false
       is_primary_resource: false
       resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_locations_autonomous_databases
       resource_method_params:
         failoverAutonomousDatabaseRequest.peerAutonomousDatabase: '{__relative_name__}'
-      required: true
+      required: false
   request:
     api_version: v1
     collection:

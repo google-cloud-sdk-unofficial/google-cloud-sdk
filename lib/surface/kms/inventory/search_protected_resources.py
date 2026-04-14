@@ -30,7 +30,7 @@ DETAILED_HELP = {
          To view the protected resources for the key `puppy` and organization
          number `1234` run:
 
-           $ {command} --keyname=puppy --scope=1234
+           $ {command} --keyname=puppy --scope=organizations/1234
        """,
 }
 

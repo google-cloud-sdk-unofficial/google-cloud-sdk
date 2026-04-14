@@ -490,6 +490,8 @@ def CreateCatalog(catalog_id, catalog_msg, primary_location=None):
   }
   if catalog_msg.credential_mode:
     body['credential-mode'] = str(catalog_msg.credential_mode)
+  if catalog_msg.description:
+    body['description'] = catalog_msg.description
   if hasattr(catalog_msg, 'default_location') and catalog_msg.default_location:
     body['default-location'] = catalog_msg.default_location
   if (

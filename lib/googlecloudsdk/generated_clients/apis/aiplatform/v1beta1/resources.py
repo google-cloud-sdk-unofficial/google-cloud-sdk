@@ -1922,6 +1922,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_ONLINEEVALUATORS = (
+      'projects.locations.onlineEvaluators',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'onlineEvaluators/{onlineEvaluatorsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_OPERATIONS = (
       'projects.locations.operations',
       '{+name}',
@@ -2261,6 +2272,18 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/'
               'semanticGovernancePolicies/{semanticGovernancePoliciesId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_SEMANTICGOVERNANCEPOLICIES_OPERATIONS = (
+      'projects.locations.semanticGovernancePolicies.operations',
+      '{+name}',
+      {
+          '':
+              'projects/{project}/locations/{location}/'
+              'semanticGovernancePolicies/{semantic_governance_policy}/'
+              'operations/{operation}',
       },
       ['name'],
       True
@@ -2713,6 +2736,24 @@ class Collections(enum.Enum):
       {
           '':
               'schedules/{schedulesId}/operations/{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  SEMANTICGOVERNANCEPOLICIES = (
+      'semanticGovernancePolicies',
+      'semanticGovernancePolicies/{semanticGovernancePoliciesId}',
+      {},
+      ['semanticGovernancePoliciesId'],
+      True
+  )
+  SEMANTICGOVERNANCEPOLICIES_OPERATIONS = (
+      'semanticGovernancePolicies.operations',
+      '{+name}',
+      {
+          '':
+              'semanticGovernancePolicies/{semanticGovernancePoliciesId}/'
+              'operations/{operationsId}',
       },
       ['name'],
       True

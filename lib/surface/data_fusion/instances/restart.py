@@ -23,6 +23,7 @@ from googlecloudsdk.command_lib.data_fusion import resource_args
 from googlecloudsdk.core import log
 
 
+@base.RegionalEndpointsSupported
 class Restart(base.DescribeCommand):
   """Restarts a Cloud Data Fusion instance."""
   detailed_help = {
@@ -46,8 +47,8 @@ class Restart(base.DescribeCommand):
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
-    datafusion = df.Datafusion()
     instance_ref = args.CONCEPTS.instance.Parse()
+    datafusion = df.Datafusion(location=instance_ref.locationsId)
 
     request = datafusion.messages.DatafusionProjectsLocationsInstancesRestartRequest(
         name=instance_ref.RelativeName())
@@ -60,7 +61,7 @@ class Restart(base.DescribeCommand):
       return operation
     else:
       waiter.WaitFor(
-          operation_poller.OperationPoller(),
+          operation_poller.OperationPoller(datafusion),
           operation.name,
           'Waiting for [{}] to complete. This may take several minutes.'.format(
               operation.name),

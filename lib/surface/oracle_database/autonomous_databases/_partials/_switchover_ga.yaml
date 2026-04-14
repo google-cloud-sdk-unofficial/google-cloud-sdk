@@ -27,6 +27,11 @@
       run:
 
         $ {command} my-instance --location=us-east4 --peer-autonomous-database=projects/project-id/locations/us-west3/autonomousDatabases/my-instance
+
+      To switchover an AutonomousDatabase with id `my-instance` in the location `us-east4` to a local standby database,
+      run:
+
+        $ {command} my-instance --location=us-east4
   arguments:
     params:
     - help_text: |-
@@ -38,13 +43,14 @@
       required: true
     - arg_name: peer-autonomous-database
       help_text: |-
-        The peer database name to switch over to.
+        The peer database name to switch over to. Required for cross-region
+        standby, and must be omitted for in-region Data Guard.
       is_positional: false
       is_primary_resource: false
       resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_locations_autonomous_databases
       resource_method_params:
         switchoverAutonomousDatabaseRequest.peerAutonomousDatabase: '{__relative_name__}'
-      required: true
+      required: false
   request:
     api_version: v1
     collection:

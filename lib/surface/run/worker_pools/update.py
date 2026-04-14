@@ -50,6 +50,8 @@ Container Flags
   group.AddArgument(flags.CpuFlag())
   group.AddArgument(flags.CommandFlag())
   group.AddArgument(flags.ArgsFlag())
+  if release_track != base.ReleaseTrack.GA:
+    group.AddArgument(flags.WorkdirFlag())
   group.AddArgument(flags_parser.SecretsFlags())
   group.AddArgument(flags.DependsOnFlag())
   group.AddArgument(flags.AddVolumeMountFlag())

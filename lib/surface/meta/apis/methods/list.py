@@ -15,14 +15,15 @@
 
 """A command that lists the resource collections for a given API."""
 
-
 import itertools
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.meta.apis import flags
 from googlecloudsdk.command_lib.util.apis import registry
 
 
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List the methods of a resource collection for an API."""
 
@@ -33,16 +34,23 @@ class List(base.ListCommand):
     collection_flag = base.Argument(
         '--collection',
         completer=flags.CollectionCompleter,
-        help='The name of the collection for which to list methods.\n'
-             'If left blank, returns methods from all collections.')
+        help=(
+            'The name of the collection for which to list methods.\n'
+            'If left blank, returns methods from all collections. Valid '
+            'example: `compute.instances`'
+        ),
+    )
     collection_flag.AddToParser(parser)
     flags.API_VERSION_FLAG.AddToParser(parser)
     api_flag = base.Argument(
         '--api',
         completer=flags.APICompleter,
-        help=('The name of the API to get the methods for. If `--api-version` '
-              'is also supplied, then returns methods from specified version, '
-              'otherwise returns methods from all versions of this API.'))
+        help=(
+            'The name of the API to get the methods for. If `--api-version` '
+            'is also supplied, then returns methods from specified version, '
+            'otherwise returns methods from all versions of this API.'
+        ),
+    )
     api_flag.AddToParser(parser)
     parser.display_info.AddFormat("""
       table(
@@ -64,10 +72,19 @@ class List(base.ListCommand):
             for api in registry.GetAllAPIs()
         ]
       collections = list(itertools.chain.from_iterable(collections))
-      methods = [registry.GetMethods(collection.full_name,
-                                     api_version=collection.api_version)
-                 for collection in collections]
+      methods = [
+          registry.GetMethods(
+              collection.full_name, api_version=collection.api_version
+          )
+          for collection in collections
+      ]
       methods = list(itertools.chain.from_iterable(methods))
       return methods
 
+    if '.' not in args.collection:
+      raise exceptions.InvalidArgumentException(
+          'collection',
+          'Collection name must be of the form <api>.<collection>, got'
+          f" '{args.collection}'. Example valid collection: compute.instances",
+      )
     return registry.GetMethods(args.collection, api_version=args.api_version)

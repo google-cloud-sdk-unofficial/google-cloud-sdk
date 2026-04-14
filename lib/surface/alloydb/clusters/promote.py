@@ -24,9 +24,8 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Promote(base.UpdateCommand):
   """Promote an AlloyDB SECONDARY cluster in a given project and region."""
 
@@ -39,8 +38,8 @@ class Promote(base.UpdateCommand):
         """,
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Specifies additional command flags.
 
     Args:
@@ -68,9 +67,15 @@ class Promote(base.UpdateCommand):
         projectsId=properties.VALUES.core.project.GetOrFail,
         locationsId=args.region,
         clustersId=args.cluster)
+
+    promote_cluster_request = alloydb_messages.PromoteClusterRequest()
+    # failover is currently only supported in alpha and beta release tracks.
+    if getattr(args, 'failover', False):
+      promote_cluster_request.failover = args.failover
+
     req = alloydb_messages.AlloydbProjectsLocationsClustersPromoteRequest(
         name=cluster_ref.RelativeName(),
-        promoteClusterRequest=alloydb_messages.PromoteClusterRequest())
+        promoteClusterRequest=promote_cluster_request)
     op = alloydb_client.projects_locations_clusters.Promote(req)
     op_ref = resources.REGISTRY.ParseRelativeName(
         op.name, collection='alloydb.projects.locations.operations')
@@ -78,3 +83,26 @@ class Promote(base.UpdateCommand):
     if not args.async_:
       cluster_operations.Await(op_ref, 'Promoting cluster', self.ReleaseTrack())
     return op
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class PromoteBeta(Promote):
+  """Promote an AlloyDB SECONDARY cluster in a given project and region."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(PromoteBeta, cls).Args(parser)
+    parser.add_argument(
+        '--failover',
+        action='store_true',
+        default=False,
+        help=('If set, the promote operation will attempt to recreate the '
+              'original primary cluster as a secondary cluster when it '
+              'comes back online. Otherwise, the promoted cluster will be '
+              'a standalone cluster. Currently only supported when there '
+              'is a single secondary cluster.'))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class PromoteAlpha(PromoteBeta):
+  """Promote an AlloyDB SECONDARY cluster in a given project and region."""

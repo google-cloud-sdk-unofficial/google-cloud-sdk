@@ -16,7 +16,6 @@
 # pylint: disable=raise-missing-from
 """Allows you to write surfaces in terms of logical Serverless operations."""
 
-
 import contextlib
 import copy
 import dataclasses
@@ -26,6 +25,7 @@ import random
 import string
 from typing import List
 
+from apitools.base.protorpclite import messages as api_messages
 from apitools.base.py import encoding
 from apitools.base.py import exceptions as api_exceptions
 from apitools.base.py import list_pager
@@ -115,6 +115,7 @@ def Connect(conn_context, already_activated_service=False):
       conn_context.api_name,
       conn_context.api_version,
       skip_activation_prompt=already_activated_service,
+      location=conn_context.region,
   )
   # pylint: enable=protected-access
 
@@ -131,6 +132,7 @@ def Connect(conn_context, already_activated_service=False):
         # Only check response if not connecting to GKE
         check_response_func=response_func,
         http_client=conn_context.HttpClient(),
+        region=conn_context.region,
     )
     # pylint: enable=protected-access
     yield ServerlessOperations(
@@ -876,6 +878,7 @@ class ServerlessOperations(object):
       kms_key=None,
       iap_enabled=None,
       skip_build=False,
+      upload_through_run_api=False,
   ):
     """Change the given service in prod using the given config_changes.
 
@@ -929,6 +932,8 @@ class ServerlessOperations(object):
       iap_enabled: If true, assign run.invoker access to IAP P4SA, if false,
         remove run.invoker access from IAP P4SA.
       skip_build: If true, skip the cloud build step.
+      upload_through_run_api: bool. If true, upload the source via Upload Source
+        API.
 
     Returns:
       service.Service, the service as returned by the server on the POST/PUT
@@ -954,27 +959,45 @@ class ServerlessOperations(object):
 
     if build_source is not None and skip_build:
       tracker.StartStage(stages.UPLOAD_SOURCE)
-      if sources.IsGcsObject(build_source):
-        tracker.UpdateHeaderMessage(
-            'Using the source from the specified bucket.'
-        )
-        source_path = build_source
-      else:
-        source = sources.Upload(
-            build_source,
-            region,
-            service_ref,
-            source_bucket,
-            sources.ArchiveType.TAR,
-            respect_gitignore=False,
-        )
-        source_path = sources.GetGsutilUri(source)
-      config_changes.append(
-          config_changes_mod.SourcesAnnotationChange(
-              updates={deploy_from_source_container_name: source_path}
+      try:
+        if sources.IsGcsObject(build_source):
+          tracker.UpdateHeaderMessage(
+              'Using the source from the specified bucket.'
           )
-      )
-      tracker.CompleteStage(stages.UPLOAD_SOURCE)
+          source_path = build_source
+        elif upload_through_run_api:
+          tracker.UpdateHeaderMessage('Uploading sources through Run API..')
+          source_path = sources.UploadThroughCloudRun(
+              source_to_upload=build_source,
+              region=region,
+              service_ref=service_ref,
+              release_track=release_track,
+              kms_key=kms_key,
+          )
+        else:
+          tracker.UpdateHeaderMessage('Uploading sources...')
+          source = sources.Upload(
+              build_source,
+              region,
+              service_ref,
+              source_bucket,
+              sources.ArchiveType.TAR,
+              respect_gitignore=False,
+          )
+          source_path = sources.GetGsutilUri(source)
+        config_changes.append(
+            config_changes_mod.SourcesAnnotationChange(
+                updates={deploy_from_source_container_name: source_path}
+            )
+        )
+        tracker.UpdateHeaderMessage(
+            'Sources uploaded to {}.'.format(source_path)
+        )
+        tracker.CompleteStage(stages.UPLOAD_SOURCE)
+      except Exception as e:
+        tracker.CompleteStageWithWarning(stages.UPLOAD_SOURCE, str(e))
+        raise e
+
     elif requires_build:
       new_conn = self._conn_context.GetContextWithRegionOverride(region)
       with new_conn:
@@ -1668,6 +1691,9 @@ class ServerlessOperations(object):
       service_name,
       config_changes,
       force_override=False,
+      tracker=None,
+      stage_key=None,
+      show_ready_message=True,
   ):
     """Create a domain mapping.
 
@@ -1676,6 +1702,10 @@ class ServerlessOperations(object):
       service_name: str, the service to which to map domain.
       config_changes: list of ConfigChanger to modify the domainmapping with
       force_override: bool, override an existing mapping of this domain.
+      tracker: progress_tracker.StagedProgressTracker, tracker to update.
+      stage_key: str, key of the stage to update in the tracker.
+      show_ready_message: bool, whether to print the ready message from the
+        mapping.
 
     Returns:
       A domain_mapping.DomainMapping object.
@@ -1706,11 +1736,19 @@ class ServerlessOperations(object):
             )
         )
       # 'run domain-mappings create' is synchronous. Poll for its completion.x
-      with progress_tracker.ProgressTracker('Creating...'):
+      if tracker and stage_key:
+        tracker.StartStage(stage_key)
         mapping = waiter.PollUntilDone(
             op_pollers.DomainMappingResourceRecordPoller(self),
             domain_mapping_ref,
         )
+        tracker.CompleteStage(stage_key)
+      else:
+        with progress_tracker.ProgressTracker('Creating...'):
+          mapping = waiter.PollUntilDone(
+              op_pollers.DomainMappingResourceRecordPoller(self),
+              domain_mapping_ref,
+          )
       ready = mapping.conditions.get('Ready')
       message = None
       if ready and ready.get('message'):
@@ -1728,7 +1766,7 @@ class ServerlessOperations(object):
         raise serverless_exceptions.DomainMappingCreationError(
             message or 'Could not create domain mapping.'
         )
-      if message:
+      if message and show_ready_message:
         log.status.Print(message)
       return mapping
 
@@ -2157,7 +2195,8 @@ class ServerlessOperations(object):
         getter = functools.partial(self.GetInstance, instance_ref)
       else:
         getter = functools.partial(
-            self.WaitInstance, created_instance.operation_id)
+            self.WaitInstance, created_instance.operation_id
+        )
       poller = op_pollers.InstanceConditionPoller(
           getter, tracker, dependencies=stages.InstanceDependencies()
       )
@@ -2227,6 +2266,83 @@ class ServerlessOperations(object):
     except api_exceptions.HttpNotFoundError:
       raise serverless_exceptions.ExecutionNotFoundError(
           'Execution [{}] could not be found.'.format(execution_ref.Name())
+      )
+
+  def StopInstance(self, instance_ref: resources.Resource) -> None:
+    """Stop the provided Instance.
+
+    Args:
+      instance_ref: Resource, a reference to the Instance to stop
+
+    Raises:
+      InstanceNotFoundError: if provided instance is not found.
+    """
+    request = self.messages_module.RunNamespacesInstancesStopRequest(
+        name=instance_ref.RelativeName()
+    )
+    try:
+      with metrics.RecordDuration(metric_names.STOP_INSTANCE):
+        self._client.namespaces_instances.Stop(request)
+    except api_exceptions.HttpNotFoundError:
+      raise serverless_exceptions.InstanceNotFoundError(
+          f'Instance [{instance_ref.Name()}] could not be found.'
+      ) from None
+
+  def StartInstance(
+      self, instance_ref: resources.Resource, asyn: bool = False
+  ) -> instance.Instance:
+    """Start the provided Instance.
+
+    Args:
+      instance_ref: Resource, a reference to the Instance to start
+      asyn: bool, if True, return without waiting for the instance to be
+        started.
+
+    Returns:
+      A intance.Instance object.
+
+    Raises:
+      InstanceNotFoundError: if provided instance is not found.
+    """
+    messages = self.messages_module
+    if asyn:
+      return instance.Instance(self._SendStartInstance(instance_ref), messages)
+    poller = op_pollers.InstanceStartPoller(self)
+    with progress_tracker.ProgressTracker(
+        f'Starting [{instance_ref.Name()}]',
+        detail_message_callback=poller.GetMessage,
+    ):
+      instance_message = self._SendStartInstance(instance_ref)
+      instance_ref = self._registry.Parse(
+          instance_message.metadata.name,
+          params={'namespacesId': instance_message.metadata.namespace},
+          collection='run.namespaces.instances',
+      )
+      res = waiter.PollUntilDone(poller, instance_ref)
+      if not res:
+        raise serverless_exceptions.StartFailedError(
+            f'Instance [{instance_ref.Name()}] could not be started.'
+        )
+      if not res.conditions.IsReady():
+        raise serverless_exceptions.StartFailedError(
+            f'Instance [{instance_ref.Name()}] could not be started:'
+            f' {poller.GetMessage()}'
+        )
+      return res
+
+  def _SendStartInstance(
+      self, instance_ref: resources.Resource
+  ) -> api_messages.Message:
+    messages = self.messages_module
+    request = messages.RunNamespacesInstancesStartRequest(
+        name=instance_ref.RelativeName()
+    )
+    try:
+      with metrics.RecordDuration(metric_names.START_INSTANCE):
+        return self._client.namespaces_instances.Start(request)
+    except api_exceptions.HttpNotFoundError:
+      raise serverless_exceptions.InstanceNotFoundError(
+          f'Instance [{instance_ref.Name()}] could not be found.'
       )
 
   def _GetIamPolicy(self, service_name):

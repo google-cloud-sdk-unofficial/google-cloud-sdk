@@ -960,6 +960,9 @@ class BackupPlan(_messages.Message):
     backupVaultServiceAccount: Output only. The Google Cloud service account
       to be used by the BackupVault for taking backups. Specify the email
       address of the Backup Vault Service Account.
+    computeInstanceBackupPlanProperties: Optional. Defines optional properties
+      specific to backups of disk-based resources, such as Compute Engine.
+      This includes settings like whether to perform a guest flush.
     createTime: Output only. When the `BackupPlan` was created.
     description: Optional. The description of the `BackupPlan` resource. The
       description allows for additional details about `BackupPlan` and its use
@@ -1045,20 +1048,21 @@ class BackupPlan(_messages.Message):
   backupRules = _messages.MessageField('BackupRule', 1, repeated=True)
   backupVault = _messages.StringField(2)
   backupVaultServiceAccount = _messages.StringField(3)
-  createTime = _messages.StringField(4)
-  description = _messages.StringField(5)
-  diskBackupPlanProperties = _messages.MessageField('DiskBackupPlanProperties', 6)
-  etag = _messages.StringField(7)
-  labels = _messages.MessageField('LabelsValue', 8)
-  logRetentionDays = _messages.IntegerField(9)
-  maxCustomOnDemandRetentionDays = _messages.IntegerField(10, variant=_messages.Variant.INT32)
-  name = _messages.StringField(11)
-  resourceType = _messages.StringField(12)
-  revisionId = _messages.StringField(13)
-  revisionName = _messages.StringField(14)
-  state = _messages.EnumField('StateValueValuesEnum', 15)
-  supportedResourceTypes = _messages.StringField(16, repeated=True)
-  updateTime = _messages.StringField(17)
+  computeInstanceBackupPlanProperties = _messages.MessageField('ComputeInstanceBackupPlanProperties', 4)
+  createTime = _messages.StringField(5)
+  description = _messages.StringField(6)
+  diskBackupPlanProperties = _messages.MessageField('DiskBackupPlanProperties', 7)
+  etag = _messages.StringField(8)
+  labels = _messages.MessageField('LabelsValue', 9)
+  logRetentionDays = _messages.IntegerField(10)
+  maxCustomOnDemandRetentionDays = _messages.IntegerField(11, variant=_messages.Variant.INT32)
+  name = _messages.StringField(12)
+  resourceType = _messages.StringField(13)
+  revisionId = _messages.StringField(14)
+  revisionName = _messages.StringField(15)
+  state = _messages.EnumField('StateValueValuesEnum', 16)
+  supportedResourceTypes = _messages.StringField(17, repeated=True)
+  updateTime = _messages.StringField(18)
 
 
 class BackupPlanAssociation(_messages.Message):
@@ -3042,6 +3046,18 @@ class CloudSqlInstanceInitializationConfig(_messages.Message):
   edition = _messages.EnumField('EditionValueValuesEnum', 1)
 
 
+class ComputeInstanceBackupPlanProperties(_messages.Message):
+  r"""--- ComputeInstanceBackupPlanProperties Message ---
+
+  Fields:
+    guestFlush: Optional. Indicates whether to perform a guest flush operation
+      before taking a compute backup. When set to false, the system will
+      create crash-consistent backups. Default value is false.
+  """
+
+  guestFlush = _messages.BooleanField(1)
+
+
 class ComputeInstanceBackupProperties(_messages.Message):
   r"""ComputeInstanceBackupProperties represents Compute Engine instance
   backup properties.
@@ -3069,6 +3085,9 @@ class ComputeInstanceBackupProperties(_messages.Message):
       created from these properties.
     guestAccelerator: A list of guest accelerator cards' type and count to use
       for instances created from these properties.
+    guestFlush: Optional. Indicates whether to perform a guest flush operation
+      before taking a compute backup. When set to false, the system will
+      create crash-consistent backups. Default value is false.
     keyRevocationActionType: KeyRevocationActionType of the instance.
       Supported options are "STOP" and "NONE". The default value is "NONE" if
       it is not specified.
@@ -3150,16 +3169,17 @@ class ComputeInstanceBackupProperties(_messages.Message):
   description = _messages.StringField(2)
   disk = _messages.MessageField('AttachedDisk', 3, repeated=True)
   guestAccelerator = _messages.MessageField('AcceleratorConfig', 4, repeated=True)
-  keyRevocationActionType = _messages.EnumField('KeyRevocationActionTypeValueValuesEnum', 5)
-  labels = _messages.MessageField('LabelsValue', 6)
-  machineType = _messages.StringField(7)
-  metadata = _messages.MessageField('Metadata', 8)
-  minCpuPlatform = _messages.StringField(9)
-  networkInterface = _messages.MessageField('NetworkInterface', 10, repeated=True)
-  scheduling = _messages.MessageField('Scheduling', 11)
-  serviceAccount = _messages.MessageField('ServiceAccount', 12, repeated=True)
-  sourceInstance = _messages.StringField(13)
-  tags = _messages.MessageField('Tags', 14)
+  guestFlush = _messages.BooleanField(5)
+  keyRevocationActionType = _messages.EnumField('KeyRevocationActionTypeValueValuesEnum', 6)
+  labels = _messages.MessageField('LabelsValue', 7)
+  machineType = _messages.StringField(8)
+  metadata = _messages.MessageField('Metadata', 9)
+  minCpuPlatform = _messages.StringField(10)
+  networkInterface = _messages.MessageField('NetworkInterface', 11, repeated=True)
+  scheduling = _messages.MessageField('Scheduling', 12)
+  serviceAccount = _messages.MessageField('ServiceAccount', 13, repeated=True)
+  sourceInstance = _messages.StringField(14)
+  tags = _messages.MessageField('Tags', 15)
 
 
 class ComputeInstanceDataSourceProperties(_messages.Message):
@@ -4913,9 +4933,11 @@ class LocationMetadata(_messages.Message):
       CLOUD_SQL: <no description>
       ALLOY_DB: <no description>
       FILESTORE: <no description>
-      CEP_METRICS: <no description>
+      BV_AF: <no description>
       CEP_MONITORING_COMPUTE_INSTANCE: <no description>
       CEP_MONITORING_DISK: <no description>
+      BV_CUSTOM_PROBERS: Remove once parity achieved between BV_AF and
+        BV_CUSTOM_PROBERS.
     """
     FEATURE_UNSPECIFIED = 0
     MANAGEMENT_SERVER = 1
@@ -4925,9 +4947,10 @@ class LocationMetadata(_messages.Message):
     CLOUD_SQL = 5
     ALLOY_DB = 6
     FILESTORE = 7
-    CEP_METRICS = 8
+    BV_AF = 8
     CEP_MONITORING_COMPUTE_INSTANCE = 9
     CEP_MONITORING_DISK = 10
+    BV_CUSTOM_PROBERS = 11
 
   unsupportedFeatures = _messages.EnumField('UnsupportedFeaturesValueListEntryValuesEnum', 1, repeated=True)
 

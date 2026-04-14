@@ -46,5 +46,6 @@
                fields.*extract('fieldPath').*flatten().join('\n'):label=FIELD_PATHS,\
                fields.*extract('order').*flatten().join('\n'):label=ORDER,\
                fields.*extract('arrayConfig').*flatten().join('\n'):label=ARRAY_CONFIG,\
-               fields.*extract('vectorConfig').*extract('dimension').*flatten().join('\n'):label=VECTOR_CONFIG)"
+               fields.*extract('vectorConfig').*extract('dimension').*flatten().join('\n'):label=VECTOR_CONFIG,\
+               fields.*extract('searchConfig').*flatten().join('\n'):label=SEARCH_CONFIG)"
     release_tracks: [BETA, GA]

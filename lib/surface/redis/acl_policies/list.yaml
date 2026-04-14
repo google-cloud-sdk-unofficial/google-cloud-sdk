@@ -1,0 +1,30 @@
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: List Redis ACL Policies.
+  description: List Redis ACL Policies for a given project and region.
+  examples: |
+    To list all ACL Policies in region `us-central1`, run:
+
+      $ gcloud alpha redis acl-policies list --region=us-central1
+
+request:
+  collection: redis.projects.locations.aclPolicies
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  GA:
+    api_version: v1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.redis.resources:region
+    help_text: |
+        The region of the acl policies to display.
+
+response:
+  id_field: name
+
+
+output:
+  format: table(name.segment(5):label=ACL_POLICY_ID, name.segment(3):label=REGION)

@@ -7,7 +7,8 @@
 
       $ {command} mytransport --region=us-east4 \
         --description="new description" \
-        --advertised-routes="10.0.0.0/8,10.1.0.0/16"
+        --advertised-routes="10.0.0.0/8,10.1.0.0/16" \
+        --bandwidth=1G
 
   output:
     format: yaml
@@ -29,8 +30,46 @@
       api_field: googleCloudNetworkconnectivityV1betaTransport.advertisedRoutes
       help_text: List of routes to advertise from the VPC `network` toward the provider.
       metavar: CIDR_RANGE
+    - arg_name: bandwidth
+      api_field: googleCloudNetworkconnectivityV1betaTransport.bandwidth
+      help_text: Bandwidth of the transport to create. Must be a supported bandwidth on the remote profile.
+      choices:
+      - arg_value: 50M
+        enum_value: BPS_50M
+      - arg_value: 100M
+        enum_value: BPS_100M
+      - arg_value: 200M
+        enum_value: BPS_200M
+      - arg_value: 300M
+        enum_value: BPS_300M
+      - arg_value: 400M
+        enum_value: BPS_400M
+      - arg_value: 500M
+        enum_value: BPS_500M
+      - arg_value: 1G
+        enum_value: BPS_1G
+      - arg_value: 2G
+        enum_value: BPS_2G
+      - arg_value: 5G
+        enum_value: BPS_5G
+      - arg_value: 10G
+        enum_value: BPS_10G
+      - arg_value: 20G
+        enum_value: BPS_20G
+      - arg_value: 50G
+        enum_value: BPS_50G
+      - arg_value: 100G
+        enum_value: BPS_100G
     - arg_name: description
       api_field: googleCloudNetworkconnectivityV1betaTransport.description
       help_text: Description of the transport.
+    - arg_name: stack-type
+      api_field: googleCloudNetworkconnectivityV1betaTransport.stackType
+      help_text: IP version of the routes to be exchanged.
+      choices:
+      - arg_value: IPV4-ONLY
+        enum_value: IPV4_ONLY
+      - arg_value: IPV4-IPV6
+        enum_value: IPV4_IPV6
     labels:
       api_field: googleCloudNetworkconnectivityV1betaTransport.labels

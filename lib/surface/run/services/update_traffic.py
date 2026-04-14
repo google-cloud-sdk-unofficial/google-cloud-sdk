@@ -14,6 +14,7 @@
 # limitations under the License.
 """Command for updating env vars and other configuration info."""
 
+import copy
 
 from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.api_lib.run import traffic_pair
@@ -42,10 +43,13 @@ class AdjustTraffic(base.Command):
   """Adjust the traffic assignments for a Cloud Run service."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION': (
+          """\
           {description}
-          """,
-      'EXAMPLES': """\
+          """
+      ),
+      'EXAMPLES': (
+          """\
           To assign 10% of traffic to revision myservice-s5sxn and
           90% of traffic to revision myservice-cp9kw run:
 
@@ -71,7 +75,8 @@ class AdjustTraffic(base.Command):
 
               $ {command} myservice --to-revisions=LATEST=10
 
-         """,
+         """
+      ),
   }
 
   @classmethod
@@ -181,8 +186,11 @@ class AdjustTraffic(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.RegionalEndpointsSupported
 class BetaAdjustTraffic(AdjustTraffic):
   """Adjust the traffic assignments for a Cloud Run service."""
+
+  detailed_help = copy.deepcopy(AdjustTraffic.detailed_help)
 
   @classmethod
   def Args(cls, parser):
@@ -190,7 +198,7 @@ class BetaAdjustTraffic(AdjustTraffic):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaAdjustTraffic(AdjustTraffic):
+class AlphaAdjustTraffic(BetaAdjustTraffic):
   """Adjust the traffic assignments for a Cloud Run service."""
 
   @classmethod

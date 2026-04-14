@@ -1,0 +1,47 @@
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: Create a Redis ACL Policy.
+  description: Create a Redis ACL Policy with the specified rules.
+  examples: |
+    To create an ACL Policy named `my-acl-policy` in region `us-east1` with two rules, run:
+
+      $ {command} my-acl-policy --region=us-east1 \
+          --rules="username=user1,rule='on ~keys:* +get'" \
+          --rules="username=user2,rule='off ~* -@all'"
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.redis.resources:acl_policy
+    help_text: The ACL Policy to create.
+    is_positional: true
+  params:
+  - arg_name: rules
+    api_field: aclPolicy.rules
+    required: true
+    repeated: true
+    help_text: |
+      The ACL rules within the ACL policy. Specify this flag multiple times for multiple rules.
+      Each rule consists of 'username' and 'rule'.
+    spec:
+    - api_field: username
+      help_text: |
+        The username for the ACL rule.
+    - api_field: rule
+      help_text: |
+        The Redis ACL rule string.
+  - arg_name: request-id
+    api_field: requestId
+    required: false
+    help_text: |
+      Idempotent request UUID.
+
+request:
+  api_version: v1
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  GA:
+    api_version: v1
+  collection: redis.projects.locations.aclPolicies
+  method: create

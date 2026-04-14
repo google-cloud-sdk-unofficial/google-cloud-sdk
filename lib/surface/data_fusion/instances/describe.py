@@ -20,6 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.data_fusion import resource_args
 
 
+@base.RegionalEndpointsSupported
 class Describe(base.DescribeCommand):
   """Gets details about a Cloud Data Fusion instance.
 
@@ -49,8 +50,8 @@ class Describe(base.DescribeCommand):
     )
 
   def Run(self, args):
-    datafusion = df.Datafusion()
     instance_ref = args.CONCEPTS.instance.Parse()
+    datafusion = df.Datafusion(location=instance_ref.locationsId)
 
     request = (
         datafusion.messages.DatafusionProjectsLocationsInstancesGetRequest(

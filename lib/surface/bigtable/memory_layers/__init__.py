@@ -19,6 +19,6 @@ from googlecloudsdk.calliope import base
 
 @base.UniverseCompatible
 @base.Hidden  # TODO: b/447212097 - Remove hidden once the feature is GA.
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class MemoryLayers(base.Group):
   """Manage Cloud Bigtable memory layers."""

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -199,14 +199,17 @@
           Arguments for the  server ca pool.
         params:
         - arg_name: server-ca-pool
-          api_field: instance.serverCaPool
-          required: false
-          repeated: false
           help_text: |-
             Customer-managed CA pool.
             The resource name of the Certificate Authority Service (CAS) CA Pool.
             Required and only applicable when --server-ca-mode is set to customer-managed-cas-ca.
             Format: projects/{project}/locations/{region}/caPools/{ca_pool}
+          is_positional: false
+          is_primary_resource: false
+          resource_spec: !REF googlecloudsdk.command_lib.memorystore.v1beta_resources:projects_locations_ca_pools
+          resource_method_params:
+            instance.serverCaPool: '{__relative_name__}'
+          required: false
     - group:
         mutex: true
         help_text: |-
@@ -220,6 +223,21 @@
           help_text: |-
             Rotate the server certificates.
           default: null
+    - group:
+        mutex: true
+        help_text: |-
+          Arguments for the  acl policy.
+        params:
+        - arg_name: acl-policy
+          help_text: |-
+            The ACL policy for the instance.
+            Format: projects/{project}/locations/{location}/aclPolicies/{acl_policy}
+          is_positional: false
+          is_primary_resource: false
+          resource_spec: !REF googlecloudsdk.command_lib.memorystore.v1beta_resources:projects_locations_acl_policies
+          resource_method_params:
+            instance.aclPolicy: '{__relative_name__}'
+          required: false
     - help_text: |-
         Identifier. Unique name of the instance.
         Format: projects/{project}/locations/{location}/instances/{instance}
@@ -251,6 +269,10 @@
         enum_value: IAM_AUTH
         help_text: |-
           IAM basic authorization.
+      - arg_value: token-auth
+        enum_value: TOKEN_AUTH
+        help_text: |-
+          Token based authorization.
     - arg_name: transit-encryption-mode
       api_field: instance.transitEncryptionMode
       required: false

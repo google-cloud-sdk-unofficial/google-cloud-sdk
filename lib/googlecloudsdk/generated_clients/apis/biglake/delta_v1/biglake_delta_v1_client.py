@@ -37,10 +37,124 @@ class BiglakeDeltaV1(base_api.BaseApiClient):
         default_global_params=default_global_params,
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
+    self.deltasharing_v1_projects_catalogs_shares_schemas_tables = self.DeltasharingV1ProjectsCatalogsSharesSchemasTablesService(self)
+    self.deltasharing_v1_projects_catalogs_shares_schemas = self.DeltasharingV1ProjectsCatalogsSharesSchemasService(self)
+    self.deltasharing_v1_projects_catalogs_shares = self.DeltasharingV1ProjectsCatalogsSharesService(self)
     self.deltasharing_v1_projects_catalogs = self.DeltasharingV1ProjectsCatalogsService(self)
     self.deltasharing_v1_projects = self.DeltasharingV1ProjectsService(self)
     self.deltasharing_v1 = self.DeltasharingV1Service(self)
     self.deltasharing = self.DeltasharingService(self)
+
+  class DeltasharingV1ProjectsCatalogsSharesSchemasTablesService(base_api.BaseApiService):
+    """Service class for the deltasharing_v1_projects_catalogs_shares_schemas_tables resource."""
+
+    _NAME = 'deltasharing_v1_projects_catalogs_shares_schemas_tables'
+
+    def __init__(self, client):
+      super(BiglakeDeltaV1.DeltasharingV1ProjectsCatalogsSharesSchemasTablesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def List(self, request, global_params=None):
+      r"""Gets a list of Delta Sharing tables available in the upstream SAP BDC source.
+
+      Args:
+        request: (BiglakeDeltasharingV1ProjectsCatalogsSharesSchemasTablesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListDeltaSharingTablesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='deltasharing/v1/projects/{projectsId}/catalogs/{catalogsId}/shares/{sharesId}/schemas/{schemasId}/tables',
+        http_method='GET',
+        method_id='biglake.deltasharing.v1.projects.catalogs.shares.schemas.tables.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='deltasharing/v1/{+parent}/tables',
+        request_field='',
+        request_type_name='BiglakeDeltasharingV1ProjectsCatalogsSharesSchemasTablesListRequest',
+        response_type_name='ListDeltaSharingTablesResponse',
+        supports_download=False,
+    )
+
+  class DeltasharingV1ProjectsCatalogsSharesSchemasService(base_api.BaseApiService):
+    """Service class for the deltasharing_v1_projects_catalogs_shares_schemas resource."""
+
+    _NAME = 'deltasharing_v1_projects_catalogs_shares_schemas'
+
+    def __init__(self, client):
+      super(BiglakeDeltaV1.DeltasharingV1ProjectsCatalogsSharesSchemasService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def List(self, request, global_params=None):
+      r"""Gets a list of Delta Sharing schemas available in the upstream SAP BDC source.
+
+      Args:
+        request: (BiglakeDeltasharingV1ProjectsCatalogsSharesSchemasListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListDeltaSharingSchemasResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='deltasharing/v1/projects/{projectsId}/catalogs/{catalogsId}/shares/{sharesId}/schemas',
+        http_method='GET',
+        method_id='biglake.deltasharing.v1.projects.catalogs.shares.schemas.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='deltasharing/v1/{+parent}/schemas',
+        request_field='',
+        request_type_name='BiglakeDeltasharingV1ProjectsCatalogsSharesSchemasListRequest',
+        response_type_name='ListDeltaSharingSchemasResponse',
+        supports_download=False,
+    )
+
+  class DeltasharingV1ProjectsCatalogsSharesService(base_api.BaseApiService):
+    """Service class for the deltasharing_v1_projects_catalogs_shares resource."""
+
+    _NAME = 'deltasharing_v1_projects_catalogs_shares'
+
+    def __init__(self, client):
+      super(BiglakeDeltaV1.DeltasharingV1ProjectsCatalogsSharesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def List(self, request, global_params=None):
+      r"""Gets a list of Delta Sharing shares available in the upstream Delta Sharing source (e.g., SAP BDC).
+
+      Args:
+        request: (BiglakeDeltasharingV1ProjectsCatalogsSharesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListDeltaSharingSharesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='deltasharing/v1/projects/{projectsId}/catalogs/{catalogsId}/shares',
+        http_method='GET',
+        method_id='biglake.deltasharing.v1.projects.catalogs.shares.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='deltasharing/v1/{+parent}/shares',
+        request_field='',
+        request_type_name='BiglakeDeltasharingV1ProjectsCatalogsSharesListRequest',
+        response_type_name='ListDeltaSharingSharesResponse',
+        supports_download=False,
+    )
 
   class DeltasharingV1ProjectsCatalogsService(base_api.BaseApiService):
     """Service class for the deltasharing_v1_projects_catalogs resource."""

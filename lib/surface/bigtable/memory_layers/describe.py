@@ -22,7 +22,7 @@ from googlecloudsdk.command_lib.bigtable import arguments
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class DescribeMemoryLayer(base.DescribeCommand):
   """Describe a Bigtable memory layer."""
 

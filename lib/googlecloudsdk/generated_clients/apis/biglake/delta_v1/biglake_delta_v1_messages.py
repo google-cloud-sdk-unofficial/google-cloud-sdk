@@ -89,11 +89,72 @@ class BiglakeDeltasharingV1ProjectsCatalogsPatchRequest(_messages.Message):
   updateMask = _messages.StringField(3)
 
 
+class BiglakeDeltasharingV1ProjectsCatalogsSharesListRequest(_messages.Message):
+  r"""A BiglakeDeltasharingV1ProjectsCatalogsSharesListRequest object.
+
+  Fields:
+    pageSize: Optional. The maximum number of shares to return. The service
+      may return fewer than this value. If unspecified, at most 50 shares will
+      be returned. The maximum value is 1000; values above 1000 will be
+      coerced to 1000.
+    pageToken: Optional. A page token, received from a previous
+      `ListDeltaSharingShares` call.
+    parent: Required. The name of the catalog. Format:
+      projects/{project}/catalogs/{catalog}
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class BiglakeDeltasharingV1ProjectsCatalogsSharesSchemasListRequest(_messages.Message):
+  r"""A BiglakeDeltasharingV1ProjectsCatalogsSharesSchemasListRequest object.
+
+  Fields:
+    pageSize: Optional. The maximum number of schemas to return. The service
+      may return fewer than this value. If unspecified, at most 50 schemas
+      will be returned. The maximum value is 1000; values above 1000 will be
+      coerced to 1000.
+    pageToken: Optional. A page token, received from a previous
+      `ListDeltaSharingSchemas` call.
+    parent: Required. The name of the share. Format:
+      projects/{project}/catalogs/{catalog}/shares/{delta_sharing_share}
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class BiglakeDeltasharingV1ProjectsCatalogsSharesSchemasTablesListRequest(_messages.Message):
+  r"""A BiglakeDeltasharingV1ProjectsCatalogsSharesSchemasTablesListRequest
+  object.
+
+  Fields:
+    pageSize: Optional. The maximum number of tables to return. The service
+      may return fewer than this value. If unspecified, at most 50 tables will
+      be returned. The maximum value is 1000; values above 1000 will be
+      coerced to 1000.
+    pageToken: Optional. A page token, received from a previous
+      `ListDeltaSharingTables` call.
+    parent: Required. The name of the schema. Format: projects/{project}/catal
+      ogs/{catalog}/shares/{delta_sharing_share}/schemas/{delta_sharing_schema
+      }
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
 class DeltaSharingCatalog(_messages.Message):
   r"""Represents a DeltaSharing catalog.
 
   Fields:
     createTime: Output only. The creation time of the catalog.
+    federated_catalog_options: Optional. Configuration options for federated
+      catalogs.
     location: Required. Immutable. The user-provided GCP location of the
       catalog. This field is immutable.
     name: Identifier. The resource name. Format:
@@ -107,11 +168,48 @@ class DeltaSharingCatalog(_messages.Message):
   """
 
   createTime = _messages.StringField(1)
-  location = _messages.StringField(2)
-  name = _messages.StringField(3)
-  sapConfig = _messages.MessageField('SapConfig', 4)
-  serviceAccount = _messages.StringField(5)
-  updateTime = _messages.StringField(6)
+  federated_catalog_options = _messages.MessageField('FederatedCatalogOptions', 2)
+  location = _messages.StringField(3)
+  name = _messages.StringField(4)
+  sapConfig = _messages.MessageField('SapConfig', 5)
+  serviceAccount = _messages.StringField(6)
+  updateTime = _messages.StringField(7)
+
+
+class DeltaSharingSchema(_messages.Message):
+  r"""Represents a Delta Sharing Schema.
+
+  Fields:
+    name: Identifier. The resource name. Format: projects/{project}/catalogs/{
+      catalog}/shares/{delta_sharing_share}/schemas/{delta_sharing_schema}
+  """
+
+  name = _messages.StringField(1)
+
+
+class DeltaSharingShare(_messages.Message):
+  r"""Represents a Delta Sharing Share.
+
+  Fields:
+    name: Identifier. The resource name. Format:
+      projects/{project}/catalogs/{catalog}/shares/{delta_sharing_share}
+    shareId: Output only. The unique identifier of the share.
+  """
+
+  name = _messages.StringField(1)
+  shareId = _messages.StringField(2)
+
+
+class DeltaSharingTable(_messages.Message):
+  r"""Represents a Delta Sharing Table.
+
+  Fields:
+    name: Identifier. The resource name. Format: projects/{project}/catalogs/{
+      catalog}/shares/{delta_sharing_share}/schemas/{delta_sharing_schema}/tab
+      les/{delta_sharing_table}
+  """
+
+  name = _messages.StringField(1)
 
 
 class Empty(_messages.Message):
@@ -121,6 +219,18 @@ class Empty(_messages.Message):
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
 
+
+
+class FederatedCatalogOptions(_messages.Message):
+  r"""Configuration options for federated catalog.
+
+  Fields:
+    service_directory_name: Optional. The service directory resource name in
+      the format `projects/{project_id}/locations/{location_id}/namespaces/{na
+      mespace_id}/services/{service_id}`.
+  """
+
+  service_directory_name = _messages.StringField(1)
 
 
 class ListDeltaSharingCatalogsResponse(_messages.Message):
@@ -133,6 +243,45 @@ class ListDeltaSharingCatalogsResponse(_messages.Message):
   """
 
   catalogs = _messages.MessageField('DeltaSharingCatalog', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
+class ListDeltaSharingSchemasResponse(_messages.Message):
+  r"""Response message for the ListDeltaSharingSchemas method.
+
+  Fields:
+    deltaSharingSchemas: The Delta Sharing schemas from the specified share.
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+  """
+
+  deltaSharingSchemas = _messages.MessageField('DeltaSharingSchema', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
+class ListDeltaSharingSharesResponse(_messages.Message):
+  r"""Response message for the ListDeltaSharingShares method.
+
+  Fields:
+    deltaSharingShares: The Delta Sharing shares from the specified catalog.
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+  """
+
+  deltaSharingShares = _messages.MessageField('DeltaSharingShare', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
+class ListDeltaSharingTablesResponse(_messages.Message):
+  r"""Response message for the ListDeltaSharingTables method.
+
+  Fields:
+    deltaSharingTables: The Delta Sharing tables from the specified schema.
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+  """
+
+  deltaSharingTables = _messages.MessageField('DeltaSharingTable', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
 
 
@@ -230,6 +379,10 @@ class StandardQueryParameters(_messages.Message):
   upload_protocol = _messages.StringField(12)
 
 
+encoding.AddCustomJsonFieldMapping(
+    DeltaSharingCatalog, 'federated_catalog_options', 'federated-catalog-options')
+encoding.AddCustomJsonFieldMapping(
+    FederatedCatalogOptions, 'service_directory_name', 'service-directory-name')
 encoding.AddCustomJsonFieldMapping(
     StandardQueryParameters, 'f__xgafv', '$.xgafv')
 encoding.AddCustomJsonEnumMapping(

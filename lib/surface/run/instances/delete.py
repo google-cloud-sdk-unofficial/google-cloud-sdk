@@ -14,7 +14,6 @@
 # limitations under the License.
 """Command for deleting instances."""
 
-
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import deletion
@@ -29,19 +28,24 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.UniverseCompatible
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.Command):
   """Delete an instance."""
 
   detailed_help = {
-      'DESCRIPTION': """
+      'DESCRIPTION': (
+          """
           {description}
-          """,
-      'EXAMPLES': """
+          """
+      ),
+      'EXAMPLES': (
+          """
           To delete an instance:
 
               $ {command} instance-name
-          """,
+          """
+      ),
   }
 
   @staticmethod

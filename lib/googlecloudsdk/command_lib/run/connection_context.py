@@ -14,7 +14,6 @@
 # limitations under the License.
 """Dynamic context for connection to Cloud Run."""
 
-
 import abc
 import base64
 import contextlib
@@ -57,8 +56,9 @@ def _OverrideEndpointOverrides(api_name, override):
   Yields:
     None.
   """
-  endpoint_property = getattr(properties.VALUES.api_endpoint_overrides,
-                              api_name)
+  endpoint_property = getattr(
+      properties.VALUES.api_endpoint_overrides, api_name
+  )
   old_endpoint = endpoint_property.Get()
   try:
     endpoint_property.Set(override)
@@ -144,18 +144,23 @@ def _CheckTLSSupport():
         'Your Python installation is using the SSL library {}, '
         'which does not support TLS 1.2. TLS 1.2 is required to connect to '
         'Cloud Run on Kubernetes Engine. Please use python with '
-        'OpenSSL >1.0'.format(ssl.OPENSSL_VERSION))
+        'OpenSSL >1.0'.format(ssl.OPENSSL_VERSION)
+    )
   # PROTOCOL_TLSv1_2 applies to [2.7.9, 2.7.13) or [3.4, 3.6).
   # PROTOCOL_TLS applies to 2.7.13 and above, or 3.6 and above.
   if not (hasattr(ssl, 'PROTOCOL_TLS') or hasattr(ssl, 'PROTOCOL_TLSv1_2')):
     # User's Python is too old.
-    min_required_version = ('2.7.9' if sys.version_info.major == 2 else '3.4')
+    min_required_version = '2.7.9' if sys.version_info.major == 2 else '3.4'
     raise serverless_exceptions.NoTLSError(
         'Your Python {}.{}.{} installation does not support TLS 1.2, which is'
         ' required to connect to Cloud Run on Kubernetes Engine. '
         'Please upgrade to Python {} or greater.'.format(
-            sys.version_info.major, sys.version_info.minor,
-            sys.version_info.micro, min_required_version))
+            sys.version_info.major,
+            sys.version_info.minor,
+            sys.version_info.micro,
+            min_required_version,
+        )
+    )
 
 
 class GKEConnectionContext(ConnectionInfo):
@@ -184,8 +189,10 @@ class GKEConnectionContext(ConnectionInfo):
     # which is not needed in all cases.
     assert self.active
     from googlecloudsdk.core.credentials import transports  # pylint: disable=g-import-not-at-top
+
     http_client = transports.GetApitoolsTransport(
-        response_encoding=transport.ENCODING, ca_certs=self.ca_certs)
+        response_encoding=transport.ENCODING, ca_certs=self.ca_certs
+    )
     return http_client
 
   @property
@@ -239,12 +246,14 @@ class KubeconfigConnectionContext(ConnectionInfo):
     with self._LoadClusterDetails():
       try:
         if self.ca_data:
-          with gke.MonkeypatchAddressChecking('kubernetes.default',
-                                              self.raw_hostname) as endpoint:
+          with gke.MonkeypatchAddressChecking(
+              'kubernetes.default', self.raw_hostname
+          ) as endpoint:
             self.endpoint = 'https://{}/{}'.format(endpoint, self.raw_path)
         else:
-          self.endpoint = 'https://{}/{}'.format(self.raw_hostname,
-                                                 self.raw_path)
+          self.endpoint = 'https://{}/{}'.format(
+              self.raw_hostname, self.raw_path
+          )
         with _OverrideEndpointOverrides(self._api_name, self.endpoint):
           yield self
       # SSL Exceptions raised by the http2lib and requests library
@@ -252,7 +261,8 @@ class KubeconfigConnectionContext(ConnectionInfo):
         if 'CERTIFICATE_VERIFY_FAILED' in six.text_type(e):
           raise gke.NoCaCertError(
               'Missing or invalid [certificate-authority] or '
-              '[certificate-authority-data] field in kubeconfig file.')
+              '[certificate-authority-data] field in kubeconfig file.'
+          )
         else:
           raise
 
@@ -261,20 +271,25 @@ class KubeconfigConnectionContext(ConnectionInfo):
     if not self.client_key and self.client_cert and self.client_cert_domain:
       raise ValueError(
           'Kubeconfig authentication requires a client certificate '
-          'authentication method.')
+          'authentication method.'
+      )
     if self.client_cert_domain:
       # Import http only when needed, as it depends on credential infrastructure
       # which is not needed in all cases.
       from googlecloudsdk.core import transports  # pylint: disable=g-import-not-at-top
+
       http_client = transports.GetApitoolsTransport(
           response_encoding=transport.ENCODING,
           ca_certs=self.ca_certs,
           client_certificate=self.client_cert,
-          client_key=self.client_key)
+          client_key=self.client_key,
+      )
       return http_client
     from googlecloudsdk.core.credentials import transports  # pylint: disable=g-import-not-at-top
+
     http_client = transports.GetApitoolsTransport(
-        response_encoding=transport.ENCODING, ca_certs=self.ca_certs)
+        response_encoding=transport.ENCODING, ca_certs=self.ca_certs
+    )
     return http_client
 
   @property
@@ -283,9 +298,12 @@ class KubeconfigConnectionContext(ConnectionInfo):
 
   @property
   def location_label(self):
-    return (' of context [{{{{bold}}}}{}{{{{reset}}}}]'
-            ' referenced by config file [{{{{bold}}}}{}{{{{reset}}}}]'.format(
-                self.curr_ctx['name'], self.kubeconfig.filename))
+    return (
+        ' of context [{{{{bold}}}}{}{{{{reset}}}}]'
+        ' referenced by config file [{{{{bold}}}}{}{{{{reset}}}}]'.format(
+            self.curr_ctx['name'], self.kubeconfig.filename
+        )
+    )
 
   @property
   def cluster_name(self):
@@ -329,12 +347,14 @@ class KubeconfigConnectionContext(ConnectionInfo):
     """
     try:
       self.curr_ctx = self.kubeconfig.contexts[self.kubeconfig.current_context]
-      self.cluster = self.kubeconfig.clusters[self.curr_ctx['context']
-                                              ['cluster']]
+      self.cluster = self.kubeconfig.clusters[
+          self.curr_ctx['context']['cluster']
+      ]
       self.ca_certs = self.cluster['cluster'].get('certificate-authority', None)
       if not self.ca_certs:
-        self.ca_data = self.cluster['cluster'].get('certificate-authority-data',
-                                                   None)
+        self.ca_data = self.cluster['cluster'].get(
+            'certificate-authority-data', None
+        )
 
       parsed_server = urlparse.urlparse(self.cluster['cluster']['server'])
       self.raw_hostname = parsed_server.hostname
@@ -354,14 +374,20 @@ class KubeconfigConnectionContext(ConnectionInfo):
         self.client_key_data = self.user['user'].get('client-key-data', None)
       self.client_cert = self.user['user'].get('client-certificate', None)
       if not self.client_cert:
-        self.client_cert_data = self.user['user'].get('client-certificate-data',
-                                                      None)
+        self.client_cert_data = self.user['user'].get(
+            'client-certificate-data', None
+        )
     except KeyError as e:
-      raise flags.KubeconfigError('Missing key `{}` in kubeconfig.'.format(
-          e.args[0]))
-    with self._WriteDataIfNoFile(self.ca_certs, self.ca_data) as ca_certs, \
-        self._WriteDataIfNoFile(self.client_key, self.client_key_data) as client_key, \
-        self._WriteDataIfNoFile(self.client_cert, self.client_cert_data) as client_cert:
+      raise flags.KubeconfigError(
+          'Missing key `{}` in kubeconfig.'.format(e.args[0])
+      )
+    with self._WriteDataIfNoFile(
+        self.ca_certs, self.ca_data
+    ) as ca_certs, self._WriteDataIfNoFile(
+        self.client_key, self.client_key_data
+    ) as client_key, self._WriteDataIfNoFile(
+        self.client_cert, self.client_cert_data
+    ) as client_cert:
       self.ca_certs = ca_certs
       self.client_key = client_key
       self.client_cert = client_cert
@@ -441,11 +467,22 @@ class RegionalConnectionContext(ConnectionInfo):
 
   @contextlib.contextmanager
   def Connect(self):
-    global_endpoint = apis.GetEffectiveApiEndpoint(self._api_name,
-                                                   self._version)
-    self.endpoint = DeriveRegionalEndpoint(global_endpoint, self.region)
-    with _OverrideEndpointOverrides(self._api_name, self.endpoint):
+    endpoint_compatibility = (
+        properties.VALUES.regional.endpoint_compatibility.Get()
+    )
+    endpoint_mode = properties.VALUES.regional.endpoint_mode.Get()
+    if endpoint_compatibility and (
+        endpoint_mode == properties.VALUES.regional.REGIONAL
+        or endpoint_mode == properties.VALUES.regional.REGIONAL_PREFERRED
+    ):
       yield self
+    else:
+      global_endpoint = apis.GetEffectiveApiEndpoint(
+          self._api_name, self._version
+      )
+      self.endpoint = DeriveRegionalEndpoint(global_endpoint, self.region)
+      with _OverrideEndpointOverrides(self._api_name, self.endpoint):
+        yield self
 
   @property
   def supports_one_platform(self):
@@ -473,10 +510,9 @@ def _GetApiName(product, release_track, is_cluster=False):
     raise ValueError('Unrecognized product: ' + six.u(product))
 
 
-def _GetApiVersion(product,
-                   release_track,
-                   is_cluster=False,
-                   version_override=None):
+def _GetApiVersion(
+    product, release_track, is_cluster=False, version_override=None
+):
   """Returns the api version to use depending on the current context."""
   if version_override is not None:
     return version_override
@@ -531,9 +567,11 @@ def GetConnectionContext(
         product,
         release_track,
         is_cluster=True,
-        version_override=version_override)
-    return KubeconfigConnectionContext(kubeconfig, api_name, api_version,
-                                       args.context)
+        version_override=version_override,
+    )
+    return KubeconfigConnectionContext(
+        kubeconfig, api_name, api_version, args.context
+    )
 
   if platform == platforms.PLATFORM_GKE:
     cluster_ref = args.CONCEPTS.cluster.Parse()
@@ -541,19 +579,22 @@ def GetConnectionContext(
       raise serverless_exceptions.ArgumentError(
           'You must specify a cluster in a given location. '
           'Either use the `--cluster` and `--cluster-location` flags '
-          'or set the run/cluster and run/cluster_location properties.')
+          'or set the run/cluster and run/cluster_location properties.'
+      )
     api_name = _GetApiName(product, release_track, is_cluster=True)
     api_version = _GetApiVersion(
         product,
         release_track,
         is_cluster=True,
-        version_override=version_override)
+        version_override=version_override,
+    )
     return GKEConnectionContext(cluster_ref, api_name, api_version)
 
   if platform == platforms.PLATFORM_MANAGED:
     api_name = _GetApiName(product, release_track)
     api_version = _GetApiVersion(
-        product, release_track, version_override=version_override)
+        product, release_track, version_override=version_override
+    )
     if not is_multiregion:
       region = flags.GetRegion(args, prompt=True, region_label=region_label)
       if not region:

@@ -248,6 +248,34 @@ class ImportInstanceRequest(_messages.Message):
   gcsUri = _messages.StringField(1)
 
 
+class IngressIpAllowlistConfig(_messages.Message):
+  r"""Ingress IP allowlist configuration.
+
+  Fields:
+    allowlistRules: Optional. List of IP range rules to allow ingress traffic.
+    enabled: Optional. Whether ingress IP allowlist functionality is enabled
+      on the Looker instance.
+    googleServicesEnabled: Optional. Whether google service connections are
+      enabled for the instance.
+  """
+
+  allowlistRules = _messages.MessageField('IngressIpAllowlistRule', 1, repeated=True)
+  enabled = _messages.BooleanField(2)
+  googleServicesEnabled = _messages.BooleanField(3)
+
+
+class IngressIpAllowlistRule(_messages.Message):
+  r"""Ingress IP allowlist rule.
+
+  Fields:
+    description: Optional. Description for the IP range.
+    ipRange: Optional. The IP range to allow ingress traffic from.
+  """
+
+  description = _messages.StringField(1)
+  ipRange = _messages.StringField(2)
+
+
 class Instance(_messages.Message):
   r"""A Looker instance.
 
@@ -278,6 +306,8 @@ class Instance(_messages.Message):
     fipsEnabled: Optional. Whether FIPS is enabled on the Looker instance.
     geminiEnabled: Optional. Whether Gemini feature is enabled on the Looker
       instance or not.
+    ingressIpAllowlistConfig: Optional. Ingress IP allowlist configuration for
+      the Looker instance.
     ingressPrivateIp: Output only. Private Ingress IP (IPv4).
     ingressPublicIp: Output only. Public Ingress IP (IPv4).
     lastDenyMaintenancePeriod: Output only. Last computed maintenance denial
@@ -390,28 +420,29 @@ class Instance(_messages.Message):
   encryptionConfig = _messages.MessageField('EncryptionConfig', 11)
   fipsEnabled = _messages.BooleanField(12)
   geminiEnabled = _messages.BooleanField(13)
-  ingressPrivateIp = _messages.StringField(14)
-  ingressPublicIp = _messages.StringField(15)
-  lastDenyMaintenancePeriod = _messages.MessageField('DenyMaintenancePeriod', 16)
-  linkedLspProjectNumber = _messages.IntegerField(17)
-  lookerUri = _messages.StringField(18)
-  lookerVersion = _messages.StringField(19)
-  maintenanceSchedule = _messages.MessageField('MaintenanceSchedule', 20)
-  maintenanceWindow = _messages.MessageField('MaintenanceWindow', 21)
-  name = _messages.StringField(22)
-  oauthConfig = _messages.MessageField('OAuthConfig', 23)
-  periodicExportConfig = _messages.MessageField('PeriodicExportConfig', 24)
-  platformEdition = _messages.EnumField('PlatformEditionValueValuesEnum', 25)
-  privateIpEnabled = _messages.BooleanField(26)
-  pscConfig = _messages.MessageField('PscConfig', 27)
-  pscEnabled = _messages.BooleanField(28)
-  publicIpEnabled = _messages.BooleanField(29)
-  reservedRange = _messages.StringField(30)
-  satisfiesPzi = _messages.BooleanField(31)
-  satisfiesPzs = _messages.BooleanField(32)
-  state = _messages.EnumField('StateValueValuesEnum', 33)
-  updateTime = _messages.StringField(34)
-  userMetadata = _messages.MessageField('UserMetadata', 35)
+  ingressIpAllowlistConfig = _messages.MessageField('IngressIpAllowlistConfig', 14)
+  ingressPrivateIp = _messages.StringField(15)
+  ingressPublicIp = _messages.StringField(16)
+  lastDenyMaintenancePeriod = _messages.MessageField('DenyMaintenancePeriod', 17)
+  linkedLspProjectNumber = _messages.IntegerField(18)
+  lookerUri = _messages.StringField(19)
+  lookerVersion = _messages.StringField(20)
+  maintenanceSchedule = _messages.MessageField('MaintenanceSchedule', 21)
+  maintenanceWindow = _messages.MessageField('MaintenanceWindow', 22)
+  name = _messages.StringField(23)
+  oauthConfig = _messages.MessageField('OAuthConfig', 24)
+  periodicExportConfig = _messages.MessageField('PeriodicExportConfig', 25)
+  platformEdition = _messages.EnumField('PlatformEditionValueValuesEnum', 26)
+  privateIpEnabled = _messages.BooleanField(27)
+  pscConfig = _messages.MessageField('PscConfig', 28)
+  pscEnabled = _messages.BooleanField(29)
+  publicIpEnabled = _messages.BooleanField(30)
+  reservedRange = _messages.StringField(31)
+  satisfiesPzi = _messages.BooleanField(32)
+  satisfiesPzs = _messages.BooleanField(33)
+  state = _messages.EnumField('StateValueValuesEnum', 34)
+  updateTime = _messages.StringField(35)
+  userMetadata = _messages.MessageField('UserMetadata', 36)
 
 
 class InstanceBackup(_messages.Message):

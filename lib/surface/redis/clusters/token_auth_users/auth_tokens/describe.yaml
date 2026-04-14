@@ -1,0 +1,33 @@
+- release_tracks: [ALPHA, BETA]
+  hidden: true
+
+  help_text:
+    brief: |
+      Show metadata for a Memorystore for Redis Cluster auth token.
+    description: |
+      Show metadata for a Memorystore for Redis Cluster auth token.
+
+      Displays all metadata associated with an auth token given a valid auth token name.
+
+      This command can fail for the following reasons:
+        * The auth token specified does not exist.
+        * The active account does not have permission to access the given auth token.
+
+    examples: |
+      To display metadata for an auth token named `my-auth-token` for the user `my-token-auth-user` in the `my-cluster` cluster in `us-central1` region, run:
+
+      $ {command} my-auth-token --cluster=my-cluster --token-auth-user=my-token-auth-user --region=us-central1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.redis.resources:auth_token
+      help_text: |
+        The name of the Redis cluster auth token you want to describe.
+      is_positional: true
+
+  request:
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
+    collection: redis.projects.locations.clusters.tokenAuthUsers.authTokens

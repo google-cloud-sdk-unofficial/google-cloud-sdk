@@ -14,6 +14,7 @@
 # limitations under the License.
 """Command for updating env vars and other configuration info."""
 
+import copy
 
 from googlecloudsdk.api_lib.run import global_methods
 from googlecloudsdk.api_lib.run import service
@@ -40,22 +41,24 @@ from googlecloudsdk.core.console import progress_tracker
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Replace(base.Command):
   """Create or replace a service from a YAML service specification."""
 
   detailed_help = {
-      'DESCRIPTION':
+      'DESCRIPTION': (
           """\
           Creates or replaces a service from a YAML service specification.
-          """,
-      'EXAMPLES':
+          """
+      ),
+      'EXAMPLES': (
           """\
           To replace the specification for a service defined in myservice.yaml
 
               $ {command} myservice.yaml
 
-         """,
+         """
+      ),
   }
 
   @classmethod
@@ -67,9 +70,9 @@ class Replace(base.Command):
         'Namespace to replace service.',
         required=True,
         prefixes=False,
-        hidden=True)
-    concept_parsers.ConceptParser([namespace_presentation
-                                  ]).AddToParser(parser)
+        hidden=True,
+    )
+    concept_parsers.ConceptParser([namespace_presentation]).AddToParser(parser)
 
     # Flags not specific to any platform
     flags.AddAsyncFlag(parser)
@@ -79,8 +82,11 @@ class Replace(base.Command):
         'FILE',
         action='store',
         type=arg_parsers.YAMLFileContents(),
-        help='The absolute path to the YAML file with a Knative '
-        'service definition for the service to update or deploy.')
+        help=(
+            'The absolute path to the YAML file with a Knative '
+            'service definition for the service to update or deploy.'
+        ),
+    )
 
     # No output by default, can be overridden by --format
     parser.display_info.AddFormat('none')
@@ -95,13 +101,16 @@ class Replace(base.Command):
     )
 
   def _GetBaseChanges(
-      self, new_service, args):  # used by child - pylint: disable=unused-argument
+      self, new_service, args
+  ):  # used by child - pylint: disable=unused-argument
     return [
         config_changes.ReplaceServiceChange(new_service),
         config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack()),
     ]
 
-  def _GetMultiRegionRegions(self, args, new_service, changes):  # used by child - pylint: disable=unused-argument
+  def _GetMultiRegionRegions(
+      self, args, new_service, changes
+  ):  # used by child - pylint: disable=unused-argument
     return None
 
   def _PrintSuccessMessage(self, service_obj, dry_run, args):
@@ -147,15 +156,19 @@ class Replace(base.Command):
     new_service = None  # this avoids a lot of errors.
     try:
       raw_service = messages_util.DictToMessageWithErrorCheck(
-          service_dict, run_messages.Service)
+          service_dict, run_messages.Service
+      )
       new_service = service.Service(raw_service, run_messages)
     except messages_util.ScalarTypeMismatchError as e:
       exceptions.MaybeRaiseCustomFieldMismatch(
           e,
-          help_text='Please make sure that the YAML file matches the Knative '
-          'service definition spec in https://kubernetes.io/docs/'
-          'reference/kubernetes-api/service-resources/service-v1/'
-          '#Service.')
+          help_text=(
+              'Please make sure that the YAML file matches the Knative '
+              'service definition spec in https://kubernetes.io/docs/'
+              'reference/kubernetes-api/service-resources/service-v1/'
+              '#Service.'
+          ),
+      )
 
     # If managed, namespace must match project (or will default to project if
     # not specified).
@@ -163,25 +176,41 @@ class Replace(base.Command):
     # multiple places (or will default to "default" if not specified).
     namespace = args.CONCEPTS.namespace.Parse().Name()  # From flag or default
     if new_service.metadata.namespace is not None:
-      if (args.IsSpecified('namespace') and
-          namespace != new_service.metadata.namespace):
+      if (
+          args.IsSpecified('namespace')
+          and namespace != new_service.metadata.namespace
+      ):
         raise exceptions.ConfigurationError(
-            'Namespace specified in file does not match passed flag.')
+            'Namespace specified in file does not match passed flag.'
+        )
       namespace = new_service.metadata.namespace
       if platforms.GetPlatform() == platforms.PLATFORM_MANAGED:
         project = properties.VALUES.core.project.Get()
-        project_number = projects_util.GetProjectNumber(project)
-        if namespace != project and namespace != str(project_number):
-          raise exceptions.ConfigurationError(
-              'Namespace must be project ID [{}] or quoted number [{}] for '
-              'Cloud Run (fully managed).'.format(project, project_number))
+        endpoint_mode = properties.VALUES.regional.endpoint_mode.Get()
+        if (
+            properties.VALUES.regional.endpoint_compatibility
+            and endpoint_mode == properties.VALUES.regional.REGIONAL
+        ):
+          if namespace != project:
+            raise exceptions.ConfigurationError(
+                'Namespace must be project ID [{}] for Cloud Run with regional'
+                ' endpoints.'.format(project)
+            )
+        else:
+          project_number = projects_util.GetProjectNumber(project)
+          if namespace != project and namespace != str(project_number):
+            raise exceptions.ConfigurationError(
+                'Namespace must be project ID [{}] or quoted number [{}] for '
+                'Cloud Run (fully managed).'.format(project, project_number)
+            )
     new_service.metadata.namespace = namespace
 
     changes = self._GetBaseChanges(new_service, args)
     service_ref = resources.REGISTRY.Parse(
         new_service.metadata.name,
         params={'namespacesId': new_service.metadata.namespace},
-        collection='run.namespaces.services')
+        collection='run.namespaces.services',
+    )
 
     region_label = new_service.region if new_service.is_managed else None
 
@@ -205,7 +234,7 @@ class Replace(base.Command):
       )
 
       deployment_stages = stages.ServiceStages(regions_list=regions)
-      header = ('Deploying...' if service_obj else 'Deploying new service...')
+      header = 'Deploying...' if service_obj else 'Deploying new service...'
       if dry_run:
         header = 'Validating...'
       with progress_tracker.StagedProgressTracker(
@@ -229,8 +258,16 @@ class Replace(base.Command):
       return service_obj
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.RegionalEndpointsSupported
+class BetaReplace(Replace):
+  """Create or replace a service from a YAML service specification."""
+
+  detailed_help = copy.deepcopy(Replace.detailed_help)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaReplace(Replace):
+class AlphaReplace(BetaReplace):
 
   @classmethod
   def Args(cls, parser):

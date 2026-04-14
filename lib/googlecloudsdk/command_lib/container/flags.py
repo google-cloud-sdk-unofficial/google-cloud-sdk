@@ -1511,7 +1511,7 @@ def AddManagedMLDiagnosticsFlags(parser, hidden=True):
   enable_help_text = """
   Enables managed machine learning diagnostics in the cluster.
   Use `--no-enable-managed-mldiagnostics` to disable.
-  See https://github.com/AI-Hypercomputer/google-cloud-mldiagnostics
+  See https://docs.cloud.google.com/tpu/docs/ml-diagnostics/gke
   for more info.
 
   """

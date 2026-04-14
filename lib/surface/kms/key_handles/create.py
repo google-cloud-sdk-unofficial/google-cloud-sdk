@@ -36,7 +36,7 @@ class Create(base.CreateCommand):
   The following command creates a KeyHandle named `my-key-handle` within the
   location `global` for the resource type `compute.googleapis.com/Disk`:
 
-    $ {command} --key-handle-id=my-key-handle --my-key-handle --location=global
+    $ {command} --key-handle-id=my-key-handle --location=global
     --resource-type=compute.googleapis.com/Disk
 
   In case we want to generate a random KeyHandle id, we can use the

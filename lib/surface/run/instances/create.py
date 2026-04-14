@@ -14,7 +14,6 @@
 # limitations under the License.
 """Create a Cloud Run instance."""
 
-
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.calliope import parser_errors as c_parser_errors
@@ -69,6 +68,7 @@ Container Flags
 
 
 @base.UniverseCompatible
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.Command):
   """Create a Cloud Run instance."""

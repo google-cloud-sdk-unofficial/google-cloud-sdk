@@ -39,7 +39,7 @@ class Add(base.UpdateCommand):
 
   enable_ipv6_assignment = False
   support_igmp_query = False
-  support_service_class_id = False
+  support_alias_ipv6_ranges = False
 
   @classmethod
   def Args(cls, parser):
@@ -54,6 +54,10 @@ class Add(base.UpdateCommand):
     )
     network_interfaces_flags.AddNetworkAttachmentArg(parser)
     network_interfaces_flags.AddAliasesArg(parser, add_network_interface=True)
+    if cls.support_alias_ipv6_ranges:
+      network_interfaces_flags.AddIpv6AliasesArg(
+          parser, add_network_interface=True
+      )
     network_interfaces_flags.AddStackTypeArg(parser)
     network_interfaces_flags.AddNetworkTierArg(parser)
     network_interfaces_flags.AddIpv6NetworkTierArg(parser)
@@ -65,8 +69,7 @@ class Add(base.UpdateCommand):
     if cls.enable_ipv6_assignment:
       network_interfaces_flags.AddIpv6AddressArg(parser)
       network_interfaces_flags.AddIpv6PrefixLengthArg(parser)
-    if cls.support_service_class_id:
-      network_interfaces_flags.AddServiceClassIdArg(parser)
+    network_interfaces_flags.AddServiceClassIdArg(parser)
 
     if cls.support_igmp_query:
       network_interfaces_flags.AddIgmpQueryArg(parser)
@@ -97,6 +100,7 @@ class Add(base.UpdateCommand):
         vlan=getattr(args, 'vlan', None),
         private_network_ip=getattr(args, 'private_network_ip', None),
         alias_ip_ranges_string=getattr(args, 'aliases', None),
+        alias_ipv6_ranges_string=getattr(args, 'ipv6_aliases', None),
         stack_type=getattr(args, 'stack_type', None),
         network_tier=getattr(args, 'network_tier', None),
         ipv6_network_tier=getattr(args, 'ipv6_network_tier', None),
@@ -114,6 +118,7 @@ class Add(base.UpdateCommand):
         ipv6_prefix_length=getattr(args, 'ipv6_prefix_length', None),
         igmp_query=getattr(args, 'igmp_query', None),
         service_class_id=getattr(args, 'service_class_id', None),
+        support_alias_ipv6_ranges=self.support_alias_ipv6_ranges,
     )
 
     request = messages.ComputeInstancesAddNetworkInterfaceRequest(
@@ -149,7 +154,7 @@ class AddBeta(Add):
 
   enable_ipv6_assignment = False
   support_igmp_query = False
-  support_service_class_id = False
+  support_alias_ipv6_ranges = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -165,7 +170,7 @@ class AddAlpha(AddBeta):
 
   enable_ipv6_assignment = True
   support_igmp_query = True
-  support_service_class_id = True
+  support_alias_ipv6_ranges = True
 
 
 Add.detailed_help = {

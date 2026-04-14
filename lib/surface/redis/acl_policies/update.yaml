@@ -1,0 +1,60 @@
+- release_tracks:
+  - ALPHA
+  - BETA
+  - GA
+  help_text:
+    brief: Update aclPolicies
+    description: Update an aclPolicy
+    examples: |-
+      To update the aclPolicy, run:
+
+          $ {command}
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.redis.resources:acl_policy
+      help_text: |-
+        Identifier. Full resource path of the ACL policy.
+      is_positional: true
+
+    params:
+    - arg_name: rules
+      api_field: aclPolicy.rules
+      required: false
+      repeated: true
+      help_text: |-
+        The ACL rules within the ACL policy.
+      clearable: true
+      spec:
+      - api_field: username
+        help_text: |-
+          Specifies the IAM user or service account to be added to the ACL policy.
+          This username will be directly set on the Redis OSS.
+      - api_field: rule
+        help_text: |-
+          The rule to be applied to the username. Ex: "on >password123 ~* +@all"
+          The format of the rule is defined by Redis OSS:
+          https://redis.io/docs/latest/operate/oss_and_stack/management/security/acl/
+    - arg_name: request-id
+      api_field: requestId
+      required: false
+      repeated: false
+      help_text: |-
+        Idempotent request UUID.
+  request:
+    ALPHA:
+      api_version: v1alpha1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.redis.util:UpdateAclPolicyRulesHook
+    BETA:
+      api_version: v1beta1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.redis.util:UpdateAclPolicyRulesHook
+    GA:
+      api_version: v1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.redis.util:UpdateAclPolicyRulesHook
+    collection: redis.projects.locations.aclPolicies
+  async:
+    collection: redis.projects.locations.operations
+  update:
+    read_modify_update: true

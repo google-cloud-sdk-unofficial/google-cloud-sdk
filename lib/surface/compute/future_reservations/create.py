@@ -71,6 +71,7 @@ class CreateV1(base.CreateCommand):
   _support_dws_gpu = True
   _support_cuds = True
   _support_dws_tpu = True
+  _support_resource_manager_tags = False
 
   @classmethod
   def Args(cls, parser):
@@ -90,6 +91,7 @@ class CreateV1(base.CreateCommand):
         support_dws_gpu=cls._support_dws_gpu,
         support_cuds=cls._support_cuds,
         support_dws_tpu=cls._support_dws_tpu,
+        support_resource_manager_tags=cls._support_resource_manager_tags,
     )
 
   def Run(self, args):
@@ -113,6 +115,7 @@ class CreateBeta(CreateV1):
   _support_dws_gpu = True
   _support_cuds = True
   _support_dws_tpu = True
+  _support_resource_manager_tags = False
 
   @classmethod
   def Args(cls, parser):
@@ -133,6 +136,7 @@ class CreateBeta(CreateV1):
         support_dws_gpu=cls._support_dws_gpu,
         support_cuds=cls._support_cuds,
         support_dws_tpu=cls._support_dws_tpu,
+        support_resource_manager_tags=cls._support_resource_manager_tags,
     )
 
   def Run(self, args):
@@ -156,6 +160,7 @@ class CreateAlpha(CreateBeta):
   _support_cuds = True
   _support_dws_gpu = True
   _support_dws_tpu = True
+  _support_resource_manager_tags = True
 
   @classmethod
   def Args(cls, parser):
@@ -175,6 +180,7 @@ class CreateAlpha(CreateBeta):
         support_cuds=cls._support_cuds,
         support_dws_gpu=cls._support_dws_gpu,
         support_dws_tpu=cls._support_dws_tpu,
+        support_resource_manager_tags=cls._support_resource_manager_tags,
     )
 
   def Run(self, args):

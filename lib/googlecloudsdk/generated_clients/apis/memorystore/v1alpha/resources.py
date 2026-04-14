@@ -41,6 +41,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_ACLPOLICIES = (
+      'projects.locations.aclPolicies',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/aclPolicies/'
+              '{aclPoliciesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_BACKUPCOLLECTIONS = (
       'projects.locations.backupCollections',
       '{+name}',
@@ -63,6 +74,13 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_CAPOOLS = (
+      'projects.locations.caPools',
+      'projects/{projectsId}/locations/{locationsId}/caPools/{caPoolsId}',
+      {},
+      ['projectsId', 'locationsId', 'caPoolsId'],
+      True
+  )
   PROJECTS_LOCATIONS_INSTANCES = (
       'projects.locations.instances',
       '{+name}',
@@ -70,6 +88,29 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/instances/'
               '{instancesId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_INSTANCES_TOKENAUTHUSERS = (
+      'projects.locations.instances.tokenAuthUsers',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/instances/'
+              '{instancesId}/tokenAuthUsers/{tokenAuthUsersId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_INSTANCES_TOKENAUTHUSERS_AUTHTOKENS = (
+      'projects.locations.instances.tokenAuthUsers.authTokens',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/instances/'
+              '{instancesId}/tokenAuthUsers/{tokenAuthUsersId}/authTokens/'
+              '{authTokensId}',
       },
       ['name'],
       True

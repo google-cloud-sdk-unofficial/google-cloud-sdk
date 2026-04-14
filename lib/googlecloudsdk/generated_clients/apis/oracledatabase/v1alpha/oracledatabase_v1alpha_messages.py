@@ -963,12 +963,9 @@ class AutonomousDatabaseRefreshableClones(_messages.Message):
   Fields:
     autonomousDatabaseRefreshableClones: The list of Autonomous Database
       refreshable clones.
-    nextPageToken: Optional. A token identifying a page of results the server
-      should return.
   """
 
   autonomousDatabaseRefreshableClones = _messages.MessageField('AutonomousDatabaseRefreshableClone', 1, repeated=True)
-  nextPageToken = _messages.StringField(2)
 
 
 class AutonomousDatabaseStandbySummary(_messages.Message):
@@ -1671,7 +1668,7 @@ class Database(_messages.Message):
       Insights for this Database.
 
   Fields:
-    adminPassword: Required. The password for the default ADMIN user.
+    adminPassword: Optional. The password for the default ADMIN user.
     adminPasswordSecretVersion: Optional. The resource name of a secret
       version in Secret Manager which contains the database admin user's
       password. Format:
@@ -3457,46 +3454,6 @@ class GoldenGateAzureSynapseAnalyticsConnectionProperties(_messages.Message):
   username = _messages.StringField(5)
 
 
-class GoldenGateBackupSchedule(_messages.Message):
-  r"""The backup schedule of the GoldenGateDeployment.
-
-  Enums:
-    FrequencyBackupScheduledValueValuesEnum: Output only. The frequency backup
-      scheduled.
-
-  Fields:
-    backupScheduledTime: Output only. The timestamp of when the backup was
-      scheduled.
-    bucket: Output only. The bucket name.
-    compartmentId: Output only. The compartment id.
-    frequencyBackupScheduled: Output only. The frequency backup scheduled.
-    metadataOnly: Output only. If metadata only.
-    namespace: Output only. The namespace name.
-  """
-
-  class FrequencyBackupScheduledValueValuesEnum(_messages.Enum):
-    r"""Output only. The frequency backup scheduled.
-
-    Values:
-      FREQUENCY_BACKUP_SCHEDULED_UNSPECIFIED: The frequency backup scheduled
-        is unspecified.
-      DAILY: The frequency backup scheduled is daily.
-      WEEKLY: The frequency backup scheduled is weekly.
-      MONTHLY: The frequency backup scheduled is monthly.
-    """
-    FREQUENCY_BACKUP_SCHEDULED_UNSPECIFIED = 0
-    DAILY = 1
-    WEEKLY = 2
-    MONTHLY = 3
-
-  backupScheduledTime = _messages.StringField(1)
-  bucket = _messages.StringField(2)
-  compartmentId = _messages.StringField(3)
-  frequencyBackupScheduled = _messages.EnumField('FrequencyBackupScheduledValueValuesEnum', 4)
-  metadataOnly = _messages.BooleanField(5)
-  namespace = _messages.StringField(6)
-
-
 class GoldenGateConnection(_messages.Message):
   r"""Details of the GoldenGateConnection resource.
 
@@ -3633,9 +3590,9 @@ class GoldenGateConnectionAssignmentProperties(_messages.Message):
     goldenGateConnection: Required. The GoldenGateConnection resource to be
       assigned. Format: projects/{project}/locations/{location}/goldenGateConn
       ections/{golden_gate_connection}
-    goldenGateDeployment: Required. The GoldenGateDeployment to assign the
-      connection to. Format: projects/{project}/locations/{location}/goldenGat
-      eDeployments/{golden_gate_deployment}
+    goldengateDeployment: Required. The GoldenGateDeployment to assign the
+      connection to. Format: projects/{project}/locations/{location}/goldengat
+      eDeployments/{goldengate_deployment}
     ocid: Output only. The [OCID](https://docs.cloud.oracle.com/Content/Genera
       l/Concepts/identifiers.htm) of the connection assignment being
       referenced.
@@ -3662,7 +3619,7 @@ class GoldenGateConnectionAssignmentProperties(_messages.Message):
 
   alias = _messages.StringField(1)
   goldenGateConnection = _messages.StringField(2)
-  goldenGateDeployment = _messages.StringField(3)
+  goldengateDeployment = _messages.StringField(3)
   ocid = _messages.StringField(4)
   state = _messages.EnumField('StateValueValuesEnum', 5)
 
@@ -4086,72 +4043,6 @@ class GoldenGateDb2ConnectionProperties(_messages.Message):
   username = _messages.StringField(12)
 
 
-class GoldenGateDeployment(_messages.Message):
-  r"""GoldenGateDeployment GoldenGate Deployment resource model.
-
-  Messages:
-    LabelsValue: Optional. The labels or tags associated with the
-      GoldenGateDeployment.
-
-  Fields:
-    createTime: Output only. The date and time that the GoldenGateDeployment
-      was created.
-    displayName: Required. The display name for the GoldenGateDeployment.
-    entitlementId: Output only. The ID of the subscription entitlement
-      associated with the GoldenGateDeployment
-    gcpOracleZone: Optional. The GCP Oracle zone where Oracle
-      GoldenGateDeployment is hosted. Example: us-east4-b-r2. If not
-      specified, the system will pick a zone based on availability.
-    labels: Optional. The labels or tags associated with the
-      GoldenGateDeployment.
-    name: Identifier. The name of the GoldenGateDeployment resource in the
-      following format: projects/{project}/locations/{region}/goldenGateDeploy
-      ments/{golden_gate_deployment}
-    ociUrl: Output only. HTTPS link to OCI resources exposed to Customer via
-      UI Interface.
-    odbNetwork: Optional. The name of the OdbNetwork associated with the
-      GoldenGateDeployment.
-    odbSubnet: Required. The name of the OdbSubnet associated with the
-      GoldenGateDeployment for IP allocation.
-    properties: Required. The properties of the GoldenGateDeployment.
-  """
-
-  @encoding.MapUnrecognizedFields('additionalProperties')
-  class LabelsValue(_messages.Message):
-    r"""Optional. The labels or tags associated with the GoldenGateDeployment.
-
-    Messages:
-      AdditionalProperty: An additional property for a LabelsValue object.
-
-    Fields:
-      additionalProperties: Additional properties of type LabelsValue
-    """
-
-    class AdditionalProperty(_messages.Message):
-      r"""An additional property for a LabelsValue object.
-
-      Fields:
-        key: Name of the additional property.
-        value: A string attribute.
-      """
-
-      key = _messages.StringField(1)
-      value = _messages.StringField(2)
-
-    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
-
-  createTime = _messages.StringField(1)
-  displayName = _messages.StringField(2)
-  entitlementId = _messages.StringField(3)
-  gcpOracleZone = _messages.StringField(4)
-  labels = _messages.MessageField('LabelsValue', 5)
-  name = _messages.StringField(6)
-  ociUrl = _messages.StringField(7)
-  odbNetwork = _messages.StringField(8)
-  odbSubnet = _messages.StringField(9)
-  properties = _messages.MessageField('GoldenGateDeploymentProperties', 10)
-
-
 class GoldenGateDeploymentEnvironment(_messages.Message):
   r"""Details of the GoldenGate Deployment Environment resource.
 
@@ -4227,285 +4118,6 @@ class GoldenGateDeploymentEnvironment(_messages.Message):
   name = _messages.StringField(9)
   networkBandwidthGbpsPerCpuCore = _messages.IntegerField(10, variant=_messages.Variant.INT32)
   storageUsageLimitGbPerCpuCore = _messages.IntegerField(11, variant=_messages.Variant.INT32)
-
-
-class GoldenGateDeploymentLock(_messages.Message):
-  r"""The lock of the GoldenGateDeployment.
-
-  Enums:
-    TypeValueValuesEnum: Output only. The type of lock.
-
-  Fields:
-    compartmentId: Output only. The compartment id.
-    createTime: Output only. The time created.
-    message: Output only. The message.
-    relatedResourceId: Output only. The related resource id.
-    type: Output only. The type of lock.
-  """
-
-  class TypeValueValuesEnum(_messages.Enum):
-    r"""Output only. The type of lock.
-
-    Values:
-      LOCK_TYPE_UNSPECIFIED: The lock type is unspecified.
-      FULL: The lock type is full.
-      DELETE: The lock type is delete.
-    """
-    LOCK_TYPE_UNSPECIFIED = 0
-    FULL = 1
-    DELETE = 2
-
-  compartmentId = _messages.StringField(1)
-  createTime = _messages.StringField(2)
-  message = _messages.StringField(3)
-  relatedResourceId = _messages.StringField(4)
-  type = _messages.EnumField('TypeValueValuesEnum', 5)
-
-
-class GoldenGateDeploymentProperties(_messages.Message):
-  r"""Properties of GoldenGateDeployment.
-
-  Enums:
-    CategoryValueValuesEnum: Output only. The category of the
-      GoldenGateDeployment.
-    DeploymentRoleValueValuesEnum: Output only. The deployment role of the
-      GoldenGateDeployment.
-    LicenseModelValueValuesEnum: Optional. The Oracle license model that
-      applies to a Deployment.
-    LifecycleStateValueValuesEnum: Output only. State of the
-      GoldenGateDeployment.
-    LifecycleSubStateValueValuesEnum: Output only. The lifecycle sub-state of
-      the GoldenGateDeployment.
-    NextMaintenanceActionTypeValueValuesEnum: Output only. The next
-      maintenance action type of the GoldenGateDeployment.
-
-  Fields:
-    backupSchedule: Output only. The backup schedule of the
-      GoldenGateDeployment.
-    category: Output only. The category of the GoldenGateDeployment.
-    cpuCoreCount: Optional. The Minimum number of OCPUs to be made available
-      for this Deployment.
-    deploymentBackupId: Output only. The deployment backup id of the
-      GoldenGateDeployment.
-    deploymentDiagnosticData: Output only. The deployment diagnostic data of
-      the GoldenGateDeployment.
-    deploymentRole: Output only. The deployment role of the
-      GoldenGateDeployment.
-    deploymentType: Required. A valid GoldenGate Deployment type. For a list
-      of supported types, use the `ListGoldenGateDeploymentTypes` operation.
-    deploymentUrl: Output only. The deployment url of the
-      GoldenGateDeployment.
-    description: Optional. The description of the GoldenGateDeployment.
-    environmentType: Optional. The environment type of the
-      GoldenGateDeployment.
-    fqdn: Output only. The Fully Qualified Domain Name of the
-      GoldenGateDeployment.
-    healthy: Output only. Whether the GoldenGateDeployment is healthy.
-    ingressIps: Output only. The ingress ips of the GoldenGateDeployment.
-    isAutoScalingEnabled: Optional. Indicates if auto scaling is enabled for
-      the Deployment's CPU core count.
-    isLatestVersion: Output only. Whether the GoldenGateDeployment is of the
-      latest version.
-    isPublic: Output only. Whether the GoldenGateDeployment is public.
-    isStorageUtilizationLimitExceeded: Output only. Whether storage
-      utilization limit is exceeded of the GoldenGateDeployment.
-    lastBackupScheduleTime: Output only. The time last backup scheduled of the
-      GoldenGateDeployment.
-    licenseModel: Optional. The Oracle license model that applies to a
-      Deployment.
-    lifecycleDetails: Output only. The lifecycle details of the
-      GoldenGateDeployment.
-    lifecycleState: Output only. State of the GoldenGateDeployment.
-    lifecycleSubState: Output only. The lifecycle sub-state of the
-      GoldenGateDeployment.
-    loadBalancerId: Output only. The load balancer id of the
-      GoldenGateDeployment.
-    loadBalancerSubnetId: Output only. The load balancer subnet id of the
-      GoldenGateDeployment.
-    locks: Output only. The locks of the GoldenGateDeployment.
-    maintenanceConfig: Optional. The maintenance configuration of the
-      GoldenGateDeployment.
-    maintenanceWindow: Optional. The maintenance window of the
-      GoldenGateDeployment.
-    nextBackupScheduleTime: Output only. The time next backup scheduled of the
-      GoldenGateDeployment.
-    nextMaintenanceActionType: Output only. The next maintenance action type
-      of the GoldenGateDeployment.
-    nextMaintenanceDescription: Output only. The next maintenance description
-      of the GoldenGateDeployment.
-    nextMaintenanceTime: Output only. The time of next maintenance of the
-      GoldenGateDeployment.
-    nsgIds: Output only. The nsg ids of the GoldenGateDeployment.
-    ocid: Output only. OCID of the GoldenGateDeployment.
-    oggData: Required. The ogg data of the GoldenGateDeployment.
-    oggVersionSupportEndTime: Output only. The time ogg version supported
-      until of the GoldenGateDeployment.
-    placements: Output only. The placements of the GoldenGateDeployment.
-    privateIpAddress: Output only. The private ip address of the
-      GoldenGateDeployment.
-    publicIpAddress: Output only. The public ip address of the
-      GoldenGateDeployment.
-    roleChangeTime: Output only. The time when the role of the
-      GoldenGateDeployment was changed.
-    storageUtilizationBytes: Output only. The storage utilization in bytes of
-      the GoldenGateDeployment.
-    updateTime: Output only. The time the GoldenGateDeployment was updated.
-    upgradeRequiredTime: Output only. The time upgrade required of the
-      GoldenGateDeployment.
-  """
-
-  class CategoryValueValuesEnum(_messages.Enum):
-    r"""Output only. The category of the GoldenGateDeployment.
-
-    Values:
-      GOLDEN_GATE_DEPLOYMENT_CATEGORY_UNSPECIFIED: The category is
-        unspecified.
-      DATA_REPLICATION: The deployment is data replication.
-      DATA_TRANSFORMS: The deployment is data transforms.
-    """
-    GOLDEN_GATE_DEPLOYMENT_CATEGORY_UNSPECIFIED = 0
-    DATA_REPLICATION = 1
-    DATA_TRANSFORMS = 2
-
-  class DeploymentRoleValueValuesEnum(_messages.Enum):
-    r"""Output only. The deployment role of the GoldenGateDeployment.
-
-    Values:
-      GOLDEN_GATE_DEPLOYMENT_ROLE_TYPE_UNSPECIFIED: The deployment role type
-        is unspecified.
-      PRIMARY: The deployment role type is primary.
-      STANDBY: The deployment role type is standby.
-    """
-    GOLDEN_GATE_DEPLOYMENT_ROLE_TYPE_UNSPECIFIED = 0
-    PRIMARY = 1
-    STANDBY = 2
-
-  class LicenseModelValueValuesEnum(_messages.Enum):
-    r"""Optional. The Oracle license model that applies to a Deployment.
-
-    Values:
-      LICENSE_MODEL_UNSPECIFIED: The license model is unspecified.
-      LICENSE_INCLUDED: The license model is included.
-      BRING_YOUR_OWN_LICENSE: The license model is bring your own license.
-    """
-    LICENSE_MODEL_UNSPECIFIED = 0
-    LICENSE_INCLUDED = 1
-    BRING_YOUR_OWN_LICENSE = 2
-
-  class LifecycleStateValueValuesEnum(_messages.Enum):
-    r"""Output only. State of the GoldenGateDeployment.
-
-    Values:
-      GOLDEN_GATE_DEPLOYMENT_LIFECYCLE_STATE_UNSPECIFIED: Default unspecified
-        value.
-      CREATING: The deployment is being created.
-      UPDATING: The deployment is being updated.
-      ACTIVE: The deployment is active.
-      INACTIVE: The deployment is inactive.
-      DELETING: The deployment is being deleted.
-      DELETED: The deployment is deleted.
-      FAILED: The deployment failed.
-      NEEDS_ATTENTION: The deployment needs attention.
-      IN_PROGRESS: The deployment is in progress.
-      CANCELLING: The deployment is canceling.
-      CANCELLED: The deployment is canceled.
-      SUCCEEDED: The deployment succeeded.
-      WAITING: The deployment is waiting.
-    """
-    GOLDEN_GATE_DEPLOYMENT_LIFECYCLE_STATE_UNSPECIFIED = 0
-    CREATING = 1
-    UPDATING = 2
-    ACTIVE = 3
-    INACTIVE = 4
-    DELETING = 5
-    DELETED = 6
-    FAILED = 7
-    NEEDS_ATTENTION = 8
-    IN_PROGRESS = 9
-    CANCELLING = 10
-    CANCELLED = 11
-    SUCCEEDED = 12
-    WAITING = 13
-
-  class LifecycleSubStateValueValuesEnum(_messages.Enum):
-    r"""Output only. The lifecycle sub-state of the GoldenGateDeployment.
-
-    Values:
-      GOLDEN_GATE_DEPLOYMENT_LIFECYCLE_SUB_STATE_UNSPECIFIED: The lifecycle
-        sub-state is unspecified.
-      RECOVERING: The deployment is recovering.
-      STARTING: The deployment is starting.
-      STOPPING: The deployment is stopping.
-      MOVING: The deployment is moving.
-      UPGRADING: The deployment is upgrading.
-      RESTORING: The deployment is restoring.
-      BACKING_UP: The deployment is backing up.
-      ROLLING_BACK: The deployment is rolling back.
-    """
-    GOLDEN_GATE_DEPLOYMENT_LIFECYCLE_SUB_STATE_UNSPECIFIED = 0
-    RECOVERING = 1
-    STARTING = 2
-    STOPPING = 3
-    MOVING = 4
-    UPGRADING = 5
-    RESTORING = 6
-    BACKING_UP = 7
-    ROLLING_BACK = 8
-
-  class NextMaintenanceActionTypeValueValuesEnum(_messages.Enum):
-    r"""Output only. The next maintenance action type of the
-    GoldenGateDeployment.
-
-    Values:
-      NEXT_MAINTENANCE_ACTION_TYPE_UNSPECIFIED: The next maintenance action
-        type is unspecified.
-      UPGRADE: The next maintenance action type is upgrade.
-    """
-    NEXT_MAINTENANCE_ACTION_TYPE_UNSPECIFIED = 0
-    UPGRADE = 1
-
-  backupSchedule = _messages.MessageField('GoldenGateBackupSchedule', 1)
-  category = _messages.EnumField('CategoryValueValuesEnum', 2)
-  cpuCoreCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  deploymentBackupId = _messages.StringField(4)
-  deploymentDiagnosticData = _messages.MessageField('DeploymentDiagnosticData', 5)
-  deploymentRole = _messages.EnumField('DeploymentRoleValueValuesEnum', 6)
-  deploymentType = _messages.StringField(7)
-  deploymentUrl = _messages.StringField(8)
-  description = _messages.StringField(9)
-  environmentType = _messages.StringField(10)
-  fqdn = _messages.StringField(11)
-  healthy = _messages.BooleanField(12)
-  ingressIps = _messages.MessageField('IngressIp', 13, repeated=True)
-  isAutoScalingEnabled = _messages.BooleanField(14)
-  isLatestVersion = _messages.BooleanField(15)
-  isPublic = _messages.BooleanField(16)
-  isStorageUtilizationLimitExceeded = _messages.BooleanField(17)
-  lastBackupScheduleTime = _messages.StringField(18)
-  licenseModel = _messages.EnumField('LicenseModelValueValuesEnum', 19)
-  lifecycleDetails = _messages.StringField(20)
-  lifecycleState = _messages.EnumField('LifecycleStateValueValuesEnum', 21)
-  lifecycleSubState = _messages.EnumField('LifecycleSubStateValueValuesEnum', 22)
-  loadBalancerId = _messages.StringField(23)
-  loadBalancerSubnetId = _messages.StringField(24)
-  locks = _messages.MessageField('GoldenGateDeploymentLock', 25, repeated=True)
-  maintenanceConfig = _messages.MessageField('GoldenGateMaintenanceConfig', 26)
-  maintenanceWindow = _messages.MessageField('GoldenGateMaintenanceWindow', 27)
-  nextBackupScheduleTime = _messages.StringField(28)
-  nextMaintenanceActionType = _messages.EnumField('NextMaintenanceActionTypeValueValuesEnum', 29)
-  nextMaintenanceDescription = _messages.StringField(30)
-  nextMaintenanceTime = _messages.StringField(31)
-  nsgIds = _messages.StringField(32, repeated=True)
-  ocid = _messages.StringField(33)
-  oggData = _messages.MessageField('GoldenGateOggDeployment', 34)
-  oggVersionSupportEndTime = _messages.StringField(35)
-  placements = _messages.MessageField('GoldenGatePlacement', 36, repeated=True)
-  privateIpAddress = _messages.StringField(37)
-  publicIpAddress = _messages.StringField(38)
-  roleChangeTime = _messages.StringField(39)
-  storageUtilizationBytes = _messages.IntegerField(40)
-  updateTime = _messages.StringField(41)
-  upgradeRequiredTime = _messages.StringField(42)
 
 
 class GoldenGateDeploymentType(_messages.Message):
@@ -4601,102 +4213,6 @@ class GoldenGateDeploymentType(_messages.Message):
   targetTechnologies = _messages.StringField(11, repeated=True)
 
 
-class GoldenGateDeploymentVersion(_messages.Message):
-  r"""Details of the GoldenGate Deployment Version resource.
-
-  Fields:
-    name: Identifier. The name of the GoldenGate Deployment Version resource
-      with the format: projects/{project}/locations/{region}/goldenGateDeploym
-      entVersions/{golden_gate_deployment_version}
-    ocid: Output only. The deployment version ocid of the GoldenGate
-      Deployment Version resource.
-    properties: Output only. The technology type of the GoldenGate Deployment
-      Version resource.
-  """
-
-  name = _messages.StringField(1)
-  ocid = _messages.StringField(2)
-  properties = _messages.MessageField('GoldenGateDeploymentVersionProperties', 3)
-
-
-class GoldenGateDeploymentVersionProperties(_messages.Message):
-  r"""Properties of GoldenGateDeploymentVersion.
-
-  Enums:
-    DeploymentTypeValueValuesEnum: Output only. The deployment type of the
-      GoldenGate Deployment Version resource.
-    ReleaseTypeValueValuesEnum: Output only. The release type of the
-      GoldenGate Deployment Version resource.
-
-  Fields:
-    deploymentType: Output only. The deployment type of the GoldenGate
-      Deployment Version resource.
-    oggVersion: Output only. The OGG version of the GoldenGate Deployment
-      Version resource.
-    releaseTime: Output only. The release time of the GoldenGate Deployment
-      Version resource.
-    releaseType: Output only. The release type of the GoldenGate Deployment
-      Version resource.
-    securityFix: Optional. Whether the GoldenGate Deployment Version resource
-      is a security fix.
-    supportEndTime: Output only. The support end time of the GoldenGate
-      Deployment Version resource.
-  """
-
-  class DeploymentTypeValueValuesEnum(_messages.Enum):
-    r"""Output only. The deployment type of the GoldenGate Deployment Version
-    resource.
-
-    Values:
-      DEPLOYMENT_TYPE_UNSPECIFIED: Default unspecified value.
-      OGG: GoldenGate Deployment Type category is OGG.
-      DATABASE_ORACLE: GoldenGate Deployment Type category is DATABASE_ORACLE.
-      BIGDATA: GoldenGate Deployment Type category is BIGDATA.
-      DATABASE_MICROSOFT_SQLSERVER: GoldenGate Deployment Type category is
-        DATABASE_MICROSOFT_SQLSERVER.
-      DATABASE_MYSQL: GoldenGate Deployment Type category is DATABASE_MYSQL.
-      DATABASE_POSTGRESQL: GoldenGate Deployment Type category is
-        DATABASE_POSTGRESQL.
-      DATABASE_DB2ZOS: GoldenGate Deployment Type category is DATABASE_DB2ZOS.
-      DATABASE_DB2I: GoldenGate Deployment Type category is DATABASE_DB2I.
-      GGSA: GoldenGate Deployment Type category is GGSA.
-      DATA_TRANSFORMS: GoldenGate Deployment Type category is DATA_TRANSFORMS.
-    """
-    DEPLOYMENT_TYPE_UNSPECIFIED = 0
-    OGG = 1
-    DATABASE_ORACLE = 2
-    BIGDATA = 3
-    DATABASE_MICROSOFT_SQLSERVER = 4
-    DATABASE_MYSQL = 5
-    DATABASE_POSTGRESQL = 6
-    DATABASE_DB2ZOS = 7
-    DATABASE_DB2I = 8
-    GGSA = 9
-    DATA_TRANSFORMS = 10
-
-  class ReleaseTypeValueValuesEnum(_messages.Enum):
-    r"""Output only. The release type of the GoldenGate Deployment Version
-    resource.
-
-    Values:
-      DEPLOYMENT_RELEASE_TYPE_UNSPECIFIED: Default unspecified value.
-      MAJOR: GoldenGate Deployment Version release type is MAJOR.
-      BUNDLE: GoldenGate Deployment Version release type is BUNDLE.
-      MINOR: GoldenGate Deployment Version release type is MINOR.
-    """
-    DEPLOYMENT_RELEASE_TYPE_UNSPECIFIED = 0
-    MAJOR = 1
-    BUNDLE = 2
-    MINOR = 3
-
-  deploymentType = _messages.EnumField('DeploymentTypeValueValuesEnum', 1)
-  oggVersion = _messages.StringField(2)
-  releaseTime = _messages.StringField(3)
-  releaseType = _messages.EnumField('ReleaseTypeValueValuesEnum', 4)
-  securityFix = _messages.BooleanField(5)
-  supportEndTime = _messages.StringField(6)
-
-
 class GoldenGateElasticsearchConnectionProperties(_messages.Message):
   r"""The properties of GoldenGateElasticsearchConnection.
 
@@ -4778,9 +4294,9 @@ class GoldenGateGoldenGateConnectionProperties(_messages.Message):
   r"""The properties of GoldenGateGoldenGateConnectionProperties.
 
   Fields:
-    goldenGateDeploymentId: Optional. The name of the GoldenGateDeployment
+    goldengateDeploymentId: Optional. The name of the GoldenGateDeployment
       associated with the GoldenGateConnection. Format: projects/{project}/loc
-      ations/{location}/goldenGateDeployments/{golden_gate_deployment}
+      ations/{location}/goldengateDeployments/{golden_gate_deployment}
     host: Optional. The host of the GoldenGateConnection.
     password: Optional. Input only. The password used to connect to the Oracle
       GoldenGate in plain text.
@@ -4793,7 +4309,7 @@ class GoldenGateGoldenGateConnectionProperties(_messages.Message):
     username: Optional. The username credential.
   """
 
-  goldenGateDeploymentId = _messages.StringField(1)
+  goldengateDeploymentId = _messages.StringField(1)
   host = _messages.StringField(2)
   password = _messages.StringField(3)
   passwordSecretVersion = _messages.StringField(4)
@@ -4839,22 +4355,6 @@ class GoldenGateGooglePubsubConnectionProperties(_messages.Message):
 
   serviceAccountKeyFile = _messages.StringField(1)
   technologyType = _messages.StringField(2)
-
-
-class GoldenGateGroupToRolesMapping(_messages.Message):
-  r"""The group to roles mapping of the GoldenGateDeployment.
-
-  Fields:
-    administratorGroupId: Output only. The administrator group id.
-    operatorGroupId: Output only. The operator group id.
-    securityGroupId: Output only. The security group id.
-    userGroupId: Output only. The user group id.
-  """
-
-  administratorGroupId = _messages.StringField(1)
-  operatorGroupId = _messages.StringField(2)
-  securityGroupId = _messages.StringField(3)
-  userGroupId = _messages.StringField(4)
 
 
 class GoldenGateHdfsConnectionProperties(_messages.Message):
@@ -5162,75 +4662,6 @@ class GoldenGateKafkaSchemaRegistryConnectionProperties(_messages.Message):
   username = _messages.StringField(14)
 
 
-class GoldenGateMaintenanceConfig(_messages.Message):
-  r"""The maintenance configuration of the GoldenGateDeployment.
-
-  Fields:
-    bundleReleaseUpgradePeriodDays: Optional. Defines auto upgrade period for
-      bundle releases. Manually configured period cannot be longer than
-      service defined period for bundle releases. This period must be shorter
-      or equal to major release upgrade period. Not passing this field during
-      create will equate to using the service default.
-    interimReleaseUpgradePeriodDays: Optional. Defines auto upgrade period for
-      interim releases. This period must be shorter or equal to bundle release
-      upgrade period.
-    isInterimReleaseAutoUpgradeEnabled: Optional. By default auto upgrade for
-      interim releases are not enabled. If auto-upgrade is enabled for interim
-      release, you have to specify interim_release_upgrade_period_days too.
-    majorReleaseUpgradePeriodDays: Optional. Defines auto upgrade period for
-      major releases. Manually configured period cannot be longer than service
-      defined period for major releases. Not passing this field during create
-      will equate to using the service default.
-    securityPatchUpgradePeriodDays: Optional. Defines auto upgrade period for
-      releases with security fix. Manually configured period cannot be longer
-      than service defined period for security releases. Not passing this
-      field during create will equate to using the service default.
-  """
-
-  bundleReleaseUpgradePeriodDays = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  interimReleaseUpgradePeriodDays = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  isInterimReleaseAutoUpgradeEnabled = _messages.BooleanField(3)
-  majorReleaseUpgradePeriodDays = _messages.IntegerField(4, variant=_messages.Variant.INT32)
-  securityPatchUpgradePeriodDays = _messages.IntegerField(5, variant=_messages.Variant.INT32)
-
-
-class GoldenGateMaintenanceWindow(_messages.Message):
-  r"""The maintenance window of the GoldenGateDeployment.
-
-  Enums:
-    DayValueValuesEnum: Required. Days of the week.
-
-  Fields:
-    day: Required. Days of the week.
-    startHour: Required. Start hour for maintenance period. Hour is in UTC.
-  """
-
-  class DayValueValuesEnum(_messages.Enum):
-    r"""Required. Days of the week.
-
-    Values:
-      DAY_OF_WEEK_UNSPECIFIED: The day of the week is unspecified.
-      MONDAY: Monday
-      TUESDAY: Tuesday
-      WEDNESDAY: Wednesday
-      THURSDAY: Thursday
-      FRIDAY: Friday
-      SATURDAY: Saturday
-      SUNDAY: Sunday
-    """
-    DAY_OF_WEEK_UNSPECIFIED = 0
-    MONDAY = 1
-    TUESDAY = 2
-    WEDNESDAY = 3
-    THURSDAY = 4
-    FRIDAY = 5
-    SATURDAY = 6
-    SUNDAY = 7
-
-  day = _messages.EnumField('DayValueValuesEnum', 1)
-  startHour = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-
-
 class GoldenGateMicrosoftFabricConnectionProperties(_messages.Message):
   r"""The properties of GoldenGateMicrosoftFabricConnection.
 
@@ -5485,58 +4916,6 @@ class GoldenGateOciObjectStorageConnectionProperties(_messages.Message):
   userId = _messages.StringField(8)
 
 
-class GoldenGateOggDeployment(_messages.Message):
-  r"""The Ogg data of the GoldenGateDeployment.
-
-  Enums:
-    CredentialStoreValueValuesEnum: Output only. The credential store of the
-      GoldenGateDeployment.
-
-  Fields:
-    adminPassword: Optional. The GoldenGate deployment console password in
-      plain text.
-    adminPasswordSecretVersion: Optional. Input only. The GoldenGate
-      deployment console password secret version.
-    adminUsername: Required. The GoldenGate deployment console username.
-    certificate: Output only. The certificate of the GoldenGateDeployment.
-    credentialStore: Output only. The credential store of the
-      GoldenGateDeployment.
-    deployment: Required. The name given to the GoldenGate service deployment.
-      The name must be 1 to 32 characters long, must contain only alphanumeric
-      characters and must start with a letter.
-    groupRolesMapping: Output only. The group to roles mapping of the
-      GoldenGateDeployment.
-    identityDomainId: Output only. The identity domain id of the
-      GoldenGateDeployment.
-    oggVersion: Optional. Version of OGG
-    passwordSecretId: Output only. The password secret id of the
-      GoldenGateDeployment.
-  """
-
-  class CredentialStoreValueValuesEnum(_messages.Enum):
-    r"""Output only. The credential store of the GoldenGateDeployment.
-
-    Values:
-      CREDENTIAL_STORE_UNSPECIFIED: The credential store is unspecified.
-      GOLDENGATE: The credential store is Goldengate.
-      IAM: The credential store is IAM.
-    """
-    CREDENTIAL_STORE_UNSPECIFIED = 0
-    GOLDENGATE = 1
-    IAM = 2
-
-  adminPassword = _messages.StringField(1)
-  adminPasswordSecretVersion = _messages.StringField(2)
-  adminUsername = _messages.StringField(3)
-  certificate = _messages.StringField(4)
-  credentialStore = _messages.EnumField('CredentialStoreValueValuesEnum', 5)
-  deployment = _messages.StringField(6)
-  groupRolesMapping = _messages.MessageField('GoldenGateGroupToRolesMapping', 7)
-  identityDomainId = _messages.StringField(8)
-  oggVersion = _messages.StringField(9)
-  passwordSecretId = _messages.StringField(10)
-
-
 class GoldenGateOracleAIDataPlatformConnectionProperties(_messages.Message):
   r"""The properties of GoldenGateOracleAIDataPlatformConnection.
 
@@ -5659,18 +5038,6 @@ class GoldenGateOracleNosqlConnectionProperties(_messages.Message):
   tenancyId = _messages.StringField(6)
   useResourcePrincipal = _messages.BooleanField(7)
   userId = _messages.StringField(8)
-
-
-class GoldenGatePlacement(_messages.Message):
-  r"""The placement of the GoldenGateDeployment.
-
-  Fields:
-    availabilityDomain: Output only. The availability domain.
-    faultDomain: Output only. The fault domain.
-  """
-
-  availabilityDomain = _messages.StringField(1)
-  faultDomain = _messages.StringField(2)
 
 
 class GoldenGatePostgresqlConnectionProperties(_messages.Message):
@@ -5887,6 +5254,635 @@ class GoldenGateSnowflakeConnectionProperties(_messages.Message):
   username = _messages.StringField(8)
 
 
+class GoldengateBackupSchedule(_messages.Message):
+  r"""The backup schedule of the GoldengateDeployment.
+
+  Enums:
+    FrequencyBackupScheduledValueValuesEnum: Output only. The frequency backup
+      scheduled.
+
+  Fields:
+    backupScheduledTime: Output only. The timestamp of when the backup was
+      scheduled.
+    bucket: Output only. The bucket name.
+    compartmentId: Output only. The compartment id.
+    frequencyBackupScheduled: Output only. The frequency backup scheduled.
+    metadataOnly: Output only. If metadata only.
+    namespace: Output only. The namespace name.
+  """
+
+  class FrequencyBackupScheduledValueValuesEnum(_messages.Enum):
+    r"""Output only. The frequency backup scheduled.
+
+    Values:
+      FREQUENCY_BACKUP_SCHEDULED_UNSPECIFIED: The frequency backup scheduled
+        is unspecified.
+      DAILY: The frequency backup scheduled is daily.
+      WEEKLY: The frequency backup scheduled is weekly.
+      MONTHLY: The frequency backup scheduled is monthly.
+    """
+    FREQUENCY_BACKUP_SCHEDULED_UNSPECIFIED = 0
+    DAILY = 1
+    WEEKLY = 2
+    MONTHLY = 3
+
+  backupScheduledTime = _messages.StringField(1)
+  bucket = _messages.StringField(2)
+  compartmentId = _messages.StringField(3)
+  frequencyBackupScheduled = _messages.EnumField('FrequencyBackupScheduledValueValuesEnum', 4)
+  metadataOnly = _messages.BooleanField(5)
+  namespace = _messages.StringField(6)
+
+
+class GoldengateDeployment(_messages.Message):
+  r"""GoldengateDeployment Goldengate Deployment resource model.
+
+  Messages:
+    LabelsValue: Optional. The labels or tags associated with the
+      GoldengateDeployment.
+
+  Fields:
+    createTime: Output only. The date and time that the GoldengateDeployment
+      was created.
+    displayName: Required. The display name for the GoldengateDeployment.
+    entitlementId: Output only. The ID of the subscription entitlement
+      associated with the GoldengateDeployment
+    gcpOracleZone: Optional. The GCP Oracle zone where Oracle
+      GoldengateDeployment is hosted. Example: us-east4-b-r2. If not
+      specified, the system will pick a zone based on availability.
+    labels: Optional. The labels or tags associated with the
+      GoldengateDeployment.
+    name: Identifier. The name of the GoldengateDeployment resource in the
+      following format: projects/{project}/locations/{region}/goldengateDeploy
+      ments/{goldengate_deployment}
+    ociUrl: Output only. HTTPS link to OCI resources exposed to Customer via
+      UI Interface.
+    odbNetwork: Optional. The name of the OdbNetwork associated with the
+      GoldengateDeployment.
+    odbSubnet: Required. The name of the OdbSubnet associated with the
+      GoldengateDeployment for IP allocation.
+    properties: Required. The properties of the GoldengateDeployment.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. The labels or tags associated with the GoldengateDeployment.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  displayName = _messages.StringField(2)
+  entitlementId = _messages.StringField(3)
+  gcpOracleZone = _messages.StringField(4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  name = _messages.StringField(6)
+  ociUrl = _messages.StringField(7)
+  odbNetwork = _messages.StringField(8)
+  odbSubnet = _messages.StringField(9)
+  properties = _messages.MessageField('GoldengateDeploymentProperties', 10)
+
+
+class GoldengateDeploymentLock(_messages.Message):
+  r"""The lock of the GoldengateDeployment.
+
+  Enums:
+    TypeValueValuesEnum: Output only. The type of lock.
+
+  Fields:
+    compartmentId: Output only. The compartment id.
+    createTime: Output only. The time created.
+    message: Output only. The message.
+    relatedResourceId: Output only. The related resource id.
+    type: Output only. The type of lock.
+  """
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The type of lock.
+
+    Values:
+      LOCK_TYPE_UNSPECIFIED: The lock type is unspecified.
+      FULL: The lock type is full.
+      DELETE: The lock type is delete.
+    """
+    LOCK_TYPE_UNSPECIFIED = 0
+    FULL = 1
+    DELETE = 2
+
+  compartmentId = _messages.StringField(1)
+  createTime = _messages.StringField(2)
+  message = _messages.StringField(3)
+  relatedResourceId = _messages.StringField(4)
+  type = _messages.EnumField('TypeValueValuesEnum', 5)
+
+
+class GoldengateDeploymentProperties(_messages.Message):
+  r"""Properties of GoldengateDeployment.
+
+  Enums:
+    CategoryValueValuesEnum: Output only. The category of the
+      GoldengateDeployment.
+    DeploymentRoleValueValuesEnum: Output only. The deployment role of the
+      GoldengateDeployment.
+    LicenseModelValueValuesEnum: Optional. The Oracle license model that
+      applies to a Deployment.
+    LifecycleStateValueValuesEnum: Output only. State of the
+      GoldengateDeployment.
+    LifecycleSubStateValueValuesEnum: Output only. The lifecycle sub-state of
+      the GoldengateDeployment.
+    NextMaintenanceActionTypeValueValuesEnum: Output only. The next
+      maintenance action type of the GoldengateDeployment.
+
+  Fields:
+    backupSchedule: Output only. The backup schedule of the
+      GoldengateDeployment.
+    category: Output only. The category of the GoldengateDeployment.
+    cpuCoreCount: Optional. The Minimum number of OCPUs to be made available
+      for this Deployment.
+    deploymentBackupId: Output only. The deployment backup id of the
+      GoldengateDeployment.
+    deploymentDiagnosticData: Output only. The deployment diagnostic data of
+      the GoldengateDeployment.
+    deploymentRole: Output only. The deployment role of the
+      GoldengateDeployment.
+    deploymentType: Required. A valid Goldengate Deployment type. For a list
+      of supported types, use the `ListGoldengateDeploymentTypes` operation.
+    deploymentUrl: Output only. The deployment url of the
+      GoldengateDeployment.
+    description: Optional. The description of the GoldengateDeployment.
+    environmentType: Optional. The environment type of the
+      GoldengateDeployment.
+    fqdn: Output only. The Fully Qualified Domain Name of the
+      GoldengateDeployment.
+    healthy: Output only. Whether the GoldengateDeployment is healthy.
+    ingressIps: Output only. The ingress ips of the GoldengateDeployment.
+    isAutoScalingEnabled: Optional. Indicates if auto scaling is enabled for
+      the Deployment's CPU core count.
+    isLatestVersion: Output only. Whether the GoldengateDeployment is of the
+      latest version.
+    isPublic: Output only. Whether the GoldengateDeployment is public.
+    isStorageUtilizationLimitExceeded: Output only. Whether storage
+      utilization limit is exceeded of the GoldengateDeployment.
+    lastBackupScheduleTime: Output only. The time last backup scheduled of the
+      GoldengateDeployment.
+    licenseModel: Optional. The Oracle license model that applies to a
+      Deployment.
+    lifecycleDetails: Output only. The lifecycle details of the
+      GoldengateDeployment.
+    lifecycleState: Output only. State of the GoldengateDeployment.
+    lifecycleSubState: Output only. The lifecycle sub-state of the
+      GoldengateDeployment.
+    loadBalancerId: Output only. The load balancer id of the
+      GoldengateDeployment.
+    loadBalancerSubnetId: Output only. The load balancer subnet id of the
+      GoldengateDeployment.
+    locks: Output only. The locks of the GoldengateDeployment.
+    maintenanceConfig: Optional. The maintenance configuration of the
+      GoldengateDeployment.
+    maintenanceWindow: Optional. The maintenance window of the
+      GoldengateDeployment.
+    nextBackupScheduleTime: Output only. The time next backup scheduled of the
+      GoldengateDeployment.
+    nextMaintenanceActionType: Output only. The next maintenance action type
+      of the GoldengateDeployment.
+    nextMaintenanceDescription: Output only. The next maintenance description
+      of the GoldengateDeployment.
+    nextMaintenanceTime: Output only. The time of next maintenance of the
+      GoldengateDeployment.
+    nsgIds: Output only. The nsg ids of the GoldengateDeployment.
+    ocid: Output only. OCID of the GoldengateDeployment.
+    oggData: Required. The ogg data of the GoldengateDeployment.
+    oggVersionSupportEndTime: Output only. The time ogg version supported
+      until of the GoldengateDeployment.
+    placements: Output only. The placements of the GoldengateDeployment.
+    privateIpAddress: Output only. The private ip address of the
+      GoldengateDeployment.
+    publicIpAddress: Output only. The public ip address of the
+      GoldengateDeployment.
+    roleChangeTime: Output only. The time when the role of the
+      GoldengateDeployment was changed.
+    storageUtilizationBytes: Output only. The storage utilization in bytes of
+      the GoldengateDeployment.
+    updateTime: Output only. The time the GoldengateDeployment was updated.
+    upgradeRequiredTime: Output only. The time upgrade required of the
+      GoldengateDeployment.
+  """
+
+  class CategoryValueValuesEnum(_messages.Enum):
+    r"""Output only. The category of the GoldengateDeployment.
+
+    Values:
+      GOLDENGATE_DEPLOYMENT_CATEGORY_UNSPECIFIED: The category is unspecified.
+      DATA_REPLICATION: The deployment is data replication.
+      DATA_TRANSFORMS: The deployment is data transforms.
+    """
+    GOLDENGATE_DEPLOYMENT_CATEGORY_UNSPECIFIED = 0
+    DATA_REPLICATION = 1
+    DATA_TRANSFORMS = 2
+
+  class DeploymentRoleValueValuesEnum(_messages.Enum):
+    r"""Output only. The deployment role of the GoldengateDeployment.
+
+    Values:
+      GOLDENGATE_DEPLOYMENT_ROLE_TYPE_UNSPECIFIED: The deployment role type is
+        unspecified.
+      PRIMARY: The deployment role type is primary.
+      STANDBY: The deployment role type is standby.
+    """
+    GOLDENGATE_DEPLOYMENT_ROLE_TYPE_UNSPECIFIED = 0
+    PRIMARY = 1
+    STANDBY = 2
+
+  class LicenseModelValueValuesEnum(_messages.Enum):
+    r"""Optional. The Oracle license model that applies to a Deployment.
+
+    Values:
+      LICENSE_MODEL_UNSPECIFIED: The license model is unspecified.
+      LICENSE_INCLUDED: The license model is included.
+      BRING_YOUR_OWN_LICENSE: The license model is bring your own license.
+    """
+    LICENSE_MODEL_UNSPECIFIED = 0
+    LICENSE_INCLUDED = 1
+    BRING_YOUR_OWN_LICENSE = 2
+
+  class LifecycleStateValueValuesEnum(_messages.Enum):
+    r"""Output only. State of the GoldengateDeployment.
+
+    Values:
+      GOLDENGATE_DEPLOYMENT_LIFECYCLE_STATE_UNSPECIFIED: Default unspecified
+        value.
+      CREATING: The deployment is being created.
+      UPDATING: The deployment is being updated.
+      ACTIVE: The deployment is active.
+      INACTIVE: The deployment is inactive.
+      DELETING: The deployment is being deleted.
+      DELETED: The deployment is deleted.
+      FAILED: The deployment failed.
+      NEEDS_ATTENTION: The deployment needs attention.
+      IN_PROGRESS: The deployment is in progress.
+      CANCELLING: The deployment is canceling.
+      CANCELLED: The deployment is canceled.
+      SUCCEEDED: The deployment succeeded.
+      WAITING: The deployment is waiting.
+    """
+    GOLDENGATE_DEPLOYMENT_LIFECYCLE_STATE_UNSPECIFIED = 0
+    CREATING = 1
+    UPDATING = 2
+    ACTIVE = 3
+    INACTIVE = 4
+    DELETING = 5
+    DELETED = 6
+    FAILED = 7
+    NEEDS_ATTENTION = 8
+    IN_PROGRESS = 9
+    CANCELLING = 10
+    CANCELLED = 11
+    SUCCEEDED = 12
+    WAITING = 13
+
+  class LifecycleSubStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The lifecycle sub-state of the GoldengateDeployment.
+
+    Values:
+      GOLDENGATE_DEPLOYMENT_LIFECYCLE_SUB_STATE_UNSPECIFIED: The lifecycle
+        sub-state is unspecified.
+      RECOVERING: The deployment is recovering.
+      STARTING: The deployment is starting.
+      STOPPING: The deployment is stopping.
+      MOVING: The deployment is moving.
+      UPGRADING: The deployment is upgrading.
+      RESTORING: The deployment is restoring.
+      BACKING_UP: The deployment is backing up.
+      ROLLING_BACK: The deployment is rolling back.
+    """
+    GOLDENGATE_DEPLOYMENT_LIFECYCLE_SUB_STATE_UNSPECIFIED = 0
+    RECOVERING = 1
+    STARTING = 2
+    STOPPING = 3
+    MOVING = 4
+    UPGRADING = 5
+    RESTORING = 6
+    BACKING_UP = 7
+    ROLLING_BACK = 8
+
+  class NextMaintenanceActionTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The next maintenance action type of the
+    GoldengateDeployment.
+
+    Values:
+      NEXT_MAINTENANCE_ACTION_TYPE_UNSPECIFIED: The next maintenance action
+        type is unspecified.
+      UPGRADE: The next maintenance action type is upgrade.
+    """
+    NEXT_MAINTENANCE_ACTION_TYPE_UNSPECIFIED = 0
+    UPGRADE = 1
+
+  backupSchedule = _messages.MessageField('GoldengateBackupSchedule', 1)
+  category = _messages.EnumField('CategoryValueValuesEnum', 2)
+  cpuCoreCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  deploymentBackupId = _messages.StringField(4)
+  deploymentDiagnosticData = _messages.MessageField('DeploymentDiagnosticData', 5)
+  deploymentRole = _messages.EnumField('DeploymentRoleValueValuesEnum', 6)
+  deploymentType = _messages.StringField(7)
+  deploymentUrl = _messages.StringField(8)
+  description = _messages.StringField(9)
+  environmentType = _messages.StringField(10)
+  fqdn = _messages.StringField(11)
+  healthy = _messages.BooleanField(12)
+  ingressIps = _messages.MessageField('IngressIp', 13, repeated=True)
+  isAutoScalingEnabled = _messages.BooleanField(14)
+  isLatestVersion = _messages.BooleanField(15)
+  isPublic = _messages.BooleanField(16)
+  isStorageUtilizationLimitExceeded = _messages.BooleanField(17)
+  lastBackupScheduleTime = _messages.StringField(18)
+  licenseModel = _messages.EnumField('LicenseModelValueValuesEnum', 19)
+  lifecycleDetails = _messages.StringField(20)
+  lifecycleState = _messages.EnumField('LifecycleStateValueValuesEnum', 21)
+  lifecycleSubState = _messages.EnumField('LifecycleSubStateValueValuesEnum', 22)
+  loadBalancerId = _messages.StringField(23)
+  loadBalancerSubnetId = _messages.StringField(24)
+  locks = _messages.MessageField('GoldengateDeploymentLock', 25, repeated=True)
+  maintenanceConfig = _messages.MessageField('GoldengateMaintenanceConfig', 26)
+  maintenanceWindow = _messages.MessageField('GoldengateMaintenanceWindow', 27)
+  nextBackupScheduleTime = _messages.StringField(28)
+  nextMaintenanceActionType = _messages.EnumField('NextMaintenanceActionTypeValueValuesEnum', 29)
+  nextMaintenanceDescription = _messages.StringField(30)
+  nextMaintenanceTime = _messages.StringField(31)
+  nsgIds = _messages.StringField(32, repeated=True)
+  ocid = _messages.StringField(33)
+  oggData = _messages.MessageField('GoldengateOggDeployment', 34)
+  oggVersionSupportEndTime = _messages.StringField(35)
+  placements = _messages.MessageField('GoldengatePlacement', 36, repeated=True)
+  privateIpAddress = _messages.StringField(37)
+  publicIpAddress = _messages.StringField(38)
+  roleChangeTime = _messages.StringField(39)
+  storageUtilizationBytes = _messages.IntegerField(40)
+  updateTime = _messages.StringField(41)
+  upgradeRequiredTime = _messages.StringField(42)
+
+
+class GoldengateDeploymentVersion(_messages.Message):
+  r"""Details of the Goldengate Deployment Version resource.
+
+  Fields:
+    name: Identifier. The name of the Goldengate Deployment Version resource
+      with the format: projects/{project}/locations/{location}/goldengateDeplo
+      ymentVersions/{goldengate_deployment_version}
+    ocid: Output only. The deployment version ocid of the Goldengate
+      Deployment Version resource.
+    properties: Output only. The technology type of the Goldengate Deployment
+      Version resource.
+  """
+
+  name = _messages.StringField(1)
+  ocid = _messages.StringField(2)
+  properties = _messages.MessageField('GoldengateDeploymentVersionProperties', 3)
+
+
+class GoldengateDeploymentVersionProperties(_messages.Message):
+  r"""Properties of GoldengateDeploymentVersion.
+
+  Enums:
+    DeploymentTypeValueValuesEnum: Output only. The deployment type of the
+      Goldengate Deployment Version resource.
+    ReleaseTypeValueValuesEnum: Output only. The release type of the
+      Goldengate Deployment Version resource.
+
+  Fields:
+    deploymentType: Output only. The deployment type of the Goldengate
+      Deployment Version resource.
+    oggVersion: Output only. The OGG version of the Goldengate Deployment
+      Version resource.
+    releaseTime: Output only. The release time of the Goldengate Deployment
+      Version resource.
+    releaseType: Output only. The release type of the Goldengate Deployment
+      Version resource.
+    securityFix: Optional. Whether the Goldengate Deployment Version resource
+      is a security fix.
+    supportEndTime: Output only. The support end time of the Goldengate
+      Deployment Version resource.
+  """
+
+  class DeploymentTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The deployment type of the Goldengate Deployment Version
+    resource.
+
+    Values:
+      DEPLOYMENT_TYPE_UNSPECIFIED: Default unspecified value.
+      OGG: Goldengate Deployment Type category is OGG.
+      DATABASE_ORACLE: Goldengate Deployment Type category is DATABASE_ORACLE.
+      BIGDATA: Goldengate Deployment Type category is BIGDATA.
+      DATABASE_MICROSOFT_SQLSERVER: Goldengate Deployment Type category is
+        DATABASE_MICROSOFT_SQLSERVER.
+      DATABASE_MYSQL: Goldengate Deployment Type category is DATABASE_MYSQL.
+      DATABASE_POSTGRESQL: Goldengate Deployment Type category is
+        DATABASE_POSTGRESQL.
+      DATABASE_DB2ZOS: Goldengate Deployment Type category is DATABASE_DB2ZOS.
+      DATABASE_DB2I: Goldengate Deployment Type category is DATABASE_DB2I.
+      GGSA: Goldengate Deployment Type category is GGSA.
+      DATA_TRANSFORMS: Goldengate Deployment Type category is DATA_TRANSFORMS.
+    """
+    DEPLOYMENT_TYPE_UNSPECIFIED = 0
+    OGG = 1
+    DATABASE_ORACLE = 2
+    BIGDATA = 3
+    DATABASE_MICROSOFT_SQLSERVER = 4
+    DATABASE_MYSQL = 5
+    DATABASE_POSTGRESQL = 6
+    DATABASE_DB2ZOS = 7
+    DATABASE_DB2I = 8
+    GGSA = 9
+    DATA_TRANSFORMS = 10
+
+  class ReleaseTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The release type of the Goldengate Deployment Version
+    resource.
+
+    Values:
+      DEPLOYMENT_RELEASE_TYPE_UNSPECIFIED: Default unspecified value.
+      MAJOR: Goldengate Deployment Version release type is MAJOR.
+      BUNDLE: Goldengate Deployment Version release type is BUNDLE.
+      MINOR: Goldengate Deployment Version release type is MINOR.
+    """
+    DEPLOYMENT_RELEASE_TYPE_UNSPECIFIED = 0
+    MAJOR = 1
+    BUNDLE = 2
+    MINOR = 3
+
+  deploymentType = _messages.EnumField('DeploymentTypeValueValuesEnum', 1)
+  oggVersion = _messages.StringField(2)
+  releaseTime = _messages.StringField(3)
+  releaseType = _messages.EnumField('ReleaseTypeValueValuesEnum', 4)
+  securityFix = _messages.BooleanField(5)
+  supportEndTime = _messages.StringField(6)
+
+
+class GoldengateGroupToRolesMapping(_messages.Message):
+  r"""The group to roles mapping of the GoldengateDeployment.
+
+  Fields:
+    administratorGroupId: Output only. The administrator group id.
+    operatorGroupId: Output only. The operator group id.
+    securityGroupId: Output only. The security group id.
+    userGroupId: Output only. The user group id.
+  """
+
+  administratorGroupId = _messages.StringField(1)
+  operatorGroupId = _messages.StringField(2)
+  securityGroupId = _messages.StringField(3)
+  userGroupId = _messages.StringField(4)
+
+
+class GoldengateMaintenanceConfig(_messages.Message):
+  r"""The maintenance configuration of the GoldengateDeployment.
+
+  Fields:
+    bundleReleaseUpgradePeriodDays: Optional. Defines auto upgrade period for
+      bundle releases. Manually configured period cannot be longer than
+      service defined period for bundle releases. This period must be shorter
+      or equal to major release upgrade period. Not passing this field during
+      create will equate to using the service default.
+    interimReleaseUpgradePeriodDays: Optional. Defines auto upgrade period for
+      interim releases. This period must be shorter or equal to bundle release
+      upgrade period.
+    isInterimReleaseAutoUpgradeEnabled: Optional. By default auto upgrade for
+      interim releases are not enabled. If auto-upgrade is enabled for interim
+      release, you have to specify interim_release_upgrade_period_days too.
+    majorReleaseUpgradePeriodDays: Optional. Defines auto upgrade period for
+      major releases. Manually configured period cannot be longer than service
+      defined period for major releases. Not passing this field during create
+      will equate to using the service default.
+    securityPatchUpgradePeriodDays: Optional. Defines auto upgrade period for
+      releases with security fix. Manually configured period cannot be longer
+      than service defined period for security releases. Not passing this
+      field during create will equate to using the service default.
+  """
+
+  bundleReleaseUpgradePeriodDays = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  interimReleaseUpgradePeriodDays = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  isInterimReleaseAutoUpgradeEnabled = _messages.BooleanField(3)
+  majorReleaseUpgradePeriodDays = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  securityPatchUpgradePeriodDays = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+
+
+class GoldengateMaintenanceWindow(_messages.Message):
+  r"""The maintenance window of the GoldengateDeployment.
+
+  Enums:
+    DayValueValuesEnum: Required. Days of the week.
+
+  Fields:
+    day: Required. Days of the week.
+    startHour: Required. Start hour for maintenance period. Hour is in UTC.
+  """
+
+  class DayValueValuesEnum(_messages.Enum):
+    r"""Required. Days of the week.
+
+    Values:
+      DAY_OF_WEEK_UNSPECIFIED: The day of the week is unspecified.
+      MONDAY: Monday
+      TUESDAY: Tuesday
+      WEDNESDAY: Wednesday
+      THURSDAY: Thursday
+      FRIDAY: Friday
+      SATURDAY: Saturday
+      SUNDAY: Sunday
+    """
+    DAY_OF_WEEK_UNSPECIFIED = 0
+    MONDAY = 1
+    TUESDAY = 2
+    WEDNESDAY = 3
+    THURSDAY = 4
+    FRIDAY = 5
+    SATURDAY = 6
+    SUNDAY = 7
+
+  day = _messages.EnumField('DayValueValuesEnum', 1)
+  startHour = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+
+
+class GoldengateOggDeployment(_messages.Message):
+  r"""The Ogg data of the GoldengateDeployment.
+
+  Enums:
+    CredentialStoreValueValuesEnum: Output only. The credential store of the
+      GoldengateDeployment.
+
+  Fields:
+    adminPassword: Optional. The Goldengate deployment console password in
+      plain text.
+    adminPasswordSecretVersion: Optional. Input only. The Goldengate
+      deployment console password secret version.
+    adminUsername: Required. The Goldengate deployment console username.
+    certificate: Output only. The certificate of the GoldengateDeployment.
+    credentialStore: Output only. The credential store of the
+      GoldengateDeployment.
+    deployment: Required. The name given to the Goldengate service deployment.
+      The name must be 1 to 32 characters long, must contain only alphanumeric
+      characters and must start with a letter.
+    groupRolesMapping: Output only. The group to roles mapping of the
+      GoldengateDeployment.
+    identityDomainId: Output only. The identity domain id of the
+      GoldengateDeployment.
+    oggVersion: Optional. Version of OGG
+    passwordSecretId: Output only. The password secret id of the
+      GoldengateDeployment.
+  """
+
+  class CredentialStoreValueValuesEnum(_messages.Enum):
+    r"""Output only. The credential store of the GoldengateDeployment.
+
+    Values:
+      CREDENTIAL_STORE_UNSPECIFIED: The credential store is unspecified.
+      GOLDENGATE: The credential store is Goldengate.
+      IAM: The credential store is IAM.
+    """
+    CREDENTIAL_STORE_UNSPECIFIED = 0
+    GOLDENGATE = 1
+    IAM = 2
+
+  adminPassword = _messages.StringField(1)
+  adminPasswordSecretVersion = _messages.StringField(2)
+  adminUsername = _messages.StringField(3)
+  certificate = _messages.StringField(4)
+  credentialStore = _messages.EnumField('CredentialStoreValueValuesEnum', 5)
+  deployment = _messages.StringField(6)
+  groupRolesMapping = _messages.MessageField('GoldengateGroupToRolesMapping', 7)
+  identityDomainId = _messages.StringField(8)
+  oggVersion = _messages.StringField(9)
+  passwordSecretId = _messages.StringField(10)
+
+
+class GoldengatePlacement(_messages.Message):
+  r"""The placement of the GoldengateDeployment.
+
+  Fields:
+    availabilityDomain: Output only. The availability domain.
+    faultDomain: Output only. The fault domain.
+  """
+
+  availabilityDomain = _messages.StringField(1)
+  faultDomain = _messages.StringField(2)
+
+
 class GoogleCloudStorageIcebergStorage(_messages.Message):
   r"""The Google Cloud Storage Iceberg storage.
 
@@ -6015,7 +6011,7 @@ class IdentityConnector(_messages.Message):
 
 
 class IngressIp(_messages.Message):
-  r"""The ingress IPs of the GoldenGateDeployment.
+  r"""The ingress IPs of the GoldengateDeployment.
 
   Fields:
     ingressIpAddress: Output only. The ingress IP.
@@ -6358,32 +6354,32 @@ class ListGoldenGateDeploymentTypesResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
-class ListGoldenGateDeploymentVersionsResponse(_messages.Message):
-  r"""Message for response to listing GoldenGateDeploymentVersions
+class ListGoldengateDeploymentVersionsResponse(_messages.Message):
+  r"""Message for response to listing GoldengateDeploymentVersions
 
   Fields:
-    goldenGateDeploymentVersions: The list of GoldenGateDeploymentVersion
+    goldengateDeploymentVersions: The list of GoldengateDeploymentVersion
     nextPageToken: A token, which can be sent as `page_token` to retrieve the
       next page. If this field is omitted, there are no subsequent pages.
     unreachable: Unordered list. Locations that could not be reached.
   """
 
-  goldenGateDeploymentVersions = _messages.MessageField('GoldenGateDeploymentVersion', 1, repeated=True)
+  goldengateDeploymentVersions = _messages.MessageField('GoldengateDeploymentVersion', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
   unreachable = _messages.StringField(3, repeated=True)
 
 
-class ListGoldenGateDeploymentsResponse(_messages.Message):
-  r"""The response for `GoldenGateDeployment.List`.
+class ListGoldengateDeploymentsResponse(_messages.Message):
+  r"""The response for `GoldengateDeployment.List`.
 
   Fields:
-    goldenGateDeployments: The list of GoldenGateDeployments.
+    goldengateDeployments: The list of GoldengateDeployments.
     nextPageToken: A token identifying a page of results the server should
       return.
     unreachable: Optional. Locations that could not be reached.
   """
 
-  goldenGateDeployments = _messages.MessageField('GoldenGateDeployment', 1, repeated=True)
+  goldengateDeployments = _messages.MessageField('GoldengateDeployment', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
   unreachable = _messages.StringField(3, repeated=True)
 
@@ -7213,14 +7209,9 @@ class OracledatabaseProjectsLocationsAutonomousDatabasesGetRefreshableClonesRequ
     name: Required. The Autonomous Database resource whose refreshable clones
       are to be listed. Format: projects/{project}/locations/{location}/autono
       mousDatabases/{autonomous_database}
-    pageSize: Optional. The maximum number of items to return.
-    pageToken: Optional. A token identifying a page of results the server
-      should return.
   """
 
   name = _messages.StringField(1, required=True)
-  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(3)
 
 
 class OracledatabaseProjectsLocationsAutonomousDatabasesGetRequest(_messages.Message):
@@ -8657,21 +8648,21 @@ class OracledatabaseProjectsLocationsGoldenGateDeploymentTypesListRequest(_messa
   parent = _messages.StringField(5, required=True)
 
 
-class OracledatabaseProjectsLocationsGoldenGateDeploymentVersionsGetRequest(_messages.Message):
-  r"""A OracledatabaseProjectsLocationsGoldenGateDeploymentVersionsGetRequest
+class OracledatabaseProjectsLocationsGoldengateDeploymentVersionsGetRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsGoldengateDeploymentVersionsGetRequest
   object.
 
   Fields:
-    name: Required. The name of the GoldenGateDeploymentVersion to retrieve.
-      Format: projects/{project}/locations/{location}/goldenGateDeploymentVers
-      ions/{golden_gate_deployment_version}
+    name: Required. The name of the GoldengateDeploymentVersion to retrieve.
+      Format: projects/{project}/locations/{location}/goldengateDeploymentVers
+      ions/{goldengate_deployment_version}
   """
 
   name = _messages.StringField(1, required=True)
 
 
-class OracledatabaseProjectsLocationsGoldenGateDeploymentVersionsListRequest(_messages.Message):
-  r"""A OracledatabaseProjectsLocationsGoldenGateDeploymentVersionsListRequest
+class OracledatabaseProjectsLocationsGoldengateDeploymentVersionsListRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsGoldengateDeploymentVersionsListRequest
   object.
 
   Fields:
@@ -8680,9 +8671,10 @@ class OracledatabaseProjectsLocationsGoldenGateDeploymentVersionsListRequest(_me
       the format: `deployment_id="id"` or `deployment_type="DATABASE_ORACLE"`.
     pageSize: Optional. Requested page size. Server may return fewer items
       than requested. If unspecified, server will pick an appropriate default.
+      The maximum value is 1000; values above 1000 will be coerced to 1000.
     pageToken: Optional. A token identifying a page of results the server
       should return.
-    parent: Required. Parent value for ListGoldenGateDeploymentVersionsRequest
+    parent: Required. Parent value for ListGoldengateDeploymentVersionsRequest
       Format: projects/{project}/locations/{location}
   """
 
@@ -8692,18 +8684,18 @@ class OracledatabaseProjectsLocationsGoldenGateDeploymentVersionsListRequest(_me
   parent = _messages.StringField(4, required=True)
 
 
-class OracledatabaseProjectsLocationsGoldenGateDeploymentsCreateRequest(_messages.Message):
-  r"""A OracledatabaseProjectsLocationsGoldenGateDeploymentsCreateRequest
+class OracledatabaseProjectsLocationsGoldengateDeploymentsCreateRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsGoldengateDeploymentsCreateRequest
   object.
 
   Fields:
-    goldenGateDeployment: A GoldenGateDeployment resource to be passed as the
+    goldengateDeployment: A GoldengateDeployment resource to be passed as the
       request body.
-    goldenGateDeploymentId: Required. The ID of the GoldenGateDeployment to
+    goldengateDeploymentId: Required. The ID of the GoldengateDeployment to
       create. This value is restricted to (^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$)
       and must be a maximum of 63 characters in length. The value must start
       with a letter and end with a letter or a number.
-    parent: Required. The value for parent of the GoldenGateDeployment in the
+    parent: Required. The value for parent of the GoldengateDeployment in the
       following format: projects/{project}/locations/{location}.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
@@ -8718,20 +8710,20 @@ class OracledatabaseProjectsLocationsGoldenGateDeploymentsCreateRequest(_message
       not supported (00000000-0000-0000-0000-000000000000).
   """
 
-  goldenGateDeployment = _messages.MessageField('GoldenGateDeployment', 1)
-  goldenGateDeploymentId = _messages.StringField(2)
+  goldengateDeployment = _messages.MessageField('GoldengateDeployment', 1)
+  goldengateDeploymentId = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
   requestId = _messages.StringField(4)
 
 
-class OracledatabaseProjectsLocationsGoldenGateDeploymentsDeleteRequest(_messages.Message):
-  r"""A OracledatabaseProjectsLocationsGoldenGateDeploymentsDeleteRequest
+class OracledatabaseProjectsLocationsGoldengateDeploymentsDeleteRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsGoldengateDeploymentsDeleteRequest
   object.
 
   Fields:
-    name: Required. The name of the GoldenGateDeployment in the following
-      format: projects/{project}/locations/{location}/goldenGateDeployments/{g
-      olden_gate_deployment}.
+    name: Required. The name of the GoldengateDeployment in the following
+      format: projects/{project}/locations/{location}/goldengateDeployments/{g
+      oldengate_deployment}.
     requestId: Optional. An optional ID to identify the request. This value is
       used to identify duplicate requests. If you make a request with the same
       request ID and the original request is still in progress or completed,
@@ -8745,32 +8737,32 @@ class OracledatabaseProjectsLocationsGoldenGateDeploymentsDeleteRequest(_message
   requestId = _messages.StringField(2)
 
 
-class OracledatabaseProjectsLocationsGoldenGateDeploymentsGetRequest(_messages.Message):
-  r"""A OracledatabaseProjectsLocationsGoldenGateDeploymentsGetRequest object.
+class OracledatabaseProjectsLocationsGoldengateDeploymentsGetRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsGoldengateDeploymentsGetRequest object.
 
   Fields:
-    name: Required. The name of the GoldenGateDeployment in the following
-      format: projects/{project}/locations/{location}/goldenGateDeployments/{g
-      olden_gate_deployment}.
+    name: Required. The name of the GoldengateDeployment in the following
+      format: projects/{project}/locations/{location}/goldengateDeployments/{g
+      oldengate_deployment}.
   """
 
   name = _messages.StringField(1, required=True)
 
 
-class OracledatabaseProjectsLocationsGoldenGateDeploymentsListRequest(_messages.Message):
-  r"""A OracledatabaseProjectsLocationsGoldenGateDeploymentsListRequest
+class OracledatabaseProjectsLocationsGoldengateDeploymentsListRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsGoldengateDeploymentsListRequest
   object.
 
   Fields:
     filter: Optional. An expression for filtering the results of the request.
     orderBy: Optional. An expression for ordering the results of the request.
     pageSize: Optional. The maximum number of items to return. If unspecified,
-      at most 50 GoldenGateDeployments will be returned. The maximum value is
+      at most 50 GoldengateDeployments will be returned. The maximum value is
       1000; values above 1000 will be coerced to 1000.
     pageToken: Optional. A page token, received from a previous
-      ListGoldenGateDeployments call. Provide this to retrieve the subsequent
+      ListGoldengateDeployments call. Provide this to retrieve the subsequent
       page.
-    parent: Required. The parent value for GoldenGateDeployments in the
+    parent: Required. The parent value for GoldengateDeployments in the
       following format: projects/{project}/locations/{location}.
   """
 
@@ -8781,36 +8773,36 @@ class OracledatabaseProjectsLocationsGoldenGateDeploymentsListRequest(_messages.
   parent = _messages.StringField(5, required=True)
 
 
-class OracledatabaseProjectsLocationsGoldenGateDeploymentsStartRequest(_messages.Message):
-  r"""A OracledatabaseProjectsLocationsGoldenGateDeploymentsStartRequest
+class OracledatabaseProjectsLocationsGoldengateDeploymentsStartRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsGoldengateDeploymentsStartRequest
   object.
 
   Fields:
-    name: Required. The name of the GoldenGate Deployment in the following
-      format: projects/{project}/locations/{location}/goldenGateDeployments/{g
-      olden_gate_deployment}.
-    startGoldenGateDeploymentRequest: A StartGoldenGateDeploymentRequest
+    name: Required. The name of the Goldengate Deployment in the following
+      format: projects/{project}/locations/{location}/goldengateDeployments/{g
+      oldengate_deployment}.
+    startGoldengateDeploymentRequest: A StartGoldengateDeploymentRequest
       resource to be passed as the request body.
   """
 
   name = _messages.StringField(1, required=True)
-  startGoldenGateDeploymentRequest = _messages.MessageField('StartGoldenGateDeploymentRequest', 2)
+  startGoldengateDeploymentRequest = _messages.MessageField('StartGoldengateDeploymentRequest', 2)
 
 
-class OracledatabaseProjectsLocationsGoldenGateDeploymentsStopRequest(_messages.Message):
-  r"""A OracledatabaseProjectsLocationsGoldenGateDeploymentsStopRequest
+class OracledatabaseProjectsLocationsGoldengateDeploymentsStopRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsGoldengateDeploymentsStopRequest
   object.
 
   Fields:
-    name: Required. The name of the GoldenGate Deployment in the following
-      format: projects/{project}/locations/{location}/goldenGateDeployments/{g
-      olden_gate_deployment}.
-    stopGoldenGateDeploymentRequest: A StopGoldenGateDeploymentRequest
+    name: Required. The name of the Goldengate Deployment in the following
+      format: projects/{project}/locations/{location}/goldengateDeployments/{g
+      oldengate_deployment}.
+    stopGoldengateDeploymentRequest: A StopGoldengateDeploymentRequest
       resource to be passed as the request body.
   """
 
   name = _messages.StringField(1, required=True)
-  stopGoldenGateDeploymentRequest = _messages.MessageField('StopGoldenGateDeploymentRequest', 2)
+  stopGoldengateDeploymentRequest = _messages.MessageField('StopGoldengateDeploymentRequest', 2)
 
 
 class OracledatabaseProjectsLocationsListRequest(_messages.Message):
@@ -9711,8 +9703,8 @@ class StartAutonomousDatabaseRequest(_messages.Message):
   r"""The request for `AutonomousDatabase.Start`."""
 
 
-class StartGoldenGateDeploymentRequest(_messages.Message):
-  r"""The request for `GoldenGateDeployment.Start`."""
+class StartGoldengateDeploymentRequest(_messages.Message):
+  r"""The request for `GoldengateDeployment.Start`."""
 
 
 class Status(_messages.Message):
@@ -9770,8 +9762,8 @@ class StopAutonomousDatabaseRequest(_messages.Message):
   r"""The request for `AutonomousDatabase.Stop`."""
 
 
-class StopGoldenGateDeploymentRequest(_messages.Message):
-  r"""The request for `GoldenGateDeployment.Stop`."""
+class StopGoldengateDeploymentRequest(_messages.Message):
+  r"""The request for `GoldengateDeployment.Stop`."""
 
 
 class StorageSizeDetails(_messages.Message):

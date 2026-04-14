@@ -39,6 +39,7 @@ class ContainerV1beta1(base_api.BaseApiClient):
         response_encoding=response_encoding)
     self.projects_aggregated_usableSubnetworks = self.ProjectsAggregatedUsableSubnetworksService(self)
     self.projects_aggregated = self.ProjectsAggregatedService(self)
+    self.projects_locations_acceleratorNetworkProfiles = self.ProjectsLocationsAcceleratorNetworkProfilesService(self)
     self.projects_locations_clusters_nodePools = self.ProjectsLocationsClustersNodePoolsService(self)
     self.projects_locations_clusters_well_known = self.ProjectsLocationsClustersWellKnownService(self)
     self.projects_locations_clusters = self.ProjectsLocationsClustersService(self)
@@ -96,6 +97,151 @@ class ContainerV1beta1(base_api.BaseApiClient):
       super(ContainerV1beta1.ProjectsAggregatedService, self).__init__(client)
       self._upload_configs = {
           }
+
+  class ProjectsLocationsAcceleratorNetworkProfilesService(base_api.BaseApiService):
+    """Service class for the projects_locations_acceleratorNetworkProfiles resource."""
+
+    _NAME = 'projects_locations_acceleratorNetworkProfiles'
+
+    def __init__(self, client):
+      super(ContainerV1beta1.ProjectsLocationsAcceleratorNetworkProfilesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new AcceleratorNetworkProfile. The name of the profile must be unique within the specified location, even across different clusters.
+
+      Args:
+        request: (ContainerProjectsLocationsAcceleratorNetworkProfilesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/acceleratorNetworkProfiles',
+        http_method='POST',
+        method_id='container.projects.locations.acceleratorNetworkProfiles.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['acceleratorNetworkProfileId'],
+        relative_path='v1beta1/{+parent}/acceleratorNetworkProfiles',
+        request_field='acceleratorNetworkProfile',
+        request_type_name='ContainerProjectsLocationsAcceleratorNetworkProfilesCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a specific AcceleratorNetworkProfile.
+
+      Args:
+        request: (ContainerProjectsLocationsAcceleratorNetworkProfilesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/acceleratorNetworkProfiles/{acceleratorNetworkProfilesId}',
+        http_method='DELETE',
+        method_id='container.projects.locations.acceleratorNetworkProfiles.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='ContainerProjectsLocationsAcceleratorNetworkProfilesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets the details of a specific AcceleratorNetworkProfile.
+
+      Args:
+        request: (ContainerProjectsLocationsAcceleratorNetworkProfilesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AcceleratorNetworkProfile) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/acceleratorNetworkProfiles/{acceleratorNetworkProfilesId}',
+        http_method='GET',
+        method_id='container.projects.locations.acceleratorNetworkProfiles.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='ContainerProjectsLocationsAcceleratorNetworkProfilesGetRequest',
+        response_type_name='AcceleratorNetworkProfile',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists all AcceleratorNetworkProfiles in a given project and location.
+
+      Args:
+        request: (ContainerProjectsLocationsAcceleratorNetworkProfilesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListAcceleratorNetworkProfilesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/acceleratorNetworkProfiles',
+        http_method='GET',
+        method_id='container.projects.locations.acceleratorNetworkProfiles.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1beta1/{+parent}/acceleratorNetworkProfiles',
+        request_field='',
+        request_type_name='ContainerProjectsLocationsAcceleratorNetworkProfilesListRequest',
+        response_type_name='ListAcceleratorNetworkProfilesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates a specific AcceleratorNetworkProfile.
+
+      Args:
+        request: (ContainerProjectsLocationsAcceleratorNetworkProfilesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/acceleratorNetworkProfiles/{acceleratorNetworkProfilesId}',
+        http_method='PATCH',
+        method_id='container.projects.locations.acceleratorNetworkProfiles.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1beta1/{+name}',
+        request_field='acceleratorNetworkProfile',
+        request_type_name='ContainerProjectsLocationsAcceleratorNetworkProfilesPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
 
   class ProjectsLocationsClustersNodePoolsService(base_api.BaseApiService):
     """Service class for the projects_locations_clusters_nodePools resource."""
@@ -189,7 +335,7 @@ class ContainerV1beta1(base_api.BaseApiClient):
     )
 
     def FetchNodePoolUpgradeInfo(self, request, global_params=None):
-      r"""Fetch upgrade information of a specific nodepool.
+      r"""Fetch upgrade information of a specific node pool.
 
       Args:
         request: (ContainerProjectsLocationsClustersNodePoolsFetchNodePoolUpgradeInfoRequest) input message
@@ -1289,7 +1435,7 @@ class ContainerV1beta1(base_api.BaseApiClient):
     )
 
     def FetchNodePoolUpgradeInfo(self, request, global_params=None):
-      r"""Fetch upgrade information of a specific nodepool.
+      r"""Fetch upgrade information of a specific node pool.
 
       Args:
         request: (ContainerProjectsZonesClustersNodePoolsFetchNodePoolUpgradeInfoRequest) input message

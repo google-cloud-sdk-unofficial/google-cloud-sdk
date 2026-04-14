@@ -16,14 +16,17 @@
 
 import argparse
 import textwrap
+from googlecloudsdk.api_lib.storage import intelligence_finding_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
+from googlecloudsdk.generated_clients.apis.storage.v2 import storage_v2_messages
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Historical revision description of a finding."""
+  _client_factory = intelligence_finding_api.IntelligenceFindingApi
 
   detailed_help = {
       'DESCRIPTION': textwrap.dedent("""
@@ -47,10 +50,21 @@ class Describe(base.DescribeCommand):
         required=True,
         help='The ID of the intelligence finding the revision belongs to.',
     )
-    parser.add_argument('--location', help='Location of the finding(s).')
+    parser.add_argument(
+        '--location',
+        default='global',
+        help='Location of the finding(s).',
+        hidden=True,
+    )
 
-  def Run(self, args: argparse.Namespace) -> None:
-    del self  # Unused.
-    raise NotImplementedError(
-        'The intelligence-findings revisions surface is not yet implemented.'
+  def Run(
+      self, args: argparse.Namespace
+  ) -> storage_v2_messages.IntelligenceFindingRevision:
+    project = properties.VALUES.core.project.GetOrFail()
+    revision_name = (
+        f'projects/{project}/locations/{args.location}/intelligenceFindings/'
+        f'{args.finding_id}/revisions/{args.REVISION_ID}'
+    )
+    return self._client_factory().get_revision(
+        revision_name=revision_name
     )

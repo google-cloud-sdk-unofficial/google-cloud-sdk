@@ -287,9 +287,17 @@ def GetMessages():
   return core_apis.GetMessagesModule('storage', 'v1')
 
 
-def GetClient():
-  """Import and return the appropriate storage client."""
-  return core_apis.GetClientInstance('storage', 'v1')
+def GetClient(location=None):
+  """Import and return the appropriate storage client.
+
+  Args:
+    location: Used to create a REP enabled client when regional endpoints are
+      enabled.
+
+  Returns:
+    The storage client.
+  """
+  return core_apis.GetClientInstance('storage', 'v1', location=location)
 
 
 def _GetGsutilPath():

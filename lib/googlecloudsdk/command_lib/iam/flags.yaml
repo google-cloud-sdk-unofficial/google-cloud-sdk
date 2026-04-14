@@ -913,9 +913,14 @@ workforce_pool_provider:
       - *clear_extra_attributes_config
       - *update_extra_attributes_group
 
-  scim_usage:
+  scim_usage: &scim_usage
     arg_name: scim-usage
     api_field: workforcePoolProvider.scimUsage
+    choices:
+    - arg_value: enabled-for-groups
+      enum_value: ENABLED_FOR_GROUPS
+    - arg_value: scim-usage-unspecified
+      enum_value: SCIM_USAGE_UNSPECIFIED
     help_text: |-
       Specifies whether the workforce identity pool provider uses SCIM-managed
       groups instead of the `google.groups` attribute mapping for authorization checks.
@@ -926,7 +931,37 @@ workforce_pool_provider:
 
       Use `enabled-for-groups` to enable SCIM-managed groups.
       Use `scim-usage-unspecified` to disable SCIM-managed groups.
+    ALPHA:
+      choices:
+      - arg_value: enabled-for-groups
+        enum_value: ENABLED_FOR_GROUPS
+      - arg_value: scim-usage-unspecified
+        enum_value: SCIM_USAGE_UNSPECIFIED
+      - arg_value: enabled-for-users-groups
+        enum_value: ENABLED_FOR_USERS_GROUPS
+      help_text: |-
+        Specifies whether the workforce identity pool provider uses SCIM-managed
+        groups instead of the `google.groups` attribute mapping for authorization checks.
 
+        The `scim_usage` and `extended_attributes_oauth2_client` fields are
+        mutually exclusive. A request that enables both fields on the same
+        workforce identity pool provider will produce an error.
+
+        Use `enabled-for-groups` to enable SCIM-managed groups.
+        Use `enabled-for-users-groups` to enable SCIM-managed user claims and groups.
+        Use `scim-usage-unspecified` to disable SCIM-managed groups.
+
+  clearable_scim_usage:
+    group:
+      mutex: true
+      params:
+      - arg_name: clear-scim-usage
+        api_field: workforcePoolProvider.scimUsage
+        action: store_true
+        processor: googlecloudsdk.command_lib.iam.hooks:ClearScimUsage
+        help_text: |-
+          Clear the SCIM usage configuration, resetting it to unspecified.
+      - *scim_usage
   attribute_sync_interval: &attribute_sync_interval
     arg_name: attribute-sync-interval
     api_field: workforcePoolProvider.attributeSyncInterval

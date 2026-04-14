@@ -361,8 +361,42 @@ class HttpErrorPayload(FormattableErrorPayload):
     domain_parts = urlparsed.netloc
     if not domain_parts:
       return None
-    domain = domain_parts.split('.')[1]
-    return domain.startswith('mtls')
+    domain = domain_parts.split('.')
+    return 'mtls' in domain
+
+  def _AppendCredentialInfoToErrorMessage(self):
+    """Appends the credential info to the error message."""
+    from googlecloudsdk.core.credentials import store as c_store  # pylint: disable=g-import-not-at-top
+
+    # Append the credential info to the error message.
+    self._cred_info = c_store.CredentialInfo.GetCredentialInfo()
+    if self._cred_info:
+      # If auth_disabled we should expect an unauthenticated response.
+      # Otherwise, a credential was added by a proxy, and we don't need to
+      # explain where it came from.
+      if (
+          self._cred_info.auth_disabled
+          and self.status_description != 'UNAUTHENTICATED'
+      ):
+        return
+
+      cred_info_message = self._cred_info.GetInfoString()
+      existing_message = self.content['error']['message']
+      # Some surface actually appends an ending dot at the end of the
+      # message, so we need to make sure not adding an ending dot if the
+      # existing message doesn't have one. (Note that cred_info_message
+      # string we created ends with a dot.)
+      if existing_message[-1] != '.':
+        # add dot after existing_message and remove the ending dot from
+        # cred_info_message.
+        self.content['error']['message'] = (
+            existing_message + '. ' + cred_info_message[:-1]
+        )
+      else:
+        self.content['error']['message'] = (
+            existing_message + ' ' + cred_info_message
+        )
+      self.error_info['message'] = self.content['error']['message']
 
   def _ExtractResponseAndJsonContent(self, http_error):
     """Extracts the response and JSON content from the HttpError."""
@@ -377,35 +411,13 @@ class HttpErrorPayload(FormattableErrorPayload):
       self.error_info = _JsonSortedDict(self.content['error'])
       if not self.status_code:  # Could have been set above.
         self.status_code = int(self.error_info.get('code', 0))
+      if not self.status_description:  # Could have been set above.
+        self.status_description = self.error_info.get('status', '')
 
       if self.status_code in [401, 403, 404] and self.error_info.get(
           'message', ''
       ):
-        from googlecloudsdk.core.credentials import store as c_store  # pylint: disable=g-import-not-at-top
-
-        # Append the credential info to the error message.
-        self._cred_info = c_store.CredentialInfo.GetCredentialInfo()
-        if self._cred_info:
-          cred_info_message = self._cred_info.GetInfoString()
-          existing_message = self.content['error']['message']
-          # Some surface actually appends an ending dot at the end of the
-          # message, so we need to make sure not adding an ending dot if the
-          # existing message doesn't have one. (Note that cred_info_message
-          # string we created ends with a dot.)
-          if existing_message[-1] != '.':
-            # add dot after existing_message and remove the ending dot from
-            # cred_info_message.
-            self.content['error']['message'] = (
-                existing_message + '. ' + cred_info_message[:-1]
-            )
-          else:
-            self.content['error']['message'] = (
-                existing_message + ' ' + cred_info_message
-            )
-          self.error_info['message'] = self.content['error']['message']
-
-      if not self.status_description:  # Could have been set above.
-        self.status_description = self.error_info.get('status', '')
+        self._AppendCredentialInfoToErrorMessage()
       if self._IsMTLSEnabledAndApiEndpointOverridesPresent():
         endpoint_overrides = (
             properties.VALUES.api_endpoint_overrides.AllValues()

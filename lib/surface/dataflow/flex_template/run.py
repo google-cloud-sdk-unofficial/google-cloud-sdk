@@ -105,8 +105,11 @@ class Run(base.Command):
 
     parser.add_argument(
         '--launcher-machine-type',
-        help='The machine type to use for launching the job. The default is'
-        'n1-standard-1.')
+        help=(
+            'The machine type to use for launching the job. If not set, '
+            'Dataflow will select a default machine type.'
+        ),
+    )
 
     parser.add_argument(
         '--subnetwork',
@@ -235,4 +238,3 @@ class Run(base.Command):
         flexrs_goal=args.flexrs_goal,
         parameters=args.parameters)
     return apis.Templates.CreateJobFromFlexTemplate(arguments)
-

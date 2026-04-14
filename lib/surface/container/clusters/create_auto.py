@@ -14,7 +14,6 @@
 # limitations under the License.
 """Create-auto cluster command."""
 
-
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container import flags
 from surface.container.clusters import create

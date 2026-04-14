@@ -30,6 +30,7 @@ VALIDATE_SERVICE = 'ValidateService'
 SYNC_RULES = 'SyncRules'
 FETCH_PROJECT_DETAILS = 'FetchProjectDetails'
 ESTABLISH_CONNECTION = 'EstablishConnection'
+DOMAIN_MAPPING_READY = 'DomainMappingReady'
 
 _RESOURCES_AVAILABLE = 'ResourcesAvailable'
 _STARTED = 'Started'
@@ -90,6 +91,7 @@ def ServiceStages(
     include_create_repo=False,
     include_create_revision=True,
     include_iap=False,
+    include_domain_mapping=False,
     regions_list=None,
 ):
   """Return the progress tracker Stages for conditions of a Service."""
@@ -129,6 +131,12 @@ def ServiceStages(
     stages.append(
         progress_tracker.Stage(
             'Setting IAP service agent...', key=SERVICE_IAP_ENABLE
+        )
+    )
+  if include_domain_mapping:
+    stages.append(
+        progress_tracker.Stage(
+            'Creating domain mapping...', key=DOMAIN_MAPPING_READY
         )
     )
   return stages

@@ -22,7 +22,8 @@ from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import yaml
 
-
+ORCHESTRATION_PIPELINES_DATA_DIRECTORY = "data"
+ORCHESTRATION_PIPELINES_DAGS_DIRECTORY = "dags/orchestration_pipelines"
 MANIFEST_FILE_NAME = "manifest.yml"
 MAX_RETRIES = 5
 
@@ -114,8 +115,8 @@ def UpdatePausedPipelinesInManifestWithRetry(
   Args:
     subprocess_mod: The subprocess module to use.
     manifest_gcs_path: GCS path to the manifest file.
-    pipeline: The pipeline to add or remove from paused_pipelines.
-    action: 'add' or 'remove' to indicate the action on paused_pipelines.
+    pipeline: The pipeline to add or remove from pausedPipelines.
+    action: 'add' or 'remove' to indicate the action on pausedPipelines.
     max_retries: The maximum number of retries for updating the manifest.
 
   Returns:
@@ -132,24 +133,24 @@ def UpdatePausedPipelinesInManifestWithRetry(
           f"Manifest file {manifest_gcs_path} not found."
       )
 
-    paused_pipelines = manifest_data.get("paused_pipelines", [])
+    paused_pipelines = manifest_data.get("pausedPipelines", [])
 
     if action == "add":
       if pipeline not in paused_pipelines:
         paused_pipelines.append(pipeline)
       else:
-        # Pipeline is already in paused_pipelines list, no update needed.
+        # Pipeline is already in pausedPipelines list, no update needed.
         return True
     elif action == "remove":
       if pipeline in paused_pipelines:
         paused_pipelines.remove(pipeline)
       else:
-        # Pipeline is not in paused_pipelines list, no update needed.
+        # Pipeline is not in pausedPipelines list, no update needed.
         return True
     else:
       raise ValueError("action must be 'add' or 'remove'")
 
-    manifest_data["paused_pipelines"] = paused_pipelines
+    manifest_data["pausedPipelines"] = paused_pipelines
     try:
       log.status.Print(
           "Attempting to update manifest (Generation match:"

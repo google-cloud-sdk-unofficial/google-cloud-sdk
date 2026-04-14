@@ -1,0 +1,184 @@
+- release_tracks: [ALPHA, BETA]
+  help_text:
+    brief: Update Flag
+    description: Update a Flag
+    examples: |-
+      To update a Flag, run:
+
+          $ {command}
+  arguments:
+    params:
+    - help_text: |-
+        ID of the Flag:
+
+          "projects/{project}/locations/{location}/flags/{flag_id}"
+
+        This follows the standard Google Cloud naming scheme (URI).
+      is_positional: true
+      request_id_field: flagId
+      resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:flag
+      required: true
+
+    - arg_name: evaluation-spec
+      api_field: flag.evaluationSpec
+      help_text: |-
+        Specification of how the Flag value should be evaluated.
+      is_positional: false
+      required: false
+      repeated: false
+      spec:
+      - api_field: defaultTarget
+        help_text: |-
+          Default variant for the flag.
+      - api_field: allocations
+        hidden: true
+        help_text: |-
+          A list of allocations.
+        spec:
+        - api_field: id
+          help_text: |-
+            Id of the allocation.
+            Max length: 128 bytes.
+        - api_field: randomizedOn
+          help_text: |-
+            Key of the context attribute that is used for traffic splitting.
+        - api_field: description
+          help_text: |-
+            A description of the allocation.
+            Max length: 500 bytes.
+        - api_field: slots
+          help_text: |-
+            Slots defines the weighted distribution of variants.
+          spec:
+          - api_field: variant
+            help_text: |-
+              Variant of the allocation slot.
+          - api_field: weight
+            help_text: |-
+              Weight defines the proportion of traffic to allocate to the variant,
+              relative to other slots in the same allocation.
+      - api_field: rules
+        hidden: true
+        help_text: |-
+          Define the logic for evaluating the flag against a given context.
+          The rules are evaluated sequentially in their specified order.
+      - api_field: attributes
+        hidden: true
+        help_text: |-
+          Names of the context attributes that are used in the evaluation rules and allocations.
+      - api_field: variants
+        help_text: |-
+          A list of variants.
+          Variant is an identifier for a value (name assigned to a value).
+        spec:
+        - api_field: name
+          help_text: |-
+            Name of the variant.
+            Max length: 128 bytes.
+        - api_field: boolValue
+          help_text: |-
+            Value is a single boolean flag value for the variant.
+
+    - arg_name: flag-set
+      api_field: flag.flagSet
+      help_text: |-
+        Flag set this flag belongs to.
+      is_positional: false
+      required: false
+      repeated: false
+      clearable: true
+
+    - arg_name: variants
+      api_field: flag.variants
+      help_text: |-
+        A list of variants.
+        Variant is an identifier for a value (name assigned to a value).
+      is_positional: false
+      required: false
+      repeated: true
+      spec:
+      - api_field: id
+        help_text: |-
+          Id of the variant.
+          Max length: 128 bytes.
+      - api_field: description
+        help_text: |-
+          A description of the variant.
+          Max length: 500 bytes.
+      - api_field: booleanValue
+        help_text: |-
+          Value is a single boolean flag value for the variant.
+      - api_field: integerValue
+        help_text: |-
+          Value is a single integer flag value for the variant.
+      - api_field: stringValue
+        help_text: |-
+          Value is a single string flag value for the variant.
+          Max length: 500 bytes.
+      - api_field: doubleValue
+        help_text: |-
+          Value is a single double flag value for the variant.
+
+    - arg_name: description
+      api_field: flag.description
+      clearable: true
+      required: false
+      help_text: |-
+        A description of the flag. Max length: 500 bytes.
+      is_positional: false
+
+    - arg_name: state
+      api_field: flag.state
+      help_text: |-
+        Current state of the flag.
+      is_positional: false
+      required: false
+      repeated: false
+      choices:
+      - arg_value: in-development
+        enum_value: FLAG_STATE_IN_DEVELOPMENT
+        help_text: |-
+          The flag is currently in the in-development state.
+      - arg_value: active
+        enum_value: FLAG_STATE_ACTIVE
+        help_text: |-
+          The flag is in the active state.
+      - arg_value: sunsetting
+        enum_value: FLAG_STATE_SUNSETTING
+        help_text: |-
+          The flag is in the sunsetting state, indicating it is being phased out.
+      - arg_value: cleanup
+        enum_value: FLAG_STATE_CLEANUP
+        help_text: |-
+          The flag is in the cleanup state and ready to be deleted.
+
+    - arg_name: labels
+      api_field: flag.labels
+      clearable: true
+      required: false
+      repeated: true
+      help_text: |-
+        The labels on the resource, which can be used for categorization.
+      spec:
+      - api_field: key
+      - api_field: value
+
+    - arg_name: annotations
+      api_field: flag.annotations
+      clearable: true
+      required: false
+      repeated: true
+      help_text: |-
+        Unstructured key-value map stored with a resource that may be set by
+        external tools to store and retrieve arbitrary metadata. Annotations
+        are not queryable and should be preserved when modifying objects.
+      spec:
+      - api_field: key
+      - api_field: value
+
+  request:
+    api_version: v1beta1
+    collection:
+    - saasservicemgmt.projects.locations.flags
+  update:
+    read_modify_update: true

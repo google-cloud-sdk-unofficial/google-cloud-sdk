@@ -36,6 +36,7 @@ def SetIamPolicyFromFile(instance_ref,
       instance_ref, namespace, new_iam_policy, messages, client)
 
 
+@base.RegionalEndpointsSupported
 class SetIamPolicy(base.Command):
   r"""Sets the IAM policy for a Cloud Data Fusion instance.
 
@@ -63,8 +64,8 @@ class SetIamPolicy(base.Command):
         'For example: `--namespace=my-namespace`.')
 
   def Run(self, args):
-    datafusion = df.Datafusion()
     instance_ref = args.CONCEPTS.instance.Parse()
+    datafusion = df.Datafusion(location=instance_ref.locationsId)
 
     results = SetIamPolicyFromFile(instance_ref, args.namespace,
                                    args.policy_file, datafusion.messages,

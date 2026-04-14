@@ -14,6 +14,7 @@
 # limitations under the License.
 """Command for updating env vars and other configuration info."""
 
+import copy
 
 from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.api_lib.run import traffic
@@ -53,6 +54,8 @@ Container Flags
   group.AddArgument(flags.MutexEnvVarsFlags(release_track=release_track))
   group.AddArgument(flags.MemoryFlag())
   group.AddArgument(flags.CpuFlag())
+  if release_track != base.ReleaseTrack.GA:
+    group.AddArgument(flags.WorkdirFlag())
   group.AddArgument(flags.CommandFlag())
   group.AddArgument(flags.ArgsFlag())
   group.AddArgument(flags.SecretsFlags())
@@ -74,14 +77,18 @@ class Update(base.Command):
   """Update Cloud Run environment variables and other configuration settings."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION': (
+          """\
           {description}
-          """,
-      'EXAMPLES': """\
+          """
+      ),
+      'EXAMPLES': (
+          """\
           To update one or more env vars:
 
               $ {command} myservice --update-env-vars=KEY1=VALUE1,KEY2=VALUE2
-         """,
+         """
+      ),
   }
 
   input_flags = (
@@ -190,7 +197,9 @@ class Update(base.Command):
   def _IsMultiRegion(self):
     return False
 
-  def _GetMultiRegionRegions(self, changes, service):  # used by child - pylint: disable=unused-argument
+  def _GetMultiRegionRegions(
+      self, changes, service
+  ):  # used by child - pylint: disable=unused-argument
     return None
 
   def _GetIap(self, args):
@@ -218,10 +227,9 @@ class Update(base.Command):
     project_id = properties.VALUES.core.project.Get(required=True)
 
     if iap:
-      if (
-          iap_util.IsOrglessProject(project_id)
-          and not iap_util.IsIapAlreadyEnabled(self)
-      ):
+      if iap_util.IsOrglessProject(
+          project_id
+      ) and not iap_util.IsIapAlreadyEnabled(self):
         pretty_print.Info(
             '\n {bold}**[Warning]**{reset} Deploying services with IAP'
             ' enabled in a project outside of an Organization and may require'
@@ -322,8 +330,11 @@ class Update(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.RegionalEndpointsSupported
 class BetaUpdate(Update):
   """Update Cloud Run environment variables and other configuration settings."""
+
+  detailed_help = copy.deepcopy(Update.detailed_help)
 
   input_flags = (
       '`--update-env-vars`, `--memory`, `--concurrency`, `--timeout`,'

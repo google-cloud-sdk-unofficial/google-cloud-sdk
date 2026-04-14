@@ -46,13 +46,24 @@ _IMAGE_ID_KEY = 'image_id'
 
 
 class BuildConfig:
-  """Represents the build configuration for a service."""
+  """Represents the build configuration for a service.
+
+  Attributes:
+    context: The build context directory.
+    dockerfile: The path to the Dockerfile.
+    args: A dictionary of build arguments.
+    image_id: The ID of the built image.
+  """
 
   def __init__(
-      self, context: str | None = None, dockerfile: str | None = None
+      self,
+      context: str | None = None,
+      dockerfile: str | None = None,
+      args: dict[str, str | None] | None = None,
   ):
     self.context = context
     self.dockerfile = dockerfile
+    self.args = args
     self.image_id: str | None = None
 
   @classmethod
@@ -60,6 +71,7 @@ class BuildConfig:
     return cls(
         context=data.get('context'),
         dockerfile=data.get('dockerfile'),
+        args=data.get('args'),
     )
 
   def to_dict(self) -> Dict[str, Any]:
@@ -68,6 +80,7 @@ class BuildConfig:
         'context': self.context,
         'dockerfile': self.dockerfile,
         'image_id': self.image_id,
+        'args': self.args,
     }
 
 
@@ -501,6 +514,11 @@ def _build_from_source(
   build_args = ['buildx', 'build', '--load', '-t', image_tag]
   if build_cfg.dockerfile:
     build_args.extend(['-f', build_cfg.dockerfile])
+  if build_cfg.args:
+    for key, value in build_cfg.args.items():
+      if value is None:
+        continue
+      build_args.extend(['--build-arg', f'{key}={value}'])
   build_args.append('.')
 
   build_config = messages.Build(

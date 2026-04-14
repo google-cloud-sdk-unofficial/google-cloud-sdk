@@ -28,7 +28,7 @@
 
         $ {command} my-assignment --location=us-east4 \
        --properties-golden-gate-connection=projects/my-project/locations/us-east4/goldenGateConnections/my-connection \
-       --properties-golden-gate-deployment=projects/my-project/locations/us-east4/goldenGateDeployments/my-deployment
+       --properties-golden-gate-deployment=projects/my-project/locations/us-east4/goldengateDeployments/my-deployment
   arguments:
     params:
     - help_text: |-
@@ -57,16 +57,16 @@
           resource_method_params:
             goldenGateConnectionAssignment.properties.goldenGateConnection: '{__relative_name__}'
           required: true
-        - arg_name: properties-golden-gate-deployment
+        - arg_name: properties-goldengate-deployment
           help_text: |-
             The GoldenGateDeployment to assign the connection to.
             Format:
-            projects/{project}/locations/{location}/goldenGateDeployments/{golden_gate_deployment}
+            projects/{project}/locations/{location}/goldengateDeployments/{goldengate_deployment}
           is_positional: false
           is_primary_resource: false
-          resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_golden_gate_deployments
+          resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_goldengate_deployments
           resource_method_params:
-            goldenGateConnectionAssignment.properties.goldenGateDeployment: '{__relative_name__}'
+            goldenGateConnectionAssignment.properties.goldengateDeployment: '{__relative_name__}'
           required: true
     - arg_name: labels
       api_field: goldenGateConnectionAssignment.labels

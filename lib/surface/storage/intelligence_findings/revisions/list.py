@@ -15,15 +15,22 @@
 """Command to list intelligence finding revisions."""
 
 import argparse
+from collections.abc import Iterator
 import textwrap
+from typing import TYPE_CHECKING
+
+from googlecloudsdk.api_lib.storage import intelligence_finding_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
+if TYPE_CHECKING:
+  from googlecloudsdk.generated_clients.apis.storage.v2 import storage_v2_messages  # pylint: disable=g-import-not-at-top
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class List(base.ListCommand):
   """Historical revisions list of a finding."""
+  _client_factory = intelligence_finding_api.IntelligenceFindingApi
 
   detailed_help = {
       'DESCRIPTION': textwrap.dedent("""
@@ -43,10 +50,20 @@ class List(base.ListCommand):
         required=True,
         help='The ID of the intelligence finding to list revisions for.',
     )
-    parser.add_argument('--location', help='Location of the finding(s).')
+    parser.add_argument(
+        '--location',
+        default='global',
+        help='Location of the finding.',
+        required=False,
+        hidden=True,
+    )
+    parser.display_info.AddUriFunc(lambda resource: resource.name)
 
-  def Run(self, args: argparse.Namespace) -> None:
-    del self  # Unused.
-    raise NotImplementedError(
-        'The intelligence-findings revisions surface is not yet implemented.'
+  def Run(
+      self, args: argparse.Namespace
+  ) -> Iterator['storage_v2_messages.IntelligenceFindingRevision']:
+    project = properties.VALUES.core.project.GetOrFail()
+    parent = f'projects/{project}/locations/{args.location}/intelligenceFindings/{args.finding_id}'
+    return self._client_factory().list_revisions(
+        parent=parent, page_size=args.page_size
     )

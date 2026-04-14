@@ -37,9 +37,7 @@ def _build_triggers(dag):
     A list containing a trigger dictionary for the DAG.
   """
   return [{
-      'schedule': (
-          dag.cronSchedule if dag.cronSchedule else dag.durationSchedule
-      ),
+      'schedule': dag.cronSchedule,
       'start_time': dag.startDate,
       'end_time': dag.endDate,
       'catchup': dag.catchup,
@@ -204,9 +202,7 @@ def get_pipeline_paused_status(dag):
     True if pipeline is paused, False otherwise.
   """
   doc_md = parse_metadata_json(dag.docMd)
-  return doc_md.get('op_is_paused', False) and (
-      dag.cronSchedule is None and dag.durationSchedule is None
-  )
+  return doc_md.get('op_is_paused', False) and not dag.cronSchedule
 
 
 def convert_dags_to_pipelines(dags):

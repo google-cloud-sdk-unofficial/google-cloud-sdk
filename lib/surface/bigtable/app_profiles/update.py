@@ -68,7 +68,7 @@ class UpdateAppProfile(base.CreateCommand):
         arguments.ArgAdder(parser)
         .AddDescription('app profile', required=False)
         .AddAppProfileRouting(required=False)
-        .AddIsolation()
+        .AddIsolation(allow_memory_layer=False)
         .AddForce('update')
         .AddAsync()
     )
@@ -89,7 +89,7 @@ class UpdateAppProfile(base.CreateCommand):
     Returns:
       Long running operation.
     """
-    arguments.ValidateStandardIsolationArgs(args)
+    arguments.ValidateStandardIsolationArgs(args, allow_memory_layer=False)
     return app_profiles.Update(
         app_profile_ref,
         cluster=args.route_to,
@@ -183,7 +183,7 @@ class UpdateAppProfileBeta(UpdateAppProfile):
         arguments.ArgAdder(parser)
         .AddDescription('app profile', required=False)
         .AddAppProfileRouting(required=False)
-        .AddIsolation()
+        .AddIsolation(allow_memory_layer=True)
         .AddForce('update')
         .AddAsync()
     )
@@ -204,13 +204,14 @@ class UpdateAppProfileBeta(UpdateAppProfile):
     Returns:
       Long running operation.
     """
-    arguments.ValidateStandardIsolationArgs(args)
+    arguments.ValidateStandardIsolationArgs(args, allow_memory_layer=True)
     return app_profiles.Update(
         app_profile_ref,
         cluster=args.route_to,
         description=args.description,
         multi_cluster=args.route_any,
         restrict_to=args.restrict_to,
+        use_memory_layer=args.use_memory_layer,
         transactional_writes=args.transactional_writes,
         row_affinity=args.row_affinity,
         priority=args.priority,
