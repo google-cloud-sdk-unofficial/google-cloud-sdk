@@ -95,6 +95,18 @@ class Action(_messages.Message):
   updateTime = _messages.StringField(9)
 
 
+class AgentMetadata(_messages.Message):
+  r"""Metadata about the agent that is used for logging.
+
+  Fields:
+    agentName: The name of the agent being used. This is expected to be
+      populated with either "aiplatform" (for Vertex AI) or
+      "geminicloudassist" (for Gemini Cloud Assist).
+  """
+
+  agentName = _messages.StringField(1)
+
+
 class Annotation(_messages.Message):
   r"""An annotation resource is associated with an AnnotationSet and
   represents timed-metadata that can be modified and searched at a high
@@ -1764,6 +1776,9 @@ class GoogleIamV1LogConfigCloudAuditOptions(_messages.Message):
     PermissionTypeValueValuesEnum: The type associated with the permission.
 
   Fields:
+    agentMetadata: If an agent is making the request, metadata about the agent
+      making the request. Used by the Cloud Audit Logging system to enrich the
+      audit log.
     authorizationLoggingOptions: Information used by the Cloud Audit Logging
       pipeline. Will be deprecated once the migration to PermissionType is
       complete (b/201806118).
@@ -1801,9 +1816,10 @@ class GoogleIamV1LogConfigCloudAuditOptions(_messages.Message):
     DATA_READ = 3
     DATA_WRITE = 4
 
-  authorizationLoggingOptions = _messages.MessageField('AuthorizationLoggingOptions', 1)
-  logName = _messages.EnumField('LogNameValueValuesEnum', 2)
-  permissionType = _messages.EnumField('PermissionTypeValueValuesEnum', 3)
+  agentMetadata = _messages.MessageField('AgentMetadata', 1)
+  authorizationLoggingOptions = _messages.MessageField('AuthorizationLoggingOptions', 2)
+  logName = _messages.EnumField('LogNameValueValuesEnum', 3)
+  permissionType = _messages.EnumField('PermissionTypeValueValuesEnum', 4)
 
 
 class GoogleIamV1LogConfigCounterOptions(_messages.Message):

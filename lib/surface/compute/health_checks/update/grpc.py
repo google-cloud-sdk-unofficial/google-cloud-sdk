@@ -187,7 +187,7 @@ def _Run(args, holder, include_log_config):
   return client.MakeRequests([set_request])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Update(base.UpdateCommand):
   """Update a gRPC health check."""
 

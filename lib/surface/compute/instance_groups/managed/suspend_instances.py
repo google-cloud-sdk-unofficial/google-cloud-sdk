@@ -26,7 +26,10 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 
 @base.UniverseCompatible
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
 )
 class SuspendInstances(base.Command):
   """Suspend instances owned by a managed instance group."""

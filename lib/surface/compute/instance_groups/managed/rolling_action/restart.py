@@ -29,7 +29,7 @@ def _AddArgs(parser, supports_min_ready=False):
     instance_groups_managed_flags.AddMinReadyArg(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class StartUpdate(base.Command):
   """Start restart instances of managed instance group."""
 

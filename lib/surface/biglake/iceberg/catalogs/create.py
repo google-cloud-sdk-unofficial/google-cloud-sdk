@@ -95,7 +95,7 @@ class CreateCatalog(base.CreateCommand):
       arguments.AddFederatedCatalogArgs(parser)
     if cls._support_catalog_type_biglake:
       util.AddDefaultLocationArg(parser)
-      util.AddAdditionalLocationsArg(parser)
+      util.AddRestrictedLocationsArg(parser)
     if cls._support_service_directory_name:
       arguments.AddServiceDirectoryNameArg(parser)
 
@@ -126,7 +126,12 @@ class CreateCatalog(base.CreateCommand):
       catalog.description = args.description
     if self._support_catalog_type_biglake:
       catalog.default_location = args.default_location
-      catalog.additional_locations = args.additional_locations or []
+      if args.IsSpecified('restricted_locations'):
+        catalog.restricted_locations_config = (
+            messages.RestrictedLocationsConfig(
+                restricted_locations=args.restricted_locations
+            )
+        )
 
     if self._support_federated_catalog and args.catalog_type == 'federated':
       catalog.federated_catalog_options = _BuildFederatedCatalogMessage(

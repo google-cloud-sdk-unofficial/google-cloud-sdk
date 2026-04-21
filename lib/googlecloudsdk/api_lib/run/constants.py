@@ -37,3 +37,6 @@ SSH_URL_TEMPLATE = 'wss://{region}.ssh.run.app/v4'
 SSH_CA_PUBLIC_KEY_URL_TEMPLATE = (
     'https://www.gstatic.com/cloud-run/ssh-ca-public-keys/keys-{region}.pub'
 )
+SSH_CA_PUBLIC_KEY_URL_QUAL_TEMPLATE = (
+    'https://www.gstatic.com/cloud-run/ssh-ca-public-keys/qual-keys-{region}.pub'
+)

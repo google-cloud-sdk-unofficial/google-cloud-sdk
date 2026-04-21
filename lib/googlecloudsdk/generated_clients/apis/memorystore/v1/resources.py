@@ -92,6 +92,29 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_INSTANCES_TOKENAUTHUSERS = (
+      'projects.locations.instances.tokenAuthUsers',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/instances/'
+              '{instancesId}/tokenAuthUsers/{tokenAuthUsersId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_INSTANCES_TOKENAUTHUSERS_AUTHTOKENS = (
+      'projects.locations.instances.tokenAuthUsers.authTokens',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/instances/'
+              '{instancesId}/tokenAuthUsers/{tokenAuthUsersId}/authTokens/'
+              '{authTokensId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_KEYRINGS_CRYPTOKEYS = (
       'projects.locations.keyRings.cryptoKeys',
       'projects/{projectsId}/locations/{locationsId}/keyRings/{keyRingsId}/'

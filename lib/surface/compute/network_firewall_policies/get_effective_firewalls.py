@@ -24,7 +24,10 @@ from googlecloudsdk.core import properties
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.PREVIEW,
 )
 class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
   """Get the effective firewalls for a network.

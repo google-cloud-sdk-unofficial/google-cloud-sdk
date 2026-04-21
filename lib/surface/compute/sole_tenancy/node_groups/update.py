@@ -22,8 +22,12 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.sole_tenancy.node_groups import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
+)
 class Update(base.UpdateCommand):
   """Update a Compute Engine node group."""
 

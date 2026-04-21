@@ -105,7 +105,7 @@ apis:
             projects/{projectsId}/locations/{locationsId}/indexEndpoints/{indexEndpointsId}/operations/{operationsId}
         projects.locations.semanticGovernancePolicies.operations:
           path: 
-            projects/{project}/locations/{location}/semanticGovernancePolicies/{semantic_governance_policy}/operations/{operation}
+            projects/{projectsId}/locations/{locationsId}/semanticGovernancePolicies/{semanticGovernancePoliciesId}/operations/{operationsId}
     v1:
       discovery_doc: aiplatform_v1.json
       gcloud_gapic_library: google/cloud/aiplatform/v1:aiplatform_v1_py
@@ -190,6 +190,10 @@ apis:
           path: projects/{projectId}
       skip:
         bug: b/491952039
+  appoptimize:
+    v1beta:
+      discovery_doc: appoptimize_v1beta.json
+      default: true
   artifactregistry:
     v1beta1:
       discovery_doc: artifactregistry_v1beta1.json
@@ -619,6 +623,25 @@ apis:
             projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}/reservationSubBlocks/{reservationSubBlocksId}
         securityPolicyRules:
           path: 
+            projects/{project}/global/securityPolicies/{securityPolicy}/securityPolicyRules/{securityPolicyRule}
+        zones:
+          path: projects/{project}/zones/{zone}
+    preview:
+      discovery_doc: compute_preview.json
+      resources:
+        nextHopGateways:
+          path: projects/{project}/global/gateways/{nextHopGateway}
+        regionSecurityPolicyRules:
+          path:
+            projects/{project}/regions/{region}/securityPolicies/{securityPolicy}/securityPolicyRules/{securityPolicyRule}
+        reservationBlocks:
+          path:
+            projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}
+        reservationSubBlocks:
+          path:
+            projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}/reservationSubBlocks/{reservationSubBlocksId}
+        securityPolicyRules:
+          path:
             projects/{project}/global/securityPolicies/{securityPolicy}/securityPolicyRules/{securityPolicyRule}
         zones:
           path: projects/{project}/zones/{zone}
@@ -1236,12 +1259,14 @@ apis:
         projects.iap_tunnel.tunnel_types.locations.services:
           path: projects/{project}/iap_tunnel/{tunnelType}/locations/{location}/services/{tunnelService}
         projects.locations.iap_web:
+          path: projects/{project}/locations/{location}/iap_web
+        projects.locations.iap_web.web_types:
           path: projects/{project}/locations/{location}/iap_web/{iapWebId}
-        projects.locations.iap_web.agents:
+        projects.locations.iap_web.web_types.agents:
           path: projects/{project}/locations/{location}/iap_web/{iapWebId}/agents/{agentId}
-        projects.locations.iap_web.mcpServers:
+        projects.locations.iap_web.web_types.mcpServers:
           path: projects/{project}/locations/{location}/iap_web/{iapWebId}/mcpServers/{mcpServerId}
-        projects.locations.iap_web.endpoints:
+        projects.locations.iap_web.web_types.endpoints:
           path: projects/{project}/locations/{location}/iap_web/{iapWebId}/endpoints/{endpointId}
   ids:
     v1:
@@ -1253,8 +1278,7 @@ apis:
         projects.locations:
           path: projects/{projectId}/locations/{locationId}
         projects.locations.endpoints:
-          path: 
-            projects/{projectId}/locations/{locationId}/endpoints/{endpointId}
+          path: projects/{projectId}/locations/{locationId}/endpoints/{endpointId}
   kmsinventory:
     v1:
       discovery_doc: kmsinventory_v1.json
@@ -1770,9 +1794,12 @@ apis:
       discovery_doc: servicedirectory_v1beta1.json
       default: false
   servicehealth:
+    v1:
+      discovery_doc: servicehealth_v1.json
+      default: true
     v1beta:
       discovery_doc: servicehealth_v1beta.json
-      default: true
+      default: false
   servicemanagement:
     v1:
       discovery_doc: servicemanagement_v1.json
@@ -2207,6 +2234,8 @@ apis:
           path: 
             projects/{projectsId}/locations/{locationsId}/keyRings/{keyRingsId}/cryptoKeys/{cryptoKeysId}
     v1alpha:
+      skip:
+        bug: b/500051674
       discovery_doc: oracledatabase_v1alpha.json
       resources:
         projects.locations.autonomousDatabaseBackups:
@@ -2295,6 +2324,9 @@ canonical_surfaces:
   apphub:
     name: apphub
     command: apphub
+  appoptimize:
+    name: appoptimize
+    command: app-optimize
   artifactregistry:
     name: artifactregistry
     command: artifacts

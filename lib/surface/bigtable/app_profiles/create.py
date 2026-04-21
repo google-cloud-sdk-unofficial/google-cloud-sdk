@@ -160,6 +160,10 @@ class CreateAppProfileBeta(CreateAppProfile):
 
             $ {command} my-app-profile-id --instance=my-instance-id --route-any --row-affinity
 
+          To create an app profile with the memory layer enabled, run:
+
+            $ {command} my-app-profile-id --instance=my-instance-id --route-to=my-cluster-id --use-memory-layer
+
           """),
   }
 

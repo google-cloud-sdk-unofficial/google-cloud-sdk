@@ -14,7 +14,6 @@
 # limitations under the License.
 """Command for obtaining details about a given worker pool revision."""
 
-
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import exceptions
@@ -29,19 +28,25 @@ from googlecloudsdk.core.resource import resource_printer
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Describe(base.DescribeCommand):
   """Obtain details about a given worker pool revision."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION': (
+          """\
           {description}
-          """,
-      'EXAMPLES': """\
-          To describe a revision `rev.1` of a worker pool `worker1` in us-central1:
+          """
+      ),
+      'EXAMPLES': (
+          """\
+          To describe a revision `rev.1` in us-central1:
 
-              $ {command} rev.1 --region=us-central1 --workerpool=worker1
-          """,
+              $ {command} rev.1 --region=us-central1
+          """
+      ),
   }
 
   @staticmethod

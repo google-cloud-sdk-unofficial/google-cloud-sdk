@@ -52,7 +52,7 @@ def _AlphaArgs(parser):
   labels_flags.AddArgsForRemoveLabels(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class SnapshotsRemoveLabels(base.UpdateCommand):
   """Remove labels to Compute Engine snapshots."""

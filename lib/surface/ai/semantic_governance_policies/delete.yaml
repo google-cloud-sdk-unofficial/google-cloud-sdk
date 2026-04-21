@@ -1,0 +1,45 @@
+release_tracks: [BETA]
+help_text:
+  brief: Delete a semantic governance policy.
+  description: Delete a semantic governance policy.
+  examples: |-
+    To delete a semantic governance policy `my-policy` in location `us-central1`, run:
+
+      $ {command} my-policy --location=us-central1
+arguments:
+  resource:
+    help_text: The semantic governance policy to delete.
+    spec:
+      name: policy
+      collection: aiplatform.projects.locations.semanticGovernancePolicies
+      attributes:
+      - parameter_name: projectsId
+        attribute_name: project
+        help: The project containing the policy.
+      - parameter_name: locationsId
+        attribute_name: location
+        help: The location containing the policy.
+      - parameter_name: semanticGovernancePoliciesId
+        attribute_name: policy
+        help: The policy to delete.
+
+  params:
+  - arg_name: etag
+    help_text: |-
+      The etag of the SemanticGovernancePolicy to delete.
+
+      If an etag is provided and does not match the current etag of the
+      SemanticGovernancePolicy, deletion will be blocked and an ABORTED error
+      will be returned.
+    required: false
+request:
+  api_version: v1beta1
+  collection: aiplatform.projects.locations.semanticGovernancePolicies
+  method: delete
+  resource_method_params:
+    name: projects/{projectsId}/locations/{locationsId}/semanticGovernancePolicies/{semanticGovernancePoliciesId}
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.ai.semantic_governance_policies.util:set_delete_etag
+
+async:
+  collection: aiplatform.projects.locations.semanticGovernancePolicies.operations

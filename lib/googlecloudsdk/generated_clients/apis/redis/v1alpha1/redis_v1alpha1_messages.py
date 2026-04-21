@@ -336,7 +336,7 @@ class Backup(_messages.Message):
 
 
 class BackupClusterRequest(_messages.Message):
-  r"""Request for [BackupCluster].
+  r"""Request for `BackupCluster`.
 
   Fields:
     backupId: Optional. The id of the backup to be created. If not specified,
@@ -2720,7 +2720,7 @@ class Entitlement(_messages.Message):
 
 
 class ExportBackupRequest(_messages.Message):
-  r"""Request for [ExportBackup].
+  r"""Request for `ExportBackup`.
 
   Fields:
     gcsBucket: Google Cloud Storage bucket, like "my-bucket".
@@ -3274,7 +3274,7 @@ class InternalResourceMetadata(_messages.Message):
 
 
 class ListAclPoliciesResponse(_messages.Message):
-  r"""Response for ListAclPolicies.
+  r"""Response for `ListAclPolicies`.
 
   Fields:
     aclPolicies: A list of ACL policies in the project in the specified
@@ -3307,7 +3307,7 @@ class ListAuthTokensResponse(_messages.Message):
 
 
 class ListBackupCollectionsResponse(_messages.Message):
-  r"""Response for [ListBackupCollections].
+  r"""Response for `ListBackupCollections`.
 
   Fields:
     backupCollections: A list of backupCollections in the project. If the
@@ -3330,7 +3330,7 @@ class ListBackupCollectionsResponse(_messages.Message):
 
 
 class ListBackupsResponse(_messages.Message):
-  r"""Response for [ListBackups].
+  r"""Response for `ListBackups`.
 
   Fields:
     backups: A list of backups in the project.
@@ -3345,7 +3345,7 @@ class ListBackupsResponse(_messages.Message):
 
 
 class ListClustersResponse(_messages.Message):
-  r"""Response for ListClusters.
+  r"""Response for `ListClusters`.
 
   Fields:
     clusters: A list of Redis clusters in the project in the specified
@@ -4538,7 +4538,7 @@ class RedisProjectsLocationsAclPoliciesListRequest(_messages.Message):
       determine if there are more ACL policies left to be queried. The maximum
       value is 1000; values above 1000 will be coerced to 1000.
     pageToken: Optional. The `next_page_token` value returned from a previous
-      ListAclPolicies request, if any.
+      `ListAclPolicies` request, if any.
     parent: Required. The resource name of the cluster location using the
       form: `projects/{project_id}/locations/{location_id}` where
       `location_id` refers to a Google Cloud region.
@@ -4558,7 +4558,7 @@ class RedisProjectsLocationsAclPoliciesPatchRequest(_messages.Message):
     requestId: Optional. Idempotent request UUID.
     updateMask: Optional. Mask of fields to be updated. At least one path must
       be supplied in this field. The elements of the repeated paths field may
-      only include these fields from AclPolicy: * `rules`
+      only include these fields from `AclPolicy`: * `rules`
   """
 
   aclPolicy = _messages.MessageField('AclPolicy', 1)
@@ -4763,7 +4763,7 @@ class RedisProjectsLocationsClustersListRequest(_messages.Message):
       should only rely on response's `next_page_token` to determine if there
       are more clusters left to be queried.
     pageToken: The `next_page_token` value returned from a previous
-      ListClusters request, if any.
+      `ListClusters` request, if any.
     parent: Required. The resource name of the cluster location using the
       form: `projects/{project_id}/locations/{location_id}` where
       `location_id` refers to a Google Cloud region.

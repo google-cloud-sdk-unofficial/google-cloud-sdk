@@ -42,6 +42,9 @@ class MultiRegionUpdate(update.Update):
         is_multiregion=True,
     )
 
+  def _IsMultiRegion(self):
+    return True
+
   def _GetBaseChanges(self, args, existing_service=None):
     changes = (
         flags.GetServiceConfigurationChanges(args, base.ReleaseTrack) or []

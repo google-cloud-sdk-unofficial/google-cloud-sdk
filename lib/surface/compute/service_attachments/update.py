@@ -297,7 +297,9 @@ class UpdateHelper(object):
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW, base.ReleaseTrack.BETA
+)
 class Update(base.UpdateCommand):
   """Update a Google Compute Engine service attachment."""
   _support_endpoint_based_security_arg = True

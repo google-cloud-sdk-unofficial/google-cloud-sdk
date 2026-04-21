@@ -14,13 +14,14 @@
 # limitations under the License.
 """The gcloud run worker-pools revisions group."""
 
-
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Revisions(base.Group):
   """View and manage your Cloud Run WorkerPools revisions.
 
@@ -29,9 +30,11 @@ class Revisions(base.Group):
   """
 
   detailed_help = {
-      'EXAMPLES': """
+      'EXAMPLES': (
+          """
           To list your existing worker pools revisions, run:
 
             $ {command} list
-      """,
+      """
+      ),
   }

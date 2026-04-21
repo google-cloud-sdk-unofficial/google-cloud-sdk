@@ -23,7 +23,9 @@ from googlecloudsdk.command_lib.compute.networks import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.PREVIEW
+)
 class List(base.ListCommand):
   """List Compute Engine networks."""
 

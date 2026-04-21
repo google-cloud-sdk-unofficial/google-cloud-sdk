@@ -227,17 +227,18 @@ def should_skip_file_download_if_outside_destination(
     raw_destination_url,
 ):
   """Returns True if the file downloads outside the destination directory."""
-  # The following checks are for preventing writing files outside the
-  # destination directory during downloads. For example, if a user runs:
-  # `gcloud storage cp -r gs://bucket/../etc/passwd .`
 
-  # If the source is not a recursive download or source does not contain ../,
-  # then we can skip this check.
-  if (
-      source_resource_url.versionless_url_string
-      == source_expanded_url.versionless_url_string
-      or '../' not in source_resource_url.resource_name
-  ):
+  # Traversal Detection:
+  # POSIX-safe check: '\' is a valid filename character on Linux/macOS,
+  # so we only evaluate '..\' as a traversal on Windows.
+  source_key = source_resource_url.resource_name
+  has_traversal = ('../' in source_key
+                   or (os.sep == '\\' and '..\\' in source_key))
+
+  # If the source object key contains no traversal sequences, it's safe.
+  # This fast-path avoids regressions in recursive copies of safe files
+  # on cross-platform mocked tests.
+  if not has_traversal:
     return False
 
   # If this is not a recursive download to a file, then we can skip this check.
@@ -250,12 +251,39 @@ def should_skip_file_download_if_outside_destination(
   ):
     return False
 
+  # If downloading into a directory, keys starting with '..' are inherently
+  # escape attempts. We must check this before the bounds check because the CLI
+  # automatically strips leading traversals from the final local destination
+  # path, which makes them look deceptively "safe" to the bounds check below.
+  is_recursive_download = (
+      source_resource_url.versionless_url_string
+      != source_expanded_url.versionless_url_string
+  )
+  is_directory_download = (
+      is_recursive_download
+      or raw_destination_url.isdir()
+      or raw_destination_url.resource_name.endswith(os.sep)
+  )
+
+  if is_directory_download:
+    stripped_key = source_key.lstrip('/')
+    key_for_start_check = (stripped_key.replace('\\', '/')
+                           if os.sep == '\\' else stripped_key)
+    if key_for_start_check.startswith('../'):
+      return True
+
   container = os.path.abspath(
       os.path.normpath(raw_destination_url.resource_name)
   )
   destination_path = os.path.abspath(
       os.path.normpath(destination_url.resource_name)
   )
+
+  # For single-file explicit renames (e.g. `cp gs://b/../a.txt ./b.txt`),
+  # landing exactly on the container path is intended behavior.
+  if not is_directory_download and destination_path == container:
+    return False
+
   # In a recursive copy, files are placed inside the destination directory,
   # so we don't use an exact path match. `startswith` is used instead, but
   # it must be made safe against matching similar paths (e.g. /a/b

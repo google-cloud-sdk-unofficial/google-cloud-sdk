@@ -171,18 +171,43 @@ class Date(_messages.Message):
   year = _messages.IntegerField(3, variant=_messages.Variant.INT32)
 
 
+class DirectoryPolicy(_messages.Message):
+  r"""A directory policy for a Managed Lustre instance.
+
+  Fields:
+    directoryPath: Required. Immutable. The lustre instance filesystem full
+      path of the directory. It must start with a slash. e.g.
+      /lustre/testFolder
+    lustreProjectId: Output only. The lustre project ID assigned for the
+      directory by the service. This read-only ID can be used to manage
+      quotas. See more details in https://docs.cloud.google.com/managed-
+      lustre/docs/file-system-quotas#set_quotas
+    name: Immutable. Identifier. The resource name of the directory policy.
+      DirectoryPolicy names have the form `projects/{project}/locations/{locat
+      ion}/instances/{instance}/directoryPolicies/{id}`. {id} is user
+      provided.
+    uid: Output only. Unique ID of the resource.
+  """
+
+  directoryPath = _messages.StringField(1)
+  lustreProjectId = _messages.IntegerField(2)
+  name = _messages.StringField(3)
+  uid = _messages.StringField(4)
+
+
 class DynamicTierOptions(_messages.Message):
   r"""Dynamic tier options for a Managed Lustre instance.
 
   Enums:
-    ModeValueValuesEnum: Required. The dynamic tier mode of the instance.
+    ModeValueValuesEnum: Required. Immutable. The dynamic tier mode of the
+      instance.
 
   Fields:
-    mode: Required. The dynamic tier mode of the instance.
+    mode: Required. Immutable. The dynamic tier mode of the instance.
   """
 
   class ModeValueValuesEnum(_messages.Enum):
-    r"""Required. The dynamic tier mode of the instance.
+    r"""Required. Immutable. The dynamic tier mode of the instance.
 
     Values:
       MODE_UNSPECIFIED: Unspecified dynamic tier mode.
@@ -282,8 +307,8 @@ class Instance(_messages.Message):
       sizes for each performance tier.
     createTime: Output only. Timestamp when the instance was created.
     description: Optional. A user-readable description of the instance.
-    dynamicTierOptions: Optional. Specifies whether the instance is on the
-      Dynamic tier. See [Performance tiers and maximum storage
+    dynamicTierOptions: Optional. Immutable. Specifies whether the instance is
+      on the Dynamic tier. See [Performance tiers and maximum storage
       capacities](https://cloud.google.com/managed-lustre/docs/create-
       instance#performance-tiers) for more information.
     filesystem: Required. Immutable. The filesystem name for this instance.
@@ -440,6 +465,19 @@ class Instance(_messages.Message):
   uid = _messages.StringField(23)
   upcomingMaintenanceSchedule = _messages.MessageField('MaintenanceSchedule', 24)
   updateTime = _messages.StringField(25)
+
+
+class ListDirectoryPoliciesResponse(_messages.Message):
+  r"""Response message for ListDirectoryPolicies.
+
+  Fields:
+    directoryPolicies: The list of DirectoryPolicies.
+    nextPageToken: A token identifying a page of results the server should
+      return.
+  """
+
+  directoryPolicies = _messages.MessageField('DirectoryPolicy', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
 
 
 class ListInstancesResponse(_messages.Message):
@@ -643,6 +681,68 @@ class LustreProjectsLocationsInstancesDeleteRequest(_messages.Message):
 
   name = _messages.StringField(1, required=True)
   requestId = _messages.StringField(2)
+
+
+class LustreProjectsLocationsInstancesDirectoryPoliciesCreateRequest(_messages.Message):
+  r"""A LustreProjectsLocationsInstancesDirectoryPoliciesCreateRequest object.
+
+  Fields:
+    directoryPolicy: A DirectoryPolicy resource to be passed as the request
+      body.
+    directoryPolicyId: Required. The ID for the DirectoryPolicy to create.
+    parent: Required. The parent instance. It must be in the format of
+      `projects/{project}/locations/{location}/instances/{instance}`.
+  """
+
+  directoryPolicy = _messages.MessageField('DirectoryPolicy', 1)
+  directoryPolicyId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class LustreProjectsLocationsInstancesDirectoryPoliciesDeleteRequest(_messages.Message):
+  r"""A LustreProjectsLocationsInstancesDirectoryPoliciesDeleteRequest object.
+
+  Fields:
+    name: Required. The resource name of the directory policy. DirectoryPolicy
+      names have the form `projects/{project}/locations/{location}/instances/{
+      instance}/directoryPolicies/{id}`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class LustreProjectsLocationsInstancesDirectoryPoliciesGetRequest(_messages.Message):
+  r"""A LustreProjectsLocationsInstancesDirectoryPoliciesGetRequest object.
+
+  Fields:
+    name: Required. The resource name of the directory policy. DirectoryPolicy
+      names have the form `projects/{project}/locations/{location}/instances/{
+      instance}/directoryPolicies/{id}`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class LustreProjectsLocationsInstancesDirectoryPoliciesListRequest(_messages.Message):
+  r"""A LustreProjectsLocationsInstancesDirectoryPoliciesListRequest object.
+
+  Fields:
+    pageSize: Optional. Requested page size. Server might return fewer items
+      than requested. If unspecified, the server will pick an appropriate
+      default. The maximum value is 1000; values above 1000 will be coerced to
+      1000.
+    pageToken: Optional. A page token, received from a previous
+      `ListDirectoryPolicies` call. Provide this to retrieve the subsequent
+      page. When paginating, all other parameters provided to
+      `ListDirectoryPolicies` must match the call that provided the page
+      token.
+    parent: Required. The parent instance. It must be in the format of
+      `projects/{project}/locations/{location}/instances/{instance}`.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
 
 
 class LustreProjectsLocationsInstancesExportDataRequest(_messages.Message):

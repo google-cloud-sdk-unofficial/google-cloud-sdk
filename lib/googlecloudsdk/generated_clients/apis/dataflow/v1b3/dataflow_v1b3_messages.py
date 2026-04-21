@@ -3288,8 +3288,8 @@ class FlexTemplateRuntimeEnvironment(_messages.Message):
     ipConfiguration: Configuration for VM IPs.
     kmsKeyName: Name for the Cloud KMS key for the job. Key format is:
       projects//locations//keyRings//cryptoKeys/
-    launcherMachineType: The machine type to use for launching the job. The
-      default is n1-standard-1.
+    launcherMachineType: The machine type to use for launching the job. If not
+      set, Dataflow will select a default machine type.
     machineType: The machine type to use for the job. Defaults to the value
       from the template if not specified.
     maxWorkers: The maximum number of Google Compute Engine instances to be
@@ -6269,11 +6269,14 @@ class RuntimeUpdatableParams(_messages.Message):
   during job creation.
 
   Fields:
-    acceptableBacklogDuration: Optional. Deprecated: Use `autoscaling_tier`
+    acceptableBacklogDuration: Optional. Deprecated: Use `latency_tier`
       instead. The backlog threshold duration in seconds for autoscaling.
       Value must be non-negative.
-    autoscalingTier: Optional. The backlog threshold tier for autoscaling.
-      Value must be one of "low-latency", "medium-latency", or "high-latency".
+    autoscalingTier: Optional. Deprecated: Use `latency_tier` instead. The
+      backlog threshold tier for autoscaling. Value must be one of "low-
+      latency", "medium-latency", or "high-latency".
+    latencyTier: Optional. The backlog threshold tier for autoscaling. Value
+      must be one of "low-latency", "medium-latency", or "high-latency".
     maxNumWorkers: The maximum number of workers to cap autoscaling at. This
       field is currently only supported for Streaming Engine jobs.
     minNumWorkers: The minimum number of workers to scale down to. This field
@@ -6288,9 +6291,10 @@ class RuntimeUpdatableParams(_messages.Message):
 
   acceptableBacklogDuration = _messages.StringField(1)
   autoscalingTier = _messages.StringField(2)
-  maxNumWorkers = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  minNumWorkers = _messages.IntegerField(4, variant=_messages.Variant.INT32)
-  workerUtilizationHint = _messages.FloatField(5)
+  latencyTier = _messages.StringField(3)
+  maxNumWorkers = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  minNumWorkers = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  workerUtilizationHint = _messages.FloatField(6)
 
 
 class SDKInfo(_messages.Message):

@@ -105,6 +105,7 @@ class AlertPolicyCheck(_messages.Message):
   Messages:
     LabelsValue: Optional. A set of labels to filter active alerts. If set,
       only alerts having all of the specified labels will be considered.
+      Otherwise, all active alerts will be considered.
 
   Fields:
     alertPolicies: Required. The Cloud Monitoring Alert Policies to check for
@@ -112,13 +113,15 @@ class AlertPolicyCheck(_messages.Message):
       `projects/{project}/alertPolicies/{alert_policy}`.
     id: Required. The ID of the analysis check.
     labels: Optional. A set of labels to filter active alerts. If set, only
-      alerts having all of the specified labels will be considered.
+      alerts having all of the specified labels will be considered. Otherwise,
+      all active alerts will be considered.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
     r"""Optional. A set of labels to filter active alerts. If set, only alerts
-    having all of the specified labels will be considered.
+    having all of the specified labels will be considered. Otherwise, all
+    active alerts will be considered.
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.
@@ -223,14 +226,14 @@ class AnalysisJob(_messages.Message):
   r"""An analysis Job.
 
   Fields:
-    customChecks: Optional. Custom analysis checks from 3P metric providers
+    customChecks: Output only. Custom analysis checks from 3P metric providers
       that are run as part of the analysis Job.
-    duration: Required. The amount of time in minutes the analysis Job will
-      last. If any check in this Job is still running when the duration ends,
-      the Job keeps running until that check completes. The maximum duration
-      is 48 hours.
-    googleCloud: Optional. Google Cloud - based analysis checks that are run
-      as part of the analysis Job.
+    duration: Output only. The amount of time in minutes the analysis Job will
+      run, up to a maximum of 48 hours. If any check in this Job is still
+      running when the duration ends, the Job keeps running until that check
+      completes.
+    googleCloud: Output only. Google Cloud - based analysis checks that are
+      run as part of the analysis Job.
   """
 
   customChecks = _messages.MessageField('CustomCheck', 1, repeated=True)
@@ -5103,6 +5106,8 @@ class PostdeployJobRun(_messages.Message):
       succeeded.
     failureMessage: Output only. Additional information about the postdeploy
       failure, if available.
+    metadata: Output only. Metadata containing information about the
+      postdeploy `JobRun`.
   """
 
   class FailureCauseValueValuesEnum(_messages.Enum):
@@ -5131,6 +5136,19 @@ class PostdeployJobRun(_messages.Message):
   build = _messages.StringField(1)
   failureCause = _messages.EnumField('FailureCauseValueValuesEnum', 2)
   failureMessage = _messages.StringField(3)
+  metadata = _messages.MessageField('PostdeployJobRunMetadata', 4)
+
+
+class PostdeployJobRunMetadata(_messages.Message):
+  r"""PostdeployJobRunMetadata contains metadata about the postdeploy
+  `JobRun`.
+
+  Fields:
+    custom: Output only. Custom metadata provided by user-defined postdeploy
+      operation.
+  """
+
+  custom = _messages.MessageField('CustomMetadata', 1)
 
 
 class Predeploy(_messages.Message):
@@ -5178,6 +5196,8 @@ class PredeployJobRun(_messages.Message):
       succeeded.
     failureMessage: Output only. Additional information about the predeploy
       failure, if available.
+    metadata: Output only. Metadata containing information about the predeploy
+      `JobRun`.
   """
 
   class FailureCauseValueValuesEnum(_messages.Enum):
@@ -5206,6 +5226,18 @@ class PredeployJobRun(_messages.Message):
   build = _messages.StringField(1)
   failureCause = _messages.EnumField('FailureCauseValueValuesEnum', 2)
   failureMessage = _messages.StringField(3)
+  metadata = _messages.MessageField('PredeployJobRunMetadata', 4)
+
+
+class PredeployJobRunMetadata(_messages.Message):
+  r"""PredeployJobRunMetadata contains metadata about the predeploy `JobRun`.
+
+  Fields:
+    custom: Output only. Custom metadata provided by user-defined predeploy
+      operation.
+  """
+
+  custom = _messages.MessageField('CustomMetadata', 1)
 
 
 class PrivatePool(_messages.Message):
@@ -7378,9 +7410,6 @@ class TargetRender(_messages.Message):
         deployment strategy.
       RENDER_FEATURE_NOT_SUPPORTED: The render operation had a feature
         configured that is not supported.
-      TASK_NOT_FOUND: The render operation did not complete successfully
-        because the task(s) required for Rollout jobs were not found in the
-        configuration file. See failure_message for additional details.
     """
     FAILURE_CAUSE_UNSPECIFIED = 0
     CLOUD_BUILD_UNAVAILABLE = 1
@@ -7390,7 +7419,6 @@ class TargetRender(_messages.Message):
     CUSTOM_ACTION_NOT_FOUND = 5
     DEPLOYMENT_STRATEGY_NOT_SUPPORTED = 6
     RENDER_FEATURE_NOT_SUPPORTED = 7
-    TASK_NOT_FOUND = 8
 
   class RenderingStateValueValuesEnum(_messages.Enum):
     r"""Output only. Current state of the render operation for this Target.

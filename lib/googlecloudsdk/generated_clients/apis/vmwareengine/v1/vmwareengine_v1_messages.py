@@ -3026,11 +3026,13 @@ class RefreshVmAuthTokenRequest(_messages.Message):
 
 
 class RefreshVmAuthTokenResponse(_messages.Message):
-  r"""Response message for VmwareEngine.RefreshVmAuthToken This message is
-  intentionally empty. The success or failure of the operation is indicated by
-  the RPC status code.
+  r"""Response message for VmwareEngine.RefreshVmAuthToken
+
+  Fields:
+    authToken: The auth token for the VM.
   """
 
+  authToken = _messages.StringField(1)
 
 
 class RepairManagementDnsZoneBindingRequest(_messages.Message):

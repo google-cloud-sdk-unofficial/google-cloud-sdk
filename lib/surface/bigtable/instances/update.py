@@ -33,6 +33,9 @@ class UpdateInstance(base.UpdateCommand):
 
             $ {command} my-instance-id --display-name="Updated Instance Name"
 
+          To update the edition for an instance to ENTERPRISE_PLUS, run:
+
+            $ {command} my-instance-id --edition=ENTERPRISE_PLUS
           """),
   }
 

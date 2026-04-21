@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import iap_util
 from googlecloudsdk.command_lib.run import messages_util
+from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import resource_change_validators
@@ -93,7 +94,7 @@ class Update(base.Command):
 
   input_flags = (
       '`--update-env-vars`, `--memory`, `--concurrency`, `--timeout`,'
-      ' `--connectivity`, `--image`'
+      ' `--connectivity`, `--image`, `--iap`'
   )
 
   @classmethod
@@ -313,9 +314,32 @@ class Update(base.Command):
       else:
         if service:
           if creates_revision:
+            requires_authentication = not getattr(
+                args, 'allow_unauthenticated', True
+            )
+            if (
+                self.ReleaseTrack() != base.ReleaseTrack.GA
+                and 'allow_unauthenticated' not in args
+                and conn_context.supports_one_platform
+                and platforms.GetPlatform() == platforms.PLATFORM_MANAGED
+                and not self._IsMultiRegion()
+            ):
+              requires_authentication = not client.IsUnauthenticated(
+                  service_ref
+              )
+
+            project = properties.VALUES.core.project.Get(required=True)
+            region = flags.GetRegion(args)
             pretty_print.Success(
                 messages_util.GetSuccessMessageForSynchronousDeploy(
-                    service, args.no_traffic
+                    service,
+                    args.no_traffic,
+                    show_proxy_message=(
+                        self.ReleaseTrack() != base.ReleaseTrack.GA
+                        and requires_authentication
+                    ),
+                    project=project,
+                    region=region,
                 )
             )
           else:
@@ -345,6 +369,9 @@ class BetaUpdate(Update):
   def Args(cls, parser):
     cls.CommonArgs(parser)
 
+    flags.AddCpuUtilizationFlag(parser)
+    flags.AddConcurrencyUtilizationFlag(parser)
+
     # Flags specific to managed CR
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
@@ -360,7 +387,7 @@ class AlphaUpdate(BetaUpdate):
 
   input_flags = (
       '`--update-env-vars`, `--memory`, `--concurrency`, `--timeout`,'
-      ' `--connectivity`, `--image`, `--iap`'
+      ' `--connectivity`, `--image`, `--iap`, `--ssh`'
   )
 
   @classmethod
@@ -381,6 +408,7 @@ class AlphaUpdate(BetaUpdate):
     flags.AddCpuUtilizationFlag(parser)
     flags.AddConcurrencyUtilizationFlag(parser)
     flags.AddClearPresetFlag(parser)
+    flags.AddSshFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_args.AddArgument(flags.ReadinessProbeFlag())
     container_parser.AddContainerFlags(

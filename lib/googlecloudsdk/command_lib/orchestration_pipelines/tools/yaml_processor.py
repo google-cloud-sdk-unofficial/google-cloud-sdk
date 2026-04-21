@@ -51,8 +51,7 @@ class InvalidPathError(exceptions.Error):
 
 def resolve_dynamic_variables(
     yaml_content: str,
-    combined_variables: Mapping[str, Any],
-    deployment: Mapping[str, Any],
+    combined_variables: Mapping[str, Any]
 ) -> Any:
   """Resolves dynamic variables in the YAML content.
 
@@ -62,7 +61,6 @@ def resolve_dynamic_variables(
   Args:
     yaml_content: The content of the YAML file to be resolved.
     combined_variables: Dict of combined variables to substitute.
-    deployment: The parsed deployment configuration as a dictionary.
 
   Returns:
     The resolved YAML content as a Python object (e.g., dict or list).
@@ -78,52 +76,13 @@ def resolve_dynamic_variables(
         f"Failed to parse pipeline YAML after variable substitution: {e}"
     ) from e
   if isinstance(parsed_yaml_content, dict) and "actions" in parsed_yaml_content:
-    return _resolve_pipeline_yaml(
-        parsed_yaml_content, combined_variables, deployment
-    )
+    return _resolve_pipeline_yaml(parsed_yaml_content)
   return parsed_yaml_content
 
 
-def _resolve_resource_profile(
-    resource_profile: Dict[str, Any], context: Dict[str, Any]
+def _resolve_pipeline_yaml(
+    yaml_content: Dict[str, Any]
 ) -> Dict[str, Any]:
-  """Resolves a resource profile.
-
-  This function handles resource profiles defined either 'inline' or via a
-  'path' reference to an external file.
-
-  Args:
-    resource_profile: The resource profile dictionary.
-    context: A dictionary of variables for template substitution.
-
-  Returns:
-    The resolved resource profile.
-  """
-  if not isinstance(resource_profile, dict):
-    return resource_profile
-
-  if "inline" in resource_profile or "external_config_path" in resource_profile:
-    return resource_profile  # Leave it completely intact
-  elif "path" in resource_profile:
-    try:
-      selected_names = (
-          [resource_profile["name"]] if resource_profile.get("name") else []
-      )
-      loaded = _load_resource_profile(
-          resource_profile["path"],
-          names=selected_names,
-          context=context,
-      )
-      if loaded:
-        return {"inline": loaded[0].get("definition", {})}
-    except BadFileError as e:
-      # pylint: disable=raise-missing-from
-      raise BadFileError(f"Error processing resource profile: {e}")
-
-  return resource_profile
-
-
-def _resolve_pipeline_yaml(yaml_content, combined_variables, deployment):
   """Resolves pipeline specific configurations within the YAML content."""
 
   for action_item in yaml_content.get("actions", []):
@@ -158,37 +117,7 @@ def _resolve_pipeline_yaml(yaml_content, combined_variables, deployment):
           action_props = action_item[first_key]
           action_type = first_key
 
-    if ARTIFACT_STORAGE_KEY in deployment and action_type in [
-        "pyspark",
-        "notebook",
-    ]:
-      action_props["staging_bucket"] = deployment[ARTIFACT_STORAGE_KEY][
-          "bucket"
-      ]
-
-    engine = action_props.get("engine", {})
     framework = action_props.get("framework", {})
-
-    if isinstance(engine, dict):
-      engine_type = next(iter(engine.keys()), None)
-    else:
-      engine_type = engine
-
-    # Handle Dataproc Serverless ---
-    if engine_type == "dataprocServerless":
-      dp_serverless = engine["dataprocServerless"]
-      if "resourceProfile" in dp_serverless:
-        dp_serverless["resourceProfile"] = _resolve_resource_profile(
-            dp_serverless["resourceProfile"], combined_variables
-        )
-
-    # Handle Dataproc on GCE (Ephemeral) ---
-    elif engine_type == "dataprocOnGce":
-      ephemeral_cluster = engine[engine_type].get("ephemeralCluster", {})
-      if "resourceProfile" in ephemeral_cluster:
-        ephemeral_cluster["resourceProfile"] = _resolve_resource_profile(
-            ephemeral_cluster["resourceProfile"], combined_variables
-        )
 
     # Extract Local Upload Paths for Frameworks, SQL, and Python ---
     raw_upload_path = None
@@ -327,7 +256,9 @@ def _expand_environment_resources(
   env_model.resources = expanded_resources
 
 
-def _build_orchestration_pipelines_model(resolved_pipeline: Dict[str, Any]):
+def _build_orchestration_pipelines_model(
+    resolved_pipeline: Dict[str, Any],
+) -> None:
   """Validates a pipeline definition against a specific model version.
 
   This function extracts the 'model_version' from the provided definition,
@@ -354,15 +285,13 @@ def _build_orchestration_pipelines_model(resolved_pipeline: Dict[str, Any]):
   from orchestration_pipelines_models.orchestration_pipelines_model import OrchestrationPipelinesModel  # pylint: disable=g-import-not-at-top
   try:
     OrchestrationPipelinesModel.build(resolved_pipeline)
-  except ExceptionGroup as e:
-    # Due to nested nature of validation exceptions for attrs classes, we need
-    # to handle the error message aggregation manually.
-    errors = _extract_nested_errors(e)
-    error_message = "\n".join("  - " + error for error in errors)
-    raise exceptions.Error(f"{error_message_prefix}{error_message}") from e
-  except (ValueError, TypeError) as e:
-    error_message = str(e)
-    raise exceptions.Error(f"{error_message_prefix}{error_message}") from e
+  except Exception as e:
+    if type(e).__name__ == "ParseError" or isinstance(
+        e, (ValueError, TypeError)
+    ):
+      error_message = str(e)
+      raise exceptions.Error(f"{error_message_prefix}{error_message}") from e
+    raise
 
 
 def _extract_paths_from_nested_data(data: Any) -> list[str]:
@@ -709,7 +638,9 @@ def _validate_dataproc_cluster(
     )
 
 
-def resolve_string_templates(yaml_content, variables):
+def resolve_string_templates(
+    yaml_content: str, variables: Mapping[str, Any]
+) -> str:
   for key, value in variables.items():
     placeholder_pattern = r"{{\s*" + re.escape(key) + r"\s*}}"
     # Use a lambda to evaluate str(value) only if a match is found.
@@ -721,7 +652,7 @@ def resolve_string_templates(yaml_content, variables):
   return yaml_content
 
 
-def check_for_missing_variables(content):
+def check_for_missing_variables(content: str) -> None:
   """Checks if there are any unsubstituted variables in the content."""
   pattern = r"{{\s*([A-Za-z0-9_]+)\s*}}"
   match = re.search(pattern, content)
@@ -734,105 +665,46 @@ def check_for_missing_variables(content):
     )
 
 
+def load_all_environments(
+    deployment_path: str,
+    external_variables: Optional[Dict[str, Any]] = None,
+) -> tuple[Dict[str, deployment_model.EnvironmentModel], Dict[str, Any]]:
+  """Lists all deployment environments configuration."""
+  yaml_content, pre_deployment_yaml = _get_pre_deployment_data(deployment_path)
+
+  environments = pre_deployment_yaml.get(ENVIRONMENTS_KEY)
+  if isinstance(environments, Mapping):
+    all_environments = {}
+    failed_environments = {}
+    for env in environments.keys():
+      try:
+        all_environments[env] = _load_environment_from_pre_parsed(
+            deployment_path,
+            yaml_content,
+            pre_deployment_yaml,
+            env,
+            external_variables,
+        )
+      except BadFileError as e:
+        failed_environments[env] = e
+    return all_environments, failed_environments
+  return {}, {}
+
+
 def load_environment(
     deployment_path: str,
     env: str,
     external_variables: Optional[Dict[str, Any]] = None,
 ) -> deployment_model.EnvironmentModel:
   """Loads the deployment environment configuration."""
-  try:
-    # 1. Read raw content
-    yaml_content = files.ReadFileContents(deployment_path)
-
-    # 2. Parse strictly to get variables
-    # We mask jinja2-style templates {{ ... }} to make it valid YAML for the
-    # first pass. We replace {{ with __OPEN_TAG__ and }} with __CLOSE_TAG__
-    # so that "name: {{ VAR }}" becomes
-    # "name: __OPEN_TAG__ VAR __CLOSE_TAG__" which is a valid string.
-    masked_content = yaml_content.replace("{{", "__OPEN_TAG__").replace(
-        "}}", "__CLOSE_TAG__")
-
-    pre_deployment_yaml = yaml.load(masked_content)
-
-    # Extract resolved variables
-    resolved_variables = {}
-    env_dict = {}
-    if (
-        pre_deployment_yaml
-        and ENVIRONMENTS_KEY in pre_deployment_yaml
-        and env in pre_deployment_yaml[ENVIRONMENTS_KEY]
-    ):
-      env_dict = pre_deployment_yaml[ENVIRONMENTS_KEY][env]
-
-    if VARIABLES_KEY in env_dict:
-      # We need to revert the masking in the values of variables if they had any
-      raw_vars = env_dict[VARIABLES_KEY] or {}
-      for k, v in raw_vars.items():
-        if isinstance(v, str):
-          resolved_variables[k] = v.replace("__OPEN_TAG__", "{{").replace(
-              "__CLOSE_TAG__", "}}"
-          )
-        else:
-          resolved_variables[k] = v
-
-    if external_variables:
-      resolved_variables.update(external_variables)
-
-    if SECRETS_KEY in env_dict:
-      raw_secrets = env_dict[SECRETS_KEY] or {}
-      if raw_secrets:
-        sm_version = apis.ResolveVersion("secretmanager")
-        client = apis.GetClientInstance("secretmanager", sm_version)
-        messages = apis.GetMessagesModule("secretmanager", sm_version)
-        for k, secret_name in raw_secrets.items():
-          if k in resolved_variables:
-            continue
-          if isinstance(secret_name, str):
-            secret_name = secret_name.replace("__OPEN_TAG__", "{{").replace(
-                "__CLOSE_TAG__", "}}"
-            )
-            secret_name = resolve_string_templates(
-                secret_name, resolved_variables
-            )
-          try:
-            req = messages.SecretmanagerProjectsSecretsVersionsAccessRequest(
-                name=secret_name
-            )
-            response = client.projects_secrets_versions.Access(req)
-            resolved_variables[k] = response.payload.data.decode("utf-8")
-          except Exception as e:
-            raise BadFileError(
-                f"Failed to fetch secret '{secret_name}' from Secret Manager:"
-                f" {e}"
-            ) from e
-
-    # 3. Substitute on raw content
-    resolved_content = resolve_string_templates(
-        yaml_content, resolved_variables)
-
-    check_for_missing_variables(resolved_content)
-
-    # 4. Final Parse
-    deployment_yaml = yaml.load(resolved_content)
-
-  except yaml.Error as e:
-    raise BadFileError(f"Error parsing deployment.yaml: {e}") from e
-
-  try:
-    deployment = deployment_model.DeploymentModel.build(deployment_yaml)
-  except (KeyError, TypeError, ValueError, AttributeError) as e:
-    raise BadFileError(f"Error parsing deployment configuration: {e}") from e
-
-  environments = getattr(deployment, ENVIRONMENTS_KEY)
-  if env not in environments:
-    raise BadFileError(f"Environment '{env}' not found in deployment file.")
-
-  # Expand resources after building the model
-  _expand_environment_resources(
-      environments[env], deployment_path, context=resolved_variables
+  yaml_content, pre_deployment_yaml = _get_pre_deployment_data(deployment_path)
+  return _load_environment_from_pre_parsed(
+      deployment_path,
+      yaml_content,
+      pre_deployment_yaml,
+      env,
+      external_variables,
   )
-
-  return environments[env]
 
 
 def validate_environment(
@@ -930,7 +802,7 @@ def collect_environment_variables() -> dict[str, str]:
 def validate_pipeline_l1(
     bundle_dir: pathlib.Path,
     pipeline_paths: list[str],
-    combined_variables: Dict[str, Any] = None,
+    combined_variables: Optional[Mapping[str, Any]] = None,
 ) -> None:
   """Performs L1 validation for all pipelines in an environment.
 
@@ -980,6 +852,123 @@ def validate_pipeline_l1(
           f"Pipeline ID {pipeline_id!r} does not match pipeline file name"
           f" {pathlib.Path(pipeline_path).stem!r} in {pipeline_path!r}."
       )
+
+
+def _get_pre_deployment_data(
+    deployment_path: str,
+) -> tuple[str, Optional[Dict[str, Any]]]:
+  """Reads, masks, and partially parses the deployment YAML.
+
+  We mask jinja2-style templates {{ ... }} to make it valid YAML for the
+  first pass. We replace {{ with __OPEN_TAG__ and }} with __CLOSE_TAG__
+  so that "name: {{ VAR }}" becomes
+  "name: __OPEN_TAG__ VAR __CLOSE_TAG__" which is a valid string.
+
+  Args:
+    deployment_path: The path to the deployment file.
+
+  Returns:
+    A tuple containing the raw YAML content and the pre-parsed YAML dictionary.
+
+  Raises:
+    BadFileError: If the file cannot be read or parsed.
+  """
+  try:
+    yaml_content = files.ReadFileContents(deployment_path)
+    masked_content = yaml_content.replace("{{", "__OPEN_TAG__").replace(
+        "}}", "__CLOSE_TAG__"
+    )
+    pre_deployment_yaml = yaml.load(masked_content)
+    return yaml_content, pre_deployment_yaml
+  except (IOError, OSError, yaml.Error) as e:
+    raise BadFileError(f"Error reading or parsing deployment.yaml: {e}") from e
+
+
+def _load_environment_from_pre_parsed(
+    deployment_path: str,
+    yaml_content: str,
+    pre_deployment_yaml: Optional[Dict[str, Any]],
+    env: str,
+    external_variables: Optional[Dict[str, Any]] = None,
+) -> deployment_model.EnvironmentModel:
+  """Loads a specific environment configuration from pre-parsed content."""
+  if not pre_deployment_yaml or ENVIRONMENTS_KEY not in pre_deployment_yaml:
+    raise BadFileError("Error parsing deployment file: no environments found.")
+
+  if env not in pre_deployment_yaml[ENVIRONMENTS_KEY]:
+    raise BadFileError(f"Environment '{env}' not found in deployment file.")
+
+  env_dict = pre_deployment_yaml[ENVIRONMENTS_KEY][env]
+
+  # Extract resolved variables
+  resolved_variables = {}
+  if VARIABLES_KEY in env_dict:
+    # We need to revert the masking in the values of variables if they had any
+    raw_vars = env_dict[VARIABLES_KEY] or {}
+    for k, v in raw_vars.items():
+      if isinstance(v, str):
+        resolved_variables[k] = v.replace("__OPEN_TAG__", "{{").replace(
+            "__CLOSE_TAG__", "}}"
+        )
+      else:
+        resolved_variables[k] = v
+
+  if external_variables:
+    resolved_variables.update(external_variables)
+
+  if SECRETS_KEY in env_dict:
+    raw_secrets = env_dict[SECRETS_KEY] or {}
+    if raw_secrets:
+      sm_version = apis.ResolveVersion("secretmanager")
+      client = apis.GetClientInstance("secretmanager", sm_version)
+      messages = apis.GetMessagesModule("secretmanager", sm_version)
+      for k, secret_name in raw_secrets.items():
+        if k in resolved_variables:
+          continue
+        if isinstance(secret_name, str):
+          secret_name = secret_name.replace("__OPEN_TAG__", "{{").replace(
+              "__CLOSE_TAG__", "}}"
+          )
+          secret_name = resolve_string_templates(
+              secret_name, resolved_variables
+          )
+        try:
+          req = messages.SecretmanagerProjectsSecretsVersionsAccessRequest(
+              name=secret_name
+          )
+          response = client.projects_secrets_versions.Access(req)
+          resolved_variables[k] = response.payload.data.decode("utf-8")
+        except Exception as e:
+          raise BadFileError(
+              f"Failed to fetch secret '{secret_name}' from Secret Manager: {e}"
+          ) from e
+
+  # 3. Substitute on raw content
+  resolved_content = resolve_string_templates(yaml_content, resolved_variables)
+
+  check_for_missing_variables(resolved_content)
+
+  # 4. Final Parse
+  try:
+    deployment_yaml = yaml.load(resolved_content)
+  except yaml.Error as e:
+    raise BadFileError(f"Error parsing deployment.yaml: {e}") from e
+
+  try:
+    deployment = deployment_model.DeploymentModel.build(deployment_yaml)
+  except (KeyError, TypeError, ValueError, AttributeError) as e:
+    raise BadFileError(f"Error parsing deployment configuration: {e}") from e
+
+  environments = getattr(deployment, ENVIRONMENTS_KEY)
+  if env not in environments:
+    raise BadFileError(f"Environment '{env}' not found in deployment file.")
+
+  # Expand resources after building the model
+  _expand_environment_resources(
+      environments[env], deployment_path, context=resolved_variables
+  )
+
+  return environments[env]
 
 
 def _validate_single_pipeline(
@@ -1081,8 +1070,8 @@ def _validate_single_pipeline(
 def validate_pipeline_l2(
     bundle_dir: pathlib.Path,
     pipeline_paths: list[str],
-    combined_variables: Dict[str, Any] = None,
-    environment: deployment_model.EnvironmentModel = None,
+    combined_variables: Optional[Mapping[str, Any]] = None,
+    environment: Optional[deployment_model.EnvironmentModel] = None,
 ) -> None:
   """Performs L2 validation for all pipelines in the deployment environment."""
 

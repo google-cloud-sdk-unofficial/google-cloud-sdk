@@ -251,7 +251,7 @@ class UpdateHelper(object):
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class UpdateGA(base.UpdateCommand):
   r"""Update a Compute Engine security policy rule.
 

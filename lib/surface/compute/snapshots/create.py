@@ -106,7 +106,7 @@ def _AlphaArgs(parser):
   )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class Create(base.CreateCommand):
   """Create snapshots of Google Compute Engine persistent disks."""

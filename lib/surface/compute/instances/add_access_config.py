@@ -74,7 +74,7 @@ def _Args(parser, support_public_dns):
   flags.INSTANCE_ARG.AddArgument(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class AddAccessConfigInstances(base.SilentCommand):
   """Create a Compute Engine virtual machine access configuration."""
 

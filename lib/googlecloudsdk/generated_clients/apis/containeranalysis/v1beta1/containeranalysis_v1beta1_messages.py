@@ -15,6 +15,25 @@ from apitools.base.py import extra_types
 package = 'containeranalysis'
 
 
+class AISkillAnalysisNote(_messages.Message):
+  r"""AISkillAnalysisNote provides the metadata of an AI-based skill analysis.
+  """
+
+
+
+class AISkillAnalysisOccurrence(_messages.Message):
+  r"""AISkillAnalysisOccurrence provides the results of an AI-based skill
+  analysis.
+
+  Fields:
+    findings: Findings produced by the analysis.
+    skillName: Name of the skill that produced this analysis.
+  """
+
+  findings = _messages.MessageField('Finding', 1, repeated=True)
+  skillName = _messages.StringField(2)
+
+
 class AliasContext(_messages.Message):
   r"""An alias to a repo revision.
 
@@ -1192,6 +1211,9 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1Artifacts(_messages.Message):
   completion of all build steps.
 
   Fields:
+    genericArtifacts: Optional. A list of generic artifacts to be uploaded to
+      Artifact Registry upon successful completion of all build steps. If any
+      artifacts fail to be pushed, the build is marked FAILURE.
     goModules: Optional. A list of Go modules to be uploaded to Artifact
       Registry upon successful completion of all build steps. If any objects
       fail to be pushed, the build is marked FAILURE.
@@ -1229,13 +1251,14 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1Artifacts(_messages.Message):
       objects fail to be pushed, the build is marked FAILURE.
   """
 
-  goModules = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1ArtifactsGoModule', 1, repeated=True)
-  images = _messages.StringField(2, repeated=True)
-  mavenArtifacts = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1ArtifactsMavenArtifact', 3, repeated=True)
-  npmPackages = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1ArtifactsNpmPackage', 4, repeated=True)
-  objects = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1ArtifactsArtifactObjects', 5)
-  oci = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1ArtifactsOci', 6, repeated=True)
-  pythonPackages = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1ArtifactsPythonPackage', 7, repeated=True)
+  genericArtifacts = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1ArtifactsGenericArtifact', 1, repeated=True)
+  goModules = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1ArtifactsGoModule', 2, repeated=True)
+  images = _messages.StringField(3, repeated=True)
+  mavenArtifacts = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1ArtifactsMavenArtifact', 4, repeated=True)
+  npmPackages = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1ArtifactsNpmPackage', 5, repeated=True)
+  objects = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1ArtifactsArtifactObjects', 6)
+  oci = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1ArtifactsOci', 7, repeated=True)
+  pythonPackages = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1ArtifactsPythonPackage', 8, repeated=True)
 
 
 class ContaineranalysisGoogleDevtoolsCloudbuildV1ArtifactsArtifactObjects(_messages.Message):
@@ -1256,6 +1279,22 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1ArtifactsArtifactObjects(_messa
   location = _messages.StringField(1)
   paths = _messages.StringField(2, repeated=True)
   timing = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1TimeSpan', 3)
+
+
+class ContaineranalysisGoogleDevtoolsCloudbuildV1ArtifactsGenericArtifact(_messages.Message):
+  r"""Generic artifact to upload to Artifact Registry upon successful
+  completion of all build steps.
+
+  Fields:
+    folder: Required. Path to the generic artifact in the build's workspace to
+      be uploaded to Artifact Registry.
+    registryPath: Required. Registry path to upload the generic artifact to,
+      in the form projects/$PROJECT/locations/$LOCATION/repositories/$REPO/pac
+      kages/$PACKAGE/versions/$VERSION
+  """
+
+  folder = _messages.StringField(1)
+  registryPath = _messages.StringField(2)
 
 
 class ContaineranalysisGoogleDevtoolsCloudbuildV1ArtifactsGoModule(_messages.Message):
@@ -2105,11 +2144,27 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1Dependency(_messages.Message):
   Fields:
     empty: If set to true disable all dependency fetching (ignoring the
       default source as well).
+    genericArtifact: Represents a generic artifact as a build dependency.
     gitSource: Represents a git repository as a build dependency.
   """
 
   empty = _messages.BooleanField(1)
-  gitSource = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1DependencyGitSourceDependency', 2)
+  genericArtifact = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1DependencyGenericArtifactDependency', 2)
+  gitSource = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1DependencyGitSourceDependency', 3)
+
+
+class ContaineranalysisGoogleDevtoolsCloudbuildV1DependencyGenericArtifactDependency(_messages.Message):
+  r"""Represents a generic artifact as a build dependency.
+
+  Fields:
+    destPath: Required. Where the artifact files should be placed on the
+      worker.
+    resource: Required. The location to download the artifact files from. Ex:
+      projects/p1/locations/us/repositories/r1/packages/p1/versions/v1
+  """
+
+  destPath = _messages.StringField(1)
+  resource = _messages.StringField(2)
 
 
 class ContaineranalysisGoogleDevtoolsCloudbuildV1DependencyGitSourceDependency(_messages.Message):
@@ -2386,6 +2441,8 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1Results(_messages.Message):
       produce this output by writing to `$BUILDER_OUTPUT/output`. Only the
       first 50KB of data is stored. Note that the `$BUILDER_OUTPUT` variable
       is read-only and can't be substituted.
+    genericArtifacts: Output only. Generic artifacts uploaded to Artifact
+      Registry at the end of the build.
     goModules: Optional. Go module artifacts uploaded to Artifact Registry at
       the end of the build.
     images: Container images that were built as a part of the build.
@@ -2403,12 +2460,13 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1Results(_messages.Message):
   artifactTiming = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1TimeSpan', 2)
   buildStepImages = _messages.StringField(3, repeated=True)
   buildStepOutputs = _messages.BytesField(4, repeated=True)
-  goModules = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1UploadedGoModule', 5, repeated=True)
-  images = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1BuiltImage', 6, repeated=True)
-  mavenArtifacts = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1UploadedMavenArtifact', 7, repeated=True)
-  npmPackages = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1UploadedNpmPackage', 8, repeated=True)
-  numArtifacts = _messages.IntegerField(9)
-  pythonPackages = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1UploadedPythonPackage', 10, repeated=True)
+  genericArtifacts = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1UploadedGenericArtifact', 5, repeated=True)
+  goModules = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1UploadedGoModule', 6, repeated=True)
+  images = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1BuiltImage', 7, repeated=True)
+  mavenArtifacts = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1UploadedMavenArtifact', 8, repeated=True)
+  npmPackages = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1UploadedNpmPackage', 9, repeated=True)
+  numArtifacts = _messages.IntegerField(10)
+  pythonPackages = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1UploadedPythonPackage', 11, repeated=True)
 
 
 class ContaineranalysisGoogleDevtoolsCloudbuildV1Secret(_messages.Message):
@@ -2669,6 +2727,58 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1TimeSpan(_messages.Message):
 
   endTime = _messages.StringField(1)
   startTime = _messages.StringField(2)
+
+
+class ContaineranalysisGoogleDevtoolsCloudbuildV1UploadedGenericArtifact(_messages.Message):
+  r"""A generic artifact uploaded to Artifact Registry using the
+  GenericArtifact directive.
+
+  Messages:
+    FileHashesValue: Output only. The file hashes that make up the generic
+      artifact.
+
+  Fields:
+    artifactFingerprint: Output only. The hash of the whole artifact.
+    artifactRegistryPackage: Output only. Path to the artifact in Artifact
+      Registry.
+    fileHashes: Output only. The file hashes that make up the generic
+      artifact.
+    pushTiming: Output only. Stores timing information for pushing the
+      specified artifact.
+    uri: Output only. URI of the uploaded artifact. Ex:
+      projects/p1/locations/us/repositories/r1/packages/p1/versions/v1
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class FileHashesValue(_messages.Message):
+    r"""Output only. The file hashes that make up the generic artifact.
+
+    Messages:
+      AdditionalProperty: An additional property for a FileHashesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type FileHashesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a FileHashesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A ContaineranalysisGoogleDevtoolsCloudbuildV1FileHashes
+          attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1FileHashes', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  artifactFingerprint = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1FileHashes', 1)
+  artifactRegistryPackage = _messages.StringField(2)
+  fileHashes = _messages.MessageField('FileHashesValue', 3)
+  pushTiming = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1TimeSpan', 4)
+  uri = _messages.StringField(5)
 
 
 class ContaineranalysisGoogleDevtoolsCloudbuildV1UploadedGoModule(_messages.Message):
@@ -3713,6 +3823,7 @@ class Discovery(_messages.Message):
       VULNERABILITY_ASSESSMENT: This represents a Vulnerability Assessment.
       SBOM_REFERENCE: This represents an SBOM Reference.
       SECRET: This represents a secret.
+      AI_SKILL_ANALYSIS: This represents an AI skill analysis.
     """
     NOTE_KIND_UNSPECIFIED = 0
     VULNERABILITY = 1
@@ -3730,6 +3841,7 @@ class Discovery(_messages.Message):
     VULNERABILITY_ASSESSMENT = 13
     SBOM_REFERENCE = 14
     SECRET = 15
+    AI_SKILL_ANALYSIS = 16
 
   analysisKind = _messages.EnumField('AnalysisKindValueValuesEnum', 1)
 
@@ -4161,6 +4273,29 @@ class FileOccurrence(_messages.Message):
   id = _messages.StringField(6)
   licenseConcluded = _messages.MessageField('License', 7)
   notice = _messages.StringField(8)
+
+
+class Finding(_messages.Message):
+  r"""Finding provides details for a single finding within an
+  AISkillAnalysisOccurrence.
+
+  Fields:
+    category: Category of the finding.
+    description: Detailed description of the finding.
+    filePath: Path to the file where the finding was detected.
+    ruleId: Unique identifier of the rule that produced this finding.
+    severity: Severity of the finding.
+    snippet: Code snippet relevant to the finding.
+    title: Title of the finding.
+  """
+
+  category = _messages.StringField(1)
+  description = _messages.StringField(2)
+  filePath = _messages.StringField(3)
+  ruleId = _messages.StringField(4)
+  severity = _messages.StringField(5)
+  snippet = _messages.StringField(6)
+  title = _messages.StringField(7)
 
 
 class Fingerprint(_messages.Message):
@@ -4980,6 +5115,7 @@ class Note(_messages.Message):
       used as a filter in list requests.
 
   Fields:
+    aiSkillAnalysis: A note describing an AI Skill analysis.
     attestationAuthority: A note describing an attestation role.
     baseImage: A note describing a base image.
     build: A note describing build provenance for a verifiable build.
@@ -5035,6 +5171,7 @@ class Note(_messages.Message):
       VULNERABILITY_ASSESSMENT: This represents a Vulnerability Assessment.
       SBOM_REFERENCE: This represents an SBOM Reference.
       SECRET: This represents a secret.
+      AI_SKILL_ANALYSIS: This represents an AI skill analysis.
     """
     NOTE_KIND_UNSPECIFIED = 0
     VULNERABILITY = 1
@@ -5052,31 +5189,33 @@ class Note(_messages.Message):
     VULNERABILITY_ASSESSMENT = 13
     SBOM_REFERENCE = 14
     SECRET = 15
+    AI_SKILL_ANALYSIS = 16
 
-  attestationAuthority = _messages.MessageField('Authority', 1)
-  baseImage = _messages.MessageField('Basis', 2)
-  build = _messages.MessageField('Build', 3)
-  createTime = _messages.StringField(4)
-  deployable = _messages.MessageField('Deployable', 5)
-  discovery = _messages.MessageField('Discovery', 6)
-  expirationTime = _messages.StringField(7)
-  intoto = _messages.MessageField('InToto', 8)
-  kind = _messages.EnumField('KindValueValuesEnum', 9)
-  longDescription = _messages.StringField(10)
-  name = _messages.StringField(11)
-  package = _messages.MessageField('Package', 12)
-  relatedNoteNames = _messages.StringField(13, repeated=True)
-  relatedUrl = _messages.MessageField('RelatedUrl', 14, repeated=True)
-  sbom = _messages.MessageField('DocumentNote', 15)
-  sbomReference = _messages.MessageField('SBOMReferenceNote', 16)
-  secret = _messages.MessageField('SecretNote', 17)
-  shortDescription = _messages.StringField(18)
-  spdxFile = _messages.MessageField('FileNote', 19)
-  spdxPackage = _messages.MessageField('PackageInfoNote', 20)
-  spdxRelationship = _messages.MessageField('RelationshipNote', 21)
-  updateTime = _messages.StringField(22)
-  vulnerability = _messages.MessageField('Vulnerability', 23)
-  vulnerabilityAssessment = _messages.MessageField('VulnerabilityAssessmentNote', 24)
+  aiSkillAnalysis = _messages.MessageField('AISkillAnalysisNote', 1)
+  attestationAuthority = _messages.MessageField('Authority', 2)
+  baseImage = _messages.MessageField('Basis', 3)
+  build = _messages.MessageField('Build', 4)
+  createTime = _messages.StringField(5)
+  deployable = _messages.MessageField('Deployable', 6)
+  discovery = _messages.MessageField('Discovery', 7)
+  expirationTime = _messages.StringField(8)
+  intoto = _messages.MessageField('InToto', 9)
+  kind = _messages.EnumField('KindValueValuesEnum', 10)
+  longDescription = _messages.StringField(11)
+  name = _messages.StringField(12)
+  package = _messages.MessageField('Package', 13)
+  relatedNoteNames = _messages.StringField(14, repeated=True)
+  relatedUrl = _messages.MessageField('RelatedUrl', 15, repeated=True)
+  sbom = _messages.MessageField('DocumentNote', 16)
+  sbomReference = _messages.MessageField('SBOMReferenceNote', 17)
+  secret = _messages.MessageField('SecretNote', 18)
+  shortDescription = _messages.StringField(19)
+  spdxFile = _messages.MessageField('FileNote', 20)
+  spdxPackage = _messages.MessageField('PackageInfoNote', 21)
+  spdxRelationship = _messages.MessageField('RelationshipNote', 22)
+  updateTime = _messages.StringField(23)
+  vulnerability = _messages.MessageField('Vulnerability', 24)
+  vulnerabilityAssessment = _messages.MessageField('VulnerabilityAssessmentNote', 25)
 
 
 class Occurrence(_messages.Message):
@@ -5088,6 +5227,7 @@ class Occurrence(_messages.Message):
       list requests.
 
   Fields:
+    aiSkillAnalysis: Describes a specific AI Skill Analysis occurrence.
     attestation: Describes an attestation of an artifact.
     build: Describes a verifiable build.
     createTime: Output only. The time this occurrence was created.
@@ -5144,6 +5284,7 @@ class Occurrence(_messages.Message):
       VULNERABILITY_ASSESSMENT: This represents a Vulnerability Assessment.
       SBOM_REFERENCE: This represents an SBOM Reference.
       SECRET: This represents a secret.
+      AI_SKILL_ANALYSIS: This represents an AI skill analysis.
     """
     NOTE_KIND_UNSPECIFIED = 0
     VULNERABILITY = 1
@@ -5161,29 +5302,31 @@ class Occurrence(_messages.Message):
     VULNERABILITY_ASSESSMENT = 13
     SBOM_REFERENCE = 14
     SECRET = 15
+    AI_SKILL_ANALYSIS = 16
 
-  attestation = _messages.MessageField('Details', 1)
-  build = _messages.MessageField('GrafeasV1beta1BuildDetails', 2)
-  createTime = _messages.StringField(3)
-  deployment = _messages.MessageField('GrafeasV1beta1DeploymentDetails', 4)
-  derivedImage = _messages.MessageField('GrafeasV1beta1ImageDetails', 5)
-  discovered = _messages.MessageField('GrafeasV1beta1DiscoveryDetails', 6)
-  envelope = _messages.MessageField('Envelope', 7)
-  installation = _messages.MessageField('GrafeasV1beta1PackageDetails', 8)
-  intoto = _messages.MessageField('GrafeasV1beta1IntotoDetails', 9)
-  kind = _messages.EnumField('KindValueValuesEnum', 10)
-  name = _messages.StringField(11)
-  noteName = _messages.StringField(12)
-  remediation = _messages.StringField(13)
-  resource = _messages.MessageField('Resource', 14)
-  sbom = _messages.MessageField('DocumentOccurrence', 15)
-  sbomReference = _messages.MessageField('SBOMReferenceOccurrence', 16)
-  secret = _messages.MessageField('SecretOccurrence', 17)
-  spdxFile = _messages.MessageField('FileOccurrence', 18)
-  spdxPackage = _messages.MessageField('PackageInfoOccurrence', 19)
-  spdxRelationship = _messages.MessageField('RelationshipOccurrence', 20)
-  updateTime = _messages.StringField(21)
-  vulnerability = _messages.MessageField('GrafeasV1beta1VulnerabilityDetails', 22)
+  aiSkillAnalysis = _messages.MessageField('AISkillAnalysisOccurrence', 1)
+  attestation = _messages.MessageField('Details', 2)
+  build = _messages.MessageField('GrafeasV1beta1BuildDetails', 3)
+  createTime = _messages.StringField(4)
+  deployment = _messages.MessageField('GrafeasV1beta1DeploymentDetails', 5)
+  derivedImage = _messages.MessageField('GrafeasV1beta1ImageDetails', 6)
+  discovered = _messages.MessageField('GrafeasV1beta1DiscoveryDetails', 7)
+  envelope = _messages.MessageField('Envelope', 8)
+  installation = _messages.MessageField('GrafeasV1beta1PackageDetails', 9)
+  intoto = _messages.MessageField('GrafeasV1beta1IntotoDetails', 10)
+  kind = _messages.EnumField('KindValueValuesEnum', 11)
+  name = _messages.StringField(12)
+  noteName = _messages.StringField(13)
+  remediation = _messages.StringField(14)
+  resource = _messages.MessageField('Resource', 15)
+  sbom = _messages.MessageField('DocumentOccurrence', 16)
+  sbomReference = _messages.MessageField('SBOMReferenceOccurrence', 17)
+  secret = _messages.MessageField('SecretOccurrence', 18)
+  spdxFile = _messages.MessageField('FileOccurrence', 19)
+  spdxPackage = _messages.MessageField('PackageInfoOccurrence', 20)
+  spdxRelationship = _messages.MessageField('RelationshipOccurrence', 21)
+  updateTime = _messages.StringField(22)
+  vulnerability = _messages.MessageField('GrafeasV1beta1VulnerabilityDetails', 23)
 
 
 class Package(_messages.Message):

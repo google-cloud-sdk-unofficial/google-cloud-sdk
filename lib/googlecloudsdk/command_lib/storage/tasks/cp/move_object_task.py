@@ -127,6 +127,9 @@ class MoveObjectTask(copy_util.ObjectCopyTaskWithExitHandler):
         progress_callback=progress_callback,
     )
 
+    if task_status_queue:
+      progress_callback(result_resource.size)
+
     self._print_created_message_if_requested(result_resource)
     if self._send_manifest_messages:
       manifest_util.send_success_message(

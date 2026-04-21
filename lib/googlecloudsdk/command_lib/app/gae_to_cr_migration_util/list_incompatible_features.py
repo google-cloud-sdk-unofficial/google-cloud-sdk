@@ -197,8 +197,10 @@ def _check_for_incompatibility(
       if not range_limited_features[key].validate(val):
         incompatible_list.append(range_limited_features[key])
     # Check for value_restricted features.
-    # TODO(b/493877807): Skip the check for flex environment.
-    if key in value_restricted_features and not util.is_flex_env(input_data):
+    if key in value_restricted_features:
+      # TODO: b/493877807 - Better handle runtime validation for flex.
+      if util.is_flex_env(input_data) and key.startswith('runtime'):
+        continue
       if not value_restricted_features[key].validate(key, val):
         incompatible_list.append(value_restricted_features[key])
   return incompatible_list

@@ -24,8 +24,12 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.PREVIEW,
+)
 class List(base.ListCommand):
   """List per-instance configs of a managed instance group."""
 

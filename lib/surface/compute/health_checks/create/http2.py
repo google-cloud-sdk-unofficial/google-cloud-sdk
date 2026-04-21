@@ -120,7 +120,7 @@ def _Run(args, holder, include_log_config, include_weighted_load_balancing):
   return client.MakeRequests([(collection, 'Insert', request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Create(base.CreateCommand):
   """Create a HTTP2 health check."""
 

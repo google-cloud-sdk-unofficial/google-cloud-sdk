@@ -18,7 +18,7 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
+  hidden: false
   help_text:
     brief: search agents
     description: search agents
@@ -35,16 +35,6 @@
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.agent_registry.v1alpha_resources:projects_locations
       required: true
-    - arg_name: search-type
-      api_field: searchAgentsRequest.searchType
-      required: false
-      help_text: |-
-        The type of search. If set, must be set to `KEYWORD`.
-      choices:
-      - arg_value: keyword
-        enum_value: KEYWORD
-        help_text: |-
-          Search for a keyword across all searchable fields.
     - arg_name: search-string
       api_field: searchAgentsRequest.searchString
       required: false
@@ -57,6 +47,23 @@
         `agentId`, `description`, `name` and `trust`, where the operators `=`,
         `NOT`, `AND` and `OR` can be used along with the suffix wildcard symbol
         `*`.
+    - arg_name: page-size
+      api_field: searchAgentsRequest.pageSize
+      type: int
+      required: false
+      help_text: |-
+        The maximum number of agents to return. The service may return fewer
+        than this value. If unspecified, at most 20 agents will be returned.
+        The maximum value is 100; values above 100 will be coerced to 100.
+    - arg_name: page-token
+      api_field: searchAgentsRequest.pageToken
+      required: false
+      help_text: |-
+        A page token, received from a previous `SearchAgents` call.
+        Provide this to retrieve the subsequent page.
+
+        When paginating, all other parameters provided to `SearchAgents` must
+        match the call that provided the page token.
   request:
     api_version: v1alpha
     collection:

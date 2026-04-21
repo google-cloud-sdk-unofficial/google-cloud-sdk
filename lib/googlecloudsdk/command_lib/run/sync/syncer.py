@@ -25,6 +25,7 @@ import time
 from typing import Mapping, Sequence
 
 from googlecloudsdk.api_lib.run import ssh as run_ssh
+from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.command_lib.util.ssh import ssh
 from googlecloudsdk.core import exceptions
@@ -32,10 +33,18 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.util import encoding
 from googlecloudsdk.core.util import files
+from googlecloudsdk.core.util import platforms
 
 
-_TAR_EXTRACT_COMMAND = ['tar', '-xf', '-', '-C', '/']
-_RM_COMMAND = ['rm', '-r', '--']
+# Using `-p` ensures that the tarball is extracted with the permissions set
+# by the syncer, this is important for files that are not owned by root created
+# by buildpacks.
+_TAR_EXTRACT_COMMAND = ['tar', '-xpf', '-', '-C', '/']
+
+# Using `-f` ensures that the container's `rm` silently returns success if
+# the target file is already gone.
+# This will avoid sync error loop trying to delete the file.
+_RM_COMMAND = ['rm', '-rf', '--']
 _DELETE_BATCH_SIZE = 100  # Max number of files to delete in a single command.
 
 
@@ -46,8 +55,11 @@ class SyncError(exceptions.Error):
 class BaseSyncer(abc.ABC):
   """Base class for syncers."""
 
-  def __init__(self, deployment_name):
+  def __init__(self, deployment_name, is_buildpack: bool):
     self.deployment_name = deployment_name
+    self._permission_filter = (
+        _BuildpackCompatibleFilter if is_buildpack else None
+    )
 
   def __enter__(self):
     return self
@@ -97,19 +109,19 @@ class BaseSyncer(abc.ABC):
       return
 
     start_time = time.time()
-    if sync_map:
-      filenames = ', '.join([os.path.basename(f) for f in sync_map.keys()])
-      with self._GetTracker(
-          f'Syncing to "{self.deployment_name}": {filenames}'
-      ):
-        self._CopyFiles(sync_map)
-
     if deleted_map:
       filenames = ', '.join([os.path.basename(f) for f in deleted_map.keys()])
       with self._GetTracker(
           f'Deleting from "{self.deployment_name}": {filenames}'
       ):
         self._DeleteFiles(deleted_map)
+
+    if sync_map:
+      filenames = ', '.join([os.path.basename(f) for f in sync_map.keys()])
+      with self._GetTracker(
+          f'Syncing to "{self.deployment_name}": {filenames}'
+      ):
+        self._CopyFiles(sync_map)
 
     log.debug(
         '%s finished syncing in %s seconds',
@@ -133,7 +145,33 @@ class BaseSyncer(abc.ABC):
                 f'Cannot sync file: "{abs_src_path}". Destination paths must be'
                 f' absolute. Found: {abs_dest_path}.'
             )
-          tar.add(abs_src_path, arcname=abs_dest_path)
+          try:
+            # recusrsive=False as we expect abs_src_path to be a file and not a
+            # folder. If file is swapped with a folder between detection and
+            # sync, this will help avoid syncing the folder without detecting
+            # it through watcher.
+            tar.add(
+                abs_src_path,
+                arcname=abs_dest_path,
+                recursive=False,
+                filter=self._permission_filter,
+            )
+          except OSError as e:
+            # Catching OSError (e.g., FileNotFoundError) handles the race
+            # condition where a file is rapidly deleted or moved after the
+            # watcher detects a modification, but before we can add it to the
+            # synchronization tarball. Skipping it prevents thread crashes;
+            # subsequent deletion events will be caught and handled
+            # asynchronously by the watcher.
+            log.warning(
+                'Skipped adding file to tarball %s: %s', abs_src_path, e
+            )
+            pretty_print.Info(
+                '{bold}WARNING:{reset} Skipped syncing "{abs_src_path}"'
+                ' due to error: {e}',
+                abs_src_path=abs_src_path,
+                e=e,
+            )
     log.debug('Tarball created')
 
 
@@ -144,15 +182,20 @@ class CloudRunSyncer(BaseSyncer):
       self,
       args: argparse.Namespace,
       workload_type: run_ssh.Ssh.WorkloadType,
+      is_buildpack: bool,
       tracker,
   ):
-    super().__init__(args.deployment_name)
+    super().__init__(args.deployment_name, is_buildpack)
 
     tracker.StartStage(stages.FETCH_PROJECT_DETAILS)
     self._ssh = run_ssh.Ssh(args, workload_type)
     tracker.CompleteStage(stages.FETCH_PROJECT_DETAILS)
     self._cached_ssh_command_components = None
     self._control_path = None
+    self._env = ssh.Environment.Current()
+
+    if platforms.OperatingSystem.IsWindows():
+      self._env = ssh.Environment(ssh.Suite.OPENSSH, None)
 
   def PrimeSshConnection(self):
     """Creates a connection to the Cloud Run Instance.
@@ -170,7 +213,7 @@ class CloudRunSyncer(BaseSyncer):
 
     ssh_command = self._GetSshCommand(
         remote_command=None, extra_flags=['-O', 'exit']
-    ).Build(ssh.Environment.Current())
+    ).Build(self._env)
 
     try:
       subprocess.run(ssh_command, check=False, capture_output=True, timeout=5)
@@ -213,7 +256,7 @@ class CloudRunSyncer(BaseSyncer):
 
   def _SshAndExecuteCommand(self, remote_command, input_data=None):
     """Executes a command in the Cloud Run Instance container via SSH."""
-    cmd = self._GetSshCommand(remote_command).Build(ssh.Environment.Current())
+    cmd = self._GetSshCommand(remote_command).Build(self._env)
 
     result = subprocess.run(
         cmd, stdin=input_data, capture_output=True, check=False
@@ -280,3 +323,24 @@ class CloudRunSyncer(BaseSyncer):
         remote_command=remote_command,
         extra_flags=extra_flags,
     )
+
+
+def _BuildpackCompatibleFilter(tarinfo: tarfile.TarInfo):
+  """Sets correct permissions and ownership for files in the tarball.
+
+  In Buildpack deployment the files are owned by webserver user and have 755
+  permissions. When syncing the files we need to match those permissions.
+  Webserver user is dynamic so we replace the ownership with root and set
+  the same permissions.
+
+  Args:
+    tarinfo: tarinfo object to modify.
+
+  Returns:
+    A tarinfo object with buildpack compatible permissions.
+  """
+
+  tarinfo.uid = tarinfo.gid = 0
+  tarinfo.uname = tarinfo.gname = 'root'
+  tarinfo.mode = 0o755
+  return tarinfo

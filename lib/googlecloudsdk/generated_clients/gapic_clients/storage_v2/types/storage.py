@@ -1800,6 +1800,9 @@ class WriteObjectResponse(proto.Message):
             finalized.
 
             This field is a member of `oneof`_ ``write_status``.
+        persisted_data_checksums (googlecloudsdk.generated_clients.gapic_clients.storage_v2.types.ObjectChecksums):
+            If persisted_size is set, contains checksums of persisted
+            data.
     """
 
     persisted_size: int = proto.Field(
@@ -1812,6 +1815,11 @@ class WriteObjectResponse(proto.Message):
         number=2,
         oneof='write_status',
         message='Object',
+    )
+    persisted_data_checksums: 'ObjectChecksums' = proto.Field(
+        proto.MESSAGE,
+        number=3,
+        message='ObjectChecksums',
     )
 
 
@@ -2061,6 +2069,9 @@ class BidiWriteObjectResponse(proto.Message):
             finalized.
 
             This field is a member of `oneof`_ ``write_status``.
+        persisted_data_checksums (googlecloudsdk.generated_clients.gapic_clients.storage_v2.types.ObjectChecksums):
+            If persisted_size is set, contains checksums of persisted
+            data.
         write_handle (googlecloudsdk.generated_clients.gapic_clients.storage_v2.types.BidiWriteHandle):
             An optional write handle that is returned
             periodically in response messages. Clients
@@ -2080,6 +2091,11 @@ class BidiWriteObjectResponse(proto.Message):
         number=2,
         oneof='write_status',
         message='Object',
+    )
+    persisted_data_checksums: 'ObjectChecksums' = proto.Field(
+        proto.MESSAGE,
+        number=4,
+        message='ObjectChecksums',
     )
     write_handle: 'BidiWriteHandle' = proto.Field(
         proto.MESSAGE,
@@ -2279,6 +2295,9 @@ class QueryWriteStatusResponse(proto.Message):
             finalized.
 
             This field is a member of `oneof`_ ``write_status``.
+        persisted_data_checksums (googlecloudsdk.generated_clients.gapic_clients.storage_v2.types.ObjectChecksums):
+            If persisted_size is set, contains checksums of persisted
+            data.
     """
 
     persisted_size: int = proto.Field(
@@ -2291,6 +2310,11 @@ class QueryWriteStatusResponse(proto.Message):
         number=2,
         oneof='write_status',
         message='Object',
+    )
+    persisted_data_checksums: 'ObjectChecksums' = proto.Field(
+        proto.MESSAGE,
+        number=3,
+        message='ObjectChecksums',
     )
 
 

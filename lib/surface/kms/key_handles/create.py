@@ -39,8 +39,8 @@ class Create(base.CreateCommand):
     $ {command} --key-handle-id=my-key-handle --location=global
     --resource-type=compute.googleapis.com/Disk
 
-  In case we want to generate a random KeyHandle id, we can use the
-  `--generate-key-handle-id` flag instead of the `--key-handle-id` flag.
+  To generate a random KeyHandle id, the `--generate-key-handle-id` flag can be
+  used instead of `--key-handle-id`.
   """
 
   @staticmethod

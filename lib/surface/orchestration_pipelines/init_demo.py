@@ -179,9 +179,10 @@ jobs:
           credentials_json: "${{{{ secrets.GCP_SA_KEY }}}}"
       - uses: google-github-actions/setup-gcloud@v1
       - run: gcloud components update --quiet
+      - run: gcloud components install beta --quiet
       - uses: astral-sh/setup-uv@v7
-      - run: gcloud beta orchestration-pipelines validate --pipeline-paths=orchestration-pipeline.yaml --environment=dev
-      - run: gcloud beta orchestration-pipelines validate --pipeline-paths=orchestration-pipeline.yaml --environment=production
+      - run: gcloud beta orchestration-pipelines validate --pipeline-paths=orchestration-pipeline.yaml --environment=dev --quiet
+      - run: gcloud beta orchestration-pipelines validate --pipeline-paths=orchestration-pipeline.yaml --environment=production --quiet
 """
 
 _DEPLOY_WORKFLOW_TEMPLATE = """\
@@ -201,8 +202,9 @@ jobs:
           credentials_json: "${{{{ secrets.GCP_SA_KEY }}}}"
       - uses: google-github-actions/setup-gcloud@v1
       - run: gcloud components update --quiet
+      - run: gcloud components install beta --quiet
       - uses: astral-sh/setup-uv@v7
-      - run: gcloud beta orchestration-pipelines deploy --environment={environment}
+      - run: gcloud beta orchestration-pipelines deploy --environment={environment} --quiet
 """
 
 

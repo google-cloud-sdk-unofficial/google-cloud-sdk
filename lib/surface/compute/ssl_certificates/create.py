@@ -112,8 +112,12 @@ def _Run(args, holder, ssl_certificate_ref):
   return client.MakeRequests([(collection, 'Insert', request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.PREVIEW,
+)
 class Create(base.CreateCommand):
   """Create a Compute Engine SSL certificate resource.
 

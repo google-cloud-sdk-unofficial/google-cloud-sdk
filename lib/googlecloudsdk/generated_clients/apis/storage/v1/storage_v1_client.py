@@ -219,7 +219,7 @@ class StorageV1(base_api.BaseApiClient):
     )
 
     def Update(self, request, global_params=None):
-      r"""Updates the config(ttl and admissionPolicy) of an Anywhere Cache instance.
+      r"""Updates the config of an Anywhere Cache instance.
 
       Args:
         request: (AnywhereCache) input message

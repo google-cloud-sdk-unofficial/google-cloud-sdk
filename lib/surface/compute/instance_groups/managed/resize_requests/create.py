@@ -36,7 +36,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a Compute Engine managed instance group resize request."""

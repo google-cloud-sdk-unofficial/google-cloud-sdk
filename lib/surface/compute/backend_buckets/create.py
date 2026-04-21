@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.compute.backend_buckets import backend_buckets_u
 from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_buckets_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a backend bucket.
@@ -37,27 +37,23 @@ class Create(base.CreateCommand):
   """
 
   BACKEND_BUCKET_ARG = None
-  _support_regional_statera_load_balancers = False
 
   @classmethod
   def Args(cls, parser):
     """Set up arguments for this command."""
     parser.display_info.AddFormat(backend_buckets_flags.DEFAULT_LIST_FORMAT)
-    backend_buckets_flags.AddUpdatableArgs(
-        cls, parser, 'create', cls._support_regional_statera_load_balancers
-    )
+    backend_buckets_flags.AddUpdatableArgs(cls, parser, 'create')
     backend_buckets_flags.REQUIRED_GCS_BUCKET_ARG.AddArgument(parser)
     parser.display_info.AddCacheUpdater(
-        backend_buckets_flags.BackendBucketsCompleter)
+        backend_buckets_flags.BackendBucketsCompleter
+    )
     signed_url_flags.AddSignedUrlCacheMaxAge(parser, required=False)
 
     cdn_flags.AddCdnPolicyArgs(parser, 'backend bucket')
 
     backend_buckets_flags.AddCacheKeyExtendedCachingArgs(parser)
     backend_buckets_flags.AddCompressionMode(parser)
-    backend_buckets_flags.AddLoadBalancingScheme(
-        parser, cls._support_regional_statera_load_balancers
-    )
+    backend_buckets_flags.AddLoadBalancingScheme(parser)
     backend_buckets_flags.AddResourceManagerTags(parser)
 
   def CreateBackendBucket(self, args):
@@ -66,7 +62,8 @@ class Create(base.CreateCommand):
     client = holder.client
 
     backend_buckets_ref = self.BACKEND_BUCKET_ARG.ResolveAsResource(
-        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL
+    )
 
     enable_cdn = args.enable_cdn or False
 
@@ -111,32 +108,20 @@ class Create(base.CreateCommand):
 
     backend_bucket = self.CreateBackendBucket(args)
 
-    if self._support_regional_statera_load_balancers:
-      ref = backend_buckets_flags.GLOBAL_REGIONAL_BACKEND_BUCKET_ARG.ResolveAsResource(
-          args,
-          holder.resources,
-          scope_lister=compute_flags.GetDefaultScopeLister(client),
-          default_scope=compute_scope.ScopeEnum.GLOBAL
-      )
-      if ref.Collection() == 'compute.backendBuckets':
-        requests = self._CreateGlobalRequests(backend_bucket, ref)
-      elif ref.Collection() == 'compute.regionBackendBuckets':
-        requests = self._CreateRegionalRequests(args, backend_bucket, ref)
-
-      self._ApplyResourceManagerTags(args, backend_bucket, ref, client)
-
-      return client.MakeRequests(requests)
-
-    if args.resource_manager_tags is not None:
-      backend_bucket.params = self._CreateBackendBucketParams(
-          client.messages, args.resource_manager_tags
-      )
-
-    backend_buckets_ref = self.BACKEND_BUCKET_ARG.ResolveAsResource(
-        args, holder.resources)
-    return client.MakeRequests(
-        self._CreateGlobalRequests(backend_bucket, backend_buckets_ref)
+    ref = backend_buckets_flags.GLOBAL_REGIONAL_BACKEND_BUCKET_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client),
+        default_scope=compute_scope.ScopeEnum.GLOBAL,
     )
+    if ref.Collection() == 'compute.backendBuckets':
+      requests = self._CreateGlobalRequests(backend_bucket, ref)
+    elif ref.Collection() == 'compute.regionBackendBuckets':
+      requests = self._CreateRegionalRequests(args, backend_bucket, ref)
+
+    self._ApplyResourceManagerTags(args, backend_bucket, ref, client)
+
+    return client.MakeRequests(requests)
 
   def _ApplyResourceManagerTags(self, args, backend_bucket, ref, client):
     if args.resource_manager_tags is None:
@@ -211,10 +196,9 @@ class CreateBeta(Create):
       $ {command} my-backend-bucket
         --gcs-bucket-name gcs-bucket-1
         --region=us-central1
-
   """
 
-  _support_regional_statera_load_balancers = True
+  pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -241,4 +225,5 @@ class CreateAlpha(CreateBeta):
         --gcs-bucket-name gcs-bucket-1
         --region=us-central1
   """
-  _support_regional_statera_load_balancers = True
+
+  pass

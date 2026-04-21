@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Create(base.CreateCommand):
   """Create a target TCP proxy."""
 

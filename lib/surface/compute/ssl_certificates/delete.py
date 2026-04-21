@@ -24,8 +24,12 @@ from googlecloudsdk.command_lib.compute.ssl_certificates import flags
 from googlecloudsdk.command_lib.compute.ssl_certificates import ssl_certificates_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
+)
 class Delete(base.DeleteCommand):
   """Delete Compute Engine SSL certificates.
 

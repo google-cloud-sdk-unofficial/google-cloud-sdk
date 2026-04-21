@@ -83,6 +83,7 @@ class Create(base.CreateCommand):
     summary_field_group = log_query_group.add_group(mutex=True)
     summary_field_group.add_argument(
         '--summary-field-start',
+        type=int,
         help=(
             'Setting for number of characters to display for each summary'
             ' field: characters will be counted from the start of the string.'
@@ -91,6 +92,7 @@ class Create(base.CreateCommand):
     )
     summary_field_group.add_argument(
         '--summary-field-end',
+        type=int,
         help=(
             'Setting for number of characters to display for each summary'
             ' field: characters will be counted from the end of the string.'

@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA, GA]
+- release_tracks: [ALPHA, BETA, GA, PREVIEW]
   help_text:
     brief: Update a preview feature's activation status.
     description: Update a preview feature's activation status.

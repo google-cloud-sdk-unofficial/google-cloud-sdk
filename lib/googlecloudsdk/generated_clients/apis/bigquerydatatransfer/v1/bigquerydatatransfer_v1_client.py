@@ -41,10 +41,12 @@ class BigquerydatatransferV1(base_api.BaseApiClient):
     self.projects_locations_dataSources = self.ProjectsLocationsDataSourcesService(self)
     self.projects_locations_transferConfigs_runs_transferLogs = self.ProjectsLocationsTransferConfigsRunsTransferLogsService(self)
     self.projects_locations_transferConfigs_runs = self.ProjectsLocationsTransferConfigsRunsService(self)
+    self.projects_locations_transferConfigs_transferResources = self.ProjectsLocationsTransferConfigsTransferResourcesService(self)
     self.projects_locations_transferConfigs = self.ProjectsLocationsTransferConfigsService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects_transferConfigs_runs_transferLogs = self.ProjectsTransferConfigsRunsTransferLogsService(self)
     self.projects_transferConfigs_runs = self.ProjectsTransferConfigsRunsService(self)
+    self.projects_transferConfigs_transferResources = self.ProjectsTransferConfigsTransferResourcesService(self)
     self.projects_transferConfigs = self.ProjectsTransferConfigsService(self)
     self.projects = self.ProjectsService(self)
 
@@ -358,6 +360,70 @@ class BigquerydatatransferV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsTransferConfigsTransferResourcesService(base_api.BaseApiService):
+    """Service class for the projects_locations_transferConfigs_transferResources resource."""
+
+    _NAME = 'projects_locations_transferConfigs_transferResources'
+
+    def __init__(self, client):
+      super(BigquerydatatransferV1.ProjectsLocationsTransferConfigsTransferResourcesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Returns a transfer resource.
+
+      Args:
+        request: (BigquerydatatransferProjectsLocationsTransferConfigsTransferResourcesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TransferResource) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/transferConfigs/{transferConfigsId}/transferResources/{transferResourcesId}',
+        http_method='GET',
+        method_id='bigquerydatatransfer.projects.locations.transferConfigs.transferResources.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='BigquerydatatransferProjectsLocationsTransferConfigsTransferResourcesGetRequest',
+        response_type_name='TransferResource',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Returns information about transfer resources.
+
+      Args:
+        request: (BigquerydatatransferProjectsLocationsTransferConfigsTransferResourcesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListTransferResourcesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/transferConfigs/{transferConfigsId}/transferResources',
+        http_method='GET',
+        method_id='bigquerydatatransfer.projects.locations.transferConfigs.transferResources.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/transferResources',
+        request_field='',
+        request_type_name='BigquerydatatransferProjectsLocationsTransferConfigsTransferResourcesListRequest',
+        response_type_name='ListTransferResourcesResponse',
+        supports_download=False,
+    )
+
   class ProjectsLocationsTransferConfigsService(base_api.BaseApiService):
     """Service class for the projects_locations_transferConfigs resource."""
 
@@ -622,7 +688,7 @@ class BigquerydatatransferV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method can be called in two ways: * **List all public locations:** Use the path `GET /v1/locations`. * **List project-visible locations:** Use the path `GET /v1/projects/{project_id}/locations`. This may include public locations as well as private or other locations specifically visible to the project.
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
       Args:
         request: (BigquerydatatransferProjectsLocationsListRequest) input message
@@ -800,6 +866,70 @@ class BigquerydatatransferV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='BigquerydatatransferProjectsTransferConfigsRunsListRequest',
         response_type_name='ListTransferRunsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsTransferConfigsTransferResourcesService(base_api.BaseApiService):
+    """Service class for the projects_transferConfigs_transferResources resource."""
+
+    _NAME = 'projects_transferConfigs_transferResources'
+
+    def __init__(self, client):
+      super(BigquerydatatransferV1.ProjectsTransferConfigsTransferResourcesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Returns a transfer resource.
+
+      Args:
+        request: (BigquerydatatransferProjectsTransferConfigsTransferResourcesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TransferResource) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/transferConfigs/{transferConfigsId}/transferResources/{transferResourcesId}',
+        http_method='GET',
+        method_id='bigquerydatatransfer.projects.transferConfigs.transferResources.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='BigquerydatatransferProjectsTransferConfigsTransferResourcesGetRequest',
+        response_type_name='TransferResource',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Returns information about transfer resources.
+
+      Args:
+        request: (BigquerydatatransferProjectsTransferConfigsTransferResourcesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListTransferResourcesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/transferConfigs/{transferConfigsId}/transferResources',
+        http_method='GET',
+        method_id='bigquerydatatransfer.projects.transferConfigs.transferResources.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/transferResources',
+        request_field='',
+        request_type_name='BigquerydatatransferProjectsTransferConfigsTransferResourcesListRequest',
+        response_type_name='ListTransferResourcesResponse',
         supports_download=False,
     )
 

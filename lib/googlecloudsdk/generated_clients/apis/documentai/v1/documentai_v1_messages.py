@@ -2728,6 +2728,10 @@ class GoogleCloudDocumentaiV1Document(_messages.Message):
   quality.
 
   Fields:
+    blobAssets: Optional. The blob assets in this document. This is used to
+      store the content of the inline blobs in this document, for example,
+      image bytes, such that it can be referenced by other fields in the
+      document via asset id.
     chunkedDocument: Document chunked based on chunking config.
     content: Optional. Inline document content, represented as a stream of
       bytes. Note: As with all `bytes` fields, protobuffers use a pure binary
@@ -2769,24 +2773,54 @@ class GoogleCloudDocumentaiV1Document(_messages.Message):
       URIs](https://cloud.google.com/storage/docs/reference-uris).
   """
 
-  chunkedDocument = _messages.MessageField('GoogleCloudDocumentaiV1DocumentChunkedDocument', 1)
+  blobAssets = _messages.MessageField('GoogleCloudDocumentaiV1DocumentBlobAsset', 1, repeated=True)
+  chunkedDocument = _messages.MessageField('GoogleCloudDocumentaiV1DocumentChunkedDocument', 2)
+  content = _messages.BytesField(3)
+  docid = _messages.StringField(4)
+  documentLayout = _messages.MessageField('GoogleCloudDocumentaiV1DocumentDocumentLayout', 5)
+  entities = _messages.MessageField('GoogleCloudDocumentaiV1DocumentEntity', 6, repeated=True)
+  entitiesRevisionId = _messages.StringField(7)
+  entitiesRevisions = _messages.MessageField('GoogleCloudDocumentaiV1DocumentEntitiesRevision', 8, repeated=True)
+  entityRelations = _messages.MessageField('GoogleCloudDocumentaiV1DocumentEntityRelation', 9, repeated=True)
+  entityValidationOutput = _messages.MessageField('GoogleCloudDocumentaiV1DocumentEntityValidationOutput', 10)
+  error = _messages.MessageField('GoogleRpcStatus', 11)
+  mimeType = _messages.StringField(12)
+  pages = _messages.MessageField('GoogleCloudDocumentaiV1DocumentPage', 13, repeated=True)
+  revisions = _messages.MessageField('GoogleCloudDocumentaiV1DocumentRevision', 14, repeated=True)
+  shardInfo = _messages.MessageField('GoogleCloudDocumentaiV1DocumentShardInfo', 15)
+  text = _messages.StringField(16)
+  textChanges = _messages.MessageField('GoogleCloudDocumentaiV1DocumentTextChange', 17, repeated=True)
+  textStyles = _messages.MessageField('GoogleCloudDocumentaiV1DocumentStyle', 18, repeated=True)
+  uri = _messages.StringField(19)
+
+
+class GoogleCloudDocumentaiV1DocumentAnnotations(_messages.Message):
+  r"""Represents the annotation of a block or a chunk.
+
+  Fields:
+    description: The description of the content with this annotation.
+  """
+
+  description = _messages.StringField(1)
+
+
+class GoogleCloudDocumentaiV1DocumentBlobAsset(_messages.Message):
+  r"""Represents a blob asset. It's used to store the content of the inline
+  blob in this document, for example, image bytes, such that it can be
+  referenced by other fields in the document via asset ID.
+
+  Fields:
+    assetId: Optional. The id of the blob asset.
+    content: Optional. The content of the blob asset, for example, image
+      bytes.
+    mimeType: The mime type of the blob asset. An IANA published [media type
+      (MIME type)](https://www.iana.org/assignments/media-types/media-
+      types.xhtml).
+  """
+
+  assetId = _messages.StringField(1)
   content = _messages.BytesField(2)
-  docid = _messages.StringField(3)
-  documentLayout = _messages.MessageField('GoogleCloudDocumentaiV1DocumentDocumentLayout', 4)
-  entities = _messages.MessageField('GoogleCloudDocumentaiV1DocumentEntity', 5, repeated=True)
-  entitiesRevisionId = _messages.StringField(6)
-  entitiesRevisions = _messages.MessageField('GoogleCloudDocumentaiV1DocumentEntitiesRevision', 7, repeated=True)
-  entityRelations = _messages.MessageField('GoogleCloudDocumentaiV1DocumentEntityRelation', 8, repeated=True)
-  entityValidationOutput = _messages.MessageField('GoogleCloudDocumentaiV1DocumentEntityValidationOutput', 9)
-  error = _messages.MessageField('GoogleRpcStatus', 10)
-  mimeType = _messages.StringField(11)
-  pages = _messages.MessageField('GoogleCloudDocumentaiV1DocumentPage', 12, repeated=True)
-  revisions = _messages.MessageField('GoogleCloudDocumentaiV1DocumentRevision', 13, repeated=True)
-  shardInfo = _messages.MessageField('GoogleCloudDocumentaiV1DocumentShardInfo', 14)
-  text = _messages.StringField(15)
-  textChanges = _messages.MessageField('GoogleCloudDocumentaiV1DocumentTextChange', 16, repeated=True)
-  textStyles = _messages.MessageField('GoogleCloudDocumentaiV1DocumentStyle', 17, repeated=True)
-  uri = _messages.StringField(18)
+  mimeType = _messages.StringField(3)
 
 
 class GoogleCloudDocumentaiV1DocumentChunkedDocument(_messages.Message):
@@ -2803,6 +2837,7 @@ class GoogleCloudDocumentaiV1DocumentChunkedDocumentChunk(_messages.Message):
   r"""Represents a chunk.
 
   Fields:
+    chunkFields: Chunk fields inside this chunk.
     chunkId: ID of the chunk.
     content: Text content of the chunk.
     pageFooters: Page footers associated with the chunk.
@@ -2811,12 +2846,26 @@ class GoogleCloudDocumentaiV1DocumentChunkedDocumentChunk(_messages.Message):
     sourceBlockIds: Unused.
   """
 
-  chunkId = _messages.StringField(1)
-  content = _messages.StringField(2)
-  pageFooters = _messages.MessageField('GoogleCloudDocumentaiV1DocumentChunkedDocumentChunkChunkPageFooter', 3, repeated=True)
-  pageHeaders = _messages.MessageField('GoogleCloudDocumentaiV1DocumentChunkedDocumentChunkChunkPageHeader', 4, repeated=True)
-  pageSpan = _messages.MessageField('GoogleCloudDocumentaiV1DocumentChunkedDocumentChunkChunkPageSpan', 5)
-  sourceBlockIds = _messages.StringField(6, repeated=True)
+  chunkFields = _messages.MessageField('GoogleCloudDocumentaiV1DocumentChunkedDocumentChunkChunkField', 1, repeated=True)
+  chunkId = _messages.StringField(2)
+  content = _messages.StringField(3)
+  pageFooters = _messages.MessageField('GoogleCloudDocumentaiV1DocumentChunkedDocumentChunkChunkPageFooter', 4, repeated=True)
+  pageHeaders = _messages.MessageField('GoogleCloudDocumentaiV1DocumentChunkedDocumentChunkChunkPageHeader', 5, repeated=True)
+  pageSpan = _messages.MessageField('GoogleCloudDocumentaiV1DocumentChunkedDocumentChunkChunkPageSpan', 6)
+  sourceBlockIds = _messages.StringField(7, repeated=True)
+
+
+class GoogleCloudDocumentaiV1DocumentChunkedDocumentChunkChunkField(_messages.Message):
+  r"""The chunk field in the chunk. A chunk field could be one of the various
+  types (for example, image, table) supported.
+
+  Fields:
+    imageChunkField: The image chunk field in the chunk.
+    tableChunkField: The table chunk field in the chunk.
+  """
+
+  imageChunkField = _messages.MessageField('GoogleCloudDocumentaiV1DocumentChunkedDocumentChunkImageChunkField', 1)
+  tableChunkField = _messages.MessageField('GoogleCloudDocumentaiV1DocumentChunkedDocumentChunkTableChunkField', 2)
 
 
 class GoogleCloudDocumentaiV1DocumentChunkedDocumentChunkChunkPageFooter(_messages.Message):
@@ -2855,6 +2904,35 @@ class GoogleCloudDocumentaiV1DocumentChunkedDocumentChunkChunkPageSpan(_messages
   pageStart = _messages.IntegerField(2, variant=_messages.Variant.INT32)
 
 
+class GoogleCloudDocumentaiV1DocumentChunkedDocumentChunkImageChunkField(_messages.Message):
+  r"""The image chunk field in the chunk.
+
+  Fields:
+    annotations: Annotation of the image chunk field.
+    blobAssetId: Optional. Asset id of the inline image. If set, find the
+      image content in the blob_assets field.
+    dataUri: Optional. Data uri of the image. It is composed of four parts: a
+      prefix (data:), a MIME type indicating the type of data, an optional
+      base64 token if non-textual, and the data itself: data:,
+    gcsUri: Optional. Google Cloud Storage uri of the image.
+  """
+
+  annotations = _messages.MessageField('GoogleCloudDocumentaiV1DocumentAnnotations', 1)
+  blobAssetId = _messages.StringField(2)
+  dataUri = _messages.StringField(3)
+  gcsUri = _messages.StringField(4)
+
+
+class GoogleCloudDocumentaiV1DocumentChunkedDocumentChunkTableChunkField(_messages.Message):
+  r"""The table chunk field in the chunk.
+
+  Fields:
+    annotations: Annotation of the table chunk field.
+  """
+
+  annotations = _messages.MessageField('GoogleCloudDocumentaiV1DocumentAnnotations', 1)
+
+
 class GoogleCloudDocumentaiV1DocumentDocumentLayout(_messages.Message):
   r"""Represents the parsed layout of a document as a collection of blocks
   that the document is divided into.
@@ -2873,6 +2951,7 @@ class GoogleCloudDocumentaiV1DocumentDocumentLayoutDocumentLayoutBlock(_messages
   Fields:
     blockId: ID of the block.
     boundingBox: Identifies the bounding box for the block.
+    imageBlock: Block consisting of image content.
     listBlock: Block consisting of list content/structure.
     pageSpan: Page span of the block.
     tableBlock: Block consisting of table content/structure.
@@ -2881,10 +2960,36 @@ class GoogleCloudDocumentaiV1DocumentDocumentLayoutDocumentLayoutBlock(_messages
 
   blockId = _messages.StringField(1)
   boundingBox = _messages.MessageField('GoogleCloudDocumentaiV1BoundingPoly', 2)
-  listBlock = _messages.MessageField('GoogleCloudDocumentaiV1DocumentDocumentLayoutDocumentLayoutBlockLayoutListBlock', 3)
-  pageSpan = _messages.MessageField('GoogleCloudDocumentaiV1DocumentDocumentLayoutDocumentLayoutBlockLayoutPageSpan', 4)
-  tableBlock = _messages.MessageField('GoogleCloudDocumentaiV1DocumentDocumentLayoutDocumentLayoutBlockLayoutTableBlock', 5)
-  textBlock = _messages.MessageField('GoogleCloudDocumentaiV1DocumentDocumentLayoutDocumentLayoutBlockLayoutTextBlock', 6)
+  imageBlock = _messages.MessageField('GoogleCloudDocumentaiV1DocumentDocumentLayoutDocumentLayoutBlockLayoutImageBlock', 3)
+  listBlock = _messages.MessageField('GoogleCloudDocumentaiV1DocumentDocumentLayoutDocumentLayoutBlockLayoutListBlock', 4)
+  pageSpan = _messages.MessageField('GoogleCloudDocumentaiV1DocumentDocumentLayoutDocumentLayoutBlockLayoutPageSpan', 5)
+  tableBlock = _messages.MessageField('GoogleCloudDocumentaiV1DocumentDocumentLayoutDocumentLayoutBlockLayoutTableBlock', 6)
+  textBlock = _messages.MessageField('GoogleCloudDocumentaiV1DocumentDocumentLayoutDocumentLayoutBlockLayoutTextBlock', 7)
+
+
+class GoogleCloudDocumentaiV1DocumentDocumentLayoutDocumentLayoutBlockLayoutImageBlock(_messages.Message):
+  r"""Represents an image type block.
+
+  Fields:
+    annotations: Annotation of the image block.
+    blobAssetId: Optional. Asset id of the inline image. If set, find the
+      image content in the blob_assets field.
+    dataUri: Optional. Data uri of the image. It is composed of four parts: a
+      prefix (data:), a MIME type indicating the type of data, an optional
+      base64 token if non-textual, and the data itself: data:,
+    gcsUri: Optional. Google Cloud Storage uri of the image.
+    imageText: Text extracted from the image using OCR or alt text describing
+      the image.
+    mimeType: Mime type of the image. An IANA published [media type (MIME
+      type)] (https://www.iana.org/assignments/media-types/media-types.xhtml).
+  """
+
+  annotations = _messages.MessageField('GoogleCloudDocumentaiV1DocumentAnnotations', 1)
+  blobAssetId = _messages.StringField(2)
+  dataUri = _messages.StringField(3)
+  gcsUri = _messages.StringField(4)
+  imageText = _messages.StringField(5)
+  mimeType = _messages.StringField(6)
 
 
 class GoogleCloudDocumentaiV1DocumentDocumentLayoutDocumentLayoutBlockLayoutListBlock(_messages.Message):
@@ -2927,14 +3032,16 @@ class GoogleCloudDocumentaiV1DocumentDocumentLayoutDocumentLayoutBlockLayoutTabl
   r"""Represents a table type block.
 
   Fields:
+    annotations: Annotation of the table block.
     bodyRows: Body rows containing main table content.
     caption: Table caption/title.
     headerRows: Header rows at the top of the table.
   """
 
-  bodyRows = _messages.MessageField('GoogleCloudDocumentaiV1DocumentDocumentLayoutDocumentLayoutBlockLayoutTableRow', 1, repeated=True)
-  caption = _messages.StringField(2)
-  headerRows = _messages.MessageField('GoogleCloudDocumentaiV1DocumentDocumentLayoutDocumentLayoutBlockLayoutTableRow', 3, repeated=True)
+  annotations = _messages.MessageField('GoogleCloudDocumentaiV1DocumentAnnotations', 1)
+  bodyRows = _messages.MessageField('GoogleCloudDocumentaiV1DocumentDocumentLayoutDocumentLayoutBlockLayoutTableRow', 2, repeated=True)
+  caption = _messages.StringField(3)
+  headerRows = _messages.MessageField('GoogleCloudDocumentaiV1DocumentDocumentLayoutDocumentLayoutBlockLayoutTableRow', 4, repeated=True)
 
 
 class GoogleCloudDocumentaiV1DocumentDocumentLayoutDocumentLayoutBlockLayoutTableCell(_messages.Message):
@@ -2966,6 +3073,7 @@ class GoogleCloudDocumentaiV1DocumentDocumentLayoutDocumentLayoutBlockLayoutText
   r"""Represents a text type block.
 
   Fields:
+    annotations: Annotation of the text block.
     blocks: A text block could further have child blocks. Repeated blocks
       support further hierarchies and nested blocks.
     text: Text content stored in the block.
@@ -2974,9 +3082,10 @@ class GoogleCloudDocumentaiV1DocumentDocumentLayoutDocumentLayoutBlockLayoutText
       `heading-5`, `header`, `footer`.
   """
 
-  blocks = _messages.MessageField('GoogleCloudDocumentaiV1DocumentDocumentLayoutDocumentLayoutBlock', 1, repeated=True)
-  text = _messages.StringField(2)
-  type = _messages.StringField(3)
+  annotations = _messages.MessageField('GoogleCloudDocumentaiV1DocumentAnnotations', 1)
+  blocks = _messages.MessageField('GoogleCloudDocumentaiV1DocumentDocumentLayoutDocumentLayoutBlock', 2, repeated=True)
+  text = _messages.StringField(3)
+  type = _messages.StringField(4)
 
 
 class GoogleCloudDocumentaiV1DocumentEntitiesRevision(_messages.Message):

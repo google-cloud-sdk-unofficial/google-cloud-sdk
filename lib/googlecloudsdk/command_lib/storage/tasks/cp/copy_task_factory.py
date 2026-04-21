@@ -15,6 +15,7 @@
 """Preferred method of generating a copy task."""
 
 
+from googlecloudsdk.command_lib.storage import encryption_util
 from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import posix_util
 from googlecloudsdk.command_lib.storage import storage_url
@@ -25,9 +26,95 @@ from googlecloudsdk.command_lib.storage.tasks.cp import daisy_chain_copy_task
 from googlecloudsdk.command_lib.storage.tasks.cp import file_download_task
 from googlecloudsdk.command_lib.storage.tasks.cp import file_upload_task
 from googlecloudsdk.command_lib.storage.tasks.cp import intra_cloud_copy_task
+from googlecloudsdk.command_lib.storage.tasks.cp import move_object_task
 from googlecloudsdk.command_lib.storage.tasks.cp import parallel_composite_upload_util
 from googlecloudsdk.command_lib.storage.tasks.cp import streaming_download_task
 from googlecloudsdk.command_lib.storage.tasks.cp import streaming_upload_task
+from googlecloudsdk.core import properties
+
+
+def _should_use_move_object_task(
+    source_resource,
+    destination_resource,
+    delete_source,
+    posix_to_set,
+    user_request_args,
+):
+  """Returns True if MoveObjectTask should be used for intra-cloud moves."""
+  if not properties.VALUES.storage.use_move_object_api.GetBool():
+    # TODO: b/331725321 - Remove this check post implementation.
+    return False
+
+  if not delete_source or posix_to_set:
+    return False
+
+  source_url = source_resource.storage_url
+  destination_url = destination_resource.storage_url
+  if (
+      source_url.scheme != storage_url.ProviderPrefix.GCS
+      or destination_url.scheme != storage_url.ProviderPrefix.GCS
+      or source_url.bucket_name != destination_url.bucket_name
+      or not isinstance(source_resource, resource_reference.ObjectResource)
+  ):
+    return False
+
+  # MoveObjects doesn't support overriding encryption keys.
+  if encryption_util.get_encryption_key():
+    return False
+
+  # Move object is only supported for live objects.
+  if source_url.generation:
+    return False
+
+  if not user_request_args:
+    return True
+  if (
+      user_request_args.gzip_settings
+      or user_request_args.manifest_path
+      or user_request_args.predefined_acl_string
+      or user_request_args.preserve_posix
+  ):
+    return False
+
+  resource_args = user_request_args.resource_args
+  if not resource_args:
+    return True
+
+  # If preserve_acl is set to False, we should not use MoveObjectTask.
+  # MoveObjectTask will preserve ACLs by default.
+  preserve_acl = getattr(resource_args, 'preserve_acl', None)
+  if preserve_acl is not None and not preserve_acl:
+    return False
+
+  # If any object resource_args are set, MoveObjectTask is not supported.
+  for field in [
+      'acl_file_path',
+      'acl_grants_to_add',
+      'acl_grants_to_remove',
+      'cache_control',
+      'content_disposition',
+      'content_encoding',
+      'content_language',
+      'content_type',
+      'custom_contexts_to_set',
+      'custom_contexts_to_remove',
+      'custom_contexts_to_update',
+      'custom_fields_to_set',
+      'custom_fields_to_remove',
+      'custom_fields_to_update',
+      'custom_time',
+      'event_based_hold',
+      'md5_hash',
+      'retain_until',
+      'retention_mode',
+      'storage_class',
+      'temporary_hold',
+  ]:
+    val = getattr(resource_args, field, None)
+    if val:
+      return False
+
+  return True
 
 
 def get_copy_task(
@@ -204,6 +291,22 @@ def get_copy_task(
           verbose=verbose,
           fetch_source_fields_scope=fetch_source_fields_scope,
       )
+
+    if _should_use_move_object_task(
+        source_resource,
+        destination_resource,
+        delete_source,
+        posix_to_set,
+        user_request_args,
+    ):
+      return move_object_task.MoveObjectTask(
+          source_resource,
+          destination_resource,
+          print_created_message=print_created_message,
+          user_request_args=user_request_args,
+          verbose=verbose,
+      )
+
     return intra_cloud_copy_task.IntraCloudCopyTask(
         source_resource,
         destination_resource,

@@ -25,8 +25,12 @@ import ipaddress
 import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.PREVIEW,
+)
 class ExpandIpRange(base.SilentCommand):
   """Expand IP range of a subnetwork."""
 

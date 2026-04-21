@@ -44,7 +44,7 @@ Start time for the disk snapshot schedule in UTC. For example, `--start-time="15
   flags.AddOnSourceDiskDeleteArgs(parser, messages)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class UpdateSnapshotSchedule(base.UpdateCommand):
   """Update a Compute Engine Snapshot Schedule Resource Policy."""
 

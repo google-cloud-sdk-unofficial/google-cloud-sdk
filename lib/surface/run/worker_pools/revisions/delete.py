@@ -30,7 +30,9 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Delete(base.Command):
   """Delete a worker pool revision."""
 
@@ -41,7 +43,7 @@ class Delete(base.Command):
       'EXAMPLES': """\
           To delete a revision `rev1` of a worker pool `worker1` in us-central1:
 
-              $ {command} rev1 --region=us-central1 --workerpool=worker1
+              $ {command} rev1 --region=us-central1 --worker-pool=worker1
           """,
   }
 

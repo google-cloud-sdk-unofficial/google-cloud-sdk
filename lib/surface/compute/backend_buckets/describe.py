@@ -21,7 +21,7 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.backend_buckets import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Describe a backend bucket.
@@ -31,15 +31,10 @@ class Describe(base.DescribeCommand):
   """
 
   BACKEND_BUCKET_ARG = None
-  _support_regional_global_flags = False
 
   @classmethod
   def Args(cls, parser):
-    cls.BACKEND_BUCKET_ARG = (
-        flags.GLOBAL_REGIONAL_BACKEND_BUCKET_ARG
-        if cls._support_regional_global_flags
-        else flags.BackendBucketArgument()
-    )
+    cls.BACKEND_BUCKET_ARG = flags.GLOBAL_REGIONAL_BACKEND_BUCKET_ARG
     cls.BACKEND_BUCKET_ARG.AddArgument(parser, operation_type='describe')
 
   def Run(self, args):
@@ -98,7 +93,7 @@ class DescribeBeta(Describe):
         --region=us-central1
   """
 
-  _support_regional_global_flags = True
+  pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -125,4 +120,4 @@ class DescribeAlpha(DescribeBeta):
         --region=us-central1
   """
 
-  _support_regional_global_flags = True
+  pass

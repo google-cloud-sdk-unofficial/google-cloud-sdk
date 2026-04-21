@@ -27,7 +27,7 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class Update(base.UpdateCommand):
   """Update a Compute Engine router."""

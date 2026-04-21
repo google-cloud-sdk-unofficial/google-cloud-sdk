@@ -40,8 +40,12 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
+)
 class Resume(base.SilentCommand):
   """Resume a virtual machine instance.
 

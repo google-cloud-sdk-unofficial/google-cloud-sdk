@@ -46,7 +46,7 @@ def _CommonArgs(parser):
   disks_flags.AddKmsKeyArg(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class UpdateKmsKey(base.Command):
   """Update the KMS key of a persistent disk."""

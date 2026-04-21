@@ -62,7 +62,7 @@ def _AddArgs(parser, supports_min_ready=False):
   instance_groups_managed_flags.AddMostDisruptiveActionArg(parser, False, None)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class StartUpdateGA(base.Command):
   """Start update instances of managed instance group."""
 

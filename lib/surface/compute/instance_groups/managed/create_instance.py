@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 from googlecloudsdk.command_lib.compute.instance_groups.managed.instance_configs import instance_configs_messages
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class CreateInstanceGA(base.CreateCommand):
   """Create a new virtual machine instance in a managed instance group."""
 

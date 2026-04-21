@@ -24,7 +24,7 @@ import re
 import subprocess
 import time
 import types
-from typing import Any
+from typing import Any, Mapping
 
 from apitools.base.py import exceptions as api_exceptions
 from apitools.base.py import transfer
@@ -287,6 +287,34 @@ def _ArtifactsExist(artifact_uri: str) -> bool:
     return False
 
 
+def _ExtractResourceProfilePaths(config_dict: dict[str, Any]) -> set[str]:
+  """Extracts and normalizes resource profile paths.
+
+  Finds 'resourceProfile' blocks, normalizes their local paths in-place,
+  and returns them.
+
+  Args:
+    config_dict: The dictionary to search within.
+
+  Returns:
+    A set of normalized local resource profile paths to upload.
+  """
+  paths_to_upload = set()
+  if not isinstance(config_dict, dict):
+    return paths_to_upload
+
+  for key, value in config_dict.items():
+    if key == "resourceProfile" and isinstance(value, dict) and "path" in value:
+      raw_path = value["path"]
+      if not raw_path.startswith(("gs://", "/")):
+        clean_rp_path = _GetRelativePath(raw_path)
+        value["path"] = clean_rp_path
+        paths_to_upload.add(clean_rp_path)
+    elif isinstance(value, dict):
+      paths_to_upload.update(_ExtractResourceProfilePaths(value))
+  return paths_to_upload
+
+
 @calliope_base.Hidden
 @calliope_base.DefaultUniverseOnly
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.BETA)
@@ -539,11 +567,9 @@ class Deploy(calliope_base.Command):
 
       version_id = None
       if pipelines:
-      # TODO(b/497670530): Re-enable L1 validation next week after backend is
-      # ready.
-      # yaml_processor.validate_pipeline_l1(
-      #     bundle_dir, pipelines, combined_variables
-      # )
+        yaml_processor.validate_pipeline_l1(
+            bundle_dir, pipelines, combined_variables
+        )
         composer_bucket = _GetComposerBucket(
             parsed_deployment["composer_env"],
             parsed_deployment["region"],
@@ -561,6 +587,7 @@ class Deploy(calliope_base.Command):
               is_local=getattr(args, "local", False),
               parsed_deployment=parsed_deployment,
               combined_variables=combined_variables,
+              pipelines=pipelines,
           )
         status["version"] = version_id
 
@@ -670,15 +697,15 @@ class Deploy(calliope_base.Command):
 
   def _WaitForPipelines(
       self,
-      bundle_name,
-      expected_pipelines_count,
-      composer_env_name,
-      location,
-      project,
+      bundle_name: str,
+      expected_pipelines_count: int,
+      composer_env_name: str,
+      location: str,
+      project: str,
       version_id: str,
-      single_pipeline_name=None,
-      is_paused=None,
-  ):
+      single_pipeline_name: str | None = None,
+      is_paused: bool | None = None,
+  ) -> dict[str, Any]:
     """Waits for pipelines to be parsed in Composer."""
     timeout = 300
     sleep_time = 10
@@ -804,13 +831,15 @@ class Deploy(calliope_base.Command):
       bundle_dir: pathlib.Path,
       composer_bucket: str,
       bundle_data_prefix: str,
-      version_id,
+      version_id: str,
       artifact_base_uri: str,
+      combined_variables: Mapping[str, str] | None = None,
+      parsed_deployment: Mapping[str, Any] | None = None,
   ) -> None:
     """Processes actions and uploads artifacts to GCS."""
-    uploaded_framework_projects = set[str]()
     action_filenames_to_upload = set[str]()
     env_pack_files_to_upload = set[str]()
+    composer_data_paths_to_upload = set[str]()
 
     defaults = resolved_pipeline.get("defaults", {})
     allowed_processor_engines = {"dataprocServerless", "dataprocOnGce"}
@@ -871,6 +900,10 @@ class Deploy(calliope_base.Command):
             action_filenames_to_upload=action_filenames_to_upload,
         )
 
+      if isinstance(engine_dict, dict):
+        extracted_paths = _ExtractResourceProfilePaths(engine_dict)
+        composer_data_paths_to_upload.update(extracted_paths)
+
       py_files = action.get("pyFiles")
       if py_files and isinstance(py_files, list):
         normalized = [_NormalizeArtifactPath(f) for f in py_files]
@@ -878,23 +911,8 @@ class Deploy(calliope_base.Command):
         action["pyFiles"] = normalized
 
       clean_path = action_item.pop("_local_framework_upload_path", None)
-      if clean_path and clean_path not in uploaded_framework_projects:
-        uploaded_framework_projects.add(clean_path)
-        local_project_path = bundle_dir / clean_path
-
-        if local_project_path.exists():
-          log.status.Print(
-              f"Uploading '{clean_path}' to pipeline data folder..."
-          )
-          data_dest_uri = f"gs://{composer_bucket}/{bundle_data_prefix}/versions/{version_id}/{clean_path}"
-          if local_project_path.is_dir():
-            _UploadDirToGcs(local_project_path, data_dest_uri)
-          else:
-            dest_ref = storage_util.ObjectReference.FromUrl(data_dest_uri)
-            storage_client = storage_api.StorageClient()
-            storage_client.CopyFileToGCS(str(local_project_path), dest_ref)
-        else:
-          log.warning(f"Path not found locally: {clean_path}")
+      if clean_path:
+        composer_data_paths_to_upload.add(clean_path)
 
       reqs_path_str = None
       if action_type in ["pyspark", "notebook"]:
@@ -905,17 +923,17 @@ class Deploy(calliope_base.Command):
             reqs_path_str = reqs.get("path")
 
       resolved_reqs_path = None
-
       if reqs_path_str:
         reqs_path_str = _GetRelativePath(reqs_path_str)
         resolved_reqs_path = bundle_dir / reqs_path_str
+
+        composer_data_paths_to_upload.add(reqs_path_str)
 
         if not resolved_reqs_path.exists():
           raise calliope_exceptions.BadFileException(
               f"Requirements file not found: {resolved_reqs_path}"
           )
 
-      provided_engines = []
       if engine_dict:
         if isinstance(engine_dict, dict):
           provided_engines = list(engine_dict.keys())
@@ -944,11 +962,40 @@ class Deploy(calliope_base.Command):
           env_pack_file = processor.env_pack_file
           if env_pack_file:
             env_pack_files_to_upload.add(env_pack_file)
-      else:
-        log.warning(
-            f"Skipping requirements processing. Engine(s) {provided_engines} "
-            f"are not supported. Allowed engines: {allowed_processor_engines}."
-        )
+
+      if "requirementsPath" in action:
+        del action["requirementsPath"]
+
+    if composer_data_paths_to_upload:
+      storage_client = storage_api.StorageClient()
+      for clean_path in composer_data_paths_to_upload:
+        local_project_path = bundle_dir / clean_path
+        if local_project_path.exists():
+          log.status.Print(
+              f"Uploading '{clean_path}' to pipeline data folder..."
+          )
+          data_dest_uri = f"gs://{composer_bucket}/{bundle_data_prefix}/versions/{version_id}/{clean_path}"
+          if local_project_path.is_dir():
+            _UploadDirToGcs(local_project_path, data_dest_uri)
+          # If the file is a YAML file (e.g. resources_profile.yaml),
+          # resolve dynamic variables
+          # before upload.
+          elif local_project_path.suffix in [".yaml", ".yml"]:
+            content = files.ReadFileContents(local_project_path)
+            if combined_variables is not None and parsed_deployment is not None:
+              resolved_content_dict = yaml_processor.resolve_dynamic_variables(
+                  yaml_content=content,
+                  combined_variables=combined_variables
+              )
+              final_content = yaml.dump(resolved_content_dict)
+            else:
+              final_content = content
+            _UploadFile(final_content, data_dest_uri, local_project_path.name)
+          else:
+            dest_ref = storage_util.ObjectReference.FromUrl(data_dest_uri)
+            storage_client.CopyFileToGCS(str(local_project_path), dest_ref)
+        else:
+          log.warning("Path not found locally: %s", local_project_path)
 
     self._UploadArtifacts(
         work_dir=bundle_dir,
@@ -967,6 +1014,7 @@ class Deploy(calliope_base.Command):
       bundle_name,
       is_paused=False,
       is_local=False,
+      pipelines=None,
   ):
     """Updates the manifest file in GCS with retry logic."""
     manifest_dest = (
@@ -993,20 +1041,17 @@ class Deploy(calliope_base.Command):
             "pausedPipelines": [],
             "versionsHistory": [],
         }
-      current_time = datetime.datetime.now(datetime.timezone.utc).isoformat(
-          timespec="milliseconds"
-      ).replace("+00:00", "Z")
+      current_time = (
+          datetime.datetime.now(datetime.timezone.utc)
+          .isoformat(timespec="milliseconds")
+          .replace("+00:00", "Z")
+      )
       pipeline_name = pipeline_path.stem
 
-      paused_pipelines = manifest_data.get("pausedPipelines", [])
-      if not isinstance(paused_pipelines, list):
-        paused_pipelines = []
+      paused_pipelines = []
 
-      if is_paused is not None:
-        if is_paused and pipeline_name not in paused_pipelines:
-          paused_pipelines.append(pipeline_name)
-        elif not is_paused and pipeline_name in paused_pipelines:
-          paused_pipelines.remove(pipeline_name)
+      if is_paused and pipelines is not None:
+        paused_pipelines = list(pipelines)
 
       new_manifest_payload = manifest_data.copy() | {
           "bundle": bundle_name,
@@ -1085,6 +1130,7 @@ class Deploy(calliope_base.Command):
       is_local=False,
       combined_variables=None,
       parsed_deployment=None,
+      pipelines=None,
   ):
     """Deploys the pipeline using the dynamic context and concurrency control.
 
@@ -1100,6 +1146,7 @@ class Deploy(calliope_base.Command):
       is_local: If True, the deployment is a local deployment.
       combined_variables: Dictionary of combined variables for substitution.
       parsed_deployment: dict[str, Any], the parsed deployment configuration.
+      pipelines: list[dict[str, Any]], the list of pipelines.
 
     Returns:
       The version ID (git commit hash) of the deployed pipeline.
@@ -1140,8 +1187,7 @@ class Deploy(calliope_base.Command):
 
     resolved_pipeline = yaml_processor.resolve_dynamic_variables(
         yaml_content=yaml_content,
-        combined_variables=combined_variables,
-        deployment=parsed_deployment,
+        combined_variables=combined_variables
     )
 
     if rollback and _ArtifactsExist(artifact_base_uri):
@@ -1157,6 +1203,8 @@ class Deploy(calliope_base.Command):
           bundle_data_prefix,
           version_id,
           artifact_base_uri,
+          combined_variables=combined_variables,
+          parsed_deployment=parsed_deployment,
       )
 
     resolved_yaml_content = yaml.dump(resolved_pipeline)
@@ -1184,6 +1232,7 @@ class Deploy(calliope_base.Command):
         bundle_name,
         is_paused=is_paused,
         is_local=is_local,
+        pipelines=pipelines,
     )
 
     return version_id

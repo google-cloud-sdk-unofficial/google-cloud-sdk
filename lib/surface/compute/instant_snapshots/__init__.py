@@ -23,8 +23,12 @@ DETAILED_HELP = {
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA,
-                    base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.PREVIEW,
+)
 class InstantSnapshots(base.Group):
   """List, create, and delete Compute Engine instant snapshots."""
 

@@ -25,7 +25,10 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
 )
 @base.UniverseCompatible
 class Create(base.CreateCommand):

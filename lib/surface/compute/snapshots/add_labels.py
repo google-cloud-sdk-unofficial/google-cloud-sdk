@@ -52,7 +52,7 @@ def _AlphaArgs(parser):
   labels_flags.AddArgsForAddLabels(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class SnapshotsAddLabels(base.UpdateCommand):
   """Add labels to Compute Engine snapshots.

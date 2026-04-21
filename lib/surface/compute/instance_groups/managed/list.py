@@ -23,8 +23,12 @@ from googlecloudsdk.command_lib.compute.instance_groups.managed import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.PREVIEW,
+)
 class List(base.ListCommand):
   """List Compute Engine managed instance groups."""
 

@@ -61,8 +61,12 @@ def _Run(args, holder, url_map_arg):
   return client.MakeRequests(requests)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
+)
 class Delete(base.DeleteCommand):
   """Delete URL maps."""
 

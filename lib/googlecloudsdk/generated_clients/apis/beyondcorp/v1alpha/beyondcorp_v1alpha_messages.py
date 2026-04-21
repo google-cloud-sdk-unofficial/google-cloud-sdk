@@ -4485,7 +4485,7 @@ class GoogleCloudBeyondcorpSecuritygatewaysV1alphaServiceDiscovery(_messages.Mes
   r"""Settings related to the Service Discovery.
 
   Fields:
-    apiGateway: Required. External API configuration.
+    apiGateway: Optional. External API configuration.
   """
 
   apiGateway = _messages.MessageField('GoogleCloudBeyondcorpSecuritygatewaysV1alphaServiceDiscoveryApiGateway', 1)
@@ -4495,7 +4495,7 @@ class GoogleCloudBeyondcorpSecuritygatewaysV1alphaServiceDiscoveryApiGateway(_me
   r"""If Service Discovery is done through API, defines its settings.
 
   Fields:
-    resourceOverride: Required. Enables fetching resource model updates to
+    resourceOverride: Optional. Enables fetching resource model updates to
       alter service behavior per Chrome profile.
   """
 
@@ -4506,7 +4506,7 @@ class GoogleCloudBeyondcorpSecuritygatewaysV1alphaServiceDiscoveryApiGatewayOper
   r"""API operation descriptor.
 
   Fields:
-    path: Required. Contains the URI path fragment where HTTP request is sent.
+    path: Optional. Contains the URI path fragment where HTTP request is sent.
   """
 
   path = _messages.StringField(1)

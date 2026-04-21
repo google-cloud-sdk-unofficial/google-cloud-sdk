@@ -4508,6 +4508,10 @@ class VolumeBackup(_messages.Message):
     FormatValueValuesEnum: Output only. The format used for the volume backup.
     StateValueValuesEnum: Output only. The current state of this VolumeBackup.
 
+  Messages:
+    LabelsValue: Output only. Holds `labels` as key-value pairs copied from
+      the google.cloud.gkebackup.v1.Backup.
+
   Fields:
     completeTime: Output only. The timestamp when the associated underlying
       volume backup operation completed.
@@ -4521,6 +4525,8 @@ class VolumeBackup(_messages.Message):
       of the `etag` in the read-modify-write cycle to perform volume backup
       updates in order to avoid race conditions.
     format: Output only. The format used for the volume backup.
+    labels: Output only. Holds `labels` as key-value pairs copied from the
+      google.cloud.gkebackup.v1.Backup.
     name: Output only. The full name of the VolumeBackup resource. Format:
       `projects/*/locations/*/backupPlans/*/backups/*/volumeBackups/*`.
     satisfiesPzi: Output only. [Output Only] Reserved for future use.
@@ -4587,21 +4593,47 @@ class VolumeBackup(_messages.Message):
     DELETING = 6
     CLEANED_UP = 7
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Output only. Holds `labels` as key-value pairs copied from the
+    google.cloud.gkebackup.v1.Backup.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   completeTime = _messages.StringField(1)
   createTime = _messages.StringField(2)
   diskSizeBytes = _messages.IntegerField(3)
   etag = _messages.StringField(4)
   format = _messages.EnumField('FormatValueValuesEnum', 5)
-  name = _messages.StringField(6)
-  satisfiesPzi = _messages.BooleanField(7)
-  satisfiesPzs = _messages.BooleanField(8)
-  sourcePvc = _messages.MessageField('NamespacedName', 9)
-  state = _messages.EnumField('StateValueValuesEnum', 10)
-  stateMessage = _messages.StringField(11)
-  storageBytes = _messages.IntegerField(12)
-  uid = _messages.StringField(13)
-  updateTime = _messages.StringField(14)
-  volumeBackupHandle = _messages.StringField(15)
+  labels = _messages.MessageField('LabelsValue', 6)
+  name = _messages.StringField(7)
+  satisfiesPzi = _messages.BooleanField(8)
+  satisfiesPzs = _messages.BooleanField(9)
+  sourcePvc = _messages.MessageField('NamespacedName', 10)
+  state = _messages.EnumField('StateValueValuesEnum', 11)
+  stateMessage = _messages.StringField(12)
+  storageBytes = _messages.IntegerField(13)
+  uid = _messages.StringField(14)
+  updateTime = _messages.StringField(15)
+  volumeBackupHandle = _messages.StringField(16)
 
 
 class VolumeDataRestorePolicyBinding(_messages.Message):

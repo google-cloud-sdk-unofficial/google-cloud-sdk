@@ -51,6 +51,8 @@ class ComputeApiHolder(object):
       self._api_version = 'alpha'
     elif release_track == base.ReleaseTrack.BETA:
       self._api_version = 'beta'
+    elif release_track == base.ReleaseTrack.PREVIEW:
+      self._api_version = 'preview'
     else:
       self._api_version = 'v1'
     self._client = None

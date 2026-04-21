@@ -37,7 +37,7 @@ def _Args(parser):
   parser.display_info.AddCacheUpdater(completers.InstanceGroupsCompleter)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class List(base.ListCommand):
   """List Compute Engine instance groups."""
 

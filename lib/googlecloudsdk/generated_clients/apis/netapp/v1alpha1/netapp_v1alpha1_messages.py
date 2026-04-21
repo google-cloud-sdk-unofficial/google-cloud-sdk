@@ -4359,8 +4359,14 @@ class Volume(_messages.Message):
       encryption.
     labels: Optional. Labels as key value pairs
     largeCapacity: Optional. Flag indicating if the volume will be a large
-      capacity volume or a regular volume.
+      capacity volume or a regular volume. This field is used for legacy FILE
+      pools. For Unified pools, use the `large_capacity_config` field instead.
+      This field and `large_capacity_config` are mutually exclusive.
     largeCapacityConfig: Optional. Large capacity config for the volume.
+      Enables and configures large capacity for volumes in Unified pools with
+      File protocols. Not applicable for Block protocols in Unified pools.
+      This field and the legacy `large_capacity` boolean field are mutually
+      exclusive.
     ldapEnabled: Output only. Flag indicating if the volume is NFS LDAP
       enabled or not.
     mode: Output only. `mode` indicates whether the volume is managed by GCNV

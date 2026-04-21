@@ -14,11 +14,12 @@
 # limitations under the License.
 """Commands for reading ZoneVmExtensionPolicies."""
 
-
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.DefaultUniverseOnly
 class ZoneVmExtensionPolicies(base.Group):
   """Compute Engine zone VM extension policies."""

@@ -390,6 +390,33 @@ class BiglakeV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Metrics(self, request, global_params=None):
+      r"""Reports a metrics report for a table.
+
+      Args:
+        request: (BiglakeIcebergV1RestcatalogV1ProjectsCatalogsNamespacesTablesMetricsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Metrics')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Metrics.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='iceberg/v1/restcatalog/v1/projects/{projectsId}/catalogs/{catalogsId}/namespaces/{namespacesId}/tables/{tablesId}/metrics',
+        http_method='POST',
+        method_id='biglake.iceberg.v1.restcatalog.v1.projects.catalogs.namespaces.tables.metrics',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='iceberg/v1/restcatalog/v1/{+name}/metrics',
+        request_field='reportIcebergTableMetricsRequest',
+        request_type_name='BiglakeIcebergV1RestcatalogV1ProjectsCatalogsNamespacesTablesMetricsRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
     def UpdateIcebergTable(self, request, global_params=None):
       r"""This is CommitTable Iceberg API, which maps to `UpdateIcebergTable` in the Google API nomenclature.
 

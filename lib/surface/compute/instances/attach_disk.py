@@ -65,7 +65,11 @@ DETAILED_HELP = {
 
 @base.UniverseCompatible
 @base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.PREVIEW,
+)
 class AttachDisk(base.SilentCommand):
   """Attach a disk to an instance."""
 

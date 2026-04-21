@@ -78,15 +78,6 @@
         help_text: |-
           Configuration for a Machine Learning run.
         params:
-        - arg_name: configs-user
-          api_field: machineLearningRun.configs.userConfigs
-          required: false
-          repeated: true
-          help_text: |-
-            User defined configs.
-          spec:
-          - api_field: key
-          - api_field: value
         - arg_name: configs-software
           api_field: machineLearningRun.configs.softwareConfigs
           required: false

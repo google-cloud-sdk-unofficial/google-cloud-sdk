@@ -361,7 +361,7 @@ def _poll_and_handle_build_result(
           None,
           message=(
               'Container build failed and logs are available at'
-              ' [{build_log_url}].'.format(build_log_url=build_log_url)
+              ' [ {build_log_url} ].'.format(build_log_url=build_log_url)
           ),
       )
       return False
@@ -399,7 +399,7 @@ def _poll_and_handle_build_result(
         None,
         message=(
             'Error waiting for build to complete: {e}. Logs are available at'
-            ' [{build_log_url}].'.format(e=e, build_log_url=build_log_url)
+            ' [ {build_log_url} ].'.format(e=e, build_log_url=build_log_url)
         ),
     )
     return False
@@ -579,7 +579,7 @@ def _build_using_cloud_build(
   tracker.StartStage(stage_key)
   tracker.UpdateStage(
       stage_key,
-      'Logs are available at [{build_log_url}].'.format(
+      'Logs are available at [ {build_log_url} ].'.format(
           build_log_url=build_log_url
       ),
   )

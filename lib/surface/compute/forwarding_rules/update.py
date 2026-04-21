@@ -44,7 +44,7 @@ def _Args(
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class UpdateGA(base.UpdateCommand):
   """Update a Compute Engine forwarding rule."""
 

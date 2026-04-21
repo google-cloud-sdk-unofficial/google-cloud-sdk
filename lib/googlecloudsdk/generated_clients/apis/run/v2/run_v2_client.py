@@ -206,6 +206,33 @@ class RunV2(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Patch(self, request, global_params=None):
+      r"""Updates an Instance.
+
+      Args:
+        request: (RunProjectsLocationsInstancesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}',
+        http_method='PATCH',
+        method_id='run.projects.locations.instances.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['allowMissing', 'updateMask', 'validateOnly'],
+        relative_path='v2/{+name}',
+        request_field='googleCloudRunV2Instance',
+        request_type_name='RunProjectsLocationsInstancesPatchRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
     def Start(self, request, global_params=None):
       r"""Starts an Instance.
 

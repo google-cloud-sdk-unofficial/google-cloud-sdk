@@ -41,6 +41,28 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_DEPLOYMENTGROUPS = (
+      'projects.locations.deploymentGroups',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'deploymentGroups/{deploymentGroupsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_DEPLOYMENTGROUPS_REVISIONS = (
+      'projects.locations.deploymentGroups.revisions',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'deploymentGroups/{deploymentGroupsId}/revisions/{revisionsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_DEPLOYMENTS = (
       'projects.locations.deployments',
       '{+name}',

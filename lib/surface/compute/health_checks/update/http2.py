@@ -233,7 +233,7 @@ def _Run(args, holder, include_log_config, include_weighted_load_balancing):
   return client.MakeRequests([set_request])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Update(base.UpdateCommand):
   """Update a HTTP2 health check."""
 

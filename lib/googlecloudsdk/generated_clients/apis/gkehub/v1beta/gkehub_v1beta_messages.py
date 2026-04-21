@@ -11,6 +11,18 @@ from apitools.base.py import extra_types
 package = 'gkehub'
 
 
+class AgentMetadata(_messages.Message):
+  r"""Metadata about the agent that is used for logging.
+
+  Fields:
+    agentName: The name of the agent being used. This is expected to be
+      populated with either "aiplatform" (for Vertex AI) or
+      "geminicloudassist" (for Gemini Cloud Assist).
+  """
+
+  agentName = _messages.StringField(1)
+
+
 class AppDevExperienceFeatureSpec(_messages.Message):
   r"""Spec for App Dev Experience Feature."""
 
@@ -314,6 +326,9 @@ class CloudAuditOptions(_messages.Message):
     PermissionTypeValueValuesEnum: The type associated with the permission.
 
   Fields:
+    agentMetadata: If an agent is making the request, metadata about the agent
+      making the request. Used by the Cloud Audit Logging system to enrich the
+      audit log.
     authorizationLoggingOptions: Information used by the Cloud Audit Logging
       pipeline. Will be deprecated once the migration to PermissionType is
       complete (b/201806118).
@@ -351,9 +366,10 @@ class CloudAuditOptions(_messages.Message):
     DATA_READ = 3
     DATA_WRITE = 4
 
-  authorizationLoggingOptions = _messages.MessageField('AuthorizationLoggingOptions', 1)
-  logName = _messages.EnumField('LogNameValueValuesEnum', 2)
-  permissionType = _messages.EnumField('PermissionTypeValueValuesEnum', 3)
+  agentMetadata = _messages.MessageField('AgentMetadata', 1)
+  authorizationLoggingOptions = _messages.MessageField('AuthorizationLoggingOptions', 2)
+  logName = _messages.EnumField('LogNameValueValuesEnum', 3)
+  permissionType = _messages.EnumField('PermissionTypeValueValuesEnum', 4)
 
 
 class ClusterSelector(_messages.Message):
@@ -6923,6 +6939,22 @@ class PolicyControllerToleration(_messages.Message):
   value = _messages.StringField(4)
 
 
+class QualifiedVersion(_messages.Message):
+  r"""Represents a qualified version with information about it.
+
+  Fields:
+    partial: Output only. Whether the version is partially qualified (the
+      rollout targeted only a subset of clusters e.g. for a higher minor).
+    qualifyTime: Output only. The timestamp when the rollout to this version
+      finished.
+    version: Output only. The actual patch version that was applied.
+  """
+
+  partial = _messages.BooleanField(1)
+  qualifyTime = _messages.StringField(2)
+  version = _messages.StringField(3)
+
+
 class RBACRoleBinding(_messages.Message):
   r"""RBACRoleBinding represents a rbacrolebinding across the Fleet
 
@@ -7297,6 +7329,7 @@ class Rollout(_messages.Message):
       CANCELLED: The Rollout is in a failure terminal state.
       COMPLETED: The Rollout is in a terminal state.
       SCHEDULED: The Rollout is scheduled to start.
+      INITIALIZING: The Rollout is initializing.
     """
     STATE_UNSPECIFIED = 0
     RUNNING = 1
@@ -7304,6 +7337,7 @@ class Rollout(_messages.Message):
     CANCELLED = 3
     COMPLETED = 4
     SCHEDULED = 5
+    INITIALIZING = 6
 
   class TriggerValueValuesEnum(_messages.Enum):
     r"""Output only. The trigger of the rollout.
@@ -7449,10 +7483,16 @@ class RolloutMembershipState(_messages.Message):
 class RolloutSequence(_messages.Message):
   r"""RolloutSequence defines the desired order of upgrades.
 
+  Enums:
+    ComputedReleaseChannelValueValuesEnum: Output only. The computed release
+      channel used for the Rollout Sequence.
+
   Messages:
     LabelsValue: Optional. Labels for this Rollout Sequence.
 
   Fields:
+    computedReleaseChannel: Output only. The computed release channel used for
+      the Rollout Sequence.
     createTime: Output only. The timestamp at which the Rollout Sequence was
       created.
     deleteTime: Output only. The timestamp at the Rollout Sequence was
@@ -7463,10 +7503,17 @@ class RolloutSequence(_messages.Message):
     ignoredClustersSelector: Optional. Selector for clusters to exclude from
       the Rollout Sequence.
     labels: Optional. Labels for this Rollout Sequence.
+    lastQualifiedControlPlaneVersion: Output only. The last qualified control
+      plane version.
+    lastQualifiedNodeVersion: Output only. The last qualified node version.
     name: Identifier. Name of the rollout sequence in the format of:
       projects/{PROJECT_ID}/locations/global/rolloutSequences/{NAME}
     stages: Required. Ordered list of stages that constitutes this Rollout.
     state: Output only. State of the Rollout Sequence as a whole.
+    targetControlPlaneVersion: Output only. The target control plane version
+      of the Rollout Sequence.
+    targetNodeVersion: Output only. The target node version of the Rollout
+      Sequence.
     uid: Output only. Google-generated UUID for this resource. This is unique
       across all Rollout Sequence resources. If a Rollout Sequence resource is
       deleted and another resource with the same name is created, it gets a
@@ -7474,6 +7521,27 @@ class RolloutSequence(_messages.Message):
     updateTime: Output only. The timestamp at which the Rollout Sequence was
       last updated.
   """
+
+  class ComputedReleaseChannelValueValuesEnum(_messages.Enum):
+    r"""Output only. The computed release channel used for the Rollout
+    Sequence.
+
+    Values:
+      GKE_RELEASE_CHANNEL_UNSPECIFIED: Default if no value is specified.
+        Should not be used.
+      RAPID: Release channel `RAPID` of GKE.
+      REGULAR: Release channel `REGULAR` of GKE.
+      STABLE: Release channel `STABLE` of GKE.
+      EXTENDED: Release channel `EXTENDED` of GKE.
+      NO_CHANNEL: Release channel `NO_CHANNEL` of GKE. Formerly known as
+        `STATIC`.
+    """
+    GKE_RELEASE_CHANNEL_UNSPECIFIED = 0
+    RAPID = 1
+    REGULAR = 2
+    STABLE = 3
+    EXTENDED = 4
+    NO_CHANNEL = 5
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
@@ -7499,17 +7567,22 @@ class RolloutSequence(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  createTime = _messages.StringField(1)
-  deleteTime = _messages.StringField(2)
-  displayName = _messages.StringField(3)
-  etag = _messages.StringField(4)
-  ignoredClustersSelector = _messages.MessageField('ClusterSelector', 5)
-  labels = _messages.MessageField('LabelsValue', 6)
-  name = _messages.StringField(7)
-  stages = _messages.MessageField('Stage', 8, repeated=True)
-  state = _messages.MessageField('RolloutSequenceState', 9)
-  uid = _messages.StringField(10)
-  updateTime = _messages.StringField(11)
+  computedReleaseChannel = _messages.EnumField('ComputedReleaseChannelValueValuesEnum', 1)
+  createTime = _messages.StringField(2)
+  deleteTime = _messages.StringField(3)
+  displayName = _messages.StringField(4)
+  etag = _messages.StringField(5)
+  ignoredClustersSelector = _messages.MessageField('ClusterSelector', 6)
+  labels = _messages.MessageField('LabelsValue', 7)
+  lastQualifiedControlPlaneVersion = _messages.StringField(8)
+  lastQualifiedNodeVersion = _messages.StringField(9)
+  name = _messages.StringField(10)
+  stages = _messages.MessageField('Stage', 11, repeated=True)
+  state = _messages.MessageField('RolloutSequenceState', 12)
+  targetControlPlaneVersion = _messages.StringField(13)
+  targetNodeVersion = _messages.StringField(14)
+  uid = _messages.StringField(15)
+  updateTime = _messages.StringField(16)
 
 
 class RolloutSequenceState(_messages.Message):
@@ -8378,18 +8451,97 @@ class SetIamPolicyRequest(_messages.Message):
 class Stage(_messages.Message):
   r"""Rollout stage.
 
+  Messages:
+    LastQualifiedControlPlaneVersionsValue: Output only. Map of minor version
+      to its last qualified version. The key is a minor version (e.g. `1.28`)
+      and the value contains details of the last qualified patch version for
+      that minor version (e.g. `1.28.1-gke.100`).
+    LastQualifiedNodeVersionsValue: Output only. Map of minor version to its
+      last qualified version. The key is a minor version (e.g. `1.28`) and the
+      value contains details of the last qualified patch version for that
+      minor version (e.g. `1.28.1-gke.100`).
+
   Fields:
     clusterSelector: Optional. Filter members of fleets (above) to a subset of
       clusters. If not specified, all clusters in the fleets are selected.
     fleetProjects: Required. List of Fleet projects to select the clusters
       from. Expected format: projects/{project}
+    lastQualifiedControlPlaneVersions: Output only. Map of minor version to
+      its last qualified version. The key is a minor version (e.g. `1.28`) and
+      the value contains details of the last qualified patch version for that
+      minor version (e.g. `1.28.1-gke.100`).
+    lastQualifiedNodeVersions: Output only. Map of minor version to its last
+      qualified version. The key is a minor version (e.g. `1.28`) and the
+      value contains details of the last qualified patch version for that
+      minor version (e.g. `1.28.1-gke.100`).
     soakDuration: Optional. Soak time after upgrading all the clusters in the
       stage.
   """
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LastQualifiedControlPlaneVersionsValue(_messages.Message):
+    r"""Output only. Map of minor version to its last qualified version. The
+    key is a minor version (e.g. `1.28`) and the value contains details of the
+    last qualified patch version for that minor version (e.g.
+    `1.28.1-gke.100`).
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        LastQualifiedControlPlaneVersionsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        LastQualifiedControlPlaneVersionsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LastQualifiedControlPlaneVersionsValue
+      object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A QualifiedVersion attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('QualifiedVersion', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LastQualifiedNodeVersionsValue(_messages.Message):
+    r"""Output only. Map of minor version to its last qualified version. The
+    key is a minor version (e.g. `1.28`) and the value contains details of the
+    last qualified patch version for that minor version (e.g.
+    `1.28.1-gke.100`).
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        LastQualifiedNodeVersionsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        LastQualifiedNodeVersionsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LastQualifiedNodeVersionsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A QualifiedVersion attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('QualifiedVersion', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   clusterSelector = _messages.MessageField('ClusterSelector', 1)
   fleetProjects = _messages.StringField(2, repeated=True)
-  soakDuration = _messages.StringField(3)
+  lastQualifiedControlPlaneVersions = _messages.MessageField('LastQualifiedControlPlaneVersionsValue', 3)
+  lastQualifiedNodeVersions = _messages.MessageField('LastQualifiedNodeVersionsValue', 4)
+  soakDuration = _messages.StringField(5)
 
 
 class StandardQueryParameters(_messages.Message):

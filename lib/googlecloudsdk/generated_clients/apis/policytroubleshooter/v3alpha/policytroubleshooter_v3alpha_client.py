@@ -124,7 +124,7 @@ class PolicytroubleshooterV3alpha(base_api.BaseApiClient):
           }
 
     def Troubleshoot(self, request, global_params=None):
-      r"""Checks why an access is granted or not with service perimeters.
+      r"""Checks why an access is granted or not with service perimeters Deprecated: Use SimulateServicePerimeter instead. go/policy-troubleshooter-deprecation-doc.
 
       Args:
         request: (GoogleCloudPolicytroubleshooterServiceperimeterV3alphaTroubleshootServicePerimeterRequest) input message

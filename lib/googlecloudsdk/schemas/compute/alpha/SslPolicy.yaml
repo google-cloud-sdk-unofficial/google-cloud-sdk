@@ -38,6 +38,15 @@ properties:
       An optional description of this resource. Provide this property when
       you create the resource.
     type: string
+  fingerprint:
+    description: |-
+      Fingerprint of this resource. A hash of the contents stored in this
+      object. This field is used in optimistic locking. This field will be
+      ignored when inserting a SslPolicy. An up-to-date fingerprint must be
+      provided in order to update the SslPolicy, otherwise the request will
+      fail with error 412 conditionNotMet.  To see the latest fingerprint,
+      make a get() request to retrieve an SslPolicy.
+    type: string
   minTlsVersion:
     description: |-
       The minimum version of SSL protocol that can be used by the clients to
@@ -61,15 +70,14 @@ properties:
     type: string
   postQuantumKeyExchange:
     description: |-
-      One of DEFAULT, ENABLED, or DEFERRED. Controls whether the load
-      balancer allows negotiating X25519MLKEM768 key exchange when clients
-      advertise support for it. When set to DEFAULT, or if no SSL Policy is
-      attached to the target proxy, the load balancer disallows
-      X25519MLKEM768 key exchange until it is enabled by default on load balancers.
-      When set to ENABLED, the load balancer can negotiate X25519MLKEM768
-      key exchange. When set to DEFERRED, temporarily opts out the load
-      balancer from negotiating X25519MLKEM768 beyond the point where it is
-      enabled by default on load balancers.
+      One of DEFAULT, ENABLED, orDEFERRED. Controls whether the load
+      balancer negotiates X25519MLKEM768 key exchange when clients advertise
+      support for it. When set to DEFAULT, or if no SSL Policy is attached
+      to the target proxy, the load balancer disallows X25519MLKEM768 key
+      exchange before October 2026, and allows it afterward. When set to
+      ENABLED, the load balancer allows X25519MLKEM768 key exchange. When
+      set toDEFERRED, the load balancer disallows X25519MLKEM768 key
+      exchange until October 2027, and allows it afterward.
     type: string
     enum:
     - DEFAULT
@@ -79,9 +87,10 @@ properties:
     description: |-
       Profile specifies the set of SSL features that can be used by the load
       balancer when negotiating SSL with clients. This can be one
-      ofCOMPATIBLE, MODERN, RESTRICTED, orCUSTOM. If using CUSTOM, the set
-      of SSL features to enable must be specified in the customFeatures
-      field.
+      ofCOMPATIBLE, MODERN, RESTRICTED,FIPS_202205, or CUSTOM. If
+      usingCUSTOM, the set of SSL features to enable must be specified in
+      the customFeatures field. If using FIPS_202205, the min_tls_version
+      field must be set to TLS_1_2.
     type: string
     enum:
     - COMPATIBLE

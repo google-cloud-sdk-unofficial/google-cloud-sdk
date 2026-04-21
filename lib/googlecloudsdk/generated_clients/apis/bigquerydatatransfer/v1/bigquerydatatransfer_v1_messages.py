@@ -542,6 +542,56 @@ class BigquerydatatransferProjectsLocationsTransferConfigsStartManualRunsRequest
   startManualTransferRunsRequest = _messages.MessageField('StartManualTransferRunsRequest', 2)
 
 
+class BigquerydatatransferProjectsLocationsTransferConfigsTransferResourcesGetRequest(_messages.Message):
+  r"""A BigquerydatatransferProjectsLocationsTransferConfigsTransferResourcesG
+  etRequest object.
+
+  Fields:
+    name: Required. The name of the transfer resource in the form of: * `proje
+      cts/{project}/transferConfigs/{transfer_config}/transferResources/{trans
+      fer_resource}` * `projects/{project}/locations/{location}/transferConfig
+      s/{transfer_config}/transferResources/{transfer_resource}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class BigquerydatatransferProjectsLocationsTransferConfigsTransferResourcesListRequest(_messages.Message):
+  r"""A BigquerydatatransferProjectsLocationsTransferConfigsTransferResourcesL
+  istRequest object.
+
+  Fields:
+    filter: Optional. Filter for the transfer resources. Currently supported
+      filters include: * Resource name: `name` - Wildcard supported * Resource
+      type: `type` * Resource destination: `destination` * Latest resource
+      state: `latest_status_detail.state` * Last update time: `update_time` -
+      RFC-3339 format * Parent table name:
+      `hierarchy_detail.partition_detail.table` Multiple filters can be
+      applied using the `AND/OR` operator. Examples: * `name="*123" AND
+      (type="TABLE" OR latest_status_detail.state="SUCCEEDED")` * `update_time
+      >= "2012-04-21T11:30:00-04:00"` *
+      `hierarchy_detail.partition_detail.table = "table1"`
+    pageSize: Optional. The maximum number of transfer resources to return.
+      The maximum value is 1000; values above 1000 will be coerced to 1000.
+      The default page size is the maximum value of 1000 results.
+    pageToken: Optional. A page token, received from a previous
+      `ListTransferResources` call. Provide this to retrieve the subsequent
+      page. When paginating, all other parameters provided to
+      `ListTransferResources` must match the call that provided the page
+      token.
+    parent: Required. Name of transfer configuration for which transfer
+      resources should be retrieved. The name should be in one of the
+      following forms: *
+      `projects/{project}/transferConfigs/{transfer_config}` * `projects/{proj
+      ect}/locations/{location_id}/transferConfigs/{transfer_config}`
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+
+
 class BigquerydatatransferProjectsLocationsUnenrollDataSourcesRequest(_messages.Message):
   r"""A BigquerydatatransferProjectsLocationsUnenrollDataSourcesRequest
   object.
@@ -903,6 +953,57 @@ class BigquerydatatransferProjectsTransferConfigsStartManualRunsRequest(_message
   startManualTransferRunsRequest = _messages.MessageField('StartManualTransferRunsRequest', 2)
 
 
+class BigquerydatatransferProjectsTransferConfigsTransferResourcesGetRequest(_messages.Message):
+  r"""A BigquerydatatransferProjectsTransferConfigsTransferResourcesGetRequest
+  object.
+
+  Fields:
+    name: Required. The name of the transfer resource in the form of: * `proje
+      cts/{project}/transferConfigs/{transfer_config}/transferResources/{trans
+      fer_resource}` * `projects/{project}/locations/{location}/transferConfig
+      s/{transfer_config}/transferResources/{transfer_resource}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class BigquerydatatransferProjectsTransferConfigsTransferResourcesListRequest(_messages.Message):
+  r"""A
+  BigquerydatatransferProjectsTransferConfigsTransferResourcesListRequest
+  object.
+
+  Fields:
+    filter: Optional. Filter for the transfer resources. Currently supported
+      filters include: * Resource name: `name` - Wildcard supported * Resource
+      type: `type` * Resource destination: `destination` * Latest resource
+      state: `latest_status_detail.state` * Last update time: `update_time` -
+      RFC-3339 format * Parent table name:
+      `hierarchy_detail.partition_detail.table` Multiple filters can be
+      applied using the `AND/OR` operator. Examples: * `name="*123" AND
+      (type="TABLE" OR latest_status_detail.state="SUCCEEDED")` * `update_time
+      >= "2012-04-21T11:30:00-04:00"` *
+      `hierarchy_detail.partition_detail.table = "table1"`
+    pageSize: Optional. The maximum number of transfer resources to return.
+      The maximum value is 1000; values above 1000 will be coerced to 1000.
+      The default page size is the maximum value of 1000 results.
+    pageToken: Optional. A page token, received from a previous
+      `ListTransferResources` call. Provide this to retrieve the subsequent
+      page. When paginating, all other parameters provided to
+      `ListTransferResources` must match the call that provided the page
+      token.
+    parent: Required. Name of transfer configuration for which transfer
+      resources should be retrieved. The name should be in one of the
+      following forms: *
+      `projects/{project}/transferConfigs/{transfer_config}` * `projects/{proj
+      ect}/locations/{location_id}/transferConfigs/{transfer_config}`
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+
+
 class CheckValidCredsRequest(_messages.Message):
   r"""A request to determine whether the user has valid credentials. This
   method is used to limit the number of OAuth popups in the user interface.
@@ -1169,6 +1270,18 @@ class EventDrivenSchedule(_messages.Message):
   pubsubSubscription = _messages.StringField(1)
 
 
+class HierarchyDetail(_messages.Message):
+  r"""Details about the hierarchy.
+
+  Fields:
+    partitionDetail: Optional. Partition details related to hierarchy.
+    tableDetail: Optional. Table details related to hierarchy.
+  """
+
+  partitionDetail = _messages.MessageField('PartitionDetail', 1)
+  tableDetail = _messages.MessageField('TableDetail', 2)
+
+
 class ListDataSourcesResponse(_messages.Message):
   r"""Returns list of supported data sources and their metadata.
 
@@ -1225,6 +1338,20 @@ class ListTransferLogsResponse(_messages.Message):
 
   nextPageToken = _messages.StringField(1)
   transferMessages = _messages.MessageField('TransferMessage', 2, repeated=True)
+
+
+class ListTransferResourcesResponse(_messages.Message):
+  r"""Response for the `ListTransferResources` RPC.
+
+  Fields:
+    nextPageToken: Output only. A token, which can be sent as `page_token` to
+      retrieve the next page. If this field is omitted, there are no
+      subsequent pages.
+    transferResources: Output only. The transfer resources.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  transferResources = _messages.MessageField('TransferResource', 2, repeated=True)
 
 
 class ListTransferRunsResponse(_messages.Message):
@@ -1324,6 +1451,16 @@ class Location(_messages.Message):
 
 class ManualSchedule(_messages.Message):
   r"""Options customizing manual transfers schedule."""
+
+
+class PartitionDetail(_messages.Message):
+  r"""Partition details related to hierarchy.
+
+  Fields:
+    table: Optional. Name of the table which has the partitions.
+  """
+
+  table = _messages.StringField(1)
 
 
 class ScheduleOptions(_messages.Message):
@@ -1536,6 +1673,17 @@ class Status(_messages.Message):
   code = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   details = _messages.MessageField('DetailsValueListEntry', 2, repeated=True)
   message = _messages.StringField(3)
+
+
+class TableDetail(_messages.Message):
+  r"""Table details related to hierarchy.
+
+  Fields:
+    partitionCount: Optional. Total number of partitions being tracked within
+      the table.
+  """
+
+  partitionCount = _messages.IntegerField(1)
 
 
 class TimeBasedSchedule(_messages.Message):
@@ -1790,6 +1938,102 @@ class TransferMessage(_messages.Message):
   severity = _messages.EnumField('SeverityValueValuesEnum', 3)
 
 
+class TransferResource(_messages.Message):
+  r"""Resource (table/partition) that is being transferred.
+
+  Enums:
+    DestinationValueValuesEnum: Optional. Resource destination.
+    TypeValueValuesEnum: Optional. Resource type.
+
+  Fields:
+    destination: Optional. Resource destination.
+    hierarchyDetail: Optional. Details about the hierarchy.
+    lastSuccessfulRun: Output only. Run details for the last successful run.
+    latestRun: Optional. Run details for the latest run.
+    latestStatusDetail: Optional. Status details for the latest run.
+    name: Identifier. Resource name.
+    type: Optional. Resource type.
+    updateTime: Output only. Time when the resource was last updated.
+  """
+
+  class DestinationValueValuesEnum(_messages.Enum):
+    r"""Optional. Resource destination.
+
+    Values:
+      RESOURCE_DESTINATION_UNSPECIFIED: Default value.
+      RESOURCE_DESTINATION_BIGQUERY: BigQuery.
+      RESOURCE_DESTINATION_DATAPROC_METASTORE: Dataproc Metastore.
+      RESOURCE_DESTINATION_BIGLAKE_METASTORE: BigLake Metastore.
+      RESOURCE_DESTINATION_BIGLAKE_REST_CATALOG: BigLake REST Catalog.
+      RESOURCE_DESTINATION_BIGLAKE_HIVE_CATALOG: BigLake Hive Catalog.
+    """
+    RESOURCE_DESTINATION_UNSPECIFIED = 0
+    RESOURCE_DESTINATION_BIGQUERY = 1
+    RESOURCE_DESTINATION_DATAPROC_METASTORE = 2
+    RESOURCE_DESTINATION_BIGLAKE_METASTORE = 3
+    RESOURCE_DESTINATION_BIGLAKE_REST_CATALOG = 4
+    RESOURCE_DESTINATION_BIGLAKE_HIVE_CATALOG = 5
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""Optional. Resource type.
+
+    Values:
+      RESOURCE_TYPE_UNSPECIFIED: Default value.
+      RESOURCE_TYPE_TABLE: Table resource type.
+      RESOURCE_TYPE_PARTITION: Partition resource type.
+    """
+    RESOURCE_TYPE_UNSPECIFIED = 0
+    RESOURCE_TYPE_TABLE = 1
+    RESOURCE_TYPE_PARTITION = 2
+
+  destination = _messages.EnumField('DestinationValueValuesEnum', 1)
+  hierarchyDetail = _messages.MessageField('HierarchyDetail', 2)
+  lastSuccessfulRun = _messages.MessageField('TransferRunBrief', 3)
+  latestRun = _messages.MessageField('TransferRunBrief', 4)
+  latestStatusDetail = _messages.MessageField('TransferResourceStatusDetail', 5)
+  name = _messages.StringField(6)
+  type = _messages.EnumField('TypeValueValuesEnum', 7)
+  updateTime = _messages.StringField(8)
+
+
+class TransferResourceStatusDetail(_messages.Message):
+  r"""Status details of the resource being transferred.
+
+  Enums:
+    StateValueValuesEnum: Optional. Transfer state of the resource.
+
+  Fields:
+    completedPercentage: Output only. Percentage of the transfer completed.
+      Valid values: 0-100.
+    error: Optional. Transfer error details for the resource.
+    state: Optional. Transfer state of the resource.
+    summary: Optional. Transfer status summary of the resource.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Optional. Transfer state of the resource.
+
+    Values:
+      RESOURCE_TRANSFER_STATE_UNSPECIFIED: Default value.
+      RESOURCE_TRANSFER_PENDING: Resource is waiting to be transferred.
+      RESOURCE_TRANSFER_RUNNING: Resource transfer is running.
+      RESOURCE_TRANSFER_SUCCEEDED: Resource transfer is a success.
+      RESOURCE_TRANSFER_FAILED: Resource transfer failed.
+      RESOURCE_TRANSFER_CANCELLED: Resource transfer was cancelled.
+    """
+    RESOURCE_TRANSFER_STATE_UNSPECIFIED = 0
+    RESOURCE_TRANSFER_PENDING = 1
+    RESOURCE_TRANSFER_RUNNING = 2
+    RESOURCE_TRANSFER_SUCCEEDED = 3
+    RESOURCE_TRANSFER_FAILED = 4
+    RESOURCE_TRANSFER_CANCELLED = 5
+
+  completedPercentage = _messages.FloatField(1)
+  error = _messages.MessageField('Status', 2)
+  state = _messages.EnumField('StateValueValuesEnum', 3)
+  summary = _messages.MessageField('TransferStatusSummary', 4)
+
+
 class TransferRun(_messages.Message):
   r"""Represents a data transfer run.
 
@@ -1903,6 +2147,82 @@ class TransferRun(_messages.Message):
   state = _messages.EnumField('StateValueValuesEnum', 13)
   updateTime = _messages.StringField(14)
   userId = _messages.IntegerField(15)
+
+
+class TransferRunBrief(_messages.Message):
+  r"""Basic information about a transfer run.
+
+  Fields:
+    run: Optional. Run URI. The format must be: `projects/{project}/locations/
+      {location}/transferConfigs/{transfer_config}/run/{run}`
+    startTime: Optional. Start time of the transfer run.
+  """
+
+  run = _messages.StringField(1)
+  startTime = _messages.StringField(2)
+
+
+class TransferStatusMetric(_messages.Message):
+  r"""Metrics for tracking the transfer status.
+
+  Enums:
+    UnitValueValuesEnum: Optional. Unit for measuring progress (e.g., BYTES).
+
+  Fields:
+    completed: Optional. Number of units transferred successfully.
+    failed: Optional. Number of units that failed to transfer.
+    pending: Optional. Number of units pending transfer.
+    total: Optional. Total number of units for the transfer.
+    unit: Optional. Unit for measuring progress (e.g., BYTES).
+  """
+
+  class UnitValueValuesEnum(_messages.Enum):
+    r"""Optional. Unit for measuring progress (e.g., BYTES).
+
+    Values:
+      TRANSFER_STATUS_UNIT_UNSPECIFIED: Default value.
+      TRANSFER_STATUS_UNIT_BYTES: Bytes.
+      TRANSFER_STATUS_UNIT_OBJECTS: Objects.
+    """
+    TRANSFER_STATUS_UNIT_UNSPECIFIED = 0
+    TRANSFER_STATUS_UNIT_BYTES = 1
+    TRANSFER_STATUS_UNIT_OBJECTS = 2
+
+  completed = _messages.IntegerField(1)
+  failed = _messages.IntegerField(2)
+  pending = _messages.IntegerField(3)
+  total = _messages.IntegerField(4)
+  unit = _messages.EnumField('UnitValueValuesEnum', 5)
+
+
+class TransferStatusSummary(_messages.Message):
+  r"""Status summary of the resource being transferred.
+
+  Enums:
+    ProgressUnitValueValuesEnum: Input only. Unit based on which transfer
+      status progress should be calculated.
+
+  Fields:
+    metrics: Optional. List of transfer status metrics.
+    progressUnit: Input only. Unit based on which transfer status progress
+      should be calculated.
+  """
+
+  class ProgressUnitValueValuesEnum(_messages.Enum):
+    r"""Input only. Unit based on which transfer status progress should be
+    calculated.
+
+    Values:
+      TRANSFER_STATUS_UNIT_UNSPECIFIED: Default value.
+      TRANSFER_STATUS_UNIT_BYTES: Bytes.
+      TRANSFER_STATUS_UNIT_OBJECTS: Objects.
+    """
+    TRANSFER_STATUS_UNIT_UNSPECIFIED = 0
+    TRANSFER_STATUS_UNIT_BYTES = 1
+    TRANSFER_STATUS_UNIT_OBJECTS = 2
+
+  metrics = _messages.MessageField('TransferStatusMetric', 1, repeated=True)
+  progressUnit = _messages.EnumField('ProgressUnitValueValuesEnum', 2)
 
 
 class UnenrollDataSourcesRequest(_messages.Message):

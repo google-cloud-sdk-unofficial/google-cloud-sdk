@@ -1320,10 +1320,12 @@ class FunctionalType(_messages.Message):
       TYPE_UNSPECIFIED: Unspecified type.
       AGENT: Agent type.
       MCP_SERVER: MCP Server type.
+      ENDPOINT: Endpoint type.
     """
     TYPE_UNSPECIFIED = 0
     AGENT = 1
     MCP_SERVER = 2
+    ENDPOINT = 3
 
   type = _messages.EnumField('TypeValueValuesEnum', 1)
 

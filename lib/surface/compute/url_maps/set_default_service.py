@@ -15,7 +15,6 @@
 
 """Command for changing the default service of a URL map."""
 
-
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
@@ -30,12 +29,14 @@ from googlecloudsdk.core import log
 def _DetailedHelp():
   return {
       'brief': 'Change the default service or default bucket of a URL map.',
-      'DESCRIPTION': """\
+      'DESCRIPTION': (
+          """\
       *{command}* is used to change the default service or default
       bucket of a URL map. The default service or default bucket is
       used for any requests for which there is no mapping in the
       URL map.
-      """,
+      """
+      ),
   }
 
 
@@ -87,7 +88,6 @@ def _Modify(
     url_map_ref,
     backend_bucket_arg,
     backend_service_arg,
-    supports_regional_backend_bucket=False,
 ):
   """Returns a modified URL map message."""
   replacement = encoding.CopyProtoMessage(url_map)
@@ -97,14 +97,9 @@ def _Modify(
         args, backend_service_arg, url_map_ref, resources
     ).SelfLink()
   else:
-    if supports_regional_backend_bucket:
-      default_backend_uri = url_maps_utils.ResolveUrlMapDefaultBackendBucket(
-          args, backend_bucket_arg, url_map_ref, resources
-      ).SelfLink()
-    else:
-      default_backend_uri = backend_bucket_arg.ResolveAsResource(
-          args, resources
-      ).SelfLink()
+    default_backend_uri = url_maps_utils.ResolveUrlMapDefaultBackendBucket(
+        args, backend_bucket_arg, url_map_ref, resources
+    ).SelfLink()
 
   replacement.defaultService = default_backend_uri
 
@@ -138,14 +133,7 @@ def _GetRegionalSetRequest(client, url_map_ref, replacement):
   )
 
 
-def _Run(
-    args,
-    holder,
-    backend_bucket_arg,
-    backend_service_arg,
-    url_map_arg,
-    supports_regional_backend_bucket=False,
-):
+def _Run(args, holder, backend_bucket_arg, backend_service_arg, url_map_arg):
   """Issues requests necessary to set the default service of URL maps."""
   client = holder.client
 
@@ -166,7 +154,6 @@ def _Run(
       url_map_ref,
       backend_bucket_arg,
       backend_service_arg,
-      supports_regional_backend_bucket,
   )
 
   # If existing object is equal to the proposed object or if
@@ -188,12 +175,11 @@ def _Run(
   return client.MakeRequests([set_request])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class SetDefaultService(base.UpdateCommand):
   """Change the default service or default bucket of a URL map."""
 
-  _supports_regional_backend_bucket = False
   detailed_help = _DetailedHelp()
   BACKEND_BUCKET_ARG = None
   BACKEND_SERVICE_ARG = None
@@ -201,16 +187,11 @@ class SetDefaultService(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    if cls._supports_regional_backend_bucket:
-      cls.BACKEND_BUCKET_ARG = (
-          backend_bucket_flags.RegionSupportingBackendBucketArgumentForUrlMap(
-              required=False
-          )
-      )
-    else:
-      cls.BACKEND_BUCKET_ARG = (
-          backend_bucket_flags.BackendBucketArgumentForUrlMap(required=False)
-      )
+    cls.BACKEND_BUCKET_ARG = (
+        backend_bucket_flags.RegionSupportingBackendBucketArgumentForUrlMap(
+            required=False
+        )
+    )
     cls.BACKEND_SERVICE_ARG = (
         backend_service_flags.BackendServiceArgumentForUrlMap(required=False)
     )
@@ -227,7 +208,6 @@ class SetDefaultService(base.UpdateCommand):
         self.BACKEND_BUCKET_ARG,
         self.BACKEND_SERVICE_ARG,
         self.URL_MAP_ARG,
-        self._supports_regional_backend_bucket,
     )
 
 
@@ -236,12 +216,12 @@ class SetDefaultService(base.UpdateCommand):
 class SetDefaultServiceBeta(SetDefaultService):
   """Change the default service or default bucket of a URL map."""
 
-  _supports_regional_backend_bucket = True
+  pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.UniverseCompatible
-class SetDefaultServiceAlpha(SetDefaultService):
+class SetDefaultServiceAlpha(SetDefaultServiceBeta):
   """Change the default service or default bucket of a URL map."""
 
-  _supports_regional_backend_bucket = True
+  pass

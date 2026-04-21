@@ -26,7 +26,10 @@ from googlecloudsdk.core import log
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
 )
 class UpdateMapping(base.UpdateCommand):
   """Update vlan to ip mapping rule to an L2-forwarding attachment.

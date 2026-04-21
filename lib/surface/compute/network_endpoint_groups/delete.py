@@ -33,7 +33,10 @@ To delete a network endpoint group named ``my-neg'':
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
 )
 class Delete(base.DeleteCommand):
   """Delete a Compute Engine network endpoint group."""

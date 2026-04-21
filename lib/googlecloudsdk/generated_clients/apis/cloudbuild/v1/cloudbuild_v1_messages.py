@@ -4079,19 +4079,18 @@ class LinuxPool(_messages.Message):
   TBI.
 
   Enums:
-    LinuxHostOsValueValuesEnum: Output only. Linux host OS to use for the
-      pool.
+    LinuxHostOsValueValuesEnum: Optional. Linux host OS to use for the pool.
 
   Fields:
     diskConfig: Required. Disk configuration for the pool.
-    linuxHostOs: Output only. Linux host OS to use for the pool.
+    linuxHostOs: Optional. Linux host OS to use for the pool.
     machineConfig: Required. Machine configuration for the pool.
     preferReusableVms: Optional. If true, the pool will prefer to use reusable
       VMs.
   """
 
   class LinuxHostOsValueValuesEnum(_messages.Enum):
-    r"""Output only. Linux host OS to use for the pool.
+    r"""Optional. Linux host OS to use for the pool.
 
     Values:
       LINUX_HOST_OS_UNSPECIFIED: LINUX_HOST_OS_UNSPECIFIED

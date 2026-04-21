@@ -26,8 +26,12 @@ from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.PREVIEW,
+)
 class DetachDisk(base.UpdateCommand):
   """Detach disks from Compute Engine virtual machine instances.
 

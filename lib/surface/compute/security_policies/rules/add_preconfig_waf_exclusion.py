@@ -286,7 +286,7 @@ class AddPreconfigWafExclusionHelper(object):
         preconfig_waf_config=new_preconfig_waf_config)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class AddPreconfigWafExclusionGA(base.UpdateCommand):
   r"""Add an exclusion configuration for preconfigured WAF evaluation into a security policy rule.
 

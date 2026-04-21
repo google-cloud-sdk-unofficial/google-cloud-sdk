@@ -26,7 +26,9 @@ import six
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.BETA, base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW
+)
 class Create(base.CreateCommand):
   r"""Create a Compute Engine organizationsecurity policy rule.
 

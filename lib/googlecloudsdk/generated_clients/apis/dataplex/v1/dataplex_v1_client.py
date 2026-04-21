@@ -44,6 +44,7 @@ class DataplexV1(base_api.BaseApiClient):
     self.projects_locations_aspectTypes = self.ProjectsLocationsAspectTypesService(self)
     self.projects_locations_changeRequests = self.ProjectsLocationsChangeRequestsService(self)
     self.projects_locations_dataAttributeBindings = self.ProjectsLocationsDataAttributeBindingsService(self)
+    self.projects_locations_dataDomains = self.ProjectsLocationsDataDomainsService(self)
     self.projects_locations_dataProducts_dataAssets = self.ProjectsLocationsDataProductsDataAssetsService(self)
     self.projects_locations_dataProducts = self.ProjectsLocationsDataProductsService(self)
     self.projects_locations_dataScans_jobs = self.ProjectsLocationsDataScansJobsService(self)
@@ -983,6 +984,97 @@ class DataplexV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsDataDomainsService(base_api.BaseApiService):
+    """Service class for the projects_locations_dataDomains resource."""
+
+    _NAME = 'projects_locations_dataDomains'
+
+    def __init__(self, client):
+      super(DataplexV1.ProjectsLocationsDataDomainsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def GetIamPolicy(self, request, global_params=None):
+      r"""Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.
+
+      Args:
+        request: (DataplexProjectsLocationsDataDomainsGetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleIamV1Policy) The response message.
+      """
+      config = self.GetMethodConfig('GetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/dataDomains/{dataDomainsId}:getIamPolicy',
+        http_method='GET',
+        method_id='dataplex.projects.locations.dataDomains.getIamPolicy',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=['options_requestedPolicyVersion'],
+        relative_path='v1/{+resource}:getIamPolicy',
+        request_field='',
+        request_type_name='DataplexProjectsLocationsDataDomainsGetIamPolicyRequest',
+        response_type_name='GoogleIamV1Policy',
+        supports_download=False,
+    )
+
+    def SetIamPolicy(self, request, global_params=None):
+      r"""Sets the access control policy on the specified resource. Replaces any existing policy.Can return NOT_FOUND, INVALID_ARGUMENT, and PERMISSION_DENIED errors.
+
+      Args:
+        request: (DataplexProjectsLocationsDataDomainsSetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleIamV1Policy) The response message.
+      """
+      config = self.GetMethodConfig('SetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/dataDomains/{dataDomainsId}:setIamPolicy',
+        http_method='POST',
+        method_id='dataplex.projects.locations.dataDomains.setIamPolicy',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v1/{+resource}:setIamPolicy',
+        request_field='googleIamV1SetIamPolicyRequest',
+        request_type_name='DataplexProjectsLocationsDataDomainsSetIamPolicyRequest',
+        response_type_name='GoogleIamV1Policy',
+        supports_download=False,
+    )
+
+    def TestIamPermissions(self, request, global_params=None):
+      r"""Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a NOT_FOUND error.Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may "fail open" without warning.
+
+      Args:
+        request: (DataplexProjectsLocationsDataDomainsTestIamPermissionsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleIamV1TestIamPermissionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('TestIamPermissions')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/dataDomains/{dataDomainsId}:testIamPermissions',
+        http_method='POST',
+        method_id='dataplex.projects.locations.dataDomains.testIamPermissions',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v1/{+resource}:testIamPermissions',
+        request_field='googleIamV1TestIamPermissionsRequest',
+        request_type_name='DataplexProjectsLocationsDataDomainsTestIamPermissionsRequest',
+        response_type_name='GoogleIamV1TestIamPermissionsResponse',
+        supports_download=False,
+    )
+
   class ProjectsLocationsDataProductsDataAssetsService(base_api.BaseApiService):
     """Service class for the projects_locations_dataProducts_dataAssets resource."""
 
@@ -1363,6 +1455,33 @@ class DataplexV1(base_api.BaseApiClient):
       super(DataplexV1.ProjectsLocationsDataScansJobsService, self).__init__(client)
       self._upload_configs = {
           }
+
+    def Cancel(self, request, global_params=None):
+      r"""Cancels a running/pending DataScan job.
+
+      Args:
+        request: (DataplexProjectsLocationsDataScansJobsCancelRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudDataplexV1CancelDataScanJobResponse) The response message.
+      """
+      config = self.GetMethodConfig('Cancel')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Cancel.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/dataScans/{dataScansId}/jobs/{jobsId}:cancel',
+        http_method='POST',
+        method_id='dataplex.projects.locations.dataScans.jobs.cancel',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:cancel',
+        request_field='googleCloudDataplexV1CancelDataScanJobRequest',
+        request_type_name='DataplexProjectsLocationsDataScansJobsCancelRequest',
+        response_type_name='GoogleCloudDataplexV1CancelDataScanJobResponse',
+        supports_download=False,
+    )
 
     def GenerateDataQualityRules(self, request, global_params=None):
       r"""Generates recommended data quality rules based on the results of a data profiling scan.Use the recommendations to build rules for a data quality scan.

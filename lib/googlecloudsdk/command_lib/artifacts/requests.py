@@ -632,3 +632,33 @@ def ExportArtifact(version, tag, gcs_destination):
   else:
     raise ValueError("Either version or tag must be specified.")
   return client.projects_locations_repositories.ExportArtifact(req)
+
+
+def PrewarmArtifact(
+    client, messages, artifact_name, artifact_type, stream_location,
+    retention_days, force
+):
+  """Initiates the prewarming of a specified artifact version or tag."""
+  if artifact_type == "version":
+    req = messages.ArtifactregistryProjectsLocationsRepositoriesPrewarmArtifactRequest(
+        repository=artifact_name.split("/packages/")[0],
+        prewarmArtifactRequest=messages.PrewarmArtifactRequest(
+            version=artifact_name,
+            streamLocation=stream_location,
+            retentionDays=retention_days,
+            force=force,
+        ),
+    )
+  elif artifact_type == "tag":
+    req = messages.ArtifactregistryProjectsLocationsRepositoriesPrewarmArtifactRequest(
+        repository=artifact_name.split("/packages/")[0],
+        prewarmArtifactRequest=messages.PrewarmArtifactRequest(
+            tag=artifact_name,
+            streamLocation=stream_location,
+            retentionDays=retention_days,
+            force=force,
+        ),
+    )
+  else:
+    raise ValueError("Invalid artifact type: {}".format(artifact_type))
+  return client.projects_locations_repositories.PrewarmArtifact(req)

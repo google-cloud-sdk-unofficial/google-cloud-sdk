@@ -18,7 +18,9 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.PREVIEW
+)
 class Peerings(base.Group):
   """List, create, and delete, and update VPC Network Peering."""
 

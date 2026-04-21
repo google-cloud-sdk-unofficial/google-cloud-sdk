@@ -275,6 +275,9 @@ def convert_tasks_to_actions(tasks):
   task_id_to_action_name = {}
   action_tasks = {}
   for task in tasks:
+    if task.id == 'init_orchestration_pipeline_context':
+      # Skip the setup task, which is not part of the user pipeline.
+      continue
     doc_md = parse_metadata_json(task.docMd)
     action_name = doc_md.get('op_action_name')
     if action_name:
@@ -359,6 +362,9 @@ def aggregate_task_instances_to_actions(task_instances):
   """
   action_task_instances = {}
   for task_instance in task_instances:
+    if task_instance.taskId == 'init_orchestration_pipeline_context':
+      # Skip the setup task instance, which is not part of the user pipeline.
+      continue
     note = parse_metadata_json(task_instance.note)
     action_name = note.get('op_action_name')
     if action_name:

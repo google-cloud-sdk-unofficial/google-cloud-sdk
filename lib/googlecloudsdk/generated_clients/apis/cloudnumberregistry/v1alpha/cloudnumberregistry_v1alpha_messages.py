@@ -11,6 +11,29 @@ from apitools.base.py import extra_types
 package = 'cloudnumberregistry'
 
 
+class AggregatedData(_messages.Message):
+  r"""Aggregated data for the RegistryBook.
+
+  Fields:
+    customRangesCount: Output only. Number of custom ranges in the
+      RegistryBook.
+    customRealmsCount: Output only. Number of custom realms in the
+      RegistryBook.
+    discoveredRangesCount: Output only. Number of discovered ranges in the
+      RegistryBook.
+    discoveredRealmsCount: Output only. Number of discovered realms in the
+      RegistryBook.
+    uniqueScopesCount: Output only. Number of scopes unique to the
+      RegistryBook.
+  """
+
+  customRangesCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  customRealmsCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  discoveredRangesCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  discoveredRealmsCount = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  uniqueScopesCount = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+
+
 class Attribute(_messages.Message):
   r"""Message describing Attribute object
 
@@ -669,15 +692,38 @@ class CloudnumberregistryProjectsLocationsRegistryBooksDeleteRequest(_messages.M
 class CloudnumberregistryProjectsLocationsRegistryBooksGetRequest(_messages.Message):
   r"""A CloudnumberregistryProjectsLocationsRegistryBooksGetRequest object.
 
+  Enums:
+    ViewValueValuesEnum: Optional. The view of the RegistryBook.
+
   Fields:
     name: Required. Name of the resource
+    view: Optional. The view of the RegistryBook.
   """
 
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. The view of the RegistryBook.
+
+    Values:
+      REGISTRY_BOOK_VIEW_UNSPECIFIED: Unspecified view. Defaults to BASIC.
+      BASIC: Basic view.
+      FULL: Full view. Includes the same data as the BASIC view.
+      AGGREGATE: Aggregate includes data about the child resources of the
+        RegistryBook.
+    """
+    REGISTRY_BOOK_VIEW_UNSPECIFIED = 0
+    BASIC = 1
+    FULL = 2
+    AGGREGATE = 3
+
   name = _messages.StringField(1, required=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 2)
 
 
 class CloudnumberregistryProjectsLocationsRegistryBooksListRequest(_messages.Message):
   r"""A CloudnumberregistryProjectsLocationsRegistryBooksListRequest object.
+
+  Enums:
+    ViewValueValuesEnum: Optional. The view of the RegistryBook.
 
   Fields:
     filter: Optional. Filtering results
@@ -687,13 +733,30 @@ class CloudnumberregistryProjectsLocationsRegistryBooksListRequest(_messages.Mes
     pageToken: Optional. A token identifying a page of results the server
       should return.
     parent: Required. Parent value for ListRegistryBooksRequest
+    view: Optional. The view of the RegistryBook.
   """
+
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. The view of the RegistryBook.
+
+    Values:
+      REGISTRY_BOOK_VIEW_UNSPECIFIED: Unspecified view. Defaults to BASIC.
+      BASIC: Basic view.
+      FULL: Full view. Includes the same data as the BASIC view.
+      AGGREGATE: Aggregate includes data about the child resources of the
+        RegistryBook.
+    """
+    REGISTRY_BOOK_VIEW_UNSPECIFIED = 0
+    BASIC = 1
+    FULL = 2
+    AGGREGATE = 3
 
   filter = _messages.StringField(1)
   orderBy = _messages.StringField(2)
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   parent = _messages.StringField(5, required=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 6)
 
 
 class CloudnumberregistryProjectsLocationsRegistryBooksPatchRequest(_messages.Message):
@@ -1562,6 +1625,8 @@ class RegistryBook(_messages.Message):
     LabelsValue: Optional. Labels as key value pairs
 
   Fields:
+    aggregatedData: Output only. Aggregated data for the RegistryBook.
+      Populated only when the view is AGGREGATE.
     claimedScopes: Optional. List of scopes claimed by the RegistryBook. In
       Preview, Only project scope is supported. Each scope is in the format of
       projects/{project}. Each scope can only be claimed once.
@@ -1596,12 +1661,13 @@ class RegistryBook(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  claimedScopes = _messages.StringField(1, repeated=True)
-  createTime = _messages.StringField(2)
-  isDefault = _messages.BooleanField(3)
-  labels = _messages.MessageField('LabelsValue', 4)
-  name = _messages.StringField(5)
-  updateTime = _messages.StringField(6)
+  aggregatedData = _messages.MessageField('AggregatedData', 1)
+  claimedScopes = _messages.StringField(2, repeated=True)
+  createTime = _messages.StringField(3)
+  isDefault = _messages.BooleanField(4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  name = _messages.StringField(6)
+  updateTime = _messages.StringField(7)
 
 
 class SearchIpResourcesRequest(_messages.Message):

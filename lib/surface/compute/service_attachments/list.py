@@ -38,8 +38,12 @@ def _Run(args, holder):
   return lister.Invoke(request_data, list_implementation)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
+)
 class List(base.ListCommand):
   """List service attachments."""
 

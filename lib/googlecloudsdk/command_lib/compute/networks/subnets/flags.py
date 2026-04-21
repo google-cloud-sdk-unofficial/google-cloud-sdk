@@ -144,6 +144,7 @@ def AddUpdateArgs(
     include_alpha_logging,
     api_version,
     update_purpose_to_private,
+    include_ipv6_secondary_ranges,
 ):
   """Add args to the parser for subnet update.
 
@@ -152,6 +153,7 @@ def AddUpdateArgs(
     include_alpha_logging: Include alpha-specific logging args.
     api_version: The api version of the request.
     update_purpose_to_private: Allow updating purpose to private.
+    include_ipv6_secondary_ranges: Include IPv6 secondary ranges args.
   """
   messages = apis.GetMessagesModule('compute',
                                     compute_api.COMPUTE_GA_API_VERSION)
@@ -377,6 +379,22 @@ def AddUpdateArgs(
   messages = apis.GetMessagesModule('compute', api_version)
   GetPrivateIpv6GoogleAccessTypeFlagMapper(messages).choice_arg.AddToParser(
       updated_field)
+
+  if include_ipv6_secondary_ranges:
+    updated_field.add_argument(
+        '--add-secondary-ipv6-range',
+        type=arg_parsers.ArgDict(min_length=1),
+        action='append',
+        metavar='rangeName=RANGE_NAME,ipv6CidrRange=IPV6_RANGE,ipCollection=IP_COLLECTION',
+        help='Adds a secondary IPv6 range to the subnetwork.',
+    )
+
+    updated_field.add_argument(
+        '--remove-secondary-ipv6-range',
+        type=arg_parsers.ArgList(min_length=1),
+        metavar='RANGE_NAME',
+        help='Removes secondary IPv6 ranges from the subnetwork.',
+    )
 
 
 def GetPrivateIpv6GoogleAccessTypeFlagMapper(messages):

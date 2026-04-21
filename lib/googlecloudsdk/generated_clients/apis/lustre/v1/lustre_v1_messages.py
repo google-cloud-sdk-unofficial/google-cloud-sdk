@@ -127,14 +127,15 @@ class DynamicTierOptions(_messages.Message):
   r"""Dynamic tier options for a Managed Lustre instance.
 
   Enums:
-    ModeValueValuesEnum: Required. The dynamic tier mode of the instance.
+    ModeValueValuesEnum: Required. Immutable. The dynamic tier mode of the
+      instance.
 
   Fields:
-    mode: Required. The dynamic tier mode of the instance.
+    mode: Required. Immutable. The dynamic tier mode of the instance.
   """
 
   class ModeValueValuesEnum(_messages.Enum):
-    r"""Required. The dynamic tier mode of the instance.
+    r"""Required. Immutable. The dynamic tier mode of the instance.
 
     Values:
       MODE_UNSPECIFIED: Unspecified dynamic tier mode.
@@ -229,8 +230,8 @@ class Instance(_messages.Message):
       sizes for each performance tier.
     createTime: Output only. Timestamp when the instance was created.
     description: Optional. A user-readable description of the instance.
-    dynamicTierOptions: Optional. Specifies whether the instance is on the
-      Dynamic tier. See [Performance tiers and maximum storage
+    dynamicTierOptions: Optional. Immutable. Specifies whether the instance is
+      on the Dynamic tier. See [Performance tiers and maximum storage
       capacities](https://cloud.google.com/managed-lustre/docs/create-
       instance#performance-tiers) for more information.
     filesystem: Required. Immutable. The filesystem name for this instance.

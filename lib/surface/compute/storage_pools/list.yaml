@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA, GA]
+- release_tracks: [ALPHA, BETA, GA, PREVIEW]
   hints:
     read_only: true
     idempotent: true
@@ -51,15 +51,21 @@
   request:
     ALPHA:
       api_version: alpha
+      static_fields:
+        returnPartialSuccess: true
     BETA:
       api_version: beta
+      static_fields:
+        returnPartialSuccess: true
     GA:
       api_version: v1
+      static_fields:
+        returnPartialSuccess: true
+    PREVIEW:
+      api_version: preview
 
     collection: compute.storagePools
     method: aggregatedList
-    static_fields:
-      returnPartialSuccess: true
 
   arguments:
     resource:

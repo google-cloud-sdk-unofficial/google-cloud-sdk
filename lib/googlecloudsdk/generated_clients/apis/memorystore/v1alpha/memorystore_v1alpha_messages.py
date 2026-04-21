@@ -94,7 +94,7 @@ class AclRule(_messages.Message):
 
 
 class AddAuthTokenRequest(_messages.Message):
-  r"""Request message for AddAuthToken.
+  r"""Request message for `AddAuthToken`.
 
   Fields:
     authToken: Required. The auth token to add.
@@ -104,7 +104,7 @@ class AddAuthTokenRequest(_messages.Message):
 
 
 class AddTokenAuthUserRequest(_messages.Message):
-  r"""Request message for AddTokenAuthUser.
+  r"""Request message for `AddTokenAuthUser`.
 
   Fields:
     tokenAuthUser: Required. The name of the token auth user to add.
@@ -333,7 +333,7 @@ class BackupFile(_messages.Message):
 
 
 class BackupInstanceRequest(_messages.Message):
-  r"""Request for [BackupInstance].
+  r"""Request for `BackupInstance`.
 
   Fields:
     backupId: Optional. The id of the backup to be created. If not specified,
@@ -538,7 +538,7 @@ class EncryptionInfo(_messages.Message):
 
 
 class ExportBackupRequest(_messages.Message):
-  r"""Request for [ExportBackup].
+  r"""Request for `ExportBackup`.
 
   Fields:
     gcsBucket: Google Cloud Storage bucket, like "my-bucket".
@@ -548,10 +548,10 @@ class ExportBackupRequest(_messages.Message):
 
 
 class FinishMigrationRequest(_messages.Message):
-  r"""Request for FinishMigration.
+  r"""Request for `FinishMigration`.
 
   Fields:
-    force: Optional. By default, the FinishMigration operation ensures the
+    force: Optional. By default, the `FinishMigration` operation ensures the
       target replication offset to catch up to the source offset as of the
       time of the call. Set this field to `true` to bypass this offset
       verification check.
@@ -790,12 +790,14 @@ class Instance(_messages.Message):
       ACTIVE: Instance has been created and is usable.
       UPDATING: Instance is being updated.
       DELETING: Instance is being deleted.
+      MIGRATING: Instance is being migrated.
     """
     STATE_UNSPECIFIED = 0
     CREATING = 1
     ACTIVE = 2
     UPDATING = 3
     DELETING = 4
+    MIGRATING = 5
 
   class TransitEncryptionModeValueValuesEnum(_messages.Enum):
     r"""Optional. Immutable. In-transit encryption mode of the instance.
@@ -922,7 +924,7 @@ class InstanceEndpoint(_messages.Message):
 
 
 class ListAclPoliciesResponse(_messages.Message):
-  r"""Response for ListAclPolicies.
+  r"""Response for `ListAclPolicies`.
 
   Fields:
     aclPolicies: A list of ACL policies in the project in the specified
@@ -940,7 +942,7 @@ class ListAclPoliciesResponse(_messages.Message):
 
 
 class ListAuthTokensResponse(_messages.Message):
-  r"""Response message for ListAuthTokens.
+  r"""Response message for `ListAuthTokens`.
 
   Fields:
     authTokens: A list of auth tokens in the project.
@@ -955,7 +957,7 @@ class ListAuthTokensResponse(_messages.Message):
 
 
 class ListBackupCollectionsResponse(_messages.Message):
-  r"""Response for [ListBackupCollections].
+  r"""Response for `ListBackupCollections`.
 
   Fields:
     backupCollections: A list of backupCollections in the project. If the
@@ -978,7 +980,7 @@ class ListBackupCollectionsResponse(_messages.Message):
 
 
 class ListBackupsResponse(_messages.Message):
-  r"""Response for [ListBackups].
+  r"""Response for `ListBackups`.
 
   Fields:
     backups: A list of backups in the project.
@@ -993,7 +995,7 @@ class ListBackupsResponse(_messages.Message):
 
 
 class ListInstancesResponse(_messages.Message):
-  r"""Response message for ListInstances.
+  r"""Response message for `ListInstances`.
 
   Fields:
     instances: If the {location} requested was "-" the response contains a
@@ -1041,7 +1043,7 @@ class ListOperationsResponse(_messages.Message):
 
 
 class ListTokenAuthUsersResponse(_messages.Message):
-  r"""Response message for ListTokenAuthUsers.
+  r"""Response message for `ListTokenAuthUsers`.
 
   Fields:
     nextPageToken: Token to retrieve the next page of results, or empty if
@@ -1268,7 +1270,7 @@ class MemorystoreProjectsLocationsAclPoliciesListRequest(_messages.Message):
       determine if there are more ACL policies left to be queried. The maximum
       value is 1000; values above 1000 will be coerced to 1000.
     pageToken: Optional. The `next_page_token` value returned from a previous
-      ListAclPolicies request, if any.
+      `ListAclPolicies` request, if any.
     parent: Required. The resource name of the cluster location using the
       form: `projects/{project}/locations/{location}` where `location` refers
       to a Google Cloud region.
@@ -1288,7 +1290,7 @@ class MemorystoreProjectsLocationsAclPoliciesPatchRequest(_messages.Message):
     requestId: Optional. Idempotent request UUID.
     updateMask: Optional. Mask of fields to be updated. At least one path must
       be supplied in this field. The elements of the repeated paths field may
-      only include these fields from AclPolicy: * `rules`
+      only include these fields from `AclPolicy`: * `rules`
   """
 
   aclPolicy = _messages.MessageField('AclPolicy', 1)
@@ -1351,7 +1353,7 @@ class MemorystoreProjectsLocationsBackupCollectionsBackupsListRequest(_messages.
       list and a caller should only rely on response's `next_page_token` to
       determine if there are more clusters left to be queried.
     pageToken: Optional. The `next_page_token` value returned from a previous
-      [ListBackupCollections] request, if any.
+      `ListBackupCollections` request, if any.
     parent: Required. The resource name of the backupCollection using the
       form: `projects/{project_id}/locations/{location_id}/backupCollections/{
       backup_collection_id}`
@@ -1384,7 +1386,7 @@ class MemorystoreProjectsLocationsBackupCollectionsListRequest(_messages.Message
       list and a caller should only rely on response's `next_page_token` to
       determine if there are more clusters left to be queried.
     pageToken: Optional. The `next_page_token` value returned from a previous
-      [ListBackupCollections] request, if any.
+      `ListBackupCollections` request, if any.
     parent: Required. The resource name of the backupCollection location using
       the form: `projects/{project_id}/locations/{location_id}` where
       `location_id` refers to a Google Cloud region.
@@ -1678,7 +1680,7 @@ class MemorystoreProjectsLocationsInstancesTokenAuthUsersAuthTokensListRequest(_
       list and a caller should only rely on response's `next_page_token` to
       determine if there are more auth tokens left to be queried.
     pageToken: Optional. The `next_page_token` value returned from a previous
-      [ListAuthTokens] request, if any.
+      `ListAuthTokens` request, if any.
     parent: Required. The parent to list auth tokens from. Format: projects/{p
       roject}/locations/{location}/instances/{instance}/tokenAuthUsers/{token_
       auth_user}
@@ -1745,7 +1747,7 @@ class MemorystoreProjectsLocationsInstancesTokenAuthUsersListRequest(_messages.M
       list and a caller should only rely on response's `next_page_token` to
       determine if there are more token auth users left to be queried.
     pageToken: Optional. The `next_page_token` value returned from a previous
-      [ListTokenAuthUsers] request, if any.
+      `ListTokenAuthUsers` request, if any.
     parent: Required. The parent to list token auth users from. Format:
       projects/{project}/locations/{location}/instances/{instance}
   """
@@ -1845,9 +1847,9 @@ class MigrationConfig(_messages.Message):
     StateValueValuesEnum: Output only. Migration state of the instance.
 
   Fields:
-    forceMigrationFinalization: Output only. Represents a boolean flag to
-      force migration finalization without offset catch up validation between
-      source and target before stopping replication.
+    forceFinishMigration: Output only. Represents a boolean flag to force
+      migration finalization without offset catch up validation between source
+      and target before stopping replication.
     selfManagedSource: Output only. Configuration for migrating from a self-
       managed Valkey/Redis instance
     state: Output only. Migration state of the instance.
@@ -1879,7 +1881,7 @@ class MigrationConfig(_messages.Message):
     REPLICATION_ESTABLISHED = 3
     MIGRATED = 4
 
-  forceMigrationFinalization = _messages.BooleanField(1)
+  forceFinishMigration = _messages.BooleanField(1)
   selfManagedSource = _messages.MessageField('SelfManagedSource', 2)
   state = _messages.EnumField('StateValueValuesEnum', 3)
 
@@ -2459,7 +2461,7 @@ class StandardQueryParameters(_messages.Message):
 
 
 class StartMigrationRequest(_messages.Message):
-  r"""Request for StartMigration.
+  r"""Request for `StartMigration`.
 
   Fields:
     selfManagedSource: Required. Configuration for migrating from a self-

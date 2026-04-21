@@ -3365,11 +3365,14 @@ class ComputeInstanceTargetEnvironment(_messages.Message):
 
   Fields:
     project: Required. Target project for the Compute Engine instance.
+    useProjectServiceAccount: Optional. Whether to use the project service
+      account for the Compute Engine instance.
     zone: Required. The zone of the Compute Engine instance.
   """
 
   project = _messages.StringField(1)
-  zone = _messages.StringField(2)
+  useProjectServiceAccount = _messages.BooleanField(2)
+  zone = _messages.StringField(3)
 
 
 class ConfidentialInstanceConfig(_messages.Message):
@@ -3844,6 +3847,8 @@ class DiskRestoreProperties(_messages.Message):
       to enable this option.
     guestOsFeature: Optional. A list of features to enable in the guest
       operating system. This is applicable only for bootable images.
+    instanceBackupSource: Provides options for creating a disk from a source
+      Compute Instance backup.
     labels: Optional. Labels to apply to this disk. These can be modified
       later using setLabels method. Label values can be empty.
     licenses: Optional. A list of publicly available licenses that are
@@ -3954,17 +3959,18 @@ class DiskRestoreProperties(_messages.Message):
   diskEncryptionKey = _messages.MessageField('CustomerEncryptionKey', 4)
   enableConfidentialCompute = _messages.BooleanField(5)
   guestOsFeature = _messages.MessageField('GuestOsFeature', 6, repeated=True)
-  labels = _messages.MessageField('LabelsValue', 7)
-  licenses = _messages.StringField(8, repeated=True)
-  name = _messages.StringField(9)
-  physicalBlockSizeBytes = _messages.IntegerField(10)
-  provisionedIops = _messages.IntegerField(11)
-  provisionedThroughput = _messages.IntegerField(12)
-  resourceManagerTags = _messages.MessageField('ResourceManagerTagsValue', 13)
-  resourcePolicy = _messages.StringField(14, repeated=True)
-  sizeGb = _messages.IntegerField(15)
-  storagePool = _messages.StringField(16)
-  type = _messages.StringField(17)
+  instanceBackupSource = _messages.MessageField('RestoreDiskFromInstanceOptions', 7)
+  labels = _messages.MessageField('LabelsValue', 8)
+  licenses = _messages.StringField(9, repeated=True)
+  name = _messages.StringField(10)
+  physicalBlockSizeBytes = _messages.IntegerField(11)
+  provisionedIops = _messages.IntegerField(12)
+  provisionedThroughput = _messages.IntegerField(13)
+  resourceManagerTags = _messages.MessageField('ResourceManagerTagsValue', 14)
+  resourcePolicy = _messages.StringField(15, repeated=True)
+  sizeGb = _messages.IntegerField(16)
+  storagePool = _messages.StringField(17)
+  type = _messages.StringField(18)
 
 
 class DiskTargetEnvironment(_messages.Message):
@@ -3972,11 +3978,14 @@ class DiskTargetEnvironment(_messages.Message):
 
   Fields:
     project: Required. Target project for the disk.
+    useProjectServiceAccount: Optional. Whether to use the project service
+      account for the disk.
     zone: Required. Target zone for the disk.
   """
 
   project = _messages.StringField(1)
-  zone = _messages.StringField(2)
+  useProjectServiceAccount = _messages.BooleanField(2)
+  zone = _messages.StringField(3)
 
 
 class DisplayDevice(_messages.Message):
@@ -4938,6 +4947,7 @@ class LocationMetadata(_messages.Message):
       CEP_MONITORING_DISK: <no description>
       BV_CUSTOM_PROBERS: Remove once parity achieved between BV_AF and
         BV_CUSTOM_PROBERS.
+      FT_CUSTOM_PROBERS: <no description>
     """
     FEATURE_UNSPECIFIED = 0
     MANAGEMENT_SERVER = 1
@@ -4951,6 +4961,7 @@ class LocationMetadata(_messages.Message):
     CEP_MONITORING_COMPUTE_INSTANCE = 9
     CEP_MONITORING_DISK = 10
     BV_CUSTOM_PROBERS = 11
+    FT_CUSTOM_PROBERS = 12
 
   unsupportedFeatures = _messages.EnumField('UnsupportedFeaturesValueListEntryValuesEnum', 1, repeated=True)
 
@@ -5523,11 +5534,14 @@ class RegionDiskTargetEnvironment(_messages.Message):
     project: Required. Target project for the disk.
     region: Required. Target region for the disk.
     replicaZones: Required. Target URLs of the replica zones for the disk.
+    useProjectServiceAccount: Optional. Whether to use the project service
+      account for the disk.
   """
 
   project = _messages.StringField(1)
   region = _messages.StringField(2)
   replicaZones = _messages.StringField(3, repeated=True)
+  useProjectServiceAccount = _messages.BooleanField(4)
 
 
 class RemoveDataSourceRequest(_messages.Message):
@@ -5692,6 +5706,20 @@ class RestoreBackupResponse(_messages.Message):
   """
 
   targetResource = _messages.MessageField('TargetResource', 1)
+
+
+class RestoreDiskFromInstanceOptions(_messages.Message):
+  r"""Options for creating a disk from a source Compute Instance backup.
+
+  Fields:
+    bootDisk: Specifies that the boot disk should be restored from the
+      instance backup. This field should only be set to `true` if selected.
+    sourceDeviceName: The device name of the disk to restore from the VM
+      backup.
+  """
+
+  bootDisk = _messages.BooleanField(1)
+  sourceDeviceName = _messages.StringField(2)
 
 
 class RuleConfigInfo(_messages.Message):

@@ -37,6 +37,7 @@ class HypercomputeclusterV1alpha(base_api.BaseApiClient):
         default_global_params=default_global_params,
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
+    self.projects_locations_clusters_nodes = self.ProjectsLocationsClustersNodesService(self)
     self.projects_locations_clusters = self.ProjectsLocationsClustersService(self)
     self.projects_locations_machineLearningRuns_monitoredEvents = self.ProjectsLocationsMachineLearningRunsMonitoredEventsService(self)
     self.projects_locations_machineLearningRuns_profileSessions = self.ProjectsLocationsMachineLearningRunsProfileSessionsService(self)
@@ -46,6 +47,70 @@ class HypercomputeclusterV1alpha(base_api.BaseApiClient):
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects = self.ProjectsService(self)
+
+  class ProjectsLocationsClustersNodesService(base_api.BaseApiService):
+    """Service class for the projects_locations_clusters_nodes resource."""
+
+    _NAME = 'projects_locations_clusters_nodes'
+
+    def __init__(self, client):
+      super(HypercomputeclusterV1alpha.ProjectsLocationsClustersNodesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single Node.
+
+      Args:
+        request: (HypercomputeclusterProjectsLocationsClustersNodesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Node) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}/nodes/{nodesId}',
+        http_method='GET',
+        method_id='hypercomputecluster.projects.locations.clusters.nodes.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='HypercomputeclusterProjectsLocationsClustersNodesGetRequest',
+        response_type_name='Node',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists Nodes in a given cluster.
+
+      Args:
+        request: (HypercomputeclusterProjectsLocationsClustersNodesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListNodesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}/nodes',
+        http_method='GET',
+        method_id='hypercomputecluster.projects.locations.clusters.nodes.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/nodes',
+        request_field='',
+        request_type_name='HypercomputeclusterProjectsLocationsClustersNodesListRequest',
+        response_type_name='ListNodesResponse',
+        supports_download=False,
+    )
 
   class ProjectsLocationsClustersService(base_api.BaseApiService):
     """Service class for the projects_locations_clusters resource."""
@@ -348,7 +413,7 @@ class HypercomputeclusterV1alpha(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Gets a Profile Session.
+      r"""Deprecated: Use `GetProfilerSession` instead. Gets a Profile Session.
 
       Args:
         request: (HypercomputeclusterProjectsLocationsMachineLearningRunsProfileSessionsGetRequest) input message
@@ -375,7 +440,7 @@ class HypercomputeclusterV1alpha(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists Profile Sessions for a Machine Learning Run.
+      r"""Deprecated: Use `ListProfilerSessions` instead. Lists Profile Sessions for a Machine Learning Run.
 
       Args:
         request: (HypercomputeclusterProjectsLocationsMachineLearningRunsProfileSessionsListRequest) input message
@@ -938,7 +1003,7 @@ class HypercomputeclusterV1alpha(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method can be called in two ways: * **List all public locations:** Use the path `GET /v1/locations`. * **List project-visible locations:** Use the path `GET /v1/projects/{project_id}/locations`. This may include public locations as well as private or other locations specifically visible to the project.
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
       Args:
         request: (HypercomputeclusterProjectsLocationsListRequest) input message

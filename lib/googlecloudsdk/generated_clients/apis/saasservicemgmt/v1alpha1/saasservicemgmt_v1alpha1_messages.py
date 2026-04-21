@@ -1497,7 +1497,7 @@ class Rollout(_messages.Message):
       number of units identified, upgraded, pending etc. Note: this can be
       expanded to include finer-grain per-scope (e.g. per location) results as
       well as the top level aggregated ones listed here.
-    rolloutKind: Optional. Immutable. Name of the RolloutKind this rollout is
+    rolloutKind: Required. Immutable. Name of the RolloutKind this rollout is
       stemming from and adhering to.
     rolloutOrchestrationStrategy: Optional. The strategy used for executing
       this Rollout. This strategy will override whatever strategy is specified

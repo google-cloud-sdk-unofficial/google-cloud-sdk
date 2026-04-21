@@ -32,10 +32,13 @@ from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.config import featu
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.translation_rules import concurrent_requests
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.translation_rules import cpu_memory
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.translation_rules import entrypoint
+from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.translation_rules import health_checks
+from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.translation_rules import network
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.translation_rules import required_flags
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.translation_rules import scaling
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.translation_rules import supported_features
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.translation_rules import timeout
+from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.translation_rules import volumes
 from googlecloudsdk.core import properties
 
 
@@ -284,7 +287,14 @@ def _get_cloud_run_flags(
       + required_flags.translate_add_required_flags(
           input_data, source_path, runtime_base_image
       )
-      + cpu_memory.translate_app_resources(input_data)
+      + volumes.translate_volumes(input_flatten_as_appyaml)
+      + cpu_memory.translate_app_resources(input_flatten_as_appyaml)
+      + network.translate_network_features(input_flatten_as_appyaml)
+      + (
+          health_checks.translate_all_health_checks(input_flatten_as_appyaml)
+          if util.is_flex_env(input_data)
+          else []
+      )
   )
 
 

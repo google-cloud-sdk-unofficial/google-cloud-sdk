@@ -165,7 +165,7 @@ class CreateHelper(object):
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class CreateGA(base.CreateCommand):
   r"""Create a Compute Engine security policy rule.
 

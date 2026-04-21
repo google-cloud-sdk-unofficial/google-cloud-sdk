@@ -25,7 +25,10 @@ from googlecloudsdk.core.resource import resource_projector
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.PREVIEW,
 )
 @base.DefaultUniverseOnly
 class List(base.ListCommand):

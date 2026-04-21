@@ -19,7 +19,11 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
+)
 class Xpn(base.Group):
   """Configure shared VPC."""
 
@@ -34,4 +38,3 @@ Xpn.detailed_help = {
         [Shared VPC documentation](https://cloud.google.com/vpc/docs/shared-vpc/).
     """,
 }
-

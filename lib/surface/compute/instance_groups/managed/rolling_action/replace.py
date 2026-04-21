@@ -32,7 +32,7 @@ def _AddArgs(parser, supports_min_ready=False):
   instance_groups_managed_flags.AddReplacementMethodFlag(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class StartUpdate(base.Command):
   """Replaces instances in a managed instance group.
 

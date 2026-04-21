@@ -25,7 +25,9 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.resource import resource_projection_spec
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.BETA, base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW
+)
 @base.UniverseCompatible
 class ListBetaGA(base.ListCommand):
   """List VPN tunnels."""

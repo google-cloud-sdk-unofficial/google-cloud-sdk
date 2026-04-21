@@ -20,43 +20,80 @@ from googlecloudsdk.command_lib.compute.networks.subnets import flags
 import six
 
 
-def _CreateSecondaryRange(client, name, ip_cidr_range, reserved_internal_range):
+def _CreateSecondaryRange(
+    client,
+    name,
+    ip_cidr_range=None,
+    reserved_internal_range=None,
+    ip_version=None,
+    ip_collection=None,
+):
   """Creates a subnetwork secondary range."""
-  if reserved_internal_range and ip_cidr_range:
-    return client.messages.SubnetworkSecondaryRange(
-        rangeName=name,
-        reservedInternalRange=reserved_internal_range,
-        ipCidrRange=ip_cidr_range)
-  elif reserved_internal_range:
-    return client.messages.SubnetworkSecondaryRange(
-        rangeName=name, reservedInternalRange=reserved_internal_range)
-  else:
-    return client.messages.SubnetworkSecondaryRange(
-        rangeName=name, ipCidrRange=ip_cidr_range)
+  secondary_range = client.messages.SubnetworkSecondaryRange(rangeName=name)
+  if ip_cidr_range:
+    secondary_range.ipCidrRange = ip_cidr_range
+  if reserved_internal_range:
+    secondary_range.reservedInternalRange = reserved_internal_range
+  if ip_version:
+    if isinstance(ip_version, six.string_types):
+      secondary_range.ipVersion = (
+          client.messages.SubnetworkSecondaryRange.IpVersionValueValuesEnum(
+              ip_version))
+    else:
+      secondary_range.ipVersion = ip_version
+  if ip_collection:
+    secondary_range.ipCollection = ip_collection
+  return secondary_range
 
 
-def CreateSecondaryRanges(client, secondary_range,
-                          secondary_range_with_reserved_internal_range):
+def CreateSecondaryRanges(
+    client,
+    secondary_range,
+    secondary_range_with_reserved_internal_range,
+    secondary_ipv6_ranges,
+):
   """Creates all secondary ranges of a subnet."""
   secondary_ranges = []
-  range_name_to_cidr = {}
-  range_name_to_reserved_internal_range = {}
   range_names = set()
+  range_configs = {}  # rangeName -> config dict
+
   if secondary_range:
-    for secondary_range in secondary_range:
-      for range_name, ip_cidr_range in six.iteritems(secondary_range):
-        range_name_to_cidr[range_name] = ip_cidr_range
-        range_names.add(range_name)
+    for r in secondary_range:
+      for name, cidr in six.iteritems(r):
+        range_names.add(name)
+        range_configs[name] = {'ip_cidr_range': cidr}
+
   if secondary_range_with_reserved_internal_range:
-    for secondary_range in secondary_range_with_reserved_internal_range:
-      for range_name, internal_range in six.iteritems(secondary_range):
-        range_name_to_reserved_internal_range[range_name] = internal_range
-        range_names.add(range_name)
-  for range_name in sorted(range_names):
+    for r in secondary_range_with_reserved_internal_range:
+      for name, internal_range in six.iteritems(r):
+        range_names.add(name)
+        if name not in range_configs:
+          range_configs[name] = {}
+        range_configs[name]['reserved_internal_range'] = internal_range
+
+  if secondary_ipv6_ranges:
+    for r in secondary_ipv6_ranges:
+      name = r.get('rangeName')
+      if name:
+        range_names.add(name)
+        range_configs[name] = {
+            'ip_version': 'IPV6',
+            'ip_cidr_range': r.get('ipv6CidrRange'),
+            'ip_collection': r.get('ipCollection'),
+        }
+
+  for name in sorted(range_names):
+    config = range_configs[name]
     secondary_ranges.append(
         _CreateSecondaryRange(
-            client, range_name, range_name_to_cidr.get(range_name),
-            range_name_to_reserved_internal_range.get(range_name)))
+            client,
+            name,
+            ip_cidr_range=config.get('ip_cidr_range'),
+            reserved_internal_range=config.get('reserved_internal_range'),
+            ip_version=config.get('ip_version'),
+            ip_collection=config.get('ip_collection'),
+        )
+    )
   return secondary_ranges
 
 
@@ -67,7 +104,9 @@ def MakeSubnetworkUpdateRequest(
     allow_cidr_routes_overlap=None,
     add_secondary_ranges=None,
     add_secondary_ranges_with_reserved_internal_range=None,
+    add_secondary_ipv6_ranges=None,
     remove_secondary_ranges=None,
+    remove_secondary_ipv6_ranges=None,
     enable_flow_logs=None,
     aggregation_interval=None,
     flow_sampling=None,
@@ -97,8 +136,12 @@ def MakeSubnetworkUpdateRequest(
       for use in IP aliasing.
     add_secondary_ranges_with_reserved_internal_range: List of secondary IP
       ranges that are associated with InternalRange resources.
+    add_secondary_ipv6_ranges: List of secondary IPv6 ranges to add to the
+      subnetwork.
     remove_secondary_ranges: List of secondary ranges to remove from the
       subnetwork.
+    remove_secondary_ipv6_ranges: List of secondary IPv6 ranges to remove from
+      the subnetwork.
     enable_flow_logs: Enable/disable flow logging for this subnet.
     aggregation_interval: The internal at which to aggregate flow logs.
     flow_sampling: The sampling rate for flow logging in this subnet.
@@ -139,8 +182,11 @@ def MakeSubnetworkUpdateRequest(
         (client.apitools_client.subnetworks, 'SetPrivateIpGoogleAccess',
          google_access_request)
     ])
-  elif (add_secondary_ranges is not None or
-        add_secondary_ranges_with_reserved_internal_range is not None):
+  elif (
+      add_secondary_ranges is not None
+      or add_secondary_ipv6_ranges is not None
+      or add_secondary_ranges_with_reserved_internal_range is not None
+  ):
     subnetwork = client.messages.Subnetwork()
     original_subnetwork = client.MakeRequests([
         (client.apitools_client.subnetworks, 'Get',
@@ -151,12 +197,32 @@ def MakeSubnetworkUpdateRequest(
 
     subnetwork.secondaryIpRanges.extend(
         CreateSecondaryRanges(
-            client, add_secondary_ranges,
-            add_secondary_ranges_with_reserved_internal_range))
+            client,
+            add_secondary_ranges,
+            add_secondary_ranges_with_reserved_internal_range,
+            add_secondary_ipv6_ranges,
+        )
+    )
 
     return client.MakeRequests(
         [CreateSubnetworkPatchRequest(client, subnet_ref, subnetwork)])
-  elif remove_secondary_ranges is not None:
+  elif (
+      remove_secondary_ranges is not None
+      or remove_secondary_ipv6_ranges is not None
+  ):
+    ranges_to_remove = []
+    if remove_secondary_ranges:
+      # Because flags.py uses action='append' combined with
+      # type=arg_parsers.ArgsList, remove_secondary_ranges is a
+      # list of lists.
+      # ex. --remove-secondary-ranges r1,r2 --remove-secondary-ranges r3 results
+      # in [['r1', 'r2'], ['r3']], but current implementation will only iterate
+      # through the first list.
+      ranges_to_remove.extend(remove_secondary_ranges[0])
+    if remove_secondary_ipv6_ranges:
+      # For secondary ipv6 ranges, flags.py does not use action='append' hence
+      # argument is a simple list ex. ['r1', 'r2'].
+      ranges_to_remove.extend(remove_secondary_ipv6_ranges)
     subnetwork = client.messages.Subnetwork()
     original_subnetwork = client.MakeRequests([
         (client.apitools_client.subnetworks, 'Get',
@@ -165,15 +231,16 @@ def MakeSubnetworkUpdateRequest(
     subnetwork.secondaryIpRanges = original_subnetwork.secondaryIpRanges
     subnetwork.fingerprint = original_subnetwork.fingerprint
 
-    for name in remove_secondary_ranges[0]:
+    for name in ranges_to_remove:
       if name not in [r.rangeName for r in subnetwork.secondaryIpRanges]:
         raise calliope_exceptions.UnknownArgumentException(
             'remove-secondary-ranges', 'Subnetwork does not have a range {}, '
             'present ranges are {}.'.format(
                 name, [r.rangeName for r in subnetwork.secondaryIpRanges]))
     subnetwork.secondaryIpRanges = [
-        r for r in original_subnetwork.secondaryIpRanges
-        if r.rangeName not in remove_secondary_ranges[0]
+        r
+        for r in original_subnetwork.secondaryIpRanges
+        if r.rangeName not in ranges_to_remove
     ]
 
     cleared_fields = []

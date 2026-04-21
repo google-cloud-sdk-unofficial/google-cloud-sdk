@@ -44,7 +44,7 @@ def _CommonArgs(parser):
         """)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Resize(base.Command):
   """Set size of a persistent disk."""
 

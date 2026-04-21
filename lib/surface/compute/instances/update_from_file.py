@@ -25,7 +25,7 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class UpdateFromFile(base.Command):
   """Update a Compute Engine virtual machine instance using a configuration file."""
 

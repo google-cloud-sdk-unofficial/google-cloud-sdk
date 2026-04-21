@@ -2465,10 +2465,11 @@ class GcsDestination(_messages.Message):
 
   Fields:
     uri: The URI of the Cloud Storage object. It's the same URI that is used
-      by gsutil. Example: "gs://bucket_name/object_name". See [Viewing and
-      Editing Object Metadata](https://cloud.google.com/storage/docs/viewing-
-      editing-metadata) for more information. If the specified Cloud Storage
-      object already exists and there is no
+      by gcloud storage. Example: "gs://bucket_name/object_name". See [Viewing
+      and Editing Object
+      Metadata](https://cloud.google.com/storage/docs/viewing-editing-
+      metadata) for more information. If the specified Cloud Storage object
+      already exists and there is no
       [hold](https://cloud.google.com/storage/docs/object-holds), it will be
       overwritten with the exported result.
     uriPrefix: The URI prefix of all generated Cloud Storage objects. Example:
@@ -2916,8 +2917,8 @@ class GoogleCloudAssetV1GcsDestination(_messages.Message):
 
   Fields:
     uri: Required. The URI of the Cloud Storage object. It's the same URI that
-      is used by gsutil. Example: "gs://bucket_name/object_name". See [Viewing
-      and Editing Object
+      is used by gcloud storage. Example: "gs://bucket_name/object_name". See
+      [Viewing and Editing Object
       Metadata](https://cloud.google.com/storage/docs/viewing-editing-
       metadata) for more information. If the specified Cloud Storage object
       already exists and there is no
@@ -3888,8 +3889,8 @@ class GoogleIdentityAccesscontextmanagerV1EgressFrom(_messages.Message):
   Fields:
     identities: A list of identities that are allowed access through
       [EgressPolicy]. Identities can be an individual user, service account,
-      Google group, or third-party identity. For the list of supported
-      identity types, see https://docs.cloud.google.com/vpc-service-
+      Google group, third-party identity, or agent identity. For the list of
+      supported identity types, see https://docs.cloud.google.com/vpc-service-
       controls/docs/supported-identities.
     identityType: Specifies the type of identities that are allowed access to
       outside the perimeter. If left unspecified, then members of `identities`
@@ -4048,8 +4049,8 @@ class GoogleIdentityAccesscontextmanagerV1IngressFrom(_messages.Message):
   Fields:
     identities: A list of identities that are allowed access through
       [IngressPolicy]. Identities can be an individual user, service account,
-      Google group, or third-party identity. For the list of supported
-      identity types, see https://docs.cloud.google.com/vpc-service-
+      Google group, third-party identity, or agent identity. For the list of
+      supported identity types, see https://docs.cloud.google.com/vpc-service-
       controls/docs/supported-identities.
     identityType: Specifies the type of identities that are allowed access
       from outside the perimeter. If left unspecified, then members of

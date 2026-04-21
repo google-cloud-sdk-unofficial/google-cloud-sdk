@@ -38,23 +38,11 @@ class OntapClient(object):
   def __init__(self, release_track: base.ReleaseTrack):
     self.release_track = release_track
     if self.release_track == base.ReleaseTrack.ALPHA:
-      self._adapter = AlphaOntapAdapter(
-          client=netapp_api_util.GetClientInstance(
-              release_track=self.release_track
-          ),
-          messages=netapp_api_util.GetMessagesModule(
-              release_track=self.release_track
-          ),
-      )
+      self._adapter = AlphaOntapAdapter()
     elif self.release_track == base.ReleaseTrack.BETA:
-      self._adapter = BetaOntapAdapter(
-          client=netapp_api_util.GetClientInstance(
-              release_track=self.release_track
-          ),
-          messages=netapp_api_util.GetMessagesModule(
-              release_track=self.release_track
-          ),
-      )
+      self._adapter = BetaOntapAdapter()
+    elif self.release_track == base.ReleaseTrack.GA:
+      self._adapter = OntapAdapter()
     else:
       raise ValueError(
           f"[{netapp_api_util.VERSION_MAP[release_track]}] is not a valid API"
@@ -150,20 +138,46 @@ class OntapClient(object):
       raise gcloud_exceptions.HttpException(error_message)
 
 
-class AlphaOntapAdapter(object):
-  """Adapter for alpha ONTAP-mode APIs for Cloud NetApp Volumes."""
+class OntapAdapter(object):
+  """Adapter for GA ONTAP-mode APIs for Cloud NetApp Volumes."""
 
-  def __init__(self, client, messages):
-    self.release_track = base.ReleaseTrack.ALPHA
-    self.client = client
-    self.messages = messages
+  def __init__(self, client=None, messages=None):
+    self.release_track = base.ReleaseTrack.GA
+    self.client = client or netapp_api_util.GetClientInstance(
+        release_track=self.release_track
+    )
+    self.messages = messages or netapp_api_util.GetMessagesModule(
+        release_track=self.release_track
+    )
 
 
-class BetaOntapAdapter(AlphaOntapAdapter):
-  """Adapter for Beta ONTAP-mode APIs for Cloud NetApp Volumes."""
+class BetaOntapAdapter(OntapAdapter):
+  """Adapter for the Beta ONTAP-mode APIs for Cloud NetApp Volumes."""
 
-  def __init__(self, client, messages):
-    super(BetaOntapAdapter, self).__init__(client, messages)
+  def __init__(self, client=None, messages=None):
+    super(BetaOntapAdapter, self).__init__(client=client, messages=messages)
     self.release_track = base.ReleaseTrack.BETA
-    self.client = client
-    self.messages = messages
+    if client is None:
+      self.client = netapp_api_util.GetClientInstance(
+          release_track=self.release_track
+      )
+    if messages is None:
+      self.messages = netapp_api_util.GetMessagesModule(
+          release_track=self.release_track
+      )
+
+
+class AlphaOntapAdapter(BetaOntapAdapter):
+  """Adapter for the Alpha ONTAP-mode APIs for Cloud NetApp Volumes."""
+
+  def __init__(self, client=None, messages=None):
+    super(AlphaOntapAdapter, self).__init__(client=client, messages=messages)
+    self.release_track = base.ReleaseTrack.ALPHA
+    if client is None:
+      self.client = netapp_api_util.GetClientInstance(
+          release_track=self.release_track
+      )
+    if messages is None:
+      self.messages = netapp_api_util.GetMessagesModule(
+          release_track=self.release_track
+      )

@@ -64,7 +64,10 @@ def _ValidateFaultReasonsBehavior(behavior_input):
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
 )
 @base.UniverseCompatible
 class ReportHostAsFaulty(base.SilentCommand):

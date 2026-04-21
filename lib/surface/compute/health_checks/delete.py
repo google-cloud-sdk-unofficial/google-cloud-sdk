@@ -71,8 +71,12 @@ def _Run(holder, args):
   return client.MakeRequests(requests)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
+)
 class Delete(base.DeleteCommand):
   """Delete Ga/Beta health checks."""
 

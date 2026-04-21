@@ -21,7 +21,10 @@ from googlecloudsdk.command_lib.compute.instances import flags
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.PREVIEW,
 )
 class InstanceSetName(base.SilentCommand):
   """Set name for Compute Engine virtual machine instances."""

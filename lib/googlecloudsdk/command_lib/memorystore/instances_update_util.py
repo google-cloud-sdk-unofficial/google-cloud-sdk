@@ -17,7 +17,7 @@
 
 def UpdateAuthMode(unused_instance_ref, args, patch_request):
   """Hook to fix auth mode in the memorystore instance update mask."""
-  if patch_request.updateMask and args.IsSpecified('auth_mode'):
+  if patch_request.updateMask and args.IsSpecified('authorization_mode'):
     # Replace 'authorizationMode' with 'auth_mode' in the update mask.
     # The framework generates 'authorizationMode' based on the api_field,
     # but the backend expects 'auth_mode'.

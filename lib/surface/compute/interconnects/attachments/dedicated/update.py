@@ -23,7 +23,7 @@ from googlecloudsdk.command_lib.util.args import labels_util
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Update(base.UpdateCommand):
   """Update a Compute Engine dedicated interconnect attachment.
 

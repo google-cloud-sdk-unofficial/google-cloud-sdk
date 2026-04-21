@@ -515,7 +515,7 @@ properties:
 
   release_tracks:
     type: array
-    items: {enum: [ALPHA, BETA, GA]}
+    items: {enum: [ALPHA, BETA, GA, PREVIEW]}
 
   # The type of command to generate. This is inferred based on the name
   # of the command file (convert to uppercase and remove .yaml extension).

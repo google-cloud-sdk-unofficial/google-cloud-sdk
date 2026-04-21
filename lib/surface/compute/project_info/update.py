@@ -21,7 +21,7 @@ from googlecloudsdk.core import properties
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Update(base.UpdateCommand):
   r"""Update a Compute Engine project resource.
 

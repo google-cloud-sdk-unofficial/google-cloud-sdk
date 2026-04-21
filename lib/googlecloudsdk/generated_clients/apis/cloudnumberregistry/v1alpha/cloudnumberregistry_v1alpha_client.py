@@ -935,7 +935,7 @@ class CloudnumberregistryV1alpha(base_api.BaseApiClient):
         method_id='cloudnumberregistry.projects.locations.registryBooks.get',
         ordered_params=['name'],
         path_params=['name'],
-        query_params=[],
+        query_params=['view'],
         relative_path='v1alpha/{+name}',
         request_field='',
         request_type_name='CloudnumberregistryProjectsLocationsRegistryBooksGetRequest',
@@ -962,7 +962,7 @@ class CloudnumberregistryV1alpha(base_api.BaseApiClient):
         method_id='cloudnumberregistry.projects.locations.registryBooks.list',
         ordered_params=['parent'],
         path_params=['parent'],
-        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken', 'view'],
         relative_path='v1alpha/{+parent}/registryBooks',
         request_field='',
         request_type_name='CloudnumberregistryProjectsLocationsRegistryBooksListRequest',
@@ -1062,7 +1062,7 @@ class CloudnumberregistryV1alpha(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method can be called in two ways: * **List all public locations:** Use the path `GET /v1/locations`. * **List project-visible locations:** Use the path `GET /v1/projects/{project_id}/locations`. This may include public locations as well as private or other locations specifically visible to the project.
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
       Args:
         request: (CloudnumberregistryProjectsLocationsListRequest) input message

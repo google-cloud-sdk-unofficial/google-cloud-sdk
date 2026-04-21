@@ -38,8 +38,8 @@ class EssentialcontactsFoldersContactsComputeRequest(_messages.Message):
       `next_page_token` from the previous response. The values of other method
       parameters should be identical to those in the previous call.
     parent: Required. The name of the resource to compute contacts for.
-      Format: organizations/{organization_id}, folders/{folder_id} or
-      projects/{project_id}
+      Format: organizations/{organization}, folders/{folder} or
+      projects/{project} (where {project} is the project number)
   """
 
   class NotificationCategoriesValueValuesEnum(_messages.Enum):
@@ -133,8 +133,8 @@ class EssentialcontactsFoldersContactsCreateRequest(_messages.Message):
       GoogleCloudEssentialcontactsV1alpha1Contact resource to be passed as the
       request body.
     parent: Required. The resource to save this contact for. Format:
-      organizations/{organization_id}, folders/{folder_id} or
-      projects/{project_id}
+      organizations/{organization}, folders/{folder} or projects/{project}
+      (where {project} is the project number)
   """
 
   googleCloudEssentialcontactsV1alpha1Contact = _messages.MessageField('GoogleCloudEssentialcontactsV1alpha1Contact', 1)
@@ -146,9 +146,10 @@ class EssentialcontactsFoldersContactsDeleteRequest(_messages.Message):
 
   Fields:
     name: Required. The name of the contact to delete. Format:
-      organizations/{organization_id}/contacts/{contact_id},
-      folders/{folder_id}/contacts/{contact_id} or
-      projects/{project_id}/contacts/{contact_id}
+      organizations/{organization}/contacts/{contact},
+      folders/{folder}/contacts/{contact} or
+      projects/{project}/contacts/{contact} (where {project} is the project
+      number)
   """
 
   name = _messages.StringField(1, required=True)
@@ -159,9 +160,10 @@ class EssentialcontactsFoldersContactsGetRequest(_messages.Message):
 
   Fields:
     name: Required. The name of the contact to retrieve. Format:
-      organizations/{organization_id}/contacts/{contact_id},
-      folders/{folder_id}/contacts/{contact_id} or
-      projects/{project_id}/contacts/{contact_id}
+      organizations/{organization}/contacts/{contact},
+      folders/{folder}/contacts/{contact} or
+      projects/{project}/contacts/{contact} (where {project} is the project
+      number)
   """
 
   name = _messages.StringField(1, required=True)
@@ -180,8 +182,8 @@ class EssentialcontactsFoldersContactsListRequest(_messages.Message):
       `next_page_token` from the previous response. The values of other method
       parameters should be identical to those in the previous call.
     parent: Required. The parent resource name. Format:
-      organizations/{organization_id}, folders/{folder_id} or
-      projects/{project_id}
+      organizations/{organization}, folders/{folder} or projects/{project}
+      (where {project} is the project number)
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -216,9 +218,10 @@ class EssentialcontactsFoldersContactsResendRequest(_messages.Message):
       GoogleCloudEssentialcontactsV1alpha1ResendVerificationRequest resource
       to be passed as the request body.
     name: Required. The name of the contact to verify. Format:
-      organizations/{organization_id}/contacts/{contact_id},
-      folders/{folder_id}/contacts/{contact_id} or
-      projects/{project_id}/contacts/{contact_id}
+      organizations/{organization}/contacts/{contact},
+      folders/{folder}/contacts/{contact} or
+      projects/{project}/contacts/{contact} (where {project} is the project
+      number)
   """
 
   googleCloudEssentialcontactsV1alpha1ResendVerificationRequest = _messages.MessageField('GoogleCloudEssentialcontactsV1alpha1ResendVerificationRequest', 1)
@@ -235,8 +238,8 @@ class EssentialcontactsFoldersContactsSendTestMessageRequest(_messages.Message):
     resource: Required. The name of the resource to send the test message for.
       All contacts must either be set directly on this resource or inherited
       from another resource that is an ancestor of this one. Format:
-      organizations/{organization_id}, folders/{folder_id} or
-      projects/{project_id}
+      organizations/{organization}, folders/{folder} or projects/{project}
+      (where {project} is the project number)
   """
 
   googleCloudEssentialcontactsV1alpha1SendTestMessageRequest = _messages.MessageField('GoogleCloudEssentialcontactsV1alpha1SendTestMessageRequest', 1)
@@ -251,9 +254,10 @@ class EssentialcontactsFoldersContactsVerifyRequest(_messages.Message):
       GoogleCloudEssentialcontactsV1alpha1VerifyContactRequest resource to be
       passed as the request body.
     name: Required. The name of the contact to verify. Format:
-      organizations/{organization_id}/contacts/{contact_id},
-      folders/{folder_id}/contacts/{contact_id} or
-      projects/{project_id}/contacts/{contact_id}
+      organizations/{organization}/contacts/{contact},
+      folders/{folder}/contacts/{contact} or
+      projects/{project}/contacts/{contact} (where {project} is the project
+      number)
   """
 
   googleCloudEssentialcontactsV1alpha1VerifyContactRequest = _messages.MessageField('GoogleCloudEssentialcontactsV1alpha1VerifyContactRequest', 1)
@@ -288,8 +292,8 @@ class EssentialcontactsOrganizationsContactsComputeRequest(_messages.Message):
       `next_page_token` from the previous response. The values of other method
       parameters should be identical to those in the previous call.
     parent: Required. The name of the resource to compute contacts for.
-      Format: organizations/{organization_id}, folders/{folder_id} or
-      projects/{project_id}
+      Format: organizations/{organization}, folders/{folder} or
+      projects/{project} (where {project} is the project number)
   """
 
   class NotificationCategoriesValueValuesEnum(_messages.Enum):
@@ -383,8 +387,8 @@ class EssentialcontactsOrganizationsContactsCreateRequest(_messages.Message):
       GoogleCloudEssentialcontactsV1alpha1Contact resource to be passed as the
       request body.
     parent: Required. The resource to save this contact for. Format:
-      organizations/{organization_id}, folders/{folder_id} or
-      projects/{project_id}
+      organizations/{organization}, folders/{folder} or projects/{project}
+      (where {project} is the project number)
   """
 
   googleCloudEssentialcontactsV1alpha1Contact = _messages.MessageField('GoogleCloudEssentialcontactsV1alpha1Contact', 1)
@@ -396,9 +400,10 @@ class EssentialcontactsOrganizationsContactsDeleteRequest(_messages.Message):
 
   Fields:
     name: Required. The name of the contact to delete. Format:
-      organizations/{organization_id}/contacts/{contact_id},
-      folders/{folder_id}/contacts/{contact_id} or
-      projects/{project_id}/contacts/{contact_id}
+      organizations/{organization}/contacts/{contact},
+      folders/{folder}/contacts/{contact} or
+      projects/{project}/contacts/{contact} (where {project} is the project
+      number)
   """
 
   name = _messages.StringField(1, required=True)
@@ -409,9 +414,10 @@ class EssentialcontactsOrganizationsContactsGetRequest(_messages.Message):
 
   Fields:
     name: Required. The name of the contact to retrieve. Format:
-      organizations/{organization_id}/contacts/{contact_id},
-      folders/{folder_id}/contacts/{contact_id} or
-      projects/{project_id}/contacts/{contact_id}
+      organizations/{organization}/contacts/{contact},
+      folders/{folder}/contacts/{contact} or
+      projects/{project}/contacts/{contact} (where {project} is the project
+      number)
   """
 
   name = _messages.StringField(1, required=True)
@@ -430,8 +436,8 @@ class EssentialcontactsOrganizationsContactsListRequest(_messages.Message):
       `next_page_token` from the previous response. The values of other method
       parameters should be identical to those in the previous call.
     parent: Required. The parent resource name. Format:
-      organizations/{organization_id}, folders/{folder_id} or
-      projects/{project_id}
+      organizations/{organization}, folders/{folder} or projects/{project}
+      (where {project} is the project number)
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -466,9 +472,10 @@ class EssentialcontactsOrganizationsContactsResendRequest(_messages.Message):
       GoogleCloudEssentialcontactsV1alpha1ResendVerificationRequest resource
       to be passed as the request body.
     name: Required. The name of the contact to verify. Format:
-      organizations/{organization_id}/contacts/{contact_id},
-      folders/{folder_id}/contacts/{contact_id} or
-      projects/{project_id}/contacts/{contact_id}
+      organizations/{organization}/contacts/{contact},
+      folders/{folder}/contacts/{contact} or
+      projects/{project}/contacts/{contact} (where {project} is the project
+      number)
   """
 
   googleCloudEssentialcontactsV1alpha1ResendVerificationRequest = _messages.MessageField('GoogleCloudEssentialcontactsV1alpha1ResendVerificationRequest', 1)
@@ -485,8 +492,8 @@ class EssentialcontactsOrganizationsContactsSendTestMessageRequest(_messages.Mes
     resource: Required. The name of the resource to send the test message for.
       All contacts must either be set directly on this resource or inherited
       from another resource that is an ancestor of this one. Format:
-      organizations/{organization_id}, folders/{folder_id} or
-      projects/{project_id}
+      organizations/{organization}, folders/{folder} or projects/{project}
+      (where {project} is the project number)
   """
 
   googleCloudEssentialcontactsV1alpha1SendTestMessageRequest = _messages.MessageField('GoogleCloudEssentialcontactsV1alpha1SendTestMessageRequest', 1)
@@ -501,9 +508,10 @@ class EssentialcontactsOrganizationsContactsVerifyRequest(_messages.Message):
       GoogleCloudEssentialcontactsV1alpha1VerifyContactRequest resource to be
       passed as the request body.
     name: Required. The name of the contact to verify. Format:
-      organizations/{organization_id}/contacts/{contact_id},
-      folders/{folder_id}/contacts/{contact_id} or
-      projects/{project_id}/contacts/{contact_id}
+      organizations/{organization}/contacts/{contact},
+      folders/{folder}/contacts/{contact} or
+      projects/{project}/contacts/{contact} (where {project} is the project
+      number)
   """
 
   googleCloudEssentialcontactsV1alpha1VerifyContactRequest = _messages.MessageField('GoogleCloudEssentialcontactsV1alpha1VerifyContactRequest', 1)
@@ -538,8 +546,8 @@ class EssentialcontactsProjectsContactsComputeRequest(_messages.Message):
       `next_page_token` from the previous response. The values of other method
       parameters should be identical to those in the previous call.
     parent: Required. The name of the resource to compute contacts for.
-      Format: organizations/{organization_id}, folders/{folder_id} or
-      projects/{project_id}
+      Format: organizations/{organization}, folders/{folder} or
+      projects/{project} (where {project} is the project number)
   """
 
   class NotificationCategoriesValueValuesEnum(_messages.Enum):
@@ -633,8 +641,8 @@ class EssentialcontactsProjectsContactsCreateRequest(_messages.Message):
       GoogleCloudEssentialcontactsV1alpha1Contact resource to be passed as the
       request body.
     parent: Required. The resource to save this contact for. Format:
-      organizations/{organization_id}, folders/{folder_id} or
-      projects/{project_id}
+      organizations/{organization}, folders/{folder} or projects/{project}
+      (where {project} is the project number)
   """
 
   googleCloudEssentialcontactsV1alpha1Contact = _messages.MessageField('GoogleCloudEssentialcontactsV1alpha1Contact', 1)
@@ -646,9 +654,10 @@ class EssentialcontactsProjectsContactsDeleteRequest(_messages.Message):
 
   Fields:
     name: Required. The name of the contact to delete. Format:
-      organizations/{organization_id}/contacts/{contact_id},
-      folders/{folder_id}/contacts/{contact_id} or
-      projects/{project_id}/contacts/{contact_id}
+      organizations/{organization}/contacts/{contact},
+      folders/{folder}/contacts/{contact} or
+      projects/{project}/contacts/{contact} (where {project} is the project
+      number)
   """
 
   name = _messages.StringField(1, required=True)
@@ -659,9 +668,10 @@ class EssentialcontactsProjectsContactsGetRequest(_messages.Message):
 
   Fields:
     name: Required. The name of the contact to retrieve. Format:
-      organizations/{organization_id}/contacts/{contact_id},
-      folders/{folder_id}/contacts/{contact_id} or
-      projects/{project_id}/contacts/{contact_id}
+      organizations/{organization}/contacts/{contact},
+      folders/{folder}/contacts/{contact} or
+      projects/{project}/contacts/{contact} (where {project} is the project
+      number)
   """
 
   name = _messages.StringField(1, required=True)
@@ -680,8 +690,8 @@ class EssentialcontactsProjectsContactsListRequest(_messages.Message):
       `next_page_token` from the previous response. The values of other method
       parameters should be identical to those in the previous call.
     parent: Required. The parent resource name. Format:
-      organizations/{organization_id}, folders/{folder_id} or
-      projects/{project_id}
+      organizations/{organization}, folders/{folder} or projects/{project}
+      (where {project} is the project number)
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -716,9 +726,10 @@ class EssentialcontactsProjectsContactsResendRequest(_messages.Message):
       GoogleCloudEssentialcontactsV1alpha1ResendVerificationRequest resource
       to be passed as the request body.
     name: Required. The name of the contact to verify. Format:
-      organizations/{organization_id}/contacts/{contact_id},
-      folders/{folder_id}/contacts/{contact_id} or
-      projects/{project_id}/contacts/{contact_id}
+      organizations/{organization}/contacts/{contact},
+      folders/{folder}/contacts/{contact} or
+      projects/{project}/contacts/{contact} (where {project} is the project
+      number)
   """
 
   googleCloudEssentialcontactsV1alpha1ResendVerificationRequest = _messages.MessageField('GoogleCloudEssentialcontactsV1alpha1ResendVerificationRequest', 1)
@@ -735,8 +746,8 @@ class EssentialcontactsProjectsContactsSendTestMessageRequest(_messages.Message)
     resource: Required. The name of the resource to send the test message for.
       All contacts must either be set directly on this resource or inherited
       from another resource that is an ancestor of this one. Format:
-      organizations/{organization_id}, folders/{folder_id} or
-      projects/{project_id}
+      organizations/{organization}, folders/{folder} or projects/{project}
+      (where {project} is the project number)
   """
 
   googleCloudEssentialcontactsV1alpha1SendTestMessageRequest = _messages.MessageField('GoogleCloudEssentialcontactsV1alpha1SendTestMessageRequest', 1)
@@ -751,9 +762,10 @@ class EssentialcontactsProjectsContactsVerifyRequest(_messages.Message):
       GoogleCloudEssentialcontactsV1alpha1VerifyContactRequest resource to be
       passed as the request body.
     name: Required. The name of the contact to verify. Format:
-      organizations/{organization_id}/contacts/{contact_id},
-      folders/{folder_id}/contacts/{contact_id} or
-      projects/{project_id}/contacts/{contact_id}
+      organizations/{organization}/contacts/{contact},
+      folders/{folder}/contacts/{contact} or
+      projects/{project}/contacts/{contact} (where {project} is the project
+      number)
   """
 
   googleCloudEssentialcontactsV1alpha1VerifyContactRequest = _messages.MessageField('GoogleCloudEssentialcontactsV1alpha1VerifyContactRequest', 1)
@@ -924,10 +936,10 @@ class GoogleCloudEssentialcontactsV1alpha1SendTestMessageRequest(_messages.Messa
 
   Fields:
     contacts: Required. The list of names of the contacts to send a test
-      message to. Format:
-      organizations/{organization_id}/contacts/{contact_id},
-      folders/{folder_id}/contacts/{contact_id} or
-      projects/{project_id}/contacts/{contact_id}
+      message to. Format: organizations/{organization}/contacts/{contact},
+      folders/{folder}/contacts/{contact} or
+      projects/{project}/contacts/{contact} (where {project} is the project
+      number)
     notificationCategory: Required. The notification category to send the test
       message for. All contacts must be subscribed to this category.
   """

@@ -34,8 +34,12 @@ class DeleteBatchPoller(poller.BatchPoller):
     return
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
+)
 class Delete(base.DeleteCommand):
   """Delete Compute Engine Highly Available VPN Gateways.
 

@@ -93,6 +93,26 @@ def _GenerateServiceNameFromLocalPath(source):
   return _GenerateServiceName(path)
 
 
+_AR_IMAGE_PATTERN = r'^([^\.]+)-docker.pkg.dev/([^/]+)/'
+
+
+def ParseArImage(image: str | None) -> tuple[str | None, str | None]:
+  """Extracts region and project from an Artifact Registry image URL.
+
+  Args:
+    image: str, The image URL.
+
+  Returns:
+    tuple(str|None, str|None): (region, project)
+  """
+  if not image:
+    return None, None
+  match = re.match(_AR_IMAGE_PATTERN, image)
+  if match:
+    return match.group(1), match.group(2)
+  return None, None
+
+
 class ResourcePromptFallthrough(PromptFallthrough):
   """Fall through to reading the resource name from an interactive prompt."""
 
@@ -128,6 +148,7 @@ class RegionPromptFallthrough(PromptFallthrough):
   def _Prompt(self, parsed_args):
     client = global_methods.GetServerlessClientInstance()
     all_regions = global_methods.ListRegions(client)
+
     idx = console_io.PromptChoice(
         all_regions,
         message='Please specify a region:\n',
@@ -183,7 +204,15 @@ class ProjectPromptFallthrough(PromptFallthrough):
     )
 
   def _Prompt(self, parsed_args):
-    return console_io.PromptWithDefault(message='Please specify a project ID')
+    default_project = None
+    image = getattr(parsed_args, 'image', None)
+    if image:
+      _, inferred_project = ParseArImage(image)
+      if inferred_project and inferred_project != 'cloudrun':
+        default_project = inferred_project
+    return console_io.PromptWithDefault(
+        message='Please specify a project ID', default=default_project
+    )
 
 
 class DefaultFallthrough(deps.Fallthrough):

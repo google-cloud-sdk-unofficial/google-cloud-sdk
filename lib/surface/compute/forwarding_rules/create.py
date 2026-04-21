@@ -608,7 +608,7 @@ class CreateHelper(object):
           args, resources).SelfLink()
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class Create(base.CreateCommand):
   """Create a forwarding rule to direct network traffic to a load balancer."""

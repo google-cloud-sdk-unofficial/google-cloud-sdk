@@ -44,13 +44,14 @@ def _DetailedHelp():
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Update(base.UpdateCommand):
   """Updates properties of an existing Compute Engine subnetwork."""
 
   _include_alpha_logging = False
   _api_version = compute_api.COMPUTE_GA_API_VERSION
   _update_purpose_to_private = True
+  _include_ipv6_secondary_ranges = False
   detailed_help = _DetailedHelp()
 
   @classmethod
@@ -70,6 +71,7 @@ class Update(base.UpdateCommand):
         cls._include_alpha_logging,
         cls._api_version,
         cls._update_purpose_to_private,
+        cls._include_ipv6_secondary_ranges,
     )
 
   def Run(self, args):
@@ -119,6 +121,24 @@ class Update(base.UpdateCommand):
           args, holder.resources
       ).SelfLink()
 
+    if self._include_ipv6_secondary_ranges:
+      add_ipv6_ranges = args.add_secondary_ipv6_range
+      if add_ipv6_ranges:
+        for r in add_ipv6_ranges:
+          if 'ipCollection' in r:
+            # Resolve the collection name to a full URL
+            r['ipCollection'] = holder.resources.Parse(
+                r['ipCollection'],
+                collection='compute.publicDelegatedPrefixes',
+                params={
+                    'project': subnet_ref.project,
+                    'region': subnet_ref.region,
+                }).SelfLink()
+      remove_ipv6_ranges = args.remove_secondary_ipv6_range
+    else:
+      add_ipv6_ranges = None
+      remove_ipv6_ranges = None
+
     return subnets_utils.MakeSubnetworkUpdateRequest(
         client,
         subnet_ref,
@@ -126,6 +146,8 @@ class Update(base.UpdateCommand):
         add_secondary_ranges=args.add_secondary_ranges,
         add_secondary_ranges_with_reserved_internal_range=reserved_internal_ranges,
         remove_secondary_ranges=args.remove_secondary_ranges,
+        add_secondary_ipv6_ranges=add_ipv6_ranges,
+        remove_secondary_ipv6_ranges=remove_ipv6_ranges,
         enable_flow_logs=args.enable_flow_logs,
         aggregation_interval=aggregation_interval,
         flow_sampling=flow_sampling,
@@ -159,3 +181,4 @@ class UpdateAlpha(UpdateBeta):
   _include_alpha_logging = True
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION
   _update_purpose_to_private = True
+  _include_ipv6_secondary_ranges = True

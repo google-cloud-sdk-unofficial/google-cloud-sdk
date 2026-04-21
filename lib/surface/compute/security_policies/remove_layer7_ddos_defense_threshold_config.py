@@ -23,7 +23,10 @@ from googlecloudsdk.command_lib.compute.security_policies import flags
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
 )
 class RemoveLayer7DdosDefenseThresholdConfig(base.UpdateCommand):
   r"""Remove a layer7 ddos defense threshold config from a Compute Engine security policy.

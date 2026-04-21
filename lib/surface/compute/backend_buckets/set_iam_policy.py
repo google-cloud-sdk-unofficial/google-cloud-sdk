@@ -14,7 +14,6 @@
 # limitations under the License.
 """Command to set IAM policy for a resource."""
 
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
@@ -24,7 +23,7 @@ from googlecloudsdk.command_lib.compute.backend_buckets import flags
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.DefaultUniverseOnly
 class SetIamPolicy(base.Command):
   """Set the IAM policy binding for a Compute Engine backend bucket."""
@@ -56,21 +55,30 @@ class SetIamPolicy(base.Command):
     )
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
+class SetIamPolicyBeta(SetIamPolicy):
+  pass
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
-class SetIamPolicyAlpha(SetIamPolicy):
-  """Set the IAM policy binding for a Compute Engine backend bucket."""
+class SetIamPolicyAlpha(SetIamPolicyBeta):
+  pass
 
 
 SetIamPolicy.detailed_help = {
     'brief': 'Set the IAM policy binding for a Compute Engine backend bucket.',
-    'DESCRIPTION': """\
+    'DESCRIPTION': (
+        """\
 
     Sets the IAM policy for the given backend bucket as defined in a
-    JSON or YAML file.  """,
-    'EXAMPLES': """\
+    JSON or YAML file.  """
+    ),
+    'EXAMPLES': (
+        """\
     The following command will read an IAM policy defined in a JSON file
-    'policy.json' and set it for the regionalbackend bucket `my-backend-bucket`:
+    'policy.json' and set it for the regional backend bucket `my-backend-bucket`:
 
       $ {command} my-backend-bucket policy.json --region=REGION
 
@@ -83,8 +91,11 @@ SetIamPolicy.detailed_help = {
 
     See https://cloud.google.com/iam/docs/managing-policies for details of the
     policy file format and contents.
-    """,
-    'API REFERENCE': """\
+    """
+    ),
+    'API REFERENCE': (
+        """\
     This command uses the compute API. The full documentation for this
-    API can be found at: https://cloud.google.com/compute/""",
+    API can be found at: https://cloud.google.com/compute/"""
+    ),
 }

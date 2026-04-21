@@ -1742,6 +1742,8 @@ class Cluster(_messages.Message):
     satisfiesPzs: Output only. Reserved for future use.
     secondaryConfig: Cross Region replication config specific to SECONDARY
       cluster.
+    secondaryInfo: Output only. Information about the secondary cluster. This
+      should be set if and only if the cluster is of type SECONDARY.
     serviceAccountEmail: Output only. AlloyDB per-cluster service account.
       This service account is created per-cluster per-project, and is
       different from the per-project service account. The per-cluster service
@@ -1837,6 +1839,7 @@ class Cluster(_messages.Message):
       SWITCHOVER: The cluster has entered switchover state. All updates on
         cluster and its associated instances are restricted while the cluster
         is in this state.
+      RECREATING: The cluster is being recreated.
     """
     STATE_UNSPECIFIED = 0
     READY = 1
@@ -1849,6 +1852,7 @@ class Cluster(_messages.Message):
     MAINTENANCE = 8
     PROMOTING = 9
     SWITCHOVER = 10
+    RECREATING = 11
 
   class SubscriptionTypeValueValuesEnum(_messages.Enum):
     r"""Optional. Subscription type of the cluster.
@@ -1971,14 +1975,15 @@ class Cluster(_messages.Message):
   reconciling = _messages.BooleanField(30)
   satisfiesPzs = _messages.BooleanField(31)
   secondaryConfig = _messages.MessageField('SecondaryConfig', 32)
-  serviceAccountEmail = _messages.StringField(33)
-  sslConfig = _messages.MessageField('SslConfig', 34)
-  state = _messages.EnumField('StateValueValuesEnum', 35)
-  subscriptionType = _messages.EnumField('SubscriptionTypeValueValuesEnum', 36)
-  tags = _messages.MessageField('TagsValue', 37)
-  trialMetadata = _messages.MessageField('TrialMetadata', 38)
-  uid = _messages.StringField(39)
-  updateTime = _messages.StringField(40)
+  secondaryInfo = _messages.MessageField('SecondaryInfo', 33)
+  serviceAccountEmail = _messages.StringField(34)
+  sslConfig = _messages.MessageField('SslConfig', 35)
+  state = _messages.EnumField('StateValueValuesEnum', 36)
+  subscriptionType = _messages.EnumField('SubscriptionTypeValueValuesEnum', 37)
+  tags = _messages.MessageField('TagsValue', 38)
+  trialMetadata = _messages.MessageField('TrialMetadata', 39)
+  uid = _messages.StringField(40)
+  updateTime = _messages.StringField(41)
 
 
 class ClusterUpgradeDetails(_messages.Message):
@@ -2421,6 +2426,16 @@ class Endpoint(_messages.Message):
       of the DNS record, eg. Type "A" or Type "CNAME". This field is not
       configurable by the user, and it is updated when user specifies the
       target instances.
+    effectiveTargetInstances: Output only. The effective target instances that
+      the endpoint is associated with. This is a list of target instance
+      names, e.g. projects/{project_number}/locations/{location}/clusters/{clu
+      ster_id}/instances/{instance_id} For write endpoint, there is only one
+      effective target instance which has to be a primary instance. Effective
+      target instances are only different from target instances after a
+      switchover or cross-region failover operation. Otherwise,
+      effective_target_instances are the same as target_instances. Note that
+      after a cross-region failover operation, the effective_target_instances
+      can be stale until the operation to update the endpoint is complete.
     endpointType: The type of the endpoint, either write or read.
     etag: For Resource freshness validation (https://google.aip.dev/154)
     name: Output only. Identifier. The name of the endpoint resource with the
@@ -2441,7 +2456,9 @@ class Endpoint(_messages.Message):
       ter}/instances/{instance}. For write endpoint, there is only one target
       instance which has to be a primary instance. For read endpoint, there
       can be multiple target instances which can be read or secondary
-      instances.
+      instances. After a cross-region failover or switchover operation, the
+      endpoint will be associated with a different target instance. This
+      change will be reflected in the effective_target_instances field.
     uid: Output only. The system-generated UID of the resource. The UID is
       assigned when the resource is created, and it is retained until it is
       deleted.
@@ -2509,14 +2526,48 @@ class Endpoint(_messages.Message):
   deleteTime = _messages.StringField(3)
   displayName = _messages.StringField(4)
   dnsConfig = _messages.MessageField('DNSConfig', 5)
-  endpointType = _messages.EnumField('EndpointTypeValueValuesEnum', 6)
-  etag = _messages.StringField(7)
-  name = _messages.StringField(8)
-  reconciling = _messages.BooleanField(9)
-  state = _messages.EnumField('StateValueValuesEnum', 10)
-  targetInstances = _messages.StringField(11, repeated=True)
-  uid = _messages.StringField(12)
-  updateTime = _messages.StringField(13)
+  effectiveTargetInstances = _messages.StringField(6, repeated=True)
+  endpointType = _messages.EnumField('EndpointTypeValueValuesEnum', 7)
+  etag = _messages.StringField(8)
+  name = _messages.StringField(9)
+  reconciling = _messages.BooleanField(10)
+  state = _messages.EnumField('StateValueValuesEnum', 11)
+  targetInstances = _messages.StringField(12, repeated=True)
+  uid = _messages.StringField(13)
+  updateTime = _messages.StringField(14)
+
+
+class EndpointInfo(_messages.Message):
+  r"""EndpointInfo describes a read or write endpoint targeting an instance.
+  This information is stored on the target instances of the endpoint.
+
+  Enums:
+    EndpointTypeValueValuesEnum: The type of an endpoint resource.
+
+  Fields:
+    dnsName: The DNS name of the endpoint. eg.
+      "endpoint_id.location_id.alloydb-psa.goog"
+    dnsZone: The DNS zone of the endpoint.
+    endpointId: The name of the endpoint, eg.
+      "projects/project_id/locations/location_id/endpoints/endpoint_id"
+    endpointType: The type of an endpoint resource.
+  """
+
+  class EndpointTypeValueValuesEnum(_messages.Enum):
+    r"""The type of an endpoint resource.
+
+    Values:
+      ENDPOINT_TYPE_UNSPECIFIED: Unspecified endpoint type.
+      WRITE_ENDPOINT: WRITE_ENDPOINT is used for serving read and write
+        traffic.
+    """
+    ENDPOINT_TYPE_UNSPECIFIED = 0
+    WRITE_ENDPOINT = 1
+
+  dnsName = _messages.StringField(1)
+  dnsZone = _messages.StringField(2)
+  endpointId = _messages.StringField(3)
+  endpointType = _messages.EnumField('EndpointTypeValueValuesEnum', 4)
 
 
 class ExportClusterRequest(_messages.Message):
@@ -2934,6 +2985,10 @@ class Instance(_messages.Message):
       Instance.
     enablePublicIp: Optional. Enabling public ip for the Instance. Deprecated;
       use network_config.enable_public_ip instead.
+    endpointInfos: Output only. The endpoint information for the instance.
+      This field is populated when an endpoint targets the instance. During
+      cross-region failover, the information on the old target instance will
+      be stale until the instance is recreated.
     etag: For Resource freshness validation (https://google.aip.dev/154)
     gcaConfig: Output only. Configuration parameters related to Gemini Cloud
       Assist.
@@ -3205,31 +3260,32 @@ class Instance(_messages.Message):
   deleteTime = _messages.StringField(9)
   displayName = _messages.StringField(10)
   enablePublicIp = _messages.BooleanField(11)
-  etag = _messages.StringField(12)
-  gcaConfig = _messages.MessageField('GCAInstanceConfig', 13)
-  gceZone = _messages.StringField(14)
-  geminiConfig = _messages.MessageField('GeminiInstanceConfig', 15)
-  instanceType = _messages.EnumField('InstanceTypeValueValuesEnum', 16)
-  ipAddress = _messages.StringField(17)
-  labels = _messages.MessageField('LabelsValue', 18)
-  machineConfig = _messages.MessageField('MachineConfig', 19)
-  maintenanceVersionName = _messages.StringField(20)
-  name = _messages.StringField(21)
-  networkConfig = _messages.MessageField('InstanceNetworkConfig', 22)
-  nodes = _messages.MessageField('Node', 23, repeated=True)
-  observabilityConfig = _messages.MessageField('ObservabilityInstanceConfig', 24)
-  outboundPublicIpAddresses = _messages.StringField(25, repeated=True)
-  pscInstanceConfig = _messages.MessageField('PscInstanceConfig', 26)
-  publicIpAddress = _messages.StringField(27)
-  queryInsightsConfig = _messages.MessageField('QueryInsightsInstanceConfig', 28)
-  readPoolConfig = _messages.MessageField('ReadPoolConfig', 29)
-  reconciling = _messages.BooleanField(30)
-  satisfiesPzs = _messages.BooleanField(31)
-  state = _messages.EnumField('StateValueValuesEnum', 32)
-  uid = _messages.StringField(33)
-  updatePolicy = _messages.MessageField('UpdatePolicy', 34)
-  updateTime = _messages.StringField(35)
-  writableNode = _messages.MessageField('Node', 36)
+  endpointInfos = _messages.MessageField('EndpointInfo', 12, repeated=True)
+  etag = _messages.StringField(13)
+  gcaConfig = _messages.MessageField('GCAInstanceConfig', 14)
+  gceZone = _messages.StringField(15)
+  geminiConfig = _messages.MessageField('GeminiInstanceConfig', 16)
+  instanceType = _messages.EnumField('InstanceTypeValueValuesEnum', 17)
+  ipAddress = _messages.StringField(18)
+  labels = _messages.MessageField('LabelsValue', 19)
+  machineConfig = _messages.MessageField('MachineConfig', 20)
+  maintenanceVersionName = _messages.StringField(21)
+  name = _messages.StringField(22)
+  networkConfig = _messages.MessageField('InstanceNetworkConfig', 23)
+  nodes = _messages.MessageField('Node', 24, repeated=True)
+  observabilityConfig = _messages.MessageField('ObservabilityInstanceConfig', 25)
+  outboundPublicIpAddresses = _messages.StringField(26, repeated=True)
+  pscInstanceConfig = _messages.MessageField('PscInstanceConfig', 27)
+  publicIpAddress = _messages.StringField(28)
+  queryInsightsConfig = _messages.MessageField('QueryInsightsInstanceConfig', 29)
+  readPoolConfig = _messages.MessageField('ReadPoolConfig', 30)
+  reconciling = _messages.BooleanField(31)
+  satisfiesPzs = _messages.BooleanField(32)
+  state = _messages.EnumField('StateValueValuesEnum', 33)
+  uid = _messages.StringField(34)
+  updatePolicy = _messages.MessageField('UpdatePolicy', 35)
+  updateTime = _messages.StringField(36)
+  writableNode = _messages.MessageField('Node', 37)
 
 
 class InstanceDowntimeStatus(_messages.Message):
@@ -4255,6 +4311,18 @@ class SecondaryConfig(_messages.Message):
   """
 
   primaryClusterName = _messages.StringField(1)
+
+
+class SecondaryInfo(_messages.Message):
+  r"""Information about the secondary cluster. This is set if and only if the
+  cluster is of type SECONDARY.
+
+  Fields:
+    primaryClusterWriteEndpoints: Output only. The list of write endpoints for
+      the primary cluster.
+  """
+
+  primaryClusterWriteEndpoints = _messages.MessageField('EndpointInfo', 1, repeated=True)
 
 
 class SqlExportOptions(_messages.Message):

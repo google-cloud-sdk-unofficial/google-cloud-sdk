@@ -41,7 +41,10 @@ DETAILED_HELP = {
 
 @base.UniverseCompatible
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
 )
 class RemoveMembers(base.UpdateCommand):
   """Remove member interconnect attachments from a Compute Engine interconnect attachment group.

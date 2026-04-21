@@ -170,7 +170,7 @@
       spec:
       - api_field: key
       - api_field: value
-    - arg_name: auth-mode
+    - arg_name: authorization-mode
       api_field: instance.authorizationMode
       required: false
       help_text: |-
@@ -215,32 +215,26 @@
           Standard small.
       - arg_value: custom-micro
         enum_value: CUSTOM_MICRO
-        hidden: true
         help_text: |-
           Custom micro.
       - arg_value: custom-mini
         enum_value: CUSTOM_MINI
-        hidden: true
         help_text: |-
           Custom mini.
       - arg_value: highcpu-medium
         enum_value: HIGHCPU_MEDIUM
-        hidden: true
         help_text: |-
           High cpu medium.
       - arg_value: standard-large
         enum_value: STANDARD_LARGE
-        hidden: true
         help_text: |-
           Standard large.
       - arg_value: highmem-2xlarge
         enum_value: HIGHMEM_2XLARGE
-        hidden: true
         help_text: |-
           High memory 2xlarge.
       - arg_value: custom-pico
         enum_value: CUSTOM_PICO
-        hidden: true
         help_text: |-
           Custom pico.
     - group:
@@ -628,8 +622,6 @@
         not supported (00000000-0000-0000-0000-000000000000).
   request:
     api_version: v1alpha
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.memorystore.instances_update_util:UpdateAuthMode
     collection:
     - memorystore.projects.locations.instances
   async:

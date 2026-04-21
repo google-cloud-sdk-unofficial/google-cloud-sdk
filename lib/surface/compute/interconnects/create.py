@@ -63,7 +63,10 @@ _CCI_DOCUMENTATION_LINK = 'https://cloud.google.com/network-connectivity/docs/in
 
 @base.UniverseCompatible
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
 )
 class Create(base.CreateCommand):
   """Create a Compute Engine interconnect.

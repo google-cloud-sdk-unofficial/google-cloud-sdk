@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute.instances import flags as instances_flag
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Delete(base.DeleteCommand):
   r"""Delete a Dynamic Network Interface from a Compute Engine instance.
 

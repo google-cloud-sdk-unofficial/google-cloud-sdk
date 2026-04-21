@@ -41,7 +41,7 @@ def _CommonArgs(track, parser):
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Create(base.Command):
   """Create Compute Engine commitments."""
 
@@ -51,6 +51,7 @@ class Create(base.Command):
   _support_reservation_sharing_policy = False
   _support_60_month_plan = False
   _support_24_month_plan = False
+  _support_resource_manager_tags = False
 
   detailed_help = {'EXAMPLES': """
         To create a commitment called ``commitment-1'' in the ``us-central1''
@@ -71,6 +72,7 @@ class Create(base.Command):
         support_reservation_sharing_policy=cls._support_reservation_sharing_policy,
         support_60_month_plan=cls._support_60_month_plan,
         support_24_month_plan=cls._support_24_month_plan,
+        support_resource_manager_tags=cls._support_resource_manager_tags,
     )
 
   def _MakeCreateRequest(
@@ -110,6 +112,10 @@ class Create(base.Command):
         existingReservations=existing_reservations,
     )
     commitment.customEndTimestamp = flags.TranslateCustomEndTimeArg(args)
+    if self._support_resource_manager_tags:
+      commitment.params = flags.TranslateResourceManagerTagsArg(
+          messages, args.resource_manager_tags
+      )
     return messages.ComputeRegionCommitmentsInsertRequest(
         commitment=commitment,
         project=project,
@@ -185,6 +191,7 @@ class CreateBeta(Create):
   _support_reservation_sharing_policy = True
   _support_60_month_plan = False
   _support_24_month_plan = False
+  _support_resource_manager_tags = False
 
   @classmethod
   def Args(cls, parser):
@@ -197,6 +204,7 @@ class CreateBeta(Create):
         support_reservation_sharing_policy=cls._support_reservation_sharing_policy,
         support_60_month_plan=cls._support_60_month_plan,
         support_24_month_plan=cls._support_24_month_plan,
+        support_resource_manager_tags=cls._support_resource_manager_tags,
     )
 
 
@@ -211,6 +219,7 @@ class CreateAlpha(CreateBeta):
   _support_reservation_sharing_policy = True
   _support_60_month_plan = True
   _support_24_month_plan = True
+  _support_resource_manager_tags = True
 
   @classmethod
   def Args(cls, parser):
@@ -223,6 +232,7 @@ class CreateAlpha(CreateBeta):
         support_reservation_sharing_policy=cls._support_reservation_sharing_policy,
         support_60_month_plan=cls._support_60_month_plan,
         support_24_month_plan=cls._support_24_month_plan,
+        support_resource_manager_tags=cls._support_resource_manager_tags,
     )
 
   def _MakeCreateRequest(
@@ -263,6 +273,10 @@ class CreateAlpha(CreateBeta):
     )
 
     commitment.customEndTimestamp = flags.TranslateCustomEndTimeArg(args)
+    if self._support_resource_manager_tags:
+      commitment.params = flags.TranslateResourceManagerTagsArg(
+          messages, args.resource_manager_tags
+      )
     return messages.ComputeRegionCommitmentsInsertRequest(
         commitment=commitment,
         project=project,

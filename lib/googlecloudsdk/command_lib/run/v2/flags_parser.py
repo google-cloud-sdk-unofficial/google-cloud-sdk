@@ -14,7 +14,6 @@
 # limitations under the License.
 """Parsers given command arguments for the Cloud Run V2 command surface into configuration changes."""
 
-from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run.config_changes import GenerateVolumeName
@@ -324,7 +323,8 @@ def _GetContainerConfigurationChanges(
             non_ingress_type=non_ingress_type,
         )
     )
-  if container_args.IsSpecified('workdir'):
+  # Not yet in GA
+  if hasattr(container_args, 'workdir') and container_args.workdir is not None:
     # Allow passing an empty string here to reset the field
     changes.append(
         config_changes.ContainerWorkdirChange(
@@ -457,11 +457,11 @@ def _GetTemplateConfigurationChanges(
     changes.extend(_GetSecretsChanges(args, non_ingress_type=non_ingress_type))
   if flags.FlagIsExplicitlySet(args, 'add_volume') and args.add_volume:
     # Volume names must be generated before calling AddVolumeChange
-    _ValidateAndMaybeGenerateVolumeNames(args, release_track)
+    _ValidateAndMaybeGenerateVolumeNames(args)
     changes.append(
         config_changes.AddVolumeChange(args.add_volume, release_track)
     )
-    _MaybeAddVolumeMountChange(args, changes, release_track)
+    _MaybeAddVolumeMountChange(args, changes)
   if (
       flags.FlagIsExplicitlySet(args, 'add_volume_mount')
       and args.add_volume_mount
@@ -602,7 +602,7 @@ def _GetInstanceSplitChanges(args):
     return config_changes.InstanceSplitChange(to_revisions=args.to_revisions)
 
 
-def _ValidateAndMaybeGenerateVolumeNames(args, release_track):
+def _ValidateAndMaybeGenerateVolumeNames(args):
   """Validates used of the volumes shortcut and generates volume names when needed.
 
   Specifically, it checks that the 'mount-path' parameter is not being used
@@ -611,29 +611,27 @@ def _ValidateAndMaybeGenerateVolumeNames(args, release_track):
 
   Args:
     args: The argparse namespace containing the parsed command line arguments.
-    release_track: The current release track (e.g., base.ReleaseTrack.ALPHA).
   """
   uses_containers_flag = flags.FlagIsExplicitlySet(args, 'containers')
-  if release_track != base.ReleaseTrack.GA:
-    for volume in args.add_volume:
-      # If mount-path is specified, the user is attempting to use the volumes
-      # shortcut.
-      if 'mount-path' in volume:
-        # The volumes shortcut is not compatible with the --containers flag.
-        if uses_containers_flag:
-          raise exceptions.ConfigurationError(
-              'When using the --containers flag, "mount-path" cannot be'
-              ' specified under the --add-volume flag. Instead, specify'
-              ' "mount-path" using the --add-volume-mount flag after the'
-              ' --container flag of the container the volume should be'
-              ' mounted to.'
-          )
-        # Generate a name if the user has not specified one.
-        if 'name' not in volume:
-          volume['name'] = GenerateVolumeName(volume['type'])
+  for volume in args.add_volume:
+    # If mount-path is specified, the user is attempting to use the volumes
+    # shortcut.
+    if 'mount-path' in volume:
+      # The volumes shortcut is not compatible with the --containers flag.
+      if uses_containers_flag:
+        raise exceptions.ConfigurationError(
+            'When using the --containers flag, "mount-path" cannot be'
+            ' specified under the --add-volume flag. Instead, specify'
+            ' "mount-path" using the --add-volume-mount flag after the'
+            ' --container flag of the container the volume should be'
+            ' mounted to.'
+        )
+      # Generate a name if the user has not specified one.
+      if 'name' not in volume:
+        volume['name'] = GenerateVolumeName(volume['type'])
 
 
-def _MaybeAddVolumeMountChange(args, changes, release_track):
+def _MaybeAddVolumeMountChange(args, changes):
   """Adds a VolumeMountChange to the list of changes if applicable.
 
   This function checks if new volume mounts should be added based on the
@@ -644,23 +642,21 @@ def _MaybeAddVolumeMountChange(args, changes, release_track):
   Args:
     args: The argparse namespace containing the parsed command line arguments.
     changes: A list of configuration changes to append to.
-    release_track: The current release track (e.g., base.ReleaseTrack.ALPHA).
   """
-  if release_track != base.ReleaseTrack.GA:
-    new_volume_mounts = []
-    for volume in args.add_volume:
-      if 'mount-path' in volume and 'name' in volume:
-        volume_mount_args = {
-            'volume': volume['name'],
-            'mount-path': volume['mount-path'],
-        }
-        new_volume_mounts.append(volume_mount_args)
-    if new_volume_mounts:
-      changes.append(
-          config_changes.AddVolumeMountChange(
-              new_mounts=new_volume_mounts,
-          )
-      )
+  new_volume_mounts = []
+  for volume in args.add_volume:
+    if 'mount-path' in volume and 'name' in volume:
+      volume_mount_args = {
+          'volume': volume['name'],
+          'mount-path': volume['mount-path'],
+      }
+      new_volume_mounts.append(volume_mount_args)
+  if new_volume_mounts:
+    changes.append(
+        config_changes.AddVolumeMountChange(
+            new_mounts=new_volume_mounts,
+        )
+    )
 
 
 def GetWorkerPoolConfigurationChanges(args, release_track):

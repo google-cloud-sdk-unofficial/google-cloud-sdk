@@ -18,7 +18,6 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Update bindings
     description: Update a binding
@@ -50,6 +49,21 @@
                 Format:
 
                 * `projects/{project}/locations/{location}/authProviders/{auth_provider}`
+            - arg_name: auth-provider-binding-scopes
+              api_field: binding.authProviderBinding.scopes
+              required: false
+              repeated: true
+              help_text: |-
+                The list of OAuth2 scopes of the AuthProvider.
+              clearable: true
+            - arg_name: auth-provider-binding-continue-uri
+              api_field: binding.authProviderBinding.continueUri
+              required: false
+              repeated: false
+              help_text: |-
+                The continue URI of the AuthProvider.
+                The URI is used to reauthenticate the user and finalize the managed OAuth
+                flow.
     - help_text: |-
         Identifier. The resource name of the Binding.
         Format: `projects/{project}/locations/{location}/bindings/{binding}`.
@@ -85,18 +99,14 @@
               Arguments for the source type.
             params:
             - arg_name: source-identifier
+              api_field: binding.source.identifier
+              required: false
+              repeated: false
               help_text: |-
                 The identifier of the source Agent.
                 Format:
 
                 * `urn:agent:{publisher}:{namespace}:{name}`
-              is_positional: false
-              is_primary_resource: false
-              resource_spec: !REF googlecloudsdk.command_lib.agent_registry.v1alpha_resources:projects_locations_agents
-              resource_method_params:
-                binding.source.identifier: '{__relative_name__}'
-              required: false
-              clearable: true
     - group:
         api_field: binding.target
         arg_name: target

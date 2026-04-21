@@ -11,6 +11,18 @@ from apitools.base.py import extra_types
 package = 'gkehub'
 
 
+class AgentMetadata(_messages.Message):
+  r"""Metadata about the agent that is used for logging.
+
+  Fields:
+    agentName: The name of the agent being used. This is expected to be
+      populated with either "aiplatform" (for Vertex AI) or
+      "geminicloudassist" (for Gemini Cloud Assist).
+  """
+
+  agentName = _messages.StringField(1)
+
+
 class ApplianceCluster(_messages.Message):
   r"""ApplianceCluster contains information specific to GDC Edge Appliance
   Clusters.
@@ -263,6 +275,9 @@ class CloudAuditOptions(_messages.Message):
     PermissionTypeValueValuesEnum: The type associated with the permission.
 
   Fields:
+    agentMetadata: If an agent is making the request, metadata about the agent
+      making the request. Used by the Cloud Audit Logging system to enrich the
+      audit log.
     authorizationLoggingOptions: Information used by the Cloud Audit Logging
       pipeline. Will be deprecated once the migration to PermissionType is
       complete (b/201806118).
@@ -300,9 +315,10 @@ class CloudAuditOptions(_messages.Message):
     DATA_READ = 3
     DATA_WRITE = 4
 
-  authorizationLoggingOptions = _messages.MessageField('AuthorizationLoggingOptions', 1)
-  logName = _messages.EnumField('LogNameValueValuesEnum', 2)
-  permissionType = _messages.EnumField('PermissionTypeValueValuesEnum', 3)
+  agentMetadata = _messages.MessageField('AgentMetadata', 1)
+  authorizationLoggingOptions = _messages.MessageField('AuthorizationLoggingOptions', 2)
+  logName = _messages.EnumField('LogNameValueValuesEnum', 3)
+  permissionType = _messages.EnumField('PermissionTypeValueValuesEnum', 4)
 
 
 class Condition(_messages.Message):

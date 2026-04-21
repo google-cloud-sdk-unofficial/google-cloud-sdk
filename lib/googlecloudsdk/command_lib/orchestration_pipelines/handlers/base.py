@@ -28,6 +28,10 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
+IMPLICIT_LABEL_KEY = "orchestration_pipeline"
+IMPLICIT_LABEL_VALUE = "true"
+
+
 class GcpResourceHandler(abc.ABC):
   """An abstract handler for deploying a specific type of GCP resource."""
 
@@ -54,6 +58,39 @@ class GcpResourceHandler(abc.ABC):
     self.client = self._get_client()
     self.messages = self._get_messages()
     self._validate_metadata()
+
+  def get_labels_field_name(self) -> str | None:
+    """Returns the name of the labels field, or None to disable.
+
+    Subclasses can override this to specify a custom field name or disable
+    implicit labeling by returning None. Returning "" (default) enables
+    autodetection.
+    """
+    return ""
+
+  def _detect_labels_field(self) -> str | None:
+    """Detects the name of the labels field in the resource message."""
+    override = self.get_labels_field_name()
+    if override is None:
+      return None
+    if override:
+      return override
+
+    for field in self.resource_message_type.all_fields():
+      if field.name == "labels":
+        return "labels"
+    return None
+
+  def _build_labels_value(
+      self, labels_value_type: Any, labels_dict: dict[str, str]
+  ) -> Any:
+    """Builds a LabelsValue message from a dictionary."""
+    additional_properties = []
+    for k, v in labels_dict.items():
+      additional_properties.append(
+          labels_value_type.AdditionalProperty(key=k, value=v)
+      )
+    return labels_value_type(additionalProperties=additional_properties)
 
   def _validate_metadata(self):
     """Validates that the resource metadata is applicable for this handler."""
@@ -295,7 +332,15 @@ class GcpResourceHandler(abc.ABC):
 
   def to_resource_message(self, definition: dict[str, Any]) -> messages.Message:
     """Converts a dictionary definition to a resource message."""
-    return encoding.DictToMessage(definition, self.resource_message_type)
+    definition_copy = definition.copy()
+    labels_field_name = self._detect_labels_field()
+    if labels_field_name:
+      labels = definition_copy.get(labels_field_name, {})
+      if isinstance(labels, dict):
+        labels_copy = labels.copy()
+        labels_copy[IMPLICIT_LABEL_KEY] = IMPLICIT_LABEL_VALUE
+        definition_copy[labels_field_name] = labels_copy
+    return encoding.DictToMessage(definition_copy, self.resource_message_type)
 
   @abc.abstractmethod
   def build_create_request(
@@ -346,7 +391,17 @@ class GcpResourceHandler(abc.ABC):
         if hasattr(existing_resource, "__dict__"):
           existing_dict = existing_resource.__dict__
 
-    return self._compare_recursive(existing_dict, local_definition, "")
+    diffs = self._compare_recursive(existing_dict, local_definition, "")
+
+    if diffs:
+      labels_field_name = self._detect_labels_field()
+      if labels_field_name and labels_field_name not in diffs:
+        existing_labels = existing_dict.get(labels_field_name, {})
+        if isinstance(existing_labels, dict):
+          if existing_labels.get(IMPLICIT_LABEL_KEY) != IMPLICIT_LABEL_VALUE:
+            diffs.append(labels_field_name)
+
+    return diffs
 
   def _compare_recursive(
       self, existing: Any, local: Any, prefix: str

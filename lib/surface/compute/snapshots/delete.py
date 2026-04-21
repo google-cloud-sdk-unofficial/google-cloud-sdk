@@ -62,7 +62,7 @@ def _AlphaArgs(parser):
   Delete.SnapshotArg.AddArgument(parser, operation_type='delete')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class Delete(base.DeleteCommand):
   """Delete Compute Engine snapshots.

@@ -61,7 +61,9 @@ def _Run(args, holder, forwarding_rules_arg):
   return client.MakeRequests([(service, 'Get', request)])[0]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.PREVIEW
+)
 @base.UniverseCompatible
 class Describe(base.DescribeCommand):
   """Display detailed information about a forwarding rule.

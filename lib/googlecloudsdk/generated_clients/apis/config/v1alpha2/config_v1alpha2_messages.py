@@ -226,6 +226,245 @@ class CancelOperationRequest(_messages.Message):
   r"""The request message for Operations.CancelOperation."""
 
 
+class ConfigProjectsLocationsDeploymentGroupsCreateRequest(_messages.Message):
+  r"""A ConfigProjectsLocationsDeploymentGroupsCreateRequest object.
+
+  Fields:
+    deploymentGroup: A DeploymentGroup resource to be passed as the request
+      body.
+    deploymentGroupId: Required. The deployment group ID.
+    parent: Required. The parent in whose context the Deployment Group is
+      created. The parent value is in the format:
+      'projects/{project_id}/locations/{location}'
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  deploymentGroup = _messages.MessageField('DeploymentGroup', 1)
+  deploymentGroupId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class ConfigProjectsLocationsDeploymentGroupsDeleteRequest(_messages.Message):
+  r"""A ConfigProjectsLocationsDeploymentGroupsDeleteRequest object.
+
+  Enums:
+    DeploymentReferencePolicyValueValuesEnum: Optional. Policy on how to
+      handle referenced deployments when deleting the DeploymentGroup. If
+      unspecified, the default behavior is to fail the deletion if any
+      deployments currently referenced in the `deployment_units` of the
+      DeploymentGroup or in the latest revision are not deleted.
+
+  Fields:
+    deploymentReferencePolicy: Optional. Policy on how to handle referenced
+      deployments when deleting the DeploymentGroup. If unspecified, the
+      default behavior is to fail the deletion if any deployments currently
+      referenced in the `deployment_units` of the DeploymentGroup or in the
+      latest revision are not deleted.
+    force: Optional. If set to true, any revisions for this deployment group
+      will also be deleted. (Otherwise, the request will only work if the
+      deployment group has no revisions.)
+    name: Required. The name of DeploymentGroup in the format projects/{projec
+      t_id}/locations/{location_id}/deploymentGroups/{deploymentGroup}
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  class DeploymentReferencePolicyValueValuesEnum(_messages.Enum):
+    r"""Optional. Policy on how to handle referenced deployments when deleting
+    the DeploymentGroup. If unspecified, the default behavior is to fail the
+    deletion if any deployments currently referenced in the `deployment_units`
+    of the DeploymentGroup or in the latest revision are not deleted.
+
+    Values:
+      DEPLOYMENT_REFERENCE_POLICY_UNSPECIFIED: The default behavior. If
+        unspecified, the system will act as if `FAIL_IF_ANY_REFERENCES_EXIST`
+        is specified.
+      FAIL_IF_ANY_REFERENCES_EXIST: Fail the deletion if any deployments
+        currently referenced in the `deployment_units` of the DeploymentGroup
+        or in the latest revision are not deleted.
+      FAIL_IF_METADATA_REFERENCES_EXIST: Fail the deletion only if any
+        deployments currently referenced in the `deployment_units` of the
+        DeploymentGroup are not deleted. The deletion will proceed even if the
+        deployments in the latest revision of the DeploymentGroup are not
+        deleted.
+      IGNORE_DEPLOYMENT_REFERENCES: Ignore any deployments currently
+        referenced in the `deployment_units` of the DeploymentGroup or in the
+        latest revision.
+    """
+    DEPLOYMENT_REFERENCE_POLICY_UNSPECIFIED = 0
+    FAIL_IF_ANY_REFERENCES_EXIST = 1
+    FAIL_IF_METADATA_REFERENCES_EXIST = 2
+    IGNORE_DEPLOYMENT_REFERENCES = 3
+
+  deploymentReferencePolicy = _messages.EnumField('DeploymentReferencePolicyValueValuesEnum', 1)
+  force = _messages.BooleanField(2)
+  name = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class ConfigProjectsLocationsDeploymentGroupsDeprovisionRequest(_messages.Message):
+  r"""A ConfigProjectsLocationsDeploymentGroupsDeprovisionRequest object.
+
+  Fields:
+    deprovisionDeploymentGroupRequest: A DeprovisionDeploymentGroupRequest
+      resource to be passed as the request body.
+    name: Required. The name of the deployment group to deprovision. Format: '
+      projects/{project_id}/locations/{location}/deploymentGroups/{deployment_
+      group}'.
+  """
+
+  deprovisionDeploymentGroupRequest = _messages.MessageField('DeprovisionDeploymentGroupRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class ConfigProjectsLocationsDeploymentGroupsGetRequest(_messages.Message):
+  r"""A ConfigProjectsLocationsDeploymentGroupsGetRequest object.
+
+  Fields:
+    name: Required. The name of the deployment group to retrieve. Format: 'pro
+      jects/{project_id}/locations/{location}/deploymentGroups/{deployment_gro
+      up}'.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class ConfigProjectsLocationsDeploymentGroupsListRequest(_messages.Message):
+  r"""A ConfigProjectsLocationsDeploymentGroupsListRequest object.
+
+  Fields:
+    filter: Optional. Lists the DeploymentGroups that match the filter
+      expression. A filter expression filters the deployment groups listed in
+      the response. The expression must be of the form '{field} {operator}
+      {value}' where operators: '<', '>', '<=', '>=', '!=', '=', ':' are
+      supported (colon ':' represents a HAS operator which is roughly
+      synonymous with equality). {field} can refer to a proto or JSON field,
+      or a synthetic field. Field names can be camelCase or snake_case.
+      Examples: - Filter by name: name = "projects/foo/locations/us-
+      central1/deploymentGroups/bar" - Filter by labels: - Resources that have
+      a key called 'foo' labels.foo:* - Resources that have a key called 'foo'
+      whose value is 'bar' labels.foo = bar - Filter by state: -
+      DeploymentGroups in CREATING state. state=CREATING
+    orderBy: Optional. Field to use to sort the list.
+    pageSize: Optional. When requesting a page of resources, 'page_size'
+      specifies number of resources to return. If unspecified, at most 500
+      will be returned. The maximum value is 1000.
+    pageToken: Optional. Token returned by previous call to
+      'ListDeploymentGroups' which specifies the position in the list from
+      where to continue listing the deployment groups.
+    parent: Required. The parent, which owns this collection of deployment
+      groups. Format: 'projects/{project_id}/locations/{location}'.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class ConfigProjectsLocationsDeploymentGroupsPatchRequest(_messages.Message):
+  r"""A ConfigProjectsLocationsDeploymentGroupsPatchRequest object.
+
+  Fields:
+    deploymentGroup: A DeploymentGroup resource to be passed as the request
+      body.
+    name: Identifier. The name of the deployment group. Format: 'projects/{pro
+      ject_id}/locations/{location}/deploymentGroups/{deployment_group}'.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. Field mask used to specify the fields to be
+      overwritten in the Deployment Group resource by the update. The fields
+      specified in the update_mask are relative to the resource, not the full
+      request. A field will be overwritten if it is in the mask. If the user
+      does not provide a mask then all fields will be overwritten.
+  """
+
+  deploymentGroup = _messages.MessageField('DeploymentGroup', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
+
+
+class ConfigProjectsLocationsDeploymentGroupsProvisionRequest(_messages.Message):
+  r"""A ConfigProjectsLocationsDeploymentGroupsProvisionRequest object.
+
+  Fields:
+    name: Required. The name of the deployment group to provision. Format: 'pr
+      ojects/{project_id}/locations/{location}/deploymentGroups/{deployment_gr
+      oup}'.
+    provisionDeploymentGroupRequest: A ProvisionDeploymentGroupRequest
+      resource to be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  provisionDeploymentGroupRequest = _messages.MessageField('ProvisionDeploymentGroupRequest', 2)
+
+
+class ConfigProjectsLocationsDeploymentGroupsRevisionsGetRequest(_messages.Message):
+  r"""A ConfigProjectsLocationsDeploymentGroupsRevisionsGetRequest object.
+
+  Fields:
+    name: Required. The name of the deployment group revision to retrieve.
+      Format: 'projects/{project_id}/locations/{location}/deploymentGroups/{de
+      ployment_group}/revisions/{revision}'.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class ConfigProjectsLocationsDeploymentGroupsRevisionsListRequest(_messages.Message):
+  r"""A ConfigProjectsLocationsDeploymentGroupsRevisionsListRequest object.
+
+  Fields:
+    pageSize: Optional. When requesting a page of resources, 'page_size'
+      specifies number of resources to return. If unspecified, a sensible
+      default will be used by the server. The maximum value is 1000; values
+      above 1000 will be coerced to 1000.
+    pageToken: Optional. Token returned by previous call to
+      'ListDeploymentGroupRevisions' which specifies the position in the list
+      from where to continue listing the deployment group revisions. All other
+      parameters provided to `ListDeploymentGroupRevisions` must match the
+      call that provided the page token.
+    parent: Required. The parent, which owns this collection of deployment
+      group revisions. Format: 'projects/{project_id}/locations/{location}/dep
+      loymentGroups/{deployment_group}'.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
 class ConfigProjectsLocationsDeploymentsCreateRequest(_messages.Message):
   r"""A ConfigProjectsLocationsDeploymentsCreateRequest object.
 
@@ -1257,6 +1496,179 @@ class Deployment(_messages.Message):
   workerPool = _messages.StringField(24)
 
 
+class DeploymentGroup(_messages.Message):
+  r"""A DeploymentGroup is a collection of DeploymentUnits that in a DAG-like
+  structure.
+
+  Enums:
+    ProvisioningStateValueValuesEnum: Output only. The provisioning state of
+      the deployment group.
+    StateValueValuesEnum: Output only. Current state of the deployment group.
+
+  Messages:
+    AnnotationsValue: Optional. Arbitrary key-value metadata storage e.g. to
+      help client tools identify deployment group during automation. See
+      https://google.aip.dev/148#annotations for details on format and size
+      limitations.
+    LabelsValue: Optional. User-defined metadata for the deployment group.
+
+  Fields:
+    annotations: Optional. Arbitrary key-value metadata storage e.g. to help
+      client tools identify deployment group during automation. See
+      https://google.aip.dev/148#annotations for details on format and size
+      limitations.
+    createTime: Output only. Time when the deployment group was created.
+    deploymentUnits: The deployment units of the deployment group in a DAG
+      like structure. When a deployment group is being provisioned, the
+      deployment units are deployed in a DAG order. The provided units must be
+      in a DAG order, otherwise an error will be returned.
+    labels: Optional. User-defined metadata for the deployment group.
+    name: Identifier. The name of the deployment group. Format: 'projects/{pro
+      ject_id}/locations/{location}/deploymentGroups/{deployment_group}'.
+    provisioningError: Output only. The error status of the deployment group
+      provisioning or deprovisioning.
+    provisioningState: Output only. The provisioning state of the deployment
+      group.
+    provisioningStateDescription: Output only. Additional information
+      regarding the current provisioning state.
+    state: Output only. Current state of the deployment group.
+    stateDescription: Output only. Additional information regarding the
+      current state.
+    updateTime: Output only. Time when the deployment group was last updated.
+  """
+
+  class ProvisioningStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The provisioning state of the deployment group.
+
+    Values:
+      PROVISIONING_STATE_UNSPECIFIED: Unspecified provisioning state.
+      PROVISIONING: The deployment group is being provisioned.
+      PROVISIONED: The deployment group is provisioned.
+      FAILED_TO_PROVISION: The deployment group failed to be provisioned.
+      DEPROVISIONING: The deployment group is being deprovisioned.
+      DEPROVISIONED: The deployment group is deprovisioned.
+      FAILED_TO_DEPROVISION: The deployment group failed to be deprovisioned.
+    """
+    PROVISIONING_STATE_UNSPECIFIED = 0
+    PROVISIONING = 1
+    PROVISIONED = 2
+    FAILED_TO_PROVISION = 3
+    DEPROVISIONING = 4
+    DEPROVISIONED = 5
+    FAILED_TO_DEPROVISION = 6
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. Current state of the deployment group.
+
+    Values:
+      STATE_UNSPECIFIED: The default value. This value is used if the state is
+        omitted.
+      CREATING: The deployment group is being created.
+      ACTIVE: The deployment group is healthy.
+      UPDATING: The deployment group is being updated.
+      DELETING: The deployment group is being deleted.
+      FAILED: The deployment group has encountered an unexpected error.
+      SUSPENDED: The deployment group is no longer being actively reconciled.
+        This may be the result of recovering the project after deletion.
+      DELETED: The deployment group has been deleted.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    UPDATING = 3
+    DELETING = 4
+    FAILED = 5
+    SUSPENDED = 6
+    DELETED = 7
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AnnotationsValue(_messages.Message):
+    r"""Optional. Arbitrary key-value metadata storage e.g. to help client
+    tools identify deployment group during automation. See
+    https://google.aip.dev/148#annotations for details on format and size
+    limitations.
+
+    Messages:
+      AdditionalProperty: An additional property for a AnnotationsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type AnnotationsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AnnotationsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. User-defined metadata for the deployment group.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  annotations = _messages.MessageField('AnnotationsValue', 1)
+  createTime = _messages.StringField(2)
+  deploymentUnits = _messages.MessageField('DeploymentUnit', 3, repeated=True)
+  labels = _messages.MessageField('LabelsValue', 4)
+  name = _messages.StringField(5)
+  provisioningError = _messages.MessageField('Status', 6)
+  provisioningState = _messages.EnumField('ProvisioningStateValueValuesEnum', 7)
+  provisioningStateDescription = _messages.StringField(8)
+  state = _messages.EnumField('StateValueValuesEnum', 9)
+  stateDescription = _messages.StringField(10)
+  updateTime = _messages.StringField(11)
+
+
+class DeploymentGroupRevision(_messages.Message):
+  r"""A DeploymentGroupRevision represents a snapshot of a DeploymentGroup at
+  a given point in time, created when a DeploymentGroup is provisioned or
+  deprovisioned.
+
+  Fields:
+    alternativeIds: Output only. The alternative IDs of the deployment group
+      revision.
+    createTime: Output only. Time when the deployment group revision was
+      created.
+    name: Identifier. The name of the deployment group revision. Format: 'proj
+      ects/{project_id}/locations/{location}/deploymentGroups/{deployment_grou
+      p}/revisions/{revision}'.
+    snapshot: Output only. The snapshot of the deployment group at this
+      revision.
+  """
+
+  alternativeIds = _messages.StringField(1, repeated=True)
+  createTime = _messages.StringField(2)
+  name = _messages.StringField(3)
+  snapshot = _messages.MessageField('DeploymentGroup', 4)
+
+
 class DeploymentOperationMetadata(_messages.Message):
   r"""Ephemeral metadata content describing the state of a deployment
   operation.
@@ -1315,6 +1727,244 @@ class DeploymentOperationMetadata(_messages.Message):
   build = _messages.StringField(2)
   logs = _messages.StringField(3)
   step = _messages.EnumField('StepValueValuesEnum', 4)
+
+
+class DeploymentOperationSummary(_messages.Message):
+  r"""The summary of the deployment operation.
+
+  Enums:
+    DeploymentStepValueValuesEnum: Output only. The current step the
+      deployment operation is running.
+
+  Fields:
+    artifacts: Output only. Location of Deployment operations artifacts in
+      `gs://{bucket}/{object}` format.
+    build: Output only. Cloud Build instance UUID associated with this
+      operation.
+    content: Output only. Location of Deployment operations content in
+      `gs://{bucket}/{object}` format.
+    deploymentStep: Output only. The current step the deployment operation is
+      running.
+    logs: Output only. Location of Deployment operations logs in
+      `gs://{bucket}/{object}` format.
+  """
+
+  class DeploymentStepValueValuesEnum(_messages.Enum):
+    r"""Output only. The current step the deployment operation is running.
+
+    Values:
+      DEPLOYMENT_STEP_UNSPECIFIED: Unspecified deployment step
+      PREPARING_STORAGE_BUCKET: Infra Manager is creating a Google Cloud
+        Storage bucket to store artifacts and metadata about the deployment
+        and revision
+      DOWNLOADING_BLUEPRINT: Downloading the blueprint onto the Google Cloud
+        Storage bucket
+      RUNNING_TF_INIT: Initializing Terraform using `terraform init`
+      RUNNING_TF_PLAN: Running `terraform plan`
+      RUNNING_TF_APPLY: Actuating resources using Terraform using `terraform
+        apply`
+      RUNNING_TF_DESTROY: Destroying resources using Terraform using
+        `terraform destroy`
+      RUNNING_TF_VALIDATE: Validating the uploaded TF state file when
+        unlocking a deployment
+      UNLOCKING_DEPLOYMENT: Unlocking a deployment
+      SUCCEEDED: Operation was successful
+      FAILED: Operation failed
+      VALIDATING_REPOSITORY: Validating the provided repository.
+      RUNNING_QUOTA_VALIDATION: Running quota validation
+    """
+    DEPLOYMENT_STEP_UNSPECIFIED = 0
+    PREPARING_STORAGE_BUCKET = 1
+    DOWNLOADING_BLUEPRINT = 2
+    RUNNING_TF_INIT = 3
+    RUNNING_TF_PLAN = 4
+    RUNNING_TF_APPLY = 5
+    RUNNING_TF_DESTROY = 6
+    RUNNING_TF_VALIDATE = 7
+    UNLOCKING_DEPLOYMENT = 8
+    SUCCEEDED = 9
+    FAILED = 10
+    VALIDATING_REPOSITORY = 11
+    RUNNING_QUOTA_VALIDATION = 12
+
+  artifacts = _messages.StringField(1)
+  build = _messages.StringField(2)
+  content = _messages.StringField(3)
+  deploymentStep = _messages.EnumField('DeploymentStepValueValuesEnum', 4)
+  logs = _messages.StringField(5)
+
+
+class DeploymentSource(_messages.Message):
+  r"""Configuration for a value sourced from a Deployment.
+
+  Fields:
+    deployment: Required. The resource name of the source Deployment to import
+      the output from. Format:
+      projects/{project}/locations/{location}/deployments/{deployment} The
+      source deployment must be in the same project and location.
+    outputName: Required. The name of the output variable in the source
+      deployment's latest successfully applied revision.
+  """
+
+  deployment = _messages.StringField(1)
+  outputName = _messages.StringField(2)
+
+
+class DeploymentSpec(_messages.Message):
+  r"""Spec for a deployment to be created.
+
+  Fields:
+    deployment: Required. The deployment to be created.
+    deploymentId: Required. The id of the deployment to be created which
+      doesn't include the project id and location.
+  """
+
+  deployment = _messages.MessageField('Deployment', 1)
+  deploymentId = _messages.StringField(2)
+
+
+class DeploymentUnit(_messages.Message):
+  r"""A DeploymentUnit is a container for a deployment and its dependencies.
+  An existing deployment can be provided directly in the unit, or the unit can
+  act as a placeholder to define the DAG, with the deployment specs supplied
+  in a `provisionDeploymentRequest`.
+
+  Fields:
+    dependencies: Required. The IDs of the deployment units within the
+      deployment group that this unit depends on.
+    deployment: Optional. The name of the deployment to be provisioned.
+      Format:
+      'projects/{project_id}/locations/{location}/deployments/{deployment}'.
+    id: The id of the deployment unit. Must be unique within the deployment
+      group.
+  """
+
+  dependencies = _messages.StringField(1, repeated=True)
+  deployment = _messages.StringField(2)
+  id = _messages.StringField(3)
+
+
+class DeploymentUnitProgress(_messages.Message):
+  r"""The progress of a deployment unit provisioning or deprovisioning.
+
+  Enums:
+    IntentValueValuesEnum: Output only. The intent of the deployment unit.
+    StateValueValuesEnum: Output only. The current step of the deployment unit
+      provisioning.
+
+  Fields:
+    deployment: Output only. The name of the deployment to be provisioned.
+      Format:
+      'projects/{project}/locations/{location}/deployments/{deployment}'.
+    deploymentOperationSummary: Output only. The summary of the deployment
+      operation.
+    error: Output only. Holds the error status of the deployment unit
+      provisioning.
+    intent: Output only. The intent of the deployment unit.
+    state: Output only. The current step of the deployment unit provisioning.
+    stateDescription: Output only. Additional information regarding the
+      current state.
+    unitId: Output only. The unit id of the deployment unit to be provisioned.
+  """
+
+  class IntentValueValuesEnum(_messages.Enum):
+    r"""Output only. The intent of the deployment unit.
+
+    Values:
+      INTENT_UNSPECIFIED: Unspecified intent.
+      CREATE_DEPLOYMENT: Create deployment in the unit from the deployment
+        spec.
+      UPDATE_DEPLOYMENT: Update deployment in the unit.
+      DELETE_DEPLOYMENT: Delete deployment in the unit.
+      RECREATE_DEPLOYMENT: Recreate deployment in the unit.
+      CLEAN_UP: Delete deployment in latest successful revision while no
+        longer referenced in any deployment unit in the current deployment
+        group.
+      UNCHANGED: Expected to be unchanged.
+    """
+    INTENT_UNSPECIFIED = 0
+    CREATE_DEPLOYMENT = 1
+    UPDATE_DEPLOYMENT = 2
+    DELETE_DEPLOYMENT = 3
+    RECREATE_DEPLOYMENT = 4
+    CLEAN_UP = 5
+    UNCHANGED = 6
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current step of the deployment unit provisioning.
+
+    Values:
+      STATE_UNSPECIFIED: The default value. This value is unused.
+      QUEUED: The deployment unit is queued for deployment creation or update.
+      APPLYING_DEPLOYMENT: The underlying deployment of the unit is being
+        created or updated.
+      SUCCEEDED: The underlying deployment operation of the unit has
+        succeeded.
+      FAILED: The underlying deployment operation of the unit has failed.
+      ABORTED: The deployment unit was aborted, likely due to failures in
+        other dependent deployment units.
+      SKIPPED: The deployment unit was skipped because there were no changes
+        to apply.
+      DELETING_DEPLOYMENT: The deployment is being deleted.
+      PREVIEWING_DEPLOYMENT: The deployment is being previewed.
+    """
+    STATE_UNSPECIFIED = 0
+    QUEUED = 1
+    APPLYING_DEPLOYMENT = 2
+    SUCCEEDED = 3
+    FAILED = 4
+    ABORTED = 5
+    SKIPPED = 6
+    DELETING_DEPLOYMENT = 7
+    PREVIEWING_DEPLOYMENT = 8
+
+  deployment = _messages.StringField(1)
+  deploymentOperationSummary = _messages.MessageField('DeploymentOperationSummary', 2)
+  error = _messages.MessageField('Status', 3)
+  intent = _messages.EnumField('IntentValueValuesEnum', 4)
+  state = _messages.EnumField('StateValueValuesEnum', 5)
+  stateDescription = _messages.StringField(6)
+  unitId = _messages.StringField(7)
+
+
+class DeprovisionDeploymentGroupRequest(_messages.Message):
+  r"""The request message for the DeprovisionDeploymentGroup method.
+
+  Enums:
+    DeletePolicyValueValuesEnum: Optional. Policy on how resources within each
+      deployment should be handled during deletion. This policy is applied
+      globally to the deletion of all deployments in this group. This
+      corresponds to the 'delete_policy' field in DeleteDeploymentRequest.
+
+  Fields:
+    deletePolicy: Optional. Policy on how resources within each deployment
+      should be handled during deletion. This policy is applied globally to
+      the deletion of all deployments in this group. This corresponds to the
+      'delete_policy' field in DeleteDeploymentRequest.
+    force: Optional. If set to true, this option is propagated to the deletion
+      of each deployment in the group. This corresponds to the 'force' field
+      in DeleteDeploymentRequest.
+  """
+
+  class DeletePolicyValueValuesEnum(_messages.Enum):
+    r"""Optional. Policy on how resources within each deployment should be
+    handled during deletion. This policy is applied globally to the deletion
+    of all deployments in this group. This corresponds to the 'delete_policy'
+    field in DeleteDeploymentRequest.
+
+    Values:
+      DELETE_POLICY_UNSPECIFIED: Unspecified policy, resources will be
+        deleted.
+      DELETE: Deletes resources actuated by the deployment.
+      ABANDON: Abandons resources and only deletes the deployment and its
+        metadata.
+    """
+    DELETE_POLICY_UNSPECIFIED = 0
+    DELETE = 1
+    ABANDON = 2
+
+  deletePolicy = _messages.EnumField('DeletePolicyValueValuesEnum', 1)
+  force = _messages.BooleanField(2)
 
 
 class Empty(_messages.Message):
@@ -1396,6 +2046,16 @@ class Expr(_messages.Message):
   title = _messages.StringField(4)
 
 
+class ExternalValueSource(_messages.Message):
+  r"""Configuration for a source of an external value.
+
+  Fields:
+    deploymentSource: A source from a Deployment.
+  """
+
+  deploymentSource = _messages.MessageField('DeploymentSource', 1)
+
+
 class GitSource(_messages.Message):
   r"""A set of files in a Git repository.
 
@@ -1421,6 +2081,38 @@ class ImportStatefileRequest(_messages.Message):
   """
 
   lockId = _messages.IntegerField(1)
+
+
+class ListDeploymentGroupRevisionsResponse(_messages.Message):
+  r"""The response message for the ListDeploymentGroupRevisions method.
+
+  Fields:
+    deploymentGroupRevisions: The deployment group revisions from the
+      specified collection.
+    nextPageToken: Token to be supplied to the next
+      ListDeploymentGroupRevisions request via `page_token` to obtain the next
+      set of results.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  deploymentGroupRevisions = _messages.MessageField('DeploymentGroupRevision', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListDeploymentGroupsResponse(_messages.Message):
+  r"""The response message for the ListDeploymentGroups method.
+
+  Fields:
+    deploymentGroups: The deployment groups from the specified collection.
+    nextPageToken: Token to be supplied to the next ListDeploymentGroups
+      request via `page_token` to obtain the next set of results.
+    unreachable: Locations that could not be reached.
+  """
+
+  deploymentGroups = _messages.MessageField('DeploymentGroup', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
 
 
 class ListDeploymentsResponse(_messages.Message):
@@ -1788,6 +2480,8 @@ class OperationMetadata(_messages.Message):
       state.
     endTime: Output only. Time when the operation finished running.
     previewMetadata: Output only. Metadata about the preview operation state.
+    provisionDeploymentGroupMetadata: Output only. Metadata about
+      ProvisionDeploymentGroup operation state.
     requestedCancellation: Output only. Identifies whether the user has
       requested cancellation of the operation. Operations that have
       successfully been cancelled have google.longrunning.Operation.error
@@ -1805,10 +2499,11 @@ class OperationMetadata(_messages.Message):
   deploymentMetadata = _messages.MessageField('DeploymentOperationMetadata', 3)
   endTime = _messages.StringField(4)
   previewMetadata = _messages.MessageField('PreviewOperationMetadata', 5)
-  requestedCancellation = _messages.BooleanField(6)
-  statusMessage = _messages.StringField(7)
-  target = _messages.StringField(8)
-  verb = _messages.StringField(9)
+  provisionDeploymentGroupMetadata = _messages.MessageField('ProvisionDeploymentGroupOperationMetadata', 6)
+  requestedCancellation = _messages.BooleanField(7)
+  statusMessage = _messages.StringField(8)
+  target = _messages.StringField(9)
+  verb = _messages.StringField(10)
 
 
 class Policy(_messages.Message):
@@ -2248,6 +2943,108 @@ class ProviderConfig(_messages.Message):
     SERVICE_MAINTAINED = 1
 
   sourceType = _messages.EnumField('SourceTypeValueValuesEnum', 1)
+
+
+class ProvisionDeploymentGroupOperationMetadata(_messages.Message):
+  r"""Operation metadata for `ProvisionDeploymentGroup` and
+  `DeprovisionDeploymentGroup` long-running operations.
+
+  Enums:
+    StepValueValuesEnum: Output only. The current step of the deployment group
+      operation.
+
+  Fields:
+    deploymentUnitProgresses: Output only. Progress information for each
+      deployment unit within the operation.
+    step: Output only. The current step of the deployment group operation.
+  """
+
+  class StepValueValuesEnum(_messages.Enum):
+    r"""Output only. The current step of the deployment group operation.
+
+    Values:
+      PROVISION_DEPLOYMENT_GROUP_STEP_UNSPECIFIED: Unspecified step.
+      VALIDATING_DEPLOYMENT_GROUP: Validating the deployment group.
+      ASSOCIATING_DEPLOYMENTS_TO_DEPLOYMENT_GROUP: Locking the deployments to
+        the deployment group for atomic actuation.
+      PROVISIONING_DEPLOYMENT_UNITS: Provisioning the deployment units.
+      DISASSOCIATING_DEPLOYMENTS_FROM_DEPLOYMENT_GROUP: Unlocking the
+        deployments from the deployment group after actuation.
+      SUCCEEDED: The operation has succeeded.
+      FAILED: The operation has failed.
+      DEPROVISIONING_DEPLOYMENT_UNITS: Deprovisioning the deployment units.
+    """
+    PROVISION_DEPLOYMENT_GROUP_STEP_UNSPECIFIED = 0
+    VALIDATING_DEPLOYMENT_GROUP = 1
+    ASSOCIATING_DEPLOYMENTS_TO_DEPLOYMENT_GROUP = 2
+    PROVISIONING_DEPLOYMENT_UNITS = 3
+    DISASSOCIATING_DEPLOYMENTS_FROM_DEPLOYMENT_GROUP = 4
+    SUCCEEDED = 5
+    FAILED = 6
+    DEPROVISIONING_DEPLOYMENT_UNITS = 7
+
+  deploymentUnitProgresses = _messages.MessageField('DeploymentUnitProgress', 1, repeated=True)
+  step = _messages.EnumField('StepValueValuesEnum', 2)
+
+
+class ProvisionDeploymentGroupRequest(_messages.Message):
+  r"""The request message for the ProvisionDeploymentGroup method.
+
+  Messages:
+    DeploymentSpecsValue: Optional. The deployment specs of the deployment
+      units to be created within the same project and location of the
+      deployment group. The key is the unit ID, and the value is the
+      `DeploymentSpec`. Provisioning will fail if a `deployment_spec` has a
+      `deployment_id` that matches an existing deployment in the same project
+      and location. If an existing deployment was part of the last successful
+      revision but is no longer in the current DeploymentGroup's
+      `deployment_units`, it will be recreated if included in
+      `deployment_specs`.
+
+  Fields:
+    deploymentSpecs: Optional. The deployment specs of the deployment units to
+      be created within the same project and location of the deployment group.
+      The key is the unit ID, and the value is the `DeploymentSpec`.
+      Provisioning will fail if a `deployment_spec` has a `deployment_id` that
+      matches an existing deployment in the same project and location. If an
+      existing deployment was part of the last successful revision but is no
+      longer in the current DeploymentGroup's `deployment_units`, it will be
+      recreated if included in `deployment_specs`.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class DeploymentSpecsValue(_messages.Message):
+    r"""Optional. The deployment specs of the deployment units to be created
+    within the same project and location of the deployment group. The key is
+    the unit ID, and the value is the `DeploymentSpec`. Provisioning will fail
+    if a `deployment_spec` has a `deployment_id` that matches an existing
+    deployment in the same project and location. If an existing deployment was
+    part of the last successful revision but is no longer in the current
+    DeploymentGroup's `deployment_units`, it will be recreated if included in
+    `deployment_specs`.
+
+    Messages:
+      AdditionalProperty: An additional property for a DeploymentSpecsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type DeploymentSpecsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a DeploymentSpecsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A DeploymentSpec attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('DeploymentSpec', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  deploymentSpecs = _messages.MessageField('DeploymentSpecsValue', 1)
 
 
 class Resource(_messages.Message):
@@ -2770,16 +3567,46 @@ class TerraformBlueprint(_messages.Message):
   describes the resources and configs to be deployed.
 
   Messages:
+    ExternalValuesValue: Optional. Map of input variable names in this
+      blueprint to configurations for importing values from external sources.
     InputValuesValue: Optional. Input variable values for the Terraform
       blueprint.
 
   Fields:
+    externalValues: Optional. Map of input variable names in this blueprint to
+      configurations for importing values from external sources.
     gcsSource: URI of an object in Google Cloud Storage. Format:
       `gs://{bucket}/{object}` URI may also specify an object version for
       zipped objects. Format: `gs://{bucket}/{object}#{version}`
     gitSource: URI of a public Git repo.
     inputValues: Optional. Input variable values for the Terraform blueprint.
   """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ExternalValuesValue(_messages.Message):
+    r"""Optional. Map of input variable names in this blueprint to
+    configurations for importing values from external sources.
+
+    Messages:
+      AdditionalProperty: An additional property for a ExternalValuesValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type ExternalValuesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ExternalValuesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A ExternalValueSource attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('ExternalValueSource', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class InputValuesValue(_messages.Message):
@@ -2806,9 +3633,10 @@ class TerraformBlueprint(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  gcsSource = _messages.StringField(1)
-  gitSource = _messages.MessageField('GitSource', 2)
-  inputValues = _messages.MessageField('InputValuesValue', 3)
+  externalValues = _messages.MessageField('ExternalValuesValue', 1)
+  gcsSource = _messages.StringField(2)
+  gitSource = _messages.MessageField('GitSource', 3)
+  inputValues = _messages.MessageField('InputValuesValue', 4)
 
 
 class TerraformError(_messages.Message):

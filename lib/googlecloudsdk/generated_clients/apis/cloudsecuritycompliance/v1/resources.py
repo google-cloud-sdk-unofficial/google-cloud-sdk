@@ -182,6 +182,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_CLOUDCONTROLS = (
+      'projects.locations.cloudControls',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/cloudControls/'
+              '{cloudControlsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_FRAMEWORKAUDITS = (
       'projects.locations.frameworkAudits',
       '{+name}',

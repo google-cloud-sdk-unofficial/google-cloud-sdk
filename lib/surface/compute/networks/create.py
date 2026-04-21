@@ -41,7 +41,7 @@ def EpilogText(network_name):
   log.status.Print(textwrap.dedent(message))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class Create(base.CreateCommand):
   r"""Create a Compute Engine network.

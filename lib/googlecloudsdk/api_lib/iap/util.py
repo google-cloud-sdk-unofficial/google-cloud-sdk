@@ -54,9 +54,18 @@ IAP_TCP_TUNNEL_TYPES_LOCATIONS_SERVICES_COLLECTION = (
     'iap.projects.iap_tunnel.tunnel_types.locations.services'
 )
 LOCATION_IAP_WEB_COLLECTION = 'iap.projects.locations.iap_web'
-LOCATION_IAP_WEB_AGENTS_COLLECTION = 'iap.projects.locations.iap_web.agents'
-LOCATION_IAP_WEB_MCPSERVERS_COLLECTION = 'iap.projects.locations.iap_web.mcpServers'
-LOCATION_IAP_WEB_ENDPOINTS_COLLECTION = 'iap.projects.locations.iap_web.endpoints'
+LOCATION_IAP_WEB_WEB_TYPES_COLLECTION = (
+    'iap.projects.locations.iap_web.web_types'
+)
+LOCATION_IAP_WEB_WEB_TYPES_AGENTS_COLLECTION = (
+    'iap.projects.locations.iap_web.web_types.agents'
+)
+LOCATION_IAP_WEB_WEB_TYPES_MCPSERVERS_COLLECTION = (
+    'iap.projects.locations.iap_web.web_types.mcpServers'
+)
+LOCATION_IAP_WEB_WEB_TYPES_ENDPOINTS_COLLECTION = (
+    'iap.projects.locations.iap_web.web_types.endpoints'
+)
 
 
 def _ApiVersion(release_track):
@@ -174,6 +183,29 @@ class IAPWeb(IapIamResource):
         None, params={
             'projectsId': '{}/iap_web'.format(project.projectNumber),
         }, collection=PROJECTS_COLLECTION)
+
+
+class IAPWebLocation(IapIamResource):
+  """IAP IAM project location resource.
+  """
+
+  def __init__(self, release_track, project, location):
+    super(IAPWebLocation, self).__init__(release_track, project)
+    self.location = location
+
+  def _Name(self):
+    return 'project location'
+
+  def _Parse(self):
+    project = _GetProject(self.project)
+    return self.registry.Parse(
+        None,
+        params={
+            'project': project.projectNumber,
+            'location': self.location,
+        },
+        collection=LOCATION_IAP_WEB_COLLECTION,
+    )
 
 
 def _AppEngineAppId(app_id):
@@ -575,7 +607,7 @@ class AgentRegistry(IapIamResource):
             'location': self.location_id,
             'iapWebId': self.iap_web_id,
         },
-        collection=LOCATION_IAP_WEB_COLLECTION,
+        collection=LOCATION_IAP_WEB_WEB_TYPES_COLLECTION,
     )
 
 
@@ -603,7 +635,7 @@ class AgentRegistryAgent(IapIamResource):
             'iapWebId': self.iap_web_id,
             'agentId': self.agent_id,
         },
-        collection=LOCATION_IAP_WEB_AGENTS_COLLECTION,
+        collection=LOCATION_IAP_WEB_WEB_TYPES_AGENTS_COLLECTION,
     )
 
 
@@ -636,7 +668,7 @@ class AgentRegistryMcpServer(IapIamResource):
             'iapWebId': self.iap_web_id,
             'mcpServerId': self.mcp_server_id,
         },
-        collection=LOCATION_IAP_WEB_MCPSERVERS_COLLECTION,
+        collection=LOCATION_IAP_WEB_WEB_TYPES_MCPSERVERS_COLLECTION,
     )
 
 
@@ -664,7 +696,7 @@ class AgentRegistryEndpoint(IapIamResource):
             'iapWebId': self.iap_web_id,
             'endpointId': self.endpoint_id,
         },
-        collection=LOCATION_IAP_WEB_ENDPOINTS_COLLECTION)
+        collection=LOCATION_IAP_WEB_WEB_TYPES_ENDPOINTS_COLLECTION)
 
 
 def _MakeIAPKwargs(is_backend_service, existing_iap_settings, enabled,

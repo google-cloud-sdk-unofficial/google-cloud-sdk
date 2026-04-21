@@ -28,6 +28,7 @@ import types
 from typing import Any, ClassVar
 
 from googlecloudsdk.api_lib.run import container_resource
+from googlecloudsdk.api_lib.run import instance as run_instance
 from googlecloudsdk.api_lib.run import job
 from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.api_lib.run import revision
@@ -236,6 +237,33 @@ class ReplaceJobChange(NonTemplateConfigChanger):
     if resource.metadata.resourceVersion:
       self.new_job.metadata.resourceVersion = resource.metadata.resourceVersion
     return self.new_job
+
+
+@dataclasses.dataclass(frozen=True)
+class ReplaceInstanceChange(NonTemplateConfigChanger):
+  """Represents the user intent to replace the instance.
+
+  Attributes:
+    new_instance: New instance that will replace the existing instance.
+  """
+
+  new_instance: run_instance.Instance
+
+  def Adjust(self, resource):
+    """Returns a replacement for resource.
+
+    The returned instance is the instance provided to the constructor. If
+    resource.metadata.resourceVersion is not empty, has metadata.resourceVersion
+    of returned instance set to this value.
+
+    Args:
+      resource: run_instance.Instance, The instance to adjust.
+    """
+    if resource.metadata.resourceVersion:
+      self.new_instance.metadata.resourceVersion = (
+          resource.metadata.resourceVersion
+      )
+    return self.new_instance
 
 
 @dataclasses.dataclass(frozen=True)

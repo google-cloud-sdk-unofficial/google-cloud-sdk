@@ -23,8 +23,12 @@ from googlecloudsdk.command_lib.compute.packet_mirrorings import flags
 from googlecloudsdk.command_lib.compute.packet_mirrorings import utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
+)
 @base.UniverseCompatible
 class Update(base.UpdateCommand):
   """Update a Compute Engine packet mirroring policy."""

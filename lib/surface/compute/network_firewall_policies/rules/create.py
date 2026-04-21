@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute.network_firewall_policies import secure_
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Create(base.CreateCommand):
   r"""Creates a Compute Engine network firewall policy rule.
 

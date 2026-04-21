@@ -18,14 +18,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import iap_tunnel
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import iap_tunnel as run_iap_tunnel
-from googlecloudsdk.core import log
-
-
-_NUMPY_HELP_TEXT = """
-
-To increase the performance of the tunnel, consider installing NumPy. For instructions,
-please see https://cloud.google.com/iap/docs/using-tcp-forwarding#increasing_the_tcp_upload_bandwidth
-"""
 
 
 @base.Hidden
@@ -83,15 +75,4 @@ class StartIapTunnel(base.Command):
     iap_tunnel_helper = iap_tunnel.IapTunnelStdinHelper(
         tunneler, with_graceful_shutdown=True
     )
-    self._CheckNumpyInstalled()
     iap_tunnel_helper.Run()
-
-  def _CheckNumpyInstalled(self):
-    # Check if user has numpy installed, show message asking them to install.
-    # Numpy will be used later inside the websocket library to speed up the
-    # transfer rate. Showing the message here before the process start looks
-    # better than showing when the actual import happen inside the websocket.
-    try:
-      import numpy  # pylint: disable=g-import-not-at-top, unused-import
-    except ImportError:
-      log.warning(_NUMPY_HELP_TEXT)

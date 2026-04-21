@@ -110,6 +110,13 @@ GkehubProjectsLocationsRolloutsForceCompleteStageRequest = (
     # | ga_messages.GkehubProjectsLocationsRolloutsForceCompleteStageRequest
 )
 
+GkehubProjectsLocationsRolloutsCancelRequest = (
+    alpha_messages.GkehubProjectsLocationsRolloutsCancelRequest
+    # Rollouts are not yet available in beta or GA.
+    # | beta_messages.GkehubProjectsLocationsRolloutsCancelRequest
+    # | ga_messages.GkehubProjectsLocationsRolloutsCancelRequest
+)
+
 GkehubProjectsLocationsRolloutsGetRequest = (
     alpha_messages.GkehubProjectsLocationsRolloutsGetRequest
     # Rollouts are not yet available in beta or GA.

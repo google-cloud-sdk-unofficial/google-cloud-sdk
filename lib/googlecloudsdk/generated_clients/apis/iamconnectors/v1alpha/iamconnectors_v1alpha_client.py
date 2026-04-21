@@ -82,7 +82,7 @@ class IamconnectorsV1alpha(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists AccessEvents in a given project and location. This is a standard List method (AIP-132). It returns a chronological history of individual access events for a specific scope (e.g. a workload). Supported Filters: - `workload_id`: Filter by the SPIFFE ID of the agent. Example: `workload_id="spiffe://example.com/ns/default/sa/my-agent"`.
+      r"""Lists AccessEvents in a given project and location. Supported Filters: - `workload_id`: Filter by the SPIFFE ID of the agent. Example: `workload_id="spiffe://example.com/ns/default/sa/my-agent"`.
 
       Args:
         request: (IamconnectorsProjectsLocationsAccessEventsListRequest) input message
@@ -290,6 +290,33 @@ class IamconnectorsV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def GetIamPolicy(self, request, global_params=None):
+      r"""Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.
+
+      Args:
+        request: (IamconnectorsProjectsLocationsConnectorsGetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('GetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/connectors/{connectorsId}:getIamPolicy',
+        http_method='GET',
+        method_id='iamconnectors.projects.locations.connectors.getIamPolicy',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=['options_requestedPolicyVersion'],
+        relative_path='v1alpha/{+resource}:getIamPolicy',
+        request_field='',
+        request_type_name='IamconnectorsProjectsLocationsConnectorsGetIamPolicyRequest',
+        response_type_name='Policy',
+        supports_download=False,
+    )
+
     def List(self, request, global_params=None):
       r"""Lists Connectors in a given project and location.
 
@@ -422,6 +449,60 @@ class IamconnectorsV1alpha(base_api.BaseApiClient):
         request_field='revokeAuthorizationRequest',
         request_type_name='IamconnectorsProjectsLocationsConnectorsRevokeAuthorizationRequest',
         response_type_name='RevokeAuthorizationResponse',
+        supports_download=False,
+    )
+
+    def SetIamPolicy(self, request, global_params=None):
+      r"""Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.
+
+      Args:
+        request: (IamconnectorsProjectsLocationsConnectorsSetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('SetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/connectors/{connectorsId}:setIamPolicy',
+        http_method='POST',
+        method_id='iamconnectors.projects.locations.connectors.setIamPolicy',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v1alpha/{+resource}:setIamPolicy',
+        request_field='setIamPolicyRequest',
+        request_type_name='IamconnectorsProjectsLocationsConnectorsSetIamPolicyRequest',
+        response_type_name='Policy',
+        supports_download=False,
+    )
+
+    def TestIamPermissions(self, request, global_params=None):
+      r"""Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may "fail open" without warning.
+
+      Args:
+        request: (IamconnectorsProjectsLocationsConnectorsTestIamPermissionsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TestIamPermissionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('TestIamPermissions')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/connectors/{connectorsId}:testIamPermissions',
+        http_method='POST',
+        method_id='iamconnectors.projects.locations.connectors.testIamPermissions',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v1alpha/{+resource}:testIamPermissions',
+        request_field='testIamPermissionsRequest',
+        request_type_name='IamconnectorsProjectsLocationsConnectorsTestIamPermissionsRequest',
+        response_type_name='TestIamPermissionsResponse',
         supports_download=False,
     )
 
@@ -608,7 +689,7 @@ class IamconnectorsV1alpha(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method can be called in two ways: * **List all public locations:** Use the path `GET /v1/locations`. * **List project-visible locations:** Use the path `GET /v1/projects/{project_id}/locations`. This may include public locations as well as private or other locations specifically visible to the project.
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
       Args:
         request: (IamconnectorsProjectsLocationsListRequest) input message

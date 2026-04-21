@@ -28,7 +28,7 @@ from googlecloudsdk.core.console import progress_tracker
 import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class Create(base.CreateCommand):
   """Create a Compute Engine firewall rule."""

@@ -3129,13 +3129,17 @@ class InstancePartition(_messages.Message):
       partition is created.
     nodeCount: The number of nodes allocated to this instance partition. Users
       can set the `node_count` field to specify the target number of nodes
-      allocated to the instance partition. This may be zero in API responses
-      for instance partitions that are not yet in state `READY`.
+      allocated to the instance partition. If autoscaling is enabled,
+      node_count is treated as an OUTPUT_ONLY field and reflects the current
+      number of nodes allocated to the instance partition. This may be zero in
+      API responses for instance partitions that are not yet in state `READY`.
     processingUnits: The number of processing units allocated to this instance
       partition. Users can set the `processing_units` field to specify the
       target number of processing units allocated to the instance partition.
-      This might be zero in API responses for instance partitions that are not
-      yet in the `READY` state.
+      If autoscaling is enabled, processing_units is treated as an OUTPUT_ONLY
+      field and reflects the current number of processing units allocated to
+      the instance partition. This might be zero in API responses for instance
+      partitions that are not yet in the `READY` state.
     referencingBackups: Output only. Deprecated: This field is not populated.
       Output only. The names of the backups that reference this instance
       partition. Referencing backups should share the parent instance. The

@@ -49,9 +49,9 @@ DETAILED_HELP = {
 
 
         If you are using this command to manage SSH keys for your project, please note
-        the [risks](https://cloud.google.com/compute/docs/instances/adding-removing-ssh-keys#risks)
+        the [risks](https://docs.cloud.google.com/compute/docs/instances/access-overview#risks)
         of manual SSH key management as well as the required format for SSH key
-        metadata, available at [](https://cloud.google.com/compute/docs/instances/adding-removing-ssh-keys).
+        metadata, available at [](https://docs.cloud.google.com/compute/docs/connect/add-ssh-keys).
         """,
     'EXAMPLES':
         """\

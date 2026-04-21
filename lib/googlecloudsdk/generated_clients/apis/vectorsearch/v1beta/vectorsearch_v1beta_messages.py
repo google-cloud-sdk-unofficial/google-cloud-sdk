@@ -325,6 +325,9 @@ class GoogleCloudVectorsearchV1betaCollection(_messages.Message):
       schema.org/draft-07/schema).
     description: Optional. User-specified description of the collection
     displayName: Optional. User-specified display name of the collection
+    encryptionSpec: Optional. Immutable. Specifies the customer-managed
+      encryption key spec for a Collection. If set, this Collection and all
+      sub-resources of this Collection will be secured by this key.
     labels: Optional. Labels as key value pairs.
     name: Identifier. name of resource
     schema: Optional. Deprecated: JSON Schema for data. Please use data_schema
@@ -442,11 +445,12 @@ class GoogleCloudVectorsearchV1betaCollection(_messages.Message):
   dataSchema = _messages.MessageField('DataSchemaValue', 2)
   description = _messages.StringField(3)
   displayName = _messages.StringField(4)
-  labels = _messages.MessageField('LabelsValue', 5)
-  name = _messages.StringField(6)
-  schema = _messages.MessageField('SchemaValue', 7)
-  updateTime = _messages.StringField(8)
-  vectorSchema = _messages.MessageField('VectorSchemaValue', 9)
+  encryptionSpec = _messages.MessageField('GoogleCloudVectorsearchV1betaEncryptionSpec', 5)
+  labels = _messages.MessageField('LabelsValue', 6)
+  name = _messages.StringField(7)
+  schema = _messages.MessageField('SchemaValue', 8)
+  updateTime = _messages.StringField(9)
+  vectorSchema = _messages.MessageField('VectorSchemaValue', 10)
 
 
 class GoogleCloudVectorsearchV1betaCreateDataObjectRequest(_messages.Message):
@@ -655,6 +659,20 @@ class GoogleCloudVectorsearchV1betaDenseVectorField(_messages.Message):
 
   dimensions = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   vertexEmbeddingConfig = _messages.MessageField('GoogleCloudVectorsearchV1betaVertexEmbeddingConfig', 2)
+
+
+class GoogleCloudVectorsearchV1betaEncryptionSpec(_messages.Message):
+  r"""Represents a customer-managed encryption key specification that can be
+  applied to a Vector Search collection.
+
+  Fields:
+    cryptoKeyName: Required. Resource name of the Cloud KMS key used to
+      protect the resource. The Cloud KMS key must be in the same region as
+      the resource. It must have the format `projects/{project}/locations/{loc
+      ation}/keyRings/{key_ring}/cryptoKeys/{crypto_key}`.
+  """
+
+  cryptoKeyName = _messages.StringField(1)
 
 
 class GoogleCloudVectorsearchV1betaExportDataObjectsRequest(_messages.Message):
@@ -2055,6 +2073,43 @@ class VectorsearchProjectsLocationsCollectionsIndexesListRequest(_messages.Messa
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   parent = _messages.StringField(5, required=True)
+
+
+class VectorsearchProjectsLocationsCollectionsIndexesPatchRequest(_messages.Message):
+  r"""A VectorsearchProjectsLocationsCollectionsIndexesPatchRequest object.
+
+  Fields:
+    googleCloudVectorsearchV1betaIndex: A GoogleCloudVectorsearchV1betaIndex
+      resource to be passed as the request body.
+    name: Identifier. name of resource
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. Specifies the fields to be overwritten in the Index
+      resource by the update. The fields specified in the update_mask are
+      relative to the resource, not the full request. A field will be
+      overwritten if it is in the mask. If the user does not provide a mask
+      then all fields present in the request with non-empty values will be
+      overwritten. The following fields support update: * `display_name` *
+      `description` * `labels` *
+      `dedicated_infrastructure.autoscaling_spec.min_replica_count` *
+      `dedicated_infrastructure.autoscaling_spec.max_replica_count` If `*` is
+      provided in the `update_mask`, full replacement of mutable fields will
+      be performed.
+  """
+
+  googleCloudVectorsearchV1betaIndex = _messages.MessageField('GoogleCloudVectorsearchV1betaIndex', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
 
 
 class VectorsearchProjectsLocationsCollectionsListRequest(_messages.Message):

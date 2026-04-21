@@ -14,11 +14,11 @@
 # limitations under the License.
 """Dataproc GCE action processor."""
 
-
 from typing import Optional
 
 from googlecloudsdk.command_lib.orchestration_pipelines.processors import base
 from googlecloudsdk.command_lib.orchestration_pipelines.tools import python_environment_unpack_renderer
+from googlecloudsdk.command_lib.orchestration_pipelines.tools import resource_profile_loader
 
 
 class DataprocGCEActionProcessor(base.ActionProcessor):
@@ -29,10 +29,19 @@ class DataprocGCEActionProcessor(base.ActionProcessor):
     # https://docs.cloud.google.com/dataproc/docs/concepts/versioning/dataproc-version-clusters
     dp_on_gce = self.action.get("engine", {}).get("dataprocOnGce", {})
     cluster_base = dp_on_gce.get("ephemeralCluster", {})
-    config = cluster_base.get("resourceProfile", {}).get("inline", {})
+    resource_profile = cluster_base.get("resourceProfile", {})
+    config = resource_profile.get("inline")
+    if config is None:
+      external_profile = resource_profile_loader.load_external_resource_profile(
+          resource_profile, self._work_dir
+      )
+      config = {}
+      if external_profile:
+        config = external_profile.get("definition", {}).get("config", {})
+
     image_version = str(
         config.get("softwareConfig", {}).get("imageVersion")
-        or config.get("clusterConfig", {})
+        or config.get("config", {})
         .get("softwareConfig", {})
         .get("imageVersion")
     )
@@ -57,17 +66,43 @@ class DataprocGCEActionProcessor(base.ActionProcessor):
     if deploy_mode == "cluster":
       job_props["spark.yarn.appMasterEnv.PYTHONPATH"] = self.full_python_path
     else:
-      cluster_config = self._get_nested_dict(
+      resource_profile = self._get_nested_dict(
           action,
           [
               "engine",
               "dataprocOnGce",
               "ephemeralCluster",
               "resourceProfile",
-              "inline",
-              "clusterConfig",
           ],
       )
+
+      # Use 'overrides' if 'path' or 'externalConfigPath' is present,
+      # otherwise default to 'inline'.
+      if "path" in resource_profile or "externalConfigPath" in resource_profile:
+        cluster_config = self._get_nested_dict(
+            action,
+            [
+                "engine",
+                "dataprocOnGce",
+                "ephemeralCluster",
+                "resourceProfile",
+                "overrides",
+                "config",
+            ],
+        )
+      else:
+        cluster_config = self._get_nested_dict(
+            action,
+            [
+                "engine",
+                "dataprocOnGce",
+                "ephemeralCluster",
+                "resourceProfile",
+                "inline",
+                "config",
+            ],
+        )
+
       initialization_actions = cluster_config.setdefault(
           "initialization_actions", []
       )

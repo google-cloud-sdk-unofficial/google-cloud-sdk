@@ -52,7 +52,7 @@ def _AddArgs(parser, beta=False):
       parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class WaitUntilGA(base.Command):
   """Wait until the managed instance group reaches the desired state."""
 

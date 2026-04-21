@@ -98,6 +98,7 @@ class ComputeAlpha(base_api.BaseApiClient):
     self.organizationSnapshotRecycleBinPolicy = self.OrganizationSnapshotRecycleBinPolicyService(self)
     self.packetMirrorings = self.PacketMirroringsService(self)
     self.previewFeatures = self.PreviewFeaturesService(self)
+    self.projectViews = self.ProjectViewsService(self)
     self.projects = self.ProjectsService(self)
     self.publicAdvertisedPrefixes = self.PublicAdvertisedPrefixesService(self)
     self.publicDelegatedPrefixes = self.PublicDelegatedPrefixesService(self)
@@ -5450,7 +5451,7 @@ project across all regions.
         method_id='compute.haControllers.delete',
         ordered_params=['project', 'region', 'haController'],
         path_params=['haController', 'project', 'region'],
-        query_params=['requestId'],
+        query_params=['force', 'requestId'],
         relative_path='projects/{project}/regions/{region}/haControllers/{haController}',
         request_field='',
         request_type_name='ComputeHaControllersDeleteRequest',
@@ -15777,6 +15778,43 @@ a PreviewFeature.
         request_field='previewFeatureResource',
         request_type_name='ComputePreviewFeaturesUpdateRequest',
         response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ProjectViewsService(base_api.BaseApiService):
+    """Service class for the projectViews resource."""
+
+    _NAME = 'projectViews'
+
+    def __init__(self, client):
+      super(ComputeAlpha.ProjectViewsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Returns the specified global ProjectViews resource, with a regional.
+context.
+
+      Args:
+        request: (ComputeProjectViewsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ProjectView) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.projectViews.get',
+        ordered_params=['project', 'region'],
+        path_params=['project', 'region'],
+        query_params=[],
+        relative_path='projects/{project}/regions/{region}/projectViews',
+        request_field='',
+        request_type_name='ComputeProjectViewsGetRequest',
+        response_type_name='ProjectView',
         supports_download=False,
     )
 
@@ -26146,6 +26184,32 @@ Replaces any existing policy.
       self._upload_configs = {
           }
 
+    def Advance(self, request, global_params=None):
+      r"""Advances a Rollout to the next wave, or completes it if no waves remain.
+
+      Args:
+        request: (ComputeRolloutsAdvanceRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Advance')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Advance.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.rollouts.advance',
+        ordered_params=['project', 'rollout'],
+        path_params=['project', 'rollout'],
+        query_params=['currentWaveNumber', 'requestId'],
+        relative_path='projects/{project}/global/rollouts/{rollout}/advance',
+        request_field='',
+        request_type_name='ComputeRolloutsAdvanceRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Cancel(self, request, global_params=None):
       r"""Cancels a Rollout.
 
@@ -26298,32 +26362,6 @@ Replaces any existing policy.
         relative_path='projects/{project}/global/rollouts/{rollout}/resume',
         request_field='',
         request_type_name='ComputeRolloutsResumeRequest',
-        response_type_name='Operation',
-        supports_download=False,
-    )
-
-    def StartNextWave(self, request, global_params=None):
-      r"""Starts the next wave of a Rollout.
-
-      Args:
-        request: (ComputeRolloutsStartNextWaveRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (Operation) The response message.
-      """
-      config = self.GetMethodConfig('StartNextWave')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    StartNextWave.method_config = lambda: base_api.ApiMethodInfo(
-        http_method='POST',
-        method_id='compute.rollouts.startNextWave',
-        ordered_params=['project', 'rollout'],
-        path_params=['project', 'rollout'],
-        query_params=['requestId', 'waveNumber'],
-        relative_path='projects/{project}/global/rollouts/{rollout}/startNextWave',
-        request_field='',
-        request_type_name='ComputeRolloutsStartNextWaveRequest',
         response_type_name='Operation',
         supports_download=False,
     )

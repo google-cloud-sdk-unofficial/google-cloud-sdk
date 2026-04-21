@@ -3674,13 +3674,19 @@ class KeyAccessJustificationsPolicyConfig(_messages.Message):
       contains an empty allowed_access_reasons list, no default Key Access
       Justifications (KAJ) policy configuration is active. In this scenario,
       all newly created keys will default to an "allow-all" policy.
+    defaultPolicyAvailable: Output only. Indicates whether this parent
+      resource is available to default policy feature. Please consult [the
+      prerequisite of default policy
+      feature](https://cloud.google.com/assured-workloads/key-access-
+      justifications/docs/set-default-policy#before) for more details.
     name: Identifier. Represents the resource name for this
       KeyAccessJustificationsPolicyConfig in the format of
       "{organizations|folders|projects}/*/kajPolicyConfig".
   """
 
   defaultKeyAccessJustificationPolicy = _messages.MessageField('KeyAccessJustificationsPolicy', 1)
-  name = _messages.StringField(2)
+  defaultPolicyAvailable = _messages.BooleanField(2)
+  name = _messages.StringField(3)
 
 
 class KeyHandle(_messages.Message):

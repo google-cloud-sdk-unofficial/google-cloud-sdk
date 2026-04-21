@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA, GA]
+- release_tracks: [ALPHA, BETA, GA, PREVIEW]
 
   help_text:
     brief: Show details about a Compute Engine reservation.

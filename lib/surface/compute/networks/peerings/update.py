@@ -23,7 +23,10 @@ from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.PREVIEW,
 )
 @base.DefaultUniverseOnly
 class Update(base.Command):

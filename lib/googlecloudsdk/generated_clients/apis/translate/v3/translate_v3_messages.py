@@ -89,6 +89,8 @@ class AdaptiveMtTranslateRequest(_messages.Message):
     glossaryConfig: Optional. Glossary to be applied. The glossary must be
       within the same region (have the same location-id) as the model,
       otherwise an INVALID_ARGUMENT (400) error is returned.
+    mimeType: The format of the source text. Currently only text/plain is
+      supported.
     referenceSentenceConfig: Configuration for caller provided reference
       sentences.
   """
@@ -96,7 +98,8 @@ class AdaptiveMtTranslateRequest(_messages.Message):
   content = _messages.StringField(1, repeated=True)
   dataset = _messages.StringField(2)
   glossaryConfig = _messages.MessageField('GlossaryConfig', 3)
-  referenceSentenceConfig = _messages.MessageField('ReferenceSentenceConfig', 4)
+  mimeType = _messages.StringField(4)
+  referenceSentenceConfig = _messages.MessageField('ReferenceSentenceConfig', 5)
 
 
 class AdaptiveMtTranslateResponse(_messages.Message):

@@ -14,11 +14,12 @@
 # limitations under the License.
 """Common utilities for the Developer Connect API."""
 
+import re
 
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
-
 import six.moves.urllib.parse
+
 
 API_NAME = 'developerconnect'
 API_VERSION_1 = 'v1'
@@ -34,4 +35,10 @@ def GetApiVersion(release_track):
 def GetApiServiceName(api_version):
   """Gets the service name based on the configured API endpoint."""
   endpoint = apis.GetEffectiveApiEndpoint(API_NAME, api_version)
-  return six.moves.urllib.parse.urlparse(endpoint).hostname
+  hostname = six.moves.urllib.parse.urlparse(endpoint).hostname
+  if hostname:
+    # Remove mTLS markers.
+    hostname = hostname.replace('.mtls.', '.')
+    # Remove regional REP (Regional Endpoint) markers.
+    hostname = re.sub(r'\.[a-z0-9-]+\.(?:p\.)?rep\.', '.', hostname)
+  return hostname

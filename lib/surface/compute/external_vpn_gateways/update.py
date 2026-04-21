@@ -28,8 +28,12 @@ _EXTERNAL_VPN_GATEWAY_ARG = (
     external_vpn_gateway_flag.ExternalVpnGatewayArgument())
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
+)
 class Update(base.UpdateCommand):
   r"""Update a Compute Engine external VPN gateway.
 

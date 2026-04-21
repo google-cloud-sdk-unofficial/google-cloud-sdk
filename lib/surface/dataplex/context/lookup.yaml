@@ -5,7 +5,7 @@
       Looks up LLM context for data assets.
 
       Fetches detailed contextual metadata for the specified data assets. Data assets can be
-      identified by their Dataplex entry name, source system resource name or fully qualified name.
+      identified by their Dataplex entry name.
       The returned context can include schema, descriptions, business annotations, data quality
       insights, and relationships, structured for application use. This output is particularly
       useful for providing grounding to Large Language Models (LLMs), enabling more accurate and

@@ -15,7 +15,6 @@
 
 """Command for adding a path matcher to a URL map."""
 
-
 import collections
 
 from apitools.base.py import encoding
@@ -40,7 +39,8 @@ def _DetailedHelp():
   # pylint:disable=line-too-long
   return {
       'brief': 'Add a path matcher to a URL map.',
-      'DESCRIPTION': """
+      'DESCRIPTION': (
+          """
 *{command}* is used to add a path matcher to a URL map. A path
 matcher maps HTTP request paths to backend services or backend
 buckets. Each path matcher must be referenced by at least one
@@ -52,8 +52,10 @@ of the operation, this command will fail unless
 `--delete-orphaned-path-matcher` is provided. Path matcher
 constraints can be found
 [here](https://cloud.google.com/load-balancing/docs/url-map-concepts#pm-constraints).
-""",
-      'EXAMPLES': """
+"""
+      ),
+      'EXAMPLES': (
+          """
 To create a rule for mapping the path ```/search/*``` to the
 hypothetical ```search-service```, ```/static/*``` to the
 ```static-bucket``` backend bucket and ```/images/*``` to the
@@ -64,7 +66,8 @@ hypothetical ```search-service```, ```/static/*``` to the
 
 Note that a default service or default backend bucket must be
 provided to handle paths for which there is no mapping.
-""",
+"""
+      ),
   }
   # pylint:enable=line-too-long
 
@@ -279,7 +282,6 @@ def _Modify(
     url_map_ref,
     backend_service_arg,
     backend_bucket_arg,
-    supports_regional_backend_bucket=False,
 ):
   """Returns a modified URL map message."""
   replacement = _ModifyBase(client, args, url_map)
@@ -307,42 +309,25 @@ def _Modify(
         )
     )
   for bucket, paths in sorted(six.iteritems(bucket_map)):
-    if supports_regional_backend_bucket:
-      path_rules.append(
-          client.messages.PathRule(
-              paths=sorted(paths),
-              service=resources.Parse(
-                  bucket,
-                  params=_GetBackendParamsForUrlMap(url_map, url_map_ref),
-                  collection=_GetBackendBucketCollectionForUrlMap(url_map),
-              ).SelfLink(),
-          )
-      )
-    else:
-      path_rules.append(
-          client.messages.PathRule(
-              paths=sorted(paths),
-              service=resources.Parse(
-                  bucket,
-                  params={'project': properties.VALUES.core.project.GetOrFail},
-                  collection='compute.backendBuckets',
-              ).SelfLink(),
-          )
-      )
+    path_rules.append(
+        client.messages.PathRule(
+            paths=sorted(paths),
+            service=resources.Parse(
+                bucket,
+                params=_GetBackendParamsForUrlMap(url_map, url_map_ref),
+                collection=_GetBackendBucketCollectionForUrlMap(url_map),
+            ).SelfLink(),
+        )
+    )
 
   if args.default_service:
     default_backend_uri = url_maps_utils.ResolveUrlMapDefaultService(
         args, backend_service_arg, url_map_ref, resources
     ).SelfLink()
   else:
-    if supports_regional_backend_bucket:
-      default_backend_uri = url_maps_utils.ResolveUrlMapDefaultBackendBucket(
-          args, backend_bucket_arg, url_map_ref, resources
-      ).SelfLink()
-    else:
-      default_backend_uri = backend_bucket_arg.ResolveAsResource(
-          args, resources
-      ).SelfLink()
+    default_backend_uri = url_maps_utils.ResolveUrlMapDefaultBackendBucket(
+        args, backend_bucket_arg, url_map_ref, resources
+    ).SelfLink()
 
   new_path_matcher = client.messages.PathMatcher(
       defaultService=default_backend_uri,
@@ -404,14 +389,7 @@ def _GetBackendBucketCollectionForUrlMap(url_map):
     return 'compute.backendBuckets'
 
 
-def _Run(
-    args,
-    holder,
-    url_map_arg,
-    backend_servie_arg,
-    backend_bucket_arg,
-    supports_regional_backend_bucket=False,
-):
+def _Run(args, holder, url_map_arg, backend_servie_arg, backend_bucket_arg):
   """Issues requests necessary to add path matcher to the Url Map."""
   client = holder.client
 
@@ -433,7 +411,6 @@ def _Run(
       url_map_ref,
       backend_servie_arg,
       backend_bucket_arg,
-      supports_regional_backend_bucket,
   )
 
   if url_maps_utils.IsRegionalUrlMapRef(url_map_ref):
@@ -444,7 +421,7 @@ def _Run(
   return client.MakeRequests([set_request])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class AddPathMatcher(base.UpdateCommand):
   """Add a path matcher to a URL map."""
@@ -453,20 +430,14 @@ class AddPathMatcher(base.UpdateCommand):
   BACKEND_SERVICE_ARG = None
   BACKEND_BUCKET_ARG = None
   URL_MAP_ARG = None
-  _supports_regional_backend_bucket = False
 
   @classmethod
   def Args(cls, parser):
-    if cls._supports_regional_backend_bucket:
-      cls.BACKEND_BUCKET_ARG = (
-          backend_bucket_flags.RegionSupportingBackendBucketArgumentForUrlMap(
-              required=False
-          )
-      )
-    else:
-      cls.BACKEND_BUCKET_ARG = (
-          backend_bucket_flags.BackendBucketArgumentForUrlMap(required=False)
-      )
+    cls.BACKEND_BUCKET_ARG = (
+        backend_bucket_flags.RegionSupportingBackendBucketArgumentForUrlMap(
+            required=False
+        )
+    )
     cls.BACKEND_SERVICE_ARG = (
         backend_service_flags.BackendServiceArgumentForUrlMap()
     )
@@ -483,7 +454,6 @@ class AddPathMatcher(base.UpdateCommand):
         self.URL_MAP_ARG,
         self.BACKEND_SERVICE_ARG,
         self.BACKEND_BUCKET_ARG,
-        self._supports_regional_backend_bucket,
     )
 
 
@@ -492,12 +462,12 @@ class AddPathMatcher(base.UpdateCommand):
 class AddPathMatcherBeta(AddPathMatcher):
   """Add a path matcher to a URL map."""
 
-  _supports_regional_backend_bucket = True
+  pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.UniverseCompatible
-class AddPathMatcherAlpha(AddPathMatcher):
+class AddPathMatcherAlpha(AddPathMatcherBeta):
   """Add a path matcher to a URL map."""
 
-  _supports_regional_backend_bucket = True
+  pass

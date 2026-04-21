@@ -485,7 +485,10 @@ def _Run(args, holder, url_map_arg, release_track):
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.PREVIEW,
 )
 @base.UniverseCompatible
 class Import(base.UpdateCommand):

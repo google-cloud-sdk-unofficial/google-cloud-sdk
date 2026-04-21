@@ -27,7 +27,10 @@ from googlecloudsdk.core import log
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.PREVIEW,
 )
 class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
   r"""Get the effective firewalls for a Compute Engine virtual machine network interface.

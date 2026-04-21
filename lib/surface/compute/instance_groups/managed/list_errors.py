@@ -29,7 +29,11 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.PREVIEW,
+)
 class ListErrors(base.ListCommand):
   """List errors produced by managed instances in a managed instance group."""
 

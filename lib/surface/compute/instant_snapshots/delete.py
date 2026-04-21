@@ -28,7 +28,7 @@ def _CommonArgs(parser):
   Delete.ips_arg.AddArgument(parser, operation_type='delete')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Delete(base.DeleteCommand):
   """Delete Compute Engine instant snapshots."""
 

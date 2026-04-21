@@ -40,7 +40,10 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
 )
 class RemoveKey(base.UpdateCommand):
   """Remove pre-shared key from a Compute Engine interconnect MACsec configuration.

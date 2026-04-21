@@ -56,7 +56,7 @@ def _Args(parser, support_public_dns, support_network_tier):
     flags.AddNetworkTierArgs(parser, instance=False, for_update=True)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class UpdateAccessConfigInstances(base.UpdateCommand):
   """Update a Compute Engine virtual machine access configuration."""
 

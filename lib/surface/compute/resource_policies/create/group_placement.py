@@ -77,7 +77,7 @@ class CreateGroupPlacementBeta(CreateGroupPlacement):
     flags.AddAcceleratorTopologyModeArgs(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class CreateGroupPlacementGa(CreateGroupPlacement):
   """Create a Compute Engine group placement resource policy."""
 

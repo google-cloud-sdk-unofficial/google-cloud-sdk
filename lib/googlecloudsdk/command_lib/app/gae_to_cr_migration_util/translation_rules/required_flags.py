@@ -36,9 +36,17 @@ def translate_add_required_flags(
   Returns:
     A sequence of strings representing the required flags.
   """
-  required_flags = [f'--labels={_get_labels()}']
+  is_flex = util.is_flex_env(input_data)
+  migration_tool = (
+      'gcloud-app-migrate-flexible-v1'
+      if is_flex
+      else 'gcloud-app-migrate-standard-v1'
+  )
+  required_flags = [
+      f'--labels={_get_labels(migration_tool=migration_tool)}'
+  ]
 
-  if not util.is_flex_env(input_data):
+  if not is_flex:
     base_image = runtime_base_image or input_data['runtime']
     if source_path and _check_dockerfile_exists(source_path):
       required_flags.extend([
@@ -52,13 +60,9 @@ def translate_add_required_flags(
   return required_flags
 
 
-def _get_labels() -> str:
+def _get_labels(*, migration_tool: str) -> str:
   """Get labels for gcloud run deploy command."""
-  labels = {
-      'migrated-from': 'app-engine',
-      'migration-tool': 'gcloud-app-migrate-standard-v1',
-  }
-  return ','.join(f'{k}={v}' for k, v in labels.items())
+  return f'migrated-from=app-engine,migration-tool={migration_tool}'
 
 
 def _check_dockerfile_exists(source_path: str) -> bool:

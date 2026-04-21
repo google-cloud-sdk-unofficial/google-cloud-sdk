@@ -23,7 +23,7 @@ from googlecloudsdk.command_lib.compute.networks.subnets import flags
 from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class List(base.ListCommand):
   """List subnetworks."""

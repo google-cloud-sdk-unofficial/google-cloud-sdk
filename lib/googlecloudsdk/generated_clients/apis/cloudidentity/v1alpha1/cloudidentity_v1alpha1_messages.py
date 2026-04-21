@@ -61,6 +61,39 @@ class AndroidAttributes(_messages.Message):
   verifyAppsEnabled = _messages.BooleanField(8)
 
 
+class AntivirusInfo(_messages.Message):
+  r"""Resource representing the anti-virus information of a Device.
+
+  Enums:
+    ProductStateValueValuesEnum: Output only. The state of the anti-virus.
+
+  Fields:
+    displayName: Output only. The display name of the anti-virus software.
+    productGuid: Output only. The GUID of the anti-virus product.
+    productState: Output only. The state of the anti-virus.
+  """
+
+  class ProductStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the anti-virus.
+
+    Values:
+      PRODUCT_STATE_UNSPECIFIED: Default value
+      PRODUCT_STATE_ON: The anti-virus is on.
+      PRODUCT_STATE_OFF: The anti-virus is off.
+      PRODUCT_STATE_SNOOZED: The anti-virus is snoozed.
+      PRODUCT_STATE_EXPIRED: The anti-virus is expired.
+    """
+    PRODUCT_STATE_UNSPECIFIED = 0
+    PRODUCT_STATE_ON = 1
+    PRODUCT_STATE_OFF = 2
+    PRODUCT_STATE_SNOOZED = 3
+    PRODUCT_STATE_EXPIRED = 4
+
+  displayName = _messages.StringField(1)
+  productGuid = _messages.StringField(2)
+  productState = _messages.EnumField('ProductStateValueValuesEnum', 3)
+
+
 class ApproveDeviceUserResponse(_messages.Message):
   r"""Response message for approving the device to access user data.
 
@@ -1007,12 +1040,15 @@ class Device(_messages.Message):
     EncryptionStateValueValuesEnum: Output only. Device encryption state.
     ManagementStateValueValuesEnum: Output only. Management state of the
       device
+    OsFirewallStatusValueValuesEnum: Output only. OS firewall status of the
+      device.
     OwnerTypeValueValuesEnum: Output only. Whether the device is owned by the
       company or an individual
 
   Fields:
     androidSpecificAttributes: Output only. Attributes specific to Android
       devices.
+    antivirusInfo: Output only. Anti-virus information for the device.
     assetTag: Asset tag of the device.
     basebandVersion: Output only. Baseband version of the device.
     bootloaderVersion: Output only. Device bootloader version. Example: 0.6.7.
@@ -1050,6 +1086,7 @@ class Device(_messages.Message):
       assigned to the Device.
     networkOperator: Output only. Mobile or network operator of device, if
       available.
+    osFirewallStatus: Output only. OS firewall status of the device.
     osVersion: Output only. OS version of the device. Example: Android 8.1.0.
     otherAccounts: Output only. Domain name for Google accounts on device.
       Type for other accounts on device. On Android, will only be populated if
@@ -1063,6 +1100,8 @@ class Device(_messages.Message):
     serialNumber: Serial Number of device. Example: HT82V1A01076.
     unifiedDeviceId: Output only. Unified device id of the device.
     wifiMacAddresses: WiFi MAC addresses of device.
+    windowsSpecificDeviceAttributes: Output only. Attributes specific to
+      Windows devices.
   """
 
   class ClientTypesValueListEntryValuesEnum(_messages.Enum):
@@ -1156,6 +1195,20 @@ class Device(_messages.Message):
     WIPING = 5
     WIPED = 6
 
+  class OsFirewallStatusValueValuesEnum(_messages.Enum):
+    r"""Output only. OS firewall status of the device.
+
+    Values:
+      OS_FIREWALL_STATUS_UNSPECIFIED: Default value
+      OS_FIREWALL_STATUS_UNKNOWN: OS firewall status is unknown.
+      OS_FIREWALL_STATUS_ENABLED: OS firewall is enabled.
+      OS_FIREWALL_STATUS_DISABLED: OS firewall is disabled.
+    """
+    OS_FIREWALL_STATUS_UNSPECIFIED = 0
+    OS_FIREWALL_STATUS_UNKNOWN = 1
+    OS_FIREWALL_STATUS_ENABLED = 2
+    OS_FIREWALL_STATUS_DISABLED = 3
+
   class OwnerTypeValueValuesEnum(_messages.Enum):
     r"""Output only. Whether the device is owned by the company or an
     individual
@@ -1170,39 +1223,42 @@ class Device(_messages.Message):
     BYOD = 2
 
   androidSpecificAttributes = _messages.MessageField('AndroidAttributes', 1)
-  assetTag = _messages.StringField(2)
-  basebandVersion = _messages.StringField(3)
-  bootloaderVersion = _messages.StringField(4)
-  brand = _messages.StringField(5)
-  browserProfiles = _messages.MessageField('BrowserAttributes', 6, repeated=True)
-  buildNumber = _messages.StringField(7)
-  clientTypes = _messages.EnumField('ClientTypesValueListEntryValuesEnum', 8, repeated=True)
-  compromisedState = _messages.EnumField('CompromisedStateValueValuesEnum', 9)
-  createTime = _messages.StringField(10)
-  deviceId = _messages.StringField(11)
-  deviceType = _messages.EnumField('DeviceTypeValueValuesEnum', 12)
-  enabledDeveloperOptions = _messages.BooleanField(13)
-  enabledUsbDebugging = _messages.BooleanField(14)
-  encryptionState = _messages.EnumField('EncryptionStateValueValuesEnum', 15)
-  endpointVerificationSpecificAttributes = _messages.MessageField('EndpointVerificationSpecificAttributes', 16)
-  hostname = _messages.StringField(17)
-  imei = _messages.StringField(18)
-  kernelVersion = _messages.StringField(19)
-  lastSyncTime = _messages.StringField(20)
-  managementState = _messages.EnumField('ManagementStateValueValuesEnum', 21)
-  manufacturer = _messages.StringField(22)
-  meid = _messages.StringField(23)
-  model = _messages.StringField(24)
-  name = _messages.StringField(25)
-  networkOperator = _messages.StringField(26)
-  osVersion = _messages.StringField(27)
-  otherAccounts = _messages.StringField(28, repeated=True)
-  ownerType = _messages.EnumField('OwnerTypeValueValuesEnum', 29)
-  releaseVersion = _messages.StringField(30)
-  securityPatchTime = _messages.StringField(31)
-  serialNumber = _messages.StringField(32)
-  unifiedDeviceId = _messages.StringField(33)
-  wifiMacAddresses = _messages.StringField(34, repeated=True)
+  antivirusInfo = _messages.MessageField('AntivirusInfo', 2, repeated=True)
+  assetTag = _messages.StringField(3)
+  basebandVersion = _messages.StringField(4)
+  bootloaderVersion = _messages.StringField(5)
+  brand = _messages.StringField(6)
+  browserProfiles = _messages.MessageField('BrowserAttributes', 7, repeated=True)
+  buildNumber = _messages.StringField(8)
+  clientTypes = _messages.EnumField('ClientTypesValueListEntryValuesEnum', 9, repeated=True)
+  compromisedState = _messages.EnumField('CompromisedStateValueValuesEnum', 10)
+  createTime = _messages.StringField(11)
+  deviceId = _messages.StringField(12)
+  deviceType = _messages.EnumField('DeviceTypeValueValuesEnum', 13)
+  enabledDeveloperOptions = _messages.BooleanField(14)
+  enabledUsbDebugging = _messages.BooleanField(15)
+  encryptionState = _messages.EnumField('EncryptionStateValueValuesEnum', 16)
+  endpointVerificationSpecificAttributes = _messages.MessageField('EndpointVerificationSpecificAttributes', 17)
+  hostname = _messages.StringField(18)
+  imei = _messages.StringField(19)
+  kernelVersion = _messages.StringField(20)
+  lastSyncTime = _messages.StringField(21)
+  managementState = _messages.EnumField('ManagementStateValueValuesEnum', 22)
+  manufacturer = _messages.StringField(23)
+  meid = _messages.StringField(24)
+  model = _messages.StringField(25)
+  name = _messages.StringField(26)
+  networkOperator = _messages.StringField(27)
+  osFirewallStatus = _messages.EnumField('OsFirewallStatusValueValuesEnum', 28)
+  osVersion = _messages.StringField(29)
+  otherAccounts = _messages.StringField(30, repeated=True)
+  ownerType = _messages.EnumField('OwnerTypeValueValuesEnum', 31)
+  releaseVersion = _messages.StringField(32)
+  securityPatchTime = _messages.StringField(33)
+  serialNumber = _messages.StringField(34)
+  unifiedDeviceId = _messages.StringField(35)
+  wifiMacAddresses = _messages.StringField(36, repeated=True)
+  windowsSpecificDeviceAttributes = _messages.MessageField('WindowsSpecificDeviceAttributes', 37)
 
 
 class DeviceUser(_messages.Message):
@@ -3359,6 +3415,43 @@ class UpdateMembershipRolesParams(_messages.Message):
 
   fieldMask = _messages.StringField(1)
   membershipRole = _messages.MessageField('MembershipRole', 2)
+
+
+class WindowsSpecificDeviceAttributes(_messages.Message):
+  r"""Represents the Windows specific attributes of a Device.
+
+  Enums:
+    SecureBootModeValueValuesEnum: Output only. Secure boot mode of the
+      device.
+
+  Fields:
+    hotfixes: Output only. The hotfixes installed on the device.
+    secureBootMode: Output only. Secure boot mode of the device.
+    windowsMachineDomain: Output only. The domain of the machine that the user
+      is logged into. This is different from the windows_user_domain as the
+      user could be logged into a domain different from the machine domain.
+    windowsUserDomain: Output only. The domain of the user account that is
+      logged into the machine.
+  """
+
+  class SecureBootModeValueValuesEnum(_messages.Enum):
+    r"""Output only. Secure boot mode of the device.
+
+    Values:
+      SECURE_BOOT_MODE_UNSPECIFIED: Default value
+      SECURE_BOOT_MODE_UNKNOWN: Secure boot mode is unknown.
+      SECURE_BOOT_MODE_ENABLED: Secure boot mode is enabled.
+      SECURE_BOOT_MODE_DISABLED: Secure boot mode is disabled.
+    """
+    SECURE_BOOT_MODE_UNSPECIFIED = 0
+    SECURE_BOOT_MODE_UNKNOWN = 1
+    SECURE_BOOT_MODE_ENABLED = 2
+    SECURE_BOOT_MODE_DISABLED = 3
+
+  hotfixes = _messages.StringField(1, repeated=True)
+  secureBootMode = _messages.EnumField('SecureBootModeValueValuesEnum', 2)
+  windowsMachineDomain = _messages.StringField(3)
+  windowsUserDomain = _messages.StringField(4)
 
 
 class WipeDeviceResponse(_messages.Message):

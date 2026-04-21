@@ -123,10 +123,13 @@ def GetVersionResourceSpec():
   return concepts.ResourceSpec(
       'artifactregistry.projects.locations.repositories.packages.versions',
       resource_name='version',
+      versionsId=concepts.ResourceParameterAttributeConfig(
+          name='version', help_text='The version of the {resource}.'
+      ),
+      packagesId=PackageAttributeConfig(),
       projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
       locationsId=LocationAttributeConfig(),
       repositoriesId=RepoAttributeConfig(),
-      packagesId=PackageAttributeConfig(),
   )
 
 
@@ -134,10 +137,13 @@ def GetTagResourceSpec():
   return concepts.ResourceSpec(
       'artifactregistry.projects.locations.repositories.packages.tags',
       resource_name='tag',
+      tagsId=concepts.ResourceParameterAttributeConfig(
+          name='tag', help_text='The tag of the {resource}.'
+      ),
+      packagesId=PackageAttributeConfig(),
       projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
       locationsId=LocationAttributeConfig(),
       repositoriesId=RepoAttributeConfig(),
-      packagesId=PackageAttributeConfig(),
   )
 
 
@@ -640,4 +646,33 @@ def GetSeverityFlag():
           'If omitted when --enable is true, it defaults to logging all '
           'severities.'
       ),
+  )
+
+
+def GetStreamLocationArg():
+  """Gets the --stream-location flag."""
+  return base.Argument(
+      '--stream-location',
+      help='The target Cloud Region where the artifact should be prewarmed.',
+      required=True,
+  )
+
+
+def GetForceArg():
+  """Gets the --force flag."""
+  return base.Argument(
+      '--force',
+      action='store_true',
+      default=False,
+      help='If set, evicts older items from the cache if the quota is reached.',
+  )
+
+
+def GetRetentionDaysArg():
+  """Gets the --retention-days flag."""
+  return base.Argument(
+      '--retention-days',
+      type=arg_parsers.BoundedInt(1, 7),
+      default=3,
+      help='Number of days to retain the artifact in the cache (e.g., 1-7).',
   )

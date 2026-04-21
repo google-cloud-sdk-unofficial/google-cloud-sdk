@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.compute.security_policies import flags
 from googlecloudsdk.command_lib.compute.security_policies import security_policies_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.DefaultUniverseOnly
 class UpdateGa(base.UpdateCommand):
   """Update a Compute Engine security policy.

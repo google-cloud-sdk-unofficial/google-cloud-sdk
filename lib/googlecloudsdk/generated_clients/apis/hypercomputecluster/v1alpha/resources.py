@@ -52,6 +52,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_CLUSTERS_NODES = (
+      'projects.locations.clusters.nodes',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/clusters/'
+              '{clustersId}/nodes/{nodesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_MACHINELEARNINGRUNS = (
       'projects.locations.machineLearningRuns',
       '{+name}',

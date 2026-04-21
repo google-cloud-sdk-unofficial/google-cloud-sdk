@@ -20,7 +20,9 @@ from googlecloudsdk.command_lib.run import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Logs(base.Group):
   """Read logs for Cloud Run worker pools."""
 

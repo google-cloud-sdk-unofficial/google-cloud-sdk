@@ -3069,6 +3069,8 @@ class TaskInstance(_messages.Message):
     StateValueValuesEnum: Task instance state.
 
   Fields:
+    cloudLoggingFilter: A Cloud Logging filter that can be used to retrieve
+      the logs of this task instance.
     dagId: The DAG ID of the DAG whose execution is described by the DAG run
       the taskInstance belongs to.
     dagRunId: The DAG run ID the task instance belongs to.
@@ -3142,29 +3144,30 @@ class TaskInstance(_messages.Message):
     RESTARTING = 13
     DEFERRED = 14
 
-  dagId = _messages.StringField(1)
-  dagRunId = _messages.StringField(2)
-  endDate = _messages.StringField(3)
-  executionDate = _messages.StringField(4)
-  externalExecutorId = _messages.StringField(5)
-  hostname = _messages.StringField(6)
-  id = _messages.StringField(7)
-  isDynamicallyMapped = _messages.BooleanField(8)
-  mapIndex = _messages.IntegerField(9, variant=_messages.Variant.INT32)
-  maxTries = _messages.IntegerField(10, variant=_messages.Variant.INT32)
-  name = _messages.StringField(11)
-  note = _messages.StringField(12)
-  pool = _messages.StringField(13)
-  priorityWeight = _messages.IntegerField(14, variant=_messages.Variant.INT32)
-  queue = _messages.StringField(15)
-  queuedDttm = _messages.StringField(16)
-  renderedMapIndex = _messages.StringField(17)
-  runAfter = _messages.StringField(18)
-  startDate = _messages.StringField(19)
-  state = _messages.EnumField('StateValueValuesEnum', 20)
-  taskId = _messages.StringField(21)
-  taskType = _messages.StringField(22)
-  tryNumber = _messages.IntegerField(23, variant=_messages.Variant.INT32)
+  cloudLoggingFilter = _messages.StringField(1)
+  dagId = _messages.StringField(2)
+  dagRunId = _messages.StringField(3)
+  endDate = _messages.StringField(4)
+  executionDate = _messages.StringField(5)
+  externalExecutorId = _messages.StringField(6)
+  hostname = _messages.StringField(7)
+  id = _messages.StringField(8)
+  isDynamicallyMapped = _messages.BooleanField(9)
+  mapIndex = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  maxTries = _messages.IntegerField(11, variant=_messages.Variant.INT32)
+  name = _messages.StringField(12)
+  note = _messages.StringField(13)
+  pool = _messages.StringField(14)
+  priorityWeight = _messages.IntegerField(15, variant=_messages.Variant.INT32)
+  queue = _messages.StringField(16)
+  queuedDttm = _messages.StringField(17)
+  renderedMapIndex = _messages.StringField(18)
+  runAfter = _messages.StringField(19)
+  startDate = _messages.StringField(20)
+  state = _messages.EnumField('StateValueValuesEnum', 21)
+  taskId = _messages.StringField(22)
+  taskType = _messages.StringField(23)
+  tryNumber = _messages.IntegerField(24, variant=_messages.Variant.INT32)
 
 
 class TaskLogsRetentionConfig(_messages.Message):

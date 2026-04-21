@@ -301,7 +301,6 @@ def ArgsForClusterRef(
 
   parser.add_argument(
       '--engine',
-      hidden=True,
       metavar='ENGINE',
       choices=['default', 'lightning'],
       help='Cluster engine',
@@ -644,37 +643,58 @@ If you want to enable all scopes use the 'cloud-platform' scope.
   )
 
   attached_disk_detailed_help = """\
-      A list of disk configurations to attach to nodes.
-      Each configuration should be a string with the format:
-      type=<disk_type>,(optional)size=<size>,(optional)iops=<iops>,
-      (optional)throughput=<throughput>, separated by semicolon.
+      A list of disk configurations to attach to each instance in this group.
+      Disk configurations are separated by semicolons. Each disk configuration
+      is a comma-separated list of the following parameters.
 
-      Allowed disk types are: hyperdisk-balanced, hyperdisk-extreme,
-      hyperdisk-ml, hyperdisk-throughput.
+         type - required
+            The type of disk to attach to the instances
+            (https://cloud.google.com/compute/docs/disks/hyperdisks).
+            Allowed disk types are: hyperdisk-balanced, hyperdisk-extreme,
+            hyperdisk-ml, hyperdisk-throughput.
 
-      Example:
-      type=hyperdisk-balanced,iops=1000,throughput=500,size=100G;type=hyperdisk-throughput,size=2000G'
-      """
+         size - optional
+            The size of the disk. The value must be a whole number followed by
+            a size unit GB for gigabyte, or TB for terabyte. For example,
+            10GB produces a 10 gigabyte disk.
+
+         iops - optional
+            Indicates the IOPS
+            (https://cloud.google.com/compute/docs/disks/hyperdisks#iops) to
+            provision for the attached hyperdisk. This parameter sets the limit
+            for disk I/O operations per second.
+
+         throughput - optional
+            Indicates the throughput
+            (https://cloud.google.com/compute/docs/disks/hyperdisks#throughput)
+            to provision for the attached hyperdisk. This parameter sets the
+            limit for throughput in MiB per second.
+
+        Example:
+          type='hyperdisk-balanced,iops=5000,throughput=200,size=100G;type=hyperdisk-throughput,size=9000G'
+
+          Attaches two disks to the instances. The first disk is a
+          hyperdisk-balanced disk with 5000 IOPS, 200 MiB/s throughput, and 100
+          GiB size. The second disk is a hyperdisk-throughput disk with 9000
+          GiB size.
+          """
 
   parser.add_argument(
       '--master-attached-disks',
       help=attached_disk_detailed_help,
       type=DiskConfigParser(),
-      hidden=True,
   )
 
   parser.add_argument(
       '--worker-attached-disks',
       help=attached_disk_detailed_help,
       type=DiskConfigParser(),
-      hidden=True,
   )
 
   parser.add_argument(
       '--secondary-worker-attached-disks',
       help=attached_disk_detailed_help,
       type=DiskConfigParser(),
-      hidden=True,
   )
 
   # Note: include_driver_pool_args is only supported in the default universe.
@@ -1763,6 +1783,7 @@ def GetClusterConfig(
       or args.secondary_worker_type == 'spot'
       or args.secondary_worker_machine_types is not None
       or args.min_secondary_worker_fraction is not None
+      or args.secondary_worker_attached_disks is not None
   ):
     instance_flexibility_policy = GetInstanceFlexibilityPolicy(
         dataproc,

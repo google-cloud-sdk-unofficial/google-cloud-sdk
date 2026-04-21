@@ -26,6 +26,17 @@ class Action(_messages.Message):
   type = _messages.StringField(2)
 
 
+class AutoAnnotateConfig(_messages.Message):
+  r"""Configuration for AutoAnnotate.
+
+  Fields:
+    models: Required. The list of unique models selected. Each model is
+      uniquely identified by its `name` string.
+  """
+
+  models = _messages.MessageField('Model', 1, repeated=True)
+
+
 class Autoclass(_messages.Message):
   r"""Configuration for a bucket's Autoclass feature.
 
@@ -700,6 +711,67 @@ class Encryption(_messages.Message):
   customerSuppliedEncryptionEnforcementConfig = _messages.MessageField('CustomerSuppliedEncryptionEnforcementConfig', 2)
   defaultKmsKey = _messages.StringField(3)
   googleManagedEncryptionEnforcementConfig = _messages.MessageField('GoogleManagedEncryptionEnforcementConfig', 4)
+
+
+class FeatureConfig(_messages.Message):
+  r"""Represents a feature configuration resource associated with an
+  organization, folder, or project.
+
+  Enums:
+    TypeValueValuesEnum: Output only. Specifies the type of the feature
+      configuration.
+
+  Fields:
+    autoAnnotateConfig: Optional. Placeholder FeatureConfig for auto_annotate
+    createTime: Output only. The time at which the feature configuration was
+      created.
+    description: Optional. A description of the feature configuration.
+    filter: Optional. Filter over location and bucket.
+    name: Identifier. The name of the `FeatureConfig` resource associated with
+      your organization, folder, or project. The name format varies based on
+      the scope as follows: * For project: `projects/{project}/locations/{loca
+      tion}/featureConfigs/{feature_config}`
+    type: Output only. Specifies the type of the feature configuration.
+    updateTime: Output only. The time at which the feature configuration was
+      last updated.
+  """
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""Output only. Specifies the type of the feature configuration.
+
+    Values:
+      FEATURE_TYPE_UNSPECIFIED: Represents the default value. This value is
+        used if the feature type is omitted.
+      AUTO_ANNOTATE: Indicates that the feature type is auto_annotate.
+    """
+    FEATURE_TYPE_UNSPECIFIED = 0
+    AUTO_ANNOTATE = 1
+
+  autoAnnotateConfig = _messages.MessageField('AutoAnnotateConfig', 1)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  filter = _messages.MessageField('FeatureConfigFilter', 4)
+  name = _messages.StringField(5)
+  type = _messages.EnumField('TypeValueValuesEnum', 6)
+  updateTime = _messages.StringField(7)
+
+
+class FeatureConfigFilter(_messages.Message):
+  r"""Filter over location and bucket using include or exclude semantics.
+  Resources that match the include or exclude filter are exclusively included
+  or excluded from the Storage Intelligence plan.
+
+  Fields:
+    excludedCloudStorageBuckets: Buckets to exclude.
+    excludedCloudStorageLocations: Optional. Bucket locations to exclude.
+    includedCloudStorageBuckets: Buckets to include.
+    includedCloudStorageLocations: Optional. Bucket locations to include.
+  """
+
+  excludedCloudStorageBuckets = _messages.MessageField('StorageBuckets', 1)
+  excludedCloudStorageLocations = _messages.MessageField('StorageLocations', 2)
+  includedCloudStorageBuckets = _messages.MessageField('StorageBuckets', 3)
+  includedCloudStorageLocations = _messages.MessageField('StorageLocations', 4)
 
 
 class Filter(_messages.Message):
@@ -1568,6 +1640,19 @@ class Lifecycle(_messages.Message):
   rule = _messages.MessageField('Rule', 1, repeated=True)
 
 
+class ListFeatureConfigsResponse(_messages.Message):
+  r"""Response message for the `ListFeatureConfigs` method.
+
+  Fields:
+    featureConfigs: The list of `FeatureConfig` resources.
+    nextPageToken: A token to retrieve the next page of results. Pass this
+      value in the `page_token` field in the subsequent call.
+  """
+
+  featureConfigs = _messages.MessageField('FeatureConfig', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
 class ListFoldersResponse(_messages.Message):
   r"""Response message for ListFolders.
 
@@ -1836,6 +1921,16 @@ class ManagementHubTrialConfig(_messages.Message):
   """
 
   expireTime = _messages.StringField(1)
+
+
+class Model(_messages.Message):
+  r"""Details of a model to be used to generate annotations for GCS objects.
+
+  Fields:
+    name: The name of the model.
+  """
+
+  name = _messages.StringField(1)
 
 
 class ObjectAccessControl(_messages.Message):
@@ -2462,6 +2557,22 @@ class Status(_messages.Message):
   message = _messages.StringField(3)
 
 
+class StorageBuckets(_messages.Message):
+  r"""Collection of buckets.
+
+  Fields:
+    bucketIdRegexes: Optional. A regex pattern for matching bucket names.
+      Regex should follow the syntax specified in
+      [google/re2](https://github.com/google/re2). For example, `^sample_.*`
+      matches all buckets of the form `gs://sample_bucket-1`,
+      `gs://sample_bucket-2`, `gs://sample_bucket-n` but not
+      `gs://test_sample_bucket`. If you want to match a single bucket, say
+      `gs://sample_bucket`, use `sample_bucket`.
+  """
+
+  bucketIdRegexes = _messages.StringField(1, repeated=True)
+
+
 class StorageFoldersLocationsGetIntelligenceConfigRequest(_messages.Message):
   r"""A StorageFoldersLocationsGetIntelligenceConfigRequest object.
 
@@ -2637,6 +2748,18 @@ class StorageLayout(_messages.Message):
   location = _messages.StringField(3)
   locationType = _messages.StringField(4)
   name = _messages.StringField(5)
+
+
+class StorageLocations(_messages.Message):
+  r"""Collection of bucket locations.
+
+  Fields:
+    locations: Optional. Bucket locations. Location can be any of the Cloud
+      Storage regions specified in lower case format. For example, `us-east1`,
+      `us-west1`.
+  """
+
+  locations = _messages.StringField(1, repeated=True)
 
 
 class StorageOrganizationsLocationsGetIntelligenceConfigRequest(_messages.Message):
@@ -3016,6 +3139,112 @@ class StorageProjectsBucketsSnapshotsPatchRequest(_messages.Message):
   name = _messages.StringField(1, required=True)
   requestId = _messages.StringField(2)
   snapshot = _messages.MessageField('Snapshot', 3)
+  updateMask = _messages.StringField(4)
+
+
+class StorageProjectsLocationsFeatureConfigsCreateRequest(_messages.Message):
+  r"""A StorageProjectsLocationsFeatureConfigsCreateRequest object.
+
+  Fields:
+    featureConfig: A FeatureConfig resource to be passed as the request body.
+    featureConfigId: Required. The ID to use for the feature config, which
+      will become the final component of the feature config's resource name.
+      The ID must be between 1 and 63 characters long, and match the following
+      regular expression: `^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$`. The first
+      character must be a lowercase letter. Subsequent characters must be a
+      lowercase letter, a digit, or a dash. The last character can't be a
+      dash. The ID must be unique within the parent resource.
+    parent: Required. The parent resource name. Format:
+      `projects/{project}/locations/{location}`
+      `organizations/{organization}/locations/{location}`
+      `folders/{folder}/locations/{location}`
+    requestId: Optional. A unique identifier for this request. UUID is the
+      recommended format, but other formats are still accepted.
+  """
+
+  featureConfig = _messages.MessageField('FeatureConfig', 1)
+  featureConfigId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class StorageProjectsLocationsFeatureConfigsDeleteRequest(_messages.Message):
+  r"""A StorageProjectsLocationsFeatureConfigsDeleteRequest object.
+
+  Fields:
+    name: Required. The name of the `FeatureConfig` resource to delete.
+      Format: `projects/{project}/locations/{location}/featureConfigs/{feature
+      _config}` `organizations/{organization}/locations/{location}/featureConf
+      igs/{feature_config}`
+      `folders/{folder}/locations/{location}/featureConfigs/{feature_config}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class StorageProjectsLocationsFeatureConfigsGetRequest(_messages.Message):
+  r"""A StorageProjectsLocationsFeatureConfigsGetRequest object.
+
+  Fields:
+    name: Required. The name of the `FeatureConfig` resource to retrieve.
+      Format: `projects/{project}/locations/{location}/featureConfigs/{feature
+      _config}` `organizations/{organization}/locations/{location}/featureConf
+      igs/{feature_config}`
+      `folders/{folder}/locations/{location}/featureConfigs/{feature_config}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class StorageProjectsLocationsFeatureConfigsListRequest(_messages.Message):
+  r"""A StorageProjectsLocationsFeatureConfigsListRequest object.
+
+  Fields:
+    filter: Optional. The filter expression to be applied. Supports filtering
+      by feature type.
+    orderBy: Optional. Order by fields for the result.
+    pageSize: Optional. The maximum number of `FeatureConfig` resources to
+      return. The maximum value is `100`; values above `100` will be coerced
+      to `100`. The default value is `100`.
+    pageToken: Optional. A page token, received from a previous
+      `ListFeatureConfigs` call. Provide this to retrieve the subsequent page.
+      When paginating, all other parameters provided to `ListFeatureConfigs`
+      must match the call that provided the page token.
+    parent: Required. The parent resource name. Format:
+      `projects/{project}/locations/{location}`
+      `organizations/{organization}/locations/{location}`
+      `folders/{folder}/locations/{location}`
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class StorageProjectsLocationsFeatureConfigsPatchRequest(_messages.Message):
+  r"""A StorageProjectsLocationsFeatureConfigsPatchRequest object.
+
+  Fields:
+    featureConfig: A FeatureConfig resource to be passed as the request body.
+    name: Identifier. The name of the `FeatureConfig` resource associated with
+      your organization, folder, or project. The name format varies based on
+      the scope as follows: * For project: `projects/{project}/locations/{loca
+      tion}/featureConfigs/{feature_config}`
+    requestId: Optional. A unique identifier for this request. UUID is the
+      recommended format, but other formats are still accepted.
+    updateMask: Optional. The `update_mask` that specifies the fields within
+      the `FeatureConfig` resource that should be modified by this update. The
+      fields that are provided in this mask are updated. A special value `*`
+      means full replacement, and will update all fields to the values
+      provided in `feature_config`. An omitted `update_mask` is treated as an
+      implied mask for all fields that are populated in the `feature_config`.
+  """
+
+  featureConfig = _messages.MessageField('FeatureConfig', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
   updateMask = _messages.StringField(4)
 
 

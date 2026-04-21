@@ -19,16 +19,19 @@
 from googlecloudsdk.calliope import base
 
 
+@base.DefaultUniverseOnly
 class ServiceHealthAlpha(base.Group):
   """Optional no-auto-generated code for ALPHA."""
   category = base.UNCATEGORIZED_CATEGORY
 
 
-class ServicehealthBeta(base.Group):
+@base.DefaultUniverseOnly
+class ServiceHealthBeta(base.Group):
   """Optional no-auto-generated code for BETA."""
   category = base.UNCATEGORIZED_CATEGORY
 
 
-class ServicehealthGa(base.Group):
+@base.DefaultUniverseOnly
+class ServiceHealthGa(base.Group):
   """Optional no-auto-generated code for GA."""
   category = base.UNCATEGORIZED_CATEGORY

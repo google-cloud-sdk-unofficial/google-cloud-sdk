@@ -962,6 +962,26 @@ class ListWorkstationsResponse(_messages.Message):
   workstations = _messages.MessageField('Workstation', 3, repeated=True)
 
 
+class OAuthToken(_messages.Message):
+  r"""OAuth token.
+
+  Fields:
+    accessToken: Required. The OAuth token.
+    email: Optional. The email address encapsulated in the OAuth token.
+    expireTime: Optional. The time the OAuth access token will expire. This
+      should be the time the access token was generated plus the expires_in
+      offset returned from the Access Token Response.
+    scopes: Optional. The scopes encapsulated in the OAuth token. See
+      https://developers.google.com/identity/protocols/oauth2/scopes for more
+      information.
+  """
+
+  accessToken = _messages.StringField(1)
+  email = _messages.StringField(2)
+  expireTime = _messages.StringField(3)
+  scopes = _messages.StringField(4)
+
+
 class Operation(_messages.Message):
   r"""This resource represents a long-running operation that is the result of
   a network API call.
@@ -1235,6 +1255,19 @@ class PrivateClusterConfig(_messages.Message):
   serviceAttachmentUri = _messages.StringField(4)
 
 
+class PushCredentialsRequest(_messages.Message):
+  r"""Request message for PushCredentials.
+
+  Fields:
+    applicationDefaultCredentials: Optional. Credentials used by Cloud Client
+      Libraries, Google API Client Libraries, and other tooling within the
+      user conainer: https://cloud.google.com/docs/authentication/application-
+      default-credentials
+  """
+
+  applicationDefaultCredentials = _messages.MessageField('OAuthToken', 1)
+
+
 class ReadinessCheck(_messages.Message):
   r"""A readiness check to be performed on a workstation.
 
@@ -1384,7 +1417,7 @@ class StartWorkstationRequest(_messages.Message):
     etag: Optional. If set, the request will be rejected if the latest version
       of the workstation on the server does not have this ETag.
     validateOnly: Optional. If set, validate the request and preview the
-      review, but do not actually apply it.
+      result, but do not actually apply it.
   """
 
   boostConfig = _messages.StringField(1)
@@ -1450,7 +1483,7 @@ class StopWorkstationRequest(_messages.Message):
     etag: Optional. If set, the request will be rejected if the latest version
       of the workstation on the server does not have this ETag.
     validateOnly: Optional. If set, validate the request and preview the
-      review, but do not actually apply it.
+      result, but do not actually apply it.
   """
 
   etag = _messages.StringField(1)
@@ -1557,12 +1590,16 @@ class Workstation(_messages.Message):
       STATE_STOPPING: The workstation is being stopped.
       STATE_STOPPED: The workstation is stopped and will not be able to
         receive requests until it is started.
+      STATE_SUSPENDING: The workstation is being suspended.
+      STATE_SUSPENDED: The workstation is suspended.
     """
     STATE_UNSPECIFIED = 0
     STATE_STARTING = 1
     STATE_RUNNING = 2
     STATE_STOPPING = 3
     STATE_STOPPED = 4
+    STATE_SUSPENDING = 5
+    STATE_SUSPENDED = 6
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AnnotationsValue(_messages.Message):
@@ -1909,6 +1946,13 @@ class WorkstationConfig(_messages.Message):
       logging#overview). Operating system audit logs are available in the
       [Cloud Logging](https://cloud.google.com/logging/docs) console by
       querying: resource.type="gce_instance" log_name:"/logs/linux-auditd"
+    enablePushingCredentials: Optional. Enables pushing user provided
+      credentials to Workstations by calling workstations.pushCredentials. If
+      application_default_credentials are supplied to pushCredentials, the
+      provided token is returned when tools and applications running in the
+      user container make a request for Default Application Credentials.
+      Please note that any credentials supplied are made available to all
+      users with access to the workstation.
     encryptionKey: Immutable. Encrypts resources of this workstation
       configuration using a customer-managed encryption key (CMEK). If
       specified, the boot disk of the Compute Engine instance and the
@@ -1972,19 +2016,21 @@ class WorkstationConfig(_messages.Message):
       default zones within the region are used. Immutable after the
       workstation configuration is created.
     runningTimeout: Optional. Number of seconds that a workstation can run
-      until it is automatically shut down. We recommend that workstations be
-      shut down daily to reduce costs and so that security updates can be
-      applied upon restart. The idle_timeout and running_timeout fields are
-      independent of each other. Note that the running_timeout field shuts
-      down VMs after the specified time, regardless of whether or not the VMs
-      are idle. Provide duration terminated by `s` for seconds-for example,
-      `"54000s"` (15 hours). Defaults to `"43200s"` (12 hours). A value of
-      `"0s"` indicates that workstations using this configuration should never
-      time out. If encryption_key is set, it must be greater than `"0s"` and
-      less than `"86400s"` (24 hours). Warning: A value of `"0s"` indicates
-      that Cloud Workstations VMs created with this configuration have no
-      maximum running time. This is strongly discouraged because you incur
-      costs and will not pick up security updates.
+      until it is automatically shut down. This field applies to workstations
+      in both STATE_RUNNING and STATE_SUSPENDED. We recommend that
+      workstations be shut down daily to reduce costs and so that security
+      updates can be applied upon restart. The idle_timeout and
+      running_timeout fields are independent of each other. Note that the
+      running_timeout field shuts down VMs after the specified time,
+      regardless of whether or not the VMs are idle. Provide duration
+      terminated by `s` for seconds-for example, `"54000s"` (15 hours).
+      Defaults to `"43200s"` (12 hours). A value of `"0s"` indicates that
+      workstations using this configuration should never time out. If
+      encryption_key is set, it must be greater than `"0s"` and less than
+      `"86400s"` (24 hours). Warning: A value of `"0s"` indicates that Cloud
+      Workstations VMs created with this configuration have no maximum running
+      time. This is strongly discouraged because you incur costs and will not
+      pick up security updates.
     satisfiesPzi: Output only. Reserved for future use.
     satisfiesPzs: Output only. Reserved for future use.
     uid: Output only. A system-assigned unique identifier for this workstation
@@ -2054,25 +2100,26 @@ class WorkstationConfig(_messages.Message):
   disableTcpConnections = _messages.BooleanField(8)
   displayName = _messages.StringField(9)
   enableAuditAgent = _messages.BooleanField(10)
-  encryptionKey = _messages.MessageField('CustomerEncryptionKey', 11)
-  ephemeralDirectories = _messages.MessageField('EphemeralDirectory', 12, repeated=True)
-  etag = _messages.StringField(13)
-  grantWorkstationAdminRoleOnCreate = _messages.BooleanField(14)
-  host = _messages.MessageField('Host', 15)
-  httpOptions = _messages.MessageField('HttpOptions', 16)
-  idleTimeout = _messages.StringField(17)
-  labels = _messages.MessageField('LabelsValue', 18)
-  maxUsableWorkstations = _messages.IntegerField(19, variant=_messages.Variant.INT32)
-  name = _messages.StringField(20)
-  persistentDirectories = _messages.MessageField('PersistentDirectory', 21, repeated=True)
-  readinessChecks = _messages.MessageField('ReadinessCheck', 22, repeated=True)
-  reconciling = _messages.BooleanField(23)
-  replicaZones = _messages.StringField(24, repeated=True)
-  runningTimeout = _messages.StringField(25)
-  satisfiesPzi = _messages.BooleanField(26)
-  satisfiesPzs = _messages.BooleanField(27)
-  uid = _messages.StringField(28)
-  updateTime = _messages.StringField(29)
+  enablePushingCredentials = _messages.BooleanField(11)
+  encryptionKey = _messages.MessageField('CustomerEncryptionKey', 12)
+  ephemeralDirectories = _messages.MessageField('EphemeralDirectory', 13, repeated=True)
+  etag = _messages.StringField(14)
+  grantWorkstationAdminRoleOnCreate = _messages.BooleanField(15)
+  host = _messages.MessageField('Host', 16)
+  httpOptions = _messages.MessageField('HttpOptions', 17)
+  idleTimeout = _messages.StringField(18)
+  labels = _messages.MessageField('LabelsValue', 19)
+  maxUsableWorkstations = _messages.IntegerField(20, variant=_messages.Variant.INT32)
+  name = _messages.StringField(21)
+  persistentDirectories = _messages.MessageField('PersistentDirectory', 22, repeated=True)
+  readinessChecks = _messages.MessageField('ReadinessCheck', 23, repeated=True)
+  reconciling = _messages.BooleanField(24)
+  replicaZones = _messages.StringField(25, repeated=True)
+  runningTimeout = _messages.StringField(26)
+  satisfiesPzi = _messages.BooleanField(27)
+  satisfiesPzs = _messages.BooleanField(28)
+  uid = _messages.StringField(29)
+  updateTime = _messages.StringField(30)
 
 
 class WorkstationsProjectsLocationsOperationsCancelRequest(_messages.Message):
@@ -2138,7 +2185,7 @@ class WorkstationsProjectsLocationsWorkstationClustersCreateRequest(_messages.Me
   Fields:
     parent: Required. Parent resource name.
     validateOnly: Optional. If set, validate the request and preview the
-      review, but do not actually apply it.
+      result, but do not actually apply it.
     workstationCluster: A WorkstationCluster resource to be passed as the
       request body.
     workstationClusterId: Required. ID to use for the workstation cluster.
@@ -2161,7 +2208,7 @@ class WorkstationsProjectsLocationsWorkstationClustersDeleteRequest(_messages.Me
       works if the workstation cluster has no configurations or workstations.
     name: Required. Name of the workstation cluster to delete.
     validateOnly: Optional. If set, validate the request and preview the
-      review, but do not apply it.
+      result, but do not apply it.
   """
 
   etag = _messages.StringField(1)
@@ -2209,7 +2256,7 @@ class WorkstationsProjectsLocationsWorkstationClustersPatchRequest(_messages.Mes
     updateMask: Required. Mask that specifies which fields in the workstation
       cluster should be updated.
     validateOnly: Optional. If set, validate the request and preview the
-      review, but do not actually apply it.
+      result, but do not actually apply it.
     workstationCluster: A WorkstationCluster resource to be passed as the
       request body.
   """
@@ -2228,7 +2275,7 @@ class WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsCreateRe
   Fields:
     parent: Required. Parent resource name.
     validateOnly: Optional. If set, validate the request and preview the
-      review, but do not actually apply it.
+      result, but do not actually apply it.
     workstationConfig: A WorkstationConfig resource to be passed as the
       request body.
     workstationConfigId: Required. ID to use for the workstation
@@ -2253,7 +2300,7 @@ class WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsDeleteRe
       configuration has no workstations.
     name: Required. Name of the workstation configuration to delete.
     validateOnly: Optional. If set, validate the request and preview the
-      review, but do not actually apply it.
+      result, but do not actually apply it.
   """
 
   etag = _messages.StringField(1)
@@ -2348,7 +2395,7 @@ class WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsPatchReq
     updateMask: Required. Mask specifying which fields in the workstation
       configuration should be updated.
     validateOnly: Optional. If set, validate the request and preview the
-      review, but do not actually apply it.
+      result, but do not actually apply it.
     workstationConfig: A WorkstationConfig resource to be passed as the
       request body.
   """
@@ -2401,7 +2448,7 @@ class WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWorkstat
   Fields:
     parent: Required. Parent resource name.
     validateOnly: Optional. If set, validate the request and preview the
-      review, but do not actually apply it.
+      result, but do not actually apply it.
     workstation: A Workstation resource to be passed as the request body.
     workstationId: Required. ID to use for the workstation.
   """
@@ -2421,7 +2468,7 @@ class WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWorkstat
       of the workstation on the server does not have this ETag.
     name: Required. Name of the workstation to delete.
     validateOnly: Optional. If set, validate the request and preview the
-      review, but do not actually apply it.
+      result, but do not actually apply it.
   """
 
   etag = _messages.StringField(1)
@@ -2522,14 +2569,13 @@ class WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWorkstat
   stationsPatchRequest object.
 
   Fields:
-    allowMissing: Optional. If set and the workstation configuration is not
-      found, a new workstation configuration is created. In this situation,
-      update_mask is ignored.
+    allowMissing: Optional. If set and the workstation is not found, a new
+      workstation is created. In this situation, update_mask is ignored.
     name: Identifier. Full name of this workstation.
     updateMask: Required. Mask specifying which fields in the workstation
-      configuration should be updated.
+      should be updated.
     validateOnly: Optional. If set, validate the request and preview the
-      review, but do not actually apply it.
+      result, but do not actually apply it.
     workstation: A Workstation resource to be passed as the request body.
   """
 
@@ -2538,6 +2584,21 @@ class WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWorkstat
   updateMask = _messages.StringField(3)
   validateOnly = _messages.BooleanField(4)
   workstation = _messages.MessageField('Workstation', 5)
+
+
+class WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWorkstationsPushCredentialsRequest(_messages.Message):
+  r"""A WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWork
+  stationsPushCredentialsRequest object.
+
+  Fields:
+    pushCredentialsRequest: A PushCredentialsRequest resource to be passed as
+      the request body.
+    workstation: Required. Name of the workstation for which the credentials
+      should be pushed.
+  """
+
+  pushCredentialsRequest = _messages.MessageField('PushCredentialsRequest', 1)
+  workstation = _messages.StringField(2, required=True)
 
 
 class WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWorkstationsSetIamPolicyRequest(_messages.Message):

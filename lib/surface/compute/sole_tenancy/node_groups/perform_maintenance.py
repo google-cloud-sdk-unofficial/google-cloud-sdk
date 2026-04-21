@@ -24,7 +24,10 @@ from googlecloudsdk.core.util import times
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
 )
 class PerformMaintenance(base.UpdateCommand):
   """Perform maintenance on nodes in a Compute Engine node group."""

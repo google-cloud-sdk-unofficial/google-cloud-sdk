@@ -1169,7 +1169,7 @@ def _RunCreate(
 # @base.UniverseCompatible once b/305707695 is fixed.
 # See go/gcloud-cli-running-tpc-tests.
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Create(base.CreateCommand):
   """Create a Compute Engine virtual machine instance template.
 

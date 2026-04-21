@@ -4734,6 +4734,7 @@ class GooglePrivacyDlpV2ContentItem(_messages.Message):
 
   Fields:
     byteItem: Content data to inspect or redact. Replaces `type` and `data`.
+    contentMetadata: User provided metadata for the content.
     table: Structured content for inspection. See
       https://cloud.google.com/sensitive-data-protection/docs/inspecting-
       text#inspecting_a_table to learn more.
@@ -4741,8 +4742,9 @@ class GooglePrivacyDlpV2ContentItem(_messages.Message):
   """
 
   byteItem = _messages.MessageField('GooglePrivacyDlpV2ByteContentItem', 1)
-  table = _messages.MessageField('GooglePrivacyDlpV2Table', 2)
-  value = _messages.StringField(3)
+  contentMetadata = _messages.MessageField('GooglePrivacyDlpV2ContentMetadata', 2)
+  table = _messages.MessageField('GooglePrivacyDlpV2Table', 3)
+  value = _messages.StringField(4)
 
 
 class GooglePrivacyDlpV2ContentLocation(_messages.Message):
@@ -4776,6 +4778,16 @@ class GooglePrivacyDlpV2ContentLocation(_messages.Message):
   imageLocation = _messages.MessageField('GooglePrivacyDlpV2ImageLocation', 5)
   metadataLocation = _messages.MessageField('GooglePrivacyDlpV2MetadataLocation', 6)
   recordLocation = _messages.MessageField('GooglePrivacyDlpV2RecordLocation', 7)
+
+
+class GooglePrivacyDlpV2ContentMetadata(_messages.Message):
+  r"""Metadata on content to be scanned.
+
+  Fields:
+    properties: User provided key-value pairs of content metadata.
+  """
+
+  properties = _messages.MessageField('GooglePrivacyDlpV2KeyValueMetadataProperty', 1, repeated=True)
 
 
 class GooglePrivacyDlpV2CreateConnectionRequest(_messages.Message):
@@ -8958,6 +8970,18 @@ class GooglePrivacyDlpV2KeyValueMetadataLabel(_messages.Message):
   key = _messages.StringField(1)
 
 
+class GooglePrivacyDlpV2KeyValueMetadataProperty(_messages.Message):
+  r"""A key-value pair in the Metadata.
+
+  Fields:
+    key: The key of the property.
+    value: The value of the property.
+  """
+
+  key = _messages.StringField(1)
+  value = _messages.StringField(2)
+
+
 class GooglePrivacyDlpV2KindExpression(_messages.Message):
   r"""A representation of a Datastore kind.
 
@@ -9390,10 +9414,12 @@ class GooglePrivacyDlpV2MetadataLocation(_messages.Message):
       METADATATYPE_UNSPECIFIED: Unused
       STORAGE_METADATA: General file metadata provided by Cloud Storage.
       CONTENT_METADATA: Metadata extracted from the files.
+      CLIENT_PROVIDED_METADATA: Metadata provided by the client.
     """
     METADATATYPE_UNSPECIFIED = 0
     STORAGE_METADATA = 1
     CONTENT_METADATA = 2
+    CLIENT_PROVIDED_METADATA = 3
 
   keyValueMetadataLabel = _messages.MessageField('GooglePrivacyDlpV2KeyValueMetadataLabel', 1)
   storageLabel = _messages.MessageField('GooglePrivacyDlpV2StorageMetadataLabel', 2)

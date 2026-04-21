@@ -39,7 +39,7 @@ def _DetailedHelp():
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine subnetwork.
 

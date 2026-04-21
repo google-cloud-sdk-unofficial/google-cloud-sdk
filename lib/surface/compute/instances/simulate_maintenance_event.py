@@ -29,7 +29,10 @@ SIMULATE_MAINTENANCE_EVENT_TIMEOUT_MS = 7200000
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
 )
 class SimulateMaintenanceEvent(base.UpdateCommand):
   """Simulate maintenance of virtual machine instances."""

@@ -1991,6 +1991,359 @@ class GoogleCloudPolicytroubleshooterIamV3alphaExplainedPolicyBinding(_messages.
   relevance = _messages.EnumField('RelevanceValueValuesEnum', 4)
 
 
+class GoogleCloudPolicytroubleshooterIamV3alphaExplainedRABBindingAndPolicy(_messages.Message):
+  r"""Details about how a regional access boundary binding and policy
+  contributes to the regional access boundary explanation, with annotations to
+  indicate how the binding and policy contribute to the overall access state.
+
+  Enums:
+    BindingAndPolicyAccessStateValueValuesEnum: Output only. Indicates whether
+      the principal is allowed to access the specified resource based on
+      evaluating the binding and policy.
+    RelevanceValueValuesEnum: The relevance of this regional access boundary
+      binding and policy to the overall access state.
+
+  Fields:
+    bindingAndPolicyAccessState: Output only. Indicates whether the principal
+      is allowed to access the specified resource based on evaluating the
+      binding and policy.
+    explainedPolicy: Optional. Details about how this policy contributes to
+      the regional access boundary explanation, with annotations to indicate
+      how the policy contributes to the overall access state. If the caller
+      doesn't have permission to view the policy in the binding, this field is
+      omitted.
+    explainedPolicyBinding: Details about how this binding contributes to the
+      regional access boundary explanation, with annotations to indicate how
+      the binding contributes to the overall access state.
+    relevance: The relevance of this regional access boundary binding and
+      policy to the overall access state.
+  """
+
+  class BindingAndPolicyAccessStateValueValuesEnum(_messages.Enum):
+    r"""Output only. Indicates whether the principal is allowed to access the
+    specified resource based on evaluating the binding and policy.
+
+    Values:
+      RAB_ACCESS_STATE_UNSPECIFIED: Not specified.
+      RAB_ACCESS_STATE_ALLOWED: Allows the principal's access to the specified
+        resource.
+      RAB_ACCESS_STATE_NOT_ALLOWED: Doesn't allow the principal's access to
+        the specified resource.
+      RAB_ACCESS_STATE_NOT_ENFORCED: Is not enforced on the principal, or the
+        specified resource. This state refers to the following scenarios: -
+        IAM doesn't enforce the specified permission at the RAB policy's
+        [enforcement
+        version](https://cloud.google.com/iam/help/rab/enforcement-versions),
+        so the RAB policy can't block access. - The binding doesn't apply to
+        the principal, so the policy is not enforced. - The RAB policy doesn't
+        have any rules
+      RAB_ACCESS_STATE_UNKNOWN_INFO: Cannot be determined because the sender
+        of the request does not have access to the RAB component, or the
+        relevant data to explain the RAB component.
+    """
+    RAB_ACCESS_STATE_UNSPECIFIED = 0
+    RAB_ACCESS_STATE_ALLOWED = 1
+    RAB_ACCESS_STATE_NOT_ALLOWED = 2
+    RAB_ACCESS_STATE_NOT_ENFORCED = 3
+    RAB_ACCESS_STATE_UNKNOWN_INFO = 4
+
+  class RelevanceValueValuesEnum(_messages.Enum):
+    r"""The relevance of this regional access boundary binding and policy to
+    the overall access state.
+
+    Values:
+      HEURISTIC_RELEVANCE_UNSPECIFIED: Not specified.
+      HEURISTIC_RELEVANCE_NORMAL: The data point has a limited effect on the
+        result. Changing the data point is unlikely to affect the overall
+        determination.
+      HEURISTIC_RELEVANCE_HIGH: The data point has a strong effect on the
+        result. Changing the data point is likely to affect the overall
+        determination.
+    """
+    HEURISTIC_RELEVANCE_UNSPECIFIED = 0
+    HEURISTIC_RELEVANCE_NORMAL = 1
+    HEURISTIC_RELEVANCE_HIGH = 2
+
+  bindingAndPolicyAccessState = _messages.EnumField('BindingAndPolicyAccessStateValueValuesEnum', 1)
+  explainedPolicy = _messages.MessageField('GoogleCloudPolicytroubleshooterIamV3alphaExplainedRABPolicy', 2)
+  explainedPolicyBinding = _messages.MessageField('GoogleCloudPolicytroubleshooterIamV3alphaExplainedPolicyBinding', 3)
+  relevance = _messages.EnumField('RelevanceValueValuesEnum', 4)
+
+
+class GoogleCloudPolicytroubleshooterIamV3alphaExplainedRABPolicy(_messages.Message):
+  r"""Details about how a regional access boundary policy contributes to the
+  explanation, with annotations to indicate how the policy contributes to the
+  overall access state.
+
+  Enums:
+    PolicyAccessStateValueValuesEnum: Output only. Indicates whether the
+      policy allows access to the specified resource.
+    RelevanceValueValuesEnum: The relevance of this policy to the overall
+      access state.
+
+  Fields:
+    explainedRules: List of regional access boundary rules that were explained
+      to check the principal's access to specified resource, with annotations
+      to indicate how each rule contributes to the overall access state.
+    policy: The policy that is explained.
+    policyAccessState: Output only. Indicates whether the policy allows access
+      to the specified resource.
+    policyVersion: Output only. Explanation of the regional access boundary
+      policy's version.
+    relevance: The relevance of this policy to the overall access state.
+  """
+
+  class PolicyAccessStateValueValuesEnum(_messages.Enum):
+    r"""Output only. Indicates whether the policy allows access to the
+    specified resource.
+
+    Values:
+      RAB_ACCESS_STATE_UNSPECIFIED: Not specified.
+      RAB_ACCESS_STATE_ALLOWED: Allows the principal's access to the specified
+        resource.
+      RAB_ACCESS_STATE_NOT_ALLOWED: Doesn't allow the principal's access to
+        the specified resource.
+      RAB_ACCESS_STATE_NOT_ENFORCED: Is not enforced on the principal, or the
+        specified resource. This state refers to the following scenarios: -
+        IAM doesn't enforce the specified permission at the RAB policy's
+        [enforcement
+        version](https://cloud.google.com/iam/help/rab/enforcement-versions),
+        so the RAB policy can't block access. - The binding doesn't apply to
+        the principal, so the policy is not enforced. - The RAB policy doesn't
+        have any rules
+      RAB_ACCESS_STATE_UNKNOWN_INFO: Cannot be determined because the sender
+        of the request does not have access to the RAB component, or the
+        relevant data to explain the RAB component.
+    """
+    RAB_ACCESS_STATE_UNSPECIFIED = 0
+    RAB_ACCESS_STATE_ALLOWED = 1
+    RAB_ACCESS_STATE_NOT_ALLOWED = 2
+    RAB_ACCESS_STATE_NOT_ENFORCED = 3
+    RAB_ACCESS_STATE_UNKNOWN_INFO = 4
+
+  class RelevanceValueValuesEnum(_messages.Enum):
+    r"""The relevance of this policy to the overall access state.
+
+    Values:
+      HEURISTIC_RELEVANCE_UNSPECIFIED: Not specified.
+      HEURISTIC_RELEVANCE_NORMAL: The data point has a limited effect on the
+        result. Changing the data point is unlikely to affect the overall
+        determination.
+      HEURISTIC_RELEVANCE_HIGH: The data point has a strong effect on the
+        result. Changing the data point is likely to affect the overall
+        determination.
+    """
+    HEURISTIC_RELEVANCE_UNSPECIFIED = 0
+    HEURISTIC_RELEVANCE_NORMAL = 1
+    HEURISTIC_RELEVANCE_HIGH = 2
+
+  explainedRules = _messages.MessageField('GoogleCloudPolicytroubleshooterIamV3alphaExplainedRABRule', 1, repeated=True)
+  policy = _messages.MessageField('GoogleIamV3RegionalAccessBoundaryPolicy', 2)
+  policyAccessState = _messages.EnumField('PolicyAccessStateValueValuesEnum', 3)
+  policyVersion = _messages.MessageField('GoogleCloudPolicytroubleshooterIamV3alphaExplainedRABPolicyVersion', 4)
+  relevance = _messages.EnumField('RelevanceValueValuesEnum', 5)
+
+
+class GoogleCloudPolicytroubleshooterIamV3alphaExplainedRABPolicyVersion(_messages.Message):
+  r"""Details about how a regional access boundary policy's version
+  contributes to the policy's enforcement state.
+
+  Enums:
+    EnforcementStateValueValuesEnum: Output only. Indicates whether the policy
+      is enforced based on its version.
+
+  Fields:
+    enforcementState: Output only. Indicates whether the policy is enforced
+      based on its version.
+    version: Output only. The actual version of the policy. - If the policy
+      uses static version, this field is the chosen static version. - If the
+      policy uses dynamic version, this field is the effective latest version.
+  """
+
+  class EnforcementStateValueValuesEnum(_messages.Enum):
+    r"""Output only. Indicates whether the policy is enforced based on its
+    version.
+
+    Values:
+      RAB_POLICY_ENFORCEMENT_STATE_UNSPECIFIED: An error occurred when
+        checking whether the policy is enforced based on its version.
+      RAB_POLICY_ENFORCEMENT_STATE_ENFORCED: Is enforced based on its version.
+      RAB_POLICY_ENFORCEMENT_STATE_NOT_ENFORCED: Is not enforced based on its
+        version.
+    """
+    RAB_POLICY_ENFORCEMENT_STATE_UNSPECIFIED = 0
+    RAB_POLICY_ENFORCEMENT_STATE_ENFORCED = 1
+    RAB_POLICY_ENFORCEMENT_STATE_NOT_ENFORCED = 2
+
+  enforcementState = _messages.EnumField('EnforcementStateValueValuesEnum', 1)
+  version = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+
+
+class GoogleCloudPolicytroubleshooterIamV3alphaExplainedRABRule(_messages.Message):
+  r"""Details about how a regional access boundary rule contributes to the
+  explanation, with annotations to indicate how the rule contributes to the
+  overall access state.
+
+  Enums:
+    CombinedResourceInclusionStateValueValuesEnum: Output only. Indicates
+      whether the specified resource within the explain request belongs to any
+      location of the rule.
+    RelevanceValueValuesEnum: The relevance of this rule to the overall access
+      state.
+    RuleAccessStateValueValuesEnum: Output only. Indicates whether the rule
+      allows access to the specified resource.
+
+  Fields:
+    combinedResourceInclusionState: Output only. Indicates whether the
+      specified resource within the explain request belongs to any location of
+      the rule.
+    explainedResourceLocations: List of resource locations that were explained
+      to check the principal's access to specified resource, with annotations
+      to indicate how each resource location contributes to the overall access
+      state.
+    relevance: The relevance of this rule to the overall access state.
+    ruleAccessState: Output only. Indicates whether the rule allows access to
+      the specified resource.
+  """
+
+  class CombinedResourceInclusionStateValueValuesEnum(_messages.Enum):
+    r"""Output only. Indicates whether the specified resource within the
+    explain request belongs to any location of the rule.
+
+    Values:
+      RESOURCE_INCLUSION_STATE_UNSPECIFIED: An error occurred when checking
+        whether the resource includes the specified resource.
+      RESOURCE_INCLUSION_STATE_INCLUDED: The resource includes the specified
+        resource.
+      RESOURCE_INCLUSION_STATE_NOT_INCLUDED: The resource doesn't include the
+        specified resource.
+      RESOURCE_INCLUSION_STATE_UNKNOWN_INFO: The sender of the request does
+        not have access to the relevant data to check whether the resource
+        includes the specified resource.
+      RESOURCE_INCLUSION_STATE_UNKNOWN_UNSUPPORTED: The resource is of an
+        unsupported type, such as non-CRM resources.
+    """
+    RESOURCE_INCLUSION_STATE_UNSPECIFIED = 0
+    RESOURCE_INCLUSION_STATE_INCLUDED = 1
+    RESOURCE_INCLUSION_STATE_NOT_INCLUDED = 2
+    RESOURCE_INCLUSION_STATE_UNKNOWN_INFO = 3
+    RESOURCE_INCLUSION_STATE_UNKNOWN_UNSUPPORTED = 4
+
+  class RelevanceValueValuesEnum(_messages.Enum):
+    r"""The relevance of this rule to the overall access state.
+
+    Values:
+      HEURISTIC_RELEVANCE_UNSPECIFIED: Not specified.
+      HEURISTIC_RELEVANCE_NORMAL: The data point has a limited effect on the
+        result. Changing the data point is unlikely to affect the overall
+        determination.
+      HEURISTIC_RELEVANCE_HIGH: The data point has a strong effect on the
+        result. Changing the data point is likely to affect the overall
+        determination.
+    """
+    HEURISTIC_RELEVANCE_UNSPECIFIED = 0
+    HEURISTIC_RELEVANCE_NORMAL = 1
+    HEURISTIC_RELEVANCE_HIGH = 2
+
+  class RuleAccessStateValueValuesEnum(_messages.Enum):
+    r"""Output only. Indicates whether the rule allows access to the specified
+    resource.
+
+    Values:
+      RAB_ACCESS_STATE_UNSPECIFIED: Not specified.
+      RAB_ACCESS_STATE_ALLOWED: Allows the principal's access to the specified
+        resource.
+      RAB_ACCESS_STATE_NOT_ALLOWED: Doesn't allow the principal's access to
+        the specified resource.
+      RAB_ACCESS_STATE_NOT_ENFORCED: Is not enforced on the principal, or the
+        specified resource. This state refers to the following scenarios: -
+        IAM doesn't enforce the specified permission at the RAB policy's
+        [enforcement
+        version](https://cloud.google.com/iam/help/rab/enforcement-versions),
+        so the RAB policy can't block access. - The binding doesn't apply to
+        the principal, so the policy is not enforced. - The RAB policy doesn't
+        have any rules
+      RAB_ACCESS_STATE_UNKNOWN_INFO: Cannot be determined because the sender
+        of the request does not have access to the RAB component, or the
+        relevant data to explain the RAB component.
+    """
+    RAB_ACCESS_STATE_UNSPECIFIED = 0
+    RAB_ACCESS_STATE_ALLOWED = 1
+    RAB_ACCESS_STATE_NOT_ALLOWED = 2
+    RAB_ACCESS_STATE_NOT_ENFORCED = 3
+    RAB_ACCESS_STATE_UNKNOWN_INFO = 4
+
+  combinedResourceInclusionState = _messages.EnumField('CombinedResourceInclusionStateValueValuesEnum', 1)
+  explainedResourceLocations = _messages.MessageField('GoogleCloudPolicytroubleshooterIamV3alphaExplainedRABRuleExplainedResourceLocation', 2, repeated=True)
+  relevance = _messages.EnumField('RelevanceValueValuesEnum', 3)
+  ruleAccessState = _messages.EnumField('RuleAccessStateValueValuesEnum', 4)
+
+
+class GoogleCloudPolicytroubleshooterIamV3alphaExplainedRABRuleExplainedResourceLocation(_messages.Message):
+  r"""Details about how a resource location contributes to the explanation,
+  with annotations to indicate how the resource location contributes to the
+  overall access state.
+
+  Enums:
+    RelevanceValueValuesEnum: The relevance of this resource to the overall
+      access state.
+    ResourceInclusionStateValueValuesEnum: Output only. Indicates whether the
+      specified resource within the explain request belongs to a location
+      within the rule.
+
+  Fields:
+    location: Output only. The location within the rule that the specified
+      resource was evaluated against.
+    relevance: The relevance of this resource to the overall access state.
+    resourceInclusionState: Output only. Indicates whether the specified
+      resource within the explain request belongs to a location within the
+      rule.
+  """
+
+  class RelevanceValueValuesEnum(_messages.Enum):
+    r"""The relevance of this resource to the overall access state.
+
+    Values:
+      HEURISTIC_RELEVANCE_UNSPECIFIED: Not specified.
+      HEURISTIC_RELEVANCE_NORMAL: The data point has a limited effect on the
+        result. Changing the data point is unlikely to affect the overall
+        determination.
+      HEURISTIC_RELEVANCE_HIGH: The data point has a strong effect on the
+        result. Changing the data point is likely to affect the overall
+        determination.
+    """
+    HEURISTIC_RELEVANCE_UNSPECIFIED = 0
+    HEURISTIC_RELEVANCE_NORMAL = 1
+    HEURISTIC_RELEVANCE_HIGH = 2
+
+  class ResourceInclusionStateValueValuesEnum(_messages.Enum):
+    r"""Output only. Indicates whether the specified resource within the
+    explain request belongs to a location within the rule.
+
+    Values:
+      RESOURCE_INCLUSION_STATE_UNSPECIFIED: An error occurred when checking
+        whether the resource includes the specified resource.
+      RESOURCE_INCLUSION_STATE_INCLUDED: The resource includes the specified
+        resource.
+      RESOURCE_INCLUSION_STATE_NOT_INCLUDED: The resource doesn't include the
+        specified resource.
+      RESOURCE_INCLUSION_STATE_UNKNOWN_INFO: The sender of the request does
+        not have access to the relevant data to check whether the resource
+        includes the specified resource.
+      RESOURCE_INCLUSION_STATE_UNKNOWN_UNSUPPORTED: The resource is of an
+        unsupported type, such as non-CRM resources.
+    """
+    RESOURCE_INCLUSION_STATE_UNSPECIFIED = 0
+    RESOURCE_INCLUSION_STATE_INCLUDED = 1
+    RESOURCE_INCLUSION_STATE_NOT_INCLUDED = 2
+    RESOURCE_INCLUSION_STATE_UNKNOWN_INFO = 3
+    RESOURCE_INCLUSION_STATE_UNKNOWN_UNSUPPORTED = 4
+
+  location = _messages.StringField(1)
+  relevance = _messages.EnumField('RelevanceValueValuesEnum', 2)
+  resourceInclusionState = _messages.EnumField('ResourceInclusionStateValueValuesEnum', 3)
+
+
 class GoogleCloudPolicytroubleshooterIamV3alphaPABPolicyExplanation(_messages.Message):
   r"""Details about how the relevant principal access boundary policies affect
   the overall access state.
@@ -2066,6 +2419,81 @@ class GoogleCloudPolicytroubleshooterIamV3alphaPABPolicyExplanation(_messages.Me
   relevance = _messages.EnumField('RelevanceValueValuesEnum', 3)
 
 
+class GoogleCloudPolicytroubleshooterIamV3alphaRABPolicyExplanation(_messages.Message):
+  r"""Details about how the relevant regional access boundary policies affect
+  the overall access state.
+
+  Enums:
+    RegionalAccessBoundaryAccessStateValueValuesEnum: Output only. Indicates
+      whether the principal is allowed to access specified resource, based on
+      evaluating all applicable regional access boundary bindings and
+      policies.
+    RelevanceValueValuesEnum: Output only. The relevance of the regional
+      access boundary access state to the overall access state.
+
+  Fields:
+    explainedBindingsAndPolicies: List of regional access boundary policies
+      and bindings that are applicable to the principal's access state, with
+      annotations to indicate how each binding and policy contributes to the
+      overall access state.
+    regionalAccessBoundaryAccessState: Output only. Indicates whether the
+      principal is allowed to access specified resource, based on evaluating
+      all applicable regional access boundary bindings and policies.
+    relevance: Output only. The relevance of the regional access boundary
+      access state to the overall access state.
+  """
+
+  class RegionalAccessBoundaryAccessStateValueValuesEnum(_messages.Enum):
+    r"""Output only. Indicates whether the principal is allowed to access
+    specified resource, based on evaluating all applicable regional access
+    boundary bindings and policies.
+
+    Values:
+      RAB_ACCESS_STATE_UNSPECIFIED: Not specified.
+      RAB_ACCESS_STATE_ALLOWED: Allows the principal's access to the specified
+        resource.
+      RAB_ACCESS_STATE_NOT_ALLOWED: Doesn't allow the principal's access to
+        the specified resource.
+      RAB_ACCESS_STATE_NOT_ENFORCED: Is not enforced on the principal, or the
+        specified resource. This state refers to the following scenarios: -
+        IAM doesn't enforce the specified permission at the RAB policy's
+        [enforcement
+        version](https://cloud.google.com/iam/help/rab/enforcement-versions),
+        so the RAB policy can't block access. - The binding doesn't apply to
+        the principal, so the policy is not enforced. - The RAB policy doesn't
+        have any rules
+      RAB_ACCESS_STATE_UNKNOWN_INFO: Cannot be determined because the sender
+        of the request does not have access to the RAB component, or the
+        relevant data to explain the RAB component.
+    """
+    RAB_ACCESS_STATE_UNSPECIFIED = 0
+    RAB_ACCESS_STATE_ALLOWED = 1
+    RAB_ACCESS_STATE_NOT_ALLOWED = 2
+    RAB_ACCESS_STATE_NOT_ENFORCED = 3
+    RAB_ACCESS_STATE_UNKNOWN_INFO = 4
+
+  class RelevanceValueValuesEnum(_messages.Enum):
+    r"""Output only. The relevance of the regional access boundary access
+    state to the overall access state.
+
+    Values:
+      HEURISTIC_RELEVANCE_UNSPECIFIED: Not specified.
+      HEURISTIC_RELEVANCE_NORMAL: The data point has a limited effect on the
+        result. Changing the data point is unlikely to affect the overall
+        determination.
+      HEURISTIC_RELEVANCE_HIGH: The data point has a strong effect on the
+        result. Changing the data point is likely to affect the overall
+        determination.
+    """
+    HEURISTIC_RELEVANCE_UNSPECIFIED = 0
+    HEURISTIC_RELEVANCE_NORMAL = 1
+    HEURISTIC_RELEVANCE_HIGH = 2
+
+  explainedBindingsAndPolicies = _messages.MessageField('GoogleCloudPolicytroubleshooterIamV3alphaExplainedRABBindingAndPolicy', 1, repeated=True)
+  regionalAccessBoundaryAccessState = _messages.EnumField('RegionalAccessBoundaryAccessStateValueValuesEnum', 2)
+  relevance = _messages.EnumField('RelevanceValueValuesEnum', 3)
+
+
 class GoogleCloudPolicytroubleshooterIamV3alphaTroubleshootIamPolicyRequest(_messages.Message):
   r"""Request for TroubleshootIamPolicy.
 
@@ -2101,6 +2529,8 @@ class GoogleCloudPolicytroubleshooterIamV3alphaTroubleshootIamPolicyResponse(_me
       the applicable IAM policies.
     pabPolicyExplanation: An explanation of how the applicable principal
       access boundary policies affect the final access state.
+    rabPolicyExplanation: An explanation of how the applicable regional access
+      boundary policies affect the final access state.
   """
 
   class OverallAccessStateValueValuesEnum(_messages.Enum):
@@ -2130,6 +2560,7 @@ class GoogleCloudPolicytroubleshooterIamV3alphaTroubleshootIamPolicyResponse(_me
   denyPolicyExplanation = _messages.MessageField('GoogleCloudPolicytroubleshooterIamV3alphaDenyPolicyExplanation', 3)
   overallAccessState = _messages.EnumField('OverallAccessStateValueValuesEnum', 4)
   pabPolicyExplanation = _messages.MessageField('GoogleCloudPolicytroubleshooterIamV3alphaPABPolicyExplanation', 5)
+  rabPolicyExplanation = _messages.MessageField('GoogleCloudPolicytroubleshooterIamV3alphaRABPolicyExplanation', 6)
 
 
 class GoogleCloudPolicytroubleshooterServiceperimeterV3alphaAccessPolicyExplanation(_messages.Message):
@@ -2735,7 +3166,7 @@ class GoogleCloudPolicytroubleshooterServiceperimeterV3alphaRemediationOption(_m
 
 
 class GoogleCloudPolicytroubleshooterServiceperimeterV3alphaResolvedResource(_messages.Message):
-  r"""The details of a resolved resource. NextTAG: 13
+  r"""The details of a resolved resource. NextTAG: 14
 
   Enums:
     ResolvedStateValueValuesEnum: The resolved resource's state
@@ -2751,6 +3182,7 @@ class GoogleCloudPolicytroubleshooterServiceperimeterV3alphaResolvedResource(_me
     dryrunRegularServicePerimeters: Full resource name of the dry run regular
       service perimeters that restricts the resource Format:
       `accessPolicies/{access_policy}/servicePerimeters/{service_perimeter}`
+    p4saOwnerServices: The services that own the P4SA.
     permissions: The iam permission names attached to this resource. This only
       applies to resources generated from resource containers.
     projectId: Project string identifier, in the format of
@@ -2798,15 +3230,16 @@ class GoogleCloudPolicytroubleshooterServiceperimeterV3alphaResolvedResource(_me
   bridgeServicePerimeters = _messages.StringField(1, repeated=True)
   dryrunBridgeServicePerimeters = _messages.StringField(2, repeated=True)
   dryrunRegularServicePerimeters = _messages.StringField(3, repeated=True)
-  permissions = _messages.StringField(4, repeated=True)
-  projectId = _messages.StringField(5)
-  projectInfo = _messages.MessageField('GoogleCloudPolicytroubleshooterServiceperimeterV3alphaResolvedResourceProjectInfo', 6)
-  projectNumber = _messages.StringField(7)
-  regularServicePerimeters = _messages.StringField(8, repeated=True)
-  resolvedState = _messages.EnumField('ResolvedStateValueValuesEnum', 9)
-  resource = _messages.MessageField('GoogleCloudPolicytroubleshooterServiceperimeterV3alphaResource', 10)
-  resourceNames = _messages.StringField(11, repeated=True)
-  resourceType = _messages.EnumField('ResourceTypeValueValuesEnum', 12)
+  p4saOwnerServices = _messages.StringField(4, repeated=True)
+  permissions = _messages.StringField(5, repeated=True)
+  projectId = _messages.StringField(6)
+  projectInfo = _messages.MessageField('GoogleCloudPolicytroubleshooterServiceperimeterV3alphaResolvedResourceProjectInfo', 7)
+  projectNumber = _messages.StringField(8)
+  regularServicePerimeters = _messages.StringField(9, repeated=True)
+  resolvedState = _messages.EnumField('ResolvedStateValueValuesEnum', 10)
+  resource = _messages.MessageField('GoogleCloudPolicytroubleshooterServiceperimeterV3alphaResource', 11)
+  resourceNames = _messages.StringField(12, repeated=True)
+  resourceType = _messages.EnumField('ResourceTypeValueValuesEnum', 13)
 
 
 class GoogleCloudPolicytroubleshooterServiceperimeterV3alphaResolvedResourceProjectInfo(_messages.Message):
@@ -3409,6 +3842,9 @@ class GoogleIamV1LogConfigCloudAuditOptions(_messages.Message):
     PermissionTypeValueValuesEnum: The type associated with the permission.
 
   Fields:
+    agentMetadata: If an agent is making the request, metadata about the agent
+      making the request. Used by the Cloud Audit Logging system to enrich the
+      audit log.
     authorizationLoggingOptions: Information used by the Cloud Audit Logging
       pipeline. Will be deprecated once the migration to PermissionType is
       complete (b/201806118).
@@ -3446,9 +3882,10 @@ class GoogleIamV1LogConfigCloudAuditOptions(_messages.Message):
     DATA_READ = 3
     DATA_WRITE = 4
 
-  authorizationLoggingOptions = _messages.MessageField('GoogleCloudAuditAuthorizationLoggingOptions', 1)
-  logName = _messages.EnumField('LogNameValueValuesEnum', 2)
-  permissionType = _messages.EnumField('PermissionTypeValueValuesEnum', 3)
+  agentMetadata = _messages.MessageField('LogsProtoCloudIamAgentMetadata', 1)
+  authorizationLoggingOptions = _messages.MessageField('GoogleCloudAuditAuthorizationLoggingOptions', 2)
+  logName = _messages.EnumField('LogNameValueValuesEnum', 3)
+  permissionType = _messages.EnumField('PermissionTypeValueValuesEnum', 4)
 
 
 class GoogleIamV1LogConfigCounterOptions(_messages.Message):
@@ -3934,12 +4371,13 @@ class GoogleIamV3PolicyBinding(_messages.Message):
       - `principal.subject in []` - `principal.subject.startsWith()` -
       `principal.subject.endsWith()` Allowed operations for `principal.type`:
       - `principal.type == ` - `principal.type != ` - `principal.type in []`
-      Supported principal types are Workspace, Workforce Pool, Workload Pool
-      and Service Account. Allowed string must be one of: -
-      iam.googleapis.com/WorkspaceIdentity -
-      iam.googleapis.com/WorkforcePoolIdentity -
-      iam.googleapis.com/WorkloadPoolIdentity -
-      iam.googleapis.com/ServiceAccount
+      Supported principal types are workspace, workforce pool, workload pool,
+      service account, and Agent Identity. Allowed string must be one of: -
+      `iam.googleapis.com/WorkspaceIdentity` -
+      `iam.googleapis.com/WorkforcePoolIdentity` -
+      `iam.googleapis.com/WorkloadPoolIdentity` -
+      `iam.googleapis.com/ServiceAccount` -
+      `iam.googleapis.com/AgentPoolIdentity` (available in Preview)
     createTime: Output only. The time when the policy binding was created.
     displayName: Optional. The description of the policy binding. Must be less
       than or equal to 63 characters.
@@ -3977,14 +4415,12 @@ class GoogleIamV3PolicyBinding(_messages.Message):
       POLICY_KIND_UNSPECIFIED: Unspecified policy kind; Not a valid state
       PRINCIPAL_ACCESS_BOUNDARY: Principal access boundary policy kind
       ACCESS: Access policy kind.
-      TRUST_BOUNDARY: <no description>
       REGIONAL_ACCESS_BOUNDARY: Regional access boundary policy kind.
     """
     POLICY_KIND_UNSPECIFIED = 0
     PRINCIPAL_ACCESS_BOUNDARY = 1
     ACCESS = 2
-    TRUST_BOUNDARY = 3
-    REGIONAL_ACCESS_BOUNDARY = 4
+    REGIONAL_ACCESS_BOUNDARY = 3
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AnnotationsValue(_messages.Message):
@@ -4183,6 +4619,114 @@ class GoogleIamV3PrincipalAccessBoundaryPolicyRule(_messages.Message):
   resources = _messages.StringField(3, repeated=True)
 
 
+class GoogleIamV3RegionalAccessBoundaryPolicy(_messages.Message):
+  r"""An IAM regional access boundary policy resource.
+
+  Messages:
+    AnnotationsValue: Optional. User defined annotations. See
+      https://google.aip.dev/148#annotations for more details such as format
+      and size limitations
+
+  Fields:
+    annotations: Optional. User defined annotations. See
+      https://google.aip.dev/148#annotations for more details such as format
+      and size limitations
+    createTime: Output only. The time when the regional access boundary policy
+      was created.
+    details: Optional. The details for the regional access boundary policy.
+    displayName: Optional. The display name of the regional access boundary
+      policy. Must be less than or equal to 63 characters.
+    etag: Optional. The etag for the regional access boundary policy. If this
+      is provided on update, it must match the etag of the policy on the
+      server.
+    name: Identifier. The name of the regional access boundary policy. The
+      following format is supported: `organizations/{organization_id}/location
+      s/{location}/regionalAccessBoundaryPolicies/{policy_id}`
+    uid: Output only. The globally unique ID of the regional access boundary
+      policy.
+    updateTime: Output only. The time when the regional access boundary policy
+      was most recently updated.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AnnotationsValue(_messages.Message):
+    r"""Optional. User defined annotations. See
+    https://google.aip.dev/148#annotations for more details such as format and
+    size limitations
+
+    Messages:
+      AdditionalProperty: An additional property for a AnnotationsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type AnnotationsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AnnotationsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  annotations = _messages.MessageField('AnnotationsValue', 1)
+  createTime = _messages.StringField(2)
+  details = _messages.MessageField('GoogleIamV3RegionalAccessBoundaryPolicyDetails', 3)
+  displayName = _messages.StringField(4)
+  etag = _messages.StringField(5)
+  name = _messages.StringField(6)
+  uid = _messages.StringField(7)
+  updateTime = _messages.StringField(8)
+
+
+class GoogleIamV3RegionalAccessBoundaryPolicyDetails(_messages.Message):
+  r"""Regional access boundary policy details
+
+  Fields:
+    enforcementVersion: Optional. The version identifier (e.g., 1) specifying
+      the enforcement behavior of the Regional Access Boundary policy. This
+      allows the TB Platform to introduce changes to enforcement logic through
+      new versions, mitigating potential breaking changes. If left
+      unspecified, the version will default to the latest launched version.
+    rules: Required. The regional access boundary policy rules. Only one rule
+      is supported at this time, requests with more than one will be rejected
+      as invalid.
+  """
+
+  enforcementVersion = _messages.StringField(1)
+  rules = _messages.MessageField('GoogleIamV3RegionalAccessBoundaryPolicyRule', 2, repeated=True)
+
+
+class GoogleIamV3RegionalAccessBoundaryPolicyRule(_messages.Message):
+  r"""Regional Access Boundary policy rule defines authorized operating
+  locations for customer identities and resources. This rule acts as a firm
+  guardrail, ensuring that access is denied for any identity and resource
+  operating outside of these specified locations.
+
+  Fields:
+    description: Optional. The description of the regional access boundary
+      policy rule. Must be less than or equal to 256 characters.
+    locations: Describes the list of authorized locations. It is in the format
+      of value groups with the following syntax:
+      "//GoogleValueGroups/Locations/LOCATION" Where LOCATION can either be
+      "Mandatory/version_number_here" (the locations which are required for
+      inclusion for all customers) or a specific country-based location. Note
+      the Mandatory Locations value group will be versioned to allow Google to
+      remove locations from this group without causing breaking changes.
+      Examples: "//GoogleValueGroups/Locations/Mandatory/v1".
+      "//GoogleValueGroups/Locations/US". "//GoogleValueGroups/Locations/JP".
+  """
+
+  description = _messages.StringField(1)
+  locations = _messages.StringField(2, repeated=True)
+
+
 class GoogleIdentityAccesscontextmanagerV1ServicePerimeter(_messages.Message):
   r"""`ServicePerimeter` describes a set of Google Cloud resources which can
   freely import and export data amongst themselves, but not export outside of
@@ -4349,8 +4893,8 @@ class GoogleIdentityAccesscontextmanagerV1ServicePerimeterConfigEgressFrom(_mess
   Fields:
     identities: A list of identities that are allowed access through
       [EgressPolicy]. Identities can be an individual user, service account,
-      Google group, or third-party identity. For the list of supported
-      identity types, see https://docs.cloud.google.com/vpc-service-
+      Google group, third-party identity, or agent identity. For the list of
+      supported identity types, see https://docs.cloud.google.com/vpc-service-
       controls/docs/supported-identities.
     identityType: Specifies the type of identities that are allowed access to
       outside the perimeter. If left unspecified, then members of `identities`
@@ -4512,8 +5056,8 @@ class GoogleIdentityAccesscontextmanagerV1ServicePerimeterConfigIngressFrom(_mes
   Fields:
     identities: A list of identities that are allowed access through
       [IngressPolicy]. Identities can be an individual user, service account,
-      Google group, or third-party identity. For the list of supported
-      identity types, see https://docs.cloud.google.com/vpc-service-
+      Google group, third-party identity, or agent identity. For the list of
+      supported identity types, see https://docs.cloud.google.com/vpc-service-
       controls/docs/supported-identities.
     identityType: Specifies the type of identities that are allowed access
       from outside the perimeter. If left unspecified, then members of
@@ -5362,6 +5906,18 @@ class IdentityCaaIntelFrontendTroubleshootingMetadata(_messages.Message):
 
   criticalLevel = _messages.EnumField('CriticalLevelValueValuesEnum', 1)
   logicalNodeExpectedValue = _messages.EnumField('LogicalNodeExpectedValueValueValuesEnum', 2)
+
+
+class LogsProtoCloudIamAgentMetadata(_messages.Message):
+  r"""Metadata about the agent that is used for logging.
+
+  Fields:
+    agentName: The name of the agent being used. This is expected to be
+      populated with either "aiplatform" (for Vertex AI) or
+      "geminicloudassist" (for Gemini Cloud Assist).
+  """
+
+  agentName = _messages.StringField(1)
 
 
 class StandardQueryParameters(_messages.Message):

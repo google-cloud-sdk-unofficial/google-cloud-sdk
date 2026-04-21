@@ -52,7 +52,7 @@ def _CommonArgs(parser):
   disks_flags.AddStopGroupAsyncReplicationArgs(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class StopGroupAsyncReplication(base.Command):
   """Stop Group Async Replication for a Consistency Group Resource Policy."""
 

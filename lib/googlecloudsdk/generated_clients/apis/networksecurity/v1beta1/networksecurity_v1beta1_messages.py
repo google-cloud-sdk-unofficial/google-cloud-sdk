@@ -799,26 +799,35 @@ class AuthzPolicyTarget(_messages.Message):
   Enums:
     LoadBalancingSchemeValueValuesEnum: Optional. All gateways and forwarding
       rules referenced by this policy and extensions must share the same load
-      balancing scheme. Supported values: `INTERNAL_MANAGED` and
-      `EXTERNAL_MANAGED`. For more information, refer to [Backend services
-      overview](https://cloud.google.com/load-balancing/docs/backend-service).
+      balancing scheme. Required only when targeting forwarding rules. If
+      targeting Secure Web Proxy, this field must be `INTERNAL_MANAGED` or not
+      specified. Must not be specified when targeting Agent Gateway. Supported
+      values: `INTERNAL_MANAGED` and `EXTERNAL_MANAGED`. For more information,
+      refer to [Backend services overview](https://cloud.google.com/load-
+      balancing/docs/backend-service).
 
   Fields:
     loadBalancingScheme: Optional. All gateways and forwarding rules
       referenced by this policy and extensions must share the same load
-      balancing scheme. Supported values: `INTERNAL_MANAGED` and
-      `EXTERNAL_MANAGED`. For more information, refer to [Backend services
-      overview](https://cloud.google.com/load-balancing/docs/backend-service).
-    resources: Required. A list of references to the Forwarding Rules on which
-      this policy will be applied.
+      balancing scheme. Required only when targeting forwarding rules. If
+      targeting Secure Web Proxy, this field must be `INTERNAL_MANAGED` or not
+      specified. Must not be specified when targeting Agent Gateway. Supported
+      values: `INTERNAL_MANAGED` and `EXTERNAL_MANAGED`. For more information,
+      refer to [Backend services overview](https://cloud.google.com/load-
+      balancing/docs/backend-service).
+    resources: Required. A list of references to the Forwarding Rules, Secure
+      Web Proxy Gateways, or Agent Gateways on which this policy will be
+      applied.
   """
 
   class LoadBalancingSchemeValueValuesEnum(_messages.Enum):
     r"""Optional. All gateways and forwarding rules referenced by this policy
-    and extensions must share the same load balancing scheme. Supported
-    values: `INTERNAL_MANAGED` and `EXTERNAL_MANAGED`. For more information,
-    refer to [Backend services overview](https://cloud.google.com/load-
-    balancing/docs/backend-service).
+    and extensions must share the same load balancing scheme. Required only
+    when targeting forwarding rules. If targeting Secure Web Proxy, this field
+    must be `INTERNAL_MANAGED` or not specified. Must not be specified when
+    targeting Agent Gateway. Supported values: `INTERNAL_MANAGED` and
+    `EXTERNAL_MANAGED`. For more information, refer to [Backend services
+    overview](https://cloud.google.com/load-balancing/docs/backend-service).
 
     Values:
       LOAD_BALANCING_SCHEME_UNSPECIFIED: Default value. Do not use.
@@ -2204,6 +2213,9 @@ class InterceptEndpointGroupAssociation(_messages.Message):
     network: Required. Immutable. The VPC network that is associated. for
       example: `projects/123456789/global/networks/my-network`. See
       https://google.aip.dev/124.
+    networkCookie: Output only. Identifier used by the data-path. See the NSI
+      GENEVE format for more details: https://docs.cloud.google.com/network-
+      security-integration/docs/understand-geneve#network_id
     reconciling: Output only. The current state of the resource does not match
       the user's intended state, and the system is working to reconcile them.
       This part of the normal operation (e.g. adding a new location to the
@@ -2274,9 +2286,10 @@ class InterceptEndpointGroupAssociation(_messages.Message):
   locationsDetails = _messages.MessageField('InterceptEndpointGroupAssociationLocationDetails', 5, repeated=True)
   name = _messages.StringField(6)
   network = _messages.StringField(7)
-  reconciling = _messages.BooleanField(8)
-  state = _messages.EnumField('StateValueValuesEnum', 9)
-  updateTime = _messages.StringField(10)
+  networkCookie = _messages.IntegerField(8, variant=_messages.Variant.UINT32)
+  reconciling = _messages.BooleanField(9)
+  state = _messages.EnumField('StateValueValuesEnum', 10)
+  updateTime = _messages.StringField(11)
 
 
 class InterceptEndpointGroupAssociationDetails(_messages.Message):

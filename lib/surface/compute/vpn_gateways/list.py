@@ -25,8 +25,12 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.resource import resource_projection_spec
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
+)
 @base.UniverseCompatible
 class List(base.ListCommand):
   """List Compute Engine Highly Available VPN Gateways."""

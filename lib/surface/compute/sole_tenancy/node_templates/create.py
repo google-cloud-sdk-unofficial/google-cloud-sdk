@@ -57,7 +57,7 @@ def _Run(args, track):
   return client.MakeRequests([(service, 'Insert', request)])[0]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Create(base.CreateCommand):
   """Create a Compute Engine node template."""
 

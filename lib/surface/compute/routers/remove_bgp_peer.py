@@ -33,7 +33,7 @@ class PeerNotFoundError(exceptions.Error):
     super(PeerNotFoundError, self).__init__(error_msg)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class RemoveBgpPeer(base.UpdateCommand):
   """Remove a BGP peer from a Compute Engine router.
 

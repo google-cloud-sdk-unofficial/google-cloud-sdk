@@ -23,8 +23,12 @@ from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute.disks import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.PREVIEW,
+)
 class List(base.ListCommand):
   """List Compute Engine persistent disks."""
 

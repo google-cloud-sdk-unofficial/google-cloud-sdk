@@ -50,6 +50,7 @@ class GatewayClient:
       version: Union[str, None] = None,
       kubernetes_namespace: Union[str, None] = None,
       operating_system: util.TYPES.OperatingSystem = None,
+      application_default_credentials: bool = False,
   ) -> util.TYPES.GenerateCredentialsResponse:
     """Retrieve connection information for accessing a membership through Connect Gateway.
 
@@ -64,15 +65,22 @@ class GatewayClient:
       operating_system: The operating system for which the kubeconfig should be
         generated. The default value of `None` works for supported operating
         systems other than Windows.
+      application_default_credentials: Whether to force the use of Application
+        Default Credentials for authentication.
 
     Returns:
       The GenerateCredentialsResponse message.
     """
+    kwargs = {
+        "name": name,
+        "forceUseAgent": force_use_agent,
+        "version": version,
+        "kubernetesNamespace": kubernetes_namespace,
+        "operatingSystem": operating_system,
+    }
+    if self.release_track == base.ReleaseTrack.ALPHA:
+      kwargs["applicationDefaultCredentials"] = application_default_credentials
     req = self.messages.ConnectgatewayProjectsLocationsMembershipsGenerateCredentialsRequest(
-        name=name,
-        forceUseAgent=force_use_agent,
-        version=version,
-        kubernetesNamespace=kubernetes_namespace,
-        operatingSystem=operating_system,
+        **kwargs
     )
     return self.client.projects_locations_memberships.GenerateCredentials(req)

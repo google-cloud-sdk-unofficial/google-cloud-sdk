@@ -104,7 +104,7 @@ def ValidateUpdatePolicyAgainstStateful(update_policy, group_ref,
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class CreateGA(base.CreateCommand):
   """Create Compute Engine managed instance groups."""
 

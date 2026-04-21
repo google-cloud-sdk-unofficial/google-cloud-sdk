@@ -996,6 +996,9 @@ class GoogleDevtoolsCloudbuildV1Artifacts(_messages.Message):
   completion of all build steps.
 
   Fields:
+    genericArtifacts: Optional. A list of generic artifacts to be uploaded to
+      Artifact Registry upon successful completion of all build steps. If any
+      artifacts fail to be pushed, the build is marked FAILURE.
     goModules: Optional. A list of Go modules to be uploaded to Artifact
       Registry upon successful completion of all build steps. If any objects
       fail to be pushed, the build is marked FAILURE.
@@ -1033,13 +1036,14 @@ class GoogleDevtoolsCloudbuildV1Artifacts(_messages.Message):
       objects fail to be pushed, the build is marked FAILURE.
   """
 
-  goModules = _messages.MessageField('GoogleDevtoolsCloudbuildV1GoModule', 1, repeated=True)
-  images = _messages.StringField(2, repeated=True)
-  mavenArtifacts = _messages.MessageField('GoogleDevtoolsCloudbuildV1MavenArtifact', 3, repeated=True)
-  npmPackages = _messages.MessageField('GoogleDevtoolsCloudbuildV1NpmPackage', 4, repeated=True)
-  objects = _messages.MessageField('GoogleDevtoolsCloudbuildV1ArtifactObjects', 5)
-  oci = _messages.MessageField('GoogleDevtoolsCloudbuildV1Oci', 6, repeated=True)
-  pythonPackages = _messages.MessageField('GoogleDevtoolsCloudbuildV1PythonPackage', 7, repeated=True)
+  genericArtifacts = _messages.MessageField('GoogleDevtoolsCloudbuildV1GenericArtifact', 1, repeated=True)
+  goModules = _messages.MessageField('GoogleDevtoolsCloudbuildV1GoModule', 2, repeated=True)
+  images = _messages.StringField(3, repeated=True)
+  mavenArtifacts = _messages.MessageField('GoogleDevtoolsCloudbuildV1MavenArtifact', 4, repeated=True)
+  npmPackages = _messages.MessageField('GoogleDevtoolsCloudbuildV1NpmPackage', 5, repeated=True)
+  objects = _messages.MessageField('GoogleDevtoolsCloudbuildV1ArtifactObjects', 6)
+  oci = _messages.MessageField('GoogleDevtoolsCloudbuildV1Oci', 7, repeated=True)
+  pythonPackages = _messages.MessageField('GoogleDevtoolsCloudbuildV1PythonPackage', 8, repeated=True)
 
 
 class GoogleDevtoolsCloudbuildV1Build(_messages.Message):
@@ -1699,11 +1703,13 @@ class GoogleDevtoolsCloudbuildV1Dependency(_messages.Message):
   Fields:
     empty: If set to true disable all dependency fetching (ignoring the
       default source as well).
+    genericArtifact: Represents a generic artifact as a build dependency.
     gitSource: Represents a git repository as a build dependency.
   """
 
   empty = _messages.BooleanField(1)
-  gitSource = _messages.MessageField('GoogleDevtoolsCloudbuildV1GitSourceDependency', 2)
+  genericArtifact = _messages.MessageField('GoogleDevtoolsCloudbuildV1GenericArtifactDependency', 2)
+  gitSource = _messages.MessageField('GoogleDevtoolsCloudbuildV1GitSourceDependency', 3)
 
 
 class GoogleDevtoolsCloudbuildV1DeveloperConnectConfig(_messages.Message):
@@ -1767,6 +1773,36 @@ class GoogleDevtoolsCloudbuildV1FileHashes(_messages.Message):
   """
 
   fileHash = _messages.MessageField('GoogleDevtoolsCloudbuildV1Hash', 1, repeated=True)
+
+
+class GoogleDevtoolsCloudbuildV1GenericArtifact(_messages.Message):
+  r"""Generic artifact to upload to Artifact Registry upon successful
+  completion of all build steps.
+
+  Fields:
+    folder: Required. Path to the generic artifact in the build's workspace to
+      be uploaded to Artifact Registry.
+    registryPath: Required. Registry path to upload the generic artifact to,
+      in the form projects/$PROJECT/locations/$LOCATION/repositories/$REPO/pac
+      kages/$PACKAGE/versions/$VERSION
+  """
+
+  folder = _messages.StringField(1)
+  registryPath = _messages.StringField(2)
+
+
+class GoogleDevtoolsCloudbuildV1GenericArtifactDependency(_messages.Message):
+  r"""Represents a generic artifact as a build dependency.
+
+  Fields:
+    destPath: Required. Where the artifact files should be placed on the
+      worker.
+    resource: Required. The location to download the artifact files from. Ex:
+      projects/p1/locations/us/repositories/r1/packages/p1/versions/v1
+  """
+
+  destPath = _messages.StringField(1)
+  resource = _messages.StringField(2)
 
 
 class GoogleDevtoolsCloudbuildV1GitConfig(_messages.Message):
@@ -2150,6 +2186,8 @@ class GoogleDevtoolsCloudbuildV1Results(_messages.Message):
       produce this output by writing to `$BUILDER_OUTPUT/output`. Only the
       first 50KB of data is stored. Note that the `$BUILDER_OUTPUT` variable
       is read-only and can't be substituted.
+    genericArtifacts: Output only. Generic artifacts uploaded to Artifact
+      Registry at the end of the build.
     goModules: Optional. Go module artifacts uploaded to Artifact Registry at
       the end of the build.
     images: Container images that were built as a part of the build.
@@ -2167,12 +2205,13 @@ class GoogleDevtoolsCloudbuildV1Results(_messages.Message):
   artifactTiming = _messages.MessageField('GoogleDevtoolsCloudbuildV1TimeSpan', 2)
   buildStepImages = _messages.StringField(3, repeated=True)
   buildStepOutputs = _messages.BytesField(4, repeated=True)
-  goModules = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedGoModule', 5, repeated=True)
-  images = _messages.MessageField('GoogleDevtoolsCloudbuildV1BuiltImage', 6, repeated=True)
-  mavenArtifacts = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedMavenArtifact', 7, repeated=True)
-  npmPackages = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedNpmPackage', 8, repeated=True)
-  numArtifacts = _messages.IntegerField(9)
-  pythonPackages = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedPythonPackage', 10, repeated=True)
+  genericArtifacts = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedGenericArtifact', 5, repeated=True)
+  goModules = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedGoModule', 6, repeated=True)
+  images = _messages.MessageField('GoogleDevtoolsCloudbuildV1BuiltImage', 7, repeated=True)
+  mavenArtifacts = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedMavenArtifact', 8, repeated=True)
+  npmPackages = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedNpmPackage', 9, repeated=True)
+  numArtifacts = _messages.IntegerField(10)
+  pythonPackages = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedPythonPackage', 11, repeated=True)
 
 
 class GoogleDevtoolsCloudbuildV1Secret(_messages.Message):
@@ -2432,6 +2471,57 @@ class GoogleDevtoolsCloudbuildV1TimeSpan(_messages.Message):
 
   endTime = _messages.StringField(1)
   startTime = _messages.StringField(2)
+
+
+class GoogleDevtoolsCloudbuildV1UploadedGenericArtifact(_messages.Message):
+  r"""A generic artifact uploaded to Artifact Registry using the
+  GenericArtifact directive.
+
+  Messages:
+    FileHashesValue: Output only. The file hashes that make up the generic
+      artifact.
+
+  Fields:
+    artifactFingerprint: Output only. The hash of the whole artifact.
+    artifactRegistryPackage: Output only. Path to the artifact in Artifact
+      Registry.
+    fileHashes: Output only. The file hashes that make up the generic
+      artifact.
+    pushTiming: Output only. Stores timing information for pushing the
+      specified artifact.
+    uri: Output only. URI of the uploaded artifact. Ex:
+      projects/p1/locations/us/repositories/r1/packages/p1/versions/v1
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class FileHashesValue(_messages.Message):
+    r"""Output only. The file hashes that make up the generic artifact.
+
+    Messages:
+      AdditionalProperty: An additional property for a FileHashesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type FileHashesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a FileHashesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A GoogleDevtoolsCloudbuildV1FileHashes attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('GoogleDevtoolsCloudbuildV1FileHashes', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  artifactFingerprint = _messages.MessageField('GoogleDevtoolsCloudbuildV1FileHashes', 1)
+  artifactRegistryPackage = _messages.StringField(2)
+  fileHashes = _messages.MessageField('FileHashesValue', 3)
+  pushTiming = _messages.MessageField('GoogleDevtoolsCloudbuildV1TimeSpan', 4)
+  uri = _messages.StringField(5)
 
 
 class GoogleDevtoolsCloudbuildV1UploadedGoModule(_messages.Message):
@@ -4413,6 +4503,23 @@ class RunNamespacesInstancesListRequest(_messages.Message):
   watch = _messages.BooleanField(9)
 
 
+class RunNamespacesInstancesReplaceInstanceRequest(_messages.Message):
+  r"""A RunNamespacesInstancesReplaceInstanceRequest object.
+
+  Fields:
+    instance: A Instance resource to be passed as the request body.
+    name: Required. The name of the Instance being replaced. Replace
+      {namespace} with the project ID or number. It takes the form
+      namespaces/{namespace}. For example: namespaces/PROJECT_ID
+    region: Optional. The region in which this resource should be replaced
+      when it's not provided in the parent field, or in the request header.
+  """
+
+  instance = _messages.MessageField('Instance', 1)
+  name = _messages.StringField(2, required=True)
+  region = _messages.StringField(3)
+
+
 class RunNamespacesInstancesStartRequest(_messages.Message):
   r"""A RunNamespacesInstancesStartRequest object.
 
@@ -6254,7 +6361,7 @@ class VolumeMount(_messages.Message):
       Run.
     subPath: Path within the volume from which the container's volume should
       be mounted. Defaults to "" (volume's root). This field is currently
-      ignored for Secret volumes.
+      rejected in Secret volume mounts.
   """
 
   mountPath = _messages.StringField(1)

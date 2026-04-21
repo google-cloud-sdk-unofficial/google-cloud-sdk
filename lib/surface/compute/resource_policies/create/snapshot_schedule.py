@@ -42,7 +42,7 @@ Start time for the disk snapshot schedule in UTC. For example, `--start-time="15
   parser.display_info.AddCacheUpdater(None)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class CreateSnapshotSchedule(base.CreateCommand):
   """Create a Compute Engine Snapshot Schedule Resource Policy."""

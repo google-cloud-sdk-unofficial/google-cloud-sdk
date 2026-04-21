@@ -84,6 +84,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_TRANSFERCONFIGS_TRANSFERRESOURCES = (
+      'projects.locations.transferConfigs.transferResources',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/transferConfigs/'
+              '{transferConfigsId}/transferResources/{transferResourcesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_TRANSFERCONFIGS = (
       'projects.transferConfigs',
       '{+name}',
@@ -101,6 +112,17 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/transferConfigs/{transferConfigsId}/'
               'runs/{runsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_TRANSFERCONFIGS_TRANSFERRESOURCES = (
+      'projects.transferConfigs.transferResources',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/transferConfigs/{transferConfigsId}/'
+              'transferResources/{transferResourcesId}',
       },
       ['name'],
       True

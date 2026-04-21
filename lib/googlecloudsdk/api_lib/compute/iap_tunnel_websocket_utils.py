@@ -21,13 +21,14 @@ import os
 import struct
 import sys
 
+import certifi
+
 from googlecloudsdk.api_lib.run import ssh as run_ssh
 from googlecloudsdk.core import context_aware
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import http_proxy_types
-import httplib2
 import six
 from six.moves.urllib import parse
 import socks
@@ -59,7 +60,7 @@ CloudRunArgs = collections.namedtuple(
     ],
 )
 
-# The proxy_info field should be either None or type httplib2.ProxyInfo
+# The proxy_info field should be either None or type http_proxy.ProxyInfo.
 # The cloud_run_args field should be either None or a CloudRunArgs object.
 IapTunnelTargetInfo = collections.namedtuple(
     'IapTunnelTarget',
@@ -191,10 +192,11 @@ def ValidateParameters(tunnel_target):
 
 def CheckCACertsFile(ignore_certs):
   """Get and check that CA cert file exists."""
-  ca_certs = httplib2.CA_CERTS
   custom_ca_certs = properties.VALUES.core.custom_ca_certs_file.Get()
   if custom_ca_certs:
     ca_certs = custom_ca_certs
+  else:
+    ca_certs = certifi.where()
   if not os.path.exists(ca_certs):
     error_msg = 'Unable to locate CA certificates file.'
     log.warning(error_msg)

@@ -139,18 +139,19 @@ class Collections(enum.Enum):
   )
   PROJECTS_LOCATIONS_SEMANTICGOVERNANCEPOLICIES = (
       'projects.locations.semanticGovernancePolicies',
-      'projects/{project}/locations/{location}/semanticGovernancePolicies/'
-      '{semantic_governance_policy}',
+      'projects/{projectsId}/locations/{locationsId}/'
+      'semanticGovernancePolicies/{semanticGovernancePoliciesId}',
       {},
-      ['project', 'location', 'semantic_governance_policy'],
+      ['projectsId', 'locationsId', 'semanticGovernancePoliciesId'],
       True
   )
   PROJECTS_LOCATIONS_SEMANTICGOVERNANCEPOLICIES_OPERATIONS = (
       'projects.locations.semanticGovernancePolicies.operations',
-      'projects/{project}/locations/{location}/semanticGovernancePolicies/'
-      '{semantic_governance_policy}/operations/{operation}',
+      'projects/{projectsId}/locations/{locationsId}/'
+      'semanticGovernancePolicies/{semanticGovernancePoliciesId}/operations/'
+      '{operationsId}',
       {},
-      ['project', 'location', 'semantic_governance_policy', 'operation'],
+      ['projectsId', 'locationsId', 'semanticGovernancePoliciesId', 'operationsId'],
       True
   )
 

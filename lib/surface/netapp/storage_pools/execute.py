@@ -23,9 +23,11 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Execute(base.Command):
   """Execute an ONTAP CLI command."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.GA
 
   @staticmethod
   def Args(parser):
@@ -39,7 +41,7 @@ class Execute(base.Command):
   def _GetOntapClient(self):
     """Returns an instance of OntapClient."""
 
-    return ontap_client.OntapClient(self.ReleaseTrack())
+    return ontap_client.OntapClient(self._RELEASE_TRACK)
 
   def Run(self, args):
     storage_pool_ref = args.CONCEPTS.storage_pool.Parse()
@@ -53,3 +55,11 @@ class ExecuteBeta(Execute):
   """Execute an ONTAP CLI command."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ExecuteAlpha(ExecuteBeta):
+  """Execute an ONTAP CLI command."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.ALPHA

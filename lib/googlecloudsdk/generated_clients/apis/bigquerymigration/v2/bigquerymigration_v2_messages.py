@@ -1934,12 +1934,14 @@ class GoogleCloudBigqueryMigrationV2SourceSpec(_messages.Message):
       translation.
     encoding: Optional. The optional field to specify the encoding of the sql
       bytes.
+    gcsFilePath: The path to a single source file in Cloud Storage.
     literal: Source literal.
   """
 
   baseUri = _messages.StringField(1)
   encoding = _messages.StringField(2)
-  literal = _messages.MessageField('GoogleCloudBigqueryMigrationV2Literal', 3)
+  gcsFilePath = _messages.StringField(3)
+  literal = _messages.MessageField('GoogleCloudBigqueryMigrationV2Literal', 4)
 
 
 class GoogleCloudBigqueryMigrationV2SourceTargetMapping(_messages.Message):

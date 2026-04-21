@@ -15,7 +15,6 @@
 
 """Flags and helpers for the compute backend-buckets commands."""
 
-
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.command_lib.compute import completers as compute_completers
 from googlecloudsdk.command_lib.compute import flags as compute_flags
@@ -129,22 +128,15 @@ def RegionSupportingBackendBucketArgumentForUrlMap(required=True):
   )
 
 
-def AddUpdatableArgs(
-    cls, parser, operation_type, support_regional_global_flags=False
-):
+def AddUpdatableArgs(cls, parser, operation_type):
   """Adds top-level backend bucket arguments that can be updated.
 
   Args:
     cls: type, Class to add backend bucket argument to.
     parser: The argparse parser.
     operation_type: str, operation_type forwarded to AddArgument(...)
-    support_regional_global_flags: bool, whether backend bucket supports
-      regional and global flags.
   """
-  if support_regional_global_flags:
-    cls.BACKEND_BUCKET_ARG = GLOBAL_REGIONAL_BACKEND_BUCKET_ARG
-  else:
-    cls.BACKEND_BUCKET_ARG = BackendBucketArgument()
+  cls.BACKEND_BUCKET_ARG = GLOBAL_REGIONAL_BACKEND_BUCKET_ARG
   cls.BACKEND_BUCKET_ARG.AddArgument(parser, operation_type=operation_type)
 
   parser.add_argument(
@@ -205,13 +197,11 @@ def AddCompressionMode(parser):
   )
 
 
-def AddLoadBalancingScheme(parser, enable_external_managed=False):
+def AddLoadBalancingScheme(parser):
   """Add support for --load-balancing-scheme flag."""
   return parser.add_argument(
       '--load-balancing-scheme',
-      choices=['INTERNAL_MANAGED', 'EXTERNAL_MANAGED']
-      if enable_external_managed
-      else ['INTERNAL_MANAGED'],
+      choices=['INTERNAL_MANAGED', 'EXTERNAL_MANAGED'],
       type=arg_utils.ChoiceToEnumName,
       required=False,
       help="""\

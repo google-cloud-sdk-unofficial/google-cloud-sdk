@@ -105,6 +105,10 @@ class Trigger(calliope_base.Command):
 
     # 3. If async, return the trigger pipeline run response.
     if args.async_:
+      log.status.Print(
+          f"Pipeline run {trigger_dag_response.dagRunId} was triggered."
+          " Exiting due to --async flag."
+      )
       return {
           "result": "success",
           "pipelineRuns": composer_utils.convert_dag_runs_to_pipeline_runs(
@@ -118,6 +122,11 @@ class Trigger(calliope_base.Command):
         collection="composer.projects.locations.environments.dags.dagRuns",
         api_version=api_version,
     )
+    log.status.Print(
+        f"Pipeline run {trigger_dag_response.dagRunId} was triggered."
+        " Waiting for the pipeline run to complete..."
+    )
+    start_time = time.time()
     while True:
       try:
         dag_run = dags_util.GetDagRun(dag_run_ref)
@@ -133,7 +142,6 @@ class Trigger(calliope_base.Command):
                   [dag_run]
               ),
           }
-
         time.sleep(
             DEFAULT_POLLING_TIME_SECONDS.total_seconds()
             + random.uniform(
@@ -141,6 +149,8 @@ class Trigger(calliope_base.Command):
                 POLL_JITTER_SECONDS.total_seconds(),
             )
         )
+        elapsed_time = int(time.time() - start_time)
+        log.status.Print(f"Waiting... ({elapsed_time}s elapsed)")
       except KeyboardInterrupt:
         break
     return {

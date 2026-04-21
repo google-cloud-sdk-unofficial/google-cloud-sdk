@@ -265,7 +265,7 @@ def _AddServerTLSPolicyArguments(parser):
   )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class Update(base.UpdateCommand):
   """Update a target HTTPS proxy."""

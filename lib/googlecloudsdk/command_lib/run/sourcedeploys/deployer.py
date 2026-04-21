@@ -131,7 +131,7 @@ def CreateImage(
         None,
         message=(
             'Container build failed and '
-            'logs are available at [{build_log_url}].'.format(
+            'logs are available at [ {build_log_url} ].'.format(
                 build_log_url=build_log_url
             )
         ),

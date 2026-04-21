@@ -233,6 +233,9 @@ def _get_input_data_by_input_type(
         'versionUrl': gcloud_output.versionUrl,
         'zones': gcloud_output.zones,
         'appEngineApis': gcloud_output.appEngineApis,
+        'livenessCheck': gcloud_output.livenessCheck,
+        'readinessCheck': gcloud_output.readinessCheck,
+        'resources': gcloud_output.resources,
     }
     if gcloud_output.envVariables is not None:
       version_data.update(

@@ -245,6 +245,12 @@ value_limited:
   - nodejs24
   severity: major
   reason: Cloud Run only supports second generation App Engine runtimes. Older runtimes are not compatible.
+- path:
+    admin_api: network.forwardedPorts
+    app_yaml: network.forwarded_ports
+  valid_format: ^\d+$
+  severity: major
+  reason: Cloud Run only supports simple container port values. Host ports and protocols are not supported.
 supported:
 - path:
     admin_api: entrypoint.shell
@@ -271,3 +277,33 @@ supported:
     app_yaml: service_account
   flags:
   - --service-account
+- path:
+    admin_api: network.name
+    app_yaml: network.name
+  flags:
+  - --network
+- path:
+    admin_api: network.subnetworkName
+    app_yaml: network.subnetwork_name
+  flags:
+  - --subnet
+- path:
+    admin_api: network.instanceTag
+    app_yaml: network.instance_tag
+  flags:
+  - --network-tags
+- path:
+    admin_api: network.sessionAffinity
+    app_yaml: network.session_affinity
+  flags:
+  - --session-affinity
+- path:
+    admin_api: network.forwardedPorts
+    app_yaml: network.forwarded_ports
+  flags:
+  - --port
+- path:
+    admin_api: network.instanceIpMode
+    app_yaml: network.instance_ip_mode
+  flags:
+  - --ingress

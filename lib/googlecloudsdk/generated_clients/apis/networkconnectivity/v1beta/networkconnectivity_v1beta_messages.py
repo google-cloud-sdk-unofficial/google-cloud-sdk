@@ -2943,23 +2943,24 @@ class GoogleCloudNetworkconnectivityV1betaTransport(_messages.Message):
     mtuLimit: Output only. The maximum transmission unit (MTU) of a packet
       that can be sent over this transport.
     name: Identifier. Name of the resource.
-    network: Optional. Resource URI of the Network that will be peered with
-      this Transport. This field must be provided during resource creation and
-      cannot be changed.
+    network: Optional. Immutable. Resource URI of the Network that will be
+      peered with this Transport. This field must be provided during resource
+      creation and cannot be changed.
     peeringNetwork: Output only. VPC Network URI that was created for the VPC
       Peering connection to the provided `network`. If VPC Peering is
       disconnected, this can be used to re-establish.
-    providedActivationKey: Optional. Key used for establishing a connection
-      with the remote transport. This key can only be provided if the profile
-      supports an INPUT key flow and the resource is in the PENDING_KEY state.
+    providedActivationKey: Optional. Immutable. Key used for establishing a
+      connection with the remote transport. This key can only be provided if
+      the profile supports an INPUT key flow and the resource is in the
+      PENDING_KEY state.
     pscRoutingEnabled: Optional. Immutable. Controls whether a Routing VPC
       Spoke should be created and attached to the NCC Hub. This will provide
       Private Service Connect (PSC) connectivity through NCC. This can only be
       set when the Transport is first created.
-    remoteAccountId: Optional. The user supplied account id for the CSP
-      associated with the remote profile.
-    remoteProfile: Optional. Name of the remoteTransportProfile that this
-      Transport is connecting to.
+    remoteAccountId: Optional. Immutable. The user supplied account id for the
+      CSP associated with the remote profile.
+    remoteProfile: Optional. Immutable. Name of the remoteTransportProfile
+      that this Transport is connecting to.
     stackType: Optional. IP version stack for the established connectivity.
     state: Output only. State of the underlying connectivity.
     updateTime: Output only. Update time stamp.

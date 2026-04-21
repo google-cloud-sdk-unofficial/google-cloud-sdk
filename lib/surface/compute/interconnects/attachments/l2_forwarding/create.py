@@ -26,7 +26,7 @@ from googlecloudsdk.core import log
 _DOCUMENTATION_LINK = 'https://cloud.google.com/interconnect/docs/how-to/l2-forwarding/creating-l2-attachments'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a Compute Engine L2 forwarding interconnect attachment.

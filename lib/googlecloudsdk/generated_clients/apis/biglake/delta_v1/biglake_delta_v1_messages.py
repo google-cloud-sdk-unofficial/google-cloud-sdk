@@ -194,10 +194,12 @@ class DeltaSharingShare(_messages.Message):
     name: Identifier. The resource name. Format:
       projects/{project}/catalogs/{catalog}/shares/{delta_sharing_share}
     shareId: Output only. The unique identifier of the share.
+    userFriendlyName: Output only. The user-friendly name of the share.
   """
 
   name = _messages.StringField(1)
   shareId = _messages.StringField(2)
+  userFriendlyName = _messages.StringField(3)
 
 
 class DeltaSharingTable(_messages.Message):

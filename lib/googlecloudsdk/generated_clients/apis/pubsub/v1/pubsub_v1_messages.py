@@ -776,7 +776,9 @@ class CreateSnapshotRequest(_messages.Message):
       labels](https://cloud.google.com/pubsub/docs/labels).
     TagsValue: Optional. Input only. Immutable. Tag keys/values directly bound
       to this resource. For example: "123/environment": "production",
-      "123/costCenter": "marketing"
+      "123/costCenter": "marketing" See https://{$universe.dns_names.final_doc
+      umentation_domain}/pubsub/docs/tags for more information on using tags
+      with Pub/Sub resources.
 
   Fields:
     labels: Optional. See [Creating and managing
@@ -791,7 +793,9 @@ class CreateSnapshotRequest(_messages.Message):
       Format is `projects/{project}/subscriptions/{sub}`.
     tags: Optional. Input only. Immutable. Tag keys/values directly bound to
       this resource. For example: "123/environment": "production",
-      "123/costCenter": "marketing"
+      "123/costCenter": "marketing" See https://{$universe.dns_names.final_doc
+      umentation_domain}/pubsub/docs/tags for more information on using tags
+      with Pub/Sub resources.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -823,7 +827,9 @@ class CreateSnapshotRequest(_messages.Message):
   class TagsValue(_messages.Message):
     r"""Optional. Input only. Immutable. Tag keys/values directly bound to
     this resource. For example: "123/environment": "production",
-    "123/costCenter": "marketing"
+    "123/costCenter": "marketing" See
+    https://{$universe.dns_names.final_documentation_domain}/pubsub/docs/tags
+    for more information on using tags with Pub/Sub resources.
 
     Messages:
       AdditionalProperty: An additional property for a TagsValue object.
@@ -2576,7 +2582,9 @@ class Schema(_messages.Message):
   Messages:
     TagsValue: Optional. Input only. Immutable. Tag keys/values directly bound
       to this resource. For example: "123/environment": "production",
-      "123/costCenter": "marketing"
+      "123/costCenter": "marketing" See https://{$universe.dns_names.final_doc
+      umentation_domain}/pubsub/docs/tags for more information on using tags
+      with Pub/Sub resources.
 
   Fields:
     definition: The definition of the schema. This should contain a string
@@ -2589,7 +2597,9 @@ class Schema(_messages.Message):
     revisionId: Output only. Immutable. The revision ID of the schema.
     tags: Optional. Input only. Immutable. Tag keys/values directly bound to
       this resource. For example: "123/environment": "production",
-      "123/costCenter": "marketing"
+      "123/costCenter": "marketing" See https://{$universe.dns_names.final_doc
+      umentation_domain}/pubsub/docs/tags for more information on using tags
+      with Pub/Sub resources.
     type: The type of the schema definition.
   """
 
@@ -2609,7 +2619,9 @@ class Schema(_messages.Message):
   class TagsValue(_messages.Message):
     r"""Optional. Input only. Immutable. Tag keys/values directly bound to
     this resource. For example: "123/environment": "production",
-    "123/costCenter": "marketing"
+    "123/costCenter": "marketing" See
+    https://{$universe.dns_names.final_documentation_domain}/pubsub/docs/tags
+    for more information on using tags with Pub/Sub resources.
 
     Messages:
       AdditionalProperty: An additional property for a TagsValue object.
@@ -2973,7 +2985,9 @@ class Subscription(_messages.Message):
       labels](https://cloud.google.com/pubsub/docs/labels).
     TagsValue: Optional. Input only. Immutable. Tag keys/values directly bound
       to this resource. For example: "123/environment": "production",
-      "123/costCenter": "marketing"
+      "123/costCenter": "marketing" See https://{$universe.dns_names.final_doc
+      umentation_domain}/pubsub/docs/tags for more information on using tags
+      with Pub/Sub resources.
 
   Fields:
     ackDeadlineSeconds: Optional. The approximate amount of time (on a best-
@@ -3078,7 +3092,9 @@ class Subscription(_messages.Message):
       subscription can receive messages.
     tags: Optional. Input only. Immutable. Tag keys/values directly bound to
       this resource. For example: "123/environment": "production",
-      "123/costCenter": "marketing"
+      "123/costCenter": "marketing" See https://{$universe.dns_names.final_doc
+      umentation_domain}/pubsub/docs/tags for more information on using tags
+      with Pub/Sub resources.
     topic: Required. The name of the topic from which this subscription is
       receiving messages. Format is `projects/{project}/topics/{topic}`. The
       value of this field will be `_deleted-topic_` if the topic has been
@@ -3136,7 +3152,9 @@ class Subscription(_messages.Message):
   class TagsValue(_messages.Message):
     r"""Optional. Input only. Immutable. Tag keys/values directly bound to
     this resource. For example: "123/environment": "production",
-    "123/costCenter": "marketing"
+    "123/costCenter": "marketing" See
+    https://{$universe.dns_names.final_documentation_domain}/pubsub/docs/tags
+    for more information on using tags with Pub/Sub resources.
 
     Messages:
       AdditionalProperty: An additional property for a TagsValue object.
@@ -3271,7 +3289,9 @@ class Topic(_messages.Message):
       (https://cloud.google.com/pubsub/docs/labels).
     TagsValue: Optional. Input only. Immutable. Tag keys/values directly bound
       to this resource. For example: "123/environment": "production",
-      "123/costCenter": "marketing"
+      "123/costCenter": "marketing" See https://{$universe.dns_names.final_doc
+      umentation_domain}/pubsub/docs/tags for more information on using tags
+      with Pub/Sub resources.
 
   Fields:
     ingestionDataSourceSettings: Optional. Settings for ingestion from a data
@@ -3314,7 +3334,9 @@ class Topic(_messages.Message):
       topic.
     tags: Optional. Input only. Immutable. Tag keys/values directly bound to
       this resource. For example: "123/environment": "production",
-      "123/costCenter": "marketing"
+      "123/costCenter": "marketing" See https://{$universe.dns_names.final_doc
+      umentation_domain}/pubsub/docs/tags for more information on using tags
+      with Pub/Sub resources.
   """
 
   class StateValueValuesEnum(_messages.Enum):
@@ -3360,7 +3382,9 @@ class Topic(_messages.Message):
   class TagsValue(_messages.Message):
     r"""Optional. Input only. Immutable. Tag keys/values directly bound to
     this resource. For example: "123/environment": "production",
-    "123/costCenter": "marketing"
+    "123/costCenter": "marketing" See
+    https://{$universe.dns_names.final_documentation_domain}/pubsub/docs/tags
+    for more information on using tags with Pub/Sub resources.
 
     Messages:
       AdditionalProperty: An additional property for a TagsValue object.

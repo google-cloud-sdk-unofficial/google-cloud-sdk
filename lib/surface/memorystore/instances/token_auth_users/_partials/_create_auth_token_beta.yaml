@@ -18,7 +18,6 @@
 - release_tracks:
   - BETA
   auto_generated: true
-  hidden: true
   help_text:
     brief: create an auth token for a token auth user
     description: create an auth token for a token auth user

@@ -20,7 +20,11 @@ from googlecloudsdk.calliope import base
 
 @base.UniverseCompatible
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
+)
 class SslCertificates(base.Group):
   """List, create, and delete Compute Engine SSL certificate resources.
 
@@ -51,5 +55,3 @@ SslCertificates.detailed_help = {
         and [regional SSL certificates API](https://cloud.google.com/compute/docs/reference/rest/v1/regionSslCertificates).
     """,
 }
-
-

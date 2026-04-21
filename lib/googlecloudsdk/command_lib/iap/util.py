@@ -444,15 +444,14 @@ def ParseIapIamResource(
           '--service',
           '`--service` cannot be specified without `--resource-type`.',
       )
-    if args.region:
-      raise calliope_exc.InvalidArgumentException(
-          '--region',
-          '`--region` cannot be specified without `--resource-type`.',
-      )
     if args.version:
       raise calliope_exc.InvalidArgumentException(
           '--version',
           '`--version` cannot be specified without `--resource-type`.',
+      )
+    if support_agent_registry and args.region:
+      return iap_api.IAPWebLocation(
+          release_track, project, args.region
       )
     return iap_api.IAPWeb(release_track, project)
   elif args.resource_type == APP_ENGINE_RESOURCE_TYPE:

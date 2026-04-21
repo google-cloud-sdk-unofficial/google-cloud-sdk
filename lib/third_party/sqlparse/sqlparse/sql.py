@@ -10,7 +10,6 @@
 import re
 
 from sqlparse import tokens as T
-from sqlparse.exceptions import SQLParseError
 from sqlparse.utils import imt, remove_quotes
 
 
@@ -46,7 +45,7 @@ class Token:
     """
 
     __slots__ = ('value', 'ttype', 'parent', 'normalized', 'is_keyword',
-                 'is_group', 'is_whitespace')
+                 'is_group', 'is_whitespace', 'is_newline')
 
     def __init__(self, ttype, value):
         value = str(value)
@@ -56,6 +55,7 @@ class Token:
         self.is_group = False
         self.is_keyword = ttype in T.Keyword
         self.is_whitespace = self.ttype in T.Whitespace
+        self.is_newline = self.ttype in T.Newline
         self.normalized = value.upper() if self.is_keyword else value
 
     def __str__(self):
@@ -89,14 +89,14 @@ class Token:
     def match(self, ttype, values, regex=False):
         """Checks whether the token matches the given arguments.
 
-        *ttype* is a token type. If this token doesn't match the given token
-        type.
-        *values* is a list of possible values for this token. The values
-        are OR'ed together so if only one of the values matches ``True``
-        is returned. Except for keyword tokens the comparison is
-        case-sensitive. For convenience it's OK to pass in a single string.
-        If *regex* is ``True`` (default is ``False``) the given values are
-        treated as regular expressions.
+        *ttype* is a token type as defined in `sqlparse.tokens`. If it does
+        not match, ``False`` is returned.
+        *values* is a list of possible values for this token. For match to be
+        considered valid, the token value needs to be in this list. For tokens
+        of type ``Keyword`` the comparison is case-insensitive. For
+        convenience, a single value can be given passed as a string.
+        If *regex* is ``True``, the given values are treated as regular
+        expressions. Partial matches are allowed. Defaults to ``False``.
         """
         type_matched = self.ttype is ttype
         if not type_matched or values is None:
@@ -106,7 +106,7 @@ class Token:
             values = (values,)
 
         if regex:
-            # TODO: Add test for regex with is_keyboard = false
+            # TODO: Add test for regex with is_keyword = false
             flag = re.IGNORECASE if self.is_keyword else 0
             values = (re.compile(v, flag) for v in values)
 
@@ -189,8 +189,7 @@ class TokenList(Token):
             pre = '`- ' if last else '|- '
 
             q = '"' if value.startswith("'") and value.endswith("'") else "'"
-            print("{_pre}{pre}{idx} {cls} {q}{value}{q}"
-                  .format(**locals()), file=f)
+            print(f"{_pre}{pre}{idx} {cls} {q}{value}{q}", file=f)
 
             if token.is_group and (max_depth is None or depth < max_depth):
                 parent_pre = '   ' if last else '|  '
@@ -210,14 +209,11 @@ class TokenList(Token):
 
         This method is recursively called for all child tokens.
         """
-        try:
-            for token in self.tokens:
-                if token.is_group:
-                    yield from token.flatten()
-                else:
-                    yield token
-        except RecursionError as err:
-            raise SQLParseError('Maximum recursion depth exceeded') from err
+        for token in self.tokens:
+            if token.is_group:
+                yield from token.flatten()
+            else:
+                yield token
 
     def get_sublists(self):
         for token in self.tokens:
@@ -555,7 +551,7 @@ class Where(TokenList):
     M_OPEN = T.Keyword, 'WHERE'
     M_CLOSE = T.Keyword, (
         'ORDER BY', 'GROUP BY', 'LIMIT', 'UNION', 'UNION ALL', 'EXCEPT',
-        'HAVING', 'RETURNING', 'INTO', 'INTERSECT', 'INTERSECT ALL')
+        'INTERSECT', 'HAVING', 'RETURNING', 'INTO', 'INTERSECT ALL')
 
 
 class Over(TokenList):

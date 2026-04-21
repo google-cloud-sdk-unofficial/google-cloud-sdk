@@ -113,6 +113,7 @@ class GetCredentialsCommand(hub_base.HubCommand, base.Command):
       arg_location: str,
       force_use_agent: bool = False,
       arg_namespace: Union[str, None] = None,
+      application_default_credentials: bool = False,
   ):
     """RunServerSide generates credentials using server-side kubeconfig generation.
 
@@ -123,6 +124,8 @@ class GetCredentialsCommand(hub_base.HubCommand, base.Command):
       force_use_agent: Whether to force the use of Connect Agent in generated
         credentials.
       arg_namespace: The namespace to use in the kubeconfig context.
+      application_default_credentials: Whether to force the use of Application
+        Default Credentials for authentication.
     """
     log.status.Print('Fetching Gateway kubeconfig...')
     container_util.CheckKubectlInstalled()
@@ -142,11 +145,16 @@ class GetCredentialsCommand(hub_base.HubCommand, base.Command):
 
     with overrides.RegionalGatewayEndpoint(arg_location):
       client = gateway_client.GatewayClient(self.ReleaseTrack())
+      adc = (
+          self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+          and application_default_credentials
+      )
       resp = client.GenerateCredentials(
           name=f'projects/{project_number}/locations/{arg_location}/memberships/{membership_id}',
           force_use_agent=force_use_agent,
           kubernetes_namespace=arg_namespace,
           operating_system=operating_system,
+          application_default_credentials=adc,
       )
 
     new = kconfig.Kubeconfig.LoadFromBytes(resp.kubeconfig)

@@ -84,7 +84,7 @@ def _CommonArgs(parser):
   )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.DefaultUniverseOnly
 class Create(base.Command):
   """Create a Compute Engine instant snapshot."""

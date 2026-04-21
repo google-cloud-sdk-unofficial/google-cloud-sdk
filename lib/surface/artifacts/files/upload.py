@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.command_lib.artifacts import util
+from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -40,15 +41,26 @@ class Upload(base.Command):
   detailed_help = {
       'DESCRIPTION': '{description}',
       'EXAMPLES': """\
-    To upload a file located in /path/to/file/ to a repository in "us-central1":
+    To upload an attachment file located in /path/to/file/ to a repository in
+    "us-central1":
 
-        $ {command} --location=us-central1 --project=myproject --repository=myrepo \
-          --file=myfile --source=/path/to/file/
+        $ gcloud artifacts files upload --location=us-central1 \
+          --project=myproject --repository=myrepo --file=myfile \
+          --source=/path/to/file/
 
-    To upload all files located in directory /path/to/file/ to a repository in "us-central1":
+    To upload an artifact file located in /path/to/file/ to a repository in
+    "us-central1":
 
-        $ {command} --location=us-central1 --project=myproject --repository=myrepo \
-          --source-directory=/path/to/file/
+        $ gcloud artifacts files upload --location=us-central1 \
+          --project=myproject --repository=myrepo --file=myfile \
+          --source=/path/to/file/ --file-type=artifact
+
+    To upload all files located in directory /path/to/file/ to a repository in
+    "us-central1" as attachment files:
+
+        $ gcloud artifacts files upload --location=us-central1 \
+          --project=myproject --repository=myrepo \
+          --source-directory=/path/to/file/ --file-type=attachment
     """,
   }
 
@@ -73,6 +85,19 @@ class Upload(base.Command):
             'If not specified, the name of the local file is used.'
         ),
     )
+    parser.add_argument(
+        '--file-type',
+        metavar='FILE_TYPE',
+        required=False,
+        default='attachment',
+        help=(
+            'The type of the file to upload. FILE_TYPE must be one of:\n\n'
+            '  attachment\n'
+            '     The file represents an attachment file.\n'
+            '  artifact\n'
+            '     The file represents an artifact.\n'
+        ),
+    )
     group.add_argument(
         '--source',
         metavar='SOURCE',
@@ -90,6 +115,7 @@ class Upload(base.Command):
     client = apis.GetClientInstance('artifactregistry', self.api_version)
     messages = client.MESSAGES_MODULE
 
+    file_type = self.getFileType(args, messages)
     source_dir = args.source_directory
     source_file = args.source
 
@@ -110,7 +136,7 @@ class Upload(base.Command):
 
     # Uploading a single file
     if source_file:
-      return self.uploadArtifact(args, source_file, client, messages)
+      return self.uploadArtifact(args, source_file, file_type, client, messages)
     # Uploading a directory
     elif source_dir:
       # If source_dir was specified, expand, normalize and traverse
@@ -125,7 +151,7 @@ class Upload(base.Command):
         for file in files:
           try:
             self.uploadArtifact(
-                args, (os.path.join(path, file)), client, messages
+                args, (os.path.join(path, file)), file_type, client, messages
             )
           except waiter.OperationError as e:
             if args.skip_existing and 'already exists' in str(e):
@@ -133,7 +159,7 @@ class Upload(base.Command):
               continue
             raise
 
-  def uploadArtifact(self, args, file_path, client, messages):
+  def uploadArtifact(self, args, file_path, file_type, client, messages):
     # Default chunk size to be consistent for uploading to clouds.
     chunksize = scaled_integer.ParseInteger(
         properties.VALUES.storage.upload_chunk_size.Get()
@@ -147,7 +173,9 @@ class Upload(base.Command):
       file_name = args.file
 
     request = messages.ArtifactregistryProjectsLocationsRepositoriesFilesUploadRequest(
-        uploadFileRequest=messages.UploadFileRequest(fileId=file_name),
+        uploadFileRequest=messages.UploadFileRequest(
+            fileId=file_name, fileType=file_type
+        ),
         parent=repo_ref.RelativeName(),
     )
 
@@ -175,3 +203,14 @@ class Upload(base.Command):
           'Uploading file: {}'.format(file_name),
       )
       return result
+
+  def getFileType(self, args, messages):
+    """Returns the file type from the arguments."""
+
+    # Default to attachment if the file_type is not provided.
+    if not hasattr(args, 'file_type'):
+      return messages.UploadFileRequest.FileTypeValueValuesEnum.ATTACHMENT
+
+    return arg_utils.ChoiceToEnum(
+        args.file_type, messages.UploadFileRequest.FileTypeValueValuesEnum
+    )

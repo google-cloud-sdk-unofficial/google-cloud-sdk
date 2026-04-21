@@ -39,7 +39,10 @@ DETAILED_HELP = {
 
 @base.UniverseCompatible
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
 )
 class ConfigureBandwidthPercentagePolicy(base.UpdateCommand):
   """Configure bandwidth percentage policy for application awareness configuration of a Compute Engine interconnect.

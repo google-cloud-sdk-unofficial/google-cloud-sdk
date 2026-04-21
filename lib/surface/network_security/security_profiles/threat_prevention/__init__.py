@@ -80,6 +80,10 @@ class ThreatPrevention(base.Group):
 
     $ {command} list --location=global
 
+  To describe a Security Profile called `my-security-profile`, run:
+
+    $ {command} describe my-security-profile
+
   To delete a Security Profile called `my-security-profile` which includes
   location as global or region specified and organization ID, run:
 

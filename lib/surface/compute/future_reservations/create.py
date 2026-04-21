@@ -56,7 +56,7 @@ def _RunCreate(compute_api, args):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class CreateV1(base.CreateCommand):
   """Create a Compute Engine reservation."""
   _support_share_setting = True

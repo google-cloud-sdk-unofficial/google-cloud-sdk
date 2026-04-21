@@ -1243,6 +1243,7 @@ class _SectionApiEndpointOverrides(_Section):
     )
     self.appengine = self._Add('appengine', command='gcloud app')
     self.apphub = self._Add('apphub', command='gcloud apphub')
+    self.appoptimize = self._Add('appoptimize', command='gcloud app-optimize')
     self.artifactregistry = self._Add(
         'artifactregistry', command='gcloud artifacts')
     self.assuredworkloads = self._Add(

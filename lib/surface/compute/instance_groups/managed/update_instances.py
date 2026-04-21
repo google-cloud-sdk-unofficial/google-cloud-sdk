@@ -26,7 +26,11 @@ from googlecloudsdk.command_lib.compute.managed_instance_groups import update_in
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.PREVIEW,
+)
 class UpdateInstances(base.Command):
   r"""Immediately update selected instances in a Compute Engine managed instance group."""
 

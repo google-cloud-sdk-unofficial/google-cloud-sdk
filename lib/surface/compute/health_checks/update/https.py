@@ -276,7 +276,7 @@ def _Run(
   return client.MakeRequests([set_request])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.DefaultUniverseOnly
 class Update(base.UpdateCommand):
   """Update a HTTPS health check."""

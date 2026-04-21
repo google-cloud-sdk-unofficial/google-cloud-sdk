@@ -71,18 +71,13 @@ Container Flags
   group.AddArgument(flags.AddVolumeMountFlag())
   group.AddArgument(flags.RemoveVolumeMountFlag())
   group.AddArgument(flags.ClearVolumeMountsFlag())
-  # ALPHA and BETA features
-  if (
-      release_track == base.ReleaseTrack.ALPHA
-      or release_track == base.ReleaseTrack.BETA
-  ):
-    group.AddArgument(flags.GpuFlag())
+  group.AddArgument(flags.GpuFlag())
 
   return group
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Deploy(base.Command):
   """Create or update a Cloud Run worker-pool."""
 
@@ -410,7 +405,7 @@ def _CreateBuildPack(container, release_track=base.ReleaseTrack.GA):
   return pack
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class AlphaDeploy(Deploy):
   """Create or update a Cloud Run worker-pool."""
 

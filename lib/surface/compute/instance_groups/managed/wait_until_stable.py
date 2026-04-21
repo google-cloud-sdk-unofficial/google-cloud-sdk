@@ -39,8 +39,12 @@ _DEPRECATION_WARNING = (
 
 
 @base.Deprecate(is_removed=False, warning=_DEPRECATION_WARNING)
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.PREVIEW,
+)
 class WaitUntilStable(base.Command):
   """Waits until state of managed instance group is stable."""
 

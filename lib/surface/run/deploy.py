@@ -22,6 +22,7 @@ import os.path
 import re
 
 from googlecloudsdk.api_lib.run import api_enabler
+from googlecloudsdk.api_lib.run import container_resource
 from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.api_lib.run import service as service_lib
 from googlecloudsdk.api_lib.run import traffic
@@ -840,7 +841,31 @@ class Deploy(base.Command):
       apis.append('cloudbuild.googleapis.com')
     return apis
 
-  def _DisplaySuccessMessage(self, service, args, records=None):
+  def _DisplaySuccessMessage(
+      self, service, args, allow_unauth, operations, service_ref, records=None
+  ):
+    # TODO(b/402450629): Remove this block once the proxy call out message is
+    # ready for GA.
+    if self.ReleaseTrack() == base.ReleaseTrack.GA:
+      if self._IsMultiRegion() and not args.async_:
+        pretty_print.Success(
+            messages_util.GetSuccessMessageForMultiRegionSynchronousDeploy(
+                service, self._GetRegionsForMultiRegion()
+            )
+        )
+      elif args.async_:
+        pretty_print.Success(
+            'Service [{{bold}}{serv}{{reset}}] is deploying '
+            'asynchronously.'.format(serv=service.name)
+        )
+      else:
+        pretty_print.Success(
+            messages_util.GetSuccessMessageForSynchronousDeploy(
+                service, args.no_traffic
+            )
+        )
+      return
+
     if self._IsMultiRegion() and not args.async_:
       pretty_print.Success(
           messages_util.GetSuccessMessageForMultiRegionSynchronousDeploy(
@@ -853,9 +878,49 @@ class Deploy(base.Command):
           'asynchronously.'.format(serv=service.name)
       )
     else:
+      requires_authentication = False
+      if (
+          platforms.GetPlatform() == platforms.PLATFORM_MANAGED
+          and not (
+              getattr(args, 'dry_run', False)
+              or service.annotations.get(
+                  container_resource.DISABLE_IAM_ANNOTATION
+              )
+              == 'true'
+              or service.annotations.get(service_lib.INGRESS_ANNOTATION)
+              in [
+                  service_lib.INGRESS_INTERNAL,
+                  service_lib.INGRESS_INTERNAL_AND_CLOUD_LOAD_BALANCING,
+              ]
+              or service.annotations.get(
+                  container_resource.DISABLE_URL_ANNOTATION
+              )
+              == 'true'
+          )
+      ):
+        if (
+            allow_unauth is not None
+            and not allow_unauth
+            # allow_unauth is set to None when --no-allow-unauthenticated flag
+            # is used, so check flag value too
+            or getattr(args, 'allow_unauthenticated', None) is not None
+            and not getattr(args, 'allow_unauthenticated')
+        ):
+          requires_authentication = True
+        elif allow_unauth is None:
+          requires_authentication = not operations.IsUnauthenticated(
+              service_ref
+          )
+
+      project = properties.VALUES.core.project.Get(required=True)
+      region = flags.GetRegion(args)
       pretty_print.Success(
           messages_util.GetSuccessMessageForSynchronousDeploy(
-              service, args.no_traffic
+              service,
+              args.no_traffic,
+              show_proxy_message=requires_authentication,
+              project=project,
+              region=region,
           )
       )
     if records:
@@ -1119,7 +1184,9 @@ class Deploy(base.Command):
         else:
           raise e
 
-      self._DisplaySuccessMessage(service, args, records)
+      self._DisplaySuccessMessage(
+          service, args, allow_unauth, operations, service_ref, records
+      )
       return service
 
 
@@ -1313,6 +1380,8 @@ class BetaDeploy(Deploy):
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser)
+    flags.AddCpuUtilizationFlag(parser)
+    flags.AddConcurrencyUtilizationFlag(parser)
 
     # Flags specific to managed CR
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
@@ -1350,6 +1419,7 @@ class AlphaDeploy(BetaDeploy):
     flags.AddCpuUtilizationFlag(parser)
     flags.AddConcurrencyUtilizationFlag(parser)
     flags.AddPresetFlags(parser)
+    flags.AddSshFlag(parser)
     concept_parsers.ConceptParser([
         presentation_specs.ResourcePresentationSpec(
             '--domain',

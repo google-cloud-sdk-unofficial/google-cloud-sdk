@@ -388,6 +388,33 @@ class WorkstationsV1beta(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def PushCredentials(self, request, global_params=None):
+      r"""Pushes credentials to a running workstation on behalf of a user. Once complete, supported credential types (application_default_credentials) are made available to processes running in the user container.
+
+      Args:
+        request: (WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWorkstationsPushCredentialsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('PushCredentials')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    PushCredentials.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta/projects/{projectsId}/locations/{locationsId}/workstationClusters/{workstationClustersId}/workstationConfigs/{workstationConfigsId}/workstations/{workstationsId}:pushCredentials',
+        http_method='POST',
+        method_id='workstations.projects.locations.workstationClusters.workstationConfigs.workstations.pushCredentials',
+        ordered_params=['workstation'],
+        path_params=['workstation'],
+        query_params=[],
+        relative_path='v1beta/{+workstation}:pushCredentials',
+        request_field='pushCredentialsRequest',
+        request_type_name='WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWorkstationsPushCredentialsRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def SetIamPolicy(self, request, global_params=None):
       r"""Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.
 

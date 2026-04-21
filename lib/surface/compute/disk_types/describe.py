@@ -22,7 +22,7 @@ from googlecloudsdk.command_lib.compute.flags import GetDefaultScopeLister
 from googlecloudsdk.command_lib.compute.scope import ScopeEnum
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine disk type."""
 

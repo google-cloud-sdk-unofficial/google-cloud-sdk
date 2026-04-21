@@ -52,7 +52,7 @@ def _AddArgs(parser, creation_retries, suspended_stopped_sizes):
 
 # TODO(b/345166947) Remove universe annotation once b/341682289 is resolved.
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Resize(base.Command):
   """Set managed instance group size."""
 

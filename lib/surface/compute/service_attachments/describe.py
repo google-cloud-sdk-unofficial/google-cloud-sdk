@@ -46,7 +46,9 @@ def _Run(args, holder, service_attachment_arg):
   return client.MakeRequests([(collection, 'Get', request)])[0]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.BETA, base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW
+)
 @base.UniverseCompatible
 class Describe(base.DescribeCommand):
   """Display details about a Google Compute Engine service attachment."""

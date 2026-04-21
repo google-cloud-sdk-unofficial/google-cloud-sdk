@@ -39,6 +39,8 @@ class AccountConnector(_messages.Message):
     oauthStartUri: Output only. Start OAuth flow by clicking on this URL.
     providerOauthConfig: Optional. Provider OAuth config.
     proxyConfig: Optional. Configuration for the http and git proxy features.
+    uid: Output only. A system-assigned unique identifier for the Account
+      Connector.
     updateTime: Output only. The timestamp when the accountConnector was
       updated.
   """
@@ -101,7 +103,8 @@ class AccountConnector(_messages.Message):
   oauthStartUri = _messages.StringField(7)
   providerOauthConfig = _messages.MessageField('ProviderOAuthConfig', 8)
   proxyConfig = _messages.MessageField('ProxyConfig', 9)
-  updateTime = _messages.StringField(10)
+  uid = _messages.StringField(10)
+  updateTime = _messages.StringField(11)
 
 
 class AppHubService(_messages.Message):
@@ -2687,9 +2690,15 @@ class ProxyConfig(_messages.Message):
     enabled: Optional. Setting this to true allows the git and http proxies to
       perform actions on behalf of the user configured under the account
       connector.
+    httpProxyBaseUri: Output only. The base URI for the HTTP proxy endpoint.
+      Has the format
+      `https://{generatedID}-a-h-{shortRegion}.developerconnect.dev` Populated
+      only when `enabled` is set to `true`. This endpoint is used by other
+      Google services that integrate with Developer Connect.
   """
 
   enabled = _messages.BooleanField(1)
+  httpProxyBaseUri = _messages.StringField(2)
 
 
 class RuntimeConfig(_messages.Message):

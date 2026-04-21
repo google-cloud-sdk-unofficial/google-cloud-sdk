@@ -31,7 +31,7 @@ from googlecloudsdk.command_lib.compute.vpn_tunnels import (
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class UpdateInterface(base.UpdateCommand):
   """Update an interface on a Compute Engine router.
 

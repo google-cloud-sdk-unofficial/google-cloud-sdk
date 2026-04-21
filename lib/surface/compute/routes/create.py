@@ -145,7 +145,7 @@ def _Args(parser):
   parser.display_info.AddCacheUpdater(completers.RoutesCompleter)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class Create(base.CreateCommand):
   r"""Create a new route.

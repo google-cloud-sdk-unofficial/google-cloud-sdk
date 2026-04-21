@@ -148,6 +148,22 @@ _SHUTDOWN = 'SHUTDOWN'
 
 _CREATE_WORKER_PROCESS = 'CREATE_WORKER_PROCESS'
 
+# These dummy TaskWrapper and Output objects function as a "reverse poison
+# pill". While a standard poison pill (like _SHUTDOWN) travels from the
+# orchestrator down to the workers to signal termination, this reverse poison
+# pill originates from a crashing worker and travels upwards to the
+# orchestrator. Its purpose is to force the orchestrator to abort cleanly upon
+# encountering unrecoverable structural failures (e.g., multiprocessing crashes
+# or BrokenPipeErrors).
+_STRUCTURAL_ERROR_TASK_WRAPPER = task_graph_module.TaskWrapper(
+    task_id=None, task=None, dependent_task_ids=None
+)
+
+_STRUCTURAL_ERROR_OUTPUT = task.Output(
+    additional_task_iterators=None,
+    messages=[task.Message(topic=task.Topic.FATAL_ERROR, payload={})],
+)
+
 
 class _DebugSignalHandler:
   """Signal handler for collecting debug information."""
@@ -260,52 +276,80 @@ def _thread_worker(task_queue, task_output_queue, task_status_queue,
   # Verifiable Accounting: The thread is alive and ready for work.
   idle_thread_count.release()
 
-  while not abort_event.is_set():
-    with _task_queue_lock():
+  try:
+    while not abort_event.is_set():
+      with _task_queue_lock():
+        try:
+          task_wrapper = task_queue.get(timeout=1.0)
+        except queue.Empty:
+          continue
+
+      if task_wrapper == _SHUTDOWN:
+        break
+
+      # We received a task. Mark ourselves as busy.
+      idle_thread_count.acquire()
+
       try:
-        task_wrapper = task_queue.get(timeout=1.0)
-      except queue.Empty:
-        continue
+        task_output = task_wrapper.task.execute(
+            task_status_queue=task_status_queue
+        )
+      # pylint: disable=broad-except
+      # If any exception is raised, it will prevent the executor from exiting.
+      except Exception as exception:
+        log.error(
+            'Task %r failed: %r',
+            getattr(task_wrapper, 'id', None),
+            exception,
+        )
+        log.debug(
+            'Task %r traceback:',
+            getattr(task_wrapper, 'id', None),
+            exc_info=True,
+        )
 
-    if task_wrapper == _SHUTDOWN:
-      break
-
-    # We received a task. Mark ourselves as busy.
-    idle_thread_count.acquire()
-
-    task_execution_error = None
-    try:
-      task_output = task_wrapper.task.execute(
-          task_status_queue=task_status_queue)
-    # pylint: disable=broad-except
-    # If any exception is raised, it will prevent the executor from exiting.
-    except Exception as exception:
-      task_execution_error = exception
-      log.error(exception)
-      log.debug(exception, exc_info=sys.exc_info())
-
-      if isinstance(exception, errors.FatalError):
-        task_output = task.Output(
-            additional_task_iterators=None,
-            messages=[task.Message(topic=task.Topic.FATAL_ERROR, payload={})])
-      elif task_wrapper.task.change_exit_code:
-        task_output = task.Output(
-            additional_task_iterators=None,
-            messages=[
-                task.Message(topic=task.Topic.CHANGE_EXIT_CODE, payload={})
-            ])
+        if isinstance(exception, errors.FatalError):
+          task_output = task.Output(
+              additional_task_iterators=None,
+              messages=[task.Message(topic=task.Topic.FATAL_ERROR, payload={})],
+          )
+        elif task_wrapper.task.change_exit_code:
+          task_output = task.Output(
+              additional_task_iterators=None,
+              messages=[
+                  task.Message(topic=task.Topic.CHANGE_EXIT_CODE, payload={})
+              ],
+          )
+        else:
+          task_output = None
+        task_wrapper.task.exit_handler(exception, task_status_queue)
       else:
-        task_output = None
-    # pylint: enable=broad-except
-    finally:
-      task_wrapper.task.exit_handler(task_execution_error, task_status_queue)
-      # By placing the release here, inside the finally block of the
-      # execution loop, we guarantee the capacity token is returned to the
-      # Producer even if the thread crashed structurally during execution.
-      # This prevents capacity starvation deadlocks (the "Ghost Token" bug).
-      idle_thread_count.release()
+        task_wrapper.task.exit_handler(None, task_status_queue)
+      finally:
+        # By placing the release here, inside the finally block of the
+        # execution loop, we guarantee the capacity token is returned to the
+        # Producer even if the thread crashed structurally during execution.
+        # This prevents capacity starvation deadlocks (the "Ghost Token" bug).
+        idle_thread_count.release()
 
-    task_output_queue.put((task_wrapper, task_output))
+      task_output_queue.put((task_wrapper, task_output))
+
+  except Exception as structural_exception:  # pylint: disable=broad-except
+    # The Structural Guardian: Catches Semaphore crashes, BrokenPipe, etc.
+    log.error('Worker thread crashed structurally: %r', structural_exception)
+    try:
+      # The structural error task wrapper is used here to inform the main
+      # process that a worker thread caught a severe error and it cannot
+      # recover or continue processing tasks. The wrapper will be processed by
+      # the listener(_handle_task_output) and it will change the command exit
+      # code as well as will provide a signal to stop accepting new tasks.
+      task_output_queue.put(
+          (_STRUCTURAL_ERROR_TASK_WRAPPER, _STRUCTURAL_ERROR_OUTPUT)
+      )
+    except Exception as e:  # pylint: disable=broad-except
+      log.debug('Failed to send poison pill: %r', e)
+    # The thread will now die. We have successfully sent the Poison Pill or
+    # failed to do so but reported the failure in logs.
 
 
 @crash_handling.CrashManager
@@ -370,6 +414,41 @@ def _process_worker(
           os._exit(1)  # pylint: disable=protected-access
 
 
+def _health_check_worker_processes(processes, task_output_queue, abort_event):
+  """Checks if any worker process died unexpectedly and signals abort if so.
+
+  Args:
+    processes (list[multiprocessing.Process]): List of worker processes.
+    task_output_queue (multiprocessing.Queue): Queue for reporting results.
+    abort_event (multiprocessing.Event): Global abort signal.
+  """
+  for process in processes:
+    if process.is_alive():
+      continue
+    if (
+        not hasattr(process, 'exitcode')
+        or process.exitcode is None
+        or process.exitcode == 0
+    ):
+      continue
+
+    log.error(
+        'Worker process %s died silently with exit code %s',
+        process.pid,
+        process.exitcode,
+    )
+    try:
+      # The structural error task wrapper is used here to inform the main
+      # process that a worker process died unexpectedly.
+      task_output_queue.put(
+          (_STRUCTURAL_ERROR_TASK_WRAPPER, _STRUCTURAL_ERROR_OUTPUT)
+      )
+    except Exception:  # pylint: disable=broad-except
+      pass
+    abort_event.set()
+    break
+
+
 @crash_handling.CrashManager
 def _process_factory(
     task_queue,
@@ -410,6 +489,11 @@ def _process_factory(
     try:
       signal = signal_queue.get(timeout=1.0)
     except queue.Empty:
+      _health_check_worker_processes(
+          processes, task_output_queue, abort_event
+      )
+      if abort_event.is_set():
+        break
       continue
 
     if signal == _SHUTDOWN:
@@ -631,6 +715,9 @@ class TaskGraphExecutor:
             self._exit_code = 1
             if message.topic == task.Topic.FATAL_ERROR:
               self._accepting_new_tasks = False
+
+      if executed_task_wrapper.task is None:
+        continue
 
       submittable_tasks = self._task_graph.update_from_executed_task(
           executed_task_wrapper, task_output)

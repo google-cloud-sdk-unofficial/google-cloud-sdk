@@ -1398,9 +1398,9 @@ class GoogleCloudRecaptchaenterpriseV1RiskAnalysis(_messages.Message):
   Fields:
     challenge: Output only. Challenge information for POLICY_BASED_CHALLENGE
       and INVISIBLE keys.
-    extendedVerdictReasons: Output only. Advanced reasons contributing to the
-      risk analysis verdict. These reasons are available to Enterprise tier
-      projects only. Contact sales for more information. The set of possible
+    extendedVerdictReasons: Output only. Additional reasons contributing to
+      the risk analysis verdict. These reasons are available to Enterprise
+      tier projects only. Contact sales for more information. The set of
       reasons is subject to change.
     reasons: Output only. Reasons contributing to the risk analysis verdict.
     score: Output only. Legitimate event score from 0.0 to 1.0. (1.0 means
@@ -1440,10 +1440,12 @@ class GoogleCloudRecaptchaenterpriseV1RiskAnalysis(_messages.Message):
         different than expected patterns.
       LOW_CONFIDENCE_SCORE: Too little traffic has been received from this
         site thus far to generate quality risk analysis.
-      SUSPECTED_CARDING: The request matches behavioral characteristics of a
-        carding attack.
-      SUSPECTED_CHARGEBACK: The request matches behavioral characteristics of
-        chargebacks for fraud.
+      SUSPECTED_CARDING: Deprecated: Use
+        FraudPreventionAssessment.transaction_risk and FraudPreventionAssessme
+        nt.RiskReason.Reason.EXCESSIVE_ENUMERATION_PATTERN instead.
+      SUSPECTED_CHARGEBACK: Deprecated: Use
+        FraudPreventionAssessment.transaction_risk and FraudPreventionAssessme
+        nt.RiskReason.Reason.ASSOCIATED_WITH_FRAUD_CLUSTER instead.
     """
     CLASSIFICATION_REASON_UNSPECIFIED = 0
     AUTOMATION = 1
@@ -1701,6 +1703,10 @@ class GoogleCloudRecaptchaenterpriseV1TokenProperties(_messages.Message):
         following are true: - your `site_key` has the POLICY_BASED_CHALLENGE
         integration type - you set an action score threshold higher than 0.0 -
         you provided a non-empty `expected_action`
+      KEY_MISMATCH: The key used to generate the token does not match the
+        `site_key`.
+      DOMAIN_MISMATCH: The domain of the page on which the token was generated
+        does not match the `allowed_domains` configured in the `site_key`.
     """
     INVALID_REASON_UNSPECIFIED = 0
     UNKNOWN_INVALID_REASON = 1
@@ -1710,6 +1716,8 @@ class GoogleCloudRecaptchaenterpriseV1TokenProperties(_messages.Message):
     MISSING = 5
     BROWSER_ERROR = 6
     UNEXPECTED_ACTION = 7
+    KEY_MISMATCH = 8
+    DOMAIN_MISMATCH = 9
 
   action = _messages.StringField(1)
   androidPackageName = _messages.StringField(2)

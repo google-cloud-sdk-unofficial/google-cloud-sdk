@@ -30,7 +30,7 @@ from googlecloudsdk.command_lib.compute.instance_groups.managed.instance_configs
 import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class UpdateGA(base.UpdateCommand):
   """Update per-instance config of a managed instance group."""
 

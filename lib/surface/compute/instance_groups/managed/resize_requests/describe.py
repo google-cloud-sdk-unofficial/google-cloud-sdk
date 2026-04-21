@@ -36,7 +36,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.DefaultUniverseOnly
 class DescribeGA(base.DescribeCommand):
   """Describe a Compute Engine managed instance group resize request resource.

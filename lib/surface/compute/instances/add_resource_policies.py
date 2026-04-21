@@ -22,8 +22,12 @@ from googlecloudsdk.command_lib.compute.resource_policies import flags
 from googlecloudsdk.command_lib.compute.resource_policies import util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
+)
 class InstancesAddResourcePolicies(base.UpdateCommand):
   """Add resource policies to Compute Engine VM instances.
 

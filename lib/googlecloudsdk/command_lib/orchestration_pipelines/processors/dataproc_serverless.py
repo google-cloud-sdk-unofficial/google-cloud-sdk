@@ -14,10 +14,10 @@
 # limitations under the License.
 """Dataproc Serverless action processor."""
 
-
 from typing import Optional
 
 from googlecloudsdk.command_lib.orchestration_pipelines.processors import base
+from googlecloudsdk.command_lib.orchestration_pipelines.tools import resource_profile_loader
 
 
 class DataprocServerlessActionProcessor(base.ActionProcessor):
@@ -35,6 +35,16 @@ class DataprocServerlessActionProcessor(base.ActionProcessor):
         .get("version")
     )
     if not runtime_version:
+      external_profile = resource_profile_loader.load_external_resource_profile(
+          resource_profile, self._work_dir
+      )
+      if external_profile:
+        runtime_version = (
+            external_profile.get("definition", {})
+            .get("runtimeConfig", {})
+            .get("version")
+        )
+    if not runtime_version:
       return "3.12"
     return "3.11" if str(runtime_version).startswith("2.3") else "3.12"
 
@@ -42,20 +52,44 @@ class DataprocServerlessActionProcessor(base.ActionProcessor):
     if not self._env_pack_file:
       return
 
-    # Add PYTHONPATH to Spark driver and executors
-    # to include the site-packages
-    # from the uploaded dependencies.zip, allowing the Spark jobs to find
-    # the required Python libraries.
-    props = self._get_nested_dict(
+    resource_profile = self._get_nested_dict(
         action,
         [
             "engine",
             "dataprocServerless",
             "resourceProfile",
-            "inline",
-            "runtimeConfig",
-            "properties",
         ],
     )
+
+    # Route to 'overrides' if 'path' is used, otherwise default to 'inline'
+    if "path" in resource_profile or "externalConfigPath" in resource_profile:
+      props = self._get_nested_dict(
+          action,
+          [
+              "engine",
+              "dataprocServerless",
+              "resourceProfile",
+              "overrides",
+              "runtimeConfig",
+              "properties",
+          ],
+      )
+    else:
+      props = self._get_nested_dict(
+          action,
+          [
+              "engine",
+              "dataprocServerless",
+              "resourceProfile",
+              "inline",
+              "runtimeConfig",
+              "properties",
+          ],
+      )
+
+    # Add PYTHONPATH to Spark driver and executors
+    # to include the site-packages
+    # from the uploaded dependencies.zip, allowing the Spark jobs to find
+    # the required Python libraries.
     props["spark.dataproc.driverEnv.PYTHONPATH"] = self.full_python_path
     props["spark.executorEnv.PYTHONPATH"] = self.full_python_path

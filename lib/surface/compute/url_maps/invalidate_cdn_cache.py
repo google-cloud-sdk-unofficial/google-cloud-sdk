@@ -149,7 +149,7 @@ def _Run(args, holder, url_map_arg):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class InvalidateCdnCache(base.SilentCommand):
   """Invalidate specified objects for a URL map in Cloud CDN caches."""
 

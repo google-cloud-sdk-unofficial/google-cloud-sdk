@@ -13,7 +13,7 @@ class MemorystoreV1beta(base_api.BaseApiClient):
   MTLS_BASE_URL = 'https://memorystore.mtls.googleapis.com/'
 
   _PACKAGE = 'memorystore'
-  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform']
+  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/memorystore.read-only', 'https://www.googleapis.com/auth/memorystore.read-write']
   _VERSION = 'v1beta'
   _CLIENT_ID = 'CLIENT_ID'
   _CLIENT_SECRET = 'CLIENT_SECRET'

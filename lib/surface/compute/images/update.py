@@ -107,7 +107,7 @@ def _CommonArgs(messages, cls, parser, support_user_licenses=False):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Update(base.UpdateCommand):
   """Update a Compute Engine image."""
 

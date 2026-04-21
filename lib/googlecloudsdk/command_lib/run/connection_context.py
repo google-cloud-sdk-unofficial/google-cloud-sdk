@@ -596,7 +596,12 @@ def GetConnectionContext(
         product, release_track, version_override=version_override
     )
     if not is_multiregion:
-      region = flags.GetRegion(args, prompt=True, region_label=region_label)
+      region = flags.GetRegion(
+          args,
+          prompt=True,
+          region_label=region_label,
+          release_track=release_track,
+      )
       if not region:
         raise serverless_exceptions.ArgumentError(
             'You must specify a region. Either use the `--region` flag '

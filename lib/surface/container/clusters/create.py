@@ -885,6 +885,7 @@ flags_to_add = {
         'autopilotPrivilegedAdmission': (
             flags.AddAutopilotPrivilegedAdmissionFlag
         ),
+        'podsnapshots': lambda p: flags.AddPodSnapshotConfigFlags(p, hidden=True),
         'enableKernelModuleSignatureEnforcement': (
             flags.AddEnableKernelModuleSignatureEnforcementFlag
         ),

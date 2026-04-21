@@ -56,9 +56,12 @@ class _ConvertState(enum.Enum):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA,
-                    base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
+)
 class Convert(base.RestoreCommand):
   """Convert a Compute Engine Persistent Disk volume to a Hyperdisk volume."""
 

@@ -37,6 +37,7 @@ def GetLatestScan(project, resource):
   filter_kinds = ["DISCOVERY"]
   filter_ca = filter_util.ContainerAnalysisFilter()
   filter_ca.WithKinds(filter_kinds)
+  filter_ca.WithCustomFilter('noteId = "PACKAGE_VULNERABILITY"')
   filter_ca.WithResources([resource])
   occurrences = requests.ListOccurrencesWithFilters(
       project, filter_ca.GetChunkifiedFilters()
@@ -47,7 +48,10 @@ def GetLatestScan(project, resource):
       latest_scan = occ
       continue
     try:
-      if latest_scan.discovery.lastScanTime < occ.discovery.lastScanTime:
+      if occ.discovery.lastScanTime and (
+          not latest_scan.discovery.lastScanTime
+          or latest_scan.discovery.lastScanTime < occ.discovery.lastScanTime
+      ):
         latest_scan = occ
     except AttributeError:
       continue

@@ -255,6 +255,33 @@ class FetchUseCasesResponse(_messages.Message):
   workloadSpecs = _messages.MessageField('WorkloadSpec', 1, repeated=True)
 
 
+class GenerateOptimizationSetManifestRequest(_messages.Message):
+  r"""Request message for WorkloadOptimizer.GenerateOptimizationSetManifest.
+
+  Fields:
+    clusterVersion: Required. The GKE version to generate the manifest for.
+    optimizationSet: Required. The name of the optimization set to generate
+      the manifest for. This specifies the workload, workload version, and
+      workload characterization to optimize for. E.g. `redis-7-caching`
+    options: Optional. Includes machine series to use for provisioning nodes
+      e.g. [{key: "machine_series", value: "c4d-highmem-16,c4a-highmem-16"}]
+  """
+
+  clusterVersion = _messages.StringField(1)
+  optimizationSet = _messages.StringField(2)
+  options = _messages.MessageField('Option', 3, repeated=True)
+
+
+class GenerateOptimizationSetManifestResponse(_messages.Message):
+  r"""Response message for WorkloadOptimizer.GenerateOptimizationSetManifest.
+
+  Fields:
+    kubernetesManifests: A list of generated Kubernetes manifests.
+  """
+
+  kubernetesManifests = _messages.MessageField('KubernetesManifest', 1, repeated=True)
+
+
 class GenerateOptimizedManifestRequest(_messages.Message):
   r"""Request message for GkeInferenceQuickstart.GenerateOptimizedManifest.
 
@@ -515,6 +542,18 @@ class ModelServerInfo(_messages.Message):
   model = _messages.StringField(1)
   modelServer = _messages.StringField(2)
   modelServerVersion = _messages.StringField(3)
+
+
+class Option(_messages.Message):
+  r"""Option is a key-value pair for additional configuration options.
+
+  Fields:
+    key: Required. The option name.
+    value: Required. The option value.
+  """
+
+  key = _messages.StringField(1)
+  value = _messages.StringField(2)
 
 
 class PerformanceRange(_messages.Message):

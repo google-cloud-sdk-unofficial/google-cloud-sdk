@@ -21,42 +21,32 @@ from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute.backend_buckets import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class List(base.ListCommand):
   """List backend buckets."""
 
-  _support_regional_global_flags = False
   detailed_help = base_classes.GetGlobalListerHelp('backend buckets')
 
   @classmethod
   def Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    if cls._support_regional_global_flags:
-      lister.AddMultiScopeListerFlags(
-          parser, zonal=False, regional=True, global_=True
-      )
-    else:
-      lister.AddBaseListerArgs(parser)
+    lister.AddMultiScopeListerFlags(
+        parser, zonal=False, regional=True, global_=True
+    )
     parser.display_info.AddCacheUpdater(completers.InstancesCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    if self._support_regional_global_flags:
-      request_data = lister.ParseMultiScopeFlags(args, holder.resources)
-      list_implementation = lister.MultiScopeLister(
-          client,
-          regional_service=client.apitools_client.regionBackendBuckets,
-          global_service=client.apitools_client.backendBuckets,
-          aggregation_service=client.apitools_client.backendBuckets,
-      )
-    else:
-      request_data = lister.ParseNamesAndRegexpFlags(args, holder.resources)
-      list_implementation = lister.GlobalLister(
-          client, client.apitools_client.backendBuckets
-      )
+    request_data = lister.ParseMultiScopeFlags(args, holder.resources)
+    list_implementation = lister.MultiScopeLister(
+        client,
+        regional_service=client.apitools_client.regionBackendBuckets,
+        global_service=client.apitools_client.backendBuckets,
+        aggregation_service=client.apitools_client.backendBuckets,
+    )
 
     return lister.Invoke(request_data, list_implementation)
 
@@ -66,7 +56,6 @@ class List(base.ListCommand):
 class ListBeta(List):
   """List backend buckets."""
 
-  _support_regional_global_flags = True
   detailed_help = base_classes.GetGlobalRegionalListerHelp('backend buckets')
 
 
@@ -75,4 +64,4 @@ class ListBeta(List):
 class ListAlpha(ListBeta):
   """List backend buckets."""
 
-  _support_regional_global_flags = True
+  pass

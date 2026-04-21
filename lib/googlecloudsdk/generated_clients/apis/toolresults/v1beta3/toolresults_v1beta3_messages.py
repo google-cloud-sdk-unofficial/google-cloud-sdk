@@ -590,11 +590,12 @@ class FileReference(_messages.Message):
 
   Fields:
     fileUri: The URI of a file stored in Google Cloud Storage. For example:
-      http://storage.googleapis.com/mybucket/path/to/test.xml or in gsutil
-      format: gs://mybucket/path/to/test.xml with version-specific info,
-      gs://mybucket/path/to/test.xml#1360383693690000 An INVALID_ARGUMENT
-      error will be returned if the URI format is not supported. - In
-      response: always set - In create/update request: always set
+      `http://storage.googleapis.com/mybucket/path/to/test.xml` or in Cloud
+      Storage URI format: `gs://mybucket/path/to/test.xml` with version-
+      specific info, `gs://mybucket/path/to/test.xml#1360383693690000` An
+      INVALID_ARGUMENT error will be returned if the URI format is not
+      supported. - In response: always set - In create/update request: always
+      set
   """
 
   fileUri = _messages.StringField(1)
@@ -1581,11 +1582,14 @@ class SkippedDetail(_messages.Message):
       architecture, for example, x86.
     incompatibleDevice: If the requested OS version doesn't run on the
       specific device model.
+    pendingTimeout: Indicates that the test could not be scheduled in the
+      requested time because no suitable device was available.
   """
 
   incompatibleAppVersion = _messages.BooleanField(1)
   incompatibleArchitecture = _messages.BooleanField(2)
   incompatibleDevice = _messages.BooleanField(3)
+  pendingTimeout = _messages.BooleanField(4)
 
 
 class Specification(_messages.Message):

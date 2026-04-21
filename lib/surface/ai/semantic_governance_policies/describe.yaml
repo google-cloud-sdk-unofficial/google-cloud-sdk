@@ -1,0 +1,31 @@
+release_tracks: [BETA]
+help_text:
+  brief: Describe a semantic governance policy.
+  description: Describe a semantic governance policy.
+  examples: |-
+    To describe a semantic governance policy `my-policy` in location `us-central1`, run:
+
+      $ {command} my-policy --location=us-central1
+arguments:
+  resource:
+    help_text: The semantic governance policy to describe.
+    spec:
+      name: policy
+      collection: aiplatform.projects.locations.semanticGovernancePolicies
+      attributes:
+      - parameter_name: projectsId
+        attribute_name: project
+        help: The project containing the policy.
+      - parameter_name: locationsId
+        attribute_name: location
+        help: The location containing the policy.
+      - parameter_name: semanticGovernancePoliciesId
+        attribute_name: policy
+        help: The policy to describe.
+
+request:
+  api_version: v1beta1
+  collection: aiplatform.projects.locations.semanticGovernancePolicies
+  method: get
+  resource_method_params:
+    name: projects/{projectsId}/locations/{locationsId}/semanticGovernancePolicies/{semanticGovernancePoliciesId}

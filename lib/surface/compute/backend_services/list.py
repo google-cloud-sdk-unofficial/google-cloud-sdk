@@ -21,7 +21,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class List(base.ListCommand):
   """List backend services."""
 

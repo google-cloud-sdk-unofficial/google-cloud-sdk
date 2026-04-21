@@ -39,7 +39,8 @@ def _GetBatchUrl(endpoint_url, api_version):
   parsed_endpoint = parse.urlparse(endpoint_url)
   return parse.urljoin(
       '{0}://{1}'.format(parsed_endpoint.scheme, parsed_endpoint.netloc),
-      'batch/compute/' + api_version)
+      'batch/compute/' + utils.GetUrlAPIVersionByApiVersion(api_version),
+  )
 
 
 def _ForceBatchRequest():

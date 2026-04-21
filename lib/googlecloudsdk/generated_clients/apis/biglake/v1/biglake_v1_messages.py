@@ -91,11 +91,13 @@ class BiglakeIcebergV1RestcatalogExtensionsProjectsCatalogsCreateRequest(_messag
       metadata will be stored. For BigLake catalogs, this specifies the GCP
       region where the catalog service / metadata lives. If not specified, the
       region is inferred from the `default_location` bucket's region. If
-      specified, this defines the catalog's primary location. For Federated
-      catalogs, this is the primary location for mirroring the remote catalog
-      metadata. It must be a BigLake-supported location, and it should be
-      proximate to the remote catalog's location for better performance and
-      lower cost.
+      specified, this defines the catalog's primary location. This region must
+      be in jurisdiction or near the `default_location` bucket's region and
+      the `restricted_locations` buckets' regions. For Federated catalogs,
+      this is a required field and is the primary location for mirroring the
+      remote catalog metadata. It must be a BigLake-supported location, and it
+      should be proximate to the remote catalog's location for better
+      performance and lower cost.
   """
 
   iceberg_catalog_id = _messages.StringField(1)
@@ -376,6 +378,22 @@ class BiglakeIcebergV1RestcatalogV1ProjectsCatalogsNamespacesTablesListRequest(_
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
+
+
+class BiglakeIcebergV1RestcatalogV1ProjectsCatalogsNamespacesTablesMetricsRequest(_messages.Message):
+  r"""A
+  BiglakeIcebergV1RestcatalogV1ProjectsCatalogsNamespacesTablesMetricsRequest
+  object.
+
+  Fields:
+    name: Required. Table to report metrics for in the format:
+      `projects/{project_id}/namespaces/{namespace}/tables/{table}`.
+    reportIcebergTableMetricsRequest: A ReportIcebergTableMetricsRequest
+      resource to be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  reportIcebergTableMetricsRequest = _messages.MessageField('ReportIcebergTableMetricsRequest', 2)
 
 
 class BiglakeIcebergV1RestcatalogV1ProjectsCatalogsNamespacesTablesUpdateIcebergTableRequest(_messages.Message):
@@ -768,11 +786,13 @@ class FailoverIcebergCatalogResponse(_messages.Message):
 
 
 class FederatedCatalogOptions(_messages.Message):
-  r"""Configuration options for federated catalog.
+  r"""Configuration options for Iceberg REST Federated Catalog.
 
   Fields:
     glue_catalog_info: Optional. Info specific to an AWS Glue Catalog.
     refresh_options: Optional. Refresh configuration.
+    refresh_status: Output only. The status of the background refresh
+      operations.
     secret_name: Required. The secret resource name in Secret Manager, in the
       format `projects/{project_id}/locations/{location}/secrets/{secret_id}`
       or `projects/{project_id}/locations/{location}/secrets/{secret_id}/versi
@@ -788,9 +808,10 @@ class FederatedCatalogOptions(_messages.Message):
 
   glue_catalog_info = _messages.MessageField('GlueCatalogInfo', 1)
   refresh_options = _messages.MessageField('RefreshOptions', 2)
-  secret_name = _messages.StringField(3)
-  service_directory_name = _messages.StringField(4)
-  unity_catalog_info = _messages.MessageField('UnityCatalogInfo', 5)
+  refresh_status = _messages.MessageField('RefreshStatus', 3)
+  secret_name = _messages.StringField(4)
+  service_directory_name = _messages.StringField(5)
+  unity_catalog_info = _messages.MessageField('UnityCatalogInfo', 6)
 
 
 class GlueCatalogInfo(_messages.Message):
@@ -889,7 +910,10 @@ class IcebergCatalog(_messages.Message):
       use by resources within a catalog.
     biglake_service_account: Output only. The service account used for
       credential vending, output only. Might be empty if Credential vending
-      was never enabled for the catalog.
+      was never enabled for the catalog. For federated catalogs, the service
+      account will be always provisioned and will be used to access the remote
+      Iceberg REST Catalog using access to Secret Manager secret or identity
+      federation.
     biglake_service_account_id: Output only. The unique ID of the service
       account. This is used for federation scenarios.
     catalog_type: Required. The catalog type. Required for
@@ -924,7 +948,9 @@ class IcebergCatalog(_messages.Message):
     storage_regions: Output only. The GCP region(s) of the default location's
       bucket, e.g. `us-central1`, `nam4` or `us`. This will contain one value
       for all locations, except for the catalogs that are configured to use
-      custom dual region buckets.
+      custom dual region buckets, in which case it will contain the two
+      regions of the bucket. The region(s) of this field should be in the
+      jurisdiction of or nearby the primary location of the catalog.
     update_time: Output only. When the catalog was last updated.
   """
 
@@ -938,7 +964,7 @@ class IcebergCatalog(_messages.Message):
         namespaces and tables within a catalog to be mapped to locations
         beyond the catalog's designated default.
       CATALOG_TYPE_FEDERATED: BigLake federated catalog mirroring a remote
-        catalog.
+        Iceberg REST Catalog.
     """
     CATALOG_TYPE_UNSPECIFIED = 0
     CATALOG_TYPE_GCS_BUCKET = 1
@@ -1287,8 +1313,8 @@ class RefreshSchedule(_messages.Message):
 
   Fields:
     refresh_interval: Optional. The interval for refreshing metadata from the
-      remote catalog. A value <= 0 disables periodic refresh. A default value
-      will be used if not specified.
+      remote catalog. If unset or if the value is <= 0, the background refresh
+      will be disabled.
   """
 
   refresh_interval = _messages.StringField(1)
@@ -1306,6 +1332,23 @@ class RefreshScope(_messages.Message):
   """
 
   namespace_filters = _messages.StringField(1, repeated=True)
+
+
+class RefreshStatus(_messages.Message):
+  r"""Remote catalog background refresh status.
+
+  Fields:
+    end_time: Output only. When the catalog refresh has ended, unset for in-
+      progress refreshes.
+    start_time: Output only. When the catalog refresh has started, including
+      in-progress refreshes.
+    status: Output only. The status of the last background refresh operation,
+      unset for in-progress refreshes.
+  """
+
+  end_time = _messages.StringField(1)
+  start_time = _messages.StringField(2)
+  status = _messages.MessageField('Status', 3)
 
 
 class RegisterIcebergTableRequest(_messages.Message):
@@ -1351,6 +1394,16 @@ class Replica(_messages.Message):
 
   region = _messages.StringField(1)
   state = _messages.EnumField('StateValueValuesEnum', 2)
+
+
+class ReportIcebergTableMetricsRequest(_messages.Message):
+  r"""The request message for the `ReportIcebergTableMetrics` API.
+
+  Fields:
+    httpBody: Required.
+  """
+
+  httpBody = _messages.MessageField('HttpBody', 1)
 
 
 class RestrictedLocationsConfig(_messages.Message):
@@ -1447,6 +1500,57 @@ class StandardQueryParameters(_messages.Message):
   trace = _messages.StringField(10)
   uploadType = _messages.StringField(11)
   upload_protocol = _messages.StringField(12)
+
+
+class Status(_messages.Message):
+  r"""The `Status` type defines a logical error model that is suitable for
+  different programming environments, including REST APIs and RPC APIs. It is
+  used by [gRPC](https://github.com/grpc). Each `Status` message contains
+  three pieces of data: error code, error message, and error details. You can
+  find out more about this error model and how to work with it in the [API
+  Design Guide](https://cloud.google.com/apis/design/errors).
+
+  Messages:
+    DetailsValueListEntry: A DetailsValueListEntry object.
+
+  Fields:
+    code: The status code, which should be an enum value of google.rpc.Code.
+    details: A list of messages that carry the error details. There is a
+      common set of message types for APIs to use.
+    message: A developer-facing error message, which should be in English. Any
+      user-facing error message should be localized and sent in the
+      google.rpc.Status.details field, or localized by the client.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class DetailsValueListEntry(_messages.Message):
+    r"""A DetailsValueListEntry object.
+
+    Messages:
+      AdditionalProperty: An additional property for a DetailsValueListEntry
+        object.
+
+    Fields:
+      additionalProperties: Properties of the object. Contains field @type
+        with type URL.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a DetailsValueListEntry object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  code = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  details = _messages.MessageField('DetailsValueListEntry', 2, repeated=True)
+  message = _messages.StringField(3)
 
 
 class StorageCredential(_messages.Message):
@@ -1577,6 +1681,8 @@ encoding.AddCustomJsonFieldMapping(
 encoding.AddCustomJsonFieldMapping(
     FederatedCatalogOptions, 'refresh_options', 'refresh-options')
 encoding.AddCustomJsonFieldMapping(
+    FederatedCatalogOptions, 'refresh_status', 'refresh-status')
+encoding.AddCustomJsonFieldMapping(
     FederatedCatalogOptions, 'secret_name', 'secret-name')
 encoding.AddCustomJsonFieldMapping(
     FederatedCatalogOptions, 'service_directory_name', 'service-directory-name')
@@ -1627,6 +1733,10 @@ encoding.AddCustomJsonFieldMapping(
 encoding.AddCustomJsonFieldMapping(
     RefreshScope, 'namespace_filters', 'namespace-filters')
 encoding.AddCustomJsonFieldMapping(
+    RefreshStatus, 'end_time', 'end-time')
+encoding.AddCustomJsonFieldMapping(
+    RefreshStatus, 'start_time', 'start-time')
+encoding.AddCustomJsonFieldMapping(
     RegisterIcebergTableRequest, 'metadata_location', 'metadata-location')
 encoding.AddCustomJsonFieldMapping(
     RestrictedLocationsConfig, 'restricted_locations', 'restricted-locations')
@@ -1642,8 +1752,6 @@ encoding.AddCustomJsonEnumMapping(
     StandardQueryParameters.FXgafvValueValuesEnum, '_2', '2')
 encoding.AddCustomJsonFieldMapping(
     BiglakeIcebergV1RestcatalogExtensionsProjectsCatalogsCreateRequest, 'iceberg_catalog_id', 'iceberg-catalog-id')
-encoding.AddCustomJsonFieldMapping(
-    BiglakeIcebergV1RestcatalogExtensionsProjectsCatalogsCreateRequest, 'primary_location', 'primary-location')
 encoding.AddCustomJsonFieldMapping(
     BiglakeIcebergV1RestcatalogExtensionsProjectsCatalogsListRequest, 'page_size', 'page-size')
 encoding.AddCustomJsonFieldMapping(

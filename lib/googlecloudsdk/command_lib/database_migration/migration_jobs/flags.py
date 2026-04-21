@@ -571,5 +571,4 @@ def AddPostgresHomogeneousConfigFlag(parser):
       action='store_true',
       default=False,
       help='Use native logical replication for PostgreSQL migration.',
-      hidden=True,
   )

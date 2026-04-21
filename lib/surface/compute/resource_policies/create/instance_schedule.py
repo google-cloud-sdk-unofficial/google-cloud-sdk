@@ -60,7 +60,7 @@ def _CommonArgs(parser):
         an RFC3339 valid string.""")
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class CreateInstanceSchedulePolicy(base.CreateCommand):
   """Create a Compute Engine instance schedule resource policy."""
 

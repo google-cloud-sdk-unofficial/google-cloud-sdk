@@ -250,7 +250,7 @@ def _GuestOsFeatureFlagsIncluded(args):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Update(base.UpdateCommand):
   r"""Update a Compute Engine persistent disk."""
 

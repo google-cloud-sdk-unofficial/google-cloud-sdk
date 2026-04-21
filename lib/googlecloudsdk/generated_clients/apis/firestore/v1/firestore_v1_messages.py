@@ -3030,6 +3030,9 @@ class GoogleFirestoreAdminV1Index(_messages.Message):
       collection group query scope specified allow queries against all
       collections descended from a specific document, specified at query time,
       and that have the same collection ID as this index.
+    searchIndexOptions: Optional. Options for search indexes that are at the
+      index definition level. This field is only currently supported for
+      indexes with MONGODB_COMPATIBLE_API ApiScope.
     shardCount: Optional. The number of shards for the index.
     state: Output only. The serving state of the index.
     unique: Optional. Whether it is an unique index. Unique index ensures all
@@ -3144,9 +3147,10 @@ class GoogleFirestoreAdminV1Index(_messages.Message):
   multikey = _messages.BooleanField(4)
   name = _messages.StringField(5)
   queryScope = _messages.EnumField('QueryScopeValueValuesEnum', 6)
-  shardCount = _messages.IntegerField(7, variant=_messages.Variant.INT32)
-  state = _messages.EnumField('StateValueValuesEnum', 8)
-  unique = _messages.BooleanField(9)
+  searchIndexOptions = _messages.MessageField('GoogleFirestoreAdminV1SearchIndexOptions', 7)
+  shardCount = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+  state = _messages.EnumField('StateValueValuesEnum', 9)
+  unique = _messages.BooleanField(10)
 
 
 class GoogleFirestoreAdminV1IndexConfig(_messages.Message):
@@ -3219,6 +3223,9 @@ class GoogleFirestoreAdminV1IndexField(_messages.Message):
       name of the field or may be omitted.
     order: Indicates that this field supports ordering by the specified order
       or comparing using =, !=, <, <=, >, >=.
+    searchConfig: Indicates that this field supports search operations. This
+      field is only currently supported for indexes with
+      MONGODB_COMPATIBLE_API ApiScope.
     vectorConfig: Indicates that this field supports nearest neighbor and
       distance operations on vector.
   """
@@ -3250,7 +3257,8 @@ class GoogleFirestoreAdminV1IndexField(_messages.Message):
   arrayConfig = _messages.EnumField('ArrayConfigValueValuesEnum', 1)
   fieldPath = _messages.StringField(2)
   order = _messages.EnumField('OrderValueValuesEnum', 3)
-  vectorConfig = _messages.MessageField('GoogleFirestoreAdminV1VectorConfig', 4)
+  searchConfig = _messages.MessageField('GoogleFirestoreAdminV1SearchConfig', 4)
+  vectorConfig = _messages.MessageField('GoogleFirestoreAdminV1VectorConfig', 5)
 
 
 class GoogleFirestoreAdminV1IndexOperationMetadata(_messages.Message):
@@ -3547,6 +3555,105 @@ class GoogleFirestoreAdminV1RestoreDatabaseRequest(_messages.Message):
   tags = _messages.MessageField('TagsValue', 4)
 
 
+class GoogleFirestoreAdminV1SearchConfig(_messages.Message):
+  r"""The configuration for how to index a field for search.
+
+  Fields:
+    geoSpec: Optional. The specification for building a geo search index for a
+      field.
+    textSpec: Optional. The specification for building a text search index for
+      a field.
+  """
+
+  geoSpec = _messages.MessageField('GoogleFirestoreAdminV1SearchGeoSpec', 1)
+  textSpec = _messages.MessageField('GoogleFirestoreAdminV1SearchTextSpec', 2)
+
+
+class GoogleFirestoreAdminV1SearchGeoSpec(_messages.Message):
+  r"""The specification for how to build a geo search index for a field.
+
+  Fields:
+    geoJsonIndexingDisabled: Optional. Disables geoJSON indexing for the
+      field. By default, geoJSON points are indexed.
+  """
+
+  geoJsonIndexingDisabled = _messages.BooleanField(1)
+
+
+class GoogleFirestoreAdminV1SearchIndexOptions(_messages.Message):
+  r"""Options for search indexes at the definition level.
+
+  Fields:
+    textLanguage: Optional. The language to use for text search indexes. Used
+      as the default language if not overridden at the document level by
+      specifying the `text_language_override_field`. The language is specified
+      as a BCP 47 language code. For indexes with MONGODB_COMPATIBLE_API
+      ApiScope: If unspecified, the default language is English. For indexes
+      with `ANY_API` ApiScope: If unspecified, the default behavior is
+      autodetect.
+    textLanguageOverrideFieldPath: Optional. The field in the document that
+      specifies which language to use for that specific document. For indexes
+      with MONGODB_COMPATIBLE_API ApiScope: if unspecified, the language is
+      taken from the "language" field if it exists or from `text_language` if
+      it does not.
+  """
+
+  textLanguage = _messages.StringField(1)
+  textLanguageOverrideFieldPath = _messages.StringField(2)
+
+
+class GoogleFirestoreAdminV1SearchTextIndexSpec(_messages.Message):
+  r"""Specification of how the field should be indexed for search text
+  indexes.
+
+  Enums:
+    IndexTypeValueValuesEnum: Required. How to index the text field value.
+    MatchTypeValueValuesEnum: Required. How to match the text field value.
+
+  Fields:
+    indexType: Required. How to index the text field value.
+    matchType: Required. How to match the text field value.
+  """
+
+  class IndexTypeValueValuesEnum(_messages.Enum):
+    r"""Required. How to index the text field value.
+
+    Values:
+      TEXT_INDEX_TYPE_UNSPECIFIED: The index type is unspecified. Not a valid
+        option.
+      TOKENIZED: Field values are tokenized. This is the only way currently
+        supported for MONGODB_COMPATIBLE_API.
+    """
+    TEXT_INDEX_TYPE_UNSPECIFIED = 0
+    TOKENIZED = 1
+
+  class MatchTypeValueValuesEnum(_messages.Enum):
+    r"""Required. How to match the text field value.
+
+    Values:
+      TEXT_MATCH_TYPE_UNSPECIFIED: The match type is unspecified. Not a valid
+        option.
+      MATCH_GLOBALLY: Match on any indexed field. This is the only way
+        currently supported for MONGODB_COMPATIBLE_API.
+    """
+    TEXT_MATCH_TYPE_UNSPECIFIED = 0
+    MATCH_GLOBALLY = 1
+
+  indexType = _messages.EnumField('IndexTypeValueValuesEnum', 1)
+  matchType = _messages.EnumField('MatchTypeValueValuesEnum', 2)
+
+
+class GoogleFirestoreAdminV1SearchTextSpec(_messages.Message):
+  r"""The specification for how to build a text search index for a field.
+
+  Fields:
+    indexSpecs: Required. Specifications for how the field should be indexed.
+      Repeated so that the field can be indexed in multiple ways.
+  """
+
+  indexSpecs = _messages.MessageField('GoogleFirestoreAdminV1SearchTextIndexSpec', 1, repeated=True)
+
+
 class GoogleFirestoreAdminV1SourceEncryptionOptions(_messages.Message):
   r"""The configuration options for using the same encryption method as the
   source.
@@ -3588,17 +3695,25 @@ class GoogleFirestoreAdminV1Stats(_messages.Message):
 
 class GoogleFirestoreAdminV1TtlConfig(_messages.Message):
   r"""The TTL (time-to-live) configuration for documents that have this
-  `Field` set. Storing a timestamp value into a TTL-enabled field will be
-  treated as the document's absolute expiration time. For Enterprise edition
-  databases, the timestamp value may also be stored in an array value in the
-  TTL-enabled field. Timestamp values in the past indicate that the document
-  is eligible for immediate expiration. Using any other data type or leaving
-  the field absent will disable expiration for the individual document.
+  `Field` set. A timestamp stored in a TTL-enabled field will be used to
+  determine the expiration time of the document. The expiration time is the
+  sum of the timestamp value and the `expiration_offset`. For Enterprise
+  edition databases, the timestamp value may alternatively be stored in an
+  array value in the TTL-enabled field. An expiration time in the past
+  indicates that the document is eligible for immediate expiration. Using any
+  other data type or leaving the field absent will disable expiration for the
+  individual document.
 
   Enums:
     StateValueValuesEnum: Output only. The state of the TTL configuration.
 
   Fields:
+    expirationOffset: Optional. The offset, relative to the timestamp value
+      from the TTL-enabled field, used to determine the document's expiration
+      time. `expiration_offset.seconds` must be between 0 and 2,147,483,647
+      inclusive. Values more precise than seconds are rejected. If unset,
+      defaults to 0, in which case the expiration time is the same as the
+      timestamp value from the TTL-enabled field.
     state: Output only. The state of the TTL configuration.
   """
 
@@ -3623,7 +3738,8 @@ class GoogleFirestoreAdminV1TtlConfig(_messages.Message):
     ACTIVE = 2
     NEEDS_REPAIR = 3
 
-  state = _messages.EnumField('StateValueValuesEnum', 1)
+  expirationOffset = _messages.StringField(1)
+  state = _messages.EnumField('StateValueValuesEnum', 2)
 
 
 class GoogleFirestoreAdminV1TtlConfigDelta(_messages.Message):
@@ -3635,6 +3751,8 @@ class GoogleFirestoreAdminV1TtlConfigDelta(_messages.Message):
 
   Fields:
     changeType: Specifies how the TTL configuration is changing.
+    expirationOffset: The offset, relative to the timestamp value in the TTL-
+      enabled field, used determine the document's expiration time.
   """
 
   class ChangeTypeValueValuesEnum(_messages.Enum):
@@ -3650,6 +3768,7 @@ class GoogleFirestoreAdminV1TtlConfigDelta(_messages.Message):
     REMOVE = 2
 
   changeType = _messages.EnumField('ChangeTypeValueValuesEnum', 1)
+  expirationOffset = _messages.StringField(2)
 
 
 class GoogleFirestoreAdminV1UpdateDatabaseMetadata(_messages.Message):

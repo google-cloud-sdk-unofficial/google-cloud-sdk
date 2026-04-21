@@ -234,7 +234,7 @@ class UpdateBeta(base.UpdateCommand):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class UpdateGa(base.UpdateCommand):
   """Update a gRPC with TLS health check."""
 

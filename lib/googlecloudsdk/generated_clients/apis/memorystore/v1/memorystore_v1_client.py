@@ -13,7 +13,7 @@ class MemorystoreV1(base_api.BaseApiClient):
   MTLS_BASE_URL = 'https://memorystore.mtls.googleapis.com/'
 
   _PACKAGE = 'memorystore'
-  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform']
+  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/memorystore.read-only', 'https://www.googleapis.com/auth/memorystore.read-write']
   _VERSION = 'v1'
   _CLIENT_ID = 'CLIENT_ID'
   _CLIENT_SECRET = 'CLIENT_SECRET'
@@ -40,6 +40,8 @@ class MemorystoreV1(base_api.BaseApiClient):
     self.projects_locations_aclPolicies = self.ProjectsLocationsAclPoliciesService(self)
     self.projects_locations_backupCollections_backups = self.ProjectsLocationsBackupCollectionsBackupsService(self)
     self.projects_locations_backupCollections = self.ProjectsLocationsBackupCollectionsService(self)
+    self.projects_locations_instances_tokenAuthUsers_authTokens = self.ProjectsLocationsInstancesTokenAuthUsersAuthTokensService(self)
+    self.projects_locations_instances_tokenAuthUsers = self.ProjectsLocationsInstancesTokenAuthUsersService(self)
     self.projects_locations_instances = self.ProjectsLocationsInstancesService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
@@ -372,6 +374,215 @@ class MemorystoreV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsInstancesTokenAuthUsersAuthTokensService(base_api.BaseApiService):
+    """Service class for the projects_locations_instances_tokenAuthUsers_authTokens resource."""
+
+    _NAME = 'projects_locations_instances_tokenAuthUsers_authTokens'
+
+    def __init__(self, client):
+      super(MemorystoreV1.ProjectsLocationsInstancesTokenAuthUsersAuthTokensService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a token for a user of a token based auth enabled instance.
+
+      Args:
+        request: (MemorystoreProjectsLocationsInstancesTokenAuthUsersAuthTokensDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}/tokenAuthUsers/{tokenAuthUsersId}/authTokens/{authTokensId}',
+        http_method='DELETE',
+        method_id='memorystore.projects.locations.instances.tokenAuthUsers.authTokens.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='MemorystoreProjectsLocationsInstancesTokenAuthUsersAuthTokensDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets a token based auth enabled instance's auth token for a given user.
+
+      Args:
+        request: (MemorystoreProjectsLocationsInstancesTokenAuthUsersAuthTokensGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AuthToken) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}/tokenAuthUsers/{tokenAuthUsersId}/authTokens/{authTokensId}',
+        http_method='GET',
+        method_id='memorystore.projects.locations.instances.tokenAuthUsers.authTokens.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='MemorystoreProjectsLocationsInstancesTokenAuthUsersAuthTokensGetRequest',
+        response_type_name='AuthToken',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists all the auth tokens for a specific token auth user.
+
+      Args:
+        request: (MemorystoreProjectsLocationsInstancesTokenAuthUsersAuthTokensListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListAuthTokensResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}/tokenAuthUsers/{tokenAuthUsersId}/authTokens',
+        http_method='GET',
+        method_id='memorystore.projects.locations.instances.tokenAuthUsers.authTokens.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/authTokens',
+        request_field='',
+        request_type_name='MemorystoreProjectsLocationsInstancesTokenAuthUsersAuthTokensListRequest',
+        response_type_name='ListAuthTokensResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsInstancesTokenAuthUsersService(base_api.BaseApiService):
+    """Service class for the projects_locations_instances_tokenAuthUsers resource."""
+
+    _NAME = 'projects_locations_instances_tokenAuthUsers'
+
+    def __init__(self, client):
+      super(MemorystoreV1.ProjectsLocationsInstancesTokenAuthUsersService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def AddAuthToken(self, request, global_params=None):
+      r"""Adds a token for a user of a token based auth enabled instance.
+
+      Args:
+        request: (MemorystoreProjectsLocationsInstancesTokenAuthUsersAddAuthTokenRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('AddAuthToken')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    AddAuthToken.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}/tokenAuthUsers/{tokenAuthUsersId}:addAuthToken',
+        http_method='POST',
+        method_id='memorystore.projects.locations.instances.tokenAuthUsers.addAuthToken',
+        ordered_params=['tokenAuthUser'],
+        path_params=['tokenAuthUser'],
+        query_params=[],
+        relative_path='v1/{+tokenAuthUser}:addAuthToken',
+        request_field='addAuthTokenRequest',
+        request_type_name='MemorystoreProjectsLocationsInstancesTokenAuthUsersAddAuthTokenRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a token auth user for a token based auth enabled instance.
+
+      Args:
+        request: (MemorystoreProjectsLocationsInstancesTokenAuthUsersDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}/tokenAuthUsers/{tokenAuthUsersId}',
+        http_method='DELETE',
+        method_id='memorystore.projects.locations.instances.tokenAuthUsers.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['force', 'requestId'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='MemorystoreProjectsLocationsInstancesTokenAuthUsersDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets a specific token auth user for a token based auth enabled instance.
+
+      Args:
+        request: (MemorystoreProjectsLocationsInstancesTokenAuthUsersGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TokenAuthUser) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}/tokenAuthUsers/{tokenAuthUsersId}',
+        http_method='GET',
+        method_id='memorystore.projects.locations.instances.tokenAuthUsers.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='MemorystoreProjectsLocationsInstancesTokenAuthUsersGetRequest',
+        response_type_name='TokenAuthUser',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists all the token auth users for a token based auth enabled instance.
+
+      Args:
+        request: (MemorystoreProjectsLocationsInstancesTokenAuthUsersListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListTokenAuthUsersResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}/tokenAuthUsers',
+        http_method='GET',
+        method_id='memorystore.projects.locations.instances.tokenAuthUsers.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/tokenAuthUsers',
+        request_field='',
+        request_type_name='MemorystoreProjectsLocationsInstancesTokenAuthUsersListRequest',
+        response_type_name='ListTokenAuthUsersResponse',
+        supports_download=False,
+    )
+
   class ProjectsLocationsInstancesService(base_api.BaseApiService):
     """Service class for the projects_locations_instances resource."""
 
@@ -381,6 +592,33 @@ class MemorystoreV1(base_api.BaseApiClient):
       super(MemorystoreV1.ProjectsLocationsInstancesService, self).__init__(client)
       self._upload_configs = {
           }
+
+    def AddTokenAuthUser(self, request, global_params=None):
+      r"""Adds a token auth user for a token based auth enabled instance.
+
+      Args:
+        request: (MemorystoreProjectsLocationsInstancesAddTokenAuthUserRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('AddTokenAuthUser')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    AddTokenAuthUser.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}:addTokenAuthUser',
+        http_method='POST',
+        method_id='memorystore.projects.locations.instances.addTokenAuthUser',
+        ordered_params=['instance'],
+        path_params=['instance'],
+        query_params=[],
+        relative_path='v1/{+instance}:addTokenAuthUser',
+        request_field='addTokenAuthUserRequest',
+        request_type_name='MemorystoreProjectsLocationsInstancesAddTokenAuthUserRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
 
     def Backup(self, request, global_params=None):
       r"""Backup Instance. If this is the first time a backup is being created, a backup collection will be created at the backend, and this backup belongs to this collection. Both collection and backup will have a resource name. Backup will be executed for each shard. A replica (primary if nonHA) will be selected to perform the execution. Backup call will be rejected if there is an ongoing backup or update operation. Be aware that during preview, if the instance's internal software version is too old, critical update will be performed before actual backup. Once the internal software version is updated to the minimum version required by the backup feature, subsequent backups will not require critical update. After preview, there will be no critical update needed for backup.

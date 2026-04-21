@@ -172,7 +172,7 @@ def _CheckForExistingImage(
     raise exceptions.InvalidArgumentException(arg_name, message)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.Deprecate(
     is_removed=False,
     warning=(

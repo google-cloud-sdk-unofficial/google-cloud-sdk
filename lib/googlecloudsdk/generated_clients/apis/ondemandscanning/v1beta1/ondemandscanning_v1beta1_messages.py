@@ -12,6 +12,19 @@ from apitools.base.py import extra_types
 package = 'ondemandscanning'
 
 
+class AISkillAnalysisOccurrence(_messages.Message):
+  r"""AISkillAnalysisOccurrence provides the results of an AI-based skill
+  analysis.
+
+  Fields:
+    findings: Findings produced by the analysis.
+    skillName: Name of the skill that produced this analysis.
+  """
+
+  findings = _messages.MessageField('Finding', 1, repeated=True)
+  skillName = _messages.StringField(2)
+
+
 class AliasContext(_messages.Message):
   r"""An alias to a repo revision.
 
@@ -937,10 +950,38 @@ class FileLocation(_messages.Message):
     filePath: For jars that are contained inside .war files, this filepath can
       indicate the path to war file combined with the path to jar file.
     layerDetails: A LayerDetails attribute.
+    lineNumber: Line number in the file where the package is found. Applies
+      only to source repository scanning. Note: this field is marked as
+      `optional` in other corresponding protos, but in edition 2023, the
+      "optional" keyword is redundant.
   """
 
   filePath = _messages.StringField(1)
   layerDetails = _messages.MessageField('LayerDetails', 2)
+  lineNumber = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+
+
+class Finding(_messages.Message):
+  r"""Finding provides details for a single finding within an
+  AISkillAnalysisOccurrence.
+
+  Fields:
+    category: Category of the finding.
+    description: Detailed description of the finding.
+    filePath: Path to the file where the finding was detected.
+    ruleId: Unique identifier of the rule that produced this finding.
+    severity: Severity of the finding.
+    snippet: Code snippet relevant to the finding.
+    title: Title of the finding.
+  """
+
+  category = _messages.StringField(1)
+  description = _messages.StringField(2)
+  filePath = _messages.StringField(3)
+  ruleId = _messages.StringField(4)
+  severity = _messages.StringField(5)
+  snippet = _messages.StringField(6)
+  title = _messages.StringField(7)
 
 
 class Fingerprint(_messages.Message):
@@ -1623,6 +1664,8 @@ class Occurrence(_messages.Message):
       list requests.
 
   Fields:
+    advisoryPublishTime: The time this advisory was published by the source.
+    aiSkillAnalysis: Describes an AI skill analysis.
     attestation: Describes an attestation of an artifact.
     build: Describes a verifiable build.
     compliance: Describes a compliance violation on a linked resource.
@@ -1675,6 +1718,7 @@ class Occurrence(_messages.Message):
       VULNERABILITY_ASSESSMENT: This represents a Vulnerability Assessment.
       SBOM_REFERENCE: This represents an SBOM Reference.
       SECRET: This represents a secret.
+      AI_SKILL_ANALYSIS: This represents an AI skill analysis.
     """
     NOTE_KIND_UNSPECIFIED = 0
     VULNERABILITY = 1
@@ -1690,27 +1734,30 @@ class Occurrence(_messages.Message):
     VULNERABILITY_ASSESSMENT = 11
     SBOM_REFERENCE = 12
     SECRET = 13
+    AI_SKILL_ANALYSIS = 14
 
-  attestation = _messages.MessageField('AttestationOccurrence', 1)
-  build = _messages.MessageField('BuildOccurrence', 2)
-  compliance = _messages.MessageField('ComplianceOccurrence', 3)
-  createTime = _messages.StringField(4)
-  deployment = _messages.MessageField('DeploymentOccurrence', 5)
-  discovery = _messages.MessageField('DiscoveryOccurrence', 6)
-  dsseAttestation = _messages.MessageField('DSSEAttestationOccurrence', 7)
-  envelope = _messages.MessageField('Envelope', 8)
-  image = _messages.MessageField('ImageOccurrence', 9)
-  kind = _messages.EnumField('KindValueValuesEnum', 10)
-  name = _messages.StringField(11)
-  noteName = _messages.StringField(12)
-  package = _messages.MessageField('PackageOccurrence', 13)
-  remediation = _messages.StringField(14)
-  resourceUri = _messages.StringField(15)
-  sbomReference = _messages.MessageField('SBOMReferenceOccurrence', 16)
-  secret = _messages.MessageField('SecretOccurrence', 17)
-  updateTime = _messages.StringField(18)
-  upgrade = _messages.MessageField('UpgradeOccurrence', 19)
-  vulnerability = _messages.MessageField('VulnerabilityOccurrence', 20)
+  advisoryPublishTime = _messages.StringField(1)
+  aiSkillAnalysis = _messages.MessageField('AISkillAnalysisOccurrence', 2)
+  attestation = _messages.MessageField('AttestationOccurrence', 3)
+  build = _messages.MessageField('BuildOccurrence', 4)
+  compliance = _messages.MessageField('ComplianceOccurrence', 5)
+  createTime = _messages.StringField(6)
+  deployment = _messages.MessageField('DeploymentOccurrence', 7)
+  discovery = _messages.MessageField('DiscoveryOccurrence', 8)
+  dsseAttestation = _messages.MessageField('DSSEAttestationOccurrence', 9)
+  envelope = _messages.MessageField('Envelope', 10)
+  image = _messages.MessageField('ImageOccurrence', 11)
+  kind = _messages.EnumField('KindValueValuesEnum', 12)
+  name = _messages.StringField(13)
+  noteName = _messages.StringField(14)
+  package = _messages.MessageField('PackageOccurrence', 15)
+  remediation = _messages.StringField(16)
+  resourceUri = _messages.StringField(17)
+  sbomReference = _messages.MessageField('SBOMReferenceOccurrence', 18)
+  secret = _messages.MessageField('SecretOccurrence', 19)
+  updateTime = _messages.StringField(20)
+  upgrade = _messages.MessageField('UpgradeOccurrence', 21)
+  vulnerability = _messages.MessageField('VulnerabilityOccurrence', 22)
 
 
 class OndemandscanningProjectsLocationsOperationsCancelRequest(_messages.Message):

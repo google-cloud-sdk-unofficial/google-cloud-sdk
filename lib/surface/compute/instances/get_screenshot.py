@@ -38,7 +38,9 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.BETA, base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW
+)
 class GetScreenshot(base.Command):
   """Capture a screenshot (JPEG image) of the virtual machine instance's display."""
 

@@ -22,7 +22,10 @@ from googlecloudsdk.command_lib.compute.addresses import flags
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
 )
 class Move(base.SilentCommand):
   """Move an address to another project.

@@ -14,7 +14,6 @@
 # limitations under the License.
 """Command for creating URL maps."""
 
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
@@ -28,7 +27,8 @@ from googlecloudsdk.command_lib.compute.url_maps import url_maps_utils
 def _DetailedHelp():
   return {
       'brief': 'Create a URL map.',
-      'DESCRIPTION': """
+      'DESCRIPTION': (
+          """
       *{command}* is used to create URL maps which map HTTP and
       HTTPS request URLs to backend services and backend buckets.
       Mappings are done using a longest-match strategy.
@@ -47,8 +47,10 @@ def _DetailedHelp():
       after the map is created by using `gcloud compute url-maps edit`
       or by using `gcloud compute url-maps add-path-matcher`
       and `gcloud compute url-maps add-host-rule`.
-      """,
-      'EXAMPLES': """
+      """
+      ),
+      'EXAMPLES': (
+          """
         To create a global URL map with a default service, run:
 
         $ {command} URL_MAP_NAME --default-service=BACKEND_SERVICE_NAME
@@ -60,7 +62,8 @@ def _DetailedHelp():
         To create a global URL map with a default backend bucket, run:
 
         $ {command} URL_MAP_NAME --default-backend-bucket=BACKEND_BUCKET_NAME
-      """,
+      """
+      ),
   }
 
 
@@ -119,14 +122,7 @@ def _MakeRegionalRequest(args, url_map_ref, default_backend_uri, client):
   )
 
 
-def _Run(
-    args,
-    holder,
-    backend_bucket_arg,
-    backend_service_arg,
-    url_map_arg,
-    supports_regional_backend_bucket=False,
-):
+def _Run(args, holder, backend_bucket_arg, backend_service_arg, url_map_arg):
   """Issues requests necessary to create a Url Map."""
   client = holder.client
 
@@ -142,14 +138,9 @@ def _Run(
         args, backend_service_arg, url_map_ref, holder.resources
     ).SelfLink()
   else:
-    if supports_regional_backend_bucket:
-      default_backend_uri = url_maps_utils.ResolveUrlMapDefaultBackendBucket(
-          args, backend_bucket_arg, url_map_ref, holder.resources
-      ).SelfLink()
-    else:
-      default_backend_uri = backend_bucket_arg.ResolveAsResource(
-          args, holder.resources
-      ).SelfLink()
+    default_backend_uri = url_maps_utils.ResolveUrlMapDefaultBackendBucket(
+        args, backend_bucket_arg, url_map_ref, holder.resources
+    ).SelfLink()
 
   if url_maps_utils.IsGlobalUrlMapRef(url_map_ref):
     return _MakeGlobalRequest(args, url_map_ref, default_backend_uri, client)
@@ -157,12 +148,11 @@ def _Run(
     return _MakeRegionalRequest(args, url_map_ref, default_backend_uri, client)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class Create(base.CreateCommand):
   """Create a URL map."""
 
-  _supports_regional_backend_bucket = False
   detailed_help = _DetailedHelp()
   BACKEND_BUCKET_ARG = None
   BACKEND_SERVICE_ARG = None
@@ -171,16 +161,11 @@ class Create(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    if cls._supports_regional_backend_bucket:
-      cls.BACKEND_BUCKET_ARG = (
-          backend_bucket_flags.RegionSupportingBackendBucketArgumentForUrlMap(
-              required=False
-          )
-      )
-    else:
-      cls.BACKEND_BUCKET_ARG = (
-          backend_bucket_flags.BackendBucketArgumentForUrlMap(required=False)
-      )
+    cls.BACKEND_BUCKET_ARG = (
+        backend_bucket_flags.RegionSupportingBackendBucketArgumentForUrlMap(
+            required=False
+        )
+    )
     cls.BACKEND_SERVICE_ARG = (
         backend_service_flags.BackendServiceArgumentForUrlMap(required=False)
     )
@@ -196,7 +181,6 @@ class Create(base.CreateCommand):
         self.BACKEND_BUCKET_ARG,
         self.BACKEND_SERVICE_ARG,
         self.URL_MAP_ARG,
-        self._supports_regional_backend_bucket,
     )
 
 
@@ -205,12 +189,12 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
   """Create a URL map."""
 
-  _supports_regional_backend_bucket = True
+  pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.UniverseCompatible
-class CreateAlpha(Create):
+class CreateAlpha(CreateBeta):
   """Create a URL map."""
 
-  _supports_regional_backend_bucket = True
+  pass

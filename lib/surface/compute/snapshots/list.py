@@ -58,7 +58,7 @@ def _AlphaArgs(parser):
   lister.AddMultiScopeListerFlags(parser, global_=True, regional=True)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class List(base.ListCommand):
   """List Compute Engine snapshots."""

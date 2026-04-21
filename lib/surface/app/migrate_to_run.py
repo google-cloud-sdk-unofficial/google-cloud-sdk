@@ -35,6 +35,42 @@ from googlecloudsdk.core import properties
 from surface.run import deploy
 
 
+def _parse_labels(labels_str: str) -> Mapping[str, str]:
+  """Parses a 'labels' string and converts it into an OrderedDict.
+
+  Args:
+      labels_str: A string in the format of 'key1=value1,key2=value2'.
+
+  Returns:
+      An OrderedDict containing the labels.
+  """
+  if not labels_str:
+    return collections.OrderedDict()
+
+  return collections.OrderedDict(
+      pair.split('=', 1) for pair in labels_str.split(',') if '=' in pair
+  )
+
+
+def _parse_set_env_vars(
+    env_vars_str: str,
+) -> Mapping[str, str]:
+  """Parses a 'set-env-vars' string and converts it into an OrderedDict.
+
+  Args:
+      env_vars_str: A string in the format of "KEY1=VALUE1,KEY2=VALUE2".
+
+  Returns:
+      An OrderedDict containing the environment variables.
+  """
+  if not env_vars_str:
+    return collections.OrderedDict()
+
+  return collections.OrderedDict(
+      pair.split('=', 1) for pair in env_vars_str.split(',') if '=' in pair
+  )
+
+
 class _HiddenParserProxy:
   """Proxy for calliope parser that sets hidden=True for all added arguments."""
 
@@ -271,45 +307,71 @@ class AppEngineToCloudRun(deploy.Deploy):
         command_str = command_str.replace('--', '')
         # TODO: b/445905035 - Use ArgDict type for args to simplify the parsing
         # logic
-        command_args = command_str.split('=')
-        command_args[0] = command_args[0].replace('-', '_')
-        self._migration_flags.append(command_args[0])
-        if command_args[0] == 'labels':
-          args.__setattr__(
-              command_args[0],
-              {
-                  'migrated-from': 'app-engine',
-                  'migration-tool': 'gcloud-app-migrate-standard-v1',
-              },
+        parts = command_str.split('=', 1)
+        flag_name = parts[0].replace('-', '_')
+        self._migration_flags.append(flag_name)
+        flag_value = parts[1] if len(parts) > 1 else None
+        if flag_name == 'labels':
+          label_value = parts[1] if len(parts) > 1 else ''
+          setattr(args, flag_name, _parse_labels(label_value))
+          continue
+        if flag_name == 'image':
+          setattr(args, flag_name, flag_value)
+          continue
+        if flag_name == 'set_env_vars':
+          env_vars_value = parts[1] if len(parts) > 1 else ''
+          setattr(
+              args, flag_name, _parse_set_env_vars(env_vars_value.strip('"'))
           )
           continue
-        if command_args[0] == 'image':
-          setattr(args, command_args[0], command_args[1])
+        if flag_name == 'timeout':
+          if flag_value == '600':
+            setattr(args, flag_name, 600)
+          elif flag_value == '3600':
+            setattr(args, flag_name, 3600)
           continue
-        if command_args[0] == 'set_env_vars':
-          args.__setattr__(
-              command_args[0], self._parse_set_env_vars(command_str)
+        if flag_name == 'min_instances':
+          setattr(args, flag_name, flags.ScaleValue(flag_value))
+          continue
+        if flag_name == 'max_instances':
+          setattr(args, flag_name, flags.ScaleValue(flag_value))
+          continue
+        if flag_name in ['liveness_probe', 'readiness_probe']:
+          setattr(args, flag_name, self._parse_dict_string(flag_value))
+          continue
+        if flag_name == 'scaling':
+          setattr(args, flag_name, flags.ScalingValue(flag_value))
+          continue
+        if flag_name in ['add_volume', 'add_volume_mount']:
+          current_value = getattr(args, flag_name, None)
+          if current_value is None:
+            setattr(args, flag_name, [])
+          getattr(args, flag_name).append(
+              self._parse_dict_string(flag_value)
           )
           continue
-        if command_args[0] == 'timeout':
-          if command_args[1] == '600':
-            args.__setattr__(command_args[0], 600)
-          elif command_args[1] == '3600':
-            args.__setattr__(command_args[0], 3600)
+        if flag_name == 'network_tags':
+          setattr(args, flag_name, flag_value.split(',') if flag_value else [])
           continue
-        if command_args[0] == 'min_instances':
-          args.__setattr__(command_args[0], flags.ScaleValue(command_args[1]))
+        if flag_name == 'ingress':
+          setattr(args, flag_name, flag_value)
           continue
-        if command_args[0] == 'max_instances':
-          args.__setattr__(command_args[0], flags.ScaleValue(command_args[1]))
+        if flag_name == 'network':
+          setattr(args, flag_name, flag_value)
           continue
-        if command_args[0] == 'scaling':
-          args.__setattr__(command_args[0], flags.ScalingValue(command_args[1]))
+        if flag_name == 'subnet':
+          setattr(args, flag_name, flag_value)
           continue
-        if len(command_args) > 1:
-          args.__setattr__(command_args[0], command_args[1])
+        if flag_name == 'session_affinity':
+          setattr(args, flag_name, True)
+          continue
+        if flag_name == 'port':
+          setattr(args, flag_name, flag_value)
+          continue
+        if flag_value is not None:
+          setattr(args, flag_name, flag_value)
         else:
-          args.__setattr__(command_args[0], True)
+          setattr(args, flag_name, True)
     return
 
   def _print_migration_summary(self, args):
@@ -340,6 +402,19 @@ class AppEngineToCloudRun(deploy.Deploy):
           f' run deploy {service} --source=.'
           f' --region={region} --project={project}"\n'
       )
+
+  def _parse_dict_string(self, value_str: str) -> dict[str, str]:
+    """Parses a comma-separated key=value string into a dictionary.
+
+    Args:
+        value_str: A string in the format of 'key1=val1,key2=val2'.
+
+    Returns:
+        A dictionary containing the parsed key-value pairs.
+    """
+    return dict(
+        pair.split('=', 1) for pair in value_str.split(',') if '=' in pair
+    )
 
   def _parse_set_env_vars(
       self, input_str: str

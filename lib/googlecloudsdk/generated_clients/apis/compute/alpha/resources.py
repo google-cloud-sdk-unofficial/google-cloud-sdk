@@ -483,6 +483,13 @@ class Collections(enum.Enum):
       ['project', 'previewFeature'],
       True
   )
+  PROJECTVIEWS = (
+      'projectViews',
+      'projects/{project}/regions/{region}/projectViews',
+      {},
+      ['project', 'region'],
+      True
+  )
   PROJECTS = (
       'projects',
       'projects/{project}',

@@ -49,7 +49,7 @@ def _RunCreate(compute_api, args):
   return compute_api.client.MakeRequests([(service, 'Insert', create_request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class Create(base.CreateCommand):
   """Create a Compute Engine reservation."""

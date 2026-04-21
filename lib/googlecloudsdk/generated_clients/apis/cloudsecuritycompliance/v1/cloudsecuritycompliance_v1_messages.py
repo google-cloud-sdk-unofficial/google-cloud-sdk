@@ -149,9 +149,9 @@ class CloudControl(_messages.Message):
       findings. The maximum length is 255 characters.
     majorRevisionId: Output only. The major version of the cloud control,
       which is incremented in ascending order.
-    name: Required. Identifier. The name of the cloud control, in the format `
-      organizations/{organization}/locations/{location}/cloudControls/{cloud_c
-      ontrol}` or
+    name: Required. Identifier. ## The name of the cloud control, in either of
+      the formats: ## `organizations/{organization}/locations/{location}/cloud
+      Controls/{cloud_control}`
       `projects/{project}/locations/{location}/cloudControls/{cloud_control}`.
       The only supported location is `global`.
     parameterSpec: Optional. The parameter specifications for the cloud
@@ -1047,9 +1047,10 @@ class CloudsecuritycomplianceOrganizationsLocationsCloudControlsCreateRequest(_m
     cloudControlId: Required. The identifier for the cloud control, which is
       the last segment of the cloud control name. The format is
       `^a-zA-Z{0,61}[a-zA-Z0-9]$`.
-    parent: Required. The parent resource name, in the format
-      `organizations/{organization}/locations/{location}`. The only supported
-      location is `global`.
+    parent: Required. The parent resource name, in either of the formats: -
+      `organizations/{organization}/locations/{location}`. -
+      `projects/{project}/locations/{location}`. The only supported location
+      is `global`.
   """
 
   cloudControl = _messages.MessageField('CloudControl', 1)
@@ -1063,9 +1064,11 @@ class CloudsecuritycomplianceOrganizationsLocationsCloudControlsDeleteRequest(_m
   object.
 
   Fields:
-    name: Required. The name of the cloud control to delete, in the format `or
-      ganizations/{organization}/locations/{location}/CloudControls/{CloudCont
-      rol}`. The only supported location is `global`.
+    name: Required. ## The name of the cloud control to delete, in either of
+      the formats: `organizations/{organization}/locations/{location}/CloudCon
+      trols/{CloudControl}`. -
+      `projects/{project}/locations/{location}/CloudControls/{CloudControl}`.
+      The only supported location is `global`.
   """
 
   name = _messages.StringField(1, required=True)
@@ -1079,9 +1082,11 @@ class CloudsecuritycomplianceOrganizationsLocationsCloudControlsGetRequest(_mess
     majorRevisionId: Optional. The major version of the cloud control to
       retrieve. If not specified, the most recently updated `revision_id` is
       retrieved.
-    name: Required. The name of the cloud control to retrieve, in the format `
-      organizations/{organization}/locations/{location}/cloudControls/{cloud_c
-      ontrol}`. The only supported location is `global`.
+    name: Required. ## The name of the cloud control to retrieve, in either of
+      the formats: `organizations/{organization}/locations/{location}/cloudCon
+      trols/{cloud_control}` -
+      `projects/{project}/locations/{location}/cloudControls/{cloud_control}`.
+      The only supported location is `global`.
   """
 
   majorRevisionId = _messages.IntegerField(1)
@@ -1101,9 +1106,10 @@ class CloudsecuritycomplianceOrganizationsLocationsCloudControlsListRequest(_mes
       page of results. When paginating, the parent that you provide to the
       ListCloudControls request must match the call that provided the page
       token.
-    parent: Required. The parent resource name, in the format
-      `organizations/{organization}/locations/{location}`. The only supported
-      location is `global`.
+    parent: Required. The parent resource name, in either of the formats: -
+      `organizations/{organization}/locations/{location}` -
+      `projects/{project}/locations/{location}`. The only supported location
+      is `global`.
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -1117,9 +1123,9 @@ class CloudsecuritycomplianceOrganizationsLocationsCloudControlsPatchRequest(_me
 
   Fields:
     cloudControl: A CloudControl resource to be passed as the request body.
-    name: Required. Identifier. The name of the cloud control, in the format `
-      organizations/{organization}/locations/{location}/cloudControls/{cloud_c
-      ontrol}` or
+    name: Required. Identifier. ## The name of the cloud control, in either of
+      the formats: ## `organizations/{organization}/locations/{location}/cloud
+      Controls/{cloud_control}`
       `projects/{project}/locations/{location}/cloudControls/{cloud_control}`.
       The only supported location is `global`.
     updateMask: Optional. Use a field mask to specify the fields to be
@@ -1460,9 +1466,10 @@ class CloudsecuritycomplianceOrganizationsLocationsFrameworksCreateRequest(_mess
     frameworkId: Required. The identifier (ID) of the framework. The ID is not
       the full name of the framework; it's the last part of the full name of
       the framework.
-    parent: Required. The parent resource name, in the format
-      `organizations/{organization}/locations/{location}`. The only supported
-      location is `global`.
+    parent: Required. The parent resource name, in either of the formats: -
+      `organizations/{organization}/locations/{location}` -
+      `projects/{project}/locations/{location}`. The only supported location
+      is `global`.
   """
 
   framework = _messages.MessageField('Framework', 1)
@@ -1475,9 +1482,10 @@ class CloudsecuritycomplianceOrganizationsLocationsFrameworksDeleteRequest(_mess
   object.
 
   Fields:
-    name: Required. The name of the resource, in the format `organizations/{or
-      ganization}/locations/{location}/frameworks/{framework}`. The only
-      supported location is `global`.
+    name: Required. ## The name of the resource, in either of the formats:
+      `organizations/{organization}/locations/{location}/frameworks/{framework
+      }` - `projects/{project}/locations/{location}/frameworks/{framework}`
+      The only supported location is `global`.
   """
 
   name = _messages.StringField(1, required=True)
@@ -1719,6 +1727,109 @@ class CloudsecuritycomplianceProjectsLocationsCloudControlDeploymentsListRequest
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   parent = _messages.StringField(5, required=True)
+
+
+class CloudsecuritycomplianceProjectsLocationsCloudControlsCreateRequest(_messages.Message):
+  r"""A CloudsecuritycomplianceProjectsLocationsCloudControlsCreateRequest
+  object.
+
+  Fields:
+    cloudControl: A CloudControl resource to be passed as the request body.
+    cloudControlId: Required. The identifier for the cloud control, which is
+      the last segment of the cloud control name. The format is
+      `^a-zA-Z{0,61}[a-zA-Z0-9]$`.
+    parent: Required. The parent resource name, in either of the formats: -
+      `organizations/{organization}/locations/{location}`. -
+      `projects/{project}/locations/{location}`. The only supported location
+      is `global`.
+  """
+
+  cloudControl = _messages.MessageField('CloudControl', 1)
+  cloudControlId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class CloudsecuritycomplianceProjectsLocationsCloudControlsDeleteRequest(_messages.Message):
+  r"""A CloudsecuritycomplianceProjectsLocationsCloudControlsDeleteRequest
+  object.
+
+  Fields:
+    name: Required. ## The name of the cloud control to delete, in either of
+      the formats: `organizations/{organization}/locations/{location}/CloudCon
+      trols/{CloudControl}`. -
+      `projects/{project}/locations/{location}/CloudControls/{CloudControl}`.
+      The only supported location is `global`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class CloudsecuritycomplianceProjectsLocationsCloudControlsGetRequest(_messages.Message):
+  r"""A CloudsecuritycomplianceProjectsLocationsCloudControlsGetRequest
+  object.
+
+  Fields:
+    majorRevisionId: Optional. The major version of the cloud control to
+      retrieve. If not specified, the most recently updated `revision_id` is
+      retrieved.
+    name: Required. ## The name of the cloud control to retrieve, in either of
+      the formats: `organizations/{organization}/locations/{location}/cloudCon
+      trols/{cloud_control}` -
+      `projects/{project}/locations/{location}/cloudControls/{cloud_control}`.
+      The only supported location is `global`.
+  """
+
+  majorRevisionId = _messages.IntegerField(1)
+  name = _messages.StringField(2, required=True)
+
+
+class CloudsecuritycomplianceProjectsLocationsCloudControlsListRequest(_messages.Message):
+  r"""A CloudsecuritycomplianceProjectsLocationsCloudControlsListRequest
+  object.
+
+  Fields:
+    pageSize: Optional. The maximum number of cloud controls to return. The
+      default value is `500`. If you exceed the maximum value of `1000`, then
+      the service uses the maximum value.
+    pageToken: Optional. A pagination token that's returned from a previous
+      request to list cloud controls. Provide this token to retrieve the next
+      page of results. When paginating, the parent that you provide to the
+      ListCloudControls request must match the call that provided the page
+      token.
+    parent: Required. The parent resource name, in either of the formats: -
+      `organizations/{organization}/locations/{location}` -
+      `projects/{project}/locations/{location}`. The only supported location
+      is `global`.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class CloudsecuritycomplianceProjectsLocationsCloudControlsPatchRequest(_messages.Message):
+  r"""A CloudsecuritycomplianceProjectsLocationsCloudControlsPatchRequest
+  object.
+
+  Fields:
+    cloudControl: A CloudControl resource to be passed as the request body.
+    name: Required. Identifier. ## The name of the cloud control, in either of
+      the formats: ## `organizations/{organization}/locations/{location}/cloud
+      Controls/{cloud_control}`
+      `projects/{project}/locations/{location}/cloudControls/{cloud_control}`.
+      The only supported location is `global`.
+    updateMask: Optional. Use a field mask to specify the fields to be
+      overwritten in the cloud control during the update. The fields that you
+      specify in the `update_mask` are relative to the cloud control, not the
+      full request. A field is overwritten if it is in the mask. If you don't
+      provide a mask, all fields in the request are updated. You can update
+      the following fields: - Display name - Description - Parameters - Rules
+      - Parameter specification
+  """
+
+  cloudControl = _messages.MessageField('CloudControl', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
 
 
 class CloudsecuritycomplianceProjectsLocationsCmEnrollmentCalculateRequest(_messages.Message):
@@ -2033,6 +2144,40 @@ class CloudsecuritycomplianceProjectsLocationsFrameworkDeploymentsListRequest(_m
   parent = _messages.StringField(5, required=True)
 
 
+class CloudsecuritycomplianceProjectsLocationsFrameworksCreateRequest(_messages.Message):
+  r"""A CloudsecuritycomplianceProjectsLocationsFrameworksCreateRequest
+  object.
+
+  Fields:
+    framework: A Framework resource to be passed as the request body.
+    frameworkId: Required. The identifier (ID) of the framework. The ID is not
+      the full name of the framework; it's the last part of the full name of
+      the framework.
+    parent: Required. The parent resource name, in either of the formats: -
+      `organizations/{organization}/locations/{location}` -
+      `projects/{project}/locations/{location}`. The only supported location
+      is `global`.
+  """
+
+  framework = _messages.MessageField('Framework', 1)
+  frameworkId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class CloudsecuritycomplianceProjectsLocationsFrameworksDeleteRequest(_messages.Message):
+  r"""A CloudsecuritycomplianceProjectsLocationsFrameworksDeleteRequest
+  object.
+
+  Fields:
+    name: Required. ## The name of the resource, in either of the formats:
+      `organizations/{organization}/locations/{location}/frameworks/{framework
+      }` - `projects/{project}/locations/{location}/frameworks/{framework}`
+      The only supported location is `global`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
 class CloudsecuritycomplianceProjectsLocationsFrameworksGetRequest(_messages.Message):
   r"""A CloudsecuritycomplianceProjectsLocationsFrameworksGetRequest object.
 
@@ -2069,6 +2214,32 @@ class CloudsecuritycomplianceProjectsLocationsFrameworksListRequest(_messages.Me
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
+
+
+class CloudsecuritycomplianceProjectsLocationsFrameworksPatchRequest(_messages.Message):
+  r"""A CloudsecuritycomplianceProjectsLocationsFrameworksPatchRequest object.
+
+  Fields:
+    framework: A Framework resource to be passed as the request body.
+    majorRevisionId: Optional. The major version ID of the framework to
+      update.
+    name: Required. Identifier. ## The name of the framework, in one of the
+      following formats: `organizations/{organization}/locations/{location}/fr
+      ameworks/{framework}` -
+      `projects/{project}/locations/{location}/frameworks/{framework}`. The
+      only supported location is `global`.
+    updateMask: Optional. A field mask is used to specify the fields to be
+      overwritten in the framework resource by the update. The fields
+      specified in the `update_mask` are relative to the resource, not the
+      full request. A field is overwritten if it is in the mask. If you don't
+      provide a mask then all fields present in the request will be
+      overwritten.
+  """
+
+  framework = _messages.MessageField('Framework', 1)
+  majorRevisionId = _messages.IntegerField(2)
+  name = _messages.StringField(3, required=True)
+  updateMask = _messages.StringField(4)
 
 
 class CloudsecuritycomplianceProjectsLocationsGetRequest(_messages.Message):
@@ -3430,11 +3601,11 @@ class ParamValue(_messages.Message):
   r"""The possible parameter value types.
 
   Fields:
-    boolValue: A boolean value.
-    numberValue: A double value.
-    oneofValue: Sub-parameter values.
-    stringListValue: A repeated string.
-    stringValue: A string value.
+    boolValue: Optional. A boolean value.
+    numberValue: Optional. A double value.
+    oneofValue: Optional. Sub-parameter values.
+    stringListValue: Optional. A repeated string.
+    stringValue: Optional. A string value.
   """
 
   boolValue = _messages.BooleanField(1)

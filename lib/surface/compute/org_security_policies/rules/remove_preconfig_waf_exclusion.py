@@ -294,7 +294,9 @@ class RemovePreconfigWafExclusionHelper(object):
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.BETA, base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW
+)
 class RemovePreconfigWafExclusionBeta(base.UpdateCommand):
   r"""Remove an exclusion configuration for preconfigured WAF evaluation from a security policy rule.
 

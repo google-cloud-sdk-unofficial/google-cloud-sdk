@@ -149,8 +149,12 @@ def _SendRegionalRequest(client, project, region, url_map):
       _MakeRegionalRequest(client, project, region, url_map))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
+)
 class Validate(base.Command):
   """Validates URL map configs from your project."""
 

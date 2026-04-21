@@ -159,7 +159,7 @@ def _Args(
 # @base.UniverseCompatible once b/305707759 is fixed.
 # See go/gcloud-cli-running-tpc-tests.
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class CreateWithContainer(base.CreateCommand):
   """Command for creating VM instances running container images."""
 

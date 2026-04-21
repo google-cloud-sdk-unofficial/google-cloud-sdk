@@ -61,8 +61,12 @@ def _Run(holder, target_http_proxy_ref):
   return client.MakeRequests([(collection, 'Get', request)])[0]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
+)
 class Describe(base.DescribeCommand):
   """Display detailed information about a target HTTP proxy."""
 

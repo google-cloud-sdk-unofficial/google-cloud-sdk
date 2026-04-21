@@ -29,7 +29,7 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class ListInstances(base.ListCommand):
   """List Compute Engine instances present in managed instance group."""
 

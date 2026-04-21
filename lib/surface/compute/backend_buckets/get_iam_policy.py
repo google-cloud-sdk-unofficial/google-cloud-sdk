@@ -14,7 +14,6 @@
 # limitations under the License.
 """Command to get IAM policy for a resource."""
 
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
@@ -23,7 +22,7 @@ from googlecloudsdk.command_lib.compute.backend_buckets import backend_buckets_u
 from googlecloudsdk.command_lib.compute.backend_buckets import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.DefaultUniverseOnly
 class GetIamPolicy(base.ListCommand):
   """Get the IAM policy for a Compute Engine backend bucket."""
@@ -48,14 +47,22 @@ class GetIamPolicy(base.ListCommand):
     return backend_buckets_utils.GetIamPolicy(backend_bucket_ref, client)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
+class GetIamPolicyBeta(GetIamPolicy):
+  pass
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
-class GetIamPolicyAlpha(GetIamPolicy):
-  """Get the IAM policy for a Compute Engine backend bucket."""
+class GetIamPolicyAlpha(GetIamPolicyBeta):
+  pass
+
 
 GetIamPolicy.detailed_help = {
     'brief': 'Get the IAM policy for a Compute Engine backend bucket.',
-    'DESCRIPTION': """\
+    'DESCRIPTION': (
+        """\
 
       *{command}* displays the IAM policy associated with a
     Compute Engine backend bucket in a project. If formatted as JSON,
@@ -63,8 +70,9 @@ GetIamPolicy.detailed_help = {
     set-iam-policy. The output includes an "etag" field
     identifying the version emitted and allowing detection of
     concurrent policy updates; see
-    $ {parent} set-iam-policy for additional details.  """,
-    'EXAMPLES':
+    $ {parent} set-iam-policy for additional details.  """
+    ),
+    'EXAMPLES': (
         """\
     To print the IAM policy for a given regional backend bucket, run:
 
@@ -76,9 +84,11 @@ GetIamPolicy.detailed_help = {
       $ {command} my-backend-bucket --global
 
       $ {command} my-backend-bucket
-      """,
-    'API REFERENCE':
-    """\
+      """
+    ),
+    'API REFERENCE': (
+        """\
         This command uses the compute API. The full documentation for this
-    API can be found at: https://cloud.google.com/compute/""",
+    API can be found at: https://cloud.google.com/compute/"""
+    ),
 }

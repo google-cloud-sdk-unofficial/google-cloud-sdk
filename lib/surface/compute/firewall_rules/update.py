@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute import exceptions
 from googlecloudsdk.command_lib.compute.firewall_rules import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class UpdateFirewall(base.UpdateCommand):
   """Update a firewall rule."""
 

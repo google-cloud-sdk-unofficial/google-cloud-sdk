@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class UpdateBackend(base.UpdateCommand):
   """Update an existing backend of a load balancer or Traffic Director.
 

@@ -214,17 +214,17 @@ def AddDefaultLocationArg(parser):
   )
 
 
-def AddAdditionalLocationsArg(parser):
+def AddRestrictedLocationsArg(parser):
   parser.add_argument(
-      '--additional-locations',
+      '--restricted-locations',
       hidden=True,
       type=arg_parsers.ArgList(element_type=GcsBucketLinkValidator),
       metavar='LOCATION',
       help=(
-          'Can only be used with BigLake catalogs. Additional'
-          ' Google Cloud Storage buckets and locations (e.g.,'
-          ' `gs://my-other-bucket/...`) that are permitted for use by'
-          ' resources within a catalog.'
+          'Can only be used with BigLake catalogs. If empty, all accessible'
+          ' storage locations are allowed. If not empty, only locations in'
+          ' `default_location` and `restricted_locations` are allowed.'
+          ' Locations are in the format of `gs://my-bucket/...`.'
       ),
   )
 
@@ -232,7 +232,7 @@ def AddAdditionalLocationsArg(parser):
 def CheckValidArgCombinations(args):
   """Checks for valid combinations of arguments.
 
-  Ensures that `--default-location` and `--additional-locations`
+  Ensures that `--default-location` and `--restricted-locations`
   are only used when `--catalog-type` is 'BigLake'.
 
   Args:
@@ -252,10 +252,10 @@ def CheckValidArgCombinations(args):
         '--default-location is only supported for BigLake catalogs.'
     )
   elif args.catalog_type != 'biglake' and args.IsSpecified(
-      'additional_locations'
+      'restricted_locations'
   ):
     raise arg_parsers.ArgumentTypeError(
-        '--additional-locations is only supported for BigLake catalogs.'
+        '--restricted-locations is only supported for BigLake catalogs.'
     )
 
 
@@ -495,10 +495,14 @@ def CreateCatalog(catalog_id, catalog_msg, primary_location=None):
   if hasattr(catalog_msg, 'default_location') and catalog_msg.default_location:
     body['default-location'] = catalog_msg.default_location
   if (
-      hasattr(catalog_msg, 'additional_locations')
-      and catalog_msg.additional_locations
+      hasattr(catalog_msg, 'restricted_locations_config')
+      and catalog_msg.restricted_locations_config
   ):
-    body['additional-locations'] = catalog_msg.additional_locations
+    body['restricted-locations-config'] = {
+        'restricted-locations': (
+            catalog_msg.restricted_locations_config.restricted_locations
+        )
+    }
 
   if (
       hasattr(catalog_msg, 'federated_catalog_options')

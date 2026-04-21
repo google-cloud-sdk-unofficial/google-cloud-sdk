@@ -23,7 +23,7 @@ from googlecloudsdk.command_lib.compute.target_tcp_proxies import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Delete(base.DeleteCommand):
   """Delete target TCP proxy."""
 

@@ -26,7 +26,11 @@ from googlecloudsdk.command_lib.util.args import labels_util
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
+)
 class ImagesRemoveLabels(base.UpdateCommand):
 
   DISK_IMAGE_ARG = None

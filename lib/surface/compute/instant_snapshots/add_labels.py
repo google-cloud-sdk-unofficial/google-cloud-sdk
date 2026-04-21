@@ -27,8 +27,12 @@ from googlecloudsdk.command_lib.compute.instant_snapshots import flags as ips_fl
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA,
-                    base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.PREVIEW,
+)
 class AddLabels(base.UpdateCommand):
   """add-labels command for instant snapshots."""
   IPS_ARG = None

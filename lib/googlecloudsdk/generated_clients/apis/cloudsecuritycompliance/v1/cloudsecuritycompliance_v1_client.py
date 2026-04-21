@@ -63,6 +63,7 @@ class CloudsecuritycomplianceV1(base_api.BaseApiClient):
     self.organizations_locations = self.OrganizationsLocationsService(self)
     self.organizations = self.OrganizationsService(self)
     self.projects_locations_cloudControlDeployments = self.ProjectsLocationsCloudControlDeploymentsService(self)
+    self.projects_locations_cloudControls = self.ProjectsLocationsCloudControlsService(self)
     self.projects_locations_cmEnrollment = self.ProjectsLocationsCmEnrollmentService(self)
     self.projects_locations_findingSummaries = self.ProjectsLocationsFindingSummariesService(self)
     self.projects_locations_frameworkAuditScopeReports = self.ProjectsLocationsFrameworkAuditScopeReportsService(self)
@@ -1506,7 +1507,7 @@ class CloudsecuritycomplianceV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method can be called in two ways: * **List all public locations:** Use the path `GET /v1/locations`. * **List project-visible locations:** Use the path `GET /v1/projects/{project_id}/locations`. This may include public locations as well as private or other locations specifically visible to the project.
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
       Args:
         request: (CloudsecuritycomplianceOrganizationsLocationsListRequest) input message
@@ -1630,6 +1631,151 @@ class CloudsecuritycomplianceV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='CloudsecuritycomplianceProjectsLocationsCloudControlDeploymentsListRequest',
         response_type_name='ListCloudControlDeploymentsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsCloudControlsService(base_api.BaseApiService):
+    """Service class for the projects_locations_cloudControls resource."""
+
+    _NAME = 'projects_locations_cloudControls'
+
+    def __init__(self, client):
+      super(CloudsecuritycomplianceV1.ProjectsLocationsCloudControlsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a custom cloud control in a given parent resource. You can't create built-in cloud controls because those are managed by Google.
+
+      Args:
+        request: (CloudsecuritycomplianceProjectsLocationsCloudControlsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (CloudControl) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/cloudControls',
+        http_method='POST',
+        method_id='cloudsecuritycompliance.projects.locations.cloudControls.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['cloudControlId'],
+        relative_path='v1/{+parent}/cloudControls',
+        request_field='cloudControl',
+        request_type_name='CloudsecuritycomplianceProjectsLocationsCloudControlsCreateRequest',
+        response_type_name='CloudControl',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a custom cloud control, including all its major and minor revisions. Consider the following: - You can't delete built-in cloud controls. You can only delete cloud controls with type `CUSTOM`. - You can't delete cloud controls if any of the versions are referenced by a framework. - You can't restore a deleted cloud control. This action is permanent.
+
+      Args:
+        request: (CloudsecuritycomplianceProjectsLocationsCloudControlsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/cloudControls/{cloudControlsId}',
+        http_method='DELETE',
+        method_id='cloudsecuritycompliance.projects.locations.cloudControls.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='CloudsecuritycomplianceProjectsLocationsCloudControlsDeleteRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details about a cloud control. This method retrieves the latest major version of a cloud control that you identify by name. By default, the latest major version of the cloud control is returned. To retrieve a specific major version, include `major_revision_id` in the request.
+
+      Args:
+        request: (CloudsecuritycomplianceProjectsLocationsCloudControlsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (CloudControl) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/cloudControls/{cloudControlsId}',
+        http_method='GET',
+        method_id='cloudsecuritycompliance.projects.locations.cloudControls.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['majorRevisionId'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='CloudsecuritycomplianceProjectsLocationsCloudControlsGetRequest',
+        response_type_name='CloudControl',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists the cloud controls (both built-in and custom) that are available in a given parent resource. The latest major version of each cloud control is returned. This method supports pagination.
+
+      Args:
+        request: (CloudsecuritycomplianceProjectsLocationsCloudControlsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListCloudControlsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/cloudControls',
+        http_method='GET',
+        method_id='cloudsecuritycompliance.projects.locations.cloudControls.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/cloudControls',
+        request_field='',
+        request_type_name='CloudsecuritycomplianceProjectsLocationsCloudControlsListRequest',
+        response_type_name='ListCloudControlsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates a custom cloud control. This method allows for partial updates of a cloud control. Use the `update_mask` to specify which fields to update. Consider the following: - If you provide an `update_mask`, only the fields that are specified in the mask are updated. - If you don't provide an `update_mask`, all the fields that are present in the request's `cloud_control` body are used to overwrite the existing resource. You can only update cloud controls with the `CUSTOM` type. A successful update creates a new version of the cloud control.
+
+      Args:
+        request: (CloudsecuritycomplianceProjectsLocationsCloudControlsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (CloudControl) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/cloudControls/{cloudControlsId}',
+        http_method='PATCH',
+        method_id='cloudsecuritycompliance.projects.locations.cloudControls.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1/{+name}',
+        request_field='cloudControl',
+        request_type_name='CloudsecuritycomplianceProjectsLocationsCloudControlsPatchRequest',
+        response_type_name='CloudControl',
         supports_download=False,
     )
 
@@ -2101,6 +2247,60 @@ class CloudsecuritycomplianceV1(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+    def Create(self, request, global_params=None):
+      r"""Creates a custom framework in a given parent resource. You can't create built-in frameworks because those are managed by Google.
+
+      Args:
+        request: (CloudsecuritycomplianceProjectsLocationsFrameworksCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Framework) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/frameworks',
+        http_method='POST',
+        method_id='cloudsecuritycompliance.projects.locations.frameworks.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['frameworkId'],
+        relative_path='v1/{+parent}/frameworks',
+        request_field='framework',
+        request_type_name='CloudsecuritycomplianceProjectsLocationsFrameworksCreateRequest',
+        response_type_name='Framework',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a custom framework, including all its major and minor revisions. Consider the following: - You can't delete built-in frameworks. You can only delete frameworks with type `CUSTOM`. - You can't delete frameworks that are deployed to a resource. - You can't restore a deleted framework. This action is permanent.
+
+      Args:
+        request: (CloudsecuritycomplianceProjectsLocationsFrameworksDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/frameworks/{frameworksId}',
+        http_method='DELETE',
+        method_id='cloudsecuritycompliance.projects.locations.frameworks.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='CloudsecuritycomplianceProjectsLocationsFrameworksDeleteRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Gets details about a framework. This method retrieves the latest major version of the framework. To retrieve a specific major version, include `major_revision_id` in the request.
 
@@ -2152,6 +2352,33 @@ class CloudsecuritycomplianceV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='CloudsecuritycomplianceProjectsLocationsFrameworksListRequest',
         response_type_name='ListFrameworksResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates a custom framework. This method allows for partial updates of a framework. Use the `update_mask` to specify which fields to update. Consider the following: - If you provide an `update_mask`, only the fields that are specified in the mask are updated. - If you don't provide an `update_mask`, all the fields that are present in the request's `framework` body are used to overwrite the existing resource. You can only update frameworks with the `CUSTOM` type. A successful update creates a new version of the framework.
+
+      Args:
+        request: (CloudsecuritycomplianceProjectsLocationsFrameworksPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Framework) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/frameworks/{frameworksId}',
+        http_method='PATCH',
+        method_id='cloudsecuritycompliance.projects.locations.frameworks.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['majorRevisionId', 'updateMask'],
+        relative_path='v1/{+name}',
+        request_field='framework',
+        request_type_name='CloudsecuritycomplianceProjectsLocationsFrameworksPatchRequest',
+        response_type_name='Framework',
         supports_download=False,
     )
 
@@ -2348,7 +2575,7 @@ class CloudsecuritycomplianceV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method can be called in two ways: * **List all public locations:** Use the path `GET /v1/locations`. * **List project-visible locations:** Use the path `GET /v1/projects/{project_id}/locations`. This may include public locations as well as private or other locations specifically visible to the project.
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
       Args:
         request: (CloudsecuritycomplianceProjectsLocationsListRequest) input message

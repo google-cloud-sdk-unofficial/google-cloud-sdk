@@ -18,7 +18,6 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: create auth token for a token auth user
     description: create auth token for a token auth user

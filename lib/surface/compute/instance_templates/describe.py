@@ -23,7 +23,7 @@ from googlecloudsdk.command_lib.compute.instance_templates import flags
 from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class DescribeGA(base.DescribeCommand):
   """Describe a virtual machine instance template."""
   support_region_flag = True

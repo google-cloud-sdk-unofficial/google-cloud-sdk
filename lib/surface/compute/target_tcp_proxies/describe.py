@@ -23,7 +23,7 @@ from googlecloudsdk.command_lib.compute.target_tcp_proxies import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Describe(base.DescribeCommand):
   """Display detailed information about a target TCP proxy."""
 

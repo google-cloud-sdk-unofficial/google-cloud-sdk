@@ -12,6 +12,20 @@ from apitools.base.py import extra_types
 package = 'designcenter'
 
 
+class AdcMetadata(_messages.Message):
+  r"""ADC specific information and metadata.
+
+  Fields:
+    applicationTemplateUri: Output only. ADC ApplicationTemplate URI
+    applicationUri: Output only. ADC Application URI
+    spaceUri: Output only. ADC Space URI
+  """
+
+  applicationTemplateUri = _messages.StringField(1)
+  applicationUri = _messages.StringField(2)
+  spaceUri = _messages.StringField(3)
+
+
 class AlternateDefault(_messages.Message):
   r"""Alternate default for a UI input.
 
@@ -465,6 +479,136 @@ class ArtifactLocation(_messages.Message):
 
   developerConnectExportConfig = _messages.MessageField('DeveloperConnectExportConfig', 1)
   gcsUri = _messages.StringField(2)
+
+
+class AssessedFramework(_messages.Message):
+  r"""Framework assessed and their findings.
+
+  Fields:
+    findings: Required. A list of every Finding found during the assessment.
+    framework: Required. The framework that was assessed.
+    scoreCard: Optional. Score card associated with the report.
+    skipped: Optional. Whether the framework was skipped during assessment.
+    skippedReason: Optional. Reason for skipping the framework during
+      assessment.
+  """
+
+  findings = _messages.MessageField('AssessmentFinding', 1, repeated=True)
+  framework = _messages.MessageField('Framework', 2)
+  scoreCard = _messages.MessageField('ScoreCard', 3)
+  skipped = _messages.BooleanField(4)
+  skippedReason = _messages.StringField(5)
+
+
+class AssessmentFinding(_messages.Message):
+  r"""Details of an Assessment Finding.
+
+  Enums:
+    FindingTypeValueValuesEnum: Required. The type of the finding. Findings
+      can be informational, warning, or error.
+    SeverityValueValuesEnum: Optional. The severity of the finding.
+
+  Fields:
+    adcMetadata: Output only. Metadata related to the ADC with the finding.
+    additionalNotes: Optional. A description of the additional details about
+      finding.
+    assessedAsset: Required. Details of the Cloud Asset Inventory asset that
+      was assessed.
+    assessedFramework: Optional. Details of the framework that was assessed.
+    assessedFrameworkId: Optional. The framework that was assessed.
+    description: Optional. Description of the finding.
+    findingType: Required. The type of the finding. Findings can be
+      informational, warning, or error.
+    findingsUri: Optional. Link to the findings, if persisted by the domain.
+    id: Output only. The Finding ID.
+    remediationStep: Optional. A description of the steps that users can take
+      to fix the finding.
+    sccMetadata: Output only. SCC related metadata for the finding.
+    severity: Optional. The severity of the finding.
+  """
+
+  class FindingTypeValueValuesEnum(_messages.Enum):
+    r"""Required. The type of the finding. Findings can be informational,
+    warning, or error.
+
+    Values:
+      TYPE_UNSPECIFIED: Default value. This value is unused.
+      WARNING: Warning finding. ADC Deployment will not be blocked.
+      ERROR: Error finding. ADC Deployment will be blocked on ERROR.
+    """
+    TYPE_UNSPECIFIED = 0
+    WARNING = 1
+    ERROR = 2
+
+  class SeverityValueValuesEnum(_messages.Enum):
+    r"""Optional. The severity of the finding.
+
+    Values:
+      SEVERITY_UNSPECIFIED: Default value. This value is unused.
+      CRITICAL: Critical severity.
+      HIGH: High severity.
+      MEDIUM: Medium severity.
+      LOW: Low severity.
+    """
+    SEVERITY_UNSPECIFIED = 0
+    CRITICAL = 1
+    HIGH = 2
+    MEDIUM = 3
+    LOW = 4
+
+  adcMetadata = _messages.MessageField('FindingADCMetadata', 1)
+  additionalNotes = _messages.StringField(2)
+  assessedAsset = _messages.MessageField('AssetDetails', 3)
+  assessedFramework = _messages.MessageField('Framework', 4)
+  assessedFrameworkId = _messages.StringField(5)
+  description = _messages.StringField(6)
+  findingType = _messages.EnumField('FindingTypeValueValuesEnum', 7)
+  findingsUri = _messages.StringField(8)
+  id = _messages.StringField(9)
+  remediationStep = _messages.MessageField('RemediationStep', 10)
+  sccMetadata = _messages.MessageField('SCCMetadata', 11)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 12)
+
+
+class AssessmentReport(_messages.Message):
+  r"""Aggregated assessment report from all domains.
+
+  Fields:
+    adcApplicationTemplateUri: Output only. ADC Application Template URI.
+    adcApplicationUri: Output only. ADC Application URI.
+    adcCatalogTemplateUri: Output only. ADC Catalog Template URI.
+    adcSpaceUri: Output only. ADC Space URI.
+    createTime: Output only. The time at which the report was created.
+    domainAssessmentReports: Output only. Generated best practice reports.
+    skippedDomains: Output only. Skipped domains.
+  """
+
+  adcApplicationTemplateUri = _messages.StringField(1)
+  adcApplicationUri = _messages.StringField(2)
+  adcCatalogTemplateUri = _messages.StringField(3)
+  adcSpaceUri = _messages.StringField(4)
+  createTime = _messages.StringField(5)
+  domainAssessmentReports = _messages.MessageField('DomainAssessmentReport', 6, repeated=True)
+  skippedDomains = _messages.MessageField('SkippedDomain', 7, repeated=True)
+
+
+class AssetDetails(_messages.Message):
+  r"""Details of a Cloud Asset Inventory asset that caused the finding.
+
+  Fields:
+    assetId: Required. Information about the Cloud Asset Inventory asset that
+      the framework is assessed against. The full resource name of the asset
+      in CAIS format. For details about the format of the full resource name
+      for each asset type, see [Resource name format]
+      (https://cloud.google.com/asset-inventory/docs/resource-name-format).
+    assetType: Optional. The type of Cloud Asset Inventory asset. For a list
+      of asset types, see [Supported asset
+      types](https://cloud.google.com/asset-inventory/docs/supported-asset-
+      types).
+  """
+
+  assetId = _messages.StringField(1)
+  assetType = _messages.StringField(2)
 
 
 class Attributes(_messages.Message):
@@ -1645,6 +1789,24 @@ class DeploymentTarget(_messages.Message):
   gkeDeploymentTarget = _messages.MessageField('GKEDeploymentTarget', 1)
 
 
+class DeploymentUnitProgress(_messages.Message):
+  r"""Single deployment unit progress info
+
+  Fields:
+    deployment: Output only. Deployment resource of deploying unit ID
+    deploymentBuild: Output only. Deployment build uuid
+    deploymentStep: Output only. Current deployment step
+    deploymentUnitStep: Output only. Current deployment unit step
+    unitId: Output only. Deployment unit ID
+  """
+
+  deployment = _messages.StringField(1)
+  deploymentBuild = _messages.StringField(2)
+  deploymentStep = _messages.StringField(3)
+  deploymentUnitStep = _messages.StringField(4)
+  unitId = _messages.StringField(5)
+
+
 class DesignCenterPolicy(_messages.Message):
   r"""A Policy is a resource within an Application Template that refers to a
   Policy that is authored and managed outside of the ADC and attached to an
@@ -2018,6 +2180,20 @@ class DesigncenterProjectsLocationsSpacesApplicationTemplatesDeleteRequest(_mess
   name = _messages.StringField(2, required=True)
 
 
+class DesigncenterProjectsLocationsSpacesApplicationTemplatesExportRequest(_messages.Message):
+  r"""A DesigncenterProjectsLocationsSpacesApplicationTemplatesExportRequest
+  object.
+
+  Fields:
+    exportApplicationTemplateIaCRequest: A ExportApplicationTemplateIaCRequest
+      resource to be passed as the request body.
+    name: Required. The name of the application template.
+  """
+
+  exportApplicationTemplateIaCRequest = _messages.MessageField('ExportApplicationTemplateIaCRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class DesigncenterProjectsLocationsSpacesApplicationTemplatesGenerateAssessmentReportRequest(_messages.Message):
   r"""A DesigncenterProjectsLocationsSpacesApplicationTemplatesGenerateAssessm
   entReportRequest object.
@@ -2242,6 +2418,21 @@ class DesigncenterProjectsLocationsSpacesApplicationTemplatesRevisionsDeleteRequ
   name = _messages.StringField(1, required=True)
 
 
+class DesigncenterProjectsLocationsSpacesApplicationTemplatesRevisionsExportRequest(_messages.Message):
+  r"""A DesigncenterProjectsLocationsSpacesApplicationTemplatesRevisionsExport
+  Request object.
+
+  Fields:
+    exportApplicationTemplateRevisionIaCRequest: A
+      ExportApplicationTemplateRevisionIaCRequest resource to be passed as the
+      request body.
+    name: Required. The name of the application template revision.
+  """
+
+  exportApplicationTemplateRevisionIaCRequest = _messages.MessageField('ExportApplicationTemplateRevisionIaCRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class DesigncenterProjectsLocationsSpacesApplicationTemplatesRevisionsGenerateRequest(_messages.Message):
   r"""A DesigncenterProjectsLocationsSpacesApplicationTemplatesRevisionsGenera
   teRequest object.
@@ -2379,6 +2570,19 @@ class DesigncenterProjectsLocationsSpacesApplicationsDeployRequest(_messages.Mes
 
   deployApplicationRequest = _messages.MessageField('DeployApplicationRequest', 1)
   name = _messages.StringField(2, required=True)
+
+
+class DesigncenterProjectsLocationsSpacesApplicationsFetchAssessmentReportRequest(_messages.Message):
+  r"""A
+  DesigncenterProjectsLocationsSpacesApplicationsFetchAssessmentReportRequest
+  object.
+
+  Fields:
+    name: Required. The application name in the following format: projects/$pr
+      oject/locations/$location/spaces/$space/applications/$application
+  """
+
+  name = _messages.StringField(1, required=True)
 
 
 class DesigncenterProjectsLocationsSpacesApplicationsGenerateRequest(_messages.Message):
@@ -3273,6 +3477,69 @@ class Domain(_messages.Message):
   inactive = _messages.BooleanField(5)
 
 
+class DomainAssessmentReport(_messages.Message):
+  r"""The assessment report for each domain.
+
+  Enums:
+    StatusValueValuesEnum: Optional. Status of assessment report.
+
+  Fields:
+    adcMetadata: Output only. ADC specific information and metadata.
+    additionalInfo: Optional. Additional information about the report.
+    assessedFrameworks: Required. List of frameworks assessed and their
+      findings.
+    createTime: Output only. The time at which the report was created.
+    domainId: Output only. The ID of the domain.
+    domainRedirectInfo: Optional. Information on how to redirect to domain.
+    reportName: Optional. The report name as per ADC.
+    reportScore: Output only. Score card associated with the report.
+    skippedAssetTypes: Optional. List of asset types skipped during
+      assessment.
+    status: Optional. Status of assessment report.
+    updateTime: Output only. The time at which the report was last updated.
+  """
+
+  class StatusValueValuesEnum(_messages.Enum):
+    r"""Optional. Status of assessment report.
+
+    Values:
+      STATUS_UNSPECIFIED: No status specified.
+      PENDING: Pending domain assessment.
+      COMPLETED: Complete domain assessment.
+      FAILED: Failed domain assessment.
+    """
+    STATUS_UNSPECIFIED = 0
+    PENDING = 1
+    COMPLETED = 2
+    FAILED = 3
+
+  adcMetadata = _messages.MessageField('AdcMetadata', 1)
+  additionalInfo = _messages.StringField(2)
+  assessedFrameworks = _messages.MessageField('AssessedFramework', 3, repeated=True)
+  createTime = _messages.StringField(4)
+  domainId = _messages.StringField(5)
+  domainRedirectInfo = _messages.MessageField('DomainRedirectInfo', 6)
+  reportName = _messages.StringField(7)
+  reportScore = _messages.MessageField('ScoreCard', 8)
+  skippedAssetTypes = _messages.StringField(9, repeated=True)
+  status = _messages.EnumField('StatusValueValuesEnum', 10)
+  updateTime = _messages.StringField(11)
+
+
+class DomainRedirectInfo(_messages.Message):
+  r"""Information on how to redirect to domain.
+
+  Fields:
+    openInSameTab: Optional. Flag to open the URL in new tab. Default: false.
+    url: Required. URL to the domain page.
+    urlText: Required. Text to display in UI on the redirect URL.
+  """
+
+  openInSameTab = _messages.BooleanField(1)
+  url = _messages.StringField(2)
+  urlText = _messages.StringField(3)
+
+
 class Empty(_messages.Message):
   r"""A generic empty message that you can re-use to avoid defining duplicated
   empty messages in your APIs. A typical example is to use it as the request
@@ -3315,6 +3582,66 @@ class Environment(_messages.Message):
   type = _messages.EnumField('TypeValueValuesEnum', 2)
 
 
+class ExportApplicationTemplateIaCRequest(_messages.Message):
+  r"""Request message for ExportApplicationTemplateIaC method.
+
+  Enums:
+    IacFormatValueValuesEnum: Optional. The IaC format to generate.
+
+  Fields:
+    artifactLocation: Optional. Specifies the destination for the generated
+      IaC, which can be Cloud Storage or a Developer Connect repository.
+    iacFormat: Optional. The IaC format to generate.
+    moduleSourceConfig: Optional. Configuration for handling module sources.
+  """
+
+  class IacFormatValueValuesEnum(_messages.Enum):
+    r"""Optional. The IaC format to generate.
+
+    Values:
+      IAC_FORMAT_UNSPECIFIED: IaC format is unspecified.
+      TERRAFORM: IaC format is Terraform.
+      HELM: IaC format is HELM.
+    """
+    IAC_FORMAT_UNSPECIFIED = 0
+    TERRAFORM = 1
+    HELM = 2
+
+  artifactLocation = _messages.MessageField('ArtifactLocation', 1)
+  iacFormat = _messages.EnumField('IacFormatValueValuesEnum', 2)
+  moduleSourceConfig = _messages.MessageField('ModuleSourceConfig', 3)
+
+
+class ExportApplicationTemplateRevisionIaCRequest(_messages.Message):
+  r"""Request message for ExportApplicationTemplateRevisionIaC method.
+
+  Enums:
+    IacFormatValueValuesEnum: Optional. The IaC format to generate.
+
+  Fields:
+    artifactLocation: Optional. Specifies the destination for the generated
+      IaC, which can be Cloud Storage or a Developer Connect repository.
+    iacFormat: Optional. The IaC format to generate.
+    moduleSourceConfig: Optional. Configuration for handling module sources.
+  """
+
+  class IacFormatValueValuesEnum(_messages.Enum):
+    r"""Optional. The IaC format to generate.
+
+    Values:
+      IAC_FORMAT_UNSPECIFIED: IaC format is unspecified.
+      TERRAFORM: IaC format is Terraform.
+      HELM: IaC format is HELM.
+    """
+    IAC_FORMAT_UNSPECIFIED = 0
+    TERRAFORM = 1
+    HELM = 2
+
+  artifactLocation = _messages.MessageField('ArtifactLocation', 1)
+  iacFormat = _messages.EnumField('IacFormatValueValuesEnum', 2)
+  moduleSourceConfig = _messages.MessageField('ModuleSourceConfig', 3)
+
+
 class Expr(_messages.Message):
   r"""Represents a textual expression in the Common Expression Language (CEL)
   syntax. CEL is a C-like expression language. The syntax and semantics of CEL
@@ -3351,6 +3678,16 @@ class Expr(_messages.Message):
   title = _messages.StringField(4)
 
 
+class FetchApplicationAssessmentReportResponse(_messages.Message):
+  r"""Message for response of fetching an application assessment report.
+
+  Fields:
+    assessmentReport: Assessment report for the application.
+  """
+
+  assessmentReport = _messages.MessageField('AssessmentReport', 1)
+
+
 class FetchFrameworksResponse(_messages.Message):
   r"""Response for FetchFrameworks rpc
 
@@ -3362,6 +3699,16 @@ class FetchFrameworksResponse(_messages.Message):
 
   frameworks = _messages.MessageField('Framework', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
+
+
+class FindingADCMetadata(_messages.Message):
+  r"""Metadata related to the ADC with the finding.
+
+  Fields:
+    componentName: Output only. ADC component the finding belongs to.
+  """
+
+  componentName = _messages.StringField(1)
 
 
 class Framework(_messages.Message):
@@ -4374,6 +4721,22 @@ class MetadataInputSpec(_messages.Message):
   ui = _messages.MessageField('TemplateUi', 4)
 
 
+class ModuleSourceConfig(_messages.Message):
+  r"""Configuration for how external module sources should be handled during
+  export.
+
+  Fields:
+    gitProxyEnabled: Optional. This is typically only valid for 3P components
+      if ingested via devconnect URI. Typically, for 1P components, since they
+      are sourced from public git repos, this field is not applicable.
+    localReferencesEnabled: Optional. If set, all the dependent modules will
+      be downloaded from the target repository and referenced locally.
+  """
+
+  gitProxyEnabled = _messages.BooleanField(1)
+  localReferencesEnabled = _messages.BooleanField(2)
+
+
 class OciRepo(_messages.Message):
   r"""Open Container Initiative (OCI) repo.
 
@@ -4503,6 +4866,8 @@ class OperationMetadata(_messages.Message):
     applicationMetadata: Output only. The application delete metadata this
       operation is associated with.
     createTime: Output only. The time the operation was created.
+    deploymentGroupMetadata: Output only. The Provision Deployment Group
+      Metadata this operation is associated with.
     deploymentMetadata: Output only. The application deployment metadata this
       operation is associated with.
     endTime: Output only. The time the operation finished running.
@@ -4522,13 +4887,14 @@ class OperationMetadata(_messages.Message):
   apiVersion = _messages.StringField(1)
   applicationMetadata = _messages.MessageField('ApplicationOperationMetadata', 2)
   createTime = _messages.StringField(3)
-  deploymentMetadata = _messages.MessageField('DeploymentOperationMetadata', 4)
-  endTime = _messages.StringField(5)
-  previewMetadata = _messages.MessageField('PreviewOperationMetadata', 6)
-  requestedCancellation = _messages.BooleanField(7)
-  statusMessage = _messages.StringField(8)
-  target = _messages.StringField(9)
-  verb = _messages.StringField(10)
+  deploymentGroupMetadata = _messages.MessageField('ProvisionDeploymentGroupOperationMetadata', 4)
+  deploymentMetadata = _messages.MessageField('DeploymentOperationMetadata', 5)
+  endTime = _messages.StringField(6)
+  previewMetadata = _messages.MessageField('PreviewOperationMetadata', 7)
+  requestedCancellation = _messages.BooleanField(8)
+  statusMessage = _messages.StringField(9)
+  target = _messages.StringField(10)
+  verb = _messages.StringField(11)
 
 
 class Parameter(_messages.Message):
@@ -4710,6 +5076,41 @@ class ProviderVersion(_messages.Message):
   version = _messages.StringField(2)
 
 
+class ProvisionDeploymentGroupOperationMetadata(_messages.Message):
+  r"""Represents the Provision Deployment Group operation metadata.
+
+  Enums:
+    DeploymentStepValueValuesEnum: Output only. Current step of deploying
+      composite application
+
+  Fields:
+    deploymentStep: Output only. Current step of deploying composite
+      application
+    deploymentUnitProgress: Output only. List of deployment unit deployment
+      progress
+  """
+
+  class DeploymentStepValueValuesEnum(_messages.Enum):
+    r"""Output only. Current step of deploying composite application
+
+    Values:
+      DEPLOYMENT_STEP_UNSPECIFIED: Unspecified deployment step.
+      GENERATING_TERRAFORM_CONTENT: Generating Terraform content for the
+        application.
+      DEPLOYING: Deploying the application.
+      SUCCEEDED: Operation was successful.
+      FAILED: Operation failed.
+    """
+    DEPLOYMENT_STEP_UNSPECIFIED = 0
+    GENERATING_TERRAFORM_CONTENT = 1
+    DEPLOYING = 2
+    SUCCEEDED = 3
+    FAILED = 4
+
+  deploymentStep = _messages.EnumField('DeploymentStepValueValuesEnum', 1)
+  deploymentUnitProgress = _messages.MessageField('DeploymentUnitProgress', 2, repeated=True)
+
+
 class RegisterAppHubApplicationResourcesRequest(_messages.Message):
   r"""Request message for RegisterAppHubApplicationResources method.
 
@@ -4796,6 +5197,21 @@ class RegisterDeployedResourcesRequest(_messages.Message):
   serviceAccount = _messages.StringField(2)
   terraformState = _messages.StringField(3)
   tfstateSignedGcsUri = _messages.StringField(4)
+
+
+class RemediationStep(_messages.Message):
+  r"""Remediation steps that can be taken to rectify the finding.
+
+  Fields:
+    note: Optional. Any other note related to the remediation.
+    remediationDocumentationUrl: Optional. Remediation documentation URL.
+    remediationSteps: Required. A description of the steps that users can take
+      to remediate the findings.
+  """
+
+  note = _messages.StringField(1)
+  remediationDocumentationUrl = _messages.StringField(2)
+  remediationSteps = _messages.StringField(3, repeated=True)
 
 
 class Resource(_messages.Message):
@@ -4921,6 +5337,18 @@ class RootOutputVariable(_messages.Message):
   variable = _messages.StringField(1)
 
 
+class SCCMetadata(_messages.Message):
+  r"""SCC metadata for the assessment finding.
+
+  Fields:
+    findingClass: Optional. The SCC finding class. Also known as category.
+    findingType: Optional. The SCC finding type.
+  """
+
+  findingClass = _messages.StringField(1)
+  findingType = _messages.StringField(2)
+
+
 class SaaSRuntimeContext(_messages.Message):
   r"""SaaS runtime context.
 
@@ -4955,6 +5383,23 @@ class Scope(_messages.Message):
     GLOBAL = 2
 
   type = _messages.EnumField('TypeValueValuesEnum', 1)
+
+
+class ScoreCard(_messages.Message):
+  r"""Score card associated with the report.
+
+  Fields:
+    averageScore: Optional. Average score for similar reports.
+    maxScore: Required. Maximum score of the report. For example, for a score
+      of 75/100, report_score is 75 and max_score is 100.
+    minScoreRequired: Optional. Minimum score required to pass assessment.
+    reportScore: Required. Calculated score of the report.
+  """
+
+  averageScore = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  maxScore = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  minScoreRequired = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  reportScore = _messages.IntegerField(4, variant=_messages.Variant.INT32)
 
 
 class SerializedApplicationTemplate(_messages.Message):
@@ -5353,6 +5798,36 @@ class SharedTemplateRevision(_messages.Message):
   sharedTemplateMetadata = _messages.MessageField('TFBlueprintMetadata', 16)
   templateCategory = _messages.EnumField('TemplateCategoryValueValuesEnum', 17)
   type = _messages.EnumField('TypeValueValuesEnum', 18)
+
+
+class SkippedDomain(_messages.Message):
+  r"""Domains skipped during the best practice assessment.
+
+  Enums:
+    SkipReasonValueValuesEnum: Output only. Reason for skipping the domain
+      from assessment.
+
+  Fields:
+    domain: Output only. Details of the domain skipped.
+    skipReason: Output only. Reason for skipping the domain from assessment.
+  """
+
+  class SkipReasonValueValuesEnum(_messages.Enum):
+    r"""Output only. Reason for skipping the domain from assessment.
+
+    Values:
+      REASON_UNSPECIFIED: No reason specified.
+      UNAVAILABLE: Domain is unavailable.
+      FAILURE: Domain assessment failed.
+      TIMEOUT: Domain assessment timed out.
+    """
+    REASON_UNSPECIFIED = 0
+    UNAVAILABLE = 1
+    FAILURE = 2
+    TIMEOUT = 3
+
+  domain = _messages.MessageField('Domain', 1)
+  skipReason = _messages.EnumField('SkipReasonValueValuesEnum', 2)
 
 
 class Space(_messages.Message):

@@ -65,7 +65,7 @@ def _AlphaArgs(parser):
   labels_util.AddUpdateLabelsFlags(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class Update(base.UpdateCommand):
   r"""Update a Compute Engine snapshot.

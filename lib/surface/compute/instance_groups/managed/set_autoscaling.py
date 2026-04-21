@@ -40,7 +40,7 @@ _REPLACE_AUTOSCALER_PROMPT = (
 _DELETION_CANCEL_STRING = 'Deletion aborted by user.'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class SetAutoscaling(base.Command):
   """Set autoscaling parameters of a managed instance group."""
 

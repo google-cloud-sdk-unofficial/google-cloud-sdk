@@ -162,9 +162,7 @@ class CreateHelper(object):
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(
-    base.ReleaseTrack.GA,
-)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Create(base.CreateCommand):
   """Create a Google Compute Engine service attachment."""
 

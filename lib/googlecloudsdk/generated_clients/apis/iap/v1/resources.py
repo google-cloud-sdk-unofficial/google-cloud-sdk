@@ -116,29 +116,36 @@ class Collections(enum.Enum):
   )
   PROJECTS_LOCATIONS_IAP_WEB = (
       'projects.locations.iap_web',
+      'projects/{project}/locations/{location}/iap_web',
+      {},
+      ['project', 'location'],
+      True
+  )
+  PROJECTS_LOCATIONS_IAP_WEB_WEB_TYPES = (
+      'projects.locations.iap_web.web_types',
       'projects/{project}/locations/{location}/iap_web/{iapWebId}',
       {},
       ['project', 'location', 'iapWebId'],
       True
   )
-  PROJECTS_LOCATIONS_IAP_WEB_AGENTS = (
-      'projects.locations.iap_web.agents',
+  PROJECTS_LOCATIONS_IAP_WEB_WEB_TYPES_AGENTS = (
+      'projects.locations.iap_web.web_types.agents',
       'projects/{project}/locations/{location}/iap_web/{iapWebId}/agents/'
       '{agentId}',
       {},
       ['project', 'location', 'iapWebId', 'agentId'],
       True
   )
-  PROJECTS_LOCATIONS_IAP_WEB_ENDPOINTS = (
-      'projects.locations.iap_web.endpoints',
+  PROJECTS_LOCATIONS_IAP_WEB_WEB_TYPES_ENDPOINTS = (
+      'projects.locations.iap_web.web_types.endpoints',
       'projects/{project}/locations/{location}/iap_web/{iapWebId}/endpoints/'
       '{endpointId}',
       {},
       ['project', 'location', 'iapWebId', 'endpointId'],
       True
   )
-  PROJECTS_LOCATIONS_IAP_WEB_MCPSERVERS = (
-      'projects.locations.iap_web.mcpServers',
+  PROJECTS_LOCATIONS_IAP_WEB_WEB_TYPES_MCPSERVERS = (
+      'projects.locations.iap_web.web_types.mcpServers',
       'projects/{project}/locations/{location}/iap_web/{iapWebId}/mcpServers/'
       '{mcpServerId}',
       {},

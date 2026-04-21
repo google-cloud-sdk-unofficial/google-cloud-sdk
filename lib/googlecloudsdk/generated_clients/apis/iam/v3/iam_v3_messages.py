@@ -143,12 +143,13 @@ class GoogleIamV3PolicyBinding(_messages.Message):
       - `principal.subject in []` - `principal.subject.startsWith()` -
       `principal.subject.endsWith()` Allowed operations for `principal.type`:
       - `principal.type == ` - `principal.type != ` - `principal.type in []`
-      Supported principal types are Workspace, Workforce Pool, Workload Pool
-      and Service Account. Allowed string must be one of: -
-      iam.googleapis.com/WorkspaceIdentity -
-      iam.googleapis.com/WorkforcePoolIdentity -
-      iam.googleapis.com/WorkloadPoolIdentity -
-      iam.googleapis.com/ServiceAccount
+      Supported principal types are workspace, workforce pool, workload pool,
+      service account, and Agent Identity. Allowed string must be one of: -
+      `iam.googleapis.com/WorkspaceIdentity` -
+      `iam.googleapis.com/WorkforcePoolIdentity` -
+      `iam.googleapis.com/WorkloadPoolIdentity` -
+      `iam.googleapis.com/ServiceAccount` -
+      `iam.googleapis.com/AgentPoolIdentity` (available in Preview)
     createTime: Output only. The time when the policy binding was created.
     displayName: Optional. The description of the policy binding. Must be less
       than or equal to 63 characters.

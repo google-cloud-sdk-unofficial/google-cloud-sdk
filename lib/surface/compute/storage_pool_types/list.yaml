@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA, GA]
+- release_tracks: [ALPHA, BETA, GA, PREVIEW]
   help_text:
     brief: "View storage pools types."
     description: "View storage pools."

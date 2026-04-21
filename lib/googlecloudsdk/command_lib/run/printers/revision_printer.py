@@ -48,6 +48,20 @@ class RevisionPrinter(cp.CustomPrinterBase):
     return fmt
 
   @staticmethod
+  def GetIdentity(record):
+    return record.annotations.get(revision.IDENTITY_ANNOTATION, '')
+
+  @staticmethod
+  def GetIdentityCertificateEnabled(record):
+    return record.annotations.get(
+        revision.IDENTITY_CERTIFICATE_ENABLED_ANNOTATION, 'false'
+    )
+
+  @staticmethod
+  def GetIdentityType(record):
+    return record.annotations.get(revision.IDENTITY_TYPE_ANNOTATION, '')
+
+  @staticmethod
   def GetTimeout(record):
     if record.timeout is not None:
       return '{}s'.format(record.timeout)
@@ -114,12 +128,26 @@ class RevisionPrinter(cp.CustomPrinterBase):
     return k8s_util.GetThreatDetectionEnabled(record)
 
   @staticmethod
+  def _GetIdentityLabels(record):
+    identity_type = RevisionPrinter.GetIdentityType(record)
+    if identity_type in ['workload-identity', 'agent-identity']:
+      return [
+          ('Identity', RevisionPrinter.GetIdentity(record)),
+          ('Identity Type', identity_type),
+          (
+              'Identity Certificate Enabled',
+              RevisionPrinter.GetIdentityCertificateEnabled(record),
+          ),
+      ]
+    else:
+      return [('Service account', record.spec.serviceAccountName)]
+
+  @staticmethod
   def TransformSpec(
       record: revision.Revision, manual_scaling_enabled=False
   ) -> cp.Lines:
-    labels = [
-        ('Service account', record.spec.serviceAccountName),
-        ('Concurrency', record.concurrency)]
+    labels = RevisionPrinter._GetIdentityLabels(record)
+    labels.append(('Concurrency', record.concurrency))
     if not manual_scaling_enabled:
       autoscaling_labels = [
           ('Min instances', RevisionPrinter.GetMinInstances(record)),

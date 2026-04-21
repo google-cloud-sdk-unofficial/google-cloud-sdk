@@ -157,7 +157,7 @@ class UpdateAlphaBeta(base.Command):
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Update(base.Command):
   """Update a Google Cloud Observability agents policy for the Ops Agent.
 

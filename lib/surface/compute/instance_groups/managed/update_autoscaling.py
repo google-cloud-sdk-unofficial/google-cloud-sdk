@@ -37,7 +37,7 @@ class NoMatchingAutoscalerFoundError(exceptions.Error):
   pass
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class UpdateAutoscaling(base.Command):
   """Update autoscaling parameters of a managed instance group."""
 

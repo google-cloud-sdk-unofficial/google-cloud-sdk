@@ -14,6 +14,7 @@
 # limitations under the License.
 """Compute resource handler."""
 
+import copy
 from typing import Any
 from apitools.base.protorpclite import messages
 from googlecloudsdk.command_lib.orchestration_pipelines.handlers import base
@@ -339,7 +340,7 @@ class ComputeAddressHandler(base.GcpResourceHandler):
 
   def build_delete_request(
       self, existing_resource: messages.Message
-  ) -> messages.Message:
+  ) -> messages.Message:  # pylint: disable=unused-argument
     return self.messages.ComputeAddressesDeleteRequest(
         project=self.environment.project,
         region=self.environment.region,
@@ -382,6 +383,24 @@ class ComputeInstanceHandler(base.GcpResourceHandler):
     definition["name"] = self.resource.name
     definition["zone"] = self.zone
     return definition
+
+  def get_labels_field_name(self) -> str | None:
+    """Disable base handler's label detection to handle it manually."""
+    return None
+
+  def to_resource_message(self, definition: dict[str, Any]) -> messages.Message:
+    """Converts a dictionary definition to a resource message."""
+    definition_copy = copy.deepcopy(definition)
+    labels_dict = definition_copy.pop("labels", {}) or {}
+    labels_dict[base.IMPLICIT_LABEL_KEY] = base.IMPLICIT_LABEL_VALUE
+
+    resource_msg = super().to_resource_message(definition_copy)
+
+    resource_msg.labels = self._build_labels_value(
+        self.messages.Instance.LabelsValue, labels_dict
+    )
+
+    return resource_msg
 
   def compare(
       self, existing_resource: Any, local_definition: dict[str, Any]
@@ -472,7 +491,7 @@ class ComputeInstanceTemplateHandler(base.GcpResourceHandler):
       existing_resource: messages.Message,
       resource_message: messages.Message,
       changed_fields: list[str],
-  ) -> messages.Message:
+  ) -> messages.Message:  # pylint: disable=unused-argument
     raise NotImplementedError(
         "Compute Instance Templates cannot be updated in-place."
     )
@@ -591,7 +610,7 @@ class ComputeRouteHandler(base.GcpResourceHandler):
       existing_resource: messages.Message,
       resource_message: messages.Message,
       changed_fields: list[str],
-  ) -> messages.Message:
+  ) -> messages.Message:  # pylint: disable=unused-argument
     # Cannot patch routes
     raise NotImplementedError("Compute Routes update not fully supported.")
 
@@ -706,7 +725,7 @@ class ComputeTargetInstanceHandler(base.GcpResourceHandler):
       existing_resource: messages.Message,
       resource_message: messages.Message,
       changed_fields: list[str],
-  ) -> messages.Message:
+  ) -> messages.Message:  # pylint: disable=unused-argument
     raise NotImplementedError("Update is not supported for target instances.")
 
   def get_update_method(self) -> Any:

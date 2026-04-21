@@ -49,7 +49,7 @@ def _CommonArgs(parser):
   disks_flags.AddSecondaryDiskProject(parser, secondary_disk_category)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class StartAsyncReplication(base.Command):
   """Start Async Replication on Compute Engine persistent disks."""
 

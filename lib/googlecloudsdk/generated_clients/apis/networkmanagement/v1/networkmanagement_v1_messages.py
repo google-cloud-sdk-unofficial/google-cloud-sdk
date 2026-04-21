@@ -1266,7 +1266,6 @@ class Empty(_messages.Message):
   """
 
 
-
 class Endpoint(_messages.Message):
   r"""Source or destination of the Connectivity Test.
 
@@ -1723,6 +1722,69 @@ class GKEMasterInfo(_messages.Message):
   internalIp = _messages.StringField(5)
 
 
+class GenerateMonitoringPointConfigResponse(_messages.Message):
+  r"""Message for response for getting Monitoring Point configuration of a
+  NetworkMonitoringProvider resource.
+
+  Messages:
+    ConfigValue: The Monitoring Point configuration of the provider in JSON
+      format.
+
+  Fields:
+    config: The Monitoring Point configuration of the provider in JSON format.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ConfigValue(_messages.Message):
+    r"""The Monitoring Point configuration of the provider in JSON format.
+
+    Messages:
+      AdditionalProperty: An additional property for a ConfigValue object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ConfigValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  config = _messages.MessageField('ConfigValue', 1)
+
+
+class GenerateProviderAccessTokenResponse(_messages.Message):
+  r"""Message for response for generating an access token for a
+  NetworkMonitoringProvider resource.
+
+  Fields:
+    providerAccessToken: Provider access token for the
+      NetworkMonitoringProvider resource.
+  """
+
+  providerAccessToken = _messages.StringField(1)
+
+
+class GeoLocation(_messages.Message):
+  r"""The geographical location of the MonitoringPoint.
+
+  Fields:
+    formattedAddress: Formatted address.
+    regionCode: Unicode CLDR region code.
+  """
+
+  formattedAddress = _messages.StringField(1)
+  regionCode = _messages.StringField(2)
+
+
 class GkeNetworkPolicyInfo(_messages.Message):
   r"""For display only. Metadata associated with a GKE Network Policy.
 
@@ -1852,6 +1914,90 @@ class GoogleServiceInfo(_messages.Message):
 
   googleServiceType = _messages.EnumField('GoogleServiceTypeValueValuesEnum', 1)
   sourceIp = _messages.StringField(2)
+
+
+class Host(_messages.Message):
+  r"""Message describing information about the host.
+
+  Fields:
+    cloudInstanceId: Output only. The cloud instance id of the host.
+    cloudProjectId: Output only. The cloud project id of the host.
+    cloudProvider: Output only. The cloud provider of the host.
+    cloudRegion: Output only. The cloud region of the host.
+    cloudVirtualNetworkIds: Output only. The ids of cloud virtual networks of
+      the host.
+    cloudZone: Output only. The cloud zone of the host.
+    os: Output only. The operating system of the host.
+  """
+
+  cloudInstanceId = _messages.StringField(1)
+  cloudProjectId = _messages.StringField(2)
+  cloudProvider = _messages.StringField(3)
+  cloudRegion = _messages.StringField(4)
+  cloudVirtualNetworkIds = _messages.StringField(5, repeated=True)
+  cloudZone = _messages.StringField(6)
+  os = _messages.StringField(7)
+
+
+class HttpBody(_messages.Message):
+  r"""Message that represents an arbitrary HTTP body. It should only be used
+  for payload formats that can't be represented as JSON, such as raw binary or
+  an HTML page. This message can be used both in streaming and non-streaming
+  API methods in the request as well as the response. It can be used as a top-
+  level request field, which is convenient if one wants to extract parameters
+  from either the URL or HTTP template into the request fields and also want
+  access to the raw HTTP body. Example: message GetResourceRequest { // A
+  unique request id. string request_id = 1; // The raw HTTP body is bound to
+  this field. google.api.HttpBody http_body = 2; } service ResourceService {
+  rpc GetResource(GetResourceRequest) returns (google.api.HttpBody); rpc
+  UpdateResource(google.api.HttpBody) returns (google.protobuf.Empty); }
+  Example with streaming methods: service CaldavService { rpc
+  GetCalendar(stream google.api.HttpBody) returns (stream
+  google.api.HttpBody); rpc UpdateCalendar(stream google.api.HttpBody) returns
+  (stream google.api.HttpBody); } Use of this type only changes how the
+  request and response bodies are handled, all other features will continue to
+  work unchanged.
+
+  Messages:
+    ExtensionsValueListEntry: A ExtensionsValueListEntry object.
+
+  Fields:
+    contentType: The HTTP Content-Type header value specifying the content
+      type of the body.
+    data: The HTTP request/response body as raw binary.
+    extensions: Application specific response metadata. Must be set in the
+      first response for streaming APIs.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ExtensionsValueListEntry(_messages.Message):
+    r"""A ExtensionsValueListEntry object.
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        ExtensionsValueListEntry object.
+
+    Fields:
+      additionalProperties: Properties of the object. Contains field @type
+        with type URL.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ExtensionsValueListEntry object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  contentType = _messages.StringField(1)
+  data = _messages.BytesField(2)
+  extensions = _messages.MessageField('ExtensionsValueListEntry', 3, repeated=True)
 
 
 class HybridSubnetInfo(_messages.Message):
@@ -2062,6 +2208,45 @@ class ListLocationsResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
+class ListMonitoringPointsResponse(_messages.Message):
+  r"""Message for response to listing MonitoringPoints
+
+  Fields:
+    monitoringPoints: The list of MonitoringPoints.
+    nextPageToken: A token identifying a page of results the server should
+      return.
+  """
+
+  monitoringPoints = _messages.MessageField('MonitoringPoint', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
+class ListNetworkMonitoringProvidersResponse(_messages.Message):
+  r"""Message for response to listing NetworkMonitoringProviders
+
+  Fields:
+    networkMonitoringProviders: The list of NetworkMonitoringProvider
+    nextPageToken: A token identifying a page of results the server should
+      return.
+  """
+
+  networkMonitoringProviders = _messages.MessageField('NetworkMonitoringProvider', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
+class ListNetworkPathsResponse(_messages.Message):
+  r"""Message for response to listing NetworkPaths
+
+  Fields:
+    networkPaths: The list of NetworkPath
+    nextPageToken: A token identifying a page of results the server should
+      return.
+  """
+
+  networkPaths = _messages.MessageField('NetworkPath', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
 class ListOperationsResponse(_messages.Message):
   r"""The response message for Operations.ListOperations.
 
@@ -2093,6 +2278,19 @@ class ListVpcFlowLogsConfigsResponse(_messages.Message):
   nextPageToken = _messages.StringField(1)
   unreachable = _messages.StringField(2, repeated=True)
   vpcFlowLogsConfigs = _messages.MessageField('VpcFlowLogsConfig', 3, repeated=True)
+
+
+class ListWebPathsResponse(_messages.Message):
+  r"""Message for response to listing WebPaths
+
+  Fields:
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    webPaths: The list of WebPath.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  webPaths = _messages.MessageField('WebPath', 2, repeated=True)
 
 
 class LoadBalancerBackend(_messages.Message):
@@ -2360,6 +2558,132 @@ class Location(_messages.Message):
   name = _messages.StringField(5)
 
 
+class MonitoringPoint(_messages.Message):
+  r"""Message describing MonitoringPoint resource.
+
+  Enums:
+    ConnectionStatusValueValuesEnum: Output only. Connection status of the
+      MonitoringPoint.
+    DeploymentTypeValueValuesEnum: Output only. The deployment type of the
+      MonitoringPoint.
+    ErrorsValueListEntryValuesEnum:
+    UpgradeTypeValueValuesEnum: Output only. The type of upgrade available for
+      the MonitoringPoint.
+
+  Fields:
+    autoGeoLocationEnabled: Output only. Indicates if automaitic geographic
+      location is enabled for the MonitoringPoint.
+    connectionStatus: Output only. Connection status of the MonitoringPoint.
+    createTime: Output only. The time the MonitoringPoint was created.
+    deploymentType: Output only. The deployment type of the MonitoringPoint.
+    displayName: Output only. Display name of the MonitoringPoint.
+    errors: Output only. The codes of errors detected in the MonitoringPoint.
+    geoLocation: Output only. The geographical location of the
+      MonitoringPoint.
+    guid: Output only. The GUID of the MonitoringPoint.
+    host: Output only. The host information of the MonitoringPoint.
+    hostname: Output only. The hostname of the MonitoringPoint.
+    name: Identifier. Name of the resource. Format: `projects/{project}/locati
+      ons/{location}/networkMonitoringProviders/{network_monitoring_provider}/
+      monitoringPoints/{monitoring_point}`
+    networkInterfaces: Output only. The network interfaces of the
+      MonitoringPoint.
+    originatingIp: Output only. IP address visible when MonitoringPoint
+      connects to the provider.
+    providerTags: Output only. The provider tags of the MonitoringPoint.
+    type: Output only. Deployment type of the MonitoringPoint.
+    updateTime: Output only. The time the MonitoringPoint was updated.
+    upgradeAvailable: Output only. Indicates if an upgrade is available for
+      the MonitoringPoint.
+    upgradeType: Output only. The type of upgrade available for the
+      MonitoringPoint.
+    version: Output only. Version of the software running on the
+      MonitoringPoint.
+  """
+
+  class ConnectionStatusValueValuesEnum(_messages.Enum):
+    r"""Output only. Connection status of the MonitoringPoint.
+
+    Values:
+      CONNECTION_STATUS_UNSPECIFIED: The default value. This value is used if
+        the status is omitted.
+      ONLINE: MonitoringPoint is online.
+      OFFLINE: MonitoringPoint is offline.
+    """
+    CONNECTION_STATUS_UNSPECIFIED = 0
+    ONLINE = 1
+    OFFLINE = 2
+
+  class DeploymentTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The deployment type of the MonitoringPoint.
+
+    Values:
+      DEPLOYMENT_TYPE_UNSPECIFIED: The default value. This value is used if
+        the type is omitted.
+      DOCKER: The MonitoringPoint is deployed as a Docker container.
+      PODMAN: The MonitoringPoint is deployed as a Podman container.
+      HELM: The MonitoringPoint is deployed as a Helm chart.
+    """
+    DEPLOYMENT_TYPE_UNSPECIFIED = 0
+    DOCKER = 1
+    PODMAN = 2
+    HELM = 3
+
+  class ErrorsValueListEntryValuesEnum(_messages.Enum):
+    r"""ErrorsValueListEntryValuesEnum enum type.
+
+    Values:
+      ERROR_CODE_UNSPECIFIED: The default value. This value is used if the
+        error code is omitted.
+      NTP_ERROR: Error detected in NTP service.
+      UPGRADE_ERROR: Error detected during the upgrade process.
+      DOWNLOAD_FAILED: Error detected while downloading.
+    """
+    ERROR_CODE_UNSPECIFIED = 0
+    NTP_ERROR = 1
+    UPGRADE_ERROR = 2
+    DOWNLOAD_FAILED = 3
+
+  class UpgradeTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The type of upgrade available for the MonitoringPoint.
+
+    Values:
+      UPGRADE_TYPE_UNSPECIFIED: The default value. This value is used if the
+        upgrade type is omitted.
+      MANUAL: Upgrades are performed manually.
+      MANAGED: Upgrades are managed.
+      SCHEDULED: Upgrade is scheduled.
+      AUTO: Upgrades are performed automatically.
+      EXTERNAL: Upgrades are performed externally.
+    """
+    UPGRADE_TYPE_UNSPECIFIED = 0
+    MANUAL = 1
+    MANAGED = 2
+    SCHEDULED = 3
+    AUTO = 4
+    EXTERNAL = 5
+
+  autoGeoLocationEnabled = _messages.BooleanField(1)
+  connectionStatus = _messages.EnumField('ConnectionStatusValueValuesEnum', 2)
+  createTime = _messages.StringField(3)
+  deploymentType = _messages.EnumField('DeploymentTypeValueValuesEnum', 4)
+  displayName = _messages.StringField(5)
+  errors = _messages.EnumField('ErrorsValueListEntryValuesEnum', 6, repeated=True)
+  geoLocation = _messages.MessageField('GeoLocation', 7)
+  guid = _messages.StringField(8)
+  host = _messages.MessageField('Host', 9)
+  hostname = _messages.StringField(10)
+  name = _messages.StringField(11)
+  networkInterfaces = _messages.MessageField('NetworkInterface', 12, repeated=True)
+  originatingIp = _messages.StringField(13)
+  providerTags = _messages.MessageField('ProviderTag', 14, repeated=True)
+  type = _messages.StringField(15)
+  updateTime = _messages.StringField(16)
+  upgradeAvailable = _messages.BooleanField(17)
+  upgradeType = _messages.EnumField('UpgradeTypeValueValuesEnum', 18)
+  version = _messages.StringField(19)
+
+
 class NatInfo(_messages.Message):
   r"""For display only. Metadata associated with NAT.
 
@@ -2464,6 +2788,186 @@ class NetworkInfo(_messages.Message):
   matchedSubnetUri = _messages.StringField(3)
   region = _messages.StringField(4)
   uri = _messages.StringField(5)
+
+
+class NetworkInterface(_messages.Message):
+  r"""Message describing network interfaces.
+
+  Fields:
+    adapterDescription: Output only. The description of the interface.
+    cidr: Output only. The IP address of the interface and subnet mask in CIDR
+      format. Examples: 192.168.1.0/24, 2001:db8::/32
+    interfaceName: Output only. The name of the network interface. Examples:
+      eth0, eno1
+    ipAddress: Output only. The IP address of the interface.
+    macAddress: Output only. The MAC address of the interface.
+    speed: Output only. Speed of the interface in millions of bits per second.
+    vlanId: Output only. The id of the VLAN.
+  """
+
+  adapterDescription = _messages.StringField(1)
+  cidr = _messages.StringField(2)
+  interfaceName = _messages.StringField(3)
+  ipAddress = _messages.StringField(4)
+  macAddress = _messages.StringField(5)
+  speed = _messages.IntegerField(6)
+  vlanId = _messages.IntegerField(7)
+
+
+class NetworkMonitoringProvider(_messages.Message):
+  r"""Message describing NetworkMonitoringProvider resource.
+
+  Enums:
+    ProviderTypeValueValuesEnum: Required. Type of the
+      NetworkMonitoringProvider.
+    StateValueValuesEnum: Output only. State of the NetworkMonitoringProvider.
+
+  Fields:
+    createTime: Output only. The time the NetworkMonitoringProvider was
+      created.
+    errors: Output only. The list of error messages detected for the
+      NetworkMonitoringProvider.
+    name: Output only. Identifier. Name of the resource. Format:
+    `projects/{project}/locations/{location}/networkMonitoringProviders/{network_monitoring_provider}`
+    providerType: Required. Type of the NetworkMonitoringProvider.
+    providerUri: Output only. Link to the provider's UI.
+    state: Output only. State of the NetworkMonitoringProvider.
+    updateTime: Output only. The time the NetworkMonitoringProvider was
+      updated.
+  """
+
+  class ProviderTypeValueValuesEnum(_messages.Enum):
+    r"""Required. Type of the NetworkMonitoringProvider.
+
+    Values:
+      PROVIDER_TYPE_UNSPECIFIED: The default value. This value is used if the
+        type is omitted.
+      EXTERNAL: External provider.
+    """
+    PROVIDER_TYPE_UNSPECIFIED = 0
+    EXTERNAL = 1
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. State of the NetworkMonitoringProvider.
+
+    Values:
+      STATE_UNSPECIFIED: The default value. This value is used if the status
+        is omitted.
+      ACTIVATING: NetworkMonitoringProvider is being activated.
+      ACTIVE: NetworkMonitoringProvider is active.
+      SUSPENDING: NetworkMonitoringProvider is being suspended.
+      SUSPENDED: NetworkMonitoringProvider is suspended.
+      DELETING: NetworkMonitoringProvider is being deleted.
+      DELETED: NetworkMonitoringProvider is deleted.
+    """
+    STATE_UNSPECIFIED = 0
+    ACTIVATING = 1
+    ACTIVE = 2
+    SUSPENDING = 3
+    SUSPENDED = 4
+    DELETING = 5
+    DELETED = 6
+
+  createTime = _messages.StringField(1)
+  errors = _messages.StringField(2, repeated=True)
+  name = _messages.StringField(3)
+  providerType = _messages.EnumField('ProviderTypeValueValuesEnum', 4)
+  providerUri = _messages.StringField(5)
+  state = _messages.EnumField('StateValueValuesEnum', 6)
+  updateTime = _messages.StringField(7)
+
+
+class NetworkPath(_messages.Message):
+  r"""Message describing NetworkPath resource.
+
+  Enums:
+    MonitoringStatusValueValuesEnum: Output only. The monitoring status of the
+      network path.
+    NetworkProtocolValueValuesEnum: Output only. The network protocol of the
+      network path.
+
+  Fields:
+    createTime: Output only. The time the NetworkPath was created.
+    destination: Output only. IP address or hostname of the network path
+      destination.
+    destinationGeoLocation: Output only. Geographical location of the
+      destination MonitoringPoint.
+    destinationMonitoringPointId: Output only. Provider's UUID of the
+      destination MonitoringPoint. This id may not point to a resource in the
+      Google Cloud.
+    displayName: Output only. The display name of the network path.
+    dualEnded: Output only. Indicates if the network path is dual ended. When
+      true, the network path is measured both: from both source to
+      destination, and from destination to source. When false, the network
+      path is measured from the source through the destination back to the
+      source (round trip measurement).
+    monitoringEnabled: Output only. Is monitoring enabled for the network
+      path.
+    monitoringPolicyDisplayName: Output only. Display name of the monitoring
+      policy.
+    monitoringPolicyId: Output only. ID of monitoring policy.
+    monitoringStatus: Output only. The monitoring status of the network path.
+    name: Identifier. Name of the resource. Format: `projects/{project}/locati
+      ons/{location}/networkMonitoringProviders/{network_monitoring_provider}/
+      networkPaths/{network_path}`
+    networkProtocol: Output only. The network protocol of the network path.
+    providerTags: Output only. The provider tags of the network path.
+    providerUiUri: Output only. Link to provider's UI; link shows the
+      NetworkPath.
+    sourceMonitoringPointId: Output only. Provider's UUID of the source
+      MonitoringPoint. This id may not point to a resource in the Google
+      Cloud.
+    updateTime: Output only. The time the NetworkPath was updated.
+  """
+
+  class MonitoringStatusValueValuesEnum(_messages.Enum):
+    r"""Output only. The monitoring status of the network path.
+
+    Values:
+      MONITORING_STATUS_UNSPECIFIED: The default value. This value is used if
+        the status is omitted.
+      MONITORING: Monitoring is enabled.
+      POLICY_MISMATCH: Policy is mismatched.
+      MONITORING_POINT_OFFLINE: Monitoring point is offline.
+      DISABLED: Monitoring is disabled.
+    """
+    MONITORING_STATUS_UNSPECIFIED = 0
+    MONITORING = 1
+    POLICY_MISMATCH = 2
+    MONITORING_POINT_OFFLINE = 3
+    DISABLED = 4
+
+  class NetworkProtocolValueValuesEnum(_messages.Enum):
+    r"""Output only. The network protocol of the network path.
+
+    Values:
+      NETWORK_PROTOCOL_UNSPECIFIED: The default value. This value is used if
+        the network protocol is omitted.
+      ICMP: ICMP.
+      UDP: UDP.
+      TCP: TCP.
+    """
+    NETWORK_PROTOCOL_UNSPECIFIED = 0
+    ICMP = 1
+    UDP = 2
+    TCP = 3
+
+  createTime = _messages.StringField(1)
+  destination = _messages.StringField(2)
+  destinationGeoLocation = _messages.MessageField('GeoLocation', 3)
+  destinationMonitoringPointId = _messages.StringField(4)
+  displayName = _messages.StringField(5)
+  dualEnded = _messages.BooleanField(6)
+  monitoringEnabled = _messages.BooleanField(7)
+  monitoringPolicyDisplayName = _messages.StringField(8)
+  monitoringPolicyId = _messages.StringField(9)
+  monitoringStatus = _messages.EnumField('MonitoringStatusValueValuesEnum', 10)
+  name = _messages.StringField(11)
+  networkProtocol = _messages.EnumField('NetworkProtocolValueValuesEnum', 12)
+  providerTags = _messages.MessageField('ProviderTag', 13, repeated=True)
+  providerUiUri = _messages.StringField(14)
+  sourceMonitoringPointId = _messages.StringField(15)
+  updateTime = _messages.StringField(16)
 
 
 class NetworkmanagementOrganizationsLocationsGetRequest(_messages.Message):
@@ -2926,6 +3430,315 @@ class NetworkmanagementProjectsLocationsListRequest(_messages.Message):
   pageToken = _messages.StringField(5)
 
 
+class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersCreateRequest(_messages.Message):
+  r"""A
+  NetworkmanagementProjectsLocationsNetworkMonitoringProvidersCreateRequest
+  object.
+
+  Fields:
+    networkMonitoringProvider: A NetworkMonitoringProvider resource to be
+      passed as the request body.
+    networkMonitoringProviderId: Required. The ID to use for the
+      NetworkMonitoringProvider resource, which will become the final
+      component of the NetworkMonitoringProvider resource's name.
+    parent: Required. Parent value for CreateNetworkMonitoringProviderRequest.
+      Format: projects/{project}/locations/{location}
+  """
+
+  networkMonitoringProvider = _messages.MessageField('NetworkMonitoringProvider', 1)
+  networkMonitoringProviderId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersDeleteRequest(_messages.Message):
+  r"""A
+  NetworkmanagementProjectsLocationsNetworkMonitoringProvidersDeleteRequest
+  object.
+
+  Fields:
+    force: Optional. If set to true, any nested MonitoringPoints, NetworkPaths
+      and WebPaths resources from this NetworkMonitoringProvider will also be
+      deleted. Otherwise, the request will only work if there are no nested
+      resources.
+    name: Required. Name of the resource. Format: projects/{project}/locations
+      /{location}/networkMonitoringProviders/{network_monitoring_provider}
+  """
+
+  force = _messages.BooleanField(1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersGenerateMonitoringPointConfigRequest(_messages.Message):
+  r"""A NetworkmanagementProjectsLocationsNetworkMonitoringProvidersGenerateMo
+  nitoringPointConfigRequest object.
+
+  Fields:
+    name: Required. Name of the resource. Format: projects/{project}/locations
+      /{location}/networkMonitoringProviders/{network_monitoring_provider}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersGenerateProviderAccessTokenRequest(_messages.Message):
+  r"""A NetworkmanagementProjectsLocationsNetworkMonitoringProvidersGeneratePr
+  oviderAccessTokenRequest object.
+
+  Fields:
+    gcpAccessToken: Required. Google access token.
+    name: Required. Name of the resource. Format: projects/{project}/locations
+      /{location}/networkMonitoringProviders/{network_monitoring_provider}
+  """
+
+  gcpAccessToken = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersGetRequest(_messages.Message):
+  r"""A NetworkmanagementProjectsLocationsNetworkMonitoringProvidersGetRequest
+  object.
+
+  Fields:
+    name: Required. Name of the resource. Format: `projects/{project}/location
+      s/{location}/networkMonitoringProviders/{network_monitoring_provider}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersListRequest(_messages.Message):
+  r"""A
+  NetworkmanagementProjectsLocationsNetworkMonitoringProvidersListRequest
+  object.
+
+  Fields:
+    pageSize: Optional. The maximum number of monitoring points to return. The
+      service may return fewer than this value. If unspecified, at most 20
+      monitoring points will be returned. The maximum value is 1000; values
+      above 1000 will be coerced to 1000.
+    pageToken: Optional. A page token, received from a previous
+      `ListMonitoringPoints` call. Provide this to retrieve the subsequent
+      page. When paginating, all other parameters provided to
+      `ListMonitoringPoints` must match the call that provided the page token.
+    parent: Required. Parent value for ListNetworkMonitoringProvidersRequest.
+      Format: `projects/{project}/locations/{location}`
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPointsDownloadInstallScriptRequest(_messages.Message):
+  r"""A NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoring
+  PointsDownloadInstallScriptRequest object.
+
+  Enums:
+    MonitoringPointTypeValueValuesEnum: Required. The type of the monitoring
+      point.
+
+  Fields:
+    _password: Optional. Password for logging into the MonitoringPoint.
+    hostname: Required. The hostname of the MonitoringPoint, e.g. "test-vm"
+    monitoringPointType: Required. The type of the monitoring point.
+    ntpServerAddress: Optional. Network Time Protocol a user can configure. If
+      the user omits the field, the default is either NTP servers provided in
+      the DHCP lease or a set of well-known NTP servers pre-configured on the
+      monitoring point. This field can be an IP address or FQDN.
+    ntpServerSecondaryAddress: Optional. Second NTP server.
+    parent: Required. Parent value for DownloadInstallScriptRequest. Format: p
+      rojects/{project}/locations/{location}/networkMonitoringProviders/{netwo
+      rk_monitoring_provider}
+    staticIpAddress_dnsServerAddress: Required. DNS server.
+    staticIpAddress_dnsServerSecondaryAddress: Optional. Second DNS server.
+    staticIpAddress_domain: Optional. Domain name of the MonitoringPoint.
+    staticIpAddress_gatewayAddress: Required. Gateway IP address. Example:
+      "100.80.40.1".
+    staticIpAddress_ipAddress: Required. IP address of the MonitoringPoint.
+    staticIpAddress_netmask: Optional. Networkmask and CIDR range. Example:
+      "255.255.255.0/24"
+    timeZone_id: IANA Time Zone Database time zone. For example
+      "America/New_York".
+    timeZone_version: Optional. IANA Time Zone Database version number. For
+      example "2019a".
+    useDhcp: Optional. Dynamic Host Configuration Protocol, is a network
+      management protocol that automatically assigns IP addresses and other
+      network configuration parameters to devices connecting to a network.
+  """
+
+  class MonitoringPointTypeValueValuesEnum(_messages.Enum):
+    r"""Required. The type of the monitoring point.
+
+    Values:
+      MONITORING_POINT_TYPE_UNSPECIFIED: This value should not be used.
+      CONTAINER: Monitoring Point that runs in a Docker container.
+      KVM: Monitoring Point that runs in a Kernel-based Virtual Machine (KVM)
+        hypervisor.
+      VMWARE: Monitoring Point that runs in a VMware hypervisor.
+      HELM: Monitoring Point that runs on a K8S Helm.
+      GCE_VM: Monitoring Point that runs as a startup script in a Compute
+        Engine VM.
+    """
+    MONITORING_POINT_TYPE_UNSPECIFIED = 0
+    CONTAINER = 1
+    KVM = 2
+    VMWARE = 3
+    HELM = 4
+    GCE_VM = 5
+
+  _password = _messages.StringField(1)
+  hostname = _messages.StringField(2)
+  monitoringPointType = _messages.EnumField('MonitoringPointTypeValueValuesEnum', 3)
+  ntpServerAddress = _messages.StringField(4)
+  ntpServerSecondaryAddress = _messages.StringField(5)
+  parent = _messages.StringField(6, required=True)
+  staticIpAddress_dnsServerAddress = _messages.StringField(7)
+  staticIpAddress_dnsServerSecondaryAddress = _messages.StringField(8)
+  staticIpAddress_domain = _messages.StringField(9)
+  staticIpAddress_gatewayAddress = _messages.StringField(10)
+  staticIpAddress_ipAddress = _messages.StringField(11)
+  staticIpAddress_netmask = _messages.StringField(12)
+  timeZone_id = _messages.StringField(13)
+  timeZone_version = _messages.StringField(14)
+  useDhcp = _messages.BooleanField(15)
+
+
+class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPointsDownloadRecreateInstallScriptRequest(_messages.Message):
+  r"""A NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoring
+
+  PointsDownloadRecreateInstallScriptRequest object.
+
+  Fields:
+    hostname: Optional. The hostname of the MonitoringPoint, e.g. "test-vm"
+    name: Required. Resource name of the MonitoringPoint. Format:
+    projects/{project}/locations/{location}/networkMonitoringProviders/{network_monitoring_provider}/monitoringPoints/{monitoring_point}
+  """
+
+  hostname = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPointsDownloadServerConnectConfigRequest(_messages.Message):
+  r"""A NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoring
+  PointsDownloadServerConnectConfigRequest object.
+
+  Fields:
+    parent: Required. Parent value for DownloadServerConnectConfigRequest.
+      Format: projects/{project}/locations/{location}/networkMonitoringProvide
+      rs/{network_monitoring_provider}
+  """
+
+  parent = _messages.StringField(1, required=True)
+
+
+class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPointsGetRequest(_messages.Message):
+  r"""A NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoring
+  PointsGetRequest object.
+
+  Fields:
+    name: Required. Name of the resource. Format: projects/{project}/locations
+      /{location}/networkMonitoringProviders/{network_monitoring_provider}/mon
+      itoringPoints/{monitoring_point}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPointsListRequest(_messages.Message):
+  r"""A NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoring
+
+  PointsListRequest object.
+
+  Fields:
+    pageSize: Optional. The maximum number of monitoring points to return. The
+      service may return fewer than this value. If unspecified, at most 20
+      monitoring points will be returned. The maximum value is 1000; values
+      above 1000 will be coerced to 1000.
+    pageToken: Optional. A page token, received from a previous
+      `ListMonitoringPoints` call. Provide this to retrieve the subsequent
+      page. When paginating, all other parameters provided to
+      `ListMonitoringPoints` must match the call that provided the page token.
+    parent: Required. Parent value for ListMonitoringPointsRequest. Format:
+    projects/{project}/locations/{location}/networkMonitoringProviders/{network_monitoring_provider}
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersNetworkPathsGetRequest(_messages.Message):
+  r"""A NetworkmanagementProjectsLocationsNetworkMonitoringProvidersNetworkPat
+  hsGetRequest object.
+
+  Fields:
+    name: Required. Name of the resource. Format: projects/{project}/locations
+      /{location}/networkMonitoringProviders/{network_monitoring_provider}/net
+      workPaths/{network_path}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersNetworkPathsListRequest(_messages.Message):
+  r"""A NetworkmanagementProjectsLocationsNetworkMonitoringProvidersNetworkPat
+  hsListRequest object.
+
+  Fields:
+    pageSize: Optional. The maximum number of network paths to return. The
+      service may return fewer than this value. If unspecified, at most 20
+      network pathswill be returned. The maximum value is 1000; values above
+      1000 will be coerced to 1000.
+    pageToken: Optional. A page token, received from a previous
+      `ListNetworkPaths` call. Provide this to retrieve the subsequent page.
+      When paginating, all other parameters provided to `ListNetworkPaths`
+      must match the call that provided the page token.
+    parent: Required. Parent value for ListNetworkPathsRequest. Format: projec
+      ts/{project}/locations/{location}/networkMonitoringProviders/{network_mo
+      nitoring_provider}
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersWebPathsGetRequest(_messages.Message):
+  r"""A NetworkmanagementProjectsLocationsNetworkMonitoringProvidersWebPathsGe
+  tRequest object.
+
+  Fields:
+    name: Required. Name of the resource.. Format: projects/{project}/location
+      s/{location}/networkMonitoringProviders/{network_monitoring_provider}/we
+      bPaths/{web_path}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersWebPathsListRequest(_messages.Message):
+  r"""A NetworkmanagementProjectsLocationsNetworkMonitoringProvidersWebPathsLi
+  stRequest object.
+
+  Fields:
+    pageSize: Optional. The maximum number of web paths to return. The service
+      may return fewer than this value. If unspecified, at most 20 web paths
+      will be returned. The maximum value is 1000; values above 1000 will be
+      coerced to 1000.
+    pageToken: Optional. A page token, received from a previous `ListWebPaths`
+      call. Provide this to retrieve the subsequent page. When paginating, all
+      other parameters provided to `ListWebPaths` must match the call that
+      provided the page token.
+    parent: Required. Parent value for ListWebPathsRequest. Format: projects/{
+      project}/locations/{location}/networkMonitoringProviders/{network_monito
+      ring_provider}
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
 class NetworkmanagementProjectsLocationsVpcFlowLogsConfigsCreateRequest(_messages.Message):
   r"""A NetworkmanagementProjectsLocationsVpcFlowLogsConfigsCreateRequest
   object.
@@ -3371,6 +4184,52 @@ class ProbingDetails(_messages.Message):
   sentProbeCount = _messages.IntegerField(9, variant=_messages.Variant.INT32)
   successfulProbeCount = _messages.IntegerField(10, variant=_messages.Variant.INT32)
   verifyTime = _messages.StringField(11)
+
+
+class ProviderTag(_messages.Message):
+  r"""Message describing the provider tag.
+
+  Enums:
+    ResourceTypeValueValuesEnum: Output only. The resource type of the
+      provider tag.
+
+  Fields:
+    category: Output only. The category of the provider tag.
+    resourceType: Output only. The resource type of the provider tag.
+    value: Output only. The value of the provider tag.
+  """
+
+  class ResourceTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The resource type of the provider tag.
+
+    Values:
+      RESOURCE_TYPE_UNSPECIFIED: The default value. This value is used if the
+        status is omitted.
+      NETWORK_PATH: Network path.
+      WEB_PATH: Web path.
+      MONITORING_POLICY: Monitoring policy.
+      MONITORING_POINT: Monitoring point.
+      MONITORING_POINT_RULE: This represents Provider Tag that a user manually
+        assigns to a specific Rule within a Monitoring Policy. It is created
+        when a user saves a Monitoring Policy with custom tags applied to its
+        rules.
+      MONITORING_POINT_RULE_AUTO: This represents auto-generated Provider Tags
+        derived from the criteria defined in a Monitoring Point Rule (e.g.,
+        Subnet, VLAN, Interface). If "Auto Network Rule Tagging" is enabled,
+        the system automatically generates these tags based on the rule's
+        filter values.
+    """
+    RESOURCE_TYPE_UNSPECIFIED = 0
+    NETWORK_PATH = 1
+    WEB_PATH = 2
+    MONITORING_POLICY = 3
+    MONITORING_POINT = 4
+    MONITORING_POINT_RULE = 5
+    MONITORING_POINT_RULE_AUTO = 6
+
+  category = _messages.StringField(1)
+  resourceType = _messages.EnumField('ResourceTypeValueValuesEnum', 2)
+  value = _messages.StringField(3)
 
 
 class ProxyConnectionInfo(_messages.Message):
@@ -4522,6 +5381,87 @@ class VpnTunnelInfo(_messages.Message):
   uri = _messages.StringField(9)
 
 
+class WebPath(_messages.Message):
+  r"""Message describing WebPath resource.
+
+  Enums:
+    MonitoringStatusValueValuesEnum: Output only. The monitoring status of the
+      WebPath.
+    WorkflowTypeValueValuesEnum: Output only. The workflow type of the
+      WebPath.
+
+  Fields:
+    createTime: Output only. The time the WebPath was created.
+    destination: Output only. Web monitoring target.
+    destinationGeoLocation: Output only. Geographical location of the
+      destination.
+    displayName: Output only. Display name of the WebPath.
+    interval: Output only. Monitoring interval.
+    monitoringEnabled: Output only. Is monitoring enabled for the WebPath.
+    monitoringPolicyDisplayName: Output only. Display name of the monitoring
+      policy.
+    monitoringPolicyId: Output only. ID of the monitoring policy.
+    monitoringStatus: Output only. The monitoring status of the WebPath.
+    name: Identifier. Name of the resource. Format: `projects/{project}/locati
+      ons/{location}/networkMonitoringProviders/{network_monitoring_provider}/
+      webPaths/{web_path}`
+    providerTags: Output only. The provider tags of the web path.
+    providerUiUri: Output only. Link to provider's UI; link shows the WebPath.
+    relatedNetworkPathId: Output only. Provider's UUID of the related
+      NetworkPath.
+    sourceMonitoringPointId: Output only. ID of the source MonitoringPoint.
+    updateTime: Output only. The time the WebPath was updated.
+    workflowType: Output only. The workflow type of the WebPath.
+  """
+
+  class MonitoringStatusValueValuesEnum(_messages.Enum):
+    r"""Output only. The monitoring status of the WebPath.
+
+    Values:
+      MONITORING_STATUS_UNSPECIFIED: The default value. This value is used if
+        the status is omitted.
+      MONITORING: Monitoring is enabled.
+      POLICY_MISMATCH: Policy is mismatched.
+      MONITORING_POINT_OFFLINE: Monitoring point is offline.
+      DISABLED: Monitoring is disabled.
+    """
+    MONITORING_STATUS_UNSPECIFIED = 0
+    MONITORING = 1
+    POLICY_MISMATCH = 2
+    MONITORING_POINT_OFFLINE = 3
+    DISABLED = 4
+
+  class WorkflowTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The workflow type of the WebPath.
+
+    Values:
+      WORKFLOW_TYPE_UNSPECIFIED: The default value. This value is used if the
+        status is omitted.
+      BROWSER: Browser.
+      HTTP: HTTP.
+    """
+    WORKFLOW_TYPE_UNSPECIFIED = 0
+    BROWSER = 1
+    HTTP = 2
+
+  createTime = _messages.StringField(1)
+  destination = _messages.StringField(2)
+  destinationGeoLocation = _messages.MessageField('GeoLocation', 3)
+  displayName = _messages.StringField(4)
+  interval = _messages.StringField(5)
+  monitoringEnabled = _messages.BooleanField(6)
+  monitoringPolicyDisplayName = _messages.StringField(7)
+  monitoringPolicyId = _messages.StringField(8)
+  monitoringStatus = _messages.EnumField('MonitoringStatusValueValuesEnum', 9)
+  name = _messages.StringField(10)
+  providerTags = _messages.MessageField('ProviderTag', 11, repeated=True)
+  providerUiUri = _messages.StringField(12)
+  relatedNetworkPathId = _messages.StringField(13)
+  sourceMonitoringPointId = _messages.StringField(14)
+  updateTime = _messages.StringField(15)
+  workflowType = _messages.EnumField('WorkflowTypeValueValuesEnum', 16)
+
+
 encoding.AddCustomJsonFieldMapping(
     StandardQueryParameters, 'f__xgafv', '$.xgafv')
 encoding.AddCustomJsonEnumMapping(
@@ -4530,3 +5470,19 @@ encoding.AddCustomJsonEnumMapping(
     StandardQueryParameters.FXgafvValueValuesEnum, '_2', '2')
 encoding.AddCustomJsonFieldMapping(
     NetworkmanagementProjectsLocationsGlobalConnectivityTestsGetIamPolicyRequest, 'options_requestedPolicyVersion', 'options.requestedPolicyVersion')
+encoding.AddCustomJsonFieldMapping(
+    NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPointsDownloadInstallScriptRequest, 'staticIpAddress_dnsServerAddress', 'staticIpAddress.dnsServerAddress')
+encoding.AddCustomJsonFieldMapping(
+    NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPointsDownloadInstallScriptRequest, 'staticIpAddress_dnsServerSecondaryAddress', 'staticIpAddress.dnsServerSecondaryAddress')
+encoding.AddCustomJsonFieldMapping(
+    NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPointsDownloadInstallScriptRequest, 'staticIpAddress_domain', 'staticIpAddress.domain')
+encoding.AddCustomJsonFieldMapping(
+    NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPointsDownloadInstallScriptRequest, 'staticIpAddress_gatewayAddress', 'staticIpAddress.gatewayAddress')
+encoding.AddCustomJsonFieldMapping(
+    NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPointsDownloadInstallScriptRequest, 'staticIpAddress_ipAddress', 'staticIpAddress.ipAddress')
+encoding.AddCustomJsonFieldMapping(
+    NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPointsDownloadInstallScriptRequest, 'staticIpAddress_netmask', 'staticIpAddress.netmask')
+encoding.AddCustomJsonFieldMapping(
+    NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPointsDownloadInstallScriptRequest, 'timeZone_id', 'timeZone.id')
+encoding.AddCustomJsonFieldMapping(
+    NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPointsDownloadInstallScriptRequest, 'timeZone_version', 'timeZone.version')

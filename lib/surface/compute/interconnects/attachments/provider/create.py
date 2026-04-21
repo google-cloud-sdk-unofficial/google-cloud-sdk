@@ -23,7 +23,7 @@ from googlecloudsdk.command_lib.compute.interconnects.attachments import flags a
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Create(base.CreateCommand):
   """Create a Compute Engine partner provider interconnect attachment.
 

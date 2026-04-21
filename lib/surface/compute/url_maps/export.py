@@ -84,8 +84,12 @@ def _Run(args, holder, url_map_arg, release_track):
         schema_path=_GetSchemaPath(release_track))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.PREVIEW,
+)
 class Export(base.Command):
   """Export a URL map."""
 

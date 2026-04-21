@@ -41,7 +41,10 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
 )
 class GetConfig(base.DescribeCommand):
   """Get MACsec configuration of a Compute Engine interconnect.

@@ -217,10 +217,10 @@ class GoogleIamV3alphaAccessPolicyRule(_messages.Message):
     ConditionsValue: Optional. The conditions that determine whether this rule
       applies to a request. Conditions are identified by their key, which is
       the FQDN of the service that they are relevant to. For example: ```
-      "conditions": { "iam.googleapis.com": } ``` Each rule is evaluated
-      independently. If this rule does not apply to a request, other rules
-      might still apply. Currently supported keys are as follows: *
-      `eventarc.googleapis.com`: Can use `CEL` functions that evaluate
+      "conditions": { "iam.googleapis.com": { "expression": } } ``` Each rule
+      is evaluated independently. If this rule does not apply to a request,
+      other rules might still apply. Currently supported keys are as follows:
+      * `eventarc.googleapis.com`: Can use `CEL` functions that evaluate
       resource fields. * `iam.googleapis.com`: Can use `CEL` functions that
       evaluate [resource
       tags](https://cloud.google.com/iam/help/conditions/resource-tags) and
@@ -231,10 +231,10 @@ class GoogleIamV3alphaAccessPolicyRule(_messages.Message):
     conditions: Optional. The conditions that determine whether this rule
       applies to a request. Conditions are identified by their key, which is
       the FQDN of the service that they are relevant to. For example: ```
-      "conditions": { "iam.googleapis.com": } ``` Each rule is evaluated
-      independently. If this rule does not apply to a request, other rules
-      might still apply. Currently supported keys are as follows: *
-      `eventarc.googleapis.com`: Can use `CEL` functions that evaluate
+      "conditions": { "iam.googleapis.com": { "expression": } } ``` Each rule
+      is evaluated independently. If this rule does not apply to a request,
+      other rules might still apply. Currently supported keys are as follows:
+      * `eventarc.googleapis.com`: Can use `CEL` functions that evaluate
       resource fields. * `iam.googleapis.com`: Can use `CEL` functions that
       evaluate [resource
       tags](https://cloud.google.com/iam/help/conditions/resource-tags) and
@@ -300,19 +300,17 @@ class GoogleIamV3alphaAccessPolicyRule(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class ConditionsValue(_messages.Message):
-    r"""Optional.
-
-    The conditions that determine whether this rule applies to a request.
-    Conditions are identified by their key, which is the FQDN of the service
-    that they are relevant to. For example: ``` "conditions": {
-    "iam.googleapis.com": } ``` Each rule is evaluated independently. If this
-    rule does not apply to a request, other rules might still apply. Currently
-    supported keys are as follows: * `eventarc.googleapis.com`: Can use `CEL`
-    functions that evaluate resource fields. * `iam.googleapis.com`: Can use
-    `CEL` functions that evaluate [resource
-    tags](https://cloud.google.com/iam/help/conditions/resource-tags) and
-    combine them using boolean and logical operators. Other functions and
-    operators are not supported.
+    r"""Optional. The conditions that determine whether this rule applies to a
+    request. Conditions are identified by their key, which is the FQDN of the
+    service that they are relevant to. For example: ``` "conditions": {
+    "iam.googleapis.com": { "expression": } } ``` Each rule is evaluated
+    independently. If this rule does not apply to a request, other rules might
+    still apply. Currently supported keys are as follows: *
+    `eventarc.googleapis.com`: Can use `CEL` functions that evaluate resource
+    fields. * `iam.googleapis.com`: Can use `CEL` functions that evaluate
+    [resource tags](https://cloud.google.com/iam/help/conditions/resource-
+    tags) and combine them using boolean and logical operators. Other
+    functions and operators are not supported.
 
     Messages:
       AdditionalProperty: An additional property for a ConditionsValue object.
@@ -338,15 +336,12 @@ class GoogleIamV3alphaAccessPolicyRule(_messages.Message):
   description = _messages.StringField(2)
   effect = _messages.EnumField('EffectValueValuesEnum', 3)
   excludedPrincipals = _messages.StringField(4, repeated=True)
-  operation = _messages.MessageField(
-      'GoogleIamV3alphaAccessPolicyRuleOperation', 5
-  )
+  operation = _messages.MessageField('GoogleIamV3alphaAccessPolicyRuleOperation', 5)
   principals = _messages.StringField(6, repeated=True)
 
 
 class GoogleIamV3alphaAccessPolicyRuleOperation(_messages.Message):
   r"""Attributes that are used to determine whether this rule applies to a
-
   request.
 
   Fields:
@@ -562,9 +557,7 @@ class GoogleIamV3alphaPolicy(_messages.Message):
   """
 
   accessPolicy = _messages.MessageField('GoogleIamV3alphaAccessPolicy', 1)
-  principalAccessBoundaryPolicy = _messages.MessageField(
-      'GoogleIamV3alphaPrincipalAccessBoundaryPolicy', 2
-  )
+  principalAccessBoundaryPolicy = _messages.MessageField('GoogleIamV3alphaPrincipalAccessBoundaryPolicy', 2)
 
 
 class GoogleIamV3alphaPolicyBinding(_messages.Message):
@@ -598,12 +591,13 @@ class GoogleIamV3alphaPolicyBinding(_messages.Message):
       - `principal.subject in []` - `principal.subject.startsWith()` -
       `principal.subject.endsWith()` Allowed operations for `principal.type`:
       - `principal.type == ` - `principal.type != ` - `principal.type in []`
-      Supported principal types are Workspace, Workforce Pool, Workload Pool
-      and Service Account. Allowed string must be one of: -
-      iam.googleapis.com/WorkspaceIdentity -
-      iam.googleapis.com/WorkforcePoolIdentity -
-      iam.googleapis.com/WorkloadPoolIdentity -
-      iam.googleapis.com/ServiceAccount
+      Supported principal types are workspace, workforce pool, workload pool,
+      service account, and Agent Identity. Allowed string must be one of: -
+      `iam.googleapis.com/WorkspaceIdentity` -
+      `iam.googleapis.com/WorkforcePoolIdentity` -
+      `iam.googleapis.com/WorkloadPoolIdentity` -
+      `iam.googleapis.com/ServiceAccount` -
+      `iam.googleapis.com/AgentPoolIdentity` (available in Preview)
     createTime: Output only. The time when the policy binding was created.
     displayName: Optional. The description of the policy binding. Must be less
       than or equal to 63 characters.

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -74,3 +74,57 @@ organizations_or_projects_locations_vpc_flow_logs_configs:
     - *location
     - *vpcFlowLogsConfig
     disable_auto_completers: true
+projects_locations_network_monitoring_providers:
+  name: networkMonitoringProvider
+  plural_name: networkMonitoringProviders
+  collection: networkmanagement.projects.locations.networkMonitoringProviders
+  attributes:
+  - *project
+  - *location
+  - &networkMonitoringProvider
+    parameter_name: networkMonitoringProvidersId
+    attribute_name: network_monitoring_provider
+    help: The networkMonitoringProvider id of the {resource} resource.
+  disable_auto_completers: true
+projects_locations_network_monitoring_providers_monitoring_points:
+  name: monitoringPoint
+  plural_name: monitoringPoints
+  collection:
+    networkmanagement.projects.locations.networkMonitoringProviders.monitoringPoints
+  attributes:
+  - *project
+  - *location
+  - *networkMonitoringProvider
+  - &monitoringPoint
+    parameter_name: monitoringPointsId
+    attribute_name: monitoring_point
+    help: The monitoringPoint id of the {resource} resource.
+  disable_auto_completers: false
+projects_locations_network_monitoring_providers_network_paths:
+  name: networkPath
+  plural_name: networkPaths
+  collection:
+    networkmanagement.projects.locations.networkMonitoringProviders.networkPaths
+  attributes:
+  - *project
+  - *location
+  - *networkMonitoringProvider
+  - &networkPath
+    parameter_name: networkPathsId
+    attribute_name: network_path
+    help: The networkPath id of the {resource} resource.
+  disable_auto_completers: false
+projects_locations_network_monitoring_providers_web_paths:
+  name: webPath
+  plural_name: webPaths
+  collection:
+    networkmanagement.projects.locations.networkMonitoringProviders.webPaths
+  attributes:
+  - *project
+  - *location
+  - *networkMonitoringProvider
+  - &webPath
+    parameter_name: webPathsId
+    attribute_name: web_path
+    help: The webPath id of the {resource} resource.
+  disable_auto_completers: false

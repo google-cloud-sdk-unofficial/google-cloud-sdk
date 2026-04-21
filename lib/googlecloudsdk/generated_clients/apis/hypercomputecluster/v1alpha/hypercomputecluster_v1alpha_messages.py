@@ -57,18 +57,6 @@ class Artifacts(_messages.Message):
   gcsPath = _messages.StringField(1)
 
 
-class AtmTag(_messages.Message):
-  r"""Unstable: Contact hypercompute-service-eng@ before using.
-
-  Fields:
-    key: Required. Unstable: Contact hypercompute-service-eng@ before using.
-    value: Required. Unstable: Contact hypercompute-service-eng@ before using.
-  """
-
-  key = _messages.StringField(1)
-  value = _messages.StringField(2)
-
-
 class BootDisk(_messages.Message):
   r"""A [Persistent disk](https://cloud.google.com/compute/docs/disks) used as
   the boot disk for a Compute Engine VM instance.
@@ -138,7 +126,7 @@ class Cluster(_messages.Message):
       applied to the cluster. Labels can be used to organize clusters and to
       filter them in queries.
     NetworkResourcesValue: Optional. Network resources available to the
-      cluster. Must contain at most one value. Keys specify the ID of the
+      cluster. Must contain exactly one value. Keys specify the ID of the
       network resource by which it can be referenced elsewhere, and must
       conform to [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034)
       (lower-case, alphanumeric, and at most 63 characters).
@@ -149,7 +137,6 @@ class Cluster(_messages.Message):
       alphanumeric, and at most 63 characters).
 
   Fields:
-    compute: Optional. Deprecated. Use compute_resources instead.
     computeResources: Optional. Compute resources available to the cluster.
       Keys specify the ID of the compute resource by which it can be
       referenced elsewhere, and must conform to
@@ -167,11 +154,10 @@ class Cluster(_messages.Message):
       the cluster, in the format
       `projects/{project}/locations/{location}/clusters/{cluster}`.
     networkResources: Optional. Network resources available to the cluster.
-      Must contain at most one value. Keys specify the ID of the network
+      Must contain exactly one value. Keys specify the ID of the network
       resource by which it can be referenced elsewhere, and must conform to
       [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034) (lower-case,
       alphanumeric, and at most 63 characters).
-    networks: Optional. Deprecated. Use network_resources instead.
     orchestrator: Optional. Orchestrator that is responsible for scheduling
       and running jobs on the cluster.
     reconciling: Output only. Indicates whether changes to the cluster are
@@ -182,7 +168,6 @@ class Cluster(_messages.Message):
       referenced elsewhere, and must conform to
       [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034) (lower-case,
       alphanumeric, and at most 63 characters).
-    storages: Optional. Deprecated. Use storage_resources instead.
     updateTime: Output only. Time that the cluster was most recently updated.
   """
 
@@ -243,8 +228,8 @@ class Cluster(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class NetworkResourcesValue(_messages.Message):
-    r"""Optional. Network resources available to the cluster. Must contain at
-    most one value. Keys specify the ID of the network resource by which it
+    r"""Optional. Network resources available to the cluster. Must contain
+    exactly one value. Keys specify the ID of the network resource by which it
     can be referenced elsewhere, and must conform to
     [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034) (lower-case,
     alphanumeric, and at most 63 characters).
@@ -300,32 +285,37 @@ class Cluster(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  compute = _messages.MessageField('Compute', 1)
-  computeResources = _messages.MessageField('ComputeResourcesValue', 2)
-  createTime = _messages.StringField(3)
-  description = _messages.StringField(4)
-  labels = _messages.MessageField('LabelsValue', 5)
-  maintenancePolicy = _messages.MessageField('MaintenancePolicy', 6)
-  name = _messages.StringField(7)
-  networkResources = _messages.MessageField('NetworkResourcesValue', 8)
-  networks = _messages.MessageField('Network', 9, repeated=True)
-  orchestrator = _messages.MessageField('Orchestrator', 10)
-  reconciling = _messages.BooleanField(11)
-  storageResources = _messages.MessageField('StorageResourcesValue', 12)
-  storages = _messages.MessageField('Storage', 13, repeated=True)
-  updateTime = _messages.StringField(14)
+  computeResources = _messages.MessageField('ComputeResourcesValue', 1)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  labels = _messages.MessageField('LabelsValue', 4)
+  maintenancePolicy = _messages.MessageField('MaintenancePolicy', 5)
+  name = _messages.StringField(6)
+  networkResources = _messages.MessageField('NetworkResourcesValue', 7)
+  orchestrator = _messages.MessageField('Orchestrator', 8)
+  reconciling = _messages.BooleanField(9)
+  storageResources = _messages.MessageField('StorageResourcesValue', 10)
+  updateTime = _messages.StringField(11)
 
 
-class Compute(_messages.Message):
-  r"""Message describing Compute object
+class ComputeEngineNodeDetails(_messages.Message):
+  r"""Compute Engine-specific details for a Node.
 
   Fields:
-    atmTags: Optional. ATM Tags to attach to compute VM instances
-    resourceRequests: Required. Source of compute resource
+    instance: Output only. [Relative resource
+      name](https://google.aip.dev/122) of the VM instance, in the format
+      `projects/{project}/zones/{zone}/instances/{instance}`.
+    machineType: Output only. Name of the Compute Engine [machine
+      type](https://cloud.google.com/compute/docs/machine-resource) to use,
+      e.g. `n2-standard-2`.
+    state: Output only. The Compute Engine VM [instance lifecycle
+      state](https://cloud.google.com/compute/docs/instances/instance-
+      lifecycle).
   """
 
-  atmTags = _messages.MessageField('AtmTag', 1, repeated=True)
-  resourceRequests = _messages.MessageField('ResourceRequest', 2, repeated=True)
+  instance = _messages.StringField(1)
+  machineType = _messages.StringField(2)
+  state = _messages.StringField(3)
 
 
 class ComputeInstance(_messages.Message):
@@ -358,9 +348,9 @@ class ComputeInstanceSlurmNodeSet(_messages.Message):
       scripts/linux) to be run on each VM instance in the nodeset. Max 256KB.
     startupScriptTimeout: Optional. The maximum time to wait for the startup
       script to complete. If the script exceeds this duration, the instance
-      setup will be considered failed. This value must be at least 300
-      seconds. If this value is unset, a default timeout of 5 minutes (300
-      seconds) will be used by the system.
+      setup will be considered failed. This value must be positive. If this
+      value is unset, a default timeout of 5 minutes (300 seconds) will be
+      used by the system.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -521,6 +511,22 @@ class Configs(_messages.Message):
   hardwareConfigs = _messages.MessageField('HardwareConfigsValue', 1)
   softwareConfigs = _messages.MessageField('SoftwareConfigsValue', 2)
   userConfigs = _messages.MessageField('UserConfigsValue', 3)
+
+
+class ContainerEngineNodeDetails(_messages.Message):
+  r"""Container Engine-specific details for a Node.
+
+  Fields:
+    pod: Output only. [Relative resource name](https://google.aip.dev/122) of
+      the pod, in the format `projects/{project}/locations/{location}/clusters
+      /{cluster}/k8s/namespaces/{namespace}/pods/{pod}`.
+    state: Output only. The Container Engine [pod lifecycle
+      state](https://kubernetes.io/docs/Concepts/Workloads/Pods/Pod-
+      lifecycle/).
+  """
+
+  pod = _messages.StringField(1)
+  state = _messages.StringField(2)
 
 
 class ContainerNodePoolSlurmNodeSet(_messages.Message):
@@ -764,26 +770,6 @@ class DeleteStorageBucket(_messages.Message):
   """
 
   bucket = _messages.StringField(1)
-
-
-class Disk(_messages.Message):
-  r"""Deprecated: Do not use.
-
-  Fields:
-    boot: Optional. Immutable. Unstable: Contact hypercompute-service-eng@
-      before using.
-    sizeGb: Required. Immutable. Unstable: Contact hypercompute-service-eng@
-      before using.
-    sourceImage: Optional. Immutable. Unstable: Contact hypercompute-service-
-      eng@ before using.
-    type: Required. Immutable. Unstable: Contact hypercompute-service-eng@
-      before using.
-  """
-
-  boot = _messages.BooleanField(1)
-  sizeGb = _messages.IntegerField(2)
-  sourceImage = _messages.StringField(3)
-  type = _messages.StringField(4)
 
 
 class Empty(_messages.Message):
@@ -1036,6 +1022,44 @@ class HypercomputeclusterProjectsLocationsClustersListRequest(_messages.Message)
       provided the page token.
     parent: Required. Parent location of the clusters to list, in the format
       `projects/{project}/locations/{location}`.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class HypercomputeclusterProjectsLocationsClustersNodesGetRequest(_messages.Message):
+  r"""A HypercomputeclusterProjectsLocationsClustersNodesGetRequest object.
+
+  Fields:
+    name: Required. Name of the node to retrieve, in the format
+      `projects/{project}/locations/{location}/clusters/{cluster}/nodes/{node}
+      `.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class HypercomputeclusterProjectsLocationsClustersNodesListRequest(_messages.Message):
+  r"""A HypercomputeclusterProjectsLocationsClustersNodesListRequest object.
+
+  Fields:
+    filter: Optional. [Filter](https://google.aip.dev/160) to apply to the
+      returned results.
+    orderBy: Optional. How to order the resulting nodes. Must be one of the
+      following strings: * `name` * `name desc` If not specified, nodes will
+      be returned in an arbitrary order.
+    pageSize: Optional. Maximum number of nodes to return. The service may
+      return fewer than this value.
+    pageToken: Optional. A page token received from a previous `ListNodes`
+      call. Provide this to retrieve the subsequent page. When paginating, all
+      other parameters provided to `ListNodes` must match the call that
+      provided the page token.
+    parent: Required. Parent cluster of the nodes to list, in the format
+      `projects/{project}/locations/{location}/clusters/{cluster}`.
   """
 
   filter = _messages.StringField(1)
@@ -1568,6 +1592,19 @@ class ListMonitoredEventsResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
+class ListNodesResponse(_messages.Message):
+  r"""Response message for ListNodes.
+
+  Fields:
+    nextPageToken: A token that can be sent as `page_token` to retrieve the
+      next page. If this field is absent, there are no subsequent pages.
+    nodes: Nodes in the specified cluster.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  nodes = _messages.MessageField('Node', 2, repeated=True)
+
+
 class ListOperationsResponse(_messages.Message):
   r"""The response message for Operations.ListOperations.
 
@@ -1970,18 +2007,6 @@ class MonitoredEvent(_messages.Message):
   type = _messages.EnumField('TypeValueValuesEnum', 7)
 
 
-class Network(_messages.Message):
-  r"""Message describing Network object
-
-  Fields:
-    network: Output only. Name of the network
-    subnetwork: Output only. Name of the subnetwork
-  """
-
-  network = _messages.StringField(1)
-  subnetwork = _messages.StringField(2)
-
-
 class NetworkReference(_messages.Message):
   r"""A reference to a [VPC network](https://cloud.google.com/vpc/docs/vpc) in
   Google Compute Engine.
@@ -2008,7 +2033,7 @@ class NetworkResource(_messages.Message):
       how the network resource is initially created or imported. Subsequent
       changes to the network resource should be made via the resource's API
       and will not be reflected in the configuration.
-    network: Reference to a network in Google Compute Engine.
+    network: Output only. Reference to a network in Google Compute Engine.
   """
 
   config = _messages.MessageField('NetworkResourceConfig', 1)
@@ -2290,8 +2315,6 @@ class NewReservedInstancesConfig(_messages.Message):
   Fields:
     atmTags: Optional. Immutable. Unstable: Contact hypercompute-service-eng@
       before using.
-    bootDisk: Optional. Immutable. Deprecated: set disks in node config
-      instead.
     machineType: Optional. Immutable. Deprecated: Do not use.
     reservation: Optional. Immutable. Name of the reservation from which VM
       instances should be created, in the format
@@ -2333,12 +2356,11 @@ class NewReservedInstancesConfig(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   atmTags = _messages.MessageField('AtmTagsValue', 1)
-  bootDisk = _messages.MessageField('Disk', 2)
-  machineType = _messages.StringField(3)
-  reservation = _messages.StringField(4)
-  reservationBlock = _messages.StringField(5)
-  reservationSubBlock = _messages.StringField(6)
-  zone = _messages.StringField(7)
+  machineType = _messages.StringField(2)
+  reservation = _messages.StringField(3)
+  reservationBlock = _messages.StringField(4)
+  reservationSubBlock = _messages.StringField(5)
+  zone = _messages.StringField(6)
 
 
 class NewSpotInstancesConfig(_messages.Message):
@@ -2410,6 +2432,71 @@ class NewSpotInstancesConfig(_messages.Message):
   machineType = _messages.StringField(2)
   terminationAction = _messages.EnumField('TerminationActionValueValuesEnum', 3)
   zone = _messages.StringField(4)
+
+
+class Node(_messages.Message):
+  r"""A resource representing a compute node managed by Cluster Director.
+
+  Enums:
+    StateValueValuesEnum: Output only. High-level lifecycle state of the node.
+
+  Fields:
+    acceptingJobs: Output only. Indicates whether the node is available for
+      new job allocations.
+    computeEngineDetails: Output only. Compute Engine-specific details for the
+      node.
+    containerEngineDetails: Output only. Container Engine-specific details for
+      the node.
+    createTime: Output only. Time that the node was originally created.
+    name: Identifier. [Relative resource name](https://google.aip.dev/122) of
+      the node, in the format `projects/{project}/locations/{location}/cluster
+      s/{cluster}/nodes/{node}`.
+    runningJobs: Output only. Indicates whether the node is currently
+      executing workloads.
+    slurmDetails: Output only. Slurm-specific details for the node.
+    state: Output only. High-level lifecycle state of the node.
+    stateMessage: Output only. Human-readable message providing extra
+      information about the current state.
+    updateTime: Output only. Time that the node was most recently updated.
+    zone: Output only. Name of the zone in which the node is running, e.g.
+      `us-central1-a`.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. High-level lifecycle state of the node.
+
+    Values:
+      STATE_UNSPECIFIED: Not set.
+      CREATING: The node is being provisioned at the infrastructure layer or
+        initialized by the orchestrator.
+      ACTIVE: The node is healthy and operational.
+      SUSPENDING: The node is transitioning to a stopped or suspended state.
+      SUSPENDED: The node is suspended or stopped and not consuming compute
+        resources.
+      REPAIRING: The node is undergoing maintenance or automatic recovery.
+      FAILED: The node is in an unhealthy or terminal error state.
+      DELETING: The node is being deleted.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    SUSPENDING = 3
+    SUSPENDED = 4
+    REPAIRING = 5
+    FAILED = 6
+    DELETING = 7
+
+  acceptingJobs = _messages.BooleanField(1)
+  computeEngineDetails = _messages.MessageField('ComputeEngineNodeDetails', 2)
+  containerEngineDetails = _messages.MessageField('ContainerEngineNodeDetails', 3)
+  createTime = _messages.StringField(4)
+  name = _messages.StringField(5)
+  runningJobs = _messages.BooleanField(6)
+  slurmDetails = _messages.MessageField('SlurmNodeDetails', 7)
+  state = _messages.EnumField('StateValueValuesEnum', 8)
+  stateMessage = _messages.StringField(9)
+  updateTime = _messages.StringField(10)
+  zone = _messages.StringField(11)
 
 
 class Operation(_messages.Message):
@@ -2845,96 +2932,16 @@ class RecommendedAction(_messages.Message):
   documentationUrl = _messages.StringField(2)
 
 
-class ReservationAffinity(_messages.Message):
-  r"""Deprecated: Do not use.
-
-  Enums:
-    TypeValueValuesEnum: Required. Deprecated: Do not use.
+class ResourcePolicyConfig(_messages.Message):
+  r"""Policy describing how VM instances should be created.
 
   Fields:
-    key: Optional. Deprecated: Do not use.
-    type: Required. Deprecated: Do not use.
-    values: Optional. Deprecated: Do not use.
+    topology: Optional. Specifies the topology required to create a partition
+      for VMs that have interconnected accelerators, in the format `AxB` or
+      `AxBxC`, where `A`, `B`, and `C` are integers.
   """
 
-  class TypeValueValuesEnum(_messages.Enum):
-    r"""Required. Deprecated: Do not use.
-
-    Values:
-      RESERVATION_TYPE_UNSPECIFIED: Deprecated: Do not use.
-      RESERVATION_TYPE_NO_RESERVATION: Deprecated: Do not use.
-      RESERVATION_TYPE_ANY_RESERVATION: Deprecated: Do not use.
-      RESERVATION_TYPE_SPECIFIC_RESERVATION: Deprecated: Do not use.
-    """
-    RESERVATION_TYPE_UNSPECIFIED = 0
-    RESERVATION_TYPE_NO_RESERVATION = 1
-    RESERVATION_TYPE_ANY_RESERVATION = 2
-    RESERVATION_TYPE_SPECIFIC_RESERVATION = 3
-
-  key = _messages.StringField(1)
-  type = _messages.EnumField('TypeValueValuesEnum', 2)
-  values = _messages.StringField(3, repeated=True)
-
-
-class ResourceRequest(_messages.Message):
-  r"""Message describing resource request object
-
-  Enums:
-    ProvisioningModelValueValuesEnum: Optional. Specifies the provisioning
-      model of the instance
-    TerminationActionValueValuesEnum: Optional. Specifies the termination
-      action of the instance
-
-  Fields:
-    disks: Optional. Array of disks associated with this instance
-    id: Required. Id of resource request
-    machineType: Required. Type of the machine e.g. c2-standard-60
-    maxRunDuration: Optional. Max amount of time instance is allowed to run
-    provisioningModel: Optional. Specifies the provisioning model of the
-      instance
-    reservationAffinity: Optional. Reservations this instance can consume from
-    terminationAction: Optional. Specifies the termination action of the
-      instance
-    zone: Required. Zone of the selected locations
-  """
-
-  class ProvisioningModelValueValuesEnum(_messages.Enum):
-    r"""Optional. Specifies the provisioning model of the instance
-
-    Values:
-      PROVISIONING_MODEL_UNSPECIFIED: Unspecified provisioning model
-      PROVISIONING_MODEL_STANDARD: Standard provisioning model
-      PROVISIONING_MODEL_SPOT: Spot provisioning model
-      PROVISIONING_MODEL_FLEX_START: Flex Start provisioning model
-      PROVISIONING_MODEL_RESERVATION_BOUND: Reservation Bound provisioning
-        model
-    """
-    PROVISIONING_MODEL_UNSPECIFIED = 0
-    PROVISIONING_MODEL_STANDARD = 1
-    PROVISIONING_MODEL_SPOT = 2
-    PROVISIONING_MODEL_FLEX_START = 3
-    PROVISIONING_MODEL_RESERVATION_BOUND = 4
-
-  class TerminationActionValueValuesEnum(_messages.Enum):
-    r"""Optional. Specifies the termination action of the instance
-
-    Values:
-      TERMINATION_ACTION_UNSPECIFIED: Unspecified termination action
-      TERMINATION_ACTION_STOP: Stop the instance
-      TERMINATION_ACTION_DELETE: Delete the instance
-    """
-    TERMINATION_ACTION_UNSPECIFIED = 0
-    TERMINATION_ACTION_STOP = 1
-    TERMINATION_ACTION_DELETE = 2
-
-  disks = _messages.MessageField('Disk', 1, repeated=True)
-  id = _messages.StringField(2)
-  machineType = _messages.StringField(3)
-  maxRunDuration = _messages.IntegerField(4)
-  provisioningModel = _messages.EnumField('ProvisioningModelValueValuesEnum', 5)
-  reservationAffinity = _messages.MessageField('ReservationAffinity', 6)
-  terminationAction = _messages.EnumField('TerminationActionValueValuesEnum', 7)
-  zone = _messages.StringField(8)
+  topology = _messages.StringField(1)
 
 
 class ServiceAccount(_messages.Message):
@@ -3182,7 +3189,6 @@ class SlurmLoginNodes(_messages.Message):
   Fields:
     bootDisk: Optional. Boot disk for the login node.
     count: Required. Number of login node instances to create.
-    disks: Optional. Deprecated: Use boot_disk instead.
     enableOsLogin: Optional. Whether [OS
       Login](https://cloud.google.com/compute/docs/oslogin) should be enabled
       on login node instances.
@@ -3238,16 +3244,33 @@ class SlurmLoginNodes(_messages.Message):
 
   bootDisk = _messages.MessageField('BootDisk', 1)
   count = _messages.IntegerField(2)
-  disks = _messages.MessageField('Disk', 3, repeated=True)
-  enableOsLogin = _messages.BooleanField(4)
-  enablePublicIps = _messages.BooleanField(5)
-  instances = _messages.MessageField('ComputeInstance', 6, repeated=True)
-  labels = _messages.MessageField('LabelsValue', 7)
-  machineType = _messages.StringField(8)
-  serviceAccount = _messages.MessageField('ServiceAccount', 9)
-  startupScript = _messages.StringField(10)
-  storageConfigs = _messages.MessageField('StorageConfig', 11, repeated=True)
-  zone = _messages.StringField(12)
+  enableOsLogin = _messages.BooleanField(3)
+  enablePublicIps = _messages.BooleanField(4)
+  instances = _messages.MessageField('ComputeInstance', 5, repeated=True)
+  labels = _messages.MessageField('LabelsValue', 6)
+  machineType = _messages.StringField(7)
+  serviceAccount = _messages.MessageField('ServiceAccount', 8)
+  startupScript = _messages.StringField(9)
+  storageConfigs = _messages.MessageField('StorageConfig', 10, repeated=True)
+  zone = _messages.StringField(11)
+
+
+class SlurmNodeDetails(_messages.Message):
+  r"""Slurm-specific details for a Node.
+
+  Fields:
+    comment: Output only. System comments from Slurm.
+    nodeset: Output only. The ID of the nodeset this node belongs to.
+    partitions: Output only. Slurm partitions this node belongs to.
+    reason: Output only. User-readable reason for the current state.
+    states: Output only. Raw state flags directly from Slurm.
+  """
+
+  comment = _messages.StringField(1)
+  nodeset = _messages.StringField(2)
+  partitions = _messages.StringField(3, repeated=True)
+  reason = _messages.StringField(4)
+  states = _messages.StringField(5, repeated=True)
 
 
 class SlurmNodeSet(_messages.Message):
@@ -3255,19 +3278,13 @@ class SlurmNodeSet(_messages.Message):
   compute nodes used by Slurm that are responsible for running workloads
   submitted to the cluster.
 
-  Messages:
-    LabelsValue: Optional. Deprecated: Use ComputeInstanceSlurmNodeSet.labels
-      instead.
-
   Fields:
-    bootDisk: Optional. Deprecated: Use compute_instance.boot_disk instead.
-    computeId: Optional. ID of the compute resource on which this nodeset will
+    computeId: Required. ID of the compute resource on which this nodeset will
       run. Must match a key in the cluster's compute_resources.
     computeInstance: Optional. If set, indicates that the nodeset should be
       backed by Compute Engine instances.
     containerNodePool: Optional. If set, indicates that the nodeset should be
       backed by a Kubernetes Engine node pool.
-    enableOsLogin: Optional. Deprecated: Do not use.
     enablePublicIps: Optional. Whether compute node instances should be
       assigned [external IP
       addresses](https://cloud.google.com/compute/docs/ip-
@@ -3276,18 +3293,15 @@ class SlurmNodeSet(_messages.Message):
       by partitions. Must conform to
       [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034) (lower-case,
       alphanumeric, and at most 63 characters).
-    labels: Optional. Deprecated: Use ComputeInstanceSlurmNodeSet.labels
-      instead.
     maxDynamicNodeCount: Optional. Controls how many additional nodes a
       cluster can bring online to handle workloads. Set this value to enable
       dynamic node creation and limit the number of additional nodes the
       cluster can bring online. Leave empty if you do not want the cluster to
       create nodes dynamically, and instead rely only on static nodes.
-    resourceRequestId: Optional. Deprecated: Use compute_id instead.
+    resourcePolicyConfig: Optional. Resource policy configuration for the
+      nodeset.
     serviceAccount: Optional. Unstable: Contact hypercompute-service-eng@
       before using.
-    startupScript: Optional. Deprecated: Use
-      ComputeInstanceSlurmNodeSet.startup_script instead.
     staticNodeCount: Optional. Number of nodes to be statically created for
       this nodeset. The cluster will attempt to ensure that at least this many
       nodes exist at all times.
@@ -3295,44 +3309,16 @@ class SlurmNodeSet(_messages.Message):
       compute node.
   """
 
-  @encoding.MapUnrecognizedFields('additionalProperties')
-  class LabelsValue(_messages.Message):
-    r"""Optional. Deprecated: Use ComputeInstanceSlurmNodeSet.labels instead.
-
-    Messages:
-      AdditionalProperty: An additional property for a LabelsValue object.
-
-    Fields:
-      additionalProperties: Additional properties of type LabelsValue
-    """
-
-    class AdditionalProperty(_messages.Message):
-      r"""An additional property for a LabelsValue object.
-
-      Fields:
-        key: Name of the additional property.
-        value: A string attribute.
-      """
-
-      key = _messages.StringField(1)
-      value = _messages.StringField(2)
-
-    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
-
-  bootDisk = _messages.MessageField('Disk', 1)
-  computeId = _messages.StringField(2)
-  computeInstance = _messages.MessageField('ComputeInstanceSlurmNodeSet', 3)
-  containerNodePool = _messages.MessageField('ContainerNodePoolSlurmNodeSet', 4)
-  enableOsLogin = _messages.BooleanField(5)
-  enablePublicIps = _messages.BooleanField(6)
-  id = _messages.StringField(7)
-  labels = _messages.MessageField('LabelsValue', 8)
-  maxDynamicNodeCount = _messages.IntegerField(9)
-  resourceRequestId = _messages.StringField(10)
-  serviceAccount = _messages.MessageField('ServiceAccount', 11)
-  startupScript = _messages.StringField(12)
-  staticNodeCount = _messages.IntegerField(13)
-  storageConfigs = _messages.MessageField('StorageConfig', 14, repeated=True)
+  computeId = _messages.StringField(1)
+  computeInstance = _messages.MessageField('ComputeInstanceSlurmNodeSet', 2)
+  containerNodePool = _messages.MessageField('ContainerNodePoolSlurmNodeSet', 3)
+  enablePublicIps = _messages.BooleanField(4)
+  id = _messages.StringField(5)
+  maxDynamicNodeCount = _messages.IntegerField(6)
+  resourcePolicyConfig = _messages.MessageField('ResourcePolicyConfig', 7)
+  serviceAccount = _messages.MessageField('ServiceAccount', 8)
+  staticNodeCount = _messages.IntegerField(9)
+  storageConfigs = _messages.MessageField('StorageConfig', 10, repeated=True)
 
 
 class SlurmOrchestrator(_messages.Message):
@@ -3529,18 +3515,6 @@ class Status(_messages.Message):
   message = _messages.StringField(3)
 
 
-class Storage(_messages.Message):
-  r"""Message describing Storage object
-
-  Fields:
-    id: Required. Storage id
-    storage: Output only. Storage name
-  """
-
-  id = _messages.StringField(1)
-  storage = _messages.StringField(2)
-
-
 class StorageConfig(_messages.Message):
   r"""Description of how a storage resource should be mounted on a VM
   instance.
@@ -3561,17 +3535,18 @@ class StorageResource(_messages.Message):
   to compute resources in the cluster.
 
   Fields:
-    bucket: Reference to a Google Cloud Storage bucket. Populated if and only
-      if the storage resource was configured to use Google Cloud Storage.
+    bucket: Output only. Reference to a Google Cloud Storage bucket. Populated
+      if and only if the storage resource was configured to use Google Cloud
+      Storage.
     config: Required. Immutable. Configuration for this storage resource,
       which describes how it should be created or imported. This field only
       controls how the storage resource is initially created or imported.
       Subsequent changes to the storage resource should be made via the
       resource's API and will not be reflected in the configuration.
-    filestore: Reference to a Filestore instance. Populated if and only if the
-      storage resource was configured to use Filestore.
-    lustre: Reference to a Managed Lustre instance. Populated if and only if
-      the storage resource was configured to use Managed Lustre.
+    filestore: Output only. Reference to a Filestore instance. Populated if
+      and only if the storage resource was configured to use Filestore.
+    lustre: Output only. Reference to a Managed Lustre instance. Populated if
+      and only if the storage resource was configured to use Managed Lustre.
   """
 
   bucket = _messages.MessageField('BucketReference', 1)

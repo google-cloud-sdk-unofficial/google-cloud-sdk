@@ -160,7 +160,7 @@ def _CreateImageParams(messages, resource_manager_tags):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Create(base.CreateCommand):
   """Create Compute Engine images."""
 

@@ -129,8 +129,12 @@ def _Run(args, holder, url_map_arg):
   return client.MakeRequests([_GetSetRequest(client, url_map_ref, new_object)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
+)
 class RemoveHostRule(base.UpdateCommand):
   """Remove a host rule from a URL map."""
 

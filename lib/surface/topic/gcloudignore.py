@@ -45,6 +45,7 @@ class GcloudignoreHelp(base.TopicCommand):
   * `gcloud container builds submit`
   * `gcloud run deploy`
   * `gcloud run jobs deploy`
+  * `gcloud run worker-pools deploy`
   * `gcloud alpha deploy releases create`
   * `gcloud beta deploy releases create`
   * `gcloud deploy releases create`

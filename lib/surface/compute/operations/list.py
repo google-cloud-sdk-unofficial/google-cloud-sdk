@@ -65,7 +65,7 @@ def AddFlags(parser, is_ga):
         default=False)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class List(base.ListCommand):
   """List Compute Engine operations."""
@@ -95,14 +95,20 @@ class List(base.ListCommand):
     # TODO(b/36050874): Start using aggregatedList for zones and regions when
     # the operations list API supports them.
     if no_scope_flags:
-      requests.append(
-          (compute_client.apitools_client.globalOperations, 'AggregatedList',
-           compute_client.apitools_client.globalOperations.GetRequestType(
-               'AggregatedList')(
-                   filter=request_data.filter,
-                   maxResults=request_data.max_results,
-                   returnPartialSuccess=True,
-                   project=list(request_data.scope_set)[0].project)))
+      request = compute_client.apitools_client.globalOperations.GetRequestType(
+          'AggregatedList'
+      )(
+          filter=request_data.filter,
+          maxResults=request_data.max_results,
+          project=list(request_data.scope_set)[0].project,
+      )
+      if hasattr(request, 'returnPartialSuccess'):
+        request.returnPartialSuccess = True
+      requests.append((
+          compute_client.apitools_client.globalOperations,
+          'AggregatedList',
+          request,
+      ))
     else:
       if getattr(args, 'global'):
         requests.append(

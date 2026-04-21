@@ -41,7 +41,10 @@ DETAILED_HELP = {
 
 @base.UniverseCompatible
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
 )
 class AddMembers(base.UpdateCommand):
   """Add member interconnects to a Compute Engine interconnect group.

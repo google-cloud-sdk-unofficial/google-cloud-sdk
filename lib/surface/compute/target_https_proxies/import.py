@@ -205,8 +205,12 @@ def _Run(args, holder, target_https_proxy_arg, release_track):
                              target_https_proxy)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.PREVIEW,
+)
 class Import(base.UpdateCommand):
   """Import a target HTTPS Proxy."""
 

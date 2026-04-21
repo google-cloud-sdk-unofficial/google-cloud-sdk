@@ -1433,11 +1433,10 @@ class ClusterConfig(_messages.Message):
 
     Values:
       ENGINE_UNSPECIFIED: The engine is not specified. Works the same as
-        DEFAULT.
+        ENGINE_DEFAULT.
       DEFAULT: The cluster is a default engine cluster.
       LIGHTNING: The cluster is a lightning engine cluster.
     """
-
     ENGINE_UNSPECIFIED = 0
     DEFAULT = 1
     LIGHTNING = 2
@@ -1454,9 +1453,7 @@ class ClusterConfig(_messages.Message):
   engine = _messages.EnumField('EngineValueValuesEnum', 10)
   gceClusterConfig = _messages.MessageField('GceClusterConfig', 11)
   gkeClusterConfig = _messages.MessageField('GkeClusterConfig', 12)
-  initializationActions = _messages.MessageField(
-      'NodeInitializationAction', 13, repeated=True
-  )
+  initializationActions = _messages.MessageField('NodeInitializationAction', 13, repeated=True)
   lifecycleConfig = _messages.MessageField('LifecycleConfig', 14)
   masterConfig = _messages.MessageField('InstanceGroupConfig', 15)
   metastoreConfig = _messages.MessageField('MetastoreConfig', 16)
@@ -4173,8 +4170,11 @@ class DataprocProjectsRegionsClustersListRequest(_messages.Message):
       AND operator is supported; space-separated items are treated as having
       an implicit AND operator.Example filter:status.state = ACTIVE AND
       clusterName = mycluster AND labels.env = staging AND labels.starred = *
-    pageSize: Optional. The standard List page size.
-    pageToken: Optional. The standard List page token.
+    pageSize: Optional. The maximum number of clusters to return in each
+      response. The service may return fewer than this value. If unspecified,
+      the default value is 200. The maximum value is 1000.
+    pageToken: Optional. A page token received from a previous ListClusters
+      call. Provide this token to retrieve the subsequent page.
     projectId: Required. The ID of the Google Cloud Platform project that the
       cluster belongs to.
     region: Required. The Dataproc region in which to handle the request.
@@ -5138,6 +5138,7 @@ class Empty(_messages.Message):
   """
 
 
+
 class EncryptionConfig(_messages.Message):
   r"""Encryption settings for the cluster.
 
@@ -5242,6 +5243,13 @@ class EphemeralMetastoreConfig(_messages.Message):
 class ExecutionConfig(_messages.Message):
   r"""Execution configuration for a workload.
 
+  Messages:
+    ResourceManagerTagsValue: Optional. Associates Resource Manager tags with
+      the workload nodes. There is a max limit of 30 tags. Keys and values can
+      be either in numeric format, such as tagKeys/{tag_key_id} and
+      tagValues/{tag_value_id}, or in namespaced format, such as
+      {org_id|project_id}/{tag_key_short_name} and {tag_value_short_name}.
+
   Fields:
     authenticationConfig: Optional. Authentication configuration used to set
       the default identity for the workload execution. The config specifies
@@ -5260,6 +5268,11 @@ class ExecutionConfig(_messages.Message):
     kmsKey: Optional. The Cloud KMS key to use for encryption.
     networkTags: Optional. Tags used for network traffic control.
     networkUri: Optional. Network URI to connect workload to.
+    resourceManagerTags: Optional. Associates Resource Manager tags with the
+      workload nodes. There is a max limit of 30 tags. Keys and values can be
+      either in numeric format, such as tagKeys/{tag_key_id} and
+      tagValues/{tag_value_id}, or in namespaced format, such as
+      {org_id|project_id}/{tag_key_short_name} and {tag_value_short_name}.
     serviceAccount: Optional. Service account that used to execute workload.
     stagingBucket: Optional. A Cloud Storage bucket used to stage workload
       dependencies, config files, and store workload output and other
@@ -5286,15 +5299,46 @@ class ExecutionConfig(_messages.Message):
       first.
   """
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ResourceManagerTagsValue(_messages.Message):
+    r"""Optional. Associates Resource Manager tags with the workload nodes.
+    There is a max limit of 30 tags. Keys and values can be either in numeric
+    format, such as tagKeys/{tag_key_id} and tagValues/{tag_value_id}, or in
+    namespaced format, such as {org_id|project_id}/{tag_key_short_name} and
+    {tag_value_short_name}.
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        ResourceManagerTagsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        ResourceManagerTagsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ResourceManagerTagsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   authenticationConfig = _messages.MessageField('AuthenticationConfig', 1)
   idleTtl = _messages.StringField(2)
   kmsKey = _messages.StringField(3)
   networkTags = _messages.StringField(4, repeated=True)
   networkUri = _messages.StringField(5)
-  serviceAccount = _messages.StringField(6)
-  stagingBucket = _messages.StringField(7)
-  subnetworkUri = _messages.StringField(8)
-  ttl = _messages.StringField(9)
+  resourceManagerTags = _messages.MessageField('ResourceManagerTagsValue', 6)
+  serviceAccount = _messages.StringField(7)
+  stagingBucket = _messages.StringField(8)
+  subnetworkUri = _messages.StringField(9)
+  ttl = _messages.StringField(10)
 
 
 class ExecutorMetrics(_messages.Message):
@@ -10840,19 +10884,49 @@ class SparkPlanGraph(_messages.Message):
 class SparkPlanGraphCluster(_messages.Message):
   r"""Represents a tree of spark plan.
 
+  Messages:
+    MetadataValue: Optional. Additional metadata for the spark plan graph
+      cluster.
+
   Fields:
     desc: A string attribute.
+    metadata: Optional. Additional metadata for the spark plan graph cluster.
     metrics: A SqlPlanMetric attribute.
     name: A string attribute.
     nodes: A SparkPlanGraphNodeWrapper attribute.
     sparkPlanGraphClusterId: A string attribute.
   """
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class MetadataValue(_messages.Message):
+    r"""Optional. Additional metadata for the spark plan graph cluster.
+
+    Messages:
+      AdditionalProperty: An additional property for a MetadataValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type MetadataValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a MetadataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   desc = _messages.StringField(1)
-  metrics = _messages.MessageField('SqlPlanMetric', 2, repeated=True)
-  name = _messages.StringField(3)
-  nodes = _messages.MessageField('SparkPlanGraphNodeWrapper', 4, repeated=True)
-  sparkPlanGraphClusterId = _messages.IntegerField(5)
+  metadata = _messages.MessageField('MetadataValue', 2)
+  metrics = _messages.MessageField('SqlPlanMetric', 3, repeated=True)
+  name = _messages.StringField(4)
+  nodes = _messages.MessageField('SparkPlanGraphNodeWrapper', 5, repeated=True)
+  sparkPlanGraphClusterId = _messages.IntegerField(6)
 
 
 class SparkPlanGraphEdge(_messages.Message):
@@ -10870,17 +10944,47 @@ class SparkPlanGraphEdge(_messages.Message):
 class SparkPlanGraphNode(_messages.Message):
   r"""Represents a node in the spark plan tree.
 
+  Messages:
+    MetadataValue: Optional. Additional metadata for the spark plan graph
+      cluster.
+
   Fields:
     desc: A string attribute.
+    metadata: Optional. Additional metadata for the spark plan graph cluster.
     metrics: A SqlPlanMetric attribute.
     name: A string attribute.
     sparkPlanGraphNodeId: A string attribute.
   """
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class MetadataValue(_messages.Message):
+    r"""Optional. Additional metadata for the spark plan graph cluster.
+
+    Messages:
+      AdditionalProperty: An additional property for a MetadataValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type MetadataValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a MetadataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   desc = _messages.StringField(1)
-  metrics = _messages.MessageField('SqlPlanMetric', 2, repeated=True)
-  name = _messages.StringField(3)
-  sparkPlanGraphNodeId = _messages.IntegerField(4)
+  metadata = _messages.MessageField('MetadataValue', 2)
+  metrics = _messages.MessageField('SqlPlanMetric', 3, repeated=True)
+  name = _messages.StringField(4)
+  sparkPlanGraphNodeId = _messages.IntegerField(5)
 
 
 class SparkPlanGraphNodeWrapper(_messages.Message):

@@ -54,7 +54,7 @@ def _CommonArgs(parser):
   )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class UpdateKmsKey(base.Command):
   """Update the KMS key of a persistent snapshot."""

@@ -13,7 +13,7 @@ class ComposerV1(base_api.BaseApiClient):
   MTLS_BASE_URL = 'https://composer.mtls.googleapis.com/'
 
   _PACKAGE = 'composer'
-  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/cloudcomposer']
+  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/cloudcomposer', 'https://www.googleapis.com/auth/cloudcomposer.readonly']
   _VERSION = 'v1'
   _CLIENT_ID = 'CLIENT_ID'
   _CLIENT_SECRET = 'CLIENT_SECRET'

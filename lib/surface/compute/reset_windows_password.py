@@ -103,8 +103,12 @@ RESET_PASSWORD_WARNING = textwrap.dedent("""
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.PREVIEW,
+)
 class ResetWindowsPassword(base.UpdateCommand):
   """Reset and return a password for a Windows machine instance.
 

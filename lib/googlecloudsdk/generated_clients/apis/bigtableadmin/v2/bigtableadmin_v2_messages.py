@@ -167,12 +167,18 @@ class AutomatedBackupPolicy(_messages.Message):
     frequency: How frequently automated backups should occur. The only
       supported value at this time is 24 hours. An undefined frequency is
       treated as 24 hours.
+    locations: Optional. A list of Cloud Bigtable zones where automated
+      backups are allowed to be created. If empty, automated backups will be
+      created in all zones of the instance. Locations are in the format
+      `projects/{project}/locations/{zone}`. This field can only set for
+      tables in Enterprise Plus instances.
     retentionPeriod: Required. How long the automated backups should be
       retained. Values must be at least 3 days and at most 90 days.
   """
 
   frequency = _messages.StringField(1)
-  retentionPeriod = _messages.StringField(2)
+  locations = _messages.StringField(2, repeated=True)
+  retentionPeriod = _messages.StringField(3)
 
 
 class AutoscalingLimits(_messages.Message):
@@ -3099,6 +3105,46 @@ class GoogleBigtableAdminV2TypeGeography(_messages.Message):
 
 
 
+class GoogleBigtableAdminV2TypeInt32(_messages.Message):
+  r"""Int32 Values of type `Int32` are stored in `Value.int_value`.
+
+  Fields:
+    encoding: The encoding to use when converting to or from lower level
+      types.
+  """
+
+  encoding = _messages.MessageField('GoogleBigtableAdminV2TypeInt32Encoding', 1)
+
+
+class GoogleBigtableAdminV2TypeInt32Encoding(_messages.Message):
+  r"""Rules used to convert to or from lower level types.
+
+  Fields:
+    bigEndianBytes: Use `BigEndianBytes` encoding.
+    orderedCodeBytes: Use `OrderedCodeBytes` encoding.
+  """
+
+  bigEndianBytes = _messages.MessageField('GoogleBigtableAdminV2TypeInt32EncodingBigEndianBytes', 1)
+  orderedCodeBytes = _messages.MessageField('GoogleBigtableAdminV2TypeInt32EncodingOrderedCodeBytes', 2)
+
+
+class GoogleBigtableAdminV2TypeInt32EncodingBigEndianBytes(_messages.Message):
+  r"""Encodes the value as a 4-byte big-endian two's complement value. Sorted
+  mode: non-negative values are supported. Distinct mode: all values are
+  supported. Compatible with: - BigQuery `BINARY` encoding - HBase
+  `Bytes.toBytes` - Java `ByteBuffer.putInt()` with `ByteOrder.BIG_ENDIAN`
+  """
+
+
+
+class GoogleBigtableAdminV2TypeInt32EncodingOrderedCodeBytes(_messages.Message):
+  r"""Encodes the value in a variable length binary format of up to 5 bytes.
+  Values that are closer to zero use fewer bytes. Sorted mode: all values are
+  supported. Distinct mode: all values are supported.
+  """
+
+
+
 class GoogleBigtableAdminV2TypeInt64(_messages.Message):
   r"""Int64 Values of type `Int64` are stored in `Value.int_value`.
 
@@ -3957,10 +4003,9 @@ class MemoryLayer(_messages.Message):
     StateValueValuesEnum: Output only. The current state of the memory layer.
 
   Fields:
-    etag: Optional. The etag for this memory configuration. This may be sent
-      on update requests to ensure that the client has an up-to-date value
-      before proceeding. The server returns an ABORTED error on a mismatched
-      etag.
+    etag: Optional. The etag for this memory layer. This may be sent on update
+      requests to ensure that the client has an up-to-date value before
+      proceeding. The server returns an ABORTED error on a mismatched etag.
     memoryConfig: The configuration of this memory layer. Set an empty
       `memory_config` to enable the memory layer. Unset this to disable the
       memory layer.
@@ -4509,8 +4554,8 @@ class StandardIsolation(_messages.Message):
       profile.
 
   Fields:
-    memoryConfig: The memory config to use for requests sent using this app
-      profile.
+    memoryConfig: Optional. The memory config to use for requests sent using
+      this app profile.
     priority: The priority of requests sent using this app profile.
   """
 
@@ -4981,6 +5026,7 @@ class Type(_messages.Message):
     float32Type: Float32
     float64Type: Float64
     geographyType: Geography
+    int32Type: Int32
     int64Type: Int64
     mapType: Map
     protoType: Proto
@@ -4998,12 +5044,13 @@ class Type(_messages.Message):
   float32Type = _messages.MessageField('GoogleBigtableAdminV2TypeFloat32', 7)
   float64Type = _messages.MessageField('GoogleBigtableAdminV2TypeFloat64', 8)
   geographyType = _messages.MessageField('GoogleBigtableAdminV2TypeGeography', 9)
-  int64Type = _messages.MessageField('GoogleBigtableAdminV2TypeInt64', 10)
-  mapType = _messages.MessageField('GoogleBigtableAdminV2TypeMap', 11)
-  protoType = _messages.MessageField('GoogleBigtableAdminV2TypeProto', 12)
-  stringType = _messages.MessageField('GoogleBigtableAdminV2TypeString', 13)
-  structType = _messages.MessageField('GoogleBigtableAdminV2TypeStruct', 14)
-  timestampType = _messages.MessageField('GoogleBigtableAdminV2TypeTimestamp', 15)
+  int32Type = _messages.MessageField('GoogleBigtableAdminV2TypeInt32', 10)
+  int64Type = _messages.MessageField('GoogleBigtableAdminV2TypeInt64', 11)
+  mapType = _messages.MessageField('GoogleBigtableAdminV2TypeMap', 12)
+  protoType = _messages.MessageField('GoogleBigtableAdminV2TypeProto', 13)
+  stringType = _messages.MessageField('GoogleBigtableAdminV2TypeString', 14)
+  structType = _messages.MessageField('GoogleBigtableAdminV2TypeStruct', 15)
+  timestampType = _messages.MessageField('GoogleBigtableAdminV2TypeTimestamp', 16)
 
 
 class UndeleteTableMetadata(_messages.Message):

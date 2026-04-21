@@ -1005,11 +1005,14 @@ class GenerationConfig(proto.Message):
                 Image modality.
             AUDIO (3):
                 Audio modality.
+            VIDEO (4):
+                Video modality.
         """
         MODALITY_UNSPECIFIED = 0
         TEXT = 1
         IMAGE = 2
         AUDIO = 3
+        VIDEO = 4
 
     class MediaResolution(proto.Enum):
         r"""Media resolution for the input media.

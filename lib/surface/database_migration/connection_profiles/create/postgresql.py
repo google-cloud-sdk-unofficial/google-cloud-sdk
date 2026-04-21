@@ -58,11 +58,18 @@ class PostgreSQL(base.Command):
         the command line after this command. Positional arguments are allowed.
     """
     resource_args.AddPostgresqlConnectionProfileResourceArg(parser, 'to create')
-
     cp_flags.AddNoAsyncFlag(parser)
     cp_flags.AddDisplayNameFlag(parser)
     cp_flags.AddDatabaseParamsFlags(
-        parser, with_database_name=True, supports_iam_auth=True)
+        parser,
+        with_database_name=True,
+        supports_iam_auth=True,
+        database_help_text=(
+            'The name of the specific database within the host. For Native'
+            ' Logical Postgres migrations, one of the replicating databases'
+            ' must be specified.'
+        ),
+    )
     cp_flags.AddSslConfigGroup(parser, base.ReleaseTrack.GA)
     cp_flags.AddCloudSQLInstanceFlag(parser)
     cp_flags.AddAlloydbClusterFlag(parser)

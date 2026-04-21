@@ -390,7 +390,10 @@ class BackendRule(_messages.Message):
   r"""A backend rule provides configuration for an individual API element.
 
   Enums:
-    PathTranslationValueValuesEnum: no-lint
+    PathTranslationValueValuesEnum: Path translation specifies how to combine
+      the backend address with the request path in order to produce the
+      appropriate forwarding URL for the request. See PathTranslation for more
+      details.
 
   Messages:
     OverridesByRequestProtocolValue: The map between request protocol and the
@@ -424,7 +427,9 @@ class BackendRule(_messages.Message):
       long running operation. The default is no deadline.
     overridesByRequestProtocol: The map between request protocol and the
       backend address.
-    pathTranslation: no-lint
+    pathTranslation: Path translation specifies how to combine the backend
+      address with the request path in order to produce the appropriate
+      forwarding URL for the request. See PathTranslation for more details.
     protocol: The protocol used for sending a request to the backend. The
       supported values are "http/1.1" and "h2". The default value is inferred
       from the scheme in the address field: SCHEME PROTOCOL http:// http/1.1
@@ -440,7 +445,9 @@ class BackendRule(_messages.Message):
   """
 
   class PathTranslationValueValuesEnum(_messages.Enum):
-    r"""no-lint
+    r"""Path translation specifies how to combine the backend address with the
+    request path in order to produce the appropriate forwarding URL for the
+    request. See PathTranslation for more details.
 
     Values:
       PATH_TRANSLATION_UNSPECIFIED: <no description>
@@ -839,7 +846,7 @@ class CommonLanguageSettings(_messages.Message):
     referenceDocsUri: Link to automatically generated reference documentation.
       Example: https://cloud.google.com/nodejs/docs/reference/asset/latest
     selectiveGapicGeneration: Configuration for which RPCs should be generated
-      in the GAPIC client.
+      in the GAPIC client. Note: This field should not be used in most cases.
   """
 
   class DestinationsValueListEntryValuesEnum(_messages.Enum):
@@ -4329,7 +4336,8 @@ class RubySettings(_messages.Message):
 
 class SelectiveGapicGeneration(_messages.Message):
   r"""This message is used to configure the generation of a subset of the RPCs
-  in a service for client libraries.
+  in a service for client libraries. Note: This feature should not be used in
+  most cases.
 
   Fields:
     generateOmittedAsInternal: Setting this to true indicates to the client
@@ -4386,14 +4394,7 @@ class Service(_messages.Message):
     documentation: Additional API documentation.
     endpoints: Configuration for network endpoints. If this is empty, then an
       endpoint with the same name as the service is automatically generated to
-      service all defined APIs. WARNING: Defining any entries in the
-      `endpoints` list disables the automatic generation of default endpoint
-      variations (e.g., `{service}.clients6.google.com`,
-      `content-{service}.googleapis.com`, and mTLS variants like
-      `{service}.mtls.googleapis.com`). To retain these default variations,
-      you are required to explicitly include your main service endpoint (e.g.,
-      `myservice.googleapis.com`) in this list alongside any other custom
-      endpoints (like REP, GFE, etc.).
+      service all defined APIs.
     enums: A list of all enum types included in this API service. Enums
       referenced directly or indirectly by the `apis` are automatically
       included. Enums which are not referenced but shall be included should be
@@ -5517,7 +5518,7 @@ class UsageRule(_messages.Message):
   r"""Usage configuration rules for the service.
 
   Fields:
-    allowUnregisteredCalls:  Use this rule to configure unregistered calls for
+    allowUnregisteredCalls: Use this rule to configure unregistered calls for
       the service. Unregistered calls are calls that do not contain consumer
       project identity. (Example: calls that do not contain an API key).
       WARNING: By default, API methods do not allow unregistered calls, and

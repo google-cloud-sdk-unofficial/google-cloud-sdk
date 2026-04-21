@@ -3781,7 +3781,7 @@ class GoogleCloudRunV2VolumeMount(_messages.Message):
     name: Required. This must match the Name of a Volume.
     subPath: Optional. Path within the volume from which the container's
       volume should be mounted. Defaults to "" (volume's root). This field is
-      currently ignored for Secret volumes.
+      currently rejected in Secret volume mounts.
   """
 
   mountPath = _messages.StringField(1)
@@ -6760,6 +6760,33 @@ class RunProjectsLocationsInstancesListRequest(_messages.Message):
   pageToken = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
   showDeleted = _messages.BooleanField(4)
+
+
+class RunProjectsLocationsInstancesPatchRequest(_messages.Message):
+  r"""A RunProjectsLocationsInstancesPatchRequest object.
+
+  Fields:
+    allowMissing: Optional. If set to true, and if the Instance does not
+      exist, it will create a new one. The caller must have
+      'run.instances.create' permissions if this is set to true and the
+      Instance does not exist.
+    googleCloudRunV2Instance: A GoogleCloudRunV2Instance resource to be passed
+      as the request body.
+    name: The fully qualified name of this Instance. In CreateInstanceRequest,
+      this field is ignored, and instead composed from
+      CreateInstanceRequest.parent and CreateInstanceRequest.instance_id.
+      Format: projects/{project}/locations/{location}/instances/{instance_id}
+    updateMask: Optional. The list of fields to be updated.
+    validateOnly: Optional. Indicates that the request should be validated and
+      default values populated, without persisting the request or updating any
+      resources.
+  """
+
+  allowMissing = _messages.BooleanField(1)
+  googleCloudRunV2Instance = _messages.MessageField('GoogleCloudRunV2Instance', 2)
+  name = _messages.StringField(3, required=True)
+  updateMask = _messages.StringField(4)
+  validateOnly = _messages.BooleanField(5)
 
 
 class RunProjectsLocationsInstancesStartRequest(_messages.Message):

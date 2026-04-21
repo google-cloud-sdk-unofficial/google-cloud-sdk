@@ -74,7 +74,7 @@ def ValidateSimpleSharedSecret(possible_secret):
       'non-printable charcters.')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class CreateGA(base.CreateCommand):
   """Create a VPN tunnel.

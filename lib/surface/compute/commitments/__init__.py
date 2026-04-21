@@ -20,7 +20,11 @@ from googlecloudsdk.calliope import base
 
 @base.UniverseCompatible
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
+)
 class Commitments(base.Group):
   """Manage Compute Engine commitments."""
 
@@ -37,4 +41,3 @@ Commitments.detailed_help = {
         See also: [Commitments API](https://cloud.google.com/compute/docs/reference/rest/v1/regionCommitments).
     """,
 }
-

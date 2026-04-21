@@ -21,7 +21,7 @@ from googlecloudsdk.command_lib.compute.snapshot_settings import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class Describe(base.DescribeCommand):
   """Describe snapshot settings."""

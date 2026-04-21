@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA, GA]
+- release_tracks: [ALPHA, BETA, GA, PREVIEW]
   help_text:
     brief: "Get the IAM policy of a storage pool."
     description: "Get the IAM policy of a storage pool."

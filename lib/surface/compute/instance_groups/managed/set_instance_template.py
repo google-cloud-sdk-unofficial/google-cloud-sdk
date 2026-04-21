@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute.instance_groups.managed import flags as 
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class SetInstanceTemplateGA(base.Command):
   r"""Command for setting instance template of managed instance group."""
 

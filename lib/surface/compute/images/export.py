@@ -30,7 +30,7 @@ _OUTPUT_FILTER = ['[Daisy', '[image-export', '  image', 'ERROR']
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Export(base.CreateCommand):
   """Export a Compute Engine image."""
 

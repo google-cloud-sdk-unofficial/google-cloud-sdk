@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief: Get the IAM policy for a Cloud Run worker pool.
@@ -29,6 +29,10 @@
       policy_version: 3
       get_iam_policy_version_path: options_requestedPolicyVersion
   BETA:
+    iam:
+      policy_version: 3
+      get_iam_policy_version_path: options_requestedPolicyVersion
+  GA:
     iam:
       policy_version: 3
       get_iam_policy_version_path: options_requestedPolicyVersion

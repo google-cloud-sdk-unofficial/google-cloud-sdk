@@ -32,7 +32,7 @@ from googlecloudsdk.core import resources
 _OUTPUT_FILTER = ['[Daisy', '[import-', 'starting build', '  import', 'ERROR']
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.Deprecate(
     is_removed=False,
     warning=(

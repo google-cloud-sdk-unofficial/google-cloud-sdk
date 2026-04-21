@@ -27,7 +27,7 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class Update(base.UpdateCommand):
   r"""Update a Compute Engine Network.

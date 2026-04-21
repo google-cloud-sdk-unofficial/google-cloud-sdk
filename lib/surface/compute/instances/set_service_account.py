@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.compute.instances import exceptions
 from googlecloudsdk.command_lib.compute.instances import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class SetServiceAccount(base.SilentCommand):
   """Set a service account and access scopes for a Compute Engine VM instance.
   """

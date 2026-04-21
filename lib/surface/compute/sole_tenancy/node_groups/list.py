@@ -21,8 +21,12 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.sole_tenancy.node_groups import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
+)
 class List(base.ListCommand):
   """List Compute Engine node groups."""
 

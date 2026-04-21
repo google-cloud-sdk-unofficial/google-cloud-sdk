@@ -23,6 +23,7 @@ import functools
 import json
 import random
 import string
+import time
 from typing import List
 
 from apitools.base.protorpclite import messages as api_messages
@@ -2205,6 +2206,53 @@ class ServerlessOperations(object):
 
     return created_instance
 
+  def ReplaceInstance(
+      self,
+      instance_ref,
+      config_changes,
+      tracker=None,
+      asyn=False,
+  ):
+    """Replace an existing Cloud Run Instance.
+
+    Args:
+      instance_ref: Resource, the instance to replace.
+      config_changes: list, objects that implement Adjust().
+      tracker: StagedProgressTracker, to report on the progress of updating.
+      asyn: bool, if True, return without waiting for the instance to be
+        created.
+
+    Returns:
+      An instance.Instance object.
+    """
+    update_instance = self.GetInstance(instance_ref)
+    if update_instance is not None:
+      self.DeleteInstance(instance_ref)
+      if tracker:
+        tracker.UpdateHeaderMessage(
+            'Waiting for instance deletion to complete...'
+        )
+      max_retries = 120
+      while max_retries > 0 and self.GetInstance(instance_ref) is not None:
+        time.sleep(1)
+        max_retries -= 1
+      if max_retries <= 0:
+        raise serverless_exceptions.DeploymentFailedError(
+            'Timed out waiting for instance [{}] to be deleted.'.format(
+                instance_ref.Name()
+            )
+        )
+      if tracker:
+        tracker.UpdateHeaderMessage('Deleted existing instance. Recreating...')
+
+    return self.CreateInstance(
+        instance_ref.Parent(),
+        instance_ref.Name(),
+        config_changes,
+        tracker,
+        asyn,
+    )
+
   def DeleteInstance(self, instance_ref):
     """Delete the provided Instance.
 
@@ -2414,6 +2462,31 @@ class ServerlessOperations(object):
         request
     )
     return set(NEEDED_IAM_PERMISSIONS).issubset(set(response.permissions))
+
+  def IsUnauthenticated(self, service_ref, region_override=None):
+    """Checks if the service allows unauthenticated invocations.
+
+    Args:
+      service_ref: The service resource reference.
+      region_override: Optional region to use instead of the configured region.
+
+    Returns:
+      True if the service allows unauthenticated invocations, or if we
+      cannot check the IAM policy.
+    """
+    region = region_override or self._region
+    oneplatform_service = resource_name_conversion.K8sToOnePlatform(
+        service_ref, region
+    )
+    try:
+      policy = self._GetIamPolicy(oneplatform_service)
+    except api_exceptions.HttpForbiddenError:
+      return True
+    return iam_util.BindingInPolicy(
+        policy,
+        ALLOW_UNAUTH_POLICY_BINDING_MEMBER,
+        ALLOW_UNAUTH_POLICY_BINDING_ROLE,
+    )
 
   def _ValidateService(self, service_ref, config_changes):
     """Validates starting service operation with provided config."""

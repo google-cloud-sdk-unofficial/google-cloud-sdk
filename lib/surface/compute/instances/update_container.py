@@ -37,7 +37,7 @@ from googlecloudsdk.command_lib.compute.instances import flags as instances_flag
     ),
 )
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class UpdateContainer(base.UpdateCommand):
   """Command for updating VM instances running container images."""
 

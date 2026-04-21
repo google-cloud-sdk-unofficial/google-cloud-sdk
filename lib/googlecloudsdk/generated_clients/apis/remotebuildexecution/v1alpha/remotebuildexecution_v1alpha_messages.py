@@ -408,7 +408,7 @@ class BuildBazelRemoteExecutionV2Directory(_messages.Message):
   (either a file blob or a `Directory` proto) or a symlink target, as well as
   possibly some metadata about the file or directory. In order to ensure that
   two equivalent directory trees hash to the same value, the following
-  restrictions MUST be obeyed when constructing a a `Directory`: * Every child
+  restrictions MUST be obeyed when constructing a `Directory`: * Every child
   in the directory must have a path of exactly one segment. Multiple levels of
   directory hierarchy may not be collapsed. * Each child in the directory must
   have a unique path segment (file name). Note that while the API itself is
@@ -462,10 +462,22 @@ class BuildBazelRemoteExecutionV2ExecuteOperationMetadata(_messages.Message):
   metadata field of the Operation.
 
   Enums:
+    DigestFunctionValueValuesEnum: The digest function that was used to
+      compute the action digest. If the digest function used is one of BLAKE3,
+      MD5, MURMUR3, SHA1, SHA256, SHA256TREE, SHA384, SHA512, or VSO, the
+      server MAY leave this field unset. In that case the client SHOULD infer
+      the digest function using the length of the action digest hash and the
+      digest functions announced in the server's capabilities.
     StageValueValuesEnum: The current stage of execution.
 
   Fields:
     actionDigest: The digest of the Action being executed.
+    digestFunction: The digest function that was used to compute the action
+      digest. If the digest function used is one of BLAKE3, MD5, MURMUR3,
+      SHA1, SHA256, SHA256TREE, SHA384, SHA512, or VSO, the server MAY leave
+      this field unset. In that case the client SHOULD infer the digest
+      function using the length of the action digest hash and the digest
+      functions announced in the server's capabilities.
     partialExecutionMetadata: The client can read this field to view details
       about the ongoing execution.
     stage: The current stage of execution.
@@ -476,6 +488,78 @@ class BuildBazelRemoteExecutionV2ExecuteOperationMetadata(_messages.Message):
       ByteStream.Read to stream the standard output from the endpoint hosting
       streamed responses.
   """
+
+  class DigestFunctionValueValuesEnum(_messages.Enum):
+    r"""The digest function that was used to compute the action digest. If the
+    digest function used is one of BLAKE3, MD5, MURMUR3, SHA1, SHA256,
+    SHA256TREE, SHA384, SHA512, or VSO, the server MAY leave this field unset.
+    In that case the client SHOULD infer the digest function using the length
+    of the action digest hash and the digest functions announced in the
+    server's capabilities.
+
+    Values:
+      UNKNOWN: It is an error for the server to return this value.
+      SHA256: The SHA-256 digest function.
+      SHA1: The SHA-1 digest function.
+      MD5: The MD5 digest function.
+      VSO: The Microsoft "VSO-Hash" paged SHA256 digest function. See https://
+        github.com/microsoft/BuildXL/blob/master/Documentation/Specs/PagedHash
+        .md .
+      SHA384: The SHA-384 digest function.
+      SHA512: The SHA-512 digest function.
+      MURMUR3: Murmur3 128-bit digest function, x64 variant. Note that this is
+        not a cryptographic hash function and its collision properties are not
+        strongly guaranteed. See
+        https://github.com/aappleby/smhasher/wiki/MurmurHash3 .
+      SHA256TREE: The SHA-256 digest function, modified to use a Merkle tree
+        for large objects. This permits implementations to store large blobs
+        as a decomposed sequence of 2^j sized chunks, where j >= 10, while
+        being able to validate integrity at the chunk level. Furthermore, on
+        systems that do not offer dedicated instructions for computing SHA-256
+        hashes (e.g., the Intel SHA and ARMv8 cryptographic extensions),
+        SHA256TREE hashes can be computed more efficiently than plain SHA-256
+        hashes by using generic SIMD extensions, such as Intel AVX2 or ARM
+        NEON. SHA256TREE hashes are computed as follows: - For blobs that are
+        1024 bytes or smaller, the hash is computed using the regular SHA-256
+        digest function. - For blobs that are more than 1024 bytes in size,
+        the hash is computed as follows: 1. The blob is partitioned into a
+        left (leading) and right (trailing) blob. These blobs have lengths m
+        and n respectively, where m = 2^k and 0 < n <= m. 2. Hashes of the
+        left and right blob, Hash(left) and Hash(right) respectively, are
+        computed by recursively applying the SHA256TREE algorithm. 3. A single
+        invocation is made to the SHA-256 block cipher with the following
+        parameters: M = Hash(left) || Hash(right) H = { 0xcbbb9d5d,
+        0x629a292a, 0x9159015a, 0x152fecd8, 0x67332667, 0x8eb44a87,
+        0xdb0c2e0d, 0x47b5481d, } The values of H are the leading fractional
+        parts of the square roots of the 9th to the 16th prime number (23 to
+        53). This differs from plain SHA-256, where the first eight prime
+        numbers (2 to 19) are used, thereby preventing trivial hash collisions
+        between small and large objects. 4. The hash of the full blob can then
+        be obtained by concatenating the outputs of the block cipher:
+        Hash(blob) = a || b || c || d || e || f || g || h Addition of the
+        original values of H, as normally done through the use of the Davies-
+        Meyer structure, is not performed. This isn't necessary, as the block
+        cipher is only invoked once. Test vectors of this digest function can
+        be found in the accompanying sha256tree_test_vectors.txt file.
+      BLAKE3: The BLAKE3 hash function. See
+        https://github.com/BLAKE3-team/BLAKE3.
+      GITSHA1: Identical to SHA1, except that "blob ${sizeBytes}\0" is
+        prepended to the blob's contents before hashing, where ${sizeBytes}
+        corresponds to the decimal size of the original blob. This allows
+        hashes of files to be converted from and to the ones used by the Git
+        version control system.
+    """
+    UNKNOWN = 0
+    SHA256 = 1
+    SHA1 = 2
+    MD5 = 3
+    VSO = 4
+    SHA384 = 5
+    SHA512 = 6
+    MURMUR3 = 7
+    SHA256TREE = 8
+    BLAKE3 = 9
+    GITSHA1 = 10
 
   class StageValueValuesEnum(_messages.Enum):
     r"""The current stage of execution.
@@ -494,10 +578,11 @@ class BuildBazelRemoteExecutionV2ExecuteOperationMetadata(_messages.Message):
     COMPLETED = 4
 
   actionDigest = _messages.MessageField('BuildBazelRemoteExecutionV2Digest', 1)
-  partialExecutionMetadata = _messages.MessageField('BuildBazelRemoteExecutionV2ExecutedActionMetadata', 2)
-  stage = _messages.EnumField('StageValueValuesEnum', 3)
-  stderrStreamName = _messages.StringField(4)
-  stdoutStreamName = _messages.StringField(5)
+  digestFunction = _messages.EnumField('DigestFunctionValueValuesEnum', 2)
+  partialExecutionMetadata = _messages.MessageField('BuildBazelRemoteExecutionV2ExecutedActionMetadata', 3)
+  stage = _messages.EnumField('StageValueValuesEnum', 4)
+  stderrStreamName = _messages.StringField(5)
+  stdoutStreamName = _messages.StringField(6)
 
 
 class BuildBazelRemoteExecutionV2ExecuteResponse(_messages.Message):
@@ -724,8 +809,8 @@ class BuildBazelRemoteExecutionV2OutputDirectory(_messages.Message):
 
   Fields:
     isTopologicallySorted: If set, consumers MAY make the following
-      assumptions about the directories contained in the the Tree, so that it
-      may be instantiated on a local file system by scanning through it
+      assumptions about the directories contained in the Tree, so that it may
+      be instantiated on a local file system by scanning through it
       sequentially: - All directories with the same binary representation are
       stored exactly once. - All directories, apart from the root directory,
       are referenced by at least one parent directory. - Directories are
@@ -753,7 +838,7 @@ class BuildBazelRemoteExecutionV2OutputDirectory(_messages.Message):
       path, it MUST NOT begin with a leading forward slash. The empty string
       value is allowed, and it denotes the entire working directory.
     rootDirectoryDigest: The digest of the encoded Directory proto containing
-      the contents the directory's root. If both `tree_digest` and
+      the contents of the directory's root. If both `tree_digest` and
       `root_directory_digest` are set, this field MUST match the digest of the
       root directory contained in the Tree message.
     treeDigest: The digest of the encoded Tree proto containing the

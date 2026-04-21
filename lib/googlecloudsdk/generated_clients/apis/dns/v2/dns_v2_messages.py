@@ -872,14 +872,14 @@ class DnsResourceRecordSetsListRequest(_messages.Message):
 
   Fields:
     filter: Specify a filter expression to view records that exactly match the
-      specified domain. Both the name and type parameters are not supported
-      when you use filter and must be omitted. Your filter expression must
-      conform to AIP-160 and you must specify a domain in the name field.
-      Optionally, you can include the type field to filter records by type.
-      You can also include the has_suffix function to view records that match
-      by domain suffix. Examples: - name="example.com." - name="example.com."
-      AND type="A" - name=has_suffix("example.com.") -
-      name=has_suffix("example.com.") AND type="A"
+      specified domain. Both the `name` and `type` parameters are not
+      supported and must be omitted when you use `filter`. Your `filter`
+      expression must conform to AIP-160 and you must specify a domain in the
+      `name` field. Optionally, you can include the `type` field to filter
+      records by type. You can also include the `has_suffix` function to view
+      records that match by domain suffix. Examples: * `name`="example.com." *
+      `name`="example.com." AND type="A" * `name`=`has_suffix`("example.com.")
+      * `name`=`has_suffix`("example.com.") AND type="A"
     location: Specifies the location of the resource. This information is used
       for routing and is part of the resource name.
     managedZone: Identifies the managed zone addressed by this request. Can be
@@ -887,14 +887,14 @@ class DnsResourceRecordSetsListRequest(_messages.Message):
     maxResults: Optional. Maximum number of results to be returned. If
       unspecified, the server decides how many results to return.
     name: Specify a fully qualified domain name to view only those records.
-      The name parameter is not supported and must be omitted when you use
-      filter.
+      The `name` parameter is not supported and must be omitted when you use
+      `filter`.
     pageToken: Optional. A tag returned by a previous list request that was
       truncated. Use this parameter to continue a previous list request.
     project: Identifies the project addressed by this request.
     type: Specify a record type to view only those records. You must also
-      specify the name parameter. The type parameter is not supported and must
-      be omitted when you use filter.
+      specify the `name` parameter. The `type` parameter is not supported and
+      must be omitted when you use `filter`.
   """
 
   filter = _messages.StringField(1)

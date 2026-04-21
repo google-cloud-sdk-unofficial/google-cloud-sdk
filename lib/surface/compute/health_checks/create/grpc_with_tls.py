@@ -163,7 +163,7 @@ class CreateBeta(base.CreateCommand):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class CreateGa(base.CreateCommand):
   """Create a gRPC with TLS health check."""
 

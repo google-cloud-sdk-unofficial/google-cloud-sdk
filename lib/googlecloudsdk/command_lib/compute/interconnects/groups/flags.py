@@ -285,11 +285,8 @@ def AddMemberInterconnectsForCreateMembers(parser):
       flag=value pairs.
 
       Example:
-      --interconnect name=interconnect1,facility=iad-1,description="my
-      interconnect",link-type=LINK_TYPE_ETHERNET_10G_LR,requested-link-count=1,
-      interconnect-type=DEDICATED,admin-enabled,
-      noc-contact-email=noc@google.com,customer-name=customer-name
-      requested-features=MACSEC:CROSS_SITE_NETWORK
+
+        --interconnect name=interconnect1,facility=iad-1,description="my interconnect",link-type=LINK_TYPE_ETHERNET_10G_LR,requested-link-count=1,interconnect-type=DEDICATED,admin-enabled,noc-contact-email=noc@google.com,customer-name=customer-name,requested-features=MACSEC:CROSS_SITE_NETWORK
 
       Note that for multiple requested-features, use a colon (:) as the
       delimiter, as the comma is used to separate the flags. Similarly, if you

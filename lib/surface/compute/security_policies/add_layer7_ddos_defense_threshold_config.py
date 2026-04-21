@@ -183,7 +183,10 @@ class AddLayer7DdosDefenseThresholdConfigHelper(object):
 
 @base.UniverseCompatible
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
 )
 class AddLayer7DdosDefenseThresholdConfigGA(base.UpdateCommand):
   r"""Add a layer7 ddos defense threshold config to a Compute Engine security policy.

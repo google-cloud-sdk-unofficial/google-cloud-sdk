@@ -26,8 +26,12 @@ from googlecloudsdk.command_lib.util.args import labels_util
 _VPN_GATEWAY_ARG = flags.GetVpnGatewayArgument()
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
+)
 class Update(base.UpdateCommand):
   r"""Update a Compute Engine Highly Available VPN gateway.
 

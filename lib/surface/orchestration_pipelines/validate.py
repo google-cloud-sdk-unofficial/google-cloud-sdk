@@ -99,10 +99,11 @@ class Validate(calliope_base.Command):
     if getattr(args, "substitutions", None):
       external_vars.update(args.substitutions)
 
-    environment = None
-
-    # 2. Load and validate deployment file if environment is specified.
-    # Otherwise, use the pipeline paths specified in the command.
+    # 2. Setup validation contexts based on provided arguments.
+    # Each context contains an environment, combined variables, pipeline paths,
+    # and resources specific to that context.
+    validation_contexts = []
+    error_environments = {}
     if args.environment:
       deployment_path = work_dir / DEPLOYMENT_FILE_NAME
       environment = yaml_processor.load_environment(
@@ -135,54 +136,129 @@ class Validate(calliope_base.Command):
                 f"Pipeline path '{pipeline_path}' not found in deployment "
                 f"environment '{args.environment}'."
             )
+      validation_contexts.append({
+          "env": environment,
+          "combined_vars": combined_variables,
+          "pipeline_paths": pipeline_paths,
+          "resources": environment.resources if environment else [],
+          "name": args.environment,
+      })
+    elif args.pipeline_paths:
+      # Validating pipelines without an explicit environment context.
+      validation_contexts.append({
+          "env": None,
+          "combined_vars": external_vars,
+          "pipeline_paths": args.pipeline_paths,
+          "resources": [],
+          "name": "provided pipelines",
+      })
     else:
-      combined_variables = external_vars
-      pipeline_paths = args.pipeline_paths
-
-    # 3. Perform L1 syntax validation for pipelines defined in the deployment
-    # environment.
-    yaml_processor.validate_pipeline_l1(
-        work_dir,
-        pipeline_paths,
-        combined_variables,
-    )
-
-    if environment:
-      for resource in environment.resources:
-        if resource.type == "resourceProfile":
-          continue
-        handler = registry.GetHandler(resource, environment)
-        gcp_deployer.validate_gcp_resource_l1(handler)
-
-      print(
-          "Successfully finished syntax validation for pipelines and resources"
-          f" in deployment environment '{args.environment}'."
+      all_environments_dict, error_environments = (
+          yaml_processor.load_all_environments(
+              work_dir / DEPLOYMENT_FILE_NAME,
+              external_vars,
+          )
       )
-    else:
-      print(
-          "Successfully finished syntax validation for all provided pipelines."
-      )
+      if not all_environments_dict:
+        print("No environments found in deployment.yaml.")
+        return
+
+      for env_name, env in all_environments_dict.items():
+        yaml_processor.validate_environment(env, env_name)
+        combined_variables = {
+            "project": env.project,
+            "region": env.region,
+            **(env.variables if env.variables else {}),
+        }
+        pipeline_paths = (
+            [p.source for p in env.pipelines]
+            if getattr(env, "pipelines", None)
+            else []
+        )
+        validation_contexts.append({
+            "env": env,
+            "combined_vars": combined_variables,
+            "pipeline_paths": pipeline_paths,
+            "resources": env.resources if env else [],
+            "name": env_name,
+        })
+
+    if not validation_contexts:
+      print("No pipelines or environments to validate.")
+      return
+
+    # 3. Perform L1 syntax validation for each context.
+    for context in validation_contexts:
+      env = context["env"]
+      combined_vars = context["combined_vars"]
+      pipeline_paths = context["pipeline_paths"]
+      resources = context["resources"]
+      env_name = context["name"]
+      has_environment = env is not None
+
+      if pipeline_paths:
+        yaml_processor.validate_pipeline_l1(
+            work_dir,
+            pipeline_paths,
+            combined_vars,
+        )
+
+      if has_environment:
+        for resource in resources:
+          if resource.type == "resourceProfile":
+            continue
+          handler = registry.GetHandler(resource, env)
+          gcp_deployer.validate_gcp_resource_l1(handler)
+
+      if has_environment:
+        print(
+            "Successfully finished syntax validation for pipelines and"
+            f" resources in deployment environment '{env_name}'."
+        )
+      elif args.pipeline_paths:
+        print(
+            "Successfully finished syntax validation for all provided"
+            " pipelines."
+        )
+
+    if error_environments:
+      print("Errors found while parsing deployment file:")
+      for env, e in error_environments.items():
+        print(f"  Environment '{env}': {e}")
+
     if args.mode == "syntax-only":
       return
 
-    # 4. Perform L2 semantic validation for pipelines defined in the deployment
-    # environment.
-    yaml_processor.validate_pipeline_l2(
-        work_dir,
-        pipeline_paths,
-        combined_variables,
-        environment,
-    )
-    if environment:
-      for resource in environment.resources:
-        if resource.type == "resourceProfile":
-          continue
-        handler = registry.GetHandler(resource, environment)
-        gcp_deployer.validate_gcp_resource_l2(handler)
+    # 4. Perform L2 semantic validation for each context.
+    for context in validation_contexts:
+      env = context["env"]
+      combined_vars = context["combined_vars"]
+      pipeline_paths = context["pipeline_paths"]
+      resources = context["resources"]
+      env_name = context["name"]
+      has_environment = env is not None
 
-      print(
-          "Successfully finished full validation for all pipelines and"
-          f" resources in deployment environment '{args.environment}'."
-      )
-    else:
-      print("Successfully finished full validation for all provided pipelines.")
+      if pipeline_paths:
+        yaml_processor.validate_pipeline_l2(
+            work_dir,
+            pipeline_paths,
+            combined_vars,
+            env,
+        )
+
+      if has_environment:
+        for resource in resources:
+          if resource.type == "resourceProfile":
+            continue
+          handler = registry.GetHandler(resource, env)
+          gcp_deployer.validate_gcp_resource_l2(handler)
+
+      if has_environment:
+        print(
+            "Successfully finished full validation for all pipelines and"
+            f" resources in deployment environment '{env_name}'."
+        )
+      elif args.pipeline_paths:
+        print(
+            "Successfully finished full validation for all provided pipelines."
+        )

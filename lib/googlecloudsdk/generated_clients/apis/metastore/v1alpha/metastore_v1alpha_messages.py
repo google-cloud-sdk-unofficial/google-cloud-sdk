@@ -260,6 +260,42 @@ class BackendMetastore(_messages.Message):
   name = _messages.StringField(2)
 
 
+class BackfillStatus(_messages.Message):
+  r"""Backfill status for the migration execution.
+
+  Enums:
+    StateValueValuesEnum: Output only. The current state of the backfill (or
+      dry run).
+
+  Fields:
+    migrationSummary: Output only. Summary of the migration results. This is
+      populated after the backfill or dry run is finished.
+    reportPath: Output only. The Cloud Storage path where the backfill or dry
+      run report is written. Format: "gs://path-to-report".
+    state: Output only. The current state of the backfill (or dry run).
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current state of the backfill (or dry run).
+
+    Values:
+      STATE_UNSPECIFIED: The backfill state is unspecified.
+      PENDING: Waiting to start.
+      RUNNING: Backfill in progress.
+      SUCCEEDED: Backfill complete, report is available
+      FAILED: Backfill failed; check report for details
+    """
+    STATE_UNSPECIFIED = 0
+    PENDING = 1
+    RUNNING = 2
+    SUCCEEDED = 3
+    FAILED = 4
+
+  migrationSummary = _messages.MessageField('MigrationSummary', 1)
+  reportPath = _messages.StringField(2)
+  state = _messages.EnumField('StateValueValuesEnum', 3)
+
+
 class Backup(_messages.Message):
   r"""The details of a backup resource.
 
@@ -305,6 +341,53 @@ class Backup(_messages.Message):
   restoringServices = _messages.StringField(5, repeated=True)
   serviceRevision = _messages.MessageField('Service', 6)
   state = _messages.EnumField('StateValueValuesEnum', 7)
+
+
+class BigLakeMetastoreMigrationConfig(_messages.Message):
+  r"""Defines the configuration required to migrate metadata from a Dataproc
+  Metastore service to BigLake Metastore.
+
+  Enums:
+    ModeValueValuesEnum: Required. Defines the behavior of the migration
+      execution.
+
+  Fields:
+    backfillStatus: Output only.
+    dryRun: Optional. If true, performs discovery of requested resources and
+      analysis against the target catalog to come up with a plan for each
+      resource (e.g. Create, Update, Skip, etc.). No metadata is actually
+      migrated.
+    hiveConfig: Optional. At least one of hive_config or iceberg_config must
+      be provided, otherwise, a validation error will be thrown. If only one
+      is provided, the service only migrates tables of that specific type. If
+      both are provided, both Hive and Iceberg tables will be
+      migrated.Configuration for migrating Hive tables to a BigLake Hive
+      catalog.
+    icebergConfig: Optional. Configuration for migrating Iceberg tables to a
+      BigLake Iceberg REST catalog.
+    mode: Required. Defines the behavior of the migration execution.
+    reportPath: Optional. The Cloud Storage path where the backfill / dry run
+      report should be written. If not provided, the report will be generated
+      in the service's artifacts bucket. Format: "gs://path/to/folder"
+  """
+
+  class ModeValueValuesEnum(_messages.Enum):
+    r"""Required. Defines the behavior of the migration execution.
+
+    Values:
+      MIGRATION_MODE_UNSPECIFIED: The migration mode is unspecified.
+      BACKFILL: Performs the metadata migration of requested resources. The
+        migration completes once the backfill is finished.
+    """
+    MIGRATION_MODE_UNSPECIFIED = 0
+    BACKFILL = 1
+
+  backfillStatus = _messages.MessageField('BackfillStatus', 1)
+  dryRun = _messages.BooleanField(2)
+  hiveConfig = _messages.MessageField('HiveConfig', 3)
+  icebergConfig = _messages.MessageField('IcebergConfig', 4)
+  mode = _messages.EnumField('ModeValueValuesEnum', 5)
+  reportPath = _messages.StringField(6)
 
 
 class BigQueryMetastoreMigrationConfig(_messages.Message):
@@ -465,6 +548,37 @@ class CancelMigrationResponse(_messages.Message):
 
 class CancelOperationRequest(_messages.Message):
   r"""The request message for Operations.CancelOperation."""
+
+
+class CatalogSummary(_messages.Message):
+  r"""Summary of results for a specific destination catalog.
+
+  Enums:
+    CatalogTypeValueValuesEnum: Output only. The type of the catalog.
+
+  Fields:
+    catalog: Output only. The catalog resource name (format:
+      projects/*/catalogs/*).
+    catalogType: Output only. The type of the catalog.
+    databaseSummaries: Output only. Summary of results for each database in
+      the catalog.
+  """
+
+  class CatalogTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The type of the catalog.
+
+    Values:
+      CATALOG_TYPE_UNSPECIFIED: The catalog type is unspecified.
+      HIVE: BigLake Metastore Hive catalog.
+      ICEBERG: BigLake Metastore Iceberg REST catalog.
+    """
+    CATALOG_TYPE_UNSPECIFIED = 0
+    HIVE = 1
+    ICEBERG = 2
+
+  catalog = _messages.StringField(1)
+  catalogType = _messages.EnumField('CatalogTypeValueValuesEnum', 2)
+  databaseSummaries = _messages.MessageField('DatabaseSummary', 3, repeated=True)
 
 
 class CdcConfig(_messages.Message):
@@ -700,6 +814,65 @@ class DatabaseDump(_messages.Message):
   gcsUri = _messages.StringField(2)
   sourceDatabase = _messages.StringField(3)
   type = _messages.EnumField('TypeValueValuesEnum', 4)
+
+
+class DatabaseSummary(_messages.Message):
+  r"""Summary of results for a specific database in a catalog.
+
+  Enums:
+    PlanActionValueValuesEnum: Output only. The migration plan action for the
+      database.
+    ResultStatusValueValuesEnum: Output only. The migration result status for
+      the database. This is only set if the migration is not a dry run.
+
+  Fields:
+    database: Output only. The name of the database.
+    planAction: Output only. The migration plan action for the database.
+    resultStatus: Output only. The migration result status for the database.
+      This is only set if the migration is not a dry run.
+    tableSummary: Output only. Aggregated summary of results for all tables in
+      the database.
+  """
+
+  class PlanActionValueValuesEnum(_messages.Enum):
+    r"""Output only. The migration plan action for the database.
+
+    Values:
+      ACTION_UNSPECIFIED: The action is unspecified.
+      CREATE: Resource missing; will be created.
+      UPDATE: Resource exists at the target, but differs from the source; will
+        be updated.
+      SKIP: Resource exists at the target; no changes will be made.
+      DEPENDENCY_FAILURE: Resource cannot be migrated due to a dependency
+        failure (e.g., parent resource missing).
+      ERROR: Resource cannot be migrated due to an error during discovery.
+    """
+    ACTION_UNSPECIFIED = 0
+    CREATE = 1
+    UPDATE = 2
+    SKIP = 3
+    DEPENDENCY_FAILURE = 4
+    ERROR = 5
+
+  class ResultStatusValueValuesEnum(_messages.Enum):
+    r"""Output only. The migration result status for the database. This is
+    only set if the migration is not a dry run.
+
+    Values:
+      STATE_UNSPECIFIED: The state is unspecified.
+      SUCCEEDED: The resource was migrated successfully.
+      FAILED: The resource failed to migrate.
+      SKIPPED: The resource was skipped and will not be migrated.
+    """
+    STATE_UNSPECIFIED = 0
+    SUCCEEDED = 1
+    FAILED = 2
+    SKIPPED = 3
+
+  database = _messages.StringField(1)
+  planAction = _messages.EnumField('PlanActionValueValuesEnum', 2)
+  resultStatus = _messages.EnumField('ResultStatusValueValuesEnum', 3)
+  tableSummary = _messages.MessageField('TableSummary', 4)
 
 
 class DataplexConfig(_messages.Message):
@@ -1057,6 +1230,22 @@ class Federation(_messages.Message):
   version = _messages.StringField(11)
 
 
+class HiveConfig(_messages.Message):
+  r"""Configuration for migrating Hive metadata.
+
+  Fields:
+    catalog: Required. The target catalog for migrated databases and tables.
+      Format: "projects/{project_id_or_number}/catalogs/{catalog_id}"
+    databases: Required. The list of databases to migrate to the Hive catalog.
+      Use "*" to migrate all databases. Note: If Iceberg tables exist in these
+      databases, they will only be migrated if iceberg_config is also
+      specified.
+  """
+
+  catalog = _messages.StringField(1)
+  databases = _messages.StringField(2, repeated=True)
+
+
 class HiveMetastoreConfig(_messages.Message):
   r"""Specifies configuration information specific to running Hive metastore
   software as the metastore service.
@@ -1201,6 +1390,22 @@ class HiveMetastoreVersion(_messages.Message):
 
   isDefault = _messages.BooleanField(1)
   version = _messages.StringField(2)
+
+
+class IcebergConfig(_messages.Message):
+  r"""Configuration for migrating Iceberg metadata.
+
+  Fields:
+    catalog: Required. The target catalog for migrated Iceberg metadata.
+      Format: "projects/{project_id_or_number}/catalogs/{catalog_id}"
+    namespaces: Required. The list of namespaces to migrate to the Iceberg
+      REST catalog. Use "*" to migrate all namespaces. Note: If Hive tables
+      exist in these namespaces, they will only be migrated if hive_config is
+      also specified.
+  """
+
+  catalog = _messages.StringField(1)
+  namespaces = _messages.StringField(2, repeated=True)
 
 
 class KerberosConfig(_messages.Message):
@@ -2719,6 +2924,8 @@ class MigrationExecution(_messages.Message):
       execution.
 
   Fields:
+    biglakeMetastoreMigrationConfig: Configuration information specific to
+      migrating from Dataproc Metastore to BigLake Metastore.
     cloudSqlMigrationConfig: Deprecated: Migrations to Dataproc Metastore are
       no longer supported. Use BigLake Metastore migration instead.
       Configuration information specific to migrating from self-managed hive
@@ -2785,13 +2992,32 @@ class MigrationExecution(_messages.Message):
     CANCELLED = 7
     DELETING = 8
 
-  cloudSqlMigrationConfig = _messages.MessageField('CloudSQLMigrationConfig', 1)
+  biglakeMetastoreMigrationConfig = _messages.MessageField('BigLakeMetastoreMigrationConfig', 1)
+  cloudSqlMigrationConfig = _messages.MessageField('CloudSQLMigrationConfig', 2)
+  createTime = _messages.StringField(3)
+  endTime = _messages.StringField(4)
+  name = _messages.StringField(5)
+  phase = _messages.EnumField('PhaseValueValuesEnum', 6)
+  state = _messages.EnumField('StateValueValuesEnum', 7)
+  stateMessage = _messages.StringField(8)
+
+
+class MigrationSummary(_messages.Message):
+  r"""Summary of the migration results.
+
+  Fields:
+    catalogSummaries: Output only. Summary of results for each catalog
+      involved in the migration.
+    createTime: Output only. The UTC time when this report was finalized.
+    dryRun: Output only. Whether the migration was a dry run.
+    service: Output only. The Dataproc Metastore service name (format:
+      projects/*/locations/*/services/*) on which the migration was executed.
+  """
+
+  catalogSummaries = _messages.MessageField('CatalogSummary', 1, repeated=True)
   createTime = _messages.StringField(2)
-  endTime = _messages.StringField(3)
-  name = _messages.StringField(4)
-  phase = _messages.EnumField('PhaseValueValuesEnum', 5)
-  state = _messages.EnumField('StateValueValuesEnum', 6)
-  stateMessage = _messages.StringField(7)
+  dryRun = _messages.BooleanField(3)
+  service = _messages.StringField(4)
 
 
 class MoveTableToDatabaseRequest(_messages.Message):
@@ -3729,6 +3955,91 @@ class StatusProto(_messages.Message):
   message = _messages.StringField(3)
   messageSet = _messages.MessageField('MessageSet', 4)
   space = _messages.StringField(5)
+
+
+class TableSummary(_messages.Message):
+  r"""Aggregated summary of results for all tables in a database.
+
+  Messages:
+    PlanCountsValue: Output only. Number of tables with a specific migration
+      plan action. The key is the action name (e.g. CREATE, UPDATE, SKIP,
+      etc.).
+    ResultCountsValue: Output only. Number of tables with a specific migration
+      result status. The key is the status name (e.g. SUCCEEDED, FAILED,
+      SKIPPED, etc.). This is only set if the migration is not a dry run.
+
+  Fields:
+    partitionDiscoveredCount: Output only. Partition migration summary across
+      all Hive tables in the database.The total number of partitions
+      discovered at the source.
+    partitionFailedCount: Output only. The total number of partitions that
+      failed to migrate at the target.
+    partitionSuccessCount: Output only. The total number of partitions
+      successfully migrated at the target.
+    planCounts: Output only. Number of tables with a specific migration plan
+      action. The key is the action name (e.g. CREATE, UPDATE, SKIP, etc.).
+    resultCounts: Output only. Number of tables with a specific migration
+      result status. The key is the status name (e.g. SUCCEEDED, FAILED,
+      SKIPPED, etc.). This is only set if the migration is not a dry run.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class PlanCountsValue(_messages.Message):
+    r"""Output only. Number of tables with a specific migration plan action.
+    The key is the action name (e.g. CREATE, UPDATE, SKIP, etc.).
+
+    Messages:
+      AdditionalProperty: An additional property for a PlanCountsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type PlanCountsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a PlanCountsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.IntegerField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ResultCountsValue(_messages.Message):
+    r"""Output only. Number of tables with a specific migration result status.
+    The key is the status name (e.g. SUCCEEDED, FAILED, SKIPPED, etc.). This
+    is only set if the migration is not a dry run.
+
+    Messages:
+      AdditionalProperty: An additional property for a ResultCountsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type ResultCountsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ResultCountsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.IntegerField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  partitionDiscoveredCount = _messages.IntegerField(1)
+  partitionFailedCount = _messages.IntegerField(2)
+  partitionSuccessCount = _messages.IntegerField(3)
+  planCounts = _messages.MessageField('PlanCountsValue', 4)
+  resultCounts = _messages.MessageField('ResultCountsValue', 5)
 
 
 class TelemetryConfig(_messages.Message):

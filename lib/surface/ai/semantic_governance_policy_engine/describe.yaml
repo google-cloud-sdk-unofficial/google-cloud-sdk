@@ -1,0 +1,22 @@
+release_tracks: [ALPHA, BETA]
+hidden: true
+help_text:
+  brief: Describe the semantic governance policy engine config.
+  description: Describe the semantic governance policy engine config.
+  examples: |-
+    To describe the semantic governance policy engine config in location `us-central1`, run:
+
+      $ {command} --location=us-central1
+arguments:
+  params:
+  - arg_name: location
+    help_text: Cloud location of the semantic governance policy engine.
+    required: true
+
+request:
+  api_version: v1beta1
+  collection: aiplatform.projects.locations
+  method: getSemanticGovernancePolicyEngine
+  disable_resource_check: true
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.ai.semantic_governance_policies.util:set_engine_name

@@ -25,7 +25,10 @@ from googlecloudsdk.command_lib.compute.network_firewall_policies import secure_
 
 @base.UniverseCompatible
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
 )
 class Update(base.UpdateCommand):
   r"""Updates a Compute Engine network firewall policy packet mirroring rule.

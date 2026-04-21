@@ -22,7 +22,9 @@ from googlecloudsdk.command_lib.compute.health_checks import exceptions
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.BETA, base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW
+)
 class List(base.ListCommand):
   """List health checks in GA."""
 

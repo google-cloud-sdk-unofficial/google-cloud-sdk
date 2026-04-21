@@ -45,7 +45,7 @@ def _CommonArgs(parser):
       parser, operation_type='stop async replication')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class StopAsyncReplication(base.Command):
   """Stop Async Replication on Compute Engine persistent disks."""
 

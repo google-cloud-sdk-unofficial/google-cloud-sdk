@@ -437,7 +437,7 @@ def _EarlyAccessMaintenanceUpdateRequest(args, reservation_ref, holder):
   )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class Update(base.UpdateCommand):
   """Update Compute Engine reservations."""

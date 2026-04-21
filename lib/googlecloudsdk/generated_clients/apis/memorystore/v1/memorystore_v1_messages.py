@@ -93,6 +93,59 @@ class AclRule(_messages.Message):
   username = _messages.StringField(2)
 
 
+class AddAuthTokenRequest(_messages.Message):
+  r"""Request message for `AddAuthToken`.
+
+  Fields:
+    authToken: Required. The auth token to add.
+  """
+
+  authToken = _messages.MessageField('AuthToken', 1)
+
+
+class AddTokenAuthUserRequest(_messages.Message):
+  r"""Request message for `AddTokenAuthUser`.
+
+  Fields:
+    tokenAuthUser: Required. The name of the token auth user to add.
+  """
+
+  tokenAuthUser = _messages.StringField(1)
+
+
+class AuthToken(_messages.Message):
+  r"""Auth token for the instance.
+
+  Enums:
+    StateValueValuesEnum: Output only. The state of the auth token.
+
+  Fields:
+    createTime: Output only. Create time of the auth token.
+    name: Identifier. Name of the auth token.
+    state: Output only. The state of the auth token.
+    token: Output only. The auth token.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the auth token.
+
+    Values:
+      STATE_UNSPECIFIED: Not set.
+      ACTIVE: The auth token is active.
+      CREATING: The auth token is being created.
+      DELETING: The auth token is being deleted.
+    """
+    STATE_UNSPECIFIED = 0
+    ACTIVE = 1
+    CREATING = 2
+    DELETING = 3
+
+  createTime = _messages.StringField(1)
+  name = _messages.StringField(2)
+  state = _messages.EnumField('StateValueValuesEnum', 3)
+  token = _messages.StringField(4)
+
+
 class AutomatedBackupConfig(_messages.Message):
   r"""The automated backup config for an instance.
 
@@ -280,7 +333,7 @@ class BackupFile(_messages.Message):
 
 
 class BackupInstanceRequest(_messages.Message):
-  r"""Request for [BackupInstance].
+  r"""Request for `BackupInstance`.
 
   Fields:
     backupId: Optional. The id of the backup to be created. If not specified,
@@ -481,7 +534,7 @@ class EncryptionInfo(_messages.Message):
 
 
 class ExportBackupRequest(_messages.Message):
-  r"""Request for [ExportBackup].
+  r"""Request for `ExportBackup`.
 
   Fields:
     gcsBucket: Google Cloud Storage bucket, like "my-bucket".
@@ -491,10 +544,10 @@ class ExportBackupRequest(_messages.Message):
 
 
 class FinishMigrationRequest(_messages.Message):
-  r"""Request for FinishMigration.
+  r"""Request for `FinishMigration`.
 
   Fields:
-    force: Optional. By default, the FinishMigration operation ensures the
+    force: Optional. By default, the `FinishMigration` operation ensures the
       target replication offset to catch up to the source offset as of the
       time of the call. Set this field to `true` to bypass this offset
       verification check.
@@ -649,10 +702,12 @@ class Instance(_messages.Message):
       AUTHORIZATION_MODE_UNSPECIFIED: Not set.
       AUTH_DISABLED: Authorization disabled.
       IAM_AUTH: IAM basic authorization.
+      TOKEN_AUTH: Token based authorization.
     """
     AUTHORIZATION_MODE_UNSPECIFIED = 0
     AUTH_DISABLED = 1
     IAM_AUTH = 2
+    TOKEN_AUTH = 3
 
   class ModeValueValuesEnum(_messages.Enum):
     r"""Optional. The mode config for the instance.
@@ -731,12 +786,14 @@ class Instance(_messages.Message):
       ACTIVE: Instance has been created and is usable.
       UPDATING: Instance is being updated.
       DELETING: Instance is being deleted.
+      MIGRATING: Instance is being migrated.
     """
     STATE_UNSPECIFIED = 0
     CREATING = 1
     ACTIVE = 2
     UPDATING = 3
     DELETING = 4
+    MIGRATING = 5
 
   class TransitEncryptionModeValueValuesEnum(_messages.Enum):
     r"""Optional. Immutable. In-transit encryption mode of the instance.
@@ -863,7 +920,7 @@ class InstanceEndpoint(_messages.Message):
 
 
 class ListAclPoliciesResponse(_messages.Message):
-  r"""Response for ListAclPolicies.
+  r"""Response for `ListAclPolicies`.
 
   Fields:
     aclPolicies: A list of ACL policies in the project in the specified
@@ -880,8 +937,23 @@ class ListAclPoliciesResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListAuthTokensResponse(_messages.Message):
+  r"""Response message for `ListAuthTokens`.
+
+  Fields:
+    authTokens: A list of auth tokens in the project.
+    nextPageToken: Token to retrieve the next page of results, or empty if
+      there are no more results in the list.
+    unreachable: Unordered list. Auth tokens that could not be reached.
+  """
+
+  authTokens = _messages.MessageField('AuthToken', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListBackupCollectionsResponse(_messages.Message):
-  r"""Response for [ListBackupCollections].
+  r"""Response for `ListBackupCollections`.
 
   Fields:
     backupCollections: A list of backupCollections in the project. If the
@@ -904,7 +976,7 @@ class ListBackupCollectionsResponse(_messages.Message):
 
 
 class ListBackupsResponse(_messages.Message):
-  r"""Response for [ListBackups].
+  r"""Response for `ListBackups`.
 
   Fields:
     backups: A list of backups in the project.
@@ -919,7 +991,7 @@ class ListBackupsResponse(_messages.Message):
 
 
 class ListInstancesResponse(_messages.Message):
-  r"""Response message for ListInstances.
+  r"""Response message for `ListInstances`.
 
   Fields:
     instances: If the {location} requested was "-" the response contains a
@@ -963,6 +1035,21 @@ class ListOperationsResponse(_messages.Message):
 
   nextPageToken = _messages.StringField(1)
   operations = _messages.MessageField('Operation', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListTokenAuthUsersResponse(_messages.Message):
+  r"""Response message for `ListTokenAuthUsers`.
+
+  Fields:
+    nextPageToken: Token to retrieve the next page of results, or empty if
+      there are no more results in the list.
+    tokenAuthUsers: A list of token auth users in the project.
+    unreachable: Unordered list. Token auth users that could not be reached.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  tokenAuthUsers = _messages.MessageField('TokenAuthUser', 2, repeated=True)
   unreachable = _messages.StringField(3, repeated=True)
 
 
@@ -1179,7 +1266,7 @@ class MemorystoreProjectsLocationsAclPoliciesListRequest(_messages.Message):
       determine if there are more ACL policies left to be queried. The maximum
       value is 1000; values above 1000 will be coerced to 1000.
     pageToken: Optional. The `next_page_token` value returned from a previous
-      ListAclPolicies request, if any.
+      `ListAclPolicies` request, if any.
     parent: Required. The resource name of the cluster location using the
       form: `projects/{project}/locations/{location}` where `location` refers
       to a Google Cloud region.
@@ -1199,7 +1286,7 @@ class MemorystoreProjectsLocationsAclPoliciesPatchRequest(_messages.Message):
     requestId: Optional. Idempotent request UUID.
     updateMask: Optional. Mask of fields to be updated. At least one path must
       be supplied in this field. The elements of the repeated paths field may
-      only include these fields from AclPolicy: * `rules`
+      only include these fields from `AclPolicy`: * `rules`
   """
 
   aclPolicy = _messages.MessageField('AclPolicy', 1)
@@ -1262,7 +1349,7 @@ class MemorystoreProjectsLocationsBackupCollectionsBackupsListRequest(_messages.
       list and a caller should only rely on response's `next_page_token` to
       determine if there are more clusters left to be queried.
     pageToken: Optional. The `next_page_token` value returned from a previous
-      [ListBackupCollections] request, if any.
+      `ListBackupCollections` request, if any.
     parent: Required. The resource name of the backupCollection using the
       form: `projects/{project_id}/locations/{location_id}/backupCollections/{
       backup_collection_id}`
@@ -1295,7 +1382,7 @@ class MemorystoreProjectsLocationsBackupCollectionsListRequest(_messages.Message
       list and a caller should only rely on response's `next_page_token` to
       determine if there are more clusters left to be queried.
     pageToken: Optional. The `next_page_token` value returned from a previous
-      [ListBackupCollections] request, if any.
+      `ListBackupCollections` request, if any.
     parent: Required. The resource name of the backupCollection location using
       the form: `projects/{project_id}/locations/{location_id}` where
       `location_id` refers to a Google Cloud region.
@@ -1328,6 +1415,21 @@ class MemorystoreProjectsLocationsGetSharedRegionalCertificateAuthorityRequest(_
   """
 
   name = _messages.StringField(1, required=True)
+
+
+class MemorystoreProjectsLocationsInstancesAddTokenAuthUserRequest(_messages.Message):
+  r"""A MemorystoreProjectsLocationsInstancesAddTokenAuthUserRequest object.
+
+  Fields:
+    addTokenAuthUserRequest: A AddTokenAuthUserRequest resource to be passed
+      as the request body.
+    instance: Required. The instance resource that this token auth user will
+      be added for. Format:
+      projects/{project}/locations/{location}/instances/{instance}
+  """
+
+  addTokenAuthUserRequest = _messages.MessageField('AddTokenAuthUserRequest', 1)
+  instance = _messages.StringField(2, required=True)
 
 
 class MemorystoreProjectsLocationsInstancesBackupRequest(_messages.Message):
@@ -1516,6 +1618,143 @@ class MemorystoreProjectsLocationsInstancesStartMigrationRequest(_messages.Messa
   startMigrationRequest = _messages.MessageField('StartMigrationRequest', 2)
 
 
+class MemorystoreProjectsLocationsInstancesTokenAuthUsersAddAuthTokenRequest(_messages.Message):
+  r"""A MemorystoreProjectsLocationsInstancesTokenAuthUsersAddAuthTokenRequest
+  object.
+
+  Fields:
+    addAuthTokenRequest: A AddAuthTokenRequest resource to be passed as the
+      request body.
+    tokenAuthUser: Required. The name of the token auth user resource that
+      this token will be added for.
+  """
+
+  addAuthTokenRequest = _messages.MessageField('AddAuthTokenRequest', 1)
+  tokenAuthUser = _messages.StringField(2, required=True)
+
+
+class MemorystoreProjectsLocationsInstancesTokenAuthUsersAuthTokensDeleteRequest(_messages.Message):
+  r"""A
+  MemorystoreProjectsLocationsInstancesTokenAuthUsersAuthTokensDeleteRequest
+  object.
+
+  Fields:
+    name: Required. The name of the token auth user resource that this token
+      will be deleted from. Format: projects/{project}/locations/{location}/in
+      stances/{instance}/tokenAuthUsers/{token_auth_user}/authTokens/{name}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class MemorystoreProjectsLocationsInstancesTokenAuthUsersAuthTokensGetRequest(_messages.Message):
+  r"""A
+  MemorystoreProjectsLocationsInstancesTokenAuthUsersAuthTokensGetRequest
+  object.
+
+  Fields:
+    name: Required. The name of token auth user for a token auth enabled
+      instance. Format: projects/{project}/locations/{location}/instances/{ins
+      tance}/tokenAuthUsers/{token_auth_user}/authTokens/{auth_token}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class MemorystoreProjectsLocationsInstancesTokenAuthUsersAuthTokensListRequest(_messages.Message):
+  r"""A
+  MemorystoreProjectsLocationsInstancesTokenAuthUsersAuthTokensListRequest
+  object.
+
+  Fields:
+    filter: Optional. Expression for filtering results.
+    orderBy: Optional. Sort results by a defined order.
+    pageSize: Optional. The maximum number of items to return. The maximum
+      value is 1000; values above 1000 will be coerced to 1000. If not
+      specified, a default value of 1000 will be used by the service.
+      Regardless of the page_size value, the response may include a partial
+      list and a caller should only rely on response's `next_page_token` to
+      determine if there are more auth tokens left to be queried.
+    pageToken: Optional. The `next_page_token` value returned from a previous
+      `ListAuthTokens` request, if any.
+    parent: Required. The parent to list auth tokens from. Format: projects/{p
+      roject}/locations/{location}/instances/{instance}/tokenAuthUsers/{token_
+      auth_user}
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class MemorystoreProjectsLocationsInstancesTokenAuthUsersDeleteRequest(_messages.Message):
+  r"""A MemorystoreProjectsLocationsInstancesTokenAuthUsersDeleteRequest
+  object.
+
+  Fields:
+    force: Optional. If set to true, any auth tokens from this user will also
+      be deleted. Otherwise, the request will only work if the user has no
+      auth tokens.
+    name: Required. The name of the token auth user to delete. Format: project
+      s/{project}/locations/{location}/instances/{instance}/tokenAuthUsers/{to
+      ken_auth_user}
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  force = _messages.BooleanField(1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+
+
+class MemorystoreProjectsLocationsInstancesTokenAuthUsersGetRequest(_messages.Message):
+  r"""A MemorystoreProjectsLocationsInstancesTokenAuthUsersGetRequest object.
+
+  Fields:
+    name: Required. The name of token auth user for a basic auth enabled
+      instance. Format: projects/{project}/locations/{location}/instances/{ins
+      tance}/tokenAuthUsers/{token_auth_user}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class MemorystoreProjectsLocationsInstancesTokenAuthUsersListRequest(_messages.Message):
+  r"""A MemorystoreProjectsLocationsInstancesTokenAuthUsersListRequest object.
+
+  Fields:
+    filter: Optional. Expression for filtering results.
+    orderBy: Optional. Sort results by a defined order.
+    pageSize: Optional. The maximum number of items to return. The maximum
+      value is 1000; values above 1000 will be coerced to 1000. If not
+      specified, a default value of 1000 will be used by the service.
+      Regardless of the page_size value, the response may include a partial
+      list and a caller should only rely on response's `next_page_token` to
+      determine if there are more token auth users left to be queried.
+    pageToken: Optional. The `next_page_token` value returned from a previous
+      `ListTokenAuthUsers` request, if any.
+    parent: Required. The parent to list token auth users from. Format:
+      projects/{project}/locations/{location}/instances/{instance}
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
 class MemorystoreProjectsLocationsListRequest(_messages.Message):
   r"""A MemorystoreProjectsLocationsListRequest object.
 
@@ -1601,9 +1840,9 @@ class MigrationConfig(_messages.Message):
     StateValueValuesEnum: Output only. Migration state of the instance.
 
   Fields:
-    forceMigrationFinalization: Output only. Represents a boolean flag to
-      force migration finalization without offset catch up validation between
-      source and target before stopping replication.
+    forceFinishMigration: Output only. Represents a boolean flag to force
+      migration finalization without offset catch up validation between source
+      and target before stopping replication.
     selfManagedSource: Output only. Configuration for migrating from a self-
       managed Valkey/Redis instance
     state: Output only. Migration state of the instance.
@@ -1619,21 +1858,23 @@ class MigrationConfig(_messages.Message):
         a migration attempt that failed, and the subsequent rollback was
         successful. The instance is now ready for a new migration attempt if
         desired.
-      ROLLBACK_ATTEMPT_FAILED: A previous migration attempt failed, and the
-        subsequent rollback also failed. The high-level instance state will be
-        MIGRATING.
-      READY_FOR_FINALIZATION: Instance is in the process of migration.
+      ROLLING_BACK: Indicates a previous migration attempt failed. The high-
+        level instance state will be `MIGRATING`. The instance is not ready
+        for a new migration attempt. Rollback is in progress to restore the
+        instance to its original state. The instance will remain in this state
+        until rollback is successful.
+      REPLICATION_ESTABLISHED: Instance is in the process of migration.
         Instance has established successful replication and is ready for
-        finalization.
+        cutover.
       MIGRATED: Instance is successfully migrated.
     """
     STATE_UNSPECIFIED = 0
     ROLLED_BACK = 1
-    ROLLBACK_ATTEMPT_FAILED = 2
-    READY_FOR_FINALIZATION = 3
+    ROLLING_BACK = 2
+    REPLICATION_ESTABLISHED = 3
     MIGRATED = 4
 
-  forceMigrationFinalization = _messages.BooleanField(1)
+  forceFinishMigration = _messages.BooleanField(1)
   selfManagedSource = _messages.MessageField('SelfManagedSource', 2)
   state = _messages.EnumField('StateValueValuesEnum', 3)
 
@@ -2213,7 +2454,7 @@ class StandardQueryParameters(_messages.Message):
 
 
 class StartMigrationRequest(_messages.Message):
-  r"""Request for StartMigration.
+  r"""Request for `StartMigration`.
 
   Fields:
     selfManagedSource: Required. Configuration for migrating from a self-
@@ -2307,6 +2548,37 @@ class TimeOfDay(_messages.Message):
   minutes = _messages.IntegerField(2, variant=_messages.Variant.INT32)
   nanos = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   seconds = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+
+
+class TokenAuthUser(_messages.Message):
+  r"""Token based auth user for the instance.
+
+  Enums:
+    StateValueValuesEnum: Output only. The state of the token based auth user.
+
+  Fields:
+    name: Identifier. Token based auth user name.
+    state: Output only. The state of the token based auth user.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the token based auth user.
+
+    Values:
+      STATE_UNSPECIFIED: Not set.
+      ACTIVE: The auth user is active.
+      CREATING: The auth user is being created.
+      UPDATING: The auth user is being updated.
+      DELETING: The auth user is being deleted.
+    """
+    STATE_UNSPECIFIED = 0
+    ACTIVE = 1
+    CREATING = 2
+    UPDATING = 3
+    DELETING = 4
+
+  name = _messages.StringField(1)
+  state = _messages.EnumField('StateValueValuesEnum', 2)
 
 
 class UpdateInfo(_messages.Message):

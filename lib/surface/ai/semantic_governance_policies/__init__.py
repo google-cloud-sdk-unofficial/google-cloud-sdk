@@ -18,7 +18,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-@base.Hidden
 @base.UniverseCompatible
 class SemanticGovernancePolicies(base.Group):
   """Manage Vertex AI Semantic Governance Policy resources."""

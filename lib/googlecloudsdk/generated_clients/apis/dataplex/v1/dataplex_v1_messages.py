@@ -596,6 +596,62 @@ class DataplexProjectsLocationsDataAttributeBindingsTestIamPermissionsRequest(_m
   resource = _messages.StringField(2, required=True)
 
 
+class DataplexProjectsLocationsDataDomainsGetIamPolicyRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsDataDomainsGetIamPolicyRequest object.
+
+  Fields:
+    options_requestedPolicyVersion: Optional. The maximum policy version that
+      will be used to format the policy.Valid values are 0, 1, and 3. Requests
+      specifying an invalid value will be rejected.Requests for policies with
+      any conditional role bindings must specify version 3. Policies with no
+      conditional role bindings may specify any valid value or leave the field
+      unset.The policy in the response might use the policy version that you
+      specified, or it might use a lower policy version. For example, if you
+      specify version 3, but the policy has no conditional role bindings, the
+      response uses version 1.To learn which resources support conditions in
+      their IAM policies, see the IAM documentation
+      (https://cloud.google.com/iam/help/conditions/resource-policies).
+    resource: REQUIRED: The resource for which the policy is being requested.
+      See Resource names (https://cloud.google.com/apis/design/resource_names)
+      for the appropriate value for this field.
+  """
+
+  options_requestedPolicyVersion = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  resource = _messages.StringField(2, required=True)
+
+
+class DataplexProjectsLocationsDataDomainsSetIamPolicyRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsDataDomainsSetIamPolicyRequest object.
+
+  Fields:
+    googleIamV1SetIamPolicyRequest: A GoogleIamV1SetIamPolicyRequest resource
+      to be passed as the request body.
+    resource: REQUIRED: The resource for which the policy is being specified.
+      See Resource names (https://cloud.google.com/apis/design/resource_names)
+      for the appropriate value for this field.
+  """
+
+  googleIamV1SetIamPolicyRequest = _messages.MessageField('GoogleIamV1SetIamPolicyRequest', 1)
+  resource = _messages.StringField(2, required=True)
+
+
+class DataplexProjectsLocationsDataDomainsTestIamPermissionsRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsDataDomainsTestIamPermissionsRequest object.
+
+  Fields:
+    googleIamV1TestIamPermissionsRequest: A
+      GoogleIamV1TestIamPermissionsRequest resource to be passed as the
+      request body.
+    resource: REQUIRED: The resource for which the policy detail is being
+      requested. See Resource names
+      (https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+  """
+
+  googleIamV1TestIamPermissionsRequest = _messages.MessageField('GoogleIamV1TestIamPermissionsRequest', 1)
+  resource = _messages.StringField(2, required=True)
+
+
 class DataplexProjectsLocationsDataProductsCreateRequest(_messages.Message):
   r"""A DataplexProjectsLocationsDataProductsCreateRequest object.
 
@@ -980,6 +1036,23 @@ class DataplexProjectsLocationsDataScansGetRequest(_messages.Message):
 
   name = _messages.StringField(1, required=True)
   view = _messages.EnumField('ViewValueValuesEnum', 2)
+
+
+class DataplexProjectsLocationsDataScansJobsCancelRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsDataScansJobsCancelRequest object.
+
+  Fields:
+    googleCloudDataplexV1CancelDataScanJobRequest: A
+      GoogleCloudDataplexV1CancelDataScanJobRequest resource to be passed as
+      the request body.
+    name: Required. The resource name of the DataScanJob: projects/{project_id
+      _or_number}/locations/{location_id}/dataScans/{data_scan_id}/jobs/{data_
+      scan_job_id} where project_id_or_number refers to a project_id or
+      project_number and location_id refers to a Google Cloud region.
+  """
+
+  googleCloudDataplexV1CancelDataScanJobRequest = _messages.MessageField('GoogleCloudDataplexV1CancelDataScanJobRequest', 1)
+  name = _messages.StringField(2, required=True)
 
 
 class DataplexProjectsLocationsDataScansJobsGenerateDataQualityRulesRequest(_messages.Message):
@@ -4322,7 +4395,7 @@ class GoogleCloudDataplexV1ActionUnauthorizedResource(_messages.Message):
 
 
 class GoogleCloudDataplexV1Aspect(_messages.Message):
-  r"""An aspect is a single piece of metadata describing an entry.
+  r"""Represents a single piece of metadata describing an entry or entry link.
 
   Messages:
     DataValue: Required. The content of the aspect, according to its aspect
@@ -5009,6 +5082,14 @@ class GoogleCloudDataplexV1BusinessGlossaryEvent(_messages.Message):
   eventType = _messages.EnumField('EventTypeValueValuesEnum', 1)
   message = _messages.StringField(2)
   resource = _messages.StringField(3)
+
+
+class GoogleCloudDataplexV1CancelDataScanJobRequest(_messages.Message):
+  r"""Request message for the CancelDataScanJob method."""
+
+
+class GoogleCloudDataplexV1CancelDataScanJobResponse(_messages.Message):
+  r"""Response message for the CancelDataScanJob method."""
 
 
 class GoogleCloudDataplexV1CancelJobRequest(_messages.Message):
@@ -6340,7 +6421,16 @@ class GoogleCloudDataplexV1DataQualityResultPostScanActionsResultBigQueryExportR
 class GoogleCloudDataplexV1DataQualityRule(_messages.Message):
   r"""A rule captures data quality intent about a data source.
 
+  Messages:
+    AttributesValue: Optional. Map of attribute name and value linked to the
+      rule. The rules to evaluate can be filtered based on attributes provided
+      here and a filter expression provided in the DataQualitySpec.filter
+      field.
+
   Fields:
+    attributes: Optional. Map of attribute name and value linked to the rule.
+      The rules to evaluate can be filtered based on attributes provided here
+      and a filter expression provided in the DataQualitySpec.filter field.
     column: Optional. The unnested column which this rule is evaluated
       against.
     debugQueries: Optional. Specifies the debug queries for this rule.
@@ -6368,6 +6458,8 @@ class GoogleCloudDataplexV1DataQualityRule(_messages.Message):
       matches a specified regex.
     rowConditionExpectation: Row-level rule which evaluates whether each row
       in a table passes the specified condition.
+    ruleSource: Output only. Contains information about the source of the rule
+      and its relationship with the BigQuery table, where applicable.
     setExpectation: Row-level rule which evaluates whether each column value
       is contained by a specified set.
     sqlAssertion: Aggregate rule which evaluates the number of rows returned
@@ -6378,6 +6470,9 @@ class GoogleCloudDataplexV1DataQualityRule(_messages.Message):
       false.
     tableConditionExpectation: Aggregate rule which evaluates whether the
       provided expression is true for a table.
+    templateReference: Aggregate rule which references a rule template and
+      provides the parameters to be substituted in the template. If any rows
+      are returned, this rule fails.
     threshold: Optional. The minimum ratio of passing_rows / total_rows
       required to pass this rule, with a range of 0.0, 1.0.0 indicates default
       value (i.e. 1.0).This field is only valid for row-level type rules.
@@ -6385,23 +6480,52 @@ class GoogleCloudDataplexV1DataQualityRule(_messages.Message):
       value is unique.
   """
 
-  column = _messages.StringField(1)
-  debugQueries = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleDebugQuery', 2, repeated=True)
-  description = _messages.StringField(3)
-  dimension = _messages.StringField(4)
-  ignoreNull = _messages.BooleanField(5)
-  name = _messages.StringField(6)
-  nonNullExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleNonNullExpectation', 7)
-  rangeExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleRangeExpectation', 8)
-  regexExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleRegexExpectation', 9)
-  rowConditionExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleRowConditionExpectation', 10)
-  setExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleSetExpectation', 11)
-  sqlAssertion = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleSqlAssertion', 12)
-  statisticRangeExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleStatisticRangeExpectation', 13)
-  suspended = _messages.BooleanField(14)
-  tableConditionExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleTableConditionExpectation', 15)
-  threshold = _messages.FloatField(16)
-  uniquenessExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleUniquenessExpectation', 17)
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AttributesValue(_messages.Message):
+    r"""Optional. Map of attribute name and value linked to the rule. The
+    rules to evaluate can be filtered based on attributes provided here and a
+    filter expression provided in the DataQualitySpec.filter field.
+
+    Messages:
+      AdditionalProperty: An additional property for a AttributesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type AttributesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AttributesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  attributes = _messages.MessageField('AttributesValue', 1)
+  column = _messages.StringField(2)
+  debugQueries = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleDebugQuery', 3, repeated=True)
+  description = _messages.StringField(4)
+  dimension = _messages.StringField(5)
+  ignoreNull = _messages.BooleanField(6)
+  name = _messages.StringField(7)
+  nonNullExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleNonNullExpectation', 8)
+  rangeExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleRangeExpectation', 9)
+  regexExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleRegexExpectation', 10)
+  rowConditionExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleRowConditionExpectation', 11)
+  ruleSource = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleRuleSource', 12)
+  setExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleSetExpectation', 13)
+  sqlAssertion = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleSqlAssertion', 14)
+  statisticRangeExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleStatisticRangeExpectation', 15)
+  suspended = _messages.BooleanField(16)
+  tableConditionExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleTableConditionExpectation', 17)
+  templateReference = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleTemplateReference', 18)
+  threshold = _messages.FloatField(19)
+  uniquenessExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleUniquenessExpectation', 20)
 
 
 class GoogleCloudDataplexV1DataQualityRuleDebugQuery(_messages.Message):
@@ -6553,6 +6677,71 @@ class GoogleCloudDataplexV1DataQualityRuleRowConditionExpectation(_messages.Mess
   sqlExpression = _messages.StringField(1)
 
 
+class GoogleCloudDataplexV1DataQualityRuleRuleSource(_messages.Message):
+  r"""Represents the rule source information from Catalog.
+
+  Fields:
+    rulePathElements: Output only. Rule path elements represent information
+      about the individual items in the relationship path between the scan
+      resource and rule origin in that order.
+  """
+
+  rulePathElements = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleRuleSourceRulePathElement', 1, repeated=True)
+
+
+class GoogleCloudDataplexV1DataQualityRuleRuleSourceRulePathElement(_messages.Message):
+  r"""Path Element represents the direct relationship between the rule origin
+  (aspects) to the BigQuery Entry. Ordering of the rule relationship will be
+  maintained such that the first entry in the list is the closest ancestor
+  (BigQuery table itself). A blank source denotes that the rule is derived
+  directly from the DataScan itself.
+
+  Fields:
+    entryLinkSource: Output only. Entry link source represents information
+      about the entry link.
+    entrySource: Output only. Entry source represents information about the
+      related source entry.
+  """
+
+  entryLinkSource = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleRuleSourceRulePathElementEntryLinkSource', 1)
+  entrySource = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleRuleSourceRulePathElementEntrySource', 2)
+
+
+class GoogleCloudDataplexV1DataQualityRuleRuleSourceRulePathElementEntryLinkSource(_messages.Message):
+  r"""Entry link source represents information about the entry link.
+
+  Fields:
+    entryLink: Output only. The entry link name in the form of: projects/{proj
+      ect_id_or_number}/locations/{location_id}/entryGroups/{entry_group_id}/e
+      ntryLinks/{entry_link_id}
+    entryLinkType: Output only. The entry link type to represent the current
+      relationship between the entry and the next entry in the path. In the
+      form of: projects/{project_id_or_number}/locations/{location_id}/entryLi
+      nkTypes/{entry_link_type_id}
+  """
+
+  entryLink = _messages.StringField(1)
+  entryLinkType = _messages.StringField(2)
+
+
+class GoogleCloudDataplexV1DataQualityRuleRuleSourceRulePathElementEntrySource(_messages.Message):
+  r"""Entry source represents information about the related source entry.
+
+  Fields:
+    displayName: Output only. The display name of the entry.
+    entry: Output only. The entry name in the form of: projects/{project_id_or
+      _number}/locations/{location_id}/entryGroups/{entry_group_id}/entries/{e
+      ntry_id}
+    entryType: Output only. The entry type to represent the current
+      characteristics of the entry in the form of: projects/{project_id_or_num
+      ber}/locations/{location_id}/entryTypes/{entry-type-id}.
+  """
+
+  displayName = _messages.StringField(1)
+  entry = _messages.StringField(2)
+  entryType = _messages.StringField(3)
+
+
 class GoogleCloudDataplexV1DataQualityRuleSetExpectation(_messages.Message):
   r"""Evaluates whether each column value is contained by a specified set.
 
@@ -6640,6 +6829,158 @@ class GoogleCloudDataplexV1DataQualityRuleTableConditionExpectation(_messages.Me
   sqlExpression = _messages.StringField(1)
 
 
+class GoogleCloudDataplexV1DataQualityRuleTemplate(_messages.Message):
+  r"""DataQualityRuleTemplate represents a template which can be reused across
+  multiple data quality rules.
+
+  Messages:
+    InputParametersValue: Output only. Description for input parameters
+
+  Fields:
+    capabilities: Output only. A list of features or properties supported by
+      this rule template.
+    dimension: Output only. The dimension a rule template belongs to. Rule
+      level results are also aggregated at the dimension level.
+    inputParameters: Output only. Description for input parameters
+    name: Output only. The name of the rule template in the format: projects/{
+      project_id_or_number}/locations/{location_id}/entryGroups/{entry_group_i
+      d}/entries/{entry_id}
+    sqlCollection: Output only. Collection of SQLs for data quality rules.
+      Currently only one SQL is supported.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class InputParametersValue(_messages.Message):
+    r"""Output only. Description for input parameters
+
+    Messages:
+      AdditionalProperty: An additional property for a InputParametersValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type InputParametersValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a InputParametersValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A
+          GoogleCloudDataplexV1DataQualityRuleTemplateParameterDescription
+          attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleTemplateParameterDescription', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  capabilities = _messages.StringField(1, repeated=True)
+  dimension = _messages.StringField(2)
+  inputParameters = _messages.MessageField('InputParametersValue', 3)
+  name = _messages.StringField(4)
+  sqlCollection = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleTemplateSql', 5, repeated=True)
+
+
+class GoogleCloudDataplexV1DataQualityRuleTemplateParameterDescription(_messages.Message):
+  r"""Description of the input parameter. It can include the type(s) supported
+  by the parameter and intended usage. It is for information purposes only and
+  does not affect the behavior of the rule template.
+
+  Fields:
+    defaultValue: Output only. The default value for the parameter if no value
+      is provided.
+    description: Output only. Description of the input parameter. It can
+      include the type(s) supported by the parameter and intended usage. It is
+      for information purposes only and does not affect the behavior of the
+      rule template.
+  """
+
+  defaultValue = _messages.StringField(1)
+  description = _messages.StringField(2)
+
+
+class GoogleCloudDataplexV1DataQualityRuleTemplateReference(_messages.Message):
+  r"""A rule that constructs a SQL statement to evaluate using a rule template
+  and parameter values. If the constructed statement returns any rows, this
+  rule fails
+
+  Messages:
+    ValuesValue: Optional. Provides the map of parameter name and value. The
+      maximum size of the field is 120KB (encoded as UTF-8).
+
+  Fields:
+    name: Required. The template entry name. Entry must be of EntryType
+      projects/dataplex-types/locations/global/entryTypes/data-quality-rule-
+      template and contains top-level aspect of AspectType projects/dataplex-
+      types/locations/global/aspectTypes/data-quality-rule-template. The
+      format is: projects/{project_id_or_number}/locations/{location_id}/entry
+      Groups/{entry_group_id}/entries/{entry_id}
+    resolvedSql: Output only. The resolved SQL statement generated from the
+      template with parameters substituted. It is only populated in the
+      result.
+    ruleTemplate: Output only. The rule template used to resolve the rule. It
+      is only populated in the result.
+    values: Optional. Provides the map of parameter name and value. The
+      maximum size of the field is 120KB (encoded as UTF-8).
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ValuesValue(_messages.Message):
+    r"""Optional. Provides the map of parameter name and value. The maximum
+    size of the field is 120KB (encoded as UTF-8).
+
+    Messages:
+      AdditionalProperty: An additional property for a ValuesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type ValuesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ValuesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A
+          GoogleCloudDataplexV1DataQualityRuleTemplateReferenceParameterValue
+          attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleTemplateReferenceParameterValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  name = _messages.StringField(1)
+  resolvedSql = _messages.StringField(2)
+  ruleTemplate = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleTemplate', 3)
+  values = _messages.MessageField('ValuesValue', 4)
+
+
+class GoogleCloudDataplexV1DataQualityRuleTemplateReferenceParameterValue(_messages.Message):
+  r"""Represents a parameter value.
+
+  Fields:
+    value: Required. Represents the string value of the parameter.
+  """
+
+  value = _messages.StringField(1)
+
+
+class GoogleCloudDataplexV1DataQualityRuleTemplateSql(_messages.Message):
+  r"""Templatized SQL query for data quality rules. It can have parameters
+  that can be substituted with values when a rule is created using this
+  template.
+
+  Fields:
+    query: Output only. Templatized SQL query for data quality rules.
+  """
+
+  query = _messages.StringField(1)
+
+
 class GoogleCloudDataplexV1DataQualityRuleUniquenessExpectation(_messages.Message):
   r"""Evaluates whether the column has duplicates."""
 
@@ -6714,6 +7055,7 @@ class GoogleCloudDataplexV1DataQualityScanRuleResult(_messages.Message):
         DataQualityRule.TableConditionExpectation.
       UNIQUENESS_EXPECTATION: See DataQualityRule.UniquenessExpectation.
       SQL_ASSERTION: See DataQualityRule.SqlAssertion.
+      TEMPLATE_REFERENCE: See DataQualityRule.TemplateReference.
     """
     RULE_TYPE_UNSPECIFIED = 0
     NON_NULL_EXPECTATION = 1
@@ -6725,6 +7067,7 @@ class GoogleCloudDataplexV1DataQualityScanRuleResult(_messages.Message):
     TABLE_CONDITION_EXPECTATION = 7
     UNIQUENESS_EXPECTATION = 8
     SQL_ASSERTION = 9
+    TEMPLATE_REFERENCE = 10
 
   assertionRowCount = _messages.IntegerField(1)
   column = _messages.StringField(2)
@@ -6747,6 +7090,25 @@ class GoogleCloudDataplexV1DataQualitySpec(_messages.Message):
   Fields:
     catalogPublishingEnabled: Optional. If set, the latest DataScan job result
       will be published as Dataplex Universal Catalog metadata.
+    enableCatalogBasedRules: Optional. If enabled, the data scan will retrieve
+      rules defined in the dataplex-types.global.data-rules aspect on all
+      paths of the catalog entry corresponding to the BigQuery table resource
+      and all attached glossary terms. The path that data-rules aspect is
+      attached on the table entry defines the column that the rule will be
+      evaluated against. For glossary terms, the path that the terms are
+      attached on the table entry defines the column that the rule will be
+      evaluated against. At the start of scan execution, the rules reflect the
+      latest state retrieved from the catalog entry and any updates on the
+      rules thereafter are ignored for that execution. The updates will be
+      reflected from the next execution. Rules defined in the datascan must be
+      empty if this field is enabled.
+    filter: Optional. Filter for selectively running a subset of rules. You
+      can filter the request by the name or attribute key-value pairs defined
+      on the rule. If not specified, all rules are run. The filter is
+      applicable to both, the rules retrieved from catalog and explicitly
+      defined rules in the scan. Please see filter syntax
+      (https://docs.cloud.google.com/dataplex/docs/auto-data-quality-
+      overview#rule-filtering) for more details.
     postScanActions: Optional. Actions to take upon job completion.
     rowFilter: Optional. A filter applied to all rows in a single DataScan
       job. The filter needs to be a valid SQL expression for a WHERE clause in
@@ -6762,10 +7124,12 @@ class GoogleCloudDataplexV1DataQualitySpec(_messages.Message):
   """
 
   catalogPublishingEnabled = _messages.BooleanField(1)
-  postScanActions = _messages.MessageField('GoogleCloudDataplexV1DataQualitySpecPostScanActions', 2)
-  rowFilter = _messages.StringField(3)
-  rules = _messages.MessageField('GoogleCloudDataplexV1DataQualityRule', 4, repeated=True)
-  samplingPercent = _messages.FloatField(5, variant=_messages.Variant.FLOAT)
+  enableCatalogBasedRules = _messages.BooleanField(2)
+  filter = _messages.StringField(3)
+  postScanActions = _messages.MessageField('GoogleCloudDataplexV1DataQualitySpecPostScanActions', 4)
+  rowFilter = _messages.StringField(5)
+  rules = _messages.MessageField('GoogleCloudDataplexV1DataQualityRule', 6, repeated=True)
+  samplingPercent = _messages.FloatField(7, variant=_messages.Variant.FLOAT)
 
 
 class GoogleCloudDataplexV1DataQualitySpecPostScanActions(_messages.Message):
@@ -12422,6 +12786,8 @@ encoding.AddCustomJsonFieldMapping(
     DataplexProjectsLocationsChangeRequestsGetIamPolicyRequest, 'options_requestedPolicyVersion', 'options.requestedPolicyVersion')
 encoding.AddCustomJsonFieldMapping(
     DataplexProjectsLocationsDataAttributeBindingsGetIamPolicyRequest, 'options_requestedPolicyVersion', 'options.requestedPolicyVersion')
+encoding.AddCustomJsonFieldMapping(
+    DataplexProjectsLocationsDataDomainsGetIamPolicyRequest, 'options_requestedPolicyVersion', 'options.requestedPolicyVersion')
 encoding.AddCustomJsonFieldMapping(
     DataplexProjectsLocationsDataProductsGetIamPolicyRequest, 'options_requestedPolicyVersion', 'options.requestedPolicyVersion')
 encoding.AddCustomJsonFieldMapping(

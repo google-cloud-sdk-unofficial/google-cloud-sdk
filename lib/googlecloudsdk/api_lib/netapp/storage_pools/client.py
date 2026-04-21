@@ -108,6 +108,7 @@ class StoragePoolsClient(object):
       qos_type: Optional[str] = None,
       storage_pool_type: Optional[str] = None,
       scale_tier: Optional[str] = None,
+      scale_type: str | None = None,
       mode: Optional[str] = None,
   ):
     """Parses the command line arguments for Create Storage Pool into a config."""
@@ -133,6 +134,7 @@ class StoragePoolsClient(object):
         qos_type=qos_type,
         storage_pool_type=storage_pool_type,
         scale_tier=scale_tier,
+        scale_type=scale_type,
         mode=mode,
     )
 
@@ -335,6 +337,7 @@ class StoragePoolsAdapter(object):
       unified_pool: Optional[bool] = None,
       storage_pool_type: Optional[str] = None,
       scale_tier: Optional[str] = None,
+      scale_type: str | None = None,
       mode: Optional[str] = None,
   ):
     """Parses the command line arguments for Create Storage Pool into a config.
@@ -362,6 +365,7 @@ class StoragePoolsAdapter(object):
       unified_pool: Bool on whether the Storage Pool is a unified pool
       storage_pool_type: Type of the Storage Pool
       scale_tier: Scale tier of the Storage Pool
+      scale_type: Scale type of the Storage Pool
       mode: Mode of the Storage Pool - ONTAP or DEFAULT
 
     Returns:
@@ -404,6 +408,8 @@ class StoragePoolsAdapter(object):
       storage_pool.type = storage_pool_type
     if scale_tier is not None:
       storage_pool.scaleTier = scale_tier
+    if scale_type is not None:
+      storage_pool.scaleType = scale_type
     if mode is not None:
       storage_pool.mode = mode
     return storage_pool

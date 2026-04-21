@@ -1282,16 +1282,34 @@ class SanitizationResult(_messages.Message):
 class SanitizeModelResponseRequest(_messages.Message):
   r"""Sanitize Model Response request.
 
+  Enums:
+    StreamingModeValueValuesEnum: Optional. Streaming Mode for StreamSanitize*
+      API.
+
   Fields:
     modelResponseData: Required. Model response data to sanitize.
     multiLanguageDetectionMetadata: Optional. Metadata related for multi
       language detection.
+    streamingMode: Optional. Streaming Mode for StreamSanitize* API.
     userPrompt: Optional. User Prompt associated with Model response.
   """
 
+  class StreamingModeValueValuesEnum(_messages.Enum):
+    r"""Optional. Streaming Mode for StreamSanitize* API.
+
+    Values:
+      STREAMING_MODE_UNSPECIFIED: Default value.
+      STREAMING_MODE_BUFFERED: Buffered Streaming mode.
+      STREAMING_MODE_REALTIME: Real Time Streaming mode.
+    """
+    STREAMING_MODE_UNSPECIFIED = 0
+    STREAMING_MODE_BUFFERED = 1
+    STREAMING_MODE_REALTIME = 2
+
   modelResponseData = _messages.MessageField('DataItem', 1)
   multiLanguageDetectionMetadata = _messages.MessageField('MultiLanguageDetectionMetadata', 2)
-  userPrompt = _messages.StringField(3)
+  streamingMode = _messages.EnumField('StreamingModeValueValuesEnum', 3)
+  userPrompt = _messages.StringField(4)
 
 
 class SanitizeModelResponseResponse(_messages.Message):
@@ -1307,14 +1325,32 @@ class SanitizeModelResponseResponse(_messages.Message):
 class SanitizeUserPromptRequest(_messages.Message):
   r"""Sanitize User Prompt request.
 
+  Enums:
+    StreamingModeValueValuesEnum: Optional. Streaming Mode for StreamSanitize*
+      API.
+
   Fields:
     multiLanguageDetectionMetadata: Optional. Metadata related to Multi
       Language Detection.
+    streamingMode: Optional. Streaming Mode for StreamSanitize* API.
     userPromptData: Required. User prompt data to sanitize.
   """
 
+  class StreamingModeValueValuesEnum(_messages.Enum):
+    r"""Optional. Streaming Mode for StreamSanitize* API.
+
+    Values:
+      STREAMING_MODE_UNSPECIFIED: Default value.
+      STREAMING_MODE_BUFFERED: Buffered Streaming mode.
+      STREAMING_MODE_REALTIME: Real Time Streaming mode.
+    """
+    STREAMING_MODE_UNSPECIFIED = 0
+    STREAMING_MODE_BUFFERED = 1
+    STREAMING_MODE_REALTIME = 2
+
   multiLanguageDetectionMetadata = _messages.MessageField('MultiLanguageDetectionMetadata', 1)
-  userPromptData = _messages.MessageField('DataItem', 2)
+  streamingMode = _messages.EnumField('StreamingModeValueValuesEnum', 2)
+  userPromptData = _messages.MessageField('DataItem', 3)
 
 
 class SanitizeUserPromptResponse(_messages.Message):

@@ -24,8 +24,12 @@ from googlecloudsdk.command_lib.compute.vpn_gateways import flags
 _VPN_GATEWAY_ARG = flags.GetVpnGatewayArgument()
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
+)
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine Highly Available VPN Gateway.
 

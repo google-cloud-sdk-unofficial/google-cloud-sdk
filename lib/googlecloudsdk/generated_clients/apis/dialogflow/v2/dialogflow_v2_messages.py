@@ -11786,6 +11786,66 @@ class GoogleCloudDialogflowV2BatchUpdateIntentsResponse(_messages.Message):
   intents = _messages.MessageField('GoogleCloudDialogflowV2Intent', 1, repeated=True)
 
 
+class GoogleCloudDialogflowV2CesAppSpec(_messages.Message):
+  r"""Spec of CES app that the generator can choose from.
+
+  Enums:
+    ConfirmationRequirementValueValuesEnum: Optional. Indicates whether the
+      app requires human confirmation.
+
+  Fields:
+    cesApp: Optional. Format: `projects//locations//apps/`.
+    confirmationRequirement: Optional. Indicates whether the app requires
+      human confirmation.
+  """
+
+  class ConfirmationRequirementValueValuesEnum(_messages.Enum):
+    r"""Optional. Indicates whether the app requires human confirmation.
+
+    Values:
+      CONFIRMATION_REQUIREMENT_UNSPECIFIED: Unspecified. Whether the action
+        requires confirmation is inferred from method_type.
+      REQUIRED: Conformation is required.
+      NOT_REQUIRED: Conformation is not required.
+    """
+    CONFIRMATION_REQUIREMENT_UNSPECIFIED = 0
+    REQUIRED = 1
+    NOT_REQUIRED = 2
+
+  cesApp = _messages.StringField(1)
+  confirmationRequirement = _messages.EnumField('ConfirmationRequirementValueValuesEnum', 2)
+
+
+class GoogleCloudDialogflowV2CesToolSpec(_messages.Message):
+  r"""Spec of CES tool that the generator can choose from.
+
+  Enums:
+    ConfirmationRequirementValueValuesEnum: Optional. Indicates whether the
+      tool requires human confirmation.
+
+  Fields:
+    cesTool: Optional. Format: `projects//locations//apps//tools/`.
+    confirmationRequirement: Optional. Indicates whether the tool requires
+      human confirmation.
+  """
+
+  class ConfirmationRequirementValueValuesEnum(_messages.Enum):
+    r"""Optional. Indicates whether the tool requires human confirmation.
+
+    Values:
+      CONFIRMATION_REQUIREMENT_UNSPECIFIED: Unspecified. Whether the action
+        requires confirmation is inferred from method_type.
+      REQUIRED: Conformation is required.
+      NOT_REQUIRED: Conformation is not required.
+    """
+    CONFIRMATION_REQUIREMENT_UNSPECIFIED = 0
+    REQUIRED = 1
+    NOT_REQUIRED = 2
+
+  cesTool = _messages.StringField(1)
+  confirmationRequirement = _messages.EnumField('ConfirmationRequirementValueValuesEnum', 2)
+
+
 class GoogleCloudDialogflowV2ClearSuggestionFeatureConfigOperationMetadata(_messages.Message):
   r"""Metadata for a ConversationProfiles.ClearSuggestionFeatureConfig
   operation.
@@ -14068,6 +14128,10 @@ class GoogleCloudDialogflowV2Generator(_messages.Message):
 
   Fields:
     agentCoachingContext: Input of prebuilt Agent Coaching feature.
+    cesAppSpecs: Optional. List of CES app specs that the generator can choose
+      from.
+    cesToolSpecs: Optional. List of CES tool specs that the generator can
+      choose from.
     createTime: Output only. Creation time of this generator.
     description: Optional. Human readable description of the generator.
     freeFormContext: Input of free from generator to LLM.
@@ -14083,6 +14147,8 @@ class GoogleCloudDialogflowV2Generator(_messages.Message):
     summarizationContext: Input of prebuilt Summarization feature.
     tools: Optional. Resource names of the tools that the generator can choose
       from. Format: `projects//locations//tools/`.
+    toolsetTools: Optional. List of CES toolset specs that the generator can
+      choose from.
     triggerEvent: Optional. The trigger event of the generator. It defines
       when the generator is triggered in a conversation.
     updateTime: Output only. Update time of this generator.
@@ -14109,17 +14175,20 @@ class GoogleCloudDialogflowV2Generator(_messages.Message):
     AGENT_MESSAGE = 4
 
   agentCoachingContext = _messages.MessageField('GoogleCloudDialogflowV2AgentCoachingContext', 1)
-  createTime = _messages.StringField(2)
-  description = _messages.StringField(3)
-  freeFormContext = _messages.MessageField('GoogleCloudDialogflowV2FreeFormContext', 4)
-  inferenceParameter = _messages.MessageField('GoogleCloudDialogflowV2InferenceParameter', 5)
-  name = _messages.StringField(6)
-  publishedModel = _messages.StringField(7)
-  suggestionDedupingConfig = _messages.MessageField('GoogleCloudDialogflowV2SuggestionDedupingConfig', 8)
-  summarizationContext = _messages.MessageField('GoogleCloudDialogflowV2SummarizationContext', 9)
-  tools = _messages.StringField(10, repeated=True)
-  triggerEvent = _messages.EnumField('TriggerEventValueValuesEnum', 11)
-  updateTime = _messages.StringField(12)
+  cesAppSpecs = _messages.MessageField('GoogleCloudDialogflowV2CesAppSpec', 2, repeated=True)
+  cesToolSpecs = _messages.MessageField('GoogleCloudDialogflowV2CesToolSpec', 3, repeated=True)
+  createTime = _messages.StringField(4)
+  description = _messages.StringField(5)
+  freeFormContext = _messages.MessageField('GoogleCloudDialogflowV2FreeFormContext', 6)
+  inferenceParameter = _messages.MessageField('GoogleCloudDialogflowV2InferenceParameter', 7)
+  name = _messages.StringField(8)
+  publishedModel = _messages.StringField(9)
+  suggestionDedupingConfig = _messages.MessageField('GoogleCloudDialogflowV2SuggestionDedupingConfig', 10)
+  summarizationContext = _messages.MessageField('GoogleCloudDialogflowV2SummarizationContext', 11)
+  tools = _messages.StringField(12, repeated=True)
+  toolsetTools = _messages.MessageField('GoogleCloudDialogflowV2ToolsetTool', 13, repeated=True)
+  triggerEvent = _messages.EnumField('TriggerEventValueValuesEnum', 14)
+  updateTime = _messages.StringField(15)
 
 
 class GoogleCloudDialogflowV2GeneratorEvaluation(_messages.Message):
@@ -17123,10 +17192,14 @@ class GoogleCloudDialogflowV2Participant(_messages.Message):
       you try to add a user id for a non-END_USER participant. Dialogflow uses
       this user id for billing and measurement purposes. For example,
       Dialogflow determines whether a user in one conversation returned in a
-      later conversation. Note: * Please never pass raw user ids to
-      Dialogflow. Always obfuscate your user id first. * Dialogflow only
-      accepts a UTF-8 encoded string, e.g., a hex digest of a hash function
-      like SHA-512. * The length of the user id must be <= 256 characters.
+      later conversation. Additionally, to link an escalated Virtual Agent
+      conversation with its corresponding Agent Assist conversation for
+      analytics, this field in Agent Assist conversations should be populated
+      to indicate the user id of the `END_USER` participant in the escalated
+      conversation. Note: * Please never pass raw user ids to Dialogflow.
+      Always obfuscate your user id first. * Dialogflow only accepts a UTF-8
+      encoded string, e.g., a hex digest of a hash function like SHA-512. *
+      The length of the user id must be <= 256 characters.
     role: Immutable. The role this participant plays in the conversation. This
       field must be set during participant creation and is then immutable.
     sipRecordingMediaLabel: Optional. Label applied to streams representing
@@ -19885,6 +19958,12 @@ class GoogleCloudDialogflowV2ToolCall(_messages.Message):
   Fields:
     action: Optional. The name of the tool's action associated with this call.
     answerRecord: Optional. The answer record associated with this tool call.
+    cesApp: Optional. CES app name for this call. Format:
+      `projects//locations//apps/`.
+    cesTool: Optional. CES tool name for this call. Format:
+      `projects//locations//apps//tools/`.
+    cesToolset: Optional. CES toolset name for this call. Format:
+      `projects//locations//apps//toolsets/ToolsetID>`.
     createTime: Output only. Create time of the tool call.
     inputParameters: Optional. The action's input parameters.
     state: Output only. State of the tool call.
@@ -19934,12 +20013,15 @@ class GoogleCloudDialogflowV2ToolCall(_messages.Message):
 
   action = _messages.StringField(1)
   answerRecord = _messages.StringField(2)
-  createTime = _messages.StringField(3)
-  inputParameters = _messages.MessageField('InputParametersValue', 4)
-  state = _messages.EnumField('StateValueValuesEnum', 5)
-  tool = _messages.StringField(6)
-  toolDisplayDetails = _messages.StringField(7)
-  toolDisplayName = _messages.StringField(8)
+  cesApp = _messages.StringField(3)
+  cesTool = _messages.StringField(4)
+  cesToolset = _messages.StringField(5)
+  createTime = _messages.StringField(6)
+  inputParameters = _messages.MessageField('InputParametersValue', 7)
+  state = _messages.EnumField('StateValueValuesEnum', 8)
+  tool = _messages.StringField(9)
+  toolDisplayDetails = _messages.StringField(10)
+  toolDisplayName = _messages.StringField(11)
 
 
 class GoogleCloudDialogflowV2ToolCallResult(_messages.Message):
@@ -19949,6 +20031,12 @@ class GoogleCloudDialogflowV2ToolCallResult(_messages.Message):
     action: Optional. The name of the tool's action associated with this call.
     answerRecord: Optional. The answer record associated with this tool call
       result.
+    cesApp: Optional. CES app name for this call. Format:
+      `projects//locations//apps/`.
+    cesTool: Optional. CES tool name for this call. Format:
+      `projects//locations//apps//tools/`.
+    cesToolset: Optional. CES toolset name for this call. Format:
+      `projects//locations//apps//toolsets/ToolsetID>`.
     content: Only populated if the response content is utf-8 encoded.
     createTime: Output only. Create time of the tool call result.
     error: The tool call's error.
@@ -19960,11 +20048,14 @@ class GoogleCloudDialogflowV2ToolCallResult(_messages.Message):
 
   action = _messages.StringField(1)
   answerRecord = _messages.StringField(2)
-  content = _messages.StringField(3)
-  createTime = _messages.StringField(4)
-  error = _messages.MessageField('GoogleCloudDialogflowV2ToolCallResultError', 5)
-  rawContent = _messages.BytesField(6)
-  tool = _messages.StringField(7)
+  cesApp = _messages.StringField(3)
+  cesTool = _messages.StringField(4)
+  cesToolset = _messages.StringField(5)
+  content = _messages.StringField(6)
+  createTime = _messages.StringField(7)
+  error = _messages.MessageField('GoogleCloudDialogflowV2ToolCallResultError', 8)
+  rawContent = _messages.BytesField(9)
+  tool = _messages.StringField(10)
 
 
 class GoogleCloudDialogflowV2ToolCallResultError(_messages.Message):
@@ -20223,6 +20314,41 @@ class GoogleCloudDialogflowV2ToolTLSConfigCACert(_messages.Message):
 
   cert = _messages.BytesField(1)
   displayName = _messages.StringField(2)
+
+
+class GoogleCloudDialogflowV2ToolsetTool(_messages.Message):
+  r"""A tool that is created from a toolset.
+
+  Enums:
+    ConfirmationRequirementValueValuesEnum: Optional. Indicates whether the
+      tool requires human confirmation.
+
+  Fields:
+    confirmationRequirement: Optional. Indicates whether the tool requires
+      human confirmation.
+    operationId: Optional. The operationId field of the OpenAPI endpoint. The
+      operationId must be present in the toolset's definition.
+    toolset: Required. The name of the toolset to retrieve the schema for.
+      Format:
+      `projects/{project}/locations/{location}/apps/{app}/toolsets/{toolset}`
+  """
+
+  class ConfirmationRequirementValueValuesEnum(_messages.Enum):
+    r"""Optional. Indicates whether the tool requires human confirmation.
+
+    Values:
+      CONFIRMATION_REQUIREMENT_UNSPECIFIED: Unspecified. Whether the action
+        requires confirmation is inferred from method_type.
+      REQUIRED: Conformation is required.
+      NOT_REQUIRED: Conformation is not required.
+    """
+    CONFIRMATION_REQUIREMENT_UNSPECIFIED = 0
+    REQUIRED = 1
+    NOT_REQUIRED = 2
+
+  confirmationRequirement = _messages.EnumField('ConfirmationRequirementValueValuesEnum', 1)
+  operationId = _messages.StringField(2)
+  toolset = _messages.StringField(3)
 
 
 class GoogleCloudDialogflowV2TrainAgentRequest(_messages.Message):
@@ -24077,6 +24203,12 @@ class GoogleCloudDialogflowV2beta1ToolCall(_messages.Message):
   Fields:
     action: Optional. The name of the tool's action associated with this call.
     answerRecord: Optional. The answer record associated with this tool call.
+    cesApp: Optional. CES app name for this call. Format:
+      `projects//locations//apps/`.
+    cesTool: Optional. CES tool name for this call. Format:
+      `projects//locations//apps//tools/`.
+    cesToolset: Optional. CES toolset name for this call. Format:
+      `projects//locations//apps//toolsets/ToolsetID>`.
     createTime: Output only. Create time of the tool call.
     inputParameters: Optional. The action's input parameters.
     state: Output only. State of the tool call
@@ -24126,12 +24258,15 @@ class GoogleCloudDialogflowV2beta1ToolCall(_messages.Message):
 
   action = _messages.StringField(1)
   answerRecord = _messages.StringField(2)
-  createTime = _messages.StringField(3)
-  inputParameters = _messages.MessageField('InputParametersValue', 4)
-  state = _messages.EnumField('StateValueValuesEnum', 5)
-  tool = _messages.StringField(6)
-  toolDisplayDetails = _messages.StringField(7)
-  toolDisplayName = _messages.StringField(8)
+  cesApp = _messages.StringField(3)
+  cesTool = _messages.StringField(4)
+  cesToolset = _messages.StringField(5)
+  createTime = _messages.StringField(6)
+  inputParameters = _messages.MessageField('InputParametersValue', 7)
+  state = _messages.EnumField('StateValueValuesEnum', 8)
+  tool = _messages.StringField(9)
+  toolDisplayDetails = _messages.StringField(10)
+  toolDisplayName = _messages.StringField(11)
 
 
 class GoogleCloudDialogflowV2beta1ToolCallResult(_messages.Message):
@@ -24141,6 +24276,12 @@ class GoogleCloudDialogflowV2beta1ToolCallResult(_messages.Message):
     action: Optional. The name of the tool's action associated with this call.
     answerRecord: Optional. The answer record associated with this tool call
       result.
+    cesApp: Optional. CES app name for this call. Format:
+      `projects//locations//apps/`.
+    cesTool: Optional. CES tool name for this call. Format:
+      `projects//locations//apps//tools/`.
+    cesToolset: Optional. CES toolset name for this call. Format:
+      `projects//locations//apps//toolsets/ToolsetID>`.
     content: Only populated if the response content is utf-8 encoded.
     createTime: Output only. Create time of the tool call result.
     error: The tool call's error.
@@ -24152,11 +24293,14 @@ class GoogleCloudDialogflowV2beta1ToolCallResult(_messages.Message):
 
   action = _messages.StringField(1)
   answerRecord = _messages.StringField(2)
-  content = _messages.StringField(3)
-  createTime = _messages.StringField(4)
-  error = _messages.MessageField('GoogleCloudDialogflowV2beta1ToolCallResultError', 5)
-  rawContent = _messages.BytesField(6)
-  tool = _messages.StringField(7)
+  cesApp = _messages.StringField(3)
+  cesTool = _messages.StringField(4)
+  cesToolset = _messages.StringField(5)
+  content = _messages.StringField(6)
+  createTime = _messages.StringField(7)
+  error = _messages.MessageField('GoogleCloudDialogflowV2beta1ToolCallResultError', 8)
+  rawContent = _messages.BytesField(9)
+  tool = _messages.StringField(10)
 
 
 class GoogleCloudDialogflowV2beta1ToolCallResultError(_messages.Message):

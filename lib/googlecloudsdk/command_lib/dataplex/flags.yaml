@@ -75,10 +75,5 @@ resources:
   required: true
   type: 'googlecloudsdk.calliope.arg_parsers:ArgList:'
   help_text: |
-    The identifier describing the resource,
-    - in the form of a entry name, or
-    - in the form of a linked resource name, or
-    - in the form of a fully qualified name.
-    Examples:
-    - projects/{project}/locations/{location}/entryGroups/{entry_group}/entries/{entry}
-    - bigquery:{project}.{dataset}.{table}
+    The identifier describing the resource, for example:
+    `projects/{project}/locations/{location}/entryGroups/{entry_group}/entries/{entry}`

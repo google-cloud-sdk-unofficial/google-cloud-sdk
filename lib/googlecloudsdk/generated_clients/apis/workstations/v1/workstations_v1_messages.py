@@ -1380,7 +1380,7 @@ class StartWorkstationRequest(_messages.Message):
     etag: Optional. If set, the request will be rejected if the latest version
       of the workstation on the server does not have this ETag.
     validateOnly: Optional. If set, validate the request and preview the
-      review, but do not actually apply it.
+      result, but do not actually apply it.
   """
 
   boostConfig = _messages.StringField(1)
@@ -1446,7 +1446,7 @@ class StopWorkstationRequest(_messages.Message):
     etag: Optional. If set, the request will be rejected if the latest version
       of the workstation on the server does not have this ETag.
     validateOnly: Optional. If set, validate the request and preview the
-      review, but do not actually apply it.
+      result, but do not actually apply it.
   """
 
   etag = _messages.StringField(1)
@@ -1543,12 +1543,16 @@ class Workstation(_messages.Message):
       STATE_STOPPING: The workstation is being stopped.
       STATE_STOPPED: The workstation is stopped and will not be able to
         receive requests until it is started.
+      STATE_SUSPENDING: The workstation is being suspended.
+      STATE_SUSPENDED: The workstation is suspended.
     """
     STATE_UNSPECIFIED = 0
     STATE_STARTING = 1
     STATE_RUNNING = 2
     STATE_STOPPING = 3
     STATE_STOPPED = 4
+    STATE_SUSPENDING = 5
+    STATE_SUSPENDED = 6
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AnnotationsValue(_messages.Message):
@@ -1702,6 +1706,21 @@ class WorkstationCluster(_messages.Message):
       cluster.
     updateTime: Output only. Time when this workstation cluster was most
       recently updated.
+    workstationAuthorizationUrl: Optional. Specifies the redirect URL for
+      unauthorized requests received by workstation VMs in this cluster.
+      Redirects to this endpoint will send a base64 encoded `state` query
+      param containing the target workstation name and original request
+      hostname. The endpoint is responsible for retrieving a token using
+      `GenerateAccessToken` and redirecting back to the original hostname with
+      the token.
+    workstationLaunchUrl: Optional. Specifies the launch URL for workstations
+      in this cluster. Requests sent to unstarted workstations will be
+      redirected to this URL. Requests redirected to the launch endpoint will
+      be sent with a `workstation` and `project` query parameter containing
+      the full workstation resource name and project ID, respectively. The
+      launch endpoint is responsible for starting the workstation, polling it
+      until it reaches `STATE_RUNNING`, and then issuing a redirect to the
+      workstation's host URL.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -1800,6 +1819,8 @@ class WorkstationCluster(_messages.Message):
   tags = _messages.MessageField('TagsValue', 17)
   uid = _messages.StringField(18)
   updateTime = _messages.StringField(19)
+  workstationAuthorizationUrl = _messages.StringField(20)
+  workstationLaunchUrl = _messages.StringField(21)
 
 
 class WorkstationConfig(_messages.Message):
@@ -1916,19 +1937,21 @@ class WorkstationConfig(_messages.Message):
       default zones within the region are used. Immutable after the
       workstation configuration is created.
     runningTimeout: Optional. Number of seconds that a workstation can run
-      until it is automatically shut down. We recommend that workstations be
-      shut down daily to reduce costs and so that security updates can be
-      applied upon restart. The idle_timeout and running_timeout fields are
-      independent of each other. Note that the running_timeout field shuts
-      down VMs after the specified time, regardless of whether or not the VMs
-      are idle. Provide duration terminated by `s` for seconds-for example,
-      `"54000s"` (15 hours). Defaults to `"43200s"` (12 hours). A value of
-      `"0s"` indicates that workstations using this configuration should never
-      time out. If encryption_key is set, it must be greater than `"0s"` and
-      less than `"86400s"` (24 hours). Warning: A value of `"0s"` indicates
-      that Cloud Workstations VMs created with this configuration have no
-      maximum running time. This is strongly discouraged because you incur
-      costs and will not pick up security updates.
+      until it is automatically shut down. This field applies to workstations
+      in both STATE_RUNNING and STATE_SUSPENDED. We recommend that
+      workstations be shut down daily to reduce costs and so that security
+      updates can be applied upon restart. The idle_timeout and
+      running_timeout fields are independent of each other. Note that the
+      running_timeout field shuts down VMs after the specified time,
+      regardless of whether or not the VMs are idle. Provide duration
+      terminated by `s` for seconds-for example, `"54000s"` (15 hours).
+      Defaults to `"43200s"` (12 hours). A value of `"0s"` indicates that
+      workstations using this configuration should never time out. If
+      encryption_key is set, it must be greater than `"0s"` and less than
+      `"86400s"` (24 hours). Warning: A value of `"0s"` indicates that Cloud
+      Workstations VMs created with this configuration have no maximum running
+      time. This is strongly discouraged because you incur costs and will not
+      pick up security updates.
     uid: Output only. A system-assigned unique identifier for this workstation
       configuration.
     updateTime: Output only. Time when this workstation configuration was most
@@ -2111,7 +2134,7 @@ class WorkstationsProjectsLocationsWorkstationClustersCreateRequest(_messages.Me
   Fields:
     parent: Required. Parent resource name.
     validateOnly: Optional. If set, validate the request and preview the
-      review, but do not actually apply it.
+      result, but do not actually apply it.
     workstationCluster: A WorkstationCluster resource to be passed as the
       request body.
     workstationClusterId: Required. ID to use for the workstation cluster.
@@ -2134,7 +2157,7 @@ class WorkstationsProjectsLocationsWorkstationClustersDeleteRequest(_messages.Me
       works if the workstation cluster has no configurations or workstations.
     name: Required. Name of the workstation cluster to delete.
     validateOnly: Optional. If set, validate the request and preview the
-      review, but do not apply it.
+      result, but do not apply it.
   """
 
   etag = _messages.StringField(1)
@@ -2182,7 +2205,7 @@ class WorkstationsProjectsLocationsWorkstationClustersPatchRequest(_messages.Mes
     updateMask: Required. Mask that specifies which fields in the workstation
       cluster should be updated.
     validateOnly: Optional. If set, validate the request and preview the
-      review, but do not actually apply it.
+      result, but do not actually apply it.
     workstationCluster: A WorkstationCluster resource to be passed as the
       request body.
   """
@@ -2201,7 +2224,7 @@ class WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsCreateRe
   Fields:
     parent: Required. Parent resource name.
     validateOnly: Optional. If set, validate the request and preview the
-      review, but do not actually apply it.
+      result, but do not actually apply it.
     workstationConfig: A WorkstationConfig resource to be passed as the
       request body.
     workstationConfigId: Required. ID to use for the workstation
@@ -2226,7 +2249,7 @@ class WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsDeleteRe
       configuration has no workstations.
     name: Required. Name of the workstation configuration to delete.
     validateOnly: Optional. If set, validate the request and preview the
-      review, but do not actually apply it.
+      result, but do not actually apply it.
   """
 
   etag = _messages.StringField(1)
@@ -2321,7 +2344,7 @@ class WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsPatchReq
     updateMask: Required. Mask specifying which fields in the workstation
       configuration should be updated.
     validateOnly: Optional. If set, validate the request and preview the
-      review, but do not actually apply it.
+      result, but do not actually apply it.
     workstationConfig: A WorkstationConfig resource to be passed as the
       request body.
   """
@@ -2374,7 +2397,7 @@ class WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWorkstat
   Fields:
     parent: Required. Parent resource name.
     validateOnly: Optional. If set, validate the request and preview the
-      review, but do not actually apply it.
+      result, but do not actually apply it.
     workstation: A Workstation resource to be passed as the request body.
     workstationId: Required. ID to use for the workstation.
   """
@@ -2394,7 +2417,7 @@ class WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWorkstat
       of the workstation on the server does not have this ETag.
     name: Required. Name of the workstation to delete.
     validateOnly: Optional. If set, validate the request and preview the
-      review, but do not actually apply it.
+      result, but do not actually apply it.
   """
 
   etag = _messages.StringField(1)
@@ -2495,14 +2518,13 @@ class WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWorkstat
   stationsPatchRequest object.
 
   Fields:
-    allowMissing: Optional. If set and the workstation configuration is not
-      found, a new workstation configuration is created. In this situation,
-      update_mask is ignored.
+    allowMissing: Optional. If set and the workstation is not found, a new
+      workstation is created. In this situation, update_mask is ignored.
     name: Identifier. Full name of this workstation.
     updateMask: Required. Mask specifying which fields in the workstation
-      configuration should be updated.
+      should be updated.
     validateOnly: Optional. If set, validate the request and preview the
-      review, but do not actually apply it.
+      result, but do not actually apply it.
     workstation: A Workstation resource to be passed as the request body.
   """
 

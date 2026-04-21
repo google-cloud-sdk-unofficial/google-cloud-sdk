@@ -46,10 +46,6 @@ class Blueprint(_messages.Message):
   version = _messages.StringField(3)
 
 
-class CancelOperationRequest(_messages.Message):
-  r"""The request message for Operations.CancelOperation."""
-
-
 class Dependency(_messages.Message):
   r"""Dependency represent a single dependency with another unit kind by
   alias.
@@ -95,6 +91,16 @@ class ErrorBudget(_messages.Message):
 
   allowedCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   allowedPercentage = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+
+
+class FlagUpdate(_messages.Message):
+  r"""FlagUpdate is a UnitOperation that pushes new flag values to Units.
+
+  Fields:
+    flagRelease: Required. Flag release being applied by UnitOperation.
+  """
+
+  flagRelease = _messages.StringField(1)
 
 
 class FromMapping(_messages.Message):
@@ -201,24 +207,6 @@ class ListLocationsResponse(_messages.Message):
 
   locations = _messages.MessageField('GoogleCloudLocationLocation', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
-
-
-class ListOperationsResponse(_messages.Message):
-  r"""The response message for Operations.ListOperations.
-
-  Fields:
-    nextPageToken: The standard List next-page token.
-    operations: A list of operations that matches the specified filter in the
-      request.
-    unreachable: Unordered list. Unreachable resources. Populated when the
-      request sets `ListOperationsRequest.return_partial_success` and reads
-      across collections. For example, when attempting to list all resources
-      across all supported locations.
-  """
-
-  nextPageToken = _messages.StringField(1)
-  operations = _messages.MessageField('Operation', 2, repeated=True)
-  unreachable = _messages.StringField(3, repeated=True)
 
 
 class ListReleasesResponse(_messages.Message):
@@ -373,114 +361,6 @@ class MaintenanceSettings(_messages.Message):
   """
 
   pinnedUntilTime = _messages.StringField(1)
-
-
-class Operation(_messages.Message):
-  r"""This resource represents a long-running operation that is the result of
-  a network API call.
-
-  Messages:
-    MetadataValue: Service-specific metadata associated with the operation. It
-      typically contains progress information and common metadata such as
-      create time. Some services might not provide such metadata. Any method
-      that returns a long-running operation should document the metadata type,
-      if any.
-    ResponseValue: The normal, successful response of the operation. If the
-      original method returns no data on success, such as `Delete`, the
-      response is `google.protobuf.Empty`. If the original method is standard
-      `Get`/`Create`/`Update`, the response should be the resource. For other
-      methods, the response should have the type `XxxResponse`, where `Xxx` is
-      the original method name. For example, if the original method name is
-      `TakeSnapshot()`, the inferred response type is `TakeSnapshotResponse`.
-
-  Fields:
-    done: If the value is `false`, it means the operation is still in
-      progress. If `true`, the operation is completed, and either `error` or
-      `response` is available.
-    error: The error result of the operation in case of failure or
-      cancellation.
-    metadata: Service-specific metadata associated with the operation. It
-      typically contains progress information and common metadata such as
-      create time. Some services might not provide such metadata. Any method
-      that returns a long-running operation should document the metadata type,
-      if any.
-    name: The server-assigned name, which is only unique within the same
-      service that originally returns it. If you use the default HTTP mapping,
-      the `name` should be a resource name ending with
-      `operations/{unique_id}`.
-    response: The normal, successful response of the operation. If the
-      original method returns no data on success, such as `Delete`, the
-      response is `google.protobuf.Empty`. If the original method is standard
-      `Get`/`Create`/`Update`, the response should be the resource. For other
-      methods, the response should have the type `XxxResponse`, where `Xxx` is
-      the original method name. For example, if the original method name is
-      `TakeSnapshot()`, the inferred response type is `TakeSnapshotResponse`.
-  """
-
-  @encoding.MapUnrecognizedFields('additionalProperties')
-  class MetadataValue(_messages.Message):
-    r"""Service-specific metadata associated with the operation. It typically
-    contains progress information and common metadata such as create time.
-    Some services might not provide such metadata. Any method that returns a
-    long-running operation should document the metadata type, if any.
-
-    Messages:
-      AdditionalProperty: An additional property for a MetadataValue object.
-
-    Fields:
-      additionalProperties: Properties of the object. Contains field @type
-        with type URL.
-    """
-
-    class AdditionalProperty(_messages.Message):
-      r"""An additional property for a MetadataValue object.
-
-      Fields:
-        key: Name of the additional property.
-        value: A extra_types.JsonValue attribute.
-      """
-
-      key = _messages.StringField(1)
-      value = _messages.MessageField('extra_types.JsonValue', 2)
-
-    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
-
-  @encoding.MapUnrecognizedFields('additionalProperties')
-  class ResponseValue(_messages.Message):
-    r"""The normal, successful response of the operation. If the original
-    method returns no data on success, such as `Delete`, the response is
-    `google.protobuf.Empty`. If the original method is standard
-    `Get`/`Create`/`Update`, the response should be the resource. For other
-    methods, the response should have the type `XxxResponse`, where `Xxx` is
-    the original method name. For example, if the original method name is
-    `TakeSnapshot()`, the inferred response type is `TakeSnapshotResponse`.
-
-    Messages:
-      AdditionalProperty: An additional property for a ResponseValue object.
-
-    Fields:
-      additionalProperties: Properties of the object. Contains field @type
-        with type URL.
-    """
-
-    class AdditionalProperty(_messages.Message):
-      r"""An additional property for a ResponseValue object.
-
-      Fields:
-        key: Name of the additional property.
-        value: A extra_types.JsonValue attribute.
-      """
-
-      key = _messages.StringField(1)
-      value = _messages.MessageField('extra_types.JsonValue', 2)
-
-    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
-
-  done = _messages.BooleanField(1)
-  error = _messages.MessageField('Status', 2)
-  metadata = _messages.MessageField('MetadataValue', 3)
-  name = _messages.StringField(4)
-  response = _messages.MessageField('ResponseValue', 5)
 
 
 class Provision(_messages.Message):
@@ -673,6 +553,11 @@ class Rollout(_messages.Message):
     etag: Output only. An opaque value that uniquely identifies a version or
       generation of a resource. It can be used to confirm that the client and
       server agree on the ordering of a resource being written.
+    flagRelease: Optional. Immutable. Name of the FlagRelease to be rolled out
+      to the target Units. Release and FlagRelease are mutually exclusive.
+      Note: `release` comment needs to be adjusted to mention that "Release
+      and FlagRelease are mutually exclusive" when visibility restriction will
+      be lifted.
     labels: Optional. The labels on the resource, which can be used for
       categorization. similar to Kubernetes resource labels.
     name: Identifier. The resource name (full URI of the resource) following
@@ -684,7 +569,7 @@ class Rollout(_messages.Message):
       "projects/{project}/locations/{location}/rollouts/{rollout_id}"
     release: Optional. Immutable. Name of the Release that gets rolled out to
       target Units. Required if no other type of release is specified.
-    rolloutKind: Optional. Immutable. Name of the RolloutKind this rollout is
+    rolloutKind: Required. Immutable. Name of the RolloutKind this rollout is
       stemming from and adhering to.
     rolloutOrchestrationStrategy: Optional. The strategy used for executing
       this Rollout. This strategy will override whatever strategy is specified
@@ -808,21 +693,22 @@ class Rollout(_messages.Message):
   effectiveUnitFilter = _messages.StringField(5)
   endTime = _messages.StringField(6)
   etag = _messages.StringField(7)
-  labels = _messages.MessageField('LabelsValue', 8)
-  name = _messages.StringField(9)
-  parentRollout = _messages.StringField(10)
-  release = _messages.StringField(11)
-  rolloutKind = _messages.StringField(12)
-  rolloutOrchestrationStrategy = _messages.StringField(13)
-  rootRollout = _messages.StringField(14)
-  startTime = _messages.StringField(15)
-  state = _messages.EnumField('StateValueValuesEnum', 16)
-  stateMessage = _messages.StringField(17)
-  stateTransitionTime = _messages.StringField(18)
-  stats = _messages.MessageField('RolloutStats', 19)
-  uid = _messages.StringField(20)
-  unitFilter = _messages.StringField(21)
-  updateTime = _messages.StringField(22)
+  flagRelease = _messages.StringField(8)
+  labels = _messages.MessageField('LabelsValue', 9)
+  name = _messages.StringField(10)
+  parentRollout = _messages.StringField(11)
+  release = _messages.StringField(12)
+  rolloutKind = _messages.StringField(13)
+  rolloutOrchestrationStrategy = _messages.StringField(14)
+  rootRollout = _messages.StringField(15)
+  startTime = _messages.StringField(16)
+  state = _messages.EnumField('StateValueValuesEnum', 17)
+  stateMessage = _messages.StringField(18)
+  stateTransitionTime = _messages.StringField(19)
+  stats = _messages.MessageField('RolloutStats', 20)
+  uid = _messages.StringField(21)
+  unitFilter = _messages.StringField(22)
+  updateTime = _messages.StringField(23)
 
 
 class RolloutControl(_messages.Message):
@@ -1048,6 +934,10 @@ class RunRolloutActionParams(_messages.Message):
 class Saas(_messages.Message):
   r"""Saas is a representation of a SaaS service managed by the Producer.
 
+  Enums:
+    StateValueValuesEnum: Output only. State of the Saas. It is always in
+      ACTIVE state if the application_template is empty.
+
   Messages:
     AnnotationsValue: Optional. Annotations is an unstructured key-value map
       stored with a resource that may be set by external tools to store and
@@ -1063,7 +953,11 @@ class Saas(_messages.Message):
       arbitrary metadata. They are not queryable and should be preserved when
       modifying objects. More info: https://kubernetes.io/docs/user-
       guide/annotations
+    conditions: Output only. A set of conditions which indicate the various
+      conditions this resource can have.
     createTime: Output only. The timestamp when the resource was created.
+    error: Output only. If the state is FAILED, the corresponding error code
+      and message. Defaults to code=OK for all other states.
     etag: Output only. An opaque value that uniquely identifies a version or
       generation of a resource. It can be used to confirm that the client and
       server agree on the ordering of a resource being written.
@@ -1074,6 +968,8 @@ class Saas(_messages.Message):
     name: Identifier. The resource name (full URI of the resource) following
       the standard naming scheme:
       "projects/{project}/locations/{location}/saas/{saas}"
+    state: Output only. State of the Saas. It is always in ACTIVE state if the
+      application_template is empty.
     uid: Output only. The unique identifier of the resource. UID is unique in
       the time and space for this resource within the scope of the service. It
       is typically generated by the server on successful creation of a
@@ -1083,6 +979,29 @@ class Saas(_messages.Message):
       Any change to the resource made by users must refresh this value.
       Changes to a resource made by the service should refresh this value.
   """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. State of the Saas. It is always in ACTIVE state if the
+    application_template is empty.
+
+    Values:
+      STATE_TYPE_UNSPECIFIED: State type is unspecified.
+      STATE_ACTIVE: The Saas is ready
+      STATE_RUNNING: In the process of importing, synchronizing or replicating
+        ApplicationTemplates
+      STATE_FAILED: Failure during process of importing, synchronizing or
+        replicating ApplicationTemplate processing
+      ACTIVE: Deprecated: Use STATE_ACTIVE.
+      RUNNING: Deprecated: Use STATE_RUNNING.
+      FAILED: Deprecated: Use STATE_FAILED.
+    """
+    STATE_TYPE_UNSPECIFIED = 0
+    STATE_ACTIVE = 1
+    STATE_RUNNING = 2
+    STATE_FAILED = 3
+    ACTIVE = 4
+    RUNNING = 5
+    FAILED = 6
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AnnotationsValue(_messages.Message):
@@ -1138,70 +1057,66 @@ class Saas(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   annotations = _messages.MessageField('AnnotationsValue', 1)
-  createTime = _messages.StringField(2)
-  etag = _messages.StringField(3)
-  labels = _messages.MessageField('LabelsValue', 4)
-  locations = _messages.MessageField('Location', 5, repeated=True)
-  name = _messages.StringField(6)
-  uid = _messages.StringField(7)
-  updateTime = _messages.StringField(8)
+  conditions = _messages.MessageField('SaasCondition', 2, repeated=True)
+  createTime = _messages.StringField(3)
+  error = _messages.MessageField('Status', 4)
+  etag = _messages.StringField(5)
+  labels = _messages.MessageField('LabelsValue', 6)
+  locations = _messages.MessageField('Location', 7, repeated=True)
+  name = _messages.StringField(8)
+  state = _messages.EnumField('StateValueValuesEnum', 9)
+  uid = _messages.StringField(10)
+  updateTime = _messages.StringField(11)
 
 
-class SaasservicemgmtOperationsCancelRequest(_messages.Message):
-  r"""A SaasservicemgmtOperationsCancelRequest object.
+class SaasCondition(_messages.Message):
+  r"""SaasCondition describes the status of a Saas.
 
-  Fields:
-    cancelOperationRequest: A CancelOperationRequest resource to be passed as
-      the request body.
-    name: The name of the operation resource to be cancelled.
-  """
-
-  cancelOperationRequest = _messages.MessageField('CancelOperationRequest', 1)
-  name = _messages.StringField(2, required=True)
-
-
-class SaasservicemgmtOperationsDeleteRequest(_messages.Message):
-  r"""A SaasservicemgmtOperationsDeleteRequest object.
+  Enums:
+    StatusValueValuesEnum: Required. Status of the condition.
+    TypeValueValuesEnum: Required. Type of the condition.
 
   Fields:
-    name: The name of the operation resource to be deleted.
+    lastTransitionTime: Required. Last time the condition transited from one
+      status to another.
+    message: Required. Human readable message indicating details about the
+      last transition.
+    reason: Required. Brief reason for the condition's last transition.
+    status: Required. Status of the condition.
+    type: Required. Type of the condition.
   """
 
-  name = _messages.StringField(1, required=True)
+  class StatusValueValuesEnum(_messages.Enum):
+    r"""Required. Status of the condition.
 
+    Values:
+      STATUS_UNSPECIFIED: Condition status is unspecified.
+      STATUS_UNKNOWN: Condition is unknown.
+      STATUS_TRUE: Condition is true.
+      STATUS_FALSE: Condition is false.
+    """
+    STATUS_UNSPECIFIED = 0
+    STATUS_UNKNOWN = 1
+    STATUS_TRUE = 2
+    STATUS_FALSE = 3
 
-class SaasservicemgmtOperationsGetRequest(_messages.Message):
-  r"""A SaasservicemgmtOperationsGetRequest object.
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""Required. Type of the condition.
 
-  Fields:
-    name: The name of the operation resource.
-  """
+    Values:
+      TYPE_UNSPECIFIED: Condition type is unspecified.
+      TYPE_READY: Condition type is ready.
+      TYPE_SYNCHRONIZED: Condition type is synchronized.
+    """
+    TYPE_UNSPECIFIED = 0
+    TYPE_READY = 1
+    TYPE_SYNCHRONIZED = 2
 
-  name = _messages.StringField(1, required=True)
-
-
-class SaasservicemgmtOperationsListRequest(_messages.Message):
-  r"""A SaasservicemgmtOperationsListRequest object.
-
-  Fields:
-    filter: The standard list filter.
-    name: The name of the operation's parent resource.
-    pageSize: The standard list page size.
-    pageToken: The standard list page token.
-    returnPartialSuccess: When set to `true`, operations that are reachable
-      are returned as normal, and those that are unreachable are returned in
-      the ListOperationsResponse.unreachable field. This can only be `true`
-      when reading across collections. For example, when `parent` is set to
-      `"projects/example/locations/-"`. This field is not supported by default
-      and will result in an `UNIMPLEMENTED` error if set unless explicitly
-      documented otherwise in service or product specific documentation.
-  """
-
-  filter = _messages.StringField(1)
-  name = _messages.StringField(2, required=True)
-  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(4)
-  returnPartialSuccess = _messages.BooleanField(5)
+  lastTransitionTime = _messages.StringField(1)
+  message = _messages.StringField(2)
+  reason = _messages.StringField(3)
+  status = _messages.EnumField('StatusValueValuesEnum', 4)
+  type = _messages.EnumField('TypeValueValuesEnum', 5)
 
 
 class SaasservicemgmtProjectsLocationsGetRequest(_messages.Message):
@@ -2420,9 +2335,9 @@ class Tenant(_messages.Message):
       guide/annotations
     consumerResource: Optional. Immutable. A reference to the consumer
       resource this SaaS Tenant is representing. The relationship with a
-      consumer resource can be used by SaaS Runtime for retrieving consumer-
-      defined settings and policies such as maintenance policies (using
-      Unified Maintenance Policy API).
+      consumer resource can be used by App Lifecycle Manager for retrieving
+      consumer-defined settings and policies such as maintenance policies
+      (using Unified Maintenance Policy API).
     createTime: Output only. The timestamp when the resource was created.
     etag: Output only. An opaque value that uniquely identifies a version or
       generation of a resource. It can be used to confirm that the client and
@@ -2433,8 +2348,8 @@ class Tenant(_messages.Message):
       the standard naming scheme:
       "projects/{project}/locations/{location}/tenants/{tenant}"
     saas: Required. Immutable. A reference to the Saas that defines the
-      product (managed service) that the producer wants to manage with SaaS
-      Runtime. Part of the SaaS Runtime common data model.
+      product (managed service) that the producer wants to manage with App
+      Lifecycle Manager. Part of the App Lifecycle Manager common data model.
     uid: Output only. The unique identifier of the resource. UID is unique in
       the time and space for this resource within the scope of the service. It
       is typically generated by the server on successful creation of a
@@ -2515,8 +2430,8 @@ class ToMapping(_messages.Message):
   Fields:
     dependency: Required. Alias of the dependency that the inputVariable will
       pass its value to
-    ignoreForLookup: Optional. Tells SaaS Runtime if this mapping should be
-      used during lookup or not
+    ignoreForLookup: Optional. Tells App Lifecycle Manager if this mapping
+      should be used during lookup or not
     inputVariable: Required. Name of the inputVariable on the dependency
   """
 
@@ -2565,6 +2480,7 @@ class Unit(_messages.Message):
     etag: Output only. An opaque value that uniquely identifies a version or
       generation of a resource. It can be used to confirm that the client and
       server agree on the ordering of a resource being written.
+    flagRevisions: Optional. Output only. Flag revisions used by this Unit.
     inputVariables: Optional. Output only. Indicates the current input
       variables deployed by the unit
     labels: Optional. The labels on the resource, which can be used for
@@ -2731,25 +2647,26 @@ class Unit(_messages.Message):
   dependencies = _messages.MessageField('UnitDependency', 4, repeated=True)
   dependents = _messages.MessageField('UnitDependency', 5, repeated=True)
   etag = _messages.StringField(6)
-  inputVariables = _messages.MessageField('UnitVariable', 7, repeated=True)
-  labels = _messages.MessageField('LabelsValue', 8)
-  maintenance = _messages.MessageField('MaintenanceSettings', 9)
-  managementMode = _messages.EnumField('ManagementModeValueValuesEnum', 10)
-  name = _messages.StringField(11)
-  ongoingOperations = _messages.StringField(12, repeated=True)
-  outputVariables = _messages.MessageField('UnitVariable', 13, repeated=True)
-  pendingOperations = _messages.StringField(14, repeated=True)
-  release = _messages.StringField(15)
-  satisfiesPzi = _messages.BooleanField(16)
-  satisfiesPzs = _messages.BooleanField(17)
-  scheduledOperations = _messages.StringField(18, repeated=True)
-  state = _messages.EnumField('StateValueValuesEnum', 19)
-  systemCleanupAt = _messages.StringField(20)
-  systemManagedState = _messages.EnumField('SystemManagedStateValueValuesEnum', 21)
-  tenant = _messages.StringField(22)
-  uid = _messages.StringField(23)
-  unitKind = _messages.StringField(24)
-  updateTime = _messages.StringField(25)
+  flagRevisions = _messages.StringField(7, repeated=True)
+  inputVariables = _messages.MessageField('UnitVariable', 8, repeated=True)
+  labels = _messages.MessageField('LabelsValue', 9)
+  maintenance = _messages.MessageField('MaintenanceSettings', 10)
+  managementMode = _messages.EnumField('ManagementModeValueValuesEnum', 11)
+  name = _messages.StringField(12)
+  ongoingOperations = _messages.StringField(13, repeated=True)
+  outputVariables = _messages.MessageField('UnitVariable', 14, repeated=True)
+  pendingOperations = _messages.StringField(15, repeated=True)
+  release = _messages.StringField(16)
+  satisfiesPzi = _messages.BooleanField(17)
+  satisfiesPzs = _messages.BooleanField(18)
+  scheduledOperations = _messages.StringField(19, repeated=True)
+  state = _messages.EnumField('StateValueValuesEnum', 20)
+  systemCleanupAt = _messages.StringField(21)
+  systemManagedState = _messages.EnumField('SystemManagedStateValueValuesEnum', 22)
+  tenant = _messages.StringField(23)
+  uid = _messages.StringField(24)
+  unitKind = _messages.StringField(25)
+  updateTime = _messages.StringField(26)
 
 
 class UnitCondition(_messages.Message):
@@ -2841,6 +2758,9 @@ class UnitKind(_messages.Message):
       modifying objects. More info: https://kubernetes.io/docs/user-
       guide/annotations
     createTime: Output only. The timestamp when the resource was created.
+    defaultFlagRevisions: Optional. Default revisions of flags for this
+      UnitKind. Newly created units will use the flag default_flag_revisions
+      present at the time of creation.
     defaultRelease: Optional. A reference to the Release object to use as
       default for creating new units of this UnitKind (optional). If not
       specified, a new unit must explicitly reference which release to use for
@@ -2862,8 +2782,9 @@ class UnitKind(_messages.Message):
     outputVariableMappings: Optional. List of outputVariables for this unit
       kind will be passed to this unit's outputVariables. Maximum 100.
     saas: Required. Immutable. A reference to the Saas that defines the
-      product (managed service) that the producer wants to manage with SaaS
-      Runtime. Part of the SaaS Runtime common data model. Immutable once set.
+      product (managed service) that the producer wants to manage with App
+      Lifecycle Manager. Part of the App Lifecycle Manager common data model.
+      Immutable once set.
     uid: Output only. The unique identifier of the resource. UID is unique in
       the time and space for this resource within the scope of the service. It
       is typically generated by the server on successful creation of a
@@ -2929,16 +2850,17 @@ class UnitKind(_messages.Message):
 
   annotations = _messages.MessageField('AnnotationsValue', 1)
   createTime = _messages.StringField(2)
-  defaultRelease = _messages.StringField(3)
-  dependencies = _messages.MessageField('Dependency', 4, repeated=True)
-  etag = _messages.StringField(5)
-  inputVariableMappings = _messages.MessageField('VariableMapping', 6, repeated=True)
-  labels = _messages.MessageField('LabelsValue', 7)
-  name = _messages.StringField(8)
-  outputVariableMappings = _messages.MessageField('VariableMapping', 9, repeated=True)
-  saas = _messages.StringField(10)
-  uid = _messages.StringField(11)
-  updateTime = _messages.StringField(12)
+  defaultFlagRevisions = _messages.StringField(3, repeated=True)
+  defaultRelease = _messages.StringField(4)
+  dependencies = _messages.MessageField('Dependency', 5, repeated=True)
+  etag = _messages.StringField(6)
+  inputVariableMappings = _messages.MessageField('VariableMapping', 7, repeated=True)
+  labels = _messages.MessageField('LabelsValue', 8)
+  name = _messages.StringField(9)
+  outputVariableMappings = _messages.MessageField('VariableMapping', 10, repeated=True)
+  saas = _messages.StringField(11)
+  uid = _messages.StringField(12)
+  updateTime = _messages.StringField(13)
 
 
 class UnitOperation(_messages.Message):
@@ -2986,6 +2908,7 @@ class UnitOperation(_messages.Message):
     etag: Output only. An opaque value that uniquely identifies a version or
       generation of a resource. It can be used to confirm that the client and
       server agree on the ordering of a resource being written.
+    flagUpdate: A FlagUpdate attribute.
     labels: Optional. The labels on the resource, which can be used for
       categorization. similar to Kubernetes resource labels.
     name: Identifier. The resource name (full URI of the resource) following
@@ -3123,17 +3046,18 @@ class UnitOperation(_messages.Message):
   engineState = _messages.StringField(7)
   errorCategory = _messages.EnumField('ErrorCategoryValueValuesEnum', 8)
   etag = _messages.StringField(9)
-  labels = _messages.MessageField('LabelsValue', 10)
-  name = _messages.StringField(11)
-  parentUnitOperation = _messages.StringField(12)
-  provision = _messages.MessageField('Provision', 13)
-  rollout = _messages.StringField(14)
-  schedule = _messages.MessageField('Schedule', 15)
-  state = _messages.EnumField('StateValueValuesEnum', 16)
-  uid = _messages.StringField(17)
-  unit = _messages.StringField(18)
-  updateTime = _messages.StringField(19)
-  upgrade = _messages.MessageField('Upgrade', 20)
+  flagUpdate = _messages.MessageField('FlagUpdate', 10)
+  labels = _messages.MessageField('LabelsValue', 11)
+  name = _messages.StringField(12)
+  parentUnitOperation = _messages.StringField(13)
+  provision = _messages.MessageField('Provision', 14)
+  rollout = _messages.StringField(15)
+  schedule = _messages.MessageField('Schedule', 16)
+  state = _messages.EnumField('StateValueValuesEnum', 17)
+  uid = _messages.StringField(18)
+  unit = _messages.StringField(19)
+  updateTime = _messages.StringField(20)
+  upgrade = _messages.MessageField('Upgrade', 21)
 
 
 class UnitOperationCondition(_messages.Message):
@@ -3221,11 +3145,15 @@ class UnitVariable(_messages.Message):
       STRING: Variable type is string.
       INT: Variable type is int.
       BOOL: Variable type is bool.
+      STRUCT: Variable type is struct.
+      LIST: Variable type is list.
     """
     TYPE_UNSPECIFIED = 0
     STRING = 1
     INT = 2
     BOOL = 3
+    STRUCT = 4
+    LIST = 5
 
   type = _messages.EnumField('TypeValueValuesEnum', 1)
   value = _messages.StringField(2)

@@ -34,7 +34,7 @@ in zone ``us-central1-a'':
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class ListNetworkEndpoints(base.ListCommand):
   """List network endpoints in a network endpoint group."""
 

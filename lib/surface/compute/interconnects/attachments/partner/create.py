@@ -34,7 +34,7 @@ def PrintPairingKeyEpilog(pairing_key):
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Create(base.CreateCommand):
   """Create a Compute Engine partner interconnect attachment.
 

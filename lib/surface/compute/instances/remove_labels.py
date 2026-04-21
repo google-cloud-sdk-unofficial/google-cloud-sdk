@@ -25,8 +25,12 @@ from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
+)
 class InstancesRemoveLabels(base.UpdateCommand):
   """remove-labels command for instances."""
 

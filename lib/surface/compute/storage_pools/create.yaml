@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA, GA]
+- release_tracks: [ALPHA, BETA, GA, PREVIEW]
   help_text:
     brief: "Create a storage pool."
     description: "Create a storage pool."
@@ -10,6 +10,9 @@
   request:
     ALPHA:
       api_version: alpha
+      modify_request_hooks:
+      - googlecloudsdk.api_lib.compute.storage_pools.modify_request_hooks:add_name_to_payload
+      - googlecloudsdk.api_lib.compute.storage_pools.modify_request_hooks:add_shared_with_to_payload
     BETA:
       api_version: beta
     GA:
@@ -96,3 +99,12 @@
         Resource manager tags to be bound to the storage pool.
       metavar: KEY=VALUE
       type: 'googlecloudsdk.calliope.arg_parsers:ArgDict:'
+
+    - arg_name: share-with
+      release_tracks: [ALPHA]
+      hidden: true
+      help_text: |
+        Specify a comma-separated list of projects to share the storage pool with.
+        List projects using project IDs or project numbers.
+      metavar: SHARE_WITH,[SHARE_WITH,...]
+      type: 'googlecloudsdk.calliope.arg_parsers:ArgList:'

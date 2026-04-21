@@ -28,7 +28,10 @@ from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
 )
 class Create(base.CreateCommand):
   """Add a Rule to a Compute Engine NAT."""

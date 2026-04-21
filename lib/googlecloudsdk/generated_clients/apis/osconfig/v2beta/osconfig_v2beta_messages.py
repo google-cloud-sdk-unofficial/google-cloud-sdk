@@ -40,87 +40,6 @@ class FixedOrPercent(_messages.Message):
   percent = _messages.IntegerField(2, variant=_messages.Variant.INT32)
 
 
-class GoogleCloudOsconfigCommonV1OperationMetadata(_messages.Message):
-  r"""Represents the metadata of a generic long-running operation.
-
-  Fields:
-    apiVersion: Output only. API version used to start the operation.
-    createTime: Output only. The time the operation was created.
-    endTime: Output only. The time the operation finished running.
-    requestedCancellation: Output only. Identifies whether the user has
-      requested cancellation of the operation. Operations that have
-      successfully been cancelled have Operation.error value with a
-      google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.
-    statusMessage: Output only. Human-readable status of the operation, if
-      any.
-    target: Output only. Server-defined resource path for the target of the
-      operation.
-    verb: Output only. Name of the verb executed by the operation.
-  """
-
-  apiVersion = _messages.StringField(1)
-  createTime = _messages.StringField(2)
-  endTime = _messages.StringField(3)
-  requestedCancellation = _messages.BooleanField(4)
-  statusMessage = _messages.StringField(5)
-  target = _messages.StringField(6)
-  verb = _messages.StringField(7)
-
-
-class GoogleCloudOsconfigCommonV1alphaOperationMetadata(_messages.Message):
-  r"""Represents the metadata of a generic long-running operation.
-
-  Fields:
-    apiVersion: Output only. API version used to start the operation.
-    createTime: Output only. The time the operation was created.
-    endTime: Output only. The time the operation finished running.
-    requestedCancellation: Output only. Identifies whether the user has
-      requested cancellation of the operation. Operations that have
-      successfully been cancelled have Operation.error value with a
-      google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.
-    statusMessage: Output only. Human-readable status of the operation, if
-      any.
-    target: Output only. Server-defined resource path for the target of the
-      operation.
-    verb: Output only. Name of the verb executed by the operation.
-  """
-
-  apiVersion = _messages.StringField(1)
-  createTime = _messages.StringField(2)
-  endTime = _messages.StringField(3)
-  requestedCancellation = _messages.BooleanField(4)
-  statusMessage = _messages.StringField(5)
-  target = _messages.StringField(6)
-  verb = _messages.StringField(7)
-
-
-class GoogleCloudOsconfigCommonV1mainOperationMetadata(_messages.Message):
-  r"""Represents the metadata of a generic long-running operation.
-
-  Fields:
-    apiVersion: Output only. API version used to start the operation.
-    createTime: Output only. The time the operation was created.
-    endTime: Output only. The time the operation finished running.
-    requestedCancellation: Output only. Identifies whether the user has
-      requested cancellation of the operation. Operations that have
-      successfully been cancelled have Operation.error value with a
-      google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.
-    statusMessage: Output only. Human-readable status of the operation, if
-      any.
-    target: Output only. Server-defined resource path for the target of the
-      operation.
-    verb: Output only. Name of the verb executed by the operation.
-  """
-
-  apiVersion = _messages.StringField(1)
-  createTime = _messages.StringField(2)
-  endTime = _messages.StringField(3)
-  requestedCancellation = _messages.BooleanField(4)
-  statusMessage = _messages.StringField(5)
-  target = _messages.StringField(6)
-  verb = _messages.StringField(7)
-
-
 class GoogleCloudOsconfigV1OSPolicyAssignmentOperationMetadata(_messages.Message):
   r"""OS policy assignment operation metadata provided by OS policy assignment
   API methods that return long running operations.
@@ -373,8 +292,8 @@ class GoogleCloudOsconfigV2betaPolicyOrchestrator(_messages.Message):
       cross joined with a list of all available zones. - Resulting list of
       pairs is filtered according to the selectors.
     orchestrationState: Output only. State of the orchestration.
-    reconciling: Output only. Set to true, if the there are ongoing changes
-      being applied by the orchestrator.
+    reconciling: Output only. Set to true, if there are ongoing changes being
+      applied by the orchestrator.
     state: Optional. State of the orchestrator. Can be updated to change
       orchestrator behaviour. Allowed values: - `ACTIVE` - orchestrator is
       actively looking for actions to be taken. - `STOPPED` - orchestrator
@@ -972,7 +891,7 @@ class OSPolicyResourceFileResource(_messages.Message):
     StateValueValuesEnum: Required. Desired state of the file.
 
   Fields:
-    content: A a file with this content. The size of the content is limited to
+    content: A file with this content. The size of the content is limited to
       32KiB.
     file: A remote or local source.
     path: Required. The absolute path of the file within the VM.

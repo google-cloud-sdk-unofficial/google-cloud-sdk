@@ -229,7 +229,8 @@ class AgentregistryProjectsLocationsAgentsSearchRequest(_messages.Message):
   r"""A AgentregistryProjectsLocationsAgentsSearchRequest object.
 
   Fields:
-    parent: Required. Parent value for SearchAgentsRequest
+    parent: Required. Parent value for SearchAgentsRequest. Format:
+      `projects/{project}/locations/{location}`.
     searchAgentsRequest: A SearchAgentsRequest resource to be passed as the
       request body.
   """
@@ -289,6 +290,33 @@ class AgentregistryProjectsLocationsBindingsDeleteRequest(_messages.Message):
 
   name = _messages.StringField(1, required=True)
   requestId = _messages.StringField(2)
+
+
+class AgentregistryProjectsLocationsBindingsFetchAvailableRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsBindingsFetchAvailableRequest object.
+
+  Fields:
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. Page size is 500 if unspecified and is capped at `500`
+      even if a larger value is given.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. The parent, in the format
+      `projects/{project}/locations/{location}`.
+    sourceIdentifier: The identifier of the source Agent. Format: *
+      `urn:agent:{publisher}:{namespace}:{name}`
+    targetIdentifier: Optional. The identifier of the target Agent, MCP
+      Server, or Endpoint. Format: *
+      `urn:agent:{publisher}:{namespace}:{name}` *
+      `urn:mcp:{publisher}:{namespace}:{name}` *
+      `urn:endpoint:{publisher}:{namespace}:{name}`
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  sourceIdentifier = _messages.StringField(4)
+  targetIdentifier = _messages.StringField(5)
 
 
 class AgentregistryProjectsLocationsBindingsGetRequest(_messages.Message):
@@ -462,7 +490,8 @@ class AgentregistryProjectsLocationsMcpServersSearchRequest(_messages.Message):
   r"""A AgentregistryProjectsLocationsMcpServersSearchRequest object.
 
   Fields:
-    parent: Required. Parent value for SearchMcpServersRequest.
+    parent: Required. Parent value for SearchMcpServersRequest. Format:
+      `projects/{project}/locations/{location}`.
     searchMcpServersRequest: A SearchMcpServersRequest resource to be passed
       as the request body.
   """
@@ -658,7 +687,7 @@ class Annotations(_messages.Message):
       false` Default: true
     idempotentHint: Output only. If true, calling the tool repeatedly with the
       same arguments will have no additional effect on its environment. NOTE:
-      This property is meaningful only when `read_only_hint == false. Default:
+      This property is meaningful only when `read_only_hint == false` Default:
       false
     openWorldHint: Output only. If true, this tool may interact with an "open
       world" of external entities. If false, the tool's domain of interaction
@@ -683,9 +712,14 @@ class AuthProviderBinding(_messages.Message):
     authProvider: Required. The resource name of the target AuthProvider.
       Format: *
       `projects/{project}/locations/{location}/authProviders/{auth_provider}`
+    continueUri: Optional. The continue URI of the AuthProvider. The URI is
+      used to reauthenticate the user and finalize the managed OAuth flow.
+    scopes: Optional. The list of OAuth2 scopes of the AuthProvider.
   """
 
   authProvider = _messages.StringField(1)
+  continueUri = _messages.StringField(2)
+  scopes = _messages.StringField(3, repeated=True)
 
 
 class Binding(_messages.Message):
@@ -694,9 +728,9 @@ class Binding(_messages.Message):
   Fields:
     authProviderBinding: The binding for AuthProvider.
     createTime: Output only. Timestamp when this binding was created.
-    description: Required. User-defined description of a Binding. Can have a
+    description: Optional. User-defined description of a Binding. Can have a
       maximum length of `2048` characters.
-    displayName: Required. User-defined display name for the Binding. Can have
+    displayName: Optional. User-defined display name for the Binding. Can have
       a maximum length of `63` characters.
     name: Required. Identifier. The resource name of the Binding. Format:
       `projects/{project}/locations/{location}/bindings/{binding}`.
@@ -922,6 +956,19 @@ class EndpointSpec(_messages.Message):
 
   content = _messages.MessageField('ContentValue', 1)
   type = _messages.EnumField('TypeValueValuesEnum', 2)
+
+
+class FetchAvailableBindingsResponse(_messages.Message):
+  r"""Message for response to fetching available Bindings.
+
+  Fields:
+    bindings: The list of Bindings.
+    nextPageToken: A token identifying a page of results the server should
+      return.
+  """
+
+  bindings = _messages.MessageField('Binding', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
 
 
 class Interface(_messages.Message):
@@ -1464,51 +1511,52 @@ class Protocol(_messages.Message):
 class SearchAgentsRequest(_messages.Message):
   r"""Message for searching Agents
 
-  Enums:
-    SearchTypeValueValuesEnum: Optional. The type of search. If set, must be
-      set to `KEYWORD`.
-
   Fields:
-    pageSize: Optional. The page size for search result pagination. Page size
-      is 500 if unspecified and is capped at `500` even if a larger value is
-      given. A negative value will result in an `INVALID_ARGUMENT` error. If
-      set to zero, server will pick an appropriate default. Returned results
-      may be fewer than requested.
-    pageToken: Optional. If present, then retrieve the next batch of results
-      from the preceding call to this method. `page_token` must be the value
-      of `next_page_token` from the previous response. The values of all other
+    pageSize: Optional. The maximum number of search results to return per
+      page. The page size is capped at `100`, even if a larger value is
+      specified. A negative value will result in an `INVALID_ARGUMENT` error.
+      If unspecified or set to `0`, a default value of `20` will be used. The
+      server may return fewer results than requested.
+    pageToken: Optional. If present, retrieve the next batch of results from
+      the preceding call to this method. `page_token` must be the value of
+      `next_page_token` from the previous response. The values of all other
       method parameters, must be identical to those in the previous call.
     searchString: Optional. Search criteria used to select the Agents to
       return. If no search criteria is specified then all accessible Agents
       will be returned. Search expressions can be used to restrict results
-      based upon `skills`, `agentId`, `description`, `name` and `trust`, where
-      the operators `=`, `NOT`, `AND` and `OR` can be used along with the
-      suffix wildcard symbol `*`.
-    searchType: Optional. The type of search. If set, must be set to
-      `KEYWORD`.
+      based upon searchable fields, where the operators can be used along with
+      the suffix wildcard symbol `*`. See
+      [instructions](https://docs.cloud.google.com/agent-registry/search-
+      agents-and-tools) for more details. Allowed operators: `=`, `:`, `NOT`,
+      `AND`, `OR`, and `()`. Searchable fields: | Field | `=` | `:` | `*` |
+      Keyword Search |
+      |--------------------|-----|-----|-----|----------------| | agentId |
+      Yes | Yes | Yes | Included | | name | No | Yes | Yes | Included | |
+      displayName | No | Yes | Yes | Included | | description | No | Yes | No
+      | Included | | skills | No | Yes | No | Included | | skills.id | No |
+      Yes | No | Included | | skills.name | No | Yes | No | Included | |
+      skills.description | No | Yes | No | Included | | skills.tags | No | Yes
+      | No | Included | | skills.examples | No | Yes | No | Included |
+      Examples: * `agentId=urn:agent:projects-123:projects:123:locations:us-
+      central1:reasoningEngines:1234` to find the agent with the specified
+      agent ID. * `name:important` to find agents whose name contains
+      `important` as a word. * `displayName:works*` to find agents whose
+      display name contains words that start with `works`. *
+      `skills.tags:test` to find agents whose skills tags contain `test`. *
+      `planner OR booking` to find agents whose metadata contains the words
+      `planner` or `booking`.
   """
-
-  class SearchTypeValueValuesEnum(_messages.Enum):
-    r"""Optional. The type of search. If set, must be set to `KEYWORD`.
-
-    Values:
-      SEARCH_TYPE_UNSPECIFIED: Invalid search type.
-      KEYWORD: Search for a keyword across all searchable fields.
-    """
-    SEARCH_TYPE_UNSPECIFIED = 0
-    KEYWORD = 1
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(2)
   searchString = _messages.StringField(3)
-  searchType = _messages.EnumField('SearchTypeValueValuesEnum', 4)
 
 
 class SearchAgentsResponse(_messages.Message):
   r"""Message for response to searching Agents
 
   Fields:
-    agents: A list of Agents that match the `search_string` and `filter`.
+    agents: A list of Agents that match the `search_string`.
     nextPageToken: If there are more results than those appearing in this
       response, then `next_page_token` is included. To get the next set of
       results, call this method again using the value of `next_page_token` as
@@ -1522,52 +1570,50 @@ class SearchAgentsResponse(_messages.Message):
 class SearchMcpServersRequest(_messages.Message):
   r"""Message for searching MCP Servers
 
-  Enums:
-    SearchTypeValueValuesEnum: Optional. The type of search. If set, must be
-      set to `KEYWORD`.
-
   Fields:
-    pageSize: Optional. The page size for search result pagination. Page size
-      is 500 if unspecified and is capped at `500` even if a larger value is
-      given. A negative value will result in an `INVALID_ARGUMENT` error. If
-      set to zero, server will pick an appropriate default. Returned results
-      may be fewer than requested.
-    pageToken: Optional. If present, then retrieve the next batch of results
-      from the preceding call to this method. `page_token` must be the value
-      of `next_page_token` from the previous response. The values of all other
+    pageSize: Optional. The maximum number of search results to return per
+      page. The page size is capped at `100`, even if a larger value is
+      specified. A negative value will result in an `INVALID_ARGUMENT` error.
+      If unspecified or set to `0`, a default value of `20` will be used. The
+      server may return fewer results than requested.
+    pageToken: Optional. If present, retrieve the next batch of results from
+      the preceding call to this method. `page_token` must be the value of
+      `next_page_token` from the previous response. The values of all other
       method parameters, must be identical to those in the previous call.
     searchString: Optional. Search criteria used to select the MCP Servers to
       return. If no search criteria is specified then all accessible MCP
       Servers will be returned. Search expressions can be used to restrict
-      results based upon `mcpServerId`, `description`, and `name`, where the
-      operators `=`, `NOT`, `AND` and `OR` can be used along with the suffix
-      wildcard symbol `*`.
-    searchType: Optional. The type of search. If set, must be set to
-      `KEYWORD`.
+      results based upon searchable fields, where the operators can be used
+      along with the suffix wildcard symbol `*`. See
+      [instructions](https://docs.cloud.google.com/agent-registry/search-
+      agents-and-tools) for more details. Allowed operators: `=`, `:`, `NOT`,
+      `AND`, `OR`, and `()`. Searchable fields: | Field | `=` | `:` | `*` |
+      Keyword Search |
+      |--------------------|-----|-----|-----|----------------| | mcpServerId
+      | Yes | Yes | Yes | Included | | name | No | Yes | Yes | Included | |
+      displayName | No | Yes | Yes | Included | Examples: *
+      `mcpServerId=urn:mcp:projects-123:projects:123:locations:us-
+      central1:agentregistry:services:service-id` to find the MCP Server with
+      the specified MCP Server ID. * `name:important` to find MCP Servers
+      whose name contains `important` as a word. * `displayName:works*` to
+      find MCP Servers whose display name contains words that start with
+      `works`. * `planner OR booking` to find MCP Servers whose metadata
+      contains the words `planner` or `booking`. * `mcpServerId:service-id AND
+      (displayName:planner OR displayName:booking)` to find MCP Servers whose
+      MCP Server ID contains `service-id` and whose display name contains
+      `planner` or `booking`.
   """
-
-  class SearchTypeValueValuesEnum(_messages.Enum):
-    r"""Optional. The type of search. If set, must be set to `KEYWORD`.
-
-    Values:
-      SEARCH_TYPE_UNSPECIFIED: Invalid search type.
-      KEYWORD: Search for a keyword across all searchable fields.
-    """
-    SEARCH_TYPE_UNSPECIFIED = 0
-    KEYWORD = 1
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(2)
   searchString = _messages.StringField(3)
-  searchType = _messages.EnumField('SearchTypeValueValuesEnum', 4)
 
 
 class SearchMcpServersResponse(_messages.Message):
   r"""Message for response to searching MCP Servers
 
   Fields:
-    mcpServers: A list of McpServers that match the `search_string` and
-      `filter`.
+    mcpServers: A list of McpServers that match the `search_string`.
     nextPageToken: If there are more results than those appearing in this
       response, then `next_page_token` is included. To get the next set of
       results, call this method again using the value of `next_page_token` as

@@ -108,7 +108,7 @@ class DescribeHelper(object):
     return security_policy_rule.Describe()
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class DescribeGA(base.DescribeCommand):
   r"""Describe a Compute Engine security policy rule.
 
@@ -160,4 +160,3 @@ class DescribeAlpha(DescribeBeta):
     $ {command} 1000 \
        --security-policy=my-policy
   """
-

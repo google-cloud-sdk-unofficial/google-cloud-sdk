@@ -105,8 +105,12 @@ the `--region` and `--network` flags:
   return detailed_help
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
+)
 @base.DefaultUniverseOnly
 class Scp(base.Command):
   """Copy files to and from Google Compute Engine virtual machines via scp."""

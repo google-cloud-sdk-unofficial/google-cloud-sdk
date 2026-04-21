@@ -2448,6 +2448,9 @@ class Dataset(_messages.Message):
       patch a dataset, then this field is overwritten by the patched dataset's
       access field. To add entities, you must supply the entire existing
       access array in addition to any new entities that you want to add.
+    catalogSource: Output only. The origin of the dataset, one of: * (Unset) -
+      Native BigQuery Dataset * BIGLAKE - Dataset is backed by a namespace
+      stored natively in Biglake
     creationTime: Output only. The time when this dataset was created, in
       milliseconds since the epoch.
     datasetReference: Required. A reference that identifies the dataset.
@@ -2557,7 +2560,9 @@ class Dataset(_messages.Message):
     type: Output only. Same as `type` in `ListFormatDataset`. The type of the
       dataset, one of: * DEFAULT - only accessible by owner and authorized
       accounts, * PUBLIC - accessible by everyone, * LINKED - linked dataset,
-      * EXTERNAL - dataset with definition in external metadata catalog.
+      * EXTERNAL - dataset with definition in external metadata catalog, *
+      BIGLAKE_ICEBERG - a Biglake dataset accessible through the Iceberg API,
+      * BIGLAKE_HIVE - a Biglake dataset accessible through the Hive API.
   """
 
   class DefaultRoundingModeValueValuesEnum(_messages.Enum):
@@ -2729,35 +2734,36 @@ class Dataset(_messages.Message):
     tagValue = _messages.StringField(2)
 
   access = _messages.MessageField('AccessValueListEntry', 1, repeated=True)
-  creationTime = _messages.IntegerField(2)
-  datasetReference = _messages.MessageField('DatasetReference', 3)
-  defaultCollation = _messages.StringField(4)
-  defaultEncryptionConfiguration = _messages.MessageField('EncryptionConfiguration', 5)
-  defaultPartitionExpirationMs = _messages.IntegerField(6)
-  defaultRoundingMode = _messages.EnumField('DefaultRoundingModeValueValuesEnum', 7)
-  defaultTableExpirationMs = _messages.IntegerField(8)
-  description = _messages.StringField(9)
-  etag = _messages.StringField(10)
-  externalCatalogDatasetOptions = _messages.MessageField('ExternalCatalogDatasetOptions', 11)
-  externalDatasetReference = _messages.MessageField('ExternalDatasetReference', 12)
-  friendlyName = _messages.StringField(13)
-  id = _messages.StringField(14)
-  isCaseInsensitive = _messages.BooleanField(15)
-  kind = _messages.StringField(16, default='bigquery#dataset')
-  labels = _messages.MessageField('LabelsValue', 17)
-  lastModifiedTime = _messages.IntegerField(18)
-  linkedDatasetMetadata = _messages.MessageField('LinkedDatasetMetadata', 19)
-  linkedDatasetSource = _messages.MessageField('LinkedDatasetSource', 20)
-  location = _messages.StringField(21)
-  maxTimeTravelHours = _messages.IntegerField(22)
-  resourceTags = _messages.MessageField('ResourceTagsValue', 23)
-  restrictions = _messages.MessageField('RestrictionConfig', 24)
-  satisfiesPzi = _messages.BooleanField(25)
-  satisfiesPzs = _messages.BooleanField(26)
-  selfLink = _messages.StringField(27)
-  storageBillingModel = _messages.EnumField('StorageBillingModelValueValuesEnum', 28)
-  tags = _messages.MessageField('TagsValueListEntry', 29, repeated=True)
-  type = _messages.StringField(30)
+  catalogSource = _messages.StringField(2)
+  creationTime = _messages.IntegerField(3)
+  datasetReference = _messages.MessageField('DatasetReference', 4)
+  defaultCollation = _messages.StringField(5)
+  defaultEncryptionConfiguration = _messages.MessageField('EncryptionConfiguration', 6)
+  defaultPartitionExpirationMs = _messages.IntegerField(7)
+  defaultRoundingMode = _messages.EnumField('DefaultRoundingModeValueValuesEnum', 8)
+  defaultTableExpirationMs = _messages.IntegerField(9)
+  description = _messages.StringField(10)
+  etag = _messages.StringField(11)
+  externalCatalogDatasetOptions = _messages.MessageField('ExternalCatalogDatasetOptions', 12)
+  externalDatasetReference = _messages.MessageField('ExternalDatasetReference', 13)
+  friendlyName = _messages.StringField(14)
+  id = _messages.StringField(15)
+  isCaseInsensitive = _messages.BooleanField(16)
+  kind = _messages.StringField(17, default='bigquery#dataset')
+  labels = _messages.MessageField('LabelsValue', 18)
+  lastModifiedTime = _messages.IntegerField(19)
+  linkedDatasetMetadata = _messages.MessageField('LinkedDatasetMetadata', 20)
+  linkedDatasetSource = _messages.MessageField('LinkedDatasetSource', 21)
+  location = _messages.StringField(22)
+  maxTimeTravelHours = _messages.IntegerField(23)
+  resourceTags = _messages.MessageField('ResourceTagsValue', 24)
+  restrictions = _messages.MessageField('RestrictionConfig', 25)
+  satisfiesPzi = _messages.BooleanField(26)
+  satisfiesPzs = _messages.BooleanField(27)
+  selfLink = _messages.StringField(28)
+  storageBillingModel = _messages.EnumField('StorageBillingModelValueValuesEnum', 29)
+  tags = _messages.MessageField('TagsValueListEntry', 30, repeated=True)
+  type = _messages.StringField(31)
 
 
 class DatasetAccessEntry(_messages.Message):
@@ -2827,6 +2833,9 @@ class DatasetList(_messages.Message):
         to organize and group your datasets.
 
     Fields:
+      catalogSource: Output only. The origin of the dataset, one of: * (Unset)
+        - Native BigQuery Dataset. * BIGLAKE - Dataset is backed by a
+        namespace stored natively in Biglake.
       datasetReference: The dataset reference. Use this property to access
         specific parts of the dataset's ID, such as project ID or dataset ID.
       externalDatasetReference: Output only. Reference to a read-only external
@@ -2840,6 +2849,13 @@ class DatasetList(_messages.Message):
       labels: The labels associated with this dataset. You can use these to
         organize and group your datasets.
       location: The geographic location where the dataset resides.
+      type: Output only. Same as `type` in `Dataset`. The type of the dataset,
+        one of: * DEFAULT - only accessible by owner and authorized accounts,
+        * PUBLIC - accessible by everyone, * LINKED - linked dataset, *
+        EXTERNAL - dataset with definition in external metadata catalog, *
+        BIGLAKE_ICEBERG - a Biglake dataset accessible through the Iceberg
+        API, * BIGLAKE_HIVE - a Biglake dataset accessible through the Hive
+        API.
     """
 
     @encoding.MapUnrecognizedFields('additionalProperties')
@@ -2867,13 +2883,15 @@ class DatasetList(_messages.Message):
 
       additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-    datasetReference = _messages.MessageField('DatasetReference', 1)
-    externalDatasetReference = _messages.MessageField('ExternalDatasetReference', 2)
-    friendlyName = _messages.StringField(3)
-    id = _messages.StringField(4)
-    kind = _messages.StringField(5)
-    labels = _messages.MessageField('LabelsValue', 6)
-    location = _messages.StringField(7)
+    catalogSource = _messages.StringField(1)
+    datasetReference = _messages.MessageField('DatasetReference', 2)
+    externalDatasetReference = _messages.MessageField('ExternalDatasetReference', 3)
+    friendlyName = _messages.StringField(4)
+    id = _messages.StringField(5)
+    kind = _messages.StringField(6)
+    labels = _messages.MessageField('LabelsValue', 7)
+    location = _messages.StringField(8)
+    type = _messages.StringField(9)
 
   datasets = _messages.MessageField('DatasetsValueListEntry', 1, repeated=True)
   etag = _messages.StringField(2)
@@ -3602,7 +3620,7 @@ class ExternalDataConfiguration(_messages.Message):
     timestampTargetPrecision: Precisions (maximum number of total digits in
       base 10) for seconds of TIMESTAMP types that are allowed to the
       destination table for autodetection mode. Available for the formats:
-      CSV. For the CSV Format, Possible values include: Not Specified, [], or
+      CSV, PARQUET, and AVRO. Possible values include: Not Specified, [], or
       [6]: timestamp(6) for all auto detected TIMESTAMP columns [6, 12]:
       timestamp(6) for all auto detected TIMESTAMP columns that have less than
       6 digits of subseconds. timestamp(12) for all auto detected TIMESTAMP
@@ -3868,6 +3886,16 @@ class GenAiErrorStats(_messages.Message):
   errors = _messages.StringField(1, repeated=True)
 
 
+class GenAiFunctionCacheStats(_messages.Message):
+  r"""Provides cache statistics for a GenAi function call.
+
+  Fields:
+    numCacheHitRows: Number of rows served from cache.
+  """
+
+  numCacheHitRows = _messages.IntegerField(1)
+
+
 class GenAiFunctionCostOptimizationStats(_messages.Message):
   r"""Provides cost optimization statistics for a GenAi function call.
 
@@ -3898,6 +3926,7 @@ class GenAiFunctionStats(_messages.Message):
   r"""Provides statistics for each Ai function call within a query.
 
   Fields:
+    cacheStats: Cache stats for the function.
     costOptimizationStats: Cost optimization stats if applied on the rows
       processed by the function.
     errorStats: Error stats for the function.
@@ -3907,11 +3936,12 @@ class GenAiFunctionStats(_messages.Message):
     prompt: User input prompt of the function (truncated to 20 chars).
   """
 
-  costOptimizationStats = _messages.MessageField('GenAiFunctionCostOptimizationStats', 1)
-  errorStats = _messages.MessageField('GenAiFunctionErrorStats', 2)
-  functionName = _messages.StringField(3)
-  numProcessedRows = _messages.IntegerField(4)
-  prompt = _messages.StringField(5)
+  cacheStats = _messages.MessageField('GenAiFunctionCacheStats', 1)
+  costOptimizationStats = _messages.MessageField('GenAiFunctionCostOptimizationStats', 2)
+  errorStats = _messages.MessageField('GenAiFunctionErrorStats', 3)
+  functionName = _messages.StringField(4)
+  numProcessedRows = _messages.IntegerField(5)
+  prompt = _messages.StringField(6)
 
 
 class GenAiStats(_messages.Message):
@@ -4991,7 +5021,7 @@ class JobConfigurationLoad(_messages.Message):
     timestampTargetPrecision: Precisions (maximum number of total digits in
       base 10) for seconds of TIMESTAMP types that are allowed to the
       destination table for autodetection mode. Available for the formats:
-      CSV. For the CSV Format, Possible values include: Not Specified, [], or
+      CSV, PARQUET, and AVRO. Possible values include: Not Specified, [], or
       [6]: timestamp(6) for all auto detected TIMESTAMP columns [6, 12]:
       timestamp(6) for all auto detected TIMESTAMP columns that have less than
       6 digits of subseconds. timestamp(12) for all auto detected TIMESTAMP
@@ -6336,6 +6366,21 @@ class MaterializedViewStatus(_messages.Message):
   refreshWatermark = _messages.StringField(2)
 
 
+class MetadataCacheStalenessInsight(_messages.Message):
+  r"""Column Metadata Index staleness detailed infnormation.
+
+  Fields:
+    avgPreviousStalenessMs: Output only. Average column metadata index
+      staleness of previous runs with the same query hash.
+    stalenessPercentageIncrease: Output only. The percent increase in
+      staleness between the current job and the average staleness of previous
+      jobs with the same query hash.
+  """
+
+  avgPreviousStalenessMs = _messages.StringField(1)
+  stalenessPercentageIncrease = _messages.FloatField(2)
+
+
 class MetadataCacheStatistics(_messages.Message):
   r"""Statistics for metadata caching in queried tables.
 
@@ -6794,11 +6839,14 @@ class PerformanceInsights(_messages.Message):
       regression.
     stagePerformanceStandaloneInsights: Output only. Standalone query stage
       performance insights, for exploring potential improvements.
+    tableChangeInsights: Output only. Performance insights for table-level
+      attributes that changed compared to previous runs.
   """
 
   avgPreviousExecutionMs = _messages.IntegerField(1)
   stagePerformanceChangeInsights = _messages.MessageField('StagePerformanceChangeInsight', 2, repeated=True)
   stagePerformanceStandaloneInsights = _messages.MessageField('StagePerformanceStandaloneInsight', 3, repeated=True)
+  tableChangeInsights = _messages.MessageField('TableChangeInsight', 4, repeated=True)
 
 
 class Policy(_messages.Message):
@@ -9194,6 +9242,26 @@ class TableCell(_messages.Message):
   """
 
   v = _messages.MessageField('extra_types.JsonValue', 1)
+
+
+class TableChangeInsight(_messages.Message):
+  r"""Table-level performance insights compared to previous runs. These
+  insights don't apply to specific query stages, rather they apply to the
+  whole table.
+
+  Fields:
+    metadataCacheNotUsedButUsedPreviously: Output only. True if the table's
+      column metadata index was not used in the current job, but was used in a
+      previous job with the same query hash.
+    metadataCacheStalenessInsight: Output only. If present, indicates that the
+      table's metadata column index staleness has increased significantly
+      compared to previous jobs with the same query hash.
+    tableReference: Output only. The table that was queried.
+  """
+
+  metadataCacheNotUsedButUsedPreviously = _messages.BooleanField(1)
+  metadataCacheStalenessInsight = _messages.MessageField('MetadataCacheStalenessInsight', 2)
+  tableReference = _messages.MessageField('TableReference', 3)
 
 
 class TableConstraints(_messages.Message):

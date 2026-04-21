@@ -55,6 +55,7 @@ def _AddArgs(
     include_custom_hardware_link,
     api_version,
     include_peer_migration_purpose,
+    include_ipv6_secondary_ranges,
 ):
   """Add subnetwork create arguments to parser."""
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT_WITH_IPV6_FIELD)
@@ -371,6 +372,15 @@ def _AddArgs(
 
   flags.IpCollectionArgument().AddArgument(parser)
 
+  if include_ipv6_secondary_ranges:
+    parser.add_argument(
+        '--secondary-ipv6-range',
+        type=arg_parsers.ArgDict(min_length=1),
+        action='append',
+        metavar='rangeName=RANGE_NAME,ipv6CidrRange=IPV6_RANGE,ipCollection=IP_COLLECTION',
+        help='Adds a secondary IPv6 range to the subnetwork.',
+    )
+
 
 def GetPrivateIpv6GoogleAccessTypeFlagMapper(messages):
   return arg_utils.ChoiceEnumMapper(
@@ -560,6 +570,7 @@ def _Run(
     include_l2,
     include_custom_hardware_link,
     include_peer_migration_purpose,
+    include_ipv6_secondary_ranges,
 ):
   """Issues a list of requests necessary for adding a subnetwork."""
   client = holder.client
@@ -593,10 +604,26 @@ def _Run(
       region=subnet_ref.region,  # type: ignore
       project=subnet_ref.project)  # type: ignore
 
+  add_ipv6_ranges = None
+  if include_ipv6_secondary_ranges:
+    add_ipv6_ranges = args.secondary_ipv6_range
+    if add_ipv6_ranges:
+      for r in add_ipv6_ranges:
+        if 'ipCollection' in r:
+          # Resolve the collection name to a full URL
+          r['ipCollection'] = holder.resources.Parse(
+              r['ipCollection'],
+              collection='compute.publicDelegatedPrefixes',
+              params={
+                  'project': subnet_ref.project,
+                  'region': subnet_ref.region,
+              },
+          ).SelfLink()
   secondary_ranges = subnets_utils.CreateSecondaryRanges(
       client,
       args.secondary_range,
       args.secondary_range_with_reserved_internal_range,
+      add_ipv6_ranges,
   )
 
   request.subnetwork.secondaryIpRanges = secondary_ranges
@@ -605,7 +632,7 @@ def _Run(
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Create(base.CreateCommand):
   """Create a GA subnet."""
 
@@ -615,6 +642,7 @@ class Create(base.CreateCommand):
   _api_version = compute_api.COMPUTE_GA_API_VERSION
   _include_custom_hardware_link = False
   _include_peer_migration_purpose = True
+  _include_ipv6_secondary_ranges = False
 
   detailed_help = _DetailedHelp()
 
@@ -628,6 +656,7 @@ class Create(base.CreateCommand):
         cls._include_custom_hardware_link,
         cls._api_version,
         cls._include_peer_migration_purpose,
+        cls._include_ipv6_secondary_ranges,
     )
 
   def Run(self, args):
@@ -641,6 +670,7 @@ class Create(base.CreateCommand):
         self._include_l2,
         self._include_custom_hardware_link,
         self._include_peer_migration_purpose,
+        self._include_ipv6_secondary_ranges,
     )
 
 
@@ -661,3 +691,4 @@ class CreateAlpha(CreateBeta):
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION
   _include_custom_hardware_link = True
   _include_peer_migration_purpose = True
+  _include_ipv6_secondary_ranges = True

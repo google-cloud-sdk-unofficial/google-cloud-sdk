@@ -28,7 +28,7 @@ from googlecloudsdk.core import resources
 import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class AddBgpPeer(base.UpdateCommand):
   """Add a BGP peer to a Compute Engine router."""

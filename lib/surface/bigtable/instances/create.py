@@ -48,6 +48,9 @@ class CreateInstance(base.CreateCommand):
 
             $ {command} my-hdd-instance --display-name="HDD Instance" --cluster-storage-type=HDD --cluster-config=id=my-cluster-id,zone=us-east1-c,nodes=10
 
+          To create an instance with edition `ENTERPRISE_PLUS`, run:
+
+            $ {command} my-enterprise-plus-instance --display-name="Enterprise Plus Instance" --edition=ENTERPRISE_PLUS --cluster-config=id=my-cluster-id,zone=us-east1-c,nodes=1
           """),
   }
 

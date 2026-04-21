@@ -86,7 +86,7 @@ class CreateHelper(object):
                                  'Insert', request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class CreateGA(base.CreateCommand):
   """Create a target instance for handling traffic from a forwarding rule.
 

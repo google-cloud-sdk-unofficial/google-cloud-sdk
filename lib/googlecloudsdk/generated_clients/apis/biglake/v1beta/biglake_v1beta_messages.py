@@ -153,8 +153,8 @@ class BiglakeHiveV1betaProjectsCatalogsDatabasesPatchRequest(_messages.Message):
 
   Fields:
     hiveDatabase: A HiveDatabase resource to be passed as the request body.
-    name: Output only. The resource name. Format: projects/{project_id_or_numb
-      er}/catalogs/{catalog_id}/databases/{database_id}
+    name: Identifier. The resource name. Format: projects/{project_id_or_numbe
+      r}/catalogs/{catalog_id}/databases/{database_id}
     updateMask: Optional. The list of fields to update.
   """
 
@@ -297,8 +297,8 @@ class BiglakeHiveV1betaProjectsCatalogsDatabasesTablesPatchRequest(_messages.Mes
 
   Fields:
     hiveTable: A HiveTable resource to be passed as the request body.
-    name: Output only. The resource name. Format: projects/{project_id_or_numb
-      er}/catalogs/{catalog_id}/databases/{database_id}/tables/{table_id}
+    name: Identifier. The resource name. Format: projects/{project_id_or_numbe
+      r}/catalogs/{catalog_id}/databases/{database_id}/tables/{table_id}
     updateMask: Optional. The list of fields to update.
   """
 
@@ -349,7 +349,7 @@ class BiglakeHiveV1betaProjectsCatalogsPatchRequest(_messages.Message):
 
   Fields:
     hiveCatalog: A HiveCatalog resource to be passed as the request body.
-    name: Output only. The resource name. Format:
+    name: Identifier. The resource name. Format:
       projects/{project_id_or_number}/catalogs/{catalog_id}
     updateMask: Optional. The list of fields to update. For the `FieldMask`
       definition, see https://developers.google.com/protocol-
@@ -410,20 +410,24 @@ class HiveCatalog(_messages.Message):
   on-prem Hive metastore to GCP.
 
   Fields:
+    createTime: Output only. The creation time of the catalog.
     description: Optional. Stores the catalog description. The maximum length
       is 4000 characters.
     locationUri: Required. The Cloud Storage location path where the catalog
       exists. Format: gs://bucket/path/to/catalog The maximum length is 4000
       characters.
-    name: Output only. The resource name. Format:
+    name: Identifier. The resource name. Format:
       projects/{project_id_or_number}/catalogs/{catalog_id}
     replicas: Output only. The replicas for the catalog metadata.
+    updateTime: Output only. The update time of the catalog.
   """
 
-  description = _messages.StringField(1)
-  locationUri = _messages.StringField(2)
-  name = _messages.StringField(3)
-  replicas = _messages.MessageField('Replica', 4, repeated=True)
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  locationUri = _messages.StringField(3)
+  name = _messages.StringField(4)
+  replicas = _messages.MessageField('Replica', 5, repeated=True)
+  updateTime = _messages.StringField(6)
 
 
 class HiveDatabase(_messages.Message):
@@ -435,16 +439,18 @@ class HiveDatabase(_messages.Message):
       database. The maximum size is 2 MiB.
 
   Fields:
+    createTime: Output only. The creation time of the database.
     description: Optional. Stores the database description. The maximum length
       is 4000 characters.
     locationUri: Optional. The Cloud Storage location path where the database
       exists. Format: `gs://bucket/path/to/database` If unspecified, the
       database will be stored in the catalog location. The maximum length is
       4000 characters.
-    name: Output only. The resource name. Format: projects/{project_id_or_numb
-      er}/catalogs/{catalog_id}/databases/{database_id}
+    name: Identifier. The resource name. Format: projects/{project_id_or_numbe
+      r}/catalogs/{catalog_id}/databases/{database_id}
     parameters: Optional. Stores the properties associated with the database.
       The maximum size is 2 MiB.
+    updateTime: Output only. The update time of the database.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -472,10 +478,12 @@ class HiveDatabase(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  description = _messages.StringField(1)
-  locationUri = _messages.StringField(2)
-  name = _messages.StringField(3)
-  parameters = _messages.MessageField('ParametersValue', 4)
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  locationUri = _messages.StringField(3)
+  name = _messages.StringField(4)
+  parameters = _messages.MessageField('ParametersValue', 5)
+  updateTime = _messages.StringField(6)
 
 
 class HiveTable(_messages.Message):
@@ -491,14 +499,15 @@ class HiveTable(_messages.Message):
     createTime: Output only. The creation time of the table.
     description: Optional. Description of the table. The maximum length is
       4000 characters.
-    name: Output only. The resource name. Format: projects/{project_id_or_numb
-      er}/catalogs/{catalog_id}/databases/{database_id}/tables/{table_id}
+    name: Identifier. The resource name. Format: projects/{project_id_or_numbe
+      r}/catalogs/{catalog_id}/databases/{database_id}/tables/{table_id}
     parameters: Optional. Stores the properties associated with the table. The
       maximum size is 4MiB.
     partitionKeys: Optional. The partition keys of the table.
     storageDescriptor: Required. Storage descriptor of the table.
     tableType: Output only. The type of the table. This is EXTERNAL for
       BigLake hive tables.
+    updateTime: Output only. The update time of the table.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -533,6 +542,7 @@ class HiveTable(_messages.Message):
   partitionKeys = _messages.MessageField('FieldSchema', 5, repeated=True)
   storageDescriptor = _messages.MessageField('StorageDescriptor', 6)
   tableType = _messages.StringField(7)
+  updateTime = _messages.StringField(8)
 
 
 class ListHiveCatalogsResponse(_messages.Message):

@@ -48,13 +48,18 @@ def GetSuccessMessageForMultiRegionSynchronousDeploy(service, regions):
   return msg
 
 
-def GetSuccessMessageForSynchronousDeploy(service, no_traffic):
+def GetSuccessMessageForSynchronousDeploy(
+    service, no_traffic, show_proxy_message=False, project=None, region=None
+):
   """Returns a user message for a successful synchronous deploy.
 
   Args:
     service: googlecloudsdk.api_lib.run.service.Service, Deployed service for
       which to build a success message.
     no_traffic: bool, whether the service was deployed with --no-traffic flag.
+    show_proxy_message: bool, whether to show the proxy message.
+    project: str, the project the service is deployed to.
+    region: str, the region the service is deployed to.
   """
   latest_ready = service.status.latestReadyRevisionName
   # Use lastCreatedRevisionName if --no-traffic is set. This was due to a bug
@@ -76,6 +81,12 @@ def GetSuccessMessageForSynchronousDeploy(service, no_traffic):
     tag_url_message = '\nThe revision can be reached directly at {}'.format(
         latest_url
     )
+  proxy_message = ''
+  if show_proxy_message:
+    proxy_message = (
+        '\nProxy locally with: '
+        'gcloud run services proxy {serv} --region {region} --project {project}'
+    ).format(serv=service.name, project=project, region=region)
   return (
       msg.format(
           serv=service.name,
@@ -84,6 +95,7 @@ def GetSuccessMessageForSynchronousDeploy(service, no_traffic):
           latest_percent_traffic=latest_percent_traffic,
       )
       + tag_url_message
+      + proxy_message
   )
 
 

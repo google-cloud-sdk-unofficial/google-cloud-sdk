@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute.instances import flags as instances_flag
 from googlecloudsdk.command_lib.compute.instances.network_interfaces import flags as network_interfaces_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class Add(base.UpdateCommand):
   r"""Add a Dynamic Network Interface to a Compute Engine instance.

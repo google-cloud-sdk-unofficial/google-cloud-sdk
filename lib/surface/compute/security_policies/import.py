@@ -31,7 +31,7 @@ import six
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Import(base.SilentCommand):
   """Import security policy configs into your project.
 

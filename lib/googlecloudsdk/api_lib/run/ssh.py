@@ -256,6 +256,12 @@ class Ssh:
       return False
     return True
 
+  def _UseQualDomain(self) -> bool:
+    """Returns whether to use the Qual domain override."""
+    if self.iap_tunnel_url_override is None:
+      return False
+    return "cloud-run-qual" in self.iap_tunnel_url_override
+
   def _GetWorkloadJson(self):
     """Retrieves the JSON representation of the Cloud Run workload."""
     command = ["gcloud"]
@@ -415,9 +421,15 @@ class Ssh:
       the keys could not be fetched.
     """
 
-    endpoint = constants.SSH_CA_PUBLIC_KEY_URL_TEMPLATE.format(
+    template = (
+        constants.SSH_CA_PUBLIC_KEY_URL_QUAL_TEMPLATE
+        if self._UseQualDomain()
+        else constants.SSH_CA_PUBLIC_KEY_URL_TEMPLATE
+    )
+    endpoint = template.format(
         region=self.region
     )
+
     try:
       with core_requests.GetSession() as session:
         response = session.get(endpoint, timeout=10)

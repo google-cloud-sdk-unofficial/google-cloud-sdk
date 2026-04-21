@@ -29,7 +29,7 @@ def _CommonArgs(parser):
   flags.AddInstanceScheduleArgs(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.DefaultUniverseOnly
 class UpdateInstanceSchedule(base.UpdateCommand):
   """Update a Compute Engine Instance Schedule Resource Policy."""

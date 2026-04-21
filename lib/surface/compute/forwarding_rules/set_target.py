@@ -93,7 +93,7 @@ class SetTargetHelper(object):
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Set(base.UpdateCommand):
   """Modify a forwarding rule to direct network traffic to a new target."""
 

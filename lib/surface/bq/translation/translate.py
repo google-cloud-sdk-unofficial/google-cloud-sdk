@@ -23,6 +23,7 @@ from apitools.base.py import encoding
 from googlecloudsdk.api_lib.bq import util as api_util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import waiter
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bq import command_utils
 from googlecloudsdk.core import exceptions
@@ -72,31 +73,100 @@ def _get_task_type(source_dialect: str) -> str:
   return f'{mapped_dialect}2BigQuery_Translation'
 
 
-def _build_translation_details(messages, query):
+def _build_translation_details(
+    messages,
+    query,
+    explanation_output_file=None,
+    translation_config_files=None,
+    metadata_gcs_uri=None,
+):
   """Builds the translation details message for the migration task."""
-  translation_details = (
-      messages.GoogleCloudBigqueryMigrationV2TranslationDetails(
-          targetReturnLiterals=['sql/query.sql'],
-          targetTypes=['sql'],
-      )
-  )
+  target_return_literals = ['sql/query.sql']
+  target_types = ['sql']
 
-  literal_mapping = messages.GoogleCloudBigqueryMigrationV2SourceTargetMapping(
-      sourceSpec=messages.GoogleCloudBigqueryMigrationV2SourceSpec(
-          literal=messages.GoogleCloudBigqueryMigrationV2Literal(
-              literalString=query, relativePath='query.sql'
+  source_target_mapping = [
+      messages.GoogleCloudBigqueryMigrationV2SourceTargetMapping(
+          sourceSpec=messages.GoogleCloudBigqueryMigrationV2SourceSpec(
+              literal=messages.GoogleCloudBigqueryMigrationV2Literal(
+                  literalString=query, relativePath='query.sql'
+              )
           )
       )
+  ]
+
+  if explanation_output_file:
+    target_return_literals.append(
+        'translation_explanation_suggestion/query.sql'
+    )
+    if 'suggestion' not in target_types:
+      target_types.append('suggestion')
+    ai_config = (
+        'translation_rules:\n  - suggestion_type: "TRANSLATION_EXPLANATION"'
+    )
+    source_target_mapping.append(
+        messages.GoogleCloudBigqueryMigrationV2SourceTargetMapping(
+            sourceSpec=messages.GoogleCloudBigqueryMigrationV2SourceSpec(
+                literal=messages.GoogleCloudBigqueryMigrationV2Literal(
+                    literalString=ai_config,
+                    relativePath='gcloud_default_inline.ai_config.yaml',
+                )
+            )
+        )
+    )
+
+  if translation_config_files:
+    for config_file in translation_config_files:
+      filename = os.path.basename(config_file)
+      if not filename.endswith('.config.yaml'):
+        raise exceptions.Error(
+            f'Translation config file "{config_file}" must end with'
+            ' ".config.yaml".'
+        )
+      content = files.ReadFileContents(config_file)
+      source_target_mapping.append(
+          messages.GoogleCloudBigqueryMigrationV2SourceTargetMapping(
+              sourceSpec=messages.GoogleCloudBigqueryMigrationV2SourceSpec(
+                  literal=messages.GoogleCloudBigqueryMigrationV2Literal(
+                      literalString=content,
+                      relativePath=filename,
+                  )
+              )
+          )
+      )
+
+  if metadata_gcs_uri:
+    source_target_mapping.append(
+        messages.GoogleCloudBigqueryMigrationV2SourceTargetMapping(
+            sourceSpec=messages.GoogleCloudBigqueryMigrationV2SourceSpec(
+                gcsFilePath=metadata_gcs_uri
+            )
+        )
+    )
+
+  return messages.GoogleCloudBigqueryMigrationV2TranslationDetails(
+      targetReturnLiterals=target_return_literals,
+      targetTypes=target_types,
+      sourceTargetMapping=source_target_mapping,
   )
-  translation_details.sourceTargetMapping = [literal_mapping]
-
-  return translation_details
 
 
-def _build_migration_workflow(messages, query, source_dialect):
+def _build_migration_workflow(
+    messages,
+    query,
+    source_dialect,
+    explanation_output_file=None,
+    translation_config_files=None,
+    metadata_gcs_uri=None,
+):
   """Builds the migration workflow message and returns it with the task type."""
   task_type = _get_task_type(source_dialect)
-  translation_details = _build_translation_details(messages, query)
+  translation_details = _build_translation_details(
+      messages,
+      query,
+      explanation_output_file,
+      translation_config_files,
+      metadata_gcs_uri,
+  )
 
   task = messages.GoogleCloudBigqueryMigrationV2MigrationTask(
       type=task_type, translationDetails=translation_details
@@ -118,24 +188,48 @@ def _build_migration_workflow(messages, query, source_dialect):
 def _parse_task_result(wait_response):
   """Parses the workflow wait response into component task details."""
   translated_sql = None
+  explanation = None
   result_task = None
   console_uri = ''
   report_log_messages = []
 
   if wait_response.tasks and wait_response.tasks.additionalProperties:
-    result_task = wait_response.tasks.additionalProperties[0].value
-    if result_task.taskResult and result_task.taskResult.translationTaskResult:
+    translation_task_prop = next(
+        (
+            p
+            for p in wait_response.tasks.additionalProperties
+            if p.key == 'translation_task'
+        ),
+        None,
+    )
+    if translation_task_prop:
+      result_task = translation_task_prop.value
+    if (
+        result_task
+        and result_task.taskResult
+        and result_task.taskResult.translationTaskResult
+    ):
       literals = result_task.taskResult.translationTaskResult.translatedLiterals
       for literal in literals:
         if literal.relativePath == 'sql/query.sql':
           translated_sql = literal.literalString
-          break
+        elif (
+            literal.relativePath
+            == 'translation_explanation_suggestion/query.sql'
+        ):
+          explanation = literal.literalString
       console_uri = result_task.taskResult.translationTaskResult.consoleUri
       report_log_messages = (
           result_task.taskResult.translationTaskResult.reportLogMessages
       )
 
-  return result_task, translated_sql, console_uri, report_log_messages
+  return (
+      result_task,
+      translated_sql,
+      explanation,
+      console_uri,
+      report_log_messages,
+  )
 
 
 def _format_log_result(
@@ -194,7 +288,7 @@ def _handle_task_failure(wait_response, result_task):
 
 def _process_workflow_result(wait_response, task_type, args):
   """Processes the completed workflow and handles output/logging."""
-  result_task, translated_sql, console_uri, report_log_messages = (
+  result_task, translated_sql, explanation, console_uri, report_log_messages = (
       _parse_task_result(wait_response)
   )
 
@@ -221,6 +315,13 @@ def _process_workflow_result(wait_response, task_type, args):
   else:
     log.out.Print('Translated query:')
     log.out.Print(translated_sql)
+
+  if args.explanation_output_file and explanation:
+    files.WriteFileContents(args.explanation_output_file, explanation)
+    log.status.Print(
+        'Successfully saved translation explanation to'
+        f' {args.explanation_output_file}.'
+    )
 
   if args.translation_log_file:
     # Return None to avoid duplicating output in standard terminal output.
@@ -293,6 +394,28 @@ To translate a Snowflake query from a file and save the output and logs to files
         help='File to which to write the translation logs.',
         required=False,
     )
+    parser.add_argument(
+        '--explanation-output-file',
+        help='File to which to write the translation explanation.',
+        required=False,
+    )
+    parser.add_argument(
+        '--metadata-gcs-uri',
+        help='Cloud Storage URI for the metadata zip file.',
+        required=False,
+    )
+    parser.add_argument(
+        '--translation-config-files',
+        type=arg_parsers.ArgList(),
+        metavar='CONFIG_FILE',
+        help=(
+            'A comma-separated list of paths to YAML configuration files. File'
+            ' names must end with .config.yaml. See'
+            ' https://docs.cloud.google.com/bigquery/docs/config-yaml-translation'
+            ' for more details.'
+        ),
+        required=False,
+    )
 
   def Run(self, args):
     query = console_io.ReadFromFileOrStdin(args.input_file or '-', binary=False)
@@ -313,7 +436,12 @@ To translate a Snowflake query from a file and save the output and logs to files
     location = args.location
 
     workflow, task_type = _build_migration_workflow(
-        messages, query, args.source_dialect
+        messages,
+        query,
+        args.source_dialect,
+        args.explanation_output_file,
+        args.translation_config_files,
+        args.metadata_gcs_uri,
     )
 
     request_type = api_util.GetMigrationApiMessage(

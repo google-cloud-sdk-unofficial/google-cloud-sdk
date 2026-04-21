@@ -41,6 +41,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_AUTOMATEDDNSRECORDS = (
+      'projects.locations.automatedDnsRecords',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'automatedDnsRecords/{automatedDnsRecordsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_GLOBAL_HUBS = (
       'projects.locations.global.hubs',
       '{+name}',
@@ -165,6 +176,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_REMOTETRANSPORTPROFILES = (
+      'projects.locations.remoteTransportProfiles',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'remoteTransportProfiles/{remoteTransportProfilesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_SERVICECLASSES = (
       'projects.locations.serviceClasses',
       '{+name}',
@@ -216,6 +238,17 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/spokes/'
               '{spokesId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_TRANSPORTS = (
+      'projects.locations.transports',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/transports/'
+              '{transportsId}',
       },
       ['name'],
       True

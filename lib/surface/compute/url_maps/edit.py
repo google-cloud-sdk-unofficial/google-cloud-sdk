@@ -429,7 +429,7 @@ class InvalidResourceError(exceptions.ToolException):
   pass
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class Edit(base.Command):
   """Modify URL maps."""

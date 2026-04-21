@@ -19,6 +19,7 @@ import argparse
 from typing import Any
 
 from googlecloudsdk.api_lib.netapp import util as netapp_api_util
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope.concepts import concepts
@@ -147,12 +148,56 @@ def GetStoragePoolScaleTierArg(messages):
           'SCALE_TIER_STANDARD': 'standard',
           'SCALE_TIER_ENTERPRISE': 'enterprise',
       },
+      action=actions.DeprecationAction(
+          '--scale-tier',
+          warn=(
+              'The `{flag_name}` flag is deprecated. Use `--scale-type`'
+              ' instead.'
+          ),
+      ),
   )
 
 
 def GetStoragePoolScaleTierEnumFromArg(choice, messages):
   """Returns the Choice Enum for StoragePoolScaleTier."""
   return GetStoragePoolScaleTierArg(messages).GetEnumForChoice(choice)
+
+
+def GetStoragePoolScaleTypeArg(messages: Any) -> arg_utils.ChoiceEnumMapper:
+  """Returns the ChoiceEnumMapper for StoragePoolScaleType.
+
+  Args:
+    messages: The messages module.
+
+  Returns:
+    The ChoiceEnumMapper for StoragePoolScaleType.
+  """
+  return arg_utils.ChoiceEnumMapper(
+      '--scale-type',
+      messages.StoragePool.ScaleTypeValueValuesEnum,
+      help_str=(
+          'The scale type of the Storage Pool. `default` scale type'
+          ' is for standard capacity and performance. `scaleout` scale'
+          ' type is for higher capacity and performance.'
+      ),
+      custom_mappings={
+          'SCALE_TYPE_DEFAULT': 'default',
+          'SCALE_TYPE_SCALEOUT': 'scaleout',
+      },
+  )
+
+
+def GetStoragePoolScaleTypeEnumFromArg(choice: str, messages: Any) -> Any:
+  """Returns the Choice Enum for StoragePoolScaleType.
+
+  Args:
+    choice: The choice for storage pool scale type as string.
+    messages: The messages module.
+
+  Returns:
+    The storage pool scale type enum.
+  """
+  return GetStoragePoolScaleTypeArg(messages).GetEnumForChoice(choice)
 
 
 def GetStoragePoolModeEnumFromArg(choice: str, messages: Any):
@@ -183,6 +228,18 @@ def AddStoragePoolModeArg(parser: argparse.ArgumentParser, messages: Any):
 def AddStoragePoolScaleTierArg(parser, messages):
   """Adds the --scale-tier arg to the arg parser for Storage Pools."""
   GetStoragePoolScaleTierArg(messages).choice_arg.AddToParser(parser)
+
+
+def AddStoragePoolScaleTypeArg(
+    parser: argparse.ArgumentParser, messages: Any
+) -> None:
+  """Adds the --scale-type arg to the arg parser for Storage Pools.
+
+  Args:
+    parser: The argparse parser.
+    messages: The messages module.
+  """
+  GetStoragePoolScaleTypeArg(messages).choice_arg.AddToParser(parser)
 
 
 def AddStoragePoolTypeArg(parser, messages):
@@ -415,14 +472,15 @@ def AddStoragePoolCreateArgs(parser, release_track):
   AddStoragePoolTotalThroughputArg(parser)
   AddStoragePoolTotalIopsArg(parser)
   AddStoragePoolTypeArg(parser, messages)
+  AddStoragePoolScaleTypeArg(parser, messages)
   AddStoragePoolQosTypeArg(parser, messages)
+  AddStoragePoolModeArg(parser, messages)
   if (release_track == base.ReleaseTrack.ALPHA or
       release_track == base.ReleaseTrack.BETA):
     AddStoragePoolHotTierSizeArg(parser)
     AddStoragePoolEnableHotTierAutoResizeArg(parser)
     AddStoragePoolUnifiedPoolArg(parser)
     AddStoragePoolScaleTierArg(parser, messages)
-    AddStoragePoolModeArg(parser, messages)
 
 
 def AddStoragePoolDeleteArgs(parser):

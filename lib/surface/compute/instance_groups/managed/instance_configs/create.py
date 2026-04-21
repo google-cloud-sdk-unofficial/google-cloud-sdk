@@ -29,7 +29,7 @@ import six
 
 
 # TODO(b/70321546): rewrite help
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class CreateGA(base.CreateCommand):
   """Create per-instance config for an instance in a managed instance group."""
 

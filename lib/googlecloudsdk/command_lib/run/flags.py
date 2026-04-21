@@ -459,6 +459,18 @@ def AddRevisionArg(parser):
   )
 
 
+def AddSshFlag(parser):
+  """Adds the --ssh flag to the given parser."""
+  parser.add_argument(
+      '--ssh',
+      action=arg_parsers.StoreTrueFalseAction,
+      help=(
+          "Whether to enable SSH access to the service's container instances"
+          'for inspection and debugging.'
+      ),
+  )
+
+
 def AddNoTrafficFlag(parser):
   """Add flag to deploy a revision with no traffic."""
   parser.add_argument(
@@ -786,40 +798,23 @@ def AddCloudSQLFlags(parser):
 def AddVolumesFlags(parser, release_track):
   """Add flags for adding and removing volumes."""
   group = parser.add_group()
-  if release_track != base.ReleaseTrack.GA:
-    group.add_argument(
-        '--add-volume',
-        type=arg_parsers.ArgDict(required_keys=['type']),
-        action='append',
-        metavar='KEY=VALUE',
-        help=(
-            'Adds a volume to the Cloud Run resource. To add more than one '
-            'volume, specify this flag multiple times.'
-            ' Volumes must have a `type` key. '
-            'Volumes must have a `name` key if `mount-path` is not specified. '
-            'A `name` key is optional if `mount-path` is specified.'
-            'Only certain values are supported for `type`. Depending on the '
-            'provided type, other keys will be required. The following types '
-            'are supported with the specified additional keys:\n\n'
-            + volumes.volume_help(release_track)
-        ),
-    )
-  else:
-    group.add_argument(
-        '--add-volume',
-        type=arg_parsers.ArgDict(required_keys=['name', 'type']),
-        action='append',
-        metavar='KEY=VALUE',
-        help=(
-            'Adds a volume to the Cloud Run resource. To add more than one '
-            'volume, specify this flag multiple times.'
-            ' Volumes must have a `name` and `type` key. '
-            'Only certain values are supported for `type`. Depending on the '
-            'provided type, other keys will be required. The following types '
-            'are supported with the specified additional keys:\n\n'
-            + volumes.volume_help(release_track)
-        ),
-    )
+  group.add_argument(
+      '--add-volume',
+      type=arg_parsers.ArgDict(required_keys=['type']),
+      action='append',
+      metavar='KEY=VALUE',
+      help=(
+          'Adds a volume to the Cloud Run resource. To add more than one '
+          'volume, specify this flag multiple times.'
+          ' Volumes must have a `type` key. '
+          'Volumes must have a `name` key if `mount-path` is not specified. '
+          'A `name` key is optional if `mount-path` is specified.'
+          'Only certain values are supported for `type`. Depending on the '
+          'provided type, other keys will be required. The following types '
+          'are supported with the specified additional keys:\n\n'
+          + volumes.volume_help(release_track)
+      ),
+  )
   group.add_argument(
       '--remove-volume',
       type=arg_parsers.ArgList(),
@@ -2978,11 +2973,11 @@ def _GetConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
     changes.extend(_GetSecretsChanges(args))
   if FlagIsExplicitlySet(args, 'add_volume') and args.add_volume:
     # Volume names must be generated before calling AddVolumeChange
-    _ValidateAndMaybeGenerateVolumeNames(args, release_track)
+    _ValidateAndMaybeGenerateVolumeNames(args)
     changes.append(
         config_changes.AddVolumeChange(args.add_volume, release_track)
     )
-    _MaybeAddVolumeMountChange(args, changes, release_track)
+    _MaybeAddVolumeMountChange(args, changes)
 
   if FlagIsExplicitlySet(args, 'add_volume_mount') and args.add_volume_mount:
     changes.append(
@@ -3270,7 +3265,7 @@ def _GetConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
   return changes
 
 
-def _ValidateAndMaybeGenerateVolumeNames(args, release_track):
+def _ValidateAndMaybeGenerateVolumeNames(args):
   """Validates used of the volumes shortcut and generates volume names when needed.
 
   Specifically, it checks that the 'mount-path' parameter is not being used
@@ -3279,29 +3274,27 @@ def _ValidateAndMaybeGenerateVolumeNames(args, release_track):
 
   Args:
     args: The argparse namespace containing the parsed command line arguments.
-    release_track: The current release track (e.g., base.ReleaseTrack.ALPHA).
   """
   uses_containers_flag = FlagIsExplicitlySet(args, 'containers')
-  if release_track != base.ReleaseTrack.GA:
-    for volume in args.add_volume:
-      # If mount-path is specified, the user is attempting to use the volumes
-      # shortcut.
-      if 'mount-path' in volume:
-        # The volumes shortcut is not compatible with the --containers flag.
-        if uses_containers_flag:
-          raise serverless_exceptions.ConfigurationError(
-              'When using the --containers flag, "mount-path" cannot be'
-              ' specified under the --add-volume flag. Instead, specify'
-              ' "mount-path" using the --add-volume-mount flag after the'
-              ' --container flag of the container the volume should be'
-              ' mounted to.'
-          )
-        # Generate a name if the user has not specified one.
-        if 'name' not in volume:
-          volume['name'] = config_changes.GenerateVolumeName(volume['type'])
+  for volume in args.add_volume:
+    # If mount-path is specified, the user is attempting to use the volumes
+    # shortcut.
+    if 'mount-path' in volume:
+      # The volumes shortcut is not compatible with the --containers flag.
+      if uses_containers_flag:
+        raise serverless_exceptions.ConfigurationError(
+            'When using the --containers flag, "mount-path" cannot be'
+            ' specified under the --add-volume flag. Instead, specify'
+            ' "mount-path" using the --add-volume-mount flag after the'
+            ' --container flag of the container the volume should be'
+            ' mounted to.'
+        )
+      # Generate a name if the user has not specified one.
+      if 'name' not in volume:
+        volume['name'] = config_changes.GenerateVolumeName(volume['type'])
 
 
-def _MaybeAddVolumeMountChange(args, changes, release_track):
+def _MaybeAddVolumeMountChange(args, changes):
   """Adds a VolumeMountChange to the list of changes if applicable.
 
   This function checks if new volume mounts should be added based on the
@@ -3312,23 +3305,21 @@ def _MaybeAddVolumeMountChange(args, changes, release_track):
   Args:
     args: The argparse namespace containing the parsed command line arguments.
     changes: A list of configuration changes to append to.
-    release_track: The current release track (e.g., base.ReleaseTrack.ALPHA).
   """
-  if release_track != base.ReleaseTrack.GA:
-    new_volume_mounts = []
-    for volume in args.add_volume:
-      if 'mount-path' in volume and 'name' in volume:
-        volume_mount_args = {
-            'volume': volume['name'],
-            'mount-path': volume['mount-path'],
-        }
-        new_volume_mounts.append(volume_mount_args)
-    if new_volume_mounts:
-      changes.append(
-          config_changes.AddVolumeMountChange(
-              new_mounts=new_volume_mounts,
-          )
-      )
+  new_volume_mounts = []
+  for volume in args.add_volume:
+    if 'mount-path' in volume and 'name' in volume:
+      volume_mount_args = {
+          'volume': volume['name'],
+          'mount-path': volume['mount-path'],
+      }
+      new_volume_mounts.append(volume_mount_args)
+  if new_volume_mounts:
+    changes.append(
+        config_changes.AddVolumeMountChange(
+            new_mounts=new_volume_mounts,
+        )
+    )
 
 
 def _GetContainerConfigurationChanges(container_args, container_name=None):
@@ -3527,6 +3518,20 @@ def GetServiceConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
               revision.SESSION_AFFINITY_ANNOTATION
           )
       )
+  if FlagIsExplicitlySet(args, 'ssh'):
+    if args.ssh:
+      changes.append(
+          config_changes.SetAnnotationChange(
+              service.SERVICE_SSH_ENABLED_ANNOTATION, 'true'
+          )
+      )
+    else:
+      changes.append(
+          config_changes.SetAnnotationChange(
+              service.SERVICE_SSH_ENABLED_ANNOTATION, 'false'
+          )
+      )
+
   if FlagIsExplicitlySet(args, 'runtime'):
     changes.append(config_changes.RuntimeChange(runtime=args.runtime))
 
@@ -3734,11 +3739,15 @@ def ValidateResource(resource_ref):
     )
 
 
-def PromptForRegion():
+def PromptForRegion(parsed_args=None, release_track=None):
   """Prompt for region from list of available regions.
 
   This method is referenced by the declaritive iam commands as a fallthrough
   for getting the region.
+
+  Args:
+    parsed_args: Optional args namespace.
+    release_track: Optional release track.
 
   Returns:
     The region specified by the user, str
@@ -3746,6 +3755,18 @@ def PromptForRegion():
   if console_io.CanPrompt():
     client = global_methods.GetServerlessClientInstance()
     all_regions = global_methods.ListRegions(client)
+
+    image = getattr(parsed_args, 'image', None)
+    if release_track == base.ReleaseTrack.ALPHA and image:
+      inferred_region, _ = resource_args.ParseArImage(image)
+      if inferred_region and inferred_region in all_regions:
+        if console_io.PromptContinue(
+            prompt_string='Do you want to deploy to region {}'.format(
+                inferred_region
+            ),
+            default=True):
+          return inferred_region
+
     idx = console_io.PromptChoice(
         all_regions,
         message='Please specify a region:\n',
@@ -3793,7 +3814,7 @@ def GetFirstRegion(args):
   return None
 
 
-def GetRegion(args, prompt=False, region_label=None):
+def GetRegion(args, prompt=False, region_label=None, release_track=None):
   """Prompt for region if not provided.
 
   Region is decided in the following order:
@@ -3806,6 +3827,7 @@ def GetRegion(args, prompt=False, region_label=None):
     args: Namespace, The args namespace.
     prompt: bool, whether to attempt to prompt.
     region_label: a k8s label for the region
+    release_track: Optional release track.
 
   Returns:
     A str representing region.
@@ -3817,7 +3839,7 @@ def GetRegion(args, prompt=False, region_label=None):
   if properties.VALUES.run.region.IsExplicitlySet():
     return properties.VALUES.run.region.Get()
   if prompt:
-    region = PromptForRegion()
+    region = PromptForRegion(parsed_args=args, release_track=release_track)
     if region:
       # set the region on args, so we're not embarassed the next time we call
       # GetRegion
@@ -5204,4 +5226,14 @@ def AddClearPresetFlag(parser):
       action='store_true',
       default=False,
       hidden=True,
+  )
+
+
+def SkipDeployArg(parser):
+  return parser.add_argument(
+      '--skip-deploy',
+      action='store_true',
+      default=False,
+      hidden=True,
+      help='Skip the deploy step during dev sync.',
   )

@@ -22,7 +22,9 @@ from googlecloudsdk.command_lib.compute.zone_vm_extension_policies import flags
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Update(base.UpdateCommand):
   """Update a Compute Engine zone VM extension policy."""
 

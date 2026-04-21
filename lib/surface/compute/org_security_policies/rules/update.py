@@ -26,7 +26,9 @@ import six
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.BETA, base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW
+)
 class Update(base.UpdateCommand):
   r"""Update a Compute Engine security policy rule.
 

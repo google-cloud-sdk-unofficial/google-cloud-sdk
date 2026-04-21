@@ -401,7 +401,7 @@ def _CreateDiskParams(messages, resource_manager_tags):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Create(base.Command):
   """Create Compute Engine persistent disks."""
 

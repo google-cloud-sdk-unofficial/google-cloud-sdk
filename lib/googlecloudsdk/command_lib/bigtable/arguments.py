@@ -449,13 +449,11 @@ class ArgAdder(object):
           action='store_true',
           default=None,
           help=(
-              'Use in-memory layer with standard provisioned node compute.'
-              ' Passing this option implies standard provisioned node'
-              ' compute, e.g. the `--standard` option, with in-memory layer'
-              ' enabled. Use `--no-use-memory-layer` to not use the memory'
-              ' layer.'
+              'Enables the in-memory layer for standard provisioned node'
+              ' compute. This option sets the compute option to `--standard`'
+              ' with the in-memory layer enabled. Use `--no-use-memory-layer`'
+              ' to disable the in-memory layer.'
           ),
-          hidden=True,  # TODO(b/469808090): unhide for GA.
       )
 
     data_boost_isolation_group = isolation_group.add_group(
@@ -519,7 +517,6 @@ class ArgAdder(object):
         help='The edition of the instance.',
         required=required,
         choices=GetValidEditions(),
-        hidden=True,  # TODO: b/471252340 - Unhide for GA.
     )
     return self
 

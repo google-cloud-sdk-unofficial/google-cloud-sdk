@@ -40,7 +40,7 @@ def _CommonArgs(parser):
   parser.display_info.AddCacheUpdater(None)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class CreateDiskConsistencyGroup(base.CreateCommand):
   """Create a Compute Engine Disk Consistency Group resource policy."""
 

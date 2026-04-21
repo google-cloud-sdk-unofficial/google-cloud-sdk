@@ -80,7 +80,7 @@ def _Run(args, holder, url_map_arg):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class ListCacheInvalidations(base.ListCommand):
   """List Cloud CDN cache invalidations for a URL map."""
 

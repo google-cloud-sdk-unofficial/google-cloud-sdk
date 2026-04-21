@@ -1746,22 +1746,22 @@ class GetVersionOperationMetadataSbomInfo(_messages.Message):
   r"""A GetVersionOperationMetadataSbomInfo object.
 
   Messages:
-    CurrentComponentVersionsValue: SBOM versions currently applied to the
-      resource. The key is the component name and the value is the version.
-    TargetComponentVersionsValue: SBOM versions scheduled for the next
-      maintenance. The key is the component name and the value is the version.
+    CurrentComponentVersionsValue: A mapping of components to their currently-
+      applied versions or other appropriate identifiers.
+    TargetComponentVersionsValue: A mapping of components to their target
+      versions or other appropriate identifiers.
 
   Fields:
-    currentComponentVersions: SBOM versions currently applied to the resource.
-      The key is the component name and the value is the version.
-    targetComponentVersions: SBOM versions scheduled for the next maintenance.
-      The key is the component name and the value is the version.
+    currentComponentVersions: A mapping of components to their currently-
+      applied versions or other appropriate identifiers.
+    targetComponentVersions: A mapping of components to their target versions
+      or other appropriate identifiers.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class CurrentComponentVersionsValue(_messages.Message):
-    r"""SBOM versions currently applied to the resource. The key is the
-    component name and the value is the version.
+    r"""A mapping of components to their currently-applied versions or other
+    appropriate identifiers.
 
     Messages:
       AdditionalProperty: An additional property for a
@@ -1787,8 +1787,8 @@ class GetVersionOperationMetadataSbomInfo(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class TargetComponentVersionsValue(_messages.Message):
-    r"""SBOM versions scheduled for the next maintenance. The key is the
-    component name and the value is the version.
+    r"""A mapping of components to their target versions or other appropriate
+    identifiers.
 
     Messages:
       AdditionalProperty: An additional property for a

@@ -51,7 +51,10 @@ def _MakeRequests(client, requests, is_async):
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.PREVIEW,
 )
 class Create(base.Command):
   r"""Create a Compute Engine network peering.
@@ -187,4 +190,3 @@ class Create(base.Command):
 
     requests = [(client.apitools_client.networks, 'AddPeering', request)]
     return _MakeRequests(client, requests, args.async_)
-

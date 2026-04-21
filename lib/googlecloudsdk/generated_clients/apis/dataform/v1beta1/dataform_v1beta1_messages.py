@@ -615,8 +615,9 @@ class DataformProjectsLocationsFoldersCreateRequest(_messages.Message):
 
   Fields:
     folder: A Folder resource to be passed as the request body.
-    folderId: The ID to use for the Folder, which will become the final
-      component of the Folder's resource name.
+    folderId: Deprecated: This field is not used. The resource name is
+      generated automatically. The ID to use for the Folder, which will become
+      the final component of the Folder's resource name.
     parent: Required. The location in which to create the Folder. Must be in
       the format `projects/*/locations/*`.
   """
@@ -634,6 +635,20 @@ class DataformProjectsLocationsFoldersDeleteRequest(_messages.Message):
   """
 
   name = _messages.StringField(1, required=True)
+
+
+class DataformProjectsLocationsFoldersDeleteTreeRequest(_messages.Message):
+  r"""A DataformProjectsLocationsFoldersDeleteTreeRequest object.
+
+  Fields:
+    deleteFolderTreeRequest: A DeleteFolderTreeRequest resource to be passed
+      as the request body.
+    name: Required. The Folder's name. Format:
+      projects/{project}/locations/{location}/folders/{folder}
+  """
+
+  deleteFolderTreeRequest = _messages.MessageField('DeleteFolderTreeRequest', 1)
+  name = _messages.StringField(2, required=True)
 
 
 class DataformProjectsLocationsFoldersGetIamPolicyRequest(_messages.Message):
@@ -707,14 +722,14 @@ class DataformProjectsLocationsFoldersQueryFolderContentsRequest(_messages.Messa
 
   Fields:
     filter: Optional. Optional filtering for the returned list. Filtering is
-      currently only supported on the `display_name` field. Example: -
+      currently only supported on the `display_name` field. Example: *
       `filter="display_name="MyFolder""`
-    folder: Required. Name of the folder whose contents to list. Format:
-      projects/*/locations/*/folders/*
+    folder: Required. Resource name of the Folder to list contents for.
+      Format: projects/*/locations/*/folders/*
     orderBy: Optional. Field to additionally sort results by. Will order
       Folders before Repositories, and then by `order_by` in ascending order.
       Supported keywords: display_name (default), create_time,
-      last_modified_time. Examples: - `orderBy="display_name"` -
+      last_modified_time. Examples: * `orderBy="display_name"` *
       `orderBy="display_name desc"`
     pageSize: Optional. Maximum number of paths to return. The server may
       return fewer items than requested. If unspecified, the server will pick
@@ -871,14 +886,14 @@ class DataformProjectsLocationsQueryUserRootContentsRequest(_messages.Message):
 
   Fields:
     filter: Optional. Optional filtering for the returned list. Filtering is
-      currently only supported on the `display_name` field. Example: -
+      currently only supported on the `display_name` field. Example: *
       `filter="display_name="MyFolder""`
-    location: Required. Location of the user root folder whose contents to
-      list. Format: projects/*/locations/*
+    location: Required. Location of the user root folder to list contents for.
+      Format: projects/*/locations/*
     orderBy: Optional. Field to additionally sort results by. Will order
       Folders before Repositories, and then by `order_by` in ascending order.
       Supported keywords: display_name (default), created_at,
-      last_modified_at. Examples: - `orderBy="display_name"` -
+      last_modified_at. Examples: * `orderBy="display_name"` *
       `orderBy="display_name desc"`
     pageSize: Optional. Maximum number of paths to return. The server may
       return fewer items than requested. If unspecified, the server will pick
@@ -1747,7 +1762,7 @@ class DataformProjectsLocationsRepositoriesWorkspacesQueryDirectoryContentsReque
     protected workspaces.
 
     Values:
-      DIRECTORY_CONTENTS_VIEW_UNSPECIFIED: The default / unset value. Defaults
+      DIRECTORY_CONTENTS_VIEW_UNSPECIFIED: The default unset value. Defaults
         to DIRECTORY_CONTENTS_VIEW_BASIC.
       DIRECTORY_CONTENTS_VIEW_BASIC: Includes only the file or directory name.
         This is the default behavior.
@@ -1903,8 +1918,9 @@ class DataformProjectsLocationsTeamFoldersCreateRequest(_messages.Message):
     parent: Required. The location in which to create the TeamFolder. Must be
       in the format `projects/*/locations/*`.
     teamFolder: A TeamFolder resource to be passed as the request body.
-    teamFolderId: The ID to use for the TeamFolder, which will become the
-      final component of the TeamFolder's resource name.
+    teamFolderId: Deprecated: This field is not used. The resource name is
+      generated automatically. The ID to use for the TeamFolder, which will
+      become the final component of the TeamFolder's resource name.
   """
 
   parent = _messages.StringField(1, required=True)
@@ -1920,6 +1936,20 @@ class DataformProjectsLocationsTeamFoldersDeleteRequest(_messages.Message):
   """
 
   name = _messages.StringField(1, required=True)
+
+
+class DataformProjectsLocationsTeamFoldersDeleteTreeRequest(_messages.Message):
+  r"""A DataformProjectsLocationsTeamFoldersDeleteTreeRequest object.
+
+  Fields:
+    deleteTeamFolderTreeRequest: A DeleteTeamFolderTreeRequest resource to be
+      passed as the request body.
+    name: Required. The TeamFolder's name. Format:
+      projects/{project}/locations/{location}/teamFolders/{team_folder}
+  """
+
+  deleteTeamFolderTreeRequest = _messages.MessageField('DeleteTeamFolderTreeRequest', 1)
+  name = _messages.StringField(2, required=True)
 
 
 class DataformProjectsLocationsTeamFoldersGetIamPolicyRequest(_messages.Message):
@@ -1978,12 +2008,12 @@ class DataformProjectsLocationsTeamFoldersQueryContentsRequest(_messages.Message
 
   Fields:
     filter: Optional. Optional filtering for the returned list. Filtering is
-      currently only supported on the `display_name` field. Example: -
+      currently only supported on the `display_name` field. Example: *
       `filter="display_name="MyFolder""`
     orderBy: Optional. Field to additionally sort results by. Will order
       Folders before Repositories, and then by `order_by` in ascending order.
       Supported keywords: `display_name` (default), `create_time`,
-      last_modified_time. Examples: - `orderBy="display_name"` -
+      last_modified_time. Examples: * `orderBy="display_name"` *
       `orderBy="display_name desc"`
     pageSize: Optional. Maximum number of paths to return. The server may
       return fewer items than requested. If unspecified, the server will pick
@@ -1993,8 +2023,8 @@ class DataformProjectsLocationsTeamFoldersQueryContentsRequest(_messages.Message
       page. When paginating, all other parameters provided to
       `QueryTeamFolderContents`, with the exception of `page_size`, must match
       the call that provided the page token.
-    teamFolder: Required. Name of the team_folder whose contents to list.
-      Format: `projects/*/locations/*/teamFolders/*`.
+    teamFolder: Required. Resource name of the TeamFolder to list contents
+      for. Format: `projects/*/locations/*/teamFolders/*`.
   """
 
   filter = _messages.StringField(1)
@@ -2009,13 +2039,13 @@ class DataformProjectsLocationsTeamFoldersSearchRequest(_messages.Message):
 
   Fields:
     filter: Optional. Optional filtering for the returned list. Filtering is
-      currently only supported on the `display_name` field. Example: -
+      currently only supported on the `display_name` field. Example: *
       `filter="display_name="MyFolder""`
     location: Required. Location in which to query TeamFolders. Format:
       `projects/*/locations/*`.
     orderBy: Optional. Field to additionally sort results by. Supported
       keywords: `display_name` (default), `create_time`, `last_modified_time`.
-      Examples: - `orderBy="display_name"` - `orderBy="display_name desc"`
+      Examples: * `orderBy="display_name"` * `orderBy="display_name desc"`
     pageSize: Optional. Maximum number of TeamFolders to return. The server
       may return fewer items than requested. If unspecified, the server will
       pick an appropriate default.
@@ -2094,6 +2124,36 @@ class Declaration(_messages.Message):
 
 class DeleteFile(_messages.Message):
   r"""Represents the delete file operation."""
+
+
+class DeleteFolderTreeRequest(_messages.Message):
+  r"""`DeleteFolderTree` request message.
+
+  Fields:
+    force: Optional. If `false` (default): The operation will fail if any
+      Repository within the folder hierarchy has associated Release Configs or
+      Workflow Configs. If `true`: The operation will attempt to delete
+      everything, including any Release Configs and Workflow Configs linked to
+      Repositories within the folder hierarchy. This permanently removes
+      schedules and resources.
+  """
+
+  force = _messages.BooleanField(1)
+
+
+class DeleteTeamFolderTreeRequest(_messages.Message):
+  r"""`DeleteTeamFolderTree` request message.
+
+  Fields:
+    force: Optional. If `false` (default): The operation will fail if any
+      Repository within the folder hierarchy has associated Release Configs or
+      Workflow Configs. If `true`: The operation will attempt to delete
+      everything, including any Release Configs and Workflow Configs linked to
+      Repositories within the folder hierarchy. This permanently removes
+      schedules and resources.
+  """
+
+  force = _messages.BooleanField(1)
 
 
 class DirectoryEntry(_messages.Message):
@@ -2281,8 +2341,8 @@ class Folder(_messages.Message):
       should take the format:
       projects/{project}/locations/{location}/folders/{folder},
       projects/{project}/locations/{location}/teamFolders/{teamFolder}, or
-      just projects/{project}/locations/{location} if this is a root Folder.
-      This field can only be updated through MoveFolder.
+      just "" if this is a root Folder. This field can only be updated through
+      MoveFolder.
     createTime: Output only. The timestamp of when the Folder was created.
     creatorIamPrincipal: Output only. The IAM principal identifier of the
       creator of the Folder.
@@ -2335,7 +2395,8 @@ class GitRemoteSettings(_messages.Message):
     authenticationTokenSecretVersion: Optional. The name of the Secret Manager
       secret version to use as an authentication token for Git operations.
       Must be in the format `projects/*/secrets/*/versions/*`.
-    defaultBranch: Required. The Git remote's default branch name.
+    defaultBranch: Required. The Git remote's default branch name. If not set,
+      `main` will be used and stored for the repository.
     sshAuthenticationConfig: Optional. Authentication fields for remote uris
       using SSH protocol.
     tokenStatus: Output only. Deprecated: The field does not contain any token

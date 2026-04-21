@@ -30,7 +30,7 @@ def _CommonArgs(parser):
   parser.display_info.AddCacheUpdater(completers.InstantSnapshotsCompleter)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class List(base.ListCommand):
   """List Compute Engine persistent instant snapshots."""
 

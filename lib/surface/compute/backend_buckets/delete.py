@@ -14,7 +14,6 @@
 # limitations under the License.
 """Command for deleting backend buckets."""
 
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
@@ -23,7 +22,7 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.backend_buckets import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class Delete(base.DeleteCommand):
   """Delete backend buckets.
@@ -32,48 +31,29 @@ class Delete(base.DeleteCommand):
   """
 
   BACKEND_BUCKET_ARG = None
-  _support_regional_global_flags = False
 
   @classmethod
   def Args(cls, parser):
-    if cls._support_regional_global_flags:
-      cls.BACKEND_BUCKET_ARG = flags.GLOBAL_REGIONAL_MULTI_BACKEND_BUCKET_ARG
-      cls.BACKEND_BUCKET_ARG.AddArgument(
-          parser, operation_type='delete'
-      )
-    else:
-      cls.BACKEND_BUCKET_ARG = flags.BackendBucketArgument(plural=True)
-      cls.BACKEND_BUCKET_ARG.AddArgument(parser, operation_type='delete')
+    cls.BACKEND_BUCKET_ARG = flags.GLOBAL_REGIONAL_MULTI_BACKEND_BUCKET_ARG
+    cls.BACKEND_BUCKET_ARG.AddArgument(parser, operation_type='delete')
     parser.display_info.AddCacheUpdater(flags.BackendBucketsCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    if self._support_regional_global_flags:
-      backend_bucket_refs = (
-          self.BACKEND_BUCKET_ARG.ResolveAsResource(
-              args,
-              holder.resources,
-              scope_lister=compute_flags.GetDefaultScopeLister(client),
-              default_scope=compute_scope.ScopeEnum.GLOBAL,
-          )
-      )
-    else:
-      backend_bucket_refs = self.BACKEND_BUCKET_ARG.ResolveAsResource(
-          args,
-          holder.resources,
-          scope_lister=compute_flags.GetDefaultScopeLister(client),
-      )
+    backend_bucket_refs = self.BACKEND_BUCKET_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client),
+        default_scope=compute_scope.ScopeEnum.GLOBAL,
+    )
 
     utils.PromptForDeletion(backend_bucket_refs)
 
     requests = []
     for backend_bucket_ref in backend_bucket_refs:
-      if (
-          self._support_regional_global_flags
-          and backend_bucket_ref.Collection() == 'compute.regionBackendBuckets'
-      ):
+      if backend_bucket_ref.Collection() == 'compute.regionBackendBuckets':
         requests.append((
             client.apitools_client.regionBackendBuckets,
             'Delete',
@@ -116,7 +96,7 @@ class DeleteBeta(Delete):
         --region=us-central1
   """
 
-  _support_regional_global_flags = True
+  pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -142,4 +122,4 @@ class DeleteAlpha(DeleteBeta):
         --region=us-central1
   """
 
-  _support_regional_global_flags = True
+  pass

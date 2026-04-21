@@ -15,7 +15,6 @@
 """Command for updating interconnects."""
 
 
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.interconnects import client
 from googlecloudsdk.calliope import base
@@ -53,7 +52,7 @@ def _ArgsCommon(
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class UpdateGA(base.UpdateCommand):
   """Update a Compute Engine interconnect.
 

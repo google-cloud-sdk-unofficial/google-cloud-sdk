@@ -4068,12 +4068,30 @@ class UploadFileMediaResponse(_messages.Message):
 class UploadFileRequest(_messages.Message):
   r"""The request to upload a file.
 
+  Enums:
+    FileTypeValueValuesEnum: Optional. The type of the file to upload.
+      Defaulting to ATTACHMENT if not specified.
+
   Fields:
     fileId: Optional. The ID of the file. If left empty will default to sha256
       digest of the content uploaded.
+    fileType: Optional. The type of the file to upload. Defaulting to
+      ATTACHMENT if not specified.
   """
 
+  class FileTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The type of the file to upload. Defaulting to ATTACHMENT if
+    not specified.
+
+    Values:
+      ATTACHMENT: Attachment file. Default value.
+      ARTIFACT: Facade specific artifact file.
+    """
+    ATTACHMENT = 0
+    ARTIFACT = 1
+
   fileId = _messages.StringField(1)
+  fileType = _messages.EnumField('FileTypeValueValuesEnum', 2)
 
 
 class UploadGenericArtifactMediaResponse(_messages.Message):
@@ -4301,6 +4319,10 @@ class Version(_messages.Message):
   collection of components, such as files and other data. This may correspond
   to a version in many package management schemes.
 
+  Enums:
+    RepositoryFormatValueValuesEnum: Output only. The format of the repository
+      containing this version.
+
   Messages:
     AnnotationsValue: Optional. Client specified annotations.
     MetadataValue: Output only. Repository-specific Metadata stored against
@@ -4323,10 +4345,47 @@ class Version(_messages.Message):
     name: The name of the version, for example: `projects/p1/locations/us-
       central1/repositories/repo1/packages/pkg1/versions/art1`. If the package
       or version ID parts contain slashes, the slashes are escaped.
+    nativeAlias: Output only. An alias name of the version. For Generics, this
+      is the GCP resource-name. For other facades like Docker, Maven, this is
+      in the form of "-.pkg.dev///@".
     relatedTags: Output only. A list of related tags. Will contain up to 100
       tags that reference this version.
+    repositoryFormat: Output only. The format of the repository containing
+      this version.
     updateTime: The time when the version was last updated.
   """
+
+  class RepositoryFormatValueValuesEnum(_messages.Enum):
+    r"""Output only. The format of the repository containing this version.
+
+    Values:
+      FORMAT_UNSPECIFIED: Unspecified package format.
+      DOCKER: Docker package format.
+      MAVEN: Maven package format.
+      NPM: NPM package format.
+      APT: APT package format.
+      YUM: YUM package format.
+      GOOGET: GooGet package format.
+      PYTHON: Python package format.
+      KFP: Kubeflow Pipelines package format.
+      GO: Go package format.
+      GENERIC: Generic package format.
+      RUBY: Ruby package format.
+      CONDA: Conda package format.
+    """
+    FORMAT_UNSPECIFIED = 0
+    DOCKER = 1
+    MAVEN = 2
+    NPM = 3
+    APT = 4
+    YUM = 5
+    GOOGET = 6
+    PYTHON = 7
+    KFP = 8
+    GO = 9
+    GENERIC = 10
+    RUBY = 11
+    CONDA = 12
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AnnotationsValue(_messages.Message):
@@ -4385,8 +4444,10 @@ class Version(_messages.Message):
   fingerprints = _messages.MessageField('Hash', 4, repeated=True)
   metadata = _messages.MessageField('MetadataValue', 5)
   name = _messages.StringField(6)
-  relatedTags = _messages.MessageField('Tag', 7, repeated=True)
-  updateTime = _messages.StringField(8)
+  nativeAlias = _messages.StringField(7)
+  relatedTags = _messages.MessageField('Tag', 8, repeated=True)
+  repositoryFormat = _messages.EnumField('RepositoryFormatValueValuesEnum', 9)
+  updateTime = _messages.StringField(10)
 
 
 class VirtualRepositoryConfig(_messages.Message):

@@ -23,7 +23,10 @@ from googlecloudsdk.core import properties
 
 @base.UniverseCompatible
 @base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.PREVIEW,
 )
 class ListUsableSubnets(base.ListCommand):
   """List subnetworks which the current user has permission to use."""

@@ -30,7 +30,9 @@ from googlecloudsdk.core.resource import resource_printer
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Describe(base.Command):
   """Obtain details about a given worker-pool."""
 

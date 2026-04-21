@@ -258,37 +258,28 @@ class _InMemoryVolume(_VolumeType):
 
   @classmethod
   def optional_fields(cls, release_track):
-    if release_track != base.ReleaseTrack.GA:
-      return {
-          'name': (
-              'The name of the volume. A name will be generated if the'
-              ' `mount-path` flag is specified. A name is required if'
-              ' `mount-path` is not specified.'
-          ),
-          'mount-path': (
-              'The path at which the volume should be mounted. The `mount-path`'
-              ' parameter is only supported for single container services which'
-              ' do not make use of the --container flag. For multi-container'
-              ' services, specify the `mount-path` parameter under the'
-              ' --add-volume-mount flag.'
-          ),
-          'size-limit': (
-              'A quantity representing the maximum amount of memory allocated'
-              ' to this volume, such as "512Mi" or "3G". Data stored in an'
-              ' in-memory volume consumes the memory allocation of the'
-              ' container that wrote the data. If size-limit is not specified,'
-              ' the maximum size will be half the total memory limit of all'
-              ' containers.'
-          ),
-      }
+    # pylint: disable=unused-argument
     return {
+        'name': (
+            'The name of the volume. A name will be generated if the'
+            ' `mount-path` flag is specified. A name is required if'
+            ' `mount-path` is not specified.'
+        ),
+        'mount-path': (
+            'The path at which the volume should be mounted. The `mount-path`'
+            ' parameter is only supported for single container services which'
+            ' do not make use of the --container flag. For multi-container'
+            ' services, specify the `mount-path` parameter under the'
+            ' --add-volume-mount flag.'
+        ),
         'size-limit': (
-            'A quantity representing the maximum amount of memory allocated to'
-            ' this volume, such as "512Mi" or "3G". Data stored in an in-memory'
-            ' volume consumes the memory allocation of the container that wrote'
-            ' the data. If size-limit is not specified, the maximum size will'
-            ' be half the total memory limit of all containers.'
-        )
+            'A quantity representing the maximum amount of memory allocated'
+            ' to this volume, such as "512Mi" or "3G". Data stored in an'
+            ' in-memory volume consumes the memory allocation of the'
+            ' container that wrote the data. If size-limit is not specified,'
+            ' the maximum size will be half the total memory limit of all'
+            ' containers.'
+        ),
     }
 
   @classmethod
@@ -402,29 +393,24 @@ class _NfsVolume(_VolumeType):
 
   @classmethod
   def optional_fields(cls, release_track):
-    if release_track != base.ReleaseTrack.GA:
-      return {
-          'name': (
-              'The name of the volume. A name will be generated if the'
-              ' `mount-path` flag is specified. A name is required if'
-              ' `mount-path` is not specified.'
-          ),
-          'mount-path': (
-              'The path at which the volume should be mounted. The `mount-path`'
-              ' parameter is only supported for single container services which'
-              ' do not make use of the --container flag. For multi-container'
-              ' services, specify the `mount-path` parameter under the'
-              ' --add-volume-mount flag.'
-          ),
-          'readonly': (
-              'A boolean. If true, this volume will be read-only from all'
-              ' mounts.'
-          ),
-      }
+    # pylint: disable=unused-argument
     return {
+        'name': (
+            'The name of the volume. A name will be generated if the'
+            ' `mount-path` flag is specified. A name is required if'
+            ' `mount-path` is not specified.'
+        ),
+        'mount-path': (
+            'The path at which the volume should be mounted. The `mount-path`'
+            ' parameter is only supported for single container services which'
+            ' do not make use of the --container flag. For multi-container'
+            ' services, specify the `mount-path` parameter under the'
+            ' --add-volume-mount flag.'
+        ),
         'readonly': (
-            'A boolean. If true, this volume will be read-only from all mounts.'
-        )
+            'A boolean. If true, this volume will be read-only from all'
+            ' mounts.'
+        ),
     }
 
   @classmethod
@@ -526,19 +512,18 @@ class _GcsVolume(_VolumeType):
           + 'Note: You will either need to specify a bucket or set '
           + 'dynamic-mounting to true, but not both.'
       )
-    if release_track != base.ReleaseTrack.GA:
-      fields['name'] = (
-          'The name of the volume. A name will be generated if the'
-          ' `mount-path` flag is specified. A name is required if'
-          ' `mount-path` is not specified.'
-      )
-      fields['mount-path'] = (
-          'The path at which the volume should be mounted. The `mount-path`'
-          ' parameter is only supported for single container services which'
-          ' do not make use of the --container flag. For multi-container'
-          ' services, specify the `mount-path` parameter under the'
-          ' --add-volume-mount flag.'
-      )
+    fields['name'] = (
+        'The name of the volume. A name will be generated if the'
+        ' `mount-path` flag is specified. A name is required if'
+        ' `mount-path` is not specified.'
+    )
+    fields['mount-path'] = (
+        'The path at which the volume should be mounted. The `mount-path`'
+        ' parameter is only supported for single container services which'
+        ' do not make use of the --container flag. For multi-container'
+        ' services, specify the `mount-path` parameter under the'
+        ' --add-volume-mount flag.'
+    )
     return fields
 
   @classmethod
@@ -694,22 +679,21 @@ class CloudSqlInstance(_VolumeType):
 
   @classmethod
   def optional_fields(cls, release_track):
-    if release_track != base.ReleaseTrack.GA:
-      return {
-          'name': (
-              'The name of the volume. A name will be generated if the'
-              ' `mount-path` flag is specified. A name is required if'
-              ' `mount-path` is not specified.'
-          ),
-          'mount-path': (
-              'The path at which the volume should be mounted. The `mount-path`'
-              ' parameter is only supported for single container services which'
-              ' do not make use of the --container flag. For multi-container'
-              ' services, specify the `mount-path` parameter under the'
-              ' --add-volume-mount flag.'
-          ),
-      }
-    return {}
+    # pylint: disable=unused-argument
+    return {
+        'name': (
+            'The name of the volume. A name will be generated if the'
+            ' `mount-path` flag is specified. A name is required if'
+            ' `mount-path` is not specified.'
+        ),
+        'mount-path': (
+            'The path at which the volume should be mounted. The `mount-path`'
+            ' parameter is only supported for single container services which'
+            ' do not make use of the --container flag. For multi-container'
+            ' services, specify the `mount-path` parameter under the'
+            ' --add-volume-mount flag.'
+        ),
+    }
 
   @classmethod
   def fill_volume(cls, volume, new_vol, messages):
@@ -742,22 +726,16 @@ def _is_readonly(volume):
 
 def _validate_volume_name_and_type(volume, release_track):
   """Validates the volume name and type."""
-  if release_track != base.ReleaseTrack.GA:
-    if 'type' not in volume:
-      raise serverless_exceptions.ConfigurationError(
-          'All added volumes must have a type'
-      )
-    # Volume name should have already been generated if the user specified the
-    # `mount-path` flag.
-    if 'name' not in volume:
-      raise serverless_exceptions.ConfigurationError(
-          'Volume "name" must be specified if "mount-path" is not specified.'
-      )
-  else:
-    if 'name' not in volume or 'type' not in volume:
-      raise serverless_exceptions.ConfigurationError(
-          'All added volumes must have a name and type'
-      )
+  if 'type' not in volume:
+    raise serverless_exceptions.ConfigurationError(
+        'All added volumes must have a type'
+    )
+  # Volume name should have already been generated if the user specified the
+  # `mount-path` flag.
+  if 'name' not in volume:
+    raise serverless_exceptions.ConfigurationError(
+        'Volume "name" must be specified if "mount-path" is not specified.'
+    )
 
   if volume['type'] not in _supported_volume_types:
     raise serverless_exceptions.ConfigurationError(

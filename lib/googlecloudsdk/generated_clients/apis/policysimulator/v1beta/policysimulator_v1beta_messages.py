@@ -2471,13 +2471,11 @@ class GoogleCloudPolicysimulatorV1betaIamV3PolicyBinding(_messages.Message):
     Values:
       POLICY_KIND_UNSPECIFIED: Unspecified policy kind; Not a valid state
       PRINCIPAL_ACCESS_BOUNDARY: Principal access boundary policy kind
-      TRUST_BOUNDARY: Trust boundary policy kind
       REGIONAL_ACCESS_BOUNDARY: Regional access boundary policy kind
     """
     POLICY_KIND_UNSPECIFIED = 0
     PRINCIPAL_ACCESS_BOUNDARY = 1
-    TRUST_BOUNDARY = 2
-    REGIONAL_ACCESS_BOUNDARY = 3
+    REGIONAL_ACCESS_BOUNDARY = 2
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AnnotationsValue(_messages.Message):
@@ -2814,7 +2812,7 @@ class GoogleCloudPolicysimulatorV1betaListActivityBacktestsResponse(_messages.Me
       return all fields in the ActivityBacktest, such as the change_overlay
       field. To view an omitted field, call GetActivityBacktest. The
       ActivityBacktest fields included in the list response are: - name -
-      state - create_time - run_time - observation_period
+      state - create_time - run_time - observation_period - summary
     nextPageToken: Optional. A token that you can use to retrieve the next
       page of ActivityBacktest objects. If this field is omitted, there are no
       subsequent pages.
@@ -3279,12 +3277,12 @@ class GoogleCloudPolicysimulatorV1betaPabSimulationResultAccessTuplePrincipal(_m
   Fields:
     subject: The subject of the principal. For 1st party users, this is the
       email address. For 3rd party users, this is the 3P subject.
-    type: The type of the principal. Supported principal types are Workspace,
-      Workforce Pool, Workload Pool and Service Account. Allowed string must
-      be one of: * iam.googleapis.com/WorkspaceIdentity *
-      iam.googleapis.com/WorkforcePoolIdentity *
-      iam.googleapis.com/WorkloadPoolIdentity *
-      iam.googleapis.com/ServiceAccount
+    type: The type of the principal. Supported principal types are workspace,
+      workforce pool, workload pool, and service account. Allowed string must
+      be one of: * `iam.googleapis.com/WorkspaceIdentity` *
+      `iam.googleapis.com/WorkforcePoolIdentity` *
+      `iam.googleapis.com/WorkloadPoolIdentity` *
+      `iam.googleapis.com/ServiceAccount`
   """
 
   subject = _messages.StringField(1)
@@ -3337,12 +3335,13 @@ class GoogleCloudPolicysimulatorV1betaPolicyBinding(_messages.Message):
       - `principal.subject in []` - `principal.subject.startsWith()` -
       `principal.subject.endsWith()` Allowed operations for `principal.type`:
       - `principal.type == ` - `principal.type != ` - `principal.type in []`
-      Supported principal types are Workspace, Workforce Pool, Workload Pool
-      and Service Account. Allowed string must be one of: -
-      iam.googleapis.com/WorkspaceIdentity -
-      iam.googleapis.com/WorkforcePoolIdentity -
-      iam.googleapis.com/WorkloadPoolIdentity -
-      iam.googleapis.com/ServiceAccount
+      Supported principal types are workspace, workforce pool, workload pool,
+      service account, and Agent Identity. Allowed string must be one of: -
+      `iam.googleapis.com/WorkspaceIdentity` -
+      `iam.googleapis.com/WorkforcePoolIdentity` -
+      `iam.googleapis.com/WorkloadPoolIdentity` -
+      `iam.googleapis.com/ServiceAccount` -
+      `iam.googleapis.com/AgentPoolIdentity` (available in Preview)
     createTime: Output only. The time when the policy binding was created.
     displayName: Optional. The description of the policy binding. Must be less
       than or equal to 63 characters.
@@ -4260,6 +4259,9 @@ class GoogleIamV1LogConfigCloudAuditOptions(_messages.Message):
     PermissionTypeValueValuesEnum: The type associated with the permission.
 
   Fields:
+    agentMetadata: If an agent is making the request, metadata about the agent
+      making the request. Used by the Cloud Audit Logging system to enrich the
+      audit log.
     authorizationLoggingOptions: Information used by the Cloud Audit Logging
       pipeline. Will be deprecated once the migration to PermissionType is
       complete (b/201806118).
@@ -4297,9 +4299,10 @@ class GoogleIamV1LogConfigCloudAuditOptions(_messages.Message):
     DATA_READ = 3
     DATA_WRITE = 4
 
-  authorizationLoggingOptions = _messages.MessageField('GoogleCloudAuditAuthorizationLoggingOptions', 1)
-  logName = _messages.EnumField('LogNameValueValuesEnum', 2)
-  permissionType = _messages.EnumField('PermissionTypeValueValuesEnum', 3)
+  agentMetadata = _messages.MessageField('LogsProtoCloudIamAgentMetadata', 1)
+  authorizationLoggingOptions = _messages.MessageField('GoogleCloudAuditAuthorizationLoggingOptions', 2)
+  logName = _messages.EnumField('LogNameValueValuesEnum', 3)
+  permissionType = _messages.EnumField('PermissionTypeValueValuesEnum', 4)
 
 
 class GoogleIamV1LogConfigCounterOptions(_messages.Message):
@@ -4776,6 +4779,18 @@ class GoogleTypeInterval(_messages.Message):
   startTime = _messages.StringField(2)
 
 
+class LogsProtoCloudIamAgentMetadata(_messages.Message):
+  r"""Metadata about the agent that is used for logging.
+
+  Fields:
+    agentName: The name of the agent being used. This is expected to be
+      populated with either "aiplatform" (for Vertex AI) or
+      "geminicloudassist" (for Gemini Cloud Assist).
+  """
+
+  agentName = _messages.StringField(1)
+
+
 class PolicysimulatorFoldersLocationsAccessPolicySimulationsCreateRequest(_messages.Message):
   r"""A PolicysimulatorFoldersLocationsAccessPolicySimulationsCreateRequest
   object.
@@ -4981,8 +4996,11 @@ class PolicysimulatorFoldersLocationsActivityBacktestsListRequest(_messages.Mess
       returns only ActivityBacktests that were created by the authenticated
       user making this API call. Example: `filter="createdByMe()"`. - Has
       operator on the `policy_kinds` field only. Example:
-      `filter="policy_kinds:REGIONAL_ACCESS_BOUNDARY"`. Additional operators,
-      fields, and other expressions are not supported.
+      `filter="policy_kinds:REGIONAL_ACCESS_BOUNDARY"`. Conjunction of filters
+      is supported. Example: `filter="createdByMe() AND
+      policy_kinds:REGIONAL_ACCESS_BOUNDARY"`. Only one policy kind may be
+      specified in the filter. Additional operators, fields, and other
+      expressions are not supported.
     pageSize: Optional. The maximum number of ActivityBacktest objects to
       return. Defaults to 100. Maximum value is 100. Values above the maximum
       are reduced to the maximum value.
@@ -5437,8 +5455,11 @@ class PolicysimulatorOrganizationsLocationsActivityBacktestsListRequest(_message
       returns only ActivityBacktests that were created by the authenticated
       user making this API call. Example: `filter="createdByMe()"`. - Has
       operator on the `policy_kinds` field only. Example:
-      `filter="policy_kinds:REGIONAL_ACCESS_BOUNDARY"`. Additional operators,
-      fields, and other expressions are not supported.
+      `filter="policy_kinds:REGIONAL_ACCESS_BOUNDARY"`. Conjunction of filters
+      is supported. Example: `filter="createdByMe() AND
+      policy_kinds:REGIONAL_ACCESS_BOUNDARY"`. Only one policy kind may be
+      specified in the filter. Additional operators, fields, and other
+      expressions are not supported.
     pageSize: Optional. The maximum number of ActivityBacktest objects to
       return. Defaults to 100. Maximum value is 100. Values above the maximum
       are reduced to the maximum value.
@@ -6008,8 +6029,11 @@ class PolicysimulatorProjectsLocationsActivityBacktestsListRequest(_messages.Mes
       returns only ActivityBacktests that were created by the authenticated
       user making this API call. Example: `filter="createdByMe()"`. - Has
       operator on the `policy_kinds` field only. Example:
-      `filter="policy_kinds:REGIONAL_ACCESS_BOUNDARY"`. Additional operators,
-      fields, and other expressions are not supported.
+      `filter="policy_kinds:REGIONAL_ACCESS_BOUNDARY"`. Conjunction of filters
+      is supported. Example: `filter="createdByMe() AND
+      policy_kinds:REGIONAL_ACCESS_BOUNDARY"`. Only one policy kind may be
+      specified in the filter. Additional operators, fields, and other
+      expressions are not supported.
     pageSize: Optional. The maximum number of ActivityBacktest objects to
       return. Defaults to 100. Maximum value is 100. Values above the maximum
       are reduced to the maximum value.

@@ -50,7 +50,7 @@ INSTANCE_TEMPLATE_ARG = managed_flags.InstanceTemplateArg(
 
 # TODO(b/345166947) Remove universe annotation once b/341682289 is resolved.
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class UpdateGA(base.UpdateCommand):
   r"""Update a Compute Engine managed instance group."""
 

@@ -268,7 +268,7 @@ def RunTroubleshooting(
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Ssh(base.Command):
   """SSH into a virtual machine instance."""
 

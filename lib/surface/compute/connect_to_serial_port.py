@@ -52,7 +52,7 @@ REGIONAL_HOST_KEY_URL_TEMPLATE_V2 = (
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class ConnectToSerialPort(base.Command):
   """Connect to the serial port of an instance.
 

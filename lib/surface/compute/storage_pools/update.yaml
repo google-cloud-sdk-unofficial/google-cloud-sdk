@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA, GA]
+- release_tracks: [ALPHA, BETA, GA, PREVIEW]
   help_text:
     brief: "Update a storage pool."
     description: "Update a storage pool."
@@ -10,6 +10,8 @@
   request:
     ALPHA:
       api_version: alpha
+      modify_request_hooks:
+      - googlecloudsdk.api_lib.compute.storage_pools.modify_request_hooks:modify_share_settings
     BETA:
       api_version: beta
     GA:
@@ -56,3 +58,23 @@
       help_text: |
         Throughput in MB/s provision the pool with.
       type: int
+
+    - arg_name: add-share-with
+      release_tracks: [ALPHA]
+      hidden: true
+      help_text: |
+        Projects to add to storage pool share list. Specify a comma-separated list of projects to add.
+        List projects using project IDs or project numbers. If this flag is used (--add-share-with=projects), at
+        least one project must be provided.
+      type: 'googlecloudsdk.calliope.arg_parsers:ArgList:'
+      metavar: SHARE_WITH,[SHARE_WITH,...]
+
+    - arg_name: remove-share-with
+      release_tracks: [ALPHA]
+      hidden: true
+      help_text: |
+        Projects to remove from storage pool share list. Specify a comma-separated list of projects to remove.
+        List projects using project IDs or project numbers. If this flag is used (--remove-share-with=projects), at
+        least one project must be provided.
+      type: 'googlecloudsdk.calliope.arg_parsers:ArgList:'
+      metavar: SHARE_WITH,[SHARE_WITH,...]

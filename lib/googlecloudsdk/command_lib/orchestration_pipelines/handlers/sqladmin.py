@@ -14,6 +14,7 @@
 # limitations under the License.
 """SQLAdmin resource handler."""
 
+import copy
 from typing import Any
 
 from apitools.base.protorpclite import messages
@@ -54,6 +55,20 @@ class SqladminInstanceHandler(base.GcpResourceHandler):
     return self.messages.SqlInstancesInsertRequest(
         project=self.environment.project, databaseInstance=resource_message
     )
+
+  def to_resource_message(self, definition: dict[str, Any]) -> messages.Message:
+    """Converts a dictionary definition to a resource message."""
+    definition_copy = copy.deepcopy(definition)
+    settings = definition_copy.get("settings")
+    if settings is None:
+      settings = {}
+      definition_copy["settings"] = settings
+    user_labels = settings.get("userLabels")
+    if user_labels is None:
+      user_labels = {}
+      settings["userLabels"] = user_labels
+    user_labels[base.IMPLICIT_LABEL_KEY] = base.IMPLICIT_LABEL_VALUE
+    return super().to_resource_message(definition_copy)
 
   def build_delete_request(
       self, existing_resource: messages.Message

@@ -21,6 +21,7 @@ import datetime
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.command_lib.compute import completers as compute_completers
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import resource_manager_tags_utils
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.command_lib.compute.reservations import flags as reservation_flags
@@ -117,6 +118,25 @@ def TranslateCustomEndTimeArg(args):
   return None
 
 
+def TranslateResourceManagerTagsArg(messages, resource_manager_tags):
+  """Creates a commitment params object for resource manager tags."""
+  if not resource_manager_tags:
+    return None
+  resource_manager_tags_map = (
+      resource_manager_tags_utils.GetResourceManagerTags(resource_manager_tags)
+  )
+  params = messages.CommitmentParams
+  additional_properties = [
+      params.ResourceManagerTagsValue.AdditionalProperty(key=key, value=value)
+      for key, value in sorted(resource_manager_tags_map.items())
+  ]
+  return params(
+      resourceManagerTags=params.ResourceManagerTagsValue(
+          additionalProperties=additional_properties
+      )
+  )
+
+
 def TranslateResourcesArg(messages, resources_arg):
   return [
       messages.ResourceCommitment(
@@ -181,6 +201,7 @@ def AddCreateFlags(
     support_reservation_sharing_policy=False,
     support_60_month_plan=False,
     support_24_month_plan=False,
+    support_resource_manager_tags=False,
 ):
   """Add general arguments for `commitments create` flag."""
   AddPlanForCreate(parser, support_60_month_plan, support_24_month_plan)
@@ -195,6 +216,8 @@ def AddCreateFlags(
   AddSplitSourceCommitment(parser)
   AddMergeSourceCommitments(parser)
   AddCustomEndTime(parser)
+  if support_resource_manager_tags:
+    AddResourceManagerTagsFlag(parser)
 
 
 def AddUpdateFlags(
@@ -294,6 +317,20 @@ def AddCustomEndTime(parser):
           "Specifies a custom future end date and extends the commitment's"
           ' ongoing term.'
       ),
+  )
+
+
+def AddResourceManagerTagsFlag(parser):
+  """Gets the --resource-manager-tags flag."""
+  help_text = """\
+  Resource manager tags to be bound to the commitment.
+  """
+  return parser.add_argument(
+      '--resource-manager-tags',
+      required=False,
+      metavar='KEY=VALUE',
+      type=arg_parsers.ArgDict(),
+      help=help_text,
   )
 
 

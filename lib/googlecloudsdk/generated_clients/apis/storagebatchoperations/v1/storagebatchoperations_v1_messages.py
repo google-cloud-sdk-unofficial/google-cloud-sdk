@@ -11,6 +11,20 @@ from apitools.base.py import extra_types
 package = 'storagebatchoperations'
 
 
+class AccessControlsUpdates(_messages.Message):
+  r"""Represents updates to existing access-control entries on an object.
+
+  Fields:
+    grants: Optional. Grants to add or update. If a grant for same entity
+      exists, its role is updated.
+    removeEntities: Optional. Entities for which all grants should be removed.
+      An entity cannot be in both `grants` and `remove_entities`.
+  """
+
+  grants = _messages.MessageField('ObjectAccessControl', 1, repeated=True)
+  removeEntities = _messages.StringField(2, repeated=True)
+
+
 class Bucket(_messages.Message):
   r"""Describes configuration of a single bucket and its objects to be
   transformed.
@@ -60,11 +74,14 @@ class BucketOperation(_messages.Message):
       defined by the service. Format: projects/{project}/locations/global/jobs
       /{job_id}/bucketOperations/{bucket_operation}.
     prefixList: Specifies objects matching a prefix set.
+    projectSource: Specifies objects matching the object filters in a project
+      source.
     putMetadata: Updates object metadata. Allows updating fixed-key and custom
       metadata and fixed-key metadata i.e. Cache-Control, Content-Disposition,
       Content-Encoding, Content-Language, Content-Type, Custom-Time.
     putObjectHold: Changes object hold status.
     rewriteObject: Rewrite the object and updates metadata like KMS key.
+    setObjectAcls: Updates object ACLs.
     startTime: Output only. The time that the BucketOperation was started.
     state: Output only. State of the BucketOperation.
     updateObjectCustomContext: Update object custom context.
@@ -97,12 +114,14 @@ class BucketOperation(_messages.Message):
   manifest = _messages.MessageField('Manifest', 7)
   name = _messages.StringField(8)
   prefixList = _messages.MessageField('PrefixList', 9)
-  putMetadata = _messages.MessageField('PutMetadata', 10)
-  putObjectHold = _messages.MessageField('PutObjectHold', 11)
-  rewriteObject = _messages.MessageField('RewriteObject', 12)
-  startTime = _messages.StringField(13)
-  state = _messages.EnumField('StateValueValuesEnum', 14)
-  updateObjectCustomContext = _messages.MessageField('UpdateObjectCustomContext', 15)
+  projectSource = _messages.MessageField('ProjectSource', 10)
+  putMetadata = _messages.MessageField('PutMetadata', 11)
+  putObjectHold = _messages.MessageField('PutObjectHold', 12)
+  rewriteObject = _messages.MessageField('RewriteObject', 13)
+  setObjectAcls = _messages.MessageField('SetObjectAcls', 14)
+  startTime = _messages.StringField(15)
+  state = _messages.EnumField('StateValueValuesEnum', 16)
+  updateObjectCustomContext = _messages.MessageField('UpdateObjectCustomContext', 17)
 
 
 class CancelJobRequest(_messages.Message):
@@ -131,7 +150,18 @@ class Counters(_messages.Message):
   r"""Describes details about the progress of the job.
 
   Fields:
-    failedObjectCount: Output only. Number of objects failed.
+    failedObjectCount: Output only. The number of objects that failed due to
+      user errors or service errors.
+    objectCustomContextsCreated: Output only. Number of object custom contexts
+      created. This field is only populated for jobs with the
+      UpdateObjectCustomContext transformation.
+    objectCustomContextsDeleted: Output only. Number of object custom contexts
+      deleted. This field is only populated for jobs with the
+      UpdateObjectCustomContext transformation.
+    objectCustomContextsUpdated: Output only. Number of object custom contexts
+      updated. This counter tracks custom contexts where the key already
+      existed, but the payload was modified. This field is only populated for
+      jobs with the UpdateObjectCustomContext transformation.
     succeededObjectCount: Output only. Number of objects completed.
     totalBytesFound: Output only. Number of bytes found from source. This
       field is only populated for jobs with a prefix list object
@@ -140,9 +170,12 @@ class Counters(_messages.Message):
   """
 
   failedObjectCount = _messages.IntegerField(1)
-  succeededObjectCount = _messages.IntegerField(2)
-  totalBytesFound = _messages.IntegerField(3)
-  totalObjectCount = _messages.IntegerField(4)
+  objectCustomContextsCreated = _messages.IntegerField(2)
+  objectCustomContextsDeleted = _messages.IntegerField(3)
+  objectCustomContextsUpdated = _messages.IntegerField(4)
+  succeededObjectCount = _messages.IntegerField(5)
+  totalBytesFound = _messages.IntegerField(6)
+  totalObjectCount = _messages.IntegerField(7)
 
 
 class CustomContextUpdates(_messages.Message):
@@ -352,6 +385,42 @@ class ErrorSummary(_messages.Message):
   errorLogEntries = _messages.MessageField('ErrorLogEntry', 3, repeated=True)
 
 
+class Expr(_messages.Message):
+  r"""Represents a textual expression in the Common Expression Language (CEL)
+  syntax. CEL is a C-like expression language. The syntax and semantics of CEL
+  are documented at https://github.com/google/cel-spec. Example (Comparison):
+  title: "Summary size limit" description: "Determines if a summary is less
+  than 100 chars" expression: "document.summary.size() < 100" Example
+  (Equality): title: "Requestor is owner" description: "Determines if
+  requestor is the document owner" expression: "document.owner ==
+  request.auth.claims.email" Example (Logic): title: "Public documents"
+  description: "Determine whether the document should be publicly visible"
+  expression: "document.type != 'private' && document.type != 'internal'"
+  Example (Data Manipulation): title: "Notification string" description:
+  "Create a notification string with a timestamp." expression: "'New message
+  received at ' + string(document.create_time)" The exact variables and
+  functions that may be referenced within an expression are determined by the
+  service that evaluates it. See the service documentation for additional
+  information.
+
+  Fields:
+    description: Optional. Description of the expression. This is a longer
+      text which describes the expression, e.g. when hovered over it in a UI.
+    expression: Textual representation of an expression in Common Expression
+      Language syntax.
+    location: Optional. String indicating the location of the expression for
+      error reporting, e.g. a file name and a position in the file.
+    title: Optional. Title for the expression, i.e. a short string describing
+      its purpose. This can be used e.g. in UIs which allow to enter the
+      expression.
+  """
+
+  description = _messages.StringField(1)
+  expression = _messages.StringField(2)
+  location = _messages.StringField(3)
+  title = _messages.StringField(4)
+
+
 class Job(_messages.Message):
   r"""The Storage Batch Operations Job description.
 
@@ -380,12 +449,15 @@ class Job(_messages.Message):
       the project, that is either set by the customer or defined by the
       service. Format: projects/{project}/locations/global/jobs/{job_id} . For
       example: "projects/123456/locations/global/jobs/job01".
+    projectSource: Specifies a project source and filters to identify objects
+      to be transformed.
     putMetadata: Updates object metadata. Allows updating fixed-key and custom
       metadata and fixed-key metadata i.e. Cache-Control, Content-Disposition,
       Content-Encoding, Content-Language, Content-Type, Custom-Time.
     putObjectHold: Changes object hold status.
     rewriteObject: Rewrite the object and updates metadata like KMS key.
     scheduleTime: Output only. The time that the job was scheduled.
+    setObjectAcls: Updates object ACLs.
     state: Output only. State of the job.
     updateObjectCustomContext: Update object custom context.
   """
@@ -419,12 +491,14 @@ class Job(_messages.Message):
   isMultiBucketJob = _messages.BooleanField(9)
   loggingConfig = _messages.MessageField('LoggingConfig', 10)
   name = _messages.StringField(11)
-  putMetadata = _messages.MessageField('PutMetadata', 12)
-  putObjectHold = _messages.MessageField('PutObjectHold', 13)
-  rewriteObject = _messages.MessageField('RewriteObject', 14)
-  scheduleTime = _messages.StringField(15)
-  state = _messages.EnumField('StateValueValuesEnum', 16)
-  updateObjectCustomContext = _messages.MessageField('UpdateObjectCustomContext', 17)
+  projectSource = _messages.MessageField('ProjectSource', 12)
+  putMetadata = _messages.MessageField('PutMetadata', 13)
+  putObjectHold = _messages.MessageField('PutObjectHold', 14)
+  rewriteObject = _messages.MessageField('RewriteObject', 15)
+  scheduleTime = _messages.StringField(16)
+  setObjectAcls = _messages.MessageField('SetObjectAcls', 17)
+  state = _messages.EnumField('StateValueValuesEnum', 18)
+  updateObjectCustomContext = _messages.MessageField('UpdateObjectCustomContext', 19)
 
 
 class ListBucketOperationsResponse(_messages.Message):
@@ -628,6 +702,21 @@ class Manifest(_messages.Message):
   manifestLocation = _messages.StringField(1)
 
 
+class ObjectAccessControl(_messages.Message):
+  r"""Represents an access control entry on an object.
+
+  Fields:
+    entity: Required. The entity holding the permission, in one of the
+      following forms: * `allUsers` * `allAuthenticatedUsers`
+    role: Required. The role to grant. Acceptable values are: * `READER` -
+      gives read access to the object. * `OWNER` - gives owner access to the
+      object.
+  """
+
+  entity = _messages.StringField(1)
+  role = _messages.StringField(2)
+
+
 class ObjectCustomContextPayload(_messages.Message):
   r"""Describes the payload of a user defined object custom context.
 
@@ -814,6 +903,41 @@ class PrefixList(_messages.Message):
   """
 
   includedObjectPrefixes = _messages.StringField(1, repeated=True)
+
+
+class ProjectSource(_messages.Message):
+  r"""Describes the project source where the objects satisfying the filters
+  will be transformed.
+
+  Fields:
+    bucketFilters: Optional. Filters expressed in Common Expression Language
+      (CEL) to apply to buckets to identify buckets with objects to be
+      transformed.
+    dryRunJobId: Optional. The unique identifier of a dry run job to use as
+      the baseline for the current job. Specifying this ID ensures the job is
+      executed against the same set of objects validated during the dry run.
+      The value corresponds to the {job_id} segment of the resource name:
+      `projects/{project}/locations/{location}/jobs/{job_id}`.
+    insightsDatasetConfig: Optional. The resource identifier of the Storage
+      Insights dataset configuration. SBO uses the latest snapshot from this
+      dataset as the source to list and filter target objects. This should be
+      of the form: `projects/{project}/locations/{location}/datasetConfigs/{da
+      tasetConfig}`.
+    objectFilters: Optional. Filters expressed in Common Expression Language
+      (CEL) to apply to objects to identify objects to be transformed.
+    project: Required. Project name of the objects to be transformed. e.g.
+      projects/my-project or projects/123456.
+    snapshotTime: Output only. The snapshot time used to read the Storage
+      Insights dataset. This is only populated if `insights_dataset_config` is
+      specified.
+  """
+
+  bucketFilters = _messages.MessageField('Expr', 1)
+  dryRunJobId = _messages.StringField(2)
+  insightsDatasetConfig = _messages.StringField(3)
+  objectFilters = _messages.MessageField('Expr', 4)
+  project = _messages.StringField(5)
+  snapshotTime = _messages.StringField(6)
 
 
 class PutMetadata(_messages.Message):
@@ -1011,6 +1135,17 @@ class RewriteObject(_messages.Message):
 
   kmsKey = _messages.StringField(1)
   storageClass = _messages.EnumField('StorageClassValueValuesEnum', 2)
+
+
+class SetObjectAcls(_messages.Message):
+  r"""Describes options for setting object ACLs.
+
+  Fields:
+    accessControlsUpdates: Required. Add, update, or remove grants from the
+      object's existing ACLs.
+  """
+
+  accessControlsUpdates = _messages.MessageField('AccessControlsUpdates', 1)
 
 
 class StandardQueryParameters(_messages.Message):

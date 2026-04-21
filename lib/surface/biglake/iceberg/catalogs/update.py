@@ -45,7 +45,7 @@ class UpdateCatalog(base.UpdateCommand):
       util.GetUpdateCatalogTypeEnumMapper(
           base.ReleaseTrack.ALPHA
       ).choice_arg.AddToParser(parser)
-      util.AddAdditionalLocationsArg(parser)
+      util.AddRestrictedLocationsArg(parser)
     if cls._support_service_directory_name:
       arguments.AddServiceDirectoryNameArg(parser)
     if cls._support_federated_catalog:
@@ -128,12 +128,12 @@ class UpdateCatalog(base.UpdateCommand):
       catalog_type = util.GetUpdateCatalogTypeEnumMapper(
           self.ReleaseTrack()
       ).GetEnumForChoice(args.catalog_type)
-    additional_locations = []
+    restricted_locations = []
     if self._support_catalog_type_biglake and args.IsSpecified(
-        'additional_locations'
+        'restricted_locations'
     ):
-      update_mask.append('additional_locations')
-      additional_locations = args.additional_locations
+      update_mask.append('restricted_locations_config.restricted_locations')
+      restricted_locations = args.restricted_locations
 
     catalog = messages.IcebergCatalog(
         name=catalog_name,
@@ -153,8 +153,12 @@ class UpdateCatalog(base.UpdateCommand):
             args, catalog, messages, update_mask
         )
 
-    if self._support_catalog_type_biglake:
-      catalog.additional_locations = additional_locations
+    if self._support_catalog_type_biglake and args.IsSpecified(
+        'restricted_locations'
+    ):
+      catalog.restricted_locations_config = messages.RestrictedLocationsConfig(
+          restricted_locations=restricted_locations
+      )
     request = messages.BiglakeIcebergV1RestcatalogExtensionsProjectsCatalogsPatchRequest(
         name=catalog_name,
         icebergCatalog=catalog,

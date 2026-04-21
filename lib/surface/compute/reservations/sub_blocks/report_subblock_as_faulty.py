@@ -66,7 +66,10 @@ def _GetReportFaultyRequest(args, reservation_ref, holder):
 
 @base.UniverseCompatible
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
 )
 class ReportFaulty(base.UpdateCommand):
   """Report a sub-block within a reservation as faulty."""

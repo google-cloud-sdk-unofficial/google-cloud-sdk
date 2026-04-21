@@ -40,7 +40,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class ImportGA(base.UpdateCommand):
   """Import a backend service.
@@ -271,4 +271,3 @@ class ImportAlphaBeta(ImportGA):
   To edit a backend service you can export the backend service to a file,
   edit its configuration, and then import the new configuration.
   """
-

@@ -18,6 +18,7 @@
 import textwrap
 
 from googlecloudsdk.api_lib.container.fleet import util as fleet_util
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import gateway
 from googlecloudsdk.command_lib.container.fleet import resources
 
@@ -86,15 +87,31 @@ class GetCredentials(gateway.GetCredentialsCommand):
           Force the use of Connect Agent-based transport.
         """),
     )
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      parser.add_argument(
+          '--use-application-default-credentials',
+          action='store_true',
+          required=False,
+          help=textwrap.dedent("""\
+            Force the use of Application Default Credentials for authentication.
+          """),
+      )
 
   def Run(self, args):
     membership_name = resources.ParseMembershipArg(args)
     location = fleet_util.MembershipLocation(membership_name)
     membership_id = fleet_util.MembershipShortname(membership_name)
+    use_adc = (
+        self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+        and getattr(args, 'use_application_default_credentials', False)
+    )
 
     if args.use_client_side_generation:
       self.RunGetCredentials(membership_id, location)
     else:
       self.RunServerSide(
-          membership_id, location, force_use_agent=args.force_use_agent
+          membership_id,
+          location,
+          force_use_agent=args.force_use_agent,
+          application_default_credentials=use_adc,
       )

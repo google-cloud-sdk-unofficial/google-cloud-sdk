@@ -375,8 +375,8 @@ class VolumeMount(proto.Message):
             the container's volume should be mounted.
             Defaults to "" (volume's root).
 
-            This field is currently ignored for Secret
-            volumes.
+            This field is currently rejected in Secret
+            volume mounts.
     """
 
     name: str = proto.Field(

@@ -805,6 +805,24 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  ONLINEEVALUATORS = (
+      'onlineEvaluators',
+      'onlineEvaluators/{onlineEvaluatorsId}',
+      {},
+      ['onlineEvaluatorsId'],
+      True
+  )
+  ONLINEEVALUATORS_OPERATIONS = (
+      'onlineEvaluators.operations',
+      '{+name}',
+      {
+          '':
+              'onlineEvaluators/{onlineEvaluatorsId}/operations/'
+              '{operationsId}',
+      },
+      ['name'],
+      True
+  )
   OPERATIONS = (
       'operations',
       '{+name}',
@@ -1933,6 +1951,18 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_ONLINEEVALUATORS_OPERATIONS = (
+      'projects.locations.onlineEvaluators.operations',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'onlineEvaluators/{onlineEvaluatorsId}/operations/'
+              '{operationsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_OPERATIONS = (
       'projects.locations.operations',
       '{+name}',
@@ -2178,10 +2208,14 @@ class Collections(enum.Enum):
   )
   PROJECTS_LOCATIONS_REASONINGENGINES_RUNTIMEREVISIONS = (
       'projects.locations.reasoningEngines.runtimeRevisions',
-      'projects/{projectsId}/locations/{locationsId}/reasoningEngines/'
-      '{reasoningEnginesId}/runtimeRevisions/{runtimeRevisionsId}',
-      {},
-      ['projectsId', 'locationsId', 'reasoningEnginesId', 'runtimeRevisionsId'],
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'reasoningEngines/{reasoningEnginesId}/runtimeRevisions/'
+              '{runtimeRevisionsId}',
+      },
+      ['name'],
       True
   )
   PROJECTS_LOCATIONS_REASONINGENGINES_RUNTIMEREVISIONS_OPERATIONS = (
@@ -2192,6 +2226,56 @@ class Collections(enum.Enum):
               'projects/{projectsId}/locations/{locationsId}/'
               'reasoningEngines/{reasoningEnginesId}/runtimeRevisions/'
               '{runtimeRevisionsId}/operations/{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_REASONINGENGINES_SANDBOXENVIRONMENTSNAPSHOTS = (
+      'projects.locations.reasoningEngines.sandboxEnvironmentSnapshots',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'reasoningEngines/{reasoningEnginesId}/'
+              'sandboxEnvironmentSnapshots/{sandboxEnvironmentSnapshotsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_REASONINGENGINES_SANDBOXENVIRONMENTSNAPSHOTS_OPERATIONS = (
+      'projects.locations.reasoningEngines.sandboxEnvironmentSnapshots.operations',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'reasoningEngines/{reasoningEnginesId}/'
+              'sandboxEnvironmentSnapshots/{sandboxEnvironmentSnapshotsId}/'
+              'operations/{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_REASONINGENGINES_SANDBOXENVIRONMENTTEMPLATES = (
+      'projects.locations.reasoningEngines.sandboxEnvironmentTemplates',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'reasoningEngines/{reasoningEnginesId}/'
+              'sandboxEnvironmentTemplates/{sandboxEnvironmentTemplatesId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_REASONINGENGINES_SANDBOXENVIRONMENTTEMPLATES_OPERATIONS = (
+      'projects.locations.reasoningEngines.sandboxEnvironmentTemplates.operations',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'reasoningEngines/{reasoningEnginesId}/'
+              'sandboxEnvironmentTemplates/{sandboxEnvironmentTemplatesId}/'
+              'operations/{operationsId}',
       },
       ['name'],
       True
@@ -2281,9 +2365,9 @@ class Collections(enum.Enum):
       '{+name}',
       {
           '':
-              'projects/{project}/locations/{location}/'
-              'semanticGovernancePolicies/{semantic_governance_policy}/'
-              'operations/{operation}',
+              'projects/{projectsId}/locations/{locationsId}/'
+              'semanticGovernancePolicies/{semanticGovernancePoliciesId}/'
+              'operations/{operationsId}',
       },
       ['name'],
       True
@@ -2676,6 +2760,52 @@ class Collections(enum.Enum):
           '':
               'reasoningEngines/{reasoningEnginesId}/runtimeRevisions/'
               '{runtimeRevisionsId}/operations/{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  REASONINGENGINES_SANDBOXENVIRONMENTSNAPSHOTS = (
+      'reasoningEngines.sandboxEnvironmentSnapshots',
+      '{+name}',
+      {
+          '':
+              'reasoningEngines/{reasoningEnginesId}/'
+              'sandboxEnvironmentSnapshots/{sandboxEnvironmentSnapshotsId}',
+      },
+      ['name'],
+      True
+  )
+  REASONINGENGINES_SANDBOXENVIRONMENTSNAPSHOTS_OPERATIONS = (
+      'reasoningEngines.sandboxEnvironmentSnapshots.operations',
+      '{+name}',
+      {
+          '':
+              'reasoningEngines/{reasoningEnginesId}/'
+              'sandboxEnvironmentSnapshots/{sandboxEnvironmentSnapshotsId}/'
+              'operations/{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  REASONINGENGINES_SANDBOXENVIRONMENTTEMPLATES = (
+      'reasoningEngines.sandboxEnvironmentTemplates',
+      '{+name}',
+      {
+          '':
+              'reasoningEngines/{reasoningEnginesId}/'
+              'sandboxEnvironmentTemplates/{sandboxEnvironmentTemplatesId}',
+      },
+      ['name'],
+      True
+  )
+  REASONINGENGINES_SANDBOXENVIRONMENTTEMPLATES_OPERATIONS = (
+      'reasoningEngines.sandboxEnvironmentTemplates.operations',
+      '{+name}',
+      {
+          '':
+              'reasoningEngines/{reasoningEnginesId}/'
+              'sandboxEnvironmentTemplates/{sandboxEnvironmentTemplatesId}/'
+              'operations/{operationsId}',
       },
       ['name'],
       True

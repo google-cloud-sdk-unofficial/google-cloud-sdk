@@ -25,7 +25,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Bulk(base.Group):
   """Manipulate multiple Compute Engine disks with single command executions."""
 

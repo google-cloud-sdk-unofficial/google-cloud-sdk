@@ -201,6 +201,33 @@ class AgentregistryV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def FetchAvailable(self, request, global_params=None):
+      r"""Fetches available Bindings.
+
+      Args:
+        request: (AgentregistryProjectsLocationsBindingsFetchAvailableRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (FetchAvailableBindingsResponse) The response message.
+      """
+      config = self.GetMethodConfig('FetchAvailable')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    FetchAvailable.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/bindings:fetchAvailable',
+        http_method='GET',
+        method_id='agentregistry.projects.locations.bindings.fetchAvailable',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken', 'sourceIdentifier', 'targetIdentifier'],
+        relative_path='v1alpha/{+parent}/bindings:fetchAvailable',
+        request_field='',
+        request_type_name='AgentregistryProjectsLocationsBindingsFetchAvailableRequest',
+        response_type_name='FetchAvailableBindingsResponse',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Gets details of a single Binding.
 

@@ -32,6 +32,12 @@
       location `us-central1` with data schema and vector schema, run:
 
       $ {command} my-collection --location=us-central1 --display-name='My Collection' --data-schema='{"type":"object","properties":{"year":{"type":"number"},"genre":{"type":"string"},"director":{"type":"string"},"title":{"type":"string"}}}' --vector-schema='{"plot_embedding":{"denseVector":{"dimensions":3}},"genre_embedding":{"denseVector":{"dimensions":4}},"sparse_embedding":{"sparseVector":{}}}' --project=my-project
+
+      To create a CMEK-encrypted collection `my-collection` in project `my-project` and
+      location `us-central1` to store dense embedding vectors with 100 dimensions, run:
+
+      $ {command} my-collection --location=us-central1
+        --display-name='My Collection' --vector-schema='{"my-embedding-field": {"denseVector": {"dimensions": 100}}}' --encryption-spec-crypto-key-name='projects/my-project/locations/us-central1/keyRings/my-key-ring/cryptoKeys/my-key' --project=my-project
   arguments:
     params:
     - help_text: |-
@@ -124,6 +130,23 @@
         underscores, and hyphens.
         The schema must be compliant with
         [JSON Schema Draft 7](https://json-schema.org/draft-07/schema).
+    - group:
+        api_field: googleCloudVectorsearchV1betaCollection.encryptionSpec
+        required: false
+        help_text: |-
+          Represents a customer-managed encryption key specification that can be
+          applied to a Vector Search collection.
+        params:
+        - arg_name: encryption-spec-crypto-key-name
+          api_field: googleCloudVectorsearchV1betaCollection.encryptionSpec.cryptoKeyName
+          required: true
+          repeated: false
+          help_text: |-
+            Resource name of the Cloud KMS key used to protect the resource.
+
+            The Cloud KMS key must be in the same region as the resource. It must have
+            the format
+            `projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}`.
     - arg_name: request-id
       api_field: requestId
       required: false

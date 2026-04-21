@@ -46,6 +46,7 @@ class GkerecommenderV1(base_api.BaseApiClient):
     self.servingStackVersions = self.ServingStackVersionsService(self)
     self.servingStacks = self.ServingStacksService(self)
     self.useCases = self.UseCasesService(self)
+    self.v1 = self.V1Service(self)
 
   class BenchmarkingDataService(base_api.BaseApiService):
     """Service class for the benchmarkingData resource."""
@@ -368,5 +369,41 @@ class GkerecommenderV1(base_api.BaseApiClient):
         request_field='<request>',
         request_type_name='FetchUseCasesRequest',
         response_type_name='FetchUseCasesResponse',
+        supports_download=False,
+    )
+
+  class V1Service(base_api.BaseApiService):
+    """Service class for the v1 resource."""
+
+    _NAME = 'v1'
+
+    def __init__(self, client):
+      super(GkerecommenderV1.V1Service, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def GenerateOptimizationSetManifest(self, request, global_params=None):
+      r"""Generates optimized deployment manifests for a given optimization set, GKE version, and other optional input requirements.
+
+      Args:
+        request: (GenerateOptimizationSetManifestRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GenerateOptimizationSetManifestResponse) The response message.
+      """
+      config = self.GetMethodConfig('GenerateOptimizationSetManifest')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GenerateOptimizationSetManifest.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='gkerecommender.generateOptimizationSetManifest',
+        ordered_params=[],
+        path_params=[],
+        query_params=[],
+        relative_path='v1:generateOptimizationSetManifest',
+        request_field='<request>',
+        request_type_name='GenerateOptimizationSetManifestRequest',
+        response_type_name='GenerateOptimizationSetManifestResponse',
         supports_download=False,
     )

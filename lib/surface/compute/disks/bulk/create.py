@@ -104,7 +104,7 @@ def _GetResult(compute_client, request, operation_group_id, parent_errors):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class BulkCreate(base.Command):
   """Create multiple Compute Engine disks."""
 

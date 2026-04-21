@@ -25,7 +25,7 @@ def _CommonArgs(parser):
   Describe.disk_arg.AddArgument(parser, operation_type='describe')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine disk."""
 

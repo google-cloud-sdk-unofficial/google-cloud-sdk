@@ -121,7 +121,7 @@ class DeleteHelper(object):
     return holder.client.MakeRequests(requests)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class DeleteGA(base.DeleteCommand):
   r"""Delete Compute Engine security policy rules.
 

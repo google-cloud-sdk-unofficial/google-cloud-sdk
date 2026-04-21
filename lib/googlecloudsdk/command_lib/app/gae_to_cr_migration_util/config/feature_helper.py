@@ -137,7 +137,11 @@ class ValueLimitFeature(UnsupportedFeature):
     """Check if the given value is valid, either by regex or set of known/allowed values."""
     if self.valid_format is not None:
       # validate by regex only when valid_format is present.
-      return re.search(self.valid_format, val) is not None
+      if isinstance(val, list):
+        return all(
+            re.fullmatch(self.valid_format, str(v)) is not None for v in val
+        )
+      return re.fullmatch(self.valid_format, str(val)) is not None
     if key.startswith("runtime") and not self._check_runtime_value(val):
       return False
     return self.allowed_values is not None and val in self.allowed_values

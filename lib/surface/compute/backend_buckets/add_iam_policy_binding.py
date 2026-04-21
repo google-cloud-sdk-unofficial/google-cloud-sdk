@@ -14,7 +14,6 @@
 # limitations under the License.
 """Command to set IAM policy for a resource."""
 
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
@@ -24,7 +23,7 @@ from googlecloudsdk.command_lib.compute.backend_buckets import flags
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.DefaultUniverseOnly
 class AddIamPolicyBinding(base.Command):
   """Add an IAM policy binding to a Compute Engine backend bucket."""
@@ -42,7 +41,9 @@ class AddIamPolicyBinding(base.Command):
             args,
             holder.resources,
             default_scope=compute_scope.ScopeEnum.GLOBAL,
-            scope_lister=compute_flags.GetDefaultScopeLister(holder.client)))
+            scope_lister=compute_flags.GetDefaultScopeLister(holder.client),
+        )
+    )
 
     policy = backend_buckets_utils.GetIamPolicy(backend_bucket_ref, client)
     iam_util.AddBindingToIamPolicy(
@@ -54,19 +55,26 @@ class AddIamPolicyBinding(base.Command):
     )
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
+class AddIamPolicyBindingBeta(AddIamPolicyBinding):
+  pass
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
-class AddIamPolicyBindingAlpha(AddIamPolicyBinding):
-  """Add an IAM policy binding to a Compute Engine backend bucket."""
+class AddIamPolicyBindingAlpha(AddIamPolicyBindingBeta):
+  pass
+
 
 AddIamPolicyBinding.detailed_help = {
-    'brief':
-        'Add an IAM policy binding to a Compute Engine backend bucket.',
-    'DESCRIPTION':
+    'brief': 'Add an IAM policy binding to a Compute Engine backend bucket.',
+    'DESCRIPTION': (
         """\
 
-  Add an IAM policy binding to a Compute Engine backend bucket.  """,
-    'EXAMPLES':
+  Add an IAM policy binding to a Compute Engine backend bucket.  """
+    ),
+    'EXAMPLES': (
         """\
   To add an IAM policy binding for the role of
   'compute.loadBalancerServiceUser' for the user 'test-user@gmail.com' with
@@ -90,8 +98,11 @@ AddIamPolicyBinding.detailed_help = {
 
   See https://cloud.google.com/iam/docs/managing-policies for details of
   policy role and member types.
-  """,
-    'API REFERENCE': """\
+  """
+    ),
+    'API REFERENCE': (
+        """\
    This command uses the compute API. The full documentation for this
-    API can be found at: https://cloud.google.com/compute/""",
+    API can be found at: https://cloud.google.com/compute/"""
+    ),
 }

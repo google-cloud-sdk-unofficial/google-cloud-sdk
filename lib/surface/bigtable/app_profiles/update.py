@@ -173,6 +173,10 @@ class UpdateAppProfileBeta(UpdateAppProfile):
 
             $ {command} my-app-profile-id --instance=my-instance-id --route-any --row-affinity
 
+          To update an app profile to use the memory layer, run:
+
+            $ {command} my-app-profile-id --instance=my-instance-id --use-memory-layer
+
           """),
   }
 

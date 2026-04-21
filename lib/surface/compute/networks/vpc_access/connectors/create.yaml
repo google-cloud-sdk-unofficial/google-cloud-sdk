@@ -1,4 +1,4 @@
-- release_tracks: [GA, BETA, ALPHA]
+- release_tracks: [GA, BETA, ALPHA, PREVIEW]
   help_text:
     brief: |
       Create a VPC Access connector.
@@ -82,7 +82,7 @@
               help_text: |
                 Project ID of the provided subnet. The default is the project of the connector.
     - group:
-        release_tracks: [ALPHA, BETA, GA]
+        release_tracks: [ALPHA, BETA, GA, PREVIEW]
         mutex: true
         params:
         - group:
@@ -134,7 +134,7 @@
                 `--min-instances`.
     - arg_name: machine-type
       api_field: connector.machineType
-      release_tracks: [ALPHA, BETA, GA]
+      release_tracks: [ALPHA, BETA, GA, PREVIEW]
       required: false
       help_text: |
         Machine type of VMs underlying the VPC Access connector. Accepted values are ``e2-micro'',

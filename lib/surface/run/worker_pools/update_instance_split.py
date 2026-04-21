@@ -35,7 +35,9 @@ from googlecloudsdk.core.resource import resource_printer
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class AdjustInstanceSplit(base.Command):
   """Adjust the instance assignments for a Cloud Run worker-pool."""
 

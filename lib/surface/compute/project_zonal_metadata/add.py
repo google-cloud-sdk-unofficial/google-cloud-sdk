@@ -23,7 +23,10 @@ from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
 )
 class AddMetadata(base.UpdateCommand):
   # pylint:disable=line-too-long

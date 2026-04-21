@@ -29,7 +29,7 @@ _NETWORK_ARG = network_flags.NetworkArgumentForOtherResource("""\
   """)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class Create(base.CreateCommand):
   """Create a new Compute Engine Highly Available VPN gateway.

@@ -5630,10 +5630,11 @@ class MulticastGroupConsumerActivation(_messages.Message):
       consumer association that is in the same zone as this multicast group
       consumer activation. Use the following format:
       `projects/*/locations/*/multicastConsumerAssociations/*`.
-    multicastGroup: Required. The resource name of the multicast group created
+    multicastGroup: Optional. The resource name of the multicast group created
       by the admin in the same zone as this multicast group consumer
       activation. Use the following format: //
-      `projects/*/locations/*/multicastGroups/*`.
+      `projects/*/locations/*/multicastGroups/*`. This field is deprecated.
+      Use multicast_group_range_activation instead.
     multicastGroupRangeActivation: Required. The resource name of the
       multicast group range activation created by the admin in the same zone
       as this multicast group consumer activation. Use the following format:
@@ -5805,10 +5806,11 @@ class MulticastGroupProducerActivation(_messages.Message):
     description: Optional. An optional text description of the multicast group
       producer activation.
     labels: Optional. Labels as key-value pairs
-    multicastGroup: Required. The resource name of the multicast group created
+    multicastGroup: Optional. The resource name of the multicast group created
       by the admin in the same zone as this multicast group producer
       activation. Use the following format: //
-      `projects/*/locations/*/multicastGroups/*`.
+      `projects/*/locations/*/multicastGroups/*`. This field is deprecated.
+      Use multicast_group_range_activation instead.
     multicastGroupRangeActivation: Required. The resource name of the
       multicast group range activationcreated by the admin in the same zone as
       this multicast group producer activation. Use the following format: //

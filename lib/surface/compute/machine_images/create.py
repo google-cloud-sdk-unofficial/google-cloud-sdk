@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Create(base.CreateCommand):
   """Create a Compute Engine machine image."""
 

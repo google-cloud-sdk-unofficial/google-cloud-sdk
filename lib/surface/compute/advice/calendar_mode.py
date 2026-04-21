@@ -62,7 +62,7 @@ def detailed_help(track):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class CalendarMode(base_classes.BaseCommand):
   """Recommends the optimal time window and zone for Future Reservations."""
 

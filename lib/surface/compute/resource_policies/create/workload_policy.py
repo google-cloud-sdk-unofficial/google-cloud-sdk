@@ -47,7 +47,7 @@ def ValidateWorkloadPolicy(resource_policy, messages, args):
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class CreateWorkloadPolicyGa(base.CreateCommand):
   """Create a Compute Engine workload resource policy."""
 

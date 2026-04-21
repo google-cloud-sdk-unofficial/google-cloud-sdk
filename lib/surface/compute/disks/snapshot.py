@@ -95,7 +95,7 @@ def _CommonArgs(parser):
   base.ASYNC_FLAG.AddToParser(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class SnapshotDisks(base.SilentCommand):
   """Create snapshots of Google Compute Engine persistent disks."""
 

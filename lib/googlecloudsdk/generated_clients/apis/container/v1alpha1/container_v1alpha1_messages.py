@@ -2495,7 +2495,6 @@ class CompleteConvertToAutopilotRequest(_messages.Message):
   """
 
 
-
 class CompleteIPRotationRequest(_messages.Message):
   r"""CompleteIPRotationRequest moves the cluster master back into single-IP
   mode.
@@ -2526,7 +2525,6 @@ class CompleteNodePoolUpgradeRequest(_messages.Message):
   r"""CompleteNodePoolUpgradeRequest sets the name of target node pool to
   complete upgrade.
   """
-
 
 
 class CompliancePostureConfig(_messages.Message):
@@ -3788,6 +3786,32 @@ class DatabaseEncryption(_messages.Message):
   state = _messages.EnumField('StateValueValuesEnum', 5)
 
 
+class DataplaneV2Config(_messages.Message):
+  r"""DataplaneV2Config is the configuration for DPv2. This configuration is
+  currently only for internal use.
+
+  Enums:
+    ScalabilityModeValueValuesEnum: Scalability mode for the cluster.
+
+  Fields:
+    scalabilityMode: Scalability mode for the cluster.
+  """
+
+  class ScalabilityModeValueValuesEnum(_messages.Enum):
+    r"""Scalability mode for the cluster.
+
+    Values:
+      SCALABILITY_MODE_UNSPECIFIED: Default value.
+      DISABLED: Disable mode uses the default scaling profile.
+      SCALE_OPTIMIZED: Enable scalability mode. go/dpv2-scalability-mode
+    """
+    SCALABILITY_MODE_UNSPECIFIED = 0
+    DISABLED = 1
+    SCALE_OPTIMIZED = 2
+
+  scalabilityMode = _messages.EnumField('ScalabilityModeValueValuesEnum', 1)
+
+
 class Date(_messages.Message):
   r"""Represents a whole or partial calendar date, such as a birthday. The
   time of day and time zone are either specified elsewhere or are
@@ -3886,6 +3910,22 @@ class DesiredEnterpriseConfig(_messages.Message):
   desiredTier = _messages.EnumField('DesiredTierValueValuesEnum', 1)
 
 
+class DiskIoScheduler(_messages.Message):
+  r"""DiskIoScheduler contains the configuration for the disk IO scheduler.
+
+  Fields:
+    nodeAttachedDiskIoScheduler: Optional. Configures the IO scheduler for the
+      attached disks. Supported values are `mq-deadline`, `bfq`, `kyber`,
+      `none`.
+    nodeSystemIoScheduler: Optional. Configures the IO scheduler for the boot
+      disk or ephemeral lssd that runs node system workloads. Supported values
+      are `mq-deadline`, `bfq`, `kyber`, `none`.
+  """
+
+  nodeAttachedDiskIoScheduler = _messages.StringField(1)
+  nodeSystemIoScheduler = _messages.StringField(2)
+
+
 class DisruptionBudget(_messages.Message):
   r"""DisruptionBudget defines the upgrade disruption budget for the cluster
   control plane.
@@ -3923,7 +3963,6 @@ class Empty(_messages.Message):
   or the response type of an API method. For instance: service Foo { rpc
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
-
 
 
 class EncryptionConfig(_messages.Message):
@@ -6262,6 +6301,7 @@ class NetworkConfig(_messages.Message):
       mode on this cluster.
     datapathProvider: The desired datapath provider for this cluster. By
       default, uses the IPTables-based kube-proxy implementation.
+    dataplaneV2Config: DataplaneV2Config specifies the DPv2 configuration.
     defaultEnablePrivateNodes: Controls whether by default nodes have private
       IP addresses only. It is invalid to specify both
       PrivateClusterConfig.enablePrivateNodes and this field at the same time.
@@ -6378,27 +6418,28 @@ class NetworkConfig(_messages.Message):
 
   ambientNetworkingConfig = _messages.MessageField('AmbientNetworkingConfig', 1)
   datapathProvider = _messages.EnumField('DatapathProviderValueValuesEnum', 2)
-  defaultEnablePrivateNodes = _messages.BooleanField(3)
-  defaultSnatStatus = _messages.MessageField('DefaultSnatStatus', 4)
-  disableDefaultSnat = _messages.BooleanField(5)
-  disableL4LbFirewallReconciliation = _messages.BooleanField(6)
-  dnsConfig = _messages.MessageField('DNSConfig', 7)
-  enableCiliumClusterwideNetworkPolicy = _messages.BooleanField(8)
-  enableCloudNat = _messages.BooleanField(9)
-  enableFqdnNetworkPolicy = _messages.BooleanField(10)
-  enableIntraNodeVisibility = _messages.BooleanField(11)
-  enableL4ilbSubsetting = _messages.BooleanField(12)
-  enableMultiNetworking = _messages.BooleanField(13)
-  enablePrivateIpv6Access = _messages.BooleanField(14)
-  enableSharedNetwork = _messages.BooleanField(15)
-  gatewayApiConfig = _messages.MessageField('GatewayAPIConfig', 16)
-  inTransitEncryptionConfig = _messages.EnumField('InTransitEncryptionConfigValueValuesEnum', 17)
-  network = _messages.StringField(18)
-  networkPerformanceConfig = _messages.MessageField('ClusterNetworkPerformanceConfig', 19)
-  nodeNetworkPolicy = _messages.MessageField('NodeNetworkPolicy', 20)
-  privateIpv6GoogleAccess = _messages.EnumField('PrivateIpv6GoogleAccessValueValuesEnum', 21)
-  serviceExternalIpsConfig = _messages.MessageField('ServiceExternalIPsConfig', 22)
-  subnetwork = _messages.StringField(23)
+  dataplaneV2Config = _messages.MessageField('DataplaneV2Config', 3)
+  defaultEnablePrivateNodes = _messages.BooleanField(4)
+  defaultSnatStatus = _messages.MessageField('DefaultSnatStatus', 5)
+  disableDefaultSnat = _messages.BooleanField(6)
+  disableL4LbFirewallReconciliation = _messages.BooleanField(7)
+  dnsConfig = _messages.MessageField('DNSConfig', 8)
+  enableCiliumClusterwideNetworkPolicy = _messages.BooleanField(9)
+  enableCloudNat = _messages.BooleanField(10)
+  enableFqdnNetworkPolicy = _messages.BooleanField(11)
+  enableIntraNodeVisibility = _messages.BooleanField(12)
+  enableL4ilbSubsetting = _messages.BooleanField(13)
+  enableMultiNetworking = _messages.BooleanField(14)
+  enablePrivateIpv6Access = _messages.BooleanField(15)
+  enableSharedNetwork = _messages.BooleanField(16)
+  gatewayApiConfig = _messages.MessageField('GatewayAPIConfig', 17)
+  inTransitEncryptionConfig = _messages.EnumField('InTransitEncryptionConfigValueValuesEnum', 18)
+  network = _messages.StringField(19)
+  networkPerformanceConfig = _messages.MessageField('ClusterNetworkPerformanceConfig', 20)
+  nodeNetworkPolicy = _messages.MessageField('NodeNetworkPolicy', 21)
+  privateIpv6GoogleAccess = _messages.EnumField('PrivateIpv6GoogleAccessValueValuesEnum', 22)
+  serviceExternalIpsConfig = _messages.MessageField('ServiceExternalIPsConfig', 23)
+  subnetwork = _messages.StringField(24)
 
 
 class NetworkPerformanceConfig(_messages.Message):
@@ -6624,8 +6665,9 @@ class NodeAffinity(_messages.Message):
 
 
 class NodeConfig(_messages.Message):
-  r"""Parameters that describe the nodes in a cluster. GKE Autopilot clusters
-  do not recognize parameters in `NodeConfig`. Use
+  r"""Parameters that describe the nodes in a cluster.
+
+  GKE Autopilot clusters do not recognize parameters in `NodeConfig`. Use
   AutoprovisioningNodePoolDefaults instead.
 
   Enums:
@@ -6694,6 +6736,8 @@ class NodeConfig(_messages.Message):
       are scaled down by default behavior, i.e. according to the chosen
       autoscaling profile.
     containerdConfig: Parameters for containerd customization.
+    diskIoScheduler: Optional. Controls the configuration for the disk IO
+      scheduler.
     diskSizeGb: Size of the disk attached to each node, specified in GB. The
       smallest allowed disk size is 10GB. If unspecified, the default disk
       size is 100GB.
@@ -6980,55 +7024,70 @@ class NodeConfig(_messages.Message):
   confidentialNodes = _messages.MessageField('ConfidentialNodes', 6)
   consolidationDelay = _messages.StringField(7)
   containerdConfig = _messages.MessageField('ContainerdConfig', 8)
-  diskSizeGb = _messages.IntegerField(9, variant=_messages.Variant.INT32)
-  diskType = _messages.StringField(10)
-  effectiveCgroupMode = _messages.EnumField('EffectiveCgroupModeValueValuesEnum', 11)
-  enableConfidentialStorage = _messages.BooleanField(12)
-  ephemeralStorageConfig = _messages.MessageField('EphemeralStorageConfig', 13)
-  ephemeralStorageLocalSsdConfig = _messages.MessageField('EphemeralStorageLocalSsdConfig', 14)
-  fastSocket = _messages.MessageField('FastSocket', 15)
-  flexStart = _messages.BooleanField(16)
-  gcfsConfig = _messages.MessageField('GcfsConfig', 17)
-  gpuDirectConfig = _messages.MessageField('GPUDirectConfig', 18)
-  gvnic = _messages.MessageField('VirtualNIC', 19)
-  hostMaintenancePolicy = _messages.MessageField('HostMaintenancePolicy', 20)
-  imageType = _messages.StringField(21)
-  kubeletConfig = _messages.MessageField('NodeKubeletConfig', 22)
-  labels = _messages.MessageField('LabelsValue', 23)
-  linuxNodeConfig = _messages.MessageField('LinuxNodeConfig', 24)
-  localNvmeSsdBlockConfig = _messages.MessageField('LocalNvmeSsdBlockConfig', 25)
-  localSsdCount = _messages.IntegerField(26, variant=_messages.Variant.INT32)
-  localSsdEncryptionMode = _messages.EnumField('LocalSsdEncryptionModeValueValuesEnum', 27)
-  localSsdVolumeConfigs = _messages.MessageField('LocalSsdVolumeConfig', 28, repeated=True)
-  loggingConfig = _messages.MessageField('NodePoolLoggingConfig', 29)
-  lustreConfig = _messages.MessageField('LustreConfig', 30)
-  machineType = _messages.StringField(31)
-  maxRunDuration = _messages.StringField(32)
-  metadata = _messages.MessageField('MetadataValue', 33)
-  minCpuPlatform = _messages.StringField(34)
-  nodeGroup = _messages.StringField(35)
-  nodeImageConfig = _messages.MessageField('CustomImageConfig', 36)
-  oauthScopes = _messages.StringField(37, repeated=True)
-  preemptible = _messages.BooleanField(38)
-  reservationAffinity = _messages.MessageField('ReservationAffinity', 39)
-  resourceLabels = _messages.MessageField('ResourceLabelsValue', 40)
-  resourceManagerTags = _messages.MessageField('ResourceManagerTags', 41)
-  runnerPoolConfig = _messages.MessageField('RunnerPoolConfig', 42)
-  runnerPoolControl = _messages.MessageField('RunnerPoolControl', 43)
-  sandboxConfig = _messages.MessageField('SandboxConfig', 44)
-  secondaryBootDiskUpdateStrategy = _messages.MessageField('SecondaryBootDiskUpdateStrategy', 45)
-  secondaryBootDisks = _messages.MessageField('SecondaryBootDisk', 46, repeated=True)
-  serviceAccount = _messages.StringField(47)
-  shieldedInstanceConfig = _messages.MessageField('ShieldedInstanceConfig', 48)
-  soleTenantConfig = _messages.MessageField('SoleTenantConfig', 49)
-  spot = _messages.BooleanField(50)
-  stableFleetConfig = _messages.MessageField('StableFleetConfig', 51)
-  storagePools = _messages.StringField(52, repeated=True)
-  tags = _messages.StringField(53, repeated=True)
-  taintConfig = _messages.MessageField('TaintConfig', 54)
-  taints = _messages.MessageField('NodeTaint', 55, repeated=True)
-  windowsNodeConfig = _messages.MessageField('WindowsNodeConfig', 56)
-  workloadMetadataConfig = _messages.MessageField('WorkloadMetadataConfig', 57)
+  diskIoScheduler = _messages.MessageField('DiskIoScheduler', 9)
+  diskSizeGb = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  diskType = _messages.StringField(11)
+  effectiveCgroupMode = _messages.EnumField(
+      'EffectiveCgroupModeValueValuesEnum', 12
+  )
+  enableConfidentialStorage = _messages.BooleanField(13)
+  ephemeralStorageConfig = _messages.MessageField('EphemeralStorageConfig', 14)
+  ephemeralStorageLocalSsdConfig = _messages.MessageField(
+      'EphemeralStorageLocalSsdConfig', 15
+  )
+  fastSocket = _messages.MessageField('FastSocket', 16)
+  flexStart = _messages.BooleanField(17)
+  gcfsConfig = _messages.MessageField('GcfsConfig', 18)
+  gpuDirectConfig = _messages.MessageField('GPUDirectConfig', 19)
+  gvnic = _messages.MessageField('VirtualNIC', 20)
+  hostMaintenancePolicy = _messages.MessageField('HostMaintenancePolicy', 21)
+  imageType = _messages.StringField(22)
+  kubeletConfig = _messages.MessageField('NodeKubeletConfig', 23)
+  labels = _messages.MessageField('LabelsValue', 24)
+  linuxNodeConfig = _messages.MessageField('LinuxNodeConfig', 25)
+  localNvmeSsdBlockConfig = _messages.MessageField(
+      'LocalNvmeSsdBlockConfig', 26
+  )
+  localSsdCount = _messages.IntegerField(27, variant=_messages.Variant.INT32)
+  localSsdEncryptionMode = _messages.EnumField(
+      'LocalSsdEncryptionModeValueValuesEnum', 28
+  )
+  localSsdVolumeConfigs = _messages.MessageField(
+      'LocalSsdVolumeConfig', 29, repeated=True
+  )
+  loggingConfig = _messages.MessageField('NodePoolLoggingConfig', 30)
+  lustreConfig = _messages.MessageField('LustreConfig', 31)
+  machineType = _messages.StringField(32)
+  maxRunDuration = _messages.StringField(33)
+  metadata = _messages.MessageField('MetadataValue', 34)
+  minCpuPlatform = _messages.StringField(35)
+  nodeGroup = _messages.StringField(36)
+  nodeImageConfig = _messages.MessageField('CustomImageConfig', 37)
+  oauthScopes = _messages.StringField(38, repeated=True)
+  preemptible = _messages.BooleanField(39)
+  reservationAffinity = _messages.MessageField('ReservationAffinity', 40)
+  resourceLabels = _messages.MessageField('ResourceLabelsValue', 41)
+  resourceManagerTags = _messages.MessageField('ResourceManagerTags', 42)
+  runnerPoolConfig = _messages.MessageField('RunnerPoolConfig', 43)
+  runnerPoolControl = _messages.MessageField('RunnerPoolControl', 44)
+  sandboxConfig = _messages.MessageField('SandboxConfig', 45)
+  secondaryBootDiskUpdateStrategy = _messages.MessageField(
+      'SecondaryBootDiskUpdateStrategy', 46
+  )
+  secondaryBootDisks = _messages.MessageField(
+      'SecondaryBootDisk', 47, repeated=True
+  )
+  serviceAccount = _messages.StringField(48)
+  shieldedInstanceConfig = _messages.MessageField('ShieldedInstanceConfig', 49)
+  soleTenantConfig = _messages.MessageField('SoleTenantConfig', 50)
+  spot = _messages.BooleanField(51)
+  stableFleetConfig = _messages.MessageField('StableFleetConfig', 52)
+  storagePools = _messages.StringField(53, repeated=True)
+  tags = _messages.StringField(54, repeated=True)
+  taintConfig = _messages.MessageField('TaintConfig', 55)
+  taints = _messages.MessageField('NodeTaint', 56, repeated=True)
+  windowsNodeConfig = _messages.MessageField('WindowsNodeConfig', 57)
+  workloadMetadataConfig = _messages.MessageField('WorkloadMetadataConfig', 58)
 
 
 class NodeConfigDefaults(_messages.Message):
@@ -8023,6 +8082,8 @@ class Operation(_messages.Message):
       FLEET_FEATURE_UPGRADE: Fleet features of GKE Enterprise are being
         upgraded. The cluster should be assumed to be blocked for other
         upgrades until the operation finishes.
+      CREATE_ACCELERATOR_NETWORK_PROFILE: An accelerator network profile is
+        being created.
     """
     TYPE_UNSPECIFIED = 0
     CREATE_CLUSTER = 1
@@ -8044,6 +8105,7 @@ class Operation(_messages.Message):
     UPDATE_IP_ALLOCATION_POLICY = 17
     RESIZE_CLUSTER = 18
     FLEET_FEATURE_UPGRADE = 19
+    CREATE_ACCELERATOR_NETWORK_PROFILE = 20
 
   class StatusValueValuesEnum(_messages.Enum):
     r"""Output only. The current status of the operation.
@@ -9229,7 +9291,6 @@ class SecondaryBootDiskUpdateStrategy(_messages.Message):
   r"""SecondaryBootDiskUpdateStrategy is a placeholder which will be extended
   in the future to define different options for updating secondary boot disks.
   """
-
 
 
 class SecretManagerConfig(_messages.Message):
@@ -10471,6 +10532,8 @@ class UpdateNodePoolRequest(_messages.Message):
     containerdConfig: The desired containerd config for nodes in the node
       pool. Initiates an upgrade operation that recreates the nodes with the
       new config.
+    diskIoScheduler: Configures the disk IO scheduler for nodes in the node
+      pool.
     diskSizeGb: Optional. The desired disk size for nodes in the node pool.
       Initiates an upgrade operation that migrates the nodes in the node pool
       to the specified disk size.
@@ -10578,44 +10641,45 @@ class UpdateNodePoolRequest(_messages.Message):
   confidentialNodes = _messages.MessageField('ConfidentialNodes', 4)
   consolidationDelay = _messages.StringField(5)
   containerdConfig = _messages.MessageField('ContainerdConfig', 6)
-  diskSizeGb = _messages.IntegerField(7)
-  diskType = _messages.StringField(8)
-  etag = _messages.StringField(9)
-  fastSocket = _messages.MessageField('FastSocket', 10)
-  flexStart = _messages.BooleanField(11)
-  gcfsConfig = _messages.MessageField('GcfsConfig', 12)
-  gvnic = _messages.MessageField('VirtualNIC', 13)
-  image = _messages.StringField(14)
-  imageProject = _messages.StringField(15)
-  imageType = _messages.StringField(16)
-  kubeletConfig = _messages.MessageField('NodeKubeletConfig', 17)
-  labels = _messages.MessageField('NodeLabels', 18)
-  linuxNodeConfig = _messages.MessageField('LinuxNodeConfig', 19)
-  locations = _messages.StringField(20, repeated=True)
-  loggingConfig = _messages.MessageField('NodePoolLoggingConfig', 21)
-  lustreConfig = _messages.MessageField('LustreConfig', 22)
-  machineType = _messages.StringField(23)
-  maintenancePolicy = _messages.MessageField('NodePoolMaintenancePolicy', 24)
-  maxRunDuration = _messages.StringField(25)
-  name = _messages.StringField(26)
-  nodeDrainConfig = _messages.MessageField('NodeDrainConfig', 27)
-  nodeNetworkConfig = _messages.MessageField('NodeNetworkConfig', 28)
-  nodePoolId = _messages.StringField(29)
-  nodeVersion = _messages.StringField(30)
-  projectId = _messages.StringField(31)
-  queuedProvisioning = _messages.MessageField('QueuedProvisioning', 32)
-  resourceLabels = _messages.MessageField('ResourceLabels', 33)
-  resourceManagerTags = _messages.MessageField('ResourceManagerTags', 34)
-  runnerPoolConfig = _messages.MessageField('RunnerPoolConfig', 35)
-  storagePools = _messages.StringField(36, repeated=True)
-  tags = _messages.MessageField('NetworkTags', 37)
-  taintConfig = _messages.MessageField('TaintConfig', 38)
-  taints = _messages.MessageField('NodeTaints', 39)
-  updatedNodePool = _messages.MessageField('NodePool', 40)
-  upgradeSettings = _messages.MessageField('UpgradeSettings', 41)
-  windowsNodeConfig = _messages.MessageField('WindowsNodeConfig', 42)
-  workloadMetadataConfig = _messages.MessageField('WorkloadMetadataConfig', 43)
-  zone = _messages.StringField(44)
+  diskIoScheduler = _messages.MessageField('DiskIoScheduler', 7)
+  diskSizeGb = _messages.IntegerField(8)
+  diskType = _messages.StringField(9)
+  etag = _messages.StringField(10)
+  fastSocket = _messages.MessageField('FastSocket', 11)
+  flexStart = _messages.BooleanField(12)
+  gcfsConfig = _messages.MessageField('GcfsConfig', 13)
+  gvnic = _messages.MessageField('VirtualNIC', 14)
+  image = _messages.StringField(15)
+  imageProject = _messages.StringField(16)
+  imageType = _messages.StringField(17)
+  kubeletConfig = _messages.MessageField('NodeKubeletConfig', 18)
+  labels = _messages.MessageField('NodeLabels', 19)
+  linuxNodeConfig = _messages.MessageField('LinuxNodeConfig', 20)
+  locations = _messages.StringField(21, repeated=True)
+  loggingConfig = _messages.MessageField('NodePoolLoggingConfig', 22)
+  lustreConfig = _messages.MessageField('LustreConfig', 23)
+  machineType = _messages.StringField(24)
+  maintenancePolicy = _messages.MessageField('NodePoolMaintenancePolicy', 25)
+  maxRunDuration = _messages.StringField(26)
+  name = _messages.StringField(27)
+  nodeDrainConfig = _messages.MessageField('NodeDrainConfig', 28)
+  nodeNetworkConfig = _messages.MessageField('NodeNetworkConfig', 29)
+  nodePoolId = _messages.StringField(30)
+  nodeVersion = _messages.StringField(31)
+  projectId = _messages.StringField(32)
+  queuedProvisioning = _messages.MessageField('QueuedProvisioning', 33)
+  resourceLabels = _messages.MessageField('ResourceLabels', 34)
+  resourceManagerTags = _messages.MessageField('ResourceManagerTags', 35)
+  runnerPoolConfig = _messages.MessageField('RunnerPoolConfig', 36)
+  storagePools = _messages.StringField(37, repeated=True)
+  tags = _messages.MessageField('NetworkTags', 38)
+  taintConfig = _messages.MessageField('TaintConfig', 39)
+  taints = _messages.MessageField('NodeTaints', 40)
+  updatedNodePool = _messages.MessageField('NodePool', 41)
+  upgradeSettings = _messages.MessageField('UpgradeSettings', 42)
+  windowsNodeConfig = _messages.MessageField('WindowsNodeConfig', 43)
+  workloadMetadataConfig = _messages.MessageField('WorkloadMetadataConfig', 44)
+  zone = _messages.StringField(45)
 
 
 class UpgradeDetails(_messages.Message):

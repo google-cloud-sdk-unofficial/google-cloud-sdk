@@ -14,7 +14,6 @@
 # limitations under the License.
 """Commands for updating backend buckets."""
 
-
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
@@ -26,11 +25,12 @@ from googlecloudsdk.command_lib.compute import signed_url_flags
 from googlecloudsdk.command_lib.compute.backend_buckets import backend_buckets_utils
 from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_buckets_flags
 from googlecloudsdk.command_lib.compute.security_policies import (
-    flags as security_policy_flags)
+    flags as security_policy_flags,
+)
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class Update(base.UpdateCommand):
   """Update a backend bucket.
@@ -41,23 +41,22 @@ class Update(base.UpdateCommand):
   BACKEND_BUCKET_ARG = None
   EDGE_SECURITY_POLICY_ARG = None
 
-  support_regional_global_flags = False
-
   @classmethod
   def Args(cls, parser):
     """Set up arguments for this command."""
-    backend_buckets_flags.AddUpdatableArgs(
-        cls, parser, 'update', cls.support_regional_global_flags
-    )
+    backend_buckets_flags.AddUpdatableArgs(cls, parser, 'update')
     backend_buckets_flags.GCS_BUCKET_ARG.AddArgument(parser)
     signed_url_flags.AddSignedUrlCacheMaxAge(
-        parser, required=False, unspecified_help='')
+        parser, required=False, unspecified_help=''
+    )
 
     cdn_flags.AddCdnPolicyArgs(parser, 'backend bucket', update_command=True)
 
     cls.EDGE_SECURITY_POLICY_ARG = (
         security_policy_flags.EdgeSecurityPolicyArgumentForTargetResource(
-            resource='backend bucket'))
+            resource='backend bucket'
+        )
+    )
     cls.EDGE_SECURITY_POLICY_ARG.AddArgument(parser)
 
     backend_buckets_flags.AddCacheKeyExtendedCachingArgs(parser)
@@ -66,30 +65,36 @@ class Update(base.UpdateCommand):
 
   def AnyArgsSpecified(self, args):
     """Returns true if any args for updating backend bucket were specified."""
-    return (args.IsSpecified('description') or
-            args.IsSpecified('gcs_bucket_name') or
-            args.IsSpecified('enable_cdn') or
-            args.IsSpecified('edge_security_policy') or
-            args.IsSpecified('cache_key_include_http_header') or
-            args.IsSpecified('cache_key_query_string_whitelist') or
-            args.IsSpecified('compression_mode'))
+    return (
+        args.IsSpecified('description')
+        or args.IsSpecified('gcs_bucket_name')
+        or args.IsSpecified('enable_cdn')
+        or args.IsSpecified('edge_security_policy')
+        or args.IsSpecified('cache_key_include_http_header')
+        or args.IsSpecified('cache_key_query_string_whitelist')
+        or args.IsSpecified('compression_mode')
+    )
 
   def AnyFlexibleCacheArgsSpecified(self, args):
     """Returns true if any Flexible Cache args for updating backend bucket were specified."""
-    return any(
-        (args.IsSpecified('cache_mode'), args.IsSpecified('client_ttl'),
-         args.IsSpecified('no_client_ttl'), args.IsSpecified('default_ttl'),
-         args.IsSpecified('no_default_ttl'), args.IsSpecified('max_ttl'),
-         args.IsSpecified('no_max_ttl'),
-         args.IsSpecified('custom_response_header'),
-         args.IsSpecified('no_custom_response_headers'),
-         args.IsSpecified('negative_caching'),
-         args.IsSpecified('negative_caching_policy'),
-         args.IsSpecified('no_negative_caching_policies'),
-         args.IsSpecified('serve_while_stale'),
-         args.IsSpecified('no_serve_while_stale'),
-         args.IsSpecified('bypass_cache_on_request_headers'),
-         args.IsSpecified('no_bypass_cache_on_request_headers')))
+    return any((
+        args.IsSpecified('cache_mode'),
+        args.IsSpecified('client_ttl'),
+        args.IsSpecified('no_client_ttl'),
+        args.IsSpecified('default_ttl'),
+        args.IsSpecified('no_default_ttl'),
+        args.IsSpecified('max_ttl'),
+        args.IsSpecified('no_max_ttl'),
+        args.IsSpecified('custom_response_header'),
+        args.IsSpecified('no_custom_response_headers'),
+        args.IsSpecified('negative_caching'),
+        args.IsSpecified('negative_caching_policy'),
+        args.IsSpecified('no_negative_caching_policies'),
+        args.IsSpecified('serve_while_stale'),
+        args.IsSpecified('no_serve_while_stale'),
+        args.IsSpecified('bypass_cache_on_request_headers'),
+        args.IsSpecified('no_bypass_cache_on_request_headers'),
+    ))
 
   def GetGetRequest(self, client, backend_bucket_ref):
     """Returns a request to retrieve the backend bucket."""
@@ -103,10 +108,14 @@ class Update(base.UpdateCommand):
               backendBucket=backend_bucket_ref.Name(),
           ),
       )
-    return (client.apitools_client.backendBuckets, 'Get',
-            client.messages.ComputeBackendBucketsGetRequest(
-                project=backend_bucket_ref.project,
-                backendBucket=backend_bucket_ref.Name()))
+    return (
+        client.apitools_client.backendBuckets,
+        'Get',
+        client.messages.ComputeBackendBucketsGetRequest(
+            project=backend_bucket_ref.project,
+            backendBucket=backend_bucket_ref.Name(),
+        ),
+    )
 
   def GetSetRequest(self, client, backend_bucket_ref, replacement):
     """Returns a request to update the backend bucket."""
@@ -121,24 +130,35 @@ class Update(base.UpdateCommand):
               backendBucketResource=replacement,
           ),
       )
-    return (client.apitools_client.backendBuckets, 'Patch',
-            client.messages.ComputeBackendBucketsPatchRequest(
-                project=backend_bucket_ref.project,
-                backendBucket=backend_bucket_ref.Name(),
-                backendBucketResource=replacement))
+    return (
+        client.apitools_client.backendBuckets,
+        'Patch',
+        client.messages.ComputeBackendBucketsPatchRequest(
+            project=backend_bucket_ref.project,
+            backendBucket=backend_bucket_ref.Name(),
+            backendBucketResource=replacement,
+        ),
+    )
 
-  def GetSetEdgeSecurityPolicyRequest(self, client, backend_bucket_ref,
-                                      security_policy_ref):
+  def GetSetEdgeSecurityPolicyRequest(
+      self, client, backend_bucket_ref, security_policy_ref
+  ):
     """Returns a request to set the edge policy for the backend bucket."""
     if backend_bucket_ref.Collection() == 'compute.regionBackendBuckets':
       raise exceptions.ArgumentError(
-          'Regional backend buckets do not support edge security policies.')
-    return (client.apitools_client.backendBuckets, 'SetEdgeSecurityPolicy',
-            client.messages.ComputeBackendBucketsSetEdgeSecurityPolicyRequest(
-                project=backend_bucket_ref.project,
-                backendBucket=backend_bucket_ref.Name(),
-                securityPolicyReference=client.messages.SecurityPolicyReference(
-                    securityPolicy=security_policy_ref)))
+          'Regional backend buckets do not support edge security policies.'
+      )
+    return (
+        client.apitools_client.backendBuckets,
+        'SetEdgeSecurityPolicy',
+        client.messages.ComputeBackendBucketsSetEdgeSecurityPolicyRequest(
+            project=backend_bucket_ref.project,
+            backendBucket=backend_bucket_ref.Name(),
+            securityPolicyReference=client.messages.SecurityPolicyReference(
+                securityPolicy=security_policy_ref
+            ),
+        ),
+    )
 
   def Modify(self, args, existing):
     """Modifies and returns the updated backend bucket."""
@@ -157,11 +177,8 @@ class Update(base.UpdateCommand):
       replacement.enableCdn = args.enable_cdn
 
     backend_buckets_utils.ApplyCdnPolicyArgs(
-        client,
-        args,
-        replacement,
-        is_update=True,
-        cleared_fields=cleared_fields)
+        client, args, replacement, is_update=True, cleared_fields=cleared_fields
+    )
 
     if args.custom_response_header is not None:
       replacement.customResponseHeaders = args.custom_response_header
@@ -169,14 +186,19 @@ class Update(base.UpdateCommand):
       replacement.customResponseHeaders = []
     if not replacement.customResponseHeaders:
       cleared_fields.append('customResponseHeaders')
-    if (replacement.cdnPolicy is not None and
-        replacement.cdnPolicy.cacheMode and args.enable_cdn is not False):  # pylint: disable=g-bool-id-comparison
+    if (
+        replacement.cdnPolicy is not None
+        and replacement.cdnPolicy.cacheMode
+        and args.enable_cdn is not False  # pylint: disable=g-bool-id-comparison
+    ):
       replacement.enableCdn = True
 
     if args.compression_mode is not None:
       replacement.compressionMode = (
           client.messages.BackendBucket.CompressionModeValueValuesEnum(
-              args.compression_mode))
+              args.compression_mode
+          )
+      )
 
     if not replacement.description:
       cleared_fields.append('description')
@@ -187,17 +209,12 @@ class Update(base.UpdateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    if self.support_regional_global_flags:
-      backend_bucket_ref = backend_buckets_flags.GLOBAL_REGIONAL_BACKEND_BUCKET_ARG.ResolveAsResource(
-          args,
-          holder.resources,
-          scope_lister=compute_flags.GetDefaultScopeLister(client),
-          default_scope=compute_scope.ScopeEnum.GLOBAL,
-      )
-    else:
-      backend_bucket_ref = self.BACKEND_BUCKET_ARG.ResolveAsResource(
-          args, holder.resources
-      )
+    backend_bucket_ref = backend_buckets_flags.GLOBAL_REGIONAL_BACKEND_BUCKET_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client),
+        default_scope=compute_scope.ScopeEnum.GLOBAL,
+    )
     get_request = self.GetGetRequest(client, backend_bucket_ref)
 
     objects = client.MakeRequests([get_request])
@@ -212,13 +229,16 @@ class Update(base.UpdateCommand):
       if getattr(args, 'edge_security_policy', None) is None:
         log.status.Print(
             'No change requested; skipping update for [{0}].'.format(
-                objects[0].name))
+                objects[0].name
+            )
+        )
         return objects
       backend_bucket_result = []
     else:
       with client.apitools_client.IncludeFields(cleared_fields):
         backend_bucket_result = client.MakeRequests(
-            [self.GetSetRequest(client, backend_bucket_ref, new_object)])
+            [self.GetSetRequest(client, backend_bucket_ref, new_object)]
+        )
 
     # Empty string is a valid value.
     if getattr(args, 'edge_security_policy', None) is not None:
@@ -229,14 +249,17 @@ class Update(base.UpdateCommand):
         )
       if getattr(args, 'edge_security_policy', None):
         security_policy_ref = self.EDGE_SECURITY_POLICY_ARG.ResolveAsResource(
-            args, holder.resources).SelfLink()
+            args, holder.resources
+        ).SelfLink()
       # If security policy is an empty string we should clear the current policy
       else:
         security_policy_ref = None
       edge_security_policy_request = self.GetSetEdgeSecurityPolicyRequest(
-          client, backend_bucket_ref, security_policy_ref)
+          client, backend_bucket_ref, security_policy_ref
+      )
       edge_security_policy_result = client.MakeRequests(
-          [edge_security_policy_request])
+          [edge_security_policy_request]
+      )
     else:
       edge_security_policy_result = []
 
@@ -244,12 +267,15 @@ class Update(base.UpdateCommand):
 
   def Run(self, args):
     """Issues the request necessary for updating a backend bucket."""
-    if (not self.AnyArgsSpecified(args) and
-        not args.IsSpecified('signed_url_cache_max_age') and
-        not args.IsSpecified('request_coalescing') and
-        not self.AnyFlexibleCacheArgsSpecified(args)):
+    if (
+        not self.AnyArgsSpecified(args)
+        and not args.IsSpecified('signed_url_cache_max_age')
+        and not args.IsSpecified('request_coalescing')
+        and not self.AnyFlexibleCacheArgsSpecified(args)
+    ):
       raise exceptions.UpdatePropertyError(
-          'At least one property must be modified.')
+          'At least one property must be modified.'
+      )
     return self.MakeRequests(args)
 
 
@@ -275,7 +301,7 @@ class UpdateBeta(Update):
         --no-enable-cdn
   """
 
-  support_regional_global_flags = True
+  pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -300,4 +326,4 @@ class UpdateAlpha(UpdateBeta):
         --no-enable-cdn
   """
 
-  support_regional_global_flags = True
+  pass

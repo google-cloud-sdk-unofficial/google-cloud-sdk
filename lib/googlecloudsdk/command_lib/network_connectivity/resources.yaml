@@ -238,3 +238,27 @@ gatewayAdvertisedRoute:
     parameter_name: gatewayAdvertisedRoutesId
     attribute_name: gateway_advertised_route
     help: Id of the gateway advertised route.
+
+transport:
+  name: transport
+  collection: networkconnectivity.projects.locations.transports
+  request_id_field: transportId
+  attributes:
+  - *project
+  - *region
+  - &transport
+    parameter_name: transportsId
+    attribute_name: transport
+    help: Id of the transport.
+
+remote_transport_profile:
+  name: remoteTransportProfile
+  collection: networkconnectivity.projects.locations.remoteTransportProfiles
+  request_id_field: remoteTransportProfileId
+  attributes:
+  - *project
+  - *region
+  - &remoteTransportProfile
+    parameter_name: remoteTransportProfilesId
+    attribute_name: remote_transport_profile
+    help: Id of the remoteTransportProfile.

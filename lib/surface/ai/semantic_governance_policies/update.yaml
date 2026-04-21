@@ -1,0 +1,64 @@
+release_tracks: [BETA]
+help_text:
+  brief: Update a semantic governance policy.
+  description: Update a semantic governance policy.
+  examples: |-
+    To update the display name of a semantic governance policy `my-policy` in location `us-central1`, run:
+
+      $ {command} my-policy --location=us-central1 --display-name="New display name"
+arguments:
+  resource:
+    help_text: The semantic governance policy to update.
+    spec:
+      name: policy
+      collection: aiplatform.projects.locations.semanticGovernancePolicies
+      attributes:
+      - parameter_name: projectsId
+        attribute_name: project
+        help: The project containing the location.
+      - parameter_name: locationsId
+        attribute_name: location
+        help: The location to update the policy in.
+      - parameter_name: semanticGovernancePoliciesId
+        attribute_name: policy
+        help: Name of the semantic governance policy to update.
+
+  params:
+  - arg_name: display-name
+    help_text: The user-defined name of the semantic governance policy.
+    api_field: googleCloudAiplatformV1beta1SemanticGovernancePolicy.displayName
+  - arg_name: description
+    help_text: The description of the semantic governance policy.
+    api_field: googleCloudAiplatformV1beta1SemanticGovernancePolicy.description
+  - arg_name: natural-language-constraint
+    help_text: The natural language constraint of the semantic governance policy.
+    api_field: googleCloudAiplatformV1beta1SemanticGovernancePolicy.naturalLanguageConstraint
+  - arg_name: agent
+    help_text: The name of the agent in Agent Registry that is affected by this policy.
+    api_field: googleCloudAiplatformV1beta1SemanticGovernancePolicy.agent
+  - arg_name: mcp-tools
+    api_field: googleCloudAiplatformV1beta1SemanticGovernancePolicy.mcpTools
+    repeated: true
+    action: append
+    type: googlecloudsdk.command_lib.ai.semantic_governance_policies.util:mcp_tools_parser
+    help_text: |
+      The MCP tools that are affected by this policy.
+      Syntax: --mcp-tools=mcp-server=S1,tools=T1;T2
+  - arg_name: etag
+    help_text: |
+      The etag of the semantic governance policy.
+      If an etag is provided and does not match the current etag of the
+      SemanticGovernancePolicy, update will be blocked and an ABORTED error
+      will be returned.
+    api_field: googleCloudAiplatformV1beta1SemanticGovernancePolicy.etag
+request:
+  api_version: v1beta1
+  collection: aiplatform.projects.locations.semanticGovernancePolicies
+  method: patch
+  resource_method_params:
+    name: projects/{projectsId}/locations/{locationsId}/semanticGovernancePolicies/{semanticGovernancePoliciesId}
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.ai.semantic_governance_policies.util:set_semantic_governance_policy
+
+async:
+  collection: aiplatform.projects.locations.semanticGovernancePolicies.operations

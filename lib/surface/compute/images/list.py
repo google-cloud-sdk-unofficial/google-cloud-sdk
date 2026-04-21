@@ -103,7 +103,7 @@ def _Args(parser, support_image_zone_flag=False):
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class List(base.ListCommand):
   """List Compute Engine images."""
 

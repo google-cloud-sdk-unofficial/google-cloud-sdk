@@ -1528,6 +1528,12 @@ class FleetClient(object):
     """Delete a fleet rollout."""
     return self.client.projects_locations_rollouts.Delete(req)
 
+  def CancelRollout(
+      self, req: types.GkehubProjectsLocationsRolloutsCancelRequest
+  ):
+    """Cancel a fleet rollout."""
+    return self.client.projects_locations_rollouts.Cancel(req)
+
   def ForceCompleteRolloutStage(
       self, req: types.GkehubProjectsLocationsRolloutsForceCompleteStageRequest
   ) -> types.Operation:

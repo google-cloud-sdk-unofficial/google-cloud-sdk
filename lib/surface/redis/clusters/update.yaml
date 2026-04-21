@@ -31,15 +31,12 @@
         arg_value: redis-highmem-xlarge
       - enum_value: REDIS_HIGHMEM_2XLARGE
         arg_value: redis-highmem-2xlarge
-        hidden: true
       - enum_value: REDIS_HIGHCPU_MEDIUM
         arg_value: redis-highcpu-medium
-        hidden: true
       - enum_value: REDIS_STANDARD_SMALL
         arg_value: redis-standard-small
       - enum_value: REDIS_STANDARD_LARGE
         arg_value: redis-standard-large
-        hidden: true
       - enum_value: REDIS_SHARED_CORE_NANO
         arg_value: redis-shared-core-nano
     - arg_name: auth-mode

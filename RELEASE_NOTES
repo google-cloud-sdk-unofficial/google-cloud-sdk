@@ -5,6 +5,102 @@ Copyright 2014-2026 Google Inc. All rights reserved.
 Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
 
 
+## 565.0.0 (2026-04-14)
+
+### AI Platform
+
+*   Added `gcloud beta ai semantic-governance-policies` command group.
+    Commands in this group allow users to manage natural-language governance
+    policies for their agents and tools in Agent Registry. For more information,
+    see [Configure semantic governance policies](https://docs.cloud.google.com/gemini-enterprise-agent-platform/govern/policies/configure-semantic-governance).
+
+### Beyondcorp
+
+* Added `add-iam-policy-binding` and `remove-iam-policy-binding` commands to `gcloud beyondcorp security-gateways` and `gcloud beyondcorp security-gateways applications`.
+
+### BigLake
+
+*   Promoted `gcloud biglake iceberg tables` to GA.
+
+### Cloud Bigtable
+
+*   Added `--edition` flag to `gcloud bigtable instances create` and `gcloud
+    bigtable instances update` to support Bigtable Editions.
+*   Added `gcloud beta bigtable memory-layers describe` and `gcloud beta
+    bigtable memory-layers update` commands to read, enable, or disable Cloud
+    Bigtable memory layers.
+*   Added `--use-memory-layer` and `--no-use-memory-layer` flags to `gcloud beta
+    bigtable app-profiles create` and `gcloud beta bigtable app-profiles update`
+    to support enabling and disabling memory layer usage for app profiles.
+
+### Cloud Dataproc
+
+*   Added `--master-attached-disks`, `--worker-attached-disks`, and
+    `secondary-worker-attached-disks` flags to `gcloud dataproc
+    clusters create` to allow attaching non-boot disks to group of instances.
+*   Added `--engine` flag to `gcloud dataproc clusters create` to allow creating
+    clusters with Lightning Engine or the default engine.
+
+### Cloud Interconnect
+
+* Add a new section "DEFAULTABLE PER-INTERCONNECT FLAGS" for `gcloud compute interconnects groups create-members`.
+
+### Cloud Memorystore
+
+* Added new node types (`redis-highcpu-medium`, `redis-standard-large`, `redis-highmem-2xlarge`) for Memorystore for Redis Cluster.
+* Added new node types (`custom-pico`, `custom-micro`, `custom-mini`, `highcpu-medium`, `standard-large`, `highmem-2xlarge`) for Memorystore for Valkey.
+
+### Cloud NetApp
+
+*   Added `--scale-type` flag to `gcloud netapp storage-pools create` to specify the storage pool scale-type (e.g., `SCALEOUT`) upon creation.
+*   Added `--large-capacity-config` flag to `gcloud netapp volumes create` to specify the large-capacity-config upon creation.
+*   Added `--mode` flag to GA track for `gcloud netapp storage-pools create`.
+*   Added `gcloud netapp storage-pool execute` command to GA track of the `storage-pool` group.
+
+### Cloud Run
+
+* Promoted volumes shortcut (allowing optional `name` parameter in `--add-volume` flag when `mount-path` is provided) to `gcloud run` command groups.
+* Promoted `gcloud run` flags `--scaling-cpu-target` and `--scaling-concurrency-target` to beta.
+* Promoted `gcloud run worker-pools`, `gcloud run worker-pools revisions` and
+  `gcloud run worker-pools logs` to GA.
+
+### Cloud Storage
+
+* Updated `gcloud-crc32c` to support computing CRC32C checksums for data chunks.
+
+### Compute Engine
+
+* Promoted `gcloud compute addresses update` to GA.
+* Promoted regional backend buckets and aggregated list support in `gcloud compute backend-buckets` to GA.
+* Promoted regional backend bucket support in `gcloud compute url-maps` to GA.
+* Promoted `gcloud compute zone-vm-extension-policies` to GA.
+
+### Database Migration
+
+* Added `--use-postgres-native` flag to `gcloud database-migration migration-jobs create` command to allow users to create native postgres migrations.
+
+### Network Connectivity
+
+* promoting `gcloud networkconnectivity transports` from beta.
+* added `transports create` flag group in beta for NCC Hub fields.
+* set `transports create --stack_type` default value to `ipv4-only` because API requires it is set.
+
+### Network Security
+
+*   Added `describe` command to `gcloud network-security security-profiles threat-prevention`.
+
+### Service Health
+
+* Added `gcloud service-health` command group to beta.
+
+### Vector Search
+
+* Added `--encryption-spec-crypto-key-name` flag to `gcloud vector-search collections create` to allow creating collections with CMEK encryption.
+
+
+Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
+
+
 ## 564.0.0 (2026-04-07)
 
 ### Breaking Changes

@@ -24,8 +24,12 @@ from googlecloudsdk.command_lib.compute.reservations.sub_blocks import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
+)
 class PerformMaintenance(base.UpdateCommand):
   """Perform maintenance on a reservation sub-block."""
 

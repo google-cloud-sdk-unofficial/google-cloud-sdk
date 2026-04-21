@@ -80,7 +80,7 @@ specify the `--region` and `--network` flags:
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class StartIapTunnel(base.Command):
   """Starts an IAP TCP forwarding tunnel."""
 

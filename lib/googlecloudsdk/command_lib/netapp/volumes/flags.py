@@ -816,12 +816,8 @@ def AddVolumeCreateArgs(parser, release_track):
   AddVolumeCacheParametersArg(parser)
   AddVolumeCachePrePopulateArg(parser)
   AddVolumeBlockDevicesArg(parser, messages)
+  AddVolumeLargeCapacityConfigArg(parser)
   labels_util.AddCreateLabelsFlags(parser)
-  if release_track in [
-      calliope_base.ReleaseTrack.ALPHA,
-      calliope_base.ReleaseTrack.BETA,
-  ]:
-    AddVolumeLargeCapacityConfigArg(parser)
 
 
 def AddVolumeDeleteArgs(parser):

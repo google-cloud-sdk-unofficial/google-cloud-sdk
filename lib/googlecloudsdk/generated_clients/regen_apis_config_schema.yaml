@@ -1,0 +1,88 @@
+# Copyright 2026 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+$schema: "http://json-schema.org/draft-06/schema#"
+
+type: object
+additionalProperties: false
+required: [root_dir, apis]
+
+properties:
+  root_dir:
+    type: string
+
+  canonical_surfaces:
+    type: object
+    patternProperties:
+      "^[a-z0-9_]+$":
+        type: object
+        additionalProperties: false
+        required: [name]
+        properties:
+          name:
+            type: string
+          command:
+            type: string
+          hidden:
+            type: boolean
+          help_text:
+            type: string
+
+  apis:
+    type: object
+    patternProperties:
+      "^[a-z0-9_]+$":
+        type: object
+        additionalProperties: false
+        patternProperties:
+          "^[a-z0-9_]+$":
+            type: object
+            additionalProperties: false
+            properties:
+              discovery_doc:
+                type: string
+              default:
+                type: boolean
+              enable_mtls:
+                type: boolean
+              mtls_endpoint_override:
+                type: string
+              gcloud_gapic_library:
+                type: string
+              unelidable_request_methods:
+                type: array
+                items:
+                  type: string
+              skip:
+                type: object
+                additionalProperties: false
+                required: [bug]
+                properties:
+                  bug:
+                    type: string
+              resources:
+                type: object
+                patternProperties:
+                  ".*":
+                    type: object
+                    additionalProperties: false
+                    required: [path]
+                    properties:
+                      path:
+                        type: string
+                      gapic_compatible:
+                        type: boolean
+                      apitools_compatible:
+                        type: boolean
+                      enable_uri_parsing:
+                        type: boolean

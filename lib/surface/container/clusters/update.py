@@ -365,6 +365,7 @@ class Update(base.UpdateCommand):
     flags.AddUpdateLabelsFlag(group)
     flags.AddRemoveLabelsFlag(group)
     flags.AddAutoprovisioningNetworkTagsUpdate(group)
+    flags.AddPodSnapshotConfigFlags(group, hidden=True)
     flags.AddNetworkPolicyFlags(group)
     flags.AddEnableIntraNodeVisibilityFlag(group)
     group_logging_monitoring = group.add_group()

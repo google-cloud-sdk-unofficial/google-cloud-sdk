@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute.target_vpn_gateways import flags
 import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class Create(base.CreateCommand):
   """Create a Cloud VPN Classic Target VPN Gateway.

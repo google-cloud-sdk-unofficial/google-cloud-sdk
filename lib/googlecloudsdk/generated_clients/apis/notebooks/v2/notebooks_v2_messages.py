@@ -217,6 +217,15 @@ class BootDisk(_messages.Message):
       PD_EXTREME: Extreme persistent disk type.
       HYPERDISK_BALANCED: Represents the Hyperdisk Balanced persistent disk
         type. Can be used as a boot disk or data disk.
+      HYPERDISK_EXTREME: Represents the Hyperdisk Extreme persistent disk
+        type. Can only be used as a data disk.
+      HYPERDISK_THROUGHPUT: Represents the Hyperdisk Throughput persistent
+        disk type. Can only be used as a data disk.
+      HYPERDISK_BALANCED_HIGH_AVAILABILITY: Represents the Hyperdisk Balanced
+        High Availability persistent disk type. Can be used as a boot disk or
+        data disk.
+      HYPERDISK_ML: Represents the Hyperdisk ML persistent disk type. Can be
+        used as a boot disk or data disk.
     """
     DISK_TYPE_UNSPECIFIED = 0
     PD_STANDARD = 1
@@ -224,6 +233,10 @@ class BootDisk(_messages.Message):
     PD_BALANCED = 3
     PD_EXTREME = 4
     HYPERDISK_BALANCED = 5
+    HYPERDISK_EXTREME = 6
+    HYPERDISK_THROUGHPUT = 7
+    HYPERDISK_BALANCED_HIGH_AVAILABILITY = 8
+    HYPERDISK_ML = 9
 
   diskEncryption = _messages.EnumField('DiskEncryptionValueValuesEnum', 1)
   diskSizeGb = _messages.IntegerField(2)
@@ -426,6 +439,15 @@ class DataDisk(_messages.Message):
       PD_EXTREME: Extreme persistent disk type.
       HYPERDISK_BALANCED: Represents the Hyperdisk Balanced persistent disk
         type. Can be used as a boot disk or data disk.
+      HYPERDISK_EXTREME: Represents the Hyperdisk Extreme persistent disk
+        type. Can only be used as a data disk.
+      HYPERDISK_THROUGHPUT: Represents the Hyperdisk Throughput persistent
+        disk type. Can only be used as a data disk.
+      HYPERDISK_BALANCED_HIGH_AVAILABILITY: Represents the Hyperdisk Balanced
+        High Availability persistent disk type. Can be used as a boot disk or
+        data disk.
+      HYPERDISK_ML: Represents the Hyperdisk ML persistent disk type. Can be
+        used as a boot disk or data disk.
     """
     DISK_TYPE_UNSPECIFIED = 0
     PD_STANDARD = 1
@@ -433,6 +455,10 @@ class DataDisk(_messages.Message):
     PD_BALANCED = 3
     PD_EXTREME = 4
     HYPERDISK_BALANCED = 5
+    HYPERDISK_EXTREME = 6
+    HYPERDISK_THROUGHPUT = 7
+    HYPERDISK_BALANCED_HIGH_AVAILABILITY = 8
+    HYPERDISK_ML = 9
 
   diskEncryption = _messages.EnumField('DiskEncryptionValueValuesEnum', 1)
   diskSizeGb = _messages.IntegerField(2)

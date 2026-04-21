@@ -133,6 +133,8 @@ class ComputeV1(base_api.BaseApiClient):
     self.reservationSubBlocks = self.ReservationSubBlocksService(self)
     self.reservations = self.ReservationsService(self)
     self.resourcePolicies = self.ResourcePoliciesService(self)
+    self.rolloutPlans = self.RolloutPlansService(self)
+    self.rollouts = self.RolloutsService(self)
     self.routers = self.RoutersService(self)
     self.routes = self.RoutesService(self)
     self.securityPolicies = self.SecurityPoliciesService(self)
@@ -7078,7 +7080,7 @@ that are already in use by a managed instance group.
         method_id='compute.instanceTemplates.get',
         ordered_params=['project', 'instanceTemplate'],
         path_params=['instanceTemplate', 'project'],
-        query_params=['view'],
+        query_params=[],
         relative_path='projects/{project}/global/instanceTemplates/{instanceTemplate}',
         request_field='',
         request_type_name='ComputeInstanceTemplatesGetRequest',
@@ -7162,7 +7164,7 @@ the specified project.
         method_id='compute.instanceTemplates.list',
         ordered_params=['project'],
         path_params=['project'],
-        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess', 'view'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
         relative_path='projects/{project}/global/instanceTemplates',
         request_field='',
         request_type_name='ComputeInstanceTemplatesListRequest',
@@ -7530,7 +7532,7 @@ field;
         method_id='compute.instances.get',
         ordered_params=['project', 'zone', 'instance'],
         path_params=['instance', 'project', 'zone'],
-        query_params=['view'],
+        query_params=[],
         relative_path='projects/{project}/zones/{zone}/instances/{instance}',
         request_field='',
         request_type_name='ComputeInstancesGetRequest',
@@ -7614,32 +7616,6 @@ policy or resource exists.
         request_field='',
         request_type_name='ComputeInstancesGetIamPolicyRequest',
         response_type_name='Policy',
-        supports_download=False,
-    )
-
-    def GetPartnerMetadata(self, request, global_params=None):
-      r"""Gets partner metadata of the specified instance and namespaces.
-
-      Args:
-        request: (ComputeInstancesGetPartnerMetadataRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (PartnerMetadata) The response message.
-      """
-      config = self.GetMethodConfig('GetPartnerMetadata')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    GetPartnerMetadata.method_config = lambda: base_api.ApiMethodInfo(
-        http_method='GET',
-        method_id='compute.instances.getPartnerMetadata',
-        ordered_params=['project', 'zone', 'instance'],
-        path_params=['instance', 'project', 'zone'],
-        query_params=['namespaces'],
-        relative_path='projects/{project}/zones/{zone}/instances/{instance}/getPartnerMetadata',
-        request_field='',
-        request_type_name='ComputeInstancesGetPartnerMetadataRequest',
-        response_type_name='PartnerMetadata',
         supports_download=False,
     )
 
@@ -7767,7 +7743,7 @@ the specified zone.
         method_id='compute.instances.list',
         ordered_params=['project', 'zone'],
         path_params=['project', 'zone'],
-        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess', 'view'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
         relative_path='projects/{project}/zones/{zone}/instances',
         request_field='',
         request_type_name='ComputeInstancesListRequest',
@@ -7802,32 +7778,6 @@ referrers to VM instances.
         request_field='',
         request_type_name='ComputeInstancesListReferrersRequest',
         response_type_name='InstanceListReferrers',
-        supports_download=False,
-    )
-
-    def PatchPartnerMetadata(self, request, global_params=None):
-      r"""Patches partner metadata of the specified instance.
-
-      Args:
-        request: (ComputeInstancesPatchPartnerMetadataRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (Operation) The response message.
-      """
-      config = self.GetMethodConfig('PatchPartnerMetadata')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    PatchPartnerMetadata.method_config = lambda: base_api.ApiMethodInfo(
-        http_method='POST',
-        method_id='compute.instances.patchPartnerMetadata',
-        ordered_params=['project', 'zone', 'instance'],
-        path_params=['instance', 'project', 'zone'],
-        query_params=['requestId'],
-        relative_path='projects/{project}/zones/{zone}/instances/{instance}/patchPartnerMetadata',
-        request_field='partnerMetadata',
-        request_type_name='ComputeInstancesPatchPartnerMetadataRequest',
-        response_type_name='Operation',
         supports_download=False,
     )
 
@@ -12265,6 +12215,34 @@ project.
         relative_path='projects/{project}/global/networks/{network}/addPeering',
         request_field='networksAddPeeringRequest',
         request_type_name='ComputeNetworksAddPeeringRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def CancelRequestRemovePeering(self, request, global_params=None):
+      r"""Cancel requests to remove a peering from the specified network. Applicable.
+only for PeeringConnection with update_strategy=CONSENSUS.  Cancels a
+request to remove a peering from the specified network.
+
+      Args:
+        request: (ComputeNetworksCancelRequestRemovePeeringRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('CancelRequestRemovePeering')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    CancelRequestRemovePeering.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.networks.cancelRequestRemovePeering',
+        ordered_params=['project', 'network'],
+        path_params=['network', 'project'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/global/networks/{network}/cancelRequestRemovePeering',
+        request_field='networksCancelRequestRemovePeeringRequest',
+        request_type_name='ComputeNetworksCancelRequestRemovePeeringRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -18586,7 +18564,7 @@ permanent and cannot be undone.
         method_id='compute.regionInstanceTemplates.get',
         ordered_params=['project', 'region', 'instanceTemplate'],
         path_params=['instanceTemplate', 'project', 'region'],
-        query_params=['view'],
+        query_params=[],
         relative_path='projects/{project}/regions/{region}/instanceTemplates/{instanceTemplate}',
         request_field='',
         request_type_name='ComputeRegionInstanceTemplatesGetRequest',
@@ -18640,7 +18618,7 @@ specified project and region.
         method_id='compute.regionInstanceTemplates.list',
         ordered_params=['project', 'region'],
         path_params=['project', 'region'],
-        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess', 'view'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
         relative_path='projects/{project}/regions/{region}/instanceTemplates',
         request_field='',
         request_type_name='ComputeRegionInstanceTemplatesListRequest',
@@ -22816,6 +22794,234 @@ Replaces any existing policy.
         request_field='testPermissionsRequest',
         request_type_name='ComputeResourcePoliciesTestIamPermissionsRequest',
         response_type_name='TestPermissionsResponse',
+        supports_download=False,
+    )
+
+  class RolloutPlansService(base_api.BaseApiService):
+    """Service class for the rolloutPlans resource."""
+
+    _NAME = 'rolloutPlans'
+
+    def __init__(self, client):
+      super(ComputeV1.RolloutPlansService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a RolloutPlan.
+
+      Args:
+        request: (ComputeRolloutPlansDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='DELETE',
+        method_id='compute.rolloutPlans.delete',
+        ordered_params=['project', 'rolloutPlan'],
+        path_params=['project', 'rolloutPlan'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/global/rolloutPlans/{rolloutPlan}',
+        request_field='',
+        request_type_name='ComputeRolloutPlansDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single project-scoped RolloutPlan.
+
+      Args:
+        request: (ComputeRolloutPlansGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (RolloutPlan) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.rolloutPlans.get',
+        ordered_params=['project', 'rolloutPlan'],
+        path_params=['project', 'rolloutPlan'],
+        query_params=[],
+        relative_path='projects/{project}/global/rolloutPlans/{rolloutPlan}',
+        request_field='',
+        request_type_name='ComputeRolloutPlansGetRequest',
+        response_type_name='RolloutPlan',
+        supports_download=False,
+    )
+
+    def Insert(self, request, global_params=None):
+      r"""Creates a new RolloutPlan in a given project and location.
+
+      Args:
+        request: (ComputeRolloutPlansInsertRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Insert')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Insert.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.rolloutPlans.insert',
+        ordered_params=['project'],
+        path_params=['project'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/global/rolloutPlans',
+        request_field='rolloutPlan',
+        request_type_name='ComputeRolloutPlansInsertRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists RolloutPlans in a given project and location.
+
+      Args:
+        request: (ComputeRolloutPlansListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (RolloutPlansListResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.rolloutPlans.list',
+        ordered_params=['project'],
+        path_params=['project'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
+        relative_path='projects/{project}/global/rolloutPlans',
+        request_field='',
+        request_type_name='ComputeRolloutPlansListRequest',
+        response_type_name='RolloutPlansListResponse',
+        supports_download=False,
+    )
+
+  class RolloutsService(base_api.BaseApiService):
+    """Service class for the rollouts resource."""
+
+    _NAME = 'rollouts'
+
+    def __init__(self, client):
+      super(ComputeV1.RolloutsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Cancel(self, request, global_params=None):
+      r"""Cancels a Rollout.
+
+      Args:
+        request: (ComputeRolloutsCancelRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Cancel')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Cancel.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='PATCH',
+        method_id='compute.rollouts.cancel',
+        ordered_params=['project', 'rollout'],
+        path_params=['project', 'rollout'],
+        query_params=['requestId', 'rollback'],
+        relative_path='projects/{project}/global/rollouts/{rollout}',
+        request_field='',
+        request_type_name='ComputeRolloutsCancelRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a Rollout.
+
+      Args:
+        request: (ComputeRolloutsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='DELETE',
+        method_id='compute.rollouts.delete',
+        ordered_params=['project', 'rollout'],
+        path_params=['project', 'rollout'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/global/rollouts/{rollout}',
+        request_field='',
+        request_type_name='ComputeRolloutsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single project-scoped Rollout.
+
+      Args:
+        request: (ComputeRolloutsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Rollout) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.rollouts.get',
+        ordered_params=['project', 'rollout'],
+        path_params=['project', 'rollout'],
+        query_params=[],
+        relative_path='projects/{project}/global/rollouts/{rollout}',
+        request_field='',
+        request_type_name='ComputeRolloutsGetRequest',
+        response_type_name='Rollout',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists Rollouts in a given project and location.
+
+      Args:
+        request: (ComputeRolloutsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (RolloutsListResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.rollouts.list',
+        ordered_params=['project'],
+        path_params=['project'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
+        relative_path='projects/{project}/global/rollouts',
+        request_field='',
+        request_type_name='ComputeRolloutsListRequest',
+        response_type_name='RolloutsListResponse',
         supports_download=False,
     )
 

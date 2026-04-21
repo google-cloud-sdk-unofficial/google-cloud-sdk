@@ -40,7 +40,10 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
 )
 class AddKey(base.UpdateCommand):
   """Add pre-shared key to a Compute Engine interconnect MACsec configuration.

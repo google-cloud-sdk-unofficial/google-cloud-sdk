@@ -37,6 +37,8 @@ class ConfigV1(base_api.BaseApiClient):
         default_global_params=default_global_params,
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
+    self.projects_locations_deploymentGroups_revisions = self.ProjectsLocationsDeploymentGroupsRevisionsService(self)
+    self.projects_locations_deploymentGroups = self.ProjectsLocationsDeploymentGroupsService(self)
     self.projects_locations_deployments_revisions_resources = self.ProjectsLocationsDeploymentsRevisionsResourcesService(self)
     self.projects_locations_deployments_revisions = self.ProjectsLocationsDeploymentsRevisionsService(self)
     self.projects_locations_deployments = self.ProjectsLocationsDeploymentsService(self)
@@ -47,6 +49,269 @@ class ConfigV1(base_api.BaseApiClient):
     self.projects_locations_terraformVersions = self.ProjectsLocationsTerraformVersionsService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects = self.ProjectsService(self)
+
+  class ProjectsLocationsDeploymentGroupsRevisionsService(base_api.BaseApiService):
+    """Service class for the projects_locations_deploymentGroups_revisions resource."""
+
+    _NAME = 'projects_locations_deploymentGroups_revisions'
+
+    def __init__(self, client):
+      super(ConfigV1.ProjectsLocationsDeploymentGroupsRevisionsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets details about a DeploymentGroupRevision.
+
+      Args:
+        request: (ConfigProjectsLocationsDeploymentGroupsRevisionsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (DeploymentGroupRevision) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/deploymentGroups/{deploymentGroupsId}/revisions/{revisionsId}',
+        http_method='GET',
+        method_id='config.projects.locations.deploymentGroups.revisions.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='ConfigProjectsLocationsDeploymentGroupsRevisionsGetRequest',
+        response_type_name='DeploymentGroupRevision',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists DeploymentGroupRevisions in a given DeploymentGroup.
+
+      Args:
+        request: (ConfigProjectsLocationsDeploymentGroupsRevisionsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListDeploymentGroupRevisionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/deploymentGroups/{deploymentGroupsId}/revisions',
+        http_method='GET',
+        method_id='config.projects.locations.deploymentGroups.revisions.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/revisions',
+        request_field='',
+        request_type_name='ConfigProjectsLocationsDeploymentGroupsRevisionsListRequest',
+        response_type_name='ListDeploymentGroupRevisionsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsDeploymentGroupsService(base_api.BaseApiService):
+    """Service class for the projects_locations_deploymentGroups resource."""
+
+    _NAME = 'projects_locations_deploymentGroups'
+
+    def __init__(self, client):
+      super(ConfigV1.ProjectsLocationsDeploymentGroupsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a DeploymentGroup The newly created DeploymentGroup will be in the `CREATING` state and can be retrieved via Get and List calls.
+
+      Args:
+        request: (ConfigProjectsLocationsDeploymentGroupsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/deploymentGroups',
+        http_method='POST',
+        method_id='config.projects.locations.deploymentGroups.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['deploymentGroupId', 'requestId'],
+        relative_path='v1/{+parent}/deploymentGroups',
+        request_field='deploymentGroup',
+        request_type_name='ConfigProjectsLocationsDeploymentGroupsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a DeploymentGroup.
+
+      Args:
+        request: (ConfigProjectsLocationsDeploymentGroupsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/deploymentGroups/{deploymentGroupsId}',
+        http_method='DELETE',
+        method_id='config.projects.locations.deploymentGroups.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['deploymentReferencePolicy', 'force', 'requestId'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='ConfigProjectsLocationsDeploymentGroupsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Deprovision(self, request, global_params=None):
+      r"""Deprovisions a deployment group. NOTE: As a first step of this operation, Infra Manager will automatically delete any Deployments that were part of the *last successful* DeploymentGroupRevision but are *no longer* included in the *current* DeploymentGroup definition (e.g., following an `UpdateDeploymentGroup` call), along with their actuated resources.
+
+      Args:
+        request: (ConfigProjectsLocationsDeploymentGroupsDeprovisionRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Deprovision')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Deprovision.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/deploymentGroups/{deploymentGroupsId}:deprovision',
+        http_method='POST',
+        method_id='config.projects.locations.deploymentGroups.deprovision',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:deprovision',
+        request_field='deprovisionDeploymentGroupRequest',
+        request_type_name='ConfigProjectsLocationsDeploymentGroupsDeprovisionRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Get a DeploymentGroup for a given project and location.
+
+      Args:
+        request: (ConfigProjectsLocationsDeploymentGroupsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (DeploymentGroup) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/deploymentGroups/{deploymentGroupsId}',
+        http_method='GET',
+        method_id='config.projects.locations.deploymentGroups.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='ConfigProjectsLocationsDeploymentGroupsGetRequest',
+        response_type_name='DeploymentGroup',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""List DeploymentGroups for a given project and location.
+
+      Args:
+        request: (ConfigProjectsLocationsDeploymentGroupsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListDeploymentGroupsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/deploymentGroups',
+        http_method='GET',
+        method_id='config.projects.locations.deploymentGroups.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/deploymentGroups',
+        request_field='',
+        request_type_name='ConfigProjectsLocationsDeploymentGroupsListRequest',
+        response_type_name='ListDeploymentGroupsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates a DeploymentGroup.
+
+      Args:
+        request: (ConfigProjectsLocationsDeploymentGroupsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/deploymentGroups/{deploymentGroupsId}',
+        http_method='PATCH',
+        method_id='config.projects.locations.deploymentGroups.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1/{+name}',
+        request_field='deploymentGroup',
+        request_type_name='ConfigProjectsLocationsDeploymentGroupsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Provision(self, request, global_params=None):
+      r"""Provisions a deployment group. NOTE: As a first step of this operation, Infra Manager will automatically delete any Deployments that were part of the *last successful* DeploymentGroupRevision but are *no longer* included in the *current* DeploymentGroup definition (e.g., following an `UpdateDeploymentGroup` call), along with their actuated resources.
+
+      Args:
+        request: (ConfigProjectsLocationsDeploymentGroupsProvisionRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Provision')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Provision.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/deploymentGroups/{deploymentGroupsId}:provision',
+        http_method='POST',
+        method_id='config.projects.locations.deploymentGroups.provision',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:provision',
+        request_field='provisionDeploymentGroupRequest',
+        request_type_name='ConfigProjectsLocationsDeploymentGroupsProvisionRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
 
   class ProjectsLocationsDeploymentsRevisionsResourcesService(base_api.BaseApiService):
     """Service class for the projects_locations_deployments_revisions_resources resource."""
@@ -1111,7 +1376,7 @@ class ConfigV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method can be called in two ways: * **List all public locations:** Use the path `GET /v1/locations`. * **List project-visible locations:** Use the path `GET /v1/projects/{project_id}/locations`. This may include public locations as well as private or other locations specifically visible to the project.
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
       Args:
         request: (ConfigProjectsLocationsListRequest) input message

@@ -142,7 +142,7 @@ def _GetResult(
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Create(base.Command):
   """Create Compute Engine virtual machine instances."""
 

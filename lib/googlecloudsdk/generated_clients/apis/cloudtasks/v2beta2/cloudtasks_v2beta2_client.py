@@ -39,6 +39,7 @@ class CloudtasksV2beta2(base_api.BaseApiClient):
         response_encoding=response_encoding)
     self.api_queue = self.ApiQueueService(self)
     self.api = self.ApiService(self)
+    self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
     self.projects_locations_queues_tasks = self.ProjectsLocationsQueuesTasksService(self)
     self.projects_locations_queues = self.ProjectsLocationsQueuesService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
@@ -89,6 +90,43 @@ class CloudtasksV2beta2(base_api.BaseApiClient):
       super(CloudtasksV2beta2.ApiService, self).__init__(client)
       self._upload_configs = {
           }
+
+  class ProjectsLocationsOperationsService(base_api.BaseApiService):
+    """Service class for the projects_locations_operations resource."""
+
+    _NAME = 'projects_locations_operations'
+
+    def __init__(self, client):
+      super(CloudtasksV2beta2.ProjectsLocationsOperationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.
+
+      Args:
+        request: (CloudtasksProjectsLocationsOperationsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2beta2/projects/{projectsId}/locations/{locationsId}/operations/{operationsId}',
+        http_method='GET',
+        method_id='cloudtasks.projects.locations.operations.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v2beta2/{+name}',
+        request_field='',
+        request_type_name='CloudtasksProjectsLocationsOperationsGetRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
 
   class ProjectsLocationsQueuesTasksService(base_api.BaseApiService):
     """Service class for the projects_locations_queues_tasks resource."""
@@ -742,7 +780,7 @@ class CloudtasksV2beta2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method can be called in two ways: * **List all public locations:** Use the path `GET /v1/locations`. * **List project-visible locations:** Use the path `GET /v1/projects/{project_id}/locations`. This may include public locations as well as private or other locations specifically visible to the project.
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
       Args:
         request: (CloudtasksProjectsLocationsListRequest) input message

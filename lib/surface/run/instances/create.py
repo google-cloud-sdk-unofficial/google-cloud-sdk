@@ -29,6 +29,7 @@ from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import progress_tracker
@@ -162,11 +163,6 @@ class Create(base.Command):
       instance_name = instance_ref.Name()
     else:
       # instance_ref is None, name not provided. Build parent_ref manually.
-      region = properties.VALUES.run.region.Get()
-      if not region:
-        raise exceptions.ConfigurationError(
-            'The --region flag or run/region property must be set.'
-        )
       project = properties.VALUES.core.project.Get(required=True)
 
       # Construct the parent reference (namespace)
@@ -217,5 +213,36 @@ class Create(base.Command):
             'Instance [{{bold}}{instance}{{reset}}] has successfully been'
             ' created.'.format(instance=instance.name)
         )
+        region = (
+            getattr(conn_context, 'region', None)
+            or properties.VALUES.run.region.Get()
+        )
+        release_track = self.ReleaseTrack()
+        log.status.Print(
+            '\nSee logs with: \ngcloud{release_track} run instances logs tail'
+            ' {instance} --region {region}'.format(
+                release_track=(
+                    ' {}'.format(release_track.prefix)
+                    if release_track.prefix is not None
+                    else ''
+                ),
+                instance=instance.name,
+                region=region,
+            )
+        )
+        log.status.Print(
+            '\nSSH with:\ngcloud{release_track} run instances ssh {instance}'
+            ' --region {region}'.format(
+                release_track=(
+                    ' {}'.format(release_track.prefix)
+                    if release_track.prefix is not None
+                    else ''
+                ),
+                instance=instance.name,
+                region=region,
+            )
+        )
+        if instance.urls:
+          log.status.Print('\nURL: {}'.format(instance.urls[0]))
 
       return instance

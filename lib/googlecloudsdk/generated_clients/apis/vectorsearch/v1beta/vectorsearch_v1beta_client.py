@@ -469,6 +469,33 @@ class VectorsearchV1beta(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single Index.
+
+      Args:
+        request: (VectorsearchProjectsLocationsCollectionsIndexesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta/projects/{projectsId}/locations/{locationsId}/collections/{collectionsId}/indexes/{indexesId}',
+        http_method='PATCH',
+        method_id='vectorsearch.projects.locations.collections.indexes.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1beta/{+name}',
+        request_field='googleCloudVectorsearchV1betaIndex',
+        request_type_name='VectorsearchProjectsLocationsCollectionsIndexesPatchRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
   class ProjectsLocationsCollectionsService(base_api.BaseApiService):
     """Service class for the projects_locations_collections resource."""
 

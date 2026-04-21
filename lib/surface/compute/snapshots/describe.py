@@ -38,7 +38,7 @@ def _AlphaArgs(parser):
   Describe.SnapshotArg.AddArgument(parser, operation_type='describe')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine snapshot."""

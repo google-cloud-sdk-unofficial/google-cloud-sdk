@@ -40,8 +40,12 @@ def _AddCommonDeleteInstancesArgs(parser):
   mig_flags.AddGracefulValidationArg(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.PREVIEW,
+)
 @base.UniverseCompatible
 class DeleteInstances(base.Command):
   """Delete instances managed by managed instance group."""

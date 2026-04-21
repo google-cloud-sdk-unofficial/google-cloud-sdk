@@ -26,7 +26,7 @@ from googlecloudsdk.core.util import times
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class SetSchedulingInstances(base.SilentCommand):
   """Set scheduling options for Compute Engine virtual machines.
 
