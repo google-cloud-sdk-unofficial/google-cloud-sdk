@@ -32,6 +32,7 @@ from googlecloudsdk.core.util import files
 
 import six
 from google.auth import exceptions as google_auth_exceptions
+from six.moves.urllib.parse import urlparse
 
 
 class Error(exceptions.Error):
@@ -142,6 +143,37 @@ class CredentialWrappingMixin(object):
   @abc.abstractmethod
   def AuthorizeClient(self, http_client, credentials):
     """Returns an http_client authorized with the given credentials."""
+
+
+def _HostMatchesUniverseDomain(hostname, universe_domain):
+  """Returns True if hostname is inside the active universe domain."""
+  if not hostname or not universe_domain:
+    return False
+  hostname = hostname.lower().rstrip('.')
+  universe_domain = universe_domain.lower().rstrip('.')
+  return (
+      hostname == universe_domain or
+      hostname.endswith('.' + universe_domain)
+  )
+
+
+def ValidateCredentialedRequestUrl(url):
+  """Rejects credential attachment to non-universe hosts unless opted in."""
+  if properties.VALUES.core.allow_non_universe_credentialed_endpoints.GetBool():
+    return
+
+  host = urlparse(url).hostname
+  universe_domain = properties.GetUniverseDomain()
+  if _HostMatchesUniverseDomain(host, universe_domain):
+    return
+
+  raise Error(
+      'Refusing to attach credentials to non-universe host [{host}]. To '
+      'override this behavior, set '
+      '[core/allow_non_universe_credentialed_endpoints] to true.'.format(
+          host=host
+      )
+  )
 
 
 def _GetIAMAuthHandlers(authority_selector, authorization_token_file):

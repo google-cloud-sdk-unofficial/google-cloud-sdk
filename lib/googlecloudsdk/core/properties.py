@@ -2538,6 +2538,16 @@ class _SectionCore(_Section):
         help_text='Sets the domain of the universe to use for API requests.',
         default='googleapis.com',
     )
+    self.allow_non_universe_credentialed_endpoints = self._AddBool(
+        'allow_non_universe_credentialed_endpoints',
+        help_text=(
+            'Allows credentialed requests to target hosts outside the active '
+            'universe domain. Warning: this may disclose bearer tokens to '
+            'non-universe endpoints.'
+        ),
+        hidden=True,
+        default=False,
+    )
 
     self.credentialed_hosted_repo_domains = self._Add(
         'credentialed_hosted_repo_domains', hidden=True
