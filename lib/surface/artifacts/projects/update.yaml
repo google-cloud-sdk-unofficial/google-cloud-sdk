@@ -1,5 +1,4 @@
 - release_tracks: [GA]
-  hidden: true
   universe_compatible: true
   help_text:
     brief: Update project configuration.
@@ -20,7 +19,6 @@
     params:
     - group:
         mutex: true
-        hidden: true
         params:
         - arg_name: enable-platform-logs
           api_field: projectConfig.platformLogsConfig.loggingState
@@ -55,7 +53,6 @@
             help_text: Platform logging set to project settings.
     - arg_name: severity
       api_field: projectConfig.platformLogsConfig.severityLevel
-      hidden: true
       help_text: |
         The minimum severity level of logs to generate. This flag is only applicable when using
         --enable-platform-logs.

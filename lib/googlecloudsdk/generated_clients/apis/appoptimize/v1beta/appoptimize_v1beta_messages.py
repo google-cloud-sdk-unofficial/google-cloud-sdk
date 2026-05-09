@@ -28,14 +28,11 @@ class AppoptimizeProjectsLocationsListRequest(_messages.Message):
   r"""A AppoptimizeProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
-    includeUnrevealedLocations: If true, the returned list will include
-      locations which are not yet revealed.
     name: The resource that owns the locations collection, if applicable.
     pageSize: The maximum number of results to return. If not set, the service
       selects a default.
@@ -45,10 +42,9 @@ class AppoptimizeProjectsLocationsListRequest(_messages.Message):
 
   extraLocationTypes = _messages.StringField(1, repeated=True)
   filter = _messages.StringField(2)
-  includeUnrevealedLocations = _messages.BooleanField(3)
-  name = _messages.StringField(4, required=True)
-  pageSize = _messages.IntegerField(5, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(6)
+  name = _messages.StringField(3, required=True)
+  pageSize = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(5)
 
 
 class AppoptimizeProjectsLocationsOperationsCancelRequest(_messages.Message):
@@ -222,7 +218,6 @@ class Empty(_messages.Message):
   or the response type of an API method. For instance: service Foo { rpc
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
-
 
 
 class ListLocationsResponse(_messages.Message):
@@ -463,7 +458,6 @@ class OperationMetadata(_messages.Message):
   """
 
 
-
 class ReadReportRequest(_messages.Message):
   r"""Request message for the `ReadReport` method.
 
@@ -552,9 +546,6 @@ class Report(_messages.Message):
     name: Identifier. The name of this report.
     scopes: Optional. The resource containers for which to fetch data. Default
       is the project specified in the report's parent.
-    ttl: Input only. The TTL for this report. Once the report expires, it will
-      no longer be accessible and the report's underlying data will be
-      deleted.
   """
 
   dimensions = _messages.StringField(1, repeated=True)
@@ -563,7 +554,6 @@ class Report(_messages.Message):
   metrics = _messages.StringField(4, repeated=True)
   name = _messages.StringField(5)
   scopes = _messages.MessageField('Scope', 6, repeated=True)
-  ttl = _messages.StringField(7)
 
 
 class Scope(_messages.Message):

@@ -1,11 +1,15 @@
 - release_tracks: [ALPHA, BETA]
   help_text:
     brief: Create a Flag Attribute
-    description: Create a Flag Attribute
+    description: |-
+      Create a new flag attribute resource. Flag attributes define the data
+      schema for targeting rules and percentage-based rollouts. These attributes
+      correspond to the keys in the OpenFeature EvaluationContext used by the
+      application SDK to provide contextual data for flag evaluation.
     examples: |-
-      To create a Flag Attribute, run:
+      To create a string attribute for user IDs in the global location, run:
 
-        $ {command}
+          $ {command} user-id-attr --key=userID --attribute-value-type=string --location=global
   arguments:
     params:
     - help_text: |-

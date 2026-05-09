@@ -14,8 +14,6 @@
 # limitations under the License.
 """The command lists the deployment configurations of a given model supported by Model Garden."""
 
-
-
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.ai.model_garden import client as client_mg
 from googlecloudsdk.calliope import base
@@ -28,7 +26,6 @@ from googlecloudsdk.command_lib.ai.region_util import (
 )
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import properties
-
 
 _DEFAULT_FORMAT = """
         table(
@@ -151,5 +148,7 @@ class ListDeployMentConfig(base.ListCommand):
             'ai/region',
             'The [ai/region] property must be set in this environment.',
         )
-    with endpoint_util.AiplatformEndpointOverrides(version, region=api_region):
+    with endpoint_util.AiplatformEndpointOverrides(
+        version, region=api_region, use_info_log=True
+    ):
       return self._GetMultiDeploy(args, version)

@@ -1367,7 +1367,7 @@ class _SectionApiEndpointOverrides(_Section):
     self.observability = self._Add(
         'observability', command='gcloud observability')
     self.servicehealth = self._Add(
-        'servicehealth', command='gcloud servicehealth', hidden=True)
+        'servicehealth', command='gcloud servicehealth')
     self.transcoder = self._Add(
         'transcoder', command='gcloud transcoder', hidden=True
     )
@@ -3454,6 +3454,12 @@ class _SectionRun(_Section):
         default='managed',
         help_text='Target platform for running commands.')
 
+    self.enable_unified_build = self._Add(
+        'enable_unified_build',
+        default=False,
+        hidden=True,
+        help_text='Enables using Cloud Run API to orchestrate builds.',)
+
 
 class _SectionRunApps(_Section):
   """Contains the properties for the 'runapps' section."""
@@ -3697,7 +3703,7 @@ class _SectionStorage(_Section):
 
     self.use_move_object_api = self._AddBool(
         'use_move_object_api',
-        default=False,
+        default=True,
         hidden=True,
         help_text=(
             'If True, gcloud storage will use the MoveObject API for'
@@ -3915,6 +3921,17 @@ class _SectionStorage(_Section):
         help_text='Determines if the GET bucket call should be performed to '
         'check if the default storage class and retention period for the '
         'destination bucket meet the criteria for parallel composite upload.')
+
+    self.delete_source_objects_in_compose = self._AddBool(
+        'delete_source_objects_in_compose',
+        default=False,
+        hidden=True,
+        help_text=(
+            'If True, parallel composite uploads will use the delete source '
+            'objects feature of the compose API to remove temporary '
+            'components, avoiding soft-delete costs.'
+        ),
+    )
 
     self.parallel_composite_upload_enabled = self._Add(
         'parallel_composite_upload_enabled',

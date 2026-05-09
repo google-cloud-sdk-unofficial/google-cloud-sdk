@@ -30,22 +30,6 @@
        --location=global my-report
   arguments:
     params:
-    - group:
-        mutex: true
-        hidden: true
-        help_text: |-
-          Arguments for the expiration.
-        params:
-        - arg_name: ttl
-          api_field: report.ttl
-          required: false
-          repeated: false
-          type: googlecloudsdk.core.util.times:ParseDuration
-          processor: googlecloudsdk.core.util.times:FormatDurationForJson
-          hidden: true
-          help_text: |-
-            The TTL for this report. Once the report expires, it will no longer be
-            accessible and the report's underlying data will be deleted.
     - help_text: |-
         Identifier. The name of this report.
       is_positional: true
@@ -89,6 +73,7 @@
           Format: `"projects/{project}"`.
       - api_field: application
         one_of_index: 0
+        resource_pattern: projects/{project}/locations/{location}/applications/{application}
         help_text: |-
           An App Hub Application to fetch data from.
 

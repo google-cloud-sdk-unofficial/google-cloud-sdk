@@ -5274,6 +5274,18 @@ def SkipDeployArg(parser):
       '--skip-deploy',
       action='store_true',
       default=False,
-      hidden=True,
       help='Skip the deploy step during dev sync.',
+  )
+
+
+def KeepAliveAfterDevSyncFlag(parser):
+  return parser.add_argument(
+      '--keep-alive-after-dev-sync',
+      action='store_true',
+      default=False,
+      help=(
+          'If set, the Cloud Run instance created for the dev sync session'
+          ' will not be automatically deleted when the session terminates. By'
+          ' default, the instance is deleted to clean up resources.'
+      ),
   )

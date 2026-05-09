@@ -14,8 +14,6 @@
 # limitations under the License.
 """The command lists the models in Model Garden and their supported functionalities."""
 
-
-
 from googlecloudsdk.api_lib.ai.model_garden import client as client_mg
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
@@ -146,7 +144,9 @@ class List(base.ListCommand):
             'ai/region',
             'The [ai/region] property must be set in this environment.',
         )
-    with endpoint_util.AiplatformEndpointOverrides(version, region=api_region):
+    with endpoint_util.AiplatformEndpointOverrides(
+        version, region=api_region, use_info_log=True
+    ):
       mg_client = client_mg.ModelGardenClient(version)
       return mg_client.ListPublisherModels(
           limit=args.limit,

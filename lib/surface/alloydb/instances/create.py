@@ -85,6 +85,25 @@ class Create(base.CreateCommand):
     flags.AddPSCAutoConnections(parser)
     flags.AddAllocatedIPRangeOverride(parser)
 
+    # Observability flags.
+    flags.AddObservabilityConfigEnabled(
+        parser, show_negated_in_help=True
+    )
+    flags.AddObservabilityConfigPreserveComments(
+        parser, show_negated_in_help=True
+    )
+    flags.AddObservabilityConfigTrackWaitEvents(
+        parser, show_negated_in_help=False
+    )
+    flags.AddObservabilityConfigMaxQueryStringLength(parser)
+    flags.AddObservabilityConfigRecordApplicationTags(
+        parser, show_negated_in_help=True
+    )
+    flags.AddObservabilityConfigQueryPlansPerMinute(parser)
+    flags.AddObservabilityConfigTrackActiveQueries(
+        parser, show_negated_in_help=True
+    )
+
     # Connection pooling flags.
     flags.AddEnableConnectionPooling(parser)
     flags.AddConnectionPoolingPoolMode(parser)
@@ -147,21 +166,10 @@ class CreateBeta(Create):
   @classmethod
   def Args(cls, parser):
     super(CreateBeta, CreateBeta).Args(parser)
-    flags.AddObservabilityConfigEnabled(
+    flags.AddObservabilityConfigTrackClientAddress(
         parser, show_negated_in_help=True
     )
-    flags.AddObservabilityConfigPreserveComments(
-        parser, show_negated_in_help=True
-    )
-    flags.AddObservabilityConfigTrackWaitEvents(
-        parser, show_negated_in_help=False
-    )
-    flags.AddObservabilityConfigMaxQueryStringLength(parser)
-    flags.AddObservabilityConfigRecordApplicationTags(
-        parser, show_negated_in_help=True
-    )
-    flags.AddObservabilityConfigQueryPlansPerMinute(parser)
-    flags.AddObservabilityConfigTrackActiveQueries(
+    flags.AddObservabilityConfigAssistiveExperiencesEnabled(
         parser, show_negated_in_help=True
     )
     flags.AddObservabilityConfigTrackActiveQueryPlan(

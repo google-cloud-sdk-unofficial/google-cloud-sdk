@@ -1518,9 +1518,7 @@ class AssertionCredentials(GoogleCredentials):
 def _require_crypto_or_die():
     """Ensure we have a crypto library, or throw CryptoUnavailableError.
 
-    The oauth2client.crypt module requires either PyCrypto or PyOpenSSL
-    to be available in order to function, but these are optional
-    dependencies.
+    The oauth2client.crypt module requires the cryptography library.
     """
     if not HAS_CRYPTO:
         raise CryptoUnavailableError('No crypto library available')
@@ -1531,8 +1529,7 @@ def verify_id_token(id_token, audience, http=None,
                     cert_uri=ID_TOKEN_VERIFICATION_CERTS):
     """Verifies a signed JWT id_token.
 
-    This function requires PyOpenSSL and because of that it does not work on
-    App Engine.
+    This function requires cryptography or PyOpenSSL.
 
     Args:
         id_token: string, A Signed JWT.

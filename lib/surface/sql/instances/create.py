@@ -192,6 +192,7 @@ def AddBetaArgs(parser):
   flags.AddUncMappings(parser)
   flags.AddEnablePscAutoDns(parser)
   flags.AddEnablePscWriteEndpointDns(parser)
+  flags.AddEnablePscAutoConnectionPolicy(parser, hidden=True)
 
 
 def AddAlphaArgs(unused_parser):
@@ -381,6 +382,14 @@ def RunBaseCreateCommand(args, release_track):
   ) and not args.IsKnownAndSpecified('enable_private_service_connect'):
     raise sql_exceptions.ArgumentError(
         '`--enable-psc-write-endpoint-dns` requires'
+        ' `--enable-private-service-connect`'
+    )
+
+  if args.IsKnownAndSpecified(
+      'enable_psc_auto_connection_policy'
+  ) and not args.IsKnownAndSpecified('enable_private_service_connect'):
+    raise sql_exceptions.ArgumentError(
+        '`--enable-psc-auto-connection-policy` requires'
         ' `--enable-private-service-connect`'
     )
 

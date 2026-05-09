@@ -33,6 +33,23 @@ _DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Deprecate(
+    is_removed=False,  # Set to False to issue a warning first
+    warning=(
+        'The `gcloud alpha api-registry mcp servers list` command is deprecated'
+        ' and will be removed in a future release. Please use `gcloud alpha'
+        ' agent-registry mcp-servers list` instead. Note: Agent Registry only'
+        ' lists MCP servers for service APIs that are enabled in a project. For'
+        ' more information, see: '
+        'https://docs.cloud.google.com/sdk/gcloud/reference/alpha/agent-registry/mcp-servers'
+    ),
+    error=(
+        'The `gcloud alpha api-registry mcp servers list` command has been'
+        ' removed. Please use `gcloud alpha agent-registry mcp-servers list`'
+        ' instead. For more information, see: '
+        'https://docs.cloud.google.com/sdk/gcloud/reference/alpha/agent-registry/mcp-servers'
+    )
+)
 @base.DefaultUniverseOnly
 class ListAlpha(base.ListCommand):
   """List MCP servers."""
@@ -61,6 +78,23 @@ class ListAlpha(base.ListCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.Deprecate(
+    is_removed=False,  # Set to False to issue a warning first
+    warning=(
+        'The `gcloud beta api-registry mcp servers list` command is deprecated'
+        ' and will be removed in a future release. Please use `gcloud alpha'
+        ' agent-registry mcp-servers list` instead. Note: Agent Registry only'
+        ' lists MCP servers for service APIs that are enabled in a project. For'
+        ' more information, see: '
+        'https://docs.cloud.google.com/sdk/gcloud/reference/alpha/agent-registry/mcp-servers'
+    ),
+    error=(
+        'The `gcloud beta api-registry mcp servers list` command has been'
+        ' removed. Please use `gcloud alpha agent-registry mcp-servers list`'
+        ' instead. For more information, see: '
+        'https://docs.cloud.google.com/sdk/gcloud/reference/alpha/agent-registry/mcp-servers'
+    )
+)
 @base.DefaultUniverseOnly
 class ListBeta(base.ListCommand):
   """List MCP servers."""

@@ -16,6 +16,7 @@
 
 
 import argparse
+import textwrap
 from typing import Any
 
 from googlecloudsdk.api_lib.netapp import util as netapp_api_util
@@ -544,3 +545,98 @@ def AddOntapCommandArg(parser: argparse.ArgumentParser):
       type=str,
       help='The ONTAP command to execute.',
   )
+
+
+def AddStoragePoolRestoreFromBackupArg(parser, required=True):
+  """Adds the --backup arg to the arg parser."""
+  concept_parsers.ConceptParser.ForResource(
+      '--backup',
+      flags.GetBackupResourceSpec(positional=False),
+      required=required,
+      flag_name_overrides={'location': ''},
+      group_help='The Backup from which files are restored back to the Volume.',
+  ).AddToParser(parser)
+
+
+def AddStoragePoolRestoreDestinationPathArg(parser, required=False):
+  """Adds the --restore-destination-path arg to the arg parser."""
+  parser.add_argument(
+      '--restore-destination-path',
+      type=str,
+      required=required,
+      help="""Name of the absolute directory path in the destination volume.""",
+  )
+
+
+def AddStoragePoolRestoreFileListArg(parser, required=False):
+  """Adds the --file-list arg to the arg parser."""
+  parser.add_argument(
+      '--file-list',
+      type=arg_parsers.ArgList(),
+      metavar='FILE_LIST',
+      required=required,
+      help="""List of files to be restored in the form of their absolute path as in source volume.""",
+  )
+
+
+def AddStoragePoolRestoreVolumeArgs(parser):
+  """Adds args for restoring a backup to an ONTAP volume in a Storage Pool."""
+  concept_parsers.ConceptParser([
+      flags.GetStoragePoolPresentationSpec('The Storage Pool to restore into.')
+  ]).AddToParser(parser)
+
+  AddStoragePoolRestoreFromBackupArg(parser)
+  AddStoragePoolRestoreDestinationPathArg(parser)
+  AddStoragePoolRestoreFileListArg(parser)
+
+  parser.add_argument(
+      '--volume-uuid',
+      type=str,
+      required=True,
+      help='The UUID of the ONTAP-mode volume to restore to.',
+  )
+  flags.AddResourceAsyncFlag(parser)
+
+
+def AddStoragePoolUpdateBackupConfigArgs(parser):
+  """Add args for updating backup config of a volume in an ONTAP-mode Storage Pool."""
+  concept_parsers.ConceptParser([
+      flags.GetStoragePoolPresentationSpec('The Storage Pool.')
+  ]).AddToParser(parser)
+
+  parser.add_argument(
+      '--volume-uuid',
+      type=str,
+      required=True,
+      help='The UUID of the volume to update backup config for.',
+  )
+
+  backup_config_arg_spec = {
+      'backup-policies': arg_parsers.ArgList(
+          min_length=1, element_type=str, custom_delim_char='#'
+      ),
+      'backup-vault': str,
+      'enable-scheduled-backups': arg_parsers.ArgBoolean(
+          truthy_strings=netapp_util.truthy, falsey_strings=netapp_util.falsey
+      ),
+  }
+  backup_config_help = textwrap.dedent("""\
+      Backup Config contains backup related config on a volume in ONTAP-mode Storage Pool.
+
+      Backup Config will have the following format
+      `--backup-config=backup-policies=BACKUP_POLICIES,
+      backup-vault=BACKUP_VAULT_NAME,
+      enable-scheduled-backups=ENABLE_SCHEDULED_BACKUPS`
+
+      backup-policies is a pound-separated (#) list of backup policy names, backup-vault can include
+      a single backup-vault resource name, and enable-scheduled-backups is a Boolean value indicating
+      whether or not scheduled backups are enabled on the volume in the ONTAP-mode Storage Pool.
+  """)
+  parser.add_argument(
+      '--backup-config',
+      type=arg_parsers.ArgDict(spec=backup_config_arg_spec),
+      required=True,
+      help=backup_config_help,
+  )
+
+  flags.AddResourceAsyncFlag(parser)

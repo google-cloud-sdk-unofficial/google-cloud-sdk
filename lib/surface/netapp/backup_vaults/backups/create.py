@@ -24,10 +24,12 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a Cloud NetApp Backup."""
 
   _RELEASE_TRACK = base.ReleaseTrack.GA
+  _support_ontap_source = False
 
   detailed_help = {
       'DESCRIPTION': """\
@@ -40,9 +42,9 @@ class Create(base.CreateCommand):
           """,
   }
 
-  @staticmethod
-  def Args(parser):
-    backups_flags.AddBackupCreateArgs(parser)
+  @classmethod
+  def Args(cls, parser):
+    backups_flags.AddBackupCreateArgs(parser, cls._support_ontap_source)
 
   def Run(self, args):
     """Create a Cloud NetApp Backup in the current project."""
@@ -51,12 +53,14 @@ class Create(base.CreateCommand):
     labels = labels_util.ParseCreateArgs(
         args, client.messages.Backup.LabelsValue
     )
+    ontap_source = args.ontap_source if self._support_ontap_source else None
     backup = client.ParseBackup(
         name=backup_ref.RelativeName(),
         source_volume=args.source_volume,
         source_snapshot=args.source_snapshot,
         description=args.description,
         labels=labels,
+        ontap_source=ontap_source,
     )
     result = client.CreateBackup(backup_ref, args.async_, backup)
     if args.async_:
@@ -71,7 +75,13 @@ class Create(base.CreateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
 class CreateBeta(Create):
   """Create a Cloud NetApp Backup."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
+  _support_ontap_source = True
+
+  @classmethod
+  def Args(cls, parser):
+    backups_flags.AddBackupCreateArgs(parser, cls._support_ontap_source)

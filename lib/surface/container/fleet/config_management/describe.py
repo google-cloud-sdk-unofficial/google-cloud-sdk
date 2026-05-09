@@ -160,7 +160,7 @@ Config Sync repo, run:
     sort_by_with_examples.kwargs['help'] = (
         sort_by_with_examples.kwargs['help'].rstrip() + """
 
-The default table summary sorts by `LOCATION` then `MEMBERSHIP`.
+The default sort order is by the `LOCATION`, then `MEMBERSHIP` table columns.
 
 To sort the table by `VERSION` instead, run:
 
@@ -251,8 +251,8 @@ Config Sync repo, and print its values in a table, run:
           self.hubclient, fdc_exists,
       ))
       self.parser.display_info.AddFormat("""table(
-          name.segment(-3):label=MEMBERSHIP:sort=2,
-          name.segment(-5):label=LOCATION:sort=1,
+          name.segment(-3):label=MEMBERSHIP,
+          name.segment(-5):label=LOCATION,
           state.state.code:label=STATUS,
           state.configmanagement.configSyncState.state:label=INSTALL_STATE,
           state.configmanagement.configSyncState.clusterLevelStopSyncingState:label=STOP_STATE,
@@ -277,7 +277,7 @@ Config Sync repo, and print its values in a table, run:
       }
     project_id = self.Project(number=False)
     project_number = self.Project(number=True)
-    return [
+    return sorted([
         # Mimic v2 MembershipFeature. Leaves room for alternate
         # ListMembershipFeatures API call implementation. Uses dictionary
         # instead of generated API message class to avoid potential v1 vs. v2
@@ -306,7 +306,7 @@ Config Sync repo, and print its values in a table, run:
             )
         }
         for entry in feature.membershipSpecs.additionalProperties
-    ]
+    ], key=lambda mf: mf['name'])
 
   def Epilog(self, resources_were_displayed):
     # Reference Epilog method on ListCommand.

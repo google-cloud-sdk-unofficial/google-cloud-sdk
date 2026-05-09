@@ -107,6 +107,7 @@ class GrpcClientWithJsonFallback(gcs_json_client.JsonClient):
       source_resources,
       destination_resource,
       request_config,
+      delete_source_objects=False,
       original_source_resource=None,
       posix_to_set=None,
   ):
@@ -119,6 +120,8 @@ class GrpcClientWithJsonFallback(gcs_json_client.JsonClient):
         the resulting composite object.
       request_config (RequestConfig): Object containing general API function
         arguments. Subclasses for specific cloud providers are available.
+      delete_source_objects (bool): If True, deletes the source objects after
+        successful composition.
       original_source_resource (Resource|None): Useful for finding metadata to
         apply to final object. For instance, if doing a composite upload, this
         would represent the pre-split local file.
@@ -132,6 +135,11 @@ class GrpcClientWithJsonFallback(gcs_json_client.JsonClient):
       NotImplementedError: This function was not implemented by a class using
         this interface.
     """
+    if delete_source_objects:
+      raise cloud_errors.GcsApiError(
+          'delete_source_objects is not supported in gRPC API.'
+      )
+
     if not source_resources:
       raise cloud_errors.GcsApiError(
           'Compose requires at least one component object.'

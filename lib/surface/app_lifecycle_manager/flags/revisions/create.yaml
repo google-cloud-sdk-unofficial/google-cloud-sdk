@@ -1,11 +1,27 @@
 - release_tracks: [ALPHA, BETA]
   help_text:
     brief: Create Flag Revision
-    description: Create a Flag Revision.
-    examples: |-
-      To create a Flag Revision, run:
+    description: |-
+      Create a new flag revision resource. Flag revisions act as immutable snapshots
+      of a flag's configuration (variants, rules, and allocations) at a specific
+      point in time.
 
-          $ {command}
+      This snapshot is a required prerequisite for creating a Flag Release and
+      initiating a Flag Rollout. Creating a revision ensures that the configuration
+      state is frozen and safely decoupled from the live flag definition during the
+      rollout process.
+    examples: |-
+      To create a Flag Revision for a flag named `my-flag` in the `global` location, run:
+
+          $ {command} my-revision-v1 --flag=my-flag --location=global
+
+      To create a revision using a fully qualified resource name for the revision ID, run:
+
+          $ {command} projects/my-project/locations/global/flagRevisions/my-revision-v1 --flag=my-flag
+
+      To create a revision with metadata for tracking, run:
+
+          $ {command} prod-ready-rev --flag=search-optimizations --location=us-central1 --labels=env=prod,owner=search-team --annotations=ticket=123
   arguments:
     params:
     - help_text: |-

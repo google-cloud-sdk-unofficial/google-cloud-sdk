@@ -1,15 +1,32 @@
 - release_tracks: [ALPHA, BETA]
   help_text:
     brief: Describe Flag
-    description: Describe a Flag
-    examples: |-
-      To describe a Flag, run:
+    description: |-
+      Show detailed information about a feature flag resource.
 
-      $ {command}
+      This command retrieves the complete configuration and status of a flag. It is
+      the primary tool for auditing flag definitions and troubleshooting rollout
+      discrepancies.
+
+      For automated processing, use `--format=json` or `--format=yaml` to retrieve the
+      structured representation of the flag's evaluation specification, which can be
+      used to programmatically verify rollout configurations before deployment.
+    examples: |-
+      To describe a flag named `my-feature-flag` in the `global` location, run:
+
+          $ {command} my-feature-flag --location=global
+
+      To describe a flag using its fully qualified resource name, run:
+
+          $ {command} projects/my-project/locations/global/flags/my-feature-flag
+
+      To inspect the evaluation specification in JSON format for automated auditing, run:
+
+          $ {command} my-feature-flag --location=global --format=json
   arguments:
     params:
     - help_text: |-
-        Flag ID of the Flag to describe.
+        Flag ID of the Flag to describe or the fully qualified resource name.
       is_positional: true
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:flag
       required: true

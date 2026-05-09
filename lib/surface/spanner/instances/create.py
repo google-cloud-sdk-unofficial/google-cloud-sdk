@@ -286,7 +286,6 @@ class AlphaCreate(Create):
     ).AddToParser(parser)
     resource_args.AddExpireBehaviorArg(parser)
     resource_args.AddInstanceTypeArg(parser)
-    resource_args.AddDefaultStorageTypeArg(parser)
     flags.AddCapacityArgsForInstance(
         require_all_autoscaling_args=True,
         parser=parser,
@@ -313,7 +312,6 @@ class AlphaCreate(Create):
     """
     instance_type = resource_args.GetInstanceType(args)
     expire_behavior = resource_args.GetExpireBehavior(args)
-    default_storage_type = resource_args.GetDefaultStorageTypeArg(args)
 
     op = instances.Create(
         instance=args.instance,
@@ -332,7 +330,6 @@ class AlphaCreate(Create):
         disable_downscaling=args.disable_downscaling,
         instance_type=instance_type,
         expire_behavior=expire_behavior,
-        default_storage_type=default_storage_type,
         ssd_cache=args.ssd_cache,
         edition=args.edition,
         default_backup_schedule_type=args.default_backup_schedule_type,

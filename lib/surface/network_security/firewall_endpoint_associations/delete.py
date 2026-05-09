@@ -38,11 +38,13 @@ DETAILED_HELP = {
 }
 
 
+@base.DefaultUniverseOnly
 class Delete(base.DeleteCommand):
   """Delete a Firewall Plus endpoint association."""
 
   @classmethod
   def Args(cls, parser):
+    association_flags.AddLocationArg(parser, required=False, default='')
     association_flags.AddAssociationResource(cls.ReleaseTrack(), parser)
     association_flags.AddMaxWait(parser, '60m')  # default to 60 minutes wait.
     base.ASYNC_FLAG.AddToParser(parser)

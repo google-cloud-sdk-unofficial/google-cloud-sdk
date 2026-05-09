@@ -16,15 +16,22 @@
 
 from googlecloudsdk.api_lib.run import ssh as run_ssh
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import container_parser
+from googlecloudsdk.command_lib.run import deletion
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
+from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run.sourcedeploys import deploy_util
 from googlecloudsdk.command_lib.run.sync import sync_util
 from googlecloudsdk.command_lib.util.args import map_util
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core import execution_utils
+from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_io
 
 
 def ContainerArgGroup(release_track=base.ReleaseTrack.GA):
@@ -70,6 +77,7 @@ class Sync(base.Command):
   @classmethod
   def CommonArgs(cls, parser):
     flags.SkipDeployArg(parser)
+    flags.KeepAliveAfterDevSyncFlag(parser)
     parser.add_argument(
         '--iap-tunnel-url-override',
         hidden=True,
@@ -100,6 +108,17 @@ class Sync(base.Command):
         parser, container_args, cls.ReleaseTrack()
     )
 
+  def _Cleanup(self, args, instance_ref):
+    pretty_print.Info('Waiting for instance to be deleted...')
+    conn_context = connection_context.GetConnectionContext(
+        args, flags.Product.RUN, self.ReleaseTrack()
+    )
+    with serverless_operations.Connect(conn_context) as client:
+      deletion.Delete(
+          instance_ref, client.GetInstance, client.DeleteInstance, False
+      )
+      log.DeletedResource(instance_ref.instancesId, 'instance')
+
   def Run(self, args):
     instance_ref = args.CONCEPTS.instance.Parse()
     args.project = flags.GetProjectID(args)
@@ -118,18 +137,36 @@ class Sync(base.Command):
     args.build_env_vars['GOOGLE_DEVSYNC'] = 'true'
 
     if not args.source:
-      raise exceptions.ArgumentError(
-          'The --source flag must be provided to specify the source for dev'
-          ' sync.'
-      )
+      if console_io.CanPrompt():
+        args.source = flags.PromptForDefaultSource()
+      else:
+        raise exceptions.ArgumentError(
+            'The --source flag must be provided to specify the source for dev'
+            ' sync.'
+        )
 
     if not args.skip_deploy:
+      changes = sync_util.NecessaryChangesForInstancesDevSync(args)
       deploy_util.DeployInstanceFromSource(
-          instance_ref, args.source, args.region, args, self.ReleaseTrack()
+          instance_ref=instance_ref,
+          source=args.source,
+          region=args.region,
+          args=args,
+          release_track=self.ReleaseTrack(),
+          changes=changes,
       )
 
-    sync_util.Sync(
-        args=args,
-        workload_type=run_ssh.Ssh.WorkloadType.INSTANCE,
-        source=args.source,
-    ).Run()
+    try:
+      with execution_utils.RaisesKeyboardInterrupt():
+        sync_util.Sync(
+            args=args,
+            workload_type=run_ssh.Ssh.WorkloadType.INSTANCE,
+            source=args.source,
+        ).Run()
+    except KeyboardInterrupt:
+      pretty_print.Info(
+          'Received Keyboard Interrupt... Dev Sync Session terminated'
+      )
+    finally:
+      if not args.keep_alive_after_dev_sync and not args.skip_deploy:
+        self._Cleanup(args, instance_ref)

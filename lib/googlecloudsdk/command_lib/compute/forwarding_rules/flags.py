@@ -220,23 +220,6 @@ SUBNET_ARG = compute_flags.ResourceArgument(
                         ' region of the forwarding rule.'))
 
 
-IP_COLLECTION_ARG = compute_flags.ResourceArgument(
-    name='--ip-collection',
-    required=False,
-    resource_name='public delegated prefix',
-    regional_collection='compute.publicDelegatedPrefixes',
-    short_help='Resource reference to a PublicDelegatedPrefix.',
-    detailed_help="""
-        Resource reference to a public delegated prefix. The PublicDelegatedPrefix (PDP) must
-        be a sub-prefix in EXTERNAL_IPV6_FORWARDING_RULE_CREATION mode.
-        """,
-    region_explanation=(
-        'If not specified, the region is set to the'
-        ' region of the forwarding rule.'
-    ),
-)
-
-
 def TargetGrpcProxyArg():
   """Return a resource argument for parsing a target gRPC proxy."""
 
@@ -539,7 +522,10 @@ def AddCreateArgs(
 
   NetworkArg().AddArgument(parser)
   SUBNET_ARG.AddArgument(parser)
-  IP_COLLECTION_ARG.AddArgument(parser)
+
+  AddIpCollection(
+      parser, include_external_passthrough=include_external_passthrough
+  )
 
   AddLoadBalancingScheme(
       parser,
@@ -617,6 +603,36 @@ def AddSetTargetArgs(
       include_external_passthrough=include_external_passthrough,
       deprecation_action=CreateDeprecationAction('--load-balancing-scheme'),
   )
+
+
+def GetIpCollectionArg(include_external_passthrough=False):
+  """Returns the ResourceArgument for the ip-collection flag."""
+  global_collection = (
+      'compute.globalPublicDelegatedPrefixes'
+      if include_external_passthrough
+      else None
+  )
+  return compute_flags.ResourceArgument(
+      name='--ip-collection',
+      required=False,
+      resource_name='public delegated prefix',
+      regional_collection='compute.publicDelegatedPrefixes',
+      global_collection=global_collection,
+      short_help='Resource reference to a PublicDelegatedPrefix.',
+      detailed_help="""
+          Resource reference to a public delegated prefix. The PublicDelegatedPrefix (PDP) must
+          be a sub-prefix in EXTERNAL_IPV6_FORWARDING_RULE_CREATION mode.
+          """,
+      region_explanation=(
+          'If not specified, the region is set to the'
+          ' region of the forwarding rule.'
+      ),
+  )
+
+
+def AddIpCollection(parser, include_external_passthrough=False):
+  """Adds the ip-collection flag."""
+  GetIpCollectionArg(include_external_passthrough).AddArgument(parser)
 
 
 def AddLoadBalancingScheme(

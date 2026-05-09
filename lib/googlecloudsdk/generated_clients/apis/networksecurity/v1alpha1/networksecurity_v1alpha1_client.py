@@ -72,6 +72,7 @@ class NetworksecurityV1alpha1(base_api.BaseApiClient):
     self.projects_locations_partnerSSEEnvironments = self.ProjectsLocationsPartnerSSEEnvironmentsService(self)
     self.projects_locations_partnerSSEGateways = self.ProjectsLocationsPartnerSSEGatewaysService(self)
     self.projects_locations_partnerSSERealms = self.ProjectsLocationsPartnerSSERealmsService(self)
+    self.projects_locations_rateLimitPolicies = self.ProjectsLocationsRateLimitPoliciesService(self)
     self.projects_locations_sacAttachments = self.ProjectsLocationsSacAttachmentsService(self)
     self.projects_locations_sacRealms = self.ProjectsLocationsSacRealmsService(self)
     self.projects_locations_securityProfileGroups = self.ProjectsLocationsSecurityProfileGroupsService(self)
@@ -5023,6 +5024,151 @@ class NetworksecurityV1alpha1(base_api.BaseApiClient):
         request_field='',
         request_type_name='NetworksecurityProjectsLocationsPartnerSSERealmsListRequest',
         response_type_name='ListPartnerSSERealmsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsRateLimitPoliciesService(base_api.BaseApiService):
+    """Service class for the projects_locations_rateLimitPolicies resource."""
+
+    _NAME = 'projects_locations_rateLimitPolicies'
+
+    def __init__(self, client):
+      super(NetworksecurityV1alpha1.ProjectsLocationsRateLimitPoliciesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new RateLimitPolicy in a given project and location.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsRateLimitPoliciesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/rateLimitPolicies',
+        http_method='POST',
+        method_id='networksecurity.projects.locations.rateLimitPolicies.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['rateLimitPolicyId', 'requestId'],
+        relative_path='v1alpha1/{+parent}/rateLimitPolicies',
+        request_field='rateLimitPolicy',
+        request_type_name='NetworksecurityProjectsLocationsRateLimitPoliciesCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single RateLimitPolicy.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsRateLimitPoliciesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/rateLimitPolicies/{rateLimitPoliciesId}',
+        http_method='DELETE',
+        method_id='networksecurity.projects.locations.rateLimitPolicies.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsRateLimitPoliciesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single RateLimitPolicy.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsRateLimitPoliciesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (RateLimitPolicy) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/rateLimitPolicies/{rateLimitPoliciesId}',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.rateLimitPolicies.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsRateLimitPoliciesGetRequest',
+        response_type_name='RateLimitPolicy',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""This option block is needed for CCFE to recognize your service. You can leave this block empty but do not remove it. Required to comment out to avoid build errors in CCFE config files. option (google.internal.cloud.control2.frontend) = { }; Lists RateLimitPolicies in a given project and location.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsRateLimitPoliciesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListRateLimitPoliciesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/rateLimitPolicies',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.rateLimitPolicies.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1alpha1/{+parent}/rateLimitPolicies',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsRateLimitPoliciesListRequest',
+        response_type_name='ListRateLimitPoliciesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single RateLimitPolicy.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsRateLimitPoliciesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/rateLimitPolicies/{rateLimitPoliciesId}',
+        http_method='PATCH',
+        method_id='networksecurity.projects.locations.rateLimitPolicies.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1alpha1/{+name}',
+        request_field='rateLimitPolicy',
+        request_type_name='NetworksecurityProjectsLocationsRateLimitPoliciesPatchRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

@@ -1,11 +1,33 @@
 - release_tracks: [ALPHA, BETA]
   help_text:
     brief: List Flags Attributes
-    description: List Flags Attributes
+    description: |-
+      List Flag Attributes available in a specific location for your SaaS offerings.
+
+      Use this command to audit available attributes (such as `userID` or `tenantID`) used in
+      feature flag evaluation specs to determine variant assignment. These attributes are typically
+      defined in the `global` location and must exist before they can be referenced in a flag's
+      evaluation criteria.
     examples: |-
-      To list all Flags Attributes, run:
+      To list all Flag Attributes across all locations in the current project, run:
 
           $ {command}
+
+      To list Flag Attributes for a specific location (e.g., `global`), run:
+
+          $ {command} --location=global
+
+      To find a specific attribute by its key (e.g., `userID`), run:
+
+          $ {command} --filter="key:userID"
+
+      To get the full resource URIs for use in a flag's evaluation-spec JSON, run:
+
+          $ {command} --location=global --uri
+
+      To list attributes and output in JSON format for automation/scripting, run:
+
+          $ {command} --format=json
   arguments:
     resource:
       help_text: |-

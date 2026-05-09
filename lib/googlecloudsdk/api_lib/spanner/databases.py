@@ -14,6 +14,7 @@
 # limitations under the License.
 """Spanner database API helper."""
 
+from typing import Any
 
 from apitools.base.py import list_pager
 from cloudsdk.google.protobuf import descriptor_pb2
@@ -22,7 +23,7 @@ from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.command_lib.ai import errors
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.spanner.resource_args import CloudKmsKeyName
-
+from googlecloudsdk.core import resources
 
 # The list of pre-defined IAM roles in Spanner.
 KNOWN_ROLES = [
@@ -195,43 +196,71 @@ def Restore(database_ref, backup_ref, encryption_type=None, kms_key=None):
   return client.projects_instances_databases.Restore(req)
 
 
-def Update(database_ref, enable_drop_protection, kms_keys=None):
-  """Update a database."""
+def Update(
+    database_ref: resources.Resource,
+    enable_drop_protection: bool | None = None,
+    kms_keys: list[str] | None = None,
+    clear_kms_keys: bool = False,
+) -> Any:
+  """Update a database.
+
+  Args:
+    database_ref: The reference to the database to update.
+    enable_drop_protection: Whether to enable drop protection on the database.
+    kms_keys: The list of KMS key names to be used to encrypt the database.
+    clear_kms_keys: Whether to clear KMS key references and revert to
+      Google-managed encryption.
+
+  Returns:
+    The long-running operation for the database update.
+
+  Raises:
+    errors.NoFieldsSpecifiedError: If no updates or multiple updates are
+    requested.
+  """
   client = apis.GetClientInstance('spanner', 'v1')
   msgs = apis.GetMessagesModule('spanner', 'v1')
 
-  if enable_drop_protection and kms_keys:
+  flags_set = [
+      enable_drop_protection is not None,
+      kms_keys is not None,
+      clear_kms_keys,
+  ].count(True)
+  if flags_set == 0:
     raise errors.NoFieldsSpecifiedError(
-        'Multiple updates requested. Both flag --[no-]enable-drop-protection'
-        ' and --kms-keys were specified. Please specify only one flag.'
+        'No updates requested. Need to specify at least one of '
+        '--[no-]enable-drop-protection, --kms-keys, or --clear-kms-keys.'
+    )
+  if flags_set > 1:
+    raise errors.NoFieldsSpecifiedError(
+        'Multiple updates requested. Please specify only one flag.'
     )
 
-  if enable_drop_protection is None and kms_keys is None:
-    raise errors.NoFieldsSpecifiedError(
-        'No updates requested. Need to specify either flag '
-        '--[no-]enable-drop-protection OR --kms-keys.'
-    )
-
-  database_obj = None
-  update_mask = []
   if enable_drop_protection is not None:
-    update_mask.append('enable_drop_protection')
     database_obj = msgs.Database(
         name=database_ref.RelativeName(),
         enableDropProtection=enable_drop_protection,
     )
+    update_mask = ['enable_drop_protection']
   elif kms_keys is not None:
-    update_mask.append('encryption_config')
     database_obj = msgs.Database(
         name=database_ref.RelativeName(),
         encryptionConfig=msgs.EncryptionConfig(kmsKeyNames=kms_keys),
     )
+    update_mask = ['encryption_config']
+  elif clear_kms_keys:
+    database_obj = msgs.Database(name=database_ref.RelativeName())
+    update_mask = ['encryption_config']
+
   req = msgs.SpannerProjectsInstancesDatabasesPatchRequest(
       database=database_obj,
       name=database_ref.RelativeName(),
       updateMask=','.join(update_mask),
   )
-  return client.projects_instances_databases.Patch(req)
+
+  cleared_fields = ['encryptionConfig'] if clear_kms_keys else []
+  with client.IncludeFields(cleared_fields):
+    return client.projects_instances_databases.Patch(req)
 
 
 def ChangeQuorum(database_ref, quorum_type, etag=None):

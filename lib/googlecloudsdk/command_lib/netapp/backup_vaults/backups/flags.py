@@ -15,6 +15,9 @@
 """Flags and helpers for the Cloud NetApp Backups commands."""
 
 
+import textwrap
+
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.command_lib.netapp import flags
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -77,17 +80,51 @@ def AddBackupSourceSnapshotResourceArg(parser):
   ).AddToParser(parser)
 
 
+def AddBackupOntapSourceArg(parser):
+  """Add the ONTAP Source arg to the arg parser."""
+  ontap_source_arg_spec = {
+      'storage-pool': str,
+      'volume-uuid': str,
+      'snapshot-uuid': str,
+  }
+  ontap_source_help = textwrap.dedent("""\
+    ONTAP source for the backup.
+
+    It consists of the following fields:
+    * `storage-pool`: The storage pool of the source volume.
+    * `volume-uuid`: The UUID of the source volume.
+    * `snapshot-uuid`: The UUID of the source snapshot (optional).
+    """)
+  parser.add_argument(
+      '--ontap-source',
+      type=arg_parsers.ArgDict(
+          spec=ontap_source_arg_spec,
+          required_keys=['storage-pool', 'volume-uuid'],
+      ),
+      help=ontap_source_help,
+      required=False,
+  )
+
+
 ## Helper functions to combine Backups args / flags for gcloud commands ##
 
 
-def AddBackupCreateArgs(parser):
+def AddBackupCreateArgs(parser, support_ontap_source=False):
   """Add args for creating a Backup."""
   concept_parsers.ConceptParser(
       [flags.GetBackupPresentationSpec('The Backup to create')]
   ).AddToParser(parser)
   AddBackupBackupVaultResourceArg(parser, required=True)
-  AddBackupSourceVolumeResourceArg(parser, required=True)
-  AddBackupSourceSnapshotResourceArg(parser)
+
+  if support_ontap_source:
+    source_group = parser.add_mutually_exclusive_group(required=True)
+    vol_snap_group = source_group.add_group()
+    AddBackupSourceVolumeResourceArg(vol_snap_group, required=True)
+    AddBackupSourceSnapshotResourceArg(vol_snap_group)
+    AddBackupOntapSourceArg(source_group)
+  else:
+    AddBackupSourceVolumeResourceArg(parser, required=True)
+    AddBackupSourceSnapshotResourceArg(parser)
   flags.AddResourceDescriptionArg(parser, 'Backup Vault')
   flags.AddResourceAsyncFlag(parser)
   labels_util.AddCreateLabelsFlags(parser)
@@ -110,4 +147,3 @@ def AddBackupUpdateArgs(parser):
   flags.AddResourceDescriptionArg(parser, 'Backup')
   flags.AddResourceAsyncFlag(parser)
   labels_util.AddUpdateLabelsFlags(parser)
-

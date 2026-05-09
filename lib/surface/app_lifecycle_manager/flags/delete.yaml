@@ -1,11 +1,27 @@
 - release_tracks: [ALPHA, BETA]
   help_text:
     brief: Delete Flag
-    description: Delete a Flag
-    examples: |-
-      To delete a Flag, run:
+    description: |-
+      Delete a feature flag resource.
 
-      $ {command}
+      This operation is permanent. To prevent production outages, the flag MUST be
+      detached from all Units and UnitKinds via a rollout before it is deleted.
+
+      The safe deletion workflow is:
+
+        1. Ensure all application code using the flag has been removed and the updated binary is deployed to production.
+        2. Confirm that no active Units are still requesting evaluations for that specific flag key.
+        3. Detach from Units: create a new FlagRelease that includes Flag to remove and initiate a Rollout.
+        4. Once the cleanup rollout is complete, you can safely delete the FlagRelease and FlagRevision.
+        5. Run this delete command to permanently remove the Flag.
+    examples: |-
+      To delete a flag named `my-feature-flag` in the `global` location, run:
+
+          $ {command} my-feature-flag --location=global
+
+      To delete a flag using a fully qualified resource name (useful for automation), run:
+
+          $ {command} projects/my-project/locations/global/flags/my-feature-flag
   arguments:
     params:
     - help_text: |-

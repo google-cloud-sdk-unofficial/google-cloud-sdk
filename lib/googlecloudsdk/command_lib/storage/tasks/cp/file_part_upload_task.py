@@ -19,7 +19,6 @@ Typically executed in a task iterator:
 googlecloudsdk.command_lib.storage.tasks.task_executor.
 """
 
-
 import collections
 import functools
 import os
@@ -239,22 +238,27 @@ class FilePartUploadTask(file_part_task.FilePartTask):
                   self._existing_destination_is_valid(destination_resource)):
                 return self._get_output(destination_resource)
 
-        attempt_upload = functools.partial(
-            api.upload_object,
-            source_stream,
-            self._destination_resource,
-            request_config,
-            posix_to_set=self._posix_to_set,
-            serialization_data=serialization_data,
-            source_resource=source_resource_for_metadata,
-            tracker_callback=tracker_callback,
-            upload_strategy=upload_strategy,
-        )
+        def attempt_upload() -> resource_reference.ObjectResource:
+          log.debug('attempt_upload, serialization_data: %s',
+                    serialization_data)
+          return api.upload_object(
+              source_stream,
+              self._destination_resource,
+              request_config,
+              posix_to_set=self._posix_to_set,
+              serialization_data=serialization_data,
+              source_resource=source_resource_for_metadata,
+              tracker_callback=tracker_callback,
+              upload_strategy=upload_strategy,
+          )
 
         def _handle_resumable_upload_error(exc_type, exc_value, exc_traceback,
                                            state):
           """Returns true if resumable upload should retry on error argument."""
-          del exc_traceback, exc_type  # Unused.
+          log.debug(
+              'Resumable upload error.',
+              exc_info=(exc_type, exc_value, exc_traceback),
+          )
           if not (
               isinstance(exc_value, api_errors.NotFoundError)
               or getattr(exc_value, 'status_code', None) == 410
@@ -270,6 +274,18 @@ class FilePartUploadTask(file_part_task.FilePartTask):
             return False
 
           tracker_file_util.delete_tracker_file(tracker_file_path)
+          nonlocal serialization_data
+          serialization_data = None
+          try:
+            source_stream.seek(0)
+          except (command_errors.Error, OSError) as e:
+            # If the stream is not seekable (e.g. a pipe that has been partially
+            # read), we can't do a fresh upload.
+            log.debug(
+                'Stream is not seekable, aborting resumable upload. Error: %s',
+                e,
+            )
+            return False
 
           if state.retrial == 0:
             # Ping bucket to see if it exists.

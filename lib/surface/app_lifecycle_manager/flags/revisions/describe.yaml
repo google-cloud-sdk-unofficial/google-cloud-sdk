@@ -1,15 +1,32 @@
 - release_tracks: [ALPHA, BETA]
   help_text:
     brief: Describe Flag Revision
-    description: Describe a Flag Revision
-    examples: |-
-      To describe a Flag Revision, run:
+    description: |-
+      Show detailed information about a flag revision resource.
 
-          $ {command}
+      This command retrieves the complete configuration of a specific flag revision.
+      It is the primary tool for auditing historical flag definitions and inspecting
+      snapshots before they are included in a Flag Release.
+
+      For automated processing, use `--format=json` or `--format=yaml` to retrieve the
+      structured representation of the revision's evaluation logic, which can be used
+      to programmatically verify configurations.
+    examples: |-
+      To describe a flag revision named `my-revision-v1` in the `global` location, run:
+
+          $ {command} my-revision-v1 --location=global
+
+      To describe a flag revision using its fully qualified resource name, run:
+
+          $ {command} projects/my-project/locations/global/flagRevisions/my-revision-v1
+
+      To inspect the revision configuration in JSON format for automated auditing, run:
+
+          $ {command} my-revision-v1 --location=global --format=json
   arguments:
     params:
     - help_text: |-
-        Flag Revision ID of the Flag Revision to describe.
+        Flag Revision ID of the Flag Revision to describe or the fully qualified resource name.
       is_positional: true
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:flag_revision
       required: true

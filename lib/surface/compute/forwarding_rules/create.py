@@ -157,7 +157,6 @@ class CreateHelper(object):
           serviceDirectoryRegion=region, namespace=namespace)
 
     ports_all_specified, range_list = _ExtractPortsAndAll(args.ports)
-    port_range = _MakeSingleUnifiedPortRange(args.port_range, range_list)
     # All global forwarding rules must use EXTERNAL or INTERNAL_SELF_MANAGED
     # schemes presently.
     load_balancing_scheme = _GetLoadBalancingScheme(
@@ -166,6 +165,15 @@ class CreateHelper(object):
         is_psc_google_apis,
         self._support_external_passthrough,
     )
+    # Omit setting port_range for Global NetLB. _MakeSingleUnifiedPortRange does
+    # not permit discontinguous port ranges, which are allowed for Global NetLB.
+    port_range = None
+    if not (
+        self._support_external_passthrough
+        and load_balancing_scheme
+        == client.messages.ForwardingRule.LoadBalancingSchemeValueValuesEnum.EXTERNAL_PASSTHROUGH
+    ):
+      port_range = _MakeSingleUnifiedPortRange(args.port_range, range_list)
     if (load_balancing_scheme == client.messages.ForwardingRule
         .LoadBalancingSchemeValueValuesEnum.INTERNAL):
       raise fw_exceptions.ArgumentError(
@@ -220,19 +228,30 @@ class CreateHelper(object):
             'The valid values for target-google-apis-bundle are: ' +
             bundles_list)
     else:
-      # L7XLB in Premium Tier.
       target_ref = utils.GetGlobalTarget(
           resources, args, self._support_external_passthrough
       )
       target_as_str = target_ref.SelfLink()
 
-      if ports_all_specified:
-        raise exceptions.InvalidArgumentException(
-            '--ports',
-            '[--ports] cannot be set to ALL for global forwarding rules.')
-      if not port_range:
-        raise exceptions.InvalidArgumentException(
-            '--ports', '[--ports] is required for global forwarding rules.')
+      if (
+          self._support_external_passthrough
+          and load_balancing_scheme
+          == client.messages.ForwardingRule.LoadBalancingSchemeValueValuesEnum.EXTERNAL_PASSTHROUGH
+      ):
+        # This is a Global NetLB forwarding rule using a backend service.
+        pass
+      else:
+        # L7XLB in Premium Tier.
+        # Validate the port flags.
+        if ports_all_specified:
+          raise exceptions.InvalidArgumentException(
+              '--ports',
+              '[--ports] cannot be set to ALL for global forwarding rules.',
+          )
+        if not port_range:
+          raise exceptions.InvalidArgumentException(
+              '--ports', '[--ports] is required for global forwarding rules.'
+          )
 
     if hasattr(args, 'ip_addresses') and args.ip_addresses:
       if (
@@ -244,7 +263,7 @@ class CreateHelper(object):
             '--ip-addresses can only be specified for EXTERNAL_PASSTHROUGH load'
             ' balancing scheme.',
         )
-      if hasattr(args, 'ip_addresses') and len(args.ip_addresses) not in [1, 2]:
+      if len(args.ip_addresses) not in [1, 2]:
         raise exceptions.InvalidArgumentException(
             '--ip-addresses',
             'Exactly one or two IP addresses must be specified.',
@@ -281,6 +300,33 @@ class CreateHelper(object):
 
     if args.IsSpecified('allow_global_access'):
       forwarding_rule.allowGlobalAccess = args.allow_global_access
+
+    if (
+        self._support_external_passthrough
+        and load_balancing_scheme
+        == client.messages.ForwardingRule.LoadBalancingSchemeValueValuesEnum.EXTERNAL_PASSTHROUGH
+    ):
+      # This is a Global NetLB forwarding rule using a backend service.
+      # The backendService field must be specified instead of target,
+      # and the ports arguments must be resolved to the correct fields.
+      forwarding_rule.backendService = forwarding_rule.target
+      forwarding_rule.target = None
+      forwarding_rule.portRange = None
+      _SetForwardingRulePortsForNetLbBackendService(
+          forwarding_rule, ports_all_specified, range_list, args.port_range
+      )
+
+      # The ipCollection field must be set if provided (for BYOIP PDP).
+      if args.IsSpecified('ip_collection'):
+        forwarding_rule.ipCollection = (
+            flags.GetIpCollectionArg(self._support_external_passthrough)
+            .ResolveAsResource(
+                args,
+                resources,
+                default_scope=compute_flags.compute_scope.ScopeEnum.GLOBAL,
+            )
+            .SelfLink()
+        )
 
     request = client.messages.ComputeGlobalForwardingRulesInsertRequest(
         forwardingRule=forwarding_rule, project=forwarding_rule_ref.project)
@@ -339,13 +385,6 @@ class CreateHelper(object):
           'the EXTERNAL_PASSTHROUGH load balancing scheme.',
       )
 
-    address = self._ResolveAddress(
-        resources,
-        args,
-        compute_flags.compute_scope.ScopeEnum.REGION,
-        forwarding_rule_ref,
-    )
-
     forwarding_rule = client.messages.ForwardingRule(
         description=args.description,
         name=forwarding_rule_ref.Name(),
@@ -362,7 +401,7 @@ class CreateHelper(object):
     ports_all_specified, range_list = _ExtractPortsAndAll(args.ports)
 
     if target_ref.Collection() == 'compute.regionBackendServices':
-      # A FR pointing to a BES has no target attribute.
+      # A FR pointing to a BS has no target attribute.
       forwarding_rule.backendService = target_ref.SelfLink()
       forwarding_rule.target = None
     else:
@@ -414,22 +453,9 @@ class CreateHelper(object):
       # API fields allPorts, ports, and portRange are mutually exclusive.
       # All three API fields are valid for this case.
       # Use of L3_DEFAULT implies all ports even if allPorts is unset.
-      if ports_all_specified:
-        forwarding_rule.allPorts = True
-      elif range_list:
-        if len(range_list) > 1:
-          # More than one port, potentially discontiguous, from --ports= flag.
-          forwarding_rule.ports = [
-              six.text_type(p) for p in _GetPortList(range_list)
-          ]
-        else:
-          # Exactly one value from --ports= flag. Might be a single port (80);
-          # might be a range (80-90). Since it might be a range, the portRange
-          # API attribute is more appropriate.
-          forwarding_rule.portRange = six.text_type(range_list[0])
-      elif args.port_range:
-        forwarding_rule.portRange = _MakeSingleUnifiedPortRange(
-            args.port_range, range_list)
+      _SetForwardingRulePortsForNetLbBackendService(
+          forwarding_rule, ports_all_specified, range_list, args.port_range
+      )
     elif ((target_ref.Collection() == 'compute.targetPool' or
            target_ref.Collection() == 'compute.targetInstances') and
           ((args.load_balancing_scheme == 'EXTERNAL') or
@@ -460,8 +486,11 @@ class CreateHelper(object):
       forwarding_rule.allowPscGlobalAccess = args.allow_psc_global_access
 
     if args.IsSpecified('ip_collection'):
-      forwarding_rule.ipCollection = flags.IP_COLLECTION_ARG.ResolveAsResource(
-          args, resources).SelfLink()
+      forwarding_rule.ipCollection = (
+          flags.GetIpCollectionArg(self._support_external_passthrough)
+          .ResolveAsResource(args, resources)
+          .SelfLink()
+      )
 
     if args.IsSpecified('disable_automate_dns_zone'):
       forwarding_rule.noAutomateDnsZone = args.disable_automate_dns_zone
@@ -716,6 +745,40 @@ def _GetPortList(range_list):
   for port_range in range_list:
     ports.extend(list(range(port_range.start, port_range.end + 1)))
   return sorted(ports)
+
+
+def _SetForwardingRulePortsForNetLbBackendService(
+    forwarding_rule, ports_all_specified, range_list, arg_port_range
+):
+  """Set the appropriate port field for a NetLB FR with backend service.
+
+  Args:
+    forwarding_rule: The forwarding rule to set properties on.
+    ports_all_specified: Whether the --all-ports flag was specified.
+    range_list: The list of ranges from the --ports flag.
+    arg_port_range: The port range from the --port-range flag.
+  """
+  # This is a NetLB forwarding rule with a backend service.
+  # API fields allPorts, ports, and portRange are mutually exclusive.
+  # API field ports is not valid for this case.
+  # Use of L3_DEFAULT implies all ports by definition.
+  if ports_all_specified:
+    forwarding_rule.allPorts = True
+  elif range_list:
+    if len(range_list) > 1:
+      # More than one port, potentially discontiguous, from --ports= flag.
+      forwarding_rule.ports = [
+          six.text_type(p) for p in _GetPortList(range_list)
+      ]
+    else:
+      # Exactly one value from --ports= flag. Might be a single port (80);
+      # might be a range (80-90). Since it might be a range, the portRange
+      # API attribute is more appropriate.
+      forwarding_rule.portRange = six.text_type(range_list[0])
+  elif arg_port_range:
+    forwarding_rule.portRange = _MakeSingleUnifiedPortRange(
+        arg_port_range, range_list
+    )
 
 
 def _GetLoadBalancingScheme(

@@ -403,6 +403,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_RATELIMITPOLICIES = (
+      'projects.locations.rateLimitPolicies',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'rateLimitPolicies/{rateLimitPoliciesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_SACATTACHMENTS = (
       'projects.locations.sacAttachments',
       '{+name}',

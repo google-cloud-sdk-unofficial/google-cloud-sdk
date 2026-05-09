@@ -30,6 +30,9 @@ CREATE_ROUTE = _SERVERLESS_PREFIX + 'create_route'
 # Time to create a service
 CREATE_SERVICE = _SERVERLESS_PREFIX + 'create_service'
 
+# Time to submit a build to Cloud Build and wait for its completion
+CREATE_BUILD = _SERVERLESS_PREFIX + 'submit_build'
+
 # Time to delete a domain mapping
 DELETE_DOMAIN_MAPPING = _SERVERLESS_PREFIX + 'delete_domain_mapping'
 
@@ -155,3 +158,9 @@ LIST_WORKER_POOL_REVISIONS = _SERVERLESS_PREFIX + 'list_worker_pool_revisions'
 
 # Time to get a worker pool revision
 GET_WORKER_POOL_REVISION = _SERVERLESS_PREFIX + 'get_worker_pool_revision'
+
+# Custom metric for the region of the service being deployed
+CUSTOM_METRIC_REGION = _SERVERLESS_PREFIX + 'region'
+
+# Custom metric for the base image of the service being deployed
+CUSTOM_METRIC_BASE_IMAGE = _SERVERLESS_PREFIX + 'base_image'

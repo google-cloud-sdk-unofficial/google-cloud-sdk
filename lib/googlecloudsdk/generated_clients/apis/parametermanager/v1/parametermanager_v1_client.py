@@ -39,6 +39,8 @@ class ParametermanagerV1(base_api.BaseApiClient):
         response_encoding=response_encoding)
     self.projects_locations_parameters_versions = self.ProjectsLocationsParametersVersionsService(self)
     self.projects_locations_parameters = self.ProjectsLocationsParametersService(self)
+    self.projects_locations_templates_versions = self.ProjectsLocationsTemplatesVersionsService(self)
+    self.projects_locations_templates = self.ProjectsLocationsTemplatesService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects = self.ProjectsService(self)
 
@@ -359,6 +361,323 @@ class ParametermanagerV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsTemplatesVersionsService(base_api.BaseApiService):
+    """Service class for the projects_locations_templates_versions resource."""
+
+    _NAME = 'projects_locations_templates_versions'
+
+    def __init__(self, client):
+      super(ParametermanagerV1.ProjectsLocationsTemplatesVersionsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new TemplateVersion in a given project, location, and template.
+
+      Args:
+        request: (ParametermanagerProjectsLocationsTemplatesVersionsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TemplateVersion) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/templates/{templatesId}/versions',
+        http_method='POST',
+        method_id='parametermanager.projects.locations.templates.versions.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['requestId', 'templateVersionId'],
+        relative_path='v1/{+parent}/versions',
+        request_field='templateVersion',
+        request_type_name='ParametermanagerProjectsLocationsTemplatesVersionsCreateRequest',
+        response_type_name='TemplateVersion',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single TemplateVersion.
+
+      Args:
+        request: (ParametermanagerProjectsLocationsTemplatesVersionsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/templates/{templatesId}/versions/{versionsId}',
+        http_method='DELETE',
+        method_id='parametermanager.projects.locations.templates.versions.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='ParametermanagerProjectsLocationsTemplatesVersionsDeleteRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single TemplateVersion.
+
+      Args:
+        request: (ParametermanagerProjectsLocationsTemplatesVersionsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TemplateVersion) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/templates/{templatesId}/versions/{versionsId}',
+        http_method='GET',
+        method_id='parametermanager.projects.locations.templates.versions.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['view'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='ParametermanagerProjectsLocationsTemplatesVersionsGetRequest',
+        response_type_name='TemplateVersion',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists TemplateVersions in a given project, location, and template.
+
+      Args:
+        request: (ParametermanagerProjectsLocationsTemplatesVersionsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListTemplateVersionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/templates/{templatesId}/versions',
+        http_method='GET',
+        method_id='parametermanager.projects.locations.templates.versions.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/versions',
+        request_field='',
+        request_type_name='ParametermanagerProjectsLocationsTemplatesVersionsListRequest',
+        response_type_name='ListTemplateVersionsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates a single TemplateVersion.
+
+      Args:
+        request: (ParametermanagerProjectsLocationsTemplatesVersionsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TemplateVersion) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/templates/{templatesId}/versions/{versionsId}',
+        http_method='PATCH',
+        method_id='parametermanager.projects.locations.templates.versions.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1/{+name}',
+        request_field='templateVersion',
+        request_type_name='ParametermanagerProjectsLocationsTemplatesVersionsPatchRequest',
+        response_type_name='TemplateVersion',
+        supports_download=False,
+    )
+
+    def Render(self, request, global_params=None):
+      r"""Gets rendered version of a TemplateVersion.
+
+      Args:
+        request: (ParametermanagerProjectsLocationsTemplatesVersionsRenderRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (RenderTemplateVersionResponse) The response message.
+      """
+      config = self.GetMethodConfig('Render')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Render.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/templates/{templatesId}/versions/{versionsId}:render',
+        http_method='GET',
+        method_id='parametermanager.projects.locations.templates.versions.render',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['parameterVersion'],
+        relative_path='v1/{+name}:render',
+        request_field='',
+        request_type_name='ParametermanagerProjectsLocationsTemplatesVersionsRenderRequest',
+        response_type_name='RenderTemplateVersionResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsTemplatesService(base_api.BaseApiService):
+    """Service class for the projects_locations_templates resource."""
+
+    _NAME = 'projects_locations_templates'
+
+    def __init__(self, client):
+      super(ParametermanagerV1.ProjectsLocationsTemplatesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new Template in a given project and location.
+
+      Args:
+        request: (ParametermanagerProjectsLocationsTemplatesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Template) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/templates',
+        http_method='POST',
+        method_id='parametermanager.projects.locations.templates.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['requestId', 'templateId'],
+        relative_path='v1/{+parent}/templates',
+        request_field='template',
+        request_type_name='ParametermanagerProjectsLocationsTemplatesCreateRequest',
+        response_type_name='Template',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single Template.
+
+      Args:
+        request: (ParametermanagerProjectsLocationsTemplatesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/templates/{templatesId}',
+        http_method='DELETE',
+        method_id='parametermanager.projects.locations.templates.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='ParametermanagerProjectsLocationsTemplatesDeleteRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single Template.
+
+      Args:
+        request: (ParametermanagerProjectsLocationsTemplatesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Template) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/templates/{templatesId}',
+        http_method='GET',
+        method_id='parametermanager.projects.locations.templates.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='ParametermanagerProjectsLocationsTemplatesGetRequest',
+        response_type_name='Template',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists Templates in a given project and location.
+
+      Args:
+        request: (ParametermanagerProjectsLocationsTemplatesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListTemplatesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/templates',
+        http_method='GET',
+        method_id='parametermanager.projects.locations.templates.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/templates',
+        request_field='',
+        request_type_name='ParametermanagerProjectsLocationsTemplatesListRequest',
+        response_type_name='ListTemplatesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates a single Template.
+
+      Args:
+        request: (ParametermanagerProjectsLocationsTemplatesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Template) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/templates/{templatesId}',
+        http_method='PATCH',
+        method_id='parametermanager.projects.locations.templates.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1/{+name}',
+        request_field='template',
+        request_type_name='ParametermanagerProjectsLocationsTemplatesPatchRequest',
+        response_type_name='Template',
+        supports_download=False,
+    )
+
   class ProjectsLocationsService(base_api.BaseApiService):
     """Service class for the projects_locations resource."""
 
@@ -397,7 +716,7 @@ class ParametermanagerV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the ListLocationsRequest.name field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
       Args:
         request: (ParametermanagerProjectsLocationsListRequest) input message

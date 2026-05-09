@@ -210,9 +210,12 @@ class ProjectPromptFallthrough(PromptFallthrough):
       _, inferred_project = ParseArImage(image)
       if inferred_project and inferred_project != 'cloudrun':
         default_project = inferred_project
-    return console_io.PromptWithDefault(
+    project = console_io.PromptWithDefault(
         message='Please specify a project ID', default=default_project
     )
+    if project:
+      properties.VALUES.core.project.Set(project)
+    return project
 
 
 class DefaultFallthrough(deps.Fallthrough):

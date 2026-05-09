@@ -42,7 +42,6 @@ class CreateGroupPlacement(base.CreateCommand):
   def Args(parser):
     _CommonArgs(parser, compute_api.COMPUTE_ALPHA_API_VERSION,
                 base.ReleaseTrack.ALPHA)
-    flags.AddAcceleratorTopologyModeArgs(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -74,7 +73,6 @@ class CreateGroupPlacementBeta(CreateGroupPlacement):
   def Args(parser):
     _CommonArgs(parser, compute_api.COMPUTE_BETA_API_VERSION,
                 base.ReleaseTrack.BETA)
-    flags.AddAcceleratorTopologyModeArgs(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)

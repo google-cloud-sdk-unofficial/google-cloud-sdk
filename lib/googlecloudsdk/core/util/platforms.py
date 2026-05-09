@@ -30,13 +30,19 @@ INVALID_WINDOWS_PATH_CHARACTERS = ('/', ':', '*', '?', '"', '<', '>', '|')
 
 def MakePathWindowsCompatible(path):
   """Converts invalid Windows characters to Unicode 'unsupported' character."""
-  if re.search(r'^[A-Za-z]:', path):
-    # Windows drive letters are valid (e.g. "C:\\path\\...").
-    new_path = [path[:2]]
-    start_index = 2
-  else:
-    new_path = []
-    start_index = 0
+  new_path = []
+  start_index = 0
+
+  # Handle extended path prefix \\?\
+  if path.startswith('\\\\?\\'):
+    new_path.append(path[:4])
+    start_index = 4
+
+  # Handle drive letter (potentially after prefix)
+  if re.search(r'^[A-Za-z]:', path[start_index:]):
+    new_path.append(path[start_index : start_index + 2])
+    start_index += 2
+
   performed_conversion = False
   for i in range(start_index, len(path)):
     if path[i] in INVALID_WINDOWS_PATH_CHARACTERS:

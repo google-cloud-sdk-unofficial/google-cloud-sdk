@@ -1233,9 +1233,8 @@ class EventarcProjectsLocationsListRequest(_messages.Message):
   r"""A EventarcProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -2098,6 +2097,8 @@ class GoogleCloudEventarcV1PipelineDestination(_messages.Message):
       destinations that require Google Cloud credentials for access like Cloud
       Run. This field is optional and should be set only by users interested
       in authenticated push.
+    firebaseCloudMessaging: Optional. The Firebase Cloud Messaging endpoint
+      where an FCM message should be sent.
     httpEndpoint: Optional. An HTTP endpoint destination described by an URI.
       If a DNS FQDN is provided as the endpoint, Pipeline will create a
       peering zone to the consumer VPC and forward DNS requests to the VPC
@@ -2123,12 +2124,13 @@ class GoogleCloudEventarcV1PipelineDestination(_messages.Message):
   """
 
   authenticationConfig = _messages.MessageField('GoogleCloudEventarcV1PipelineDestinationAuthenticationConfig', 1)
-  httpEndpoint = _messages.MessageField('GoogleCloudEventarcV1PipelineDestinationHttpEndpoint', 2)
-  messageBus = _messages.StringField(3)
-  networkConfig = _messages.MessageField('GoogleCloudEventarcV1PipelineDestinationNetworkConfig', 4)
-  outputPayloadFormat = _messages.MessageField('GoogleCloudEventarcV1PipelineMessagePayloadFormat', 5)
-  topic = _messages.StringField(6)
-  workflow = _messages.StringField(7)
+  firebaseCloudMessaging = _messages.MessageField('GoogleCloudEventarcV1PipelineDestinationFirebaseCloudMessaging', 2)
+  httpEndpoint = _messages.MessageField('GoogleCloudEventarcV1PipelineDestinationHttpEndpoint', 3)
+  messageBus = _messages.StringField(4)
+  networkConfig = _messages.MessageField('GoogleCloudEventarcV1PipelineDestinationNetworkConfig', 5)
+  outputPayloadFormat = _messages.MessageField('GoogleCloudEventarcV1PipelineMessagePayloadFormat', 6)
+  topic = _messages.StringField(7)
+  workflow = _messages.StringField(8)
 
 
 class GoogleCloudEventarcV1PipelineDestinationAuthenticationConfig(_messages.Message):
@@ -2193,6 +2195,79 @@ class GoogleCloudEventarcV1PipelineDestinationAuthenticationConfigOidcToken(_mes
 
   audience = _messages.StringField(1)
   serviceAccount = _messages.StringField(2)
+
+
+class GoogleCloudEventarcV1PipelineDestinationFirebaseCloudMessaging(_messages.Message):
+  r"""Represents a Firebase Cloud Messaging destination.
+
+  Fields:
+    messageTemplate: Required. The FCM message template that helps construct
+      the HTTP request to send to Firebase Cloud Messaging service.
+    project: Required. The name or id of the project where FCM Message is sent
+      to. Format: `projects/{project-id}` or `projects/{project-number}`.
+  """
+
+  messageTemplate = _messages.MessageField('GoogleCloudEventarcV1PipelineDestinationFirebaseCloudMessagingMessageTemplate', 1)
+  project = _messages.StringField(2)
+
+
+class GoogleCloudEventarcV1PipelineDestinationFirebaseCloudMessagingMessageTemplate(_messages.Message):
+  r"""A template that helps construct an FCM message in the HTTP request to
+  send to Firebase Cloud Messaging service (https://firebase.google.com/docs/r
+  eference/fcm/rest/v1/projects.messages#resource:-message).
+
+  Fields:
+    androidConfig: Optional. A CEL expression that constructs a [AndroidConfig
+      ](https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messag
+      es#androidconfig) object. Note that Enum fields within AndroidConfig
+      take string values. Example 1: ``` { "ttl": "100s",
+      "restricted_package_name": "com.example.app", "priority": "HIGH",
+      "collapse_key": message.data.collapse_key } ``` Example 2:
+      `message.data.android_config`
+    apnsConfig: Optional. A CEL expression that constructs a [ApnsConfig](http
+      s://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages#Apn
+      sConfig) object. The format is similar to `android_config` field.
+    condition: Optional. A CEL expression that constructs a condition to send
+      a message to. Examples: Example 1 (use a known condition): "'foo' in
+      topics && 'bar' in topics" Example 2 (populate the condition from
+      message attributes): message.data.condition
+    data: Optional. A CEL expression that constructs the data payload within
+      the [message](https://firebase.google.com/docs/reference/fcm/rest/v1/pro
+      jects.messages#resource:-message). Must return a map of key/value pairs.
+      Example: `{ "name": "wrench", "mass": "1.3kg", "count": "3" }`
+    fcmOptions: Optional. A CEL expression that constructs the [FcmOptions](ht
+      tps://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages#F
+      cmOptions) object. Example: `{ "analytics_label": "SOME_LABEL" }`
+    notification: Optional. A CEL expression that constructs a [notification](
+      https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages
+      #notification) object. Example 1: ``` { "title": "Welcome", "body":
+      "Welcome to this awesome app", "image": "https://example.com/image.png"
+      } ``` Example 2: `message.data.notification` Example 3: ``` { "title":
+      message.data.notification.title, "body": message.data.notification.body,
+      "image": message.data.notification.image } ```
+    token: Optional. A CEL expression that constructs a registration token to
+      send a message to. Example 1 (use a known token):
+      "bk3RNwTe3H0:CI2k_HHwgIpoDKCIZvvDMExUdFQ3P1..." Example 2 (populate the
+      token from message attributes): message.data.token
+    topic: Optional. A CEL expression that constructs a topic name to send a
+      message to. Example 1 (use a known topic): "fcm-topic-for-breaking-news"
+      Example 2 (populate the topic from message attributes):
+      message.data.topic
+    webpushConfig: Optional. A CEL expression that constructs a [WebpushConfig
+      ](https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messag
+      es#WebpushConfig) object. The format is similar to `android_config`
+      field.
+  """
+
+  androidConfig = _messages.StringField(1)
+  apnsConfig = _messages.StringField(2)
+  condition = _messages.StringField(3)
+  data = _messages.StringField(4)
+  fcmOptions = _messages.StringField(5)
+  notification = _messages.StringField(6)
+  token = _messages.StringField(7)
+  topic = _messages.StringField(8)
+  webpushConfig = _messages.StringField(9)
 
 
 class GoogleCloudEventarcV1PipelineDestinationHttpEndpoint(_messages.Message):

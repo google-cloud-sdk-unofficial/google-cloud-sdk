@@ -1,11 +1,54 @@
 - release_tracks: [ALPHA, BETA]
   help_text:
     brief: Update Flag
-    description: Update a Flag
-    examples: |-
-      To update a Flag, run:
+    description: |-
+      Update the definition of a feature flag. This command modifies the flag's
+      configuration such as variants, evaluation logic, or metadata within its parent UnitKind.
 
-          $ {command}
+      Feature flags follow a lifecycle managed through their state:
+
+      The `in-development` state is the initial state for a feature flag. It indicates that the flag
+      is currently being defined, variants are being added, and evaluation logic is being refined.
+      Flags in this state are typically used for initial setup and testing and are not yet intended
+      for production rollouts.
+
+      The `active` state is the default state for a feature flag. It signifies that the flag is in
+      use, authorized for production rollouts, and actively being evaluated by application services.
+      Active flags are included in configuration manifests and release snapshots for the fleet.
+
+      The `sunsetting` state indicates that a feature flag is being phased out. It serves as a
+      signal to engineering teams that the code associated with the flag should be removed. While
+      still functional, sunsetting flags should not be used for new feature logic and are candidates
+      for future cleanup.
+
+      When a flag is no longer needed, its state can be updated to `cleanup`. Performing a rollout
+      with a flag in this state will remove all its revisions from the Units. This is a mandatory
+      step in the flag deletion flow.
+
+      Note that updating a flag definition does not immediately change the flag's value in
+      production units. To apply these changes to your fleet, you must subsequently create a new
+      FlagRelease and initiate a Rollout. This architecture enables the decoupling of feature
+      releases from code deployments, facilitating safe, progressive rollouts and instant rollbacks.
+    examples: |-
+      To initialize a flag in the in-development state for testing, run:
+
+          $ {command} my-flag --location=global --state=in-development
+
+      To guarantee a flag is active for a new production rollout, run:
+
+          $ {command} my-flag --location=global --state=active
+
+      To update the variants of a boolean flag, run:
+
+          $ {command} my-flag --location=global --variants='[{"id": "Enabled", "booleanValue": true}, {"id": "Disabled", "booleanValue": false}]'
+
+      To mark a flag as sunsetting to signal code removal, run:
+
+          $ {command} my-flag --location=global --state=sunsetting --description="Feature fully launched. Starting code removal."
+
+      To mark a flag for cleanup (remove from Units in the next rollout), run:
+
+          $ {command} my-flag --location=global --state=cleanup --description="Ready for permanent deletion."
   arguments:
     params:
     - help_text: |-
@@ -31,7 +74,6 @@
         help_text: |-
           Default variant for the flag.
       - api_field: allocations
-        hidden: true
         help_text: |-
           A list of allocations.
         spec:
@@ -58,12 +100,21 @@
               Weight defines the proportion of traffic to allocate to the variant,
               relative to other slots in the same allocation.
       - api_field: rules
-        hidden: true
         help_text: |-
           Define the logic for evaluating the flag against a given context.
           The rules are evaluated sequentially in their specified order.
+        spec:
+        - api_field: condition
+          help_text: |-
+            A Common Expression Language (CEL cel.dev) expression evaluated against the evaluation context.
+            For example: `plan == "premium" && country == "DE"`.
+        - api_field: id
+          help_text: |-
+            A unique identifier for the rule.
+        - api_field: target
+          help_text: |-
+            The ID of the variant to return if the condition evaluates to true.
       - api_field: attributes
-        hidden: true
         help_text: |-
           Names of the context attributes that are used in the evaluation rules and allocations.
 

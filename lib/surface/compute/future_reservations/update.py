@@ -27,7 +27,6 @@ from googlecloudsdk.command_lib.compute.future_reservations import util
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
-@base.DefaultUniverseOnly
 class UpdateV1(base.UpdateCommand):
   """Update Compute Engine future reservations."""
 

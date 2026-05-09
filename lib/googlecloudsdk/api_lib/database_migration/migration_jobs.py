@@ -823,10 +823,16 @@ class MigrationJobsClient(object):
           self._GetSqlserverHomogeneousMigrationJobConfig(args)
       )
 
-    if getattr(args, 'use_postgres_native', False):
+    if getattr(args, 'use_postgres_native', False) or args.IsKnownAndSpecified(
+        'postgres_max_additional_subscriptions'
+    ):
       postgres_homogeneous_config = self.messages.PostgresHomogeneousConfig(
-          isNativeLogical=True
+          isNativeLogical=getattr(args, 'use_postgres_native', False)
       )
+      if args.IsKnownAndSpecified('postgres_max_additional_subscriptions'):
+        postgres_homogeneous_config.maxAdditionalSubscriptions = (
+            args.postgres_max_additional_subscriptions
+        )
       migration_job_obj.postgresHomogeneousConfig = postgres_homogeneous_config
 
     if args.IsKnownAndSpecified('databases_filter') or args.IsKnownAndSpecified(
@@ -1069,6 +1075,10 @@ class MigrationJobsClient(object):
         'all_databases'
     ):
       update_fields.append('objectsConfig.sourceObjectsConfig')
+    if args.IsKnownAndSpecified('postgres_max_additional_subscriptions'):
+      update_fields.append(
+          'postgresHomogeneousConfig.maxAdditionalSubscriptions'
+      )
     return update_fields
 
   def _GetDumpFlags(self, dump_flags):
@@ -1135,6 +1145,15 @@ class MigrationJobsClient(object):
         self._UpdateHeterogeneousFailbackMigrationJobConfig(
             args, migration_job, update_fields
         )
+
+    if args.IsKnownAndSpecified('postgres_max_additional_subscriptions'):
+      if migration_job.postgresHomogeneousConfig is None:
+        migration_job.postgresHomogeneousConfig = (
+            self.messages.PostgresHomogeneousConfig()
+        )
+      migration_job.postgresHomogeneousConfig.maxAdditionalSubscriptions = (
+          args.postgres_max_additional_subscriptions
+      )
 
     return migration_job, update_fields
 

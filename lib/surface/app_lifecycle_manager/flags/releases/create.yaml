@@ -1,11 +1,18 @@
 - release_tracks: [ALPHA, BETA]
   help_text:
     brief: Create Flag Release
-    description: Create a Flag Release.
+    description: |-
+      Create a new Flag Release resource. A Flag Release defines a specific set of
+      flag revisions to be applied to a UnitKind. It serves as the immutable input
+      for a Rollout.
     examples: |-
-      To create a Flag Release, run:
+      To create a targeted Flag Release for specific flag revisions, run:
 
-          $ {command}
+          $ {command} my-release --unit-kind=my-unit-kind --revisions=rev-1,rev-2 --location=global
+
+      To create a Flag Release that includes all current flags in a UnitKind, run:
+
+          $ {command} full-sync --unit-kind=my-unit-kind --all-flags --location=global
   arguments:
     params:
     - help_text: |-

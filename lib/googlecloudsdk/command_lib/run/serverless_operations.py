@@ -944,6 +944,17 @@ class ServerlessOperations(object):
 
     region = build_region or self._region
 
+    metrics.CustomKeyValue(
+        properties.VALUES.metrics.command_name.Get(),
+        metric_names.CUSTOM_METRIC_REGION,
+        region,
+    )
+    metrics.CustomKeyValue(
+        properties.VALUES.metrics.command_name.Get(),
+        metric_names.CUSTOM_METRIC_BASE_IMAGE,
+        base_image if base_image is not None else 'unspecified',
+    )
+
     if tracker is None:
       tracker = progress_tracker.NoOpStagedProgressTracker(
           stages.ServiceStages(
@@ -2625,7 +2636,7 @@ class ServerlessOperations(object):
         taskCount=tasks,
         timeoutSeconds=task_timeout,
     )
-    if delay_execution:
+    if delay_execution is not None:
       overrides.delayExecution = delay_execution
     return overrides
 

@@ -392,6 +392,7 @@ def AddBetaArgs(parser):
   flags.AddPerformanceCaptureConfig(parser, hidden=False)
   flags.AddEnablePscAutoDns(parser)
   flags.AddEnablePscWriteEndpointDns(parser)
+  flags.AddEnablePscAutoConnectionPolicy(parser, hidden=True)
 
 
 def AddAlphaArgs(unused_parser):
@@ -547,6 +548,32 @@ def RunBasePatchCommand(args, release_track):
     raise exceptions.ArgumentError(
         '`--performance-capture-config` is only supported for MySQL instances.'
     )
+
+  if args.IsKnownAndSpecified('enable_psc_auto_connection_policy'):
+    if (
+        args.IsKnownAndSpecified('enable_private_service_connect')
+        and not args.enable_private_service_connect
+    ):
+      raise exceptions.ArgumentError(
+          '`--enable-psc-auto-connection-policy` and'
+          ' `--no-enable-psc-auto-connection-policy` require Private Service'
+          ' Connect to be enabled.'
+      )
+    if args.IsKnownAndSpecified('enable_private_service_connect'):
+      effective_psc_enabled = args.enable_private_service_connect
+    else:
+      effective_psc_enabled = (
+          original_instance_resource.settings
+          and original_instance_resource.settings.ipConfiguration
+          and original_instance_resource.settings.ipConfiguration.pscConfig
+          and original_instance_resource.settings.ipConfiguration.pscConfig.pscEnabled
+      )
+    if not effective_psc_enabled:
+      raise exceptions.ArgumentError(
+          '`--enable-psc-auto-connection-policy` and'
+          ' `--no-enable-psc-auto-connection-policy` require Private Service'
+          ' Connect to be enabled.'
+      )
 
   if (
       args.IsSpecified('deny_maintenance_period_start_date')

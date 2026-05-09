@@ -360,6 +360,7 @@ def AddGroupPlacementArgs(parser, messages, track):
           ' eg. A4X.'
       ),
   )
+  AddAcceleratorTopologyModeArgs(parser)
 
 
 def GetCollocationFlagMapper(messages, track):

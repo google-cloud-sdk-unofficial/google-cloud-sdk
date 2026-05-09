@@ -2418,9 +2418,8 @@ class NetappProjectsLocationsListRequest(_messages.Message):
   r"""A NetappProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -2685,6 +2684,20 @@ class NetappProjectsLocationsStoragePoolsSwitchRequest(_messages.Message):
 
   name = _messages.StringField(1, required=True)
   switchActiveReplicaZoneRequest = _messages.MessageField('SwitchActiveReplicaZoneRequest', 2)
+
+
+class NetappProjectsLocationsStoragePoolsUpdateBackupConfigRequest(_messages.Message):
+  r"""A NetappProjectsLocationsStoragePoolsUpdateBackupConfigRequest object.
+
+  Fields:
+    name: Required. The resource name of the StoragePool, in the format:
+      projects/{projectNumber}/locations/{locationId}/storagePools/{poolId}
+    updateBackupConfigRequest: A UpdateBackupConfigRequest resource to be
+      passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  updateBackupConfigRequest = _messages.MessageField('UpdateBackupConfigRequest', 2)
 
 
 class NetappProjectsLocationsStoragePoolsValidateDirectoryServiceRequest(_messages.Message):
@@ -4344,6 +4357,23 @@ class TransferStats(_messages.Message):
   totalTransferDuration = _messages.StringField(6)
   transferBytes = _messages.IntegerField(7)
   updateTime = _messages.StringField(8)
+
+
+class UpdateBackupConfigRequest(_messages.Message):
+  r"""Request message for UpdateBackupConfig
+
+  Fields:
+    backupConfig: Required. Backup configuration to apply.
+    updateMask: Required. Field mask is used to specify the fields to be
+      overwritten in the BackupConfig for the Volume. The fields specified in
+      the update_mask are relative to the resource, not the full request. A
+      field will be overwritten if it is in the mask.
+    volumeUuid: Required. The UUID of the ONTAP-mode volume.
+  """
+
+  backupConfig = _messages.MessageField('BackupConfig', 1)
+  updateMask = _messages.StringField(2)
+  volumeUuid = _messages.StringField(3)
 
 
 class UserCommands(_messages.Message):

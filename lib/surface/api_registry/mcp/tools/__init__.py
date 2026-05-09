@@ -22,5 +22,6 @@ from googlecloudsdk.calliope import base
 # to this group's children.
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.Deprecate(is_removed=False)
 class Tools(base.Group):
   """Manage Cloud API Registry MCP tools."""

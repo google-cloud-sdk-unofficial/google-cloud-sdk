@@ -28,6 +28,36 @@ from googlecloudsdk.command_lib.workbench import completers
 from googlecloudsdk.core import properties
 
 
+# Gen-4 (and newer) Compute Engine machine series only support Hyperdisk and
+# do not support Persistent Disk types. When the user picks one of these
+# machine types without specifying a disk type, gcloud defaults boot and data
+# disk types to `GEN4_DEFAULT_DISK_TYPE`.
+GEN4_MACHINE_SERIES_PREFIXES = (
+    'c4-',
+    'c4a-',
+    'c4d-',
+    'e4-',
+    'g4-',
+    'h4-',
+    'm4-',
+    'n4-',
+    'x4-',
+    'z4-',
+)
+GEN4_DEFAULT_DISK_TYPE = 'HYPERDISK_BALANCED'
+
+
+def IsGen4MachineType(machine_type):
+  """Returns True if `machine_type` belongs to a gen-4 machine series.
+
+  Args:
+    machine_type: The machine type string (e.g. `n4-standard-4`), or None.
+  """
+  if not machine_type:
+    return False
+  return machine_type.lower().startswith(GEN4_MACHINE_SERIES_PREFIXES)
+
+
 def GetLocationResourceArg(help_text):
   """Constructs and returns the Location Resource Argument."""
 
@@ -228,7 +258,26 @@ def AddCreateInstanceFlags(parser):
       'NVIDIA_L4', 'NVIDIA_H100_80GB', 'NVIDIA_H100_MEGA_80GB',
       'NVIDIA_H200_141GB', 'NVIDIA_B200'
   ]
-  disk_choices = ['PD_STANDARD', 'PD_SSD', 'PD_BALANCED', 'PD_EXTREME']
+  boot_disk_choices = [
+      'PD_STANDARD',
+      'PD_SSD',
+      'PD_BALANCED',
+      'PD_EXTREME',
+      'HYPERDISK_BALANCED',
+      'HYPERDISK_BALANCED_HIGH_AVAILABILITY',
+      'HYPERDISK_ML',
+  ]
+  data_disk_choices = [
+      'PD_STANDARD',
+      'PD_SSD',
+      'PD_BALANCED',
+      'PD_EXTREME',
+      'HYPERDISK_BALANCED',
+      'HYPERDISK_BALANCED_HIGH_AVAILABILITY',
+      'HYPERDISK_ML',
+      'HYPERDISK_EXTREME',
+      'HYPERDISK_THROUGHPUT',
+  ]
   encryption_choices = ['GMEK', 'CMEK']
   nic_type_choices = ['VIRTIGO_NET', 'GVNIC']
   reservation_type_choices = [
@@ -329,11 +378,13 @@ def AddCreateInstanceFlags(parser):
   boot_group = gce_setup_group.add_group(help='Boot disk configurations.')
   boot_group.add_argument(
       '--boot-disk-type',
-      choices=disk_choices,
+      choices=boot_disk_choices,
       default=None,
       help=(
-          'Type of boot disk attached to this instance, defaults to '
-          'standard persistent disk (`PD_STANDARD`).'
+          'Type of boot disk attached to this instance. Defaults to '
+          'standard persistent disk (`PD_STANDARD`) on machine types that '
+          'support Persistent Disk, and to `HYPERDISK_BALANCED` on '
+          'Hyperdisk-only machine series (e.g. N4, C4, C4A, M4).'
       ),
   )
   boot_group.add_argument(
@@ -366,11 +417,13 @@ def AddCreateInstanceFlags(parser):
   data_group = gce_setup_group.add_group(help='Data disk configurations.')
   data_group.add_argument(
       '--data-disk-type',
-      choices=disk_choices,
+      choices=data_disk_choices,
       default=None,
       help=(
-          'Type of data disk attached to this instance, defaults to '
-          'standard persistent disk (`PD_STANDARD`).'
+          'Type of data disk attached to this instance. Defaults to '
+          'standard persistent disk (`PD_STANDARD`) on machine types that '
+          'support Persistent Disk, and to `HYPERDISK_BALANCED` on '
+          'Hyperdisk-only machine series (e.g. N4, C4, C4A, M4).'
       ),
   )
   data_group.add_argument(

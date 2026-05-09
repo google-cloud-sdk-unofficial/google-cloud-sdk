@@ -120,7 +120,7 @@ class CloudApi(object):
   capabilities = set()
 
   # Some APIs limit the number of objects that can be composed in a single call.
-  # This field should be overidden by those APIs, and default to 1 for APIs
+  # This field should be overridden by those APIs, and default to 1 for APIs
   # that do not support compose_objects.
   MAX_OBJECTS_PER_COMPOSE_CALL = 1
 
@@ -540,6 +540,7 @@ class CloudApi(object):
       source_resources,
       destination_resource,
       request_config,
+      delete_source_objects=False,
       original_source_resource=None,
       posix_to_set=None,
   ):
@@ -552,6 +553,7 @@ class CloudApi(object):
         the resulting composite object.
       request_config (RequestConfig): Object containing general API function
         arguments. Subclasses for specific cloud providers are available.
+      delete_source_objects (bool): If True, hard delete the source objects.
       original_source_resource (Resource|None): Useful for finding metadata to
         apply to final object. For instance, if doing a composite upload, this
         would represent the pre-split local file.

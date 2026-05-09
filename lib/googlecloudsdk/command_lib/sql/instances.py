@@ -766,6 +766,16 @@ class _BaseInstances(object):
       settings.ipConfiguration.pscConfig.pscAutoConnections = (
           reducers.PscAutoConnections(sql_messages, args.psc_auto_connections)
       )
+
+    if args.IsKnownAndSpecified('enable_psc_auto_connection_policy'):
+      if not settings.ipConfiguration:
+        settings.ipConfiguration = sql_messages.IpConfiguration()
+      if not settings.ipConfiguration.pscConfig:
+        settings.ipConfiguration.pscConfig = sql_messages.PscConfig()
+      settings.ipConfiguration.pscConfig.pscAutoConnectionPolicyEnabled = (
+          args.enable_psc_auto_connection_policy
+      )
+
     final_backup_configuration = reducers.FinalBackupConfiguration(
         sql_messages,
         instance,
@@ -1028,6 +1038,15 @@ class _BaseInstances(object):
         settings.ipConfiguration.pscConfig = sql_messages.PscConfig()
       settings.ipConfiguration.pscConfig.pscWriteEndpointDnsEnabled = (
           args.enable_psc_write_endpoint_dns
+      )
+
+    if args.IsKnownAndSpecified('enable_psc_auto_connection_policy'):
+      if not settings.ipConfiguration:
+        settings.ipConfiguration = sql_messages.IpConfiguration()
+      if not settings.ipConfiguration.pscConfig:
+        settings.ipConfiguration.pscConfig = sql_messages.PscConfig()
+      settings.ipConfiguration.pscConfig.pscAutoConnectionPolicyEnabled = (
+          args.enable_psc_auto_connection_policy
       )
 
     read_pool_auto_scale_config = reducers.ReadPoolAutoScaleConfig(

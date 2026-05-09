@@ -16,7 +16,6 @@
 """Translation rule for app resources (instance_class, cpu, memory)."""
 
 import logging
-import math
 from typing import Mapping, Sequence, Tuple
 import frozendict
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.common import util
@@ -174,20 +173,31 @@ def _adjust_cpu_for_mem(cpu_value: float, clamped_memory: float) -> float:
     CPU value after memory adjustment.
   """
   if clamped_memory > 24:
-    cpu_after_mem_adjust = max(cpu_value, 8)
+    min_cpu = 8
   elif clamped_memory > 16:
-    cpu_after_mem_adjust = max(cpu_value, 6)
+    min_cpu = 6
   elif clamped_memory > 8:
-    cpu_after_mem_adjust = max(cpu_value, 4)
+    min_cpu = 4
   elif clamped_memory > 4:
-    cpu_after_mem_adjust = max(cpu_value, 2)
+    min_cpu = 2
   elif clamped_memory > 1:
-    cpu_after_mem_adjust = max(cpu_value, 1)
+    min_cpu = 1
   elif clamped_memory > 0.5:
-    cpu_after_mem_adjust = max(cpu_value, 0.5)
+    min_cpu = 0.5
   else:
-    cpu_after_mem_adjust = max(cpu_value, 0.08)
-  return cpu_after_mem_adjust
+    min_cpu = 0.08
+
+  desired_cpu = max(cpu_value, min_cpu)
+
+  if desired_cpu > 1:
+    if desired_cpu <= 2:
+      return 2
+    if desired_cpu <= 4:
+      return 4
+    if desired_cpu <= 6:
+      return 6
+    return 8
+  return desired_cpu
 
 
 def _adjust_mem_for_cpu(
@@ -228,8 +238,14 @@ def _do_final_cpu_and_mem_adjustments(
   """
   # Final CPU constraints
   if cpu_after_mem_adjust > 1:
-    temp_cpu = int(math.ceil(cpu_after_mem_adjust))
-    final_cpu = min(temp_cpu, 8)
+    if cpu_after_mem_adjust <= 2:
+      final_cpu = 2
+    elif cpu_after_mem_adjust <= 4:
+      final_cpu = 4
+    elif cpu_after_mem_adjust <= 6:
+      final_cpu = 6
+    else:
+      final_cpu = 8
   elif cpu_after_mem_adjust < 0.08:
     final_cpu = 0.08
   else:

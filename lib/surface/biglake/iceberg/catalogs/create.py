@@ -49,6 +49,7 @@ def _BuildFederatedCatalogMessage(args, messages):
         unity_catalog_info=messages.UnityCatalogInfo(
             instance_name=args.unity_instance_name,
             catalog_name=args.unity_catalog_name,
+            service_principal_application_id=args.service_principal_application_id,
         ),
     )
   else:

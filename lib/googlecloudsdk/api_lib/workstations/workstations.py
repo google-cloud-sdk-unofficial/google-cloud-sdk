@@ -14,7 +14,6 @@
 # limitations under the License.
 """Cloud Workstations workstations API utilities."""
 
-
 import socket
 import ssl
 import sys
@@ -23,7 +22,6 @@ import time
 
 from apitools.base.py.exceptions import Error
 from apitools.base.py.exceptions import HttpError
-
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.api_lib.workstations.util import GetClientInstance
 from googlecloudsdk.api_lib.workstations.util import GetMessagesModule
@@ -36,7 +34,6 @@ from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
-
 from requests import certs
 import six
 import websocket
@@ -50,7 +47,9 @@ class Workstations:
     self.api_version = VERSION_MAP.get(release_track)
     self.client = GetClientInstance(release_track)
     self.messages = GetMessagesModule(release_track)
-    self._service = self.client.projects_locations_workstationClusters_workstationConfigs_workstations
+    self._service = (
+        self.client.projects_locations_workstationClusters_workstationConfigs_workstations
+    )
     self.threading_event = threading.Event()
     self.tcp_tunnel_open = False
 
@@ -64,51 +63,57 @@ class Workstations:
     """Start a workstation."""
     workstation_name = args.CONCEPTS.workstation.Parse().RelativeName()
     workstation_id = arg_utils.GetFromNamespace(
-        args, 'workstation', use_defaults=True)
+        args, 'workstation', use_defaults=True
+    )
     start_req = self.messages.WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWorkstationsStartRequest(
-        name=workstation_name)
-    if (
-        self.api_version != VERSION_MAP.get(base.ReleaseTrack.GA)
-        and args.boost
+        name=workstation_name
+    )
+    if self.api_version != VERSION_MAP.get(base.ReleaseTrack.GA) and getattr(
+        args, 'boost', None
     ):
       start_req = self.messages.WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWorkstationsStartRequest(
           name=workstation_name,
           startWorkstationRequest=self.messages.StartWorkstationRequest(
               boostConfig=args.boost
-          )
+          ),
       )
 
     op_ref = self._service.Start(start_req)
 
-    log.status.Print(
-        'Starting workstation: [{}]'.format(workstation_id))
+    log.status.Print('Starting workstation: [{}]'.format(workstation_id))
 
-    if args.async_:
+    if getattr(args, 'async_', False):
       log.status.Print('Check operation [{}] for status.'.format(op_ref.name))
       return op_ref
 
     op_resource = resources.REGISTRY.ParseRelativeName(
         op_ref.name,
         collection='workstations.projects.locations.operations',
-        api_version=self.api_version)
+        api_version=self.api_version,
+    )
     poller = waiter.CloudOperationPoller(
-        self._service, self.client.projects_locations_operations)
+        self._service, self.client.projects_locations_operations
+    )
 
-    waiter.WaitFor(poller, op_resource,
-                   'Waiting for operation [{}] to complete'.format(op_ref.name))
+    waiter.WaitFor(
+        poller,
+        op_resource,
+        'Waiting for operation [{}] to complete'.format(op_ref.name),
+    )
     log.status.Print('Started workstation [{}].'.format(workstation_id))
 
   def Stop(self, args):
     """Stop a workstation."""
     workstation_name = args.CONCEPTS.workstation.Parse().RelativeName()
     workstation_id = arg_utils.GetFromNamespace(
-        args, 'workstation', use_defaults=True)
+        args, 'workstation', use_defaults=True
+    )
     stop_req = self.messages.WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWorkstationsStopRequest(
-        name=workstation_name)
+        name=workstation_name
+    )
     op_ref = self._service.Stop(stop_req)
 
-    log.status.Print(
-        'Stopping workstation: [{}]'.format(workstation_id))
+    log.status.Print('Stopping workstation: [{}]'.format(workstation_id))
 
     if args.async_:
       log.status.Print('Check operation [{}] for status.'.format(op_ref.name))
@@ -117,12 +122,17 @@ class Workstations:
     op_resource = resources.REGISTRY.ParseRelativeName(
         op_ref.name,
         collection='workstations.projects.locations.operations',
-        api_version=self.api_version)
+        api_version=self.api_version,
+    )
     poller = waiter.CloudOperationPoller(
-        self._service, self.client.projects_locations_operations)
+        self._service, self.client.projects_locations_operations
+    )
 
-    waiter.WaitFor(poller, op_resource,
-                   'Waiting for operation [{}] to complete'.format(op_ref.name))
+    waiter.WaitFor(
+        poller,
+        op_resource,
+        'Waiting for operation [{}] to complete'.format(op_ref.name),
+    )
     log.status.Print('Stopped workstation [{}].'.format(workstation_id))
 
   def StartTcpTunnel(self, args, threaded=False):
@@ -171,17 +181,27 @@ class Workstations:
         workstation.state
         != self.messages.Workstation.StateValueValuesEnum.STATE_RUNNING
     ):
-      if threaded:
-        self.threading_event.set()
-      log.error('Workstation is not running.')
-      sys.exit(1)
+      if getattr(args, 'start_workstation', False):
+        self.Start(args)
+        self.client.projects_locations_workstationClusters_workstationConfigs_workstations.Get(
+            self.messages.WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWorkstationsGetRequest(
+                name=workstation_name
+            )
+        )
+      else:
+        if threaded:
+          self.threading_event.set()
+        log.error(
+            'Workstation is not running. Use --start-workstation to start it.'
+        )
+        sys.exit(1)
 
     # Generate an access token and refresh it periodically
     self._FetchAccessToken(workstation_name, threaded)
     self._RefreshAccessToken(workstation_name, threaded)
 
     # Bind on the local TCP port
-    (host, port) = self._GetLocalHostPort(args)
+    host, port = self._GetLocalHostPort(args)
     self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     self.socket.bind((host, port))
@@ -224,7 +244,7 @@ class Workstations:
     keys = ssh.Keys.FromFilename()
     keys.EnsureKeysExist(overwrite=False)
 
-    (host, port) = self._GetLocalHostPort(args)
+    host, port = self._GetLocalHostPort(args)
 
     remote = ssh.Remote(host=host, user=args.user)
 
@@ -359,6 +379,7 @@ class Workstations:
 
   def _ForwardClientToServer(self, client, server):
     """Forwards data from the client to the server."""
+
     def Forward():
       while True:
         data = client.recv(4096)

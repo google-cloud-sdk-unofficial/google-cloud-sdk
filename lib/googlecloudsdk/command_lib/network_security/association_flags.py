@@ -58,6 +58,9 @@ def AddAssociationResource(release_track, parser):
           "zone",
           "Zone of the {resource}.",
           parameter_name="locationsId",
+          fallthroughs=[
+              deps.ArgFallthrough("--location"),
+          ],
       ),
       firewallEndpointAssociationsId=concepts.ResourceParameterAttributeConfig(
           "association-name",
@@ -98,6 +101,7 @@ def OrgEndpointResourceSpec(api_version, collection_info):
           parameter_name="locationsId",
           fallthroughs=[
               deps.ArgFallthrough("--zone"),
+              deps.ArgFallthrough("--location"),
               deps.FullySpecifiedAnchorFallthrough(
                   [deps.ArgFallthrough(ASSOCIATION_RESOURCE_NAME)],
                   collection_info,
@@ -141,6 +145,7 @@ def ProjectEndpointResourceSpec(api_version, collection_info):
           parameter_name="locationsId",
           fallthroughs=[
               deps.ArgFallthrough("--zone"),
+              deps.ArgFallthrough("--location"),
               deps.FullySpecifiedAnchorFallthrough(
                   [deps.ArgFallthrough(ASSOCIATION_RESOURCE_NAME)],
                   collection_info,
@@ -304,6 +309,22 @@ def MakeGetUriFunc(release_track):
 
 
 def AddZoneArg(
-    parser, required=True, help_text="Zone of a firewall endpoint association"
+    parser,
+    required=True,
+    help_text="Zone of the firewall endpoint association",
+    default="-",
 ):
-  parser.add_argument("--zone", required=required, default="-", help=help_text)
+  parser.add_argument(
+      "--zone", required=required, default=default, help=help_text
+  )
+
+
+def AddLocationArg(
+    parser,
+    required=True,
+    help_text="Location of the firewall endpoint association",
+    default="-",
+):
+  parser.add_argument(
+      "--location", required=required, default=default, help=help_text
+  )

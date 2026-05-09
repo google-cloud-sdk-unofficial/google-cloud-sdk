@@ -90,6 +90,7 @@ class BackupsClient(object):
       source_volume=None,
       description=None,
       labels=None,
+      ontap_source=None,
   ):
     """Parses the command line arguments for Create Backup into a message.
 
@@ -99,9 +100,10 @@ class BackupsClient(object):
       source_volume: The Source Volume of the Backup.
       description: The description of the Backup.
       labels: The parsed labels value.
+      ontap_source: The ONTAP Source details of the Backup.
 
     Returns:
-      The configuration that will be used ass the request body for creating a
+      The configuration that will be used as the request body for creating a
       Cloud NetApp Backup.
     """
     backup = self.messages.Backup()
@@ -110,6 +112,12 @@ class BackupsClient(object):
     backup.sourceVolume = source_volume
     backup.description = description
     backup.labels = labels
+    if ontap_source is not None:
+      backup.ontapSource = self.messages.OntapSource(
+          storagePool=ontap_source.get('storage-pool'),
+          volumeUuid=ontap_source.get('volume-uuid'),
+          snapshotUuid=ontap_source.get('snapshot-uuid'),
+      )
     return backup
 
   def ListBackups(self, backupvault_ref, limit=None):

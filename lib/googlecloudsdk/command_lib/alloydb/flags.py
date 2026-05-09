@@ -819,7 +819,10 @@ def AddUserType(parser):
           'IAM_BASED': (
               'This database user can authenticate via IAM-based authentication'
           ),
-          # 'ALLOYDB_IAM_GROUP': Not implemented until IAM auth phase 2.,
+          'IAM_GROUP': (
+              'This database user represents an IAM group whose members'
+              ' can authenticate via IAM group-based authentication'
+          ),
       },
       default='BUILT_IN',
       help='Type corresponds to the user type.',
@@ -1500,7 +1503,7 @@ def AddObservabilityConfigQueryPlansPerMinute(parser):
       required=False,
       type=arg_parsers.BoundedInt(lower_bound=0, upper_bound=20),
       help="""Number of query plans to sample every minute.
-        Default value is 200. Allowed range: 0 to 200.""",
+        Default value is 20. Allowed range: 0 to 200.""",
   )
 
 
@@ -1520,6 +1523,28 @@ def AddObservabilityConfigTrackActiveQueryPlan(parser, show_negated_in_help):
       '--observability-config-track-active-query-plan',
       required=False,
       help="""Track active query plans.""",
+      **kwargs,
+  )
+
+
+def AddObservabilityConfigTrackClientAddress(parser, show_negated_in_help):
+  kwargs = _GetKwargsForBoolFlag(show_negated_in_help)
+  parser.add_argument(
+      '--observability-config-track-client-address',
+      required=False,
+      help="""Enable tracking of client address in query insights.""",
+      **kwargs,
+  )
+
+
+def AddObservabilityConfigAssistiveExperiencesEnabled(
+    parser, show_negated_in_help
+):
+  kwargs = _GetKwargsForBoolFlag(show_negated_in_help)
+  parser.add_argument(
+      '--observability-config-assistive-experiences-enabled',
+      required=False,
+      help="""Enable assistive experiences to monitor, troubleshoot and recommend.""",
       **kwargs,
   )
 

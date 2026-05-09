@@ -1645,10 +1645,15 @@ class UnityCatalogInfo(_messages.Message):
       when you log into your Databricks deployment. For example, for a
       Databricks on GCP workspace URL https://1.1.gcp.databricks.com, the
       instance name is 1.1.gcp.databricks.com.
+    service_principal_application_id: Optional. The application ID of the
+      Databricks service principal that will be used to access the Unity
+      Catalog in the OIDC authentication flow. With OIDC, the secret_name
+      field is not used.
   """
 
   catalog_name = _messages.StringField(1)
   instance_name = _messages.StringField(2)
+  service_principal_application_id = _messages.StringField(3)
 
 
 class UpdateIcebergNamespaceResponse(_messages.Message):
@@ -1744,6 +1749,8 @@ encoding.AddCustomJsonFieldMapping(
     UnityCatalogInfo, 'catalog_name', 'catalog-name')
 encoding.AddCustomJsonFieldMapping(
     UnityCatalogInfo, 'instance_name', 'instance-name')
+encoding.AddCustomJsonFieldMapping(
+    UnityCatalogInfo, 'service_principal_application_id', 'service-principal-application-id')
 encoding.AddCustomJsonFieldMapping(
     StandardQueryParameters, 'f__xgafv', '$.xgafv')
 encoding.AddCustomJsonEnumMapping(

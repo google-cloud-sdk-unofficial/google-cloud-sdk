@@ -145,6 +145,7 @@ class ExecuteSql(base.Command):
         rowLimit=args.row_limit,
         partialResultMode=partial_result_mode,
         autoIamAuthn=True,
+        application='gcloud',
     )
     return sql_client.instances.ExecuteSql(
         sql_messages.SqlInstancesExecuteSqlRequest(

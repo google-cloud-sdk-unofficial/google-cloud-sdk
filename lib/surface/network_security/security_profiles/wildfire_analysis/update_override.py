@@ -91,7 +91,8 @@ class UpdateOverride(base.UpdateCommand):
         metavar='THREAT_ID',
         help=(
             'Comma-separated list of WildFire Signature IDs to override the'
-            ' action for.'
+            ' action for. If specified, --action must be set to DEFAULT or'
+            ' ALLOW.'
         ),
     )
     base.ASYNC_FLAG.AddToParser(parser)
@@ -108,10 +109,10 @@ class UpdateOverride(base.UpdateCommand):
           f'Only `global` location is supported, but got: {args.location}'
       )
 
-    if args.threat_ids and args.action not in ['DEFAULT', 'ALLOW', 'DENY']:
+    if args.threat_ids and args.action not in ['DEFAULT', 'ALLOW']:
       raise exceptions.InvalidArgumentException(
           '--action',
-          'Action must be one of DEFAULT, ALLOW or DENY when --threat-ids is'
+          'Action must be one of DEFAULT or ALLOW when --threat-ids is'
           ' specified.',
       )
 

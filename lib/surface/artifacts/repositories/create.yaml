@@ -150,7 +150,6 @@
             help_text: Vulnerability scanning enablement config set to disabled.
     - group:
         mutex: true
-        hidden: true
         params:
         - arg_name: enable-platform-logs
           api_field: repository.platformLogsConfig.loggingState
@@ -184,7 +183,6 @@
             help_text: Platform logging set to project settings.
     - arg_name: severity
       api_field: repository.platformLogsConfig.severityLevel
-      hidden: true
       default: null
       choices:
       - arg_value: INFO

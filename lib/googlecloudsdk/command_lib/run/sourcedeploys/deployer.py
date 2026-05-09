@@ -21,6 +21,7 @@ from apitools.base.py import encoding
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.run import global_methods
+from googlecloudsdk.api_lib.run import metric_names
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base as calliope_base
@@ -30,6 +31,7 @@ from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.command_lib.run.sourcedeploys import sources
 from googlecloudsdk.command_lib.run.sourcedeploys import types
+from googlecloudsdk.core import metrics
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.util import retry
@@ -65,87 +67,88 @@ def CreateImage(
     kms_key=None,
 ):
   """Creates an image from Source."""
-  if repo_to_create:
-    tracker.StartStage(stages.CREATE_REPO)
-    tracker.UpdateHeaderMessage('Creating Container Repository.')
-    artifact_registry.CreateRepository(
-        repo_to_create, already_activated_services
-    )
-    tracker.CompleteStage(stages.CREATE_REPO)
+  with metrics.RecordDuration(metric_names.CREATE_BUILD):
+    if repo_to_create:
+      tracker.StartStage(stages.CREATE_REPO)
+      tracker.UpdateHeaderMessage('Creating Container Repository.')
+      artifact_registry.CreateRepository(
+          repo_to_create, already_activated_services
+      )
+      tracker.CompleteStage(stages.CREATE_REPO)
 
-  base_image_from_build = None
-  source = None
-  client = 'gcloud'
+    base_image_from_build = None
+    source = None
+    client = 'gcloud'
 
-  tracker.StartStage(stages.UPLOAD_SOURCE)
-  if kms_key:
-    tracker.UpdateHeaderMessage('Using the source from the specified bucket.')
-    _ValidateCmekDeployment(build_source, build_image, kms_key)
-    source = sources.GetGcsObject(build_source, location=region)
-  else:
-    tracker.UpdateHeaderMessage('Uploading sources.')
-    source = sources.Upload(build_source, region, resource_ref, source_bucket)
-  tracker.CompleteStage(stages.UPLOAD_SOURCE)
-  submit_build_request = _PrepareSubmitBuildRequest(
-      build_image,
-      build_pack,
-      region,
-      base_image,
-      source,
-      resource_ref,
-      service_account,
-      build_worker_pool,
-      build_machine_type,
-      build_env_vars,
-      enable_automatic_updates,
-      release_track,
-      client,
-  )
-  try:
-    response_dict, build_log_url, base_image_from_build = _SubmitBuild(
-        tracker,
-        submit_build_request,
-        region=region,
-    )
-  except apitools_exceptions.HttpNotFoundError as e:
-    # This happens if user didn't have permission to access the builds API.
-    if base_image or delegate_builds:
-      # If the customer enabled automatic base image updates or set the
-      # --delegate-builds falling back is not possible.
-      raise e
-
-    # If the user didn't explicitly opt-in to the API, we can fall back to
-    # the old client orchestrated builds functionality.
-    response_dict, build_log_url = _CreateImageWithoutSubmitBuild(
-        tracker,
+    tracker.StartStage(stages.UPLOAD_SOURCE)
+    if kms_key:
+      tracker.UpdateHeaderMessage('Using the source from the specified bucket.')
+      _ValidateCmekDeployment(build_source, build_image, kms_key)
+      source = sources.GetGcsObject(build_source, location=region)
+    else:
+      tracker.UpdateHeaderMessage('Uploading sources.')
+      source = sources.Upload(build_source, region, resource_ref, source_bucket)
+    tracker.CompleteStage(stages.UPLOAD_SOURCE)
+    submit_build_request = _PrepareSubmitBuildRequest(
         build_image,
-        build_source,
         build_pack,
-        already_activated_services,
-        remote_source=source,
-    )
-
-  if response_dict and response_dict['status'] != 'SUCCESS':
-    tracker.FailStage(
-        stages.BUILD_READY,
-        None,
-        message=(
-            'Container build failed and '
-            'logs are available at [ {build_log_url} ].'.format(
-                build_log_url=build_log_url
-            )
-        ),
-    )
-    return None, None, None, None, None  # Failed to create an image
-  else:
-    tracker.CompleteStage(stages.BUILD_READY)
-    return (
-        response_dict['results']['images'][0]['digest'],
-        base_image_from_build,
-        response_dict['id'],
+        region,
+        base_image,
         source,
-        response_dict['name'],
+        resource_ref,
+        service_account,
+        build_worker_pool,
+        build_machine_type,
+        build_env_vars,
+        enable_automatic_updates,
+        release_track,
+        client,
     )
+    try:
+      response_dict, build_log_url, base_image_from_build = _SubmitBuild(
+          tracker,
+          submit_build_request,
+          region=region,
+      )
+    except apitools_exceptions.HttpNotFoundError as e:
+      # This happens if user didn't have permission to access the builds API.
+      if base_image or delegate_builds:
+        # If the customer enabled automatic base image updates or set the
+        # --delegate-builds falling back is not possible.
+        raise e
+
+      # If the user didn't explicitly opt-in to the API, we can fall back to
+      # the old client orchestrated builds functionality.
+      response_dict, build_log_url = _CreateImageWithoutSubmitBuild(
+          tracker,
+          build_image,
+          build_source,
+          build_pack,
+          already_activated_services,
+          remote_source=source,
+      )
+
+    if response_dict and response_dict['status'] != 'SUCCESS':
+      tracker.FailStage(
+          stages.BUILD_READY,
+          None,
+          message=(
+              'Container build failed and '
+              'logs are available at [ {build_log_url} ].'.format(
+                  build_log_url=build_log_url
+              )
+          ),
+      )
+      return None, None, None, None, None  # Failed to create an image
+    else:
+      tracker.CompleteStage(stages.BUILD_READY)
+      return (
+          response_dict['results']['images'][0]['digest'],
+          base_image_from_build,
+          response_dict['id'],
+          source,
+          response_dict['name'],
+      )
 
 
 def _CreateImageWithoutSubmitBuild(

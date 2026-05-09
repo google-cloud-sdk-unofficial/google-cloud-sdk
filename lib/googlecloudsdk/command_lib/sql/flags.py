@@ -2815,6 +2815,21 @@ def AddClearAllowedPscProjects(parser):
   )
 
 
+def AddEnablePscAutoConnectionPolicy(
+    parser: parser_extensions.Namespace, *, hidden: bool = False
+) -> None:
+  """Adds --enable-psc-auto-connection-policy argument."""
+  parser.add_argument(
+      '--enable-psc-auto-connection-policy',
+      action=arg_parsers.StoreTrueFalseAction,
+      required=False,
+      help=(
+          'If set, service connection policy will be created by Cloud SQL'
+          ' when missing for PSC enabled instance.'
+      ),
+      hidden=hidden)
+
+
 def AddPscAutoConnections(parser, hidden=False):
   """Adds --psc-auto-connections argument."""
   parser.add_argument(

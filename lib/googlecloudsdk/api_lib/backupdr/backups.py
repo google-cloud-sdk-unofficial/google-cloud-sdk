@@ -472,7 +472,7 @@ class BackupsClient(util.BackupDrClientBase):
           self.messages.RegionDiskTargetEnvironment(
               region=restore_config["TargetRegion"],
               project=restore_config["TargetProject"],
-              replicaZones=restore_config["ReplicaZones"],
+              replicaZones=restore_config.get("ReplicaZones", []),
           )
       )
 

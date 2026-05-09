@@ -97,7 +97,6 @@
         Whether this is the default repository for the alternative hostname if no repository matches the path prefix.
     - group:
         mutex: true
-        hidden: true
         params:
         - arg_name: enable-platform-logs
           api_field: repository.platformLogsConfig.loggingState
@@ -131,7 +130,6 @@
             help_text: Platform logging set to project settings.
     - arg_name: severity
       api_field: repository.platformLogsConfig.severityLevel
-      hidden: true
       choices:
       - arg_value: INFO
         enum_value: INFO

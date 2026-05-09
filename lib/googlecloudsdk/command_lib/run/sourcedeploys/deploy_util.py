@@ -22,7 +22,6 @@ from typing import Any, Optional, Tuple
 import uuid
 
 from googlecloudsdk.api_lib.run import instance
-from googlecloudsdk.api_lib.run import service
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import docker_util
 from googlecloudsdk.command_lib.run import artifact_registry
@@ -104,48 +103,13 @@ def _BuildImageFromArgs(
   return f'{ar_repo.GetDockerString()}/{image_suffix}', repo_to_create
 
 
-def _NecessaryChangesForInstances(
-    args: _Namespace,
-    changes: list[config_changes.ConfigChanger],
-    final_image: str,
-) -> None:
-  """Adds necessary changes for instances.
-
-  TODO: b/498806046 - Remove this function once instances don't require hacks
-    to work.
-
-  Args:
-    args: The argparse namespace containing command-line arguments.
-    changes: The list of configuration changes to update.
-    final_image: The image to use for the instance.
-  """
-  domain = properties.VALUES.core.universe_domain.Get()
-  changes.extend([
-      config_changes.ImageChange(final_image),
-      config_changes.SetAnnotationChange(
-          f'run.{domain}/ssh-enabled', 'true'
-      ),
-  ])
-  if getattr(args, _PORT_ATTRIBUTE, None) is None:
-    changes.append(config_changes.ContainerPortChange(port='8080'))
-  if getattr(args, _INVOKER_IAM_CHECK_ATTRIBUTE, None) is None:
-    changes.append(config_changes.InvokerIamChange(invoker_iam_check=False))
-  ingress_val = (
-      getattr(args, _INGRESS_SETTINGS_ATTRIBUTE, None) or service.INGRESS_ALL
-  )
-  changes.append(
-      config_changes.SetAnnotationChange(
-          service.INGRESS_ANNOTATION, ingress_val
-      ),
-  )
-
-
 def DeployInstanceFromSource(
     instance_ref: resources.Resource | None,
-    source: str | None,
+    source: str,
     region: str,
     args: _Namespace,
     release_track: base.ReleaseTrack,
+    changes: list[config_changes.ConfigChanger] | None = None,
 ) -> instance.Instance:
   """Deploys a Cloud Run instance from source.
 
@@ -156,6 +120,7 @@ def DeployInstanceFromSource(
     region: The region to deploy to.
     args: The arguments passed to the command.
     release_track: The release track of the command.
+    changes: The list of config changes to apply.
 
   Returns:
     The created instance object.
@@ -163,6 +128,12 @@ def DeployInstanceFromSource(
   Raises:
     ImageCreationError: If the container image fails to build.
   """
+  if not source:
+    raise ValueError('Source is required for source deployment.')
+
+  if changes is None:
+    changes = []
+
   is_async = getattr(args, 'async_', False)
   instance_name = None
   project = properties.VALUES.core.project.Get(required=True)
@@ -181,8 +152,10 @@ def DeployInstanceFromSource(
       run_flags.Product.RUN,
       release_track,
   )
-  changes = run_flags.GetInstanceConfigurationChanges(
-      args, release_track=release_track
+  changes.extend(
+      run_flags.GetInstanceConfigurationChanges(
+          args, release_track=release_track
+      )
   )
   changes.append(config_changes.SetLaunchStageAnnotationChange(release_track))
 
@@ -193,10 +166,7 @@ def DeployInstanceFromSource(
             conn_context, parent_ref, instance_name
         )
     )
-    if instance_name:
-      image_suffix = instance_name
-    else:
-      image_suffix = f'instance-{uuid.uuid4().hex[:8]}'
+    image_suffix = instance_name or f'instance-{uuid.uuid4().hex[:8]}'
     build_image, repo_to_create = _BuildImageFromArgs(
         project, image_suffix, args
     )
@@ -246,7 +216,7 @@ def DeployInstanceFromSource(
       final_image = (
           f'{build_image}@{image_digest}' if image_digest else build_image
       )
-      _NecessaryChangesForInstances(args, changes, final_image)
+      changes.append(config_changes.ImageChange(final_image))
 
       result_instance = operations.CreateInstance(
           parent_ref,

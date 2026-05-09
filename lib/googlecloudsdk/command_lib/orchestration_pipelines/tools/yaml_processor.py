@@ -21,8 +21,8 @@ import pathlib
 import re
 import threading
 from typing import Any, Dict, Iterable, Optional
-
 from apitools.base.py import exceptions as apitools_exceptions
+from cloudsdk.google.protobuf import descriptor_pb2
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import exceptions as api_exceptions
 from googlecloudsdk.calliope import arg_parsers
@@ -34,6 +34,8 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 from googlecloudsdk.core import yaml
 from googlecloudsdk.core.util import files
+from orchestration_pipelines_models.orchestration_pipelines_model import OrchestrationPipelinesModel
+
 
 DEPLOYMENT_FILE_NAME = "deployment.yaml"
 ARTIFACT_STORAGE_KEY = "artifact_storage"
@@ -265,8 +267,8 @@ def _expand_environment_resources(
 
 def _build_orchestration_pipelines_model(
     resolved_pipeline: Dict[str, Any],
-) -> None:
-  """Validates a pipeline definition against a specific model version.
+) -> OrchestrationPipelinesModel:
+  """Validates and builds a pipeline definition against a specific model version.
 
   This function extracts the 'model_version' from the provided definition,
   selects the corresponding Orchestration Pipelines model, and performs
@@ -274,6 +276,9 @@ def _build_orchestration_pipelines_model(
 
   Args:
     resolved_pipeline: The resolved pipeline definition as a dictionary.
+
+  Returns:
+    An instance of OrchestrationPipelinesModel.
 
   Raises:
     exceptions.Error: If the pipeline definition fails to build against the
@@ -289,104 +294,80 @@ def _build_orchestration_pipelines_model(
       " the following issues:\n"
   )
 
-  from orchestration_pipelines_models.orchestration_pipelines_model import OrchestrationPipelinesModel  # pylint: disable=g-import-not-at-top
   try:
-    OrchestrationPipelinesModel.build(resolved_pipeline)
+    return OrchestrationPipelinesModel.build(resolved_pipeline)
   except Exception as e:
     if type(e).__name__ == "ParseError" or isinstance(
         e, (ValueError, TypeError)
     ):
-      error_message = str(e)
-      raise exceptions.Error(f"{error_message_prefix}{error_message}") from e
+      raise exceptions.Error(f"{error_message_prefix}{e}") from e
     raise
 
 
-def _extract_paths_from_nested_data(data: Any) -> list[str]:
-  """Recursively extracts string values where the key ends with 'path'.
-
-  Excludes fields under 'job' keys.
+def _extract_paths_from_nested_proto(message: Any) -> list[str]:
+  """Recursively extracts values from fields named 'path' within a proto message.
 
   Args:
-    data: The dictionary or list to search within.
+    message: The proto message to traverse.
 
   Returns:
-    A list of strings, each representing a path.
+    A list of strings containing all values found in fields with "path" in
+    their name.
   """
+  if not hasattr(message, "ListFields"):
+    return []
+
+  exclude_fields = ["job", "properties", "project_directory_path"]
   values = []
-  if isinstance(data, dict):
-    for k, v in data.items():
-      # Exclude fields under 'job' keys(usually under dataproc actions) as
-      # they may include fields with "path" that are not relevant to the
-      # actual file paths used in the pipeline.
-      if k == "job":
-        continue
-      if k == "properties":
-        continue
-      if isinstance(k, str) and (k.lower().endswith("path")):
-        if isinstance(v, str):
-          values.append(v)
-      elif isinstance(v, (dict, list)):
-        values.extend(_extract_paths_from_nested_data(v))
-  elif isinstance(data, list):
-    for item in data:
-      values.extend(_extract_paths_from_nested_data(item))
+  for field_descriptor, value in message.ListFields():
+    field_name = field_descriptor.name
+
+    if field_name in exclude_fields:
+      continue
+
+    if "path" in field_name.lower():
+      if (
+          field_descriptor.type
+          == descriptor_pb2.FieldDescriptorProto.TYPE_STRING
+      ):
+        if (
+            field_descriptor.label
+            == descriptor_pb2.FieldDescriptorProto.LABEL_REPEATED
+        ):
+          values.extend(value)
+        else:
+          values.append(value)
+
+    if (
+        field_descriptor.type
+        == descriptor_pb2.FieldDescriptorProto.TYPE_MESSAGE
+    ):
+      if (
+          field_descriptor.label
+          == descriptor_pb2.FieldDescriptorProto.LABEL_REPEATED
+      ):
+        if field_descriptor.message_type.GetOptions().map_entry:
+          value_descriptor = field_descriptor.message_type.fields_by_name[
+              "value"
+          ]
+          # value is a dict {map_key: map_value}
+          for map_key, map_val in value.items():
+            # Check if the map key contains "path" and the value is a string
+            if "path" in map_key.lower() and isinstance(map_val, str):
+              values.append(map_val)
+
+            # Check if the map value is a message and recurse
+            if (
+                value_descriptor.type
+                == descriptor_pb2.FieldDescriptorProto.TYPE_MESSAGE
+            ):
+              values.extend(_extract_paths_from_nested_proto(map_val))
+        else:
+          for element in value:
+            values.extend(_extract_paths_from_nested_proto(element))
+      else:
+        values.extend(_extract_paths_from_nested_proto(value))
   return values
-
-
-def _extract_nested_errors(exc: BaseException, path: str = "$") -> list[str]:
-  """Recursively transforms ExceptionGroup errors into formatted messages.
-
-  If the exception contains nested exceptions (i.e., has an `exceptions`
-  attribute), it traverses them to build a list of all errors. It uses
-  `__notes__` attached to exceptions to construct a path to the error
-  location (e.g., '$.field[0]').
-
-  Args:
-    exc: The validation exception, potentially containing nested exceptions.
-    path: The current JSON-like path to the error location.
-
-  Returns:
-    A list of error strings, each formatted as "path: error message".
-  """
-  errors = []
-  if not isinstance(exc, ExceptionGroup):
-    errors.append(f"{path}: {str(exc)}")
-    return errors
-
-  excs_with_notes = []
-  other_excs = []
-  for subexc in exc.exceptions:
-    note_found = False
-    if hasattr(subexc, "__notes__"):
-      for note in subexc.__notes__:
-        if hasattr(note, "name") and hasattr(note, "type"):
-          excs_with_notes.append((subexc, note))
-          note_found = True
-          break
-        elif hasattr(note, "index") and hasattr(note, "type"):
-          excs_with_notes.append((subexc, note))
-          note_found = True
-          break
-    if not note_found:
-      other_excs.append(subexc)
-
-  for subexc, note in excs_with_notes:
-    if hasattr(note, "name"):
-      p = f"{path}.{note.name}"
-    else:
-      p = f"{path}[{note.index!r}]"
-
-    if isinstance(subexc, ExceptionGroup):
-      errors.extend(_extract_nested_errors(subexc, p))
-    else:
-      errors.append(f"{p}: {str(subexc)}")
-
-  for subexc in other_excs:
-    if isinstance(subexc, ExceptionGroup):
-      errors.extend(_extract_nested_errors(subexc, path))
-    else:
-      errors.append(f"{path}: {str(subexc)}")
-  return errors
 
 
 def _validate_gcp_project(project_id: str, pipeline_path: str):
@@ -445,7 +426,7 @@ def _validate_gcp_project(project_id: str, pipeline_path: str):
 
 def _validate_paths_in_pipeline(
     bundle_dir: pathlib.Path,
-    pipeline_path: str,
+    pipeline_id: str,
     path_str: str,
 ):
   """Validates a path fields from a pipeline definition, checking for existence.
@@ -455,7 +436,7 @@ def _validate_paths_in_pipeline(
 
   Args:
     bundle_dir: The directory where the pipeline bundle is located.
-    pipeline_path: The relative path to the pipeline configuration.
+    pipeline_id: The pipeline ID for error messages.
     path_str: The path string to validate.
 
   Raises:
@@ -473,13 +454,13 @@ def _validate_paths_in_pipeline(
       storage_resource = resources.REGISTRY.ParseStorageURL(path_str)
     except resources.WrongResourceCollectionException as e:
       raise InvalidPathError(
-          f"Invalid GCS path in pipeline '{pipeline_path}': {path_str} - {e}"
+          f"Invalid GCS path in pipeline '{pipeline_id}': {path_str} - {e}"
       ) from e
 
     try:
       if not storage_resource.object:
         raise InvalidPathError(
-            f"GCS path in pipeline '{pipeline_path}' appears to point to"
+            f"GCS path in pipeline '{pipeline_id}' appears to point to"
             f" a bucket '{path_str}' but an object path was expected."
         )
       client.objects.Get(
@@ -492,7 +473,7 @@ def _validate_paths_in_pipeline(
           e,
           error_format=(
               f'Permission denied when checking GCS path "{path_str}" in'
-              f' pipeline "{pipeline_path}". Please ensure your account has'
+              f' pipeline "{pipeline_id}". Please ensure your account has'
               " necessary permissions."
           ),
       )
@@ -500,7 +481,7 @@ def _validate_paths_in_pipeline(
       raise api_exceptions.HttpException(
           e,
           error_format=(
-              f'GCS path "{path_str}" from pipeline "{pipeline_path}" does'
+              f'GCS path "{path_str}" from pipeline "{pipeline_id}" does'
               " not exist."
           ),
       )
@@ -508,8 +489,7 @@ def _validate_paths_in_pipeline(
       raise api_exceptions.HttpException(
           e,
           error_format=(
-              f'GCS path "{path_str}" from pipeline "{pipeline_path}" is'
-              " invalid."
+              f'GCS path "{path_str}" from pipeline "{pipeline_id}" is invalid.'
           ),
       )
     except apitools_exceptions.HttpError as e:
@@ -520,24 +500,24 @@ def _validate_paths_in_pipeline(
     candidate_path = bundle_dir / path_str
     if not candidate_path.exists():
       raise InvalidPathError(
-          f"In pipeline '{pipeline_path}', path '{path_str}' does not "
+          f"In pipeline '{pipeline_id}', path '{path_str}' does not "
           f"exist relative to bundle directory: {candidate_path}"
       )
   else:
     raise InvalidPathError(
-        f"Invalid path in pipeline '{pipeline_path}': {path_str}"
+        f"Invalid path in pipeline '{pipeline_id}': {path_str}"
     )
 
 
 def _validate_composer_environment(
-    composer_environment_resource_name: str, pipeline_path: str
+    composer_environment_resource_name: str, pipeline_id: str
 ):
   """Validates that a Composer environment exists.
 
   Args:
     composer_environment_resource_name: The Composer environment resource name
       to validate.
-    pipeline_path: The relative path to the pipeline file for error messages.
+    pipeline_id: The pipeline ID for error messages.
 
   Raises:
     api_exceptions.HttpException: If the Composer environment is not found,
@@ -558,7 +538,7 @@ def _validate_composer_environment(
         error_format=(
             "Permission denied when checking Composer environment"
             f' "{composer_environment_resource_name}" from pipeline'
-            f' "{pipeline_path}". Please ensure your account has necessary'
+            f' "{pipeline_id}". Please ensure your account has necessary'
             " permissions and the Composer environment exists."
         ),
     )
@@ -567,7 +547,7 @@ def _validate_composer_environment(
         e,
         error_format=(
             f'Composer environment "{composer_environment_resource_name}"'
-            f' from pipeline "{pipeline_path}" does not exist.'
+            f' from pipeline "{pipeline_id}" does not exist.'
         ),
     )
   except apitools_exceptions.HttpBadRequestError as e:
@@ -575,7 +555,7 @@ def _validate_composer_environment(
         e,
         error_format=(
             f'Composer environment "{composer_environment_resource_name}"'
-            f' from pipeline "{pipeline_path}" is invalid.'
+            f' from pipeline "{pipeline_id}" is invalid.'
         ),
     )
   except apitools_exceptions.HttpError as e:
@@ -589,7 +569,7 @@ def _validate_dataproc_cluster(
     region: str,
     project_id: str,
     action_name: str,
-    pipeline_path: str,
+    pipeline_id: str,
 ):
   """Validates that a Dataproc cluster exists.
 
@@ -598,7 +578,7 @@ def _validate_dataproc_cluster(
     region: The region of the cluster.
     project_id: The project ID of the cluster.
     action_name: The name of the action for error messages.
-    pipeline_path: The relative path to the pipeline file for error messages.
+    pipeline_id: The pipeline ID for error messages.
 
   Raises:
     api_exceptions.HttpException: If the Dataproc cluster is not found,
@@ -618,7 +598,7 @@ def _validate_dataproc_cluster(
         e,
         error_format=(
             "Permission denied when checking Dataproc cluster"
-            f' "{cluster_name}" from pipeline "{pipeline_path}" and action'
+            f' "{cluster_name}" from pipeline "{pipeline_id}" and action'
             f' "{action_name}". Please ensure'
             " your account has necessary permissions and the cluster exists."
         ),
@@ -628,7 +608,7 @@ def _validate_dataproc_cluster(
         e,
         error_format=(
             f'Dataproc cluster "{cluster_name}" from pipeline'
-            f' "{pipeline_path}" and action "{action_name}" does not exist.'
+            f' "{pipeline_id}" and action "{action_name}" does not exist.'
         ),
     )
   except apitools_exceptions.HttpBadRequestError as e:
@@ -636,13 +616,14 @@ def _validate_dataproc_cluster(
         e,
         error_format=(
             f'Dataproc cluster "{cluster_name}" from pipeline'
-            f' "{pipeline_path}" and action "{action_name}" is invalid.'
+            f' "{pipeline_id}" and action "{action_name}" is invalid.'
         ),
     )
   except apitools_exceptions.HttpError as e:
     raise api_exceptions.HttpException(
         e, error_format="Failed to check Dataproc cluster: {message}"
     )
+
 
 _SECRET_RESOLUTION_ALLOWED = threading.local()
 
@@ -933,7 +914,7 @@ def validate_pipeline_l1(
     pipeline_paths: list[str],
     combined_variables: Optional[Mapping[str, Any]] = None,
     secret_keys: Iterable[str] = (),
-) -> None:
+) -> list[OrchestrationPipelinesModel]:
   """Performs L1 validation for all pipelines in an environment.
 
   L1 validation includes syntax checking, variable substitution, and
@@ -945,12 +926,16 @@ def validate_pipeline_l1(
     combined_variables: Dictionary of variables for template substitution.
     secret_keys: Optional list of secret keys to check against.
 
+  Returns:
+    A list of `OrchestrationPipelinesModel` instances for the validated
+    pipelines.
+
   Raises:
     BadFileError: If a pipeline file cannot be read or parsed, or if variable
     substitution fails, or if secrets are used.
     exceptions.Error: If model validation fails.
   """
-
+  pipeline_models = []
   for pipeline_path in pipeline_paths:
     full_pipeline_path = bundle_dir / pipeline_path
 
@@ -1002,7 +987,9 @@ def validate_pipeline_l1(
           except files.Error:
             pass
 
-    _build_orchestration_pipelines_model(resolved_pipeline)
+    pipeline_models.append(
+        _build_orchestration_pipelines_model(resolved_pipeline)
+    )
 
     # Check if pipeline ID matches pipeline file name
     pipeline_id = resolved_pipeline.get("pipelineId") or resolved_pipeline.get(
@@ -1014,6 +1001,8 @@ def validate_pipeline_l1(
           f"Pipeline ID {pipeline_id!r} does not match pipeline file name"
           f" {pathlib.Path(pipeline_path).stem!r} in {pipeline_path!r}."
       )
+
+  return pipeline_models
 
 
 def _get_pre_deployment_data(
@@ -1212,9 +1201,8 @@ def _load_environment_from_pre_parsed(
 
 
 def _validate_single_pipeline(
-    pipeline_path: str,
+    pipeline_model: OrchestrationPipelinesModel,
     bundle_dir: pathlib.Path,
-    combined_variables: Dict[str, Any],
     environment: deployment_model.EnvironmentModel,
 ) -> None:
   """Performs L2 semantic validation for a single orchestration pipeline.
@@ -1223,9 +1211,8 @@ def _validate_single_pipeline(
   GCP project existence and path (local or GCS) validity.
 
   Args:
-    pipeline_path: The path to the pipeline to validate.
+    pipeline_model: The OrchestrationPipelinesModel object to validate.
     bundle_dir: The directory where pipeline bundles are located.
-    combined_variables: Dictionary of variables for template substitution.
     environment: The deployment_model.EnvironmentModel object.
 
   Raises:
@@ -1235,36 +1222,17 @@ def _validate_single_pipeline(
     api_exceptions.HttpException: If GCP project or GCS path validation fails
       due to API errors.
   """
-  pipeline_path = bundle_dir / pipeline_path
-
-  try:
-    yaml_content = files.ReadFileContents(pipeline_path)
-  except files.Error as e:
-    raise BadFileError(f"Error reading {pipeline_path.name}: {e}") from e
-
-  resolved_yaml_content = resolve_string_templates(
-      yaml_content, combined_variables
-  )
-  check_for_missing_variables(resolved_yaml_content)
-
-  try:
-    resolved_pipeline = yaml.load(resolved_yaml_content)
-  except yaml.Error as e:
-    raise BadFileError(
-        f"Failed to parse pipeline YAML after variable substitution: {e}"
-    ) from e
-
-  project = resolved_pipeline.get("defaults", {}).get(
-      "project_id"
-  ) or resolved_pipeline.get("defaults", {}).get("projectId")
-  region = resolved_pipeline.get("defaults", {}).get("location")
+  project = pipeline_model.defaults.project_id
+  region = pipeline_model.defaults.location
   # Check if GCP project exists
-  _validate_gcp_project(project, pipeline_path)
+  _validate_gcp_project(project, pipeline_model.pipeline_id)
 
   # Check if all 'path' fields refer to existing resources.
-  all_paths_in_pipeline = _extract_paths_from_nested_data(resolved_pipeline)
+  all_paths_in_pipeline = _extract_paths_from_nested_proto(pipeline_model)
   for path_str in all_paths_in_pipeline:
-    _validate_paths_in_pipeline(bundle_dir, pipeline_path, path_str)
+    _validate_paths_in_pipeline(
+        bundle_dir, pipeline_model.pipeline_id, path_str
+    )
 
   # Check if Composer environment exists
   if environment:
@@ -1274,20 +1242,21 @@ def _validate_single_pipeline(
       )
     composer_environment_resource_name = f"projects/{environment.project}/locations/{environment.region}/environments/{environment.composer_environment}"
     _validate_composer_environment(
-        composer_environment_resource_name, pipeline_path
+        composer_environment_resource_name, pipeline_model.pipeline_id
     )
 
   # Check if specified Dataproc cluster exists
-  for action in resolved_pipeline.get("actions", []):
-    pyspark_action = action.get("pyspark")
-    if pyspark_action:
-      existing_cluster = (
-          pyspark_action.get("engine", {})
-          .get("dataprocOnGce", {})
-          .get("existingCluster", {})
-      )
-      cluster_region = existing_cluster.get("location") or region
-      cluster_project = existing_cluster.get("projectId") or project
+  for action in pipeline_model.actions:
+    if (
+        action.WhichOneof("action") == "pyspark"
+        and action.pyspark.engine.WhichOneof("engine") == "dataproc_on_gce"
+        and action.pyspark.engine.dataproc_on_gce.WhichOneof("config")
+        == "existing_cluster"
+    ):
+      pyspark_action = action.pyspark
+      existing_cluster = pyspark_action.engine.dataproc_on_gce.existing_cluster
+      cluster_region = existing_cluster.location or region
+      cluster_project = existing_cluster.project_id or project
       if not cluster_region:
         raise BadFileError(
             "Region is not set in Dataproc cluster config or pipeline defaults."
@@ -1297,25 +1266,21 @@ def _validate_single_pipeline(
             "Project is not set in Dataproc cluster config or pipeline"
             " defaults."
         )
-      if existing_cluster:
-        _validate_dataproc_cluster(
-            existing_cluster.get("clusterName"),
-            cluster_region,
-            cluster_project,
-            pyspark_action.get("name"),
-            pipeline_path,
-        )
+      _validate_dataproc_cluster(
+          existing_cluster.cluster_name,
+          cluster_region,
+          cluster_project,
+          pyspark_action.name,
+          pipeline_model.pipeline_id,
+      )
 
 
 def validate_pipeline_l2(
     bundle_dir: pathlib.Path,
-    pipeline_paths: list[str],
-    combined_variables: Optional[Mapping[str, Any]] = None,
+    pipeline_models: Iterable[OrchestrationPipelinesModel],
     environment: Optional[deployment_model.EnvironmentModel] = None,
 ) -> None:
   """Performs L2 validation for all pipelines in the deployment environment."""
 
-  for pipeline_path in pipeline_paths:
-    _validate_single_pipeline(
-        pipeline_path, bundle_dir, combined_variables, environment
-    )
+  for pipeline_model in pipeline_models:
+    _validate_single_pipeline(pipeline_model, bundle_dir, environment)

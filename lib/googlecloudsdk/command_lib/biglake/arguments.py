@@ -148,6 +148,16 @@ def AddFederatedCatalogArgs(parser):
       ),
   )
   parser.add_argument(
+      '--service-principal-application-id',
+      hidden=True,
+      help=(
+          'Optional. The application ID of the Databricks service principal'
+          ' that will be used to access the Unity Catalog in the OIDC'
+          ' authentication flow. With OIDC, the secret-name argument is not'
+          ' used.'
+      ),
+  )
+  parser.add_argument(
       '--unity-instance-name',
       help=(
           'The instance name is the first part of the URL when you log into'
@@ -190,6 +200,16 @@ def AddUpdateFederatedCatalogArgs(parser):
           ' `projects/{project_id}/locations/{location}/secrets/{secret_id}`'
           ' or `projects/{project_id}/locations/{location}/secrets/{secret_id}/'
           'versions/{version_id}`.'
+      ),
+  )
+  parser.add_argument(
+      '--service-principal-application-id',
+      hidden=True,
+      help=(
+          'Optional. The application ID of the Databricks service principal'
+          ' that will be used to access the Unity Catalog in the OIDC'
+          ' authentication flow. With OIDC, the secret-name argument is not'
+          ' used.'
       ),
   )
   parser.add_argument(

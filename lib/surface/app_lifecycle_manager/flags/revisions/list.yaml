@@ -1,15 +1,37 @@
 - release_tracks: [ALPHA, BETA]
   help_text:
-    brief: List Flags Revisions
-    description: List Flags Revisions
+    brief: List Flag Revisions
+    description: |-
+      List all flag revisions available in a specific location. Flag revisions are
+      immutable, point-in-time snapshots of a flag's configuration.
+
+      Use this command to audit configuration history, verify revision creation
+      success, or identify specific revision IDs for manual recovery or inclusion in
+      a Flag Release.
     examples: |-
-      To list Flags Revisions, run:
+      To list all flag revisions across all locations in the current project, run:
 
           $ {command}
+
+      To list all flag revisions in the `global` location, run:
+
+          $ {command} --location=global
+
+      To list revisions specifically for a flag named `my-flag`, run:
+
+          $ {command} --location=global --filter="flag:my-flag"
+
+      To list the 5 most recent revisions to identify the latest configuration state, run:
+
+          $ {command} --location=global --limit=5 --sort-by=~createTime
+
+      To list revisions and output in JSON format for automation/scripting, run:
+
+          $ {command} --format=json
   arguments:
     resource:
       help_text: |-
-        Parent value for ListFlagRevisionsRequest
+        Location in which to list Flag Revisions.
       spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:project_location_with_default
   request:
     api_version: v1beta1

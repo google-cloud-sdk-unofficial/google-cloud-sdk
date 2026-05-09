@@ -27,11 +27,14 @@ from typing import Any, Set
 from googlecloudsdk.api_lib.util import messages as messages_util
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.calliope.concepts import concepts
+from googlecloudsdk.command_lib.cluster_director.clusters import _compute
+from googlecloudsdk.command_lib.cluster_director.clusters import _networks
+from googlecloudsdk.command_lib.cluster_director.clusters import _storage
+from googlecloudsdk.command_lib.cluster_director.clusters import errors
 from googlecloudsdk.command_lib.cluster_director.clusters import flag_types
 from googlecloudsdk.command_lib.util.apis import yaml_data
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
-from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core.util import files
 
 _GCE_INSTANCE_FIELDS = frozenset([
@@ -71,10 +74,6 @@ _UPDATE_GCE_FIELDS_ON_GKE_NODE_SET_ERROR = (
 _UPDATE_GKE_FIELDS_ON_GCE_NODE_SET_ERROR = (
     "Cannot update GKE node set fields for a compute instance node set."
 )
-
-
-class ClusterDirectorError(core_exceptions.Error):
-  """Error for Cluster Director commands."""
 
 
 class NodeSetType(enum.Enum):
@@ -136,9 +135,15 @@ class ClusterUtil:
   def MakeCluster(self):
     """Returns a cluster message from the granular flags."""
     cluster = self.MakeClusterBasic()
-    cluster.networkResources = self.MakeClusterNetworks()
-    cluster.storageResources = self.MakeClusterStorages()
-    cluster.computeResources = self.MakeClusterCompute()
+    cluster.networkResources = _networks.MakeClusterNetworks(
+        self.args, self.message_module, self.cluster_ref
+    )
+    cluster.storageResources = _storage.MakeClusterStorages(
+        self.args, self.message_module, self.cluster_ref
+    )
+    cluster.computeResources = _compute.MakeClusterCompute(
+        self.args, self.message_module, self.cluster_ref
+    )
     cluster.orchestrator = self.message_module.Orchestrator(
         slurm=self.MakeClusterSlurmOrchestrator(cluster)
     )
@@ -155,267 +160,6 @@ class ClusterUtil:
           self.args.labels, self.message_module.Cluster.LabelsValue
       )
     return cluster
-
-  def MakeClusterNetworks(self):
-    """Makes a cluster message with network fields."""
-    networks = self.message_module.Cluster.NetworkResourcesValue()
-    if self.args.IsSpecified("create_network"):
-      network_id = self.args.create_network.get("name")
-      network_name = self._GetNetworkName(network_id)
-      networks.additionalProperties.append(
-          self.message_module.Cluster.NetworkResourcesValue.AdditionalProperty(
-              key=f"net-{network_id}",
-              value=self.message_module.NetworkResource(
-                  config=self.message_module.NetworkResourceConfig(
-                      newNetwork=self.message_module.NewNetworkConfig(
-                          network=network_name,
-                          description=self.args.create_network.get(
-                              "description"
-                          ),
-                      )
-                  )
-              ),
-          )
-      )
-    if self.args.IsSpecified("network") and self.args.IsSpecified("subnet"):
-      network_id = self.args.network
-      network_name = self._GetNetworkName(network_id)
-      networks.additionalProperties.append(
-          self.message_module.Cluster.NetworkResourcesValue.AdditionalProperty(
-              key=f"net-{network_id}",
-              value=self.message_module.NetworkResource(
-                  config=self.message_module.NetworkResourceConfig(
-                      existingNetwork=self.message_module.ExistingNetworkConfig(
-                          network=network_name,
-                          subnetwork=self._GetSubNetworkName(self.args.subnet),
-                      )
-                  )
-              ),
-          )
-      )
-    return networks
-
-  def MakeClusterStorages(self):
-    """Makes a cluster message with storage fields."""
-    storages = self.message_module.Cluster.StorageResourcesValue()
-    storage_ids = set()
-    if self.args.IsSpecified("create_filestores"):
-      for filestore in self.args.create_filestores:
-        storage_id = filestore.get("id")
-        if storage_id in storage_ids:
-          raise ClusterDirectorError(
-              f"Duplicate storage resource id: {storage_id}"
-          )
-        storage_ids.add(storage_id)
-        storages.additionalProperties.append(
-            self.message_module.Cluster.StorageResourcesValue.AdditionalProperty(
-                key=filestore.get("id"),
-                value=self.message_module.StorageResource(
-                    config=self.message_module.StorageResourceConfig(
-                        newFilestore=self.message_module.NewFilestoreConfig(
-                            filestore=self._GetFilestoreName(
-                                filestore.get("name")
-                            ),
-                            tier=filestore.get("tier"),
-                            fileShares=[
-                                self.message_module.FileShareConfig(
-                                    capacityGb=filestore.get("capacityGb"),
-                                    fileShare=filestore.get("fileshare"),
-                                )
-                            ],
-                            protocol=filestore.get("protocol"),
-                            description=filestore.get("description"),
-                        )
-                    ),
-                ),
-            )
-        )
-    if self.args.IsSpecified("filestores"):
-      for filestore in self.args.filestores:
-        storage_id = filestore.get("id")
-        if storage_id in storage_ids:
-          raise ClusterDirectorError(
-              f"Duplicate storage resource id: {storage_id}"
-          )
-        storage_ids.add(storage_id)
-        storages.additionalProperties.append(
-            self.message_module.Cluster.StorageResourcesValue.AdditionalProperty(
-                key=storage_id,
-                value=self.message_module.StorageResource(
-                    config=self.message_module.StorageResourceConfig(
-                        existingFilestore=self.message_module.ExistingFilestoreConfig(
-                            filestore=self._GetFilestoreName(
-                                filestore.get("name")
-                            ),
-                        )
-                    ),
-                ),
-            )
-        )
-    if self.args.IsSpecified("create_lustres"):
-      for lustre in self.args.create_lustres:
-        storage_id = lustre.get("id")
-        if storage_id in storage_ids:
-          raise ClusterDirectorError(
-              f"Duplicate storage resource id: {storage_id}"
-          )
-        storage_ids.add(storage_id)
-        storages.additionalProperties.append(
-            self.message_module.Cluster.StorageResourcesValue.AdditionalProperty(
-                key=storage_id,
-                value=self.message_module.StorageResource(
-                    config=self.message_module.StorageResourceConfig(
-                        newLustre=self.message_module.NewLustreConfig(
-                            lustre=self._GetLustreName(lustre.get("name")),
-                            filesystem=lustre.get("filesystem"),
-                            capacityGb=lustre.get("capacityGb"),
-                            description=lustre.get("description"),
-                            perUnitStorageThroughput=lustre.get(
-                                "perUnitStorageThroughput"
-                            ),
-                        )
-                    ),
-                ),
-            )
-        )
-    if self.args.IsSpecified("lustres"):
-      for lustre in self.args.lustres:
-        storage_id = lustre.get("id")
-        if storage_id in storage_ids:
-          raise ClusterDirectorError(
-              f"Duplicate storage resource id: {storage_id}"
-          )
-        storage_ids.add(storage_id)
-        storages.additionalProperties.append(
-            self.message_module.Cluster.StorageResourcesValue.AdditionalProperty(
-                key=storage_id,
-                value=self.message_module.StorageResource(
-                    config=self.message_module.StorageResourceConfig(
-                        existingLustre=self.message_module.ExistingLustreConfig(
-                            lustre=self._GetLustreName(lustre.get("name")),
-                        )
-                    ),
-                ),
-            )
-        )
-    if self.args.IsSpecified("create_buckets"):
-      for gcs_bucket in self.args.create_buckets:
-        storage_id = gcs_bucket.get("id")
-        if storage_id in storage_ids:
-          raise ClusterDirectorError(
-              f"Duplicate storage resource id: {storage_id}"
-          )
-        storage_ids.add(storage_id)
-        gcs = self.message_module.NewBucketConfig(
-            bucket=gcs_bucket.get("name"),
-        )
-        if "storageClass" in gcs_bucket:
-          gcs.storageClass = gcs_bucket.get("storageClass")
-        else:
-          self._SetGcsAutoclassConfig(gcs, gcs_bucket)
-        # If neither storageClass nor autoclass is set, set storageClass to
-        # STANDARD by default.
-        if not gcs.storageClass and not gcs.autoclass:
-          gcs.storageClass = (
-              self.message_module.NewBucketConfig.StorageClassValueValuesEnum.STANDARD
-          )
-        if "enableHNS" in gcs_bucket:
-          gcs.hierarchicalNamespace = (
-              self.message_module.GcsHierarchicalNamespaceConfig(
-                  enabled=gcs_bucket.get("enableHNS"),
-              )
-          )
-        storages.additionalProperties.append(
-            self.message_module.Cluster.StorageResourcesValue.AdditionalProperty(
-                key=storage_id,
-                value=self.message_module.StorageResource(
-                    config=self.message_module.StorageResourceConfig(
-                        newBucket=gcs
-                    )
-                ),
-            ),
-        )
-    if self.args.IsSpecified("buckets"):
-      for gcs_bucket in self.args.buckets:
-        storage_id = gcs_bucket.get("id")
-        if storage_id in storage_ids:
-          raise ClusterDirectorError(
-              f"Duplicate storage resource id: {storage_id}"
-          )
-        storage_ids.add(storage_id)
-        storages.additionalProperties.append(
-            self.message_module.Cluster.StorageResourcesValue.AdditionalProperty(
-                key=storage_id,
-                value=self.message_module.StorageResource(
-                    config=self.message_module.StorageResourceConfig(
-                        existingBucket=self.message_module.ExistingBucketConfig(
-                            bucket=gcs_bucket.get("name"),
-                        )
-                    ),
-                ),
-            )
-        )
-    return storages
-
-  def MakeClusterCompute(self):
-    """Makes a cluster message with compute fields."""
-    if (
-        not self.args.IsSpecified("on_demand_instances")
-        and not self.args.IsSpecified("spot_instances")
-        and not self.args.IsSpecified("reserved_instances")
-        and not self.args.IsSpecified("flex_start_instances")
-    ):
-      raise ClusterDirectorError(
-          "At least one of on_demand_instances, spot_instances,"
-          " reserved_instances, or flex_start_instances flag must be specified."
-      )
-    compute_ids = set()
-    compute = self.message_module.Cluster.ComputeResourcesValue()
-    if self.args.IsSpecified("on_demand_instances"):
-      for instance in self.args.on_demand_instances:
-        compute_id = instance.get("id")
-        compute_ids.add(compute_id)
-        compute.additionalProperties.append(
-            self.message_module.Cluster.ComputeResourcesValue.AdditionalProperty(
-                key=compute_id,
-                value=self._MakeOnDemandComputeResource(instance),
-            )
-        )
-    if self.args.IsSpecified("spot_instances"):
-      for instance in self.args.spot_instances:
-        compute_id = instance.get("id")
-        compute_ids.add(compute_id)
-        compute.additionalProperties.append(
-            self.message_module.Cluster.ComputeResourcesValue.AdditionalProperty(
-                key=compute_id,
-                value=self._MakeSpotComputeResource(instance),
-            )
-        )
-    if self.args.IsSpecified("reserved_instances"):
-      for instance in self.args.reserved_instances:
-        compute_id = instance.get("id")
-        compute_ids.add(compute_id)
-        compute.additionalProperties.append(
-            self.message_module.Cluster.ComputeResourcesValue.AdditionalProperty(
-                key=compute_id,
-                value=self._MakeReservedComputeResource(instance),
-            )
-        )
-    if self.args.IsSpecified("flex_start_instances"):
-      for instance in self.args.flex_start_instances:
-        compute_id = instance.get("id")
-        compute_ids.add(compute_id)
-        compute.additionalProperties.append(
-            self.message_module.Cluster.ComputeResourcesValue.AdditionalProperty(
-                key=compute_id,
-                value=self._MakeFlexStartComputeResource(instance),
-            )
-        )
-    if len(compute_ids) != len(compute.additionalProperties):
-      raise ClusterDirectorError(
-          "Compute instances with duplicate ids are not supported."
-      )
-    return compute
 
   def MakeClusterSlurmOrchestrator(self, cluster):
     """Makes a cluster message with slurm orchestrator fields."""
@@ -525,8 +269,20 @@ class ClusterUtil:
   def MakeClusterPatch(self):
     """Returns the cluster patch message and update mask."""
     cluster = self.MakeClusterBasicPatch()
-    cluster.storageResources = self.MakeClusterStoragesPatch()
-    cluster.computeResources = self.MakeClusterComputePatch()
+    cluster.storageResources = _storage.MakeClusterStoragesPatch(
+        self.args,
+        self.message_module,
+        self.cluster_ref,
+        self.existing_cluster,
+        self.update_mask,
+    )
+    cluster.computeResources = _compute.MakeClusterComputePatch(
+        self.args,
+        self.message_module,
+        self.cluster_ref,
+        self.existing_cluster,
+        self.update_mask,
+    )
     cluster.orchestrator = self.message_module.Orchestrator(
         slurm=self.MakeClusterSlurmOrchestratorPatch(cluster)
     )
@@ -558,432 +314,6 @@ class ClusterUtil:
       )
       self.update_mask.add("labels")
     return cluster
-
-  def MakeClusterStoragesPatch(self):
-    """Makes a cluster patch message with storage fields."""
-    storage_resources = self.message_module.Cluster.StorageResourcesValue()
-    storages = self._ConvertMessageToDict(
-        self.existing_cluster.storageResources
-        if self.existing_cluster
-        else None
-    )
-    is_storage_updated = False
-
-    if self.args.IsSpecified("remove_filestore_instances"):
-      filestores_to_remove = {
-          self._GetFilestoreName(f)
-          for f in self.args.remove_filestore_instances
-      }
-      storage_ids_to_remove = set()
-      found_filestores = set()
-
-      for storage_id, storage_resource in storages.items():
-        config = storage_resource.config
-        filestore_name = None
-        if config and config.newFilestore:
-          filestore_name = config.newFilestore.filestore
-        elif config and config.existingFilestore:
-          filestore_name = config.existingFilestore.filestore
-
-        if filestore_name in filestores_to_remove:
-          storage_ids_to_remove.add(storage_id)
-          found_filestores.add(filestore_name)
-
-      if found_filestores != filestores_to_remove:
-        not_found = filestores_to_remove - found_filestores
-        raise ClusterDirectorError(
-            f"Filestore(s) not found: {', '.join(not_found)}"
-        )
-
-      for storage_id in storage_ids_to_remove:
-        storages.pop(storage_id)
-      is_storage_updated = True
-
-    if self.args.IsSpecified("remove_storage_buckets"):
-      buckets_to_remove = set(self.args.remove_storage_buckets)
-      storage_ids_to_remove = set()
-      found_buckets = set()
-
-      for storage_id, storage_resource in storages.items():
-        config = storage_resource.config
-        bucket_name = None
-        if config:
-          if config.newBucket:
-            bucket_name = config.newBucket.bucket
-          elif config.existingBucket:
-            bucket_name = config.existingBucket.bucket
-
-        if bucket_name in buckets_to_remove:
-          storage_ids_to_remove.add(storage_id)
-          found_buckets.add(bucket_name)
-
-      if found_buckets != buckets_to_remove:
-        not_found = buckets_to_remove - found_buckets
-        raise ClusterDirectorError(
-            "Cloud Storage bucket(s) not found:"
-            f" {', '.join(sorted(list(not_found)))}"
-        )
-
-      for storage_id in storage_ids_to_remove:
-        storages.pop(storage_id)
-      is_storage_updated = True
-
-    if self.args.IsSpecified("remove_lustre_instances"):
-      lustres_to_remove = {
-          self._GetLustreName(f) for f in self.args.remove_lustre_instances
-      }
-      storage_ids_to_remove = set()
-      found_lustres = set()
-
-      for storage_id, storage_resource in storages.items():
-        config = storage_resource.config
-        lustre_name = None
-        if config and config.newLustre:
-          lustre_name = config.newLustre.lustre
-        elif config and config.existingLustre:
-          lustre_name = config.existingLustre.lustre
-
-        if lustre_name in lustres_to_remove:
-          storage_ids_to_remove.add(storage_id)
-          found_lustres.add(lustre_name)
-
-      if found_lustres != lustres_to_remove:
-        not_found = lustres_to_remove - found_lustres
-        raise ClusterDirectorError(
-            f"Lustre(s) not found: {', '.join(not_found)}"
-        )
-
-      for storage_id in storage_ids_to_remove:
-        storages.pop(storage_id)
-      is_storage_updated = True
-
-    if self.args.IsSpecified("add_new_filestore_instances"):
-      for filestore in self.args.add_new_filestore_instances:
-        storage_id = filestore.get("id")
-        if storage_id in storages:
-          raise ClusterDirectorError(
-              f"Duplicate storage resource id: {storage_id}"
-          )
-        filestore_name = self._GetFilestoreName(filestore.get("name"))
-        for storage_resource in storages.values():
-          config = storage_resource.config
-          if config and (
-              (
-                  config.newFilestore
-                  and config.newFilestore.filestore == filestore_name
-              )
-              or (
-                  config.existingFilestore
-                  and config.existingFilestore.filestore == filestore_name
-              )
-          ):
-            raise ClusterDirectorError(
-                f"Filestore {filestore_name} already exists."
-            )
-
-        storages[storage_id] = self.message_module.StorageResource(
-            config=self.message_module.StorageResourceConfig(
-                newFilestore=self.message_module.NewFilestoreConfig(
-                    filestore=filestore_name,
-                    tier=filestore.get("tier"),
-                    fileShares=[
-                        self.message_module.FileShareConfig(
-                            capacityGb=filestore.get("capacityGb"),
-                            fileShare=filestore.get("fileshare"),
-                        )
-                    ],
-                    protocol=filestore.get("protocol"),
-                    description=filestore.get("description"),
-                )
-            )
-        )
-      is_storage_updated = True
-
-    if self.args.IsSpecified("add_filestore_instances"):
-      for filestore in self.args.add_filestore_instances:
-        storage_id = filestore.get("id")
-        if storage_id in storages:
-          raise ClusterDirectorError(
-              f"Duplicate storage resource id: {storage_id}"
-          )
-        filestore_name = self._GetFilestoreName(filestore.get("name"))
-        for storage_resource in storages.values():
-          config = storage_resource.config
-          if config and (
-              (
-                  config.newFilestore
-                  and config.newFilestore.filestore == filestore_name
-              )
-              or (
-                  config.existingFilestore
-                  and config.existingFilestore.filestore == filestore_name
-              )
-          ):
-            raise ClusterDirectorError(
-                f"Filestore {filestore_name} already exists."
-            )
-
-        storages[storage_id] = self.message_module.StorageResource(
-            config=self.message_module.StorageResourceConfig(
-                existingFilestore=self.message_module.ExistingFilestoreConfig(
-                    filestore=filestore_name,
-                )
-            )
-        )
-      is_storage_updated = True
-
-    if self.args.IsSpecified("add_new_lustre_instances"):
-      for lustre in self.args.add_new_lustre_instances:
-        storage_id = lustre.get("id")
-        if storage_id in storages:
-          raise ClusterDirectorError(
-              f"Duplicate storage resource id: {storage_id}"
-          )
-        lustre_name = self._GetLustreName(lustre.get("name"))
-        for storage_resource in storages.values():
-          config = storage_resource.config
-          if config and (
-              (config.newLustre and config.newLustre.lustre == lustre_name)
-              or (
-                  config.existingLustre
-                  and config.existingLustre.lustre == lustre_name
-              )
-          ):
-            raise ClusterDirectorError(
-                f"Lustre {lustre_name} already exists."
-            )
-
-        storages[storage_id] = self.message_module.StorageResource(
-            config=self.message_module.StorageResourceConfig(
-                newLustre=self.message_module.NewLustreConfig(
-                    lustre=self._GetLustreName(lustre.get("name")),
-                    filesystem=lustre.get("filesystem"),
-                    capacityGb=lustre.get("capacityGb"),
-                    description=lustre.get("description"),
-                    perUnitStorageThroughput=lustre.get(
-                        "perUnitStorageThroughput"
-                    ),
-                )
-            )
-        )
-      is_storage_updated = True
-
-    if self.args.IsSpecified("add_lustre_instances"):
-      for lustre in self.args.add_lustre_instances:
-        storage_id = lustre.get("id")
-        if storage_id in storages:
-          raise ClusterDirectorError(
-              f"Duplicate storage resource id: {storage_id}"
-          )
-        lustre_name = self._GetLustreName(lustre.get("name"))
-        for storage_resource in storages.values():
-          config = storage_resource.config
-          if config and (
-              (config.newLustre and config.newLustre.lustre == lustre_name)
-              or (
-                  config.existingLustre
-                  and config.existingLustre.lustre == lustre_name
-              )
-          ):
-            raise ClusterDirectorError(
-                f"Lustre {lustre_name} already exists."
-            )
-
-        storages[storage_id] = self.message_module.StorageResource(
-            config=self.message_module.StorageResourceConfig(
-                existingLustre=self.message_module.ExistingLustreConfig(
-                    lustre=lustre_name,
-                )
-            )
-        )
-      is_storage_updated = True
-
-    if self.args.IsSpecified("add_storage_buckets"):
-      for bucket in self.args.add_storage_buckets:
-        storage_id = bucket.get("id")
-        if storage_id in storages:
-          raise ClusterDirectorError(
-              f"Duplicate storage resource id: {storage_id}"
-          )
-        bucket_name = bucket.get("name")
-        # Check for duplicates
-        for storage_resource in storages.values():
-          config = storage_resource.config
-          bucket_name_in_config = None
-          if config:
-            if config.newBucket:
-              bucket_name_in_config = config.newBucket.bucket
-            elif config.existingBucket:
-              bucket_name_in_config = config.existingBucket.bucket
-
-          if bucket_name_in_config == bucket_name:
-            raise ClusterDirectorError(
-                f"Cloud Storage bucket {bucket_name} already exists."
-            )
-
-        storages[storage_id] = self.message_module.StorageResource(
-            config=self.message_module.StorageResourceConfig(
-                existingBucket=self.message_module.ExistingBucketConfig(
-                    bucket=bucket_name,
-                )
-            )
-        )
-      is_storage_updated = True
-
-    if self.args.IsSpecified("add_new_storage_buckets"):
-      for gcs_bucket in self.args.add_new_storage_buckets:
-        storage_id = gcs_bucket.get("id")
-        if storage_id in storages:
-          raise ClusterDirectorError(
-              f"Duplicate storage resource id: {storage_id}"
-          )
-        bucket_name = gcs_bucket.get("name")
-        for storage_resource in storages.values():
-          config = storage_resource.config
-          b_name = None
-          if config:
-            if config.newBucket:
-              b_name = config.newBucket.bucket
-            elif config.existingBucket:
-              b_name = config.existingBucket.bucket
-          if b_name == bucket_name:
-            raise ClusterDirectorError(
-                f"Cloud Storage bucket {bucket_name} already exists."
-            )
-        gcs = self.message_module.NewBucketConfig(
-            bucket=gcs_bucket.get("name"),
-        )
-        if "storageClass" in gcs_bucket:
-          gcs.storageClass = gcs_bucket.get("storageClass")
-        else:
-          self._SetGcsAutoclassConfig(gcs, gcs_bucket)
-        if not gcs.storageClass and not gcs.autoclass:
-          gcs.storageClass = (
-              self.message_module.NewBucketConfig.StorageClassValueValuesEnum.STANDARD
-          )
-        if "enableHNS" in gcs_bucket:
-          gcs.hierarchicalNamespace = (
-              self.message_module.GcsHierarchicalNamespaceConfig(
-                  enabled=gcs_bucket.get("enableHNS"),
-              )
-          )
-        storages[storage_id] = self.message_module.StorageResource(
-            config=self.message_module.StorageResourceConfig(newBucket=gcs)
-        )
-      is_storage_updated = True
-
-    if is_storage_updated:
-      storage_resources.additionalProperties = [
-          self.message_module.Cluster.StorageResourcesValue.AdditionalProperty(
-              key=key, value=value
-          )
-          for key, value in storages.items()
-      ]
-      self.update_mask.add("storage_resources")
-    return storage_resources
-
-  def MakeClusterComputePatch(self):
-    """Makes a cluster compute patch message with compute fields."""
-    compute_resources = self.message_module.Cluster.ComputeResourcesValue()
-    compute = self._ConvertMessageToDict(
-        self.existing_cluster.computeResources
-        if self.existing_cluster
-        else None
-    )
-    is_compute_updated = False
-    if self.args.IsSpecified("remove_on_demand_instances"):
-      for compute_id in self.args.remove_on_demand_instances:
-        self._RemoveKeyByAttrFromDictSpec(
-            key=compute_id,
-            dict_spec=compute,
-            attrs=["newOnDemandInstances"],
-            key_exception_message=_COMPUTE_INSTANCE_NOT_FOUND_ERROR,
-            attr_exception_message=(
-                f"On demand {_COMPUTE_INSTANCE_NOT_FOUND_ERROR}"
-            ),
-        )
-        is_compute_updated = True
-    if self.args.IsSpecified("remove_spot_instances"):
-      for compute_id in self.args.remove_spot_instances:
-        self._RemoveKeyByAttrFromDictSpec(
-            key=compute_id,
-            dict_spec=compute,
-            attrs=["newSpotInstances"],
-            key_exception_message=_COMPUTE_INSTANCE_NOT_FOUND_ERROR,
-            attr_exception_message=f"Spot {_COMPUTE_INSTANCE_NOT_FOUND_ERROR}",
-        )
-        is_compute_updated = True
-    if self.args.IsSpecified("remove_reserved_instances"):
-      for compute_id in self.args.remove_reserved_instances:
-        self._RemoveKeyByAttrFromDictSpec(
-            key=compute_id,
-            dict_spec=compute,
-            attrs=["newReservedInstances"],
-            key_exception_message=_COMPUTE_INSTANCE_NOT_FOUND_ERROR,
-            attr_exception_message=(
-                f"Reserved {_COMPUTE_INSTANCE_NOT_FOUND_ERROR}"
-            ),
-        )
-        is_compute_updated = True
-    if self.args.IsSpecified("remove_flex_start_instances"):
-      for compute_id in self.args.remove_flex_start_instances:
-        self._RemoveKeyByAttrFromDictSpec(
-            key=compute_id,
-            dict_spec=compute,
-            attrs=["newFlexStartInstances"],
-            key_exception_message=_COMPUTE_INSTANCE_NOT_FOUND_ERROR,
-            attr_exception_message=(
-                f"Flex Start {_COMPUTE_INSTANCE_NOT_FOUND_ERROR}"
-            ),
-        )
-        is_compute_updated = True
-    if self.args.IsSpecified("add_on_demand_instances"):
-      for instance in self.args.add_on_demand_instances:
-        self._AddKeyToDictSpec(
-            key=instance.get("id"),
-            dict_spec=compute,
-            value=self._MakeOnDemandComputeResource(instance),
-            exception_message=_COMPUTE_INSTANCE_ALREADY_EXISTS_ERROR,
-        )
-        is_compute_updated = True
-    if self.args.IsSpecified("add_spot_instances"):
-      for instance in self.args.add_spot_instances:
-        self._AddKeyToDictSpec(
-            key=instance.get("id"),
-            dict_spec=compute,
-            value=self._MakeSpotComputeResource(instance),
-            exception_message=_COMPUTE_INSTANCE_ALREADY_EXISTS_ERROR,
-        )
-        is_compute_updated = True
-    if self.args.IsSpecified("add_reserved_instances"):
-      for instance in self.args.add_reserved_instances:
-        self._AddKeyToDictSpec(
-            key=instance.get("id"),
-            dict_spec=compute,
-            value=self._MakeReservedComputeResource(instance),
-            exception_message=_COMPUTE_INSTANCE_ALREADY_EXISTS_ERROR,
-        )
-        is_compute_updated = True
-    if self.args.IsSpecified("add_flex_start_instances"):
-      for instance in self.args.add_flex_start_instances:
-        self._AddKeyToDictSpec(
-            key=instance.get("id"),
-            dict_spec=compute,
-            value=self._MakeFlexStartComputeResource(instance),
-            exception_message=_COMPUTE_INSTANCE_ALREADY_EXISTS_ERROR,
-        )
-        is_compute_updated = True
-    if is_compute_updated:
-      compute_resources.additionalProperties = [
-          self.message_module.Cluster.ComputeResourcesValue.AdditionalProperty(
-              key=key, value=value
-          )
-          for key, value in compute.items()
-      ]
-      if not compute_resources.additionalProperties:
-        raise ClusterDirectorError("Compute instances cannot be empty.")
-      self.update_mask.add("compute.resource_requests")
-    return compute_resources
 
   def MakeClusterSlurmOrchestratorPatch(self, cluster_patch):
     """Makes a cluster slurm orchestrator patch message with slurm fields."""
@@ -1020,11 +350,15 @@ class ClusterUtil:
             getattr(existing_node_set, "containerNodePool", None) is not None
         )
         if is_gke_node_set and node_set_keys.intersection(_GCE_INSTANCE_FIELDS):
-          raise ClusterDirectorError(_UPDATE_GCE_FIELDS_ON_GKE_NODE_SET_ERROR)
+          raise errors.ClusterDirectorError(
+              _UPDATE_GCE_FIELDS_ON_GKE_NODE_SET_ERROR
+          )
         elif not is_gke_node_set and node_set_keys.intersection(
             _GKE_NODE_POOL_FIELDS
         ):
-          raise ClusterDirectorError(_UPDATE_GKE_FIELDS_ON_GCE_NODE_SET_ERROR)
+          raise errors.ClusterDirectorError(
+              _UPDATE_GKE_FIELDS_ON_GCE_NODE_SET_ERROR
+          )
         if "staticNodeCount" in node_set:
           existing_node_set.staticNodeCount = node_set.get("staticNodeCount")
         if "maxDynamicNodeCount" in node_set:
@@ -1091,7 +425,7 @@ class ClusterUtil:
     if is_node_sets_updated:
       slurm.nodeSets = list(slurm_node_sets.values())
       if not slurm.nodeSets:
-        raise ClusterDirectorError("Slurm nodesets cannot be empty.")
+        raise errors.ClusterDirectorError("Slurm nodesets cannot be empty.")
       self.update_mask.add("orchestrator.slurm.node_sets")
 
     existing_slurm_partitions = None
@@ -1138,7 +472,7 @@ class ClusterUtil:
     if is_partitions_updated:
       slurm.partitions = list(slurm_partitions.values())
       if not slurm.partitions:
-        raise ClusterDirectorError("Slurm partitions cannot be empty.")
+        raise errors.ClusterDirectorError("Slurm partitions cannot be empty.")
       self.update_mask.add("orchestrator.slurm.partitions")
 
     if self.args.IsSpecified("update_slurm_login_node"):
@@ -1148,7 +482,7 @@ class ClusterUtil:
           or not self.existing_cluster.orchestrator.slurm
           or not self.existing_cluster.orchestrator.slurm.loginNodes
       ):
-        raise ClusterDirectorError(
+        raise errors.ClusterDirectorError(
             "Login node is not part of existing cluster spec and cannot be"
             " updated."
         )
@@ -1225,56 +559,6 @@ class ClusterUtil:
     else:
       existing_node_set.computeInstance.bootDisk = boot_disk
 
-  def _GetNetworkName(self, network) -> str:
-    """Returns the network name."""
-    project = getattr(self.args, "network_project", None) or (
-        self.cluster_ref.Parent().projectsId
-    )
-    return f"projects/{project}/global/networks/{network}"
-
-  def _GetSubNetworkName(self, subnetwork) -> str:
-    """Returns the subnetwork name."""
-    project = (
-        getattr(self.args, "network_project", None)
-        or self.cluster_ref.Parent().projectsId
-    )
-    return f"projects/{project}/{subnetwork}"
-
-  def _GetNextStorageId(self, storage_counter: int) -> str:
-    """Returns the next storage ID."""
-    return f"storage{storage_counter}"
-
-  def _GetFilestoreName(self, filestore) -> str:
-    """Returns the filestore name."""
-    project = self.cluster_ref.Parent().projectsId
-    return f"projects/{project}/{filestore}"
-
-  def _GetLustreName(self, lustre) -> str:
-    """Returns the Lustre name."""
-    project = self.cluster_ref.Parent().projectsId
-    return f"projects/{project}/{lustre}"
-
-  def _GetReservationName(self, reservation) -> str:
-    """Returns the reservation name."""
-    project = self.cluster_ref.Parent().projectsId
-    if reservation.startswith("projects/"):
-      reservation_name = reservation
-    else:
-      reservation_name = f"projects/{project}/{reservation}"
-    self._GetReservationZone(reservation)
-    return reservation_name
-
-  def _GetReservationZone(self, reservation) -> str:
-    """Returns the reservation zone."""
-    # projects/{project}/zones/{zone}/reservations/{reservation}/reservationBlocks/{reservationBlock}
-    parts = reservation.split("/")
-    for current_part, next_part in zip(parts, parts[1:]):
-      if current_part == "zones" and next_part:
-        return next_part
-    raise ClusterDirectorError(
-        f"Reservation {reservation} does not contain a zone."
-    )
-
   def _GetComputeMachineTypeFromArgs(self, compute_id):
     """Returns the compute machine type from args."""
     instances = []
@@ -1289,7 +573,7 @@ class ClusterUtil:
     for instance in instances:
       if instance.get("id") == compute_id:
         return instance.get("machineType")
-    raise ClusterDirectorError(
+    raise errors.ClusterDirectorError(
         f"Compute instances with id={compute_id} not found."
     )
 
@@ -1307,7 +591,7 @@ class ClusterUtil:
       )
       if compute_id in compute_resources:
         return self._GetComputeMachineType(compute_id, compute_resources)
-    raise ClusterDirectorError(
+    raise errors.ClusterDirectorError(
         f"Compute instances with id={compute_id} not found."
     )
 
@@ -1324,7 +608,7 @@ class ClusterUtil:
       return compute_resource.config.newReservedInstances.machineType
     if compute_resource.config.newFlexStartInstances:
       return compute_resource.config.newFlexStartInstances.machineType
-    raise ClusterDirectorError("Compute instances type not supported.")
+    raise errors.ClusterDirectorError("Compute instances type not supported.")
 
   def _GetStorageConfigs(self, cluster):
     """Returns the storage configs."""
@@ -1366,7 +650,7 @@ class ClusterUtil:
           local_mount = f"/data{counters['bucket']}"
           counters["bucket"] += 1
       if not local_mount:
-        raise ClusterDirectorError(
+        raise errors.ClusterDirectorError(
             "Storage configuration is not supported."
         )
 
@@ -1415,18 +699,18 @@ class ClusterUtil:
       dict_spec: dict[str, Any],
       value: Any,
       exception_message: str,
-  ) -> None | ClusterDirectorError:
+  ) -> None:
     """Adds a cluster identifier (key) with value, if not present in dict spec."""
     if key in dict_spec:
-      raise ClusterDirectorError(exception_message.format(key))
+      raise errors.ClusterDirectorError(exception_message.format(key))
     dict_spec[key] = value
 
   def _RemoveKeyFromDictSpec(
       self, key: str, dict_spec: dict[str, Any], exception_message: str
-  ) -> None | ClusterDirectorError:
+  ) -> None:
     """Removes a cluster identifier (key), if present in dict spec."""
     if key not in dict_spec:
-      raise ClusterDirectorError(exception_message.format(key))
+      raise errors.ClusterDirectorError(exception_message.format(key))
     dict_spec.pop(key)
 
   def _RemoveKeyByAttrFromDictSpec(
@@ -1436,14 +720,14 @@ class ClusterUtil:
       attrs: list[str],
       key_exception_message: str,
       attr_exception_message: str,
-  ) -> None | ClusterDirectorError:
+  ) -> None:
     """Removes a cluster identifier (key) by attribute, if present in dict spec."""
     if key not in dict_spec:
-      raise ClusterDirectorError(key_exception_message.format(key))
+      raise errors.ClusterDirectorError(key_exception_message.format(key))
     if not getattr(dict_spec[key], "config", None):
-      raise ClusterDirectorError(attr_exception_message.format(key))
+      raise errors.ClusterDirectorError(attr_exception_message.format(key))
     if not any(getattr(dict_spec[key].config, attr, None) for attr in attrs):
-      raise ClusterDirectorError(attr_exception_message.format(key))
+      raise errors.ClusterDirectorError(attr_exception_message.format(key))
     dict_spec.pop(key)
 
   def _GetValueFromDictSpec(
@@ -1451,99 +735,8 @@ class ClusterUtil:
   ) -> Any:
     """Returns the value message by cluster identifier (key) from a dict spec."""
     if key not in dict_spec:
-      raise ClusterDirectorError(exception_message.format(key))
+      raise errors.ClusterDirectorError(exception_message.format(key))
     return dict_spec[key]
-
-  def _SetGcsAutoclassConfig(self, gcs_message, gcs_bucket_args):
-    """Sets the autoclass configuration on a NewBucketConfig message."""
-    if gcs_bucket_args.get("enableAutoclass") or gcs_bucket_args.get(
-        "terminalStorageClass"
-    ):
-      gcs_message.autoclass = self.message_module.GcsAutoclassConfig(
-          enabled=True
-      )
-      if gcs_bucket_args.get("terminalStorageClass"):
-        gcs_message.autoclass.terminalStorageClass = gcs_bucket_args.get(
-            "terminalStorageClass"
-        )
-
-  def _MakeOnDemandComputeResource(self, instance):
-    """Makes a cluster compute resource message for on demand instances."""
-    return self.message_module.ComputeResource(
-        config=self.message_module.ComputeResourceConfig(
-            newOnDemandInstances=self.message_module.NewOnDemandInstancesConfig(
-                zone=instance.get("zone"),
-                machineType=instance.get("machineType"),
-            ),
-        ),
-    )
-
-  def _MakeSpotComputeResource(self, instance):
-    """Makes a cluster compute resource message for spot instances."""
-    return self.message_module.ComputeResource(
-        config=self.message_module.ComputeResourceConfig(
-            newSpotInstances=self.message_module.NewSpotInstancesConfig(
-                zone=instance.get("zone"),
-                machineType=instance.get("machineType"),
-                terminationAction=instance.get("terminationAction"),
-            ),
-        ),
-    )
-
-  def _MakeReservedComputeResource(self, instance):
-    """Makes a cluster compute resource message for reserved instances."""
-    reservation = instance.get("reservation")
-    reservation_block = instance.get("reservationBlock")
-    reservation_sub_block = instance.get("reservationSubBlock")
-    if (
-        sum(
-            p is not None
-            for p in [reservation, reservation_block, reservation_sub_block]
-        )
-        != 1
-    ):
-      raise ClusterDirectorError(
-          "Exactly one of reservation, reservationBlock, or"
-          " reservationSubBlock must be provided for reserved instances."
-      )
-    if reservation:
-      return self.message_module.ComputeResource(
-          config=self.message_module.ComputeResourceConfig(
-              newReservedInstances=self.message_module.NewReservedInstancesConfig(
-                  reservation=self._GetReservationName(reservation),
-              ),
-          ),
-      )
-    elif reservation_block:
-      return self.message_module.ComputeResource(
-          config=self.message_module.ComputeResourceConfig(
-              newReservedInstances=self.message_module.NewReservedInstancesConfig(
-                  reservationBlock=self._GetReservationName(reservation_block),
-              ),
-          ),
-      )
-    else:
-      return self.message_module.ComputeResource(
-          config=self.message_module.ComputeResourceConfig(
-              newReservedInstances=self.message_module.NewReservedInstancesConfig(
-                  reservationSubBlock=self._GetReservationName(
-                      reservation_sub_block
-                  ),
-              ),
-          ),
-      )
-
-  def _MakeFlexStartComputeResource(self, instance):
-    """Makes a cluster compute resource message for flex start instances."""
-    return self.message_module.ComputeResource(
-        config=self.message_module.ComputeResourceConfig(
-            newFlexStartInstances=self.message_module.NewFlexStartInstancesConfig(
-                zone=instance.get("zone"),
-                machineType=instance.get("machineType"),
-                maxDuration=instance.get("maxDuration"),
-            ),
-        ),
-    )
 
   def _MakeSlurmNodeSet(self, node_set, machine_type, storage_configs):
     """Makes a cluster slurm node set message from node set args.
@@ -1574,19 +767,19 @@ class ClusterUtil:
     if node_set_type_str:
       try:
         node_set_type = NodeSetType(node_set_type_str)
-      except ValueError:
-        raise ClusterDirectorError(
+      except ValueError as exc:
+        raise errors.ClusterDirectorError(
             f"Invalid node set type: {node_set_type_str!r}. Must be 'gce' or"
             " 'gke'."
-        )
+        ) from exc
 
     is_container_node_pool = node_set_type == NodeSetType.GKE or (
         node_set_type is None and has_gke_fields
     )
     if is_container_node_pool and has_gce_fields:
-      raise ClusterDirectorError(_GCE_FIELDS_ON_GKE_NODE_SET_ERROR)
+      raise errors.ClusterDirectorError(_GCE_FIELDS_ON_GKE_NODE_SET_ERROR)
     if not is_container_node_pool and has_gke_fields:
-      raise ClusterDirectorError(_GKE_FIELDS_ON_GCE_NODE_SET_ERROR)
+      raise errors.ClusterDirectorError(_GKE_FIELDS_ON_GCE_NODE_SET_ERROR)
     slurm_node_set = self.message_module.SlurmNodeSet(
         id=node_set.get("id"),
         staticNodeCount=node_set.get("staticNodeCount", 1),
@@ -1596,7 +789,7 @@ class ClusterUtil:
     )
     if is_container_node_pool:
       if not hasattr(slurm_node_set, "containerNodePool"):
-        raise ClusterDirectorError(
+        raise errors.ClusterDirectorError(
             "GKE node set fields (container-*) are not supported in this API"
             " version."
         )
@@ -1611,7 +804,7 @@ class ClusterUtil:
       )
     else:
       if not node_set.get("computeId"):
-        raise ClusterDirectorError(
+        raise errors.ClusterDirectorError(
             "computeId is required for node sets not backed by GKE."
         )
       conf = node_set.get("computeInstance") or node_set

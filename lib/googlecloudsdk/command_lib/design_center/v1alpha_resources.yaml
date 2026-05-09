@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -124,6 +124,20 @@ projects_locations_spaces_application_templates_revisions:
     parameter_name: revisionsId
     attribute_name: revision
     help: The revision id of the {resource} resource.
+  disable_auto_completers: false
+projects_locations_spaces_application_templates_system_revisions:
+  name: systemRevision
+  plural_name: systemRevisions
+  collection: designcenter.projects.locations.spaces.applicationTemplates.systemRevisions
+  attributes:
+  - *project
+  - *location
+  - *space
+  - *applicationTemplate
+  - &systemRevision
+    parameter_name: systemRevisionsId
+    attribute_name: system_revision
+    help: The systemRevision id of the {resource} resource.
   disable_auto_completers: false
 projects_locations_spaces_catalogs_shares:
   name: share

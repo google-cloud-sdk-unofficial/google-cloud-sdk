@@ -84,6 +84,14 @@ class Collections(enum.Enum):
       ['project', 'tunnelType', 'location'],
       True
   )
+  PROJECTS_IAP_TUNNEL_TUNNEL_TYPES_LOCATIONS_INSTANCES = (
+      'projects.iap_tunnel.tunnel_types.locations.instances',
+      'projects/{project}/iap_tunnel/{tunnelType}/locations/{location}/'
+      'instances/{instanceId}',
+      {},
+      ['project', 'tunnelType', 'location', 'instanceId'],
+      True
+  )
   PROJECTS_IAP_TUNNEL_TUNNEL_TYPES_LOCATIONS_SERVICES = (
       'projects.iap_tunnel.tunnel_types.locations.services',
       'projects/{project}/iap_tunnel/{tunnelType}/locations/{location}/'

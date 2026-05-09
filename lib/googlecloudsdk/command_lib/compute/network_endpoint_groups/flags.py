@@ -136,8 +136,14 @@ def _AddNetworkEndpointType(parser):
 def _AddNetwork(parser):
   """Adds network argument for creating network endpoint groups."""
   help_text = """\
-      Name of the network in which the NEG is created. `default` project
-      network is used if unspecified.
+      Name of the network in which the NEG is created.
+      For networkEndpointType `GCE_VM_IP_PORT`, `GCE_VM_IP_PORTMAP` or
+      `NON_GCP_PRIVATE_IP_PORT`, if this field is not specified, a default
+      network will be used.
+      This field cannot be set for NEGs with networkEndpointType set to
+      `SERVERLESS` or `PRIVATE_SERVICE_CONNECT` and for global NEGs.
+
+      For all other network endpoint types, this field is required.
   """
   network_applicable_ne_types = [
       '`gce-vm-ip-port`',

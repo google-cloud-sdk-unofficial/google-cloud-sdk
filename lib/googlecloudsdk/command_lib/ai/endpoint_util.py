@@ -36,7 +36,9 @@ def DeriveAiplatformRegionalEndpoint(endpoint, region, is_prediction=False):
 
 
 @contextlib.contextmanager
-def AiplatformEndpointOverrides(version, region, is_prediction=False):
+def AiplatformEndpointOverrides(
+    version, region, is_prediction=False, use_info_log=False
+):
   """Context manager to override the AI Platform endpoints for a while.
 
   Raises an error if
@@ -46,13 +48,17 @@ def AiplatformEndpointOverrides(version, region, is_prediction=False):
     version: str, implies the version that the endpoint will use.
     region: str, region of the AI Platform stack.
     is_prediction: bool, it's for prediction endpoint or not.
+    use_info_log: bool, whether to use info log or print.
 
   Yields:
     None
   """
   used_endpoint = GetEffectiveEndpoint(version=version, region=region,
                                        is_prediction=is_prediction)
-  log.status.Print('Using endpoint [{}]'.format(used_endpoint))
+  if use_info_log:
+    log.info('Using endpoint [%s]', used_endpoint)
+  else:
+    log.status.Print('Using endpoint [{}]'.format(used_endpoint))
   properties.VALUES.api_endpoint_overrides.aiplatform.Set(used_endpoint)
   yield
 

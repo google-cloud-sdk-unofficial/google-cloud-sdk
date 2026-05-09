@@ -920,6 +920,17 @@ def AddLocalHostPortField(parser):
   )
 
 
+def AddStartWorkstationFlag(parser):
+  """Adds a --start-workstation flag to the given parser."""
+  help_text = """\
+  If set, automatically starts the workstation if it is currently stopped."""
+  parser.add_argument(
+      '--start-workstation',
+      action='store_true',
+      help=help_text,
+  )
+
+
 def AddCommandField(parser):
   """Adds a --command flag to the given parser."""
   help_text = """\

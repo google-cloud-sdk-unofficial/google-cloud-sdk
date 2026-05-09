@@ -913,6 +913,45 @@ workforce_pool_provider:
       - *clear_extra_attributes_config
       - *update_extra_attributes_group
 
+  vendor_type: &vendor_type
+    arg_name: vendor-type
+    api_field: workforcePoolProvider.vendorType
+    hidden: true
+    choices:
+    - arg_value: entra-id
+      enum_value: ENTRA_ID
+    - arg_value: okta
+      enum_value: OKTA
+    - arg_value: ping-federate
+      enum_value: PING_FEDERATE
+    - arg_value: adfs
+      enum_value: ADFS
+    - arg_value: keycloak
+      enum_value: KEYCLOAK
+    - arg_value: forge-rock
+      enum_value: FORGE_ROCK
+    - arg_value: jump-cloud
+      enum_value: JUMP_CLOUD
+    - arg_value: one-login
+      enum_value: ONE_LOGIN
+    - arg_value: generic
+      enum_value: GENERIC
+    - arg_value: vendor-type-unspecified
+      enum_value: VENDOR_TYPE_UNSPECIFIED
+    help_text: |-
+      The vendor type of the third-party identity provider.
+
+      Use `entra-id` for Microsoft Entra ID.
+      Use `okta` for Okta.
+      Use `ping-federate` for Ping Federate.
+      Use `adfs` for Microsoft AD Federated Service.
+      Use `keycloak` for Keycloak.
+      Use `forge-rock` for ForgeRock.
+      Use `jump-cloud` for JumpCloud.
+      Use `one-login` for OneLogin.
+      Use `generic` for other generic identity providers.
+      Use `vendor-type-unspecified` to clear the vendor type.
+
   scim_usage: &scim_usage
     arg_name: scim-usage
     api_field: workforcePoolProvider.scimUsage

@@ -67,6 +67,36 @@ class ListParametersResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListTemplateVersionsResponse(_messages.Message):
+  r"""Message for response to listing TemplateVersions
+
+  Fields:
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    templateVersions: The list of TemplateVersions
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  templateVersions = _messages.MessageField('TemplateVersion', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListTemplatesResponse(_messages.Message):
+  r"""Message for response to listing Templates
+
+  Fields:
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    templates: The list of Templates
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  templates = _messages.MessageField('Template', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class Location(_messages.Message):
   r"""A resource that represents a Google Cloud location.
 
@@ -274,9 +304,8 @@ class ParametermanagerProjectsLocationsListRequest(_messages.Message):
   r"""A ParametermanagerProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -566,6 +595,280 @@ class ParametermanagerProjectsLocationsParametersVersionsRenderRequest(_messages
   name = _messages.StringField(1, required=True)
 
 
+class ParametermanagerProjectsLocationsTemplatesCreateRequest(_messages.Message):
+  r"""A ParametermanagerProjectsLocationsTemplatesCreateRequest object.
+
+  Fields:
+    parent: Required. Value for parent in the format `projects/*/locations/*`.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    template: A Template resource to be passed as the request body.
+    templateId: Required. Id of the Template resource
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  template = _messages.MessageField('Template', 3)
+  templateId = _messages.StringField(4)
+
+
+class ParametermanagerProjectsLocationsTemplatesDeleteRequest(_messages.Message):
+  r"""A ParametermanagerProjectsLocationsTemplatesDeleteRequest object.
+
+  Fields:
+    name: Required. Name of the resource in the format
+      `projects/*/locations/*/templates/*`.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class ParametermanagerProjectsLocationsTemplatesGetRequest(_messages.Message):
+  r"""A ParametermanagerProjectsLocationsTemplatesGetRequest object.
+
+  Fields:
+    name: Required. Name of the resource in the format
+      `projects/*/locations/*/templates/*`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class ParametermanagerProjectsLocationsTemplatesListRequest(_messages.Message):
+  r"""A ParametermanagerProjectsLocationsTemplatesListRequest object.
+
+  Fields:
+    filter: Optional. Filtering results
+    orderBy: Optional. Hint for how to order the results
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A page token, received from a previous
+      `ListTemplates` call. Provide this to retrieve the subsequent page. When
+      paginating, all other parameters provided to `ListTemplates` must match
+      the call that provided the page token.
+    parent: Required. Parent value for ListTemplatesRequest in the format
+      `projects/*/locations/*`.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class ParametermanagerProjectsLocationsTemplatesPatchRequest(_messages.Message):
+  r"""A ParametermanagerProjectsLocationsTemplatesPatchRequest object.
+
+  Fields:
+    name: Identifier. The resource name of the Template in the format
+      `projects/*/locations/*/templates/*`.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    template: A Template resource to be passed as the request body.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the Template resource by the update. The fields specified
+      in the update_mask are relative to the resource, not the full request. A
+      mutable field will be overwritten if it is in the mask. If the user does
+      not provide a mask then all mutable fields present in the request will
+      be overwritten.
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  template = _messages.MessageField('Template', 3)
+  updateMask = _messages.StringField(4)
+
+
+class ParametermanagerProjectsLocationsTemplatesVersionsCreateRequest(_messages.Message):
+  r"""A ParametermanagerProjectsLocationsTemplatesVersionsCreateRequest
+  object.
+
+  Fields:
+    parent: Required. Value for parent in the format
+      `projects/*/locations/*/templates/*`.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    templateVersion: A TemplateVersion resource to be passed as the request
+      body.
+    templateVersionId: Required. Id of the TemplateVersion resource
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  templateVersion = _messages.MessageField('TemplateVersion', 3)
+  templateVersionId = _messages.StringField(4)
+
+
+class ParametermanagerProjectsLocationsTemplatesVersionsDeleteRequest(_messages.Message):
+  r"""A ParametermanagerProjectsLocationsTemplatesVersionsDeleteRequest
+  object.
+
+  Fields:
+    name: Required. Name of the resource in the format
+      `projects/*/locations/*/templates/*/versions/*`.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class ParametermanagerProjectsLocationsTemplatesVersionsGetRequest(_messages.Message):
+  r"""A ParametermanagerProjectsLocationsTemplatesVersionsGetRequest object.
+
+  Enums:
+    ViewValueValuesEnum: Optional. Specifies the view of the TemplateVersion
+      to return. In the default FULL view, all metadata & payload associated
+      with the TemplateVersion will be returned.
+
+  Fields:
+    name: Required. Name of the resource in the format
+      `projects/*/locations/*/templates/*/versions/*`.
+    view: Optional. Specifies the view of the TemplateVersion to return. In
+      the default FULL view, all metadata & payload associated with the
+      TemplateVersion will be returned.
+  """
+
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. Specifies the view of the TemplateVersion to return. In the
+    default FULL view, all metadata & payload associated with the
+    TemplateVersion will be returned.
+
+    Values:
+      VIEW_UNSPECIFIED: The default / unset value. The API will default to the
+        FULL view.
+      BASIC: Include only the metadata for the resource.
+      FULL: Include metadata & other relevant payload data as well. This is
+        the default view.
+    """
+    VIEW_UNSPECIFIED = 0
+    BASIC = 1
+    FULL = 2
+
+  name = _messages.StringField(1, required=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 2)
+
+
+class ParametermanagerProjectsLocationsTemplatesVersionsListRequest(_messages.Message):
+  r"""A ParametermanagerProjectsLocationsTemplatesVersionsListRequest object.
+
+  Fields:
+    filter: Optional. Filtering results
+    orderBy: Optional. Hint for how to order the results
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A page token, received from a previous
+      `ListTemplateVersions` call. Provide this to retrieve the subsequent
+      page. When paginating, all other parameters provided to
+      `ListTemplateVersions` must match the call that provided the page token.
+    parent: Required. Parent value for ListTemplateVersionsRequest in the
+      format `projects/*/locations/*/templates/*`.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class ParametermanagerProjectsLocationsTemplatesVersionsPatchRequest(_messages.Message):
+  r"""A ParametermanagerProjectsLocationsTemplatesVersionsPatchRequest object.
+
+  Fields:
+    name: Identifier. The resource name of the TemplateVersion in the format
+      `projects/*/locations/*/templates/*/versions/*`.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    templateVersion: A TemplateVersion resource to be passed as the request
+      body.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the TemplateVersion resource by the update. The fields
+      specified in the update_mask are relative to the resource, not the full
+      request. A mutable field will be overwritten if it is in the mask. If
+      the user does not provide a mask then all mutable fields present in the
+      request will be overwritten.
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  templateVersion = _messages.MessageField('TemplateVersion', 3)
+  updateMask = _messages.StringField(4)
+
+
+class ParametermanagerProjectsLocationsTemplatesVersionsRenderRequest(_messages.Message):
+  r"""A ParametermanagerProjectsLocationsTemplatesVersionsRenderRequest
+  object.
+
+  Fields:
+    name: Required. Name of the resource
+    parameterVersion: Required. Parameter version used to render the template
+      version.
+  """
+
+  name = _messages.StringField(1, required=True)
+  parameterVersion = _messages.StringField(2)
+
+
 class RenderParameterVersionResponse(_messages.Message):
   r"""Message describing RenderParameterVersionResponse resource
 
@@ -583,6 +886,46 @@ class RenderParameterVersionResponse(_messages.Message):
   parameterVersion = _messages.StringField(1)
   payload = _messages.MessageField('ParameterVersionPayload', 2)
   renderedPayload = _messages.BytesField(3)
+
+
+class RenderTemplateVersionResponse(_messages.Message):
+  r"""Message describing RenderTemplateVersionResponse resource
+
+  Enums:
+    TemplateFormatValueValuesEnum: Output only. Format of the template
+      version.
+
+  Fields:
+    parameterVersion: Output only. The resource name of the ParameterVersion
+      used to render the template version in the format
+      `projects/*/locations/*/parameters/*/versions/*`.
+    payload: Payload content of a TemplateVersion resource.
+    renderedPayload: Output only. Server generated rendered version of the
+      user provided payload data (TemplateVersionPayload) which has all the
+      variables resolved using the provided parameter version.
+    templateFormat: Output only. Format of the template version.
+    templateVersion: Resource identifier of a TemplateVersion in the format
+      `projects/*/locations/*/templates/*/versions/*`.
+  """
+
+  class TemplateFormatValueValuesEnum(_messages.Enum):
+    r"""Output only. Format of the template version.
+
+    Values:
+      TEMPLATE_FORMAT_UNSPECIFIED: The default / unset value. The API will
+        default to the YAML format.
+      TEMPLATE_FORMAT_YAML: YAML format.
+      TEMPLATE_FORMAT_JSON: JSON format.
+    """
+    TEMPLATE_FORMAT_UNSPECIFIED = 0
+    TEMPLATE_FORMAT_YAML = 1
+    TEMPLATE_FORMAT_JSON = 2
+
+  parameterVersion = _messages.StringField(1)
+  payload = _messages.MessageField('TemplateVersionPayload', 2)
+  renderedPayload = _messages.BytesField(3)
+  templateFormat = _messages.EnumField('TemplateFormatValueValuesEnum', 4)
+  templateVersion = _messages.StringField(5)
 
 
 class ResourcePolicyMember(_messages.Message):
@@ -669,6 +1012,100 @@ class StandardQueryParameters(_messages.Message):
   trace = _messages.StringField(10)
   uploadType = _messages.StringField(11)
   upload_protocol = _messages.StringField(12)
+
+
+class Template(_messages.Message):
+  r"""Message describing Template resource
+
+  Enums:
+    FormatValueValuesEnum: Optional. Specifies the format of a Template.
+
+  Messages:
+    LabelsValue: Optional. Labels as key value pairs
+
+  Fields:
+    createTime: Output only. Create time stamp
+    format: Optional. Specifies the format of a Template.
+    labels: Optional. Labels as key value pairs
+    name: Identifier. The resource name of the Template in the format
+      `projects/*/locations/*/templates/*`.
+    updateTime: Output only. Update time stamp
+  """
+
+  class FormatValueValuesEnum(_messages.Enum):
+    r"""Optional. Specifies the format of a Template.
+
+    Values:
+      TEMPLATE_FORMAT_UNSPECIFIED: The default / unset value. The API will
+        default to the YAML format.
+      TEMPLATE_FORMAT_YAML: YAML format.
+      TEMPLATE_FORMAT_JSON: JSON format.
+    """
+    TEMPLATE_FORMAT_UNSPECIFIED = 0
+    TEMPLATE_FORMAT_YAML = 1
+    TEMPLATE_FORMAT_JSON = 2
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels as key value pairs
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  format = _messages.EnumField('FormatValueValuesEnum', 2)
+  labels = _messages.MessageField('LabelsValue', 3)
+  name = _messages.StringField(4)
+  updateTime = _messages.StringField(5)
+
+
+class TemplateVersion(_messages.Message):
+  r"""Message describing TemplateVersion resource
+
+  Fields:
+    createTime: Output only. Create time stamp
+    disabled: Optional. Disabled boolean to determine if a TemplateVersion
+      acts as a metadata only resource (payload is never returned if disabled
+      is true).
+    name: Identifier. The resource name of the TemplateVersion in the format
+      `projects/*/locations/*/templates/*/versions/*`.
+    payload: Required. Immutable. Payload content of a TemplateVersion
+      resource.
+    updateTime: Output only. Update time stamp
+  """
+
+  createTime = _messages.StringField(1)
+  disabled = _messages.BooleanField(2)
+  name = _messages.StringField(3)
+  payload = _messages.MessageField('TemplateVersionPayload', 4)
+  updateTime = _messages.StringField(5)
+
+
+class TemplateVersionPayload(_messages.Message):
+  r"""Message for storing a TemplateVersion resource's payload data
+
+  Fields:
+    data: Required. bytes data for storing payload.
+  """
+
+  data = _messages.BytesField(1)
 
 
 encoding.AddCustomJsonFieldMapping(

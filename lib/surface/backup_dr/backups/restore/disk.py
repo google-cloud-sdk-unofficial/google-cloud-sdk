@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.backupdr.backups import BackupsClient
 from googlecloudsdk.api_lib.backupdr.backups import DiskRestoreConfig
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.backupdr import flags
 from googlecloudsdk.command_lib.backupdr.restore import disk_flags
 from googlecloudsdk.core import log
@@ -112,6 +113,11 @@ class Disk(base.Command):
       restore_config['TargetZone'] = args.target_zone
     if args.target_region:
       restore_config['TargetRegion'] = args.target_region
+    if args.target_region and not args.replica_zones:
+      raise calliope_exceptions.RequiredArgumentException(
+          'replica_zones',
+          'Replica zones are required for regional disk restore.',
+      )
     if args.replica_zones:
       restore_config['ReplicaZones'] = args.replica_zones
     if args.guest_os_features:

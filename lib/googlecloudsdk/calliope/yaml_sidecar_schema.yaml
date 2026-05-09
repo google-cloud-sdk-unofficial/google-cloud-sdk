@@ -1,0 +1,50 @@
+# JSON schema for validating gcloud command sidecar metadata files (.yaml).
+# This schema ensures that sidecar files follow a consistent structure.
+$schema: "http://json-schema.org/draft-07/schema#"
+title: "YAML Sidecar Metadata Schema"
+description: "Schema for gcloud command sidecar metadata files."
+
+# LINT.IfChange
+# The root must be an array of configurations.
+type: array
+items:
+  type: object
+  properties:
+    is_python_command:
+      type: boolean
+  # We use if/then/else to conditionally apply schema constraints.
+  # If is_python_command is true, we enforce strict sidecar schema (only
+  # release_tracks and hints).
+  # Otherwise (if false or absent), we allow any other fields to support full
+  # declarative commands in the same file (hybrid files).
+  if:
+    properties:
+      is_python_command: {const: true}
+    required: [is_python_command]
+  then:
+    properties:
+      release_tracks:
+        type: array
+        items:
+          type: string
+          enum: [GA, BETA, ALPHA, PREVIEW]
+      is_python_command:
+        type: boolean
+      hints:
+        type: object
+        description: >
+          Static metadata describing the command's execution behavior and
+          side effects.
+        properties:
+          read_only: {type: boolean}
+          destructive: {type: boolean}
+          idempotent: {type: boolean}
+          open_world: {type: boolean}
+        additionalProperties: false
+    required: [release_tracks, hints]
+    additionalProperties: false
+  else:
+    additionalProperties: true
+# LINT.ThenChange(../command_lib/util/apis/yaml_command_schema.yaml)
+# Updates to this sidecar YAML should be mirrored in the command schema for
+# declarative commands.

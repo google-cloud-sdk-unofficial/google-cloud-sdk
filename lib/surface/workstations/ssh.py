@@ -57,7 +57,9 @@ class Start(base.Command):
     workstations_flags.AddWorkstationResourceArg(parser)
     workstations_flags.AddPortField(parser)
     workstations_flags.AddLocalHostPortField(parser)
+    workstations_flags.AddStartWorkstationFlag(parser)
     workstations_flags.AddCommandField(parser)
+
     workstations_flags.AddSshArgsAndUserField(parser)
 
   def Collection(self):

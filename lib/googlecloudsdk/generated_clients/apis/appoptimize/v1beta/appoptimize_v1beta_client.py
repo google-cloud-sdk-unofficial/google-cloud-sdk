@@ -343,11 +343,23 @@ class AppoptimizeV1beta(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
+      r"""Lists information about the supported locations for this service.
+
+      This method lists locations based on the resource scope provided in the
+      ListLocationsRequest.name field: * **Global locations**: If `name` is
+      empty, the method lists the public locations available to all projects. *
+      **Project-specific locations**: If `name` follows the format
+      `projects/{project}`, the method lists locations visible to that specific
+      project. This includes public, private, or other project-specific
+      locations enabled for the project. For gRPC and client library
+      implementations, the resource name is passed as the `name` field. For
+      direct service calls, the resource name is incorporated into the request
+      path based on the specific service implementation and version.
 
       Args:
         request: (AppoptimizeProjectsLocationsListRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
+
       Returns:
         (ListLocationsResponse) The response message.
       """
@@ -361,7 +373,7 @@ class AppoptimizeV1beta(base_api.BaseApiClient):
         method_id='appoptimize.projects.locations.list',
         ordered_params=['name'],
         path_params=['name'],
-        query_params=['extraLocationTypes', 'filter', 'includeUnrevealedLocations', 'pageSize', 'pageToken'],
+        query_params=['extraLocationTypes', 'filter', 'pageSize', 'pageToken'],
         relative_path='v1beta/{+name}/locations',
         request_field='',
         request_type_name='AppoptimizeProjectsLocationsListRequest',

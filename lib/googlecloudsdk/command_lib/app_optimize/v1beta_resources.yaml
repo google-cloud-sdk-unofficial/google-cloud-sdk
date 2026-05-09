@@ -30,6 +30,18 @@ projects_locations:
     attribute_name: location
     help: The location id of the {resource} resource.
   disable_auto_completers: true
+projects_locations_applications:
+  name: application
+  plural_name: applications
+  collection: appoptimize.projects.locations.applications
+  attributes:
+  - *project
+  - *location
+  - &application
+    parameter_name: applicationsId
+    attribute_name: application
+    help: The application id of the {resource} resource.
+  disable_auto_completers: true
 projects_locations_reports:
   name: report
   plural_name: reports

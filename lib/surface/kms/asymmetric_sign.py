@@ -27,6 +27,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 
 
+@base.DefaultUniverseOnly
 class AsymmetricSign(base.Command):
   r"""Sign a user input file using an asymmetric-signing key version.
 
@@ -38,6 +39,11 @@ class AsymmetricSign(base.Command):
   By default, the command performs integrity verification on data sent to and
   received from Cloud KMS. Use `--skip-integrity-verification` to disable
   integrity verification.
+
+  For the ML-DSA EXTERNAL-MU algorithms, the digest `external-mu`
+  should be used that depends on the public key. This command will fetch
+  the public key from KMS and compute the `external-mu` digest. Note
+  that this requires `signer` permissions on the associated CryptoKeyVersion.
 
   ## EXAMPLES
   The following command will read the file '/tmp/my/file.to.sign', digest it
@@ -80,15 +86,18 @@ class AsymmetricSign(base.Command):
     return data
 
   def _CreateAsymmetricSignRequestOnDigest(self, args):
+    version_ref = flags.ParseCryptoKeyVersionName(args)
     try:
-      digest = get_digest.GetDigest(args.digest_algorithm, args.input_file)
+      digest = get_digest.GetDigest(
+          args.digest_algorithm, args.input_file, key_version_ref=version_ref
+      )
     except EnvironmentError as e:
       raise exceptions.BadFileException(
           'Failed to read input file [{0}]: {1}'.format(args.input_file, e))
 
     messages = cloudkms_base.GetMessagesModule()
     req = messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsAsymmetricSignRequest(  # pylint: disable=line-too-long
-        name=flags.ParseCryptoKeyVersionName(args).RelativeName())
+        name=version_ref.RelativeName())
 
     if self._PerformIntegrityVerification(args):
       # args.digest_algorithm has been verified in get_digest.GetDigest()

@@ -14,9 +14,10 @@
 # limitations under the License.
 """Helpers for digesting a file."""
 
-
 import hashlib
+
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
+from googlecloudsdk.api_lib.cloudkms import cryptokeyversions
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core.util import files
 
@@ -39,13 +40,15 @@ _DIGEST_ALGORITHMS = {
 
 
 # TODO(b/77481291) Refactor this to allow reading from stdin.
-def GetDigest(digest_algorithm, filename):
+def GetDigest(digest_algorithm, filename, key_version_ref=None):
   """Digest the file at filename based on digest_algorithm.
 
   Args:
     digest_algorithm: The algorithm used to digest the file, can be one of
       'sha256', 'sha384', or 'sha512'.
     filename: A valid file path over which a digest will be calculated.
+    key_version_ref: A CryptoKeyVersion resource reference. Required if
+      `digest_algorithm` is 'external-mu'.
 
   Returns:
     The digest of the provided file.
@@ -54,30 +57,75 @@ def GetDigest(digest_algorithm, filename):
     InvalidArgumentException: The provided digest_algorithm is invalid.
   """
   with files.BinaryFileReader(filename) as f:
-    return GetDigestOfFile(digest_algorithm, f)
+    return GetDigestOfFile(digest_algorithm, f, key_version_ref)
 
 
-def GetDigestOfFile(digest_algorithm, file_to_digest):
+def GetDigestOfFile(digest_algorithm, file_to_digest, key_version_ref=None):
   """Digest the file_to_digest based on digest_algorithm.
 
   Args:
     digest_algorithm: The algorithm used to digest the file, can be one of
       'sha256', 'sha384', or 'sha512'.
     file_to_digest: A valid file handle.
+    key_version_ref: A CryptoKeyVersion resource reference. Required if
+      `digest_algorithm` is 'external-mu'.
 
   Returns:
     The digest of the provided file.
 
   Raises:
     InvalidArgumentException: The provided digest_algorithm is invalid.
+    ToolException: If the public key is required but cannot be retrieved.
   """
   messages = cloudkms_base.GetMessagesModule()
+
+  if digest_algorithm == 'external-mu':
+    if key_version_ref is None:
+      raise exceptions.InvalidArgumentException(
+          'key_version_ref', 'key_version_ref is required for external-mu.'
+      )
+    # Fetch the public key from KMS using NIST_PQC format.
+    format_enum = (
+        messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsGetPublicKeyRequest.PublicKeyFormatValueValuesEnum
+    )
+    response = cryptokeyversions.GetPublicKey(
+        key_version_ref, public_key_format=format_enum.NIST_PQC
+    )
+    public_key = response.publicKey
+    if not public_key or not public_key.data:
+      raise exceptions.ToolException('Failed to retrieve public key.')
+
+    input_data = file_to_digest.read()
+    mu = GetExternalMu(public_key.data, input_data)
+    return messages.Digest(externalMu=mu)
+
   algorithm = _DIGEST_ALGORITHMS.get(digest_algorithm)
   if not algorithm:
-    raise exceptions.InvalidArgumentException('digest',
-                                              'digest_algorithm is invalid.')
+    raise exceptions.InvalidArgumentException(
+        'digest', 'digest_algorithm is invalid.'
+    )
   digest = algorithm()
   for chunk in _ChunkReader(file_to_digest):
     digest.update(chunk)
   kwargs = {digest_algorithm: digest.digest()}
   return messages.Digest(**kwargs)
+
+
+def GetExternalMu(public_key, data):
+  """Generates the External MU of a given data.
+
+  This is computed according to the ML-DSA standard and
+  go/prehash-friendly-ml-dsa-api.
+
+  Args:
+      public_key: The public key of the ML-DSA algorithm.
+      data: The data to be used for the computation of the External MU.
+
+  Returns:
+      The computed External MU.
+  """
+
+  context = b''
+  pk_hash = hashlib.shake_256(public_key).digest(64)
+  suffix = bytes([0]) + bytes([len(context)]) + context + data
+  return hashlib.shake_256(pk_hash + suffix).digest(64)

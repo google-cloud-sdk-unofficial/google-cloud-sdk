@@ -564,11 +564,20 @@ def AddHeterogeneousMigrationSourceConfigFlags(parser, is_update=False):
     )
 
 
-def AddPostgresHomogeneousConfigFlag(parser):
+def AddPostgresHomogeneousConfigFlag(parser, is_update=False):
   """Adds postgres homogeneous config flag to the given parser."""
+  if not is_update:
+    parser.add_argument(
+        '--use-postgres-native',
+        action='store_true',
+        default=False,
+        help='Use native logical replication for PostgreSQL migration.',
+    )
   parser.add_argument(
-      '--use-postgres-native',
-      action='store_true',
-      default=False,
-      help='Use native logical replication for PostgreSQL migration.',
+      '--postgres-max-additional-subscriptions',
+      type=int,
+      help=(
+          'Maximum number of additional subscriptions to use for the PostgreSQL'
+          ' migration job.'
+      ),
   )

@@ -1,11 +1,17 @@
 - release_tracks: [ALPHA, BETA]
   help_text:
     brief: Create Flag
-    description: Create a Flag
+    description: |-
+      Create a new feature flag resource. Flags define toggleable features or
+      configurations that can be evaluated at runtime by applications.
     examples: |-
-      To create a Flag, run:
+      To create a simple boolean flag with a default `Disabled` state, run:
 
-          $ {command}
+          $ {command} my-feature-flag --key=enable_new_feature --flag-value-type=bool --unit-kind=my-service-unit --variants='[{"id": "Enabled", "booleanValue": true}, {"id": "Disabled", "booleanValue": false}]' --evaluation-spec='{"defaultTarget": "Disabled"}' --location=global
+
+      To create a percentage rollout (10% Enabled) using a `userID` attribute, run:
+
+          $ {command} beta-feature --key=beta_rollout --flag-value-type=bool --unit-kind=my-service-unit --variants='[{"id": "Enabled", "booleanValue": true}, {"id": "Disabled", "booleanValue": false}]' --evaluation-spec='{"allocations": [{"id": "p10", "randomizedOn": "userID", "slots": [{"variant": "Disabled", "weight": 90}, {"variant": "Enabled", "weight": 10}]}], "defaultTarget": "p10", "attributes": ["projects/my-project/locations/global/flagAttributes/id-attr"]}' --location=global
   arguments:
     params:
     - help_text: |-
@@ -65,7 +71,6 @@
         help_text: |-
           Default variant for the flag.
       - api_field: allocations
-        hidden: true
         help_text: |-
           A list of allocations.
         spec:
@@ -92,12 +97,21 @@
               Weight defines the proportion of traffic to allocate to the variant,
               relative to other slots in the same allocation.
       - api_field: rules
-        hidden: true
         help_text: |-
           Define the logic for evaluating the flag against a given context.
           The rules are evaluated sequentially in their specified order.
+        spec:
+        - api_field: condition
+          help_text: |-
+            A Common Expression Language (CEL cel.dev) expression evaluated against the evaluation context.
+            For example: `plan == "premium" && country == "DE"`.
+        - api_field: id
+          help_text: |-
+            A unique identifier for the rule.
+        - api_field: target
+          help_text: |-
+            The ID of the variant to return if the condition evaluates to true.
       - api_field: attributes
-        hidden: true
         help_text: |-
           Names of the context attributes that are used in the evaluation rules and allocations.
 

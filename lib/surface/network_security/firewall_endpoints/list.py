@@ -47,6 +47,7 @@ table(
 
 _PROJECT_SCOPE_SUPPORTED_TRACKS = (
     base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
 )
 
 
@@ -72,8 +73,16 @@ class List(base.ListCommand):
       common_args.ProjectArgument(
           help_text_to_prepend='The project for a list operation'
       ).AddToParser(group)
+    location_group = parser.add_mutually_exclusive_group(required=False)
     activation_flags.AddZoneArg(
-        parser, required=False, help_text='The zone for a list operation'
+        location_group,
+        required=False,
+        help_text='The zone for a list operation',
+    )
+    activation_flags.AddLocationArg(
+        location_group,
+        required=False,
+        help_text='The location for a list operation',
     )
 
   def Run(self, args):
@@ -100,7 +109,8 @@ class List(base.ListCommand):
 
     client = activation_api.Client(self.ReleaseTrack(), project_scoped)
 
-    zone = args.zone if args.zone else '-'
+    zone = args.zone if args.zone else args.location
+    zone = zone if zone else '-'
     if project_scoped:
       parent = 'projects/{}/locations/{}'.format(project, zone)
     else:
@@ -115,7 +125,8 @@ class List(base.ListCommand):
           '--organization flag must be specified.',
       )
     client = activation_api.Client(self.ReleaseTrack())
-    zone = args.zone if args.zone else '-'
+    zone = args.zone if args.zone else args.location
+    zone = zone if zone else '-'
     parent = 'organizations/{}/locations/{}'.format(args.organization, zone)
     return client.ListEndpoints(parent, args.limit, args.page_size)
 

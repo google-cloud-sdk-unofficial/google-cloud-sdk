@@ -59,11 +59,12 @@ def Get(version_ref):
       req)
 
 
-def GetPublicKey(version_ref):
+def GetPublicKey(version_ref, public_key_format=None):
   """Gets the public key of a CryptoKeyVersion.
 
   Args:
       version_ref: A resources.Resource for the CryptoKeyVersion.
+      public_key_format: The format in which the public key should be returned.
 
   Returns:
       The CryptoKeyVersion's PublicKey.
@@ -71,8 +72,11 @@ def GetPublicKey(version_ref):
   client = cloudkms_base.GetClientInstance()
   messages = cloudkms_base.GetMessagesModule()
 
-  req = messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsGetPublicKeyRequest(
-      name=version_ref.RelativeName())
+  req = (
+      messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsGetPublicKeyRequest(
+          name=version_ref.RelativeName(), publicKeyFormat=public_key_format
+      )
+  )
 
   return client.projects_locations_keyRings_cryptoKeys_cryptoKeyVersions.GetPublicKey(
       req)

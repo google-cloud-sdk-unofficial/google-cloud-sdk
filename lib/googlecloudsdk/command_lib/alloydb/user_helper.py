@@ -129,4 +129,6 @@ def _ParseUserType(alloydb_messages, user_type):
     return alloydb_messages.User.UserTypeValueValuesEnum.ALLOYDB_BUILT_IN
   elif user_type == 'IAM_BASED':
     return alloydb_messages.User.UserTypeValueValuesEnum.ALLOYDB_IAM_USER
+  elif user_type == 'IAM_GROUP':
+    return alloydb_messages.User.UserTypeValueValuesEnum.ALLOYDB_IAM_GROUP
   return None

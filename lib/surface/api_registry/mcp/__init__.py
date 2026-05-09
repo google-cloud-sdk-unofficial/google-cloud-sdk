@@ -21,6 +21,7 @@ from googlecloudsdk.core import properties
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.Deprecate(is_removed=False)
 class Mcp(base.Group):
   """Manage MCP Command Group.
 

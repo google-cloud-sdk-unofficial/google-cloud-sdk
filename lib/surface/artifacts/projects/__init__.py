@@ -18,7 +18,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 @base.UniverseCompatible
 class Projects(base.Group):
   """Manage Artifact Registry project-level configurations for a specific location."""

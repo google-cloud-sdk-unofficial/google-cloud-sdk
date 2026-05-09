@@ -36,9 +36,10 @@ def translate_entrypoint_features(
   """Tranlsate entrypoint from App Engine app to entrypoint for equivalent Cloud Run app."""
   if command is None:
     warning_text = (
-        'Warning: entrypoint for the app is not detected/provided, if an'
-        ' entrypoint is needed to start the app, please use the `--entrypoint`'
-        ' flag to specify the entrypoint for the App.\n'
+        'Warning: entrypoint for the app is not detected/provided, if an '
+        'entrypoint is needed to start the app, please specify the '
+        'entrypoint in the app.yaml file.\n'
     )
     logging.info(warning_text)
-  return []
+    return []
+  return ['--set-build-env-vars=GOOGLE_ENTRYPOINT=' + command]

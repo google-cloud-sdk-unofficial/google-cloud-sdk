@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,7 +45,8 @@ projects_locations_network_monitoring_providers:
 projects_locations_network_monitoring_providers_monitoring_points:
   name: monitoringPoint
   plural_name: monitoringPoints
-  collection: networkmanagement.projects.locations.networkMonitoringProviders.monitoringPoints
+  collection:
+    networkmanagement.projects.locations.networkMonitoringProviders.monitoringPoints
   attributes:
   - *project
   - *location
@@ -58,7 +59,8 @@ projects_locations_network_monitoring_providers_monitoring_points:
 projects_locations_network_monitoring_providers_network_paths:
   name: networkPath
   plural_name: networkPaths
-  collection: networkmanagement.projects.locations.networkMonitoringProviders.networkPaths
+  collection:
+    networkmanagement.projects.locations.networkMonitoringProviders.networkPaths
   attributes:
   - *project
   - *location
@@ -71,7 +73,8 @@ projects_locations_network_monitoring_providers_network_paths:
 projects_locations_network_monitoring_providers_web_paths:
   name: webPath
   plural_name: webPaths
-  collection: networkmanagement.projects.locations.networkMonitoringProviders.webPaths
+  collection:
+    networkmanagement.projects.locations.networkMonitoringProviders.webPaths
   attributes:
   - *project
   - *location

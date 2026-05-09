@@ -128,6 +128,14 @@ class Deploy(base.Command):
         required=False,
     ).AddToParser(parser)
     base.Argument(
+        '--system-labels',
+        metavar='KEY=VALUE',
+        type=arg_parsers.ArgDict(),
+        action=arg_parsers.UpdateAction,
+        help='System labels for Model Garden deployments.',
+        required=False,
+    ).AddToParser(parser)
+    base.Argument(
         '--accept-eula',
         help=(
             'When set, the user accepts the End User License Agreement (EULA)'

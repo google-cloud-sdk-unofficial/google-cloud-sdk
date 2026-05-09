@@ -85,6 +85,25 @@ class Update(base.UpdateCommand):
     flags.AddPSCAutoConnectionGroup(parser)
     flags.AddActivationPolicy(parser, alloydb_messages)
 
+    # Observability flags.
+    flags.AddObservabilityConfigEnabled(
+        parser, show_negated_in_help=True
+    )
+    flags.AddObservabilityConfigPreserveComments(
+        parser, show_negated_in_help=True
+    )
+    flags.AddObservabilityConfigTrackWaitEvents(
+        parser, show_negated_in_help=False
+    )
+    flags.AddObservabilityConfigMaxQueryStringLength(parser)
+    flags.AddObservabilityConfigRecordApplicationTags(
+        parser, show_negated_in_help=True
+    )
+    flags.AddObservabilityConfigQueryPlansPerMinute(parser)
+    flags.AddObservabilityConfigTrackActiveQueries(
+        parser, show_negated_in_help=True
+    )
+
     # Connection pooling flags.
     flags.AddEnableConnectionPooling(parser)
     flags.AddConnectionPoolingPoolMode(parser)
@@ -149,21 +168,10 @@ class UpdateBeta(Update):
   def Args(cls, parser):
     super(UpdateBeta, cls).Args(parser)
     flags.AddUpdateMode(parser)
-    flags.AddObservabilityConfigEnabled(
+    flags.AddObservabilityConfigTrackClientAddress(
         parser, show_negated_in_help=True
     )
-    flags.AddObservabilityConfigPreserveComments(
-        parser, show_negated_in_help=True
-    )
-    flags.AddObservabilityConfigTrackWaitEvents(
-        parser, show_negated_in_help=False
-    )
-    flags.AddObservabilityConfigMaxQueryStringLength(parser)
-    flags.AddObservabilityConfigRecordApplicationTags(
-        parser, show_negated_in_help=True
-    )
-    flags.AddObservabilityConfigQueryPlansPerMinute(parser)
-    flags.AddObservabilityConfigTrackActiveQueries(
+    flags.AddObservabilityConfigAssistiveExperiencesEnabled(
         parser, show_negated_in_help=True
     )
     flags.AddObservabilityConfigTrackActiveQueryPlan(

@@ -1025,9 +1025,8 @@ class AlloydbProjectsLocationsListRequest(_messages.Message):
   r"""A AlloydbProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -5771,10 +5770,12 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceMetadata(_messages.Me
       MODE_UNSPECIFIED: Default mode.
       MODE_NATIVE: Native mode.
       MODE_MONGODB_COMPATIBLE: MongoDB compatible mode.
+      MODE_DATASTORE: Datastore mode.
     """
     MODE_UNSPECIFIED = 0
     MODE_NATIVE = 1
     MODE_MONGODB_COMPATIBLE = 2
+    MODE_DATASTORE = 3
 
   class SuspensionReasonValueValuesEnum(_messages.Enum):
     r"""Optional. Suspension reason for the resource.
@@ -6285,7 +6286,7 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceSignalData(_messages.
     backupRun: Deprecated: Use signal_metadata_list instead.
     fullResourceName: Required. Full Resource name of the source resource.
     lastRefreshTime: Required. Last time signal was refreshed
-    location: Resource location.
+    location: Required. Resource location.
     resourceId: Database resource id.
     signalBoolValue: Deprecated: Use signal_metadata_list instead.
     signalMetadataList: This will support array of OneOf signal metadata
@@ -7552,10 +7553,13 @@ class User(_messages.Message):
         based authentication.
       ALLOYDB_IAM_USER: Database user that can authenticate via IAM-Based
         authentication.
+      ALLOYDB_IAM_GROUP: Database user that represents an IAM group whose
+        members can authenticate via IAM group-based authentication.
     """
     USER_TYPE_UNSPECIFIED = 0
     ALLOYDB_BUILT_IN = 1
     ALLOYDB_IAM_USER = 2
+    ALLOYDB_IAM_GROUP = 3
 
   databaseRoles = _messages.StringField(1, repeated=True)
   keepExtraRoles = _messages.BooleanField(2)

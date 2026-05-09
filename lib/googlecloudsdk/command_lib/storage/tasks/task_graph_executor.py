@@ -17,7 +17,6 @@
 See go/parallel-processing-in-gcloud-storage for more information.
 """
 
-
 import contextlib
 import functools
 import multiprocessing
@@ -26,6 +25,7 @@ import signal as signal_lib
 import sys
 import tempfile
 import threading
+import time
 
 from googlecloudsdk.api_lib.storage.gcs_json import patch_apitools_messages
 from googlecloudsdk.command_lib import crash_handling
@@ -122,7 +122,8 @@ def _task_queue_lock():
     None, but acquires a lock which is released on exit.
   """
   get_is_unsafe = (
-      sys.version_info.major == 3 and sys.version_info.minor <= 5
+      sys.version_info.major == 3
+      and sys.version_info.minor <= 5
       and multiprocessing_context.get_start_method() == 'spawn'
   )
 
@@ -147,6 +148,10 @@ def _task_queue_lock():
 _SHUTDOWN = 'SHUTDOWN'
 
 _CREATE_WORKER_PROCESS = 'CREATE_WORKER_PROCESS'
+
+# The generous upper bound for IPC pipes to flush and processes to respond
+# to SIGTERM without forcing the user to wait indefinitely during a teardown.
+_TEARDOWN_TIMEOUT_SECONDS = 5.0
 
 # These dummy TaskWrapper and Output objects function as a "reverse poison
 # pill". While a standard poison pill (like _SHUTDOWN) travels from the
@@ -227,7 +232,8 @@ class SharedProcessContext:
 
     self._environment_variables = execution_utils.GetToolEnv()
     self._creds_context_manager = (
-        creds_context_managers.CredentialProvidersManager())
+        creds_context_managers.CredentialProvidersManager()
+    )
     self._key_store = encryption_util._key_store
     self._invocation_id = transport.INVOCATION_ID
 
@@ -237,7 +243,8 @@ class SharedProcessContext:
       return
 
     self._environment_context_manager = execution_utils.ReplaceEnv(
-        **self._environment_variables)
+        **self._environment_variables
+    )
 
     self._environment_context_manager.__enter__()
     self._creds_context_manager.__enter__()
@@ -254,13 +261,19 @@ class SharedProcessContext:
       return
 
     self._environment_context_manager.__exit__(
-        exc_type, exc_value, exc_traceback)
+        exc_type, exc_value, exc_traceback
+    )
     self._creds_context_manager.__exit__(exc_type, exc_value, exc_traceback)
 
 
 @crash_handling.CrashManager
-def _thread_worker(task_queue, task_output_queue, task_status_queue,
-                   idle_thread_count, abort_event):
+def _thread_worker(
+    task_queue,
+    task_output_queue,
+    task_status_queue,
+    idle_thread_count,
+    abort_event,
+):
   """A consumer thread run in a child process.
 
   Args:
@@ -476,8 +489,8 @@ def _process_factory(
       progress to a central location.
     thread_count (int): Number of threads the process should spawn.
     idle_thread_count (multiprocessing.Semaphore): Passed on to worker threads.
-    signal_queue (multiprocessing.Queue): Queue used by parent process to
-      signal when a new child worker process must be created.
+    signal_queue (multiprocessing.Queue): Queue used by parent process to signal
+      when a new child worker process must be created.
     shared_process_context (SharedProcessContext): Holds values from global
       state that need to be replicated in child processes.
     stack_trace_file_path (str): File path to write stack traces to.
@@ -497,9 +510,32 @@ def _process_factory(
       continue
 
     if signal == _SHUTDOWN:
+      abort_detected = False
       for _ in processes:
+        if abort_detected:
+          break
         for _ in range(thread_count):
-          task_queue.put(_SHUTDOWN)
+          # Ensure every worker thread receives a _SHUTDOWN token to exit.
+          # Loop indefinitely because a healthy worker might be busy.
+          while True:
+            try:
+              # Use timeout to prevent block if worker dies or queue is full.
+              task_queue.put(_SHUTDOWN, timeout=1.0)
+              break
+            except queue.Full:
+              # If aborting, abandon graceful shutdown to prevent hanging.
+              if abort_event.is_set():
+                abort_detected = True
+                break
+            except Exception:  # pylint: disable=broad-except
+              # Abandon push if pipe is broken to avoid 100% CPU spin-loop.
+              log.error(
+                  'Aborting worker process shutdown due to unexpected error'
+              )
+              abort_detected = True
+              break
+          if abort_detected:
+            break
       break
     elif signal == _CREATE_WORKER_PROCESS:
       process = multiprocessing_context.Process(
@@ -517,17 +553,46 @@ def _process_factory(
       )
 
       processes.append(process)
-      log.debug('Adding 1 process with {} threads.'
-                ' Total processes: {}. Total threads: {}.'.format(
-                    thread_count, len(processes),
-                    len(processes) * thread_count))
+      log.debug(
+          'Adding 1 process with %d threads. Total processes: %d. Total'
+          ' threads: %d.',
+          thread_count,
+          len(processes),
+          len(processes) * thread_count,
+      )
       process.start()
     else:
-      raise errors.Error('Received invalid signal for worker '
-                         'process creation: {}'.format(signal))
+      raise errors.Error(
+          f'Received invalid signal for worker process creation: {signal}'
+      )
 
   for process in processes:
     process.join()
+
+
+def _drain_queue(queue_to_drain) -> None:
+  """Drains a queue to unblock any processes/threads blocked on putting to it.
+
+  This is necessary during early exits or aborts to ensure that worker
+  processes or management threads attempting to write their final exit states
+  do not block indefinitely on full IPC pipes, which would cause the entire
+  shutdown sequence to deadlock.
+
+  Args:
+    queue_to_drain (multiprocessing.Queue): The queue to drain.
+  """
+  while True:
+    try:
+      queue_to_drain.get_nowait()
+    except queue.Empty:
+      # Happy Path: The queue is completely empty. We can safely move on.
+      break
+    except (BrokenPipeError, EOFError, OSError):
+      # Broken Pipe / Corruption Fail-Safe: A child process died mid-write
+      # or the underlying OS pipe is physically broken. Since we are in an
+      # abort context and simply trying to unblock writers, a broken pipe is
+      # functionally "unblocked", so we gracefully exit the drain loop.
+      break
 
 
 def _store_exception(target_function):
@@ -539,6 +604,7 @@ def _store_exception(target_function):
   Returns:
     Decorator function.
   """
+
   @functools.wraps(target_function)
   def wrapper(self, *args, **kwargs):
     try:
@@ -560,6 +626,7 @@ def _store_exception(target_function):
           # main thread anyway.
           log.error(e)
           log.debug(e, exc_info=sys.exc_info())
+
   return wrapper
 
 
@@ -585,8 +652,8 @@ class TaskGraphExecutor:
       thread_count (int): The number of threads to start per process.
       task_status_queue (multiprocessing.Queue|None): Used by task to report its
         progress to a central location.
-      progress_manager_args (task_status.ProgressManagerArgs|None):
-        Determines what type of progress indicator to display.
+      progress_manager_args (task_status.ProgressManagerArgs|None): Determines
+        what type of progress indicator to display.
     """
 
     self._task_iterator = iter(task_iterator)
@@ -606,16 +673,19 @@ class TaskGraphExecutor:
 
     # Sends information about completed tasks to the main process.
     self._task_output_queue = multiprocessing_context.Queue(
-        maxsize=self._worker_count)
+        maxsize=self._worker_count
+    )
 
     # Queue for informing worker_process_creator to create a new process.
     self._signal_queue = multiprocessing_context.Queue(
-        maxsize=self._worker_count + 1)
+        maxsize=self._worker_count + 1
+    )
 
     # Tracks dependencies between tasks in the executor to help ensure that
     # tasks returned by executed tasks are completed in the correct order.
     self._task_graph = task_graph_module.TaskGraph(
-        top_level_task_limit=2 * self._worker_count)
+        top_level_task_limit=2 * self._worker_count
+    )
 
     # Holds tasks without any dependencies.
     self._executable_tasks = task_buffer.TaskBuffer()
@@ -687,13 +757,23 @@ class TaskGraphExecutor:
       reached_process_limit = self._process_count >= self._max_process_count
 
       try:
-        self._task_queue.put(task_wrapper, block=reached_process_limit)
+        # We combine `block` and `timeout` to defeat the Blocked Thread Paradox
+        # (where a thread blocks indefinitely on a full/empty queue and cannot
+        # receive the abort signal) while preventing CPU spinlocks.
+        # 1. When `block=False` (scaling up), timeout is ignored. It fails
+        #    instantly if full, rapidly triggering _add_worker_process()
+        #    without latency.
+        # 2. When `block=True` (fully scaled), it sleeps to save CPU cycles but
+        #    wakes up every 1.0s to check the global _abort_event.
+        self._task_queue.put(
+            task_wrapper, block=reached_process_limit, timeout=1.0
+        )
         task_wrapper = None
       except queue.Full:
         if self._idle_thread_count.acquire(block=False):
           # Idle worker will take a task. Restore semaphore count.
           self._idle_thread_count.release()
-        else:
+        elif not reached_process_limit:
           self._add_worker_process()
 
   @_store_exception
@@ -710,8 +790,10 @@ class TaskGraphExecutor:
       executed_task_wrapper, task_output = output
       if task_output and task_output.messages:
         for message in task_output.messages:
-          if message.topic in (task.Topic.CHANGE_EXIT_CODE,
-                               task.Topic.FATAL_ERROR):
+          if message.topic in (
+              task.Topic.CHANGE_EXIT_CODE,
+              task.Topic.FATAL_ERROR,
+          ):
             self._exit_code = 1
             if message.topic == task.Topic.FATAL_ERROR:
               self._accepting_new_tasks = False
@@ -720,7 +802,8 @@ class TaskGraphExecutor:
         continue
 
       submittable_tasks = self._task_graph.update_from_executed_task(
-          executed_task_wrapper, task_output)
+          executed_task_wrapper, task_output
+      )
 
       for task_wrapper in submittable_tasks:
         task_wrapper.is_submitted = True
@@ -739,22 +822,56 @@ class TaskGraphExecutor:
         self._signal_queue.put(_SHUTDOWN, timeout=1.0)
       except queue.Full:
         pass
-      worker_process_spawner.join()
+      except Exception:  # pylint: disable=broad-except
+        pass
 
     if self._abort_event.is_set():
-      if hasattr(self._task_queue, 'cancel_join_thread'):
-        self._task_queue.cancel_join_thread()
-      if hasattr(self._task_output_queue, 'cancel_join_thread'):
-        self._task_output_queue.cancel_join_thread()
-      if hasattr(self._signal_queue, 'cancel_join_thread'):
-        self._signal_queue.cancel_join_thread()
-      if self._task_status_queue and hasattr(
-          self._task_status_queue, 'cancel_join_thread'
-      ):
-        self._task_status_queue.cancel_join_thread()
+      if worker_process_spawner.is_alive():
+        self._drain_and_join_with_timeout(
+            worker_process_spawner,
+            (self._signal_queue, self._task_output_queue),
+        )
+
+        # If the process is still alive after the draining phase, it means
+        # it is not responding to the shutdown signals cleanly. We forcefully
+        # terminate it to avoid hanging the entire executor during teardown.
+        if worker_process_spawner.is_alive():
+          worker_process_spawner.terminate()
+          worker_process_spawner.join(timeout=1.0)
+
+      self._cancel_join_threads()
+
+      if worker_process_spawner.is_alive():
+        log.error(
+            'Factory process refused to die after SIGTERM. Forcing OS exit.'
+        )
+        os._exit(1)  # pylint: disable=protected-access
+    else:
+      worker_process_spawner.join()
 
     # Restore the debug signal handler.
     self._debug_handler.terminate()
+
+  def _drain_and_join_with_timeout(self, process_or_thread, queues_to_drain):
+    """Drains given queues while joining a process or thread with a timeout."""
+    abort_time_deadline = time.time() + _TEARDOWN_TIMEOUT_SECONDS
+    while process_or_thread.is_alive() and time.time() < abort_time_deadline:
+      for q in queues_to_drain:
+        _drain_queue(q)
+      process_or_thread.join(timeout=0.1)
+
+  def _cancel_join_threads(self):
+    """Cancels the background feeder threads for all IPC pipes."""
+    if hasattr(self._task_queue, 'cancel_join_thread'):
+      self._task_queue.cancel_join_thread()
+    if hasattr(self._task_output_queue, 'cancel_join_thread'):
+      self._task_output_queue.cancel_join_thread()
+    if hasattr(self._signal_queue, 'cancel_join_thread'):
+      self._signal_queue.cancel_join_thread()
+    if self._task_status_queue is not None and hasattr(
+        self._task_status_queue, 'cancel_join_thread'
+    ):
+      self._task_status_queue.cancel_join_thread()
 
   def run(self):
     """Executes tasks from a task iterator in parallel.
@@ -816,6 +933,7 @@ class TaskGraphExecutor:
               started_threads.append(thread)
           except Exception:
             # If any thread fails to start, stop the ones that did start.
+            self._abort_event.set()
             self._accepting_new_tasks = False
             try:
               self._executable_tasks.put(_SHUTDOWN, timeout=1.0)
@@ -859,32 +977,53 @@ class TaskGraphExecutor:
 
           get_tasks_from_iterator_thread.join()
           try:
-            self._task_graph.is_empty.wait()
+            while not self._task_graph.is_empty.wait(timeout=1.0):
+              if self._abort_event.is_set():
+                break
+              if self.thread_exception or not worker_process_spawner.is_alive():
+                self._exit_code = 1
+                self._abort_event.set()
+                break
           except console_io.OperationCancelledError:
-            # If user hits ctrl-c, there will be no thread to pop tasks from the
-            # graph. Python garbage collection will remove unstarted tasks in
-            # the graph if we skip this endless wait.
-            pass
+            self._abort_event.set()
 
-          try:
-            self._executable_tasks.put(_SHUTDOWN, timeout=1.0)
-          except queue.Full:
-            pass
-          try:
-            self._task_output_queue.put(_SHUTDOWN, timeout=1.0)
-          except queue.Full:
-            pass
+          if self._abort_event.is_set():
 
-          handle_task_output_thread.join()
-          add_executable_tasks_to_queue_thread.join()
+            self._drain_and_join_with_timeout(
+                add_executable_tasks_to_queue_thread, (self._task_queue,)
+            )
+            self._drain_and_join_with_timeout(
+                handle_task_output_thread, (self._task_output_queue,)
+            )
+          else:
+            try:
+              self._executable_tasks.put(_SHUTDOWN, timeout=1.0)
+            except Exception:  # pylint: disable=broad-except
+              pass
+            try:
+              self._task_output_queue.put(_SHUTDOWN, timeout=1.0)
+            except Exception:  # pylint: disable=broad-except
+              pass
+
+          if self._abort_event.is_set():
+            if (
+                handle_task_output_thread.is_alive()
+                or add_executable_tasks_to_queue_thread.is_alive()
+            ):
+              log.error('Management threads refused to die. Forcing OS exit.')
+              os._exit(1)  # pylint: disable=protected-access
+          else:
+            handle_task_output_thread.join()
+            add_executable_tasks_to_queue_thread.join()
         finally:
+
           # By calling the clean in the finally block, we ensure that the
           # progress manager exit is called first.
           # We also handle the scenario where an exception may be thrown by the
           # progress manager it self.
           self._clean_worker_process_spawner(worker_process_spawner)
           worker_process_cleaned_up = True
-    except Exception as e:  # pylint: disable=broad-exception-caught
+    except Exception:  # pylint: disable=broad-exception-caught
       # In case we get an exception occurs while spinning up the worker process
       # spawner or during start of progress manager context, we need to
       # do a clean up, hence we use the following method which carries out
@@ -897,8 +1036,18 @@ class TaskGraphExecutor:
       if not worker_process_cleaned_up:
         self._clean_worker_process_spawner(worker_process_spawner)
 
+      # Force close all pipes to unblock any stuck listeners (e.g. progress
+      # indicator thread or caller).
+      self._cancel_join_threads()
+
+      self._task_queue.close()
+      self._task_output_queue.close()
+      self._signal_queue.close()
+      if self._task_status_queue is not None:
+        self._task_status_queue.close()
+
       # Raise it back as we still want main process to exit
-      raise e
+      raise
 
     # Queue close calls need to be outside the worker process spawner context
     # manager since the task queue need to be open for the shutdown logic.

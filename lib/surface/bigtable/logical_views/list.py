@@ -22,7 +22,6 @@ from googlecloudsdk.command_lib.bigtable import arguments
 
 
 @base.DefaultUniverseOnly
-@base.UniverseCompatible
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )

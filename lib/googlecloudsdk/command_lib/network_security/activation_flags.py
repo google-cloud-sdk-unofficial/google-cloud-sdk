@@ -54,6 +54,9 @@ def OrgEndpointResourceSpec(api_version):
           "zone",
           "Zone of the {resource}.",
           parameter_name="locationsId",
+          fallthroughs=[
+              deps_lib.ArgFallthrough("--location"),
+          ],
       ),
       firewallEndpointsId=concepts.ResourceParameterAttributeConfig(
           "endpoint-name",
@@ -85,6 +88,9 @@ def ProjectEndpointResourceSpec(api_version):
           "zone",
           "Zone of the {resource}.",
           parameter_name="locationsId",
+          fallthroughs=[
+              deps_lib.ArgFallthrough("--location"),
+          ],
       ),
       firewallEndpointsId=concepts.ResourceParameterAttributeConfig(
           "endpoint-name",
@@ -144,6 +150,12 @@ def AddOrganizationArg(parser, help_text="Organization of the endpoint"):
 
 def AddDescriptionArg(parser, help_text="Description of the endpoint"):
   parser.add_argument("--description", required=False, help=help_text)
+
+
+def AddLocationArg(
+    parser, required=False, help_text="Location of the endpoint"
+):
+  parser.add_argument("--location", required=required, help=help_text)
 
 
 def AddTargetFirewallAttachmentArg(

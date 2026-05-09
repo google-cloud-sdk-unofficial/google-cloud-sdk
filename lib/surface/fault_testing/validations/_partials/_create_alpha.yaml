@@ -18,7 +18,6 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Create a validation
     description: |
@@ -151,6 +150,7 @@
             - group:
                 api_field: validation.action.gceFailCompute
                 required: false
+                hidden: true
                 help_text: |-
                   GCEFailCompute specifies which instances to fail.
                 params:

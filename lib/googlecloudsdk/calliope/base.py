@@ -33,7 +33,9 @@ from googlecloudsdk.calliope import display
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import yaml
 from googlecloudsdk.core.resource import resource_printer
+from googlecloudsdk.core.util import pkg_resources
 import six
 
 try:
@@ -573,6 +575,67 @@ class CommandHint(object):
     return json.dumps(hint_output)
 
 
+class HintsDescriptor(object):
+  """A descriptor that lazily loads the YAML sidecar file and extracts hints.
+
+  This descriptor handles the file I/O and parsing of the `.yaml` sidecar
+  file associated with a python-based command class.
+
+  The sidecar file must reside in the same directory as the module defining the
+  command class and share the same base name with a `.yaml` extension
+  (e.g., `list.py` -> `list.yaml`).
+
+  To preserve gcloud execution speed, the file is only loaded and parsed when
+  metadata is explicitly requested (e.g., by AI agents or help tools).
+
+  Note that this descriptor does NOT cache the parsed YAML data.
+  Caching was deemed a premature optimization since reading hints is typically
+  a non-production codepath (e.g., used by help generation or external tools)
+  and does not need to be optimized for standard CLI execution.
+
+  To prevent classes in different files from incorrectly sharing metadata
+  through inheritance, this descriptor reads the file specific to the class's
+  defining module on every access.
+  """
+
+  def __get__(self, instance, owner):
+    if owner is None:
+      return CommandHint()
+
+    content = self._LoadSidecarYAMLContent(owner)
+    data = self._Parse(content)
+    track_name = owner.ReleaseTrack().name
+
+    for item in data:
+      if track_name in item.get('release_tracks', []):
+        return CommandHint(**item.get('hints', {}))
+    return CommandHint()
+
+  def _LoadSidecarYAMLContent(self, owner):
+    """Loads the content of the YAML sidecar file if it exists."""
+    module_name = owner.__module__
+    resource_name = module_name.split('.')[-1] + '.yaml'
+    try:
+      return pkg_resources.GetResource(module_name, resource_name)
+    except FileNotFoundError:
+      return None
+
+  def _Parse(self, content):
+    """Parses the YAML content and returns it."""
+    if not content:
+      return []
+
+    # We don't catch yaml.YAMLParseError here because all sidecar files are
+    # discovered and validated against the schema at test time (see
+    # yaml_sidecar_validation_test.py). Malformed files will be caught there.
+    data = yaml.load(content)
+    if not data:
+      return []
+    if isinstance(data, dict):
+      return [data]
+    return data
+
+
 class _Common(six.with_metaclass(abc.ABCMeta, object)):
   """Base class for Command and Group."""
 
@@ -771,6 +834,8 @@ class Command(six.with_metaclass(abc.ABCMeta, _Common)):
   """
 
   IS_COMMAND = True
+
+  hints = HintsDescriptor()
 
   def __init__(self, cli, context):
     super(Command, self).__init__(is_group=False)
@@ -1051,6 +1116,10 @@ def UniverseCompatible(cmd_class):
     A modified version of the provided class.
   """
   # pylint: disable=protected-access
+  if '_universe_compatible' in cmd_class.__dict__:
+    raise ValueError(
+        f'Class {cmd_class.__name__} cannot have multiple universe annotations.'
+    )
   cmd_class._universe_compatible = True
   return cmd_class
 
@@ -1069,6 +1138,10 @@ def DefaultUniverseOnly(cmd_class):
     A modified version of the provided class.
   """
   # pylint: disable=protected-access
+  if '_universe_compatible' in cmd_class.__dict__:
+    raise ValueError(
+        f'Class {cmd_class.__name__} cannot have multiple universe annotations.'
+    )
   cmd_class._universe_compatible = False
   return cmd_class
 
@@ -1087,6 +1160,10 @@ def NonDefaultUniverseOnly(cmd_class):
     A modified version of the provided class.
   """
   # pylint: disable=protected-access
+  if '_universe_compatible' in cmd_class.__dict__:
+    raise ValueError(
+        f'Class {cmd_class.__name__} cannot have multiple universe annotations.'
+    )
   cmd_class._universe_compatible = True
   cmd_class._default_universe_compatible = False
   return cmd_class

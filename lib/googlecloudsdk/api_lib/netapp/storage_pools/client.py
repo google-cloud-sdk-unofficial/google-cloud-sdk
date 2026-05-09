@@ -71,7 +71,7 @@ class StoragePoolsClient(object):
         max_wait_ms=max_wait_ms)
 
   def CreateStoragePool(self, storagepool_ref, async_, config):
-    """Create a Cloud NetApp Storage Pool."""
+    """Creates a Cloud NetApp Storage Pool."""
     request = self.messages.NetappProjectsLocationsStoragePoolsCreateRequest(
         parent=storagepool_ref.Parent().RelativeName(),
         storagePoolId=storagepool_ref.Name(),
@@ -159,6 +159,27 @@ class StoragePoolsClient(object):
         self.client.projects_locations_storagePools,
         request,
         field=constants.STORAGE_POOL_RESOURCE,
+        limit=limit,
+        batch_size_attribute='pageSize')
+
+  def ListBackupConfigs(self, storagepool_ref, limit=None):
+    """Make API calls to List Backup Configs in a Storage Pool.
+
+    Args:
+      storagepool_ref: googlecloudsdk.core.resources.Resource, the parsed
+        Storage Pool.
+      limit: int, The number of results to limit to.
+
+    Returns:
+      Generator that yields the Backup Configs.
+    """
+    request = self.messages.NetappProjectsLocationsStoragePoolsBackupConfigsListRequest(
+        parent=storagepool_ref.RelativeName())
+    return list_pager.YieldFromList(
+        self.client.projects_locations_storagePools_backupConfigs,
+        request,
+        method='List',
+        field=constants.VOLUME_BACKUP_CONFIGS,
         limit=limit,
         batch_size_attribute='pageSize')
 
@@ -300,6 +321,83 @@ class StoragePoolsClient(object):
         validate_op.name, collection=constants.OPERATIONS_COLLECTION
     )
     return self.WaitForOperation(operation_ref)
+
+  def RestoreVolume(
+      self,
+      storagepool_ref,
+      backup: str,
+      file_list: Optional[list[str]],
+      volume_uuid: str,
+      restore_destination_path: Optional[str],
+      async_: bool,
+  ) -> Any:
+    """Restores a backup to an ONTAP-mode volume.
+
+    Args:
+      storagepool_ref: the reference to the storage pool.
+      backup: The backup resource name to restore from.
+      file_list: Optional list of files/folders to restore.
+      volume_uuid: The UUID of the destination ONTAP volume.
+      restore_destination_path: Optional destination path within the volume.
+      async_: bool, if False, wait for the operation to complete.
+
+    Returns:
+      an Operation if async_ is set to true, or the response of the
+      RestoreVolume operation if successful.
+    """
+    restore_op = self._adapter.RestoreVolume(
+        storagepool_ref,
+        backup,
+        file_list,
+        volume_uuid,
+        restore_destination_path,
+    )
+    if async_:
+      return restore_op
+    return self.WaitForOperation(
+        resources.REGISTRY.ParseRelativeName(
+            restore_op.name, collection=constants.OPERATIONS_COLLECTION
+        )
+    )
+
+  def UpdateBackupConfig(
+      self,
+      storagepool_ref: Any,
+      volume_uuid: str,
+      backup_config: Dict[str, Any],
+      update_mask: str,
+      async_: bool,
+  ) -> Any:
+    """Updates backup config of a volume in a Storage Pool.
+
+    Args:
+      storagepool_ref: The reference to the storage pool.
+      volume_uuid: The UUID of the volume to update the backup config for.
+      backup_config: A dictionary containing the backup config updates. Expected
+        keys are: - 'backup-policies': Optional[list[str]], a list of backup
+        policy resource names. - 'backup-vault': Optional[str], the backup vault
+        resource name. - 'enable-scheduled-backups': Optional[bool], whether
+        scheduled backups are enabled.
+      update_mask: Field mask as a comma-separated string.
+      async_: bool, if False, wait for the operation to complete.
+
+    Returns:
+      an Operation if async_ is set to true, or the response of the
+      UpdateBackupConfig operation if successful.
+    """
+    update_op = self._adapter.UpdateBackupConfig(
+        storagepool_ref,
+        volume_uuid,
+        backup_config,
+        update_mask,
+    )
+    if async_:
+      return update_op
+    return self.WaitForOperation(
+        resources.REGISTRY.ParseRelativeName(
+            update_op.name, collection=constants.OPERATIONS_COLLECTION
+        )
+    )
 
 
 class StoragePoolsAdapter(object):
@@ -491,6 +589,92 @@ class StoragePoolsAdapter(object):
     )
     return self.client.projects_locations_storagePools.ValidateDirectoryService(
         validate_request
+    )
+
+  def RestoreVolume(
+      self,
+      storagepool_ref,
+      backup: str,
+      file_list: Optional[list[str]],
+      volume_uuid: str,
+      restore_destination_path: Optional[str],
+  ) -> Any:
+    """Sends a restore volume request for the Cloud NetApp storage pool.
+
+    Args:
+      storagepool_ref: the reference to the storage pool.
+      backup: The backup resource name to restore from.
+      file_list: Optional list of files/folders to restore.
+      volume_uuid: The UUID of the destination ONTAP volume.
+      restore_destination_path: Optional destination path within the volume.
+
+    Returns:
+      The Operation message for the restore request.
+    """
+    backup_source = self.messages.BackupSource(backup=backup)
+    if file_list is not None:
+      backup_source.fileList = file_list
+
+    ontap_volume_target = self.messages.OntapVolumeTarget(
+        volumeUuid=volume_uuid
+    )
+    if restore_destination_path is not None:
+      ontap_volume_target.restoreDestinationPath = restore_destination_path
+
+    request = self.messages.RestoreVolumeRequest(
+        backupSource=backup_source, ontapVolumeTarget=ontap_volume_target
+    )
+    restore_request = (
+        self.messages.NetappProjectsLocationsStoragePoolsRestoreVolumeRequest(
+            name=storagepool_ref.RelativeName(), restoreVolumeRequest=request
+        )
+    )
+    return self.client.projects_locations_storagePools.RestoreVolume(
+        restore_request
+    )
+
+  def UpdateBackupConfig(
+      self,
+      storagepool_ref,
+      volume_uuid,
+      backup_config,
+      update_mask,
+  ):
+    """Send an update backup config request for the Cloud NetApp storage pool.
+
+    Args:
+      storagepool_ref: The reference to the storage pool.
+      volume_uuid: The UUID of the volume to update the backup config for.
+      backup_config: A dictionary containing the backup config updates. Expected
+        keys are: - 'backup-policies': Optional[list[str]], a list of backup
+        policy resource names. - 'backup-vault': Optional[str], the backup vault
+        resource name. - 'enable-scheduled-backups': Optional[bool], whether
+        scheduled backups are enabled.
+      update_mask: Field mask as a string.
+
+    Returns:
+      The Operation message for the update request.
+    """
+    backup_config_msg = self.messages.BackupConfig()
+    if backup_config.get('backup-policies') is not None:
+      backup_config_msg.backupPolicies = backup_config.get('backup-policies')
+    if backup_config.get('backup-vault') is not None:
+      backup_config_msg.backupVault = backup_config.get('backup-vault')
+    if backup_config.get('enable-scheduled-backups') is not None:
+      backup_config_msg.scheduledBackupEnabled = backup_config.get(
+          'enable-scheduled-backups'
+      )
+
+    request = self.messages.UpdateBackupConfigRequest(
+        volumeUuid=volume_uuid,
+        backupConfig=backup_config_msg,
+        updateMask=update_mask,
+    )
+    return self.client.projects_locations_storagePools.UpdateBackupConfig(
+        self.messages.NetappProjectsLocationsStoragePoolsUpdateBackupConfigRequest(
+            name=storagepool_ref.RelativeName(),
+            updateBackupConfigRequest=request,
+        )
     )
 
 

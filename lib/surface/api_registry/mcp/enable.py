@@ -21,8 +21,18 @@ from googlecloudsdk.core import log
 
 
 # TODO(b/321801975) make command public after preview.
-@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Deprecate(
+    is_removed=False,  # Set to False to issue a warning first
+    warning=(
+        'The `gcloud alpha api-registry mcp enable` command is deprecated and '
+        ' will be removed in a future release.'
+    ),
+    error=(
+        'The `gcloud alpha api-registry mcp enable` command has been removed.'
+    )
+)
+@base.DefaultUniverseOnly
 class EnableAlpha(base.SilentCommand):
   """Enables MCP server for a given service in the current project."""
 
@@ -43,8 +53,18 @@ class EnableAlpha(base.SilentCommand):
     )
 
 
-@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.Deprecate(
+    is_removed=False,  # Set to False to issue a warning first
+    warning=(
+        'The `gcloud beta api-registry mcp enable` command is deprecated and '
+        ' will be removed in a future release.'
+    ),
+    error=(
+        'The `gcloud beta api-registry mcp enable` command has been removed.'
+    )
+)
+@base.DefaultUniverseOnly
 class EnableBeta(base.SilentCommand):
   """Enables MCP server for a given service in the current project."""
 

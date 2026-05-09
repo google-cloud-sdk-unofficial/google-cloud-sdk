@@ -41,6 +41,7 @@ DETAILED_HELP = {
 
 _PROJECT_SCOPE_SUPPORTED_TRACKS = (
     base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
 )
 
 
@@ -58,6 +59,7 @@ class Describe(base.DescribeCommand):
         parser,
         project_scope_supported,
     )
+    activation_flags.AddLocationArg(parser)
 
   def Run(self, args):
     result = args.CONCEPTS.firewall_endpoint.Parse()

@@ -50,6 +50,7 @@ _SUPPORTED_PROFILES = [
 
 _PROJECT_SCOPE_SUPPORTED_TRACKS = (
     base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
 )
 
 
@@ -165,18 +166,11 @@ class UpdateProfileGroup(base.UpdateCommand):
     if description is not None:
       update_mask.append('description')
 
-    if (
-        self.ReleaseTrack() == base.ReleaseTrack.ALPHA
-        and labels_update.needs_update
-    ):
+    if labels_update.needs_update:
       update_mask.append('labels')
 
     if not update_mask:
-      attributes = (
-          '`description`, `security profile` and/or `labels`'
-          if self.ReleaseTrack() == base.ReleaseTrack.ALPHA
-          else '`description` and/or `security profile`'
-      )
+      attributes = '`description`, `security profile` and/or `labels`'
       raise core_exceptions.Error(
           'Operation failed to satisfy minimum qualification. '
           'Please specify the attribute which needs an update. '

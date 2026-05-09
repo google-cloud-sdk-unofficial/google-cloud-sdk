@@ -49,7 +49,8 @@ class ListIcebergCatalogs(base.ListCommand):
 
     parent_name = util.GetParentName()
     request = messages.BiglakeIcebergV1RestcatalogExtensionsProjectsCatalogsListRequest(
-        parent=parent_name
+        parent=parent_name,
+        view=messages.BiglakeIcebergV1RestcatalogExtensionsProjectsCatalogsListRequest.ViewValueValuesEnum.CATALOG_VIEW_FULL
     )
 
     return list_pager.YieldFromList(

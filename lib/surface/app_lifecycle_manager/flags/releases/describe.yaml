@@ -1,11 +1,29 @@
 - release_tracks: [ALPHA, BETA]
   help_text:
-    brief: Describe Flag Revision
-    description: Describe a Flag Release
-    examples: |-
-      To describe a Flag Release, run:
+    brief: Describe Flag Release
+    description: |-
+      Show detailed information about a Flag Release resource.
 
-          $ {command}
+      A Flag Release is a configuration snapshot that groups one or more Flag Revisions
+      for a specific UnitKind. This command retrieves the list of revisions, target
+      UnitKind, and other metadata. It is the primary tool for auditing the
+      content of a rollout.
+
+      For automated processing, use `--format=json` or `--format=yaml` to retrieve the
+      structured representation of the release, which can be used to programmatically
+      verify rollout configurations or generate recovery scripts.
+    examples: |-
+      To describe a Flag Release named `my-release` in the `global` location, run:
+
+          $ {command} my-release --location=global
+
+      To describe a Flag Release using its fully qualified resource name, run:
+
+          $ {command} projects/my-project/locations/global/flagReleases/my-release
+
+      To inspect the revisions in JSON format for automated auditing or recovery, run:
+
+          $ {command} my-release --location=global --format=json
   arguments:
     params:
     - help_text: |-

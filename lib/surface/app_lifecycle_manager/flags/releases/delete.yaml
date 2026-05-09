@@ -1,11 +1,24 @@
 - release_tracks: [ALPHA, BETA]
   help_text:
     brief: Delete Flag Release
-    description: Delete a Flag Release
-    examples: |-
-      To delete a Flag Release, run:
+    description: |-
+      Delete a Flag Release resource.
 
-          $ {command}
+      Flag Releases are resources that groups one or more FlagRevision resources that are intended
+      to be deployed together as a single payload for a Rollout.
+
+      The safe deletion workflow is:
+
+        1. Ensure no active Rollouts reference this Flag Release.
+        2. Run this `delete` command to permanently remove the Flag Release.
+    examples: |-
+      To delete a Flag Release named 'v1-release' in the 'global' location, run:
+
+          $ {command} v1-release --location=global
+
+      To delete a Flag Release using a fully qualified resource name (useful for automation), run:
+
+          $ {command} projects/my-project/locations/global/flagReleases/v1-release
   arguments:
     params:
     - help_text: |-

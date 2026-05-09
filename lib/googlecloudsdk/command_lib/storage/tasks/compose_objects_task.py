@@ -15,7 +15,6 @@
 """Task for composing storage objects."""
 
 
-
 from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.api_lib.storage import request_config_factory
@@ -35,6 +34,7 @@ class ComposeObjectsTask(task.Task):
       posix_to_set=None,
       print_status_message=False,
       user_request_args=None,
+      delete_source_objects=False,
   ):
     """Initializes task.
 
@@ -53,10 +53,13 @@ class ComposeObjectsTask(task.Task):
         file system.
       print_status_message (bool): If True, the task prints the status message.
       user_request_args (UserRequestArgs|None): Values for RequestConfig.
+      delete_source_objects (bool): If True, the source objects are deleted
+        after a successful composition.
     """
     super(ComposeObjectsTask, self).__init__()
     self._source_resources = source_resources
     self._destination_resource = destination_resource
+    self._delete_source_objects = delete_source_objects
     self._original_source_resource = original_source_resource
     self._posix_to_set = posix_to_set
     self._print_status_message = print_status_message
@@ -86,6 +89,7 @@ class ComposeObjectsTask(task.Task):
         self._source_resources,
         self._destination_resource,
         request_config,
+        delete_source_objects=self._delete_source_objects,
         original_source_resource=self._original_source_resource,
         posix_to_set=self._posix_to_set,
     )
@@ -100,6 +104,9 @@ class ComposeObjectsTask(task.Task):
   def __eq__(self, other):
     if not isinstance(other, ComposeObjectsTask):
       return NotImplemented
-    return (self._source_resources == other._source_resources and
-            self._destination_resource == other._destination_resource and
-            self._user_request_args == other._user_request_args)
+    return (
+        self._source_resources == other._source_resources
+        and self._destination_resource == other._destination_resource
+        and self._user_request_args == other._user_request_args
+        and self._delete_source_objects == other._delete_source_objects
+    )

@@ -27,5 +27,5 @@
     format: |
       table(
         name.basename():label=ID,
-        userFriendlyName:label=USER_FRIENDLY_NAME
+        originalName:label=ORIGINAL_NAME
       )

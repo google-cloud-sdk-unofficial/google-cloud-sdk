@@ -816,6 +816,18 @@ def EnableUpdateKmsKeys(required=False):
   )
 
 
+def ClearKmsKeys(required: bool = False) -> base.Argument:
+  return base.Argument(
+      '--clear-kms-keys',
+      required=required,
+      action='store_true',
+      help=(
+          'Removes all KMS key references and reverts the database to'
+          ' Google-managed encryption.'
+      ),
+  )
+
+
 def OperationId(database=False):
   return base.Argument(
       'operation',

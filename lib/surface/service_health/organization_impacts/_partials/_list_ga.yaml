@@ -18,7 +18,6 @@
 - release_tracks:
   - GA
   auto_generated: true
-  hidden: true
   help_text:
     brief: List assets impacted by events under an organization.
     description: |

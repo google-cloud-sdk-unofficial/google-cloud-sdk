@@ -20,12 +20,12 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: generate networkMonitoringProviders
-    description: generate networkMonitoringProviders
+    brief: Generate a monitoring point config.
+    description: Generate a monitoring point config.
     examples: |-
-      To generate all networkMonitoringProviders, run:
+      To generate a monitoring point configuration for provider `my-provider-id`, run:
 
-          $ {command}
+        $ {command} my-provider-id --location=global
   arguments:
     params:
     - help_text: |-

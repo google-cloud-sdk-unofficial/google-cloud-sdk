@@ -44,6 +44,11 @@ class Update(base.UpdateCommand):
         'my-database', run:
 
           $ {command} my-database --kms-keys="KEY1,KEY2"
+
+        To remove all KMS key references and revert a Cloud Spanner database
+        'my-database' to Google-managed encryption, run:
+
+          $ {command} my-database --clear-kms-keys
         """),
   }
 
@@ -56,9 +61,10 @@ class Update(base.UpdateCommand):
         the command line after this command. Positional arguments are allowed.
     """
     resource_args.AddDatabaseResourceArg(parser, 'to update')
-    group_parser = parser.add_argument_group(mutex=True)
-    flags.EnableDropProtection().AddToParser(group_parser)
-    flags.EnableUpdateKmsKeys().AddToParser(group_parser)
+    mutex_group = parser.add_argument_group(mutex=True)
+    flags.EnableDropProtection().AddToParser(mutex_group)
+    flags.EnableUpdateKmsKeys().AddToParser(mutex_group)
+    flags.ClearKmsKeys().AddToParser(mutex_group)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -73,8 +79,9 @@ class Update(base.UpdateCommand):
     """
     op = databases.Update(
         args.CONCEPTS.database.Parse(),
-        args.enable_drop_protection,
-        args.kms_keys,
+        enable_drop_protection=args.enable_drop_protection,
+        kms_keys=args.kms_keys,
+        clear_kms_keys=args.clear_kms_keys,
     )
     if args.async_:
       return op

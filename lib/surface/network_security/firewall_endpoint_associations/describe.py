@@ -38,11 +38,13 @@ DETAILED_HELP = {
 }
 
 
+@base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Describe a Firewall Plus endpoint association."""
 
   @classmethod
   def Args(cls, parser):
+    association_flags.AddLocationArg(parser, required=False, default='')
     association_flags.AddAssociationResource(cls.ReleaseTrack(), parser)
 
   def Run(self, args):

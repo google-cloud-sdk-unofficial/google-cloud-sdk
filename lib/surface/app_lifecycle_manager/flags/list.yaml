@@ -1,11 +1,26 @@
 - release_tracks: [ALPHA, BETA]
   help_text:
     brief: List Flags
-    description: List Flags
-    examples: |-
-      To list Flags, run:
+    description: |-
+      List all feature flags available in a specific location for your SaaS offerings.
 
-        $ {command}
+      Use this command to audit available flags and their associated UnitKind assignments.
+    examples: |-
+      To list all flags across all locations in the current project, run:
+
+          $ {command}
+
+      To list flags for a specific location (e.g., `us-central1`), run:
+
+          $ {command} --location=us-central1
+
+      To filter flags belonging to a specific UnitKind, run:
+
+          $ {command} --filter="unitKind:my-unit-kind"
+
+      To list flags and output in JSON format for automation/scripting, run:
+
+          $ {command} --format=json
   arguments:
     resource:
       help_text: |-

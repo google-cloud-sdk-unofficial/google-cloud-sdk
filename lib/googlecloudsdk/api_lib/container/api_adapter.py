@@ -440,6 +440,7 @@ ADDON_MANAGER = 'ADDON_MANAGER'
 KCP_SSHD = 'KCP_SSHD'
 KCP_CONNECTION = 'KCP_CONNECTION'
 KCP_HPA = 'KCP_HPA'
+KCP_VPA = 'KCP_VPA'
 STORAGE = 'STORAGE'
 HPA_COMPONENT = 'HPA'
 POD = 'POD'
@@ -461,6 +462,7 @@ LOGGING_OPTIONS = [
     KCP_SSHD,
     KCP_CONNECTION,
     KCP_HPA,
+    KCP_VPA,
 ]
 MONITORING_OPTIONS = [
     NONE,
@@ -2214,6 +2216,17 @@ class APIAdapter(object):
             'zone': location,
         },
         collection='container.projects.zones.clusters',
+    )
+
+  def ParseAcceleratorNetworkProfile(self, name, location, project=None):
+    project = project or properties.VALUES.core.project.GetOrFail()
+    return self.registry.Parse(
+        name,
+        params={
+            'projectsId': project,
+            'locationsId': location,
+        },
+        collection='container.projects.locations.acceleratorNetworkProfiles',
     )
 
   def ParseOperation(self, operation_id, location, project=None):
@@ -7095,6 +7108,69 @@ class APIAdapter(object):
     operation = self.client.projects_locations_clusters_nodePools.Create(req)
     return self.ParseOperation(operation.name, node_pool_ref.zone)
 
+  def CreateAcceleratorNetworkProfile(self, profile_ref, args):
+    """CreateAcceleratorNetworkProfile creates an accelerator network profile.
+
+    Args:
+      profile_ref: The accelerator network profile resource reference.
+      args: The arguments parsed from the command line.
+
+    Returns:
+      The operation to be executed for creating the accelerator network profile.
+    """
+    profile = self.messages.AcceleratorNetworkProfile(
+        name=profile_ref.RelativeName(),
+        description=args.description,
+        maxNodeCount=args.max_node_count,
+        cluster=args.cluster,
+        labels=labels_util.ParseCreateArgs(
+            args, self.messages.AcceleratorNetworkProfile.LabelsValue
+        ),
+        annotations=labels_util.ParseCreateArgs(
+            args,
+            self.messages.AcceleratorNetworkProfile.AnnotationsValue,
+            labels_dest='annotations',
+        ),
+        tags=labels_util.ParseCreateArgs(
+            args,
+            self.messages.AcceleratorNetworkProfile.TagsValue,
+            labels_dest='tags',
+        ),
+    )
+
+    if (
+        args.auto_config_machine_type
+        or args.auto_config_mrdma_network_profile
+        or args.auto_create_local_mrdma_vpc
+        or args.auto_config_mrdma_vpc
+        or args.auto_config_host_nic_in_same_vpc
+    ):
+      auto_config = self.messages.AcceleratorAutoConfig(
+          machineType=args.auto_config_machine_type,
+          mrdmaNetworkProfile=args.auto_config_mrdma_network_profile,
+          autoCreateLocalMrdmaNetwork=args.auto_create_local_mrdma_vpc,
+          mrdmaNetwork=args.auto_config_mrdma_vpc,
+          hostNicSameVpc=args.auto_config_host_nic_in_same_vpc,
+      )
+      profile.autoConfig = auto_config
+
+    req = self.messages.ContainerProjectsLocationsAcceleratorNetworkProfilesCreateRequest(
+        acceleratorNetworkProfile=profile,
+        parent=ProjectLocation(profile_ref.projectsId, profile_ref.locationsId),
+        acceleratorNetworkProfileId=profile_ref.Name(),
+    )
+
+    operation = (
+        self.client.projects_locations_acceleratorNetworkProfiles.Create(req)
+    )
+    return self.ParseOperation(operation.name, profile_ref.locationsId)
+
+  def GetAcceleratorNetworkProfile(self, profile_ref):
+    req = self.messages.ContainerProjectsLocationsAcceleratorNetworkProfilesGetRequest(
+        name=profile_ref.RelativeName()
+    )
+    return self.client.projects_locations_acceleratorNetworkProfiles.Get(req)
+
   def ListNodePools(self, cluster_ref):
     req = self.messages.ContainerProjectsLocationsClustersNodePoolsListRequest(
         parent=ProjectLocationCluster(
@@ -11913,6 +11989,10 @@ def _GetLoggingConfig(options, messages):
     config.enableComponents.append(
         messages.LoggingComponentConfig.EnableComponentsValueListEntryValuesEnum.KCP_HPA
     )
+  if KCP_VPA in options.logging:
+    config.enableComponents.append(
+        messages.LoggingComponentConfig.EnableComponentsValueListEntryValuesEnum.KCP_VPA
+    )
 
   return messages.LoggingConfig(componentConfig=config)
 
@@ -12293,6 +12373,14 @@ def ProjectLocation(project, location):
 
 def ProjectLocationCluster(project, location, cluster):
   return ProjectLocation(project, location) + '/clusters/' + cluster
+
+
+def ProjectLocationAcceleratorNetworkProfile(project, location, profile):
+  return (
+      ProjectLocation(project, location)
+      + '/acceleratorNetworkProfiles/'
+      + profile
+  )
 
 
 def ProjectLocationClusterNodePool(project, location, cluster, nodepool):

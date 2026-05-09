@@ -187,6 +187,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_FIREWALLENDPOINTS = (
+      'projects.locations.firewallEndpoints',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'firewallEndpoints/{firewallEndpointsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_GATEWAYSECURITYPOLICIES = (
       'projects.locations.gatewaySecurityPolicies',
       '{+name}',
@@ -329,6 +340,28 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/sacRealms/'
               '{sacRealmsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_SECURITYPROFILEGROUPS = (
+      'projects.locations.securityProfileGroups',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'securityProfileGroups/{securityProfileGroupsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_SECURITYPROFILES = (
+      'projects.locations.securityProfiles',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'securityProfiles/{securityProfilesId}',
       },
       ['name'],
       True

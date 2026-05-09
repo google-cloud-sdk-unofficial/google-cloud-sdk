@@ -38,6 +38,7 @@ class List(base.ListCommand):
 
   @classmethod
   def Args(cls, parser):
+    activation_flags.AddLocationArg(parser)
     api_version = activation_api.GetApiVersion(cls.ReleaseTrack())
     org_spec = activation_flags.OrgEndpointResourceSpec(api_version)
     project_spec = activation_flags.ProjectEndpointResourceSpec(api_version)

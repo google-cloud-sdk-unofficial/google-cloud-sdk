@@ -21,6 +21,7 @@ import textwrap
 
 from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.api_lib.storage import errors as api_errors
+from googlecloudsdk.api_lib.util import apis as api_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import errors as command_errors
@@ -322,7 +323,9 @@ class SignUrl(base.Command):
 
     # Signed URLs always hit the XML API, regardless of what API is preferred
     # for other operations.
-    original_host = properties.VALUES.storage.gs_xml_endpoint_url.Get()
+    original_host = api_util.UniversifyAddress(
+        properties.VALUES.storage.gs_xml_endpoint_url.Get()
+    )
 
     has_provider_url = any(
         storage_url.storage_url_from_string(url_string).is_provider()

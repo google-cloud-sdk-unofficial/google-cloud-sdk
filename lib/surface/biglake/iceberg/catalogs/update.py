@@ -84,6 +84,13 @@ class UpdateCatalog(base.UpdateCommand):
     if args.IsSpecified('secret_name'):
       update_mask.append('federated_catalog_options.secret_name')
       catalog.federated_catalog_options.secret_name = args.secret_name
+    if args.IsSpecified('service_principal_application_id'):
+      update_mask.append(
+          'federated_catalog_options.unity_catalog_info.service_principal_application_id'
+      )
+      catalog.federated_catalog_options.unity_catalog_info = messages.UnityCatalogInfo(
+          service_principal_application_id=args.service_principal_application_id
+      )
     if args.IsSpecified('refresh_interval') or args.IsSpecified(
         'namespace_filters'
     ):
@@ -164,6 +171,7 @@ class UpdateCatalog(base.UpdateCommand):
       if (
           args.IsSpecified('service_directory_name')
           or args.IsSpecified('secret_name')
+          or args.IsSpecified('service_principal_application_id')
           or args.IsSpecified('refresh_interval')
           or args.IsSpecified('namespace_filters')
       ):

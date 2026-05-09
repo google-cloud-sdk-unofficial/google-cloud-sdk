@@ -5208,6 +5208,117 @@ class NetworksecurityProjectsLocationsFirewallEndpointAssociationsPatchRequest(_
   updateMask = _messages.StringField(4)
 
 
+class NetworksecurityProjectsLocationsFirewallEndpointsCreateRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsFirewallEndpointsCreateRequest object.
+
+  Fields:
+    firewallEndpoint: A FirewallEndpoint resource to be passed as the request
+      body.
+    firewallEndpointId: Required. Id of the requesting object. If auto-
+      generating Id server-side, remove this field and firewall_endpoint_id
+      from the method_signature of Create RPC.
+    parent: Required. Value for parent.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  firewallEndpoint = _messages.MessageField('FirewallEndpoint', 1)
+  firewallEndpointId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class NetworksecurityProjectsLocationsFirewallEndpointsDeleteRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsFirewallEndpointsDeleteRequest object.
+
+  Fields:
+    name: Required. Name of the resource
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class NetworksecurityProjectsLocationsFirewallEndpointsGetRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsFirewallEndpointsGetRequest object.
+
+  Fields:
+    name: Required. Name of the resource
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityProjectsLocationsFirewallEndpointsListRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsFirewallEndpointsListRequest object.
+
+  Fields:
+    filter: Optional. Filtering results
+    orderBy: Hint for how to order the results
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: A token identifying a page of results the server should return.
+    parent: Required. Parent value for ListEndpointsRequest
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class NetworksecurityProjectsLocationsFirewallEndpointsPatchRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsFirewallEndpointsPatchRequest object.
+
+  Fields:
+    firewallEndpoint: A FirewallEndpoint resource to be passed as the request
+      body.
+    name: Immutable. Identifier. Name of resource.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    updateMask: Required. Field mask is used to specify the fields to be
+      overwritten in the Endpoint resource by the update. The fields specified
+      in the update_mask are relative to the resource, not the full request. A
+      field will be overwritten if it is in the mask. If the user does not
+      provide a mask then all fields will be overwritten.
+  """
+
+  firewallEndpoint = _messages.MessageField('FirewallEndpoint', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
+
+
 class NetworksecurityProjectsLocationsGatewaySecurityPoliciesCreateRequest(_messages.Message):
   r"""A NetworksecurityProjectsLocationsGatewaySecurityPoliciesCreateRequest
   object.
@@ -5828,9 +5939,8 @@ class NetworksecurityProjectsLocationsListRequest(_messages.Message):
   r"""A NetworksecurityProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -6503,6 +6613,182 @@ class NetworksecurityProjectsLocationsSacRealmsListRequest(_messages.Message):
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   parent = _messages.StringField(5, required=True)
+
+
+class NetworksecurityProjectsLocationsSecurityProfileGroupsCreateRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsSecurityProfileGroupsCreateRequest
+  object.
+
+  Fields:
+    parent: Required. The parent resource of the SecurityProfileGroup. Must be
+      in the format `projects|organizations/*/locations/{location}`.
+    securityProfileGroup: A SecurityProfileGroup resource to be passed as the
+      request body.
+    securityProfileGroupId: Required. Short name of the SecurityProfileGroup
+      resource to be created. This value should be 1-63 characters long,
+      containing only letters, numbers, hyphens, and underscores, and should
+      not start with a number. E.g. "security_profile_group1".
+  """
+
+  parent = _messages.StringField(1, required=True)
+  securityProfileGroup = _messages.MessageField('SecurityProfileGroup', 2)
+  securityProfileGroupId = _messages.StringField(3)
+
+
+class NetworksecurityProjectsLocationsSecurityProfileGroupsDeleteRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsSecurityProfileGroupsDeleteRequest
+  object.
+
+  Fields:
+    etag: Optional. If client provided etag is out of date, delete will return
+      FAILED_PRECONDITION error.
+    name: Required. A name of the SecurityProfileGroup to delete. Must be in
+      the format `projects|organizations/*/locations/{location}/securityProfil
+      eGroups/{security_profile_group}`.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetworksecurityProjectsLocationsSecurityProfileGroupsGetRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsSecurityProfileGroupsGetRequest
+  object.
+
+  Fields:
+    name: Required. A name of the SecurityProfileGroup to get. Must be in the
+      format `projects|organizations/*/locations/{location}/securityProfileGro
+      ups/{security_profile_group}`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityProjectsLocationsSecurityProfileGroupsListRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsSecurityProfileGroupsListRequest
+  object.
+
+  Fields:
+    pageSize: Optional. Maximum number of SecurityProfileGroups to return per
+      call.
+    pageToken: Optional. The value returned by the last
+      `ListSecurityProfileGroupsResponse` Indicates that this is a
+      continuation of a prior `ListSecurityProfileGroups` call, and that the
+      system should return the next page of data.
+    parent: Required. The project or organization and location from which the
+      SecurityProfileGroups should be listed, specified in the format
+      `projects|organizations/*/locations/{location}`.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class NetworksecurityProjectsLocationsSecurityProfileGroupsPatchRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsSecurityProfileGroupsPatchRequest
+  object.
+
+  Fields:
+    name: Immutable. Identifier. Name of the SecurityProfileGroup resource. It
+      matches pattern `projects|organizations/*/locations/{location}/securityP
+      rofileGroups/{security_profile_group}`.
+    securityProfileGroup: A SecurityProfileGroup resource to be passed as the
+      request body.
+    updateMask: Required. Field mask is used to specify the fields to be
+      overwritten in the SecurityProfileGroup resource by the update. The
+      fields specified in the update_mask are relative to the resource, not
+      the full request. A field will be overwritten if it is in the mask.
+  """
+
+  name = _messages.StringField(1, required=True)
+  securityProfileGroup = _messages.MessageField('SecurityProfileGroup', 2)
+  updateMask = _messages.StringField(3)
+
+
+class NetworksecurityProjectsLocationsSecurityProfilesCreateRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsSecurityProfilesCreateRequest object.
+
+  Fields:
+    parent: Required. The parent resource of the SecurityProfile. Must be in
+      the format `projects|organizations/*/locations/{location}`.
+    securityProfile: A SecurityProfile resource to be passed as the request
+      body.
+    securityProfileId: Required. Short name of the SecurityProfile resource to
+      be created. This value should be 1-63 characters long, containing only
+      letters, numbers, hyphens, and underscores, and should not start with a
+      number. E.g. "security_profile1".
+  """
+
+  parent = _messages.StringField(1, required=True)
+  securityProfile = _messages.MessageField('SecurityProfile', 2)
+  securityProfileId = _messages.StringField(3)
+
+
+class NetworksecurityProjectsLocationsSecurityProfilesDeleteRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsSecurityProfilesDeleteRequest object.
+
+  Fields:
+    etag: Optional. If client provided etag is out of date, delete will return
+      FAILED_PRECONDITION error.
+    name: Required. A name of the SecurityProfile to delete. Must be in the
+      format `projects|organizations/*/locations/{location}/securityProfiles/{
+      security_profile_id}`.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetworksecurityProjectsLocationsSecurityProfilesGetRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsSecurityProfilesGetRequest object.
+
+  Fields:
+    name: Required. A name of the SecurityProfile to get. Must be in the
+      format `projects|organizations/*/locations/{location}/securityProfiles/{
+      security_profile_id}`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityProjectsLocationsSecurityProfilesListRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsSecurityProfilesListRequest object.
+
+  Fields:
+    pageSize: Optional. Maximum number of SecurityProfiles to return per call.
+    pageToken: Optional. The value returned by the last
+      `ListSecurityProfilesResponse` Indicates that this is a continuation of
+      a prior `ListSecurityProfiles` call, and that the system should return
+      the next page of data.
+    parent: Required. The project or organization and location from which the
+      SecurityProfiles should be listed, specified in the format
+      `projects|organizations/*/locations/{location}`.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class NetworksecurityProjectsLocationsSecurityProfilesPatchRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsSecurityProfilesPatchRequest object.
+
+  Fields:
+    name: Immutable. Identifier. Name of the SecurityProfile resource. It
+      matches pattern `projects|organizations/*/locations/{location}/securityP
+      rofiles/{security_profile}`.
+    securityProfile: A SecurityProfile resource to be passed as the request
+      body.
+    updateMask: Required. Field mask is used to specify the fields to be
+      overwritten in the SecurityProfile resource by the update. The fields
+      specified in the update_mask are relative to the resource, not the full
+      request. A field will be overwritten if it is in the mask.
+  """
+
+  name = _messages.StringField(1, required=True)
+  securityProfile = _messages.MessageField('SecurityProfile', 2)
+  updateMask = _messages.StringField(3)
 
 
 class NetworksecurityProjectsLocationsServerTlsPoliciesCreateRequest(_messages.Message):

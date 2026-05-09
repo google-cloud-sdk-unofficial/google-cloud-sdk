@@ -167,26 +167,15 @@ def AddSpokeEtagFlag(parser, help_text):
 def AddGroupFlag(parser, required=False):
   """Adds the --group argument to the given parser."""
   # TODO(b/233653552) Parse this with a resource argument.
-  if required:
-    parser.add_argument(
-        '--group',
-        required=True,
-        hidden=False,
-        help=(
-            'Group that the spoke will be part of. The group must already'
-            ' exist.'
-        ),
-    )
-  else:
-    parser.add_argument(
-        '--group',
-        required=False,
-        hidden=True,
-        help=(
-            'Group that the spoke will be part of. The group must already'
-            ' exist.'
-        ),
-    )
+  parser.add_argument(
+      '--group',
+      required=required,
+      hidden=False,
+      help=(
+          'Group that the spoke will be part of. The group must already'
+          ' exist.'
+      ),
+  )
 
 
 def AddNetworkFlag(parser):

@@ -48,6 +48,7 @@ def DeployCustomWeightsModel(
     accelerator_count,
     project,
     location,
+    system_labels=None,
 ):
   """Deploys a custom weights model."""
   deploy_request = messages.GoogleCloudAiplatformV1beta1DeployRequest()
@@ -67,6 +68,26 @@ def DeployCustomWeightsModel(
             ),
             minReplicaCount=1,
         ),
+    )
+  if system_labels:
+    if not deploy_request.deployConfig:
+      deploy_request.deployConfig = (
+          messages.GoogleCloudAiplatformV1beta1DeployRequestDeployConfig()
+      )
+    additional_properties = []
+    deploy_config_msg = (
+        messages.GoogleCloudAiplatformV1beta1DeployRequestDeployConfig
+    )
+    for key, value in sorted(system_labels.items()):
+      additional_properties.append(
+          deploy_config_msg.SystemLabelsValue.AdditionalProperty(
+              key=key, value=value
+          )
+      )
+    deploy_request.deployConfig.systemLabels = (
+        deploy_config_msg.SystemLabelsValue(
+            additionalProperties=additional_properties
+        )
     )
 
   request = messages.AiplatformProjectsLocationsDeployRequest(
@@ -134,6 +155,7 @@ class ModelGardenClient(object):
       use_dedicated_endpoint,
       disable_dedicated_endpoint,
       enable_fast_tryout,
+      system_labels=None,
       container_image_uri=None,
       container_command=None,
       container_args=None,
@@ -168,6 +190,8 @@ class ModelGardenClient(object):
       use_dedicated_endpoint: Whether to use a dedicated endpoint.
       disable_dedicated_endpoint: Whether to disable the dedicated endpoint.
       enable_fast_tryout: Whether to enable fast tryout.
+      system_labels: Optional dictionary of system labels for custom weights
+        deployments.
       container_image_uri: Immutable. URI of the Docker image to be used as the
         custom container for serving predictions. This URI must identify an
         image in Artifact Registry or Container Registry. Learn more about the
@@ -432,6 +456,7 @@ class ModelGardenClient(object):
           accelerator_count,
           project,
           location,
+          system_labels=system_labels,
       )
     elif IsHuggingFaceModel(model):
       deploy_request = self._messages.GoogleCloudAiplatformV1beta1DeployRequest(

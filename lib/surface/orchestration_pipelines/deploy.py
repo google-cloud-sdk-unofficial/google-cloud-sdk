@@ -549,6 +549,7 @@ class Deploy(calliope_base.Command):
           )
         pipelines = filtered_pipelines
       deployed_pipelines = []
+      pipeline_models = []
 
       version_id = None
       if pipelines:
@@ -557,7 +558,7 @@ class Deploy(calliope_base.Command):
             if environment_model.secrets
             else []
         )
-        yaml_processor.validate_pipeline_l1(
+        pipeline_models = yaml_processor.validate_pipeline_l1(
             bundle_dir, pipelines, combined_variables, secret_keys=secret_keys
         )
         composer_bucket = _GetComposerBucket(
@@ -687,9 +688,9 @@ class Deploy(calliope_base.Command):
             pipelines=pipelines_by_id,
         )
 
-      if args.validate:
+      if args.validate and pipeline_models:
         yaml_processor.validate_pipeline_l2(
-            bundle_dir, pipelines, combined_variables, environment_model
+            bundle_dir, pipeline_models, environment_model
         )
 
       if (

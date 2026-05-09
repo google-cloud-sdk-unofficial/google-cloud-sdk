@@ -1,11 +1,29 @@
 - release_tracks: [ALPHA, BETA]
   help_text:
     brief: Describe Flag Attribute
-    description: Describe a Flag Attribute
-    examples: |-
-      To describe a Flag Attribute, run:
+    description: |-
+      Show detailed information about a Flag Attribute resource.
 
-          $ {command}
+      This command retrieves the metadata and configuration of a Flag Attribute. Flag
+      Attributes are the fundamental building blocks for targeted rollouts and
+      randomization, defining the keys (such as `userID` or `version`) that are
+      referenced in a flag's evaluation specification.
+
+      For automated processing, use `--format=json` or `--format=yaml` to retrieve the
+      structured representation of the attribute, which can be useful for
+      programmatically verifying targeting schemas across environments.
+    examples: |-
+      To describe a Flag Attribute named `user-id-attr` in the `global` location, run:
+
+          $ {command} user-id-attr --location=global
+
+      To describe a Flag Attribute using its fully qualified resource name, run:
+
+          $ {command} projects/my-project/locations/global/flagAttributes/user-id-attr
+
+      To inspect the attribute configuration in JSON format for automated auditing, run:
+
+          $ {command} user-id-attr --location=global --format=json
   arguments:
     params:
     - help_text: |-

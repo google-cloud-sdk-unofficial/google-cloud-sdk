@@ -5,6 +5,162 @@ Copyright 2014-2026 Google Inc. All rights reserved.
 Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
 
 
+## 567.0.0 (2026-05-05)
+
+### Google Cloud CLI
+
+* Rebuilt Linux bundled Python for the `gcloud` CLI to resolve CVE-2024-9979.
+
+### AI
+
+* Added `--system-labels` flag to `gcloud ai model-garden models deploy` for custom weights deployments.
+
+### API Registry
+
+*  Deprecated `gcloud alpha api-registry mcp` and `gcloud beta api-registry mcp`. Use `gcloud alpha agent-registry mcp-servers` instead. For more information, see <https://docs.cloud.google.com/sdk/gcloud/reference/alpha/agent-registry/mcp-servers>.
+
+### AlloyDB
+
+* Added `IAM_GROUP` option to `--type` flag of `gcloud alloydb users create` to represent IAM groups.
+
+### App Engine
+
+* Removed `--entrypoint` flag from `gcloud beta app migrate-to-run` and updated the command to extract it from configuration files (app.yaml or version config) automatically.
+* Updated the Go SDK to version 1.9.78.
+  Please visit the following release notes for details:
+  <https://cloud.google.com/appengine/docs/go/release-notes>.
+
+### Artifact Registry
+
+*   Added `gcloud artifacts projects` command group, including
+    `gcloud artifacts projects describe` and `gcloud artifacts projects update`,
+    to view and manage project-level settings per location.
+*   Added `--clear-platform-logs`, `--disable-platform-logs`,
+    `--enable-platform-logs`, and `--severity` flags to
+    `gcloud artifacts projects update`, `gcloud artifacts repositories create`,
+    and `gcloud artifacts repositories update` to configure platform logging.
+
+### BigLake
+
+*   Fixed issue where `gcloud biglake iceberg catalogs list` does not return replicas or storage-regions.
+
+### Cloud Dataplex
+
+*   Added `--context-format` flag to `gcloud dataplex context lookup` to specify the output format (`yaml`, `json`, `xml`).
+*   Added `--options` flag to `gcloud dataplex context lookup` to provide additional configurations via a JSON string.
+
+### Cloud Firestore Emulator
+
+* Release Cloud Firestore emulator v1.21.0
+  * Added support for subqueries, subcollections, `let(...)` stage, and
+    nested field modification in `add_fields(...)` & `select(...)` stages in
+    the emulator.
+
+### Cloud Identity-Aware Proxy
+
+* Added support for `--resource-type=agent-registry` for `gcloud beta iap web get-iam-policy` command in alpha and beta.
+* Added `--agent`, `--mcp-server` and `--endpoint` flag to `gcloud beta iap web get-iam-policy --resource-type=agent-registry`.
+
+### Cloud Key Management Service
+
+*   Added a new enum value `external-mu` to Digest.
+*   Updated `gcloud kms single-tenant-hsm create` to include
+    `--key-portability-enabled` flag, allowing users to allow instances to use
+    key portability features.
+
+### Cloud NetApp
+
+* Added `gcloud netapp storage-pools restore-volume` command to alpha and beta tracks of the `storage-pool` group.
+* Added `--ontap-source` flag to `gcloud beta netapp backups create`.
+* Added `gcloud netapp storage-pools list-backup-configs` command to alpha and beta tracks of the `storage-pool` group.
+* Added `gcloud netapp storage-pools update-backup-config` command to alpha and beta tracks of the `storage-pool` group.
+
+### Cloud Spanner
+
+* Added `--clear-kms-keys` flag to `gcloud spanner databases update` to
+  support reverting a Cloud Spanner database from customer-managed encryption
+  keys (CMEK) to Google-managed default encryption.
+
+### Cloud Storage
+
+* Introduced `--delete-source-objects` flag to `gcloud storage objects compose` command.
+* Enables the use of [`Objects:move`](https://docs.cloud.google.com/storage/docs/json_api/v1/objects/move) API for intra-bucket `gcloud storage mv` operations.
+* Updated gsutil component to 5.37.
+
+### Cloud Workstations
+
+* Added `--start-workstation` flag to `gcloud workstations start-tcp-tunnel` and `gcloud workstations ssh` commands to automatically start the workstation if its stopped.
+
+### Compute Engine
+
+* Promoted `--accelerator-topology-mode` flag on `gcloud compute resource-policies create workload-policy` and `gcloud compute resource-policies create group-placement` to V1.
+
+### Database Migration
+
+* For PostgreSQL migrations, added `--postgres-max-additional-subscriptions`
+to `gcloud database-migration migration-jobs create` and
+`gcloud database-migration migration-jobs update` to specify the maximum
+number of additional subscriptions to use for the migration job.
+
+### Kubernetes Engine
+
+* Added new kubectl version 1.36.0 for the RAPID channel.
+* Additional kubectl versions:
+  * kubectl.1.30 (1.30.14)
+  * kubectl.1.31 (1.31.14)
+  * kubectl.1.32 (1.32.13)
+  * kubectl.1.33 (1.33.11)
+  * kubectl.1.34 (1.34.7)
+  * kubectl.1.35 (1.35.4)
+  * kubectl.1.36 (1.36.0)
+*   Added `--confidential-node-type` flag to `gcloud container clusters create-auto` to allow creation of confidential nodes of types: sev, sev_snp, tdx on GKE Autopilot clusters.
+
+### Network Connectivity
+
+*   Add `--group` flag to `gcloud network-connectivity spokes linked-vpc-network
+    create` and `gcloud network-connectivity spokes linked-producer-vpc-network
+    create` to allow creating spokes in other groups.
+
+### Network Security
+
+*   Promoted project scoping for `gcloud network-security firewall-endpoints` commands (`create`, `delete`, `describe`, `list`, `update`) to the beta track.
+*   Promoted project scoping for `gcloud network-security firewall-endpoint-associations create` command to the beta track.
+*   Allow using `--location` flag instead of `--zone` flag for `network-security firewall-endpoints` commands.
+*   Promoted project scoping for `gcloud network-security security-profiles` commands (`delete`, `describe`, `export`, `import`, `list`) to the beta track.
+*   Allow using `--location` flag instead of `--zone` flag for `network-security firewall-endpoint-associations` commands.
+*   Promoted project scoping for `gcloud network-security security-profiles custom-intercept` commands (`create`, `delete`, `describe`, `list`, `update`) to the beta track.
+*   Promoted project scoping for `gcloud network-security security-profiles custom-mirroring` commands (`create`, `delete`, `describe`, `list`, `update`) to the beta track.
+*   Promoted project scoping for `gcloud network-security security-profiles threat-prevention` commands (`add-override`, `delete`, `describe`, `list`, `update`) to the beta track.
+*   Promoted project scoping for `gcloud network-security security-profiles url-filtering` commands (`create`, `delete`, `describe`, `list`) to the beta track.
+*   Promoted project scoping for `gcloud network-security security-profile-groups` commands (`create`, `delete`, `describe`, `list`, `update`) to the beta track.
+
+### Network Services
+
+* Promoted `gcloud compute networks peerings cancel-request-delete` to GA.
+
+### Service Health
+
+* Added `gcloud service-health` command group to GA.
+
+### Workbench
+
+* Added Hyperdisk options to `--boot-disk-type` of
+`gcloud workbench instances create`: `HYPERDISK_BALANCED`,
+`HYPERDISK_BALANCED_HIGH_AVAILABILITY`, `HYPERDISK_ML`.
+* Added Hyperdisk options to `--data-disk-type` of
+`gcloud workbench instances create`: `HYPERDISK_BALANCED`,
+`HYPERDISK_BALANCED_HIGH_AVAILABILITY`, `HYPERDISK_ML`, `HYPERDISK_EXTREME`,
+`HYPERDISK_THROUGHPUT`.
+* Added support for Gen-4 machine series (e.g. N4, C4, C4A, C4D, M4, X4, H4,
+Z4, G4, E4) in `gcloud workbench instances create`. When a Gen-4 machine type
+is used without an explicit `--boot-disk-type` / `--data-disk-type`, gcloud
+defaults the disk type to `HYPERDISK_BALANCED` since these machine series do
+not support Persistent Disk.
+
+
+Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
+
+
 ## 566.0.0 (2026-04-28)
 
 ### Google Cloud CLI

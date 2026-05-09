@@ -53,6 +53,9 @@ IAP_TCP_TUNNEL_TYPES_LOCATIONS_COLLECTION = (
 IAP_TCP_TUNNEL_TYPES_LOCATIONS_SERVICES_COLLECTION = (
     'iap.projects.iap_tunnel.tunnel_types.locations.services'
 )
+IAP_TCP_TUNNEL_TYPES_LOCATIONS_INSTANCES_COLLECTION = (
+    'iap.projects.iap_tunnel.tunnel_types.locations.instances'
+)
 LOCATION_IAP_WEB_COLLECTION = 'iap.projects.locations.iap_web'
 LOCATION_IAP_WEB_WEB_TYPES_COLLECTION = (
     'iap.projects.locations.iap_web.web_types'
@@ -925,11 +928,21 @@ class IapTunnelDestGroupResource(IapIamResource):
 class IapTcpIamResource(IapIamResource):
   """IAP TCP IAM resource."""
 
-  def __init__(self, release_track, project, *, tunnel_type, region, service):
+  def __init__(
+      self,
+      release_track,
+      project,
+      *,
+      tunnel_type,
+      region,
+      service=None,
+      instance=None
+  ):
     super(IapTcpIamResource, self).__init__(release_track, project)
     self.tunnel_type = tunnel_type
     self.region = region
     self.service_id = service
+    self.instance_id = instance
 
   def _Name(self):
     del self  # Unused in this method.
@@ -937,6 +950,17 @@ class IapTcpIamResource(IapIamResource):
 
   def _Parse(self):
     project = _GetProject(self.project)
+    if self.instance_id:
+      return self.registry.Parse(
+          None,
+          params={
+              'project': project.projectNumber,
+              'tunnelType': self.tunnel_type,
+              'location': self.region,
+              'instanceId': self.instance_id,
+          },
+          collection=IAP_TCP_TUNNEL_TYPES_LOCATIONS_INSTANCES_COLLECTION,
+      )
     return self.registry.Parse(
         None,
         params={

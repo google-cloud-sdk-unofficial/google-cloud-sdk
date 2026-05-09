@@ -45,6 +45,7 @@ class StartTcpTunnel(base.Command):
     workstations_flags.AddWorkstationResourceArg(parser)
     workstations_flags.AddWorkstationPortField(parser)
     workstations_flags.AddLocalHostPortField(parser)
+    workstations_flags.AddStartWorkstationFlag(parser)
 
   def Run(self, args):
     client = workstations.Workstations(self.ReleaseTrack())

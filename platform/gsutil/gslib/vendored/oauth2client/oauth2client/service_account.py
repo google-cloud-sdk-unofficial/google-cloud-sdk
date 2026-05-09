@@ -30,8 +30,8 @@ from oauth2client import transport
 _PASSWORD_DEFAULT = 'notasecret'
 _PKCS12_KEY = '_private_key_pkcs12'
 _PKCS12_ERROR = r"""
-This library only implements PKCS#12 support via the pyOpenSSL library.
-Either install pyOpenSSL, or please convert the .p12 file
+This library only implements PKCS#12 support via the cryptography library.
+Either install cryptography, or please convert the .p12 file
 to .pem format:
     $ cat key.p12 | \
     >   openssl pkcs12 -nodes -nocerts -passin pass:notasecret | \

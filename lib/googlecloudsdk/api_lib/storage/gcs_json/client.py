@@ -795,6 +795,7 @@ class JsonClient(cloud_api.CloudApi):
       source_resources,
       destination_resource,
       request_config,
+      delete_source_objects=False,
       original_source_resource=None,
       posix_to_set=None,
   ):
@@ -844,9 +845,10 @@ class JsonClient(cloud_api.CloudApi):
       additional_kwargs['dropContextGroups'] = ['custom']
 
     compose_request_payload = self.messages.ComposeRequest(
-        sourceObjects=source_messages,
-        destination=final_destination_metadata,
+        sourceObjects=source_messages, destination=final_destination_metadata
     )
+    if delete_source_objects:
+      compose_request_payload.deleteSourceObjects = True
 
     compose_request = self.messages.StorageObjectsComposeRequest(
         composeRequest=compose_request_payload,

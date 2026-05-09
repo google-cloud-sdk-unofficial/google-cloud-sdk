@@ -268,10 +268,20 @@ def CheckValidUnityArgCombinations(args):
   Raises:
     arg_parsers.ArgumentTypeError: If an invalid argument combination is found.
   """
-  if not args.IsSpecified('secret_name'):
+  if not args.IsSpecified('secret_name') and not args.IsSpecified(
+      'service_principal_application_id'
+  ):
+    # TODO: b/502209000 - Update this error message once application ID is
+    # visible.
     raise arg_parsers.ArgumentTypeError(
-        '--secret-name must be specified when federated catalog type is'
-        ' unity.'
+        '--secret-name must be specified when federated catalog type is unity.'
+    )
+  if args.IsSpecified('secret_name') and args.IsSpecified(
+      'service_principal_application_id'
+  ):
+    raise arg_parsers.ArgumentTypeError(
+        'Only one of --secret-name or --service-principal-application-id can be'
+        ' specified when federated catalog type is unity.'
     )
   if not args.IsSpecified('unity_instance_name'):
     raise arg_parsers.ArgumentTypeError(
@@ -300,6 +310,7 @@ def CheckValidFederatedArgCombinations(args):
   """
   federated_flags = [
       'secret_name',
+      'service_principal_application_id',
       'unity_instance_name',
       'unity_catalog_name',
       'refresh_interval',
@@ -434,8 +445,13 @@ def _BuildUnityCatalogInfo(unity_catalog_info_option):
       hasattr(unity_catalog_info_option, 'catalog_name')
       and unity_catalog_info_option.catalog_name
   ):
-    unity_catalog_info['catalog-name'] = (
-        unity_catalog_info_option.catalog_name
+    unity_catalog_info['catalog-name'] = unity_catalog_info_option.catalog_name
+  if (
+      hasattr(unity_catalog_info_option, 'service_principal_application_id')
+      and unity_catalog_info_option.service_principal_application_id
+  ):
+    unity_catalog_info['service-principal-application-id'] = (
+        unity_catalog_info_option.service_principal_application_id
     )
   return unity_catalog_info
 

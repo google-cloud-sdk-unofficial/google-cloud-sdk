@@ -102,8 +102,5 @@ class PollingWatcher(watcher.BaseWatcher):
         self._file_states = current_states
         if sync_required:
           self._ScheduleSync()
-
-    except KeyboardInterrupt:
-      pass
     finally:
       self._CancelSync()

@@ -259,6 +259,10 @@ class Deploy(base.Command):
         allow_unauth = None
     return allow_unauth
 
+  def _IsIngressContainer(self, container):
+    """Returns True if the container is an ingress container."""
+    return container.IsSpecified('port') or container.IsSpecified('use_http2')
+
   def _ValidateAndGetContainers(self, args):
     if flags.FlagIsExplicitlySet(args, 'containers'):
       containers = args.containers
@@ -284,7 +288,7 @@ class Deploy(base.Command):
       ingress_containers = [
           c
           for c in containers.values()
-          if c.IsSpecified('port') or c.IsSpecified('use_http2')
+          if self._IsIngressContainer(c)
       ]
       if len(ingress_containers) != 1:
         raise c_exceptions.InvalidArgumentException(
@@ -311,7 +315,7 @@ class Deploy(base.Command):
             ' builds from source.',
         )
 
-  def _ValidateAndGeDeployFromSource(self, containers):
+  def _ValidateAndGetDeployFromSource(self, containers):
     deploy_from_source = {
         name: container
         for name, container in containers.items()
@@ -331,6 +335,7 @@ class Deploy(base.Command):
       raise c_exceptions.InvalidArgumentException(
           '--container', 'At most one container can be deployed from source.'
       )
+    self._ValidateUnifiedBuildProperty(deploy_from_source, containers)
     self._ValidateNoAutomaticUpdatesForContainers(
         deploy_from_source, containers
     )
@@ -358,6 +363,24 @@ class Deploy(base.Command):
     self._ValidateUploadThroughRunApi(deploy_from_source)
     self._ValidateNoBuildFromSource(deploy_from_source)
     return deploy_from_source
+
+  def _ValidateUnifiedBuildProperty(self, deploy_from_source, containers):
+    if (
+        properties.VALUES.run.enable_unified_build.GetBool()
+    ):
+      if self.ReleaseTrack() != base.ReleaseTrack.ALPHA:
+        raise exceptions.ConfigurationError(
+            'The `enable_unified_build` property is only supported in the Alpha'
+            ' release track.'
+        )
+      if len(containers) > 1:
+        for _, container in deploy_from_source.items():
+          if not self._IsIngressContainer(container):
+            raise c_exceptions.InvalidArgumentException(
+                '--container',
+                'Building sidecars from source is currently not supported when'
+                ' using unified build.',
+            )
 
   def _ValidateUploadThroughRunApi(self, deploy_from_source):
     if not deploy_from_source or len(deploy_from_source) != 1:
@@ -393,11 +416,6 @@ class Deploy(base.Command):
           '--no-build',
           'Source deployment must specify --base-image when skipping'
           'Cloud Build.',
-      )
-    if not container.IsSpecified('command'):
-      raise c_exceptions.InvalidArgumentException(
-          '--no-build',
-          'Source deployment must specify --command when skipping Cloud Build.',
       )
     if (
         container.IsSpecified('image')
@@ -965,7 +983,7 @@ class Deploy(base.Command):
     )
 
     containers = self._ValidateAndGetContainers(args)
-    deploy_from_source = self._ValidateAndGeDeployFromSource(containers)
+    deploy_from_source = self._ValidateAndGetDeployFromSource(containers)
     is_no_build_from_source = _IsNoBuildFromSource(
         self.ReleaseTrack(), deploy_from_source
     )

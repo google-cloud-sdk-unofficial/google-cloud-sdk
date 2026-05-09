@@ -26,7 +26,6 @@ from googlecloudsdk.generated_clients.apis.bigtableadmin.v2 import bigtableadmin
 
 
 @base.DefaultUniverseOnly
-@base.UniverseCompatible
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )

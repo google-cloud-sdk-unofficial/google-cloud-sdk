@@ -20,7 +20,7 @@ from googlecloudsdk.command_lib.util.apis import arg_utils
 
 MESSAGES = cloudkms_base.GetMessagesModule()
 
-DIGESTS = {'sha256', 'sha384', 'sha512'}
+DIGESTS = frozenset({'sha256', 'sha384', 'sha512', 'external-mu'})
 
 ALGORITHM_ENUM = MESSAGES.CryptoKeyVersionTemplate.AlgorithmValueValuesEnum
 ALGORITHM_MAPPER = arg_utils.ChoiceEnumMapper('algorithm_enum', ALGORITHM_ENUM)

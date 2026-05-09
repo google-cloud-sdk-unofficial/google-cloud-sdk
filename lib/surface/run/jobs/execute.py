@@ -151,7 +151,7 @@ class Execute(base.Command):
           delay_execution = (
               args.delay_execution
               if flags.FlagIsExplicitlySet(args, 'delay_execution')
-              else False
+              else None
           )
           overrides = operations.GetExecutionOverrides(
               args.tasks,

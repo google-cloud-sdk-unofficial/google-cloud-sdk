@@ -155,13 +155,15 @@ class Validate(calliope_base.Command):
       resources = context["resources"]
       env_name = context["name"]
       has_environment = env is not None
+      pipeline_models = []
 
       if pipeline_paths:
-        yaml_processor.validate_pipeline_l1(
+        pipeline_models = yaml_processor.validate_pipeline_l1(
             work_dir,
             pipeline_paths,
             combined_vars,
         )
+      context["pipeline_models"] = pipeline_models
 
       if has_environment:
         for resource in resources:
@@ -192,17 +194,15 @@ class Validate(calliope_base.Command):
     # 4. Perform L2 semantic validation for each context.
     for context in validation_contexts:
       env = context["env"]
-      combined_vars = context["combined_vars"]
-      pipeline_paths = context["pipeline_paths"]
+      pipeline_models = context["pipeline_models"]
       resources = context["resources"]
       env_name = context["name"]
       has_environment = env is not None
 
-      if pipeline_paths:
+      if pipeline_models:
         yaml_processor.validate_pipeline_l2(
             work_dir,
-            pipeline_paths,
-            combined_vars,
+            pipeline_models,
             env,
         )
 

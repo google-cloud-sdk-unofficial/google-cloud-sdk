@@ -1,5 +1,4 @@
 - release_tracks: [GA]
-  hidden: true
   universe_compatible: true
   help_text:
     brief: Describe project configuration.

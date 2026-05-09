@@ -33,6 +33,28 @@ _DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Deprecate(
+    is_removed=False,  # Set to False to issue a warning first
+    warning=(
+        'The `gcloud alpha api-registry mcp tools list` command is '
+        'deprecated and will be removed in a future release. '
+        'For similar functionality, you can use Agent Registry. '
+        'Note: Agent Registry does not treat tools as a separate collection. '
+        'To view tools, please use `gcloud alpha agent-registry mcp-servers'
+        ' list` or `describe` command to view the tools included in the'
+        ' server payloads. For more information, see: '
+        'https://docs.cloud.google.com/sdk/gcloud/reference/alpha/agent-registry/mcp-servers'
+    ),
+    error=(
+        'The `gcloud alpha api-registry mcp tools list` command has been '
+        'removed. For similar functionality, you can use Agent Registry. '
+        'Note: Agent Registry does not treat tools as a separate collection. '
+        'To view tools, please use `gcloud alpha agent-registry mcp-servers'
+        ' list` or `describe` command to view the tools included in the server'
+        ' payloads. For more information, see: '
+        'https://docs.cloud.google.com/sdk/gcloud/reference/alpha/agent-registry/mcp-servers'
+    )
+)
 @base.DefaultUniverseOnly
 class ListAlpha(base.ListCommand):
   """List MCP tools."""
@@ -61,6 +83,28 @@ class ListAlpha(base.ListCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.Deprecate(
+    is_removed=False,  # Set to False to issue a warning first
+    warning=(
+        'The `gcloud beta api-registry mcp tools list` command is '
+        'deprecated and will be removed in a future release. '
+        'For similar functionality, you can use Agent Registry. '
+        'Note: Agent Registry does not treat tools as a separate collection. '
+        'To view tools, please use `gcloud alpha agent-registry mcp-servers'
+        ' list` or `describe` command to view the tools included in the'
+        ' server payloads. For more information, see: '
+        'https://docs.cloud.google.com/sdk/gcloud/reference/alpha/agent-registry/mcp-servers'
+    ),
+    error=(
+        'The `gcloud beta api-registry mcp tools list` command has been '
+        'removed. For similar functionality, you can use Agent Registry. '
+        'Note: Agent Registry does not treat tools as a separate collection. '
+        'To view tools, please use `gcloud alpha agent-registry mcp-servers'
+        ' list` or `describe` command to view the tools included in the server'
+        ' payloads. For more information, see: '
+        'https://docs.cloud.google.com/sdk/gcloud/reference/alpha/agent-registry/mcp-servers'
+    )
+)
 @base.DefaultUniverseOnly
 class ListBeta(base.ListCommand):
   """List MCP tools."""

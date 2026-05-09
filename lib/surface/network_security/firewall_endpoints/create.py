@@ -42,6 +42,7 @@ DETAILED_HELP = {
 
 _PROJECT_SCOPE_SUPPORTED_TRACKS = (
     base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
 )
 
 
@@ -60,6 +61,7 @@ class Create(base.CreateCommand):
         parser,
         project_scope_supported,
     )
+    activation_flags.AddLocationArg(parser)
     activation_flags.AddMaxWait(parser, '60m')  # default to 60 minutes wait.
     activation_flags.AddDescriptionArg(parser)
     activation_flags.AddEnableJumboFramesArg(parser)

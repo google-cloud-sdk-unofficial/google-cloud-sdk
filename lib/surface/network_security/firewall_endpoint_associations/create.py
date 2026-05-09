@@ -43,6 +43,7 @@ DETAILED_HELP = {
 
 _PROJECT_SCOPE_SUPPORTED_TRACKS = (
     base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
 )
 
 
@@ -56,7 +57,9 @@ class Create(base.CreateCommand):
         cls.ReleaseTrack() in _PROJECT_SCOPE_SUPPORTED_TRACKS
     )
     association_flags.AddAssociationIDArg(parser)
-    association_flags.AddZoneArg(parser)
+    location_group = parser.add_mutually_exclusive_group(required=True)
+    association_flags.AddZoneArg(location_group, required=False, default='')
+    association_flags.AddLocationArg(location_group, required=False, default='')
     association_flags.AddEndpointResource(
         cls.ReleaseTrack(), parser, project_scope_supported
     )
@@ -71,7 +74,7 @@ class Create(base.CreateCommand):
     client = association_api.Client(self.ReleaseTrack())
 
     project = args.project or properties.VALUES.core.project.GetOrFail()
-    zone = args.zone
+    zone = args.zone or args.location
     parent = 'projects/{}/locations/{}'.format(project, zone)
     association_id = args.association_id
     labels = labels_util.ParseCreateArgs(

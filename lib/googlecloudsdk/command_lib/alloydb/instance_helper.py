@@ -147,6 +147,16 @@ def _ConstructInstanceFromArgs(client, alloydb_messages, args):
       alloydb_messages.Instance.DatabaseFlagsValue,
       labels_dest='database_flags',
   )
+  instance_resource.observabilityConfig = _ObservabilityConfig(
+      alloydb_messages,
+      observability_config_enabled=args.observability_config_enabled,
+      observability_config_preserve_comments=args.observability_config_preserve_comments,
+      observability_config_track_wait_events=args.observability_config_track_wait_events,
+      observability_config_max_query_string_length=args.observability_config_max_query_string_length,
+      observability_config_record_application_tags=args.observability_config_record_application_tags,
+      observability_config_query_plans_per_minute=args.observability_config_query_plans_per_minute,
+      observability_config_track_active_queries=args.observability_config_track_active_queries,
+  )
   instance_resource.instanceType = _ParseInstanceType(
       alloydb_messages, args.instance_type
   )
@@ -226,17 +236,32 @@ def _ConstructInstanceFromArgsBeta(client, alloydb_messages, args):
     An AlloyDB instance to create with the specified command line arguments.
   """
   instance_resource = _ConstructInstanceFromArgs(client, alloydb_messages, args)
-  instance_resource.observabilityConfig = _ObservabilityConfig(
-      alloydb_messages,
-      observability_config_enabled=args.observability_config_enabled,
-      observability_config_preserve_comments=args.observability_config_preserve_comments,
-      observability_config_track_wait_events=args.observability_config_track_wait_events,
-      observability_config_max_query_string_length=args.observability_config_max_query_string_length,
-      observability_config_record_application_tags=args.observability_config_record_application_tags,
-      observability_config_query_plans_per_minute=args.observability_config_query_plans_per_minute,
-      observability_config_track_active_queries=args.observability_config_track_active_queries,
-      observability_config_track_active_query_plan=args.observability_config_track_active_query_plan,
-  )
+  observability_config_track_active_query_plan = getattr(
+      args, 'observability_config_track_active_query_plan', None)
+  observability_config_track_client_address = getattr(
+      args, 'observability_config_track_client_address', None)
+  observability_config_assistive_experiences_enabled = getattr(
+      args, 'observability_config_assistive_experiences_enabled', None)
+
+  if (observability_config_track_active_query_plan is not None or
+      observability_config_track_client_address is not None or
+      observability_config_assistive_experiences_enabled is not None):
+    if instance_resource.observabilityConfig is None:
+      instance_resource.observabilityConfig = (
+          alloydb_messages.ObservabilityInstanceConfig()
+      )
+    if observability_config_track_active_query_plan is not None:
+      instance_resource.observabilityConfig.trackActiveQueryPlan = (
+          observability_config_track_active_query_plan
+      )
+    if observability_config_track_client_address is not None:
+      instance_resource.observabilityConfig.trackClientAddress = (
+          observability_config_track_client_address
+      )
+    if observability_config_assistive_experiences_enabled is not None:
+      instance_resource.observabilityConfig.assistiveExperiencesEnabled = (
+          observability_config_assistive_experiences_enabled
+      )
 
   if (
       args.autoscaler_max_node_count is not None
@@ -480,6 +505,25 @@ def ConstructInstanceAndUpdatePathsFromArgs(
   insights_config_record_client_address_path = (
       'queryInsightsConfig.recordClientAddress'
   )
+  observability_config_enabled_path = 'observabilityConfig.enabled'
+  observability_config_preserve_comments_path = (
+      'observabilityConfig.preserveComments'
+  )
+  observability_config_track_wait_events_path = (
+      'observabilityConfig.trackWaitEvents'
+  )
+  observability_config_max_query_string_length_path = (
+      'observabilityConfig.maxQueryStringLength'
+  )
+  observability_config_record_application_tags_path = (
+      'observabilityConfig.recordApplicationTags'
+  )
+  observability_config_query_plans_per_minute_path = (
+      'observabilityConfig.queryPlansPerMinute'
+  )
+  observability_config_track_active_queries_path = (
+      'observabilityConfig.trackActiveQueries'
+  )
   activation_policy_path = 'activationPolicy'
 
   instance_resource = alloydb_messages.Instance()
@@ -536,6 +580,31 @@ def ConstructInstanceAndUpdatePathsFromArgs(
       args.insights_config_query_plans_per_minute,
       args.insights_config_record_application_tags,
       args.insights_config_record_client_address,
+  )
+
+  if args.observability_config_enabled is not None:
+    paths.append(observability_config_enabled_path)
+  if args.observability_config_preserve_comments is not None:
+    paths.append(observability_config_preserve_comments_path)
+  if args.observability_config_track_wait_events is not None:
+    paths.append(observability_config_track_wait_events_path)
+  if args.observability_config_max_query_string_length is not None:
+    paths.append(observability_config_max_query_string_length_path)
+  if args.observability_config_record_application_tags is not None:
+    paths.append(observability_config_record_application_tags_path)
+  if args.observability_config_query_plans_per_minute is not None:
+    paths.append(observability_config_query_plans_per_minute_path)
+  if args.observability_config_track_active_queries is not None:
+    paths.append(observability_config_track_active_queries_path)
+  instance_resource.observabilityConfig = _ObservabilityConfig(
+      alloydb_messages,
+      observability_config_enabled=args.observability_config_enabled,
+      observability_config_preserve_comments=args.observability_config_preserve_comments,
+      observability_config_track_wait_events=args.observability_config_track_wait_events,
+      observability_config_max_query_string_length=args.observability_config_max_query_string_length,
+      observability_config_record_application_tags=args.observability_config_record_application_tags,
+      observability_config_query_plans_per_minute=args.observability_config_query_plans_per_minute,
+      observability_config_track_active_queries=args.observability_config_track_active_queries,
   )
 
   # Check if require_connectors is set to True/False, then update
@@ -699,7 +768,7 @@ def _QueryInsightsConfig(
 
 
 def _ObservabilityConfig(
-    alloydb_messages,
+    alloydb_messages, *,
     observability_config_enabled=None,
     observability_config_preserve_comments=None,
     observability_config_track_wait_events=None,
@@ -707,7 +776,6 @@ def _ObservabilityConfig(
     observability_config_record_application_tags=None,
     observability_config_query_plans_per_minute=None,
     observability_config_track_active_queries=None,
-    observability_config_track_active_query_plan=None,
 ):
   """Generates the observability config for the instance.
 
@@ -727,8 +795,6 @@ def _ObservabilityConfig(
       to sample every minute.
     observability_config_track_active_queries: boolean, True if active queries
       should be tracked.
-    observability_config_track_active_query_plan: boolean, True if active query
-      plans should be tracked.
 
   Returns:
     alloydb_messages.ObservabilityInstanceConfig or None
@@ -742,7 +808,6 @@ def _ObservabilityConfig(
       observability_config_record_application_tags is not None,
       observability_config_query_plans_per_minute is not None,
       observability_config_track_active_queries is not None,
-      observability_config_track_active_query_plan is not None,
   ])
   if not should_generate_config:
     return None
@@ -774,10 +839,6 @@ def _ObservabilityConfig(
   if observability_config_track_active_queries is not None:
     observability_config.trackActiveQueries = (
         observability_config_track_active_queries
-    )
-  if observability_config_track_active_query_plan is not None:
-    observability_config.trackActiveQueryPlan = (
-        observability_config_track_active_query_plan
     )
 
   return observability_config
@@ -1389,27 +1450,14 @@ def ConstructInstanceAndUpdatePathsFromArgsBeta(
   Returns:
     An AlloyDB instance and paths for update.
   """
-  observability_config_enabled_path = 'observabilityConfig.enabled'
-  observability_config_preserve_comments_path = (
-      'observabilityConfig.preserveComments'
-  )
-  observability_config_track_wait_events_path = (
-      'observabilityConfig.trackWaitEvents'
-  )
-  observability_config_max_query_string_length_path = (
-      'observabilityConfig.maxQueryStringLength'
-  )
-  observability_config_record_application_tags_path = (
-      'observabilityConfig.recordApplicationTags'
-  )
-  observability_config_query_plans_per_minute_path = (
-      'observabilityConfig.queryPlansPerMinute'
-  )
-  observability_config_track_active_queries_path = (
-      'observabilityConfig.trackActiveQueries'
-  )
   observability_config_track_active_query_plan_path = (
       'observabilityConfig.trackActiveQueryPlan'
+  )
+  observability_config_track_client_address_path = (
+      'observabilityConfig.trackClientAddress'
+  )
+  observability_config_assistive_experiences_enabled_path = (
+      'observabilityConfig.assistiveExperiencesEnabled'
   )
   instance_resource, paths = ConstructInstanceAndUpdatePathsFromArgs(
       alloydb_messages, instance_ref, args, release_track
@@ -1421,34 +1469,39 @@ def ConstructInstanceAndUpdatePathsFromArgsBeta(
     )
     update_mode_path = 'updatePolicy.mode'
     paths.append(update_mode_path)
-  if args.observability_config_enabled is not None:
-    paths.append(observability_config_enabled_path)
-  if args.observability_config_preserve_comments is not None:
-    paths.append(observability_config_preserve_comments_path)
-  if args.observability_config_track_wait_events is not None:
-    paths.append(observability_config_track_wait_events_path)
-  if args.observability_config_max_query_string_length is not None:
-    paths.append(observability_config_max_query_string_length_path)
-  if args.observability_config_record_application_tags is not None:
-    paths.append(observability_config_record_application_tags_path)
-  if args.observability_config_query_plans_per_minute is not None:
-    paths.append(observability_config_query_plans_per_minute_path)
-  if args.observability_config_track_active_queries is not None:
-    paths.append(observability_config_track_active_queries_path)
-  if args.observability_config_track_active_query_plan is not None:
-    paths.append(observability_config_track_active_query_plan_path)
 
-  instance_resource.observabilityConfig = _ObservabilityConfig(
-      alloydb_messages,
-      args.observability_config_enabled,
-      args.observability_config_preserve_comments,
-      args.observability_config_track_wait_events,
-      args.observability_config_max_query_string_length,
-      args.observability_config_record_application_tags,
-      args.observability_config_query_plans_per_minute,
-      args.observability_config_track_active_queries,
-      args.observability_config_track_active_query_plan,
+  observability_config_track_active_query_plan = getattr(
+      args, 'observability_config_track_active_query_plan', None
   )
+  observability_config_track_client_address = getattr(
+      args, 'observability_config_track_client_address', None
+  )
+  observability_config_assistive_experiences_enabled = getattr(
+      args, 'observability_config_assistive_experiences_enabled', None
+  )
+  if observability_config_assistive_experiences_enabled is not None:
+    paths.append(observability_config_assistive_experiences_enabled_path)
+  if observability_config_track_active_query_plan is not None:
+    paths.append(observability_config_track_active_query_plan_path)
+  if observability_config_track_client_address is not None:
+    paths.append(observability_config_track_client_address_path)
+
+  if instance_resource.observabilityConfig is None and (
+      observability_config_track_active_query_plan is not None or
+      observability_config_track_client_address is not None or
+      observability_config_assistive_experiences_enabled is not None):
+    instance_resource.observabilityConfig = (
+        alloydb_messages.ObservabilityInstanceConfig())
+
+  if observability_config_track_active_query_plan is not None:
+    instance_resource.observabilityConfig.trackActiveQueryPlan = (
+        observability_config_track_active_query_plan)
+  if observability_config_track_client_address is not None:
+    instance_resource.observabilityConfig.trackClientAddress = (
+        observability_config_track_client_address)
+  if observability_config_assistive_experiences_enabled is not None:
+    instance_resource.observabilityConfig.assistiveExperiencesEnabled = (
+        observability_config_assistive_experiences_enabled)
 
   # We update the whole connection pool config if any of the connection pooling
   # flags are set because we want to preserve any existing flags. But to do so,

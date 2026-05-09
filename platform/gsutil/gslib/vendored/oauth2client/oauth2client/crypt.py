@@ -51,21 +51,10 @@ except ImportError:  # pragma: NO COVER
     OpenSSLSigner = None
     pkcs12_key_as_pem = _bad_pkcs12_key_as_pem
 
-try:
-    from oauth2client import _pycrypto_crypt
-    PyCryptoSigner = _pycrypto_crypt.PyCryptoSigner
-    PyCryptoVerifier = _pycrypto_crypt.PyCryptoVerifier
-except ImportError:  # pragma: NO COVER
-    PyCryptoVerifier = None
-    PyCryptoSigner = None
-
 
 if OpenSSLSigner:
     Signer = OpenSSLSigner
     Verifier = OpenSSLVerifier
-elif PyCryptoSigner:  # pragma: NO COVER
-    Signer = PyCryptoSigner
-    Verifier = PyCryptoVerifier
 else:  # pragma: NO COVER
     Signer = RsaSigner
     Verifier = RsaVerifier

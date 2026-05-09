@@ -15,6 +15,11 @@
 
 from OpenSSL import crypto
 
+from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.serialization import pkcs12
+
 from oauth2client import _helpers
 
 
@@ -25,7 +30,7 @@ class OpenSSLVerifier(object):
         """Constructor.
 
         Args:
-            pubkey: OpenSSL.crypto.PKey, The public key to verify with.
+            pubkey: OpenSSL.crypto.PKey or OpenSSL.crypto.X509, The public key to verify with.
         """
         self._pubkey = pubkey
 
@@ -44,9 +49,22 @@ class OpenSSLVerifier(object):
         """
         message = _helpers._to_bytes(message, encoding='utf-8')
         signature = _helpers._to_bytes(signature, encoding='utf-8')
+
+        if isinstance(self._pubkey, crypto.X509):
+            public_key = self._pubkey.to_cryptography().public_key()
+        else:
+            public_key = self._pubkey.to_cryptography_key()
+
+        # If it's a private key, extract the public key.
+        if hasattr(public_key, 'public_key'):
+            public_key = public_key.public_key()
+
         try:
-            crypto.verify(self._pubkey, signature, message, 'sha256')
+            public_key.verify(signature, message, padding.PKCS1v15(),
+                              hashes.SHA256())
             return True
+        except InvalidSignature:
+            return False
         except crypto.Error:
             return False
 
@@ -94,7 +112,8 @@ class OpenSSLSigner(object):
             string, The signature of the message for the given key.
         """
         message = _helpers._to_bytes(message, encoding='utf-8')
-        return crypto.sign(self._key, message, 'sha256')
+        crypto_key = self._key.to_cryptography_key()
+        return crypto_key.sign(message, padding.PKCS1v15(), hashes.SHA256())
 
     @staticmethod
     def from_string(key, password=b'notasecret'):
@@ -116,7 +135,17 @@ class OpenSSLSigner(object):
             pkey = crypto.load_privatekey(crypto.FILETYPE_PEM, parsed_pem_key)
         else:
             password = _helpers._to_bytes(password, encoding='utf-8')
-            pkey = crypto.load_pkcs12(key, password).get_privatekey()
+            crypto_key, _, _ = pkcs12.load_key_and_certificates(key, password)
+
+            # cryptography private key doesn't have an exact pyOpenSSL wrapper 
+            # for backward compatibility, so we dump it to PEM and reload it.
+            from cryptography.hazmat.primitives import serialization
+            pem_bytes = crypto_key.private_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PrivateFormat.TraditionalOpenSSL,
+                encryption_algorithm=serialization.NoEncryption()
+            )
+            pkey = crypto.load_privatekey(crypto.FILETYPE_PEM, pem_bytes)
         return OpenSSLSigner(pkey)
 
 
@@ -131,6 +160,11 @@ def pkcs12_key_as_pem(private_key_bytes, private_key_password):
         String. PEM contents of ``private_key_bytes``.
     """
     private_key_password = _helpers._to_bytes(private_key_password)
-    pkcs12 = crypto.load_pkcs12(private_key_bytes, private_key_password)
-    return crypto.dump_privatekey(crypto.FILETYPE_PEM,
-                                  pkcs12.get_privatekey())
+    crypto_key, _, _ = pkcs12.load_key_and_certificates(private_key_bytes, private_key_password)
+    from cryptography.hazmat.primitives import serialization
+    pem_bytes = crypto_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.TraditionalOpenSSL,
+        encryption_algorithm=serialization.NoEncryption()
+    )
+    return pem_bytes

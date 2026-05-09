@@ -31,11 +31,15 @@ def _CommonArgs(parser):
   flags.AddMaxTopologyDistanceAndAcceleratorTopologyArgsForWorkloadPolicy(
       parser
   )
+  flags.AddAcceleratorTopologyModeArgs(parser)
 
 
 def ValidateWorkloadPolicy(resource_policy, messages, args):
   """Validates the workload policy."""
-  if args.accelerator_topology is not None and (
+  if (
+      args.accelerator_topology is not None
+      or args.accelerator_topology_mode is not None
+  ) and (
       resource_policy.workloadPolicy.type
       != messages.ResourcePolicyWorkloadPolicy.TypeValueValuesEnum.HIGH_THROUGHPUT
   ):
@@ -85,7 +89,6 @@ class CreateWorkloadPolicyBeta(CreateWorkloadPolicyGa):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
-    flags.AddAcceleratorTopologyModeArgs(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -95,7 +98,6 @@ class CreateWorkloadPolicyAlpha(CreateWorkloadPolicyGa):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
-    flags.AddAcceleratorTopologyModeArgs(parser)
 
 
 CreateWorkloadPolicyGa.detailed_help = {

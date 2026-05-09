@@ -60,7 +60,6 @@ def translate_from_source(
     input_type: feature_helper.InputType,
     appyaml: str,
     service: str,
-    entrypoint_command: str,
 ) -> Sequence[str]:
   """Translates GAE app config to a Cloud Run deploy command.
 
@@ -72,7 +71,6 @@ def translate_from_source(
     input_type: The input type of the input data.
     appyaml: The path to the app.yaml file.
     service: The App Engine service to migrate.
-    entrypoint_command: The entrypoint command for the Cloud Run service.
 
   Returns:
     A sequence of strings representing the gcloud run deploy command.
@@ -92,7 +90,6 @@ def translate_from_source(
   flags: Sequence[str] = _get_cloud_run_flags(
       input_data=input_data,
       input_flatten_as_appyaml=input_flatten_as_appyaml,
-      entrypoint_command=entrypoint_command,
       source_path=source_path,
       runtime_base_image=None,
   )
@@ -102,7 +99,6 @@ def translate_from_source(
 def translate_from_exported_image(
     input_data: Mapping[str, any],
     service: str,
-    entrypoint_command: str,
     export_image_response: ExportImageResult,
 ) -> Sequence[str]:
   """Translates a deployed GAE version to Cloud Run command via image export.
@@ -110,7 +106,6 @@ def translate_from_exported_image(
   Args:
     input_data: The original input data, either from app.yaml or the Admin API.
     service: The App Engine service to migrate.
-    entrypoint_command: The entrypoint command for the Cloud Run service.
     export_image_response: An ExportImageResult object containing the exported
       image URI, runtime ID, and runtime base image.
 
@@ -131,7 +126,6 @@ def translate_from_exported_image(
   flags: Sequence[str] = _get_cloud_run_flags(
       input_data=input_data,
       input_flatten_as_appyaml=input_flatten_as_appyaml,
-      entrypoint_command=entrypoint_command,
       source_path=None,
       runtime_base_image=runtime_base_image,
   )
@@ -168,7 +162,6 @@ def translate_from_image(
   flags = _get_cloud_run_flags(
       input_data=input_data,
       input_flatten_as_appyaml=input_flatten_as_appyaml,
-      entrypoint_command=None,
       source_path=None,
       runtime_base_image=None,
   )
@@ -240,7 +233,6 @@ def _convert_admin_api_input_to_app_yaml(
 def _get_cloud_run_flags(
     input_data: Mapping[str, any],
     input_flatten_as_appyaml: Mapping[str, any],
-    entrypoint_command: str, *,
     source_path: str | None,
     runtime_base_image: str | None,
 ) -> Sequence[str]:
@@ -250,7 +242,6 @@ def _get_cloud_run_flags(
     input_data: The original input data, either from app.yaml or the Admin API.
     input_flatten_as_appyaml: A flattened mapping of the input data, with keys
       translated to their app.yaml equivalents.
-    entrypoint_command: The command to use as the container entrypoint.
     source_path: The path to the application's source code, if deploying from
       source. None if deploying from an image.
     runtime_base_image: The base image URL for the runtime, if provided during
@@ -270,6 +261,20 @@ def _get_cloud_run_flags(
       feature_helper.InputType.APP_YAML, feature_config.supported
   )
   project = properties.VALUES.core.project.Get()
+
+  derived_entrypoint = input_flatten_as_appyaml.get(
+      'entrypoint'
+  ) or input_flatten_as_appyaml.get('entrypoint.shell')
+
+  if source_path is not None:
+    entrypoint_flags = entrypoint.translate_entrypoint_features(
+        derived_entrypoint
+    )
+  elif derived_entrypoint:
+    entrypoint_flags = [f'--command={derived_entrypoint}']
+  else:
+    entrypoint_flags = []
+
   return (
       concurrent_requests.translate_concurrent_requests_features(
           input_flatten_as_appyaml, range_limited_features_app_yaml
@@ -283,7 +288,7 @@ def _get_cloud_run_flags(
           supported_features_app_yaml,
           project,
       )
-      + entrypoint.translate_entrypoint_features(entrypoint_command)
+      + entrypoint_flags
       + required_flags.translate_add_required_flags(
           input_data, source_path, runtime_base_image
       )

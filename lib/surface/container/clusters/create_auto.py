@@ -115,7 +115,7 @@ def AddAutoFlags(parser, release_track):
   flags.AddAdditiveVPCScopeFlags(parser)
   flags.AddIPAliasRelatedFlags(parser, autopilot=True)
   flags.AddEnableConfidentialNodesFlag(parser)
-  flags.AddConfidentialNodeTypeFlag(parser, hidden=True)
+  flags.AddConfidentialNodeTypeFlag(parser, hidden=False)
   flags.AddEnableLustreCSIDriverFlag(parser, hidden=False)
   flags.AddEnableRayOperatorFlag(parser, hidden=False)
   flags.AddEnableSlurmOperatorFlag(parser)

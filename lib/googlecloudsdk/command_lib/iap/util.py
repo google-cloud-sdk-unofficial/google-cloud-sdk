@@ -164,8 +164,6 @@ def AddIapIamResourceArgs(
   group.add_argument(
       '--resource-type',
       choices=choices,
-      hidden_choices=[AGENT_REGISTRY_RESOURCE_TYPE] if support_agent_registry
-      else None,
       help='Resource type of the IAP resource.',
   )
   group.add_argument('--service', help='Service name.')
@@ -188,26 +186,23 @@ def AddIapIamResourceArgs(
   )
 
   if support_agent_registry:
-    agent_group = group.add_mutually_exclusive_group(hidden=True)
+    agent_group = group.add_mutually_exclusive_group()
     agent_group.add_argument(
         '--agent',
-        hidden=True,
         help=(
             'Agent ID for the agent-registry resource type.'
         ),
     )
     agent_group.add_argument(
         '--mcp-server',
-        hidden=True,
         help=(
-            'MCP server address for the agent-registry resource type.'
+            'MCP server ID for the agent-registry resource type.'
         ),
     )
     agent_group.add_argument(
         '--endpoint',
-        hidden=True,
         help=(
-            'Endpoint for the agent-registry resource type.'
+            'Endpoint ID for the agent-registry resource type.'
         ),
     )
 
@@ -316,12 +311,14 @@ def AddIapTcpIamResourceArgs(
       choices=IAP_TCP_IAM_RESOURCE_TYPE_ENUM,
       help='Resource type of the IAP resource.',
   )
-  group.add_argument('--service', help='Service name.')
+  cr_group = group.add_mutually_exclusive_group()
+  cr_group.add_argument('--service', help='Service name.')
+  cr_group.add_argument('--instance', help='Instance ID.')
   group.add_argument(
       '--region',
       help=(
-          'Region name. Required when `--service` is specified for '
-          '`resource-type=cloud-run`.'
+          'Region name. Required when `--service` or `--instance` is specified '
+          'for `resource-type=cloud-run`.'
       ),
   )
 
@@ -792,15 +789,16 @@ def ParseIapTcpIamResource(release_track, args):
         '--resource-type',
         '`--resource-type` must be specified for IAP TCP IAM resources.',
     )
-  if not args.service:
+  if not args.service and not args.instance:
     return iap_api.IapTcpIamResources(
         release_track, project, tunnel_type='cloudRun', region=args.region
     )
   if not args.region:
+    flag = '--service' if args.service else '--instance'
     raise calliope_exc.InvalidArgumentException(
         '--region',
-        '`--region` must be specified for '
-        '`--resource-type=cloud-run` with `--service`.',
+        '`--region` must be specified for `--resource-type=cloud-run` with {}.'
+        .format(flag),
     )
   return iap_api.IapTcpIamResource(
       release_track,
@@ -808,5 +806,6 @@ def ParseIapTcpIamResource(release_track, args):
       tunnel_type='cloudRun',
       region=args.region,
       service=args.service,
+      instance=args.instance,
   )
 

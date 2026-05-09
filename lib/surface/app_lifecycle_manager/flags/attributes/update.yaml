@@ -1,11 +1,21 @@
 - release_tracks: [ALPHA, BETA]
   help_text:
     brief: Update Flag Attribute
-    description: Update a Flag Attribute.
-    examples: |-
-      To update Flag Attribute, run:
+    description: |-
+      Update the metadata of a Flag Attribute. This command allows you to modify labels and
+      annotations associated with the resource.
 
-          $ {command}
+      Flag Attributes are foundational resources that define the evaluation context such as
+      'userID', 'tenantID', or 'region' used by targeting rules and randomization algorithms
+      to determine flag values.
+
+      Note that core fields like the attribute key and value type are immutable after creation
+      to maintain evaluation consistency across your service. This command is primarily used
+      for categorization via labels or for attaching audit metadata via annotations.
+    examples: |-
+      To update labels and annotations for a flag attribute, run:
+
+          $ {command} my-attribute --location=global --labels=env=prod --annotations=ticket=123
   arguments:
     params:
     - help_text: |-

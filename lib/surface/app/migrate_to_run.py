@@ -140,10 +140,10 @@ class AppEngineToCloudRun(deploy.Deploy):
       'EXAMPLES': """\
           To migrate an App Engine app to Cloud Run:\n
           through app.yaml\n
-          gcloud app migrate-to-run --appyaml=path/to/app.yaml --entrypoint=main\n
+          gcloud app migrate-to-run --appyaml=path/to/app.yaml\n
           OR\n
           through service and version\n
-          gcloud app migrate-to-run --service=default --version=v1 --entrypoint=main\n
+          gcloud app migrate-to-run --service=default --version=v1\n
           """,
   }
 
@@ -160,21 +160,26 @@ class AppEngineToCloudRun(deploy.Deploy):
     parser.add_argument(
         '--appyaml',
         help=(
-            'YAML file for the second generation App Engine version to be'
-            ' migrated.'
+            'Path to the app.yaml file for the second generation App Engine'
+            ' version to be migrated. If not provided, the app.yaml present in'
+            ' the current directory is used.'
         ),
     )
     parser.add_argument(
         '--service',
-        help='service name that is deployed in App Engine',
+        help=(
+            'Name of the service that is deployed in App Engine. If specified,'
+            ' the configuration of the existing service will be used and'
+            ' app.yaml in the current directory will be ignored.'
+        ),
     )
     parser.add_argument(
         '--version',
-        help='version name that is deployed in App Engine',
-    )
-    parser.add_argument(
-        '--entrypoint',
-        help='entrypoint required for some runtimes',
+        help=(
+            'Name of the version that is deployed in App Engine. If specified,'
+            ' the configuration of the existing version will be used and'
+            ' app.yaml in the current directory will be ignored.'
+        ),
     )
 
   @classmethod
@@ -289,16 +294,6 @@ class AppEngineToCloudRun(deploy.Deploy):
       )
 
     print_deploy_command = ' '.join(cloud_run_deploy_command) + ' '
-    if args.entrypoint:
-      setattr(
-          args,
-          'set-build-env-vars',
-          {'GOOGLE_ENTRYPOINT': args.entrypoint},
-      )
-      print_deploy_command += (
-          ' --set-build-env-vars GOOGLE_ENTRYPOINT=' + args.entrypoint
-      )
-
     log.status.Print('Command to run:', print_deploy_command, '\n')
     setattr(args, 'SERVICE', cloud_run_deploy_command[3])
     self._migration_flags = []
@@ -456,7 +451,7 @@ class AppEngineToCloudRun(deploy.Deploy):
       )
     else:
       return translate.translate_from_source(
-          input_data, input_type, args.appyaml, args.service, args.entrypoint
+          input_data, input_type, args.appyaml, args.service
       )
 
   def _run_deploy_command_for_standard(
@@ -482,12 +477,11 @@ class AppEngineToCloudRun(deploy.Deploy):
       return translate.translate_from_exported_image(
           input_data,
           args.service,
-          args.entrypoint,
           export_image_response,
       )
     else:
       return translate.translate_from_source(
-          input_data, input_type, args.appyaml, args.service, args.entrypoint
+          input_data, input_type, args.appyaml, args.service
       )
 
 

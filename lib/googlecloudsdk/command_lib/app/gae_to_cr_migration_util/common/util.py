@@ -236,6 +236,7 @@ def _get_input_data_by_input_type(
         'livenessCheck': gcloud_output.livenessCheck,
         'readinessCheck': gcloud_output.readinessCheck,
         'resources': gcloud_output.resources,
+        'entrypoint': gcloud_output.entrypoint,
     }
     if gcloud_output.envVariables is not None:
       version_data.update(

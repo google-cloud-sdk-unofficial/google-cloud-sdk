@@ -61,7 +61,6 @@ def _Args(parser):
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.UniverseCompatible
 class Update(base.UpdateCommand):
   """Updates a node pool in a running cluster."""
 

@@ -50,6 +50,13 @@ However, the following command overwrites custom contexts on composed object:
 
   $ {command} gs://bucket/a.txt gs://bucket/b.txt gs://bucket/target.txt \
       --custom-contexts=key1=value1,key2=value2
+
+The following command creates a new object `target.txt` by concatenating
+`a.txt` and `b.txt`, and deletes the source objects after a successful
+composition:
+
+  $ {command} gs://bucket/a.txt gs://bucket/b.txt gs://bucket/target.txt \
+      --delete-source-objects
 """
 _ALPHA_EXAMPLES = """
 """
@@ -81,6 +88,15 @@ class Compose(base.Command):
     flags.add_encryption_flags(parser, hidden=True)
     flags.add_per_object_retention_flags(parser)
     flags.add_precondition_flags(parser)
+    parser.add_argument(
+        '--delete-source-objects',
+        action='store_true',
+        help=textwrap.dedent("""\
+            If set, the source objects will be deleted after a successful
+            composition. Note that this deletion bypasses the soft delete
+            policy if configured on the bucket.
+            """),
+    )
 
     context_group = flags.get_object_context_group(parser)
     flags.add_object_context_setter_flags(context_group)
@@ -102,7 +118,8 @@ class Compose(base.Command):
       raise errors.Error(
           'Verison-specific URLs are not valid destinations because'
           ' composing always results in creating an object with the'
-          ' latest generation.')
+          ' latest generation.'
+      )
 
     source_expansion_iterator = name_expansion.NameExpansionIterator(
         args.source,
@@ -120,6 +137,7 @@ class Compose(base.Command):
     compose_objects_task.ComposeObjectsTask(
         objects_to_compose,
         destination_resource,
+        delete_source_objects=args.delete_source_objects,
         print_status_message=True,
         user_request_args=user_request_args,
     ).execute()

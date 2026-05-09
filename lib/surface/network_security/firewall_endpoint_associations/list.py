@@ -51,6 +51,7 @@ table(
 """
 
 
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List Firewall Plus endpoint associations."""
 
@@ -60,15 +61,15 @@ class List(base.ListCommand):
     parser.display_info.AddUriFunc(
         association_flags.MakeGetUriFunc(cls.ReleaseTrack())
     )
-    association_flags.AddZoneArg(
-        parser, required=False, help_text='Zone for the list operation'
-    )
+    location_group = parser.add_mutually_exclusive_group(required=False)
+    association_flags.AddZoneArg(location_group, required=False, default='')
+    association_flags.AddLocationArg(location_group, required=False, default='')
 
   def Run(self, args):
     client = association_api.Client(self.ReleaseTrack())
 
     project = args.project or properties.VALUES.core.project.GetOrFail()
-    zone = args.zone or '-'
+    zone = args.zone or args.location or '-'
     parent = 'projects/{}/locations/{}'.format(project, zone)
 
     return client.ListAssociations(parent, args.limit, args.page_size)

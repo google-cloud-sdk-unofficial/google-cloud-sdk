@@ -1,8 +1,8 @@
 - release_tracks: [ALPHA, GA]
   help_text:
-    brief: Looks up LLM context for data assets.
+    brief: Looks up metadata that can be used as context by agents.
     description: |
-      Looks up LLM context for data assets.
+      Looks up metadata that can be used as context by agents.
 
       Fetches detailed contextual metadata for the specified data assets. Data assets can be
       identified by their Dataplex entry name.
@@ -28,6 +28,8 @@
     collection: dataplex.projects.locations
     api_version: v1
     method: lookupContext
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.dataplex.request_hooks:TransformLookupContextOptionsToRequest
 
   arguments:
     resource:
@@ -38,3 +40,18 @@
       is_positional: false
     params:
     - !REF googlecloudsdk.command_lib.dataplex.flags:resources
+    - arg_name: context-format
+      help_text: |
+        The output format of the command.
+      choices:
+      - arg_value: yaml
+      - arg_value: json
+      - arg_value: xml
+      default: yaml
+      is_positional: false
+    - arg_name: options
+      help_text: |
+        Additional options for the command. This can be provided as a JSON string.
+        Example: --options='{"key": "value"}'
+      is_positional: false
+      required: false

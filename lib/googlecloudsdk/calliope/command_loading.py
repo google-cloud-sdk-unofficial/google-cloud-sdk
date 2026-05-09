@@ -105,6 +105,7 @@ def FindSubElements(impl_paths, path):
   groups, commands = pkg_resources.ListPackage(
       impl_path, extra_extensions=['.yaml']
   )
+
   return (
       _GenerateElementInfo(impl_path, groups),
       _GenerateElementInfo(impl_path, commands),
@@ -235,6 +236,7 @@ def _GetAllImplementations(
   implementations = []
   for impl_file in impl_paths:
     if impl_file.endswith('.yaml'):
+
       if not is_command:
         raise CommandLoadFailure(
             '.'.join(path),
@@ -697,16 +699,18 @@ def _ImplementationsFromYaml(path, data, yaml_command_translator):
         Exception('No yaml command translator has been registered'),
     )
 
-  # pylint:disable=undefined-loop-variable, Linter is just wrong here.
-  # We need to use a default param on the lambda so that it captures the value
-  # of the variable at the time in the loop or else the closure will just have
-  # the last value that was iterated on.
+  # Filter out sidecar configurations for Python commands, as they should not
+  # be loaded as full declarative commands.
+  def _IsDeclarativeCommand(i):
+    return not i.get('is_python_command', False)
+
   implementations = [
       (
           lambda i=i: yaml_command_translator.Translate(path, i),
           {base.ReleaseTrack.FromId(t) for t in i.get('release_tracks', [])},
       )
       for i in command_release_tracks.SeparateDeclarativeCommandTracks(data)
+      if _IsDeclarativeCommand(i)
   ]
   return implementations
 
@@ -749,7 +753,7 @@ def _ExtractReleaseTrackImplementation(
 
   # There was more than one thing found, make sure there are no conflicts.
   implemented_release_tracks = set()
-  for impl, valid_tracks in implementations:
+  for _, valid_tracks in implementations:
     # When there are multiple definitions, they need to explicitly register
     # their track to keep things sane.
     if not valid_tracks:
