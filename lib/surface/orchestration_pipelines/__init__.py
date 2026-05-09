@@ -14,6 +14,7 @@
 # limitations under the License.
 """The command group for Orchestration Pipelines."""
 
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base as calliope_base
 
 
@@ -22,3 +23,7 @@ from googlecloudsdk.calliope import base as calliope_base
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.BETA)
 class OrchestrationPipelines(calliope_base.Group):
   """Manage Orchestration Pipelines resources."""
+
+  @staticmethod
+  def Args(parser):
+    pass

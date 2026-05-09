@@ -918,7 +918,7 @@ class ProjectSource(_messages.Message):
       executed against the same set of objects validated during the dry run.
       The value corresponds to the {job_id} segment of the resource name:
       `projects/{project}/locations/{location}/jobs/{job_id}`.
-    insightsDatasetConfig: Optional. The resource identifier of the Storage
+    insightsDatasetConfig: Required. The resource identifier of the Storage
       Insights dataset configuration. SBO uses the latest snapshot from this
       dataset as the source to list and filter target objects. This should be
       of the form: `projects/{project}/locations/{location}/datasetConfigs/{da

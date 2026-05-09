@@ -6214,9 +6214,9 @@ class GoogleCloudDataplexV1DataProfileSpec(_messages.Message):
         other fields such as sampling_percent, row_filter, and column filters.
         This mode allows for full scans or custom sampling.
       LIGHTWEIGHT: Specifies lightweight profiling mode. This mode is
-        optimized for low-latency low-fidelity profiling.When this mode is
-        selected, the following fields must not be set: - sampling_percent -
-        row_filter - include_fields - exclude_fields
+        optimized for low-latency, low-fidelity profiling.When this mode is
+        selected, the following fields must not be set: sampling_percent,
+        row_filter, include_fields, and exclude_fields.
     """
     MODE_UNSPECIFIED = 0
     STANDARD = 1

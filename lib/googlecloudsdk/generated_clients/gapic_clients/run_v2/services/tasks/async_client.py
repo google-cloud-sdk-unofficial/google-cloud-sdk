@@ -65,6 +65,8 @@ class TasksAsyncClient:
     _DEFAULT_ENDPOINT_TEMPLATE = TasksClient._DEFAULT_ENDPOINT_TEMPLATE
     _DEFAULT_UNIVERSE = TasksClient._DEFAULT_UNIVERSE
 
+    build_path = staticmethod(TasksClient.build_path)
+    parse_build_path = staticmethod(TasksClient.parse_build_path)
     connector_path = staticmethod(TasksClient.connector_path)
     parse_connector_path = staticmethod(TasksClient.parse_connector_path)
     crypto_key_path = staticmethod(TasksClient.crypto_key_path)

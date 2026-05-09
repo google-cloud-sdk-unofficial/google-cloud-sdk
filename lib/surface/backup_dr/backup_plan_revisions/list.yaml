@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, GA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: List backup plan revisions.
     description: List backup plan revisions in the project.

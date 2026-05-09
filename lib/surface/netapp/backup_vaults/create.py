@@ -56,6 +56,7 @@ class Create(base.CreateCommand):
     )
     backup_vault_type = None
     backup_region = None
+    cross_project_vault = None
 
     kms_config = args.kms_config
 
@@ -64,6 +65,7 @@ class Create(base.CreateCommand):
           args.backup_vault_type, client.messages
       )
       backup_region = args.backup_region
+      cross_project_vault = args.cross_project_vault
 
     backup_vault = client.ParseBackupVault(
         name=backupvault_ref.RelativeName(),
@@ -73,6 +75,7 @@ class Create(base.CreateCommand):
         backup_vault_type=backup_vault_type,
         backup_region=backup_region,
         kms_config=kms_config,
+        cross_project_vault=cross_project_vault,
     )
     result = client.CreateBackupVault(
         backupvault_ref, args.async_, backup_vault

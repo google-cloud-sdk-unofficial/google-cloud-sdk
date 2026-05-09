@@ -16,6 +16,7 @@
 
 import hashlib
 import pathlib
+import subprocess
 
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
@@ -31,31 +32,44 @@ class GitError(exceptions.Error):
 class SafeCommitSha:
   """A helper class to represent a commit SHA that might be dirty."""
 
-  def __init__(self, git_context):
-    self._git_context = git_context
+  def __init__(self, git_context_provider):
+    self._git_context_provider = git_context_provider
+    self._git_context = None
+
+  @staticmethod
+  def CreateLazy(bundle_path=None, is_local=False):
+    """Creates a SafeCommitSha that lazily instantiates GitContext."""
+    return SafeCommitSha(
+        lambda: GitContext(
+            bundle_path=bundle_path,
+            is_local=is_local,
+        )
+    )
+
+  def _GetGitContext(self):
+    if self._git_context is None:
+      self._git_context = self._git_context_provider()
+    return self._git_context
 
   def __str__(self):
     """Returns the SHA string, checking for dirty state if necessary."""
-    self._git_context.EnforceClean()
-    if not self._git_context.commit_sha:
+    ctx = self._GetGitContext()
+    ctx.EnforceClean()
+    if not ctx.commit_sha:
       raise GitError(
           "--local mode generates a version hash that cannot be used "
           "for COMMIT_SHA. Please provide COMMIT_SHA explicitly."
       )
-    return self._git_context.commit_sha
+    return ctx.commit_sha
 
   def __repr__(self):
-    return self._git_context.commit_sha
+    return self.__str__()
 
 
 class GitContext:
   """Manages git status and commit SHA."""
 
-  def __init__(
-      self, subprocess_mod, override_version=None,
-      bundle_path=None, is_local=False
-  ):
-    self._subprocess = subprocess_mod
+  def __init__(self, override_version=None, bundle_path=None, is_local=False):
     self._override_version = override_version
     self.is_explicit_version = bool(override_version)
     self._bundle_path = bundle_path
@@ -85,41 +99,39 @@ class GitContext:
     try:
       self._changes = self._GetUncommittedChanges()
       self._is_dirty = bool(self._changes)
-    except (self._subprocess.CalledProcessError, FileNotFoundError):
+    except (subprocess.CalledProcessError, FileNotFoundError):
       # No git repo or command failed -> Ignore
       self._is_dirty = False
 
     try:
       if self._bundle_path:
         try:
-          computed_sha = self._subprocess.check_output(
+          computed_sha = subprocess.check_output(
               ["git", "rev-parse", f"HEAD:{self._bundle_path.name}"],
               text=True,
-              stderr=self._subprocess.DEVNULL,
+              stderr=subprocess.DEVNULL,
           ).strip()
           self._version = computed_sha
           self._commit_sha = computed_sha
           return
-        except self._subprocess.CalledProcessError:
+        except subprocess.CalledProcessError:
           pass
 
-      computed_sha = (
-          self._subprocess.check_output(
-              ["git", "rev-parse", "HEAD"],
-              text=True,
-              stderr=self._subprocess.DEVNULL,
-          ).strip()
-      )
+      computed_sha = subprocess.check_output(
+          ["git", "rev-parse", "HEAD"],
+          text=True,
+          stderr=subprocess.DEVNULL,
+      ).strip()
       self._version = computed_sha
       self._commit_sha = computed_sha
-    except (self._subprocess.CalledProcessError, FileNotFoundError):
+    except (subprocess.CalledProcessError, FileNotFoundError):
       self._version = None
       self._commit_sha = None
 
   def _GetUncommittedChanges(self):
     """Returns a list of uncommitted changes, or empty list if clean."""
     try:
-      status_output = self._subprocess.check_output(
+      status_output = subprocess.check_output(
           ["git", "status", "--porcelain"], text=True
       ).strip()
       if status_output:
@@ -130,11 +142,11 @@ class GitContext:
         ]
         return real_changes
       return []
-    except self._subprocess.CalledProcessError:
+    except subprocess.CalledProcessError:
       return []
 
   def GetSafeCommitSha(self):
-    return SafeCommitSha(self)
+    return SafeCommitSha(lambda: self)
 
   def EnforceClean(self):
     """Enforces that the working copy is clean."""
@@ -233,25 +245,23 @@ class GitContext:
       return True
 
     try:
-      self._subprocess.check_call(
+      subprocess.check_call(
           ["git", "cat-file", "-t", remote_sha],
       )
-    except self._subprocess.CalledProcessError:
+    except subprocess.CalledProcessError:
       log.error("Remote version %s not found in local git history.", remote_sha)
       return False
 
     try:
-      self._subprocess.check_call(
-          [
-              "git",
-              "merge-base",
-              "--is-ancestor",
-              remote_sha,
-              self._version,
-          ]
-      )
+      subprocess.check_call([
+          "git",
+          "merge-base",
+          "--is-ancestor",
+          remote_sha,
+          self._version,
+      ])
       return True
-    except self._subprocess.CalledProcessError:
+    except subprocess.CalledProcessError:
       log.error(
           "REGRESSION BLOCKED: The remote version (%s) is ahead of your local"
           " version (%s). Please pull the latest changes before deploying.",
@@ -307,34 +317,34 @@ class GitContext:
     git_branch = "unknown"
 
     try:
-      git_branch = self._subprocess.check_output(
+      git_branch = subprocess.check_output(
           ["git", "rev-parse", "--abbrev-ref", "HEAD"],
           text=True,
-          stderr=self._subprocess.DEVNULL,
+          stderr=subprocess.DEVNULL,
       ).strip()
-    except (self._subprocess.CalledProcessError, FileNotFoundError):
+    except (subprocess.CalledProcessError, FileNotFoundError):
       pass
 
     remote_name = "origin"
     if git_branch != "unknown":
       try:
-        configured_remote = self._subprocess.check_output(
+        configured_remote = subprocess.check_output(
             ["git", "config", "--get", f"branch.{git_branch}.remote"],
             text=True,
-            stderr=self._subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
         ).strip()
         if configured_remote:
           remote_name = configured_remote
-      except (self._subprocess.CalledProcessError, FileNotFoundError):
+      except (subprocess.CalledProcessError, FileNotFoundError):
         pass
 
     try:
-      git_repo = self._subprocess.check_output(
+      git_repo = subprocess.check_output(
           ["git", "remote", "get-url", remote_name],
           text=True,
-          stderr=self._subprocess.DEVNULL,
+          stderr=subprocess.DEVNULL,
       ).strip()
-    except (self._subprocess.CalledProcessError, FileNotFoundError):
+    except (subprocess.CalledProcessError, FileNotFoundError):
       pass
 
     return {

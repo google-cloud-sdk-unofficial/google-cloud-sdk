@@ -3688,6 +3688,7 @@ class Publishing(_messages.Message):
       SHOPPING: Shopping Org.
       GEO: Geo Org.
       GENERATIVE_AI: Generative AI - https://developers.generativeai.google
+      HEALTH: Health Org.
     """
     CLIENT_LIBRARY_ORGANIZATION_UNSPECIFIED = 0
     CLOUD = 1
@@ -3697,6 +3698,7 @@ class Publishing(_messages.Message):
     SHOPPING = 5
     GEO = 6
     GENERATIVE_AI = 7
+    HEALTH = 8
 
   apiShortName = _messages.StringField(1)
   codeownerGithubTeams = _messages.StringField(2, repeated=True)

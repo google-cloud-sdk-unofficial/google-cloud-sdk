@@ -78,13 +78,18 @@ class Client(sp_api.Client):
       analyze_shell=None,
       analyze_ooxml=None,
       analyze_macho=None,
+      labels=None,
   ):
     """Calls the Update Security Profile API to update a WildFire Analysis Profile."""
-    profile = self.messages.SecurityProfile()
+    profile = self.messages.SecurityProfile(
+        description=description, labels=labels
+    )
     update_mask = []
     if description is not None:
-      profile.description = description
       update_mask.append('description')
+
+    if labels is not None:
+      update_mask.append('labels')
 
     wf_profile_to_update = False
     wf_profile_kwargs = {}

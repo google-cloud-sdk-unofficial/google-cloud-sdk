@@ -18,6 +18,8 @@
 from googlecloudsdk.api_lib.firestore import api_utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import exceptions as ex
+from googlecloudsdk.core.util import iso_duration
+from googlecloudsdk.core.util import times
 
 
 def _GetBackupSchedulesService():
@@ -113,8 +115,8 @@ def UpdateBackupSchedule(project, database, backup_schedule, retention):
   messages = api_utils.GetMessages()
   backup_schedule_updates = messages.GoogleFirestoreAdminV1BackupSchedule()
   if retention:
-    backup_schedule_updates.retention = api_utils.FormatDurationString(
-        retention
+    backup_schedule_updates.retention = times.FormatDurationForJson(
+        iso_duration.Duration(seconds=retention)
     )
 
   return _GetBackupSchedulesService().Patch(
@@ -156,7 +158,9 @@ def CreateBackupSchedule(
   """
   messages = api_utils.GetMessages()
   backup_schedule = messages.GoogleFirestoreAdminV1BackupSchedule()
-  backup_schedule.retention = api_utils.FormatDurationString(retention)
+  backup_schedule.retention = times.FormatDurationForJson(
+      iso_duration.Duration(seconds=retention)
+  )
   if recurrence == 'daily':
     if day_of_week is not None:
       raise ex.ConflictingArgumentsException(

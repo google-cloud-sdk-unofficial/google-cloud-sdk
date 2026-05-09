@@ -2843,7 +2843,7 @@ def AddPscAutoConnections(parser, hidden=False):
   )
 
 
-def AddEnablePscAutoDns(parser, hidden=True):
+def AddEnablePscAutoDns(parser, hidden=False):
   """Adds --enable-psc-auto-dns flag."""
   parser.add_argument(
       '--enable-psc-auto-dns',
@@ -2854,7 +2854,7 @@ def AddEnablePscAutoDns(parser, hidden=True):
   )
 
 
-def AddEnablePscWriteEndpointDns(parser, hidden=True):
+def AddEnablePscWriteEndpointDns(parser, hidden=False):
   """Adds --enable-psc-write-endpoint-dns flag."""
   parser.add_argument(
       '--enable-psc-write-endpoint-dns',

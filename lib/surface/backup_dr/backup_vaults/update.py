@@ -305,3 +305,58 @@ class UpdateAlpha(Update):
 
   def Run(self, args):
     return _run(self, args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Update a Backup and DR backup vault."""
+
+  @staticmethod
+  def Args(parser):
+    """Specifies additional command flags.
+
+    Args:
+      parser: argparse.Parser: Parser object for command line inputs.
+    """
+    _add_common_args(parser)
+
+  def ParseUpdateBv(self, args: argparse.Namespace, client: BackupVaultsClient):
+    """Parses the update backup vault arguments.
+
+    Args:
+      args: argparse.Namespace, An object that contains the values for the
+        arguments specified in the .Args() method.
+      client: BackupVaultsClient, The client to use to parse the backup vault.
+
+    Returns:
+      A parsed backup vault object.
+    """
+    (
+        backup_min_enforced_retention,
+        description,
+        effective_time,
+        access_restriction,
+    ) = _parse_update_bv(args)
+
+    return client.ParseUpdate(
+        description=description,
+        backup_min_enforced_retention=backup_min_enforced_retention,
+        effective_time=effective_time,
+        access_restriction=access_restriction,
+    )
+
+  def GetUpdateMask(self, args: argparse.Namespace) -> str:
+    """Returns the update mask for the update command.
+
+    Args:
+      args: argparse.Namespace, An object that contains the values for the
+        arguments specified in the .Args() method.
+
+    Returns:
+      A string containing the update mask.
+    """
+    mask = _add_common_update_mask(args)
+    return mask
+
+  def Run(self, args):
+    return _run(self, args)

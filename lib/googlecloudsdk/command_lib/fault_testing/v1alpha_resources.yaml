@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,6 +30,18 @@ projects_locations:
     attribute_name: location
     help: The location id of the {resource} resource.
   disable_auto_completers: true
+projects_locations_exclusion_windows:
+  name: exclusionWindow
+  plural_name: exclusionWindows
+  collection: faulttesting.projects.locations.exclusionWindows
+  attributes:
+  - *project
+  - *location
+  - &exclusionWindow
+    parameter_name: exclusionWindowsId
+    attribute_name: exclusion_window
+    help: The exclusionWindow id of the {resource} resource.
+  disable_auto_completers: false
 projects_locations_experiment_templates:
   name: experimentTemplate
   plural_name: experimentTemplates

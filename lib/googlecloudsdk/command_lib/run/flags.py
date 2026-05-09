@@ -1887,6 +1887,18 @@ def AddInvokerIamCheckFlag(parser):
   )
 
 
+def AddPublicFlag(parser):
+  """Add flag to make the service public."""
+  parser.add_argument(
+      '--public',
+      action='store_true',
+      help=(
+          'Make the service public by disabling invoker IAM checks and IAP. '
+          'Equivalent to setting --no-invoker-iam-check and --no-iap.'
+      ),
+  )
+
+
 def AddRegionsArg(parser, hidden=False):
   """Add a multi-regional 'regions' arg."""
   parser.add_argument(
@@ -2994,6 +3006,9 @@ def _GetConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
     changes.append(config_changes.ResourceChanges(gpu=args.gpu))
     if args.gpu == '0':
       changes.append(config_changes.GpuTypeChange(gpu_type=''))
+      changes.append(
+          config_changes.GpuZonalRedundancyChange(gpu_zonal_redundancy=None)
+      )
   if FlagIsExplicitlySet(args, 'gpu_zonal_redundancy'):
     changes.append(
         config_changes.GpuZonalRedundancyChange(
@@ -3438,6 +3453,8 @@ def _GetContainerConfigurationChanges(container_args, container_name=None):
 
 def _GetIapChanges(args):
   """Returns the list of changes for IAP for given args."""
+  if FlagIsExplicitlySet(args, 'public') and args.public:
+    return [config_changes.DeleteAnnotationChange(service.IAP_ANNOTATION)]
   if getattr(args, 'iap', None) is None:
     # flag not specified in the current command, carry over the existing value
     # on the Service
@@ -3504,6 +3521,8 @@ def GetServiceConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
             invoker_iam_check=args.invoker_iam_check
         )
     )
+  elif FlagIsExplicitlySet(args, 'public') and args.public:
+    changes.append(config_changes.InvokerIamChange(invoker_iam_check=False))
   if FlagIsExplicitlySet(args, 'session_affinity'):
     if args.session_affinity:
       changes.append(
@@ -3902,7 +3921,7 @@ def GetAllowUnauthenticated(
   if (
       FlagIsExplicitlySet(args, 'invoker_iam_check')
       and not args.invoker_iam_check
-  ):
+  ) or (FlagIsExplicitlySet(args, 'public') and args.public):
     return None
   if prompt:
     # Need to check if the user has permissions before we prompt
@@ -3921,6 +3940,27 @@ def GetAllowUnauthenticated(
           'This service will require authentication to be invoked.'
       )
   return None
+
+
+def ValidatePublicFlags(args):
+  """Validates that --public is not used with conflicting flags."""
+  if FlagIsExplicitlySet(args, 'public') and args.public:
+    if FlagIsExplicitlySet(args, 'iap') and args.iap:
+      raise c_exceptions.ConflictingArgumentsException('--public', '--iap')
+    if (
+        FlagIsExplicitlySet(args, 'invoker_iam_check')
+        and args.invoker_iam_check
+    ):
+      raise c_exceptions.ConflictingArgumentsException(
+          '--public', '--invoker-iam-check'
+      )
+    if (
+        FlagIsExplicitlySet(args, 'allow_unauthenticated')
+        and not args.allow_unauthenticated
+    ):
+      raise c_exceptions.ConflictingArgumentsException(
+          '--public', '--no-allow-unauthenticated'
+      )
 
 
 def GetKubeconfig(file_path=None):

@@ -57,6 +57,7 @@ _DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   r"""List certificates within a project.

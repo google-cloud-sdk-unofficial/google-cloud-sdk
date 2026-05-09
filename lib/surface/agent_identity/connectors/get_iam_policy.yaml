@@ -1,0 +1,19 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Get the IAM policy for an Agent Identity connector.
+    description: |
+      This command gets the IAM policy for a connector.
+    examples: |
+      To print the IAM policy for a given connector, run:
+
+        $ {command} my-connector --location=LOCATION
+
+  request:
+    api_version: v1alpha
+    collection: iamconnectors.projects.locations.connectors
+
+  arguments:
+    resource:
+      help_text: The connector for which to display the IAM policy.
+      spec: !REF googlecloudsdk.command_lib.agent_identity.v1alpha_resources:projects_locations_connectors

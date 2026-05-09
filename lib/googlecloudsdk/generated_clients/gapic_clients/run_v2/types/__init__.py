@@ -49,6 +49,7 @@ from .job import (
     UpdateJobRequest,
 )
 from .k8s_min import (
+    BuildConfiguration,
     BuildInfo,
     CloudSqlInstance,
     Container,
@@ -158,6 +159,7 @@ __all__ = (
     'ListJobsResponse',
     'RunJobRequest',
     'UpdateJobRequest',
+    'BuildConfiguration',
     'BuildInfo',
     'CloudSqlInstance',
     'Container',

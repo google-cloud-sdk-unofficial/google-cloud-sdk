@@ -1149,7 +1149,7 @@ class RunV2(base_api.BaseApiClient):
         method_id='run.projects.locations.services.patch',
         ordered_params=['name'],
         path_params=['name'],
-        query_params=['allowMissing', 'forceNewRevision', 'updateMask', 'validateOnly'],
+        query_params=['allowMissing', 'forceBuild', 'forceNewRevision', 'updateMask', 'validateOnly'],
         relative_path='v2/{+name}',
         request_field='googleCloudRunV2Service',
         request_type_name='RunProjectsLocationsServicesPatchRequest',

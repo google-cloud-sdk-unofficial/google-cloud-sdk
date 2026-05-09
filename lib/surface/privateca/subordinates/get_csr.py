@@ -20,6 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.privateca import resource_args
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class GetCsr(base.Command):
   # pylint: disable=line-too-long

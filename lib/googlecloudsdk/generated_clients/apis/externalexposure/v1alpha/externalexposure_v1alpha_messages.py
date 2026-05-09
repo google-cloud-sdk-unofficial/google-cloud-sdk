@@ -589,6 +589,8 @@ class ScanMetrics(_messages.Message):
   r"""Singleton resource representing the latest scan metrics.
 
   Fields:
+    detectedPorts: Output only. Ports detected as externally exposed in the
+      last completed scan.
     exposedTargetsCount: Output only. Number of targets found to be externally
       exposed.
     exposedUiTargetsCount: Output only. Number of exposed targets with exposed
@@ -603,6 +605,8 @@ class ScanMetrics(_messages.Message):
     nextScanTime: Output only. Timestamp of the next scheduled batch scan. If
       metrics are aggregated over a scope (e.g. folder or organization), this
       field is skipped.
+    scannedProjectsCount: Output only. Number of projects scanned in the last
+      completed scan.
     scannedResourcesCount: Output only. Number of resources scanned in the
       last completed scan.
     scannedTargetsCount: Output only. Number of target (IP:Port combinations)
@@ -611,14 +615,16 @@ class ScanMetrics(_messages.Message):
       weak credentials detected.
   """
 
-  exposedTargetsCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  exposedUiTargetsCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  latestScanTime = _messages.StringField(3)
-  name = _messages.StringField(4)
-  nextScanTime = _messages.StringField(5)
-  scannedResourcesCount = _messages.IntegerField(6, variant=_messages.Variant.INT32)
-  scannedTargetsCount = _messages.IntegerField(7, variant=_messages.Variant.INT32)
-  weakCredentialsTargetsCount = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+  detectedPorts = _messages.IntegerField(1, repeated=True, variant=_messages.Variant.INT32)
+  exposedTargetsCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  exposedUiTargetsCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  latestScanTime = _messages.StringField(4)
+  name = _messages.StringField(5)
+  nextScanTime = _messages.StringField(6)
+  scannedProjectsCount = _messages.IntegerField(7, variant=_messages.Variant.INT32)
+  scannedResourcesCount = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+  scannedTargetsCount = _messages.IntegerField(9, variant=_messages.Variant.INT32)
+  weakCredentialsTargetsCount = _messages.IntegerField(10, variant=_messages.Variant.INT32)
 
 
 class StandardQueryParameters(_messages.Message):

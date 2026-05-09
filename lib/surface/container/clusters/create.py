@@ -627,12 +627,10 @@ def AddEnableAutoUpgradeWithDefault(parser):
   flags.AddEnableAutoUpgradeFlag(parser, default=True)
 
 
-def AddAutoprovisioning(parser, napless=False):
+def AddAutoprovisioning(parser):
   flags.AddAutoprovisioningFlags(
       parser,
       hidden=False,
-      for_create=True,
-      napless=napless,
   )
 
 
@@ -885,7 +883,7 @@ flags_to_add = {
         'autopilotPrivilegedAdmission': (
             flags.AddAutopilotPrivilegedAdmissionFlag
         ),
-        'podsnapshots': lambda p: flags.AddPodSnapshotConfigFlags(p, hidden=True),
+        'podsnapshots': flags.AddPodSnapshotConfigFlags,
         'enableKernelModuleSignatureEnforcement': (
             flags.AddEnableKernelModuleSignatureEnforcementFlag
         ),
@@ -901,7 +899,7 @@ flags_to_add = {
         'allowrouteoverlap': flags.AddAllowRouteOverlapFlag,
         'args': _Args,
         'autorepair': AddAutoRepair,
-        'autoprovisioning': lambda p: AddAutoprovisioning(p, napless=True),
+        'autoprovisioning': AddAutoprovisioning,
         'autoscalingprofiles': flags.AddAutoscalingProfilesFlag,
         'authenticatorsecurity': flags.AddAuthenticatorSecurityGroupFlags,
         'autoupgrade': AddEnableAutoUpgradeWithDefault,
@@ -1147,7 +1145,7 @@ flags_to_add = {
         'allowrouteoverlap': flags.AddAllowRouteOverlapFlag,
         'args': _Args,
         'authenticatorsecurity': flags.AddAuthenticatorSecurityGroupFlags,
-        'autoprovisioning': lambda p: AddAutoprovisioning(p, napless=True),
+        'autoprovisioning': AddAutoprovisioning,
         'autorepair': AddAutoRepair,
         'autoscalingprofiles': flags.AddAutoscalingProfilesFlag,
         'autopilotworkloadpolicies': flags.AddAutopilotWorkloadPoliciesFlag,

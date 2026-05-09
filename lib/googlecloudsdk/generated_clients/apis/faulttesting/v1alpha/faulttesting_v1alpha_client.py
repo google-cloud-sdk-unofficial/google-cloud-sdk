@@ -37,6 +37,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
         default_global_params=default_global_params,
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
+    self.projects_locations_exclusionWindows = self.ProjectsLocationsExclusionWindowsService(self)
     self.projects_locations_experimentTemplates = self.ProjectsLocationsExperimentTemplatesService(self)
     self.projects_locations_experiments_affectedResources = self.ProjectsLocationsExperimentsAffectedResourcesService(self)
     self.projects_locations_experiments = self.ProjectsLocationsExperimentsService(self)
@@ -45,6 +46,205 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
     self.projects_locations_validations = self.ProjectsLocationsValidationsService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects = self.ProjectsService(self)
+
+  class ProjectsLocationsExclusionWindowsService(base_api.BaseApiService):
+    """Service class for the projects_locations_exclusionWindows resource."""
+
+    _NAME = 'projects_locations_exclusionWindows'
+
+    def __init__(self, client):
+      super(FaulttestingV1alpha.ProjectsLocationsExclusionWindowsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""CreateExclusionWindow creates a new ExclusionWindow. Once created, an ExclusionWindow must be started with StartExclusionWindow to take effect.
+
+      Args:
+        request: (FaulttestingProjectsLocationsExclusionWindowsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ExclusionWindow) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/exclusionWindows',
+        http_method='POST',
+        method_id='faulttesting.projects.locations.exclusionWindows.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['exclusionWindowId'],
+        relative_path='v1alpha/{+parent}/exclusionWindows',
+        request_field='exclusionWindow',
+        request_type_name='FaulttestingProjectsLocationsExclusionWindowsCreateRequest',
+        response_type_name='ExclusionWindow',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""DeleteExclusionWindow deletes an ExclusionWindow.
+
+      Args:
+        request: (FaulttestingProjectsLocationsExclusionWindowsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/exclusionWindows/{exclusionWindowsId}',
+        http_method='DELETE',
+        method_id='faulttesting.projects.locations.exclusionWindows.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='FaulttestingProjectsLocationsExclusionWindowsDeleteRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Get the details of an ExclusionWindow.
+
+      Args:
+        request: (FaulttestingProjectsLocationsExclusionWindowsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ExclusionWindow) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/exclusionWindows/{exclusionWindowsId}',
+        http_method='GET',
+        method_id='faulttesting.projects.locations.exclusionWindows.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='FaulttestingProjectsLocationsExclusionWindowsGetRequest',
+        response_type_name='ExclusionWindow',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""ListExclusionWindows lists all ExclusionWindows in a project and region, or all ExclusionWindows in a project in all regions if the location is given as "-".
+
+      Args:
+        request: (FaulttestingProjectsLocationsExclusionWindowsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListExclusionWindowsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/exclusionWindows',
+        http_method='GET',
+        method_id='faulttesting.projects.locations.exclusionWindows.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/exclusionWindows',
+        request_field='',
+        request_type_name='FaulttestingProjectsLocationsExclusionWindowsListRequest',
+        response_type_name='ListExclusionWindowsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""UpdateExclusionWindow updates an ExclusionWindow.
+
+      Args:
+        request: (FaulttestingProjectsLocationsExclusionWindowsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ExclusionWindow) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/exclusionWindows/{exclusionWindowsId}',
+        http_method='PATCH',
+        method_id='faulttesting.projects.locations.exclusionWindows.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1alpha/{+name}',
+        request_field='exclusionWindow',
+        request_type_name='FaulttestingProjectsLocationsExclusionWindowsPatchRequest',
+        response_type_name='ExclusionWindow',
+        supports_download=False,
+    )
+
+    def Start(self, request, global_params=None):
+      r"""StartExclusionWindow starts (or restarts) an existing ExclusionWindow. This sets start_time to the current time and end_time to current time plus duration.
+
+      Args:
+        request: (FaulttestingProjectsLocationsExclusionWindowsStartRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ExclusionWindow) The response message.
+      """
+      config = self.GetMethodConfig('Start')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Start.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/exclusionWindows/{exclusionWindowsId}:start',
+        http_method='POST',
+        method_id='faulttesting.projects.locations.exclusionWindows.start',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:start',
+        request_field='startExclusionWindowRequest',
+        request_type_name='FaulttestingProjectsLocationsExclusionWindowsStartRequest',
+        response_type_name='ExclusionWindow',
+        supports_download=False,
+    )
+
+    def Stop(self, request, global_params=None):
+      r"""StopExclusionWindow stops an active ExclusionWindow. This sets end_time to the current time.
+
+      Args:
+        request: (FaulttestingProjectsLocationsExclusionWindowsStopRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ExclusionWindow) The response message.
+      """
+      config = self.GetMethodConfig('Stop')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Stop.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/exclusionWindows/{exclusionWindowsId}:stop',
+        http_method='POST',
+        method_id='faulttesting.projects.locations.exclusionWindows.stop',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:stop',
+        request_field='stopExclusionWindowRequest',
+        request_type_name='FaulttestingProjectsLocationsExclusionWindowsStopRequest',
+        response_type_name='ExclusionWindow',
+        supports_download=False,
+    )
 
   class ProjectsLocationsExperimentTemplatesService(base_api.BaseApiService):
     """Service class for the projects_locations_experimentTemplates resource."""
@@ -57,7 +257,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""CreateExperimentTemplate creates a new experiment template.
+      r"""Creates a new experiment template. You can use this template to create multiple `Experiment` instances.
 
       Args:
         request: (FaulttestingProjectsLocationsExperimentTemplatesCreateRequest) input message
@@ -84,7 +284,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""DeleteExperimentTemplate deletes an experiment template.
+      r"""Deletes an experiment template.
 
       Args:
         request: (FaulttestingProjectsLocationsExperimentTemplatesDeleteRequest) input message
@@ -111,7 +311,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""GetExperimentTemplate gets an experiment template.
+      r"""Retrieves the details of a specific experiment template.
 
       Args:
         request: (FaulttestingProjectsLocationsExperimentTemplatesGetRequest) input message
@@ -138,7 +338,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""ListExperimentTemplates lists all experiment templates in a project.
+      r"""Lists all experiment templates in a specified project and location.
 
       Args:
         request: (FaulttestingProjectsLocationsExperimentTemplatesListRequest) input message
@@ -165,7 +365,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""UpdateExperimentTemplate updates an experiment template.
+      r"""Updates an existing experiment template.
 
       Args:
         request: (FaulttestingProjectsLocationsExperimentTemplatesPatchRequest) input message
@@ -202,7 +402,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Get the details of an affected resource.
+      r"""Gets the details of a specific cloud resource that is being or was affected by a particular `Experiment`. The response includes the resource's state within the `Experiment`.
 
       Args:
         request: (FaulttestingProjectsLocationsExperimentsAffectedResourcesGetRequest) input message
@@ -229,7 +429,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""List all the affected resources for a given experiment.
+      r"""Lists all cloud resources that are being or were affected by a specific `Experiment`. This method is useful for seeing the scope of an `Experiment` and the status of each resource involved.
 
       Args:
         request: (FaulttestingProjectsLocationsExperimentsAffectedResourcesListRequest) input message
@@ -266,7 +466,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""CreateExperiment creates a new experiment. If experiment.experiment_template is specified, a regular experiment is created. If experiment.action is specified, a template-validation experiment is created. Either way, the initial state will be PREPARING. If it's a regular Experiment, when the system is finished preparing it, the state will change to PREPARED, after which it can be started. If it's a template validation Experiment, the state will go directly from PREPARING to COMPLETED.
+      r"""Creates an `Experiment` and prepares it to run by identifying all cloud resources that will be affected. The `Experiment` starts in the `PREPARING` state and transitions to `PREPARED` once the resources are identified. You can then list these resources using the [`list` method for `AffectedResources`](list.html). To execute the `Experiment`, call [`start`](start.html) on the `Experiment` after it reaches the `PREPARED` state.
 
       Args:
         request: (FaulttestingProjectsLocationsExperimentsCreateRequest) input message
@@ -293,7 +493,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""DeleteExperiment deletes an experiment. Running experiments must be stopped first.
+      r"""Deletes an `Experiment` record. The `Experiment` must be in a `COMPLETED` state before it can be deleted.
 
       Args:
         request: (FaulttestingProjectsLocationsExperimentsDeleteRequest) input message
@@ -320,7 +520,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""GetExperiment gets an experiment.
+      r"""Returns a single `Experiment` resource, including its current state and configuration.
 
       Args:
         request: (FaulttestingProjectsLocationsExperimentsGetRequest) input message
@@ -347,7 +547,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""ListExperiments lists all experiments in a project.
+      r"""Lists all experiments in a specified project and location.
 
       Args:
         request: (FaulttestingProjectsLocationsExperimentsListRequest) input message
@@ -374,7 +574,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
     )
 
     def Start(self, request, global_params=None):
-      r"""StartExperiment starts an existing experiment. The experiment must already be in the PREPARED state. On return, the new state will be INJECTING. When injection is complete, the state becomes INJECTED.
+      r"""Starts an existing `Experiment`. The `Experiment` must already be in the `PREPARED` state. This method initiates the fault injection process. The `Experiment` state will transition to `INJECTING` and then to `INJECTED` once the fault is active.
 
       Args:
         request: (FaulttestingProjectsLocationsExperimentsStartRequest) input message
@@ -401,7 +601,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
     )
 
     def Stop(self, request, global_params=None):
-      r"""StopExperiment stops a running experiment. On return, the new state will be REVERTING. Once the revert process completes it will become COMPLETED.
+      r"""Stops a running `Experiment`. This method initiates the process of reverting any changes made by the `Experiment`, returning the affected resources to their normal state. The `Experiment` state will transition to `REVERTING` and then to `COMPLETED`.
 
       Args:
         request: (FaulttestingProjectsLocationsExperimentsStopRequest) input message
@@ -428,7 +628,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
     )
 
     def StopAll(self, request, global_params=None):
-      r"""StopAllExperiments stops all running experiments for a given project and location. On return, the process of stopping all experiments will have begun, but may not be completed. Call ListExperiments with filter="state!=COMPLETED" to check the progress. Returns an RPC error if it can't list experiments at all. Otherwise, it lists and stops all experiments it can, and returns a response including success count and a list of errors. If there are no experiments to stop, it returns successfully with an empty response message.
+      r"""Stops all running experiments in a given location for a given project. This method initiates the process of reverting any changes made by the experiments, returning the affected resources to their normal state. The `Experiment` states will transition to `REVERTING` and then to `COMPLETED`. Returns an RPC error if it can't list experiments at all. Otherwise, it lists and stops all experiments it can, and returns a response including success count and a list of errors. If there are no experiments to stop, it returns successfully with an empty response message.
 
       Args:
         request: (FaulttestingProjectsLocationsExperimentsStopAllRequest) input message
@@ -583,7 +783,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Get the details of a ValidationResource.
+      r"""Gets the details of a specific `ValidationResource`. This field shows a resource that was flagged as potentially affected by the `Action` defined in the parent `Validation`.
 
       Args:
         request: (FaulttestingProjectsLocationsValidationsValidationResourcesGetRequest) input message
@@ -610,7 +810,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""List all the validation resources for a given Validation.
+      r"""Lists all cloud resources identified as potentially affected within a specific `Validation` dry run.
 
       Args:
         request: (FaulttestingProjectsLocationsValidationsValidationResourcesListRequest) input message
@@ -647,7 +847,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""CreateValidation creates a new template validation. The initial state will be PREPARING. When finished, it will change to COMPLETED.
+      r"""Creates a new `Validation` dry run. This process involves analyzing the provided `Action` to identify all the Google Cloud resources that match the targeting criteria. You can view the results by listing the `ValidationResource` children of the `Validation` dry run. The `Validation` dry run starts in the `PREPARING` state and transitions to `COMPLETED` once the analysis is finished.
 
       Args:
         request: (FaulttestingProjectsLocationsValidationsCreateRequest) input message
@@ -674,7 +874,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""DeleteValidation deletes a Validation.
+      r"""Deletes a record of a dry run.
 
       Args:
         request: (FaulttestingProjectsLocationsValidationsDeleteRequest) input message
@@ -701,7 +901,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""GetValidation gets a Validation.
+      r"""Retrieves the details of a specific `Validation` dry run.
 
       Args:
         request: (FaulttestingProjectsLocationsValidationsGetRequest) input message
@@ -728,7 +928,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""ListValidations lists all Validations in a project.
+      r"""Lists all dry runs in a specified project and location.
 
       Args:
         request: (FaulttestingProjectsLocationsValidationsListRequest) input message
@@ -792,7 +992,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the ListLocationsRequest.name field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
       Args:
         request: (FaulttestingProjectsLocationsListRequest) input message

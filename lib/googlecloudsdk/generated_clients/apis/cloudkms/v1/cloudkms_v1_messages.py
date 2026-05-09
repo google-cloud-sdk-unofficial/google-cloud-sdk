@@ -5213,6 +5213,10 @@ class SingleTenantHsmInstance(_messages.Message):
       RefreshSingleTenantHsmInstance operation must be made via a
       SingleTenantHsmInstanceProposal before this time otherwise the
       SingleTenantHsmInstance will become disabled.
+    keyPortabilityEnabled: Optional. Immutable. Indicates whether key
+      portability is enabled for the SingleTenantHsmInstance. This can only be
+      set at creation time. Key portability features are disabled by default
+      and not yet available in GA.
     name: Identifier. The resource name for this SingleTenantHsmInstance in
       the format `projects/*/locations/*/singleTenantHsmInstances/*`.
     quorumAuth: Required. The quorum auth configuration for the
@@ -5257,10 +5261,11 @@ class SingleTenantHsmInstance(_messages.Message):
   createTime = _messages.StringField(1)
   deleteTime = _messages.StringField(2)
   disableTime = _messages.StringField(3)
-  name = _messages.StringField(4)
-  quorumAuth = _messages.MessageField('QuorumAuth', 5)
-  state = _messages.EnumField('StateValueValuesEnum', 6)
-  unrefreshedDurationUntilDisable = _messages.StringField(7)
+  keyPortabilityEnabled = _messages.BooleanField(4)
+  name = _messages.StringField(5)
+  quorumAuth = _messages.MessageField('QuorumAuth', 6)
+  state = _messages.EnumField('StateValueValuesEnum', 7)
+  unrefreshedDurationUntilDisable = _messages.StringField(8)
 
 
 class SingleTenantHsmInstanceProposal(_messages.Message):

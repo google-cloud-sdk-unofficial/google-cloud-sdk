@@ -1133,6 +1133,43 @@ class BuildStep(_messages.Message):
   waitFor = _messages.StringField(20, repeated=True)
 
 
+class BuildStepResults(_messages.Message):
+  r"""Results for a build step.
+
+  Messages:
+    ResultsValue: Results for a build step.
+
+  Fields:
+    results: Results for a build step.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ResultsValue(_messages.Message):
+    r"""Results for a build step.
+
+    Messages:
+      AdditionalProperty: An additional property for a ResultsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type ResultsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ResultsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  results = _messages.MessageField('ResultsValue', 1)
+
+
 class BuildTrigger(_messages.Message):
   r"""Configuration for an automated build in response to source repository
   changes.
@@ -3931,7 +3968,8 @@ class HttpConfig(_messages.Message):
 
 
 class HybridPoolConfig(_messages.Message):
-  r"""Configuration for a Hybrid Worker Pool Next ID: 6
+  r"""Deprecated: Hybrid pools are cancelled. Configuration for a Hybrid
+  Worker Pool Next ID: 6
 
   Enums:
     BuilderImageCachingValueValuesEnum: Immutable. Controls how the worker
@@ -4512,7 +4550,8 @@ class PoolOption(_messages.Message):
 
 
 class PrivatePoolConfig(_messages.Message):
-  r"""Configuration for a PrivatePool.
+  r"""Deprecated: Cloud Build 2nd gen is cancelled. Configuration for a
+  PrivatePool.
 
   Enums:
     PrivilegedModeValueValuesEnum: Immutable. Specifies the privileged mode
@@ -4929,6 +4968,9 @@ class RepositoryEventConfig(_messages.Message):
 class Results(_messages.Message):
   r"""Artifacts created by the build pipeline.
 
+  Messages:
+    BuildStepResultsValue: Results for build steps. step_id ->
+
   Fields:
     artifactManifest: Path to the artifact manifest for non-container
       artifacts uploaded to Cloud Storage. Only populated when artifacts are
@@ -4942,6 +4984,7 @@ class Results(_messages.Message):
       produce this output by writing to `$BUILDER_OUTPUT/output`. Only the
       first 50KB of data is stored. Note that the `$BUILDER_OUTPUT` variable
       is read-only and can't be substituted.
+    buildStepResults: Results for build steps. step_id ->
     genericArtifacts: Output only. Generic artifacts uploaded to Artifact
       Registry at the end of the build.
     goModules: Optional. Go module artifacts uploaded to Artifact Registry at
@@ -4959,18 +5002,45 @@ class Results(_messages.Message):
       of the build.
   """
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class BuildStepResultsValue(_messages.Message):
+    r"""Results for build steps. step_id ->
+
+    Messages:
+      AdditionalProperty: An additional property for a BuildStepResultsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        BuildStepResultsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a BuildStepResultsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A BuildStepResults attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('BuildStepResults', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   artifactManifest = _messages.StringField(1)
   artifactTiming = _messages.MessageField('TimeSpan', 2)
   buildStepImages = _messages.StringField(3, repeated=True)
   buildStepOutputs = _messages.BytesField(4, repeated=True)
-  genericArtifacts = _messages.MessageField('UploadedGenericArtifact', 5, repeated=True)
-  goModules = _messages.MessageField('UploadedGoModule', 6, repeated=True)
-  images = _messages.MessageField('BuiltImage', 7, repeated=True)
-  mavenArtifacts = _messages.MessageField('UploadedMavenArtifact', 8, repeated=True)
-  npmPackages = _messages.MessageField('UploadedNpmPackage', 9, repeated=True)
-  numArtifacts = _messages.IntegerField(10)
-  ociArtifacts = _messages.MessageField('UploadedOCIArtifact', 11, repeated=True)
-  pythonPackages = _messages.MessageField('UploadedPythonPackage', 12, repeated=True)
+  buildStepResults = _messages.MessageField('BuildStepResultsValue', 5)
+  genericArtifacts = _messages.MessageField('UploadedGenericArtifact', 6, repeated=True)
+  goModules = _messages.MessageField('UploadedGoModule', 7, repeated=True)
+  images = _messages.MessageField('BuiltImage', 8, repeated=True)
+  mavenArtifacts = _messages.MessageField('UploadedMavenArtifact', 9, repeated=True)
+  npmPackages = _messages.MessageField('UploadedNpmPackage', 10, repeated=True)
+  numArtifacts = _messages.IntegerField(11)
+  ociArtifacts = _messages.MessageField('UploadedOCIArtifact', 12, repeated=True)
+  pythonPackages = _messages.MessageField('UploadedPythonPackage', 13, repeated=True)
 
 
 class RetryBuildRequest(_messages.Message):
@@ -5891,14 +5961,15 @@ class WorkerPool(_messages.Message):
     etag: Output only. Checksum computed by the server. May be sent on update
       and delete requests to ensure that the client has an up-to-date value
       before proceeding.
-    hybridPoolConfig: Hybrid pool configuration
+    hybridPoolConfig: Deprecated: Hybrid pools are cancelled. Hybrid pool
+      configuration
     name: Output only. The resource name of the `WorkerPool`, with format
       `projects/{project}/locations/{location}/workerPools/{worker_pool}`. The
       value of `{worker_pool}` is provided by `worker_pool_id` in
       `CreateWorkerPool` request and the value of `{location}` is determined
       by the endpoint accessed.
-    privatePoolConfig: Private Pool configuration for Cloud Build 2nd gen.
-      DEPRECATED due to the cancellation of Cloud Build 2nd gen.
+    privatePoolConfig: Deprecated: Cloud Build 2nd gen is cancelled. Private
+      Pool configuration for Cloud Build 2nd gen.
     privatePoolV1Config: Private Pool configuration.
     state: Output only. `WorkerPool` state.
     trustedPoolConfig: Trusted Pool configuration for running builds in

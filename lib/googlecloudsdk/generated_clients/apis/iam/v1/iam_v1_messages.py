@@ -5752,6 +5752,8 @@ class WorkforcePoolProvider(_messages.Message):
       are mutually exclusive. A request that enables both fields on the same
       workforce identity pool provider will produce an error.
     StateValueValuesEnum: Output only. The state of the provider.
+    VendorTypeValueValuesEnum: Optional. The vendor type of the third-party
+      identity provider.
 
   Messages:
     AttributeMappingValue: Required. Maps attributes from the authentication
@@ -5911,6 +5913,8 @@ class WorkforcePoolProvider(_messages.Message):
       exclusive. A request that enables both fields on the same workforce
       identity pool provider will produce an error.
     state: Output only. The state of the provider.
+    vendorType: Optional. The vendor type of the third-party identity
+      provider.
   """
 
   class ScimUsageValueValuesEnum(_messages.Enum):
@@ -5946,6 +5950,33 @@ class WorkforcePoolProvider(_messages.Message):
     STATE_UNSPECIFIED = 0
     ACTIVE = 1
     DELETED = 2
+
+  class VendorTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The vendor type of the third-party identity provider.
+
+    Values:
+      VENDOR_TYPE_UNSPECIFIED: Default value, no vendor specified, backfilled
+        to existing providers.
+      ENTRA_ID: Microsoft Entra ID
+      OKTA: Okta
+      PING_FEDERATE: Ping Federate
+      ADFS: Microsoft AD Federated Service
+      KEYCLOAK: Keycloak
+      FORGE_ROCK: ForgeRock
+      JUMP_CLOUD: JumpCloud
+      ONE_LOGIN: OneLogin
+      GENERIC: Other Generic Identity Providers
+    """
+    VENDOR_TYPE_UNSPECIFIED = 0
+    ENTRA_ID = 1
+    OKTA = 2
+    PING_FEDERATE = 3
+    ADFS = 4
+    KEYCLOAK = 5
+    FORGE_ROCK = 6
+    JUMP_CLOUD = 7
+    ONE_LOGIN = 8
+    GENERIC = 9
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AttributeMappingValue(_messages.Message):
@@ -6032,6 +6063,7 @@ class WorkforcePoolProvider(_messages.Message):
   saml = _messages.MessageField('GoogleIamAdminV1WorkforcePoolProviderSaml', 13)
   scimUsage = _messages.EnumField('ScimUsageValueValuesEnum', 14)
   state = _messages.EnumField('StateValueValuesEnum', 15)
+  vendorType = _messages.EnumField('VendorTypeValueValuesEnum', 16)
 
 
 class WorkforcePoolProviderKey(_messages.Message):

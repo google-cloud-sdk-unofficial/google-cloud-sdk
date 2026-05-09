@@ -65,7 +65,6 @@ def _get_updated_summary_fields(
   return new_summary_fields
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):

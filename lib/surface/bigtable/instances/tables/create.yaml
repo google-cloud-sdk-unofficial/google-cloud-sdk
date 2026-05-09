@@ -38,6 +38,10 @@
 
       $ {command} my-table --instance=my-instance --column-families="my-family" --automated-backup-retention_period=30d
 
+      To create a table `my-table` with a custom automated backup policy configured to take backups in only us-central1-b and us-east1-c, run:
+
+      $ {command} my-table --instance=my-instance --automated-backup-locations=us-central1-b,us-east1-c
+
   request:
     collection: bigtableadmin.projects.instances.tables
     modify_request_hooks:

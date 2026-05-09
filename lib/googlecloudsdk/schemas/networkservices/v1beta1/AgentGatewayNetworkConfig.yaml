@@ -1,0 +1,37 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1beta1 AgentGatewayNetworkConfig export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  dnsPeeringConfig:
+    description: |-
+      Optional DNS peering configuration for connectivity to your private VPC
+      network.
+    $ref: AgentGatewayNetworkConfigDnsPeeringConfig.yaml
+  egress:
+    description: |-
+      Optional PSC-Interface network attachment for connectivity to your private
+      VPCs network.
+    $ref: AgentGatewayNetworkConfigEgress.yaml

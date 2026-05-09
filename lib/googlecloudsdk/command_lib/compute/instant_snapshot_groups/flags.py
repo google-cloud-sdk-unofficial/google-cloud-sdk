@@ -49,8 +49,10 @@ def AddSourceConsistencyGroupArg(parser):
   parser.add_argument(
       '--source-consistency-group',
       help="""
-      URL of the source consistency group resource policy. The resource policy
-      is always in the same region as the source disks.
+      Specifies the source consistency group resource policy. The value should
+      be the relative name of the resource policy, in the format
+      ``regions/REGION/resourcePolicies/POLICY_NAME``. The resource policy is
+      always in the same region as the source disks.
       """,
       # This argument is required because instant snapshot group can only be
       # created from a consistency group.

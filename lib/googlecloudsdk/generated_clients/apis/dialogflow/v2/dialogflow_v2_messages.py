@@ -16259,13 +16259,29 @@ class GoogleCloudDialogflowV2KnowledgeAssistAnswerKnowledgeAnswer(_messages.Mess
   Fields:
     answerText: The piece of text from the `source` that answers this
       suggested query.
+    eventSource: Populated if the prediction was from an event.
     faqSource: Populated if the prediction came from FAQ.
     generativeSource: Populated if the prediction was Generative.
+    playbookSource: Populated if the prediction was from Playbook.
   """
 
   answerText = _messages.StringField(1)
-  faqSource = _messages.MessageField('GoogleCloudDialogflowV2KnowledgeAssistAnswerKnowledgeAnswerFaqSource', 2)
-  generativeSource = _messages.MessageField('GoogleCloudDialogflowV2KnowledgeAssistAnswerKnowledgeAnswerGenerativeSource', 3)
+  eventSource = _messages.MessageField('GoogleCloudDialogflowV2KnowledgeAssistAnswerKnowledgeAnswerEventSource', 2)
+  faqSource = _messages.MessageField('GoogleCloudDialogflowV2KnowledgeAssistAnswerKnowledgeAnswerFaqSource', 3)
+  generativeSource = _messages.MessageField('GoogleCloudDialogflowV2KnowledgeAssistAnswerKnowledgeAnswerGenerativeSource', 4)
+  playbookSource = _messages.MessageField('GoogleCloudDialogflowV2KnowledgeAssistAnswerKnowledgeAnswerGenerativeSource', 5)
+
+
+class GoogleCloudDialogflowV2KnowledgeAssistAnswerKnowledgeAnswerEventSource(_messages.Message):
+  r"""Details about source of Event answer.
+
+  Fields:
+    event: Name of the triggered event.
+    snippets: Sources used in event fulfillment.
+  """
+
+  event = _messages.StringField(1)
+  snippets = _messages.MessageField('GoogleCloudDialogflowV2KnowledgeAssistAnswerKnowledgeAnswerGenerativeSource', 2)
 
 
 class GoogleCloudDialogflowV2KnowledgeAssistAnswerKnowledgeAnswerFaqSource(_messages.Message):
@@ -17765,11 +17781,15 @@ class GoogleCloudDialogflowV2SearchKnowledgeAnswer(_messages.Message):
       FAQ: The answer is from FAQ documents.
       GENERATIVE: The answer is from generative model.
       INTENT: The answer is from intent matching.
+      PLAYBOOK: The answer is from Playbook.
+      EVENT: The answer is from event.
     """
     ANSWER_TYPE_UNSPECIFIED = 0
     FAQ = 1
     GENERATIVE = 2
     INTENT = 3
+    PLAYBOOK = 4
+    EVENT = 5
 
   answer = _messages.StringField(1)
   answerRecord = _messages.StringField(2)
@@ -22869,13 +22889,29 @@ class GoogleCloudDialogflowV2beta1KnowledgeAssistAnswerKnowledgeAnswer(_messages
   Fields:
     answerText: The piece of text from the `source` that answers this
       suggested query.
+    eventSource: Populated if the prediction was from an event.
     faqSource: Populated if the prediction came from FAQ.
     generativeSource: Populated if the prediction was Generative.
+    playbookSource: Populated if the prediction was from Playbook.
   """
 
   answerText = _messages.StringField(1)
-  faqSource = _messages.MessageField('GoogleCloudDialogflowV2beta1KnowledgeAssistAnswerKnowledgeAnswerFaqSource', 2)
-  generativeSource = _messages.MessageField('GoogleCloudDialogflowV2beta1KnowledgeAssistAnswerKnowledgeAnswerGenerativeSource', 3)
+  eventSource = _messages.MessageField('GoogleCloudDialogflowV2beta1KnowledgeAssistAnswerKnowledgeAnswerEventSource', 2)
+  faqSource = _messages.MessageField('GoogleCloudDialogflowV2beta1KnowledgeAssistAnswerKnowledgeAnswerFaqSource', 3)
+  generativeSource = _messages.MessageField('GoogleCloudDialogflowV2beta1KnowledgeAssistAnswerKnowledgeAnswerGenerativeSource', 4)
+  playbookSource = _messages.MessageField('GoogleCloudDialogflowV2beta1KnowledgeAssistAnswerKnowledgeAnswerGenerativeSource', 5)
+
+
+class GoogleCloudDialogflowV2beta1KnowledgeAssistAnswerKnowledgeAnswerEventSource(_messages.Message):
+  r"""Details about source of Event answer.
+
+  Fields:
+    event: Name of the triggered event.
+    snippets: Sources used in event fulfillment.
+  """
+
+  event = _messages.StringField(1)
+  snippets = _messages.MessageField('GoogleCloudDialogflowV2beta1KnowledgeAssistAnswerKnowledgeAnswerGenerativeSource', 2)
 
 
 class GoogleCloudDialogflowV2beta1KnowledgeAssistAnswerKnowledgeAnswerFaqSource(_messages.Message):

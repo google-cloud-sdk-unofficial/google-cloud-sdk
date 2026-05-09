@@ -23,3 +23,10 @@ def DescribeSourceReqHook(ref, args, req):
   del ref
   req.parent = util.GetParentFromPositionalArguments(args)
   return req
+
+
+def ListSourcesReqHook(ref, args, req):
+  """Generate organization name from organization id."""
+  del ref
+  req.parent = util.GetParentFromPositionalArguments(args)
+  return req

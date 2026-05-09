@@ -22,7 +22,7 @@ from googlecloudsdk.command_lib.compute.instant_snapshot_groups import flags as 
 
 
 DETAILED_HELP = {  # Dict[str, str]
-    'brief': 'Delete a Compute Engine instant snapshot group.',
+    'brief': 'Delete a Compute Engine consistency group of instant snapshots.',
 }
 
 
@@ -32,10 +32,12 @@ def _CommonArgs(parser):
   Delete.ISG_ARG.AddArgument(parser, operation_type='delete')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 @base.DefaultUniverseOnly
 class Delete(base.DeleteCommand):
-  """Delete a Compute Engine instant snapshot group."""
+  """Delete a Compute Engine consistency group of instant snapshots."""
 
   def _GetCommonScopeNameForRefs(self, refs):
     """Gets common scope for references."""
@@ -50,7 +52,7 @@ class Delete(base.DeleteCommand):
       return None
 
   def _CreateDeleteRequests(self, client, isg_refs):
-    """Returns a list of delete messages for instant snapshot groups."""
+    """Returns a list of delete messages for consistency group of instant snapshots."""
 
     messages = client.MESSAGES_MODULE
     requests = []

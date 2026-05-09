@@ -25,6 +25,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Disable(base.SilentCommand):
   r"""Disable a root certificate authority.

@@ -30,7 +30,15 @@
 
       To enable or update a custom automated backup policy and configure it to retain backups for 30 days, run:
 
-      $ {command} my-table --instance=my-instance --automated-backup-retention_period=30d
+      $ {command} my-table --instance=my-instance --automated-backup-retention-period=30d
+
+      To enable or update a custom automated backup policy and configure it to take backups in only us-central1-b and us-east1-c, run:
+
+      $ {command} my-table --instance=my-instance --automated-backup-locations=us-central1-b,us-east1-c
+
+      To empty the automated backup locations list, run:
+
+      $ {command} my-table --instance=my-instance --clear-automated-backup-locations
 
   request:
     collection: bigtableadmin.projects.instances.tables

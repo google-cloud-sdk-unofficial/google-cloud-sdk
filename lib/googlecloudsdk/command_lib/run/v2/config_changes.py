@@ -597,12 +597,15 @@ class GpuZonalRedundancyChange(config_changes.TemplateConfigChanger):
     gpu_zonal_redundancy: The gpu_zonal_redundancy value to set.
   """
 
-  gpu_zonal_redundancy: bool
+  gpu_zonal_redundancy: bool | None
 
   def Adjust(self, resource):
-    resource.template.gpu_zonal_redundancy_disabled = (
-        not self.gpu_zonal_redundancy
-    )
+    if self.gpu_zonal_redundancy is None:
+      del resource.template.gpu_zonal_redundancy_disabled
+    else:
+      resource.template.gpu_zonal_redundancy_disabled = (
+          not self.gpu_zonal_redundancy
+      )
     return resource
 
 

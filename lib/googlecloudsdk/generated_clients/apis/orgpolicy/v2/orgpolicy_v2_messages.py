@@ -19,7 +19,7 @@ class GoogleCloudOrgpolicyV2AlternatePolicySpec(_messages.Message):
 
   Fields:
     launch: Reference to the launch that will be used while audit logging and
-      to control the launch. Should be set only in the alternate policy.
+      to control the launch. Set only in the alternate policy.
     spec: Specify constraint for configurations of Google Cloud resources.
   """
 
@@ -75,7 +75,7 @@ class GoogleCloudOrgpolicyV2Constraint(_messages.Message):
 
     Values:
       CONSTRAINT_DEFAULT_UNSPECIFIED: This is only used for distinguishing
-        unset values and should never be used. Results in an error.
+        unset values, and results in an error if set.
       ALLOW: Indicate that all values are allowed for list constraints.
         Indicate that enforcement is off for boolean constraints.
       DENY: Indicate that all values are denied for list constraints. Indicate
@@ -139,7 +139,7 @@ class GoogleCloudOrgpolicyV2ConstraintCustomConstraintDefinition(_messages.Messa
 
     Values:
       ACTION_TYPE_UNSPECIFIED: This is only used for distinguishing unset
-        values and should never be used. Results in an error.
+        values, and results in an error if used.
       ALLOW: Allowed action type.
       DENY: Deny action type.
     """
@@ -152,11 +152,10 @@ class GoogleCloudOrgpolicyV2ConstraintCustomConstraintDefinition(_messages.Messa
 
     Values:
       METHOD_TYPE_UNSPECIFIED: This is only used for distinguishing unset
-        values and should never be used. Results in an error.
+        values, and results in an error if used.
       CREATE: Constraint applied when creating the resource.
       UPDATE: Constraint applied when updating the resource.
-      DELETE: Constraint applied when deleting the resource. Not currently
-        supported.
+      DELETE: Constraint applied when deleting the resource. Not supported.
       REMOVE_GRANT: Constraint applied when removing an IAM grant.
       GOVERN_TAGS: Constraint applied when enforcing forced tagging.
     """
@@ -228,8 +227,8 @@ class GoogleCloudOrgpolicyV2ConstraintCustomConstraintDefinitionParameter(_messa
     specified by defining `type: LIST`, and `item: STRING`.
 
     Values:
-      TYPE_UNSPECIFIED: This is only used for distinguishing unset values and
-        should never be used. Results in an error.
+      TYPE_UNSPECIFIED: This is only used for distinguishing unset values, and
+        results in an error if used.
       LIST: List parameter type.
       STRING: String parameter type.
       BOOLEAN: Boolean parameter type.
@@ -243,8 +242,8 @@ class GoogleCloudOrgpolicyV2ConstraintCustomConstraintDefinitionParameter(_messa
     r"""Type of the parameter.
 
     Values:
-      TYPE_UNSPECIFIED: This is only used for distinguishing unset values and
-        should never be used. Results in an error.
+      TYPE_UNSPECIFIED: This is only used for distinguishing unset values, and
+        results in an error if used.
       LIST: List parameter type.
       STRING: String parameter type.
       BOOLEAN: Boolean parameter type.
@@ -313,8 +312,8 @@ class GoogleCloudOrgpolicyV2CustomConstraint(_messages.Message):
       display_name is 200 characters.
     methodTypes: All the operations being applied for this constraint.
     name: Immutable. Name of the constraint. This is unique within the
-      organization. Format of the name should be * `organizations/{organizatio
-      n_id}/customConstraints/{custom_constraint_id}` Example:
+      organization. The name must be of the form: * `organizations/{organizati
+      on_id}/customConstraints/{custom_constraint_id}` Example:
       `organizations/123/customConstraints/custom.createOnlyE2TypeVms` The max
       length is 71 characters and the minimum length is 1. Note that the
       prefix `organizations/{organization_id}/customConstraints/custom.` is
@@ -332,7 +331,7 @@ class GoogleCloudOrgpolicyV2CustomConstraint(_messages.Message):
 
     Values:
       ACTION_TYPE_UNSPECIFIED: This is only used for distinguishing unset
-        values and should never be used. Results in an error.
+        values, and results in an error if used.
       ALLOW: Allowed action type.
       DENY: Deny action type.
     """
@@ -345,11 +344,10 @@ class GoogleCloudOrgpolicyV2CustomConstraint(_messages.Message):
 
     Values:
       METHOD_TYPE_UNSPECIFIED: This is only used for distinguishing unset
-        values and should never be used. Results in an error.
+        values, and results in an error if used.
       CREATE: Constraint applied when creating the resource.
       UPDATE: Constraint applied when updating the resource.
-      DELETE: Constraint applied when deleting the resource. Not currently
-        supported.
+      DELETE: Constraint applied when deleting the resource. Not supported.
       REMOVE_GRANT: Constraint applied when removing an IAM grant.
       GOVERN_TAGS: Constraint applied when enforcing forced tagging.
     """
@@ -376,8 +374,8 @@ class GoogleCloudOrgpolicyV2ListConstraintsResponse(_messages.Message):
   Fields:
     constraints: The collection of constraints that are available on the
       targeted resource.
-    nextPageToken: Page token used to retrieve the next page. This is
-      currently not used.
+    nextPageToken: Page token used to retrieve the next page. This is not
+      used.
   """
 
   constraints = _messages.MessageField('GoogleCloudOrgpolicyV2Constraint', 1, repeated=True)
@@ -393,9 +391,8 @@ class GoogleCloudOrgpolicyV2ListCustomConstraintsResponse(_messages.Message):
     customConstraints: All custom and managed constraints that exist on the
       organization resource. It will be empty if no custom constraints are
       set.
-    nextPageToken: Page token used to retrieve the next page. This is
-      currently not used, but the server may at any point start supplying a
-      valid token.
+    nextPageToken: Page token used to retrieve the next page. This is not
+      used, but the server may at any point start supplying a valid token.
   """
 
   customConstraints = _messages.MessageField('GoogleCloudOrgpolicyV2CustomConstraint', 1, repeated=True)
@@ -407,9 +404,8 @@ class GoogleCloudOrgpolicyV2ListPoliciesResponse(_messages.Message):
   no policies are set on the resource.
 
   Fields:
-    nextPageToken: Page token used to retrieve the next page. This is
-      currently not used, but the server may at any point start supplying a
-      valid token.
+    nextPageToken: Page token used to retrieve the next page. This is not
+      used, but the server may at any point start supplying a valid token.
     policies: All policies that exist on the resource. It will be empty if no
       policies are set.
   """
@@ -591,7 +587,7 @@ class GoogleCloudOrgpolicyV2PolicySpecPolicyRuleResourceTypes(_messages.Message)
   Only supports managed constraints. Method type is `GOVERN_TAGS`.
 
   Fields:
-    included: Optional. The resource types we currently support.
+    included: Optional. The resource types we support.
   """
 
   included = _messages.StringField(1, repeated=True)
@@ -669,12 +665,10 @@ class OrgpolicyFoldersConstraintsListRequest(_messages.Message):
   r"""A OrgpolicyFoldersConstraintsListRequest object.
 
   Fields:
-    pageSize: Size of the pages to be returned. This is currently unsupported
-      and will be ignored. The server may at any point start using this field
-      to limit page size.
-    pageToken: Page token used to retrieve the next page. This is currently
-      unsupported and will be ignored. The server may at any point start using
-      this field.
+    pageSize: Size of the pages to be returned. This is not used, but the
+      server may at any point start using this field to limit page size.
+    pageToken: Page token used to retrieve the next page. This is not used,
+      but the server may at any point start using this field.
     parent: Required. The Google Cloud resource that parents the constraint.
       Must be in one of the following forms: * `projects/{project_number}` *
       `projects/{project_id}` * `folders/{folder_id}` *
@@ -744,12 +738,10 @@ class OrgpolicyFoldersPoliciesListRequest(_messages.Message):
   r"""A OrgpolicyFoldersPoliciesListRequest object.
 
   Fields:
-    pageSize: Size of the pages to be returned. This is currently unsupported
-      and will be ignored. The server may at any point start using this field
-      to limit page size.
-    pageToken: Page token used to retrieve the next page. This is currently
-      unsupported and will be ignored. The server may at any point start using
-      this field.
+    pageSize: Size of the pages to be returned. This is not used, but the
+      server may at any point start using this field to limit page size.
+    pageToken: Page token used to retrieve the next page. This is not used,
+      but the server may at any point start using this field.
     parent: Required. The target Google Cloud resource that parents the set of
       constraints and policies that will be returned from this call. Must be
       in one of the following forms: * `projects/{project_number}` *
@@ -792,12 +784,10 @@ class OrgpolicyOrganizationsConstraintsListRequest(_messages.Message):
   r"""A OrgpolicyOrganizationsConstraintsListRequest object.
 
   Fields:
-    pageSize: Size of the pages to be returned. This is currently unsupported
-      and will be ignored. The server may at any point start using this field
-      to limit page size.
-    pageToken: Page token used to retrieve the next page. This is currently
-      unsupported and will be ignored. The server may at any point start using
-      this field.
+    pageSize: Size of the pages to be returned. This is not used, but the
+      server may at any point start using this field to limit page size.
+    pageToken: Page token used to retrieve the next page. This is not used,
+      but the server may at any point start using this field.
     parent: Required. The Google Cloud resource that parents the constraint.
       Must be in one of the following forms: * `projects/{project_number}` *
       `projects/{project_id}` * `folders/{folder_id}` *
@@ -850,12 +840,10 @@ class OrgpolicyOrganizationsCustomConstraintsListRequest(_messages.Message):
   r"""A OrgpolicyOrganizationsCustomConstraintsListRequest object.
 
   Fields:
-    pageSize: Size of the pages to be returned. This is currently unsupported
-      and will be ignored. The server may at any point start using this field
-      to limit page size.
-    pageToken: Page token used to retrieve the next page. This is currently
-      unsupported and will be ignored. The server may at any point start using
-      this field.
+    pageSize: Size of the pages to be returned. This is not used, but the
+      server may at any point start using this field to limit page size.
+    pageToken: Page token used to retrieve the next page. This is not used,
+      but the server may at any point start using this field.
     parent: Required. The target Google Cloud resource that parents the set of
       custom constraints that will be returned from this call. Must be in one
       of the following forms: * `organizations/{organization_id}`
@@ -874,8 +862,8 @@ class OrgpolicyOrganizationsCustomConstraintsPatchRequest(_messages.Message):
       GoogleCloudOrgpolicyV2CustomConstraint resource to be passed as the
       request body.
     name: Immutable. Name of the constraint. This is unique within the
-      organization. Format of the name should be * `organizations/{organizatio
-      n_id}/customConstraints/{custom_constraint_id}` Example:
+      organization. The name must be of the form: * `organizations/{organizati
+      on_id}/customConstraints/{custom_constraint_id}` Example:
       `organizations/123/customConstraints/custom.createOnlyE2TypeVms` The max
       length is 71 characters and the minimum length is 1. Note that the
       prefix `organizations/{organization_id}/customConstraints/custom.` is
@@ -944,12 +932,10 @@ class OrgpolicyOrganizationsPoliciesListRequest(_messages.Message):
   r"""A OrgpolicyOrganizationsPoliciesListRequest object.
 
   Fields:
-    pageSize: Size of the pages to be returned. This is currently unsupported
-      and will be ignored. The server may at any point start using this field
-      to limit page size.
-    pageToken: Page token used to retrieve the next page. This is currently
-      unsupported and will be ignored. The server may at any point start using
-      this field.
+    pageSize: Size of the pages to be returned. This is not used, but the
+      server may at any point start using this field to limit page size.
+    pageToken: Page token used to retrieve the next page. This is not used,
+      but the server may at any point start using this field.
     parent: Required. The target Google Cloud resource that parents the set of
       constraints and policies that will be returned from this call. Must be
       in one of the following forms: * `projects/{project_number}` *
@@ -992,12 +978,10 @@ class OrgpolicyProjectsConstraintsListRequest(_messages.Message):
   r"""A OrgpolicyProjectsConstraintsListRequest object.
 
   Fields:
-    pageSize: Size of the pages to be returned. This is currently unsupported
-      and will be ignored. The server may at any point start using this field
-      to limit page size.
-    pageToken: Page token used to retrieve the next page. This is currently
-      unsupported and will be ignored. The server may at any point start using
-      this field.
+    pageSize: Size of the pages to be returned. This is not used, but the
+      server may at any point start using this field to limit page size.
+    pageToken: Page token used to retrieve the next page. This is not used,
+      but the server may at any point start using this field.
     parent: Required. The Google Cloud resource that parents the constraint.
       Must be in one of the following forms: * `projects/{project_number}` *
       `projects/{project_id}` * `folders/{folder_id}` *
@@ -1067,12 +1051,10 @@ class OrgpolicyProjectsPoliciesListRequest(_messages.Message):
   r"""A OrgpolicyProjectsPoliciesListRequest object.
 
   Fields:
-    pageSize: Size of the pages to be returned. This is currently unsupported
-      and will be ignored. The server may at any point start using this field
-      to limit page size.
-    pageToken: Page token used to retrieve the next page. This is currently
-      unsupported and will be ignored. The server may at any point start using
-      this field.
+    pageSize: Size of the pages to be returned. This is not used, but the
+      server may at any point start using this field to limit page size.
+    pageToken: Page token used to retrieve the next page. This is not used,
+      but the server may at any point start using this field.
     parent: Required. The target Google Cloud resource that parents the set of
       constraints and policies that will be returned from this call. Must be
       in one of the following forms: * `projects/{project_number}` *

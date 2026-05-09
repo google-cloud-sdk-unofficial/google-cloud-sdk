@@ -20,6 +20,8 @@ import collections
 from googlecloudsdk.api_lib.backupdr import util
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.backupdr import util as command_util
+from googlecloudsdk.core import properties
+
 
 # TODO: b/416214401 - Add type annotations.
 
@@ -93,7 +95,8 @@ class BackupPlansClient(util.BackupDrClientBase):
       description,
       labels,
       max_custom_on_demand_retention_days,
-      disk_properties,
+      disk_properties=None,
+      compute_instance_properties=None,
   ):
     """Creates a Backup Plan.
 
@@ -107,7 +110,12 @@ class BackupPlansClient(util.BackupDrClientBase):
       labels: The labels of the Backup Plan.
       max_custom_on_demand_retention_days: The custom on demand retention days
         limit of the Backup Plan.
-      disk_properties: The disk properties of the Backup Plan.
+      disk_properties: A dictionary containing the disk properties of the
+        Backup Plan. Expected keys include:
+        'guest-flush': bool, Whether to enable guest flush.
+      compute_instance_properties: A dictionary containing the compute instance
+        properties of the Backup Plan. Expected keys include:
+        'guest-flush': bool, Whether to enable guest flush.
 
     Returns:
       The created Backup Plan.
@@ -128,7 +136,15 @@ class BackupPlansClient(util.BackupDrClientBase):
     if disk_properties:
       disk_props_message = self.messages.DiskBackupPlanProperties(
           guestFlush=disk_properties.get('guest-flush', False)
+      )
+
+    compute_instance_props_message = None
+    if compute_instance_properties:
+      compute_instance_props_message = (
+          self.messages.ComputeInstanceBackupPlanProperties(
+              guestFlush=compute_instance_properties.get('guest-flush', False)
           )
+      )
 
     backup_plan = self.messages.BackupPlan(
         resourceType=resource_type,
@@ -142,8 +158,21 @@ class BackupPlansClient(util.BackupDrClientBase):
             if max_custom_on_demand_retention_days is not None
             else None
         ),
-        diskBackupPlanProperties=disk_props_message,
     )
+    if disk_props_message and (
+        resource_type.endswith('/Disk')
+        or resource_type
+        == f'compute.{properties.VALUES.core.universe_domain.Get()}/Disk'
+    ):
+      backup_plan.diskBackupPlanProperties = disk_props_message
+    elif compute_instance_props_message and (
+        resource_type.endswith('/Instance')
+        or resource_type
+        == f'compute.{properties.VALUES.core.universe_domain.Get()}/Instance'
+    ):
+      backup_plan.computeInstanceBackupPlanProperties = (
+          compute_instance_props_message
+      )
 
     request = self.messages.BackupdrProjectsLocationsBackupPlansCreateRequest(
         parent=parent,
@@ -177,6 +206,7 @@ class BackupPlansClient(util.BackupDrClientBase):
       log_retention_days,
       max_custom_on_demand_retention_days,
       disk_properties=None,
+      compute_instance_properties=None,
   ):
     """Parses the update request for a Backup Plan.
 
@@ -193,6 +223,8 @@ class BackupPlansClient(util.BackupDrClientBase):
         limit of the Backup Plan.
       disk_properties: A dictionary containing the disk properties of the
         Backup Plan.
+      compute_instance_properties: A dictionary containing the compute instance
+        properties of the Backup Plan.
 
     Returns:
       The updated Backup Plan.
@@ -282,6 +314,12 @@ class BackupPlansClient(util.BackupDrClientBase):
       updated_backup_plan.diskBackupPlanProperties = (
           self.messages.DiskBackupPlanProperties(
               guestFlush=disk_properties.get('guest-flush')
+          )
+      )
+    if compute_instance_properties is not None:
+      updated_backup_plan.computeInstanceBackupPlanProperties = (
+          self.messages.ComputeInstanceBackupPlanProperties(
+              guestFlush=compute_instance_properties.get('guest-flush')
           )
       )
     return updated_backup_plan

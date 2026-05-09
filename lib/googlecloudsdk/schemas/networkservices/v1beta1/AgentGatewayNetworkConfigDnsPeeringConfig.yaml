@@ -1,0 +1,50 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1beta1 AgentGatewayNetworkConfigDnsPeeringConfig export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- domains
+- targetNetwork
+- targetProject
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  domains:
+    description: |-
+      Domain names for which DNS queries should be forwarded to the target
+      network.
+    type: array
+    items:
+      type: string
+  targetNetwork:
+    description: |-
+      Target network in 'target project' to which DNS queries should be
+      forwarded to. Must be in format of
+      `projects/{project}/global/networks/{network}`.
+    type: string
+  targetProject:
+    description: |-
+      Target project ID to which DNS queries should be forwarded to. This
+      can be the same project that contains the AgentGateway or a different
+      project.
+    type: string

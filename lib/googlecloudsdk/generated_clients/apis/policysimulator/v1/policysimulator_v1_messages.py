@@ -24,7 +24,7 @@ class GoogleCloudOrgpolicyV2AlternatePolicySpec(_messages.Message):
 
   Fields:
     launch: Reference to the launch that will be used while audit logging and
-      to control the launch. Should be set only in the alternate policy.
+      to control the launch. Set only in the alternate policy.
     spec: Specify constraint for configurations of Google Cloud resources.
   """
 
@@ -55,8 +55,8 @@ class GoogleCloudOrgpolicyV2CustomConstraint(_messages.Message):
       display_name is 200 characters.
     methodTypes: All the operations being applied for this constraint.
     name: Immutable. Name of the constraint. This is unique within the
-      organization. Format of the name should be * `organizations/{organizatio
-      n_id}/customConstraints/{custom_constraint_id}` Example:
+      organization. The name must be of the form: * `organizations/{organizati
+      on_id}/customConstraints/{custom_constraint_id}` Example:
       `organizations/123/customConstraints/custom.createOnlyE2TypeVms` The max
       length is 71 characters and the minimum length is 1. Note that the
       prefix `organizations/{organization_id}/customConstraints/custom.` is
@@ -74,7 +74,7 @@ class GoogleCloudOrgpolicyV2CustomConstraint(_messages.Message):
 
     Values:
       ACTION_TYPE_UNSPECIFIED: This is only used for distinguishing unset
-        values and should never be used. Results in an error.
+        values, and results in an error if used.
       ALLOW: Allowed action type.
       DENY: Deny action type.
     """
@@ -87,11 +87,10 @@ class GoogleCloudOrgpolicyV2CustomConstraint(_messages.Message):
 
     Values:
       METHOD_TYPE_UNSPECIFIED: This is only used for distinguishing unset
-        values and should never be used. Results in an error.
+        values, and results in an error if used.
       CREATE: Constraint applied when creating the resource.
       UPDATE: Constraint applied when updating the resource.
-      DELETE: Constraint applied when deleting the resource. Not currently
-        supported.
+      DELETE: Constraint applied when deleting the resource. Not supported.
       REMOVE_GRANT: Constraint applied when removing an IAM grant.
       GOVERN_TAGS: Constraint applied when enforcing forced tagging.
     """

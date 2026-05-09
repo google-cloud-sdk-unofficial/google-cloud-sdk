@@ -398,17 +398,15 @@ class ConnectCluster(_messages.Message):
       cluster.
 
   Messages:
-    ConfigValue: Optional. Configurations for the worker that are overridden
-      from the defaults. The key of the map is a Kafka Connect worker property
-      name, for example: `exactly.once.source.support`.
+    ConfigValue: Optional. Reserved for future use. This field is meant for
+      worker config overrides, but is unsupported for now.
     LabelsValue: Optional. Labels as key value pairs.
 
   Fields:
     capacityConfig: Required. Capacity configuration for the Kafka Connect
       cluster.
-    config: Optional. Configurations for the worker that are overridden from
-      the defaults. The key of the map is a Kafka Connect worker property
-      name, for example: `exactly.once.source.support`.
+    config: Optional. Reserved for future use. This field is meant for worker
+      config overrides, but is unsupported for now.
     createTime: Output only. The time when the cluster was created.
     gcpConfig: Required. Configuration properties for a Kafka Connect cluster
       deployed to Google Cloud Platform.
@@ -443,9 +441,8 @@ class ConnectCluster(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class ConfigValue(_messages.Message):
-    r"""Optional. Configurations for the worker that are overridden from the
-    defaults. The key of the map is a Kafka Connect worker property name, for
-    example: `exactly.once.source.support`.
+    r"""Optional. Reserved for future use. This field is meant for worker
+    config overrides, but is unsupported for now.
 
     Messages:
       AdditionalProperty: An additional property for a ConfigValue object.

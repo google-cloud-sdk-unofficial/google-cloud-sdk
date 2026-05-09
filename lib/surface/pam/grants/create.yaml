@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief: Create a new Privileged Access Manager (PAM) grant.
@@ -12,86 +12,14 @@
       $ {command} --entitlement=ENTITLEMENT_NAME --requested-duration=5400s --justification="some justification" --additional-email-recipients=abc@example.com,xyz@example.com
 
   request:
-    api_version: v1alpha
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.pam.util:SetRequestedPrivilegedAccessInCreateGrantRequest
-    collection:
-    - privilegedaccessmanager.projects.locations.entitlements.grants
-    - privilegedaccessmanager.folders.locations.entitlements.grants
-    - privilegedaccessmanager.organizations.locations.entitlements.grants
-
-  arguments:
-    params:
-    - arg_name: entitlement
-      resource_spec: !REF googlecloudsdk.command_lib.pam.resources:entitlement
-      is_parent_resource: true
-      is_primary_resource: true
-      is_positional: false
-      required: true
-      help_text: |
-        Entitlement the grant is to be created against.
-    - arg_name: requested-duration
-      api_field: grant.requestedDuration
-      required: true
-      help_text: |
-        Duration of the grant being created.
-    - arg_name: justification
-      api_field: grant.justification.unstructuredJustification
-      help_text: |
-        Justification for the grant.
-    - arg_name: additional-email-recipients
-      api_field: grant.additionalEmailRecipients
-      repeated: true
-      help_text: |
-        Additional email addresses that are notified for all actions performed on the grant.
-    - arg_name: scheduled-activation-time
-      api_field: grant.activationTrigger.requestedActivationTime
-      required: false
-      type: googlecloudsdk.calliope.arg_parsers:Datetime.Parse
-      processor: googlecloudsdk.command_lib.pam.util:FormatDateTimeAsRfc3339
-      help_text: |
-        To schedule the grant, specify a start date and time up to 7 days in the future.
-        If not scheduled, the grant activates immediately upon creation or approval(s).
-      hidden: true
-    # Group for grant scope selection.
-    - group:
-        mutex: true
-        help_text: |
-          Specify the grant's scope using either high-level resource or a fine-grained scope
-          configuration.
-        params:
-        - arg_name: requested-resources
-          type: 'googlecloudsdk.calliope.arg_parsers:ArgList:'
-          help_text: |
-            The Google Cloud resources to be granted access to.
-            Format: `{resource-type}/{resource_id}`.
-            Example: `projects/{project_id}` or `folders/{folder_id}` or
-            `organizations/{organization_id}`.
-            This command currently accepts only one resource.
-        - arg_name: requested-access-from-file
-          api_field: grant.requestedPrivilegedAccess
-          type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
-          processor: googlecloudsdk.command_lib.pam.util:LoadGrantScopeFromYaml
-          help_text: |
-            Path to a YAML file defining the fine-grained scope for the grant.
-
-  output:
-    format: yaml
-
-- release_tracks: [BETA, GA]
-
-  help_text:
-    brief: Create a new Privileged Access Manager (PAM) grant.
-    description: Create a new Privileged Access Manager (PAM) grant under an entitlement.
-    examples: |
-      The following command creates a new grant against the entitlement with the full name
-      ``ENTITLEMENT_NAME'', a requested duration of 1 hour 30 minutes, a justification of
-      `some justification` and two additional email recipients `abc@example.com` and
-      `xyz@example.com`:
-
-      $ {command} --entitlement=ENTITLEMENT_NAME --requested-duration=5400s --justification="some justification" --additional-email-recipients=abc@example.com,xyz@example.com
-
-  request:
+    ALPHA:
+      api_version: v1alpha
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.pam.util:SetRequestedPrivilegedAccessInCreateGrantRequest
+      collection:
+      - privilegedaccessmanager.projects.locations.entitlements.grants
+      - privilegedaccessmanager.folders.locations.entitlements.grants
+      - privilegedaccessmanager.organizations.locations.entitlements.grants
     BETA:
       api_version: v1beta
       modify_request_hooks:
@@ -127,9 +55,18 @@
       repeated: true
       help_text: |
         Additional email addresses that are notified for all actions performed on the grant.
+    - arg_name: scheduled-activation-time
+      release_tracks: [ALPHA, BETA]
+      api_field: grant.activationTrigger.requestedActivationTime
+      required: false
+      type: googlecloudsdk.calliope.arg_parsers:Datetime.Parse
+      processor: googlecloudsdk.command_lib.pam.util:FormatDateTimeAsRfc3339
+      help_text: |
+        To schedule the grant, specify a start date and time up to 7 days in the future.
+        If not scheduled, the grant activates immediately upon creation or approval(s).
     # Group for grant scope selection (Beta only).
     - group:
-        release_tracks: [BETA]
+        release_tracks: [ALPHA, BETA]
         mutex: true
         help_text: |
           Specify the grant's scope using either high-level resource or a fine-grained scope

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,7 +31,8 @@
     params:
     - help_text: |-
         The resource name of the experiment to stop.
-        Format: projects/{project}/locations/{location}/experiments/{experiment}
+        Format:
+        `projects/{projectId}/locations/{location}/experiments/{experimentId}`.
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.fault_testing.v1alpha_resources:projects_locations_experiments

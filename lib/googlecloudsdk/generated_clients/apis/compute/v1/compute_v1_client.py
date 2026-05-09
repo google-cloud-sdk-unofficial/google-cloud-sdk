@@ -57,6 +57,7 @@ class ComputeV1(base_api.BaseApiClient):
     self.globalOperations = self.GlobalOperationsService(self)
     self.globalOrganizationOperations = self.GlobalOrganizationOperationsService(self)
     self.globalPublicDelegatedPrefixes = self.GlobalPublicDelegatedPrefixesService(self)
+    self.globalVmExtensionPolicies = self.GlobalVmExtensionPoliciesService(self)
     self.healthChecks = self.HealthChecksService(self)
     self.httpHealthChecks = self.HttpHealthChecksService(self)
     self.httpsHealthChecks = self.HttpsHealthChecksService(self)
@@ -4677,6 +4678,181 @@ patch format and processing rules.
         relative_path='projects/{project}/global/publicDelegatedPrefixes/{publicDelegatedPrefix}',
         request_field='publicDelegatedPrefixResource',
         request_type_name='ComputeGlobalPublicDelegatedPrefixesPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class GlobalVmExtensionPoliciesService(base_api.BaseApiService):
+    """Service class for the globalVmExtensionPolicies resource."""
+
+    _NAME = 'globalVmExtensionPolicies'
+
+    def __init__(self, client):
+      super(ComputeV1.GlobalVmExtensionPoliciesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def AggregatedList(self, request, global_params=None):
+      r"""Retrieves the list of all VM Extension Policy resources.
+available to the specified project.
+
+To prevent failure, it's recommended that you set the
+`returnPartialSuccess` parameter to `true`.
+
+      Args:
+        request: (ComputeGlobalVmExtensionPoliciesAggregatedListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (VmExtensionPolicyAggregatedListResponse) The response message.
+      """
+      config = self.GetMethodConfig('AggregatedList')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.globalVmExtensionPolicies.aggregatedList',
+        ordered_params=['project'],
+        path_params=['project'],
+        query_params=['filter', 'includeAllScopes', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess', 'serviceProjectNumber'],
+        relative_path='projects/{project}/aggregated/vmExtensionPolicies',
+        request_field='',
+        request_type_name='ComputeGlobalVmExtensionPoliciesAggregatedListRequest',
+        response_type_name='VmExtensionPolicyAggregatedListResponse',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Purge scoped resources (zonal policies) from a global VM extension.
+policy, and then delete the global VM extension policy. Purge of the scoped
+resources is a pre-condition of the global VM extension policy deletion.
+The deletion of the global VM extension policy happens after the purge
+rollout is done, so it's not a part of the LRO. It's an automatic process
+that triggers in the backend.
+
+      Args:
+        request: (ComputeGlobalVmExtensionPoliciesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.globalVmExtensionPolicies.delete',
+        ordered_params=['project', 'globalVmExtensionPolicy'],
+        path_params=['globalVmExtensionPolicy', 'project'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/global/vmExtensionPolicies/{globalVmExtensionPolicy}/delete',
+        request_field='globalVmExtensionPolicyRolloutOperationRolloutInput',
+        request_type_name='ComputeGlobalVmExtensionPoliciesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a global VM extension policy.
+
+      Args:
+        request: (ComputeGlobalVmExtensionPoliciesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GlobalVmExtensionPolicy) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.globalVmExtensionPolicies.get',
+        ordered_params=['project', 'globalVmExtensionPolicy'],
+        path_params=['globalVmExtensionPolicy', 'project'],
+        query_params=[],
+        relative_path='projects/{project}/global/vmExtensionPolicies/{globalVmExtensionPolicy}',
+        request_field='',
+        request_type_name='ComputeGlobalVmExtensionPoliciesGetRequest',
+        response_type_name='GlobalVmExtensionPolicy',
+        supports_download=False,
+    )
+
+    def Insert(self, request, global_params=None):
+      r"""Creates a new project level GlobalVmExtensionPolicy.
+
+      Args:
+        request: (ComputeGlobalVmExtensionPoliciesInsertRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Insert')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Insert.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.globalVmExtensionPolicies.insert',
+        ordered_params=['project'],
+        path_params=['project'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/global/vmExtensionPolicies',
+        request_field='globalVmExtensionPolicy',
+        request_type_name='ComputeGlobalVmExtensionPoliciesInsertRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists global VM extension policies.
+
+      Args:
+        request: (ComputeGlobalVmExtensionPoliciesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GlobalVmExtensionPolicyList) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.globalVmExtensionPolicies.list',
+        ordered_params=['project'],
+        path_params=['project'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
+        relative_path='projects/{project}/global/vmExtensionPolicies',
+        request_field='',
+        request_type_name='ComputeGlobalVmExtensionPoliciesListRequest',
+        response_type_name='GlobalVmExtensionPolicyList',
+        supports_download=False,
+    )
+
+    def Update(self, request, global_params=None):
+      r"""Updates a global VM extension policy.
+
+      Args:
+        request: (ComputeGlobalVmExtensionPoliciesUpdateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Update')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Update.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='PATCH',
+        method_id='compute.globalVmExtensionPolicies.update',
+        ordered_params=['project', 'globalVmExtensionPolicy'],
+        path_params=['globalVmExtensionPolicy', 'project'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/global/vmExtensionPolicies/{globalVmExtensionPolicy}',
+        request_field='globalVmExtensionPolicyResource',
+        request_type_name='ComputeGlobalVmExtensionPoliciesUpdateRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -28444,7 +28620,7 @@ This method is called on a best-effort basis. Specifically:
           }
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a specified zone VM extension policy.
+      r"""Deletes a specified zone VM extension policy within a project.
 
       Args:
         request: (ComputeZoneVmExtensionPoliciesDeleteRequest) input message
@@ -28470,7 +28646,7 @@ This method is called on a best-effort basis. Specifically:
     )
 
     def Get(self, request, global_params=None):
-      r"""Retrieves details of a specific zone VM extension policy.
+      r"""Retrieves details of a specific zone VM extension policy within a project.
 
       Args:
         request: (ComputeZoneVmExtensionPoliciesGetRequest) input message
@@ -28548,7 +28724,7 @@ This method is called on a best-effort basis. Specifically:
     )
 
     def Update(self, request, global_params=None):
-      r"""Modifies an existing zone VM extension policy.
+      r"""Modifies an existing zone VM extension policy within a project.
 
       Args:
         request: (ComputeZoneVmExtensionPoliciesUpdateRequest) input message

@@ -34,12 +34,27 @@ class Error(exceptions.Error):
   """Errors raised by this module."""
 
 
-def _GetBatchUrl(endpoint_url, api_version):
-  """Return a batch URL for the given endpoint URL."""
+def _GetBatchUrl(endpoint_url):
+  """Return a batch URL for the given endpoint URL.
+
+  For the compute API, the endpoint URL (whether the default BASE_URL, or an
+  overridden endpoint) is expected to include a trailing
+  "/compute/{url_version}/" path after the host e.g.
+  https://compute.googleapis.com/compute/v1/. The corresponding batch URL path
+  uses "/batch/compute/{url_version}" e.g.
+  https://compute.googleapis.com/batch/compute/v1.
+
+  Args:
+    endpoint_url: str, Base endpoint URL.
+  Returns:
+    str, Batch URL that corresponds to the given endpoint.
+  """
   parsed_endpoint = parse.urlparse(endpoint_url)
+  path_parts = parsed_endpoint.path.strip('/').split('/')
+  batch_url_version = path_parts[-1]
   return parse.urljoin(
       '{0}://{1}'.format(parsed_endpoint.scheme, parsed_endpoint.netloc),
-      'batch/compute/' + utils.GetUrlAPIVersionByApiVersion(api_version),
+      'batch/compute/' + batch_url_version,
   )
 
 
@@ -58,11 +73,9 @@ class ClientAdapter(object):
     self._client = client or core_apis.GetClientInstance(
         self._API_NAME, self._api_version, no_http=no_http)
 
-    # Turn the endpoint into just the host.
-    # eg. https://compute.googleapis.com/compute/v1 -> https://compute.googleapis.com
     endpoint_url = core_apis.GetEffectiveApiEndpoint(self._API_NAME,
                                                      self._api_version)
-    self._batch_url = _GetBatchUrl(endpoint_url, self._api_version)
+    self._batch_url = _GetBatchUrl(endpoint_url)
 
   @property
   def api_version(self):
@@ -161,26 +174,29 @@ class ClientAdapter(object):
       list of responses, matching list of requests. Some responses can be
         errors.
     """
-    if not _ForceBatchRequest() and len(requests) == 1:
+    if not _ForceBatchRequest() and (
+        len(requests) == 1
+        or properties.VALUES.compute.disable_batch_request.GetBool()
+    ):
       responses = []
       errors = errors_to_collect if errors_to_collect is not None else []
-      service, method, request_body = requests[0]
-      num_retries = service.client.num_retries
-      # stop the default retry behavior of http_wrapper.MakeRequest
-      service.client.num_retries = 0
-      try:
-        response = getattr(service, method)(request=request_body)
-        responses.append(response)
-      except apitools_exceptions.HttpError as exception:
-        errors.append(api_exceptions.HttpException(exception))
-        responses.append(None)
-      except apitools_exceptions.Error as exception:
-        if hasattr(exception, 'message'):
-          errors.append(Error(exception.message))
-        else:
-          errors.append((Error(exception)))
-        responses.append(None)
-      service.client.num_retries = num_retries
+      for service, method, request_body in requests:
+        num_retries = service.client.num_retries
+        # stop the default retry behavior of http_wrapper.MakeRequest
+        service.client.num_retries = 0
+        try:
+          response = getattr(service, method)(request=request_body)
+          responses.append(response)
+        except apitools_exceptions.HttpError as exception:
+          errors.append(api_exceptions.HttpException(exception))
+          responses.append(None)
+        except apitools_exceptions.Error as exception:
+          if hasattr(exception, 'message'):
+            errors.append(Error(exception.message))
+          else:
+            errors.append((Error(exception)))
+          responses.append(None)
+        service.client.num_retries = num_retries
       return responses
     else:
       batch_request = batch.BatchApiRequest(batch_url=self._batch_url)

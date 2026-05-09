@@ -202,17 +202,23 @@ def _sign_with_iam(account_email, string_to_sign, delegates):
 
 
 def _sign_with_key(key, string_to_sign):
-  """Generates a signature using OpenSSL.crypto.
+  """Generates a signature using the cryptography library.
 
   Args:
-    key (crypto.PKey): Key for the signing service account.
+    key (RSAPrivateKey): Key for the signing service account.
     string_to_sign (str): String to sign.
 
   Returns:
       A raw signature for the specified string.
   """
-  from OpenSSL import crypto  # pylint: disable=g-import-not-at-top
-  return crypto.sign(key, string_to_sign.encode('utf-8'), _DIGEST)
+  from cryptography.hazmat.primitives import hashes  # pylint: disable=g-import-not-at-top
+  from cryptography.hazmat.primitives.asymmetric import padding  # pylint: disable=g-import-not-at-top
+
+  return key.sign(
+      string_to_sign.encode('utf-8'),
+      padding.PKCS1v15(),
+      hashes.SHA256(),
+  )
 
 
 def get_signing_information_from_json(raw_data, password_bytes=None):
@@ -229,11 +235,15 @@ def get_signing_information_from_json(raw_data, password_bytes=None):
     password_bytes (bytes): A password used to decrypt encrypted private keys.
 
   Returns:
-    A tuple (client_id: str, key: crypto.PKey), which can be used to sign URLs.
+    A tuple (client_id: str, key: RSAPrivateKey), which can be used to sign
+    URLs.
   """
-  from OpenSSL import crypto  # pylint:disable=g-import-not-at-top
+  from cryptography.hazmat.primitives import serialization  # pylint:disable=g-import-not-at-top
   from cryptography.hazmat.primitives.serialization import pkcs12  # pylint:disable=g-import-not-at-top
   from cryptography.x509.oid import NameOID  # pylint:disable=g-import-not-at-top
+
+  if password_bytes is not None and not isinstance(password_bytes, bytes):
+    password_bytes = password_bytes.encode('utf-8')
 
   try:
     # Expects JSON formatted like the return value of the iam service-account
@@ -241,33 +251,34 @@ def get_signing_information_from_json(raw_data, password_bytes=None):
     # https://cloud.google.com/iam/docs/keys-create-delete#iam-service-account-keys-create-gcloud
     parsed_json = json.loads(raw_data)
     client_id = parsed_json[JSON_CLIENT_ID_KEY]
-    key = crypto.load_privatekey(
-        crypto.FILETYPE_PEM,
-        parsed_json[JSON_PRIVATE_KEY_KEY],
-        passphrase=password_bytes,
+  except ValueError:  # Failed to parse JSON. Try P12.
+    parsed_json = None
+
+  if parsed_json:
+    key = serialization.load_pem_private_key(
+        parsed_json[JSON_PRIVATE_KEY_KEY].encode('utf-8'),
+        password=password_bytes,
     )
     return client_id, key
 
-  except ValueError:  # Failed to parse JSON. Try P12.
-    if not password_bytes:
-      # If the user does not provide a password, we prompt for one for parity
-      # with gsutil. Gsutil likely chose this behavior as P12 files provided by
-      # GCP use a default password ('notasecret'). Gsutil does not supply the
-      # default password here, however.
-      # https://support.google.com/cloud/answer/6158849?hl=en#serviceaccounts&zippy=%2Cservice-accounts:~:text=provide%20the%20password-,notasecret,-.%20Note%20that%20while
-      password_bytes = console_io.PromptPassword(
-          "Keystore password (default: 'notasecret'): "
-      )
-
-    if not isinstance(password_bytes, bytes):
-      password_bytes = password_bytes.encode('utf-8')
-    private_key, certificate, _ = pkcs12.load_key_and_certificates(
-        raw_data, password=password_bytes
+  if not password_bytes:
+    # If the user does not provide a password, we prompt for one for parity
+    # with gsutil. Gsutil likely chose this behavior as P12 files provided by
+    # GCP use a default password ('notasecret'). Gsutil does not supply the
+    # default password here, however.
+    # https://support.google.com/cloud/answer/6158849?hl=en#serviceaccounts&zippy=%2Cservice-accounts:~:text=provide%20the%20password-,notasecret,-.%20Note%20that%20while
+    password_bytes = console_io.PromptPassword(
+        "Keystore password (default: 'notasecret'): "
     )
-    private_key = crypto.PKey.from_cryptography_key(private_key)
-    client_id = certificate.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
+    if password_bytes is not None and not isinstance(password_bytes, bytes):
+      password_bytes = password_bytes.encode('utf-8')
 
-    return client_id[0].value, private_key
+  private_key, certificate, _ = pkcs12.load_key_and_certificates(
+      raw_data, password=password_bytes
+  )
+  client_id = certificate.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
+
+  return client_id[0].value, private_key
 
 
 def get_signing_information_from_file(path, password=None):

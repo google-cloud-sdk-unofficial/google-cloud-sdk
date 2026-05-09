@@ -2197,7 +2197,7 @@ class ResourceTypes(_messages.Message):
   Only supports managed constraints. Method type is `GOVERN_TAGS`.
 
   Fields:
-    included: Optional. The resource types we currently support.
+    included: Optional. The resource types we support.
   """
 
   included = _messages.StringField(1, repeated=True)

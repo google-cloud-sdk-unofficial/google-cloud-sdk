@@ -394,6 +394,21 @@ class BackupRetentionPolicy(_messages.Message):
   weeklyBackupImmutable = _messages.BooleanField(5)
 
 
+class BackupSource(_messages.Message):
+  r"""Represents the backup source of the restore operation.
+
+  Fields:
+    backup: Required. The backup resource name.
+    fileList: Optional. List of files to be restored in the form of their
+      absolute path as in source volume. If provided, only these files will be
+      restored. If not provided, the entire backup will be restored (Full
+      Backup Restore)
+  """
+
+  backup = _messages.StringField(1)
+  fileList = _messages.StringField(2, repeated=True)
+
+
 class BackupVault(_messages.Message):
   r"""A NetApp BackupVault.
 
@@ -1496,6 +1511,22 @@ class ListActiveDirectoriesResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListBackupConfigsResponse(_messages.Message):
+  r"""Message for response to listing BackupConfigs in an ONTAP StoragePool.
+
+  Fields:
+    nextPageToken: The token you can use to retrieve the next page of results.
+      Not returned if there are no more results in the list.
+    unreachable: Unordered list. Locations that could not be reached.
+    volumeBackupConfigs: A list of backup configurations for volumes in the
+      pool.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  unreachable = _messages.StringField(2, repeated=True)
+  volumeBackupConfigs = _messages.MessageField('VolumeBackupConfig', 3, repeated=True)
+
+
 class ListBackupPoliciesResponse(_messages.Message):
   r"""ListBackupPoliciesResponse contains all the backup policies requested.
 
@@ -2464,6 +2495,30 @@ class NetappProjectsLocationsOperationsListRequest(_messages.Message):
   returnPartialSuccess = _messages.BooleanField(5)
 
 
+class NetappProjectsLocationsStoragePoolsBackupConfigsListRequest(_messages.Message):
+  r"""A NetappProjectsLocationsStoragePoolsBackupConfigsListRequest object.
+
+  Fields:
+    filter: Optional. The standard list filter.
+    orderBy: Optional. Sort results. Supported values are "volume_id" or ""
+    pageSize: Optional. The maximum number of items to return. The service may
+      return fewer than this value. The maximum value is 1000; values above
+      1000 will be coerced to 1000. If unspecified or set to 0, a default of
+      50 will be used.
+    pageToken: Optional. The next_page_token value to use if there are
+      additional results to retrieve for this list request.
+    parent: Required. The ONTAP StoragePool for which to retrieve backup
+      configuration information, in the format
+      `projects/{project}/locations/{location}/storagePools/{storage_pool}`.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
 class NetappProjectsLocationsStoragePoolsCreateRequest(_messages.Message):
   r"""A NetappProjectsLocationsStoragePoolsCreateRequest object.
 
@@ -2602,6 +2657,21 @@ class NetappProjectsLocationsStoragePoolsPatchRequest(_messages.Message):
   name = _messages.StringField(1, required=True)
   storagePool = _messages.MessageField('StoragePool', 2)
   updateMask = _messages.StringField(3)
+
+
+class NetappProjectsLocationsStoragePoolsRestoreVolumeRequest(_messages.Message):
+  r"""A NetappProjectsLocationsStoragePoolsRestoreVolumeRequest object.
+
+  Fields:
+    name: Required. The resource name of the ONTAP mode storage pool, in the
+      format of
+      `projects/{project}/locations/{location}/storagePools/{storage_pool}`
+    restoreVolumeRequest: A RestoreVolumeRequest resource to be passed as the
+      request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  restoreVolumeRequest = _messages.MessageField('RestoreVolumeRequest', 2)
 
 
 class NetappProjectsLocationsStoragePoolsSwitchRequest(_messages.Message):
@@ -3081,6 +3151,19 @@ class OntapSource(_messages.Message):
   volumeUuid = _messages.StringField(3)
 
 
+class OntapVolumeTarget(_messages.Message):
+  r"""Represents the ONTAP volume target of the restore operation.
+
+  Fields:
+    restoreDestinationPath: Optional. Absolute directory path in the
+      destination volume.
+    volumeUuid: Required. The UUID of the ONTAP volume to restore to.
+  """
+
+  restoreDestinationPath = _messages.StringField(1)
+  volumeUuid = _messages.StringField(2)
+
+
 class Operation(_messages.Message):
   r"""This resource represents a long-running operation that is the result of
   a network API call.
@@ -3542,6 +3625,18 @@ class RestoreParameters(_messages.Message):
   sourceBackup = _messages.StringField(1)
   sourceBackupdrBackup = _messages.StringField(2)
   sourceSnapshot = _messages.StringField(3)
+
+
+class RestoreVolumeRequest(_messages.Message):
+  r"""Request message for `RestoreVolume` API.
+
+  Fields:
+    backupSource: The backup source of the restore operation.
+    ontapVolumeTarget: The ONTAP volume target of the restore operation.
+  """
+
+  backupSource = _messages.MessageField('BackupSource', 1)
+  ontapVolumeTarget = _messages.MessageField('OntapVolumeTarget', 2)
 
 
 class ResumeReplicationRequest(_messages.Message):
@@ -4617,6 +4712,18 @@ class Volume(_messages.Message):
   unixPermissions = _messages.StringField(44)
   usedGib = _messages.IntegerField(45)
   zone = _messages.StringField(46)
+
+
+class VolumeBackupConfig(_messages.Message):
+  r"""Backup configuration for a volume in a pool.
+
+  Fields:
+    backupConfig: Backup configuration for the volume.
+    volumeUuid: Provides the Ontap UUID of the volume within the pool.
+  """
+
+  backupConfig = _messages.MessageField('BackupConfig', 1)
+  volumeUuid = _messages.StringField(2)
 
 
 class WeeklySchedule(_messages.Message):

@@ -36,9 +36,9 @@
         using the form
         `organizations/{organization_id}/locations/locations/global/organizationEvents/{event_id}`.
 
-        `organization_id` - ID (number) of the project that contains the event. To
-        get your `organization_id`, see
-        [Getting your organization resource
+        `organization_id` - ID (number) of the organization that contains the
+        event. To get your `organization_id`, see [Getting your organization
+        resource
         ID](https://cloud.google.com/resource-manager/docs/creating-managing-organization#retrieving_your_organization_id).<br>
         `event_id` - Organization event ID to retrieve.
       is_positional: true

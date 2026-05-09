@@ -74,6 +74,11 @@ class Condition(proto.Message):
             condition.
 
             This field is a member of `oneof`_ ``reasons``.
+        build_reason (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.Condition.BuildReason):
+            Output only. A reason for the build
+            condition.
+
+            This field is a member of `oneof`_ ``reasons``.
     """
     class State(proto.Enum):
         r"""Represents the possible Condition states.
@@ -267,6 +272,24 @@ class Condition(proto.Message):
         DELETED = 5
         DELAYED_START_PENDING = 6
 
+    class BuildReason(proto.Enum):
+        r"""Reasons specific to Build condition.
+
+        Values:
+            UNSPECIFIED (0):
+                Default value.
+            RUNNING (1):
+                Build is in progress.
+            SUCCEEDED (2):
+                Build succeeded.
+            FAILED (3):
+                Build failed.
+        """
+        UNSPECIFIED = 0
+        RUNNING = 1
+        SUCCEEDED = 2
+        FAILED = 3
+
     type_: str = proto.Field(
         proto.STRING,
         number=1,
@@ -307,6 +330,12 @@ class Condition(proto.Message):
         number=11,
         oneof='reasons',
         enum=ExecutionReason,
+    )
+    build_reason: BuildReason = proto.Field(
+        proto.ENUM,
+        number=13,
+        oneof='reasons',
+        enum=BuildReason,
     )
 
 

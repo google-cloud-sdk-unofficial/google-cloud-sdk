@@ -252,6 +252,11 @@ class GcpResourceHandler(abc.ABC):
     except apitools_exceptions.HttpNotFoundError:
       return None
 
+  def should_retry_create(self, exception: Exception) -> bool:
+    """Returns True if creation should be retried on this exception."""
+    del exception  # Unused
+    return False
+
   def get_parent_resource_type(self) -> str:
     """Returns the type of the parent resource, or None if top-level."""
     if self._parent_resource_type is not None:

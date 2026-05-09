@@ -57,7 +57,7 @@
         settings, session settings, restricted client application client IDs, and restricted client
         application names.
         They can't all be empty. Session settings are incompatible with restricted client
-        application client IDs/names; please use scoped access settings to bind session settings to
+        application client IDs/names; use scoped access settings to bind session settings to
         an application.
       examples: |
         To update an existing access binding, run:
@@ -89,6 +89,10 @@
 
         Note this is only possible for scoped access settings that exclusively hold session
         settings.
+
+        To update a cloud access binding for all workforce identities in a given org, run:
+
+          $ {command} --binding=my-binding-id --binding-file='binding.yaml'
 
         To update session settings, run:
 
@@ -124,10 +128,10 @@
       metavar: YAML_FILE
       arg_name: binding-file
       help_text: |
-        Path to the file that contains a Google Cloud Platform user access binding.
+        Path to the file that contains a Google Cloud user access binding.
 
         This file contains a YAML-compliant object representing
-        a GcpUserAccessBinding (as described in the API reference) containing ScopedAccessSettings only.
+        a GcpUserAccessBinding (as described in the API reference) containing `ScopedAccessSettings` only.
         No other binding fields are allowed.
 
         The file content replaces the corresponding fields in the existing binding. Unless --append
@@ -135,6 +139,17 @@
       repeated: false
       ALPHA:
         processor: googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ParseGcpUserAccessBindingFromBindingFile:api_version=v1alpha
+        help_text: |
+          Path to the file that contains a Google Cloud user access binding.
+
+          This file contains a YAML-compliant object representing
+          a GcpUserAccessBinding (as described in the API reference) containing `ScopedAccessSettings` only.
+          No other binding fields are allowed. For bindings tied to all workforce identities in a
+          given org, the `ScopedAccessSettings` must only contain `sessionSettings`
+          within the `activeSettings` list. No other fields are allowed.
+
+          The file content replaces the corresponding fields in the existing binding. Unless --append
+          is specified. See --append help text for more details.
       GA:
         processor: googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ParseGcpUserAccessBindingFromBindingFile:api_version=v1
     - api_field: gcpUserAccessBinding.accessLevels
@@ -144,6 +159,12 @@
         The access level that replaces the existing level for the given binding. The input must
         be the full identifier of an access level, such as
         `accessPolicies/123/accessLevels/new-abc`.
+      ALPHA:
+        help_text: |
+          The access level that replaces the existing level for the given binding. The input must
+          be the full identifier of an access level, such as
+          `accessPolicies/123/accessLevels/new-abc`. This parameter is not supported for
+          bindings tied to all workforce identities in an organization.
     - api_field: gcpUserAccessBinding.dryRunAccessLevels
       arg_name: dry-run-level
       type: str
@@ -151,6 +172,12 @@
         The dry run access level that replaces the existing dry run level for the given binding.
         The input must be the full identifier of an access level, such as
         `accessPolicies/123/accessLevels/new-def`.
+      ALPHA:
+        help_text: |
+          The dry run access level that replaces the existing dry run level for the given binding.
+          The input must be the full identifier of an access level, such as
+          `accessPolicies/123/accessLevels/new-def`. This parameter is not supported for
+          bindings tied to all workforce identities in an organization.
     - api_field: gcpUserAccessBinding.sessionSettings.sessionLength
       arg_name: session-length
       type: googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessSessionLength
@@ -172,9 +199,7 @@
         help_text: |
           The maximum lifetime of a user session provided as an ISO 8601 duration string.
           For first-party users, this must be at least one hour or zero seconds, and no more
-          than twenty-four hours.
-          For third-party users, this can be up to 90 days, or 14 days for Cloud Console.
-          Granularity is limited to seconds.
+          than twenty-four hours. This field is not allowed for bindings tied to Principals.
 
           When --session-length=0 users in the group attached to this binding will have infinite
           session length, effectively disabling the session settings.
@@ -185,7 +210,10 @@
           session-reauth-method.
 
           Setting --session-reauth-method when --session-length is empty raises an error. Cannot set
-          --session-length on restricted client applications; please use scoped access settings.
+          --session-length on restricted client applications; use scoped access settings.
+          This parameter is not supported for bindings tied to all workforce identities in an
+          organization. For bindings tied to all workforce identities in an organization,
+          session settings can be configured by including them in the `binding-file`.
     - api_field: gcpUserAccessBinding.sessionSettings.sessionReauthMethod
       arg_name: session-reauth-method
       default: login
@@ -193,6 +221,14 @@
         Specifies the security check a user must undergo when their session expires. Defaults to
         --session-reauth-method=LOGIN if unspecified and --session-length is set. Cannot be used when
         --session-length is empty or 0.
+      ALPHA:
+        help_text: |
+          Specifies the security check a user must undergo when their session expires. Defaults to
+          --session-reauth-method=LOGIN if unspecified and --session-length is set. Cannot be used when
+          --session-length is empty or 0. This parameter is not supported for bindings tied to all
+          workforce identities in an organization. For bindings tied to all workforce identities
+          in an organization, session settings can be configured by including them in the
+          `binding-file`.
       choices:
       - arg_value: login
         enum_value: LOGIN
@@ -219,20 +255,22 @@
       type: 'googlecloudsdk.calliope.arg_parsers:ArgList:'
       help_text: |
         The application client IDs that replace the existing application client IDs for
-        the restricted client applications in the given binding.
+        the restricted client applications in the given binding. This parameter is not
+        supported for bindings tied to all workforce identities in an organization.
     - arg_name: restricted-client-application-names
       required: false
       release_tracks: [ALPHA]
       type: 'googlecloudsdk.calliope.arg_parsers:ArgList:'
       help_text: |
         The application names that replace the existing application names for
-        the restricted client applications in the given binding.
+        the restricted client applications in the given binding. This parameter is
+        not supported for bindings tied to all workforce identities in an organization.
     - api_field: append
       arg_name: append
       help_text: |
-        When true, append the ScopedAccessSettings in `--binding-file` to the existing
-        ScopedAccessSettings on the binding. When false, the existing binding's ScopedAccessSettings
-        will be overwritten. Defaults to false. You may only append ScopedAccessSettings that
+        When true, append the `ScopedAccessSettings` in `--binding-file` to the existing
+        `ScopedAccessSettings` on the binding. When false, the existing binding's `ScopedAccessSettings`
+        will be overwritten. Defaults to false. You may only append `ScopedAccessSettings` that
         exclusively hold session settings (i.e no access levels).
       required: false
       default: false

@@ -19,13 +19,13 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instant_snapshot_groups import flags as isg_flags
 
 DETAILED_HELP = {  # Dict[str, str]
-    'brief': 'Describe a Compute Engine instant snapshot group',
+    'brief': 'Describe a Compute Engine consistency group of instant snapshots',
     'DESCRIPTION': """\
         *{command}* displays all data associated with a Compute
-        Engine instant snapshot group in a project.
+        Engine consistency group of instant snapshots in a project.
         """,
     'EXAMPLES': """\
-        To describe the instant snapshot group 'instant-snapshot-group-1' in zone 'us-east1-a', run:
+        To describe the consistency group of instant snapshots 'instant-snapshot-group-1' in zone 'us-east1-a', run:
 
             $ {command} instant-snapshot-group-1 --zone=us-east1-a
         """,
@@ -38,7 +38,9 @@ def _CommonArgs(parser):
   Describe.ISG_ARG.AddArgument(parser, operation_type='describe')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 @base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine instant snapshot group."""

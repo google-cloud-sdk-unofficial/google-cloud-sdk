@@ -400,6 +400,7 @@ class TemplateArguments:
   subnetwork = None
   worker_machine_type = None
   launcher_machine_type = None
+  launcher_vm_timeout_secs = None
   staging_location = None
   temp_location = None
   kms_key_name = None
@@ -428,6 +429,7 @@ class TemplateArguments:
                subnetwork=None,
                worker_machine_type=None,
                launcher_machine_type=None,
+               launcher_vm_timeout_secs=None,
                staging_location=None,
                temp_location=None,
                kms_key_name=None,
@@ -454,6 +456,7 @@ class TemplateArguments:
     self.subnetwork = subnetwork
     self.worker_machine_type = worker_machine_type
     self.launcher_machine_type = launcher_machine_type
+    self.launcher_vm_timeout_secs = launcher_vm_timeout_secs
     self.staging_location = staging_location
     self.temp_location = temp_location
     self.kms_key_name = kms_key_name
@@ -482,6 +485,10 @@ class Templates:
   FLEX_TEMPLATE_ENVIRONMENT = GetMessagesModule().FlexTemplateRuntimeEnvironment
   FLEX_TEMPLATE_USER_LABELS_VALUE = (
       FLEX_TEMPLATE_ENVIRONMENT.AdditionalUserLabelsValue
+  )
+  FLEX_TEMPLATE_PARAMETER = GetMessagesModule().LaunchFlexTemplateParameter
+  FLEX_TEMPLATE_LAUNCH_OPTIONS_VALUE = (
+      FLEX_TEMPLATE_PARAMETER.LaunchOptionsValue
   )
   DYNAMIC_TEMPLATE_TRANSFORM_NAME_MAPPING_VALUE = (
       LAUNCH_TEMPLATE_PARAMETERS.TransformNameMappingValue
@@ -1350,7 +1357,14 @@ class Templates:
                 additionalProperties=transform_mapping_list
             )
         )
-
+    launch_options_list = []
+    if template_args.launcher_vm_timeout_secs:
+      launch_options_list.append(
+          Templates.FLEX_TEMPLATE_LAUNCH_OPTIONS_VALUE.AdditionalProperty(
+              key='ft_launch_timeout_secs',
+              value=str(template_args.launcher_vm_timeout_secs),
+          )
+      )
     user_labels_list = Templates.__ConvertDictArguments(
         template_args.additional_user_labels,
         Templates.FLEX_TEMPLATE_USER_LABELS_VALUE)
@@ -1372,6 +1386,9 @@ class Templates:
         launchParameter=Templates.FLEX_TEMPLATE_PARAMETER(
             jobName=template_args.job_name,
             containerSpecGcsPath=template_args.gcs_location,
+            launchOptions=Templates.FLEX_TEMPLATE_LAUNCH_OPTIONS_VALUE(
+                additionalProperties=launch_options_list
+            ) if launch_options_list else None,
             environment=Templates.FLEX_TEMPLATE_ENVIRONMENT(
                 serviceAccountEmail=template_args.service_account_email,
                 maxWorkers=template_args.max_workers,

@@ -55,6 +55,19 @@ enable_pitr:
   - arg_value: false
     enum_value: POINT_IN_TIME_RECOVERY_DISABLED
 
+# entity-group simulation is not listed here as it is a legacy feature, disallowed by most databases
+# and we don't want to promote its usage or confuse users around it.
+concurrency_mode:
+  api_field: googleFirestoreAdminV1Database.concurrencyMode
+  arg_name: concurrency-mode
+  help_text: The concurrency control mode to use for this database.
+  required: false
+  choices:
+  - arg_value: optimistic
+    enum_value: OPTIMISTIC
+  - arg_value: pessimistic
+    enum_value: PESSIMISTIC
+
 query_scope:
   api_field: googleFirestoreAdminV1Index.queryScope
   arg_name: query-scope

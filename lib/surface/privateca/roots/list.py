@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.privateca import text_utils
 from googlecloudsdk.core import properties
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List root certificate authorities.
@@ -54,15 +55,19 @@ class List(base.ListCommand):
   def Args(parser):
     base.Argument(
         '--location',
-        help='Location of the certificate authorities. If ommitted, root CAs across all regions will be listed.'
+        help=(
+            'Location of the certificate authorities. If omitted, root CAs '
+            'across all regions will be listed.'
+        ),
     ).AddToParser(parser)
     base.Argument(
         '--pool',
-        help='ID of the CA Pool where the certificate authorities reside. If ommitted, root CAs across all CA pools will be listed.'
+        help=(
+            'ID of the CA Pool where the certificate authorities reside. If'
+            ' omitted, root CAs across all CA pools will be listed.'
+        ),
     ).AddToParser(parser)
     base.PAGE_SIZE_FLAG.SetDefault(parser, 100)
-    base.FILTER_FLAG.RemoveFromParser(parser)
-
     parser.display_info.AddFormat("""
         table(
           name.basename(),
@@ -97,10 +102,16 @@ class List(base.ListCommand):
     parent_resource = 'projects/{}/locations/{}/caPools/{}'.format(
         properties.VALUES.core.project.GetOrFail(), location, ca_pool_id)
 
+    filter_info = (
+        args.filter + ' AND type:SELF_SIGNED'
+        if args.IsSpecified('filter')
+        else 'type:SELF_SIGNED'
+    )
     request = messages.PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesListRequest(
         parent=parent_resource,
-        filter='type:SELF_SIGNED',
-        orderBy=common_args.ParseSortByArg(args.sort_by))
+        filter=filter_info,
+        orderBy=common_args.ParseSortByArg(args.sort_by),
+    )
 
     return list_pager.YieldFromList(
         client.projects_locations_caPools_certificateAuthorities,

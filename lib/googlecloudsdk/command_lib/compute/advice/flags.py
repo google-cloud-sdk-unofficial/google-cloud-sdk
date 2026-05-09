@@ -14,7 +14,6 @@
 # limitations under the License.
 """Advice group command flags."""
 
-
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import exceptions
@@ -26,9 +25,8 @@ from googlecloudsdk.command_lib.util.apis import arg_utils
 def AddRegionFlag(parser):
   """Add the --region flag."""
   compute_flags.AddRegionFlag(
-      parser=parser,
-      resource_type="resources",
-      operation_type="get advice on")
+      parser=parser, resource_type="resources", operation_type="get advice on"
+  )
 
 
 def AddLocationPolicyFlag(parser):
@@ -270,9 +268,7 @@ Defines the distribution requirement for the requested VMs.
       "ANY": (
           "When you specify ANY for VM instance creation across multiple"
           " zones, you specify that you want to create your VM instances in one"
-          " or more zones based on resource availability, and to use any"
-          " unused, matching reservation in your project. Use ANY for batch"
-          " workloads that don't require high availability."
+          " or more zones based on resource availability."
       ),
       "ANY_SINGLE_ZONE": (
           "When you specify ANY_SINGLE_ZONE for VM instance creation, you"
@@ -284,13 +280,21 @@ Defines the distribution requirement for the requested VMs.
           " instances. Use ANY_SINGLE_ZONE when the VM instances in your"
           " workloads need to frequently communicate among each other."
       ),
+      "BALANCED": (
+          "Prioritizes provisioning VMs in zones where resources are available."
+          " Compute Engine then distributes VMs as evenly as possible across"
+          " zones. If resources are unavailable in one or more zones, then the"
+          " actual distribution might be uneven. Use BALANCED to minimize the"
+          " impact of zonal failures."
+      ),
   }
   parser.add_argument(
       "--target-distribution-shape",
       choices=choices,
       type=arg_utils.ChoiceToEnumName,
       required=True,
-      help=help_text)
+      help=help_text,
+  )
 
 
 def AddMaxRunDurationFlag(parser):

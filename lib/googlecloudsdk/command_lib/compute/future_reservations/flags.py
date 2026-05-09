@@ -321,7 +321,7 @@ def GetSchedulingTypeFlag():
 def GetResourceMangerTagsFlag():
   """Gets the --resource-manager-tags flag."""
   help_text = """\
-  Resource manager tags to be bound to the commitment.
+  Resource manager tags to be bound to the future reservation.
   """
   return base.Argument(
       '--resource-manager-tags',

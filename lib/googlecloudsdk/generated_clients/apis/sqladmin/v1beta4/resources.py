@@ -31,6 +31,17 @@ class Collections(enum.Enum):
       ['project', 'instance', 'id'],
       True
   )
+  BLUEGREENDEPLOYMENTS = (
+      'blueGreenDeployments',
+      '{+name}',
+      {
+          '':
+              'projects/{project}/locations/{location}/blueGreenDeployments/'
+              '{blueGreenDeploymentsId}',
+      },
+      ['name'],
+      True
+  )
   CONNECT = (
       'connect',
       'projects/{project}/instances/{instance}/connectSettings',
@@ -71,6 +82,13 @@ class Collections(enum.Enum):
       'projects/{project}/instances/{instance}/users/{name}',
       {},
       ['project', 'instance', 'name'],
+      True
+  )
+  LOCATIONS = (
+      'locations',
+      'projects/{projectsId}/locations/{locationsId}',
+      {},
+      ['projectsId', 'locationsId'],
       True
   )
   PROJECTS = (

@@ -21,22 +21,26 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 
 DETAILED_HELP = {
-    'brief': 'Update the KMS key of a persistent disk.',
-    'DESCRIPTION': """
-        * {command} * updates the KMS key of a Compute Engine persistent disk
+    'brief': 'Update the KMS key of a Hyperdisk or Persistent Disk.',
+    'DESCRIPTION': (
+        """
+        *{command}* updates the KMS key of a Compute Engine Persistent or Hyperdisk Disk
         by rotating it to the primary version of the key or to the primary
         version of a new KMS key.
-    """,
-    'EXAMPLES': """
-        To rotate the KMS key of a disk named example-disk-1 to the primary version, run:
+    """
+    ),
+    'EXAMPLES': (
+        """
+        To change the KMS key of a disk named `example-disk-1` to the primary version, run:
 
           $ {command} example-disk-1 --zone=us-central1-a
 
-        To change the KMS key of a disk named example-disk-2 to a new KMS key named
+        To change the KMS key of a disk named `example-disk-2` to a new KMS key named
         example-key in a key ring named example-key-ring in the global scope, run:
 
           $ {command} example-disk-2 --zone=us-central1-a --kms-key=example-key --kms-keyring=example-key-ring --kms-location=global
-    """,
+    """
+    ),
 }
 
 
@@ -49,7 +53,7 @@ def _CommonArgs(parser):
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class UpdateKmsKey(base.Command):
-  """Update the KMS key of a persistent disk."""
+  """Update the KMS key of a Hyperdisk or Persistent Disk."""
 
   @classmethod
   def Args(cls, parser):
@@ -99,12 +103,12 @@ class UpdateKmsKey(base.Command):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateKmsKeyBeta(UpdateKmsKey):
-  """Update the KMS key of a persistent disk."""
+  """Update the KMS key of a Hyperdisk or Persistent Disk."""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateKmsKeyAlpha(UpdateKmsKeyBeta):
-  """Update the KMS key of a persistent disk."""
+  """Update the KMS key of a Hyperdisk or Persistent Disk."""
 
 
 UpdateKmsKey.detailed_help = DETAILED_HELP

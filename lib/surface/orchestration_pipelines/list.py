@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.composer import util
 from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.orchestration_pipelines.tools import composer_utils
+from googlecloudsdk.command_lib.orchestration_pipelines.tools import yaml_processor
 
 
 @calliope_base.Hidden
@@ -52,6 +53,7 @@ class List(calliope_base.Command):
         "--owner",
         help="The owner of the pipeline to filter by.",
     )
+    yaml_processor.add_substitution_flags(parser)
 
   def Run(self, args):
     api_version = util.GetApiVersion(self.ReleaseTrack())
@@ -68,9 +70,14 @@ class List(calliope_base.Command):
         owner=args.owner,
         is_current=True,
     )
+    if args.runner:
+      env_model = None
+    else:
+      env_model = yaml_processor.load_environment_with_args(args)
+
     list_dags_response = composer_utils.list_pipelines_with_filter(
         list_filter,
-        args.environment,
+        env_model,
         args.runner,
         api_version,
     )

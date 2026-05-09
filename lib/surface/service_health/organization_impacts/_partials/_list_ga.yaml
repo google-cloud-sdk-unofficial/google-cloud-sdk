@@ -38,9 +38,9 @@
 
         `location` - The location to get organization impacts from. Set this
         field to `global`.<br>
-        `organization_id` - ID (number) of the project that contains the event. To
-        get your `organization_id`, see
-        [Getting your organization resource
+        `organization_id` - ID (number) of the organization that contains the
+        event. To get your `organization_id`, see [Getting your organization
+        resource
         ID](https://cloud.google.com/resource-manager/docs/creating-managing-organization#retrieving_your_organization_id).
       is_positional: false
       is_primary_resource: true

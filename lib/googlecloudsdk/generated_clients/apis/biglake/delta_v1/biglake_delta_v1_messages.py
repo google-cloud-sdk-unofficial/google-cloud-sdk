@@ -153,8 +153,6 @@ class DeltaSharingCatalog(_messages.Message):
 
   Fields:
     createTime: Output only. The creation time of the catalog.
-    federated_catalog_options: Optional. Configuration options for federated
-      catalogs.
     location: Required. Immutable. The user-provided GCP location of the
       catalog. This field is immutable.
     name: Identifier. The resource name. Format:
@@ -168,12 +166,11 @@ class DeltaSharingCatalog(_messages.Message):
   """
 
   createTime = _messages.StringField(1)
-  federated_catalog_options = _messages.MessageField('FederatedCatalogOptions', 2)
-  location = _messages.StringField(3)
-  name = _messages.StringField(4)
-  sapConfig = _messages.MessageField('SapConfig', 5)
-  serviceAccount = _messages.StringField(6)
-  updateTime = _messages.StringField(7)
+  location = _messages.StringField(2)
+  name = _messages.StringField(3)
+  sapConfig = _messages.MessageField('SapConfig', 4)
+  serviceAccount = _messages.StringField(5)
+  updateTime = _messages.StringField(6)
 
 
 class DeltaSharingSchema(_messages.Message):
@@ -221,18 +218,6 @@ class Empty(_messages.Message):
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
 
-
-
-class FederatedCatalogOptions(_messages.Message):
-  r"""Configuration options for federated catalog.
-
-  Fields:
-    service_directory_name: Optional. The service directory resource name in
-      the format `projects/{project_id}/locations/{location_id}/namespaces/{na
-      mespace_id}/services/{service_id}`.
-  """
-
-  service_directory_name = _messages.StringField(1)
 
 
 class ListDeltaSharingCatalogsResponse(_messages.Message):
@@ -381,10 +366,6 @@ class StandardQueryParameters(_messages.Message):
   upload_protocol = _messages.StringField(12)
 
 
-encoding.AddCustomJsonFieldMapping(
-    DeltaSharingCatalog, 'federated_catalog_options', 'federated-catalog-options')
-encoding.AddCustomJsonFieldMapping(
-    FederatedCatalogOptions, 'service_directory_name', 'service-directory-name')
 encoding.AddCustomJsonFieldMapping(
     StandardQueryParameters, 'f__xgafv', '$.xgafv')
 encoding.AddCustomJsonEnumMapping(

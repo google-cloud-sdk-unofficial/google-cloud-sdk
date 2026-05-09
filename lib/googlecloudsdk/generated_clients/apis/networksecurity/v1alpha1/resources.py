@@ -491,6 +491,18 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_ULLMIRRORINGCOLLECTORS_RULES = (
+      'projects.locations.ullMirroringCollectors.rules',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'ullMirroringCollectors/{ullMirroringCollectorsId}/rules/'
+              '{rulesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_ULLMIRRORINGENGINES = (
       'projects.locations.ullMirroringEngines',
       '{+name}',

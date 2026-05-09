@@ -189,6 +189,23 @@ class AuthorizationLoggingOptions(_messages.Message):
   permissionType = _messages.EnumField('PermissionTypeValueValuesEnum', 1)
 
 
+class AutoUpgradeConfig(_messages.Message):
+  r"""Configuration for automatic upgrades.
+
+  Fields:
+    rolloutCreationScope: Optional. Specifies the scope of automation for the
+      creation of rollouts. Represents the types of rollouts (version
+      upgrades) the sequence should initiate automatically. If this field is
+      `unset`, it defaults to all types. If this field is `set` but the
+      internal `upgrade_types` list is `empty`, most automatic rollouts are
+      disabled for this sequence. Exceptions are rollouts enforcing our
+      security policies (e.g. such as end-of-support and outdated control
+      plane patch enforcements). These policy enforcements cannot be disabled.
+  """
+
+  rolloutCreationScope = _messages.MessageField('RolloutCreationScope', 1)
+
+
 class BinaryAuthorizationConfig(_messages.Message):
   r"""BinaryAuthorizationConfig defines the fleet level configuration of
   binary authorization feature.
@@ -4431,6 +4448,20 @@ class GkehubProjectsLocationsRolloutSequencesPatchRequest(_messages.Message):
   updateMask = _messages.StringField(3)
 
 
+class GkehubProjectsLocationsRolloutSequencesUpgradeRequest(_messages.Message):
+  r"""A GkehubProjectsLocationsRolloutSequencesUpgradeRequest object.
+
+  Fields:
+    name: Required. The name of the rollout sequence. Format: projects/{projec
+      t}/locations/{location}/rolloutSequences/{rollout_sequence}
+    upgradeRolloutSequenceRequest: A UpgradeRolloutSequenceRequest resource to
+      be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  upgradeRolloutSequenceRequest = _messages.MessageField('UpgradeRolloutSequenceRequest', 2)
+
+
 class GkehubProjectsLocationsRolloutsCancelRequest(_messages.Message):
   r"""A GkehubProjectsLocationsRolloutsCancelRequest object.
 
@@ -7530,13 +7561,13 @@ class QualifiedVersion(_messages.Message):
   Fields:
     partial: Output only. Whether the version is partially qualified (the
       rollout targeted only a subset of clusters e.g. for a higher minor).
-    qualifyTime: Output only. The timestamp when the rollout to this version
-      finished.
+    upgradeCompleteTime: Output only. The timestamp when the rollout to this
+      version finished.
     version: Output only. The actual patch version that was applied.
   """
 
   partial = _messages.BooleanField(1)
-  qualifyTime = _messages.StringField(2)
+  upgradeCompleteTime = _messages.StringField(2)
   version = _messages.StringField(3)
 
 
@@ -8131,6 +8162,38 @@ class Rollout(_messages.Message):
   versionUpgrade = _messages.MessageField('VersionUpgrade', 27)
 
 
+class RolloutCreationScope(_messages.Message):
+  r"""The scope for automatic rollout creation.
+
+  Enums:
+    UpgradeTypesValueListEntryValuesEnum:
+
+  Fields:
+    upgradeTypes: Optional. The list of enabled upgrade types.
+  """
+
+  class UpgradeTypesValueListEntryValuesEnum(_messages.Enum):
+    r"""UpgradeTypesValueListEntryValuesEnum enum type.
+
+    Values:
+      UPGRADE_TYPE_UNSPECIFIED: Default value. Should not be used.
+      CONTROL_PLANE_MINOR: Control plane minor version upgrades (e.g. 1.33 to
+        1.34).
+      CONTROL_PLANE_PATCH: Control plane patch version upgrades (e.g. 1.33.1
+        to 1.33.2).
+      NODE_MINOR: Node minor version upgrades (e.g. 1.33 to 1.34 or 1.33 to
+        1.35).
+      NODE_PATCH: Node patch version upgrades (e.g. 1.33.1 to 1.33.2).
+    """
+    UPGRADE_TYPE_UNSPECIFIED = 0
+    CONTROL_PLANE_MINOR = 1
+    CONTROL_PLANE_PATCH = 2
+    NODE_MINOR = 3
+    NODE_PATCH = 4
+
+  upgradeTypes = _messages.EnumField('UpgradeTypesValueListEntryValuesEnum', 1, repeated=True)
+
+
 class RolloutMembershipState(_messages.Message):
   r"""Metadata about single cluster (GKE Hub membership) that's part of this
   Rollout.
@@ -8164,6 +8227,8 @@ class RolloutSequence(_messages.Message):
     LabelsValue: Optional. Labels for this Rollout Sequence.
 
   Fields:
+    autoUpgradeConfig: Optional. Configuration for automatic upgrades. If this
+      message is `unset`, the system applies default behavior.
     computedReleaseChannel: Output only. The computed release channel used for
       the Rollout Sequence.
     createTime: Output only. The timestamp at which the Rollout Sequence was
@@ -8172,6 +8237,8 @@ class RolloutSequence(_messages.Message):
       deleted.
     displayName: Optional. Human readable display name of the Rollout
       Sequence.
+    effectiveAutoUpgradeConfig: Output only. The resolved auto-upgrade options
+      which are in effect.
     etag: Output only. etag of the Rollout Sequence Ex. abc1234
     ignoredClustersSelector: Optional. Selector for clusters to exclude from
       the Rollout Sequence.
@@ -8240,22 +8307,24 @@ class RolloutSequence(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  computedReleaseChannel = _messages.EnumField('ComputedReleaseChannelValueValuesEnum', 1)
-  createTime = _messages.StringField(2)
-  deleteTime = _messages.StringField(3)
-  displayName = _messages.StringField(4)
-  etag = _messages.StringField(5)
-  ignoredClustersSelector = _messages.MessageField('ClusterSelector', 6)
-  labels = _messages.MessageField('LabelsValue', 7)
-  lastQualifiedControlPlaneVersion = _messages.StringField(8)
-  lastQualifiedNodeVersion = _messages.StringField(9)
-  name = _messages.StringField(10)
-  stages = _messages.MessageField('Stage', 11, repeated=True)
-  state = _messages.MessageField('RolloutSequenceState', 12)
-  targetControlPlaneVersion = _messages.StringField(13)
-  targetNodeVersion = _messages.StringField(14)
-  uid = _messages.StringField(15)
-  updateTime = _messages.StringField(16)
+  autoUpgradeConfig = _messages.MessageField('AutoUpgradeConfig', 1)
+  computedReleaseChannel = _messages.EnumField('ComputedReleaseChannelValueValuesEnum', 2)
+  createTime = _messages.StringField(3)
+  deleteTime = _messages.StringField(4)
+  displayName = _messages.StringField(5)
+  effectiveAutoUpgradeConfig = _messages.MessageField('AutoUpgradeConfig', 6)
+  etag = _messages.StringField(7)
+  ignoredClustersSelector = _messages.MessageField('ClusterSelector', 8)
+  labels = _messages.MessageField('LabelsValue', 9)
+  lastQualifiedControlPlaneVersion = _messages.StringField(10)
+  lastQualifiedNodeVersion = _messages.StringField(11)
+  name = _messages.StringField(12)
+  stages = _messages.MessageField('Stage', 13, repeated=True)
+  state = _messages.MessageField('RolloutSequenceState', 14)
+  targetControlPlaneVersion = _messages.StringField(15)
+  targetNodeVersion = _messages.StringField(16)
+  uid = _messages.StringField(17)
+  updateTime = _messages.StringField(18)
 
 
 class RolloutSequenceState(_messages.Message):
@@ -8330,13 +8399,11 @@ class RolloutStage(_messages.Message):
     fleetProjects: Output only. The fleet projects from the sequence that was
       used to create this stage. Expected format: projects/{project_number}
     runningPauseDuration: Output only. The duration for which the current
-      stage of the Rollout was paused by the user while the stage was in
-      `RUNNING` state.
+      stage of the Rollout was paused while the stage was in `RUNNING` state.
     soakDuration: Optional. Duration to soak after this stage before starting
       the next stage.
     soakingPauseDuration: Output only. The duration for which the current
-      stage of the Rollout was paused by the user while the stage was in
-      `SOAKING` state.
+      stage of the Rollout was paused while the stage was in `SOAKING` state.
     stageNumber: Output only. The stage number to which this status applies.
     startTime: Optional. Output only. The time at which the stage started.
     state: Output only. The state of the stage.
@@ -9902,6 +9969,45 @@ class UIPRRolloutConfig(_messages.Message):
   customWaves = _messages.MessageField('WaveTemplate', 1, repeated=True)
   excludedMembershipNames = _messages.StringField(2, repeated=True)
   includeMembershipNames = _messages.StringField(3, repeated=True)
+
+
+class UpgradeRolloutSequenceRequest(_messages.Message):
+  r"""Request message for upgrading a rollout sequence.
+
+  Enums:
+    UpgradeTypeValueValuesEnum: Required. The type of upgrade.
+
+  Fields:
+    upgradeType: Required. The type of upgrade.
+    version: Required. GKE version to upgrade to. A valid GKE version
+      available on the release channel used by the sequence. Patch versions
+      from less conservative channels are allowed if their minor version is
+      already available in the sequence's channel. This is similar to single-
+      cluster upgrade rules, see https://cloud.google.com/kubernetes-
+      engine/docs/how-to/upgrading-a-cluster#supported-versions Example: With
+      the following versions available on the RAPID and REGULAR channels: *
+      REGULAR: 1.35.3-gke.123000 * RAPID: 1.36.4-gke.321000, 1.35.6-gke.045000
+      Valid versions are 1.35.3-gke.123, 1.35.6-gke.045000 Aliases like
+      `latest` are supported. For more information on valid upgrade versions
+      and specifying cluster versions, see:
+      https://cloud.google.com/kubernetes-
+      engine/versioning#specifying_cluster_version
+  """
+
+  class UpgradeTypeValueValuesEnum(_messages.Enum):
+    r"""Required. The type of upgrade.
+
+    Values:
+      UPGRADE_TYPE_UNSPECIFIED: Default unspecified value.
+      CONTROL_PLANE: Upgrade the control plane.
+      NODE: Upgrade the nodes.
+    """
+    UPGRADE_TYPE_UNSPECIFIED = 0
+    CONTROL_PLANE = 1
+    NODE = 2
+
+  upgradeType = _messages.EnumField('UpgradeTypeValueValuesEnum', 1)
+  version = _messages.StringField(2)
 
 
 class ValidateCreateMembershipRequest(_messages.Message):

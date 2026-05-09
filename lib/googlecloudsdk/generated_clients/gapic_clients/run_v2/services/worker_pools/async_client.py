@@ -72,6 +72,8 @@ class WorkerPoolsAsyncClient:
     _DEFAULT_ENDPOINT_TEMPLATE = WorkerPoolsClient._DEFAULT_ENDPOINT_TEMPLATE
     _DEFAULT_UNIVERSE = WorkerPoolsClient._DEFAULT_UNIVERSE
 
+    build_path = staticmethod(WorkerPoolsClient.build_path)
+    parse_build_path = staticmethod(WorkerPoolsClient.parse_build_path)
     connector_path = staticmethod(WorkerPoolsClient.connector_path)
     parse_connector_path = staticmethod(WorkerPoolsClient.parse_connector_path)
     crypto_key_path = staticmethod(WorkerPoolsClient.crypto_key_path)

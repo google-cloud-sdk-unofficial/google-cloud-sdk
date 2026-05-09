@@ -3512,48 +3512,46 @@ class Environment(_messages.Message):
 class ExportApplicationTemplateIaCRequest(_messages.Message):
   r"""Request message for ExportApplicationTemplateIaC method.
 
-  Enums:
-    IacFormatValueValuesEnum: Optional. The IaC format to generate.
-
   Fields:
     artifactLocation: Optional. Specifies the destination for the generated
       IaC, which can be Cloud Storage or a Developer Connect repository.
-    iacFormat: Optional. The IaC format to generate.
-    moduleSourceConfig: Optional. Configuration for handling module sources.
+      Default is Google Cloud Storage.
+    exportIacConfig: Optional. Configuration for exporting IaC.
   """
 
-  class IacFormatValueValuesEnum(_messages.Enum):
-    r"""Optional. The IaC format to generate.
-
-    Values:
-      IAC_FORMAT_UNSPECIFIED: IaC format is unspecified.
-      TERRAFORM: IaC format is Terraform.
-      HELM: IaC format is HELM.
-    """
-    IAC_FORMAT_UNSPECIFIED = 0
-    TERRAFORM = 1
-    HELM = 2
-
   artifactLocation = _messages.MessageField('ArtifactLocation', 1)
-  iacFormat = _messages.EnumField('IacFormatValueValuesEnum', 2)
-  moduleSourceConfig = _messages.MessageField('ModuleSourceConfig', 3)
+  exportIacConfig = _messages.MessageField('ExportIaCConfig', 2)
 
 
 class ExportApplicationTemplateRevisionIaCRequest(_messages.Message):
   r"""Request message for ExportApplicationTemplateRevisionIaC method.
 
-  Enums:
-    IacFormatValueValuesEnum: Optional. The IaC format to generate.
-
   Fields:
     artifactLocation: Optional. Specifies the destination for the generated
       IaC, which can be Cloud Storage or a Developer Connect repository.
-    iacFormat: Optional. The IaC format to generate.
-    moduleSourceConfig: Optional. Configuration for handling module sources.
+      Default is Google Cloud Storage.
+    exportIacConfig: Optional. Configuration for exporting IaC.
+  """
+
+  artifactLocation = _messages.MessageField('ArtifactLocation', 1)
+  exportIacConfig = _messages.MessageField('ExportIaCConfig', 2)
+
+
+class ExportIaCConfig(_messages.Message):
+  r"""Configuration for exporting a resource as IAC.
+
+  Enums:
+    IacFormatValueValuesEnum: Optional. IaC format of the export. Default is
+      [IACFormat.TERRAFORM].
+
+  Fields:
+    iacFormat: Optional. IaC format of the export. Default is
+      [IACFormat.TERRAFORM].
+    tfConfig: Optional. Configuration on how to handle terraform IaC export.
   """
 
   class IacFormatValueValuesEnum(_messages.Enum):
-    r"""Optional. The IaC format to generate.
+    r"""Optional. IaC format of the export. Default is [IACFormat.TERRAFORM].
 
     Values:
       IAC_FORMAT_UNSPECIFIED: IaC format is unspecified.
@@ -3564,9 +3562,8 @@ class ExportApplicationTemplateRevisionIaCRequest(_messages.Message):
     TERRAFORM = 1
     HELM = 2
 
-  artifactLocation = _messages.MessageField('ArtifactLocation', 1)
-  iacFormat = _messages.EnumField('IacFormatValueValuesEnum', 2)
-  moduleSourceConfig = _messages.MessageField('ModuleSourceConfig', 3)
+  iacFormat = _messages.EnumField('IacFormatValueValuesEnum', 1)
+  tfConfig = _messages.MessageField('TerraformConfig', 2)
 
 
 class Expr(_messages.Message):
@@ -4631,22 +4628,6 @@ class MetadataInputSpec(_messages.Message):
   interfaces = _messages.MessageField('TemplateSchema', 2)
   requirements = _messages.MessageField('TemplateRequirements', 3)
   ui = _messages.MessageField('TemplateUi', 4)
-
-
-class ModuleSourceConfig(_messages.Message):
-  r"""Configuration for how external module sources should be handled during
-  export.
-
-  Fields:
-    gitProxyEnabled: Optional. This is typically only valid for 3P components
-      if ingested via devconnect URI. Typically, for 1P components, since they
-      are sourced from public git repos, this field is not applicable.
-    localReferencesEnabled: Optional. If set, all the dependent modules will
-      be downloaded from the target repository and referenced locally.
-  """
-
-  gitProxyEnabled = _messages.BooleanField(1)
-  localReferencesEnabled = _messages.BooleanField(2)
 
 
 class OciRepo(_messages.Message):
@@ -6027,6 +6008,17 @@ class TerraformBlueprintUiMetadata(_messages.Message):
   terraformUiOutput = _messages.MessageField('TerraformUiOutput', 2)
 
 
+class TerraformConfig(_messages.Message):
+  r"""Configuration for exporting a resource as Terraform IAC.
+
+  Fields:
+    tfModuleConfig: Optional. Configuration on how terraform module should be
+      handled during export.
+  """
+
+  tfModuleConfig = _messages.MessageField('TerraformModuleConfig', 1)
+
+
 class TerraformError(_messages.Message):
   r"""Errors encountered during actuation using Terraform
 
@@ -6086,6 +6078,21 @@ class TerraformInputConnections(_messages.Message):
   cftTemplateVersion = _messages.StringField(2)
   inputPath = _messages.StringField(3)
   outputVar = _messages.StringField(4)
+
+
+class TerraformModuleConfig(_messages.Message):
+  r"""Configuration on how terraform module should be handled during export.
+
+  Fields:
+    gitProxyEnabled: Optional. This is typically only valid for 3P components
+      if ingested via devconnect URI. Typically, for 1P components, since they
+      are sourced from public git repos, this field is not applicable.
+    localReferencesEnabled: Optional. If set, all the dependent modules will
+      be downloaded from the target repository and referenced locally.
+  """
+
+  gitProxyEnabled = _messages.BooleanField(1)
+  localReferencesEnabled = _messages.BooleanField(2)
 
 
 class TerraformOutput(_messages.Message):

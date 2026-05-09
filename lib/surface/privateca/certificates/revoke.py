@@ -30,6 +30,7 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import times
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Revoke(base.SilentCommand):
   r"""Revoke a certificate.

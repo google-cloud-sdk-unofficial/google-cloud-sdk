@@ -547,16 +547,21 @@ def WaitForOperations(
     requests = resource_requests + operation_requests
     if not requests:
       break
-    if (
-        not properties.VALUES.compute.force_batch_request.GetBool()
-        and len(requests) == 1
+    if not properties.VALUES.compute.force_batch_request.GetBool() and (
+        len(requests) == 1
+        or properties.VALUES.compute.disable_batch_request.GetBool()
     ):
-      service, method, request_body = requests[0]
-      responses, request_errors = single_request_helper.MakeSingleRequest(
-          service=service, method=method, request_body=request_body)
+      responses, request_errors = [], []
+      for service, method, request_body in requests:
+        res, err = single_request_helper.MakeSingleRequest(
+            service=service, method=method, request_body=request_body
+        )
+        responses.extend(res)
+        request_errors.extend(err)
     else:
       responses, request_errors = batch_helper.MakeRequests(
-          requests=requests, http=http, batch_url=batch_url)
+          requests=requests, http=http, batch_url=batch_url
+      )
 
     all_done = True
     # If a request return error, the response will be none. In this case, append

@@ -52,6 +52,18 @@
           help_text: |-
             All flags in the flag release's unit kind will be included to be rolled out.
 
+    - arg_name: obsolete-flags
+      help_text: |-
+        Flags (IDs) to be removed from the given UnitKind and all the related Units.
+        If Flag (ID) is provided here, its Flag Revisions will be removed from the
+        UnitKind and Units.
+      is_positional: false
+      resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:flag
+      resource_method_params:
+        flagRelease.obsoleteFlags: '{__relative_name__}'
+      required: false
+      repeated: true
+
     - arg_name: unit-kind
       help_text: |-
         UnitKind (ID) this Flag Release applies to.

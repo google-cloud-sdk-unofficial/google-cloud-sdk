@@ -290,3 +290,12 @@ def AddShowNatIpsFlag(parser):
         will include the list of NAT IPs for each connected PSC endpoint and
         any endpoints propagated from them.""",
   )
+
+
+def AddNatIpsPerEndpoint(parser):
+  parser.add_argument(
+      '--nat-ips-per-endpoint',
+      type=int,
+      help="""\
+      The number of NAT IP addresses to be allocated per connected endpoint.
+      """)

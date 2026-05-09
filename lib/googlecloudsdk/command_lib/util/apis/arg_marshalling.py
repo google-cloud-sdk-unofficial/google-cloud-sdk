@@ -511,6 +511,14 @@ class DeclarativeArgumentGenerator(object):
     """Gets the value of the limit flag (if present)."""
     return getattr(namespace, 'limit', None)
 
+  def Filter(self, namespace):
+    """Gets the value of the filter flag (if present)."""
+    return getattr(namespace, 'filter', None)
+
+  def SortBy(self, namespace):
+    """Gets the value of the sort_by flag (if present)."""
+    return getattr(namespace, 'sort_by', None)
+
   def PageSize(self, namespace):
     """Gets the value of the page size flag (if present)."""
     return getattr(namespace, 'page_size', None)

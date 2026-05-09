@@ -308,6 +308,26 @@ def AddEncryptionConfigGroup(parser, source_type):
   )
 
 
+def AddConcurrencyModeFlag(parser):
+  """Adds flag for concurrency mode to the given parser.
+
+  Args:
+    parser: The argparse parser.
+  """
+  parser.add_argument(
+      '--concurrency-mode',
+      metavar='CONCURRENCY_MODE',
+      type=str,
+      choices=['optimistic', 'pessimistic'],
+      help=textwrap.dedent("""\
+          The concurrency control mode to use for this database.
+
+          When not specified, Firestore will pick a default concurrency mode
+          based on the database edition.
+          """),
+  )
+
+
 def AddKmsKeyNameFlag(parser, additional_help_text=None):
   """Adds flag for KMS Key Name to the given parser.
 

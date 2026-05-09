@@ -57,6 +57,7 @@ class ByteDataItem(_messages.Message):
       POWERPOINT_DOCUMENT: PPTX, PPTM, POTX, POTM, POT
       TXT: TXT
       CSV: CSV
+      ZIP: ZIP
     """
     BYTE_ITEM_TYPE_UNSPECIFIED = 0
     PLAINTEXT_UTF8 = 1
@@ -66,6 +67,7 @@ class ByteDataItem(_messages.Message):
     POWERPOINT_DOCUMENT = 5
     TXT = 6
     CSV = 7
+    ZIP = 8
 
   byteData = _messages.BytesField(1)
   byteDataType = _messages.EnumField('ByteDataTypeValueValuesEnum', 2)

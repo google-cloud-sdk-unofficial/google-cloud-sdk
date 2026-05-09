@@ -186,6 +186,20 @@ class CreateFirestoreAPI(base.Command):
         api_utils.GetMessages().GoogleFirestoreAdminV1Database.RealtimeUpdatesModeValueValuesEnum.REALTIME_UPDATES_MODE_DISABLED
     )
 
+  def DatabaseConcurrencyMode(self, mode):
+    enum = (
+        api_utils.GetMessages().GoogleFirestoreAdminV1Database.ConcurrencyModeValueValuesEnum
+    )
+    match mode:
+      case None:
+        return enum.CONCURRENCY_MODE_UNSPECIFIED
+      case 'optimistic':
+        return enum.OPTIMISTIC
+      case 'pessimistic':
+        return enum.PESSIMISTIC
+      case _:
+        raise ValueError('invalid concurrency mode: {}'.format(mode))
+
   def Run(self, args):
     project = properties.VALUES.core.project.Get(required=True)
     return databases.CreateDatabase(
@@ -202,6 +216,7 @@ class CreateFirestoreAPI(base.Command):
         ),
         self.FirestoreDataAccessMode(args.enable_firestore_data_access),
         self.RealtimeUpdatesMode(args.enable_realtime_updates),
+        self.DatabaseConcurrencyMode(args.concurrency_mode),
         tags=args.tags,
     )
 
@@ -302,5 +317,6 @@ class CreateFirestoreAPI(base.Command):
         action='store_true',
         default=None,
     )
+    flags.AddConcurrencyModeFlag(parser)
     flags.AddKmsKeyNameFlag(parser)
     flags.AddTags(parser, 'database')

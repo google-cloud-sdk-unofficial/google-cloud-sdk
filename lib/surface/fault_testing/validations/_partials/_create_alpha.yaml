@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,8 +30,8 @@
   arguments:
     params:
     - help_text: |-
-        Identifier. The resource name of the Validation, of the form:
-        projects/{project_id}/locations/{location}/validations/{validation}.
+        Identifier. Unique identifier for the `Validation` dry run. Format:
+        `projects/{project_id}/locations/{location}/validations/{validationId}`.
       is_positional: true
       is_primary_resource: true
       request_id_field: validationId
@@ -42,13 +42,14 @@
       required: false
       repeated: false
       help_text: |-
-        Human-readable name of the Validation.
+        A human-readable name of the `Validation` dry run.
     - arg_name: description
       api_field: validation.description
       required: false
       repeated: false
       help_text: |-
-        Optional user-provided description or notes. Min length 0, max length 2000.
+        Notes or details about the `Validation` dry run. Minimum length is 0,
+        maximum length is 2000.
     - group:
         api_field: validation.action
         required: true
@@ -158,13 +159,6 @@
                     help_text: |-
                       Arguments for the specifier.
                     params:
-                    - arg_name: gce-fail-compute-instance
-                      api_field: validation.action.gceFailCompute.instance
-                      required: false
-                      repeated: false
-                      help_text: |-
-                        Specifies a single instance by name.
-                        Format: `projects/{project}/zones/{zone}/instances/{instance}`
                     - arg_name: gce-fail-compute-secure-tag-value
                       api_field: validation.action.gceFailCompute.secureTagValue
                       required: false

@@ -14,12 +14,27 @@
 # limitations under the License.
 """The update command for BigLake Iceberg REST catalogs."""
 
+import textwrap
+
 from googlecloudsdk.api_lib.biglake import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.biglake import arguments
 from googlecloudsdk.command_lib.biglake import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import times
+
+
+help_text = textwrap.dedent("""\
+    To update the description of a catalog `my-catalog`, run:
+
+      $ {command} my-catalog --description="updated description"
+    """)
+
+help_text_alpha = textwrap.dedent("""\
+    To update the refresh interval and namespace filters for a federated catalog `my-federated-catalog`, run:
+
+      $ {command} my-federated-catalog --refresh-interval=1h --namespace-filters=db1,db2
+    """)
 
 
 @base.ReleaseTracks(
@@ -29,6 +44,9 @@ from googlecloudsdk.core.util import times
 class UpdateCatalog(base.UpdateCommand):
   """Update a BigLake Iceberg REST catalog."""
 
+  detailed_help = {
+      'EXAMPLES': help_text,
+  }
   # Not supported in beta yet.
   _support_catalog_type_biglake = False
   _support_service_directory_name = False
@@ -187,6 +205,9 @@ class UpdateCatalog(base.UpdateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateCatalog):
   """Update a BigLake Iceberg REST catalog."""
+  detailed_help = {
+      'EXAMPLES': help_text + '\n\n' + help_text_alpha,
+  }
   _support_catalog_type_biglake = True
   _support_service_directory_name = True
   _support_federated_catalog = True

@@ -102,6 +102,19 @@ class RolloutSequenceFlags:
         """,
     )
 
+  def AddAutoRolloutScope(self) -> None:
+    self.parser.add_argument(
+        '--auto-rollout-scope',
+        type=arg_parsers.ArgList(),
+        metavar='SCOPE',
+        help=textwrap.dedent("""\
+            Specifies the types of upgrades for which rollouts are automatically
+            created. Supported values: `CONTROL_PLANE_MINOR`, `CONTROL_PLANE_PATCH`,
+            `NODE_MINOR`, `NODE_PATCH`, `ALL`, `NONE`.
+        """),
+        hidden=True,
+    )
+
   def AddIgnoredClustersSelectorFlags(self, is_update: bool = False):
     """Add flags for ignored clusters selector."""
     if is_update:
@@ -169,8 +182,7 @@ class RolloutSequenceFlagParser:
   def RolloutSequence(
       self,
   ) -> (
-      fleet_messages_alpha.RolloutSequence
-      | fleet_messages_beta.RolloutSequence
+      fleet_messages_alpha.RolloutSequence | fleet_messages_beta.RolloutSequence
   ):
     """Parse the arguments into a RolloutSequence message.
 
@@ -183,12 +195,21 @@ class RolloutSequenceFlagParser:
     rollout_sequence.labels = self._Labels()
     rollout_sequence.stages = self._Stages()
     rollout_sequence.ignoredClustersSelector = self._IgnoredClustersSelector()
+
+    rollout_creation_scope = self._AutoRolloutScope()
+    if rollout_creation_scope is not None:
+      rollout_sequence.autoUpgradeConfig = self.messages.AutoUpgradeConfig(
+          rolloutCreationScope=rollout_creation_scope
+      )
+
     return rollout_sequence
 
   def _DisplayName(self) -> str:
     return self.args.display_name
 
-  def _Labels(self) -> (
+  def _Labels(
+      self,
+  ) -> (
       fleet_messages_alpha.RolloutSequence.LabelsValue
       | fleet_messages_beta.RolloutSequence.LabelsValue
   ):
@@ -279,6 +300,53 @@ class RolloutSequenceFlagParser:
         labelSelector=self.args.ignored_clusters_selector
     )
     return self.TrimEmpty(ignored_clusters_selector)
+
+  def _AutoRolloutScope(
+      self,
+  ) -> (
+      fleet_messages_alpha.RolloutCreationScope
+      | fleet_messages_beta.RolloutCreationScope
+      | None
+  ):
+    """Parses --auto-rollout-scope flag."""
+    if '--auto-rollout-scope' not in self.args.GetSpecifiedArgs():
+      return None
+
+    auto_rollout_scope = self.args.auto_rollout_scope
+
+    scope_enum = (
+        self.messages.RolloutCreationScope.UpgradeTypesValueListEntryValuesEnum
+    )
+    upgrade_type_by_name = {
+        'CONTROL_PLANE_MINOR': scope_enum.CONTROL_PLANE_MINOR,
+        'CONTROL_PLANE_PATCH': scope_enum.CONTROL_PLANE_PATCH,
+        'NODE_MINOR': scope_enum.NODE_MINOR,
+        'NODE_PATCH': scope_enum.NODE_PATCH,
+    }
+
+    upper_vals = [val.upper().replace('-', '_') for val in auto_rollout_scope]
+
+    if 'ALL' in upper_vals:
+      return self.messages.RolloutCreationScope(
+          upgradeTypes=[
+              scope_enum.CONTROL_PLANE_MINOR,
+              scope_enum.CONTROL_PLANE_PATCH,
+              scope_enum.NODE_MINOR,
+              scope_enum.NODE_PATCH,
+          ]
+      )
+
+    if 'NONE' in upper_vals:
+      return self.messages.RolloutCreationScope(upgradeTypes=[])
+
+    upgrade_types = []
+    for val in upper_vals:
+      if val in upgrade_type_by_name:
+        upgrade_types.append(upgrade_type_by_name[val])
+      else:
+        raise ValueError(f'Invalid value for --auto-rollout-scope: {val}')
+
+    return self.messages.RolloutCreationScope(upgradeTypes=upgrade_types)
 
   def Async(self) -> bool:
     """Parses --async flag.

@@ -21,7 +21,6 @@ from googlecloudsdk.calliope import base
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
 @base.UniverseCompatible
-@base.Hidden
 class WorkloadIdentity(base.Group):
   """Manage Workload Identity."""
   category = base.IDENTITY_AND_SECURITY_CATEGORY

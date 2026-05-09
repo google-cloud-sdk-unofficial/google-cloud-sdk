@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,9 +30,9 @@
   arguments:
     params:
     - help_text: |-
-        The name of the experiment to delete.
+        The resource name of the experiment to delete.
         Format:
-        projects/{project}/locations/{location}/experiments/{experiment}
+        `projects/{projectId}/locations/{location}/experiments/{experimentId}`.
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.fault_testing.v1alpha_resources:projects_locations_experiments
@@ -43,9 +43,9 @@
       required: false
       type: bool
       help_text: |-
-        Should always be set to true. If set to true, any AffectedResources under
-        this Experiment will also be deleted. (Otherwise, the request will only
-        work if the Experiment has no AffectedResources.)
+        Should always be set to true. If set to true, any affected resources under
+        this experiment will also be deleted. Otherwise, the request will only
+        work if the experiment has no affected resources.
       default: null
   request:
     api_version: v1alpha

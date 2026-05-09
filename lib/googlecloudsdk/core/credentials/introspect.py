@@ -15,7 +15,6 @@
 """Provides utilities for token introspection."""
 
 
-import functools
 import json
 import logging
 
@@ -166,12 +165,13 @@ def GetExternalAccountId(creds):
       client_authentication=client_authentication,
   )
   # Create request with mTLS certificate injection for X.509 credentials.
-  # If mTLS is required but the certificate and key paths cannot be obtained, ``
+  # If mTLS is required but the certificate and key paths cannot be obtained,
   # fall back to basic auth only.
-  request = core_requests.GoogleAuthRequest()
   # Check for mTLS attributes. This is necessary because not all
   # external_account.Credentials subclasses support mTLS, and there's no public
   # interface to check for this capability.
+  cert_path = None
+  key_path = None
   if (
       isinstance(creds, external_account.Credentials)
       and hasattr(creds, '_mtls_required')
@@ -180,7 +180,6 @@ def GetExternalAccountId(creds):
   ):
     try:
       cert_path, key_path = creds._get_mtls_cert_and_key_paths()  # pylint: disable=protected-access
-      request = functools.partial(request, cert=(cert_path, key_path))
     except (
         AttributeError,
         ValueError,
@@ -190,8 +189,19 @@ def GetExternalAccountId(creds):
     ) as e:
       # If mTLS is required but certificate and key paths are unavailable,
       # log the error and fall back to basic auth only.
-      logging.debug('Could not get mTLS certificate and key paths: %s', e)
+      logging.debug('Could not get mTLS certificate and key paths: %r', e)
       pass
+
+  # Pass certificates directly during session construction to bypass the
+  # context-aware ECP proxy and avoid authentication clashes.
+  if cert_path and key_path:
+    request = core_requests.GoogleAuthRequest(
+        client_certificate=cert_path,
+        client_key=key_path
+    )
+  else:
+    request = core_requests.GoogleAuthRequest()
+
   if not creds.valid:
     creds.refresh(request)
   token_info = oauth_introspection.introspect(request, creds.token)

@@ -20,14 +20,11 @@ from typing import Any
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
-from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import reference_utils
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-
-ReleaseTrack = base.ReleaseTrack
 
 
 class CacheKeyQueryStringException(core_exceptions.Error):
@@ -130,11 +127,13 @@ def IapBestPracticesNotice():
 
 
 def IapHttpWarning():
-  return ('IAP has been enabled for a backend service that does not use HTTPS. '
-          'Data sent from the Load Balancer to your VM will not be encrypted.')
+  return (
+      'IAP has been enabled for a backend service that does not use HTTPS. '
+      'Data sent from the Load Balancer to your VM will not be encrypted.'
+  )
 
 
-def _ValidateGroupMatchesArgs(args, release_track=None):
+def _ValidateGroupMatchesArgs(args):
   """Validate if the group arg is used with the correct group specific flags."""
   invalid_arg = None
   if args.instance_group:
@@ -142,10 +141,7 @@ def _ValidateGroupMatchesArgs(args, release_track=None):
       invalid_arg = '--max-rate-per-endpoint'
     elif args.max_connections_per_endpoint is not None:
       invalid_arg = '--max-connections-per-endpoint'
-    elif (
-        release_track == ReleaseTrack.ALPHA
-        or release_track == ReleaseTrack.BETA
-    ) and args.max_in_flight_requests_per_endpoint is not None:
+    elif args.max_in_flight_requests_per_endpoint is not None:
       invalid_arg = '--max-in-flight-requests-per-endpoint'
     if invalid_arg is not None:
       raise exceptions.InvalidArgumentException(
@@ -156,10 +152,7 @@ def _ValidateGroupMatchesArgs(args, release_track=None):
       invalid_arg = '--max-rate-per-instance'
     elif args.max_connections_per_instance is not None:
       invalid_arg = '--max-connections-per-instance'
-    elif (
-        release_track == ReleaseTrack.ALPHA
-        or release_track == ReleaseTrack.BETA
-    ) and args.max_in_flight_requests_per_instance is not None:
+    elif args.max_in_flight_requests_per_instance is not None:
       invalid_arg = '--max-in-flight-requests-per-instance'
     if invalid_arg is not None:
       raise exceptions.InvalidArgumentException(
@@ -171,7 +164,6 @@ def ValidateBalancingModeArgs(
     messages,
     add_or_update_backend_args,
     current_balancing_mode=None,
-    release_track=None,
 ):
   """Check whether the setup of the backend LB related fields is valid.
 
@@ -182,7 +174,6 @@ def ValidateBalancingModeArgs(
     current_balancing_mode: BalancingModeValueValuesEnum. The balancing mode of
       the existing backend, in case of update-backend command. Must be None
       otherwise.
-    release_track: The release track of the command.
   """
   balancing_mode_enum = messages.Backend.BalancingModeValueValuesEnum
   balancing_mode = current_balancing_mode
@@ -191,15 +182,13 @@ def ValidateBalancingModeArgs(
         add_or_update_backend_args.balancing_mode)
   traffic_duration = None
   traffic_duration_enum = None
-  if (
-      release_track == ReleaseTrack.ALPHA or release_track == ReleaseTrack.BETA
-  ) and add_or_update_backend_args.traffic_duration:
+  if add_or_update_backend_args.traffic_duration:
     traffic_duration_enum = messages.Backend.TrafficDurationValueValuesEnum
     traffic_duration = messages.Backend.TrafficDurationValueValuesEnum(
         add_or_update_backend_args.traffic_duration
     )
 
-  _ValidateGroupMatchesArgs(add_or_update_backend_args, release_track)
+  _ValidateGroupMatchesArgs(add_or_update_backend_args)
 
   invalid_arg = None
   if balancing_mode == balancing_mode_enum.RATE:
@@ -211,27 +200,23 @@ def ValidateBalancingModeArgs(
       invalid_arg = '--max-connections-per-instance'
     elif add_or_update_backend_args.max_connections_per_endpoint is not None:
       invalid_arg = '--max-connections-per-endpoint'
-    if (
-        release_track == ReleaseTrack.ALPHA
-        or release_track == ReleaseTrack.BETA
+    elif add_or_update_backend_args.max_in_flight_requests is not None:
+      invalid_arg = '--max-in-flight-requests'
+    elif (
+        add_or_update_backend_args.max_in_flight_requests_per_instance
+        is not None
     ):
-      if add_or_update_backend_args.max_in_flight_requests is not None:
-        invalid_arg = '--max-in-flight-requests'
-      elif (
-          add_or_update_backend_args.max_in_flight_requests_per_instance
-          is not None
-      ):
-        invalid_arg = '--max-in-flight-requests-per-instance'
-      elif (
-          add_or_update_backend_args.max_in_flight_requests_per_endpoint
-          is not None
-      ):
-        invalid_arg = '--max-in-flight-requests-per-endpoint'
-      elif (
-          traffic_duration_enum is not None
-          and traffic_duration == traffic_duration_enum.LONG
-      ):
-        invalid_arg = '--traffic-duration=LONG'
+      invalid_arg = '--max-in-flight-requests-per-instance'
+    elif (
+        add_or_update_backend_args.max_in_flight_requests_per_endpoint
+        is not None
+    ):
+      invalid_arg = '--max-in-flight-requests-per-endpoint'
+    elif (
+        traffic_duration_enum is not None
+        and traffic_duration == traffic_duration_enum.LONG
+    ):
+      invalid_arg = '--traffic-duration=LONG'
 
     if invalid_arg is not None:
       raise exceptions.InvalidArgumentException(
@@ -245,27 +230,23 @@ def ValidateBalancingModeArgs(
       invalid_arg = '--max-rate-per-instance'
     elif add_or_update_backend_args.max_rate_per_endpoint is not None:
       invalid_arg = '--max-rate-per-endpoint'
-    if (
-        release_track == ReleaseTrack.ALPHA
-        or release_track == ReleaseTrack.BETA
+    elif add_or_update_backend_args.max_in_flight_requests is not None:
+      invalid_arg = '--max-in-flight-requests'
+    elif (
+        add_or_update_backend_args.max_in_flight_requests_per_instance
+        is not None
     ):
-      if add_or_update_backend_args.max_in_flight_requests is not None:
-        invalid_arg = '--max-in-flight-requests'
-      elif (
-          add_or_update_backend_args.max_in_flight_requests_per_instance
-          is not None
-      ):
-        invalid_arg = '--max-in-flight-requests-per-instance'
-      elif (
-          add_or_update_backend_args.max_in_flight_requests_per_endpoint
-          is not None
-      ):
-        invalid_arg = '--max-in-flight-requests-per-endpoint'
-      elif (
-          traffic_duration_enum is not None
-          and traffic_duration == traffic_duration_enum.LONG
-      ):
-        invalid_arg = '--traffic-duration=LONG'
+      invalid_arg = '--max-in-flight-requests-per-instance'
+    elif (
+        add_or_update_backend_args.max_in_flight_requests_per_endpoint
+        is not None
+    ):
+      invalid_arg = '--max-in-flight-requests-per-endpoint'
+    elif (
+        traffic_duration_enum is not None
+        and traffic_duration == traffic_duration_enum.LONG
+    ):
+      invalid_arg = '--traffic-duration=LONG'
 
     if invalid_arg is not None:
       raise exceptions.InvalidArgumentException(
@@ -276,9 +257,7 @@ def ValidateBalancingModeArgs(
           '--network-endpoint-group',
           'cannot be set with UTILIZATION balancing mode',
       )
-  elif (
-      release_track == ReleaseTrack.ALPHA or release_track == ReleaseTrack.BETA
-  ) and balancing_mode == balancing_mode_enum.IN_FLIGHT:
+  elif balancing_mode == balancing_mode_enum.IN_FLIGHT:
     if add_or_update_backend_args.max_rate is not None:
       invalid_arg = '--max-rate'
     elif add_or_update_backend_args.max_rate_per_instance is not None:

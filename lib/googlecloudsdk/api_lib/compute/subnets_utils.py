@@ -73,6 +73,12 @@ def CreateSecondaryRanges(
 
   if secondary_ipv6_ranges:
     for r in secondary_ipv6_ranges:
+      if 'ipCidrRange' in r:
+        raise calliope_exceptions.InvalidArgumentException(
+            'ipCidrRange',
+            'The [ipCidrRange] key is not supported for IPv6 secondary '
+            'ranges. Please use [ipv6CidrRange] instead.',
+        )
       name = r.get('rangeName')
       if name:
         range_names.add(name)

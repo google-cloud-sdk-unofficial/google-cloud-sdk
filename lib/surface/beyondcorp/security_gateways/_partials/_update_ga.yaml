@@ -228,6 +228,7 @@
         settable: true
         clearable: true
         required: false
+        hidden: true
         help_text: |-
           Configuration for Cloud Logging.
         params: []

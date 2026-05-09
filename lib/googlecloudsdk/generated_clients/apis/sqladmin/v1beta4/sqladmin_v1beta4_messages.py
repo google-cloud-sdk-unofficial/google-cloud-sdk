@@ -258,6 +258,7 @@ class Backup(_messages.Message):
       POSTGRES_16: The database version is PostgreSQL 16.
       POSTGRES_17: The database version is PostgreSQL 17.
       POSTGRES_18: The database version is PostgreSQL 18.
+      POSTGRES_19: The database version is PostgreSQL 19.
       SQLSERVER_2019_STANDARD: The database version is SQL Server 2019
         Standard.
       SQLSERVER_2019_ENTERPRISE: The database version is SQL Server 2019
@@ -319,17 +320,18 @@ class Backup(_messages.Message):
     POSTGRES_16 = 40
     POSTGRES_17 = 41
     POSTGRES_18 = 42
-    SQLSERVER_2019_STANDARD = 43
-    SQLSERVER_2019_ENTERPRISE = 44
-    SQLSERVER_2019_EXPRESS = 45
-    SQLSERVER_2019_WEB = 46
-    SQLSERVER_2022_STANDARD = 47
-    SQLSERVER_2022_ENTERPRISE = 48
-    SQLSERVER_2022_EXPRESS = 49
-    SQLSERVER_2022_WEB = 50
-    SQLSERVER_2025_STANDARD = 51
-    SQLSERVER_2025_ENTERPRISE = 52
-    SQLSERVER_2025_EXPRESS = 53
+    POSTGRES_19 = 43
+    SQLSERVER_2019_STANDARD = 44
+    SQLSERVER_2019_ENTERPRISE = 45
+    SQLSERVER_2019_EXPRESS = 46
+    SQLSERVER_2019_WEB = 47
+    SQLSERVER_2022_STANDARD = 48
+    SQLSERVER_2022_ENTERPRISE = 49
+    SQLSERVER_2022_EXPRESS = 50
+    SQLSERVER_2022_WEB = 51
+    SQLSERVER_2025_STANDARD = 52
+    SQLSERVER_2025_ENTERPRISE = 53
+    SQLSERVER_2025_EXPRESS = 54
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. The state of this backup.
@@ -685,6 +687,7 @@ class BackupRun(_messages.Message):
       POSTGRES_16: The database version is PostgreSQL 16.
       POSTGRES_17: The database version is PostgreSQL 17.
       POSTGRES_18: The database version is PostgreSQL 18.
+      POSTGRES_19: The database version is PostgreSQL 19.
       SQLSERVER_2019_STANDARD: The database version is SQL Server 2019
         Standard.
       SQLSERVER_2019_ENTERPRISE: The database version is SQL Server 2019
@@ -746,17 +749,18 @@ class BackupRun(_messages.Message):
     POSTGRES_16 = 40
     POSTGRES_17 = 41
     POSTGRES_18 = 42
-    SQLSERVER_2019_STANDARD = 43
-    SQLSERVER_2019_ENTERPRISE = 44
-    SQLSERVER_2019_EXPRESS = 45
-    SQLSERVER_2019_WEB = 46
-    SQLSERVER_2022_STANDARD = 47
-    SQLSERVER_2022_ENTERPRISE = 48
-    SQLSERVER_2022_EXPRESS = 49
-    SQLSERVER_2022_WEB = 50
-    SQLSERVER_2025_STANDARD = 51
-    SQLSERVER_2025_ENTERPRISE = 52
-    SQLSERVER_2025_EXPRESS = 53
+    POSTGRES_19 = 43
+    SQLSERVER_2019_STANDARD = 44
+    SQLSERVER_2019_ENTERPRISE = 45
+    SQLSERVER_2019_EXPRESS = 46
+    SQLSERVER_2019_WEB = 47
+    SQLSERVER_2022_STANDARD = 48
+    SQLSERVER_2022_ENTERPRISE = 49
+    SQLSERVER_2022_EXPRESS = 50
+    SQLSERVER_2022_WEB = 51
+    SQLSERVER_2025_STANDARD = 52
+    SQLSERVER_2025_ENTERPRISE = 53
+    SQLSERVER_2025_EXPRESS = 54
 
   class StatusValueValuesEnum(_messages.Enum):
     r"""The status of this run.
@@ -854,6 +858,69 @@ class BinLogCoordinates(_messages.Message):
   binLogFileName = _messages.StringField(1)
   binLogPosition = _messages.IntegerField(2)
   kind = _messages.StringField(3)
+
+
+class BlueGreenDeployment(_messages.Message):
+  r"""A BlueGreenDeployment resource represents a Cloud SQL Blue/Green
+  Deployment setup. It orchestrates the lifecycle of creating a synchronized
+  "Green" environment from a "Blue" production environment, performing
+  updates, and managing the switchover process to minimize downtime.
+
+  Enums:
+    StateValueValuesEnum: Output only. The current state of the Blue/Green
+      Deployment.
+
+  Fields:
+    createTime: Output only. The time when the deployment was created.
+    description: Optional. User-provided description for the deployment.
+    errorDetail: Output only. Provides an error message with details on why
+      switchover is not possible.
+    name: Output only. Identifier. The full resource name of the deployment.
+      Format: projects/{project}/locations/{location}/blueGreenDeployments/{de
+      ployment_id}
+    pairedNodes: Output only. A list representing the pairs of source and
+      target instances in the deployment.
+    sourceInstance: Required. Immutable. Required on create, and immutable.
+      The full resource name of the source instance (the "blue" instance).
+      Format: projects/{project}/instances/{instance}
+    state: Output only. The current state of the Blue/Green Deployment.
+    switchoverTargetInstance: Output only. Details about the primary target
+      instance (the "Green" instance) that will be promoted during switchover.
+    targetConfig: Optional. Immutable. Optional on create, and immutable. The
+      configuration intended for the target instance(s) when the deployment
+      was created.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current state of the Blue/Green Deployment.
+
+    Values:
+      STATE_UNSPECIFIED: The state of the deployment is unknown.
+      PROVISIONING: The deployment is being provisioned.
+      SWITCHOVER_READY: The deployment is ready for switchover.
+      SWITCHOVER_NOT_READY: The deployment is not ready for switchover.
+      SWITCHOVER_IN_PROGRESS: The deployment is in the process of switching
+        over.
+      SWITCHOVER_COMPLETED: The deployment has completed switchover.
+      DELETING: The deployment is being deleted.
+    """
+    STATE_UNSPECIFIED = 0
+    PROVISIONING = 1
+    SWITCHOVER_READY = 2
+    SWITCHOVER_NOT_READY = 3
+    SWITCHOVER_IN_PROGRESS = 4
+    SWITCHOVER_COMPLETED = 5
+    DELETING = 6
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  errorDetail = _messages.StringField(3)
+  name = _messages.StringField(4)
+  pairedNodes = _messages.MessageField('SourceTargetPairedNode', 5, repeated=True)
+  sourceInstance = _messages.StringField(6)
+  state = _messages.EnumField('StateValueValuesEnum', 7)
+  switchoverTargetInstance = _messages.StringField(8)
+  targetConfig = _messages.MessageField('TargetConfig', 9)
 
 
 class CloneContext(_messages.Message):
@@ -1098,6 +1165,7 @@ class ConnectSettings(_messages.Message):
       POSTGRES_16: The database version is PostgreSQL 16.
       POSTGRES_17: The database version is PostgreSQL 17.
       POSTGRES_18: The database version is PostgreSQL 18.
+      POSTGRES_19: The database version is PostgreSQL 19.
       SQLSERVER_2019_STANDARD: The database version is SQL Server 2019
         Standard.
       SQLSERVER_2019_ENTERPRISE: The database version is SQL Server 2019
@@ -1159,17 +1227,18 @@ class ConnectSettings(_messages.Message):
     POSTGRES_16 = 40
     POSTGRES_17 = 41
     POSTGRES_18 = 42
-    SQLSERVER_2019_STANDARD = 43
-    SQLSERVER_2019_ENTERPRISE = 44
-    SQLSERVER_2019_EXPRESS = 45
-    SQLSERVER_2019_WEB = 46
-    SQLSERVER_2022_STANDARD = 47
-    SQLSERVER_2022_ENTERPRISE = 48
-    SQLSERVER_2022_EXPRESS = 49
-    SQLSERVER_2022_WEB = 50
-    SQLSERVER_2025_STANDARD = 51
-    SQLSERVER_2025_ENTERPRISE = 52
-    SQLSERVER_2025_EXPRESS = 53
+    POSTGRES_19 = 43
+    SQLSERVER_2019_STANDARD = 44
+    SQLSERVER_2019_ENTERPRISE = 45
+    SQLSERVER_2019_EXPRESS = 46
+    SQLSERVER_2019_WEB = 47
+    SQLSERVER_2022_STANDARD = 48
+    SQLSERVER_2022_ENTERPRISE = 49
+    SQLSERVER_2022_EXPRESS = 50
+    SQLSERVER_2022_WEB = 51
+    SQLSERVER_2025_STANDARD = 52
+    SQLSERVER_2025_ENTERPRISE = 53
+    SQLSERVER_2025_EXPRESS = 54
 
   class MdxProtocolSupportValueListEntryValuesEnum(_messages.Enum):
     r"""MdxProtocolSupportValueListEntryValuesEnum enum type.
@@ -1537,6 +1606,7 @@ class DatabaseInstance(_messages.Message):
       POSTGRES_16: The database version is PostgreSQL 16.
       POSTGRES_17: The database version is PostgreSQL 17.
       POSTGRES_18: The database version is PostgreSQL 18.
+      POSTGRES_19: The database version is PostgreSQL 19.
       SQLSERVER_2019_STANDARD: The database version is SQL Server 2019
         Standard.
       SQLSERVER_2019_ENTERPRISE: The database version is SQL Server 2019
@@ -1598,17 +1668,18 @@ class DatabaseInstance(_messages.Message):
     POSTGRES_16 = 40
     POSTGRES_17 = 41
     POSTGRES_18 = 42
-    SQLSERVER_2019_STANDARD = 43
-    SQLSERVER_2019_ENTERPRISE = 44
-    SQLSERVER_2019_EXPRESS = 45
-    SQLSERVER_2019_WEB = 46
-    SQLSERVER_2022_STANDARD = 47
-    SQLSERVER_2022_ENTERPRISE = 48
-    SQLSERVER_2022_EXPRESS = 49
-    SQLSERVER_2022_WEB = 50
-    SQLSERVER_2025_STANDARD = 51
-    SQLSERVER_2025_ENTERPRISE = 52
-    SQLSERVER_2025_EXPRESS = 53
+    POSTGRES_19 = 43
+    SQLSERVER_2019_STANDARD = 44
+    SQLSERVER_2019_ENTERPRISE = 45
+    SQLSERVER_2019_EXPRESS = 46
+    SQLSERVER_2019_WEB = 47
+    SQLSERVER_2022_STANDARD = 48
+    SQLSERVER_2022_ENTERPRISE = 49
+    SQLSERVER_2022_EXPRESS = 50
+    SQLSERVER_2022_WEB = 51
+    SQLSERVER_2025_STANDARD = 52
+    SQLSERVER_2025_ENTERPRISE = 53
+    SQLSERVER_2025_EXPRESS = 54
 
   class InstalledVersionValueValuesEnum(_messages.Enum):
     r"""Stores the current database version including minor version such as
@@ -1681,6 +1752,7 @@ class DatabaseInstance(_messages.Message):
       POSTGRES_16: The database version is PostgreSQL 16.
       POSTGRES_17: The database version is PostgreSQL 17.
       POSTGRES_18: The database version is PostgreSQL 18.
+      POSTGRES_19: The database version is PostgreSQL 19.
       SQLSERVER_2019_STANDARD: The database version is SQL Server 2019
         Standard.
       SQLSERVER_2019_ENTERPRISE: The database version is SQL Server 2019
@@ -1742,17 +1814,18 @@ class DatabaseInstance(_messages.Message):
     POSTGRES_16 = 40
     POSTGRES_17 = 41
     POSTGRES_18 = 42
-    SQLSERVER_2019_STANDARD = 43
-    SQLSERVER_2019_ENTERPRISE = 44
-    SQLSERVER_2019_EXPRESS = 45
-    SQLSERVER_2019_WEB = 46
-    SQLSERVER_2022_STANDARD = 47
-    SQLSERVER_2022_ENTERPRISE = 48
-    SQLSERVER_2022_EXPRESS = 49
-    SQLSERVER_2022_WEB = 50
-    SQLSERVER_2025_STANDARD = 51
-    SQLSERVER_2025_ENTERPRISE = 52
-    SQLSERVER_2025_EXPRESS = 53
+    POSTGRES_19 = 43
+    SQLSERVER_2019_STANDARD = 44
+    SQLSERVER_2019_ENTERPRISE = 45
+    SQLSERVER_2019_EXPRESS = 46
+    SQLSERVER_2019_WEB = 47
+    SQLSERVER_2022_STANDARD = 48
+    SQLSERVER_2022_ENTERPRISE = 49
+    SQLSERVER_2022_EXPRESS = 50
+    SQLSERVER_2022_WEB = 51
+    SQLSERVER_2025_STANDARD = 52
+    SQLSERVER_2025_ENTERPRISE = 53
+    SQLSERVER_2025_EXPRESS = 54
 
   class InstanceTypeValueValuesEnum(_messages.Enum):
     r"""The instance type.
@@ -1833,6 +1906,7 @@ class DatabaseInstance(_messages.Message):
         has expired.
       FDC_IFTRIAL_EXPIRED: Indicates that the Firebase Data Connect free trial
         instance has expired.
+      PROJECT_ABUSE: The project is suspended due to abuse detected by Ares.
     """
     SQL_SUSPENSION_REASON_UNSPECIFIED = 0
     BILLING_ISSUE = 1
@@ -1841,6 +1915,7 @@ class DatabaseInstance(_messages.Message):
     KMS_KEY_ISSUE = 4
     CLOUD_SQL_FREE_TRIAL_EXPIRED = 5
     FDC_IFTRIAL_EXPIRED = 6
+    PROJECT_ABUSE = 7
 
   class FailoverReplicaValue(_messages.Message):
     r"""The name and status of the failover replica.
@@ -2069,6 +2144,63 @@ class DenyMaintenancePeriod(_messages.Message):
   time = _messages.StringField(3)
 
 
+class DeploymentTask(_messages.Message):
+  r"""Represents a task executed as part of the deployment on a target
+  instance.
+
+  Enums:
+    StateValueValuesEnum: Output only. The current state of the task.
+    TypeValueValuesEnum: Output only. The type of the task.
+
+  Fields:
+    endTime: Output only. Task end time (if completed).
+    errorMessage: Output only. Optional Error details if the task state is
+      FAILED.
+    startTime: Output only. Task start time.
+    state: Output only. The current state of the task.
+    type: Output only. The type of the task.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current state of the task.
+
+    Values:
+      STATE_UNSPECIFIED: The state of the task is unknown.
+      PENDING: The task is pending.
+      RUNNING: The task is running.
+      SUCCEEDED: The task has succeeded.
+      FAILED: The task has failed.
+    """
+    STATE_UNSPECIFIED = 0
+    PENDING = 1
+    RUNNING = 2
+    SUCCEEDED = 3
+    FAILED = 4
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The type of the task.
+
+    Values:
+      TYPE_UNSPECIFIED: The default value. This value is used if the type is
+        omitted.
+      PROVISION: Creating target instance.
+      UPGRADE: e.g., Major Version Upgrade on Target.
+      SWITCHOVER: Promoting Target, Demoting Source for this pair.
+      DELETE: The task is to delete deployment.
+    """
+    TYPE_UNSPECIFIED = 0
+    PROVISION = 1
+    UPGRADE = 2
+    SWITCHOVER = 3
+    DELETE = 4
+
+  endTime = _messages.StringField(1)
+  errorMessage = _messages.StringField(2)
+  startTime = _messages.StringField(3)
+  state = _messages.EnumField('StateValueValuesEnum', 4)
+  type = _messages.EnumField('TypeValueValuesEnum', 5)
+
+
 class DiskEncryptionConfiguration(_messages.Message):
   r"""Disk encryption configuration for an instance.
 
@@ -2197,10 +2329,12 @@ class ExecuteSqlPayload(_messages.Message):
       SQL execution result is incomplete due to the size limit or another
       error. The default mode is to throw an error.
     password: Optional. The database user's password.
+    passwordSecretVersion: Optional. The resource name of the Secret Manager
+      secret holding the password for the user to log into the database. The
+      expected format is
+      `projects/{project}/secrets/{secret}/versions/{secret_version}`. The
+      secret resource name will not be stored.
     rowLimit: Optional. The maximum number of rows returned per SQL statement.
-    secretPath: Optional. The resource ID of a secret in secret manager which
-      contains the database user's password. Expected format -
-      projects/{project}/secrets/{secret}/versions/{version}.
     sqlStatement: Required. SQL statements to run on the database. It can be a
       single statement or a sequence of statements separated by semicolons.
     user: Optional. The name of an existing database user to connect to the
@@ -2244,8 +2378,8 @@ class ExecuteSqlPayload(_messages.Message):
   outputFormat = _messages.EnumField('OutputFormatValueValuesEnum', 5)
   partialResultMode = _messages.EnumField('PartialResultModeValueValuesEnum', 6)
   password = _messages.StringField(7)
-  rowLimit = _messages.IntegerField(8)
-  secretPath = _messages.StringField(9)
+  passwordSecretVersion = _messages.StringField(8)
+  rowLimit = _messages.IntegerField(9)
   sqlStatement = _messages.StringField(10)
   user = _messages.StringField(11)
 
@@ -2646,6 +2780,7 @@ class Flag(_messages.Message):
       POSTGRES_16: The database version is PostgreSQL 16.
       POSTGRES_17: The database version is PostgreSQL 17.
       POSTGRES_18: The database version is PostgreSQL 18.
+      POSTGRES_19: The database version is PostgreSQL 19.
       SQLSERVER_2019_STANDARD: The database version is SQL Server 2019
         Standard.
       SQLSERVER_2019_ENTERPRISE: The database version is SQL Server 2019
@@ -2707,17 +2842,18 @@ class Flag(_messages.Message):
     POSTGRES_16 = 40
     POSTGRES_17 = 41
     POSTGRES_18 = 42
-    SQLSERVER_2019_STANDARD = 43
-    SQLSERVER_2019_ENTERPRISE = 44
-    SQLSERVER_2019_EXPRESS = 45
-    SQLSERVER_2019_WEB = 46
-    SQLSERVER_2022_STANDARD = 47
-    SQLSERVER_2022_ENTERPRISE = 48
-    SQLSERVER_2022_EXPRESS = 49
-    SQLSERVER_2022_WEB = 50
-    SQLSERVER_2025_STANDARD = 51
-    SQLSERVER_2025_ENTERPRISE = 52
-    SQLSERVER_2025_EXPRESS = 53
+    POSTGRES_19 = 43
+    SQLSERVER_2019_STANDARD = 44
+    SQLSERVER_2019_ENTERPRISE = 45
+    SQLSERVER_2019_EXPRESS = 46
+    SQLSERVER_2019_WEB = 47
+    SQLSERVER_2022_STANDARD = 48
+    SQLSERVER_2022_ENTERPRISE = 49
+    SQLSERVER_2022_EXPRESS = 50
+    SQLSERVER_2022_WEB = 51
+    SQLSERVER_2025_STANDARD = 52
+    SQLSERVER_2025_ENTERPRISE = 53
+    SQLSERVER_2025_EXPRESS = 54
 
   class FlagScopeValueValuesEnum(_messages.Enum):
     r"""Scope of flag.
@@ -3667,6 +3803,19 @@ class ListBackupsResponse(_messages.Message):
   warnings = _messages.MessageField('ApiWarning', 3, repeated=True)
 
 
+class ListBlueGreenDeploymentsResponse(_messages.Message):
+  r"""The response message for listing BlueGreenDeployments.
+
+  Fields:
+    blueGreenDeployments: The list of blue-green deployments.
+    nextPageToken: A token to retrieve the next page of results, or empty if
+      there are no more results.
+  """
+
+  blueGreenDeployments = _messages.MessageField('BlueGreenDeployment', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
 class LocationPreference(_messages.Message):
   r"""Preferred location. This specifies where a Cloud SQL instance is
   located. Note that if the preferred location is not available, the instance
@@ -3829,6 +3978,23 @@ class MySqlSyncConfig(_messages.Message):
   """
 
   initialSyncFlags = _messages.MessageField('SyncFlags', 1, repeated=True)
+
+
+class NodeInfo(_messages.Message):
+  r"""Details about an instance within the deployment.
+
+  Fields:
+    connection: Output only. The instance connection name.
+    dns: Output only. The unique DNS name for this instance.
+    instance: Output only. The full resource name of the instance. Format:
+      projects/{project}/instances/{instance}
+    ipMappings: Output only. The list of IP addresses for this instance.
+  """
+
+  connection = _messages.StringField(1)
+  dns = _messages.StringField(2)
+  instance = _messages.StringField(3)
+  ipMappings = _messages.MessageField('IpMapping', 4, repeated=True)
 
 
 class OnPremisesConfiguration(_messages.Message):
@@ -4288,29 +4454,75 @@ class PerformDiskShrinkContext(_messages.Message):
 
 
 class PerformanceCaptureConfig(_messages.Message):
-  r"""Performance Capture configuration.
+  r"""Performance capture configuration.
 
   Fields:
-    enabled: Optional. Enable or disable the Performance Capture.
-    probeThreshold: Optional. The minimum number of consecutive readings above
-      threshold that triggers instance state capture.
-    probingIntervalSeconds: Optional. The time interval in seconds between any
-      two probes.
-    runningThreadsThreshold: Optional. The minimum number of server threads
-      running to trigger the capture on primary.
-    secondsBehindSourceThreshold: Optional. The minimum number of seconds
-      replica must be lagging behind primary to trigger capture on replica.
-    transactionDurationThreshold: Optional. The amount of time in seconds that
-      a transaction needs to have been open before the watcher starts
-      recording it.
+    cpuUtilizationThresholdPercent: Optional. Specifies the minimum percentage
+      of CPU utilization to trigger the performance capture. Valid integers
+      range from `10` to `99`. Enter `0` to disable the check.
+    enabled: Optional. Enables or disables the performance capture feature.
+    historyListLengthThresholdCount: Optional. Specifies the minimum number of
+      undo log entries in the history list length to trigger the performance
+      capture. Valid integers range from `10000` to `10000000`. Enter `0` to
+      disable the check.
+    memoryUsageThresholdPercent: Optional. Specifies the minimum percentage of
+      memory usage to trigger the performance capture. Valid integers range
+      from `10` to `99`. Enter `0` to disable the check.
+    probeThreshold: Optional. Specifies the minimum number of consecutive
+      probe threshold that triggers performance capture.
+    probingIntervalSeconds: Optional. Specifies the interval in seconds
+      between consecutive probes that check if any trigger condition
+      thresholds have been reached.
+    runningThreadsThreshold: Optional. Specifies the minimum number of MySQL
+      `Threads_running` to trigger the performance capture on the primary
+      instance.
+    secondsBehindSourceThreshold: Optional. Specifies the minimum number of
+      seconds replica must be lagging behind primary instance to trigger the
+      performance capture on replica.
+    semaphoreWaitThresholdCount: Optional. Specifies the minimum allowed
+      number of semaphore waits to trigger the performance capture. Valid
+      integers range from `10` to `10000`. Enter `0` to disable the check.
+    transactionDurationThreshold: Optional. Specifies the amount of time in
+      seconds that a transaction needs to have been open before the watcher
+      starts recording it.
+    transactionKillExcludedUserHosts: Optional. Specifies a customer-defined
+      list of users to exclude from transaction termination. Entries can be in
+      the format 'user@host' or just 'user'. A standalone 'user' implies
+      'user@%', excluding the user from any host. Wildcard '%' is allowed in
+      the host part of the 'user@host' format. Example: `["app_user",
+      "db_admin@10.1.2.3", "report_user@%"]`
+    transactionKillNonReadonly: Optional. Specifies whether to terminate the
+      transactions that have performed write operations. If false (default),
+      only transactions that are read-only are eligible for termination. If
+      true, transactions with write operations (such as INSERT, UPDATE,
+      DELETE, or DDL) are also eligible.
+    transactionKillThresholdSeconds: Optional. Specifies the amount of time in
+      seconds that a transaction needs to have been open before the watcher
+      starts terminating it. Valid integers range from `60` to `604800` (7
+      days). Enter `0` to disable. If enabled (i.e., > 0), this value must be
+      greater than or equal to `transaction_duration_threshold`.
+      Configurations where `0 < transaction_kill_threshold_seconds <
+      transaction_duration_threshold` will be rejected.
+    transactionLockWaitThresholdCount: Optional. Specifies the minimum allowed
+      number of transactions in lock wait state to trigger the performance
+      capture. Valid integers range from `10` to `10000`. Enter `0` to disable
+      the check.
   """
 
-  enabled = _messages.BooleanField(1)
-  probeThreshold = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  probingIntervalSeconds = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  runningThreadsThreshold = _messages.IntegerField(4, variant=_messages.Variant.INT32)
-  secondsBehindSourceThreshold = _messages.IntegerField(5, variant=_messages.Variant.INT32)
-  transactionDurationThreshold = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  cpuUtilizationThresholdPercent = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  enabled = _messages.BooleanField(2)
+  historyListLengthThresholdCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  memoryUsageThresholdPercent = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  probeThreshold = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  probingIntervalSeconds = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  runningThreadsThreshold = _messages.IntegerField(7, variant=_messages.Variant.INT32)
+  secondsBehindSourceThreshold = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+  semaphoreWaitThresholdCount = _messages.IntegerField(9, variant=_messages.Variant.INT32)
+  transactionDurationThreshold = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  transactionKillExcludedUserHosts = _messages.StringField(11, repeated=True)
+  transactionKillNonReadonly = _messages.BooleanField(12)
+  transactionKillThresholdSeconds = _messages.IntegerField(13, variant=_messages.Variant.INT32)
+  transactionLockWaitThresholdCount = _messages.IntegerField(14, variant=_messages.Variant.INT32)
 
 
 class PointInTimeRestoreContext(_messages.Message):
@@ -4515,6 +4727,7 @@ class PreCheckMajorVersionUpgradeContext(_messages.Message):
       POSTGRES_16: The database version is PostgreSQL 16.
       POSTGRES_17: The database version is PostgreSQL 17.
       POSTGRES_18: The database version is PostgreSQL 18.
+      POSTGRES_19: The database version is PostgreSQL 19.
       SQLSERVER_2019_STANDARD: The database version is SQL Server 2019
         Standard.
       SQLSERVER_2019_ENTERPRISE: The database version is SQL Server 2019
@@ -4576,17 +4789,18 @@ class PreCheckMajorVersionUpgradeContext(_messages.Message):
     POSTGRES_16 = 40
     POSTGRES_17 = 41
     POSTGRES_18 = 42
-    SQLSERVER_2019_STANDARD = 43
-    SQLSERVER_2019_ENTERPRISE = 44
-    SQLSERVER_2019_EXPRESS = 45
-    SQLSERVER_2019_WEB = 46
-    SQLSERVER_2022_STANDARD = 47
-    SQLSERVER_2022_ENTERPRISE = 48
-    SQLSERVER_2022_EXPRESS = 49
-    SQLSERVER_2022_WEB = 50
-    SQLSERVER_2025_STANDARD = 51
-    SQLSERVER_2025_ENTERPRISE = 52
-    SQLSERVER_2025_EXPRESS = 53
+    POSTGRES_19 = 43
+    SQLSERVER_2019_STANDARD = 44
+    SQLSERVER_2019_ENTERPRISE = 45
+    SQLSERVER_2019_EXPRESS = 46
+    SQLSERVER_2019_WEB = 47
+    SQLSERVER_2022_STANDARD = 48
+    SQLSERVER_2022_ENTERPRISE = 49
+    SQLSERVER_2022_EXPRESS = 50
+    SQLSERVER_2022_WEB = 51
+    SQLSERVER_2025_STANDARD = 52
+    SQLSERVER_2025_ENTERPRISE = 53
+    SQLSERVER_2025_EXPRESS = 54
 
   kind = _messages.StringField(1)
   preCheckResponse = _messages.MessageField('PreCheckResponse', 2, repeated=True)
@@ -4682,11 +4896,19 @@ class PscConfig(_messages.Message):
     pscAutoConnections: Optional. The list of settings for requested Private
       Service Connect consumer endpoints that can be used to connect to this
       Cloud SQL instance.
-    pscAutoDnsEnabled: Optional. Whether PSC DNS automation is enabled for
-      this instance.
+    pscAutoDnsEnabled: Optional. Indicates whether PSC DNS automation is
+      enabled for this instance. When enabled, Cloud SQL provisions a
+      universal DNS record across all networks configured with Private Service
+      Connect (PSC) auto-connections. This will default to true for new
+      instances when Private Service Connect is enabled.
     pscEnabled: Whether PSC connectivity is enabled for this instance.
-    pscWriteEndpointDnsEnabled: Optional. Whether PSC write endpoint DNS
-      automation is enabled for this instance.
+    pscWriteEndpointDnsEnabled: Optional. Indicates whether PSC write endpoint
+      DNS automation is enabled for this instance. When enabled, Cloud SQL
+      provisions a universal global DNS record across all networks configured
+      with Private Service Connect (PSC) auto-connections that always points
+      to the cluster primary instance. This feature is only supported for
+      Enterprise Plus edition. This will default to true for new enterprise
+      plus instances when `psc_auto_dns_enabled` is enabled.
   """
 
   allowedConsumerProjects = _messages.StringField(1, repeated=True)
@@ -4966,6 +5188,8 @@ class Settings(_messages.Message):
       Cloud SQL for SQL Server.
     advancedMachineFeatures: Specifies advanced machine configuration for the
       instances relevant only for SQL Server.
+    assistiveTroubleshootingEnabled: Optional. Enables AI-powered assistive
+      troubleshooting for the Cloud SQL instance.
     authorizedGaeApplications: The App Engine app IDs that can access this
       instance. (Deprecated) Applied to First Generation instances only.
     autoUpgradeEnabled: Optional. Cloud SQL for MySQL auto-upgrade
@@ -5188,12 +5412,15 @@ class Settings(_messages.Message):
       EDITION_UNSPECIFIED: The instance did not specify the edition.
       ENTERPRISE: The instance is an enterprise edition.
       ENTERPRISE_PLUS: The instance is an Enterprise Plus edition.
-      AI_DEVELOPER: The instance is an AI Developer edition.
+      AI_DEVELOPER: The instance is an AI Developer edition. Deprecated:
+        Please use DEVELOPER instead.
+      DEVELOPER: The instance is a Developer edition.
     """
     EDITION_UNSPECIFIED = 0
     ENTERPRISE = 1
     ENTERPRISE_PLUS = 2
     AI_DEVELOPER = 3
+    DEVELOPER = 4
 
   class PricingPlanValueValuesEnum(_messages.Enum):
     r"""The pricing plan for this instance. This can be either `PER_USE` or
@@ -5257,54 +5484,121 @@ class Settings(_messages.Message):
   activationPolicy = _messages.EnumField('ActivationPolicyValueValuesEnum', 2)
   activeDirectoryConfig = _messages.MessageField('SqlActiveDirectoryConfig', 3)
   advancedMachineFeatures = _messages.MessageField('AdvancedMachineFeatures', 4)
-  authorizedGaeApplications = _messages.StringField(5, repeated=True)
-  autoUpgradeEnabled = _messages.BooleanField(6)
-  availabilityType = _messages.EnumField('AvailabilityTypeValueValuesEnum', 7)
-  backupConfiguration = _messages.MessageField('BackupConfiguration', 8)
-  collation = _messages.StringField(9)
-  connectionPoolConfig = _messages.MessageField('ConnectionPoolConfig', 10)
-  connectorEnforcement = _messages.EnumField('ConnectorEnforcementValueValuesEnum', 11)
-  crashSafeReplicationEnabled = _messages.BooleanField(12)
-  dataApiAccess = _messages.EnumField('DataApiAccessValueValuesEnum', 13)
-  dataCacheConfig = _messages.MessageField('DataCacheConfig', 14)
-  dataDiskProvisionedIops = _messages.IntegerField(15)
-  dataDiskProvisionedThroughput = _messages.IntegerField(16)
-  dataDiskSizeGb = _messages.IntegerField(17)
-  dataDiskType = _messages.EnumField('DataDiskTypeValueValuesEnum', 18)
-  databaseFlags = _messages.MessageField('DatabaseFlags', 19, repeated=True)
-  databaseReplicationEnabled = _messages.BooleanField(20)
-  dbAlignedAtomicWritesConfig = _messages.MessageField('DbAlignedAtomicWritesConfig', 21)
-  deletionProtectionEnabled = _messages.BooleanField(22)
-  denyMaintenancePeriods = _messages.MessageField('DenyMaintenancePeriod', 23, repeated=True)
-  edition = _messages.EnumField('EditionValueValuesEnum', 24)
-  enableDataplexIntegration = _messages.BooleanField(25)
-  enableGoogleMlIntegration = _messages.BooleanField(26)
-  entraidConfig = _messages.MessageField('SqlServerEntraIdConfig', 27)
-  finalBackupConfig = _messages.MessageField('FinalBackupConfig', 28)
-  initialUsersConfig = _messages.MessageField('InitialUsersConfig', 29)
-  insightsConfig = _messages.MessageField('InsightsConfig', 30)
-  instanceVersion = _messages.StringField(31)
-  ipConfiguration = _messages.MessageField('IpConfiguration', 32)
-  kind = _messages.StringField(33)
-  locationPreference = _messages.MessageField('LocationPreference', 34)
-  maintenanceVersion = _messages.StringField(35)
-  maintenanceWindow = _messages.MessageField('MaintenanceWindow', 36)
-  passwordValidationPolicy = _messages.MessageField('PasswordValidationPolicy', 37)
-  performanceCaptureConfig = _messages.MessageField('PerformanceCaptureConfig', 38)
-  pricingPlan = _messages.EnumField('PricingPlanValueValuesEnum', 39)
-  readPoolAutoScaleConfig = _messages.MessageField('ReadPoolAutoScaleConfig', 40)
-  recreateReplicasOnPrimaryCrash = _messages.BooleanField(41)
-  replicationLagMaxSeconds = _messages.IntegerField(42, variant=_messages.Variant.INT32)
-  replicationType = _messages.EnumField('ReplicationTypeValueValuesEnum', 43)
-  retainBackupsOnDelete = _messages.BooleanField(44)
-  settingsVersion = _messages.IntegerField(45)
-  sqlServerAuditConfig = _messages.MessageField('SqlServerAuditConfig', 46)
-  storageAutoResize = _messages.BooleanField(47)
-  storageAutoResizeLimit = _messages.IntegerField(48)
-  tier = _messages.StringField(49)
-  timeZone = _messages.StringField(50)
-  uncMappings = _messages.MessageField('UncMapping', 51, repeated=True)
-  userLabels = _messages.MessageField('UserLabelsValue', 52)
+  assistiveTroubleshootingEnabled = _messages.BooleanField(5)
+  authorizedGaeApplications = _messages.StringField(6, repeated=True)
+  autoUpgradeEnabled = _messages.BooleanField(7)
+  availabilityType = _messages.EnumField('AvailabilityTypeValueValuesEnum', 8)
+  backupConfiguration = _messages.MessageField('BackupConfiguration', 9)
+  collation = _messages.StringField(10)
+  connectionPoolConfig = _messages.MessageField('ConnectionPoolConfig', 11)
+  connectorEnforcement = _messages.EnumField('ConnectorEnforcementValueValuesEnum', 12)
+  crashSafeReplicationEnabled = _messages.BooleanField(13)
+  dataApiAccess = _messages.EnumField('DataApiAccessValueValuesEnum', 14)
+  dataCacheConfig = _messages.MessageField('DataCacheConfig', 15)
+  dataDiskProvisionedIops = _messages.IntegerField(16)
+  dataDiskProvisionedThroughput = _messages.IntegerField(17)
+  dataDiskSizeGb = _messages.IntegerField(18)
+  dataDiskType = _messages.EnumField('DataDiskTypeValueValuesEnum', 19)
+  databaseFlags = _messages.MessageField('DatabaseFlags', 20, repeated=True)
+  databaseReplicationEnabled = _messages.BooleanField(21)
+  dbAlignedAtomicWritesConfig = _messages.MessageField('DbAlignedAtomicWritesConfig', 22)
+  deletionProtectionEnabled = _messages.BooleanField(23)
+  denyMaintenancePeriods = _messages.MessageField('DenyMaintenancePeriod', 24, repeated=True)
+  edition = _messages.EnumField('EditionValueValuesEnum', 25)
+  enableDataplexIntegration = _messages.BooleanField(26)
+  enableGoogleMlIntegration = _messages.BooleanField(27)
+  entraidConfig = _messages.MessageField('SqlServerEntraIdConfig', 28)
+  finalBackupConfig = _messages.MessageField('FinalBackupConfig', 29)
+  initialUsersConfig = _messages.MessageField('InitialUsersConfig', 30)
+  insightsConfig = _messages.MessageField('InsightsConfig', 31)
+  instanceVersion = _messages.StringField(32)
+  ipConfiguration = _messages.MessageField('IpConfiguration', 33)
+  kind = _messages.StringField(34)
+  locationPreference = _messages.MessageField('LocationPreference', 35)
+  maintenanceVersion = _messages.StringField(36)
+  maintenanceWindow = _messages.MessageField('MaintenanceWindow', 37)
+  passwordValidationPolicy = _messages.MessageField('PasswordValidationPolicy', 38)
+  performanceCaptureConfig = _messages.MessageField('PerformanceCaptureConfig', 39)
+  pricingPlan = _messages.EnumField('PricingPlanValueValuesEnum', 40)
+  readPoolAutoScaleConfig = _messages.MessageField('ReadPoolAutoScaleConfig', 41)
+  recreateReplicasOnPrimaryCrash = _messages.BooleanField(42)
+  replicationLagMaxSeconds = _messages.IntegerField(43, variant=_messages.Variant.INT32)
+  replicationType = _messages.EnumField('ReplicationTypeValueValuesEnum', 44)
+  retainBackupsOnDelete = _messages.BooleanField(45)
+  settingsVersion = _messages.IntegerField(46)
+  sqlServerAuditConfig = _messages.MessageField('SqlServerAuditConfig', 47)
+  storageAutoResize = _messages.BooleanField(48)
+  storageAutoResizeLimit = _messages.IntegerField(49)
+  tier = _messages.StringField(50)
+  timeZone = _messages.StringField(51)
+  uncMappings = _messages.MessageField('UncMapping', 52, repeated=True)
+  userLabels = _messages.MessageField('UserLabelsValue', 53)
+
+
+class SourceTargetPairedNode(_messages.Message):
+  r"""Represents a pairing of a source instance node and a target instance
+  node.
+
+  Enums:
+    CurrentlyServingTrafficValueValuesEnum: Output only. Deprecated: Indicates
+      which instance (SOURCE or TARGET) in the pair is currently live. Used
+      for internal implementation and deprecated for external use.
+    StateValueValuesEnum: Output only. The current state of this specific
+      source-target pair.
+
+  Fields:
+    currentlyServingTraffic: Output only. Deprecated: Indicates which instance
+      (SOURCE or TARGET) in the pair is currently live. Used for internal
+      implementation and deprecated for external use.
+    source: Output only. Resource name of the source instance in this pair.
+    state: Output only. The current state of this specific source-target pair.
+    target: Output only. Details of the corresponding target instance in this
+      pair.
+    tasks: Output only. Tasks performed or being performed on the target
+      instance of this pair.
+  """
+
+  class CurrentlyServingTrafficValueValuesEnum(_messages.Enum):
+    r"""Output only. Deprecated: Indicates which instance (SOURCE or TARGET)
+    in the pair is currently live. Used for internal implementation and
+    deprecated for external use.
+
+    Values:
+      CURRENTLY_SERVING_TRAFFIC_UNSPECIFIED: The instance serving traffic is
+        unknown.
+      SOURCE: The source instance is serving traffic.
+      TARGET: The target instance is serving traffic.
+    """
+    CURRENTLY_SERVING_TRAFFIC_UNSPECIFIED = 0
+    SOURCE = 1
+    TARGET = 2
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current state of this specific source-target pair.
+
+    Values:
+      STATE_UNSPECIFIED: The state of the deployment is unknown.
+      PROVISIONING: The deployment is being provisioned.
+      SWITCHOVER_READY: The deployment is ready for switchover.
+      SWITCHOVER_NOT_READY: The deployment is not ready for switchover.
+      SWITCHOVER_IN_PROGRESS: The deployment is in the process of switching
+        over.
+      SWITCHOVER_COMPLETED: The deployment has completed switchover.
+      DELETING: The deployment is being deleted.
+    """
+    STATE_UNSPECIFIED = 0
+    PROVISIONING = 1
+    SWITCHOVER_READY = 2
+    SWITCHOVER_NOT_READY = 3
+    SWITCHOVER_IN_PROGRESS = 4
+    SWITCHOVER_COMPLETED = 5
+    DELETING = 6
+
+  currentlyServingTraffic = _messages.EnumField('CurrentlyServingTrafficValueValuesEnum', 1)
+  source = _messages.MessageField('NodeInfo', 2)
+  state = _messages.EnumField('StateValueValuesEnum', 3)
+  target = _messages.MessageField('NodeInfo', 4)
+  tasks = _messages.MessageField('DeploymentTask', 5, repeated=True)
 
 
 class SqlActiveDirectoryConfig(_messages.Message):
@@ -5490,6 +5784,89 @@ class SqlBackupsUpdateBackupRequest(_messages.Message):
   backup = _messages.MessageField('Backup', 1)
   name = _messages.StringField(2, required=True)
   updateMask = _messages.StringField(3)
+
+
+class SqlBlueGreenDeploymentsCreateRequest(_messages.Message):
+  r"""A SqlBlueGreenDeploymentsCreateRequest object.
+
+  Fields:
+    blueGreenDeployment: A BlueGreenDeployment resource to be passed as the
+      request body.
+    blueGreenDeploymentId: Required. The ID to use for the blue-green
+      deployment, which will become the final component of the deployment's
+      resource name.
+    parent: Required. The parent resource where this blue-green deployment
+      will be created. Format: projects/{project}/locations/{location}
+  """
+
+  blueGreenDeployment = _messages.MessageField('BlueGreenDeployment', 1)
+  blueGreenDeploymentId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class SqlBlueGreenDeploymentsDeleteRequest(_messages.Message):
+  r"""A SqlBlueGreenDeploymentsDeleteRequest object.
+
+  Fields:
+    deleteOldSource: Optional. If set to true, and the switchover is complete,
+      this deletes the old source instance along with the deployment.
+    name: Required. The name of the blue-green deployment to delete. Format: p
+      rojects/{project}/locations/{location}/blueGreenDeployments/{blue_green_
+      deployment}
+  """
+
+  deleteOldSource = _messages.BooleanField(1)
+  name = _messages.StringField(2, required=True)
+
+
+class SqlBlueGreenDeploymentsGetRequest(_messages.Message):
+  r"""A SqlBlueGreenDeploymentsGetRequest object.
+
+  Fields:
+    name: Required. The name of the blue-green deployment to retrieve. Format:
+      projects/{project}/locations/{location}/blueGreenDeployments/{blue_green
+      _deployment}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class SqlBlueGreenDeploymentsListRequest(_messages.Message):
+  r"""A SqlBlueGreenDeploymentsListRequest object.
+
+  Fields:
+    filter: Optional. A filter expression that filters the results.
+    orderBy: Optional. A comma-separated list of fields to order the results
+      by.
+    pageSize: Optional. The maximum number of deployments to return.
+    pageToken: Optional. A page token, received from a previous
+      `ListBlueGreenDeployments` call. Provide this to retrieve the subsequent
+      page.
+    parent: Required. The parent resource whose blue-green deployments are to
+      be listed. Format: projects/{project}/locations/{location}
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class SqlBlueGreenDeploymentsSwitchoverRequest(_messages.Message):
+  r"""A SqlBlueGreenDeploymentsSwitchoverRequest object.
+
+  Fields:
+    name: Required. The name of the blue-green deployment to switch over.
+      Format: projects/{project}/locations/{location}/blueGreenDeployments/{bl
+      ue_green_deployment}
+    switchoverBlueGreenDeploymentRequest: A
+      SwitchoverBlueGreenDeploymentRequest resource to be passed as the
+      request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  switchoverBlueGreenDeploymentRequest = _messages.MessageField('SwitchoverBlueGreenDeploymentRequest', 2)
 
 
 class SqlConnectGenerateEphemeralRequest(_messages.Message):
@@ -5926,7 +6303,7 @@ class SqlInstancesCloneRequest(_messages.Message):
       does not include the project ID.
     instancesCloneRequest: A InstancesCloneRequest resource to be passed as
       the request body.
-    project: Project ID of the source as well as the clone Cloud SQL instance.
+    project: Project ID of the source Cloud SQL instance.
   """
 
   instance = _messages.StringField(1, required=True)
@@ -7394,6 +7771,10 @@ class Status(_messages.Message):
   message = _messages.StringField(3)
 
 
+class SwitchoverBlueGreenDeploymentRequest(_messages.Message):
+  r"""Request message for switching over a BlueGreenDeployment."""
+
+
 class SyncFlags(_messages.Message):
   r"""Initial sync flags for certain Cloud SQL APIs. Currently used for the
   MySQL external server initial dump.
@@ -7406,6 +7787,18 @@ class SyncFlags(_messages.Message):
 
   name = _messages.StringField(1)
   value = _messages.StringField(2)
+
+
+class TargetConfig(_messages.Message):
+  r"""Configuration specified by the user at creation time for the target
+  (Green) instance.
+
+  Fields:
+    databaseVersion: Optional. The target database major version for the
+      upgrade.
+  """
+
+  databaseVersion = _messages.StringField(1)
 
 
 class TargetMetric(_messages.Message):

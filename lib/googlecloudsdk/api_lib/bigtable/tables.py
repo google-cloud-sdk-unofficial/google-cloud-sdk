@@ -19,6 +19,7 @@ import base64
 
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.bigtable import util
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import yaml
@@ -301,6 +302,10 @@ def RefreshUpdateMask(unused_ref, args, req):
     req = AddFieldToUpdateMask('automatedBackupPolicy', req)
   if args.automated_backup_retention_period:
     req = AddFieldToUpdateMask('automatedBackupPolicy.retentionPeriod', req)
+  if args.IsKnownAndSpecified('automated_backup_locations') or getattr(
+      args, 'clear_automated_backup_locations', False
+  ):
+    req = AddFieldToUpdateMask('automatedBackupPolicy.locations', req)
   # TODO: b/418228423 - Remove this check once the flag is released in GA.
   #
   # We need this to verify that the flag exists in this release track.
@@ -412,8 +417,8 @@ def AddAutomatedBackupPolicyCreateTableArgs():
   Returns:
     Argument group containing automated backup args.
   """
-  argument_group = base.ArgumentGroup(mutex=True)
-  argument_group.AddArgument(
+  mutex_group = base.ArgumentGroup(mutex=True)
+  mutex_group.AddArgument(
       base.Argument(
           '--enable-automated-backup',
           help=(
@@ -424,23 +429,47 @@ def AddAutomatedBackupPolicyCreateTableArgs():
           const=True,
       )
   )
-  argument_group.AddArgument(
+
+  params_group = base.ArgumentGroup(
+      help='Group for automated backup policy parameters.'
+  )
+  mutex_group.AddArgument(params_group)
+  params_group.AddArgument(
       base.Argument(
           '--automated-backup-retention-period',
           help=(
               'The retention period of automated backup in the format of `30d`'
               ' for 30 days. Min retention period is `3d` and max is `90d`.'
               ' Setting this flag will enable automated backup for the table.'
+              ' If automated backup retention period is not specified, it'
+              ' defaults to 7 days.'
           ),
       )
   )
-  return [argument_group]
+  params_group.AddArgument(
+      base.Argument(
+          '--automated-backup-locations',
+          type=arg_parsers.ArgList(),
+          metavar='LOCATION',
+          help=(
+              'List of Cloud Bigtable zones where automated backups are allowed'
+              ' to be created. If empty, automated backups will be created in'
+              ' all zones of the instance. Locations are in the format '
+              ' `projects/{project}/locations/{zone}`. Setting this flag will'
+              ' enable automated backup for the table. If automated backup'
+              ' retention period is not specified, it defaults to 7 days.'
+          ),
+      )
+  )
+  return [mutex_group]
 
 
 def AddAutomatedBackupPolicyUpdateTableArgs():
   """Adds automated backup policy commands to update table CLI."""
-  argument_group = base.ArgumentGroup(mutex=True)
-  argument_group.AddArgument(
+  top_mutex_group = base.ArgumentGroup(mutex=True)
+  enable_disable_group = base.ArgumentGroup(mutex=True)
+  top_mutex_group.AddArgument(enable_disable_group)
+  enable_disable_group.AddArgument(
       base.Argument(
           '--enable-automated-backup',
           help=(
@@ -453,7 +482,7 @@ def AddAutomatedBackupPolicyUpdateTableArgs():
           const=True,
       )
   )
-  argument_group.AddArgument(
+  enable_disable_group.AddArgument(
       base.Argument(
           '--disable-automated-backup',
           help='Once set, disables automated backup policy for the table.',
@@ -461,7 +490,12 @@ def AddAutomatedBackupPolicyUpdateTableArgs():
           const=True,
       )
   )
-  argument_group.AddArgument(
+
+  params_group = base.ArgumentGroup(
+      help='Group for automated backup policy parameters.'
+  )
+  top_mutex_group.AddArgument(params_group)
+  params_group.AddArgument(
       base.Argument(
           '--automated-backup-retention-period',
           help=(
@@ -471,7 +505,31 @@ def AddAutomatedBackupPolicyUpdateTableArgs():
           ),
       )
   )
-  return [argument_group]
+  locations_group = base.ArgumentGroup(mutex=True)
+  params_group.AddArgument(locations_group)
+  locations_group.AddArgument(
+      base.Argument(
+          '--automated-backup-locations',
+          type=arg_parsers.ArgList(),
+          metavar='LOCATION',
+          help=(
+              'List of Cloud Bigtable zones where automated backups are allowed'
+              ' to be created. If empty, automated backups will be created in'
+              ' all zones of the instance. Locations are in the format '
+              ' `projects/{project}/locations/{zone}`. Setting this flag will'
+              ' enable automated backup for the table.'
+          ),
+      )
+  )
+  locations_group.AddArgument(
+      base.Argument(
+          '--clear-automated-backup-locations',
+          help='Empty the automated backup locations list if populated.',
+          action='store_const',
+          const=True,
+      )
+  )
+  return [top_mutex_group]
 
 
 def HandleChangeStreamArgs(unused_ref, args, req):
@@ -484,16 +542,17 @@ def HandleChangeStreamArgs(unused_ref, args, req):
 
 def HandleAutomatedBackupPolicyCreateTableArgs(unused_ref, args, req):
   """Handles automated backup policy args for create table CLI."""
+  locations = args.automated_backup_locations
+  retention = args.automated_backup_retention_period
+
   if args.enable_automated_backup:
     req.createTableRequest.table.automatedBackupPolicy = (
         CreateDefaultAutomatedBackupPolicy()
     )
-  if args.automated_backup_retention_period:
+  elif retention or locations is not None:
     req.createTableRequest.table.automatedBackupPolicy = (
-        # Keeping the frequency as None to be consistent with the UpdateTable
-        # command.
         CreateAutomatedBackupPolicy(
-            args.automated_backup_retention_period, None
+            retention or '7d', None, locations=locations
         )
     )
   return req
@@ -516,11 +575,17 @@ def HandleAutomatedBackupPolicyUpdateTableArgs(unused_ref, args, req):
   Returns:
     req: the updateTableRequest with automated backup policy handled.
   """
+
+  locations = args.automated_backup_locations
+  if getattr(args, 'clear_automated_backup_locations', False):
+    locations = []
+  retention = args.automated_backup_retention_period
+
   if args.enable_automated_backup:
     req.table.automatedBackupPolicy = CreateDefaultAutomatedBackupPolicy()
-  if args.automated_backup_retention_period:
+  elif retention or locations is not None:
     req.table.automatedBackupPolicy = CreateAutomatedBackupPolicy(
-        args.automated_backup_retention_period, None
+        retention or '7d', None, locations=locations
     )
   return req
 
@@ -564,12 +629,13 @@ def CreateChangeStreamConfig(duration):
   )
 
 
-def CreateAutomatedBackupPolicy(retention_period, frequency):
+def CreateAutomatedBackupPolicy(retention_period, frequency, locations=None):
   """Constructs AutomatedBackupPolicy message with given values.
 
   Args:
     retention_period: The retention period of the automated backup policy.
     frequency: The frequency of the automated backup policy.
+    locations: The locations of the automated backup policy.
 
   Returns:
     AutomatedBackupPolicy with the specified policy config.
@@ -583,6 +649,8 @@ def CreateAutomatedBackupPolicy(retention_period, frequency):
     policy.frequency = ConvertDurationToSeconds(
         frequency, '--automated-backup-frequency'
     )
+  if locations is not None:
+    policy.locations = locations
   return policy
 
 

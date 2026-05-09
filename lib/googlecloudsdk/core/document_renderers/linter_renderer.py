@@ -190,8 +190,7 @@ class LinterRenderer(text_renderer.TextRenderer):
     # alpha commands, groups, and certain directories do not need examples.
     if self.command_metadata and self.command_metadata.is_group:
       return False
-    # TODO(b/349849652): Re-enable example requirement for 'preview' commands.
-    if 'alpha' in self.command_name or 'preview' in self.command_name:
+    if 'alpha' in self.command_name:
       return False
     for name in self._NON_COMMAND_SURFACE_GROUPS:
       if self.command_name.startswith(name):

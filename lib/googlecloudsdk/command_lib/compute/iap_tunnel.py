@@ -52,6 +52,7 @@ if not platforms.OperatingSystem.IsWindows():
 else:
   from ctypes import wintypes  # pylint: disable=g-import-not-at-top
 
+ERROR_BROKEN_PIPE = 109
 READ_FROM_STDIN_TIMEOUT_SECS = 3
 _TERMINATION_SIGNALS = (
     'SIGHUP',
@@ -407,9 +408,10 @@ class _StdinSocket(object):
   class _DataMessageType():
     pass
 
-  def __init__(self):
+  def __init__(self, ignore_windows_broken_pipe=False):
 
     self._stdin_closed = False
+    self._ignore_windows_broken_pipe = ignore_windows_broken_pipe
     # Maximum number of bytes the thread should read.
     self._bufsize = utils.SUBPROTOCOL_MAX_DATA_FRAME_SIZE
     if platforms.OperatingSystem.IsWindows():
@@ -501,6 +503,19 @@ class _StdinSocket(object):
         ok = ctypes.windll.kernel32.ReadFile(
             h, buf, self._bufsize, ctypes.byref(number_of_bytes_read), None)
         if not ok:
+          # There is a known issue with Windows IAP tunnel where stdin
+          # will be closed with an ERROR_BROKEN_PIPE(109) on Windows. However,
+          # the session was still closed properly. It is a short term fix to
+          # ignore the broken pipe error on Windows.
+          # See b/410043096 for more details and later proper fix.
+          if (
+              self._ignore_windows_broken_pipe
+              and ctypes.windll.kernel32.GetLastError() == ERROR_BROKEN_PIPE
+          ):
+            self._stdin_closed = True
+            msg = self._StdinSocketMessage(self._StdinClosedMessageType, b'')
+            self._message_queue.put(msg)
+            break
           raise socket.error(errno.EIO, 'stdin ReadFile failed')
         msg = buf.raw[:number_of_bytes_read.value]
         self._message_queue.put(self._StdinSocketMessage(self._DataMessageType,
@@ -972,13 +987,21 @@ class IapTunnelProxyServerHelper():
 class IapTunnelStdinHelper():
   """Facilitates a connection that gets local data from stdin."""
 
-  def __init__(self, tunneler, with_graceful_shutdown=False):
+  def __init__(
+      self,
+      tunneler,
+      with_graceful_shutdown=False,
+      ignore_windows_broken_pipe=False,
+  ):
     self._tunneler = tunneler
     self._with_graceful_shutdown = with_graceful_shutdown
+    self._ignore_windows_broken_pipe = ignore_windows_broken_pipe
 
   def Run(self):
     """Executes the tunneling of data."""
-    local_conn = _StdinSocket()
+    local_conn = _StdinSocket(
+        ignore_windows_broken_pipe=self._ignore_windows_broken_pipe
+    )
 
     def _HandleTerminationSignal(signum, frame):
       del signum, frame

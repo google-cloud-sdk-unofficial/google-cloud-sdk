@@ -76,7 +76,8 @@ class AutonomousDatabase(_messages.Message):
 
   Fields:
     adminPassword: Optional. Immutable. The password for the default ADMIN
-      user.
+      user. Note: Only one of `admin_password_secret_version` or
+      `admin_password` can be populated.
     adminPasswordSecretVersion: Optional. Immutable. The resource name of a
       secret version in Secret Manager which contains the database admin
       user's password. Format:
@@ -528,7 +529,8 @@ class AutonomousDatabaseProperties(_messages.Message):
       of seconds of data loss during a Data Guard failover.
     isAutoScalingEnabled: Optional. Immutable. This field indicates if auto
       scaling is enabled for the Autonomous Database CPU core count.
-    isLocalDataGuardEnabled: Output only. This field indicates whether the
+    isLocalDataGuardEnabled: Output only. Deprecated: Please use
+      `local_data_guard_enabled` instead. This field indicates whether the
       Autonomous Database has local (in-region) Data Guard enabled.
     isStorageAutoScalingEnabled: Optional. Immutable. This field indicates if
       auto scaling is enabled for the Autonomous Database storage.
@@ -536,8 +538,10 @@ class AutonomousDatabaseProperties(_messages.Message):
       Database.
     lifecycleDetails: Output only. The details of the current lifestyle state
       of the Autonomous Database.
-    localAdgAutoFailoverMaxDataLossLimit: Output only. This field indicates
-      the maximum data loss limit for an Autonomous Database, in seconds.
+    localAdgAutoFailoverMaxDataLossLimit: Output only. Deprecated: Please use
+      `local_adg_auto_failover_max_data_loss_limit_duration` instead. This
+      field indicates the maximum data loss limit for an Autonomous Database,
+      in seconds.
     localAdgAutoFailoverMaxDataLossLimitDuration: Optional. This field
       indicates the maximum data loss limit for an Autonomous Database, in
       seconds.
@@ -702,10 +706,12 @@ class AutonomousDatabaseProperties(_messages.Message):
       LOCAL_DISASTER_RECOVERY_TYPE_UNSPECIFIED: Default unspecified value.
       ADG: Autonomous Data Guard recovery.
       BACKUP_BASED: Backup based recovery.
+      NOT_AVAILABLE: Local disaster recovery is not available.
     """
     LOCAL_DISASTER_RECOVERY_TYPE_UNSPECIFIED = 0
     ADG = 1
     BACKUP_BASED = 2
+    NOT_AVAILABLE = 3
 
   class MaintenanceScheduleTypeValueValuesEnum(_messages.Enum):
     r"""Optional. Immutable. The maintenance schedule of the Autonomous
@@ -1257,6 +1263,8 @@ class CloudExadataInfrastructureProperties(_messages.Message):
     dbNodeStorageSizeGb: Output only. The local node storage allocated in GBs.
     dbServerVersion: Output only. The software version of the database servers
       (dom0) in the Exadata Infrastructure.
+    exascaleConfig: Output only. The Exascale configuration for the Exadata
+      Infrastructure.
     maintenanceWindow: Optional. Maintenance window for repair.
     maxCpuCount: Output only. The total number of CPU cores available.
     maxDataStorageTb: Output only. The total available DATA disk group size.
@@ -1341,25 +1349,26 @@ class CloudExadataInfrastructureProperties(_messages.Message):
   databaseServerType = _messages.StringField(9)
   dbNodeStorageSizeGb = _messages.IntegerField(10, variant=_messages.Variant.INT32)
   dbServerVersion = _messages.StringField(11)
-  maintenanceWindow = _messages.MessageField('MaintenanceWindow', 12)
-  maxCpuCount = _messages.IntegerField(13, variant=_messages.Variant.INT32)
-  maxDataStorageTb = _messages.FloatField(14)
-  maxDbNodeStorageSizeGb = _messages.IntegerField(15, variant=_messages.Variant.INT32)
-  maxMemoryGb = _messages.IntegerField(16, variant=_messages.Variant.INT32)
-  memorySizeGb = _messages.IntegerField(17, variant=_messages.Variant.INT32)
-  monthlyDbServerVersion = _messages.StringField(18)
-  monthlyStorageServerVersion = _messages.StringField(19)
-  nextMaintenanceRunId = _messages.StringField(20)
-  nextMaintenanceRunTime = _messages.StringField(21)
-  nextSecurityMaintenanceRunTime = _messages.StringField(22)
-  ociUrl = _messages.StringField(23)
-  ocid = _messages.StringField(24)
-  shape = _messages.StringField(25)
-  state = _messages.EnumField('StateValueValuesEnum', 26)
-  storageCount = _messages.IntegerField(27, variant=_messages.Variant.INT32)
-  storageServerType = _messages.StringField(28)
-  storageServerVersion = _messages.StringField(29)
-  totalStorageSizeGb = _messages.IntegerField(30, variant=_messages.Variant.INT32)
+  exascaleConfig = _messages.MessageField('ExascaleConfig', 12)
+  maintenanceWindow = _messages.MessageField('MaintenanceWindow', 13)
+  maxCpuCount = _messages.IntegerField(14, variant=_messages.Variant.INT32)
+  maxDataStorageTb = _messages.FloatField(15)
+  maxDbNodeStorageSizeGb = _messages.IntegerField(16, variant=_messages.Variant.INT32)
+  maxMemoryGb = _messages.IntegerField(17, variant=_messages.Variant.INT32)
+  memorySizeGb = _messages.IntegerField(18, variant=_messages.Variant.INT32)
+  monthlyDbServerVersion = _messages.StringField(19)
+  monthlyStorageServerVersion = _messages.StringField(20)
+  nextMaintenanceRunId = _messages.StringField(21)
+  nextMaintenanceRunTime = _messages.StringField(22)
+  nextSecurityMaintenanceRunTime = _messages.StringField(23)
+  ociUrl = _messages.StringField(24)
+  ocid = _messages.StringField(25)
+  shape = _messages.StringField(26)
+  state = _messages.EnumField('StateValueValuesEnum', 27)
+  storageCount = _messages.IntegerField(28, variant=_messages.Variant.INT32)
+  storageServerType = _messages.StringField(29)
+  storageServerVersion = _messages.StringField(30)
+  totalStorageSizeGb = _messages.IntegerField(31, variant=_messages.Variant.INT32)
 
 
 class CloudVmCluster(_messages.Message):
@@ -1456,6 +1465,8 @@ class CloudVmClusterProperties(_messages.Message):
     DiskRedundancyValueValuesEnum: Optional. The type of redundancy.
     LicenseTypeValueValuesEnum: Required. License type of VM Cluster.
     StateValueValuesEnum: Output only. State of the cluster.
+    StorageManagementTypeValueValuesEnum: Output only. The storage management
+      type of the VM Cluster.
 
   Fields:
     clusterName: Optional. OCI Cluster name.
@@ -1493,6 +1504,8 @@ class CloudVmClusterProperties(_messages.Message):
     sparseDiskgroupEnabled: Optional. Use exadata sparse snapshots.
     sshPublicKeys: Optional. SSH public keys to be stored with cluster.
     state: Output only. State of the cluster.
+    storageManagementType: Output only. The storage management type of the VM
+      Cluster.
     storageSizeGb: Output only. The storage allocation for the disk group, in
       gigabytes (GB).
     systemVersion: Optional. Operating system version of the image.
@@ -1562,6 +1575,19 @@ class CloudVmClusterProperties(_messages.Message):
     FAILED = 6
     MAINTENANCE_IN_PROGRESS = 7
 
+  class StorageManagementTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The storage management type of the VM Cluster.
+
+    Values:
+      STORAGE_MANAGEMENT_TYPE_UNSPECIFIED: Unspecified storage management
+        type.
+      ASM: Automatic Storage Management.
+      EXASCALE: Exascale storage management.
+    """
+    STORAGE_MANAGEMENT_TYPE_UNSPECIFIED = 0
+    ASM = 1
+    EXASCALE = 2
+
   clusterName = _messages.StringField(1)
   compartmentId = _messages.StringField(2)
   computeModel = _messages.EnumField('ComputeModelValueValuesEnum', 3)
@@ -1592,9 +1618,23 @@ class CloudVmClusterProperties(_messages.Message):
   sparseDiskgroupEnabled = _messages.BooleanField(28)
   sshPublicKeys = _messages.StringField(29, repeated=True)
   state = _messages.EnumField('StateValueValuesEnum', 30)
-  storageSizeGb = _messages.IntegerField(31, variant=_messages.Variant.INT32)
-  systemVersion = _messages.StringField(32)
-  timeZone = _messages.MessageField('TimeZone', 33)
+  storageManagementType = _messages.EnumField('StorageManagementTypeValueValuesEnum', 31)
+  storageSizeGb = _messages.IntegerField(32, variant=_messages.Variant.INT32)
+  systemVersion = _messages.StringField(33)
+  timeZone = _messages.MessageField('TimeZone', 34)
+
+
+class ConfigureExascaleCloudExadataInfrastructureRequest(_messages.Message):
+  r"""The request for `CloudExadataInfrastructure.ConfigureExascale`.
+
+  Fields:
+    requestId: Optional. An optional ID to identify the request.
+    totalStorageSizeGb: Required. The total storage to be allocated to
+      Exascale in GBs.
+  """
+
+  requestId = _messages.StringField(1)
+  totalStorageSizeGb = _messages.IntegerField(2, variant=_messages.Variant.INT32)
 
 
 class CustomerContact(_messages.Message):
@@ -1668,12 +1708,14 @@ class Database(_messages.Message):
       Insights for this Database.
 
   Fields:
-    adminPassword: Optional. The password for the default ADMIN user.
+    adminPassword: Optional. The password for the default ADMIN user. Note:
+      Only one of `admin_password_secret_version` or `admin_password` can be
+      populated.
     adminPasswordSecretVersion: Optional. The resource name of a secret
       version in Secret Manager which contains the database admin user's
       password. Format:
       projects/{project}/secrets/{secret}/versions/{version}. Note: Only one
-      of admin_password_secret_version or admin_password can be populated.
+      of `admin_password_secret_version` or `admin_password` can be populated.
     characterSet: Optional. The character set for the database. The default is
       AL32UTF8.
     createTime: Output only. The date and time that the Database was created.
@@ -1703,11 +1745,13 @@ class Database(_messages.Message):
       contain a maximum of thirty alphanumeric characters.
     properties: Optional. The properties of the Database.
     tdeWalletPassword: Optional. The TDE wallet password for the database.
+      Note: Only one of `tde_wallet_password_secret_version` or
+      `tde_wallet_password` can be populated.
     tdeWalletPasswordSecretVersion: Optional. The resource name of a secret
       version in Secret Manager which contains the TDE wallet password for the
       database. Format:
       projects/{project}/secrets/{secret}/versions/{version}. Note: Only one
-      of tde_wallet_password_secret_version or tde_wallet_password can be
+      of `tde_wallet_password_secret_version` or `tde_wallet_password` can be
       populated.
   """
 
@@ -3055,6 +3099,20 @@ class ExadbVmClusterStorageDetails(_messages.Message):
   sizeInGbsPerNode = _messages.IntegerField(1, variant=_messages.Variant.INT32)
 
 
+class ExascaleConfig(_messages.Message):
+  r"""Details of the Exascale configuration for the Exadata Infrastructure.
+
+  Fields:
+    availableStorageSizeGb: Output only. Available storage size for Exascale
+      in GBs.
+    totalStorageSizeGb: Output only. Total storage size needed for Exascale in
+      GBs.
+  """
+
+  availableStorageSizeGb = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  totalStorageSizeGb = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+
+
 class ExascaleDbStorageDetails(_messages.Message):
   r"""The storage details of the ExascaleDbStorageVault.
 
@@ -3305,15 +3363,15 @@ class GlueIcebergCatalog(_messages.Message):
   glueId = _messages.StringField(1)
 
 
-class GoldenGateAmazonKinesisConnectionProperties(_messages.Message):
-  r"""The properties of GoldenGateAmazonKinesisConnection.
+class GoldengateAmazonKinesisConnectionProperties(_messages.Message):
+  r"""The properties of GoldengateAmazonKinesisConnection.
 
   Fields:
     accessKeyId: Optional. Access key ID to access the Amazon Kinesis.
     awsRegion: Optional. The name of the AWS region. If not provided,
-      GoldenGate will default to 'us-west-1'.
+      Goldengate will default to 'us-west-1'.
     endpoint: Optional. The endpoint URL of the Amazon Kinesis service. e.g.:
-      'https://kinesis.us-east-1.amazonaws.com' If not provided, GoldenGate
+      'https://kinesis.us-east-1.amazonaws.com' If not provided, Goldengate
       will default to 'https://kinesis..amazonaws.com'.
     secretAccessKeySecret: Optional. Secret access key to access the Amazon
       Kinesis.
@@ -3327,21 +3385,21 @@ class GoldenGateAmazonKinesisConnectionProperties(_messages.Message):
   technologyType = _messages.StringField(5)
 
 
-class GoldenGateAmazonRedshiftConnectionProperties(_messages.Message):
-  r"""The properties of GoldenGateAmazonRedshiftConnection.
+class GoldengateAmazonRedshiftConnectionProperties(_messages.Message):
+  r"""The properties of GoldengateAmazonRedshiftConnection.
 
   Fields:
     connectionUrl: Optional. Connection URL. e.g.: 'jdbc:redshift://aws-
       redshift-instance.aaaaaaaaaaaa.us-
       east-2.redshift.amazonaws.com:5439/mydb'
-    password: Optional. Input only. The password Oracle GoldenGate uses for
+    password: Optional. Input only. The password Oracle Goldengate uses for
       Amazon Redshift connection in plain text.
     passwordSecretVersion: Optional. Input only. The resource name of a secret
-      version in Secret Manager which contains the password Oracle GoldenGate
+      version in Secret Manager which contains the password Oracle Goldengate
       uses for Amazon Redshift connection. Format:
       projects/{project}/secrets/{secret}/versions/{version}.
     technologyType: Optional. The technology type of AmazonRedshiftConnection.
-    username: Optional. The username Oracle GoldenGate uses to connect the
+    username: Optional. The username Oracle Goldengate uses to connect the
       associated system of the given technology.
   """
 
@@ -3352,8 +3410,8 @@ class GoldenGateAmazonRedshiftConnectionProperties(_messages.Message):
   username = _messages.StringField(5)
 
 
-class GoldenGateAmazonS3ConnectionProperties(_messages.Message):
-  r"""The properties of GoldenGateAmazonS3Connection.
+class GoldengateAmazonS3ConnectionProperties(_messages.Message):
+  r"""The properties of GoldengateAmazonS3Connection.
 
   Fields:
     accessKeyId: Optional. Access key ID to access the Amazon S3 bucket.
@@ -3371,8 +3429,8 @@ class GoldenGateAmazonS3ConnectionProperties(_messages.Message):
   technologyType = _messages.StringField(5)
 
 
-class GoldenGateAzureDataLakeStorageConnectionProperties(_messages.Message):
-  r"""The properties of GoldenGateAzureDataLakeStorageConnection.
+class GoldengateAzureDataLakeStorageConnectionProperties(_messages.Message):
+  r"""The properties of GoldengateAzureDataLakeStorageConnection.
 
   Enums:
     AuthenticationTypeValueValuesEnum: Optional. Authentication mechanism to
@@ -3428,22 +3486,22 @@ class GoldenGateAzureDataLakeStorageConnectionProperties(_messages.Message):
   technologyType = _messages.StringField(10)
 
 
-class GoldenGateAzureSynapseAnalyticsConnectionProperties(_messages.Message):
-  r"""The properties of GoldenGateAzureSynapseAnalyticsConnection.
+class GoldengateAzureSynapseAnalyticsConnectionProperties(_messages.Message):
+  r"""The properties of GoldengateAzureSynapseAnalyticsConnection.
 
   Fields:
     connectionString: Optional. JDBC connection string. e.g.: 'jdbc:sqlserver:
       //.sql.azuresynapse.net:1433;database=;encrypt=true;trustServerCertifica
       te=false;hostNameInCertificate=*.sql.azuresynapse.net;loginTimeout=300;'
-    password: Optional. Input only. The password Oracle GoldenGate uses for
+    password: Optional. Input only. The password Oracle Goldengate uses for
       Azure Synapse Analytics connection in plain text.
     passwordSecretVersion: Optional. Input only. The resource name of a secret
-      version in Secret Manager which contains the password Oracle GoldenGate
+      version in Secret Manager which contains the password Oracle Goldengate
       uses for Azure Synapse Analytics connection. Format:
       projects/{project}/secrets/{secret}/versions/{version}.
     technologyType: Optional. The technology type of
       AzureSynapseAnalyticsConnection.
-    username: Optional. The username Oracle GoldenGate uses to connect the
+    username: Optional. The username Oracle Goldengate uses to connect the
       associated system of the given technology.
   """
 
@@ -3454,42 +3512,82 @@ class GoldenGateAzureSynapseAnalyticsConnectionProperties(_messages.Message):
   username = _messages.StringField(5)
 
 
-class GoldenGateConnection(_messages.Message):
-  r"""Details of the GoldenGateConnection resource.
+class GoldengateBackupSchedule(_messages.Message):
+  r"""The backup schedule of the GoldengateDeployment.
+
+  Enums:
+    FrequencyBackupScheduledValueValuesEnum: Output only. The frequency backup
+      scheduled.
+
+  Fields:
+    backupScheduledTime: Output only. The timestamp of when the backup was
+      scheduled.
+    bucket: Output only. The bucket name.
+    compartmentId: Output only. The compartment id.
+    frequencyBackupScheduled: Output only. The frequency backup scheduled.
+    metadataOnly: Output only. If metadata only.
+    namespace: Output only. The namespace name.
+  """
+
+  class FrequencyBackupScheduledValueValuesEnum(_messages.Enum):
+    r"""Output only. The frequency backup scheduled.
+
+    Values:
+      FREQUENCY_BACKUP_SCHEDULED_UNSPECIFIED: The frequency backup scheduled
+        is unspecified.
+      DAILY: The frequency backup scheduled is daily.
+      WEEKLY: The frequency backup scheduled is weekly.
+      MONTHLY: The frequency backup scheduled is monthly.
+    """
+    FREQUENCY_BACKUP_SCHEDULED_UNSPECIFIED = 0
+    DAILY = 1
+    WEEKLY = 2
+    MONTHLY = 3
+
+  backupScheduledTime = _messages.StringField(1)
+  bucket = _messages.StringField(2)
+  compartmentId = _messages.StringField(3)
+  frequencyBackupScheduled = _messages.EnumField('FrequencyBackupScheduledValueValuesEnum', 4)
+  metadataOnly = _messages.BooleanField(5)
+  namespace = _messages.StringField(6)
+
+
+class GoldengateConnection(_messages.Message):
+  r"""Details of the GoldengateConnection resource.
 
   Messages:
     LabelsValue: Optional. The labels or tags associated with the
-      GoldenGateConnection.
+      GoldengateConnection.
 
   Fields:
-    createTime: Output only. The date and time that the GoldenGateConnection
+    createTime: Output only. The date and time that the GoldengateConnection
       was created.
     entitlementId: Output only. The ID of the subscription entitlement
-      associated with the GoldenGateConnection.
+      associated with the GoldengateConnection.
     gcpOracleZone: Optional. The GCP Oracle zone where Oracle
-      GoldenGateConnection is hosted. Example: us-east4-b-r2. If not
+      GoldengateConnection is hosted. Example: us-east4-b-r2. If not
       specified, the system will pick a zone based on availability.
     labels: Optional. The labels or tags associated with the
-      GoldenGateConnection.
-    name: Identifier. The name of the GoldenGateConnection resource in the
-      following format: projects/{project}/locations/{region}/goldenGateConnec
-      tions/{golden_gate_connection}
+      GoldengateConnection.
+    name: Identifier. The name of the GoldengateConnection resource in the
+      following format: projects/{project}/locations/{region}/goldengateConnec
+      tions/{goldengate_connection}
     ociUrl: Output only. HTTPS link to OCI resources exposed to Customer via
       UI Interface.
     odbNetwork: Optional. The name of the OdbNetwork associated with the
-      GoldenGateConnection. The format is
+      GoldengateConnection. The format is
       projects/{project}/locations/{location}/odbNetworks/{odb_network}. It is
       optional but if specified, this should match the parent ODBNetwork of
       the OdbSubnet.
     odbSubnet: Optional. The name of the OdbSubnet associated with the
-      GoldenGateConnection for IP allocation. Format: projects/{project}/locat
+      GoldengateConnection for IP allocation. Format: projects/{project}/locat
       ions/{location}/odbNetworks/{odb_network}/odbSubnets/{odb_subnet}
-    properties: Required. The properties of the GoldenGateConnection.
+    properties: Required. The properties of the GoldengateConnection.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""Optional. The labels or tags associated with the GoldenGateConnection.
+    r"""Optional. The labels or tags associated with the GoldengateConnection.
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.
@@ -3519,36 +3617,36 @@ class GoldenGateConnection(_messages.Message):
   ociUrl = _messages.StringField(6)
   odbNetwork = _messages.StringField(7)
   odbSubnet = _messages.StringField(8)
-  properties = _messages.MessageField('GoldenGateConnectionProperties', 9)
+  properties = _messages.MessageField('GoldengateConnectionProperties', 9)
 
 
-class GoldenGateConnectionAssignment(_messages.Message):
-  r"""Represents the metadata of a GoldenGate Connection Assignment.
+class GoldengateConnectionAssignment(_messages.Message):
+  r"""Represents the metadata of a Goldengate Connection Assignment.
 
   Messages:
     LabelsValue: Optional. The labels or tags associated with the
-      GoldenGateConnectionAssignment.
+      GoldengateConnectionAssignment.
 
   Fields:
     createTime: Output only. The time when the connection assignment was
       created.
     displayName: Optional. The display name for the
-      GoldenGateConnectionAssignment.
+      GoldengateConnectionAssignment.
     entitlementId: Output only. The OCID of the entitlement linked to this
       resource.
     labels: Optional. The labels or tags associated with the
-      GoldenGateConnectionAssignment.
-    name: Identifier. The name of the GoldenGateConnectionAssignment resource
-      in the following format: projects/{project}/locations/{region}/goldenGat
-      eConnectionAssignments/{golden_gate_connection_assignment}
+      GoldengateConnectionAssignment.
+    name: Identifier. The name of the GoldengateConnectionAssignment resource
+      in the following format: projects/{project}/locations/{region}/goldengat
+      eConnectionAssignments/{goldengate_connection_assignment}
     properties: Required. The properties of the
-      GoldenGateConnectionAssignment.
+      GoldengateConnectionAssignment.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
     r"""Optional. The labels or tags associated with the
-    GoldenGateConnectionAssignment.
+    GoldengateConnectionAssignment.
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.
@@ -3575,11 +3673,11 @@ class GoldenGateConnectionAssignment(_messages.Message):
   entitlementId = _messages.StringField(3)
   labels = _messages.MessageField('LabelsValue', 4)
   name = _messages.StringField(5)
-  properties = _messages.MessageField('GoldenGateConnectionAssignmentProperties', 6)
+  properties = _messages.MessageField('GoldengateConnectionAssignmentProperties', 6)
 
 
-class GoldenGateConnectionAssignmentProperties(_messages.Message):
-  r"""The properties of a GoldenGateConnectionAssignment.
+class GoldengateConnectionAssignmentProperties(_messages.Message):
+  r"""The properties of a GoldengateConnectionAssignment.
 
   Enums:
     StateValueValuesEnum: Output only. The lifecycle state of the connection
@@ -3587,9 +3685,9 @@ class GoldenGateConnectionAssignmentProperties(_messages.Message):
 
   Fields:
     alias: Output only. Credential store alias.
-    goldenGateConnection: Required. The GoldenGateConnection resource to be
-      assigned. Format: projects/{project}/locations/{location}/goldenGateConn
-      ections/{golden_gate_connection}
+    goldengateConnection: Required. The GoldengateConnection resource to be
+      assigned. Format: projects/{project}/locations/{location}/goldengateConn
+      ections/{goldengate_connection}
     goldengateDeployment: Required. The GoldenGateDeployment to assign the
       connection to. Format: projects/{project}/locations/{location}/goldengat
       eDeployments/{goldengate_deployment}
@@ -3618,21 +3716,21 @@ class GoldenGateConnectionAssignmentProperties(_messages.Message):
     DELETING = 5
 
   alias = _messages.StringField(1)
-  goldenGateConnection = _messages.StringField(2)
+  goldengateConnection = _messages.StringField(2)
   goldengateDeployment = _messages.StringField(3)
   ocid = _messages.StringField(4)
   state = _messages.EnumField('StateValueValuesEnum', 5)
 
 
-class GoldenGateConnectionProperties(_messages.Message):
-  r"""The properties of a GoldenGateConnection.
+class GoldengateConnectionProperties(_messages.Message):
+  r"""The properties of a GoldengateConnection.
 
   Enums:
     ConnectionTypeValueValuesEnum: Required. The connection type.
     LifecycleStateValueValuesEnum: Output only. The lifecycle state of the
       connection.
     RoutingMethodValueValuesEnum: Optional. The routing method for the
-      GoldenGateConnection.
+      GoldengateConnection.
 
   Fields:
     amazonKinesisConnectionProperties: Properties for an Amazon Kinesis
@@ -3652,7 +3750,7 @@ class GoldenGateConnectionProperties(_messages.Message):
     elasticsearchConnectionProperties: Properties for an Elasticsearch
       connection.
     genericConnectionProperties: Properties for a Generic Connection.
-    goldenGateConnectionProperties: Properties for a GoldenGate Connection.
+    goldengateConnectionProperties: Properties for a Goldengate Connection.
     googleBigQueryConnectionProperties: Properties for a Google BigQuery
       Connection.
     googleCloudStorageConnectionProperties: Properties for a Google Cloud
@@ -3662,7 +3760,7 @@ class GoldenGateConnectionProperties(_messages.Message):
     hdfsConnectionProperties: Properties for an HDFS connection.
     icebergConnectionProperties: Properties for an Iceberg connection.
     ingressIpAddresses: Output only. The Ingress IPs of the
-      GoldenGateConnection.
+      GoldengateConnection.
     javaMessageServiceConnectionProperties: Properties for a Java Message
       Service connection.
     kafkaConnectionProperties: Properties for a Kafka Connection.
@@ -3688,7 +3786,7 @@ class GoldenGateConnectionProperties(_messages.Message):
       connection.
     postgresqlConnectionProperties: Properties for a PostgreSQL connection.
     redisConnectionProperties: Properties for a Redis connection.
-    routingMethod: Optional. The routing method for the GoldenGateConnection.
+    routingMethod: Optional. The routing method for the GoldengateConnection.
     snowflakeConnectionProperties: Properties for a Snowflake connection.
     updateTime: Output only. The time the resource was last updated.
   """
@@ -3697,7 +3795,7 @@ class GoldenGateConnectionProperties(_messages.Message):
     r"""Required. The connection type.
 
     Values:
-      GOLDEN_GATE_CONNECTION_TYPE_UNSPECIFIED: Connection type unspecified.
+      GOLDENGATE_CONNECTION_TYPE_UNSPECIFIED: Connection type unspecified.
       GOLDENGATE: Goldengate connection type.
       KAFKA: Kafka connection type.
       KAFKA_SCHEMA_REGISTRY: Kafka schema registry connection type.
@@ -3728,7 +3826,7 @@ class GoldenGateConnectionProperties(_messages.Message):
       MICROSOFT_FABRIC: Microsoft Fabric connection type.
       ICEBERG: Iceberg connection type.
     """
-    GOLDEN_GATE_CONNECTION_TYPE_UNSPECIFIED = 0
+    GOLDENGATE_CONNECTION_TYPE_UNSPECIFIED = 0
     GOLDENGATE = 1
     KAFKA = 2
     KAFKA_SCHEMA_REGISTRY = 3
@@ -3763,7 +3861,7 @@ class GoldenGateConnectionProperties(_messages.Message):
     r"""Output only. The lifecycle state of the connection.
 
     Values:
-      GOLDEN_GATE_CONNECTION_LIFECYCLE_STATE_UNSPECIFIED: Default unspecified
+      GOLDENGATE_CONNECTION_LIFECYCLE_STATE_UNSPECIFIED: Default unspecified
         value.
       CREATING: Indicates that the resource is in provisioning state.
       ACTIVE: Indicates that the resource is in active state.
@@ -3772,7 +3870,7 @@ class GoldenGateConnectionProperties(_messages.Message):
       DELETED: Indicates that the resource is in deleted state.
       FAILED: Indicates that the resource is in failed state.
     """
-    GOLDEN_GATE_CONNECTION_LIFECYCLE_STATE_UNSPECIFIED = 0
+    GOLDENGATE_CONNECTION_LIFECYCLE_STATE_UNSPECIFIED = 0
     CREATING = 1
     ACTIVE = 2
     UPDATING = 3
@@ -3781,121 +3879,121 @@ class GoldenGateConnectionProperties(_messages.Message):
     FAILED = 6
 
   class RoutingMethodValueValuesEnum(_messages.Enum):
-    r"""Optional. The routing method for the GoldenGateConnection.
+    r"""Optional. The routing method for the GoldengateConnection.
 
     Values:
-      GOLDEN_GATE_CONNECTION_ROUTING_METHOD_UNSPECIFIED: Default unspecified
+      GOLDENGATE_CONNECTION_ROUTING_METHOD_UNSPECIFIED: Default unspecified
         value.
       SHARED_DEPLOYMENT_ENDPOINT: Network traffic flows from the assigned
         deployment's private endpoint through the deployment's subnet.
       DEDICATED_ENDPOINT: A dedicated private endpoint is created in the
         target VCN subnet for the connection.
     """
-    GOLDEN_GATE_CONNECTION_ROUTING_METHOD_UNSPECIFIED = 0
+    GOLDENGATE_CONNECTION_ROUTING_METHOD_UNSPECIFIED = 0
     SHARED_DEPLOYMENT_ENDPOINT = 1
     DEDICATED_ENDPOINT = 2
 
-  amazonKinesisConnectionProperties = _messages.MessageField('GoldenGateAmazonKinesisConnectionProperties', 1)
-  amazonRedshiftConnectionProperties = _messages.MessageField('GoldenGateAmazonRedshiftConnectionProperties', 2)
-  amazonS3ConnectionProperties = _messages.MessageField('GoldenGateAmazonS3ConnectionProperties', 3)
-  azureDataLakeStorageConnectionProperties = _messages.MessageField('GoldenGateAzureDataLakeStorageConnectionProperties', 4)
-  azureSynapseAnalyticsConnectionProperties = _messages.MessageField('GoldenGateAzureSynapseAnalyticsConnectionProperties', 5)
+  amazonKinesisConnectionProperties = _messages.MessageField('GoldengateAmazonKinesisConnectionProperties', 1)
+  amazonRedshiftConnectionProperties = _messages.MessageField('GoldengateAmazonRedshiftConnectionProperties', 2)
+  amazonS3ConnectionProperties = _messages.MessageField('GoldengateAmazonS3ConnectionProperties', 3)
+  azureDataLakeStorageConnectionProperties = _messages.MessageField('GoldengateAzureDataLakeStorageConnectionProperties', 4)
+  azureSynapseAnalyticsConnectionProperties = _messages.MessageField('GoldengateAzureSynapseAnalyticsConnectionProperties', 5)
   connectionType = _messages.EnumField('ConnectionTypeValueValuesEnum', 6)
-  databricksConnectionProperties = _messages.MessageField('GoldenGateDatabricksConnectionProperties', 7)
-  db2ConnectionProperties = _messages.MessageField('GoldenGateDb2ConnectionProperties', 8)
+  databricksConnectionProperties = _messages.MessageField('GoldengateDatabricksConnectionProperties', 7)
+  db2ConnectionProperties = _messages.MessageField('GoldengateDb2ConnectionProperties', 8)
   description = _messages.StringField(9)
   displayName = _messages.StringField(10)
-  elasticsearchConnectionProperties = _messages.MessageField('GoldenGateElasticsearchConnectionProperties', 11)
-  genericConnectionProperties = _messages.MessageField('GoldenGateGenericConnectionProperties', 12)
-  goldenGateConnectionProperties = _messages.MessageField('GoldenGateGoldenGateConnectionProperties', 13)
-  googleBigQueryConnectionProperties = _messages.MessageField('GoldenGateGoogleBigQueryConnectionProperties', 14)
-  googleCloudStorageConnectionProperties = _messages.MessageField('GoldenGateGoogleCloudStorageConnectionProperties', 15)
-  googlePubsubConnectionProperties = _messages.MessageField('GoldenGateGooglePubsubConnectionProperties', 16)
-  hdfsConnectionProperties = _messages.MessageField('GoldenGateHdfsConnectionProperties', 17)
-  icebergConnectionProperties = _messages.MessageField('GoldenGateIcebergConnectionProperties', 18)
+  elasticsearchConnectionProperties = _messages.MessageField('GoldengateElasticsearchConnectionProperties', 11)
+  genericConnectionProperties = _messages.MessageField('GoldengateGenericConnectionProperties', 12)
+  goldengateConnectionProperties = _messages.MessageField('GoldengateGoldengateConnectionProperties', 13)
+  googleBigQueryConnectionProperties = _messages.MessageField('GoldengateGoogleBigQueryConnectionProperties', 14)
+  googleCloudStorageConnectionProperties = _messages.MessageField('GoldengateGoogleCloudStorageConnectionProperties', 15)
+  googlePubsubConnectionProperties = _messages.MessageField('GoldengateGooglePubsubConnectionProperties', 16)
+  hdfsConnectionProperties = _messages.MessageField('GoldengateHdfsConnectionProperties', 17)
+  icebergConnectionProperties = _messages.MessageField('GoldengateIcebergConnectionProperties', 18)
   ingressIpAddresses = _messages.StringField(19, repeated=True)
-  javaMessageServiceConnectionProperties = _messages.MessageField('GoldenGateJavaMessageServiceConnectionProperties', 20)
-  kafkaConnectionProperties = _messages.MessageField('GoldenGateKafkaConnectionProperties', 21)
-  kafkaSchemaRegistryConnectionProperties = _messages.MessageField('GoldenGateKafkaSchemaRegistryConnectionProperties', 22)
+  javaMessageServiceConnectionProperties = _messages.MessageField('GoldengateJavaMessageServiceConnectionProperties', 20)
+  kafkaConnectionProperties = _messages.MessageField('GoldengateKafkaConnectionProperties', 21)
+  kafkaSchemaRegistryConnectionProperties = _messages.MessageField('GoldengateKafkaSchemaRegistryConnectionProperties', 22)
   lifecycleDetails = _messages.StringField(23)
   lifecycleState = _messages.EnumField('LifecycleStateValueValuesEnum', 24)
-  microsoftFabricConnectionProperties = _messages.MessageField('GoldenGateMicrosoftFabricConnectionProperties', 25)
-  microsoftSqlserverConnectionProperties = _messages.MessageField('GoldenGateMicrosoftSqlserverConnectionProperties', 26)
-  mongodbConnectionProperties = _messages.MessageField('GoldenGateMongodbConnectionProperties', 27)
-  mysqlConnectionProperties = _messages.MessageField('GoldenGateMysqlConnectionProperties', 28)
-  ociObjectStorageConnectionProperties = _messages.MessageField('GoldenGateOciObjectStorageConnectionProperties', 29)
+  microsoftFabricConnectionProperties = _messages.MessageField('GoldengateMicrosoftFabricConnectionProperties', 25)
+  microsoftSqlserverConnectionProperties = _messages.MessageField('GoldengateMicrosoftSqlserverConnectionProperties', 26)
+  mongodbConnectionProperties = _messages.MessageField('GoldengateMongodbConnectionProperties', 27)
+  mysqlConnectionProperties = _messages.MessageField('GoldengateMysqlConnectionProperties', 28)
+  ociObjectStorageConnectionProperties = _messages.MessageField('GoldengateOciObjectStorageConnectionProperties', 29)
   ocid = _messages.StringField(30)
-  oracleAiDataPlatformConnectionProperties = _messages.MessageField('GoldenGateOracleAIDataPlatformConnectionProperties', 31)
-  oracleConnectionProperties = _messages.MessageField('GoldenGateOracleConnectionProperties', 32)
-  oracleNosqlConnectionProperties = _messages.MessageField('GoldenGateOracleNosqlConnectionProperties', 33)
-  postgresqlConnectionProperties = _messages.MessageField('GoldenGatePostgresqlConnectionProperties', 34)
-  redisConnectionProperties = _messages.MessageField('GoldenGateRedisConnectionProperties', 35)
+  oracleAiDataPlatformConnectionProperties = _messages.MessageField('GoldengateOracleAIDataPlatformConnectionProperties', 31)
+  oracleConnectionProperties = _messages.MessageField('GoldengateOracleConnectionProperties', 32)
+  oracleNosqlConnectionProperties = _messages.MessageField('GoldengateOracleNosqlConnectionProperties', 33)
+  postgresqlConnectionProperties = _messages.MessageField('GoldengatePostgresqlConnectionProperties', 34)
+  redisConnectionProperties = _messages.MessageField('GoldengateRedisConnectionProperties', 35)
   routingMethod = _messages.EnumField('RoutingMethodValueValuesEnum', 36)
-  snowflakeConnectionProperties = _messages.MessageField('GoldenGateSnowflakeConnectionProperties', 37)
+  snowflakeConnectionProperties = _messages.MessageField('GoldengateSnowflakeConnectionProperties', 37)
   updateTime = _messages.StringField(38)
 
 
-class GoldenGateConnectionType(_messages.Message):
-  r"""Details of the GoldenGate Connection Type resource.
+class GoldengateConnectionType(_messages.Message):
+  r"""Details of the Goldengate Connection Type resource.
 
   Enums:
     ConnectionTypeValueValuesEnum: Output only. The connection type of the
-      GoldenGate Connection Type resource.
+      Goldengate Connection Type resource.
 
   Fields:
-    connectionType: Output only. The connection type of the GoldenGate
+    connectionType: Output only. The connection type of the Goldengate
       Connection Type resource.
-    name: Identifier. The name of the GoldenGate Connection Type resource with
-      the format: projects/{project}/locations/{region}/goldenGateConnectionTy
-      pes/{golden_gate_connection_type}
-    technologyTypes: Output only. The technology type of the GoldenGate
+    name: Identifier. The name of the Goldengate Connection Type resource with
+      the format: projects/{project}/locations/{region}/goldengateConnectionTy
+      pes/{goldengate_connection_type}
+    technologyTypes: Output only. The technology type of the Goldengate
       Connection Type resource.
   """
 
   class ConnectionTypeValueValuesEnum(_messages.Enum):
-    r"""Output only. The connection type of the GoldenGate Connection Type
+    r"""Output only. The connection type of the Goldengate Connection Type
     resource.
 
     Values:
       CONNECTION_TYPE_UNSPECIFIED: Default unspecified value.
-      GOLDENGATE: GoldenGate Connection Type category is GOLDENGATE.
-      KAFKA: GoldenGate Connection Type category is KAFKA.
-      KAFKA_SCHEMA_REGISTRY: GoldenGate Connection Type category is
+      GOLDENGATE: Goldengate Connection Type category is GOLDENGATE.
+      KAFKA: Goldengate Connection Type category is KAFKA.
+      KAFKA_SCHEMA_REGISTRY: Goldengate Connection Type category is
         KAFKA_SCHEMA_REGISTRY.
-      MYSQL: GoldenGate Connection Type category is MYSQL.
-      JAVA_MESSAGE_SERVICE: GoldenGate Connection Type category is
+      MYSQL: Goldengate Connection Type category is MYSQL.
+      JAVA_MESSAGE_SERVICE: Goldengate Connection Type category is
         JAVA_MESSAGE_SERVICE.
-      MICROSOFT_SQLSERVER: GoldenGate Connection Type category is
+      MICROSOFT_SQLSERVER: Goldengate Connection Type category is
         MICROSOFT_SQLSERVER.
-      OCI_OBJECT_STORAGE: GoldenGate Connection Type category is
+      OCI_OBJECT_STORAGE: Goldengate Connection Type category is
         OCI_OBJECT_STORAGE.
-      ORACLE: GoldenGate Connection Type category is ORACLE.
-      AZURE_DATA_LAKE_STORAGE: GoldenGate Connection Type category is
+      ORACLE: Goldengate Connection Type category is ORACLE.
+      AZURE_DATA_LAKE_STORAGE: Goldengate Connection Type category is
         AZURE_DATA_LAKE_STORAGE.
-      POSTGRESQL: GoldenGate Connection Type category is POSTGRESQL.
-      AZURE_SYNAPSE_ANALYTICS: GoldenGate Connection Type category is
+      POSTGRESQL: Goldengate Connection Type category is POSTGRESQL.
+      AZURE_SYNAPSE_ANALYTICS: Goldengate Connection Type category is
         AZURE_SYNAPSE_ANALYTICS.
-      SNOWFLAKE: GoldenGate Connection Type category is SNOWFLAKE.
-      AMAZON_S3: GoldenGate Connection Type category is AMAZON_S3.
-      HDFS: GoldenGate Connection Type category is HDFS.
-      ORACLE_AI_DATA_PLATFORM: GoldenGate Connection Type category is
+      SNOWFLAKE: Goldengate Connection Type category is SNOWFLAKE.
+      AMAZON_S3: Goldengate Connection Type category is AMAZON_S3.
+      HDFS: Goldengate Connection Type category is HDFS.
+      ORACLE_AI_DATA_PLATFORM: Goldengate Connection Type category is
         ORACLE_AI_DATA_PLATFORM.
-      ORACLE_NOSQL: GoldenGate Connection Type category is ORACLE_NOSQL.
-      MONGODB: GoldenGate Connection Type category is MONGODB.
-      AMAZON_KINESIS: GoldenGate Connection Type category is AMAZON_KINESIS.
-      AMAZON_REDSHIFT: GoldenGate Connection Type category is AMAZON_REDSHIFT.
-      DB2: GoldenGate Connection Type category is DB2.
-      REDIS: GoldenGate Connection Type category is REDIS.
-      ELASTICSEARCH: GoldenGate Connection Type category is ELASTICSEARCH.
-      GENERIC: GoldenGate Connection Type category is GENERIC.
-      GOOGLE_CLOUD_STORAGE: GoldenGate Connection Type category is
+      ORACLE_NOSQL: Goldengate Connection Type category is ORACLE_NOSQL.
+      MONGODB: Goldengate Connection Type category is MONGODB.
+      AMAZON_KINESIS: Goldengate Connection Type category is AMAZON_KINESIS.
+      AMAZON_REDSHIFT: Goldengate Connection Type category is AMAZON_REDSHIFT.
+      DB2: Goldengate Connection Type category is DB2.
+      REDIS: Goldengate Connection Type category is REDIS.
+      ELASTICSEARCH: Goldengate Connection Type category is ELASTICSEARCH.
+      GENERIC: Goldengate Connection Type category is GENERIC.
+      GOOGLE_CLOUD_STORAGE: Goldengate Connection Type category is
         GOOGLE_CLOUD_STORAGE.
-      GOOGLE_BIGQUERY: GoldenGate Connection Type category is GOOGLE_BIGQUERY.
-      DATABRICKS: GoldenGate Connection Type category is DATABRICKS.
-      GOOGLE_PUBSUB: GoldenGate Connection Type category is GOOGLE_PUBSUB.
-      MICROSOFT_FABRIC: GoldenGate Connection Type category is
+      GOOGLE_BIGQUERY: Goldengate Connection Type category is GOOGLE_BIGQUERY.
+      DATABRICKS: Goldengate Connection Type category is DATABRICKS.
+      GOOGLE_PUBSUB: Goldengate Connection Type category is GOOGLE_PUBSUB.
+      MICROSOFT_FABRIC: Goldengate Connection Type category is
         MICROSOFT_FABRIC.
-      ICEBERG: GoldenGate Connection Type category is ICEBERG.
+      ICEBERG: Goldengate Connection Type category is ICEBERG.
     """
     CONNECTION_TYPE_UNSPECIFIED = 0
     GOLDENGATE = 1
@@ -3933,8 +4031,8 @@ class GoldenGateConnectionType(_messages.Message):
   technologyTypes = _messages.StringField(3, repeated=True)
 
 
-class GoldenGateDatabricksConnectionProperties(_messages.Message):
-  r"""The properties of GoldenGateDatabricksConnection.
+class GoldengateDatabricksConnectionProperties(_messages.Message):
+  r"""The properties of GoldengateDatabricksConnection.
 
   Enums:
     AuthenticationTypeValueValuesEnum: Optional. Authentication type for
@@ -3983,8 +4081,8 @@ class GoldenGateDatabricksConnectionProperties(_messages.Message):
   technologyType = _messages.StringField(8)
 
 
-class GoldenGateDb2ConnectionProperties(_messages.Message):
-  r"""The properties of GoldenGateDb2Connection.
+class GoldengateDb2ConnectionProperties(_messages.Message):
+  r"""The properties of GoldengateDb2Connection.
 
   Enums:
     SecurityProtocolValueValuesEnum: Optional. Security protocol for the DB2
@@ -3995,10 +4093,10 @@ class GoldenGateDb2ConnectionProperties(_messages.Message):
       entries. Used as additional parameters in connection string.
     database: Optional. The name of the database.
     host: Optional. The name or address of a host.
-    password: Optional. Input only. The password Oracle GoldenGate uses for
+    password: Optional. Input only. The password Oracle Goldengate uses for
       Db2 connection in plain text.
     passwordSecretVersion: Optional. Input only. The resource name of a secret
-      version in Secret Manager which contains the password Oracle GoldenGate
+      version in Secret Manager which contains the password Oracle Goldengate
       uses for Db2 connection. Format:
       projects/{project}/secrets/{secret}/versions/{version}.
     port: Optional. The port of an endpoint usually specified for a
@@ -4013,7 +4111,7 @@ class GoldenGateDb2ConnectionProperties(_messages.Message):
     sslServerCertificateFile: Optional. The file which contains the self-
       signed server certificate / Certificate Authority (CA) certificate.
     technologyType: Optional. The technology type of Db2Connection.
-    username: Optional. The username Oracle GoldenGate uses to connect to the
+    username: Optional. The username Oracle Goldengate uses to connect to the
       DB2 database.
   """
 
@@ -4041,1257 +4139,6 @@ class GoldenGateDb2ConnectionProperties(_messages.Message):
   sslServerCertificateFile = _messages.StringField(10)
   technologyType = _messages.StringField(11)
   username = _messages.StringField(12)
-
-
-class GoldenGateDeploymentEnvironment(_messages.Message):
-  r"""Details of the GoldenGate Deployment Environment resource.
-
-  Enums:
-    CategoryValueValuesEnum: Output only. The category of the GoldenGate
-      Deployment Environment resource.
-    EnvironmentTypeValueValuesEnum: Output only. The environment type of the
-      GoldenGate Deployment Environment resource.
-
-  Fields:
-    autoScalingEnabled: Output only. Whether auto scaling is enabled by
-      default for the GoldenGate Deployment Environment resource.
-    category: Output only. The category of the GoldenGate Deployment
-      Environment resource.
-    defaultCpuCoreCount: Output only. The default CPU core count of the
-      GoldenGate Deployment Environment resource.
-    displayName: Output only. The display name of the GoldenGate Deployment
-      Environment resource.
-    environmentType: Output only. The environment type of the GoldenGate
-      Deployment Environment resource.
-    maxCpuCoreCount: Output only. The max CPU core count of the GoldenGate
-      Deployment Environment resource.
-    memoryGbPerCpuCore: Output only. The memory per CPU core in GBs of the
-      GoldenGate Deployment Environment resource.
-    minCpuCoreCount: Output only. The min CPU core count of the GoldenGate
-      Deployment Environment resource.
-    name: Identifier. The name of the GoldenGate Deployment Environment
-      resource with the format: projects/{project}/locations/{region}/goldenGa
-      teDeploymentEnvironments/{golden_gate_deployment_environment}
-    networkBandwidthGbpsPerCpuCore: Output only. The network bandwidth per CPU
-      core in Gbps of the GoldenGate Deployment Environment resource.
-    storageUsageLimitGbPerCpuCore: Output only. The storage usage limit per
-      CPU core in GBs of the GoldenGate Deployment Environment resource.
-  """
-
-  class CategoryValueValuesEnum(_messages.Enum):
-    r"""Output only. The category of the GoldenGate Deployment Environment
-    resource.
-
-    Values:
-      DEPLOYMENT_CATEGORY_UNSPECIFIED: Default unspecified value.
-      DATA_REPLICATION_CATEGORY: GoldenGate Deployment Environment category is
-        DATA_REPLICATION_CATEGORY.
-      DATA_TRANSFORMS_CATEGORY: GoldenGate Deployment Environment category is
-        DATA_TRANSFORMS_CATEGORY.
-    """
-    DEPLOYMENT_CATEGORY_UNSPECIFIED = 0
-    DATA_REPLICATION_CATEGORY = 1
-    DATA_TRANSFORMS_CATEGORY = 2
-
-  class EnvironmentTypeValueValuesEnum(_messages.Enum):
-    r"""Output only. The environment type of the GoldenGate Deployment
-    Environment resource.
-
-    Values:
-      DEPLOYMENT_ENVIRONMENT_TYPE_UNSPECIFIED: Default unspecified value.
-      PRODUCTION: GoldenGate Deployment Environment type is PRODUCTION.
-      DEVELOPMENT_OR_TESTING: GoldenGate Deployment Environment type is
-        DEVELOPMENT_OR_TESTING.
-    """
-    DEPLOYMENT_ENVIRONMENT_TYPE_UNSPECIFIED = 0
-    PRODUCTION = 1
-    DEVELOPMENT_OR_TESTING = 2
-
-  autoScalingEnabled = _messages.BooleanField(1)
-  category = _messages.EnumField('CategoryValueValuesEnum', 2)
-  defaultCpuCoreCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  displayName = _messages.StringField(4)
-  environmentType = _messages.EnumField('EnvironmentTypeValueValuesEnum', 5)
-  maxCpuCoreCount = _messages.IntegerField(6, variant=_messages.Variant.INT32)
-  memoryGbPerCpuCore = _messages.IntegerField(7, variant=_messages.Variant.INT32)
-  minCpuCoreCount = _messages.IntegerField(8, variant=_messages.Variant.INT32)
-  name = _messages.StringField(9)
-  networkBandwidthGbpsPerCpuCore = _messages.IntegerField(10, variant=_messages.Variant.INT32)
-  storageUsageLimitGbPerCpuCore = _messages.IntegerField(11, variant=_messages.Variant.INT32)
-
-
-class GoldenGateDeploymentType(_messages.Message):
-  r"""Details of the GoldenGate Deployment Type resource.
-
-  Enums:
-    CategoryValueValuesEnum: Output only. The category of the GoldenGate
-      Deployment Type resource.
-    DeploymentTypeValueValuesEnum: Output only. The deployment type of the
-      GoldenGate Deployment Type resource.
-
-  Fields:
-    category: Output only. The category of the GoldenGate Deployment Type
-      resource.
-    connectionTypes: Output only. The connection types of the GoldenGate
-      Deployment Type resource.
-    defaultUsername: Output only. The default username of the GoldenGate
-      Deployment Type resource.
-    deploymentType: Output only. The deployment type of the GoldenGate
-      Deployment Type resource.
-    displayName: Output only. The display name of the GoldenGate Deployment
-      Type resource.
-    name: Identifier. The name of the GoldenGate Deployment Type resource with
-      the format: projects/{project}/locations/{region}/goldenGateDeploymentTy
-      pes/{golden_gate_deployment_type}
-    oggVersion: Output only. The Ogg version of the GoldenGate Deployment Type
-      resource.
-    sourceTechnologies: Output only. The source technologies of the GoldenGate
-      Deployment Type resource.
-    supportedCapabilities: Output only. The supported capabilities of the
-      GoldenGate Deployment Type resource.
-    supportedTechnologiesUrl: Output only. The supported technologies URL of
-      the GoldenGate Deployment Type resource.
-    targetTechnologies: Output only. The target technologies of the GoldenGate
-      Deployment Type resource.
-  """
-
-  class CategoryValueValuesEnum(_messages.Enum):
-    r"""Output only. The category of the GoldenGate Deployment Type resource.
-
-    Values:
-      DEPLOYMENT_CATEGORY_UNSPECIFIED: Default unspecified value.
-      DATA_REPLICATION_CATEGORY: GoldenGate Deployment Type category is
-        DATA_REPLICATION_CATEGORY.
-      DATA_TRANSFORMS_CATEGORY: GoldenGate Deployment Type category is
-        DATA_TRANSFORMS_CATEGORY.
-    """
-    DEPLOYMENT_CATEGORY_UNSPECIFIED = 0
-    DATA_REPLICATION_CATEGORY = 1
-    DATA_TRANSFORMS_CATEGORY = 2
-
-  class DeploymentTypeValueValuesEnum(_messages.Enum):
-    r"""Output only. The deployment type of the GoldenGate Deployment Type
-    resource.
-
-    Values:
-      DEPLOYMENT_TYPE_UNSPECIFIED: Default unspecified value.
-      OGG: GoldenGate Deployment Type category is OGG.
-      DATABASE_ORACLE: GoldenGate Deployment Type category is DATABASE_ORACLE.
-      BIGDATA: GoldenGate Deployment Type category is BIGDATA.
-      DATABASE_MICROSOFT_SQLSERVER: GoldenGate Deployment Type category is
-        DATABASE_MICROSOFT_SQLSERVER.
-      DATABASE_MYSQL: GoldenGate Deployment Type category is DATABASE_MYSQL.
-      DATABASE_POSTGRESQL: GoldenGate Deployment Type category is
-        DATABASE_POSTGRESQL.
-      DATABASE_DB2ZOS: GoldenGate Deployment Type category is DATABASE_DB2ZOS.
-      DATABASE_DB2I: GoldenGate Deployment Type category is DATABASE_DB2I.
-      GGSA: GoldenGate Deployment Type category is GGSA.
-      DATA_TRANSFORMS: GoldenGate Deployment Type category is DATA_TRANSFORMS.
-    """
-    DEPLOYMENT_TYPE_UNSPECIFIED = 0
-    OGG = 1
-    DATABASE_ORACLE = 2
-    BIGDATA = 3
-    DATABASE_MICROSOFT_SQLSERVER = 4
-    DATABASE_MYSQL = 5
-    DATABASE_POSTGRESQL = 6
-    DATABASE_DB2ZOS = 7
-    DATABASE_DB2I = 8
-    GGSA = 9
-    DATA_TRANSFORMS = 10
-
-  category = _messages.EnumField('CategoryValueValuesEnum', 1)
-  connectionTypes = _messages.StringField(2, repeated=True)
-  defaultUsername = _messages.StringField(3)
-  deploymentType = _messages.EnumField('DeploymentTypeValueValuesEnum', 4)
-  displayName = _messages.StringField(5)
-  name = _messages.StringField(6)
-  oggVersion = _messages.StringField(7)
-  sourceTechnologies = _messages.StringField(8, repeated=True)
-  supportedCapabilities = _messages.StringField(9, repeated=True)
-  supportedTechnologiesUrl = _messages.StringField(10)
-  targetTechnologies = _messages.StringField(11, repeated=True)
-
-
-class GoldenGateElasticsearchConnectionProperties(_messages.Message):
-  r"""The properties of GoldenGateElasticsearchConnection.
-
-  Enums:
-    AuthenticationTypeValueValuesEnum: Optional. Authentication type for
-      Elasticsearch.
-    SecurityProtocolValueValuesEnum: Optional. Security protocol for
-      Elasticsearch.
-
-  Fields:
-    authenticationType: Optional. Authentication type for Elasticsearch.
-    fingerprint: Optional. Fingerprint required by TLS security protocol. Eg.:
-      '6152b2dfbff200f973c5074a5b91d06ab3b472c07c09a1ea57bb7fd406cdce9c'
-    password: Optional. Input only. The password Oracle GoldenGate uses for
-      Elastic Search connection in plain text.
-    passwordSecretVersion: Optional. Input only. The resource name of a secret
-      version in Secret Manager which contains the password Oracle GoldenGate
-      uses for Elastic Search connection. Format:
-      projects/{project}/secrets/{secret}/versions/{version}.
-    securityProtocol: Optional. Security protocol for Elasticsearch.
-    servers: Optional. Comma separated list of Elasticsearch server addresses,
-      specified as host:port entries, where :port is optional. If port is not
-      specified, it defaults to 9200. Example:
-      "server1.example.com:4000,server2.example.com:4000"
-    technologyType: Optional. The technology type of ElasticsearchConnection.
-    username: Optional. The username Oracle GoldenGate uses to connect the
-      associated system of the given technology.
-  """
-
-  class AuthenticationTypeValueValuesEnum(_messages.Enum):
-    r"""Optional. Authentication type for Elasticsearch.
-
-    Values:
-      ELASTICSEARCH_AUTHENTICATION_TYPE_UNSPECIFIED: Authentication type not
-        specified.
-      NONE: No authentication.
-      BASIC: Basic authentication.
-    """
-    ELASTICSEARCH_AUTHENTICATION_TYPE_UNSPECIFIED = 0
-    NONE = 1
-    BASIC = 2
-
-  class SecurityProtocolValueValuesEnum(_messages.Enum):
-    r"""Optional. Security protocol for Elasticsearch.
-
-    Values:
-      ELASTICSEARCH_SECURITY_PROTOCOL_UNSPECIFIED: Security protocol not
-        specified.
-      PLAIN: Plain text communication.
-      TLS: Transport Layer Security.
-    """
-    ELASTICSEARCH_SECURITY_PROTOCOL_UNSPECIFIED = 0
-    PLAIN = 1
-    TLS = 2
-
-  authenticationType = _messages.EnumField('AuthenticationTypeValueValuesEnum', 1)
-  fingerprint = _messages.StringField(2)
-  password = _messages.StringField(3)
-  passwordSecretVersion = _messages.StringField(4)
-  securityProtocol = _messages.EnumField('SecurityProtocolValueValuesEnum', 5)
-  servers = _messages.StringField(6)
-  technologyType = _messages.StringField(7)
-  username = _messages.StringField(8)
-
-
-class GoldenGateGenericConnectionProperties(_messages.Message):
-  r"""The properties of GoldenGateGenericConnectionProperties.
-
-  Fields:
-    host: Optional. The host of the GenericConnection.
-    technologyType: Optional. The technology type.
-  """
-
-  host = _messages.StringField(1)
-  technologyType = _messages.StringField(2)
-
-
-class GoldenGateGoldenGateConnectionProperties(_messages.Message):
-  r"""The properties of GoldenGateGoldenGateConnectionProperties.
-
-  Fields:
-    goldengateDeploymentId: Optional. The name of the GoldenGateDeployment
-      associated with the GoldenGateConnection. Format: projects/{project}/loc
-      ations/{location}/goldengateDeployments/{golden_gate_deployment}
-    host: Optional. The host of the GoldenGateConnection.
-    password: Optional. Input only. The password used to connect to the Oracle
-      GoldenGate in plain text.
-    passwordSecretVersion: Optional. Input only. The resource name of a secret
-      version in Secret Manager which contains the password used to connect to
-      the Oracle GoldenGate. Format:
-      projects/{project}/secrets/{secret}/versions/{version}.
-    port: Optional. The port of the GoldenGateConnection.
-    technologyType: Optional. The technology type.
-    username: Optional. The username credential.
-  """
-
-  goldengateDeploymentId = _messages.StringField(1)
-  host = _messages.StringField(2)
-  password = _messages.StringField(3)
-  passwordSecretVersion = _messages.StringField(4)
-  port = _messages.IntegerField(5, variant=_messages.Variant.INT32)
-  technologyType = _messages.StringField(6)
-  username = _messages.StringField(7)
-
-
-class GoldenGateGoogleBigQueryConnectionProperties(_messages.Message):
-  r"""The properties of GoldenGateGoogleBigQueryConnectionProperties.
-
-  Fields:
-    serviceAccountKeyFile: Optional. The service account key file Cloud
-      Storage containing the credentials required to use Google BigQuery.
-    technologyType: Optional. The technology type.
-  """
-
-  serviceAccountKeyFile = _messages.StringField(1)
-  technologyType = _messages.StringField(2)
-
-
-class GoldenGateGoogleCloudStorageConnectionProperties(_messages.Message):
-  r"""The properties of GoldenGateGoogleCloudStorageConnectionProperties.
-
-  Fields:
-    serviceAccountKeyFile: Optional. The service account key Cloud Storage
-      file containing the credentials required to use Google Cloud Storage.
-    technologyType: Optional. The technology type.
-  """
-
-  serviceAccountKeyFile = _messages.StringField(1)
-  technologyType = _messages.StringField(2)
-
-
-class GoldenGateGooglePubsubConnectionProperties(_messages.Message):
-  r"""The properties of GoldenGateGooglePubsubConnection.
-
-  Fields:
-    serviceAccountKeyFile: Optional. The content of the service account key
-      file containing the credentials required to use Google Pub/Sub.
-    technologyType: Optional. The technology type of GooglePubsubConnection.
-  """
-
-  serviceAccountKeyFile = _messages.StringField(1)
-  technologyType = _messages.StringField(2)
-
-
-class GoldenGateHdfsConnectionProperties(_messages.Message):
-  r"""The properties of GoldenGateHdfsConnection.
-
-  Fields:
-    coreSiteXml: Optional. The content of the Hadoop Distributed File System
-      configuration file (core-site.xml).
-    technologyType: Optional. The technology type of HdfsConnection.
-  """
-
-  coreSiteXml = _messages.StringField(1)
-  technologyType = _messages.StringField(2)
-
-
-class GoldenGateIcebergConnectionProperties(_messages.Message):
-  r"""The properties of GoldenGateIcebergConnection.
-
-  Fields:
-    catalog: Required. The Iceberg catalog.
-    storage: Required. The Iceberg storage.
-    technologyType: Required. The technology type of Iceberg connection.
-  """
-
-  catalog = _messages.MessageField('IcebergCatalog', 1)
-  storage = _messages.MessageField('IcebergStorage', 2)
-  technologyType = _messages.StringField(3)
-
-
-class GoldenGateJavaMessageServiceConnectionProperties(_messages.Message):
-  r"""The properties of GoldenGateJavaMessageServiceConnection.
-
-  Enums:
-    AuthenticationTypeValueValuesEnum: Optional. Authentication type for Java
-      Message Service.
-    SecurityProtocolValueValuesEnum: Optional. Security protocol for Java
-      Message Service.
-
-  Fields:
-    authenticationType: Optional. Authentication type for Java Message
-      Service.
-    connectionFactory: Optional. The Java class implementing
-      javax.jms.ConnectionFactory interface supplied by the JMS provider.
-    connectionUrl: Optional. Connection URL of the Java Message Service,
-      specifying the protocol, host, and port. e.g.:
-      'mq://myjms.host.domain:7676'
-    jndiConnectionFactory: Optional. The Connection Factory can be looked up
-      using this name. e.g.: 'ConnectionFactory'
-    jndiInitialContextFactory: Optional. The implementation of
-      javax.naming.spi.InitialContextFactory interface used to obtain initial
-      naming context.
-    jndiProviderUrl: Optional. The URL that Java Message Service will use to
-      contact the JNDI provider. e.g.:
-      'tcp://myjms.host.domain:61616?jms.prefetchPolicy.all=1000'
-    jndiSecurityCredentialsSecret: Optional. The password associated to the
-      principal.
-    jndiSecurityPrincipal: Optional. Specifies the identity of the principal
-      (user) to be authenticated.
-    keyStoreFile: Optional. The content of the KeyStore file.
-    keyStorePassword: Optional. Input only. The KeyStore password in plain
-      text.
-    keyStorePasswordSecretVersion: Optional. Input only. The resource name of
-      a secret version in Secret Manager which contains the KeyStore password.
-      Format: projects/{project}/secrets/{secret}/versions/{version}.
-    password: Optional. Input only. The password Oracle GoldenGate uses to
-      connect the Java Message Service in plain text.
-    passwordSecretVersion: Optional. Input only. The resource name of a secret
-      version in Secret Manager which contains the password Oracle GoldenGate
-      uses to connect the associated Java Message Service. Format:
-      projects/{project}/secrets/{secret}/versions/{version}.
-    securityProtocol: Optional. Security protocol for Java Message Service.
-    sslKeyPassword: Optional. Input only. The password for the cert inside of
-      the KeyStore in plain text.
-    sslKeyPasswordSecretVersion: Optional. Input only. The resource name of a
-      secret version in Secret Manager which contains the password for the
-      cert inside of the KeyStore. Format:
-      projects/{project}/secrets/{secret}/versions/{version}.
-    technologyType: Optional. The technology type of
-      JavaMessageServiceConnection.
-    trustStoreFile: Optional. The content of the TrustStore file.
-    trustStorePassword: Optional. Input only. The TrustStore password in plain
-      text.
-    trustStorePasswordSecretVersion: Optional. Input only. The resource name
-      of a secret version in Secret Manager which contains the TrustStore
-      password. Format:
-      projects/{project}/secrets/{secret}/versions/{version}.
-    useJndi: Optional. If set to true, Java Naming and Directory Interface
-      (JNDI) properties should be provided.
-    username: Optional. The username Oracle GoldenGate uses to connect to the
-      Java Message Service.
-  """
-
-  class AuthenticationTypeValueValuesEnum(_messages.Enum):
-    r"""Optional. Authentication type for Java Message Service.
-
-    Values:
-      JMS_AUTHENTICATION_TYPE_UNSPECIFIED: Authentication type not specified.
-      NONE: No authentication.
-      BASIC: Basic authentication.
-    """
-    JMS_AUTHENTICATION_TYPE_UNSPECIFIED = 0
-    NONE = 1
-    BASIC = 2
-
-  class SecurityProtocolValueValuesEnum(_messages.Enum):
-    r"""Optional. Security protocol for Java Message Service.
-
-    Values:
-      JMS_SECURITY_PROTOCOL_UNSPECIFIED: Security protocol not specified.
-      PLAIN: Plain text communication.
-      TLS: Transport Layer Security.
-      MTLS: Mutual Transport Layer Security.
-    """
-    JMS_SECURITY_PROTOCOL_UNSPECIFIED = 0
-    PLAIN = 1
-    TLS = 2
-    MTLS = 3
-
-  authenticationType = _messages.EnumField('AuthenticationTypeValueValuesEnum', 1)
-  connectionFactory = _messages.StringField(2)
-  connectionUrl = _messages.StringField(3)
-  jndiConnectionFactory = _messages.StringField(4)
-  jndiInitialContextFactory = _messages.StringField(5)
-  jndiProviderUrl = _messages.StringField(6)
-  jndiSecurityCredentialsSecret = _messages.StringField(7)
-  jndiSecurityPrincipal = _messages.StringField(8)
-  keyStoreFile = _messages.StringField(9)
-  keyStorePassword = _messages.StringField(10)
-  keyStorePasswordSecretVersion = _messages.StringField(11)
-  password = _messages.StringField(12)
-  passwordSecretVersion = _messages.StringField(13)
-  securityProtocol = _messages.EnumField('SecurityProtocolValueValuesEnum', 14)
-  sslKeyPassword = _messages.StringField(15)
-  sslKeyPasswordSecretVersion = _messages.StringField(16)
-  technologyType = _messages.StringField(17)
-  trustStoreFile = _messages.StringField(18)
-  trustStorePassword = _messages.StringField(19)
-  trustStorePasswordSecretVersion = _messages.StringField(20)
-  useJndi = _messages.BooleanField(21)
-  username = _messages.StringField(22)
-
-
-class GoldenGateKafkaConnectionProperties(_messages.Message):
-  r"""The properties of GoldenGateKafkaConnection.
-
-  Enums:
-    SecurityProtocolValueValuesEnum: Optional. Security Type for Kafka.
-
-  Fields:
-    bootstrapServers: Optional. Kafka bootstrap. Equivalent of
-      bootstrap.servers configuration property in Kafka: list of
-      KafkaBootstrapServer objects specified by host/port. Used for
-      establishing the initial connection to the Kafka cluster. Example:
-      "server1.example.com:9092,server2.example.com:9092"
-    clusterId: Optional. The OCID of the Kafka cluster being referenced from
-      OCI Streaming with Apache Kafka.
-    consumerPropertiesFile: Optional. The content of the consumer.properties
-      file.
-    keyStoreFile: Optional. The content of the KeyStore file.
-    keyStorePassword: Optional. Input only. The KeyStore password in plain
-      text.
-    keyStorePasswordSecretVersion: Optional. Input only. The resource name of
-      a secret version in Secret Manager which contains the KeyStore password.
-      Format: projects/{project}/secrets/{secret}/versions/{version}.
-    password: Optional. Input only. The password for Kafka basic/SASL auth in
-      plain text.
-    passwordSecretVersion: Optional. Input only. The resource name of a secret
-      version in Secret Manager which contains the password for Kafka
-      basic/SASL auth. Format:
-      projects/{project}/secrets/{secret}/versions/{version}.
-    producerPropertiesFile: Optional. The content of the producer.properties
-      file.
-    securityProtocol: Optional. Security Type for Kafka.
-    sslKeyPassword: Optional. Input only. The password for the cert inside of
-      the KeyStore in plain text.
-    sslKeyPasswordSecretVersion: Optional. Input only. The resource name of a
-      secret version in Secret Manager which contains the password for the
-      cert inside of the KeyStore. Format:
-      projects/{project}/secrets/{secret}/versions/{version}.
-    streamPoolId: Optional. The OCID of the stream pool being referenced.
-    technologyType: Optional. The technology type of KafkaConnection.
-    trustStoreFile: Optional. The content of the TrustStore file.
-    trustStorePassword: Optional. Input only. The TrustStore password in plain
-      text.
-    trustStorePasswordSecretVersion: Optional. Input only. The resource name
-      of a secret version in Secret Manager which contains the TrustStore
-      password. Format:
-      projects/{project}/secrets/{secret}/versions/{version}.
-    useResourcePrincipal: Optional. Specifies that the user intends to
-      authenticate to the instance using a resource principal. Applicable only
-      for OCI Streaming connections.
-    username: Optional. The username Oracle GoldenGate uses to connect the
-      associated system of the given technology.
-  """
-
-  class SecurityProtocolValueValuesEnum(_messages.Enum):
-    r"""Optional. Security Type for Kafka.
-
-    Values:
-      KAFKA_SECURITY_PROTOCOL_UNSPECIFIED: Security type not specified.
-      SSL: SSL security protocol.
-      SASL_SSL: SASL SSL security protocol.
-      PLAINTEXT: Plaintext security protocol.
-      SASL_PLAINTEXT: SASL Plaintext security protocol.
-    """
-    KAFKA_SECURITY_PROTOCOL_UNSPECIFIED = 0
-    SSL = 1
-    SASL_SSL = 2
-    PLAINTEXT = 3
-    SASL_PLAINTEXT = 4
-
-  bootstrapServers = _messages.MessageField('KafkaBootstrapServer', 1, repeated=True)
-  clusterId = _messages.StringField(2)
-  consumerPropertiesFile = _messages.StringField(3)
-  keyStoreFile = _messages.StringField(4)
-  keyStorePassword = _messages.StringField(5)
-  keyStorePasswordSecretVersion = _messages.StringField(6)
-  password = _messages.StringField(7)
-  passwordSecretVersion = _messages.StringField(8)
-  producerPropertiesFile = _messages.StringField(9)
-  securityProtocol = _messages.EnumField('SecurityProtocolValueValuesEnum', 10)
-  sslKeyPassword = _messages.StringField(11)
-  sslKeyPasswordSecretVersion = _messages.StringField(12)
-  streamPoolId = _messages.StringField(13)
-  technologyType = _messages.StringField(14)
-  trustStoreFile = _messages.StringField(15)
-  trustStorePassword = _messages.StringField(16)
-  trustStorePasswordSecretVersion = _messages.StringField(17)
-  useResourcePrincipal = _messages.BooleanField(18)
-  username = _messages.StringField(19)
-
-
-class GoldenGateKafkaSchemaRegistryConnectionProperties(_messages.Message):
-  r"""The properties of GoldenGateKafkaSchemaRegistryConnection.
-
-  Enums:
-    AuthenticationTypeValueValuesEnum: Optional. Used authentication mechanism
-      to access Schema Registry.
-
-  Fields:
-    authenticationType: Optional. Used authentication mechanism to access
-      Schema Registry.
-    keyStoreFile: Optional. The content of the KeyStore file.
-    keyStorePassword: Optional. Input only. The KeyStore password in plain
-      text.
-    keyStorePasswordSecretVersion: Optional. Input only. The resource name of
-      a secret version in Secret Manager which contains the KeyStore password.
-      Format: projects/{project}/secrets/{secret}/versions/{version}.
-    password: Optional. Input only. The password to access Schema Registry in
-      plain text.
-    passwordSecretVersion: Optional. Input only. The resource name of a secret
-      version in Secret Manager which contains the password to access Schema
-      Registry using basic authentication. Format:
-      projects/{project}/secrets/{secret}/versions/{version}.
-    sslKeyPassword: Optional. Input only. The password for the cert inside the
-      KeyStore in plain text.
-    sslKeyPasswordSecretVersion: Optional. Input only. The resource name of a
-      secret version in Secret Manager which contains the password for the
-      cert inside the KeyStore. Format:
-      projects/{project}/secrets/{secret}/versions/{version}.
-    technologyType: Optional. The technology type of
-      KafkaSchemaRegistryConnection.
-    trustStoreFile: Optional. The content of the TrustStore file.
-    trustStorePassword: Optional. Input only. The TrustStore password in plain
-      text.
-    trustStorePasswordSecretVersion: Optional. Input only. The resource name
-      of a secret version in Secret Manager which contains the TrustStore
-      password. Format:
-      projects/{project}/secrets/{secret}/versions/{version}.
-    url: Optional. Kafka Schema Registry URL. e.g.:
-      'https://server1.us.oracle.com:8081'
-    username: Optional. The username to access Schema Registry using basic
-      authentication. This value is injected into
-      'schema.registry.basic.auth.user.info=user:password' configuration
-      property.
-  """
-
-  class AuthenticationTypeValueValuesEnum(_messages.Enum):
-    r"""Optional. Used authentication mechanism to access Schema Registry.
-
-    Values:
-      AUTHENTICATION_TYPE_UNSPECIFIED: Authentication type not specified.
-      NONE: No authentication.
-      BASIC: Basic authentication.
-      MUTUAL: Mutual authentication.
-    """
-    AUTHENTICATION_TYPE_UNSPECIFIED = 0
-    NONE = 1
-    BASIC = 2
-    MUTUAL = 3
-
-  authenticationType = _messages.EnumField('AuthenticationTypeValueValuesEnum', 1)
-  keyStoreFile = _messages.StringField(2)
-  keyStorePassword = _messages.StringField(3)
-  keyStorePasswordSecretVersion = _messages.StringField(4)
-  password = _messages.StringField(5)
-  passwordSecretVersion = _messages.StringField(6)
-  sslKeyPassword = _messages.StringField(7)
-  sslKeyPasswordSecretVersion = _messages.StringField(8)
-  technologyType = _messages.StringField(9)
-  trustStoreFile = _messages.StringField(10)
-  trustStorePassword = _messages.StringField(11)
-  trustStorePasswordSecretVersion = _messages.StringField(12)
-  url = _messages.StringField(13)
-  username = _messages.StringField(14)
-
-
-class GoldenGateMicrosoftFabricConnectionProperties(_messages.Message):
-  r"""The properties of GoldenGateMicrosoftFabricConnection.
-
-  Fields:
-    clientId: Optional. Azure client ID of the application.
-    clientSecret: Optional. Client secret associated with the client id.
-    endpoint: Optional. Optional Microsoft Fabric service endpoint. Default
-      value: https://onelake.dfs.fabric.microsoft.com
-    technologyType: Optional. The technology type of
-      MicrosoftFabricConnection.
-    tenantId: Optional. Azure tenant ID of the application.
-  """
-
-  clientId = _messages.StringField(1)
-  clientSecret = _messages.StringField(2)
-  endpoint = _messages.StringField(3)
-  technologyType = _messages.StringField(4)
-  tenantId = _messages.StringField(5)
-
-
-class GoldenGateMicrosoftSqlserverConnectionProperties(_messages.Message):
-  r"""The properties of GoldenGateMicrosoftSqlserverConnection.
-
-  Enums:
-    SecurityProtocolValueValuesEnum: Optional. Security Type for Microsoft SQL
-      Server.
-
-  Fields:
-    additionalAttributes: Optional. An array of name-value pair attribute
-      entries. Used as additional parameters in connection string.
-    database: Optional. The name of the database.
-    host: Optional. The name or address of a host.
-    password: Optional. Input only. The password Oracle GoldenGate uses for
-      Microsoft SQL Server connection in plain text.
-    passwordSecretVersion: Optional. Input only. The resource name of a secret
-      version in Secret Manager which contains the password Oracle GoldenGate
-      uses for Microsoft SQL Server connection. Format:
-      projects/{project}/secrets/{secret}/versions/{version}.
-    port: Optional. The port of an endpoint usually specified for a
-      connection.
-    securityProtocol: Optional. Security Type for Microsoft SQL Server.
-    serverCertificateValidationRequired: Optional. If set to true, the driver
-      validates the certificate that is sent by the database server.
-    sslCaFile: Optional. Database Certificate - The content of a .pem or .crt
-      file containing the server public key (for 1-way SSL).
-    technologyType: Optional. The technology type of
-      MicrosoftSqlserverConnection.
-    username: Optional. The username Oracle GoldenGate uses to connect to the
-      Microsoft SQL Server.
-  """
-
-  class SecurityProtocolValueValuesEnum(_messages.Enum):
-    r"""Optional. Security Type for Microsoft SQL Server.
-
-    Values:
-      MICROSOFT_SQLSERVER_SECURITY_PROTOCOL_UNSPECIFIED: Security type not
-        specified.
-      PLAIN: Plain text communication.
-      TLS: Transport Layer Security.
-    """
-    MICROSOFT_SQLSERVER_SECURITY_PROTOCOL_UNSPECIFIED = 0
-    PLAIN = 1
-    TLS = 2
-
-  additionalAttributes = _messages.MessageField('NameValuePair', 1, repeated=True)
-  database = _messages.StringField(2)
-  host = _messages.StringField(3)
-  password = _messages.StringField(4)
-  passwordSecretVersion = _messages.StringField(5)
-  port = _messages.IntegerField(6, variant=_messages.Variant.INT32)
-  securityProtocol = _messages.EnumField('SecurityProtocolValueValuesEnum', 7)
-  serverCertificateValidationRequired = _messages.BooleanField(8)
-  sslCaFile = _messages.StringField(9)
-  technologyType = _messages.StringField(10)
-  username = _messages.StringField(11)
-
-
-class GoldenGateMongodbConnectionProperties(_messages.Message):
-  r"""The properties of GoldenGateMongodbConnection.
-
-  Enums:
-    SecurityProtocolValueValuesEnum: Optional. Security Type for MongoDB.
-
-  Fields:
-    connectionString: Optional. MongoDB connection string. e.g.:
-      'mongodb://mongodb0.example.com:27017/recordsrecords'
-    databaseId: Optional. The OCID of the Oracle Autonomous Json Database.
-    password: Optional. Input only. The password Oracle GoldenGate uses to
-      connect the Mongodb connection in plain text.
-    passwordSecretVersion: Optional. Input only. The resource name of a secret
-      version in Secret Manager which contains the password Oracle GoldenGate
-      uses to connect the Mongodb connection. Format:
-      projects/{project}/secrets/{secret}/versions/{version}.
-    securityProtocol: Optional. Security Type for MongoDB.
-    technologyType: Optional. The technology type of MongodbConnection.
-    tlsCaFile: Optional. Database Certificate - The content of a .pem file,
-      containing the server public key (for 1 and 2-way SSL).
-    tlsCertificateKeyFile: Optional. Client Certificate - The content of a
-      .pem file, containing the client public key (for 2-way SSL).
-    tlsCertificateKeyFilePassword: Optional. Input only. The Client
-      Certificate key file password in plain text.
-    tlsCertificateKeyFilePasswordSecretVersion: Optional. Input only. The
-      resource name of a secret version in Secret Manager which contains the
-      Client Certificate key file password in Secret Manager. Format:
-      projects/{project}/secrets/{secret}/versions/{version}.
-    username: Optional. The username Oracle GoldenGate uses to connect to the
-      database.
-  """
-
-  class SecurityProtocolValueValuesEnum(_messages.Enum):
-    r"""Optional. Security Type for MongoDB.
-
-    Values:
-      MONGODB_SECURITY_PROTOCOL_UNSPECIFIED: Security type not specified.
-      PLAIN: Plain text communication.
-      TLS: Transport Layer Security.
-      MTLS: Mutual Transport Layer Security.
-    """
-    MONGODB_SECURITY_PROTOCOL_UNSPECIFIED = 0
-    PLAIN = 1
-    TLS = 2
-    MTLS = 3
-
-  connectionString = _messages.StringField(1)
-  databaseId = _messages.StringField(2)
-  password = _messages.StringField(3)
-  passwordSecretVersion = _messages.StringField(4)
-  securityProtocol = _messages.EnumField('SecurityProtocolValueValuesEnum', 5)
-  technologyType = _messages.StringField(6)
-  tlsCaFile = _messages.StringField(7)
-  tlsCertificateKeyFile = _messages.StringField(8)
-  tlsCertificateKeyFilePassword = _messages.StringField(9)
-  tlsCertificateKeyFilePasswordSecretVersion = _messages.StringField(10)
-  username = _messages.StringField(11)
-
-
-class GoldenGateMysqlConnectionProperties(_messages.Message):
-  r"""Properties of GoldenGateMysqlConnection.
-
-  Enums:
-    SecurityProtocolValueValuesEnum: Optional. Security Type for MySQL.
-    SslModeValueValuesEnum: Optional. SSL modes for MySQL.
-
-  Fields:
-    additionalAttributes: Optional. An array of name-value pair attribute
-      entries. Used as additional parameters in connection string.
-    database: Optional. The name of the database.
-    dbSystemId: Optional. The OCID of the database system being referenced.
-    host: Optional. The name or address of a host.
-    password: Optional. Input only. The password Oracle GoldenGate uses to
-      connect to MySQL in plain text.
-    passwordSecretVersion: Optional. Input only. The resource name of a secret
-      version in Secret Manager which contains the password Oracle GoldenGate
-      uses to connect to MySQL. Format:
-      projects/{project}/secrets/{secret}/versions/{version}.
-    port: Optional. The port of an endpoint usually specified for a
-      connection.
-    securityProtocol: Optional. Security Type for MySQL.
-    sslCaFile: Optional. Database Certificate - The content of a .pem or .crt
-      file containing the server public key (for 1 and 2-way SSL).
-    sslCertFile: Optional. Client Certificate - The content of a .pem or .crt
-      file containing the client public key (for 2-way SSL).
-    sslCrlFile: Optional. The list of certificates revoked by the trusted
-      certificate authorities (Trusted CA).
-    sslKeyFile: Optional. Client Key - The content of a .pem or .crt file
-      containing the client private key (for 2-way SSL).
-    sslMode: Optional. SSL modes for MySQL.
-    technologyType: Optional. The technology type of MysqlConnection.
-    username: Optional. The username Oracle GoldenGate uses to connect the
-      associated system of the given technology.
-  """
-
-  class SecurityProtocolValueValuesEnum(_messages.Enum):
-    r"""Optional. Security Type for MySQL.
-
-    Values:
-      MYSQL_SECURITY_PROTOCOL_UNSPECIFIED: Security type not specified.
-      PLAIN: Plain text communication.
-      TLS: Transport Layer Security.
-      MTLS: Mutual Transport Layer Security.
-    """
-    MYSQL_SECURITY_PROTOCOL_UNSPECIFIED = 0
-    PLAIN = 1
-    TLS = 2
-    MTLS = 3
-
-  class SslModeValueValuesEnum(_messages.Enum):
-    r"""Optional. SSL modes for MySQL.
-
-    Values:
-      SSL_MODE_UNSPECIFIED: SSL mode not specified.
-      DISABLED: SSL is disabled.
-      PREFERRED: SSL is preferred.
-      REQUIRED: SSL is required.
-      VERIFY_CA: SSL is required and certificate is verified.
-      VERIFY_IDENTITY: SSL is required and certificate and hostname are
-        verified.
-    """
-    SSL_MODE_UNSPECIFIED = 0
-    DISABLED = 1
-    PREFERRED = 2
-    REQUIRED = 3
-    VERIFY_CA = 4
-    VERIFY_IDENTITY = 5
-
-  additionalAttributes = _messages.MessageField('NameValuePair', 1, repeated=True)
-  database = _messages.StringField(2)
-  dbSystemId = _messages.StringField(3)
-  host = _messages.StringField(4)
-  password = _messages.StringField(5)
-  passwordSecretVersion = _messages.StringField(6)
-  port = _messages.IntegerField(7, variant=_messages.Variant.INT32)
-  securityProtocol = _messages.EnumField('SecurityProtocolValueValuesEnum', 8)
-  sslCaFile = _messages.StringField(9)
-  sslCertFile = _messages.StringField(10)
-  sslCrlFile = _messages.StringField(11)
-  sslKeyFile = _messages.StringField(12)
-  sslMode = _messages.EnumField('SslModeValueValuesEnum', 13)
-  technologyType = _messages.StringField(14)
-  username = _messages.StringField(15)
-
-
-class GoldenGateOciObjectStorageConnectionProperties(_messages.Message):
-  r"""The properties of GoldenGateOciObjectStorageConnection.
-
-  Fields:
-    privateKeyFile: Optional. The content of the private key file (PEM file)
-      corresponding to the API key of the fingerprint.
-    privateKeyPassphraseSecret: Optional. The passphrase of the private key.
-    publicKeyFingerprint: Optional. The fingerprint of the API Key of the user
-      specified by the userId.
-    region: Optional. The name of the region of OCI Object Storage. e.g.: us-
-      ashburn-1 If the region is not provided, backend will default to the
-      default region.
-    technologyType: Optional. The technology type of
-      OciObjectStorageConnection.
-    tenancyId: Optional. The OCID of the related OCI tenancy.
-    useResourcePrincipal: Optional. Specifies that the user intends to
-      authenticate to the instance using a resource principal.
-    userId: Optional. The OCID of the OCI user who will access the Object
-      Storage. The user must have write access to the bucket they want to
-      connect to.
-  """
-
-  privateKeyFile = _messages.StringField(1)
-  privateKeyPassphraseSecret = _messages.StringField(2)
-  publicKeyFingerprint = _messages.StringField(3)
-  region = _messages.StringField(4)
-  technologyType = _messages.StringField(5)
-  tenancyId = _messages.StringField(6)
-  useResourcePrincipal = _messages.BooleanField(7)
-  userId = _messages.StringField(8)
-
-
-class GoldenGateOracleAIDataPlatformConnectionProperties(_messages.Message):
-  r"""The properties of GoldenGateOracleAIDataPlatformConnection.
-
-  Fields:
-    connectionUrl: Optional. Connection URL. It must start with
-      'jdbc:spark://'
-    privateKeyFile: Optional. The content of the private key file (PEM file)
-      corresponding to the API key of the fingerprint.
-    privateKeyPassphraseSecret: Optional. The passphrase of the private key.
-    publicKeyFingerprint: Optional. The fingerprint of the API Key of the user
-      specified by the user_id.
-    region: Optional. The name of the region. e.g.: us-ashburn-1
-    technologyType: Optional. The technology type of
-      OracleAiDataPlatformConnection.
-    tenancyId: Optional. The OCID of the related OCI tenancy.
-    useResourcePrincipal: Optional. Specifies that the user intends to
-      authenticate to the instance using a resource principal.
-    userId: Optional. The OCID of the OCI user who will access.
-  """
-
-  connectionUrl = _messages.StringField(1)
-  privateKeyFile = _messages.StringField(2)
-  privateKeyPassphraseSecret = _messages.StringField(3)
-  publicKeyFingerprint = _messages.StringField(4)
-  region = _messages.StringField(5)
-  technologyType = _messages.StringField(6)
-  tenancyId = _messages.StringField(7)
-  useResourcePrincipal = _messages.BooleanField(8)
-  userId = _messages.StringField(9)
-
-
-class GoldenGateOracleConnectionProperties(_messages.Message):
-  r"""The properties of GoldenGate Oracle Database Connection.
-
-  Enums:
-    AuthenticationModeValueValuesEnum: Optional. Authentication mode.
-    SessionModeValueValuesEnum: Optional. The mode of the database connection
-      session to be established by the data client.
-
-  Fields:
-    authenticationMode: Optional. Authentication mode.
-    connectionString: Optional. Connect descriptor or Easy Connect Naming
-      method used to connect to a database.
-    gcpOracleDatabaseId: Optional. Database instance id of database in Oracle
-      Database @ Google Cloud. If gcp_oracle_database_id is provided,
-      connection_string must be empty.
-    password: Optional. Input only. The password Oracle GoldenGate uses in
-      plain text.
-    passwordSecretVersion: Optional. Input only. The resource name of a secret
-      version in Secret Manager which contains the password Oracle GoldenGate
-      uses. Format: projects/{project}/secrets/{secret}/versions/{version}.
-    sessionMode: Optional. The mode of the database connection session to be
-      established by the data client.
-    technologyType: Optional. The technology type.
-    username: Optional. The username Oracle GoldenGate uses to connect.
-    walletFile: Optional. The wallet contents Oracle GoldenGate uses to make
-      connections to a database.
-  """
-
-  class AuthenticationModeValueValuesEnum(_messages.Enum):
-    r"""Optional. Authentication mode.
-
-    Values:
-      ORACLE_AUTHENTICATION_MODE_UNSPECIFIED: Authentication mode not
-        specified.
-      TLS: TLS authentication mode.
-      MTLS: MTLS authentication mode.
-    """
-    ORACLE_AUTHENTICATION_MODE_UNSPECIFIED = 0
-    TLS = 1
-    MTLS = 2
-
-  class SessionModeValueValuesEnum(_messages.Enum):
-    r"""Optional. The mode of the database connection session to be
-    established by the data client.
-
-    Values:
-      SESSION_MODE_UNSPECIFIED: Default unspecified value.
-      DIRECT: Indicates that the resource is using direct session mode.
-      REDIRECT: Indicates that the resource is using redirect session mode.
-    """
-    SESSION_MODE_UNSPECIFIED = 0
-    DIRECT = 1
-    REDIRECT = 2
-
-  authenticationMode = _messages.EnumField('AuthenticationModeValueValuesEnum', 1)
-  connectionString = _messages.StringField(2)
-  gcpOracleDatabaseId = _messages.StringField(3)
-  password = _messages.StringField(4)
-  passwordSecretVersion = _messages.StringField(5)
-  sessionMode = _messages.EnumField('SessionModeValueValuesEnum', 6)
-  technologyType = _messages.StringField(7)
-  username = _messages.StringField(8)
-  walletFile = _messages.StringField(9)
-
-
-class GoldenGateOracleNosqlConnectionProperties(_messages.Message):
-  r"""The properties of GoldenGateOracleNosqlConnection.
-
-  Fields:
-    privateKeyFile: Optional. The content of the private key file (PEM file)
-      corresponding to the API key of the fingerprint.
-    privateKeyPassphraseSecret: Optional. The passphrase of the private key.
-    publicKeyFingerprint: Optional. The fingerprint of the API Key of the user
-      specified by the userId.
-    region: Optional. The name of the region. e.g.: us-ashburn-1
-    technologyType: Optional. The technology type of OracleNosqlConnection.
-    tenancyId: Optional. The OCID of the OCI tenancy.
-    useResourcePrincipal: Optional. Specifies that the user intends to
-      authenticate to the instance using a resource principal.
-    userId: Optional. The OCID of the OCI user who will access the Oracle
-      NoSQL database.
-  """
-
-  privateKeyFile = _messages.StringField(1)
-  privateKeyPassphraseSecret = _messages.StringField(2)
-  publicKeyFingerprint = _messages.StringField(3)
-  region = _messages.StringField(4)
-  technologyType = _messages.StringField(5)
-  tenancyId = _messages.StringField(6)
-  useResourcePrincipal = _messages.BooleanField(7)
-  userId = _messages.StringField(8)
-
-
-class GoldenGatePostgresqlConnectionProperties(_messages.Message):
-  r"""The properties of GoldenGatePostgresqlConnection.
-
-  Enums:
-    SecurityProtocolValueValuesEnum: Optional. Security protocol for
-      PostgreSQL.
-    SslModeValueValuesEnum: Optional. SSL modes for PostgreSQL.
-
-  Fields:
-    additionalAttributes: Optional. An array of name-value pair attribute
-      entries. Used as additional parameters in connection string.
-    database: Optional. The name of the database.
-    dbSystemId: Optional. The OCID of the database system being referenced.
-    host: Optional. The name or address of a host.
-    password: Optional. Input only. The password Oracle GoldenGate uses for
-      PostgreSQL connection in plain text.
-    passwordSecretVersion: Optional. Input only. The resource name of a secret
-      version in Secret Manager which contains the password Oracle GoldenGate
-      uses for PostgreSQL connection. Format:
-      projects/{project}/secrets/{secret}/versions/{version}.
-    port: Optional. The port of an endpoint usually specified for a
-      connection.
-    securityProtocol: Optional. Security protocol for PostgreSQL.
-    sslCaFile: Optional. The certificate of the trusted certificate
-      authorities (Trusted CA) for PostgreSQL.
-    sslCertFile: Optional. The certificate of the PostgreSQL server.
-    sslCrlFile: Optional. The list of certificates revoked by the trusted
-      certificate authorities (Trusted CA).
-    sslKeyFile: Optional. The private key of the PostgreSQL server.
-    sslMode: Optional. SSL modes for PostgreSQL.
-    technologyType: Optional. The technology type of PostgresqlConnection.
-    username: Optional. The username Oracle GoldenGate uses to connect the
-      associated system of the given technology.
-  """
-
-  class SecurityProtocolValueValuesEnum(_messages.Enum):
-    r"""Optional. Security protocol for PostgreSQL.
-
-    Values:
-      POSTGRESQL_SECURITY_PROTOCOL_UNSPECIFIED: Security protocol not
-        specified.
-      PLAIN: Plain text communication.
-      TLS: Transport Layer Security.
-      MTLS: Mutual Transport Layer Security.
-    """
-    POSTGRESQL_SECURITY_PROTOCOL_UNSPECIFIED = 0
-    PLAIN = 1
-    TLS = 2
-    MTLS = 3
-
-  class SslModeValueValuesEnum(_messages.Enum):
-    r"""Optional. SSL modes for PostgreSQL.
-
-    Values:
-      POSTGRESQL_SSL_MODE_UNSPECIFIED: SSL mode not specified.
-      PREFER: Prefer SSL.
-      REQUIRE: Require SSL.
-      VERIFY_CA: Verify Certificate Authority.
-      VERIFY_FULL: Verify Full.
-    """
-    POSTGRESQL_SSL_MODE_UNSPECIFIED = 0
-    PREFER = 1
-    REQUIRE = 2
-    VERIFY_CA = 3
-    VERIFY_FULL = 4
-
-  additionalAttributes = _messages.MessageField('NameValuePair', 1, repeated=True)
-  database = _messages.StringField(2)
-  dbSystemId = _messages.StringField(3)
-  host = _messages.StringField(4)
-  password = _messages.StringField(5)
-  passwordSecretVersion = _messages.StringField(6)
-  port = _messages.IntegerField(7, variant=_messages.Variant.INT32)
-  securityProtocol = _messages.EnumField('SecurityProtocolValueValuesEnum', 8)
-  sslCaFile = _messages.StringField(9)
-  sslCertFile = _messages.StringField(10)
-  sslCrlFile = _messages.StringField(11)
-  sslKeyFile = _messages.StringField(12)
-  sslMode = _messages.EnumField('SslModeValueValuesEnum', 13)
-  technologyType = _messages.StringField(14)
-  username = _messages.StringField(15)
-
-
-class GoldenGateRedisConnectionProperties(_messages.Message):
-  r"""The properties of GoldenGateRedisConnection.
-
-  Enums:
-    AuthenticationTypeValueValuesEnum: Optional. Authentication type for
-      Redis.
-    SecurityProtocolValueValuesEnum: Optional. Security protocol for Redis.
-
-  Fields:
-    authenticationType: Optional. Authentication type for Redis.
-    keyStoreFile: Optional. The content of the KeyStore file.
-    keyStorePassword: Optional. Input only. The KeyStore password in plain
-      text.
-    keyStorePasswordSecretVersion: Optional. Input only. The resource name of
-      a secret version in Secret Manager which contains the KeyStore password.
-      Format: projects/{project}/secrets/{secret}/versions/{version}.
-    password: Optional. Input only. The password Oracle GoldenGate uses for
-      Redis connection in plain text.
-    passwordSecretVersion: Optional. Input only. The resource name of a secret
-      version in Secret Manager which contains the password Oracle GoldenGate
-      uses for Redis connection. Format:
-      projects/{project}/secrets/{secret}/versions/{version}.
-    redisClusterId: Optional. The OCID of the Redis cluster.
-    securityProtocol: Optional. Security protocol for Redis.
-    servers: Optional. Comma separated list of Redis server addresses,
-      specified as host:port entries, where :port is optional. If port is not
-      specified, it defaults to 6379. Example:
-      "server1.example.com:6379,server2.example.com:6379"
-    technologyType: Optional. The technology type of RedisConnection.
-    trustStoreFile: Optional. The content of the TrustStore file.
-    trustStorePassword: Optional. Input only. The TrustStore password in plain
-      text.
-    trustStorePasswordSecretVersion: Optional. Input only. The resource name
-      of a secret version in Secret Manager which contains the TrustStore
-      password. Format:
-      projects/{project}/secrets/{secret}/versions/{version}.
-    username: Optional. The username Oracle GoldenGate uses to connect the
-      associated system of the given technology.
-  """
-
-  class AuthenticationTypeValueValuesEnum(_messages.Enum):
-    r"""Optional. Authentication type for Redis.
-
-    Values:
-      REDIS_AUTHENTICATION_TYPE_UNSPECIFIED: Authentication type not
-        specified.
-      NONE: No authentication.
-      BASIC: Basic authentication.
-    """
-    REDIS_AUTHENTICATION_TYPE_UNSPECIFIED = 0
-    NONE = 1
-    BASIC = 2
-
-  class SecurityProtocolValueValuesEnum(_messages.Enum):
-    r"""Optional. Security protocol for Redis.
-
-    Values:
-      REDIS_SECURITY_PROTOCOL_UNSPECIFIED: Security protocol not specified.
-      PLAIN: Plain text communication.
-      TLS: Transport Layer Security.
-      MTLS: Mutual Transport Layer Security.
-    """
-    REDIS_SECURITY_PROTOCOL_UNSPECIFIED = 0
-    PLAIN = 1
-    TLS = 2
-    MTLS = 3
-
-  authenticationType = _messages.EnumField('AuthenticationTypeValueValuesEnum', 1)
-  keyStoreFile = _messages.StringField(2)
-  keyStorePassword = _messages.StringField(3)
-  keyStorePasswordSecretVersion = _messages.StringField(4)
-  password = _messages.StringField(5)
-  passwordSecretVersion = _messages.StringField(6)
-  redisClusterId = _messages.StringField(7)
-  securityProtocol = _messages.EnumField('SecurityProtocolValueValuesEnum', 8)
-  servers = _messages.StringField(9)
-  technologyType = _messages.StringField(10)
-  trustStoreFile = _messages.StringField(11)
-  trustStorePassword = _messages.StringField(12)
-  trustStorePasswordSecretVersion = _messages.StringField(13)
-  username = _messages.StringField(14)
-
-
-class GoldenGateSnowflakeConnectionProperties(_messages.Message):
-  r"""The properties of GoldenGateSnowflakeConnection.
-
-  Enums:
-    AuthenticationTypeValueValuesEnum: Optional. Used authentication mechanism
-      to access Snowflake.
-
-  Fields:
-    authenticationType: Optional. Used authentication mechanism to access
-      Snowflake.
-    connectionUrl: Optional. JDBC connection URL. e.g.:
-      'jdbc:snowflake://.snowflakecomputing.com/?warehouse=&db='
-    password: Optional. Input only. The password Oracle GoldenGate uses to
-      connect to Snowflake platform in plain text.
-    passwordSecretVersion: Optional. Input only. The resource name of a secret
-      version in Secret Manager which contains the password Oracle GoldenGate
-      uses to connect to Snowflake platform. Format:
-      projects/{project}/secrets/{secret}/versions/{version}.
-    privateKeyFile: Optional. The content of private key file in PEM format.
-    privateKeyPassphraseSecret: Optional. Password if the private key file is
-      encrypted.
-    technologyType: Optional. The technology type of SnowflakeConnection.
-    username: Optional. The username Oracle GoldenGate uses to connect to
-      Snowflake.
-  """
-
-  class AuthenticationTypeValueValuesEnum(_messages.Enum):
-    r"""Optional. Used authentication mechanism to access Snowflake.
-
-    Values:
-      AUTHENTICATION_TYPE_UNSPECIFIED: Authentication type not specified.
-      BASIC: Basic authentication.
-      KEY_PAIR: Key pair authentication.
-    """
-    AUTHENTICATION_TYPE_UNSPECIFIED = 0
-    BASIC = 1
-    KEY_PAIR = 2
-
-  authenticationType = _messages.EnumField('AuthenticationTypeValueValuesEnum', 1)
-  connectionUrl = _messages.StringField(2)
-  password = _messages.StringField(3)
-  passwordSecretVersion = _messages.StringField(4)
-  privateKeyFile = _messages.StringField(5)
-  privateKeyPassphraseSecret = _messages.StringField(6)
-  technologyType = _messages.StringField(7)
-  username = _messages.StringField(8)
-
-
-class GoldengateBackupSchedule(_messages.Message):
-  r"""The backup schedule of the GoldengateDeployment.
-
-  Enums:
-    FrequencyBackupScheduledValueValuesEnum: Output only. The frequency backup
-      scheduled.
-
-  Fields:
-    backupScheduledTime: Output only. The timestamp of when the backup was
-      scheduled.
-    bucket: Output only. The bucket name.
-    compartmentId: Output only. The compartment id.
-    frequencyBackupScheduled: Output only. The frequency backup scheduled.
-    metadataOnly: Output only. If metadata only.
-    namespace: Output only. The namespace name.
-  """
-
-  class FrequencyBackupScheduledValueValuesEnum(_messages.Enum):
-    r"""Output only. The frequency backup scheduled.
-
-    Values:
-      FREQUENCY_BACKUP_SCHEDULED_UNSPECIFIED: The frequency backup scheduled
-        is unspecified.
-      DAILY: The frequency backup scheduled is daily.
-      WEEKLY: The frequency backup scheduled is weekly.
-      MONTHLY: The frequency backup scheduled is monthly.
-    """
-    FREQUENCY_BACKUP_SCHEDULED_UNSPECIFIED = 0
-    DAILY = 1
-    WEEKLY = 2
-    MONTHLY = 3
-
-  backupScheduledTime = _messages.StringField(1)
-  bucket = _messages.StringField(2)
-  compartmentId = _messages.StringField(3)
-  frequencyBackupScheduled = _messages.EnumField('FrequencyBackupScheduledValueValuesEnum', 4)
-  metadataOnly = _messages.BooleanField(5)
-  namespace = _messages.StringField(6)
 
 
 class GoldengateDeployment(_messages.Message):
@@ -5358,6 +4205,83 @@ class GoldengateDeployment(_messages.Message):
   odbNetwork = _messages.StringField(8)
   odbSubnet = _messages.StringField(9)
   properties = _messages.MessageField('GoldengateDeploymentProperties', 10)
+
+
+class GoldengateDeploymentEnvironment(_messages.Message):
+  r"""Details of the Goldengate Deployment Environment resource.
+
+  Enums:
+    CategoryValueValuesEnum: Output only. The category of the Goldengate
+      Deployment Environment resource.
+    EnvironmentTypeValueValuesEnum: Output only. The environment type of the
+      Goldengate Deployment Environment resource.
+
+  Fields:
+    autoScalingEnabled: Output only. Whether auto scaling is enabled by
+      default for the Goldengate Deployment Environment resource.
+    category: Output only. The category of the Goldengate Deployment
+      Environment resource.
+    defaultCpuCoreCount: Output only. The default CPU core count of the
+      Goldengate Deployment Environment resource.
+    displayName: The display name of the Goldengate Deployment Environment
+      resource.
+    environmentType: Output only. The environment type of the Goldengate
+      Deployment Environment resource.
+    maxCpuCoreCount: Output only. The max CPU core count of the Goldengate
+      Deployment Environment resource.
+    memoryGbPerCpuCore: Output only. The memory per CPU core in GBs of the
+      Goldengate Deployment Environment resource.
+    minCpuCoreCount: Output only. The min CPU core count of the Goldengate
+      Deployment Environment resource.
+    name: Identifier. The name of the Goldengate Deployment Environment
+      resource with the format: projects/{project}/locations/{location}/golden
+      gateDeploymentEnvironments/{goldengate_deployment_environment}
+    networkBandwidthGbpsPerCpuCore: Output only. The network bandwidth per CPU
+      core in Gbps of the Goldengate Deployment Environment resource.
+    storageUsageLimitGbPerCpuCore: Output only. The storage usage limit per
+      CPU core in GBs of the Goldengate Deployment Environment resource.
+  """
+
+  class CategoryValueValuesEnum(_messages.Enum):
+    r"""Output only. The category of the Goldengate Deployment Environment
+    resource.
+
+    Values:
+      DEPLOYMENT_CATEGORY_UNSPECIFIED: Default unspecified value.
+      DATA_REPLICATION_CATEGORY: Goldengate Deployment Environment category is
+        DATA_REPLICATION_CATEGORY.
+      DATA_TRANSFORMS_CATEGORY: Goldengate Deployment Environment category is
+        DATA_TRANSFORMS_CATEGORY.
+    """
+    DEPLOYMENT_CATEGORY_UNSPECIFIED = 0
+    DATA_REPLICATION_CATEGORY = 1
+    DATA_TRANSFORMS_CATEGORY = 2
+
+  class EnvironmentTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The environment type of the Goldengate Deployment
+    Environment resource.
+
+    Values:
+      DEPLOYMENT_ENVIRONMENT_TYPE_UNSPECIFIED: Default unspecified value.
+      PRODUCTION: Goldengate Deployment Environment type is PRODUCTION.
+      DEVELOPMENT_OR_TESTING: Goldengate Deployment Environment type is
+        DEVELOPMENT_OR_TESTING.
+    """
+    DEPLOYMENT_ENVIRONMENT_TYPE_UNSPECIFIED = 0
+    PRODUCTION = 1
+    DEVELOPMENT_OR_TESTING = 2
+
+  autoScalingEnabled = _messages.BooleanField(1)
+  category = _messages.EnumField('CategoryValueValuesEnum', 2)
+  defaultCpuCoreCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  displayName = _messages.StringField(4)
+  environmentType = _messages.EnumField('EnvironmentTypeValueValuesEnum', 5)
+  maxCpuCoreCount = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  memoryGbPerCpuCore = _messages.IntegerField(7, variant=_messages.Variant.INT32)
+  minCpuCoreCount = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+  name = _messages.StringField(9)
+  networkBandwidthGbpsPerCpuCore = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  storageUsageLimitGbPerCpuCore = _messages.IntegerField(11, variant=_messages.Variant.INT32)
 
 
 class GoldengateDeploymentLock(_messages.Message):
@@ -5638,6 +4562,99 @@ class GoldengateDeploymentProperties(_messages.Message):
   upgradeRequiredTime = _messages.StringField(42)
 
 
+class GoldengateDeploymentType(_messages.Message):
+  r"""Details of the Goldengate Deployment Type resource.
+
+  Enums:
+    CategoryValueValuesEnum: Output only. The category of the Goldengate
+      Deployment Type resource.
+    DeploymentTypeValueValuesEnum: Output only. The deployment type of the
+      Goldengate Deployment Type resource.
+
+  Fields:
+    category: Output only. The category of the Goldengate Deployment Type
+      resource.
+    connectionTypes: Output only. The connection types of the Goldengate
+      Deployment Type resource.
+    defaultUsername: Output only. The default username of the Goldengate
+      Deployment Type resource.
+    deploymentType: Output only. The deployment type of the Goldengate
+      Deployment Type resource.
+    displayName: Output only. The display name of the Goldengate Deployment
+      Type resource.
+    name: Identifier. The name of the Goldengate Deployment Type resource with
+      the format: projects/{project}/locations/{region}/goldengateDeploymentTy
+      pes/{goldengate_deployment_type}
+    oggVersion: Output only. The Ogg version of the Goldengate Deployment Type
+      resource.
+    sourceTechnologies: Output only. The source technologies of the Goldengate
+      Deployment Type resource.
+    supportedCapabilities: Output only. The supported capabilities of the
+      Goldengate Deployment Type resource.
+    supportedTechnologiesUrl: Output only. The supported technologies URL of
+      the Goldengate Deployment Type resource.
+    targetTechnologies: Output only. The target technologies of the Goldengate
+      Deployment Type resource.
+  """
+
+  class CategoryValueValuesEnum(_messages.Enum):
+    r"""Output only. The category of the Goldengate Deployment Type resource.
+
+    Values:
+      DEPLOYMENT_CATEGORY_UNSPECIFIED: Default unspecified value.
+      DATA_REPLICATION_CATEGORY: Goldengate Deployment Type category is
+        DATA_REPLICATION_CATEGORY.
+      DATA_TRANSFORMS_CATEGORY: Goldengate Deployment Type category is
+        DATA_TRANSFORMS_CATEGORY.
+    """
+    DEPLOYMENT_CATEGORY_UNSPECIFIED = 0
+    DATA_REPLICATION_CATEGORY = 1
+    DATA_TRANSFORMS_CATEGORY = 2
+
+  class DeploymentTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The deployment type of the Goldengate Deployment Type
+    resource.
+
+    Values:
+      DEPLOYMENT_TYPE_UNSPECIFIED: Default unspecified value.
+      OGG: Goldengate Deployment Type category is OGG.
+      DATABASE_ORACLE: Goldengate Deployment Type category is DATABASE_ORACLE.
+      BIGDATA: Goldengate Deployment Type category is BIGDATA.
+      DATABASE_MICROSOFT_SQLSERVER: Goldengate Deployment Type category is
+        DATABASE_MICROSOFT_SQLSERVER.
+      DATABASE_MYSQL: Goldengate Deployment Type category is DATABASE_MYSQL.
+      DATABASE_POSTGRESQL: Goldengate Deployment Type category is
+        DATABASE_POSTGRESQL.
+      DATABASE_DB2ZOS: Goldengate Deployment Type category is DATABASE_DB2ZOS.
+      DATABASE_DB2I: Goldengate Deployment Type category is DATABASE_DB2I.
+      GGSA: Goldengate Deployment Type category is GGSA.
+      DATA_TRANSFORMS: Goldengate Deployment Type category is DATA_TRANSFORMS.
+    """
+    DEPLOYMENT_TYPE_UNSPECIFIED = 0
+    OGG = 1
+    DATABASE_ORACLE = 2
+    BIGDATA = 3
+    DATABASE_MICROSOFT_SQLSERVER = 4
+    DATABASE_MYSQL = 5
+    DATABASE_POSTGRESQL = 6
+    DATABASE_DB2ZOS = 7
+    DATABASE_DB2I = 8
+    GGSA = 9
+    DATA_TRANSFORMS = 10
+
+  category = _messages.EnumField('CategoryValueValuesEnum', 1)
+  connectionTypes = _messages.StringField(2, repeated=True)
+  defaultUsername = _messages.StringField(3)
+  deploymentType = _messages.EnumField('DeploymentTypeValueValuesEnum', 4)
+  displayName = _messages.StringField(5)
+  name = _messages.StringField(6)
+  oggVersion = _messages.StringField(7)
+  sourceTechnologies = _messages.StringField(8, repeated=True)
+  supportedCapabilities = _messages.StringField(9, repeated=True)
+  supportedTechnologiesUrl = _messages.StringField(10)
+  targetTechnologies = _messages.StringField(11, repeated=True)
+
+
 class GoldengateDeploymentVersion(_messages.Message):
   r"""Details of the Goldengate Deployment Version resource.
 
@@ -5734,6 +4751,150 @@ class GoldengateDeploymentVersionProperties(_messages.Message):
   supportEndTime = _messages.StringField(6)
 
 
+class GoldengateElasticsearchConnectionProperties(_messages.Message):
+  r"""The properties of GoldengateElasticsearchConnection.
+
+  Enums:
+    AuthenticationTypeValueValuesEnum: Optional. Authentication type for
+      Elasticsearch.
+    SecurityProtocolValueValuesEnum: Optional. Security protocol for
+      Elasticsearch.
+
+  Fields:
+    authenticationType: Optional. Authentication type for Elasticsearch.
+    fingerprint: Optional. Fingerprint required by TLS security protocol. Eg.:
+      '6152b2dfbff200f973c5074a5b91d06ab3b472c07c09a1ea57bb7fd406cdce9c'
+    password: Optional. Input only. The password Oracle Goldengate uses for
+      Elastic Search connection in plain text.
+    passwordSecretVersion: Optional. Input only. The resource name of a secret
+      version in Secret Manager which contains the password Oracle Goldengate
+      uses for Elastic Search connection. Format:
+      projects/{project}/secrets/{secret}/versions/{version}.
+    securityProtocol: Optional. Security protocol for Elasticsearch.
+    servers: Optional. Comma separated list of Elasticsearch server addresses,
+      specified as host:port entries, where :port is optional. If port is not
+      specified, it defaults to 9200. Example:
+      "server1.example.com:4000,server2.example.com:4000"
+    technologyType: Optional. The technology type of ElasticsearchConnection.
+    username: Optional. The username Oracle Goldengate uses to connect the
+      associated system of the given technology.
+  """
+
+  class AuthenticationTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. Authentication type for Elasticsearch.
+
+    Values:
+      ELASTICSEARCH_AUTHENTICATION_TYPE_UNSPECIFIED: Authentication type not
+        specified.
+      NONE: No authentication.
+      BASIC: Basic authentication.
+    """
+    ELASTICSEARCH_AUTHENTICATION_TYPE_UNSPECIFIED = 0
+    NONE = 1
+    BASIC = 2
+
+  class SecurityProtocolValueValuesEnum(_messages.Enum):
+    r"""Optional. Security protocol for Elasticsearch.
+
+    Values:
+      ELASTICSEARCH_SECURITY_PROTOCOL_UNSPECIFIED: Security protocol not
+        specified.
+      PLAIN: Plain text communication.
+      TLS: Transport Layer Security.
+    """
+    ELASTICSEARCH_SECURITY_PROTOCOL_UNSPECIFIED = 0
+    PLAIN = 1
+    TLS = 2
+
+  authenticationType = _messages.EnumField('AuthenticationTypeValueValuesEnum', 1)
+  fingerprint = _messages.StringField(2)
+  password = _messages.StringField(3)
+  passwordSecretVersion = _messages.StringField(4)
+  securityProtocol = _messages.EnumField('SecurityProtocolValueValuesEnum', 5)
+  servers = _messages.StringField(6)
+  technologyType = _messages.StringField(7)
+  username = _messages.StringField(8)
+
+
+class GoldengateGenericConnectionProperties(_messages.Message):
+  r"""The properties of GoldengateGenericConnectionProperties.
+
+  Fields:
+    host: Optional. The host of the GenericConnection.
+    technologyType: Optional. The technology type.
+  """
+
+  host = _messages.StringField(1)
+  technologyType = _messages.StringField(2)
+
+
+class GoldengateGoldengateConnectionProperties(_messages.Message):
+  r"""The properties of GoldengateGoldengateConnectionProperties.
+
+  Fields:
+    goldengateDeploymentId: Optional. The name of the GoldengateDeployment
+      associated with the GoldengateConnection. Format: projects/{project}/loc
+      ations/{location}/goldengateDeployments/{goldengate_deployment}
+    host: Optional. The host of the GoldengateConnection.
+    password: Optional. Input only. The password used to connect to the Oracle
+      Goldengate in plain text.
+    passwordSecretVersion: Optional. Input only. The resource name of a secret
+      version in Secret Manager which contains the password used to connect to
+      the Oracle Goldengate. Format:
+      projects/{project}/secrets/{secret}/versions/{version}.
+    port: Optional. The port of the GoldengateConnection.
+    technologyType: Optional. The technology type.
+    username: Optional. The username credential.
+  """
+
+  goldengateDeploymentId = _messages.StringField(1)
+  host = _messages.StringField(2)
+  password = _messages.StringField(3)
+  passwordSecretVersion = _messages.StringField(4)
+  port = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  technologyType = _messages.StringField(6)
+  username = _messages.StringField(7)
+
+
+class GoldengateGoogleBigQueryConnectionProperties(_messages.Message):
+  r"""The properties of GoldengateGoogleBigQueryConnectionProperties.
+
+  Fields:
+    serviceAccountKeyFile: Optional. The service account key file Cloud
+      Storage containing the credentials required to use Google BigQuery.
+    technologyType: Optional. The technology type.
+  """
+
+  serviceAccountKeyFile = _messages.StringField(1)
+  technologyType = _messages.StringField(2)
+
+
+class GoldengateGoogleCloudStorageConnectionProperties(_messages.Message):
+  r"""The properties of GoldengateGoogleCloudStorageConnectionProperties.
+
+  Fields:
+    serviceAccountKeyFile: Optional. The service account key Cloud Storage
+      file containing the credentials required to use Google Cloud Storage.
+    technologyType: Optional. The technology type.
+  """
+
+  serviceAccountKeyFile = _messages.StringField(1)
+  technologyType = _messages.StringField(2)
+
+
+class GoldengateGooglePubsubConnectionProperties(_messages.Message):
+  r"""The properties of GoldengateGooglePubsubConnection.
+
+  Fields:
+    serviceAccountKeyFile: Optional. The content of the service account key
+      file containing the credentials required to use Google Pub/Sub.
+    technologyType: Optional. The technology type of GooglePubsubConnection.
+  """
+
+  serviceAccountKeyFile = _messages.StringField(1)
+  technologyType = _messages.StringField(2)
+
+
 class GoldengateGroupToRolesMapping(_messages.Message):
   r"""The group to roles mapping of the GoldengateDeployment.
 
@@ -5748,6 +4909,311 @@ class GoldengateGroupToRolesMapping(_messages.Message):
   operatorGroupId = _messages.StringField(2)
   securityGroupId = _messages.StringField(3)
   userGroupId = _messages.StringField(4)
+
+
+class GoldengateHdfsConnectionProperties(_messages.Message):
+  r"""The properties of GoldengateHdfsConnection.
+
+  Fields:
+    coreSiteXml: Optional. The content of the Hadoop Distributed File System
+      configuration file (core-site.xml).
+    technologyType: Optional. The technology type of HdfsConnection.
+  """
+
+  coreSiteXml = _messages.StringField(1)
+  technologyType = _messages.StringField(2)
+
+
+class GoldengateIcebergConnectionProperties(_messages.Message):
+  r"""The properties of GoldengateIcebergConnection.
+
+  Fields:
+    catalog: Required. The Iceberg catalog.
+    storage: Required. The Iceberg storage.
+    technologyType: Required. The technology type of Iceberg connection.
+  """
+
+  catalog = _messages.MessageField('IcebergCatalog', 1)
+  storage = _messages.MessageField('IcebergStorage', 2)
+  technologyType = _messages.StringField(3)
+
+
+class GoldengateJavaMessageServiceConnectionProperties(_messages.Message):
+  r"""The properties of GoldengateJavaMessageServiceConnection.
+
+  Enums:
+    AuthenticationTypeValueValuesEnum: Optional. Authentication type for Java
+      Message Service.
+    SecurityProtocolValueValuesEnum: Optional. Security protocol for Java
+      Message Service.
+
+  Fields:
+    authenticationType: Optional. Authentication type for Java Message
+      Service.
+    connectionFactory: Optional. The Java class implementing
+      javax.jms.ConnectionFactory interface supplied by the JMS provider.
+    connectionUrl: Optional. Connection URL of the Java Message Service,
+      specifying the protocol, host, and port. e.g.:
+      'mq://myjms.host.domain:7676'
+    jndiConnectionFactory: Optional. The Connection Factory can be looked up
+      using this name. e.g.: 'ConnectionFactory'
+    jndiInitialContextFactory: Optional. The implementation of
+      javax.naming.spi.InitialContextFactory interface used to obtain initial
+      naming context.
+    jndiProviderUrl: Optional. The URL that Java Message Service will use to
+      contact the JNDI provider. e.g.:
+      'tcp://myjms.host.domain:61616?jms.prefetchPolicy.all=1000'
+    jndiSecurityCredentialsSecret: Optional. The password associated to the
+      principal.
+    jndiSecurityPrincipal: Optional. Specifies the identity of the principal
+      (user) to be authenticated.
+    keyStoreFile: Optional. The content of the KeyStore file.
+    keyStorePassword: Optional. Input only. The KeyStore password in plain
+      text.
+    keyStorePasswordSecretVersion: Optional. Input only. The resource name of
+      a secret version in Secret Manager which contains the KeyStore password.
+      Format: projects/{project}/secrets/{secret}/versions/{version}.
+    password: Optional. Input only. The password Oracle Goldengate uses to
+      connect the Java Message Service in plain text.
+    passwordSecretVersion: Optional. Input only. The resource name of a secret
+      version in Secret Manager which contains the password Oracle Goldengate
+      uses to connect the associated Java Message Service. Format:
+      projects/{project}/secrets/{secret}/versions/{version}.
+    securityProtocol: Optional. Security protocol for Java Message Service.
+    sslKeyPassword: Optional. Input only. The password for the cert inside of
+      the KeyStore in plain text.
+    sslKeyPasswordSecretVersion: Optional. Input only. The resource name of a
+      secret version in Secret Manager which contains the password for the
+      cert inside of the KeyStore. Format:
+      projects/{project}/secrets/{secret}/versions/{version}.
+    technologyType: Optional. The technology type of
+      JavaMessageServiceConnection.
+    trustStoreFile: Optional. The content of the TrustStore file.
+    trustStorePassword: Optional. Input only. The TrustStore password in plain
+      text.
+    trustStorePasswordSecretVersion: Optional. Input only. The resource name
+      of a secret version in Secret Manager which contains the TrustStore
+      password. Format:
+      projects/{project}/secrets/{secret}/versions/{version}.
+    useJndi: Optional. If set to true, Java Naming and Directory Interface
+      (JNDI) properties should be provided.
+    username: Optional. The username Oracle Goldengate uses to connect to the
+      Java Message Service.
+  """
+
+  class AuthenticationTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. Authentication type for Java Message Service.
+
+    Values:
+      JMS_AUTHENTICATION_TYPE_UNSPECIFIED: Authentication type not specified.
+      NONE: No authentication.
+      BASIC: Basic authentication.
+    """
+    JMS_AUTHENTICATION_TYPE_UNSPECIFIED = 0
+    NONE = 1
+    BASIC = 2
+
+  class SecurityProtocolValueValuesEnum(_messages.Enum):
+    r"""Optional. Security protocol for Java Message Service.
+
+    Values:
+      JMS_SECURITY_PROTOCOL_UNSPECIFIED: Security protocol not specified.
+      PLAIN: Plain text communication.
+      TLS: Transport Layer Security.
+      MTLS: Mutual Transport Layer Security.
+    """
+    JMS_SECURITY_PROTOCOL_UNSPECIFIED = 0
+    PLAIN = 1
+    TLS = 2
+    MTLS = 3
+
+  authenticationType = _messages.EnumField('AuthenticationTypeValueValuesEnum', 1)
+  connectionFactory = _messages.StringField(2)
+  connectionUrl = _messages.StringField(3)
+  jndiConnectionFactory = _messages.StringField(4)
+  jndiInitialContextFactory = _messages.StringField(5)
+  jndiProviderUrl = _messages.StringField(6)
+  jndiSecurityCredentialsSecret = _messages.StringField(7)
+  jndiSecurityPrincipal = _messages.StringField(8)
+  keyStoreFile = _messages.StringField(9)
+  keyStorePassword = _messages.StringField(10)
+  keyStorePasswordSecretVersion = _messages.StringField(11)
+  password = _messages.StringField(12)
+  passwordSecretVersion = _messages.StringField(13)
+  securityProtocol = _messages.EnumField('SecurityProtocolValueValuesEnum', 14)
+  sslKeyPassword = _messages.StringField(15)
+  sslKeyPasswordSecretVersion = _messages.StringField(16)
+  technologyType = _messages.StringField(17)
+  trustStoreFile = _messages.StringField(18)
+  trustStorePassword = _messages.StringField(19)
+  trustStorePasswordSecretVersion = _messages.StringField(20)
+  useJndi = _messages.BooleanField(21)
+  username = _messages.StringField(22)
+
+
+class GoldengateKafkaConnectionProperties(_messages.Message):
+  r"""The properties of GoldengateKafkaConnection.
+
+  Enums:
+    SecurityProtocolValueValuesEnum: Optional. Security Type for Kafka.
+
+  Fields:
+    bootstrapServers: Optional. Kafka bootstrap. Equivalent of
+      bootstrap.servers configuration property in Kafka: list of
+      KafkaBootstrapServer objects specified by host/port. Used for
+      establishing the initial connection to the Kafka cluster. Example:
+      "server1.example.com:9092,server2.example.com:9092"
+    clusterId: Optional. The OCID of the Kafka cluster being referenced from
+      OCI Streaming with Apache Kafka.
+    consumerPropertiesFile: Optional. The content of the consumer.properties
+      file.
+    keyStoreFile: Optional. The content of the KeyStore file.
+    keyStorePassword: Optional. Input only. The KeyStore password in plain
+      text.
+    keyStorePasswordSecretVersion: Optional. Input only. The resource name of
+      a secret version in Secret Manager which contains the KeyStore password.
+      Format: projects/{project}/secrets/{secret}/versions/{version}.
+    password: Optional. Input only. The password for Kafka basic/SASL auth in
+      plain text.
+    passwordSecretVersion: Optional. Input only. The resource name of a secret
+      version in Secret Manager which contains the password for Kafka
+      basic/SASL auth. Format:
+      projects/{project}/secrets/{secret}/versions/{version}.
+    producerPropertiesFile: Optional. The content of the producer.properties
+      file.
+    securityProtocol: Optional. Security Type for Kafka.
+    sslKeyPassword: Optional. Input only. The password for the cert inside of
+      the KeyStore in plain text.
+    sslKeyPasswordSecretVersion: Optional. Input only. The resource name of a
+      secret version in Secret Manager which contains the password for the
+      cert inside of the KeyStore. Format:
+      projects/{project}/secrets/{secret}/versions/{version}.
+    streamPoolId: Optional. The OCID of the stream pool being referenced.
+    technologyType: Optional. The technology type of KafkaConnection.
+    trustStoreFile: Optional. The content of the TrustStore file.
+    trustStorePassword: Optional. Input only. The TrustStore password in plain
+      text.
+    trustStorePasswordSecretVersion: Optional. Input only. The resource name
+      of a secret version in Secret Manager which contains the TrustStore
+      password. Format:
+      projects/{project}/secrets/{secret}/versions/{version}.
+    useResourcePrincipal: Optional. Specifies that the user intends to
+      authenticate to the instance using a resource principal. Applicable only
+      for OCI Streaming connections.
+    username: Optional. The username Oracle Goldengate uses to connect the
+      associated system of the given technology.
+  """
+
+  class SecurityProtocolValueValuesEnum(_messages.Enum):
+    r"""Optional. Security Type for Kafka.
+
+    Values:
+      KAFKA_SECURITY_PROTOCOL_UNSPECIFIED: Security type not specified.
+      SSL: SSL security protocol.
+      SASL_SSL: SASL SSL security protocol.
+      PLAINTEXT: Plaintext security protocol.
+      SASL_PLAINTEXT: SASL Plaintext security protocol.
+    """
+    KAFKA_SECURITY_PROTOCOL_UNSPECIFIED = 0
+    SSL = 1
+    SASL_SSL = 2
+    PLAINTEXT = 3
+    SASL_PLAINTEXT = 4
+
+  bootstrapServers = _messages.MessageField('KafkaBootstrapServer', 1, repeated=True)
+  clusterId = _messages.StringField(2)
+  consumerPropertiesFile = _messages.StringField(3)
+  keyStoreFile = _messages.StringField(4)
+  keyStorePassword = _messages.StringField(5)
+  keyStorePasswordSecretVersion = _messages.StringField(6)
+  password = _messages.StringField(7)
+  passwordSecretVersion = _messages.StringField(8)
+  producerPropertiesFile = _messages.StringField(9)
+  securityProtocol = _messages.EnumField('SecurityProtocolValueValuesEnum', 10)
+  sslKeyPassword = _messages.StringField(11)
+  sslKeyPasswordSecretVersion = _messages.StringField(12)
+  streamPoolId = _messages.StringField(13)
+  technologyType = _messages.StringField(14)
+  trustStoreFile = _messages.StringField(15)
+  trustStorePassword = _messages.StringField(16)
+  trustStorePasswordSecretVersion = _messages.StringField(17)
+  useResourcePrincipal = _messages.BooleanField(18)
+  username = _messages.StringField(19)
+
+
+class GoldengateKafkaSchemaRegistryConnectionProperties(_messages.Message):
+  r"""The properties of GoldengateKafkaSchemaRegistryConnection.
+
+  Enums:
+    AuthenticationTypeValueValuesEnum: Optional. Used authentication mechanism
+      to access Schema Registry.
+
+  Fields:
+    authenticationType: Optional. Used authentication mechanism to access
+      Schema Registry.
+    keyStoreFile: Optional. The content of the KeyStore file.
+    keyStorePassword: Optional. Input only. The KeyStore password in plain
+      text.
+    keyStorePasswordSecretVersion: Optional. Input only. The resource name of
+      a secret version in Secret Manager which contains the KeyStore password.
+      Format: projects/{project}/secrets/{secret}/versions/{version}.
+    password: Optional. Input only. The password to access Schema Registry in
+      plain text.
+    passwordSecretVersion: Optional. Input only. The resource name of a secret
+      version in Secret Manager which contains the password to access Schema
+      Registry using basic authentication. Format:
+      projects/{project}/secrets/{secret}/versions/{version}.
+    sslKeyPassword: Optional. Input only. The password for the cert inside the
+      KeyStore in plain text.
+    sslKeyPasswordSecretVersion: Optional. Input only. The resource name of a
+      secret version in Secret Manager which contains the password for the
+      cert inside the KeyStore. Format:
+      projects/{project}/secrets/{secret}/versions/{version}.
+    technologyType: Optional. The technology type of
+      KafkaSchemaRegistryConnection.
+    trustStoreFile: Optional. The content of the TrustStore file.
+    trustStorePassword: Optional. Input only. The TrustStore password in plain
+      text.
+    trustStorePasswordSecretVersion: Optional. Input only. The resource name
+      of a secret version in Secret Manager which contains the TrustStore
+      password. Format:
+      projects/{project}/secrets/{secret}/versions/{version}.
+    url: Optional. Kafka Schema Registry URL. e.g.:
+      'https://server1.us.oracle.com:8081'
+    username: Optional. The username to access Schema Registry using basic
+      authentication. This value is injected into
+      'schema.registry.basic.auth.user.info=user:password' configuration
+      property.
+  """
+
+  class AuthenticationTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. Used authentication mechanism to access Schema Registry.
+
+    Values:
+      AUTHENTICATION_TYPE_UNSPECIFIED: Authentication type not specified.
+      NONE: No authentication.
+      BASIC: Basic authentication.
+      MUTUAL: Mutual authentication.
+    """
+    AUTHENTICATION_TYPE_UNSPECIFIED = 0
+    NONE = 1
+    BASIC = 2
+    MUTUAL = 3
+
+  authenticationType = _messages.EnumField('AuthenticationTypeValueValuesEnum', 1)
+  keyStoreFile = _messages.StringField(2)
+  keyStorePassword = _messages.StringField(3)
+  keyStorePasswordSecretVersion = _messages.StringField(4)
+  password = _messages.StringField(5)
+  passwordSecretVersion = _messages.StringField(6)
+  sslKeyPassword = _messages.StringField(7)
+  sslKeyPasswordSecretVersion = _messages.StringField(8)
+  technologyType = _messages.StringField(9)
+  trustStoreFile = _messages.StringField(10)
+  trustStorePassword = _messages.StringField(11)
+  trustStorePasswordSecretVersion = _messages.StringField(12)
+  url = _messages.StringField(13)
+  username = _messages.StringField(14)
 
 
 class GoldengateMaintenanceConfig(_messages.Message):
@@ -5819,6 +5285,260 @@ class GoldengateMaintenanceWindow(_messages.Message):
   startHour = _messages.IntegerField(2, variant=_messages.Variant.INT32)
 
 
+class GoldengateMicrosoftFabricConnectionProperties(_messages.Message):
+  r"""The properties of GoldengateMicrosoftFabricConnection.
+
+  Fields:
+    clientId: Optional. Azure client ID of the application.
+    clientSecret: Optional. Client secret associated with the client id.
+    endpoint: Optional. Optional Microsoft Fabric service endpoint. Default
+      value: https://onelake.dfs.fabric.microsoft.com
+    technologyType: Optional. The technology type of
+      MicrosoftFabricConnection.
+    tenantId: Optional. Azure tenant ID of the application.
+  """
+
+  clientId = _messages.StringField(1)
+  clientSecret = _messages.StringField(2)
+  endpoint = _messages.StringField(3)
+  technologyType = _messages.StringField(4)
+  tenantId = _messages.StringField(5)
+
+
+class GoldengateMicrosoftSqlserverConnectionProperties(_messages.Message):
+  r"""The properties of GoldengateMicrosoftSqlserverConnection.
+
+  Enums:
+    SecurityProtocolValueValuesEnum: Optional. Security Type for Microsoft SQL
+      Server.
+
+  Fields:
+    additionalAttributes: Optional. An array of name-value pair attribute
+      entries. Used as additional parameters in connection string.
+    database: Optional. The name of the database.
+    host: Optional. The name or address of a host.
+    password: Optional. Input only. The password Oracle Goldengate uses for
+      Microsoft SQL Server connection in plain text.
+    passwordSecretVersion: Optional. Input only. The resource name of a secret
+      version in Secret Manager which contains the password Oracle Goldengate
+      uses for Microsoft SQL Server connection. Format:
+      projects/{project}/secrets/{secret}/versions/{version}.
+    port: Optional. The port of an endpoint usually specified for a
+      connection.
+    securityProtocol: Optional. Security Type for Microsoft SQL Server.
+    serverCertificateValidationRequired: Optional. If set to true, the driver
+      validates the certificate that is sent by the database server.
+    sslCaFile: Optional. Database Certificate - The content of a .pem or .crt
+      file containing the server public key (for 1-way SSL).
+    technologyType: Optional. The technology type of
+      MicrosoftSqlserverConnection.
+    username: Optional. The username Oracle Goldengate uses to connect to the
+      Microsoft SQL Server.
+  """
+
+  class SecurityProtocolValueValuesEnum(_messages.Enum):
+    r"""Optional. Security Type for Microsoft SQL Server.
+
+    Values:
+      MICROSOFT_SQLSERVER_SECURITY_PROTOCOL_UNSPECIFIED: Security type not
+        specified.
+      PLAIN: Plain text communication.
+      TLS: Transport Layer Security.
+    """
+    MICROSOFT_SQLSERVER_SECURITY_PROTOCOL_UNSPECIFIED = 0
+    PLAIN = 1
+    TLS = 2
+
+  additionalAttributes = _messages.MessageField('NameValuePair', 1, repeated=True)
+  database = _messages.StringField(2)
+  host = _messages.StringField(3)
+  password = _messages.StringField(4)
+  passwordSecretVersion = _messages.StringField(5)
+  port = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  securityProtocol = _messages.EnumField('SecurityProtocolValueValuesEnum', 7)
+  serverCertificateValidationRequired = _messages.BooleanField(8)
+  sslCaFile = _messages.StringField(9)
+  technologyType = _messages.StringField(10)
+  username = _messages.StringField(11)
+
+
+class GoldengateMongodbConnectionProperties(_messages.Message):
+  r"""The properties of GoldengateMongodbConnection.
+
+  Enums:
+    SecurityProtocolValueValuesEnum: Optional. Security Type for MongoDB.
+
+  Fields:
+    connectionString: Optional. MongoDB connection string. e.g.:
+      'mongodb://mongodb0.example.com:27017/recordsrecords'
+    databaseId: Optional. The OCID of the Oracle Autonomous Json Database.
+    password: Optional. Input only. The password Oracle Goldengate uses to
+      connect the Mongodb connection in plain text.
+    passwordSecretVersion: Optional. Input only. The resource name of a secret
+      version in Secret Manager which contains the password Oracle Goldengate
+      uses to connect the Mongodb connection. Format:
+      projects/{project}/secrets/{secret}/versions/{version}.
+    securityProtocol: Optional. Security Type for MongoDB.
+    technologyType: Optional. The technology type of MongodbConnection.
+    tlsCaFile: Optional. Database Certificate - The content of a .pem file,
+      containing the server public key (for 1 and 2-way SSL).
+    tlsCertificateKeyFile: Optional. Client Certificate - The content of a
+      .pem file, containing the client public key (for 2-way SSL).
+    tlsCertificateKeyFilePassword: Optional. Input only. The Client
+      Certificate key file password in plain text.
+    tlsCertificateKeyFilePasswordSecretVersion: Optional. Input only. The
+      resource name of a secret version in Secret Manager which contains the
+      Client Certificate key file password in Secret Manager. Format:
+      projects/{project}/secrets/{secret}/versions/{version}.
+    username: Optional. The username Oracle Goldengate uses to connect to the
+      database.
+  """
+
+  class SecurityProtocolValueValuesEnum(_messages.Enum):
+    r"""Optional. Security Type for MongoDB.
+
+    Values:
+      MONGODB_SECURITY_PROTOCOL_UNSPECIFIED: Security type not specified.
+      PLAIN: Plain text communication.
+      TLS: Transport Layer Security.
+      MTLS: Mutual Transport Layer Security.
+    """
+    MONGODB_SECURITY_PROTOCOL_UNSPECIFIED = 0
+    PLAIN = 1
+    TLS = 2
+    MTLS = 3
+
+  connectionString = _messages.StringField(1)
+  databaseId = _messages.StringField(2)
+  password = _messages.StringField(3)
+  passwordSecretVersion = _messages.StringField(4)
+  securityProtocol = _messages.EnumField('SecurityProtocolValueValuesEnum', 5)
+  technologyType = _messages.StringField(6)
+  tlsCaFile = _messages.StringField(7)
+  tlsCertificateKeyFile = _messages.StringField(8)
+  tlsCertificateKeyFilePassword = _messages.StringField(9)
+  tlsCertificateKeyFilePasswordSecretVersion = _messages.StringField(10)
+  username = _messages.StringField(11)
+
+
+class GoldengateMysqlConnectionProperties(_messages.Message):
+  r"""Properties of GoldengateMysqlConnection.
+
+  Enums:
+    SecurityProtocolValueValuesEnum: Optional. Security Type for MySQL.
+    SslModeValueValuesEnum: Optional. SSL modes for MySQL.
+
+  Fields:
+    additionalAttributes: Optional. An array of name-value pair attribute
+      entries. Used as additional parameters in connection string.
+    database: Optional. The name of the database.
+    dbSystemId: Optional. The OCID of the database system being referenced.
+    host: Optional. The name or address of a host.
+    password: Optional. Input only. The password Oracle Goldengate uses to
+      connect to MySQL in plain text.
+    passwordSecretVersion: Optional. Input only. The resource name of a secret
+      version in Secret Manager which contains the password Oracle Goldengate
+      uses to connect to MySQL. Format:
+      projects/{project}/secrets/{secret}/versions/{version}.
+    port: Optional. The port of an endpoint usually specified for a
+      connection.
+    securityProtocol: Optional. Security Type for MySQL.
+    sslCaFile: Optional. Database Certificate - The content of a .pem or .crt
+      file containing the server public key (for 1 and 2-way SSL).
+    sslCertFile: Optional. Client Certificate - The content of a .pem or .crt
+      file containing the client public key (for 2-way SSL).
+    sslCrlFile: Optional. The list of certificates revoked by the trusted
+      certificate authorities (Trusted CA).
+    sslKeyFile: Optional. Client Key - The content of a .pem or .crt file
+      containing the client private key (for 2-way SSL).
+    sslMode: Optional. SSL modes for MySQL.
+    technologyType: Optional. The technology type of MysqlConnection.
+    username: Optional. The username Oracle Goldengate uses to connect the
+      associated system of the given technology.
+  """
+
+  class SecurityProtocolValueValuesEnum(_messages.Enum):
+    r"""Optional. Security Type for MySQL.
+
+    Values:
+      MYSQL_SECURITY_PROTOCOL_UNSPECIFIED: Security type not specified.
+      PLAIN: Plain text communication.
+      TLS: Transport Layer Security.
+      MTLS: Mutual Transport Layer Security.
+    """
+    MYSQL_SECURITY_PROTOCOL_UNSPECIFIED = 0
+    PLAIN = 1
+    TLS = 2
+    MTLS = 3
+
+  class SslModeValueValuesEnum(_messages.Enum):
+    r"""Optional. SSL modes for MySQL.
+
+    Values:
+      SSL_MODE_UNSPECIFIED: SSL mode not specified.
+      DISABLED: SSL is disabled.
+      PREFERRED: SSL is preferred.
+      REQUIRED: SSL is required.
+      VERIFY_CA: SSL is required and certificate is verified.
+      VERIFY_IDENTITY: SSL is required and certificate and hostname are
+        verified.
+    """
+    SSL_MODE_UNSPECIFIED = 0
+    DISABLED = 1
+    PREFERRED = 2
+    REQUIRED = 3
+    VERIFY_CA = 4
+    VERIFY_IDENTITY = 5
+
+  additionalAttributes = _messages.MessageField('NameValuePair', 1, repeated=True)
+  database = _messages.StringField(2)
+  dbSystemId = _messages.StringField(3)
+  host = _messages.StringField(4)
+  password = _messages.StringField(5)
+  passwordSecretVersion = _messages.StringField(6)
+  port = _messages.IntegerField(7, variant=_messages.Variant.INT32)
+  securityProtocol = _messages.EnumField('SecurityProtocolValueValuesEnum', 8)
+  sslCaFile = _messages.StringField(9)
+  sslCertFile = _messages.StringField(10)
+  sslCrlFile = _messages.StringField(11)
+  sslKeyFile = _messages.StringField(12)
+  sslMode = _messages.EnumField('SslModeValueValuesEnum', 13)
+  technologyType = _messages.StringField(14)
+  username = _messages.StringField(15)
+
+
+class GoldengateOciObjectStorageConnectionProperties(_messages.Message):
+  r"""The properties of GoldengateOciObjectStorageConnection.
+
+  Fields:
+    privateKeyFile: Optional. The content of the private key file (PEM file)
+      corresponding to the API key of the fingerprint.
+    privateKeyPassphraseSecret: Optional. The passphrase of the private key.
+    publicKeyFingerprint: Optional. The fingerprint of the API Key of the user
+      specified by the userId.
+    region: Optional. The name of the region of OCI Object Storage. e.g.: us-
+      ashburn-1 If the region is not provided, backend will default to the
+      default region.
+    technologyType: Optional. The technology type of
+      OciObjectStorageConnection.
+    tenancyId: Optional. The OCID of the related OCI tenancy.
+    useResourcePrincipal: Optional. Specifies that the user intends to
+      authenticate to the instance using a resource principal.
+    userId: Optional. The OCID of the OCI user who will access the Object
+      Storage. The user must have write access to the bucket they want to
+      connect to.
+  """
+
+  privateKeyFile = _messages.StringField(1)
+  privateKeyPassphraseSecret = _messages.StringField(2)
+  publicKeyFingerprint = _messages.StringField(3)
+  region = _messages.StringField(4)
+  technologyType = _messages.StringField(5)
+  tenancyId = _messages.StringField(6)
+  useResourcePrincipal = _messages.BooleanField(7)
+  userId = _messages.StringField(8)
+
+
 class GoldengateOggDeployment(_messages.Message):
   r"""The Ogg data of the GoldengateDeployment.
 
@@ -5871,6 +5591,130 @@ class GoldengateOggDeployment(_messages.Message):
   passwordSecretId = _messages.StringField(10)
 
 
+class GoldengateOracleAIDataPlatformConnectionProperties(_messages.Message):
+  r"""The properties of GoldengateOracleAIDataPlatformConnection.
+
+  Fields:
+    connectionUrl: Optional. Connection URL. It must start with
+      'jdbc:spark://'
+    privateKeyFile: Optional. The content of the private key file (PEM file)
+      corresponding to the API key of the fingerprint.
+    privateKeyPassphraseSecret: Optional. The passphrase of the private key.
+    publicKeyFingerprint: Optional. The fingerprint of the API Key of the user
+      specified by the user_id.
+    region: Optional. The name of the region. e.g.: us-ashburn-1
+    technologyType: Optional. The technology type of
+      OracleAiDataPlatformConnection.
+    tenancyId: Optional. The OCID of the related OCI tenancy.
+    useResourcePrincipal: Optional. Specifies that the user intends to
+      authenticate to the instance using a resource principal.
+    userId: Optional. The OCID of the OCI user who will access.
+  """
+
+  connectionUrl = _messages.StringField(1)
+  privateKeyFile = _messages.StringField(2)
+  privateKeyPassphraseSecret = _messages.StringField(3)
+  publicKeyFingerprint = _messages.StringField(4)
+  region = _messages.StringField(5)
+  technologyType = _messages.StringField(6)
+  tenancyId = _messages.StringField(7)
+  useResourcePrincipal = _messages.BooleanField(8)
+  userId = _messages.StringField(9)
+
+
+class GoldengateOracleConnectionProperties(_messages.Message):
+  r"""The properties of Goldengate Oracle Database Connection.
+
+  Enums:
+    AuthenticationModeValueValuesEnum: Optional. Authentication mode.
+    SessionModeValueValuesEnum: Optional. The mode of the database connection
+      session to be established by the data client.
+
+  Fields:
+    authenticationMode: Optional. Authentication mode.
+    connectionString: Optional. Connect descriptor or Easy Connect Naming
+      method used to connect to a database.
+    gcpOracleDatabaseId: Optional. Database instance id of database in Oracle
+      Database @ Google Cloud. If gcp_oracle_database_id is provided,
+      connection_string must be empty.
+    password: Optional. Input only. The password Oracle Goldengate uses in
+      plain text.
+    passwordSecretVersion: Optional. Input only. The resource name of a secret
+      version in Secret Manager which contains the password Oracle Goldengate
+      uses. Format: projects/{project}/secrets/{secret}/versions/{version}.
+    sessionMode: Optional. The mode of the database connection session to be
+      established by the data client.
+    technologyType: Optional. The technology type.
+    username: Optional. The username Oracle Goldengate uses to connect.
+    walletFile: Optional. The wallet contents Oracle Goldengate uses to make
+      connections to a database.
+  """
+
+  class AuthenticationModeValueValuesEnum(_messages.Enum):
+    r"""Optional. Authentication mode.
+
+    Values:
+      ORACLE_AUTHENTICATION_MODE_UNSPECIFIED: Authentication mode not
+        specified.
+      TLS: TLS authentication mode.
+      MTLS: MTLS authentication mode.
+    """
+    ORACLE_AUTHENTICATION_MODE_UNSPECIFIED = 0
+    TLS = 1
+    MTLS = 2
+
+  class SessionModeValueValuesEnum(_messages.Enum):
+    r"""Optional. The mode of the database connection session to be
+    established by the data client.
+
+    Values:
+      SESSION_MODE_UNSPECIFIED: Default unspecified value.
+      DIRECT: Indicates that the resource is using direct session mode.
+      REDIRECT: Indicates that the resource is using redirect session mode.
+    """
+    SESSION_MODE_UNSPECIFIED = 0
+    DIRECT = 1
+    REDIRECT = 2
+
+  authenticationMode = _messages.EnumField('AuthenticationModeValueValuesEnum', 1)
+  connectionString = _messages.StringField(2)
+  gcpOracleDatabaseId = _messages.StringField(3)
+  password = _messages.StringField(4)
+  passwordSecretVersion = _messages.StringField(5)
+  sessionMode = _messages.EnumField('SessionModeValueValuesEnum', 6)
+  technologyType = _messages.StringField(7)
+  username = _messages.StringField(8)
+  walletFile = _messages.StringField(9)
+
+
+class GoldengateOracleNosqlConnectionProperties(_messages.Message):
+  r"""The properties of GoldengateOracleNosqlConnection.
+
+  Fields:
+    privateKeyFile: Optional. The content of the private key file (PEM file)
+      corresponding to the API key of the fingerprint.
+    privateKeyPassphraseSecret: Optional. The passphrase of the private key.
+    publicKeyFingerprint: Optional. The fingerprint of the API Key of the user
+      specified by the userId.
+    region: Optional. The name of the region. e.g.: us-ashburn-1
+    technologyType: Optional. The technology type of OracleNosqlConnection.
+    tenancyId: Optional. The OCID of the OCI tenancy.
+    useResourcePrincipal: Optional. Specifies that the user intends to
+      authenticate to the instance using a resource principal.
+    userId: Optional. The OCID of the OCI user who will access the Oracle
+      NoSQL database.
+  """
+
+  privateKeyFile = _messages.StringField(1)
+  privateKeyPassphraseSecret = _messages.StringField(2)
+  publicKeyFingerprint = _messages.StringField(3)
+  region = _messages.StringField(4)
+  technologyType = _messages.StringField(5)
+  tenancyId = _messages.StringField(6)
+  useResourcePrincipal = _messages.BooleanField(7)
+  userId = _messages.StringField(8)
+
+
 class GoldengatePlacement(_messages.Message):
   r"""The placement of the GoldengateDeployment.
 
@@ -5881,6 +5725,220 @@ class GoldengatePlacement(_messages.Message):
 
   availabilityDomain = _messages.StringField(1)
   faultDomain = _messages.StringField(2)
+
+
+class GoldengatePostgresqlConnectionProperties(_messages.Message):
+  r"""The properties of GoldengatePostgresqlConnection.
+
+  Enums:
+    SecurityProtocolValueValuesEnum: Optional. Security protocol for
+      PostgreSQL.
+    SslModeValueValuesEnum: Optional. SSL modes for PostgreSQL.
+
+  Fields:
+    additionalAttributes: Optional. An array of name-value pair attribute
+      entries. Used as additional parameters in connection string.
+    database: Optional. The name of the database.
+    dbSystemId: Optional. The OCID of the database system being referenced.
+    host: Optional. The name or address of a host.
+    password: Optional. Input only. The password Oracle Goldengate uses for
+      PostgreSQL connection in plain text.
+    passwordSecretVersion: Optional. Input only. The resource name of a secret
+      version in Secret Manager which contains the password Oracle Goldengate
+      uses for PostgreSQL connection. Format:
+      projects/{project}/secrets/{secret}/versions/{version}.
+    port: Optional. The port of an endpoint usually specified for a
+      connection.
+    securityProtocol: Optional. Security protocol for PostgreSQL.
+    sslCaFile: Optional. The certificate of the trusted certificate
+      authorities (Trusted CA) for PostgreSQL.
+    sslCertFile: Optional. The certificate of the PostgreSQL server.
+    sslCrlFile: Optional. The list of certificates revoked by the trusted
+      certificate authorities (Trusted CA).
+    sslKeyFile: Optional. The private key of the PostgreSQL server.
+    sslMode: Optional. SSL modes for PostgreSQL.
+    technologyType: Optional. The technology type of PostgresqlConnection.
+    username: Optional. The username Oracle Goldengate uses to connect the
+      associated system of the given technology.
+  """
+
+  class SecurityProtocolValueValuesEnum(_messages.Enum):
+    r"""Optional. Security protocol for PostgreSQL.
+
+    Values:
+      POSTGRESQL_SECURITY_PROTOCOL_UNSPECIFIED: Security protocol not
+        specified.
+      PLAIN: Plain text communication.
+      TLS: Transport Layer Security.
+      MTLS: Mutual Transport Layer Security.
+    """
+    POSTGRESQL_SECURITY_PROTOCOL_UNSPECIFIED = 0
+    PLAIN = 1
+    TLS = 2
+    MTLS = 3
+
+  class SslModeValueValuesEnum(_messages.Enum):
+    r"""Optional. SSL modes for PostgreSQL.
+
+    Values:
+      POSTGRESQL_SSL_MODE_UNSPECIFIED: SSL mode not specified.
+      PREFER: Prefer SSL.
+      REQUIRE: Require SSL.
+      VERIFY_CA: Verify Certificate Authority.
+      VERIFY_FULL: Verify Full.
+    """
+    POSTGRESQL_SSL_MODE_UNSPECIFIED = 0
+    PREFER = 1
+    REQUIRE = 2
+    VERIFY_CA = 3
+    VERIFY_FULL = 4
+
+  additionalAttributes = _messages.MessageField('NameValuePair', 1, repeated=True)
+  database = _messages.StringField(2)
+  dbSystemId = _messages.StringField(3)
+  host = _messages.StringField(4)
+  password = _messages.StringField(5)
+  passwordSecretVersion = _messages.StringField(6)
+  port = _messages.IntegerField(7, variant=_messages.Variant.INT32)
+  securityProtocol = _messages.EnumField('SecurityProtocolValueValuesEnum', 8)
+  sslCaFile = _messages.StringField(9)
+  sslCertFile = _messages.StringField(10)
+  sslCrlFile = _messages.StringField(11)
+  sslKeyFile = _messages.StringField(12)
+  sslMode = _messages.EnumField('SslModeValueValuesEnum', 13)
+  technologyType = _messages.StringField(14)
+  username = _messages.StringField(15)
+
+
+class GoldengateRedisConnectionProperties(_messages.Message):
+  r"""The properties of GoldengateRedisConnection.
+
+  Enums:
+    AuthenticationTypeValueValuesEnum: Optional. Authentication type for
+      Redis.
+    SecurityProtocolValueValuesEnum: Optional. Security protocol for Redis.
+
+  Fields:
+    authenticationType: Optional. Authentication type for Redis.
+    keyStoreFile: Optional. The content of the KeyStore file.
+    keyStorePassword: Optional. Input only. The KeyStore password in plain
+      text.
+    keyStorePasswordSecretVersion: Optional. Input only. The resource name of
+      a secret version in Secret Manager which contains the KeyStore password.
+      Format: projects/{project}/secrets/{secret}/versions/{version}.
+    password: Optional. Input only. The password Oracle Goldengate uses for
+      Redis connection in plain text.
+    passwordSecretVersion: Optional. Input only. The resource name of a secret
+      version in Secret Manager which contains the password Oracle Goldengate
+      uses for Redis connection. Format:
+      projects/{project}/secrets/{secret}/versions/{version}.
+    redisClusterId: Optional. The OCID of the Redis cluster.
+    securityProtocol: Optional. Security protocol for Redis.
+    servers: Optional. Comma separated list of Redis server addresses,
+      specified as host:port entries, where :port is optional. If port is not
+      specified, it defaults to 6379. Example:
+      "server1.example.com:6379,server2.example.com:6379"
+    technologyType: Optional. The technology type of RedisConnection.
+    trustStoreFile: Optional. The content of the TrustStore file.
+    trustStorePassword: Optional. Input only. The TrustStore password in plain
+      text.
+    trustStorePasswordSecretVersion: Optional. Input only. The resource name
+      of a secret version in Secret Manager which contains the TrustStore
+      password. Format:
+      projects/{project}/secrets/{secret}/versions/{version}.
+    username: Optional. The username Oracle Goldengate uses to connect the
+      associated system of the given technology.
+  """
+
+  class AuthenticationTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. Authentication type for Redis.
+
+    Values:
+      REDIS_AUTHENTICATION_TYPE_UNSPECIFIED: Authentication type not
+        specified.
+      NONE: No authentication.
+      BASIC: Basic authentication.
+    """
+    REDIS_AUTHENTICATION_TYPE_UNSPECIFIED = 0
+    NONE = 1
+    BASIC = 2
+
+  class SecurityProtocolValueValuesEnum(_messages.Enum):
+    r"""Optional. Security protocol for Redis.
+
+    Values:
+      REDIS_SECURITY_PROTOCOL_UNSPECIFIED: Security protocol not specified.
+      PLAIN: Plain text communication.
+      TLS: Transport Layer Security.
+      MTLS: Mutual Transport Layer Security.
+    """
+    REDIS_SECURITY_PROTOCOL_UNSPECIFIED = 0
+    PLAIN = 1
+    TLS = 2
+    MTLS = 3
+
+  authenticationType = _messages.EnumField('AuthenticationTypeValueValuesEnum', 1)
+  keyStoreFile = _messages.StringField(2)
+  keyStorePassword = _messages.StringField(3)
+  keyStorePasswordSecretVersion = _messages.StringField(4)
+  password = _messages.StringField(5)
+  passwordSecretVersion = _messages.StringField(6)
+  redisClusterId = _messages.StringField(7)
+  securityProtocol = _messages.EnumField('SecurityProtocolValueValuesEnum', 8)
+  servers = _messages.StringField(9)
+  technologyType = _messages.StringField(10)
+  trustStoreFile = _messages.StringField(11)
+  trustStorePassword = _messages.StringField(12)
+  trustStorePasswordSecretVersion = _messages.StringField(13)
+  username = _messages.StringField(14)
+
+
+class GoldengateSnowflakeConnectionProperties(_messages.Message):
+  r"""The properties of GoldengateSnowflakeConnection.
+
+  Enums:
+    AuthenticationTypeValueValuesEnum: Optional. Used authentication mechanism
+      to access Snowflake.
+
+  Fields:
+    authenticationType: Optional. Used authentication mechanism to access
+      Snowflake.
+    connectionUrl: Optional. JDBC connection URL. e.g.:
+      'jdbc:snowflake://.snowflakecomputing.com/?warehouse=&db='
+    password: Optional. Input only. The password Oracle Goldengate uses to
+      connect to Snowflake platform in plain text.
+    passwordSecretVersion: Optional. Input only. The resource name of a secret
+      version in Secret Manager which contains the password Oracle Goldengate
+      uses to connect to Snowflake platform. Format:
+      projects/{project}/secrets/{secret}/versions/{version}.
+    privateKeyFile: Optional. The content of private key file in PEM format.
+    privateKeyPassphraseSecret: Optional. Password if the private key file is
+      encrypted.
+    technologyType: Optional. The technology type of SnowflakeConnection.
+    username: Optional. The username Oracle Goldengate uses to connect to
+      Snowflake.
+  """
+
+  class AuthenticationTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. Used authentication mechanism to access Snowflake.
+
+    Values:
+      AUTHENTICATION_TYPE_UNSPECIFIED: Authentication type not specified.
+      BASIC: Basic authentication.
+      KEY_PAIR: Key pair authentication.
+    """
+    AUTHENTICATION_TYPE_UNSPECIFIED = 0
+    BASIC = 1
+    KEY_PAIR = 2
+
+  authenticationType = _messages.EnumField('AuthenticationTypeValueValuesEnum', 1)
+  connectionUrl = _messages.StringField(2)
+  password = _messages.StringField(3)
+  passwordSecretVersion = _messages.StringField(4)
+  privateKeyFile = _messages.StringField(5)
+  privateKeyPassphraseSecret = _messages.StringField(6)
+  technologyType = _messages.StringField(7)
+  username = _messages.StringField(8)
 
 
 class GoogleCloudStorageIcebergStorage(_messages.Message):
@@ -6278,78 +6336,78 @@ class ListGiVersionsResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
-class ListGoldenGateConnectionAssignmentsResponse(_messages.Message):
-  r"""Response message for listing GoldenGateConnectionAssignments.
+class ListGoldengateConnectionAssignmentsResponse(_messages.Message):
+  r"""Response message for listing GoldengateConnectionAssignments.
 
   Fields:
-    goldenGateConnectionAssignments: The list of
-      GoldenGateConnectionAssignments.
+    goldengateConnectionAssignments: The list of
+      GoldengateConnectionAssignments.
     nextPageToken: A token, which can be sent as `page_token` to retrieve the
       next page. If this field is omitted, there are no subsequent pages.
   """
 
-  goldenGateConnectionAssignments = _messages.MessageField('GoldenGateConnectionAssignment', 1, repeated=True)
+  goldengateConnectionAssignments = _messages.MessageField('GoldengateConnectionAssignment', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
 
 
-class ListGoldenGateConnectionTypesResponse(_messages.Message):
-  r"""Message for response to listing GoldenGateConnectionTypes
+class ListGoldengateConnectionTypesResponse(_messages.Message):
+  r"""Message for response to listing GoldengateConnectionTypes
 
   Fields:
-    goldenGateConnectionTypes: The list of GoldenGateConnectionType
+    goldengateConnectionTypes: The list of GoldengateConnectionType
     nextPageToken: A token, which can be sent as `page_token` to retrieve the
       next page. If this field is omitted, there are no subsequent pages.
     unreachable: Unordered list. Locations that could not be reached.
   """
 
-  goldenGateConnectionTypes = _messages.MessageField('GoldenGateConnectionType', 1, repeated=True)
+  goldengateConnectionTypes = _messages.MessageField('GoldengateConnectionType', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
   unreachable = _messages.StringField(3, repeated=True)
 
 
-class ListGoldenGateConnectionsResponse(_messages.Message):
-  r"""The response for `GoldenGateConnection.List`.
+class ListGoldengateConnectionsResponse(_messages.Message):
+  r"""The response for `GoldengateConnection.List`.
 
   Fields:
-    goldenGateConnections: The list of GoldenGateConnections.
+    goldengateConnections: The list of GoldengateConnections.
     nextPageToken: A token identifying a page of results the server should
       return.
     unreachable: Optional. Locations that could not be reached.
   """
 
-  goldenGateConnections = _messages.MessageField('GoldenGateConnection', 1, repeated=True)
+  goldengateConnections = _messages.MessageField('GoldengateConnection', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
   unreachable = _messages.StringField(3, repeated=True)
 
 
-class ListGoldenGateDeploymentEnvironmentsResponse(_messages.Message):
-  r"""Message for response to listing GoldenGateDeploymentEnvironments
+class ListGoldengateDeploymentEnvironmentsResponse(_messages.Message):
+  r"""Message for response to listing GoldengateDeploymentEnvironments
 
   Fields:
-    goldenGateDeploymentEnvironments: The list of
-      GoldenGateDeploymentEnvironment
+    goldengateDeploymentEnvironments: The list of
+      GoldengateDeploymentEnvironment
     nextPageToken: A token identifying a page of results the server should
       return. If this field is empty, there are no subsequent pages.
     unreachable: Unordered list. Locations that could not be reached.
   """
 
-  goldenGateDeploymentEnvironments = _messages.MessageField('GoldenGateDeploymentEnvironment', 1, repeated=True)
+  goldengateDeploymentEnvironments = _messages.MessageField('GoldengateDeploymentEnvironment', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
   unreachable = _messages.StringField(3, repeated=True)
 
 
-class ListGoldenGateDeploymentTypesResponse(_messages.Message):
-  r"""Message for response to listing GoldenGateDeploymentTypes
+class ListGoldengateDeploymentTypesResponse(_messages.Message):
+  r"""Message for response to listing GoldengateDeploymentTypes
 
   Fields:
-    goldenGateDeploymentTypes: The list of GoldenGateDeploymentType
+    goldengateDeploymentTypes: The list of GoldengateDeploymentType
     nextPageToken: A token, which can be sent as `page_token` to retrieve the
       next page. If this field is omitted, there are no subsequent pages.
     unreachable: Unordered list. The resource names of locations that could
       not be reached.
   """
 
-  goldenGateDeploymentTypes = _messages.MessageField('GoldenGateDeploymentType', 1, repeated=True)
+  goldengateDeploymentTypes = _messages.MessageField('GoldengateDeploymentType', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
   unreachable = _messages.StringField(3, repeated=True)
 
@@ -7401,6 +7459,23 @@ class OracledatabaseProjectsLocationsAutonomousDbVersionsListRequest(_messages.M
   parent = _messages.StringField(3, required=True)
 
 
+class OracledatabaseProjectsLocationsCloudExadataInfrastructuresConfigureExascaleRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsCloudExadataInfrastructuresConfigureExa
+  scaleRequest object.
+
+  Fields:
+    configureExascaleCloudExadataInfrastructureRequest: A
+      ConfigureExascaleCloudExadataInfrastructureRequest resource to be passed
+      as the request body.
+    name: Required. The name of the Cloud Exadata Infrastructure in the
+      following format: projects/{project}/locations/{location}/cloudExadataIn
+      frastructures/{cloud_exadata_infrastructure}.
+  """
+
+  configureExascaleCloudExadataInfrastructureRequest = _messages.MessageField('ConfigureExascaleCloudExadataInfrastructureRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class OracledatabaseProjectsLocationsCloudExadataInfrastructuresCreateRequest(_messages.Message):
   r"""A
   OracledatabaseProjectsLocationsCloudExadataInfrastructuresCreateRequest
@@ -8326,18 +8401,18 @@ class OracledatabaseProjectsLocationsGiVersionsMinorVersionsListRequest(_message
   parent = _messages.StringField(4, required=True)
 
 
-class OracledatabaseProjectsLocationsGoldenGateConnectionAssignmentsCreateRequest(_messages.Message):
+class OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsCreateRequest(_messages.Message):
   r"""A
-  OracledatabaseProjectsLocationsGoldenGateConnectionAssignmentsCreateRequest
+  OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsCreateRequest
   object.
 
   Fields:
-    goldenGateConnectionAssignment: A GoldenGateConnectionAssignment resource
+    goldengateConnectionAssignment: A GoldengateConnectionAssignment resource
       to be passed as the request body.
-    goldenGateConnectionAssignmentId: Required. The ID of the
-      GoldenGateConnectionAssignment to create.
+    goldengateConnectionAssignmentId: Required. The ID of the
+      GoldengateConnectionAssignment to create.
     parent: Required. The parent resource where this
-      GoldenGateConnectionAssignment will be created. Format:
+      GoldengateConnectionAssignment will be created. Format:
       projects/{project}/locations/{location}
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
@@ -8352,21 +8427,21 @@ class OracledatabaseProjectsLocationsGoldenGateConnectionAssignmentsCreateReques
       not supported (00000000-0000-0000-0000-000000000000).
   """
 
-  goldenGateConnectionAssignment = _messages.MessageField('GoldenGateConnectionAssignment', 1)
-  goldenGateConnectionAssignmentId = _messages.StringField(2)
+  goldengateConnectionAssignment = _messages.MessageField('GoldengateConnectionAssignment', 1)
+  goldengateConnectionAssignmentId = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
   requestId = _messages.StringField(4)
 
 
-class OracledatabaseProjectsLocationsGoldenGateConnectionAssignmentsDeleteRequest(_messages.Message):
+class OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsDeleteRequest(_messages.Message):
   r"""A
-  OracledatabaseProjectsLocationsGoldenGateConnectionAssignmentsDeleteRequest
+  OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsDeleteRequest
   object.
 
   Fields:
-    name: Required. The name of the GoldenGateConnectionAssignment to delete.
-      Format: projects/{project}/locations/{location}/goldenGateConnectionAssi
-      gnments/{golden_gate_connection_assignment}
+    name: Required. The name of the GoldengateConnectionAssignment to delete.
+      Format: projects/{project}/locations/{location}/goldengateConnectionAssi
+      gnments/{goldengate_connection_assignment}
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
       will know to ignore the request if it has already been completed. The
@@ -8384,41 +8459,41 @@ class OracledatabaseProjectsLocationsGoldenGateConnectionAssignmentsDeleteReques
   requestId = _messages.StringField(2)
 
 
-class OracledatabaseProjectsLocationsGoldenGateConnectionAssignmentsGetRequest(_messages.Message):
+class OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsGetRequest(_messages.Message):
   r"""A
-  OracledatabaseProjectsLocationsGoldenGateConnectionAssignmentsGetRequest
+  OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsGetRequest
   object.
 
   Fields:
-    name: Required. The name of the GoldenGateConnectionAssignment to
-      retrieve. Format: projects/{project}/locations/{location}/goldenGateConn
-      ectionAssignments/{golden_gate_connection_assignment}
+    name: Required. The name of the GoldengateConnectionAssignment to
+      retrieve. Format: projects/{project}/locations/{location}/goldengateConn
+      ectionAssignments/{goldengate_connection_assignment}
   """
 
   name = _messages.StringField(1, required=True)
 
 
-class OracledatabaseProjectsLocationsGoldenGateConnectionAssignmentsListRequest(_messages.Message):
+class OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsListRequest(_messages.Message):
   r"""A
-  OracledatabaseProjectsLocationsGoldenGateConnectionAssignmentsListRequest
+  OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsListRequest
   object.
 
   Fields:
     filter: Optional. A filter expression that filters
-      GoldenGateConnectionAssignments listed in the response.
+      GoldengateConnectionAssignments listed in the response.
     orderBy: Optional. A comma-separated list of fields to order by, sorted in
       ascending order. Use "DESC" after a field name for descending.
-    pageSize: Optional. The maximum number of GoldenGateConnectionAssignments
+    pageSize: Optional. The maximum number of GoldengateConnectionAssignments
       to return. The service may return fewer than this value. If unspecified,
-      at most 50 GoldenGateConnectionAssignments will be returned. The maximum
+      at most 50 GoldengateConnectionAssignments will be returned. The maximum
       value is 1000; values above 1000 will be coerced to 1000.
     pageToken: Optional. A page token, received from a previous
-      `ListGoldenGateConnectionAssignments` call. Provide this to retrieve the
+      `ListGoldengateConnectionAssignments` call. Provide this to retrieve the
       subsequent page. When paginating, all other parameters provided to
-      `ListGoldenGateConnectionAssignments` must match the call that provided
+      `ListGoldengateConnectionAssignments` must match the call that provided
       the page token.
     parent: Required. The parent value for the
-      GoldenGateConnectionAssignments. Format:
+      GoldengateConnectionAssignments. Format:
       projects/{project}/locations/{location}
   """
 
@@ -8429,39 +8504,38 @@ class OracledatabaseProjectsLocationsGoldenGateConnectionAssignmentsListRequest(
   parent = _messages.StringField(5, required=True)
 
 
-class OracledatabaseProjectsLocationsGoldenGateConnectionAssignmentsTestRequest(_messages.Message):
+class OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsTestRequest(_messages.Message):
   r"""A
-  OracledatabaseProjectsLocationsGoldenGateConnectionAssignmentsTestRequest
+  OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsTestRequest
   object.
 
   Fields:
     name: Required. Name of the connection assignment for which to test
-      connection. projects/{project}/locations/{region}/goldenGateConnectionAs
-      signments/{golden_gate_connection_assignment}
-    testGoldenGateConnectionAssignmentRequest: A
-      TestGoldenGateConnectionAssignmentRequest resource to be passed as the
+      connection. projects/{project}/locations/{region}/goldengateConnectionAs
+      signments/{goldengate_connection_assignment}
+    testGoldengateConnectionAssignmentRequest: A
+      TestGoldengateConnectionAssignmentRequest resource to be passed as the
       request body.
   """
 
   name = _messages.StringField(1, required=True)
-  testGoldenGateConnectionAssignmentRequest = _messages.MessageField('TestGoldenGateConnectionAssignmentRequest', 2)
+  testGoldengateConnectionAssignmentRequest = _messages.MessageField('TestGoldengateConnectionAssignmentRequest', 2)
 
 
-class OracledatabaseProjectsLocationsGoldenGateConnectionTypesGetRequest(_messages.Message):
-  r"""A OracledatabaseProjectsLocationsGoldenGateConnectionTypesGetRequest
+class OracledatabaseProjectsLocationsGoldengateConnectionTypesGetRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsGoldengateConnectionTypesGetRequest
   object.
 
   Fields:
     name: Required. Name of the resource in the format: projects/{project}/loc
-      ations/{location}/goldenGateConnectionTypes/{golden_gate_connection_type
-      }
+      ations/{location}/goldengateConnectionTypes/{goldengate_connection_type}
   """
 
   name = _messages.StringField(1, required=True)
 
 
-class OracledatabaseProjectsLocationsGoldenGateConnectionTypesListRequest(_messages.Message):
-  r"""A OracledatabaseProjectsLocationsGoldenGateConnectionTypesListRequest
+class OracledatabaseProjectsLocationsGoldengateConnectionTypesListRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsGoldengateConnectionTypesListRequest
   object.
 
   Fields:
@@ -8472,7 +8546,7 @@ class OracledatabaseProjectsLocationsGoldenGateConnectionTypesListRequest(_messa
       than requested. If unspecified, server will pick an appropriate default.
     pageToken: Optional. A token identifying a page of results the server
       should return.
-    parent: Required. Parent value for ListGoldenGateConnectionTypesRequest
+    parent: Required. Parent value for ListGoldengateConnectionTypesRequest
       Format: projects/{project}/locations/{location}
   """
 
@@ -8482,18 +8556,18 @@ class OracledatabaseProjectsLocationsGoldenGateConnectionTypesListRequest(_messa
   parent = _messages.StringField(4, required=True)
 
 
-class OracledatabaseProjectsLocationsGoldenGateConnectionsCreateRequest(_messages.Message):
-  r"""A OracledatabaseProjectsLocationsGoldenGateConnectionsCreateRequest
+class OracledatabaseProjectsLocationsGoldengateConnectionsCreateRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsGoldengateConnectionsCreateRequest
   object.
 
   Fields:
-    goldenGateConnection: A GoldenGateConnection resource to be passed as the
+    goldengateConnection: A GoldengateConnection resource to be passed as the
       request body.
-    goldenGateConnectionId: Required. The ID of the GoldenGateConnection to
+    goldengateConnectionId: Required. The ID of the GoldengateConnection to
       create. This value is restricted to (^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$)
       and must be a maximum of 63 characters in length. The value must start
       with a letter and end with a letter or a number.
-    parent: Required. The value for parent of the GoldenGateConnection in the
+    parent: Required. The value for parent of the GoldengateConnection in the
       following format: projects/{project}/locations/{location}.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
@@ -8508,20 +8582,20 @@ class OracledatabaseProjectsLocationsGoldenGateConnectionsCreateRequest(_message
       not supported (00000000-0000-0000-0000-000000000000).
   """
 
-  goldenGateConnection = _messages.MessageField('GoldenGateConnection', 1)
-  goldenGateConnectionId = _messages.StringField(2)
+  goldengateConnection = _messages.MessageField('GoldengateConnection', 1)
+  goldengateConnectionId = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
   requestId = _messages.StringField(4)
 
 
-class OracledatabaseProjectsLocationsGoldenGateConnectionsDeleteRequest(_messages.Message):
-  r"""A OracledatabaseProjectsLocationsGoldenGateConnectionsDeleteRequest
+class OracledatabaseProjectsLocationsGoldengateConnectionsDeleteRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsGoldengateConnectionsDeleteRequest
   object.
 
   Fields:
-    name: Required. The name of the GoldenGateConnection in the following
-      format: projects/{project}/locations/{location}/goldenGateConnections/{g
-      olden_gate_connection}.
+    name: Required. The name of the GoldengateConnection in the following
+      format: projects/{project}/locations/{location}/goldengateConnections/{g
+      oldengate_connection}.
     requestId: Optional. An optional ID to identify the request. This value is
       used to identify duplicate requests. If you make a request with the same
       request ID and the original request is still in progress or completed,
@@ -8535,32 +8609,32 @@ class OracledatabaseProjectsLocationsGoldenGateConnectionsDeleteRequest(_message
   requestId = _messages.StringField(2)
 
 
-class OracledatabaseProjectsLocationsGoldenGateConnectionsGetRequest(_messages.Message):
-  r"""A OracledatabaseProjectsLocationsGoldenGateConnectionsGetRequest object.
+class OracledatabaseProjectsLocationsGoldengateConnectionsGetRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsGoldengateConnectionsGetRequest object.
 
   Fields:
-    name: Required. The name of the GoldenGateConnection in the following
-      format: projects/{project}/locations/{location}/goldenGateConnections/{g
-      olden_gate_connection}.
+    name: Required. The name of the GoldengateConnection in the following
+      format: projects/{project}/locations/{location}/goldengateConnections/{g
+      oldengate_connection}.
   """
 
   name = _messages.StringField(1, required=True)
 
 
-class OracledatabaseProjectsLocationsGoldenGateConnectionsListRequest(_messages.Message):
-  r"""A OracledatabaseProjectsLocationsGoldenGateConnectionsListRequest
+class OracledatabaseProjectsLocationsGoldengateConnectionsListRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsGoldengateConnectionsListRequest
   object.
 
   Fields:
     filter: Optional. An expression for filtering the results of the request.
     orderBy: Optional. An expression for ordering the results of the request.
     pageSize: Optional. The maximum number of items to return. If unspecified,
-      at most 50 GoldenGateConnections will be returned. The maximum value is
+      at most 50 GoldengateConnections will be returned. The maximum value is
       1000; values above 1000 will be coerced to 1000.
     pageToken: Optional. A page token, received from a previous
-      ListGoldenGateConnections call. Provide this to retrieve the subsequent
+      ListGoldengateConnections call. Provide this to retrieve the subsequent
       page.
-    parent: Required. The parent value for GoldenGateConnections in the
+    parent: Required. The parent value for GoldengateConnections in the
       following format: projects/{project}/locations/{location}.
   """
 
@@ -8571,32 +8645,33 @@ class OracledatabaseProjectsLocationsGoldenGateConnectionsListRequest(_messages.
   parent = _messages.StringField(5, required=True)
 
 
-class OracledatabaseProjectsLocationsGoldenGateDeploymentEnvironmentsGetRequest(_messages.Message):
+class OracledatabaseProjectsLocationsGoldengateDeploymentEnvironmentsGetRequest(_messages.Message):
   r"""A
-  OracledatabaseProjectsLocationsGoldenGateDeploymentEnvironmentsGetRequest
+  OracledatabaseProjectsLocationsGoldengateDeploymentEnvironmentsGetRequest
   object.
 
   Fields:
     name: Required. Name of the resource with the format: projects/{project}/l
-      ocations/{region}/goldenGateDeploymentEnvironments/{golden_gate_deployme
-      nt_environment}
+      ocations/{location}/goldengateDeploymentEnvironments/{goldengate_deploym
+      ent_environment}
   """
 
   name = _messages.StringField(1, required=True)
 
 
-class OracledatabaseProjectsLocationsGoldenGateDeploymentEnvironmentsListRequest(_messages.Message):
+class OracledatabaseProjectsLocationsGoldengateDeploymentEnvironmentsListRequest(_messages.Message):
   r"""A
-  OracledatabaseProjectsLocationsGoldenGateDeploymentEnvironmentsListRequest
+  OracledatabaseProjectsLocationsGoldengateDeploymentEnvironmentsListRequest
   object.
 
   Fields:
-    pageSize: Optional. Requested page size. Server may return fewer items
-      than requested. If unspecified, server will pick an appropriate default.
+    pageSize: Optional. The maximum number of items to return. If unspecified,
+      at most 50 deployment environments will be returned. The maximum value
+      is 1000; values above 1000 will be coerced to 1000.
     pageToken: Optional. A token identifying a page of results the server
       should return.
     parent: Required. The parent, which owns this collection of
-      GoldenGateDeploymentEnvironments. Format:
+      GoldengateDeploymentEnvironments. Format:
       projects/{project}/locations/{location}
   """
 
@@ -8605,21 +8680,21 @@ class OracledatabaseProjectsLocationsGoldenGateDeploymentEnvironmentsListRequest
   parent = _messages.StringField(3, required=True)
 
 
-class OracledatabaseProjectsLocationsGoldenGateDeploymentTypesGetRequest(_messages.Message):
-  r"""A OracledatabaseProjectsLocationsGoldenGateDeploymentTypesGetRequest
+class OracledatabaseProjectsLocationsGoldengateDeploymentTypesGetRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsGoldengateDeploymentTypesGetRequest
   object.
 
   Fields:
-    name: Required. The name of the GoldenGateDeploymentType to retrieve.
-      Format: projects/{project}/locations/{location}/goldenGateDeploymentType
-      s/{golden_gate_deployment_type}
+    name: Required. The name of the GoldengateDeploymentType to retrieve.
+      Format: projects/{project}/locations/{location}/goldengateDeploymentType
+      s/{goldengate_deployment_type}
   """
 
   name = _messages.StringField(1, required=True)
 
 
-class OracledatabaseProjectsLocationsGoldenGateDeploymentTypesListRequest(_messages.Message):
-  r"""A OracledatabaseProjectsLocationsGoldenGateDeploymentTypesListRequest
+class OracledatabaseProjectsLocationsGoldengateDeploymentTypesListRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsGoldengateDeploymentTypesListRequest
   object.
 
   Fields:
@@ -8631,10 +8706,8 @@ class OracledatabaseProjectsLocationsGoldenGateDeploymentTypesListRequest(_messa
       `DATABASE_MYSQL`, `DATABASE_POSTGRESQL`, `DATABASE_DB2ZOS`,
       `DATABASE_DB2I`, `GGSA`, `DATA_TRANSFORMS`.
     orderBy: Optional. Hint for how to order the results
-    pageSize: Optional. The maximum number of items to return. The service may
-      return fewer than this value. If unspecified, at most 50 items will be
-      returned. The maximum value is 1000; values above 1000 will be coerced
-      to 1000.
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
     pageToken: Optional. A token identifying a page of results the server
       should return.
     parent: Required. The parent resource. Format:
@@ -9813,7 +9886,7 @@ class SystemVersion(_messages.Message):
 
 
 class TestConnectionAssignmentError(_messages.Message):
-  r"""Error details for TestGoldenGateConnectionAssignment.
+  r"""Error details for TestGoldengateConnectionAssignment.
 
   Fields:
     action: The text describing the action required to fix the issue.
@@ -9829,8 +9902,8 @@ class TestConnectionAssignmentError(_messages.Message):
   message = _messages.StringField(4)
 
 
-class TestGoldenGateConnectionAssignmentRequest(_messages.Message):
-  r"""Request message for TestGoldenGateConnectionAssignment.
+class TestGoldengateConnectionAssignmentRequest(_messages.Message):
+  r"""Request message for TestGoldengateConnectionAssignment.
 
   Enums:
     TypeValueValuesEnum: Optional. The type of the test of the assigned
@@ -9855,8 +9928,8 @@ class TestGoldenGateConnectionAssignmentRequest(_messages.Message):
   type = _messages.EnumField('TypeValueValuesEnum', 1)
 
 
-class TestGoldenGateConnectionAssignmentResponse(_messages.Message):
-  r"""The result of the connectivity test performed between the GoldenGate
+class TestGoldengateConnectionAssignmentResponse(_messages.Message):
+  r"""The result of the connectivity test performed between the Goldengate
   deployment and the associated database / service.
 
   Enums:

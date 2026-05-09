@@ -33,19 +33,14 @@ class Describe(base.DescribeCommand):
   proposal with the name `my_proposal`, of the instance `my_sthi`, and in the
   location `us-east1` using the fully specified resource name.
 
-  ```
-  $ {command} projects/my-project/locations/us-east1/singleTenantHsmInstances/
-  my_sthi/proposals/my_proposal
-  ```
+  $ {command} projects/my-project/locations/us-east1/singleTenantHsmInstances/my_sthi/proposals/my_proposal
 
   The following command returns the metadata for the single tenant HSM instance
   proposal with the name `my_proposal`, of the instance `my_sthi`, and in the
   location `us-east1` using the location, instance id, and proposal id.
 
-  ```
-  $ {command} my_proposal --single_tenant_hsm_instance=my_sthi
-  --location=us-east1
-  ```
+  $ {command} my_proposal --single_tenant_hsm_instance=my_sthi \
+    --location=us-east1
   """
 
   @staticmethod

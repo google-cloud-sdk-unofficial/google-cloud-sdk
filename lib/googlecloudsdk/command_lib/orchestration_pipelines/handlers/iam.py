@@ -70,64 +70,6 @@ class IamServiceAccountHandler(base.GcpResourceHandler):
     return f"{self.resource.name}@{self.environment.project}.iam.gserviceaccount.com"
 
 
-class IamServiceAccountIamPolicyHandler(base.GcpResourceHandler):
-  """Handler for deploying IAM Service Account policies."""
-
-  description = "IAM Service Account policies."
-  api_client_collection_path = "projects_serviceAccounts"
-  collection_name = "serviceAccounts"
-
-  @property
-  def resource_message_type(self) -> type[messages.Message]:
-    return self.messages.Policy
-
-  def _get_location_path(self) -> str:
-    return f"projects/{self.environment.project}"
-
-  def build_create_request(
-      self, resource_message: messages.Message
-  ) -> messages.Message:
-    # Requires special client handling since SetIamPolicy returns a Policy
-
-    return self.messages.IamProjectsServiceAccountsSetIamPolicyRequest(
-        resource=self._get_resource_name(),
-        setIamPolicyRequest=self.messages.SetIamPolicyRequest(
-            policy=resource_message
-        ),
-    )
-
-  def build_get_request(self) -> Any:
-    return self.messages.IamProjectsServiceAccountsGetIamPolicyRequest(
-        resource=self._get_resource_name()
-    )
-
-  def build_update_request(
-      self,
-      existing_resource: messages.Message,
-      resource_message: messages.Message,
-      changed_fields: list[str],
-  ) -> messages.Message:
-
-    return self.messages.IamProjectsServiceAccountsSetIamPolicyRequest(
-        resource=self._get_resource_name(),
-        setIamPolicyRequest=self.messages.SetIamPolicyRequest(
-            policy=resource_message
-        ),
-    )
-
-  def get_get_method(self) -> Any:
-    return self._api_client_collection.GetIamPolicy
-
-  def get_create_method(self) -> Any:
-    return self._api_client_collection.SetIamPolicy
-
-  def get_update_method(self) -> Any:
-    return self._api_client_collection.SetIamPolicy
-
-  def get_resource_id(self) -> str:
-    return f"{self.resource.name}@{self.environment.project}.iam.gserviceaccount.com"
-
-
 class IamWorkloadIdentityPoolHandler(base.GcpResourceHandler):
   """Handler for deploying IAM Workload Identity Pools."""
 

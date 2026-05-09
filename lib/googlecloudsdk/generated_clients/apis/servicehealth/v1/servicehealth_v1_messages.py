@@ -574,11 +574,11 @@ class ServicehealthOrganizationsLocationsOrganizationEventsGetRequest(_messages.
     name: Required. Unique name of the event in this scope including
       organization and event ID using the form `organizations/{organization_id
       }/locations/locations/global/organizationEvents/{event_id}`.
-      `organization_id` - ID (number) of the project that contains the event.
-      To get your `organization_id`, see [Getting your organization resource
-      ID](https://cloud.google.com/resource-manager/docs/creating-managing-
-      organization#retrieving_your_organization_id). `event_id` - Organization
-      event ID to retrieve.
+      `organization_id` - ID (number) of the organization that contains the
+      event. To get your `organization_id`, see [Getting your organization
+      resource ID](https://cloud.google.com/resource-manager/docs/creating-
+      managing-organization#retrieving_your_organization_id). `event_id` -
+      Organization event ID to retrieve.
   """
 
   name = _messages.StringField(1, required=True)
@@ -615,7 +615,7 @@ class ServicehealthOrganizationsLocationsOrganizationEventsListRequest(_messages
       must match the call that provided the page token.
     parent: Required. Parent value using the form
       `organizations/{organization_id}/locations/{location}/organizationEvents
-      `. `organization_id` - ID (number) of the project that contains the
+      `. `organization_id` - ID (number) of the organization that contains the
       event. To get your `organization_id`, see [Getting your organization
       resource ID](https://cloud.google.com/resource-manager/docs/creating-
       managing-organization#retrieving_your_organization_id). `location` - The
@@ -697,10 +697,10 @@ class ServicehealthOrganizationsLocationsOrganizationImpactsListRequest(_message
     parent: Required. Parent value using the form `organizations/{organization
       _id}/locations/{location}/organizationImpacts`. `location` - The
       location to get organization impacts from. Set this field to `global`.
-      `organization_id` - ID (number) of the project that contains the event.
-      To get your `organization_id`, see [Getting your organization resource
-      ID](https://cloud.google.com/resource-manager/docs/creating-managing-
-      organization#retrieving_your_organization_id).
+      `organization_id` - ID (number) of the organization that contains the
+      event. To get your `organization_id`, see [Getting your organization
+      resource ID](https://cloud.google.com/resource-manager/docs/creating-
+      managing-organization#retrieving_your_organization_id).
   """
 
   filter = _messages.StringField(1)

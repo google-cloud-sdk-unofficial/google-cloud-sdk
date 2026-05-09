@@ -142,9 +142,7 @@ class DataProfile(base.Command):
         default=False,
     )
     execution_spec = parser.add_group(
-        help=(
-            'Data profile scan execution settings.'
-        )
+        help='Data profile scan execution settings.'
     )
     execution_spec.add_argument(
         '--incremental-field',
@@ -152,6 +150,19 @@ class DataProfile(base.Command):
             'Field that contains values that monotonically increase over time'
             ' (e.g. timestamp).'
         ),
+    )
+    execution_identity = execution_spec.add_group(
+        mutex=True, help='Identity to run the datascan.'
+    )
+    execution_identity.add_argument(
+        '--use-user-credential',
+        action='store_true',
+        default=False,
+        help='If set, the scan runs with the caller\'s credential.',
+    )
+    execution_identity.add_argument(
+        '--service-account',
+        help='Service account email to run the scan as.',
     )
     trigger = execution_spec.add_group(
         mutex=True, help='Data profile scan scheduling and trigger settings.'

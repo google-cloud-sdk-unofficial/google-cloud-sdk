@@ -1288,6 +1288,15 @@ class Endpoint(_messages.Message):
       get) Applicable only to source endpoint.
     cloudSqlInstance: A [Cloud SQL](https://cloud.google.com/sql) instance
       URI.
+    datastreamPrivateConnection: A [Datastream Private Connection](https://doc
+      s.cloud.google.com/datastream/docs/reference/rest/v1/projects.locations.
+      privateConnections) name format: projects/{project}/locations/{location}
+      /privateConnections/{privateConnection}.
+    dmsPrivateConnection: A [DMS Private
+      Connection](https://docs.cloud.google.com/database-
+      migration/docs/reference/rest/v1/projects.locations.privateConnections)
+      name format: projects/{project}/locations/{location}/privateConnections/
+      {privateConnection}.
     forwardingRule: A forwarding rule and its corresponding IP address
       represent the frontend configuration of a Google Cloud load balancer.
       Forwarding rules are also used for protocol forwarding, Private Service
@@ -1415,21 +1424,23 @@ class Endpoint(_messages.Message):
   cloudFunction = _messages.MessageField('CloudFunctionEndpoint', 2)
   cloudRunRevision = _messages.MessageField('CloudRunRevisionEndpoint', 3)
   cloudSqlInstance = _messages.StringField(4)
-  forwardingRule = _messages.StringField(5)
-  forwardingRuleTarget = _messages.EnumField('ForwardingRuleTargetValueValuesEnum', 6)
-  fqdn = _messages.StringField(7)
-  gkeMasterCluster = _messages.StringField(8)
-  gkePod = _messages.StringField(9)
-  instance = _messages.StringField(10)
-  ipAddress = _messages.StringField(11)
-  loadBalancerId = _messages.StringField(12)
-  loadBalancerType = _messages.EnumField('LoadBalancerTypeValueValuesEnum', 13)
-  network = _messages.StringField(14)
-  networkType = _messages.EnumField('NetworkTypeValueValuesEnum', 15)
-  port = _messages.IntegerField(16, variant=_messages.Variant.INT32)
-  projectId = _messages.StringField(17)
-  redisCluster = _messages.StringField(18)
-  redisInstance = _messages.StringField(19)
+  datastreamPrivateConnection = _messages.StringField(5)
+  dmsPrivateConnection = _messages.StringField(6)
+  forwardingRule = _messages.StringField(7)
+  forwardingRuleTarget = _messages.EnumField('ForwardingRuleTargetValueValuesEnum', 8)
+  fqdn = _messages.StringField(9)
+  gkeMasterCluster = _messages.StringField(10)
+  gkePod = _messages.StringField(11)
+  instance = _messages.StringField(12)
+  ipAddress = _messages.StringField(13)
+  loadBalancerId = _messages.StringField(14)
+  loadBalancerType = _messages.EnumField('LoadBalancerTypeValueValuesEnum', 15)
+  network = _messages.StringField(16)
+  networkType = _messages.EnumField('NetworkTypeValueValuesEnum', 17)
+  port = _messages.IntegerField(18, variant=_messages.Variant.INT32)
+  projectId = _messages.StringField(19)
+  redisCluster = _messages.StringField(20)
+  redisInstance = _messages.StringField(21)
 
 
 class EndpointInfo(_messages.Message):
@@ -3571,7 +3582,9 @@ class RouteInfo(_messages.Message):
     protocols: Protocols of the route. POLICY_BASED routes only.
     region: Region of the route. DYNAMIC, PEERING_DYNAMIC, POLICY_BASED and
       ADVERTISED routes only. If set for POLICY_BASED route, this is a region
-      of VLAN attachments for Cloud Interconnect the route applies to.
+      of VLAN attachments for Cloud Interconnect the route applies to. If set
+      to "all" for POLICY_BASED route, the route applies to VLAN attachments
+      of Cloud Interconnect in all regions.
     routeScope: Indicates where route is applicable. Deprecated, routes with
       NCC_HUB scope are not included in the trace in new tests.
     routeType: Type of route.

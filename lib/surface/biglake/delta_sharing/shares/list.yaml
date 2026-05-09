@@ -26,5 +26,6 @@
   output:
     format: |
       table(
-        name.basename():label=ID
+        name.basename():label=ID,
+        userFriendlyName:label=USER_FRIENDLY_NAME
       )

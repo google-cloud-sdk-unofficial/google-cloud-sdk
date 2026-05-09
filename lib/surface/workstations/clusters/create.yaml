@@ -60,6 +60,12 @@
         For example:
          "123/environment=production"
          "123/costCenter=marketing"
+    - arg_name: enable-http2
+      api_field: workstationCluster.gatewayConfig.http2Enabled
+      type: bool
+      default: false
+      help_text: |
+        Whether HTTP/2 is enabled for the workstation cluster.
 
   request:
     GA:

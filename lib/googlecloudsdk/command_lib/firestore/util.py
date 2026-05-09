@@ -22,7 +22,9 @@ from googlecloudsdk.api_lib.firestore import api_utils as fs_api
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.util.apis import arg_utils
+from googlecloudsdk.core.util import iso_duration
 from googlecloudsdk.core.util import text
+from googlecloudsdk.core.util import times
 
 
 FIRESTORE_INDEX_API_VERSION = 'v1'
@@ -198,10 +200,13 @@ def UpdateFieldRequestTtls(ref, args, request):
 
   if args.enable_ttl:
     ttl_config = messages.GoogleFirestoreAdminV1TtlConfig()
+    if args.IsSpecified('expiration_offset'):
+      ttl_config.expirationOffset = times.FormatDurationForJson(
+          iso_duration.Duration(seconds=args.expiration_offset)
+      )
 
   request.googleFirestoreAdminV1Field = messages.GoogleFirestoreAdminV1Field(
-      name=ref.RelativeName(),
-      ttlConfig=ttl_config)
+      name=ref.RelativeName(), ttlConfig=ttl_config)
 
   return request
 

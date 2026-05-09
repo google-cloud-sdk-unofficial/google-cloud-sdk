@@ -81,7 +81,9 @@
         If a service account is specified, then the enforcement applies only to the specified
         service account.
         If a service account project is specified, the enforcement applies to all of the
-        service accounts belonging to the specified project.
+        service accounts that belong to the specified project. If a federated principal is
+        specified, then the enforcement applies only to the specified federated
+        principal.
       examples: |
         To create a new global cloud access binding, run:
 
@@ -138,6 +140,11 @@
           $ {command} --federated-principal='//iam.googleapis.com/projects/1234567890/locations/global/workloadIdentityPools/my-pool/subject/my-subject' \
             --level=accessPolicies/123/accessLevels/abc \
             --organization='1234567890'
+
+        To create a new cloud access binding for all workforce identities in a given org, run the following command:
+
+          $ {command} --federated-principal='principalSet://cloudresourcemanager.googleapis.com/organizations/ORG_NUMBER/type/WorkforcePool' \
+            --organization='1234567890' --binding-file='binding.yaml'
 
         To create a new cloud access binding with global session settings, specify your session
         length using an ISO duration string and the `session-length` flag. For example:
@@ -196,8 +203,12 @@
         Path to the file that contains a Google Cloud Platform user access binding.
 
         This file contains a YAML-compliant object representing
-        a GcpUserAccessBinding (as described in the API reference) containing ScopedAccessSettings only.
-        No other binding fields are allowed.
+        a GcpUserAccessBinding (as described in the API reference:
+        https://docs.cloud.google.com/access-context-manager/docs/apply-policies-to-user-groups#define_configurations_for_specific_applications)
+        containing ScopedAccessSettings only.
+        No other binding fields are allowed. For bindings tied to all workforce identities in a
+        given org, the ScopedAccessSettings must only contain `sessionSettings`
+        within the `activeSettings` list. No other fields are allowed.
       repeated: false
       ALPHA:
         processor: googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ParseGcpUserAccessBindingFromBindingFile:api_version=v1alpha
@@ -209,6 +220,12 @@
       help_text: Google Group ID whose members are subject to the restrictions of this binding.
       GA:
         required: true
+      ALPHA:
+        help_text: |
+          Google Group ID whose members are subject to the restrictions of this
+          binding. At most one of `--group-key`, `--federated-principal`,
+          `--service-account`, or `--service-account-project-number` may be
+          specified.
     - api_field: gcpUserAccessBinding.accessLevels
       arg_name: level
       type: str
@@ -220,9 +237,10 @@
         help_text: |
           The access level that binds to the given group and restricted client applications.
           The input must be the full identifier of an access level, such as
-          `accessPolicies/123/accessLevels/abc`. If no `restricted-client-application-client-ids`
-          or `restricted-client-application-names` are provided, then the access level is applied
-          to the entire organization.
+          `accessPolicies/123/accessLevels/abc`. If no `--restricted-client-application-client-ids`
+          or `--restricted-client-application-names` are provided, then the access level is applied
+          to the entire organization. This parameter is not supported for bindings tied to all
+          workforce identities in an organization.
     - api_field: gcpUserAccessBinding.dryRunAccessLevels
       arg_name: dry-run-level
       type: str
@@ -238,8 +256,9 @@
           The dry run access level is evaluated but isn't enforced. Denial on a dry run access level
           is logged. The input must be the full identifier of an access level, such as
           `accessPolicies/123/accessLevels/new-def`. If no
-          `restricted-client-application-client-ids` or `restricted-client-application-names` are
-          provided, then the access level is applied to the entire organization.
+          `--restricted-client-application-client-ids` or `--restricted-client-application-names` are
+          provided, then the access level is applied to the entire organization. This parameter is
+          not supported for bindings tied to all workforce identities in an organization.
     - api_field: gcpUserAccessBinding.sessionSettings.sessionLength
       arg_name: session-length
       type: googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessSessionLength
@@ -262,7 +281,7 @@
           The maximum lifetime of a user session provided as an ISO 8601 duration string.
           For Cloud Identity users, this must be at least one hour or zero seconds, and no more
           than twenty-four hours.
-          For Workforce Identity Federated users, this can be up to 90 days, or 14 days for Cloud
+          For workforce identities, this can be up to 90 days, or 14 days for Cloud
           Console. Granularity is limited to seconds.
 
           When --session-length=0 then users in the group attached to this binding will have infinite
@@ -272,9 +291,10 @@
           the session lifetime, a new login creates a new session with a fresh lifetime. When a
           session expires, the user is asked to re-authenticate in accordance with session-method.
 
-          Setting --session-reauth-method when --session-length is empty raises an error. Cannot set
-          --session-length with --restricted-client-application-client-ids or
-          --restricted-client-application-names; please use scoped access settings.
+          Setting `--session-reauth-method` when `--session-length` is empty raises an error. Cannot set
+          `--session-length` with `--restricted-client-application-client-ids` or
+          `--restricted-client-application-names`; please use scoped access settings.
+          This parameter is not supported for bindings tied to all workforce identities in an organization.
     - api_field: gcpUserAccessBinding.sessionSettings.sessionReauthMethod
       arg_name: session-reauth-method
       default: login
@@ -282,6 +302,12 @@
         Specifies the type of re-authentication challenge given to the user when their session
          expires. Defaults to --session-reauth-method=login if unspecified and --session-length is
          set. Cannot be used when --session-length is empty or 0.
+      ALPHA:
+        help_text: |
+          Specifies the type of re-authentication challenge given to the user when their session
+           expires. Defaults to `--session-reauth-method=login` if unspecified and `--session-length` is
+           set. Cannot be used when `--session-length` is empty or 0. This parameter is not supported
+           for bindings tied to all workforce identities in an organization.
       choices:
       - arg_value: login
         enum_value: LOGIN
@@ -311,37 +337,46 @@
       required: false
       release_tracks: [ALPHA]
       type: 'googlecloudsdk.calliope.arg_parsers:ArgList:'
-      help_text: Client IDs to which the access level is applied.
+      help_text: |
+        Client IDs that this access level applies to. This parameter is not supported for bindings
+        tied to all workforce identities in an organization.
     - arg_name: restricted-client-application-names
       required: false
       release_tracks: [ALPHA]
       type: 'googlecloudsdk.calliope.arg_parsers:ArgList:'
-      help_text: Application names to which the access level is applied.
+      help_text: Application names that the access level applies to.
     - api_field: gcpUserAccessBinding.principal.serviceAccount
       arg_name: service-account
-      hidden: true
       required: false
       release_tracks: [ALPHA]
       type: str
       help_text: |
-        The access level that binds to the given service account email. For example
-        `service-account@project.iam.gserviceaccount.com`.
+        Service account email that this binding applies to. Used to assign
+        policies to a single first-party service account. At most one of
+        `--group-key`, `--federated-principal`, `--service-account`, or
+        `--service-account-project-number` may be specified.
     - api_field: gcpUserAccessBinding.principal.serviceAccountProjectNumber
       arg_name: service-account-project-number
-      hidden: true
       required: false
       release_tracks: [ALPHA]
       type: str
       help_text: |
-        The access level that binds to all the service accounts belong to the given project number.
+        Project number of the project that contains the service accounts
+        that are subject to the restrictions of this binding. Used to assign policies to all service
+        accounts in a Google Cloud project. At most one of `--group-key`,
+        `--federated-principal`, `--service-account`, or
+        `--service-account-project-number` may be specified.
     - api_field: gcpUserAccessBinding.principal.federatedPrincipal
       arg_name: federated-principal
-      hidden: true
       required: false
       release_tracks: [ALPHA]
       type: str
       help_text: |
-        The access level that binds to the given federated principal.
+        IAM federated principal that this binding applies to. Can be a single
+        principal or a principal set. Used to assign policies to third-party
+        workforce or workload identities. At most one of `--group-key`,
+        `--federated-principal`, `--service-account`, or
+        `--service-account-project-number` may be specified.
 
   output:
     format: yaml

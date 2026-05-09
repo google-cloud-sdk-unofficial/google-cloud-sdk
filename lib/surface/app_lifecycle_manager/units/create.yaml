@@ -80,6 +80,14 @@
         unit.flagRevisions: '{__relative_name__}'
       required: false
       repeated: true
+    - arg_name: application
+      api_field: unit.application
+      required: false
+      repeated: false
+      help_text: |-
+        Reference to the AppHub Application this unit belongs to.
+        All resources deployed in this Unit will be associated with the specified
+        Application.
     - arg_name: labels
       api_field: unit.labels
       required: false

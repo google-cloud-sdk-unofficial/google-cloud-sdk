@@ -65,7 +65,7 @@ projects_locations_cloud_exadata_infrastructures:
     parameter_name: cloudExadataInfrastructuresId
     attribute_name: cloud_exadata_infrastructure
     help: The cloudExadataInfrastructure id of the {resource} resource.
-  disable_auto_completers: false
+  disable_auto_completers: true
 projects_locations_cloud_vm_clusters:
   name: cloudVmCluster
   plural_name: cloudVmClusters
@@ -170,65 +170,65 @@ projects_locations_gi_versions:
     attribute_name: gi_version
     help: The giVersion id of the {resource} resource.
   disable_auto_completers: true
-projects_locations_golden_gate_connection_assignments:
-  name: goldenGateConnectionAssignment
-  plural_name: goldenGateConnectionAssignments
-  collection: oracledatabase.projects.locations.goldenGateConnectionAssignments
+projects_locations_goldengate_connection_assignments:
+  name: goldengateConnectionAssignment
+  plural_name: goldengateConnectionAssignments
+  collection: oracledatabase.projects.locations.goldengateConnectionAssignments
   attributes:
   - *project
   - *location
-  - &goldenGateConnectionAssignment
-    parameter_name: goldenGateConnectionAssignmentsId
-    attribute_name: golden_gate_connection_assignment
-    help: The goldenGateConnectionAssignment id of the {resource} resource.
+  - &goldengateConnectionAssignment
+    parameter_name: goldengateConnectionAssignmentsId
+    attribute_name: goldengate_connection_assignment
+    help: The goldengateConnectionAssignment id of the {resource} resource.
   disable_auto_completers: false
-projects_locations_golden_gate_connection_types:
-  name: goldenGateConnectionType
-  plural_name: goldenGateConnectionTypes
-  collection: oracledatabase.projects.locations.goldenGateConnectionTypes
+projects_locations_goldengate_connection_types:
+  name: goldengateConnectionType
+  plural_name: goldengateConnectionTypes
+  collection: oracledatabase.projects.locations.goldengateConnectionTypes
   attributes:
   - *project
   - *location
-  - &goldenGateConnectionType
-    parameter_name: goldenGateConnectionTypesId
-    attribute_name: golden_gate_connection_type
-    help: The goldenGateConnectionType id of the {resource} resource.
+  - &goldengateConnectionType
+    parameter_name: goldengateConnectionTypesId
+    attribute_name: goldengate_connection_type
+    help: The goldengateConnectionType id of the {resource} resource.
   disable_auto_completers: false
-projects_locations_golden_gate_connections:
-  name: goldenGateConnection
-  plural_name: goldenGateConnections
-  collection: oracledatabase.projects.locations.goldenGateConnections
+projects_locations_goldengate_connections:
+  name: goldengateConnection
+  plural_name: goldengateConnections
+  collection: oracledatabase.projects.locations.goldengateConnections
   attributes:
   - *project
   - *location
-  - &goldenGateConnection
-    parameter_name: goldenGateConnectionsId
-    attribute_name: golden_gate_connection
-    help: The goldenGateConnection id of the {resource} resource.
+  - &goldengateConnection
+    parameter_name: goldengateConnectionsId
+    attribute_name: goldengate_connection
+    help: The goldengateConnection id of the {resource} resource.
   disable_auto_completers: false
-projects_locations_golden_gate_deployment_environments:
-  name: goldenGateDeploymentEnvironment
-  plural_name: goldenGateDeploymentEnvironments
-  collection: oracledatabase.projects.locations.goldenGateDeploymentEnvironments
+projects_locations_goldengate_deployment_environments:
+  name: goldengateDeploymentEnvironment
+  plural_name: goldengateDeploymentEnvironments
+  collection: oracledatabase.projects.locations.goldengateDeploymentEnvironments
   attributes:
   - *project
   - *location
-  - &goldenGateDeploymentEnvironment
-    parameter_name: goldenGateDeploymentEnvironmentsId
-    attribute_name: golden_gate_deployment_environment
-    help: The goldenGateDeploymentEnvironment id of the {resource} resource.
+  - &goldengateDeploymentEnvironment
+    parameter_name: goldengateDeploymentEnvironmentsId
+    attribute_name: goldengate_deployment_environment
+    help: The goldengateDeploymentEnvironment id of the {resource} resource.
   disable_auto_completers: false
-projects_locations_golden_gate_deployment_types:
-  name: goldenGateDeploymentType
-  plural_name: goldenGateDeploymentTypes
-  collection: oracledatabase.projects.locations.goldenGateDeploymentTypes
+projects_locations_goldengate_deployment_types:
+  name: goldengateDeploymentType
+  plural_name: goldengateDeploymentTypes
+  collection: oracledatabase.projects.locations.goldengateDeploymentTypes
   attributes:
   - *project
   - *location
-  - &goldenGateDeploymentType
-    parameter_name: goldenGateDeploymentTypesId
-    attribute_name: golden_gate_deployment_type
-    help: The goldenGateDeploymentType id of the {resource} resource.
+  - &goldengateDeploymentType
+    parameter_name: goldengateDeploymentTypesId
+    attribute_name: goldengate_deployment_type
+    help: The goldengateDeploymentType id of the {resource} resource.
   disable_auto_completers: false
 projects_locations_goldengate_deployment_versions:
   name: goldengateDeploymentVersion

@@ -41,7 +41,13 @@ class AutonomousDatabase(_messages.Message):
 
   Fields:
     adminPassword: Optional. Immutable. The password for the default ADMIN
-      user.
+      user. Note: Only one of `admin_password_secret_version` or
+      `admin_password` can be populated.
+    adminPasswordSecretVersion: Optional. Immutable. The resource name of a
+      secret version in Secret Manager which contains the database admin
+      user's password. Format:
+      projects/{project}/secrets/{secret}/versions/{version}. Note: Only one
+      of `admin_password_secret_version` or `admin_password` can be populated.
     cidr: Optional. Immutable. The subnet CIDR range for the Autonomous
       Database.
     createTime: Output only. The date and time that the Autonomous Database
@@ -106,20 +112,21 @@ class AutonomousDatabase(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   adminPassword = _messages.StringField(1)
-  cidr = _messages.StringField(2)
-  createTime = _messages.StringField(3)
-  database = _messages.StringField(4)
-  disasterRecoverySupportedLocations = _messages.StringField(5, repeated=True)
-  displayName = _messages.StringField(6)
-  entitlementId = _messages.StringField(7)
-  labels = _messages.MessageField('LabelsValue', 8)
-  name = _messages.StringField(9)
-  network = _messages.StringField(10)
-  odbNetwork = _messages.StringField(11)
-  odbSubnet = _messages.StringField(12)
-  peerAutonomousDatabases = _messages.StringField(13, repeated=True)
-  properties = _messages.MessageField('AutonomousDatabaseProperties', 14)
-  sourceConfig = _messages.MessageField('SourceConfig', 15)
+  adminPasswordSecretVersion = _messages.StringField(2)
+  cidr = _messages.StringField(3)
+  createTime = _messages.StringField(4)
+  database = _messages.StringField(5)
+  disasterRecoverySupportedLocations = _messages.StringField(6, repeated=True)
+  displayName = _messages.StringField(7)
+  entitlementId = _messages.StringField(8)
+  labels = _messages.MessageField('LabelsValue', 9)
+  name = _messages.StringField(10)
+  network = _messages.StringField(11)
+  odbNetwork = _messages.StringField(12)
+  odbSubnet = _messages.StringField(13)
+  peerAutonomousDatabases = _messages.StringField(14, repeated=True)
+  properties = _messages.MessageField('AutonomousDatabaseProperties', 15)
+  sourceConfig = _messages.MessageField('SourceConfig', 16)
 
 
 class AutonomousDatabaseApex(_messages.Message):
@@ -661,10 +668,12 @@ class AutonomousDatabaseProperties(_messages.Message):
       LOCAL_DISASTER_RECOVERY_TYPE_UNSPECIFIED: Default unspecified value.
       ADG: Autonomous Data Guard recovery.
       BACKUP_BASED: Backup based recovery.
+      NOT_AVAILABLE: Local disaster recovery is not available.
     """
     LOCAL_DISASTER_RECOVERY_TYPE_UNSPECIFIED = 0
     ADG = 1
     BACKUP_BASED = 2
+    NOT_AVAILABLE = 3
 
   class MaintenanceScheduleTypeValueValuesEnum(_messages.Enum):
     r"""Optional. Immutable. The maintenance schedule of the Autonomous
@@ -1582,7 +1591,14 @@ class Database(_messages.Message):
       Insights for this Database.
 
   Fields:
-    adminPassword: Optional. The password for the default ADMIN user.
+    adminPassword: Optional. The password for the default ADMIN user. Note:
+      Only one of `admin_password_secret_version` or `admin_password` can be
+      populated.
+    adminPasswordSecretVersion: Optional. The resource name of a secret
+      version in Secret Manager which contains the database admin user's
+      password. Format:
+      projects/{project}/secrets/{secret}/versions/{version}. Note: Only one
+      of `admin_password_secret_version` or `admin_password` can be populated.
     characterSet: Optional. The character set for the database. The default is
       AL32UTF8.
     createTime: Output only. The date and time that the Database was created.
@@ -1612,6 +1628,14 @@ class Database(_messages.Message):
       contain a maximum of thirty alphanumeric characters.
     properties: Optional. The properties of the Database.
     tdeWalletPassword: Optional. The TDE wallet password for the database.
+      Note: Only one of `tde_wallet_password_secret_version` or
+      `tde_wallet_password` can be populated.
+    tdeWalletPasswordSecretVersion: Optional. The resource name of a secret
+      version in Secret Manager which contains the TDE wallet password for the
+      database. Format:
+      projects/{project}/secrets/{secret}/versions/{version}. Note: Only one
+      of `tde_wallet_password_secret_version` or `tde_wallet_password` can be
+      populated.
   """
 
   class OpsInsightsStatusValueValuesEnum(_messages.Enum):
@@ -1637,21 +1661,23 @@ class Database(_messages.Message):
     FAILED_DISABLING = 6
 
   adminPassword = _messages.StringField(1)
-  characterSet = _messages.StringField(2)
-  createTime = _messages.StringField(3)
-  databaseId = _messages.StringField(4)
-  dbHomeName = _messages.StringField(5)
-  dbName = _messages.StringField(6)
-  dbUniqueName = _messages.StringField(7)
-  gcpOracleZone = _messages.StringField(8)
-  name = _messages.StringField(9)
-  ncharacterSet = _messages.StringField(10)
-  ociUrl = _messages.StringField(11)
-  opsInsightsStatus = _messages.EnumField('OpsInsightsStatusValueValuesEnum', 12)
-  pluggableDatabaseId = _messages.StringField(13)
-  pluggableDatabaseName = _messages.StringField(14)
-  properties = _messages.MessageField('DatabaseProperties', 15)
-  tdeWalletPassword = _messages.StringField(16)
+  adminPasswordSecretVersion = _messages.StringField(2)
+  characterSet = _messages.StringField(3)
+  createTime = _messages.StringField(4)
+  databaseId = _messages.StringField(5)
+  dbHomeName = _messages.StringField(6)
+  dbName = _messages.StringField(7)
+  dbUniqueName = _messages.StringField(8)
+  gcpOracleZone = _messages.StringField(9)
+  name = _messages.StringField(10)
+  ncharacterSet = _messages.StringField(11)
+  ociUrl = _messages.StringField(12)
+  opsInsightsStatus = _messages.EnumField('OpsInsightsStatusValueValuesEnum', 13)
+  pluggableDatabaseId = _messages.StringField(14)
+  pluggableDatabaseName = _messages.StringField(15)
+  properties = _messages.MessageField('DatabaseProperties', 16)
+  tdeWalletPassword = _messages.StringField(17)
+  tdeWalletPasswordSecretVersion = _messages.StringField(18)
 
 
 class DatabaseCharacterSet(_messages.Message):

@@ -251,6 +251,15 @@ def _RepairECP(cert_config_file_path):
 
   See go/gcloud-ecp-repair.
   """
+
+  sdk_root = config.Paths().sdk_root
+  if not sdk_root:
+    log.debug('Skipping ECP repair because the SDK root is not set.')
+    return
+  if not config.Paths().sdk_bin_path:
+    log.debug('Skipping ECP repair because the SDK bin path is not set.')
+    return
+
   # Temporarily disable client certificate to avoid deadlock.
   properties.VALUES.context_aware.use_client_certificate.Set(False)
 
@@ -259,7 +268,7 @@ def _RepairECP(cert_config_file_path):
 
   platform = _GetPlatform()
   updater = update_manager.UpdateManager(
-      sdk_root=None, url=None, platform_filter=platform
+      sdk_root=sdk_root, url=None, platform_filter=platform
   )
 
   try:

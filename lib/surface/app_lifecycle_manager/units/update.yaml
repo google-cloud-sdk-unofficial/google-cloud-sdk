@@ -64,6 +64,15 @@
       required: false
       repeated: true
       clearable: true
+    - arg_name: application
+      api_field: unit.application
+      required: false
+      repeated: false
+      clearable: true
+      help_text: |-
+        Reference to the AppHub Application this unit belongs to.
+        All resources deployed in this Unit will be associated with the specified
+        Application.
     - arg_name: labels
       api_field: unit.labels
       required: false

@@ -15,7 +15,6 @@
 """Creates a new Backup Plan."""
 
 
-
 import textwrap
 
 from apitools.base.py import exceptions as apitools_exceptions
@@ -28,7 +27,9 @@ from googlecloudsdk.core import log
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Create(base.CreateCommand):
   """Creates a new Backup Plan."""
 
@@ -136,6 +137,7 @@ class Create(base.CreateCommand):
     flags.AddBackupRule(parser)
     flags.AddMaxCustomOnDemandRetentionDays(parser)
     flags.AddDiskBackupPlanProperties(parser)
+    flags.AddComputeInstanceBackupPlanProperties(parser)
 
     description_help = """\
         Provide a description of the backup plan, such as specific use cases and
@@ -181,6 +183,7 @@ class Create(base.CreateCommand):
         args.max_custom_on_demand_retention_days
     )
     disk_properties = args.disk_properties
+    compute_instance_properties = args.compute_instance_properties
 
     try:
       operation = client.Create(
@@ -193,6 +196,7 @@ class Create(base.CreateCommand):
           labels,
           max_custom_on_demand_retention_days,
           disk_properties,
+          compute_instance_properties,
       )
     except apitools_exceptions.HttpError as e:
       raise exceptions.HttpException(e, util.HTTP_ERROR_FORMAT)

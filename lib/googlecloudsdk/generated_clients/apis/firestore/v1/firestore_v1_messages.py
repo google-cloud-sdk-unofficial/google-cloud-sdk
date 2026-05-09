@@ -1429,7 +1429,9 @@ class FirestoreProjectsDatabasesDocumentsListCollectionIdsRequest(_messages.Mess
     parent: Required. The parent document. In the format:
       `projects/{project_id}/databases/{database_id}/documents/{document_path}
       `. For example: `projects/my-project/databases/my-
-      database/documents/chatrooms/my-chatroom`
+      database/documents/chatrooms/my-chatroom` Use
+      `projects/{project_id}/databases/{database_id}/documents` to list top-
+      level collections.
   """
 
   listCollectionIdsRequest = _messages.MessageField('ListCollectionIdsRequest', 1)

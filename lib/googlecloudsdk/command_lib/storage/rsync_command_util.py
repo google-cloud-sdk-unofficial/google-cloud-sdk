@@ -704,12 +704,23 @@ def _print_would_remove(resource):
   log.status.Print('Would remove {}'.format(resource))
 
 
+def _should_raise_file_not_found_error(url: storage_url.FileUrl):
+  """Returns True if a FileNotFoundError should be raised for the given URL."""
+  # Don't raise FileNotFoundError for temporary(_gstmp) files that are renamed
+  # after successful download.
+  return not (
+      url.resource_name.endswith(storage_url.TEMPORARY_FILE_SUFFIX)
+      and properties.VALUES.storage.use_rsync_unmatched_gstmp_handling.GetBool()
+  )
+
+
 def _get_delete_task(resource, user_request_args):
   url = resource.storage_url
   if isinstance(url, storage_url.FileUrl):
     return delete_task.DeleteFileTask(
         url,
         user_request_args=user_request_args,
+        raise_file_not_found_error=_should_raise_file_not_found_error(url),
     )
   else:
     return delete_task.DeleteObjectTask(

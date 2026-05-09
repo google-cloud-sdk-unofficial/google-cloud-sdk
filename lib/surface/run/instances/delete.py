@@ -81,12 +81,13 @@ class Delete(base.Command):
             ' This instance is currently running and will be stopped and'
             ' deleted.'
         )
-      console_io.PromptContinue(
-          message=message,
-          throw_if_unattended=True,
-          cancel_on_no=True,
-          default=False,
-      )
+      if console_io.CanPrompt():
+        console_io.PromptContinue(
+            message=message,
+            throw_if_unattended=True,
+            cancel_on_no=True,
+            default=False,
+        )
       deletion.Delete(
           instance_ref, client.GetInstance, client.DeleteInstance, args.async_
       )

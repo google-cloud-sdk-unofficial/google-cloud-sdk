@@ -244,6 +244,19 @@ class CreateHelper(object):
     backend_services_utils.ApplySubsettingArgs(
         client, args, backend_service, self._support_subsetting_subset_size
     )
+    if (
+        self._support_external_passthrough
+        and args.load_balancing_scheme == 'EXTERNAL_PASSTHROUGH'
+    ):
+      # Apply connection draining and connection tracking policy settings for
+      # Global External Passthrough Network Load Balancer.
+      if args.connection_draining_timeout is not None:
+        backend_service.connectionDraining = client.messages.ConnectionDraining(
+            drainingTimeoutSec=args.connection_draining_timeout
+        )
+      backend_services_utils.ApplyConnectionTrackingPolicyArgs(
+          client, args, backend_service
+      )
     if args.session_affinity is not None:
       backend_service.sessionAffinity = (
           client.messages.BackendService.SessionAffinityValueValuesEnum(
@@ -431,17 +444,35 @@ class CreateHelper(object):
     return [(client.apitools_client.regionBackendServices, 'Insert', request)]
 
   def _CreateBackendService(self, holder, args, backend_services_ref):
+    """Creates a global backend service."""
+
     health_checks = flags.GetHealthCheckUris(args, self, holder.resources)
     enable_cdn = True if args.enable_cdn else None
+
+    default_protocol = 'HTTP'
+    port_name = None
+    if (
+        self._support_external_passthrough
+        and args.load_balancing_scheme == 'EXTERNAL_PASSTHROUGH'
+    ):
+      # Override default protocol for global external passthrough backend
+      # service to TCP. Do not set a port name, as it is not supported for
+      # passthrough load balancers.
+      default_protocol = 'TCP'
+    else:
+      port_name = _ResolvePortName(args)
 
     return holder.client.messages.BackendService(
         description=args.description,
         name=backend_services_ref.Name(),
         healthChecks=health_checks,
-        portName=_ResolvePortName(args),
-        protocol=_ResolveProtocol(holder.client.messages, args),
+        portName=port_name,
+        protocol=_ResolveProtocol(
+            holder.client.messages, args, default=default_protocol
+        ),
         timeoutSec=args.timeout,
-        enableCDN=enable_cdn)
+        enableCDN=enable_cdn,
+    )
 
   def _CreateRegionBackendService(self, holder, args, backend_services_ref):
     """Creates a regional backend service."""

@@ -21,9 +21,11 @@ from googlecloudsdk.api_lib.compute import partner_metadata_utils
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.command_lib.compute.sole_tenancy import flags as sole_tenancy_flags
 from googlecloudsdk.command_lib.compute.sole_tenancy import util as sole_tenancy_util
+from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
@@ -81,6 +83,39 @@ class Update(base.UpdateCommand):
         args, holder.resources,
         scope_lister=flags.GetInstanceZoneScopeLister(holder.client))
 
+    most_disruptive_allowed_action_enum = (
+        messages.ComputeInstancesUpdateRequest.MostDisruptiveAllowedActionValueValuesEnum
+    )
+    most_disruptive_allowed_action_choice = getattr(
+        args, 'most_disruptive_allowed_action', 'REFRESH'
+    )
+    most_disruptive_allowed_action = arg_utils.ChoiceToEnum(
+        most_disruptive_allowed_action_choice,
+        most_disruptive_allowed_action_enum,
+    )
+
+    restart_only_args = ['identity', 'identity_certificate']
+    specified_restart_only_args = []
+    for arg in restart_only_args:
+      if hasattr(args, arg) and args.IsSpecified(arg):
+        specified_restart_only_args.append(arg)
+
+    if specified_restart_only_args:
+      if (
+          most_disruptive_allowed_action
+          != most_disruptive_allowed_action_enum.RESTART
+      ):
+        raise calliope_exceptions.InvalidArgumentException(
+            '--most-disruptive-allowed-action',
+            '[--most-disruptive-allowed-action] must be set to RESTART if '
+            '[{}] is specified.'.format(
+                ' or '.join([
+                    '--' + arg.replace('_', '-')
+                    for arg in specified_restart_only_args
+                ])
+            ),
+        )
+
     result = None
 
     labels_operation_ref = None
@@ -109,7 +144,7 @@ class Update(base.UpdateCommand):
         args.partner_metadata or args.partner_metadata_from_file
     ):
       partner_metadata_operation_ref = self._GetPartnerMetadataOperationRef(
-          args, instance_ref, holder
+          args, instance_ref, holder, most_disruptive_allowed_action
       )
     if (
         hasattr(args, 'graceful_shutdown')
@@ -119,30 +154,70 @@ class Update(base.UpdateCommand):
         and args.IsSpecified('graceful_shutdown_max_duration')
     ):
       graceful_shutdown_operation_ref = self._GetGracefulShutdownOperationRef(
-          args, instance_ref, holder
+          args, instance_ref, holder, most_disruptive_allowed_action
+      )
+
+    # Update instance fields requiring restart.
+    instance_update_operation_ref = None
+    if specified_restart_only_args:
+      instance_update_operation_ref = (
+          self._GetUpdateInstanceRefRequiringRestart(
+              instance_ref, args, holder, most_disruptive_allowed_action
+          )
       )
 
     operation_poller = poller.Poller(client.instances)
-    result = self._WaitForResult(
-        operation_poller, labels_operation_ref,
-        'Updating labels of instance [{0}]', instance_ref.Name()) or result
-    result = self._WaitForResult(
-        operation_poller, min_cpu_platform_operation_ref,
-        'Changing minimum CPU platform of instance [{0}]',
-        instance_ref.Name()) or result
-    result = self._WaitForResult(
-        operation_poller, deletion_protection_operation_ref,
-        'Setting deletion protection of instance [{0}] to [{1}]',
-        instance_ref.Name(), args.deletion_protection) or result
-    result = self._WaitForResult(
-        operation_poller, partner_metadata_operation_ref,
-        'Updating partner metadata of instance [{0}]',
-        instance_ref.Name()) or result
+    result = (
+        self._WaitForResult(
+            operation_poller,
+            labels_operation_ref,
+            'Updating labels of instance [{0}]',
+            instance_ref.Name(),
+        )
+        or result
+    )
+    result = (
+        self._WaitForResult(
+            operation_poller,
+            min_cpu_platform_operation_ref,
+            'Changing minimum CPU platform of instance [{0}]',
+            instance_ref.Name(),
+        )
+        or result
+    )
+    result = (
+        self._WaitForResult(
+            operation_poller,
+            deletion_protection_operation_ref,
+            'Setting deletion protection of instance [{0}] to [{1}]',
+            instance_ref.Name(),
+            args.deletion_protection,
+        )
+        or result
+    )
+    result = (
+        self._WaitForResult(
+            operation_poller,
+            partner_metadata_operation_ref,
+            'Updating partner metadata of instance [{0}]',
+            instance_ref.Name(),
+        )
+        or result
+    )
     result = (
         self._WaitForResult(
             operation_poller,
             graceful_shutdown_operation_ref,
             'Updating graceful shutdown configuration of instance [{0}]',
+            instance_ref.Name(),
+        )
+        or result
+    )
+    result = (
+        self._WaitForResult(
+            operation_poller,
+            instance_update_operation_ref,
+            'Updating instance [{0}] fields that require restart',
             instance_ref.Name(),
         )
         or result
@@ -176,7 +251,7 @@ class Update(base.UpdateCommand):
     if instance_utils.IsAnySpecified(args, 'node', 'node_affinity_file',
                                      'node_group', 'clear_node_affinities'):
       update_scheduling_ref = self._GetUpdateInstanceSchedulingRef(
-          instance_ref, args, holder)
+          instance_ref, args, holder, most_disruptive_allowed_action)
       result = self._WaitForResult(
           operation_poller,
           update_scheduling_ref, 'Updating the scheduling of instance [{0}]',
@@ -184,7 +259,8 @@ class Update(base.UpdateCommand):
 
     return result
 
-  def _GetUpdateInstanceSchedulingRef(self, instance_ref, args, holder):
+  def _GetUpdateInstanceSchedulingRef(self, instance_ref, args, holder,
+                                      most_disruptive_allowed_action):
     client = holder.client.apitools_client
     messages = holder.client.messages
     if instance_utils.IsAnySpecified(args, 'node', 'node_affinity_file',
@@ -207,8 +283,7 @@ class Update(base.UpdateCommand):
         instanceResource=instance,
         minimalAction=messages.ComputeInstancesUpdateRequest
         .MinimalActionValueValuesEnum.NO_EFFECT,
-        mostDisruptiveAllowedAction=messages.ComputeInstancesUpdateRequest
-        .MostDisruptiveAllowedActionValueValuesEnum.REFRESH)
+        mostDisruptiveAllowedAction=most_disruptive_allowed_action)
 
     operation = client.instances.Update(request)
     return holder.resources.Parse(
@@ -323,7 +398,8 @@ class Update(base.UpdateCommand):
     return holder.resources.Parse(
         operation.selfLink, collection='compute.zoneOperations')
 
-  def _GetGracefulShutdownOperationRef(self, args, instance_ref, holder):
+  def _GetGracefulShutdownOperationRef(self, args, instance_ref, holder,
+                                       most_disruptive_allowed_action):
     messages = holder.client.messages
     client = holder.client.apitools_client
     instance = client.instances.Get(
@@ -358,7 +434,7 @@ class Update(base.UpdateCommand):
         zone=instance_ref.zone,
         instanceResource=instance,
         minimalAction=messages.ComputeInstancesUpdateRequest.MinimalActionValueValuesEnum.NO_EFFECT,
-        mostDisruptiveAllowedAction=messages.ComputeInstancesUpdateRequest.MostDisruptiveAllowedActionValueValuesEnum.REFRESH,
+        mostDisruptiveAllowedAction=most_disruptive_allowed_action,
     )
 
     operation = client.instances.Update(request)
@@ -366,7 +442,8 @@ class Update(base.UpdateCommand):
         operation.selfLink, collection='compute.zoneOperations'
     )
 
-  def _GetPartnerMetadataOperationRef(self, args, instance_ref, holder):
+  def _GetPartnerMetadataOperationRef(self, args, instance_ref, holder,
+                                      most_disruptive_allowed_action):
     messages = holder.client.messages
     client = holder.client.apitools_client
     partner_metadata_dict = (
@@ -393,8 +470,49 @@ class Update(base.UpdateCommand):
         instanceResource=instance,
         minimalAction=messages.ComputeInstancesUpdateRequest
         .MinimalActionValueValuesEnum.NO_EFFECT,
-        mostDisruptiveAllowedAction=messages.ComputeInstancesUpdateRequest
-        .MostDisruptiveAllowedActionValueValuesEnum.REFRESH)
+        mostDisruptiveAllowedAction=most_disruptive_allowed_action)
+
+    operation = client.instances.Update(request)
+    return holder.resources.Parse(
+        operation.selfLink, collection='compute.zoneOperations')
+
+  def _UpdateWorkloadIdentityConfig(self, args, instance, messages):
+    create_config = False
+    if instance.workloadIdentityConfig is None:
+      for arg in ['identity', 'identity_certificate']:
+        if hasattr(args, arg) and args.IsSpecified(arg):
+          create_config = True
+          break
+    if create_config:
+      instance.workloadIdentityConfig = messages.WorkloadIdentityConfig()
+
+    if hasattr(args, 'identity') and args.IsSpecified('identity'):
+      instance.workloadIdentityConfig.identity = args.identity
+    if hasattr(args, 'identity_certificate') and args.IsSpecified(
+        'identity_certificate'
+    ):
+      instance.workloadIdentityConfig.identityCertificateEnabled = (
+          args.identity_certificate
+      )
+
+  def _GetUpdateInstanceRefRequiringRestart(self, instance_ref, args, holder,
+                                            most_disruptive_allowed_action):
+    client = holder.client.apitools_client
+    messages = holder.client.messages
+    instance = client.instances.Get(
+        messages.ComputeInstancesGetRequest(**instance_ref.AsDict()))
+
+    self._UpdateWorkloadIdentityConfig(args, instance, messages)
+    # In future, call here other methods updating fields requiring restart.
+
+    request = messages.ComputeInstancesUpdateRequest(
+        instance=instance_ref.Name(),
+        project=instance_ref.project,
+        zone=instance_ref.zone,
+        instanceResource=instance,
+        minimalAction=messages.ComputeInstancesUpdateRequest.MinimalActionValueValuesEnum.NO_EFFECT,
+        mostDisruptiveAllowedAction=most_disruptive_allowed_action,
+    )
 
     operation = client.instances.Update(request)
     return holder.resources.Parse(
@@ -446,6 +564,7 @@ class UpdateAlpha(UpdateBeta):
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)
     partner_metadata_utils.AddPartnerMetadataArgs(parser)
     flags.AddGracefulShutdownArgs(parser)
-
+    flags.AddWorkloadIdentityConfigArgs(parser)
+    flags.AddMostDisruptiveAllowedActionArgs(parser)
 
 Update.detailed_help = DETAILED_HELP

@@ -14,7 +14,6 @@
 # limitations under the License.
 """Database Migration Service conversion workspaces composite client."""
 
-from googlecloudsdk.api_lib.database_migration.conversion_workspaces import conversion_workspaces_ai_client
 from googlecloudsdk.api_lib.database_migration.conversion_workspaces import conversion_workspaces_crud_client
 from googlecloudsdk.api_lib.database_migration.conversion_workspaces import conversion_workspaces_entities_client
 from googlecloudsdk.api_lib.database_migration.conversion_workspaces import conversion_workspaces_lro_client
@@ -40,11 +39,6 @@ class ConversionWorkspacesClient:
       release_track: The release track of the client, controlling the API
         version to use.
     """
-    self.ai = conversion_workspaces_ai_client.ConversionWorkspacesAIClient(
-        parent_client=self,
-        release_track=release_track,
-    )
-
     self.crud = (
         conversion_workspaces_crud_client.ConversionWorkspacesCRUDClient(
             parent_client=self,

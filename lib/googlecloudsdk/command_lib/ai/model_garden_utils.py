@@ -14,7 +14,6 @@
 # limitations under the License.
 """Utilities for the model garden command group."""
 
-
 import datetime
 
 from apitools.base.py import encoding
@@ -33,7 +32,6 @@ from googlecloudsdk.core import requests
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
-
 _MAX_LABEL_VALUE_LENGTH = 63
 
 
@@ -47,6 +45,9 @@ _ACCELERATOR_TYPE_TO_QUOTA_ID_MAP = {
     'NVIDIA_TESLA_A100': 'CustomModelServingA100GPUsPerProjectPerRegion',
     'NVIDIA_A100_80GB': 'CustomModelServingA10080GBGPUsPerProjectPerRegion',
     'NVIDIA_H100_80GB': 'CustomModelServingH100GPUsPerProjectPerRegion',
+    'NVIDIA_RTX_PRO_6000': (
+        'CustomModelServingRTXPRO6000GPUsPerProjectPerRegion'
+    ),
     'TPU_V5_LITEPOD': 'CustomModelServingV5ETPUPerProjectPerRegion',
 }
 
@@ -61,6 +62,7 @@ _ACCELERATOR_TYPE_TP_QUOTA_METRIC_MAP = {
     'NVIDIA_TESLA_A100': 'custom_model_serving_nvidia_a100_gpus',
     'NVIDIA_A100_80GB': 'custom_model_serving_nvidia_a100_80gb_gpus',
     'NVIDIA_H100_80GB': 'custom_model_serving_nvidia_h100_gpus',
+    'NVIDIA_RTX_PRO_6000': 'custom_model_serving_nvidia_rtx_pro_6000_gpus',
     'TPU_V5_LITEPOD': 'custom_model_serving_tpu_v5e',
 }
 _TIME_SERIES_FILTER = (
@@ -316,7 +318,7 @@ def CheckAcceleratorQuota(
         ' use a different region or request more quota by following'
         ' https://cloud.google.com/vertex-ai/docs/quotas#requesting_additional_quota.'
     )
-  log.status.Print(
+  log.info(
       'The project has enough quota. The current usage of quota for'
       f' accelerator type {accelerator_type} in region {args.region} is'
       f' {current_usage} out of {quota_limit}.'

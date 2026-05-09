@@ -47,25 +47,19 @@ actions: []
 _DEPLOYMENT_TEMPLATE = """\
 environments:
   {environment}:
-    # TODO: Replace with your GCP project
-    project: "{project_id}"
+{project_todo}    project: "{project_id}"
 
-    # TODO: Replace with your region
-    region: "{region}"
+{region_todo}    region: "{region}"
 
-    # TODO: Replace with your Composer environment
-    composer_environment: "{composer_environment}"
+{composer_todo}    composer_environment: "{composer_environment}"
 
-    # TODO: Replace with your artifacts bucket
-    artifact_storage:
+{artifacts_todo}    artifact_storage:
       bucket: "{artifacts_bucket}"
       path_prefix: pipelines
 
     variables:
-      # TODO: Replace with your service account
-      service_account: "{service_account}"
-      # TODO: Replace with your network URI
-      network_uri: projects/{project_id}/global/networks/default
+{sa_todo}      service_account: "{service_account}"
+{network_todo}      network_uri: projects/{project_id}/global/networks/default
 
     pipelines:
       - source: {pipeline_file}
@@ -149,8 +143,34 @@ def InitProject(args):
 
   # Generate content
   files.WriteFileContents(
-      pipeline_path,
-      _PIPELINE_TEMPLATE.format(pipeline_id=pipeline_name)
+      pipeline_path, _PIPELINE_TEMPLATE.format(pipeline_id=pipeline_name)
+  )
+
+  project_todo = (
+      '    # TODO: Replace with your GCP project\n' if not args.project else ''
+  )
+  region_todo = (
+      '    # TODO: Replace with your region\n' if not args.region else ''
+  )
+  composer_todo = (
+      '    # TODO: Replace with your Composer environment\n'
+      if not args.composer_environment
+      else ''
+  )
+  artifacts_todo = (
+      '    # TODO: Replace with your artifacts bucket\n'
+      if not args.artifacts_bucket
+      else ''
+  )
+  sa_todo = (
+      '      # TODO: Replace with your service account\n'
+      if not args.service_account
+      else ''
+  )
+  network_todo = (
+      '      # TODO: Replace with your network URI\n'
+      if not args.project
+      else ''
   )
 
   files.WriteFileContents(
@@ -163,6 +183,12 @@ def InitProject(args):
           artifacts_bucket=artifacts_bucket,
           service_account=service_account,
           pipeline_file=pipeline_file,
+          project_todo=project_todo,
+          region_todo=region_todo,
+          composer_todo=composer_todo,
+          artifacts_todo=artifacts_todo,
+          sa_todo=sa_todo,
+          network_todo=network_todo,
       )
   )
 

@@ -24,39 +24,39 @@ from googlecloudsdk.core import log
 OP_BASE_CMD = 'gcloud services operations '
 OP_WAIT_CMD = OP_BASE_CMD + 'wait {0}'
 DETAILED_HELP = {
-    'EXAMPLES':
+    'EXAMPLES': (
         """
         To remove all restrictions of the key:
 
-          $ {command} projects/myproject/keys/my-key-id --clear-restrictions
+          $ {command} projects/myproject/locations/global/keys/my-key-id --clear-restrictions
 
         To update display name and set allowed ips as server key restrictions:
 
-          $ {command} projects/myproject/keys/my-key-id --display-name="test name" --allowed-ips=2620:15c:2c4:203:2776:1f90:6b3b:217,104.133.8.78
+          $ {command} projects/myproject/locations/global/keys/my-key-id --display-name="test name" --allowed-ips=2620:15c:2c4:203:2776:1f90:6b3b:217,104.133.8.78
 
         To update annotations:
 
-          $ {command} projects/myproject/keys/my-key-id --annotations=foo=bar,abc=def
+          $ {command} projects/myproject/locations/global/keys/my-key-id --annotations=foo=bar,abc=def
 
         To update key's allowed referrers restriction:
 
-          $ {command} projects/myproject/keys/my-key-id --allowed-referrers="https://www.example.com/*,http://sub.example.com/*"
+          $ {command} projects/myproject/locations/global/keys/my-key-id --allowed-referrers="https://www.example.com/*,http://sub.example.com/*"
 
         To update key's allowed ios app bundle ids:
 
-          $ {command} projects/myproject/keys/my-key-id --allowed-bundle-ids=my.app
+          $ {command} projects/myproject/locations/global/keys/my-key-id --allowed-bundle-ids=my.app
 
         To update key's allowed android application:
 
-          $ {command} projects/myproject/keys/my-key-id --allowed-application=sha1_fingerprint=foo1,package_name=bar1 --allowed-application=sha1_fingerprint=foo2,package_name=bar2
+          $ {command} projects/myproject/locations/global/keys/my-key-id --allowed-application=sha1_fingerprint=foo1,package_name=bar1 --allowed-application=sha1_fingerprint=foo2,package_name=bar2
 
         To update keys' allowed api target with multiple services:
 
-          $ {command} projects/myproject/keys/my-key-id --api-target=service=bar.service.com --api-target=service=foo.service.com
+          $ {command} projects/myproject/locations/global/keys/my-key-id --api-target=service=bar.service.com --api-target=service=foo.service.com
 
         To update keys' allowed api target with service and method:
 
-          $ {command} projects/myproject/keys/my-key-id  --flags-file=my-flags.yaml
+          $ {command} projects/myproject/locations/global/keys/my-key-id  --flags-file=my-flags.yaml
 
           The content of 'my-flags.yaml' is as following:
 
@@ -70,9 +70,11 @@ DETAILED_HELP = {
                 - "barmethod"
             ```
         """
+    )
 }
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )

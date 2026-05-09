@@ -15,6 +15,7 @@
 """Deploy command for Orchestration Pipelines."""
 
 import argparse
+import dataclasses
 import datetime
 import getpass
 import io
@@ -64,6 +65,28 @@ from orchestration_pipelines_lib.api import generate_dags
 pipeline_name = os.path.splitext(os.path.basename(__file__))[0]
 generate_dags("/home/airflow/gcs/data", "{bundle_id}", pipeline_name)
 """
+
+
+@dataclasses.dataclass
+class DeploymentResult:
+  """Represents the result of a deployment operation.
+
+  Attributes:
+    resource_deployment: str, The status of the resource
+      deployment.
+    pipeline_deployment: str, The status of the pipeline
+      deployment.
+    bundle_id: Optional[str], The ID of the deployed bundle.
+    version_id: Optional[str], The version ID (e.g., git SHA) of the deployment.
+    pipelines: Optional[Mapping[str, Any]], A mapping of pipeline IDs to their
+      deployment details.
+  """
+
+  resource_deployment: str
+  pipeline_deployment: str
+  bundle_id: str | None = None
+  version_id: str | None = None
+  pipelines: Mapping[str, Any] | None = None
 
 
 class DeployError(exceptions.Error):
@@ -321,9 +344,12 @@ def _ExtractResourceProfilePaths(config_dict: dict[str, Any]) -> set[str]:
 class Deploy(calliope_base.Command):
   """Deploy a pipeline."""
 
-  def __init__(self, *args, subprocess_mod=subprocess, **kwargs):
+  def __init__(
+      self, *args, subprocess_mod=subprocess, getpass_mod=getpass, **kwargs
+  ):
     super().__init__(*args, **kwargs)
     self._subprocess = subprocess_mod
+    self._getpass = getpass_mod
 
   @staticmethod
   def Args(parser: argparse.ArgumentParser) -> None:
@@ -383,52 +409,14 @@ class Deploy(calliope_base.Command):
             " about all the pipelines in the bundle to become available."
         ),
     )
-    parser.add_argument(
-        "--substitutions",
-        metavar="KEY=VALUE",
-        type=arg_parsers.ArgDict(),
-        help="Variables to substitute in the pipeline configuration.",
-    )
-    parser.add_argument(
-        "--substitutions-file",
-        help=(
-            "Path to a YAML file containing variable substitutions for the "
-            "pipeline configuration."
-        ),
-    )
+    yaml_processor.add_substitution_flags(parser)
 
-  def Run(self, args: argparse.Namespace) -> None:
+  def Run(self, args: argparse.Namespace) -> DeploymentResult:
     work_dir = pathlib.Path.cwd()
     status = {
         "resource_deployment": "SKIPPED",
         "pipeline_deployment": "SKIPPED",
     }
-
-    # 1. Start with built-in/ephemeral
-    external_vars = {}
-
-    # 2. Command-line substitutions overrides built-ins
-    substitutions_file_vars = {}
-    if getattr(args, "substitutions_file", None):
-      try:
-        substitutions_file_vars = yaml.load_path(args.substitutions_file)
-        if not isinstance(substitutions_file_vars, dict):
-          raise calliope_exceptions.BadFileException(
-              f"Substitutions file {args.substitutions_file} "
-              "must contain a dictionary."
-          )
-      except yaml.Error as e:
-        raise calliope_exceptions.BadFileException(
-            f"Error parsing substitutions file {args.substitutions_file}: {e}"
-        ) from e
-
-    env_vars = yaml_processor.collect_environment_variables()
-
-    # 3. Apply precedence: built-ins <- env vars <- file <- flags
-    external_vars.update(env_vars)
-    external_vars.update(substitutions_file_vars)
-    if getattr(args, "substitutions", None):
-      external_vars.update(args.substitutions)
 
     explicit_version = None
 
@@ -446,12 +434,6 @@ class Deploy(calliope_base.Command):
     if args.version:
       if args.rollback:
         explicit_version = args.version
-        external_vars["COMMIT_SHA"] = args.version
-        if "COMMIT_SHA" in external_vars:
-          log.warning(
-              "Both --version and COMMIT_SHA provided. COMMIT_SHA will be"
-              " ignored in favor of --version for rollback."
-          )
       else:
         log.warning(
             "--version is only applicable with --rollback. Ignoring provided"
@@ -460,14 +442,10 @@ class Deploy(calliope_base.Command):
         )
 
     git_context_obj = git_context.GitContext(
-        self._subprocess,
-        explicit_version,
+        override_version=explicit_version,
         bundle_path=work_dir,
         is_local=getattr(args, "local", False),
     )
-
-    if "COMMIT_SHA" not in external_vars:
-      external_vars["COMMIT_SHA"] = git_context_obj.GetSafeCommitSha()
 
     if getattr(args, "pipeline", None) and not args.local:
       raise DeployError(
@@ -500,9 +478,23 @@ class Deploy(calliope_base.Command):
     bundle_dir = work_dir
     deployment_path = bundle_dir / DEPLOYMENT_FILE
 
+    if getattr(args, "local", False):
+      try:
+        raw_user = self._getpass.getuser()
+      except (OSError, ImportError, KeyError):
+        raw_user = "localdev"
+      clean_user = re.sub(r"[^a-z0-9]", "", raw_user.lower())
+      clean_dir = re.sub(r"[^a-z0-9]", "", bundle_dir.name.lower())
+      bundle_name = f"bundle-local-{clean_user}-{clean_dir}"
+    else:
+      bundle_name = _GetRepoName(self._subprocess)
+
     try:
-      parsed_deployment, combined_variables = yaml_processor.parse_deployment(
-          deployment_path, args.environment, external_vars
+      external_vars = yaml_processor.collect_external_vars(args, bundle_dir)
+      parsed_deployment, combined_variables, environment_model = (
+          yaml_processor.parse_deployment(
+              str(deployment_path), args.environment, external_vars
+          )
       )
     except (yaml.FileLoadError, yaml.YAMLParseError) as e:
       raise calliope_exceptions.BadFileException(
@@ -517,8 +509,10 @@ class Deploy(calliope_base.Command):
 
     env_project = parsed_deployment.get("project")
     orig_project = properties.VALUES.core.project.Get()
+    orig_quota_project = properties.VALUES.billing.quota_project.Get()
     if env_project:
       properties.VALUES.core.project.Set(env_project)
+      properties.VALUES.billing.quota_project.Set(env_project)
 
     try:
       try:
@@ -554,21 +548,17 @@ class Deploy(calliope_base.Command):
               f"Pipeline '{args.pipeline}' not found in {DEPLOYMENT_FILE}."
           )
         pipelines = filtered_pipelines
-      if args.local:
-        try:
-          raw_user = getpass.getuser()
-        except (OSError, ImportError, KeyError):
-          raw_user = "localdev"
-        clean_user = re.sub(r"[^a-z0-9]", "", raw_user.lower())
-        clean_dir = re.sub(r"[^a-z0-9]", "", bundle_dir.name.lower())
-        bundle_name = f"bundle-local-{clean_user}-{clean_dir}"
-      else:
-        bundle_name = _GetRepoName(self._subprocess)
+      deployed_pipelines = []
 
       version_id = None
       if pipelines:
+        secret_keys = (
+            environment_model.secrets.keys()
+            if environment_model.secrets
+            else []
+        )
         yaml_processor.validate_pipeline_l1(
-            bundle_dir, pipelines, combined_variables
+            bundle_dir, pipelines, combined_variables, secret_keys=secret_keys
         )
         composer_bucket = _GetComposerBucket(
             parsed_deployment["composer_env"],
@@ -634,8 +624,6 @@ class Deploy(calliope_base.Command):
                 else:
                   log.error(f"Pipeline '{p_id}': [FAILED] (Status: {p_status})")
                   all_healthy = False
-            log.status.Print("\n--- Pipeline Deployment full details ---")
-            log.status.Print(f"Deployed pipelines: {deployed_pipelines}")
 
             if not all_healthy:
               status["pipeline_deployment"] = "FAILED"
@@ -650,30 +638,58 @@ class Deploy(calliope_base.Command):
                 e,
             )
 
+      bundle_id = None
+      version_id = None
+      pipelines_by_id = None
+
+      if pipelines:
+        bundle_id = bundle_name
+        if "version" in status:
+          version_id = status["version"]
+        if deployed_pipelines:
+          pipelines_by_id = {
+              p.get("pipeline_id", "unknown_pipeline"): {
+                  k: v for k, v in p.items() if k != "pipeline_id"
+              }
+              for p in deployed_pipelines
+          }
+
+      success_states = ["SUCCESS", "SKIPPED"]
+      has_error = False
+
       if status["pipeline_deployment"] == "FAILED":
-        raise DeployError(
+        log.error(
             "Deployment failed: One or more pipelines are in an UNHEALTHY "
             "state. Check Airflow logs for parsing errors."
         )
-      if args.validate:
-        environment_model = yaml_processor.load_environment(
-            deployment_path, args.environment, external_vars
-        )
-        yaml_processor.validate_pipeline_l2(
-            bundle_dir, pipelines, combined_variables, environment_model
-        )
-
-      success_states = ["SUCCESS", "SKIPPED"]
-
-      if (
+        has_error = True
+      elif (
           status["resource_deployment"] not in success_states
           and status["pipeline_deployment"] not in success_states
       ):
-        raise DeployError(
-            f"Failed to deploy. Searched recursively in {work_dir}, "
+        log.error(
+            "Failed to deploy. Searched recursively in %s, "
             "but found no valid bundles containing both a pipeline YAML "
-            f"(with pipelineId) and a {DEPLOYMENT_FILE} for environment "
-            f"'{args.environment}'."
+            "(with pipelineId) and a %s for environment "
+            "'%s'.",
+            work_dir,
+            DEPLOYMENT_FILE,
+            args.environment,
+        )
+        has_error = True
+
+      if has_error:
+        return DeploymentResult(
+            resource_deployment=status["resource_deployment"],
+            pipeline_deployment=status["pipeline_deployment"],
+            bundle_id=bundle_id,
+            version_id=version_id,
+            pipelines=pipelines_by_id,
+        )
+
+      if args.validate:
+        yaml_processor.validate_pipeline_l2(
+            bundle_dir, pipelines, combined_variables, environment_model
         )
 
       if (
@@ -686,14 +702,23 @@ class Deploy(calliope_base.Command):
         )
       elif status["pipeline_deployment"] == "SUCCESS":
         log.status.Print(
-            f"Pipeline deployment successful for version {status['version']} in"
-            f" bundle '{bundle_name}'"
+            f"Pipeline deployment successful for version {status['version']}"
+            f" in bundle '{bundle_name}'"
         )
       elif status["resource_deployment"] == "SUCCESS":
         log.status.Print("Resource deployment successful.")
+
+      return DeploymentResult(
+          resource_deployment=status["resource_deployment"],
+          pipeline_deployment=status["pipeline_deployment"],
+          bundle_id=bundle_id,
+          version_id=version_id,
+          pipelines=pipelines_by_id,
+      )
     finally:
       if env_project:
         properties.VALUES.core.project.Set(orig_project)
+        properties.VALUES.billing.quota_project.Set(orig_quota_project)
 
   def _WaitForPipelines(
       self,
@@ -940,6 +965,12 @@ class Deploy(calliope_base.Command):
           is_allowed = all(
               engine in allowed_processor_engines for engine in provided_engines
           )
+          dp_gce_config = engine_dict.get("dataprocOnGce")
+          if (
+              isinstance(dp_gce_config, dict)
+              and "existingCluster" in dp_gce_config
+          ):
+            is_allowed = False
         else:
           raise DeployError(
               "The 'engine' block is formatted incorrectly. Expected a"
@@ -1051,7 +1082,7 @@ class Deploy(calliope_base.Command):
       paused_pipelines = []
 
       if is_paused and pipelines is not None:
-        paused_pipelines = list(pipelines)
+        paused_pipelines = [pathlib.Path(p).stem for p in pipelines]
 
       new_manifest_payload = manifest_data.copy() | {
           "bundle": bundle_name,

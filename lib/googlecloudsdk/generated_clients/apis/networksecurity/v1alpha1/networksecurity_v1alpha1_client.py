@@ -40,6 +40,8 @@ class NetworksecurityV1alpha1(base_api.BaseApiClient):
     self.organizations_locations_addressGroups = self.OrganizationsLocationsAddressGroupsService(self)
     self.organizations_locations_firewallEndpoints_wildfireVerdictChangeRequests = self.OrganizationsLocationsFirewallEndpointsWildfireVerdictChangeRequestsService(self)
     self.organizations_locations_firewallEndpoints = self.OrganizationsLocationsFirewallEndpointsService(self)
+    self.organizations_locations_global_addressGroups = self.OrganizationsLocationsGlobalAddressGroupsService(self)
+    self.organizations_locations_global = self.OrganizationsLocationsGlobalService(self)
     self.organizations_locations_operations = self.OrganizationsLocationsOperationsService(self)
     self.organizations_locations_securityProfileGroups = self.OrganizationsLocationsSecurityProfileGroupsService(self)
     self.organizations_locations_securityProfiles = self.OrganizationsLocationsSecurityProfilesService(self)
@@ -77,6 +79,7 @@ class NetworksecurityV1alpha1(base_api.BaseApiClient):
     self.projects_locations_serverTlsPolicies = self.ProjectsLocationsServerTlsPoliciesService(self)
     self.projects_locations_sseGatewayReferences = self.ProjectsLocationsSseGatewayReferencesService(self)
     self.projects_locations_tlsInspectionPolicies = self.ProjectsLocationsTlsInspectionPoliciesService(self)
+    self.projects_locations_ullMirroringCollectors_rules = self.ProjectsLocationsUllMirroringCollectorsRulesService(self)
     self.projects_locations_ullMirroringCollectors = self.ProjectsLocationsUllMirroringCollectorsService(self)
     self.projects_locations_ullMirroringEngines = self.ProjectsLocationsUllMirroringEnginesService(self)
     self.projects_locations_urlLists = self.ProjectsLocationsUrlListsService(self)
@@ -571,6 +574,53 @@ class NetworksecurityV1alpha1(base_api.BaseApiClient):
         response_type_name='Operation',
         supports_download=False,
     )
+
+  class OrganizationsLocationsGlobalAddressGroupsService(base_api.BaseApiService):
+    """Service class for the organizations_locations_global_addressGroups resource."""
+
+    _NAME = 'organizations_locations_global_addressGroups'
+
+    def __init__(self, client):
+      super(NetworksecurityV1alpha1.OrganizationsLocationsGlobalAddressGroupsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def ForceStartProgressiveRollout(self, request, global_params=None):
+      r"""Starts a brand new progressive rollout of global org-level address group. This API will return an error when there is an ongoing progressive rollout.
+
+      Args:
+        request: (NetworksecurityOrganizationsLocationsGlobalAddressGroupsForceStartProgressiveRolloutRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('ForceStartProgressiveRollout')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ForceStartProgressiveRollout.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/organizations/{organizationsId}/locations/global/addressGroups/{addressGroupsId}:forceStartProgressiveRollout',
+        http_method='POST',
+        method_id='networksecurity.organizations.locations.global.addressGroups.forceStartProgressiveRollout',
+        ordered_params=['addressGroup'],
+        path_params=['addressGroup'],
+        query_params=[],
+        relative_path='v1alpha1/{+addressGroup}:forceStartProgressiveRollout',
+        request_field='forceStartProgressiveRolloutRequest',
+        request_type_name='NetworksecurityOrganizationsLocationsGlobalAddressGroupsForceStartProgressiveRolloutRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class OrganizationsLocationsGlobalService(base_api.BaseApiService):
+    """Service class for the organizations_locations_global resource."""
+
+    _NAME = 'organizations_locations_global'
+
+    def __init__(self, client):
+      super(NetworksecurityV1alpha1.OrganizationsLocationsGlobalService, self).__init__(client)
+      self._upload_configs = {
+          }
 
   class OrganizationsLocationsOperationsService(base_api.BaseApiService):
     """Service class for the organizations_locations_operations resource."""
@@ -5937,6 +5987,151 @@ class NetworksecurityV1alpha1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsUllMirroringCollectorsRulesService(base_api.BaseApiService):
+    """Service class for the projects_locations_ullMirroringCollectors_rules resource."""
+
+    _NAME = 'projects_locations_ullMirroringCollectors_rules'
+
+    def __init__(self, client):
+      super(NetworksecurityV1alpha1.ProjectsLocationsUllMirroringCollectorsRulesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new UllMirroringCollectorRule for a given UllMirroringCollector.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsUllMirroringCollectorsRulesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/ullMirroringCollectors/{ullMirroringCollectorsId}/rules',
+        http_method='POST',
+        method_id='networksecurity.projects.locations.ullMirroringCollectors.rules.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['requestId', 'ullMirroringCollectorRuleId'],
+        relative_path='v1alpha1/{+parent}/rules',
+        request_field='ullMirroringCollectorRule',
+        request_type_name='NetworksecurityProjectsLocationsUllMirroringCollectorsRulesCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single UllMirroringCollectorRule for a given UllMirroringCollector.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsUllMirroringCollectorsRulesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/ullMirroringCollectors/{ullMirroringCollectorsId}/rules/{rulesId}',
+        http_method='DELETE',
+        method_id='networksecurity.projects.locations.ullMirroringCollectors.rules.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsUllMirroringCollectorsRulesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single UllMirroringCollectorRule.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsUllMirroringCollectorsRulesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (UllMirroringCollectorRule) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/ullMirroringCollectors/{ullMirroringCollectorsId}/rules/{rulesId}',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.ullMirroringCollectors.rules.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsUllMirroringCollectorsRulesGetRequest',
+        response_type_name='UllMirroringCollectorRule',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists UllMirroringCollectorRules for a given UllMirroringCollector.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsUllMirroringCollectorsRulesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListUllMirroringCollectorRulesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/ullMirroringCollectors/{ullMirroringCollectorsId}/rules',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.ullMirroringCollectors.rules.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1alpha1/{+parent}/rules',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsUllMirroringCollectorsRulesListRequest',
+        response_type_name='ListUllMirroringCollectorRulesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates a single UllMirroringCollectorRule.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsUllMirroringCollectorsRulesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/ullMirroringCollectors/{ullMirroringCollectorsId}/rules/{rulesId}',
+        http_method='PATCH',
+        method_id='networksecurity.projects.locations.ullMirroringCollectors.rules.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1alpha1/{+name}',
+        request_field='ullMirroringCollectorRule',
+        request_type_name='NetworksecurityProjectsLocationsUllMirroringCollectorsRulesPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class ProjectsLocationsUllMirroringCollectorsService(base_api.BaseApiService):
     """Service class for the projects_locations_ullMirroringCollectors resource."""
 
@@ -5997,6 +6192,60 @@ class NetworksecurityV1alpha1(base_api.BaseApiClient):
         relative_path='v1alpha1/{+name}',
         request_field='',
         request_type_name='NetworksecurityProjectsLocationsUllMirroringCollectorsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Disable(self, request, global_params=None):
+      r"""Disables a single UllMirroringCollector.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsUllMirroringCollectorsDisableRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Disable')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Disable.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/ullMirroringCollectors/{ullMirroringCollectorsId}:disable',
+        http_method='POST',
+        method_id='networksecurity.projects.locations.ullMirroringCollectors.disable',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}:disable',
+        request_field='disableUllMirroringCollectorRequest',
+        request_type_name='NetworksecurityProjectsLocationsUllMirroringCollectorsDisableRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Enable(self, request, global_params=None):
+      r"""Enables a single UllMirroringCollector.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsUllMirroringCollectorsEnableRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Enable')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Enable.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/ullMirroringCollectors/{ullMirroringCollectorsId}:enable',
+        http_method='POST',
+        method_id='networksecurity.projects.locations.ullMirroringCollectors.enable',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}:enable',
+        request_field='enableUllMirroringCollectorRequest',
+        request_type_name='NetworksecurityProjectsLocationsUllMirroringCollectorsEnableRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -6437,7 +6686,7 @@ class NetworksecurityV1alpha1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the ListLocationsRequest.name field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
       Args:
         request: (NetworksecurityProjectsLocationsListRequest) input message

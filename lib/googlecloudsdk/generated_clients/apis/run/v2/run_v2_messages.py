@@ -107,17 +107,99 @@ class GoogleCloudRunV2BuildConfig(_messages.Message):
   workerPool = _messages.StringField(9)
 
 
+class GoogleCloudRunV2BuildConfiguration(_messages.Message):
+  r"""Build configuration for a container.
+
+  Fields:
+    buildpacksBuild: Optional. Builds the source using Buildpacks.
+    dockerBuild: Optional. Builds the source using Docker.
+    imageRepositoryUri: Required. Artifact Registry URI to store the built
+      image.
+    tags: Optional. Tags to add to the build.
+    workerConfiguration: Optional. Configuration for the worker.
+  """
+
+  buildpacksBuild = _messages.MessageField('GoogleCloudRunV2BuildConfigurationBuildpacksBuild', 1)
+  dockerBuild = _messages.MessageField('GoogleCloudRunV2BuildConfigurationDockerBuild', 2)
+  imageRepositoryUri = _messages.StringField(3)
+  tags = _messages.StringField(4, repeated=True)
+  workerConfiguration = _messages.MessageField('GoogleCloudRunV2WorkerConfiguration', 5)
+
+
+class GoogleCloudRunV2BuildConfigurationBuildpacksBuild(_messages.Message):
+  r"""Buildpacks build configuration.
+
+  Messages:
+    EnvironmentVariablesValue: Optional. Environment variables for the build.
+
+  Fields:
+    buildBaseImageUri: Optional. Specify base image other than the default.
+    cacheImageUri: Optional. Cache image URI.
+    environmentVariables: Optional. Environment variables for the build.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class EnvironmentVariablesValue(_messages.Message):
+    r"""Optional. Environment variables for the build.
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        EnvironmentVariablesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        EnvironmentVariablesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a EnvironmentVariablesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  buildBaseImageUri = _messages.StringField(1)
+  cacheImageUri = _messages.StringField(2)
+  environmentVariables = _messages.MessageField('EnvironmentVariablesValue', 3)
+
+
+class GoogleCloudRunV2BuildConfigurationDockerBuild(_messages.Message):
+  r"""Docker build configuration."""
+
+
 class GoogleCloudRunV2BuildInfo(_messages.Message):
   r"""Build information of the image.
 
   Fields:
+    buildId: Output only. The build ID.
     functionTarget: Output only. Entry point of the function when the image is
       a Cloud Run function.
     sourceLocation: Output only. Source code location of the image.
   """
 
-  functionTarget = _messages.StringField(1)
-  sourceLocation = _messages.StringField(2)
+  buildId = _messages.StringField(1)
+  functionTarget = _messages.StringField(2)
+  sourceLocation = _messages.StringField(3)
+
+
+class GoogleCloudRunV2BuildStatus(_messages.Message):
+  r"""BuildStatus holds the status of a build.
+
+  Fields:
+    error: The error code of the build.
+    message: The message details of the build.
+    status: The status of the build.
+  """
+
+  error = _messages.StringField(1)
+  message = _messages.StringField(2)
+  status = _messages.StringField(3)
 
 
 class GoogleCloudRunV2BuildpacksBuild(_messages.Message):
@@ -198,6 +280,18 @@ class GoogleCloudRunV2CancelExecutionRequest(_messages.Message):
   validateOnly = _messages.BooleanField(2)
 
 
+class GoogleCloudRunV2CloudBuildWorkerConfiguration(_messages.Message):
+  r"""Configuration for Cloud Build worker.
+
+  Fields:
+    machineType: Optional. The machine type for the Cloud Build worker.
+    workerPool: Optional. The name of the Cloud Build worker pool.
+  """
+
+  machineType = _messages.StringField(1)
+  workerPool = _messages.StringField(2)
+
+
 class GoogleCloudRunV2CloudSqlInstance(_messages.Message):
   r"""Represents a set of Cloud SQL instances. Each one will be available
   under /cloudsql/[instance]. Visit
@@ -239,6 +333,7 @@ class GoogleCloudRunV2Condition(_messages.Message):
   r"""Defines a status condition for a resource.
 
   Enums:
+    BuildReasonValueValuesEnum: Output only. A reason for the build condition.
     ExecutionReasonValueValuesEnum: Output only. A reason for the execution
       condition.
     ReasonValueValuesEnum: Output only. A common (service-level) reason for
@@ -250,6 +345,7 @@ class GoogleCloudRunV2Condition(_messages.Message):
     StateValueValuesEnum: State of the condition.
 
   Fields:
+    buildReason: Output only. A reason for the build condition.
     executionReason: Output only. A reason for the execution condition.
     lastTransitionTime: Last time the condition transitioned from one status
       to another.
@@ -266,6 +362,20 @@ class GoogleCloudRunV2Condition(_messages.Message):
       conditions-and-reporting Types common to all resources include: *
       "Ready": True when the Resource is ready.
   """
+
+  class BuildReasonValueValuesEnum(_messages.Enum):
+    r"""Output only. A reason for the build condition.
+
+    Values:
+      UNSPECIFIED: Default value.
+      RUNNING: Build is in progress.
+      SUCCEEDED: Build succeeded.
+      FAILED: Build failed.
+    """
+    UNSPECIFIED = 0
+    RUNNING = 1
+    SUCCEEDED = 2
+    FAILED = 3
 
   class ExecutionReasonValueValuesEnum(_messages.Enum):
     r"""Output only. A reason for the execution condition.
@@ -409,14 +519,15 @@ class GoogleCloudRunV2Condition(_messages.Message):
     CONDITION_FAILED = 3
     CONDITION_SUCCEEDED = 4
 
-  executionReason = _messages.EnumField('ExecutionReasonValueValuesEnum', 1)
-  lastTransitionTime = _messages.StringField(2)
-  message = _messages.StringField(3)
-  reason = _messages.EnumField('ReasonValueValuesEnum', 4)
-  revisionReason = _messages.EnumField('RevisionReasonValueValuesEnum', 5)
-  severity = _messages.EnumField('SeverityValueValuesEnum', 6)
-  state = _messages.EnumField('StateValueValuesEnum', 7)
-  type = _messages.StringField(8)
+  buildReason = _messages.EnumField('BuildReasonValueValuesEnum', 1)
+  executionReason = _messages.EnumField('ExecutionReasonValueValuesEnum', 2)
+  lastTransitionTime = _messages.StringField(3)
+  message = _messages.StringField(4)
+  reason = _messages.EnumField('ReasonValueValuesEnum', 5)
+  revisionReason = _messages.EnumField('RevisionReasonValueValuesEnum', 6)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 7)
+  state = _messages.EnumField('StateValueValuesEnum', 8)
+  type = _messages.StringField(9)
 
 
 class GoogleCloudRunV2Container(_messages.Message):
@@ -431,6 +542,7 @@ class GoogleCloudRunV2Container(_messages.Message):
     baseImageUri: Base image for this container. Only supported for services.
       If set, it indicates that the service is enrolled into automatic base
       image update.
+    buildConfig: Optional. The build configuration for the container image.
     buildInfo: Output only. The build info of the container image.
     command: Entrypoint array. Not executed within a shell. The docker image's
       ENTRYPOINT is used if this is not provided.
@@ -461,20 +573,21 @@ class GoogleCloudRunV2Container(_messages.Message):
 
   args = _messages.StringField(1, repeated=True)
   baseImageUri = _messages.StringField(2)
-  buildInfo = _messages.MessageField('GoogleCloudRunV2BuildInfo', 3)
-  command = _messages.StringField(4, repeated=True)
-  dependsOn = _messages.StringField(5, repeated=True)
-  env = _messages.MessageField('GoogleCloudRunV2EnvVar', 6, repeated=True)
-  image = _messages.StringField(7)
-  livenessProbe = _messages.MessageField('GoogleCloudRunV2Probe', 8)
-  name = _messages.StringField(9)
-  ports = _messages.MessageField('GoogleCloudRunV2ContainerPort', 10, repeated=True)
-  readinessProbe = _messages.MessageField('GoogleCloudRunV2Probe', 11)
-  resources = _messages.MessageField('GoogleCloudRunV2ResourceRequirements', 12)
-  sourceCode = _messages.MessageField('GoogleCloudRunV2SourceCode', 13)
-  startupProbe = _messages.MessageField('GoogleCloudRunV2Probe', 14)
-  volumeMounts = _messages.MessageField('GoogleCloudRunV2VolumeMount', 15, repeated=True)
-  workingDir = _messages.StringField(16)
+  buildConfig = _messages.MessageField('GoogleCloudRunV2BuildConfiguration', 3)
+  buildInfo = _messages.MessageField('GoogleCloudRunV2BuildInfo', 4)
+  command = _messages.StringField(5, repeated=True)
+  dependsOn = _messages.StringField(6, repeated=True)
+  env = _messages.MessageField('GoogleCloudRunV2EnvVar', 7, repeated=True)
+  image = _messages.StringField(8)
+  livenessProbe = _messages.MessageField('GoogleCloudRunV2Probe', 9)
+  name = _messages.StringField(10)
+  ports = _messages.MessageField('GoogleCloudRunV2ContainerPort', 11, repeated=True)
+  readinessProbe = _messages.MessageField('GoogleCloudRunV2Probe', 12)
+  resources = _messages.MessageField('GoogleCloudRunV2ResourceRequirements', 13)
+  sourceCode = _messages.MessageField('GoogleCloudRunV2SourceCode', 14)
+  startupProbe = _messages.MessageField('GoogleCloudRunV2Probe', 15)
+  volumeMounts = _messages.MessageField('GoogleCloudRunV2VolumeMount', 16, repeated=True)
+  workingDir = _messages.StringField(17)
 
 
 class GoogleCloudRunV2ContainerOverride(_messages.Message):
@@ -515,6 +628,7 @@ class GoogleCloudRunV2ContainerStatus(_messages.Message):
   value.
 
   Fields:
+    buildStatus: Output only. The build status of the container image.
     imageDigest: ImageDigest holds the resolved digest for the image specified
       and resolved during the creation of Revision. This field holds the
       digest value regardless of whether a tag or digest was originally
@@ -522,8 +636,9 @@ class GoogleCloudRunV2ContainerStatus(_messages.Message):
     name: The name of the container, if specified.
   """
 
-  imageDigest = _messages.StringField(1)
-  name = _messages.StringField(2)
+  buildStatus = _messages.MessageField('GoogleCloudRunV2BuildStatus', 1)
+  imageDigest = _messages.StringField(2)
+  name = _messages.StringField(3)
 
 
 class GoogleCloudRunV2DockerBuild(_messages.Message):
@@ -3826,6 +3941,16 @@ class GoogleCloudRunV2VpcAccess(_messages.Message):
   connector = _messages.StringField(1)
   egress = _messages.EnumField('EgressValueValuesEnum', 2)
   networkInterfaces = _messages.MessageField('GoogleCloudRunV2NetworkInterface', 3, repeated=True)
+
+
+class GoogleCloudRunV2WorkerConfiguration(_messages.Message):
+  r"""Configuration for the worker.
+
+  Fields:
+    cloudBuildWorkerConfiguration: Optional. Cloud Build worker configuration.
+  """
+
+  cloudBuildWorkerConfiguration = _messages.MessageField('GoogleCloudRunV2CloudBuildWorkerConfiguration', 1)
 
 
 class GoogleCloudRunV2WorkerPool(_messages.Message):
@@ -7280,6 +7405,8 @@ class RunProjectsLocationsServicesPatchRequest(_messages.Message):
     allowMissing: Optional. If set to true, and if the Service does not exist,
       it will create a new one. The caller must have 'run.services.create'
       permissions if this is set to true and the Service does not exist.
+    forceBuild: Optional. If set to true, ensures a build is executed even if
+      BuildConfig has not changed.
     forceNewRevision: Optional. If set to true, a new revision will be created
       from the template even if the system doesn't detect any changes from the
       previously deployed revision. This may be useful for cases where the
@@ -7300,11 +7427,12 @@ class RunProjectsLocationsServicesPatchRequest(_messages.Message):
   """
 
   allowMissing = _messages.BooleanField(1)
-  forceNewRevision = _messages.BooleanField(2)
-  googleCloudRunV2Service = _messages.MessageField('GoogleCloudRunV2Service', 3)
-  name = _messages.StringField(4, required=True)
-  updateMask = _messages.StringField(5)
-  validateOnly = _messages.BooleanField(6)
+  forceBuild = _messages.BooleanField(2)
+  forceNewRevision = _messages.BooleanField(3)
+  googleCloudRunV2Service = _messages.MessageField('GoogleCloudRunV2Service', 4)
+  name = _messages.StringField(5, required=True)
+  updateMask = _messages.StringField(6)
+  validateOnly = _messages.BooleanField(7)
 
 
 class RunProjectsLocationsServicesRevisionsDeleteRequest(_messages.Message):

@@ -71,6 +71,8 @@ class AddressGroup(_messages.Message):
     name: Required. Name of the AddressGroup resource. It matches pattern
       `projects/*/locations/{location}/addressGroups/`.
     purpose: Optional. List of supported purposes of the Address Group.
+    rolloutOperation: Optional. Configuration and status of the progressive
+      rollout of this resource.
     selfLink: Output only. Server-defined fully-qualified URL for this
       resource.
     type: Required. The type of the Address Group. Possible values are "IPv4"
@@ -135,9 +137,129 @@ class AddressGroup(_messages.Message):
   labels = _messages.MessageField('LabelsValue', 5)
   name = _messages.StringField(6)
   purpose = _messages.EnumField('PurposeValueListEntryValuesEnum', 7, repeated=True)
-  selfLink = _messages.StringField(8)
-  type = _messages.EnumField('TypeValueValuesEnum', 9)
-  updateTime = _messages.StringField(10)
+  rolloutOperation = _messages.MessageField('AddressGroupRolloutOperation', 8)
+  selfLink = _messages.StringField(9)
+  type = _messages.EnumField('TypeValueValuesEnum', 10)
+  updateTime = _messages.StringField(11)
+
+
+class AddressGroupRolloutOperation(_messages.Message):
+  r"""Represents progressive rollout input parameters and current status.
+
+  Fields:
+    rolloutInput: Optional. Input parameters to be used by the next not yet
+      scheduled rollout.
+    rolloutStatus: Optional. Current status of the rollout.
+  """
+
+  rolloutInput = _messages.MessageField('AddressGroupRolloutOperationRolloutInput', 1)
+  rolloutStatus = _messages.MessageField('AddressGroupRolloutOperationRolloutStatus', 2)
+
+
+class AddressGroupRolloutOperationRolloutInput(_messages.Message):
+  r"""Represents progressive rollout input parameters.
+
+  Enums:
+    PredefinedRolloutPlanValueValuesEnum: Optional. Predefined rollout plan.
+
+  Fields:
+    name: Optional. The name of the rollout plan. Ex.
+      organizations//locations/global/rolloutPlans/.
+    predefinedRolloutPlan: Optional. Predefined rollout plan.
+    retryUuid: Optional. The UUID of the retry action. Only needed if this is
+      a retry for an existing rollout. This can be used after the user
+      canceled a rollout and want to retry it with no changes.
+  """
+
+  class PredefinedRolloutPlanValueValuesEnum(_messages.Enum):
+    r"""Optional. Predefined rollout plan.
+
+    Values:
+      PREDEFINED_ROLLOUT_PLAN_UNSPECIFIED: Unspecified plan.
+      DEFAULT_ROLLOUT_PLAN: A default predefined rollout plan.
+    """
+    PREDEFINED_ROLLOUT_PLAN_UNSPECIFIED = 0
+    DEFAULT_ROLLOUT_PLAN = 1
+
+  name = _messages.StringField(1)
+  predefinedRolloutPlan = _messages.EnumField('PredefinedRolloutPlanValueValuesEnum', 2)
+  retryUuid = _messages.StringField(3)
+
+
+class AddressGroupRolloutOperationRolloutStatus(_messages.Message):
+  r"""Represents progressive rollout current status.
+
+  Fields:
+    nextRollout: Optional. The next rollout.
+    ongoingRollouts: Output only. [Output only] The ongoing rollout.
+    previousRollout: Output only. [Output only] The last previously executed
+      rollout.
+  """
+
+  nextRollout = _messages.MessageField('AddressGroupRolloutOperationRolloutStatusNextRollout', 1)
+  ongoingRollouts = _messages.MessageField('AddressGroupRolloutOperationRolloutStatusRolloutMetadata', 2, repeated=True)
+  previousRollout = _messages.MessageField('AddressGroupRolloutOperationRolloutStatusRolloutMetadata', 3)
+
+
+class AddressGroupRolloutOperationRolloutStatusNextRollout(_messages.Message):
+  r"""Next scheduled but not yet started rollout.
+
+  Fields:
+    rolloutId: Output only. [Output only] The id of the next rollout.
+    rolloutPlan: Optional. The name of the rollout plan to be used by the next
+      not yet started rollout. This field is auto populated based on
+      RolloutInput when a new rollout is scheduled. This can be manually
+      changed before the scheduled rollout starts. Ex.
+      organizations//locations/global/rolloutPlans/
+  """
+
+  rolloutId = _messages.StringField(1)
+  rolloutPlan = _messages.StringField(2)
+
+
+class AddressGroupRolloutOperationRolloutStatusRolloutMetadata(_messages.Message):
+  r"""Represents the status of the progressive rollout instance, either
+  completed or ongoing.
+
+  Enums:
+    StateValueValuesEnum: Output only. [Output only] The state of the rollout.
+
+  Fields:
+    rollout: Output only. [Output only] The name of the rollout
+      organizations//locations/global/rollouts/
+    rolloutPlan: Output only. [Output only] The name of the rollout plan used
+      by this rollout organizations//locations/global/rolloutPlans/
+    state: Output only. [Output only] The state of the rollout.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. [Output only] The state of the rollout.
+
+    Values:
+      STATE_UNSPECIFIED: Default value. This value is unused.
+      PROCESSING: Rollout is in progress.
+      COMPLETED: The current Address Group state is propagated everywhere.
+      FAILED: The current Address Group state is propagated partially, due to
+        failures in some regions. Use Rollout.Get API to see which regions
+        were skipped.
+      CANCELLED: The current Address Group state was propagated to some
+        regions before being canceled. Use Rollout.Get API to see which
+        regions get the current state.
+      PAUSED: The rollout is paused.
+      UNKNOWN: It is impossible to determine the current state of the
+        iteration.
+    """
+    STATE_UNSPECIFIED = 0
+    PROCESSING = 1
+    COMPLETED = 2
+    FAILED = 3
+    CANCELLED = 4
+    PAUSED = 5
+    UNKNOWN = 6
+
+  rollout = _messages.StringField(1)
+  rolloutPlan = _messages.StringField(2)
+  state = _messages.EnumField('StateValueValuesEnum', 3)
 
 
 class AntivirusOverride(_messages.Message):
@@ -1202,6 +1324,16 @@ class Destination(_messages.Message):
   ports = _messages.IntegerField(4, repeated=True, variant=_messages.Variant.UINT32)
 
 
+class DisableUllMirroringCollectorRequest(_messages.Message):
+  r"""Message for disabling a UllMirroringCollector
+
+  Fields:
+    requestId: Optional. An optional request ID to identify requests.
+  """
+
+  requestId = _messages.StringField(1)
+
+
 class DnsThreatDetector(_messages.Message):
   r"""A DNS threat detector sends DNS query logs to a _provider_ that then
   analyzes the logs to identify threat events in the DNS queries. By default,
@@ -1278,6 +1410,16 @@ class Empty(_messages.Message):
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
 
+
+
+class EnableUllMirroringCollectorRequest(_messages.Message):
+  r"""Message for enabling a UllMirroringCollector
+
+  Fields:
+    requestId: Optional. An optional request ID to identify requests.
+  """
+
+  requestId = _messages.StringField(1)
 
 
 class Expr(_messages.Message):
@@ -1840,6 +1982,26 @@ class FirewallEndpointWildfireSettingsWildfireInlineCloudAnalysisSettings(_messa
 
 class FirstPartyEndpointSettings(_messages.Message):
   r"""A FirstPartyEndpointSettings object."""
+
+
+class ForceStartProgressiveRolloutRequest(_messages.Message):
+  r"""Request used by the ForceStartProgressiveRollout method.
+
+  Fields:
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  requestId = _messages.StringField(1)
 
 
 class GatewaySecurityPolicy(_messages.Message):
@@ -3446,6 +3608,21 @@ class ListTlsInspectionPoliciesResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListUllMirroringCollectorRulesResponse(_messages.Message):
+  r"""Message for response to listing UllMirroringCollectorRules.
+
+  Fields:
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    ullMirroringCollectorRules: The list of UllMirroringCollectorRule.
+    unreachable: Locations that could not be reached.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  ullMirroringCollectorRules = _messages.MessageField('UllMirroringCollectorRule', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListUllMirroringCollectorsResponse(_messages.Message):
   r"""Message for response to listing UllMirroringCollectors
 
@@ -4024,6 +4201,7 @@ class MirroringEndpointGroup(_messages.Message):
       https://google.aip.dev/148#timestamps.
     description: Optional. User-provided description of the endpoint group.
       Used as additional context for the endpoint group.
+    endpoints: Output only. List of endpoints of this endpoint group.
     labels: Optional. Labels are key/value pairs that help to organize and
       filter resources.
     mirroringDeploymentGroup: Immutable. The deployment group that this DIRECT
@@ -4124,14 +4302,15 @@ class MirroringEndpointGroup(_messages.Message):
   connectedDeploymentGroups = _messages.MessageField('MirroringEndpointGroupConnectedDeploymentGroup', 2, repeated=True)
   createTime = _messages.StringField(3)
   description = _messages.StringField(4)
-  labels = _messages.MessageField('LabelsValue', 5)
-  mirroringDeploymentGroup = _messages.StringField(6)
-  mirroringDeploymentGroups = _messages.StringField(7, repeated=True)
-  name = _messages.StringField(8)
-  reconciling = _messages.BooleanField(9)
-  state = _messages.EnumField('StateValueValuesEnum', 10)
-  type = _messages.EnumField('TypeValueValuesEnum', 11)
-  updateTime = _messages.StringField(12)
+  endpoints = _messages.MessageField('MirroringEndpointGroupEndpoint', 5, repeated=True)
+  labels = _messages.MessageField('LabelsValue', 6)
+  mirroringDeploymentGroup = _messages.StringField(7)
+  mirroringDeploymentGroups = _messages.StringField(8, repeated=True)
+  name = _messages.StringField(9)
+  reconciling = _messages.BooleanField(10)
+  state = _messages.EnumField('StateValueValuesEnum', 11)
+  type = _messages.EnumField('TypeValueValuesEnum', 12)
+  updateTime = _messages.StringField(13)
 
 
 class MirroringEndpointGroupAssociation(_messages.Message):
@@ -4350,6 +4529,47 @@ class MirroringEndpointGroupConnectedDeploymentGroup(_messages.Message):
 
   locations = _messages.MessageField('MirroringLocation', 1, repeated=True)
   name = _messages.StringField(2)
+
+
+class MirroringEndpointGroupEndpoint(_messages.Message):
+  r"""The endpoint group's view of an endpoint.
+
+  Enums:
+    StateValueValuesEnum: Output only. Most recent known state of the
+      endpoint.
+
+  Fields:
+    name: Output only. The endpoint's resource name, for example:
+      `projects/123456789/locations/us-central1-a/mirroringEndpoints/my-
+      endpoint`. See https://google.aip.dev/124.
+    state: Output only. Most recent known state of the endpoint.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. Most recent known state of the endpoint.
+
+    Values:
+      STATE_UNSPECIFIED: State not set (this is not a valid state).
+      CREATING: The endpoint is being created.
+      ACTIVE: The endpoint is ready and in sync with the parent group.
+      DELETING: The endpoint is being deleted.
+      DELETE_FAILED: An attempt to delete the endpoint has failed. This is a
+        terminal state and the endpoint is not expected to be usable as some
+        of its resources have been deleted. The only permitted operation is to
+        retry deleting the endpoint.
+      OUT_OF_SYNC: The underlying data plane is out of sync with the endpoint.
+        The endpoint is not expected to be usable. This state can result in
+        undefined behavior.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    DELETING = 3
+    DELETE_FAILED = 4
+    OUT_OF_SYNC = 5
+
+  name = _messages.StringField(1)
+  state = _messages.EnumField('StateValueValuesEnum', 2)
 
 
 class MirroringLocation(_messages.Message):
@@ -4745,6 +4965,22 @@ class NetworksecurityOrganizationsLocationsFirewallEndpointsWildfireVerdictChang
   pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(3)
   parent = _messages.StringField(4, required=True)
+
+
+class NetworksecurityOrganizationsLocationsGlobalAddressGroupsForceStartProgressiveRolloutRequest(_messages.Message):
+  r"""A NetworksecurityOrganizationsLocationsGlobalAddressGroupsForceStartProg
+  ressiveRolloutRequest object.
+
+  Fields:
+    addressGroup: Required. A name of the AddressGroup to start a new
+      progressive rollout for. Must be in the format
+      `organization/*/locations/global/addressGroups/*`.
+    forceStartProgressiveRolloutRequest: A ForceStartProgressiveRolloutRequest
+      resource to be passed as the request body.
+  """
+
+  addressGroup = _messages.StringField(1, required=True)
+  forceStartProgressiveRolloutRequest = _messages.MessageField('ForceStartProgressiveRolloutRequest', 2)
 
 
 class NetworksecurityOrganizationsLocationsOperationsCancelRequest(_messages.Message):
@@ -8512,6 +8748,34 @@ class NetworksecurityProjectsLocationsUllMirroringCollectorsDeleteRequest(_messa
   requestId = _messages.StringField(2)
 
 
+class NetworksecurityProjectsLocationsUllMirroringCollectorsDisableRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsUllMirroringCollectorsDisableRequest
+  object.
+
+  Fields:
+    disableUllMirroringCollectorRequest: A DisableUllMirroringCollectorRequest
+      resource to be passed as the request body.
+    name: Required. Name of the resource
+  """
+
+  disableUllMirroringCollectorRequest = _messages.MessageField('DisableUllMirroringCollectorRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetworksecurityProjectsLocationsUllMirroringCollectorsEnableRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsUllMirroringCollectorsEnableRequest
+  object.
+
+  Fields:
+    enableUllMirroringCollectorRequest: A EnableUllMirroringCollectorRequest
+      resource to be passed as the request body.
+    name: Required. Name of the resource
+  """
+
+  enableUllMirroringCollectorRequest = _messages.MessageField('EnableUllMirroringCollectorRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class NetworksecurityProjectsLocationsUllMirroringCollectorsGetRequest(_messages.Message):
   r"""A NetworksecurityProjectsLocationsUllMirroringCollectorsGetRequest
   object.
@@ -8574,6 +8838,108 @@ class NetworksecurityProjectsLocationsUllMirroringCollectorsPatchRequest(_messag
   requestId = _messages.StringField(2)
   ullMirroringCollector = _messages.MessageField('UllMirroringCollector', 3)
   updateMask = _messages.StringField(4)
+
+
+class NetworksecurityProjectsLocationsUllMirroringCollectorsRulesCreateRequest(_messages.Message):
+  r"""A
+  NetworksecurityProjectsLocationsUllMirroringCollectorsRulesCreateRequest
+  object.
+
+  Fields:
+    parent: Required. Value for the parent UllMirroringCollector.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    ullMirroringCollectorRule: A UllMirroringCollectorRule resource to be
+      passed as the request body.
+    ullMirroringCollectorRuleId: Required. ID for the new
+      UllMirroringCollectorRule.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  ullMirroringCollectorRule = _messages.MessageField('UllMirroringCollectorRule', 3)
+  ullMirroringCollectorRuleId = _messages.StringField(4)
+
+
+class NetworksecurityProjectsLocationsUllMirroringCollectorsRulesDeleteRequest(_messages.Message):
+  r"""A
+  NetworksecurityProjectsLocationsUllMirroringCollectorsRulesDeleteRequest
+  object.
+
+  Fields:
+    name: Required. Name of the resource
+    requestId: Optional. An optional request ID to identify requests.
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class NetworksecurityProjectsLocationsUllMirroringCollectorsRulesGetRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsUllMirroringCollectorsRulesGetRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the UllMirroringCollectorRule.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityProjectsLocationsUllMirroringCollectorsRulesListRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsUllMirroringCollectorsRulesListRequest
+  object.
+
+  Fields:
+    filter: Optional. Filter expression. See
+      https://google.aip.dev/160#filtering for more details.
+    orderBy: Optional. Sort expression. See
+      https://google.aip.dev/132#ordering for more details.
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+      See https://google.aip.dev/158 for more details.
+    pageToken: Optional. A page token, received from a previous
+      `ListUllMirroringCollectorRules` call. Provide this to retrieve the
+      subsequent page. When paginating, all other parameters provided to
+      `ListUllMirroringCollectorRules` must match the call that provided the
+      page token. See https://google.aip.dev/158 for more details.
+    parent: Required. The parent, which owns this collection of
+      UllMirroringCollectorRules. Example:
+      `projects/123456789/locations/global`. See https://google.aip.dev/132
+      for more details.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class NetworksecurityProjectsLocationsUllMirroringCollectorsRulesPatchRequest(_messages.Message):
+  r"""A
+  NetworksecurityProjectsLocationsUllMirroringCollectorsRulesPatchRequest
+  object.
+
+  Fields:
+    name: Identifier. The name of the UllMirroringCollectorRule.
+    ullMirroringCollectorRule: A UllMirroringCollectorRule resource to be
+      passed as the request body.
+    updateMask: Optional. The list of fields to update.
+  """
+
+  name = _messages.StringField(1, required=True)
+  ullMirroringCollectorRule = _messages.MessageField('UllMirroringCollectorRule', 2)
+  updateMask = _messages.StringField(3)
 
 
 class NetworksecurityProjectsLocationsUllMirroringEnginesCreateRequest(_messages.Message):
@@ -10343,12 +10709,14 @@ class UllMirroringCollector(_messages.Message):
       DELETING: Being deleted.
       CLOSED: Indicates the collector is disabled due to a breaking change in
         another resource.
+      INACTIVE: Inactive. Collector is not processing traffic.
     """
     STATE_UNSPECIFIED = 0
     ACTIVE = 1
     CREATING = 2
     DELETING = 3
     CLOSED = 4
+    INACTIVE = 5
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
@@ -10382,6 +10750,93 @@ class UllMirroringCollector(_messages.Message):
   reconciling = _messages.BooleanField(6)
   state = _messages.EnumField('StateValueValuesEnum', 7)
   updateTime = _messages.StringField(8)
+
+
+class UllMirroringCollectorRule(_messages.Message):
+  r"""UllMirroringCollectorRule is a resource that defines what traffic should
+  be mirrored.
+
+  Messages:
+    LabelsValue: Optional. Labels as key value pairs
+
+  Fields:
+    createTime: Output only. [Output only] Create time stamp
+    labels: Optional. Labels as key value pairs
+    match: Required. Match defines what traffic to mirror.
+    name: Identifier. The name of the UllMirroringCollectorRule.
+    reconciling: Output only. Whether reconciling is in progress, recommended
+      per https://google.aip.dev/128.
+    updateTime: Output only. [Output only] Update time stamp
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels as key value pairs
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  labels = _messages.MessageField('LabelsValue', 2)
+  match = _messages.MessageField('UllMirroringCollectorRuleMatch', 3)
+  name = _messages.StringField(4)
+  reconciling = _messages.BooleanField(5)
+  updateTime = _messages.StringField(6)
+
+
+class UllMirroringCollectorRuleMatch(_messages.Message):
+  r"""Match defines the traffic filtering criteria.
+
+  Enums:
+    DirectionValueValuesEnum: Optional. Direction of traffic to match. When
+      unset, matches any direction.
+
+  Fields:
+    direction: Optional. Direction of traffic to match. When unset, matches
+      any direction.
+    dstIpRanges: Optional. Destination IP ranges to match. When unset, matches
+      any destination IP range.
+    ipProtocols: Optional. IP protocols to match. When unset, matches any IP
+      protocol. Examples: "tcp", "udp", "icmp". If unset, matches any IP
+      protocol.
+    srcIpRanges: Optional. Source IP ranges to match. When unset, matches any
+      source IP range.
+  """
+
+  class DirectionValueValuesEnum(_messages.Enum):
+    r"""Optional. Direction of traffic to match. When unset, matches any
+    direction.
+
+    Values:
+      DIRECTION_UNSPECIFIED: Not set. Matches any direction.
+      INGRESS: Traffic inbound to the capture point.
+      EGRESS: Traffic outbound from the capture point.
+    """
+    DIRECTION_UNSPECIFIED = 0
+    INGRESS = 1
+    EGRESS = 2
+
+  direction = _messages.EnumField('DirectionValueValuesEnum', 1)
+  dstIpRanges = _messages.StringField(2, repeated=True)
+  ipProtocols = _messages.StringField(3, repeated=True)
+  srcIpRanges = _messages.StringField(4, repeated=True)
 
 
 class UllMirroringEngine(_messages.Message):

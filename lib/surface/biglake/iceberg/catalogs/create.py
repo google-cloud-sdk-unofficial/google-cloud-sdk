@@ -33,6 +33,12 @@ help_text = textwrap.dedent("""\
       $ {command} my-catalog-bucket --catalog-type=gcs-bucket --credential-mode=vended-credentials
     """)
 
+help_text_alpha = textwrap.dedent("""\
+    To create a unity federated catalog `my-federated-catalog`, run:
+
+      $ {command} my-federated-catalog --catalog-type=federated --federated-catalog-type=unity --secret-name=projects/my-project/locations/us/secrets/my-secret --unity-instance-name=instance.cloud.databricks.com --unity-catalog-name=my-catalog --primary-location=us
+    """)
+
 
 def _BuildFederatedCatalogMessage(args, messages):
   """Builds FederatedCatalogMessage for federated catalogs."""
@@ -166,7 +172,7 @@ class CreateCatalog(base.CreateCommand):
 class CreateAlpha(CreateCatalog):
   """Create a BigLake Iceberg REST catalog."""
   detailed_help = {
-      'EXAMPLES': help_text,
+      'EXAMPLES': help_text + '\n\n' + help_text_alpha,
   }
   _support_catalog_type_biglake = True
   _support_primary_location = True

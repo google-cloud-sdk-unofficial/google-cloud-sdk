@@ -415,11 +415,3 @@ def JsonErrorHasDetails(data):
     return 'details' in error.keys()
   except (KeyError, AttributeError):
     return False
-
-
-def GetUrlAPIVersionByApiVersion(api_version):
-  """Returns the URL API version for the given release track."""
-  if api_version != 'preview':
-    return api_version
-  else:
-    return 'v1'

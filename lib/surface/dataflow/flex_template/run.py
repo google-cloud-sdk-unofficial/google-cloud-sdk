@@ -112,6 +112,15 @@ class Run(base.Command):
     )
 
     parser.add_argument(
+        '--launcher-vm-timeout-secs',
+        type=int,
+        help=(
+            'The timeout in seconds for the launcher VM. If not set, '
+            'Dataflow uses a default timeout.'
+        ),
+    )
+
+    parser.add_argument(
         '--subnetwork',
         help='Compute Engine subnetwork for launching instances '
         'to run your pipeline.')
@@ -220,6 +229,7 @@ class Run(base.Command):
         subnetwork=args.subnetwork,
         worker_machine_type=args.worker_machine_type,
         launcher_machine_type=args.launcher_machine_type,
+        launcher_vm_timeout_secs=args.launcher_vm_timeout_secs,
         kms_key_name=args.dataflow_kms_key,
         staging_location=args.staging_location,
         temp_location=args.temp_location,

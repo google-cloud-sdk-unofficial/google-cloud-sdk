@@ -15,6 +15,8 @@
 """API wrapper for `gcloud network-security security-profiles threat-prevention-profiles` commands."""
 
 
+import copy
+
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.network_security.security_profiles import sp_api
 
@@ -95,12 +97,10 @@ class Client(sp_api.Client):
     elif update_mask == 'threatOverrides':
       update_field = 'threatId'
 
-    for i in range(
-        0, len(existing_threat_prevention_profile_object.get(update_mask))
+    for i, existing_override in enumerate(
+        existing_threat_prevention_profile_object.get(update_mask)
     ):
-      if existing_threat_prevention_profile_object.get(update_mask)[i].get(
-          update_field
-      ) == override.get(update_field):
+      if existing_override.get(update_field) == override.get(update_field):
         return True, i
     return False, None
 
@@ -166,6 +166,10 @@ class Client(sp_api.Client):
         self.GetThreatPreventionProfile(name)
     )
 
+    original_threat_prevention_profile_object = copy.deepcopy(
+        existing_threat_prevention_profile_object
+    )
+
     updated_threat_prevention_profile_object = (
         self.UpdateThreatPreventionProfile(
             existing_threat_prevention_profile_object,
@@ -177,11 +181,18 @@ class Client(sp_api.Client):
 
     if (
         updated_threat_prevention_profile_object
-        == existing_threat_prevention_profile_object
+        == original_threat_prevention_profile_object
     ):
       update_mask = '*'
     else:
       update_mask = 'threatPreventionProfile'
+
+    if (
+        self.api_version == 'v1alpha1'
+        and labels is not None
+        and update_mask != '*'
+    ):
+      update_mask += ',labels'
 
     # Calls the Security Profile Update API
     # to add/update override to threat prevention profile object.
@@ -256,10 +267,14 @@ class Client(sp_api.Client):
         type=self._ParseSecurityProfileType(profile_type),
         labels=labels,
     )
+    update_mask = 'threatPreventionProfile'
+    if self.api_version == 'v1alpha1' and labels is not None:
+      update_mask += ',labels'
+
     api_request = self._patch_request(
         name=name,
         securityProfile=security_profile,
-        updateMask='threatPreventionProfile',
+        updateMask=update_mask,
     )
     return self._security_profile_client.Patch(api_request)
 

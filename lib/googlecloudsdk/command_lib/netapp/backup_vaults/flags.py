@@ -71,6 +71,15 @@ def AddBackupVaultBackupLocationArg(parser):
       type=str,
       help="""String indicating backup location for the Backup Vault""",
   )
+
+
+def AddBackupVaultCrossProjectVaultArg(parser):
+  """Adds the Cross Project Vault arg to the arg parser."""
+  parser.add_argument(
+      '--cross-project-vault',
+      action=arg_parsers.StoreTrueFalseAction,
+      help="""Indicates whether the backup vault is a cross project vault.""",
+  )
 ## Helper functions to combine Backup Vaults args / flags for gcloud commands ##
 
 
@@ -87,6 +96,7 @@ def AddBackupVaultCreateArgs(parser, release_track):
   if (release_track == base.ReleaseTrack.BETA):
     AddBackupVaultTypeArg(parser)
     AddBackupVaultBackupLocationArg(parser)
+    AddBackupVaultCrossProjectVaultArg(parser)
 
 
 def AddBackupVaultDeleteArgs(parser):

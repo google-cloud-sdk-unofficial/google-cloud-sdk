@@ -136,12 +136,16 @@ def _ListCore(requests, http, batch_url, errors, response_handler):
       received from the server.
   """
   while requests:
-    if not _ForceBatchRequest() and len(requests) == 1:
-      service, method, request_body = requests[0]
-      responses, request_errors = single_request_helper.MakeSingleRequest(
-          service, method, request_body
-      )
-      errors.extend(request_errors)
+    if not _ForceBatchRequest() and (
+        len(requests) == 1 or _DisableBatchRequest()
+    ):
+      responses = []
+      for service, method, request_body in requests:
+        res, request_errors = single_request_helper.MakeSingleRequest(
+            service, method, request_body
+        )
+        responses.extend(res)
+        errors.extend(request_errors)
     else:
       responses, request_errors = batch_helper.MakeRequests(
           requests=requests, http=http, batch_url=batch_url
@@ -213,6 +217,11 @@ def _IsEmptyOperation(operation, service):
 def _ForceBatchRequest():
   """Check if compute/force_batch_request property is set."""
   return properties.VALUES.compute.force_batch_request.GetBool()
+
+
+def _DisableBatchRequest():
+  """Check if compute/disable_batch_request property is set."""
+  return properties.VALUES.compute.disable_batch_request.GetBool()
 
 
 def ListJson(requests, http, batch_url, errors):
@@ -313,11 +322,16 @@ def MakeRequests(
 
   # send single request only if the requests size one and if enable_single_
   # request is set to true
-  if not _ForceBatchRequest() and len(requests) == 1:
-    service, method, request_body = requests[0]
-    responses, new_errors = single_request_helper.MakeSingleRequest(
-        service=service, method=method, request_body=request_body
-    )
+  if not _ForceBatchRequest() and (
+      len(requests) == 1 or _DisableBatchRequest()
+  ):
+    responses, new_errors = [], []
+    for service, method, request_body in requests:
+      res, err = single_request_helper.MakeSingleRequest(
+          service=service, method=method, request_body=request_body
+      )
+      responses.extend(res)
+      new_errors.extend(err)
   else:
     responses, new_errors = batch_helper.MakeRequests(
         requests=requests, http=http, batch_url=batch_url)

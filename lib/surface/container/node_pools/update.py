@@ -139,6 +139,8 @@ class Update(base.UpdateCommand):
     )
     flags.AddNodeDrainSettingsFlag(group)
     flags.AddEnableLustreMultiRailFlag(group, for_node_pool=True, hidden=True)
+    flags.AddNodePoolMaintenanceExclusionsFlag(
+        group, hidden=True, is_update=True)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -200,6 +202,8 @@ class Update(base.UpdateCommand):
         enable_lustre_multi_nic=args.enable_lustre_multi_nic,
         datapath_provider=args.datapath_provider,
         node_architecture_taint_behavior=args.node_architecture_taint_behavior,
+        add_maintenance_exclusion_until_end_of_support=args.add_maintenance_exclusion_until_end_of_support,
+        remove_maintenance_exclusion_until_end_of_support=args.remove_maintenance_exclusion_until_end_of_support,
     )
 
   def Run(self, args):
@@ -356,6 +360,8 @@ class UpdateBeta(Update):
         group, for_node_pool=True
     )
     flags.AddEnableLustreMultiRailFlag(group, for_node_pool=True, hidden=True)
+    flags.AddNodePoolMaintenanceExclusionsFlag(
+        group, hidden=True, is_update=True)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -418,6 +424,8 @@ class UpdateBeta(Update):
         enable_lustre_multi_nic=args.enable_lustre_multi_nic,
         datapath_provider=args.datapath_provider,
         node_architecture_taint_behavior=args.node_architecture_taint_behavior,
+        add_maintenance_exclusion_until_end_of_support=args.add_maintenance_exclusion_until_end_of_support,
+        remove_maintenance_exclusion_until_end_of_support=args.remove_maintenance_exclusion_until_end_of_support,
     )
     return ops
 
@@ -505,6 +513,8 @@ class UpdateAlpha(Update):
         group, for_node_pool=True
     )
     flags.AddEnableLustreMultiRailFlag(group, for_node_pool=True, hidden=True)
+    flags.AddNodePoolMaintenanceExclusionsFlag(
+        group, hidden=True, is_update=True)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -567,6 +577,8 @@ class UpdateAlpha(Update):
         enable_lustre_multi_nic=args.enable_lustre_multi_nic,
         datapath_provider=args.datapath_provider,
         node_architecture_taint_behavior=args.node_architecture_taint_behavior,
+        add_maintenance_exclusion_until_end_of_support=args.add_maintenance_exclusion_until_end_of_support,
+        remove_maintenance_exclusion_until_end_of_support=args.remove_maintenance_exclusion_until_end_of_support,
     )
     return ops
 

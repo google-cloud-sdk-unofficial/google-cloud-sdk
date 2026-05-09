@@ -29,6 +29,7 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Activate(base.SilentCommand):
   r"""Activate a subordinate certificate authority awaiting user activation.

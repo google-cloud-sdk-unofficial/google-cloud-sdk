@@ -1,5 +1,4 @@
-release_tracks: [ALPHA, BETA]
-hidden: true
+release_tracks: [BETA]
 help_text:
   brief: Describe the semantic governance policy engine config.
   description: Describe the semantic governance policy engine config.

@@ -497,27 +497,35 @@ class BaseCommandGenerator(six.with_metaclass(abc.ABCMeta, object)):
           static_fields,
           self.spec.arguments.labels,
           self.spec.command_type,
-          existing_message=existing_message)
+          existing_message=existing_message,
+      )
       for hook in self.spec.request.modify_request_hooks:
         request = hook(ref, args, request)
-
+    server_side_limit = not self.arg_generator.Filter(
+        args
+    ) and not self.arg_generator.SortBy(args)
     response = _CallMethod(
         method,
         request,
         location=self.arg_generator.EndpointLocation(
-            args, method_resource_arg.primary_resource),
-        limit=self.arg_generator.Limit(args),
-        page_size=self.arg_generator.PageSize(args))
+            args, method_resource_arg.primary_resource
+        ),
+        limit=self.arg_generator.Limit(args) if server_side_limit else None,
+        page_size=self.arg_generator.PageSize(args),
+    )
     return ref, response
 
-  def _Format(self, format_string, resource_ref, display_type,
-              display_name=None):
+  def _Format(
+      self, format_string, resource_ref, display_type, display_name=None
+  ):
     return yaml_command_schema_util.FormatResourceAttrStr(
-        format_string, resource_ref, display_name, display_type)
+        format_string, resource_ref, display_name, display_type
+    )
 
   def _GetDisplayName(self, resource_ref, args):
     primary_resource_arg = self._GetSpecifiedPrimaryResource(
-        args).primary_resource
+        args
+    ).primary_resource
     if primary_resource_arg and primary_resource_arg.display_name_hook:
       return primary_resource_arg.display_name_hook(resource_ref, args)
     return resource_ref.Name() if resource_ref else None

@@ -294,9 +294,17 @@ def ArgsForClusterRef(
 
   parser.add_argument(
       '--tier',
+      hidden=True,
       metavar='TIER',
       choices=['premium', 'standard'],
       help='Cluster tier',
+      action=actions.DeprecationAction(
+          '--tier',
+          warn=(
+              'The `--tier` flag is deprecated. Use the `--engine` flag'
+              ' instead.'
+          ),
+      ),
   )
 
   parser.add_argument(

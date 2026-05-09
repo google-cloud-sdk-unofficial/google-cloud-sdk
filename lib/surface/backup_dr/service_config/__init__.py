@@ -14,11 +14,12 @@
 # limitations under the License.
 """Command group for Backup and DR Service configuration."""
 
-
 from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class ServiceConfig(base.Group):
   """Manage Backup and DR Service configuration."""

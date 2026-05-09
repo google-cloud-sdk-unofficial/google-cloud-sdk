@@ -26,7 +26,8 @@ DataSourceReferencesClient = data_source_references.DataSourceReferencesClient
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class FetchForResourceType(base.ListCommand):
   """Fetch Data Source References for a given resource type and location."""
 

@@ -129,13 +129,9 @@ def AddAutoFlags(parser, release_track):
   flags.AddKubecontextOverrideFlag(parser)
   flags.AddAnonymousAuthenticationConfigFlag(parser)
   flags.AddEnableLegacyLustrePortFlag(parser, hidden=False)
+  flags.AddPodSnapshotConfigFlags(parser)
   if release_track != base.ReleaseTrack.GA:
-    flags.AddPodSnapshotConfigFlags(parser, hidden=False)
     flags.AddAgentSandboxConfigFlags(parser)
-  # TODO(b/469786237):Remove this else once the feature should be exposed in GA.
-  else:
-    # Add the pod snapshot config flag for GA track, but keep it hidden.
-    flags.AddPodSnapshotConfigFlags(parser, hidden=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

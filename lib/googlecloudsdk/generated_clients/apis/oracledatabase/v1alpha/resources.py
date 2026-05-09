@@ -261,58 +261,58 @@ class Collections(enum.Enum):
       True
   )
   PROJECTS_LOCATIONS_GOLDENGATECONNECTIONASSIGNMENTS = (
-      'projects.locations.goldenGateConnectionAssignments',
+      'projects.locations.goldengateConnectionAssignments',
       '{+name}',
       {
           '':
               'projects/{projectsId}/locations/{locationsId}/'
-              'goldenGateConnectionAssignments/'
-              '{goldenGateConnectionAssignmentsId}',
+              'goldengateConnectionAssignments/'
+              '{goldengateConnectionAssignmentsId}',
       },
       ['name'],
       True
   )
   PROJECTS_LOCATIONS_GOLDENGATECONNECTIONTYPES = (
-      'projects.locations.goldenGateConnectionTypes',
+      'projects.locations.goldengateConnectionTypes',
       '{+name}',
       {
           '':
               'projects/{projectsId}/locations/{locationsId}/'
-              'goldenGateConnectionTypes/{goldenGateConnectionTypesId}',
+              'goldengateConnectionTypes/{goldengateConnectionTypesId}',
       },
       ['name'],
       True
   )
   PROJECTS_LOCATIONS_GOLDENGATECONNECTIONS = (
-      'projects.locations.goldenGateConnections',
+      'projects.locations.goldengateConnections',
       '{+name}',
       {
           '':
               'projects/{projectsId}/locations/{locationsId}/'
-              'goldenGateConnections/{goldenGateConnectionsId}',
+              'goldengateConnections/{goldengateConnectionsId}',
       },
       ['name'],
       True
   )
   PROJECTS_LOCATIONS_GOLDENGATEDEPLOYMENTENVIRONMENTS = (
-      'projects.locations.goldenGateDeploymentEnvironments',
+      'projects.locations.goldengateDeploymentEnvironments',
       '{+name}',
       {
           '':
               'projects/{projectsId}/locations/{locationsId}/'
-              'goldenGateDeploymentEnvironments/'
-              '{goldenGateDeploymentEnvironmentsId}',
+              'goldengateDeploymentEnvironments/'
+              '{goldengateDeploymentEnvironmentsId}',
       },
       ['name'],
       True
   )
   PROJECTS_LOCATIONS_GOLDENGATEDEPLOYMENTTYPES = (
-      'projects.locations.goldenGateDeploymentTypes',
+      'projects.locations.goldengateDeploymentTypes',
       '{+name}',
       {
           '':
               'projects/{projectsId}/locations/{locationsId}/'
-              'goldenGateDeploymentTypes/{goldenGateDeploymentTypesId}',
+              'goldengateDeploymentTypes/{goldengateDeploymentTypesId}',
       },
       ['name'],
       True

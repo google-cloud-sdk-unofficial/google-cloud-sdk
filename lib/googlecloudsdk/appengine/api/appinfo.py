@@ -167,8 +167,6 @@ FLEX_INSTANCE_IP_MODE_REGEX = r'^(EXTERNAL|external|INTERNAL|internal)$'
 
 VPC_ACCESS_CONNECTOR_NAME_REGEX = r'^[a-z\d-]+(/.+)*$'
 
-VPC_ACCESS_TAGS_REGEX = r'^[a-z\d-]+(,[a-z\d-]+)*$'
-
 ALTERNATE_HOSTNAME_SEPARATOR = '-dot-'
 
 # Note(user): This must match api/app_config.py
@@ -2078,24 +2076,36 @@ class VpcAccessConnector(validation.Validated):
 
 
 class VpcAccessNetworkInterface(validation.Validated):
-  """A Direct VPC network interface."""
+  """A Direct VPC network interface.
+
+  Attributes:
+    network: (str) The name of the VPC network to which the interface is
+      connected. Can be a short name or a full path.
+    subnet: (str) The name of the VPC subnetwork to which the interface is
+      connected. Can be a short name or a full path.
+    tags: (list of str) A list of instance tags to apply to the VM.
+  """
 
   ATTRIBUTES = {
       VPC_ACCESS_NETWORK: validation.Optional(validation.TYPE_STR),
       VPC_ACCESS_SUBNET: validation.Optional(validation.TYPE_STR),
       VPC_ACCESS_TAGS: validation.Optional(
-          validation.Regex(VPC_ACCESS_TAGS_REGEX)
+          validation.Repeated(validation.Regex(GCE_RESOURCE_NAME_REGEX))
       ),
   }
 
 
 class VpcAccess(validation.Validated):
-  """A Direct VPC configuration."""
+  """A Direct VPC configuration.
+
+  Attributes:
+    network_interface: (VpcAccessNetworkInterface) The network interface
+      configuration for Direct VPC.
+    vpc_egress: (str) The egress setting for the VPC.
+  """
 
   ATTRIBUTES = {
-      VPC_ACCESS_NETWORK_INTERFACE: validation.Optional(
-          VpcAccessNetworkInterface
-      ),
+      VPC_ACCESS_NETWORK_INTERFACE: VpcAccessNetworkInterface,
       VPC_EGRESS_SETTING: validation.Optional(
           validation.Options(
               VPC_EGRESS_SETTING_ALL_TRAFFIC,

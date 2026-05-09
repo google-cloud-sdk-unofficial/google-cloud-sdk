@@ -1,13 +1,23 @@
-release_tracks: [ALPHA, BETA]
-hidden: true
+release_tracks: [BETA]
 help_text:
   brief: Update the semantic governance policy engine config.
   description: Update the semantic governance policy engine config.
 arguments:
+  resource:
+    help_text: The semantic governance policy engine config.
+    spec:
+      name: location
+      collection: aiplatform.projects.locations
+      attributes:
+      - parameter_name: projectsId
+        attribute_name: project
+        help: The project containing the location.
+      - parameter_name: locationsId
+        attribute_name: location
+        help: The location of the semantic governance policy engine.
+    is_positional: false
+
   params:
-  - arg_name: location
-    help_text: Cloud location of the semantic governance policy engine.
-    required: true
   - arg_name: gateway-config
     type: googlecloudsdk.command_lib.ai.semantic_governance_policies.util:gateway_config_type
     help_text: |
@@ -28,5 +38,5 @@ update:
   disable_auto_field_mask: true
 
 async:
-  collection: aiplatform.projects.locations.operations
+  collection: aiplatform.projects.locations.semanticGovernancePolicyEngine.operations
   extract_resource_result: false

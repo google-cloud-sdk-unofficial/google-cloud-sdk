@@ -2112,12 +2112,21 @@ class GpuZonalRedundancyChange(TemplateConfigChanger):
     gpu_zonal_redundancy: The gpu_zonal_redundancy annotation value to set.
   """
 
-  gpu_zonal_redundancy: bool
+  gpu_zonal_redundancy: bool | None
 
   def Adjust(self, resource):
-    resource.template.annotations[
-        revision.GPU_ZONAL_REDUNDANCY_DISABLED_ANNOTATION
-    ] = str(not self.gpu_zonal_redundancy)
+    if self.gpu_zonal_redundancy is None:
+      if (
+          revision.GPU_ZONAL_REDUNDANCY_DISABLED_ANNOTATION
+          in resource.template.annotations
+      ):
+        del resource.template.annotations[
+            revision.GPU_ZONAL_REDUNDANCY_DISABLED_ANNOTATION
+        ]
+    else:
+      resource.template.annotations[
+          revision.GPU_ZONAL_REDUNDANCY_DISABLED_ANNOTATION
+      ] = str(not self.gpu_zonal_redundancy)
     return resource
 
 

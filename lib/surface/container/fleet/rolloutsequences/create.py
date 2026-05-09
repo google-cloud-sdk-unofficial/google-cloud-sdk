@@ -52,6 +52,7 @@ class Create(base.CreateCommand):
     flags.AddLabels()
     flags.AddStageConfig(required=True)
     flags.AddIgnoredClustersSelectorFlags()
+    flags.AddAutoRolloutScope()
     flags.AddAsync()
 
   def Run(

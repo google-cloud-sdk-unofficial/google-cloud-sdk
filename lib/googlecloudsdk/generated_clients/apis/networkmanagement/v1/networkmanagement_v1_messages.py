@@ -1266,6 +1266,7 @@ class Empty(_messages.Message):
   """
 
 
+
 class Endpoint(_messages.Message):
   r"""Source or destination of the Connectivity Test.
 
@@ -2827,8 +2828,9 @@ class NetworkMonitoringProvider(_messages.Message):
       created.
     errors: Output only. The list of error messages detected for the
       NetworkMonitoringProvider.
-    name: Output only. Identifier. Name of the resource. Format:
-    `projects/{project}/locations/{location}/networkMonitoringProviders/{network_monitoring_provider}`
+    name: Output only. Identifier. Name of the resource. Format: `projects/{pr
+      oject}/locations/{location}/networkMonitoringProviders/{network_monitori
+      ng_provider}`
     providerType: Required. Type of the NetworkMonitoringProvider.
     providerUri: Output only. Link to the provider's UI.
     state: Output only. State of the NetworkMonitoringProvider.
@@ -3605,13 +3607,13 @@ class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPoin
 
 class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPointsDownloadRecreateInstallScriptRequest(_messages.Message):
   r"""A NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoring
-
   PointsDownloadRecreateInstallScriptRequest object.
 
   Fields:
     hostname: Optional. The hostname of the MonitoringPoint, e.g. "test-vm"
-    name: Required. Resource name of the MonitoringPoint. Format:
-    projects/{project}/locations/{location}/networkMonitoringProviders/{network_monitoring_provider}/monitoringPoints/{monitoring_point}
+    name: Required. Resource name of the MonitoringPoint. Format: projects/{pr
+      oject}/locations/{location}/networkMonitoringProviders/{network_monitori
+      ng_provider}/monitoringPoints/{monitoring_point}
   """
 
   hostname = _messages.StringField(1)
@@ -3646,7 +3648,6 @@ class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPoin
 
 class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPointsListRequest(_messages.Message):
   r"""A NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoring
-
   PointsListRequest object.
 
   Fields:
@@ -3658,8 +3659,9 @@ class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPoin
       `ListMonitoringPoints` call. Provide this to retrieve the subsequent
       page. When paginating, all other parameters provided to
       `ListMonitoringPoints` must match the call that provided the page token.
-    parent: Required. Parent value for ListMonitoringPointsRequest. Format:
-    projects/{project}/locations/{location}/networkMonitoringProviders/{network_monitoring_provider}
+    parent: Required. Parent value for ListMonitoringPointsRequest. Format: pr
+      ojects/{project}/locations/{location}/networkMonitoringProviders/{networ
+      k_monitoring_provider}
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -4432,7 +4434,9 @@ class RouteInfo(_messages.Message):
     protocols: Protocols of the route. POLICY_BASED routes only.
     region: Region of the route. DYNAMIC, PEERING_DYNAMIC, POLICY_BASED and
       ADVERTISED routes only. If set for POLICY_BASED route, this is a region
-      of VLAN attachments for Cloud Interconnect the route applies to.
+      of VLAN attachments for Cloud Interconnect the route applies to. If set
+      to "all" for POLICY_BASED route, the route applies to VLAN attachments
+      of Cloud Interconnect in all regions.
     routeScope: Indicates where route is applicable. Deprecated, routes with
       NCC_HUB scope are not included in the trace in new tests.
     routeType: Type of route.

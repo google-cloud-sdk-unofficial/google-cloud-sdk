@@ -618,7 +618,7 @@ MAP = {
                 default_version=True,
                 enable_mtls=True,
                 mtls_endpoint_override='',
-                regional_endpoints={}),
+                regional_endpoints={'africa-south1': 'https://backupdr.africa-south1.rep.googleapis.com/', 'asia-east1': 'https://backupdr.asia-east1.rep.googleapis.com/', 'asia-east2': 'https://backupdr.asia-east2.rep.googleapis.com/', 'asia-northeast1': 'https://backupdr.asia-northeast1.rep.googleapis.com/', 'asia-northeast2': 'https://backupdr.asia-northeast2.rep.googleapis.com/', 'asia-northeast3': 'https://backupdr.asia-northeast3.rep.googleapis.com/', 'asia-south1': 'https://backupdr.asia-south1.rep.googleapis.com/', 'asia-south2': 'https://backupdr.asia-south2.rep.googleapis.com/', 'asia-southeast1': 'https://backupdr.asia-southeast1.rep.googleapis.com/', 'asia-southeast2': 'https://backupdr.asia-southeast2.rep.googleapis.com/', 'australia-southeast1': 'https://backupdr.australia-southeast1.rep.googleapis.com/', 'australia-southeast2': 'https://backupdr.australia-southeast2.rep.googleapis.com/', 'europe-central2': 'https://backupdr.europe-central2.rep.googleapis.com/', 'europe-north1': 'https://backupdr.europe-north1.rep.googleapis.com/', 'europe-north2': 'https://backupdr.europe-north2.rep.googleapis.com/', 'europe-southwest1': 'https://backupdr.europe-southwest1.rep.googleapis.com/', 'europe-west1': 'https://backupdr.europe-west1.rep.googleapis.com/', 'europe-west2': 'https://backupdr.europe-west2.rep.googleapis.com/', 'europe-west3': 'https://backupdr.europe-west3.rep.googleapis.com/', 'europe-west4': 'https://backupdr.europe-west4.rep.googleapis.com/', 'europe-west6': 'https://backupdr.europe-west6.rep.googleapis.com/', 'europe-west8': 'https://backupdr.europe-west8.rep.googleapis.com/', 'europe-west9': 'https://backupdr.europe-west9.rep.googleapis.com/', 'europe-west10': 'https://backupdr.europe-west10.rep.googleapis.com/', 'europe-west12': 'https://backupdr.europe-west12.rep.googleapis.com/', 'me-central1': 'https://backupdr.me-central1.rep.googleapis.com/', 'me-central2': 'https://backupdr.me-central2.rep.googleapis.com/', 'me-west1': 'https://backupdr.me-west1.rep.googleapis.com/', 'northamerica-northeast1': 'https://backupdr.northamerica-northeast1.rep.googleapis.com/', 'northamerica-northeast2': 'https://backupdr.northamerica-northeast2.rep.googleapis.com/', 'northamerica-south1': 'https://backupdr.northamerica-south1.rep.googleapis.com/', 'southamerica-east1': 'https://backupdr.southamerica-east1.rep.googleapis.com/', 'southamerica-west1': 'https://backupdr.southamerica-west1.rep.googleapis.com/', 'us-central1': 'https://backupdr.us-central1.rep.googleapis.com/', 'us-central2': 'https://backupdr.us-central2.rep.googleapis.com/', 'us-east1': 'https://backupdr.us-east1.rep.googleapis.com/', 'us-east4': 'https://backupdr.us-east4.rep.googleapis.com/', 'us-east5': 'https://backupdr.us-east5.rep.googleapis.com/', 'us-east7': 'https://backupdr.us-east7.rep.googleapis.com/', 'us-south1': 'https://backupdr.us-south1.rep.googleapis.com/', 'us-west1': 'https://backupdr.us-west1.rep.googleapis.com/', 'us-west2': 'https://backupdr.us-west2.rep.googleapis.com/', 'us-west3': 'https://backupdr.us-west3.rep.googleapis.com/', 'us-west4': 'https://backupdr.us-west4.rep.googleapis.com/', 'us-west8': 'https://backupdr.us-west8.rep.googleapis.com/', 'us': 'https://backupdr.us.rep.googleapis.com/', 'eu': 'https://backupdr.eu.rep.googleapis.com/'}),
     },
     'baremetalsolution': {
         'v1':
@@ -1146,7 +1146,7 @@ MAP = {
                 default_version=True,
                 enable_mtls=True,
                 mtls_endpoint_override='',
-                regional_endpoints={'us': 'https://clouderrorreporting.us.rep.googleapis.com/'}),
+                regional_endpoints={'us': 'https://clouderrorreporting.us.rep.googleapis.com/', 'asia-east1': 'https://clouderrorreporting.asia-east1.rep.googleapis.com/', 'australia-southeast1': 'https://clouderrorreporting.australia-southeast1.rep.googleapis.com/', 'europe-north1': 'https://clouderrorreporting.europe-north1.rep.googleapis.com/', 'europe-west1': 'https://clouderrorreporting.europe-west1.rep.googleapis.com/', 'europe-west6': 'https://clouderrorreporting.europe-west6.rep.googleapis.com/', 'europe-west8': 'https://clouderrorreporting.europe-west8.rep.googleapis.com/', 'us-east4': 'https://clouderrorreporting.us-east4.rep.googleapis.com/', 'us-west8': 'https://clouderrorreporting.us-west8.rep.googleapis.com/', 'asia-northeast2': 'https://clouderrorreporting.asia-northeast2.rep.googleapis.com/', 'asia-northeast3': 'https://clouderrorreporting.asia-northeast3.rep.googleapis.com/', 'asia-south1': 'https://clouderrorreporting.asia-south1.rep.googleapis.com/', 'asia-south2': 'https://clouderrorreporting.asia-south2.rep.googleapis.com/', 'asia-southeast1': 'https://clouderrorreporting.asia-southeast1.rep.googleapis.com/'}),
     },
     'cloudfunctions': {
         'v1':
@@ -2984,19 +2984,6 @@ MAP = {
                 mtls_endpoint_override='https://language.mtls.googleapis.com/',
                 regional_endpoints={}),
     },
-    'lifesciences': {
-        'v2beta':
-            APIDef(
-                apitools=ApitoolsClientDef(
-                    class_path='googlecloudsdk.generated_clients.apis.lifesciences.v2beta',
-                    client_classpath='lifesciences_v2beta_client.LifesciencesV2beta',
-                    base_url='https://lifesciences.googleapis.com/',
-                    messages_modulepath='lifesciences_v2beta_messages'),
-                default_version=True,
-                enable_mtls=True,
-                mtls_endpoint_override='',
-                regional_endpoints={}),
-    },
     'logging': {
         'v2':
             APIDef(
@@ -4618,7 +4605,7 @@ MAP = {
                 default_version=True,
                 enable_mtls=True,
                 mtls_endpoint_override='',
-                regional_endpoints={}),
+                regional_endpoints={'us-east7': 'https://sqladmin.us-east7.rep.googleapis.com/', 'northamerica-northeast1': 'https://sqladmin.northamerica-northeast1.rep.googleapis.com/', 'northamerica-northeast2': 'https://sqladmin.northamerica-northeast2.rep.googleapis.com/', 'europe-north1': 'https://sqladmin.europe-north1.rep.googleapis.com/', 'us-west2': 'https://sqladmin.us-west2.rep.googleapis.com/', 'asia-east2': 'https://sqladmin.asia-east2.rep.googleapis.com/', 'europe-west3': 'https://sqladmin.europe-west3.rep.googleapis.com/', 'us-east1': 'https://sqladmin.us-east1.rep.googleapis.com/', 'asia-east1': 'https://sqladmin.asia-east1.rep.googleapis.com/', 'asia-northeast2': 'https://sqladmin.asia-northeast2.rep.googleapis.com/', 'me-central1': 'https://sqladmin.me-central1.rep.googleapis.com/', 'europe-central2': 'https://sqladmin.europe-central2.rep.googleapis.com/', 'northamerica-south1': 'https://sqladmin.northamerica-south1.rep.googleapis.com/', 'us-west8': 'https://sqladmin.us-west8.rep.googleapis.com/', 'me-west1': 'https://sqladmin.me-west1.rep.googleapis.com/', 'asia-northeast3': 'https://sqladmin.asia-northeast3.rep.googleapis.com/', 'us-west1': 'https://sqladmin.us-west1.rep.googleapis.com/', 'europe-west9': 'https://sqladmin.europe-west9.rep.googleapis.com/', 'asia-southeast3': 'https://sqladmin.asia-southeast3.rep.googleapis.com/', 'europe-west1': 'https://sqladmin.europe-west1.rep.googleapis.com/', 'asia-southeast1': 'https://sqladmin.asia-southeast1.rep.googleapis.com/', 'us-west4': 'https://sqladmin.us-west4.rep.googleapis.com/', 'europe-west12': 'https://sqladmin.europe-west12.rep.googleapis.com/', 'asia-south2': 'https://sqladmin.asia-south2.rep.googleapis.com/', 'australia-southeast1': 'https://sqladmin.australia-southeast1.rep.googleapis.com/', 'europe-west6': 'https://sqladmin.europe-west6.rep.googleapis.com/', 'us-east4': 'https://sqladmin.us-east4.rep.googleapis.com/', 'asia-southeast2': 'https://sqladmin.asia-southeast2.rep.googleapis.com/', 'europe-southwest1': 'https://sqladmin.europe-southwest1.rep.googleapis.com/', 'europe-west8': 'https://sqladmin.europe-west8.rep.googleapis.com/', 'africa-south1': 'https://sqladmin.africa-south1.rep.googleapis.com/', 'me-central2': 'https://sqladmin.me-central2.rep.googleapis.com/', 'us-central1': 'https://sqladmin.us-central1.rep.googleapis.com/', 'us-central2': 'https://sqladmin.us-central2.rep.googleapis.com/', 'europe-north2': 'https://sqladmin.europe-north2.rep.googleapis.com/', 'asia-northeast1': 'https://sqladmin.asia-northeast1.rep.googleapis.com/', 'europe-west2': 'https://sqladmin.europe-west2.rep.googleapis.com/', 'southamerica-east1': 'https://sqladmin.southamerica-east1.rep.googleapis.com/', 'us-east5': 'https://sqladmin.us-east5.rep.googleapis.com/', 'asia-south1': 'https://sqladmin.asia-south1.rep.googleapis.com/', 'europe-west4': 'https://sqladmin.europe-west4.rep.googleapis.com/', 'us-west3': 'https://sqladmin.us-west3.rep.googleapis.com/', 'australia-southeast2': 'https://sqladmin.australia-southeast2.rep.googleapis.com/', 'southamerica-west1': 'https://sqladmin.southamerica-west1.rep.googleapis.com/', 'europe-west10': 'https://sqladmin.europe-west10.rep.googleapis.com/'}),
     },
     'storage': {
         'v1':

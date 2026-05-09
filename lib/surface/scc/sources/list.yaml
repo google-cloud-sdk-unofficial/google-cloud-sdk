@@ -1,0 +1,27 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: List Cloud Security Command Center sources.
+    description: List Cloud Security Command Center sources.
+    examples: |
+      List all sources under organization 123456:
+
+        $ {command} organizations/123456
+
+      List all sources under folder 456:
+
+        $ {command} folders/456
+
+      List all sources under project example-project:
+
+        $ {command} projects/example-project
+
+  request:
+    collection: securitycenter.organizations.sources
+    api_version: v2
+    method: list
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.scc.sources.request_hooks:ListSourcesReqHook
+
+  arguments:
+    additional_arguments_hook: googlecloudsdk.command_lib.scc.hooks:AppendParentArg

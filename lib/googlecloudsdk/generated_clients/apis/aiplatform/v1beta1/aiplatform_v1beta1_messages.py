@@ -14558,6 +14558,22 @@ class AiplatformProjectsLocationsReasoningEnginesA2aTasksListRequest(_messages.M
   parent = _messages.StringField(5, required=True)
 
 
+class AiplatformProjectsLocationsReasoningEnginesAsyncQueryRequest(_messages.Message):
+  r"""A AiplatformProjectsLocationsReasoningEnginesAsyncQueryRequest object.
+
+  Fields:
+    googleCloudAiplatformV1beta1AsyncQueryReasoningEngineRequest: A
+      GoogleCloudAiplatformV1beta1AsyncQueryReasoningEngineRequest resource to
+      be passed as the request body.
+    name: Required. The name of the ReasoningEngine resource to use. Format: `
+      projects/{project}/locations/{location}/reasoningEngines/{reasoning_engi
+      ne}`
+  """
+
+  googleCloudAiplatformV1beta1AsyncQueryReasoningEngineRequest = _messages.MessageField('GoogleCloudAiplatformV1beta1AsyncQueryReasoningEngineRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class AiplatformProjectsLocationsReasoningEnginesCreateRequest(_messages.Message):
   r"""A AiplatformProjectsLocationsReasoningEnginesCreateRequest object.
 
@@ -16453,6 +16469,80 @@ class AiplatformProjectsLocationsSemanticGovernancePoliciesPatchRequest(_message
   googleCloudAiplatformV1beta1SemanticGovernancePolicy = _messages.MessageField('GoogleCloudAiplatformV1beta1SemanticGovernancePolicy', 1)
   name = _messages.StringField(2, required=True)
   updateMask = _messages.StringField(3)
+
+
+class AiplatformProjectsLocationsSemanticGovernancePolicyEngineOperationsCancelRequest(_messages.Message):
+  r"""A AiplatformProjectsLocationsSemanticGovernancePolicyEngineOperationsCan
+  celRequest object.
+
+  Fields:
+    name: The name of the operation resource to be cancelled.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class AiplatformProjectsLocationsSemanticGovernancePolicyEngineOperationsDeleteRequest(_messages.Message):
+  r"""A AiplatformProjectsLocationsSemanticGovernancePolicyEngineOperationsDel
+  eteRequest object.
+
+  Fields:
+    name: The name of the operation resource to be deleted.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class AiplatformProjectsLocationsSemanticGovernancePolicyEngineOperationsGetRequest(_messages.Message):
+  r"""A AiplatformProjectsLocationsSemanticGovernancePolicyEngineOperationsGet
+  Request object.
+
+  Fields:
+    name: The name of the operation resource.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class AiplatformProjectsLocationsSemanticGovernancePolicyEngineOperationsListRequest(_messages.Message):
+  r"""A AiplatformProjectsLocationsSemanticGovernancePolicyEngineOperationsLis
+  tRequest object.
+
+  Fields:
+    filter: The standard list filter.
+    name: The name of the operation's parent resource.
+    pageSize: The standard list page size.
+    pageToken: The standard list page token.
+    returnPartialSuccess: When set to `true`, operations that are reachable
+      are returned as normal, and those that are unreachable are returned in
+      the ListOperationsResponse.unreachable field. This can only be `true`
+      when reading across collections. For example, when `parent` is set to
+      `"projects/example/locations/-"`. This field is not supported by default
+      and will result in an `UNIMPLEMENTED` error if set unless explicitly
+      documented otherwise in service or product specific documentation.
+  """
+
+  filter = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  returnPartialSuccess = _messages.BooleanField(5)
+
+
+class AiplatformProjectsLocationsSemanticGovernancePolicyEngineOperationsWaitRequest(_messages.Message):
+  r"""A AiplatformProjectsLocationsSemanticGovernancePolicyEngineOperationsWai
+  tRequest object.
+
+  Fields:
+    name: The name of the operation resource to wait on.
+    timeout: The maximum duration to wait before timing out. If left blank,
+      the wait will be at most the time permitted by the underlying HTTP/RPC
+      protocol. If RPC context deadline is also specified, the shorter one
+      will be used.
+  """
+
+  name = _messages.StringField(1, required=True)
+  timeout = _messages.StringField(2)
 
 
 class AiplatformProjectsLocationsServerlessRayJobsCancelRequest(_messages.Message):
@@ -18696,6 +18786,22 @@ class AiplatformRagEngineConfigOperationsWaitRequest(_messages.Message):
   timeout = _messages.StringField(2)
 
 
+class AiplatformReasoningEnginesAsyncQueryRequest(_messages.Message):
+  r"""A AiplatformReasoningEnginesAsyncQueryRequest object.
+
+  Fields:
+    googleCloudAiplatformV1beta1AsyncQueryReasoningEngineRequest: A
+      GoogleCloudAiplatformV1beta1AsyncQueryReasoningEngineRequest resource to
+      be passed as the request body.
+    name: Required. The name of the ReasoningEngine resource to use. Format: `
+      projects/{project}/locations/{location}/reasoningEngines/{reasoning_engi
+      ne}`
+  """
+
+  googleCloudAiplatformV1beta1AsyncQueryReasoningEngineRequest = _messages.MessageField('GoogleCloudAiplatformV1beta1AsyncQueryReasoningEngineRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class AiplatformReasoningEnginesCreateRequest(_messages.Message):
   r"""A AiplatformReasoningEnginesCreateRequest object.
 
@@ -20157,6 +20263,77 @@ class AiplatformSemanticGovernancePoliciesOperationsWaitRequest(_messages.Messag
   timeout = _messages.StringField(2)
 
 
+class AiplatformSemanticGovernancePolicyEngineOperationsCancelRequest(_messages.Message):
+  r"""A AiplatformSemanticGovernancePolicyEngineOperationsCancelRequest
+  object.
+
+  Fields:
+    name: The name of the operation resource to be cancelled.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class AiplatformSemanticGovernancePolicyEngineOperationsDeleteRequest(_messages.Message):
+  r"""A AiplatformSemanticGovernancePolicyEngineOperationsDeleteRequest
+  object.
+
+  Fields:
+    name: The name of the operation resource to be deleted.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class AiplatformSemanticGovernancePolicyEngineOperationsGetRequest(_messages.Message):
+  r"""A AiplatformSemanticGovernancePolicyEngineOperationsGetRequest object.
+
+  Fields:
+    name: The name of the operation resource.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class AiplatformSemanticGovernancePolicyEngineOperationsListRequest(_messages.Message):
+  r"""A AiplatformSemanticGovernancePolicyEngineOperationsListRequest object.
+
+  Fields:
+    filter: The standard list filter.
+    name: The name of the operation's parent resource.
+    pageSize: The standard list page size.
+    pageToken: The standard list page token.
+    returnPartialSuccess: When set to `true`, operations that are reachable
+      are returned as normal, and those that are unreachable are returned in
+      the ListOperationsResponse.unreachable field. This can only be `true`
+      when reading across collections. For example, when `parent` is set to
+      `"projects/example/locations/-"`. This field is not supported by default
+      and will result in an `UNIMPLEMENTED` error if set unless explicitly
+      documented otherwise in service or product specific documentation.
+  """
+
+  filter = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  returnPartialSuccess = _messages.BooleanField(5)
+
+
+class AiplatformSemanticGovernancePolicyEngineOperationsWaitRequest(_messages.Message):
+  r"""A AiplatformSemanticGovernancePolicyEngineOperationsWaitRequest object.
+
+  Fields:
+    name: The name of the operation resource to wait on.
+    timeout: The maximum duration to wait before timing out. If left blank,
+      the wait will be at most the time permitted by the underlying HTTP/RPC
+      protocol. If RPC context deadline is also specified, the shorter one
+      will be used.
+  """
+
+  name = _messages.StringField(1, required=True)
+  timeout = _messages.StringField(2)
+
+
 class AiplatformSolversOperationsDeleteRequest(_messages.Message):
   r"""A AiplatformSolversOperationsDeleteRequest object.
 
@@ -20779,6 +20956,15 @@ class CloudAiLargeModelsVisionGenerateVideoExperiments(_messages.Message):
     numDiffusionSteps: Number of diffusion steps
     promptInputs: Prompt chunks for "ProModel" prompting. If set, the prompt
       will not be rewritten, and top-level prompt ignored.
+    requestOriginTag: Optional tag for tracking the source of this request.
+      Allowed values: "colab", "comfyui", "curl", "flowresearch",
+      "vertexstudio". Unrecognized tags are recorded as "unknown" in metrics.
+      Tags do not affect video generation behavior. Up to 16 characters, ASCII
+      alphanumeric, hyphens, and underscores only.
+    truncateInputVideo: If true (default), truncate input videos that exceed
+      the model's maximum frame count by applying a frame_selection_config to
+      __video_file__ inputs. Set to false to preserve the existing fail-fast
+      behavior.
     videoTransformMaskGcsUri: GCS URI of the grayscale video mask for
       Differential Diffusion. Maps to sdedit_video_tmax_scale_map
     videoTransformStrength: SDEdit: Scalar noise level (0.0 to 1.0) Maps to
@@ -20790,8 +20976,10 @@ class CloudAiLargeModelsVisionGenerateVideoExperiments(_messages.Message):
   modelName = _messages.StringField(3)
   numDiffusionSteps = _messages.IntegerField(4, variant=_messages.Variant.INT32)
   promptInputs = _messages.MessageField('CloudAiLargeModelsVisionPromptInputs', 5)
-  videoTransformMaskGcsUri = _messages.StringField(6)
-  videoTransformStrength = _messages.FloatField(7, variant=_messages.Variant.FLOAT)
+  requestOriginTag = _messages.StringField(6)
+  truncateInputVideo = _messages.BooleanField(7)
+  videoTransformMaskGcsUri = _messages.StringField(8)
+  videoTransformStrength = _messages.FloatField(9, variant=_messages.Variant.FLOAT)
 
 
 class CloudAiLargeModelsVisionGenerateVideoExperimentsConditioningFrame(_messages.Message):
@@ -22111,6 +22299,19 @@ class GoogleCloudAiplatformV1beta1AssignNotebookRuntimeRequest(_messages.Message
   notebookRuntime = _messages.MessageField('GoogleCloudAiplatformV1beta1NotebookRuntime', 1)
   notebookRuntimeId = _messages.StringField(2)
   notebookRuntimeTemplate = _messages.StringField(3)
+
+
+class GoogleCloudAiplatformV1beta1AsyncQueryReasoningEngineRequest(_messages.Message):
+  r"""Request message for
+  ReasoningEngineExecutionService.AsyncQueryReasoningEngine.
+
+  Fields:
+    inputGcsUri: Optional. Input Cloud Storage URI for the Async query.
+    outputGcsUri: Optional. Output Cloud Storage URI for the Async query.
+  """
+
+  inputGcsUri = _messages.StringField(1)
+  outputGcsUri = _messages.StringField(2)
 
 
 class GoogleCloudAiplatformV1beta1AsyncRetrieveContextsRequest(_messages.Message):
@@ -24472,6 +24673,15 @@ class GoogleCloudAiplatformV1beta1CopyModelRequest(_messages.Message):
   r"""Request message for ModelService.CopyModel.
 
   Fields:
+    customServiceAccount: Optional. The user-provided custom service account
+      to use to do the copy model. If empty, [Vertex AI Service
+      Agent](https://cloud.google.com/vertex-ai/docs/general/access-
+      control#service-agents) will be used to access resources needed to
+      upload the model. This account must belong to the destination project
+      where the model is copied to, i.e., the project specified in the
+      `parent` field of this request and have the Vertex AI Service Agent role
+      in the source project. Requires the user copying the Model to have the
+      `iam.serviceAccounts.actAs` permission on this service account.
     encryptionSpec: Customer-managed encryption key options. If this is set,
       then the Model copy will be encrypted with the provided encryption key.
     modelId: Optional. Copy source_model into a new Model with this ID. The ID
@@ -24486,10 +24696,11 @@ class GoogleCloudAiplatformV1beta1CopyModelRequest(_messages.Message):
       `projects/{project}/locations/{location}/models/{model}`
   """
 
-  encryptionSpec = _messages.MessageField('GoogleCloudAiplatformV1beta1EncryptionSpec', 1)
-  modelId = _messages.StringField(2)
-  parentModel = _messages.StringField(3)
-  sourceModel = _messages.StringField(4)
+  customServiceAccount = _messages.StringField(1)
+  encryptionSpec = _messages.MessageField('GoogleCloudAiplatformV1beta1EncryptionSpec', 2)
+  modelId = _messages.StringField(3)
+  parentModel = _messages.StringField(4)
+  sourceModel = _messages.StringField(5)
 
 
 class GoogleCloudAiplatformV1beta1CopyModelResponse(_messages.Message):
@@ -34474,11 +34685,16 @@ class GoogleCloudAiplatformV1beta1GatewayConfig(_messages.Message):
     StateValueValuesEnum: Output only. The state of the Gateway configuration.
 
   Fields:
+    dnsRecord: Output only. The fully qualified record name of the created
+      A-record in Cloud DNS.
     dnsZoneName: Optional. FQDN of the private DNS zone to create DNS record
       set for PSC endpoint.
+    ipAddress: Output only. The private IP address of the PSC endpoint.
     network: Optional. The URI of the network resource where PSC-E will be
       provisioned. if not provided `default` network will be used. Format:
       projects/{project}/global/networks/{network}
+    pscEndpoint: Output only. The self-link or name of the Private Service
+      Connect endpoint forwarding rule.
     state: Output only. The state of the Gateway configuration.
     subnetwork: Optional. The URI of the subnetwork resource where PSC-E will
       be provisioned. if not provided `default` subnet will be used from the
@@ -34505,10 +34721,13 @@ class GoogleCloudAiplatformV1beta1GatewayConfig(_messages.Message):
     INACTIVE = 4
     FAILED = 5
 
-  dnsZoneName = _messages.StringField(1)
-  network = _messages.StringField(2)
-  state = _messages.EnumField('StateValueValuesEnum', 3)
-  subnetwork = _messages.StringField(4)
+  dnsRecord = _messages.StringField(1)
+  dnsZoneName = _messages.StringField(2)
+  ipAddress = _messages.StringField(3)
+  network = _messages.StringField(4)
+  pscEndpoint = _messages.StringField(5)
+  state = _messages.EnumField('StateValueValuesEnum', 6)
+  subnetwork = _messages.StringField(7)
 
 
 class GoogleCloudAiplatformV1beta1GcsDestination(_messages.Message):
@@ -35406,6 +35625,13 @@ class GoogleCloudAiplatformV1beta1GenerateUserScenariosRequest(_messages.Message
     agents: Required. A map containing the static configurations for each
       agent in the system. Key: agent_id (matches the `author` field in
       events). Value: The static configuration of the agent.
+    allowCrossRegionModel: Optional. Allows the scenario generation to use
+      cross region models. When this flag is set, the service may route
+      traffic to other regions if a model is unavailable in the current region
+      (e.g., to a `global` endpoint). If a fully-qualified model endpoint
+      resource name with a different region than the request location is
+      provided elsewhere in the request, this flag must be set to true or the
+      request will fail.
     rootAgentId: Required. The agent id to identify the root agent.
     userScenarioGenerationConfig: Required. Configuration for generating user
       scenarios.
@@ -35438,8 +35664,9 @@ class GoogleCloudAiplatformV1beta1GenerateUserScenariosRequest(_messages.Message
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   agents = _messages.MessageField('AgentsValue', 1)
-  rootAgentId = _messages.StringField(2)
-  userScenarioGenerationConfig = _messages.MessageField('GoogleCloudAiplatformV1beta1UserScenarioGenerationConfig', 3)
+  allowCrossRegionModel = _messages.BooleanField(2)
+  rootAgentId = _messages.StringField(3)
+  userScenarioGenerationConfig = _messages.MessageField('GoogleCloudAiplatformV1beta1UserScenarioGenerationConfig', 4)
 
 
 class GoogleCloudAiplatformV1beta1GenerateUserScenariosResponse(_messages.Message):
@@ -44282,7 +44509,8 @@ class GoogleCloudAiplatformV1beta1OnlineEvaluatorCloudObservability(_messages.Me
     openTelemetry: Data source follows OpenTelemetry convention.
     traceScope: Scope online evaluation to single traces.
     traceView: Optional. Optional trace view that will be used to query
-      traces. If empty, the `_Default` view will be used.
+      traces. If empty, the `_Default` view will be used. NOTE: This field is
+      not supported yet and will be ignored if set.
   """
 
   logView = _messages.StringField(1)
@@ -51368,7 +51596,20 @@ class GoogleCloudAiplatformV1beta1SandboxEnvironment(_messages.Message):
     expireTime: Optional. Timestamp in UTC of when this SandboxEnvironment is
       considered expired. This is *always* provided on output, regardless of
       what `expiration` was sent on input.
+    latestSandboxEnvironmentSnapshot: Output only. The resource name of the
+      latest snapshot taken for this SandboxEnvironment.
     name: Identifier. The name of the SandboxEnvironment.
+    owner: Optional. Owner information for this sandbox environment. A Sandbox
+      can only be restored from a snapshot that belongs to the same owner. If
+      not set, sandbox will be created as the default owner.
+    sandboxEnvironmentSnapshot: Optional. The resource name of the
+      SandboxEnvironmentSnapshot to use for creating this SandboxEnvironment.
+      Format: `projects/{project}/locations/{location}/reasoningEngines/{reaso
+      ning_engine}/sandboxEnvironmentSnapshots/{sandbox_environment_snapshot}`
+    sandboxEnvironmentTemplate: Optional. The name of the
+      SandboxEnvironmentTemplate specified in the parent Agent Engine resource
+      that this SandboxEnvironment is created from. Only one of
+      `sandbox_environment_template` and `spec` should be set.
     spec: Optional. The configuration of the SandboxEnvironment.
     state: Output only. The runtime state of the SandboxEnvironment.
     ttl: Optional. Input only. The TTL for the sandbox environment. The
@@ -51402,11 +51643,15 @@ class GoogleCloudAiplatformV1beta1SandboxEnvironment(_messages.Message):
   createTime = _messages.StringField(2)
   displayName = _messages.StringField(3)
   expireTime = _messages.StringField(4)
-  name = _messages.StringField(5)
-  spec = _messages.MessageField('GoogleCloudAiplatformV1beta1SandboxEnvironmentSpec', 6)
-  state = _messages.EnumField('StateValueValuesEnum', 7)
-  ttl = _messages.StringField(8)
-  updateTime = _messages.StringField(9)
+  latestSandboxEnvironmentSnapshot = _messages.StringField(5)
+  name = _messages.StringField(6)
+  owner = _messages.StringField(7)
+  sandboxEnvironmentSnapshot = _messages.StringField(8)
+  sandboxEnvironmentTemplate = _messages.StringField(9)
+  spec = _messages.MessageField('GoogleCloudAiplatformV1beta1SandboxEnvironmentSpec', 10)
+  state = _messages.EnumField('StateValueValuesEnum', 11)
+  ttl = _messages.StringField(12)
+  updateTime = _messages.StringField(13)
 
 
 class GoogleCloudAiplatformV1beta1SandboxEnvironmentConnectionInfo(_messages.Message):
@@ -51415,6 +51660,7 @@ class GoogleCloudAiplatformV1beta1SandboxEnvironmentConnectionInfo(_messages.Mes
   Fields:
     loadBalancerHostname: Output only. The hostname of the load balancer.
     loadBalancerIp: Output only. The IP address of the load balancer.
+    routingToken: Output only. The routing token for the SandboxEnvironment.
     sandboxHostname: Output only. The hostname of the SandboxEnvironment.
     sandboxInternalIp: Output only. The internal IP address of the
       SandboxEnvironment.
@@ -51422,8 +51668,9 @@ class GoogleCloudAiplatformV1beta1SandboxEnvironmentConnectionInfo(_messages.Mes
 
   loadBalancerHostname = _messages.StringField(1)
   loadBalancerIp = _messages.StringField(2)
-  sandboxHostname = _messages.StringField(3)
-  sandboxInternalIp = _messages.StringField(4)
+  routingToken = _messages.StringField(3)
+  sandboxHostname = _messages.StringField(4)
+  sandboxInternalIp = _messages.StringField(5)
 
 
 class GoogleCloudAiplatformV1beta1SandboxEnvironmentSnapshot(_messages.Message):
@@ -51570,6 +51817,8 @@ class GoogleCloudAiplatformV1beta1SandboxEnvironmentTemplate(_messages.Message):
     defaultContainerEnvironment: The sandbox environment for default container
       workloads.
     displayName: Required. The display name of the SandboxEnvironmentTemplate.
+    egressControlConfig: Optional. The configuration for egress control of
+      this template.
     name: Identifier. The resource name of the SandboxEnvironmentTemplate.
       Format: `projects/{project}/locations/{location}/reasoningEngines/{reaso
       ning_engine}/sandboxEnvironmentTemplates/{sandbox_environment_template}`
@@ -51603,10 +51852,11 @@ class GoogleCloudAiplatformV1beta1SandboxEnvironmentTemplate(_messages.Message):
   customContainerEnvironment = _messages.MessageField('GoogleCloudAiplatformV1beta1SandboxEnvironmentTemplateCustomContainerEnvironment', 2)
   defaultContainerEnvironment = _messages.MessageField('GoogleCloudAiplatformV1beta1SandboxEnvironmentTemplateDefaultContainerEnvironment', 3)
   displayName = _messages.StringField(4)
-  name = _messages.StringField(5)
-  state = _messages.EnumField('StateValueValuesEnum', 6)
-  updateTime = _messages.StringField(7)
-  warmPoolConfig = _messages.MessageField('GoogleCloudAiplatformV1beta1SandboxEnvironmentTemplateWarmPoolConfig', 8)
+  egressControlConfig = _messages.MessageField('GoogleCloudAiplatformV1beta1SandboxEnvironmentTemplateEgressControlConfig', 5)
+  name = _messages.StringField(6)
+  state = _messages.EnumField('StateValueValuesEnum', 7)
+  updateTime = _messages.StringField(8)
+  warmPoolConfig = _messages.MessageField('GoogleCloudAiplatformV1beta1SandboxEnvironmentTemplateWarmPoolConfig', 9)
 
 
 class GoogleCloudAiplatformV1beta1SandboxEnvironmentTemplateCustomContainerEnvironment(_messages.Message):
@@ -51661,6 +51911,16 @@ class GoogleCloudAiplatformV1beta1SandboxEnvironmentTemplateDefaultContainerEnvi
     DEFAULT_CONTAINER_CATEGORY_COMPUTER_USE = 1
 
   defaultContainerCategory = _messages.EnumField('DefaultContainerCategoryValueValuesEnum', 1)
+
+
+class GoogleCloudAiplatformV1beta1SandboxEnvironmentTemplateEgressControlConfig(_messages.Message):
+  r"""Configuration for egress control of sandbox instances.
+
+  Fields:
+    internetAccess: Optional. Whether to allow internet access.
+  """
+
+  internetAccess = _messages.BooleanField(1)
 
 
 class GoogleCloudAiplatformV1beta1SandboxEnvironmentTemplateNetworkPort(_messages.Message):
@@ -56803,13 +57063,15 @@ class GoogleCloudAiplatformV1beta1SemanticGovernancePolicyEngine(_messages.Messa
       SemanticGovernancePolicyEngine.
 
   Messages:
-    GatewayConfigsValue: Optional. Configurations for gateways.
+    GatewayConfigsValue: Optional. Configurations for gateways. The keys are
+      user-defined names for each gateway.
 
   Fields:
     createTime: Output only. Timestamp when this
       SemanticGovernancePolicyEngine was created.
-    gatewayConfigs: Optional. Configurations for gateways.
-    ipAddress: Output only. The private IP address of the PSC endpoint.
+    gatewayConfigs: Optional. Configurations for gateways. The keys are user-
+      defined names for each gateway.
+    ipAddress: Output only. The private IPv4 address of the PSC endpoint.
     name: Identifier. The resource name of the SemanticGovernancePolicyEngine.
       Format:
       projects/{project}/locations/{location}/semanticGovernancePolicyEngine
@@ -56820,6 +57082,11 @@ class GoogleCloudAiplatformV1beta1SemanticGovernancePolicyEngine(_messages.Messa
       provided by SGP. Format: projects/{project}/regions/{region}/serviceAtta
       chments/{service_attachment}
     state: Output only. The state of the SemanticGovernancePolicyEngine.
+    targetProject: Optional. The project where network, subnetwork and dns
+      resources are located. If not provided, it is assumed to be the same
+      project of SemanticGovernancePolicyEngine. This field is for Shared VPC
+      scenarios, where network resources may be in a target project and SGP
+      engine in a service project.
     updateTime: Output only. Timestamp when this
       SemanticGovernancePolicyEngine was last updated.
   """
@@ -56846,7 +57113,8 @@ class GoogleCloudAiplatformV1beta1SemanticGovernancePolicyEngine(_messages.Messa
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class GatewayConfigsValue(_messages.Message):
-    r"""Optional. Configurations for gateways.
+    r"""Optional. Configurations for gateways. The keys are user-defined names
+    for each gateway.
 
     Messages:
       AdditionalProperty: An additional property for a GatewayConfigsValue
@@ -56876,7 +57144,8 @@ class GoogleCloudAiplatformV1beta1SemanticGovernancePolicyEngine(_messages.Messa
   pscForwardingRule = _messages.StringField(5)
   pscServiceAttachment = _messages.StringField(6)
   state = _messages.EnumField('StateValueValuesEnum', 7)
-  updateTime = _messages.StringField(8)
+  targetProject = _messages.StringField(8)
+  updateTime = _messages.StringField(9)
 
 
 class GoogleCloudAiplatformV1beta1SemanticGovernancePolicyMcpTool(_messages.Message):
@@ -62102,27 +62371,43 @@ class GoogleCloudAiplatformV1beta1VeoHyperParameters(_messages.Message):
   r"""Hyperparameters for Veo.
 
   Enums:
-    TuningSpeedValueValuesEnum: Optional. The speed of the tuning job. Only
-      supported for Veo 3.0 models.
-    TuningTaskValueValuesEnum: Optional. The tuning task. Either I2V or T2V.
+    AdapterSizeValueValuesEnum: Optional. The adapter size for LoRA tuning.
+    TuningSpeedValueValuesEnum: The speed of the tuning job. Only supported
+      for Veo 3.0 models.
+    TuningTaskValueValuesEnum: The tuning task for Veo.
 
   Fields:
+    adapterSize: Optional. The adapter size for LoRA tuning.
     epochCount: Optional. Number of complete passes the model makes over the
       entire training dataset during training.
     learningRateMultiplier: Optional. Multiplier for adjusting the default
       learning rate.
-    tuningSpeed: Optional. The speed of the tuning job. Only supported for Veo
-      3.0 models.
-    tuningTask: Optional. The tuning task. Either I2V or T2V.
+    tuningSpeed: The speed of the tuning job. Only supported for Veo 3.0
+      models.
+    tuningTask: The tuning task for Veo.
     veoDataMixtureRatio: Optional. The ratio of Google internal dataset to use
       in the training mixture, in range of `[0, 1)`. If `0.2`, it means 20% of
       Google internal dataset and 80% of user dataset will be used for
       training. If not set, the default value is 0.1.
   """
 
+  class AdapterSizeValueValuesEnum(_messages.Enum):
+    r"""Optional. The adapter size for LoRA tuning.
+
+    Values:
+      ADAPTER_SIZE_UNSPECIFIED: Adapter size is unspecified.
+      ADAPTER_SIZE_EIGHT: Adapter size 8. This is the default adapter size for
+        Veo LoRA tuning.
+      ADAPTER_SIZE_SIXTEEN: Adapter size 16.
+      ADAPTER_SIZE_THIRTY_TWO: Adapter size 32.
+    """
+    ADAPTER_SIZE_UNSPECIFIED = 0
+    ADAPTER_SIZE_EIGHT = 1
+    ADAPTER_SIZE_SIXTEEN = 2
+    ADAPTER_SIZE_THIRTY_TWO = 3
+
   class TuningSpeedValueValuesEnum(_messages.Enum):
-    r"""Optional. The speed of the tuning job. Only supported for Veo 3.0
-    models.
+    r"""The speed of the tuning job. Only supported for Veo 3.0 models.
 
     Values:
       TUNING_SPEED_UNSPECIFIED: The default / unset value. For Veo 3.0 models,
@@ -62135,7 +62420,7 @@ class GoogleCloudAiplatformV1beta1VeoHyperParameters(_messages.Message):
     FAST = 2
 
   class TuningTaskValueValuesEnum(_messages.Enum):
-    r"""Optional. The tuning task. Either I2V or T2V.
+    r"""The tuning task for Veo.
 
     Values:
       TUNING_TASK_UNSPECIFIED: Default value. This value is unused.
@@ -62148,11 +62433,12 @@ class GoogleCloudAiplatformV1beta1VeoHyperParameters(_messages.Message):
     TUNING_TASK_T2V = 2
     TUNING_TASK_R2V = 3
 
-  epochCount = _messages.IntegerField(1)
-  learningRateMultiplier = _messages.FloatField(2)
-  tuningSpeed = _messages.EnumField('TuningSpeedValueValuesEnum', 3)
-  tuningTask = _messages.EnumField('TuningTaskValueValuesEnum', 4)
-  veoDataMixtureRatio = _messages.FloatField(5)
+  adapterSize = _messages.EnumField('AdapterSizeValueValuesEnum', 1)
+  epochCount = _messages.IntegerField(2)
+  learningRateMultiplier = _messages.FloatField(3)
+  tuningSpeed = _messages.EnumField('TuningSpeedValueValuesEnum', 4)
+  tuningTask = _messages.EnumField('TuningTaskValueValuesEnum', 5)
+  veoDataMixtureRatio = _messages.FloatField(6)
 
 
 class GoogleCloudAiplatformV1beta1VeoTuningSpec(_messages.Message):

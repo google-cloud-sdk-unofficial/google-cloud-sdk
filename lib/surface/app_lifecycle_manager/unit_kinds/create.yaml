@@ -125,6 +125,42 @@
         - api_field: ignoreForLookup
           help_text: |-
             Indicates if this mapping should be used during lookup or not
+    - group:
+        api_field: unitKind.appParams
+        required: false
+        help_text: |-
+          AppParams contains the parameters for creating an AppHub Application.
+        params:
+        - arg_name: app-params-group
+          api_field: unitKind.appParams.group
+          required: false
+          repeated: false
+          help_text: |-
+            Grouping used to construct the name of the AppHub Application.
+            Multiple UnitKinds can specify the same group to use the same Application
+            across their respective units.
+            Corresponds to the app_boundary_id in the ADC composite
+            ApplicationTemplate. Defaults to UnitKind.name
+        - group:
+            api_field: unitKind.appParams.scope
+            required: false
+            help_text: |-
+              Scope of an application.
+            params:
+            - arg_name: scope-type
+              api_field: unitKind.appParams.scope.type
+              required: true
+              help_text: |-
+                Scope Type.
+              choices:
+              - arg_value: type-regional
+                enum_value: TYPE_REGIONAL
+                help_text: |-
+                  Regional type.
+              - arg_value: type-global
+                enum_value: TYPE_GLOBAL
+                help_text: |-
+                  Global type.
     - arg_name: labels
       api_field: unitKind.labels
       required: false

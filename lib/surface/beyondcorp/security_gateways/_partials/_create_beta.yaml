@@ -223,6 +223,7 @@
         arg_name: logging
         settable: true
         required: false
+        hidden: true
         help_text: |-
           Configuration for Cloud Logging.
         params: []

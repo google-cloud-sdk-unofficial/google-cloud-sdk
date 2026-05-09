@@ -53,6 +53,7 @@ class Update(base.UpdateCommand):
     flags.AddLabels()
     flags.AddStageConfig()
     flags.AddIgnoredClustersSelectorFlags(is_update=True)
+    flags.AddAutoRolloutScope()
     flags.AddAsync()
 
   def Run(
@@ -75,6 +76,8 @@ class Update(base.UpdateCommand):
         'ignored_clusters_selector'
     ) or args.IsKnownAndSpecified('clear_ignored_clusters_selector'):
       mask.append('ignored_clusters_selector')
+    if args.IsKnownAndSpecified('auto_rollout_scope'):
+      mask.append('auto_upgrade_config')
 
     # if there's nothing to update, then return
     if not mask:

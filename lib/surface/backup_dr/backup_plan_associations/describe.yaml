@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, GA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: Show details of the backup plan association.
     description: Show all configuration data associated with the specified backup plan association.

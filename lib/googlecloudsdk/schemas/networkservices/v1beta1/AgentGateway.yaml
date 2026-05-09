@@ -1,0 +1,76 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1beta1 AgentGateway export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- protocols
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  description:
+    description: |-
+      A free-text description of the resource. Max length 1024 characters.
+    type: string
+  etag:
+    description: |-
+      Etag of the resource. If this is provided, it must match the server's
+      etag. If the provided etag does not match the server's etag, the request
+      will fail with a 409 ABORTED error.
+    type: string
+  googleManaged:
+    description: |-
+      Proxy is orchestrated and managed by GoogleCloud in a tenant project.
+    $ref: AgentGatewayGoogleManaged.yaml
+  labels:
+    description: Set of label tags associated with the AgentGateway resource.
+    $ref: LabelsValue.yaml
+  name:
+    description: |-
+      Identifier. Name of the AgentGateway resource. It matches pattern
+      `projects/*/locations/*/agentGateways/`.
+    type: string
+  networkConfig:
+    description: Network configuration for the AgentGateway.
+    $ref: AgentGatewayNetworkConfig.yaml
+  protocols:
+    description: List of protocols supported by an Agent Gateway
+    type: array
+    items:
+      type: string
+      enum:
+      - MCP
+      - PROTOCOL_UNSPECIFIED
+  registries:
+    description: |-
+      A list of Agent registries containing the agents, MCP servers and
+      tools governed by the Agent Gateway. Note: Currently limited to
+      project-scoped registries Must be of format `//agentregistry.googleapi
+      s.com/projects/{project}/locations/{location}/
+    type: array
+    items:
+      type: string
+  selfManaged:
+    description: |-
+      Attach to existing Application Load Balancers or Secure Web
+      Proxies.
+    $ref: AgentGatewaySelfManaged.yaml

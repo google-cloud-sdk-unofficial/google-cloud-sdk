@@ -24,7 +24,6 @@ class HealthSources(base.Group):
   """Manage health sources."""
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class HealthSourcesGa(HealthSources):

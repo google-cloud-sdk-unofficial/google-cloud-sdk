@@ -4239,6 +4239,8 @@ def AddRequestValidForDurationArgs(parser):
 
 
 def AddWorkloadIdentityConfigArgs(parser):
+  """Adds arguments for configuring workload identity on instances.
+  """
   parser.add_argument(
       '--identity',
       type=str,
@@ -4250,6 +4252,20 @@ def AddWorkloadIdentityConfigArgs(parser):
       '--identity-certificate',
       action=arg_parsers.StoreTrueFalseAction,
       help="""\
-      Enables or disables managed workload identities on a VM.
+      Enables or disables managed workload identity certificates on a VM.
+      """,
+  )
+
+
+def AddMostDisruptiveAllowedActionArgs(parser):
+  """Adds arguments for configuring most disruptive allowed action on instances.
+  """
+  parser.add_argument(
+      '--most-disruptive-allowed-action',
+      choices=['NO_EFFECT', 'REFRESH', 'RESTART'],
+      help="""\
+          If specified, Compute Engine returns an error if the update
+          requires a higher action to be applied to the instance. If
+          not specified, the default will be REFRESH.
       """,
   )

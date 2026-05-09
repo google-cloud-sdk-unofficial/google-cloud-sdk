@@ -66,18 +66,6 @@
         hidden: true
         help_text: |-
           Names of the context attributes that are used in the evaluation rules and allocations.
-      - api_field: variants
-        help_text: |-
-          A list of variants.
-          Variant is an identifier for a value (name assigned to a value).
-        spec:
-        - api_field: name
-          help_text: |-
-            Name of the variant.
-            Max length: 128 bytes.
-        - api_field: boolValue
-          help_text: |-
-            Value is a single boolean flag value for the variant.
 
     - arg_name: flag-set
       api_field: flag.flagSet

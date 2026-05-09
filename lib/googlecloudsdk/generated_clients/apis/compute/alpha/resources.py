@@ -236,6 +236,13 @@ class Collections(enum.Enum):
       ['project', 'zone', 'family'],
       True
   )
+  IMAGEVIEWS = (
+      'imageViews',
+      'projects/{project}/regions/{region}/imageViews/{resourceId}',
+      {},
+      ['project', 'region', 'resourceId'],
+      True
+  )
   IMAGES = (
       'images',
       'projects/{project}/global/images/{image}',

@@ -145,10 +145,7 @@ class GetCredentialsCommand(hub_base.HubCommand, base.Command):
 
     with overrides.RegionalGatewayEndpoint(arg_location):
       client = gateway_client.GatewayClient(self.ReleaseTrack())
-      adc = (
-          self.ReleaseTrack() == base.ReleaseTrack.ALPHA
-          and application_default_credentials
-      )
+      adc = application_default_credentials
       resp = client.GenerateCredentials(
           name=f'projects/{project_number}/locations/{arg_location}/memberships/{membership_id}',
           force_use_agent=force_use_agent,

@@ -24,14 +24,15 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.backupdr import flags
 from googlecloudsdk.core import log
 
-
 BackupPlanAssociationsClient = (
     backup_plan_associations.BackupPlanAssociationsClient
 )
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class FetchForResourceType(base.ListCommand):
   """Fetch Backup Plan Associations for a given resource type and location."""
 

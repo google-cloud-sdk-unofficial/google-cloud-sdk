@@ -88,6 +88,7 @@ class BackupVaultsClient(object):
       labels=None,
       backup_retention_policy=None,
       kms_config=None,
+      cross_project_vault=None,
   ):
     """Parses the command line arguments for Create BackupVault into a message.
 
@@ -99,6 +100,7 @@ class BackupVaultsClient(object):
       labels: The parsed labels value.
       backup_retention_policy: The backup retention policy of the Backup Vault.
       kms_config: The KMS Config resource name for CMEK.
+      cross_project_vault: Whether the Backup Vault is a cross project vault.
 
     Returns:
       The configuration that will be used ass the request body for creating a
@@ -118,6 +120,8 @@ class BackupVaultsClient(object):
       )
     if kms_config is not None:
       backup_vault.kmsConfig = kms_config
+    if cross_project_vault is not None:
+      backup_vault.crossProjectVault = cross_project_vault
     return backup_vault
 
   def ListBackupVaults(self, location_ref, limit=None):

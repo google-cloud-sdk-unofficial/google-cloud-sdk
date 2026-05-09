@@ -662,3 +662,68 @@ def PrewarmArtifact(
   else:
     raise ValueError("Invalid artifact type: {}".format(artifact_type))
   return client.projects_locations_repositories.PrewarmArtifact(req)
+
+
+def RemovePrewarmedArtifact(client, messages, artifact_name, stream_location):
+  """Removes the prewarmed state of a specific artifact.
+
+  Args:
+    client: The Artifact Registry API client.
+    messages: The Artifact Registry API messages.
+    artifact_name: str, The full resource name of the artifact (version or tag).
+    stream_location: str, The location of the stream.
+
+  Returns:
+    The result of the RemovePrewarmedArtifact API call.
+  """
+  if "/versions/" in artifact_name:
+    remove_request = messages.RemovePrewarmedArtifactRequest(
+        version=artifact_name,
+        streamLocation=stream_location,
+    )
+  else:
+    remove_request = messages.RemovePrewarmedArtifactRequest(
+        tag=artifact_name,
+        streamLocation=stream_location,
+    )
+  req = messages.ArtifactregistryProjectsLocationsRepositoriesRemovePrewarmedArtifactRequest(
+      repository=artifact_name.split("/packages/")[0],
+      removePrewarmedArtifactRequest=remove_request,
+  )
+  return client.projects_locations_repositories.RemovePrewarmedArtifact(req)
+
+
+def CheckPrewarmedArtifact(client, messages, artifact_name, stream_location):
+  """Checks the prewarmed status of a specific artifact."""
+  repository = artifact_name.split("/packages/")[0]
+  if "/versions/" in artifact_name:
+    check_request = messages.CheckPrewarmedArtifactRequest(
+        version=artifact_name,
+        streamLocation=stream_location,
+    )
+  else:
+    check_request = messages.CheckPrewarmedArtifactRequest(
+        tag=artifact_name,
+        streamLocation=stream_location,
+    )
+
+  req = messages.ArtifactregistryProjectsLocationsRepositoriesCheckPrewarmedArtifactRequest(
+      repository=repository,
+      checkPrewarmedArtifactRequest=check_request,
+  )
+  return client.projects_locations_repositories.CheckPrewarmedArtifact(req)
+
+
+def ListPrewarmedArtifacts(
+    client, messages, repository, page_size=None, server_filter=None, limit=None
+):
+  """Lists all prewarmed artifacts under a repository."""
+  list_req = messages.ArtifactregistryProjectsLocationsRepositoriesPrewarmedArtifactsListRequest(
+      parent=repository, filter=server_filter)
+  return list_pager.YieldFromList(
+      client.projects_locations_repositories_prewarmedArtifacts,
+      list_req,
+      batch_size=page_size,
+      batch_size_attribute="pageSize",
+      field="prewarmedArtifacts",
+      limit=limit)

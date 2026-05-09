@@ -228,3 +228,49 @@ def Update(
 
   log.UpdatedResource(entry_ref.RelativeName(), kind='entry')
   return resource
+
+
+def Modify(
+    args: parser_extensions.Namespace,
+    remove_aspects_arg_name: str = 'remove_aspects',
+    update_aspects_arg_name: str = 'update_aspects',
+) -> dataplex_message.GoogleCloudDataplexV1ModifyEntryResponse:
+  """Create a ModifyEntry request based on arguments provided."""
+
+  update_mask = _GetFieldsForUpdateMask(args)
+  if len(update_mask) < 1:
+    raise exceptions.HttpException(
+        'Update commands must specify at least one additional parameter to'
+        ' change.'
+    )
+
+  entry_ref = args.CONCEPTS.entry.Parse()
+  dataplex_client = dataplex_api.GetClientInstance()
+
+  location_name = entry_ref.Parent().Parent().RelativeName()
+
+  log.UpdatedResource(entry_ref.RelativeName(), kind='entry')
+  return dataplex_client.projects_locations.ModifyEntry(
+      dataplex_message.DataplexProjectsLocationsModifyEntryRequest(
+          name=location_name,
+          googleCloudDataplexV1ModifyEntryRequest=dataplex_message.GoogleCloudDataplexV1ModifyEntryRequest(
+              entry=dataplex_message.GoogleCloudDataplexV1Entry(
+                  name=entry_ref.RelativeName(),
+                  fullyQualifiedName=_GetArgValueOrNone(
+                      args, 'fully_qualified_name'
+                  ),
+                  aspects=_GetArgValueOrNone(args, update_aspects_arg_name),
+                  entrySource=_GetEntrySourceOrNone(args),
+              ),
+              deleteMissingAspects=args.IsKnownAndSpecified(
+                  remove_aspects_arg_name
+              ),
+              updateMask=','.join(update_mask),
+              aspectKeys=_GenerateAspectKeys(
+                  args,
+                  remove_aspects_arg_name=remove_aspects_arg_name,
+                  update_aspects_arg_name=update_aspects_arg_name,
+              ),
+          ),
+      )
+  )

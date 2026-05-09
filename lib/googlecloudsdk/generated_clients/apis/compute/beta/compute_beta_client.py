@@ -3513,7 +3513,7 @@ To prevent failure, it is recommended that you set the
         method_id='compute.forwardingRules.get',
         ordered_params=['project', 'region', 'forwardingRule'],
         path_params=['forwardingRule', 'project', 'region'],
-        query_params=[],
+        query_params=['view'],
         relative_path='projects/{project}/regions/{region}/forwardingRules/{forwardingRule}',
         request_field='',
         request_type_name='ComputeForwardingRulesGetRequest',
@@ -4131,7 +4131,7 @@ available forwarding rules by making a list() request.
         method_id='compute.globalForwardingRules.get',
         ordered_params=['project', 'forwardingRule'],
         path_params=['forwardingRule', 'project'],
-        query_params=[],
+        query_params=['view'],
         relative_path='projects/{project}/global/forwardingRules/{forwardingRule}',
         request_field='',
         request_type_name='ComputeGlobalForwardingRulesGetRequest',
@@ -30884,7 +30884,7 @@ This method is called on a best-effort basis. Specifically:
           }
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a specified zone VM extension policy.
+      r"""Deletes a specified zone VM extension policy within a project.
 
       Args:
         request: (ComputeZoneVmExtensionPoliciesDeleteRequest) input message
@@ -30910,7 +30910,7 @@ This method is called on a best-effort basis. Specifically:
     )
 
     def Get(self, request, global_params=None):
-      r"""Retrieves details of a specific zone VM extension policy.
+      r"""Retrieves details of a specific zone VM extension policy within a project.
 
       Args:
         request: (ComputeZoneVmExtensionPoliciesGetRequest) input message
@@ -30988,7 +30988,7 @@ This method is called on a best-effort basis. Specifically:
     )
 
     def Update(self, request, global_params=None):
-      r"""Modifies an existing zone VM extension policy.
+      r"""Modifies an existing zone VM extension policy within a project.
 
       Args:
         request: (ComputeZoneVmExtensionPoliciesUpdateRequest) input message

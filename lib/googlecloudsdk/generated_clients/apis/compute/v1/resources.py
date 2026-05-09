@@ -158,6 +158,14 @@ class Collections(enum.Enum):
       ['project', 'publicDelegatedPrefix'],
       True
   )
+  GLOBALVMEXTENSIONPOLICIES = (
+      'globalVmExtensionPolicies',
+      'projects/{project}/global/vmExtensionPolicies/'
+      '{globalVmExtensionPolicy}',
+      {},
+      ['project', 'globalVmExtensionPolicy'],
+      True
+  )
   HEALTHCHECKS = (
       'healthChecks',
       'projects/{project}/global/healthChecks/{healthCheck}',

@@ -30,6 +30,7 @@ from googlecloudsdk.core.util import times
 import six
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   r"""Delete a subordinate certificate authority.

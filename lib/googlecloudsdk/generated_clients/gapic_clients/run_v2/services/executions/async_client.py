@@ -66,6 +66,8 @@ class ExecutionsAsyncClient:
     _DEFAULT_ENDPOINT_TEMPLATE = ExecutionsClient._DEFAULT_ENDPOINT_TEMPLATE
     _DEFAULT_UNIVERSE = ExecutionsClient._DEFAULT_UNIVERSE
 
+    build_path = staticmethod(ExecutionsClient.build_path)
+    parse_build_path = staticmethod(ExecutionsClient.parse_build_path)
     connector_path = staticmethod(ExecutionsClient.connector_path)
     parse_connector_path = staticmethod(ExecutionsClient.parse_connector_path)
     crypto_key_path = staticmethod(ExecutionsClient.crypto_key_path)

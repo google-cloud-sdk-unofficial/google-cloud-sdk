@@ -24,6 +24,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class GetCaCerts(base.Command):
   r"""Get the root CA certs for all active CAs in the CA pool.

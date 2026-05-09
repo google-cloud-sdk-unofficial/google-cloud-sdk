@@ -2977,6 +2977,10 @@ class TagKey(_messages.Message):
     purposeData: Optional. Purpose data corresponds to the policy system that
       the tag is intended for. See documentation for `Purpose` for formatting
       of this field. Purpose data cannot be changed once set.
+    semantics: Optional. Contains the semantic key identifier (e.g.,
+      "ENVIRONMENT", "CRITICALITY", or "COST_CENTER") as defined in the
+      centralized Semantics Catalog. This provides semantic meaning of the tag
+      key.
     shortName: Required. Immutable. The user friendly name for a TagKey. The
       short name should be unique for TagKeys within the same tag namespace.
       The short name must be 1-256 characters, beginning and ending with an
@@ -3047,8 +3051,9 @@ class TagKey(_messages.Message):
   parent = _messages.StringField(7)
   purpose = _messages.EnumField('PurposeValueValuesEnum', 8)
   purposeData = _messages.MessageField('PurposeDataValue', 9)
-  shortName = _messages.StringField(10)
-  updateTime = _messages.StringField(11)
+  semantics = _messages.StringField(10)
+  shortName = _messages.StringField(11)
+  updateTime = _messages.StringField(12)
 
 
 class TagValue(_messages.Message):
@@ -3070,6 +3075,13 @@ class TagValue(_messages.Message):
       `{project_number}/{tag_key_short_name}/{tag_value_short_name}`.
     parent: Immutable. The resource name of the new TagValue's parent TagKey.
       Must be of the form `tagKeys/{tag_key_id}`.
+    semantics: Optional. Contains the semantic value identifier (e.g.,
+      "PRODUCTION", "STAGING", or "HIGH") as defined in the centralized
+      Semantics Catalog. This must contain a valid semantic value as per the
+      definition of the parent TagKey's semantic key in the Semantics Catalog.
+      For example, if the parent TagKey has "ENVIRONMENT" as its semantic key
+      identifier, this field could contain semantic values such as
+      "PRODUCTION" or "STAGING".
     shortName: Required. Immutable. User-assigned short name for TagValue. The
       short name should be unique for TagValues within the same parent TagKey.
       The short name must be 256 characters or less, beginning and ending with
@@ -3084,8 +3096,9 @@ class TagValue(_messages.Message):
   name = _messages.StringField(4)
   namespacedName = _messages.StringField(5)
   parent = _messages.StringField(6)
-  shortName = _messages.StringField(7)
-  updateTime = _messages.StringField(8)
+  semantics = _messages.StringField(7)
+  shortName = _messages.StringField(8)
+  updateTime = _messages.StringField(9)
 
 
 class TestIamPermissionsRequest(_messages.Message):

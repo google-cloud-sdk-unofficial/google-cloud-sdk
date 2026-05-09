@@ -232,7 +232,7 @@ class Client(abc.ABC):
     if description:
       updated_sp.description = description
       update_mask.append('description')
-    if labels:
+    if labels is not None:
       updated_sp.labels = labels
       update_mask.append('labels')
 

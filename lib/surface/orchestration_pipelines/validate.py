@@ -21,7 +21,6 @@ from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.orchestration_pipelines import gcp_deployer
 from googlecloudsdk.command_lib.orchestration_pipelines.handlers import registry
 from googlecloudsdk.command_lib.orchestration_pipelines.tools import yaml_processor
-from googlecloudsdk.core import yaml
 
 DEPLOYMENT_FILE_NAME = "deployment.yaml"
 
@@ -45,19 +44,7 @@ class Validate(calliope_base.Command):
         type=arg_parsers.ArgList(),
         help="The list of relative pipeline YAML file paths to validate.",
     )
-    parser.add_argument(
-        "--substitutions",
-        metavar="KEY=VALUE",
-        type=arg_parsers.ArgDict(),
-        help="Variables to substitute in the pipeline configuration.",
-    )
-    parser.add_argument(
-        "--substitutions-file",
-        help=(
-            "Path to a YAML file containing variable substitutions for the "
-            "pipeline configuration."
-        ),
-    )
+
     parser.add_argument(
         "--mode",
         choices=["syntax-only", "full"],
@@ -71,33 +58,13 @@ class Validate(calliope_base.Command):
             " Default mode is 'full'."
         ),
     )
+    yaml_processor.add_substitution_flags(parser)
 
   def Run(self, args):
     work_dir = pathlib.Path.cwd()
 
-    # 1. Collect all variables from substitutions file and environment
-    # variables
-    substitutions_file_vars = {}
-    if getattr(args, "substitutions_file", None):
-      try:
-        substitutions_file_vars = yaml.load_path(args.substitutions_file)
-        if not isinstance(substitutions_file_vars, dict):
-          raise calliope_exceptions.BadFileException(
-              f"Substitutions file {args.substitutions_file} "
-              "must contain a dictionary."
-          )
-      except yaml.Error as e:
-        raise calliope_exceptions.BadFileException(
-            f"Error parsing substitutions file {args.substitutions_file}: {e}"
-        ) from e
-
-    env_vars = yaml_processor.collect_environment_variables()
-
-    external_vars = {}
-    external_vars.update(env_vars)
-    external_vars.update(substitutions_file_vars)
-    if getattr(args, "substitutions", None):
-      external_vars.update(args.substitutions)
+    # 1. Collect all variables from substitutions file and environment variables
+    external_vars = yaml_processor.collect_external_vars(args, work_dir)
 
     # 2. Setup validation contexts based on provided arguments.
     # Each context contains an environment, combined variables, pipeline paths,
@@ -106,16 +73,9 @@ class Validate(calliope_base.Command):
     error_environments = {}
     if args.environment:
       deployment_path = work_dir / DEPLOYMENT_FILE_NAME
-      environment = yaml_processor.load_environment(
-          deployment_path, args.environment, external_vars
+      _, combined_variables, environment = yaml_processor.parse_deployment(
+          str(deployment_path), args.environment, external_vars
       )
-      yaml_processor.validate_environment(environment, args.environment)
-
-      combined_variables = {
-          "project": environment.project,
-          "region": environment.region,
-          **(environment.variables if environment.variables else {}),
-      }
       pipeline_paths_in_deployment = (
           [p.source for p in environment.pipelines]
           if getattr(environment, "pipelines", None)

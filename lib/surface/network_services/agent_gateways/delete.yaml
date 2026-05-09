@@ -1,5 +1,5 @@
 # Copyright 2026 Google LLC. All Rights Reserved.
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, BETA]
 
 help_text:
   brief: |
@@ -22,4 +22,6 @@ async:
 request:
   ALPHA:
     api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
   collection: networkservices.projects.locations.agentGateways

@@ -71,6 +71,8 @@ class JobsAsyncClient:
     _DEFAULT_ENDPOINT_TEMPLATE = JobsClient._DEFAULT_ENDPOINT_TEMPLATE
     _DEFAULT_UNIVERSE = JobsClient._DEFAULT_UNIVERSE
 
+    build_path = staticmethod(JobsClient.build_path)
+    parse_build_path = staticmethod(JobsClient.parse_build_path)
     connector_path = staticmethod(JobsClient.connector_path)
     parse_connector_path = staticmethod(JobsClient.parse_connector_path)
     crypto_key_path = staticmethod(JobsClient.crypto_key_path)

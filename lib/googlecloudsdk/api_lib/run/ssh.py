@@ -28,9 +28,11 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import iap_tunnel
 from googlecloudsdk.command_lib.compute import ssh_utils
 from googlecloudsdk.command_lib.util.ssh import ssh
+from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import requests as core_requests
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.util import platforms
 
 
 def _GetProjectNumberFromWorkloadJson(
@@ -122,7 +124,8 @@ def CreateSshTunnelArgs(
 
   if iap_tunnel_url_override:
     res.pass_through_args.append(
-        "--iap-tunnel-url-override=" + iap_tunnel_url_override)
+        f"--iap-tunnel-url-override={iap_tunnel_url_override}"
+    )
 
   return res
 
@@ -260,11 +263,15 @@ class Ssh:
     """Returns whether to use the Qual domain override."""
     if self.iap_tunnel_url_override is None:
       return False
-    return "cloud-run-qual" in self.iap_tunnel_url_override
+    return (
+        "cloud-run-qual" in self.iap_tunnel_url_override
+        or "tunnel-staging" in self.iap_tunnel_url_override
+        or "tunnel-testing" in self.iap_tunnel_url_override
+    )
 
   def _GetWorkloadJson(self):
     """Retrieves the JSON representation of the Cloud Run workload."""
-    command = ["gcloud"]
+    command = execution_utils.ArgsForGcloud()
 
     if self.workload_type == self.WorkloadType.SERVICE:
       command.extend(["run", "services", "describe"])
@@ -329,9 +336,16 @@ class Ssh:
 
   def GetSshCommandComponents(self):
     """Returns the SSH command components."""
-    env = ssh.Environment.Current()
+    # The PuTTY binary in gcloud does not natively support passing signed
+    # certificates via flags. Since OpenSSH is now officially supported on
+    # Windows 10 and later, and Cloud Run SSH is a completely new feature,
+    # falling back to OpenSSH on Windows is safe.
+    if platforms.OperatingSystem.IsWindows():
+      env = ssh.Environment(ssh.Suite.OPENSSH, None, is_windows=True)
+    else:
+      env = ssh.Environment.Current()
     env.RequireSSH()
-    keys = ssh.Keys.FromFilename()
+    keys = ssh.Keys.FromFilename(env=env)
     keys.EnsureKeysExist(overwrite=False)
     user = constants.SSH_ROOT_USER
 
@@ -350,6 +364,7 @@ class Ssh:
             "service_account": self.service_account,
             "workload_type": self.workload_type,
         },
+        env=env,
     )
     cert_file = ssh.CertFileFromCloudRunDeployment(
         project=self.project,

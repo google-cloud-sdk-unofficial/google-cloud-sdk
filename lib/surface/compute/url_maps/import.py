@@ -298,6 +298,15 @@ def _GetClearedFieldsForCachePolicy(cache_policy, field_prefix):
   return cleared_fields
 
 
+def _GetClearedFieldsForImageOptimizationPolicy(image_optimization_policy,
+                                                field_prefix):
+  """Gets a list of fields cleared by the user for ImageOptimizationPolicy."""
+  cleared_fields = []
+  if not image_optimization_policy.queryParameterInterpretation:
+    cleared_fields.append(field_prefix + 'queryParameterInterpretation')
+  return cleared_fields
+
+
 def _GetClearedFieldsForRoutAction(route_action, field_prefix):
   """Gets a list of fields cleared by the user for HttpRouteAction."""
   cleared_fields = []
@@ -335,13 +344,26 @@ def _GetClearedFieldsForRoutAction(route_action, field_prefix):
         route_action.faultInjectionPolicy,
         field_prefix + 'faultInjectionPolicy.')
 
-  # cachePolicy is currently Alpha and Beta only.
   if hasattr(route_action, 'cachePolicy'):
     if not route_action.cachePolicy:
       cleared_fields.append(field_prefix + 'cachePolicy')
     else:
       cleared_fields = cleared_fields + _GetClearedFieldsForCachePolicy(
-          route_action.cachePolicy, field_prefix + 'cachePolicy.')
+          route_action.cachePolicy, field_prefix + 'cachePolicy.'
+      )
+
+  # imageOptimizationPolicy is currently Alpha only.
+  if hasattr(route_action, 'imageOptimizationPolicy'):
+    if not route_action.imageOptimizationPolicy:
+      cleared_fields.append(field_prefix + 'imageOptimizationPolicy')
+    else:
+      cleared_fields = (
+          cleared_fields
+          + _GetClearedFieldsForImageOptimizationPolicy(
+              route_action.imageOptimizationPolicy,
+              field_prefix + 'imageOptimizationPolicy.',
+          )
+      )
   return cleared_fields
 
 

@@ -20,7 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instant_snapshot_groups import flags as isg_flags
 
 DETAILED_HELP = {  # Dict[str, str]
-    'brief': 'Create a Compute Engine instant snapshot group.',
+    'brief': 'Create a Compute Engine consistency group of instant snapshots.',
     'DESCRIPTION': """\
     *{command}* creates an instant snapshot group of the consistency group.  An Instant Snapshot Group is a Point In Time view of the constituent disks of a Consistency Group, they are stored in-place as Instant Snapshots on the corresponding disks.
     """,
@@ -42,7 +42,9 @@ def _CommonArgs(parser):
   _SourceArgs(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 @base.DefaultUniverseOnly
 class Create(base.Command):
   """Create a Compute Engine instant snapshot group."""

@@ -50,8 +50,10 @@ class AddBackend(base.UpdateCommand):
   support_global_neg = True
   support_region_neg = True
   support_failover = True
-  support_in_flight_balancing = False
+  support_in_flight_balancing = True
   support_inline_service = False
+  # TODO(b/502655802) - Remove all references on promotion to GA.
+  support_external_passthrough = False
 
   @classmethod
   def Args(cls, parser):
@@ -68,13 +70,12 @@ class AddBackend(base.UpdateCommand):
         parser,
         support_global_neg=cls.support_global_neg,
         support_region_neg=cls.support_region_neg,
-        release_track=cls.ReleaseTrack(),
+        support_external_passthrough=cls.support_external_passthrough,
     )
     backend_flags.AddCapacityLimits(
         parser,
         support_global_neg=cls.support_global_neg,
         support_region_neg=cls.support_region_neg,
-        release_track=cls.ReleaseTrack(),
     )
     backend_flags.AddCapacityScalar(
         parser,
@@ -158,9 +159,7 @@ class AddBackend(base.UpdateCommand):
       A new Backend message with its fields set according to the given
       arguments.
     """
-    backend_services_utils.ValidateBalancingModeArgs(
-        messages, args, self.ReleaseTrack()
-    )
+    backend_services_utils.ValidateBalancingModeArgs(messages, args)
     if preference is not None:
       backend = messages.Backend(
           balancingMode=balancing_mode,
@@ -175,6 +174,10 @@ class AddBackend(base.UpdateCommand):
           maxConnections=args.max_connections,
           maxConnectionsPerInstance=args.max_connections_per_instance,
           maxConnectionsPerEndpoint=args.max_connections_per_endpoint,
+          maxInFlightRequests=args.max_in_flight_requests,
+          maxInFlightRequestsPerInstance=args.max_in_flight_requests_per_instance,
+          maxInFlightRequestsPerEndpoint=args.max_in_flight_requests_per_endpoint,
+          trafficDuration=traffic_duration,
           failover=args.failover,
       )
       if self.ReleaseTrack() in [
@@ -182,18 +185,6 @@ class AddBackend(base.UpdateCommand):
           base.ReleaseTrack.BETA,
       ]:
         backend.service = args.service
-      if (
-          self.ReleaseTrack() == base.ReleaseTrack.ALPHA
-          or self.ReleaseTrack() == base.ReleaseTrack.BETA
-      ):
-        backend.maxInFlightRequests = args.max_in_flight_requests
-        backend.maxInFlightRequestsPerInstance = (
-            args.max_in_flight_requests_per_instance
-        )
-        backend.maxInFlightRequestsPerEndpoint = (
-            args.max_in_flight_requests_per_endpoint
-        )
-        backend.trafficDuration = traffic_duration
 
       return backend
     else:
@@ -209,6 +200,10 @@ class AddBackend(base.UpdateCommand):
           maxConnections=args.max_connections,
           maxConnectionsPerInstance=args.max_connections_per_instance,
           maxConnectionsPerEndpoint=args.max_connections_per_endpoint,
+          maxInFlightRequests=args.max_in_flight_requests,
+          maxInFlightRequestsPerInstance=args.max_in_flight_requests_per_instance,
+          maxInFlightRequestsPerEndpoint=args.max_in_flight_requests_per_endpoint,
+          trafficDuration=traffic_duration,
           failover=args.failover,
       )
       if self.ReleaseTrack() in [
@@ -216,18 +211,6 @@ class AddBackend(base.UpdateCommand):
           base.ReleaseTrack.BETA,
       ]:
         backend.service = args.service
-      if (
-          self.ReleaseTrack() == base.ReleaseTrack.ALPHA
-          or self.ReleaseTrack() == base.ReleaseTrack.BETA
-      ):
-        backend.maxInFlightRequests = args.max_in_flight_requests
-        backend.maxInFlightRequestsPerInstance = (
-            args.max_in_flight_requests_per_instance
-        )
-        backend.maxInFlightRequestsPerEndpoint = (
-            args.max_in_flight_requests_per_endpoint
-        )
-        backend.trafficDuration = traffic_duration
 
       return backend
 
@@ -281,10 +264,7 @@ class AddBackend(base.UpdateCommand):
           args.preference)
 
     traffic_duration = None
-    if (
-        self.ReleaseTrack() == base.ReleaseTrack.ALPHA
-        or self.ReleaseTrack() == base.ReleaseTrack.BETA
-    ) and args.traffic_duration:
+    if args.traffic_duration:
       traffic_duration = client.messages.Backend.TrafficDurationValueValuesEnum(
           args.traffic_duration
       )
@@ -348,6 +328,8 @@ class AddBackendBeta(AddBackend):
   # Allow --preference flag to be set when updating the backend.
   support_in_flight_balancing = True
   support_inline_service = True
+  # TODO(b/502655796) - Set true for Beta promotion.
+  support_external_passthrough = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -371,3 +353,4 @@ class AddBackendAlpha(AddBackend):
   # Allow --preference flag to be set when updating the backend.
   support_in_flight_balancing = True
   support_inline_service = True
+  support_external_passthrough = True

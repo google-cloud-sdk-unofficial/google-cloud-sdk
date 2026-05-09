@@ -14,23 +14,32 @@
 # limitations under the License.
 """Update command to update WildFire Analysis profile."""
 
+import textwrap
+
 from googlecloudsdk.api_lib.network_security.security_profiles import wildfire_api
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.network_security import sp_flags
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
-    'DESCRIPTION': """
-          Update a security profile of type WildFire Analysis.
-        """,
-    'EXAMPLES': """
-          To update a WildFire Analysis security-profile `my-wildfire-security-profile` with
-          organization 1234, location global, and project my-project, run:
+    'DESCRIPTION': textwrap.dedent("""\
+        Update a security profile of type WildFire Analysis.
+        """),
+    'EXAMPLES': textwrap.dedent("""\
+        To update a WildFire Analysis security-profile `my-wildfire-security-profile` with
+        organization 1234, location global, and project my-project, run:
 
-          $ {command} my-wildfire-security-profile --organization=1234 --location=global --project=my-project --no-wildfire-realtime-lookup --analyze-windows-executables --no-analyze-shell
-        """,
+        $ {command} my-wildfire-security-profile \
+            --organization=1234 --location=global --project=my-project \
+            --no-wildfire-realtime-lookup --analyze-windows-executables --no-analyze-shell
+
+        To update labels of a WildFire Analysis security-profile, run:
+
+        $ {command} my-wildfire-security-profile --organization=1234 --location=global --update-labels=key1=value1,key2=value2
+        """),
 }
 
 
@@ -120,11 +129,20 @@ class Update(base.UpdateCommand):
             ' Mach-O files.'
         ),
     )
+    labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args):
     client = wildfire_api.Client(self.ReleaseTrack())
     security_profile = args.CONCEPTS.security_profile.Parse()
     is_async = args.async_
+
+    labels_update = labels_util.ProcessUpdateArgsLazy(
+        args,
+        client.messages.SecurityProfile.LabelsValue,
+        orig_labels_thunk=lambda: client.GetSecurityProfile(
+            security_profile.result.RelativeName()
+        ).labels,
+    )
 
     if args.location != 'global':
       raise core_exceptions.Error(
@@ -156,8 +174,14 @@ class Update(base.UpdateCommand):
       if args.IsSpecified(field):
         kwargs[field] = getattr(args, field)
 
+    if not kwargs and not labels_update.needs_update:
+      raise core_exceptions.Error(
+          'At least one field to update must be specified.'
+      )
+
     response = client.UpdateWildfireAnalysisProfile(
         name=security_profile.result.RelativeName(),
+        labels=labels_update.GetOrNone(),
         **kwargs,
     )
 

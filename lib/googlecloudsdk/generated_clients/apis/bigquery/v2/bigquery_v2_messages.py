@@ -3767,6 +3767,9 @@ class ExternalRuntimeOptions(_messages.Message):
       is 512Mi. For more information, see [Configure container limits for
       Python UDFs](https://cloud.google.com/bigquery/docs/user-defined-
       functions-python#configure-container-limits)
+    containerRequestConcurrency: Optional. Maximum number of requests that a
+      Cloud Run instance can handle concurrently. If absent or if `0`, a
+      default concurrency is used.
     maxBatchingRows: Optional. Maximum number of rows in each batch sent to
       the external runtime. If absent or if 0, BigQuery dynamically decides
       the number of rows in a batch.
@@ -3780,9 +3783,10 @@ class ExternalRuntimeOptions(_messages.Message):
 
   containerCpu = _messages.FloatField(1)
   containerMemory = _messages.StringField(2)
-  maxBatchingRows = _messages.IntegerField(3)
-  runtimeConnection = _messages.StringField(4)
-  runtimeVersion = _messages.StringField(5)
+  containerRequestConcurrency = _messages.IntegerField(3)
+  maxBatchingRows = _messages.IntegerField(4)
+  runtimeConnection = _messages.StringField(5)
+  runtimeVersion = _messages.StringField(6)
 
 
 class ExternalServiceCost(_messages.Message):

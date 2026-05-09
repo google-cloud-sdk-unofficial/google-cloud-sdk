@@ -35,9 +35,9 @@
         Parent value using the form
         `organizations/{organization_id}/locations/{location}/organizationEvents`.
 
-        `organization_id` - ID (number) of the project that contains the event. To
-        get your `organization_id`, see
-        [Getting your organization resource
+        `organization_id` - ID (number) of the organization that contains the
+        event. To get your `organization_id`, see [Getting your organization
+        resource
         ID](https://cloud.google.com/resource-manager/docs/creating-managing-organization#retrieving_your_organization_id).<br>
         `location` - The location to get the organization events from. Set this
         field to `global`.

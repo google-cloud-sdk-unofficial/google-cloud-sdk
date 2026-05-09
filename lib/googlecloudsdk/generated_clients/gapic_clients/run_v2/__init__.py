@@ -56,6 +56,7 @@ from .types.job import ListJobsRequest
 from .types.job import ListJobsResponse
 from .types.job import RunJobRequest
 from .types.job import UpdateJobRequest
+from .types.k8s_min import BuildConfiguration
 from .types.k8s_min import BuildInfo
 from .types.k8s_min import CloudSqlInstance
 from .types.k8s_min import Container
@@ -130,6 +131,7 @@ __all__ = (
     'WorkerPoolsAsyncClient',
 'BinaryAuthorization',
 'BuildConfig',
+'BuildConfiguration',
 'BuildInfo',
 'BuildsClient',
 'CancelExecutionRequest',

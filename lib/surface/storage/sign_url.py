@@ -36,8 +36,8 @@ from googlecloudsdk.core.util import iso_duration
 from googlecloudsdk.core.util import times
 
 
-_INSTALL_PY_OPEN_SSL_MESSAGE = (
-    'This command requires the pyOpenSSL library.'
+_INSTALL_CRYPTOGRAPHY_MESSAGE = (
+    'This command requires the cryptography library.'
     ' Please install it and set the environment variable'
     ' CLOUDSDK_PYTHON_SITEPACKAGES to 1 before re-running this command.'
 )
@@ -281,8 +281,8 @@ class SignUrl(base.Command):
             args.private_key_file, args.private_key_password
         )
       except ModuleNotFoundError as error:
-        if 'OpenSSL' in str(error):
-          raise command_errors.Error(_INSTALL_PY_OPEN_SSL_MESSAGE)
+        if 'cryptography' in str(error):
+          raise command_errors.Error(_INSTALL_CRYPTOGRAPHY_MESSAGE)
         raise
     elif delegate_chain:
       impersonated_account, delegates = c_store.ParseImpersonationAccounts(
@@ -298,8 +298,8 @@ class SignUrl(base.Command):
                 c_creds.ToJsonGoogleAuth(creds)
             )
           except ModuleNotFoundError as error:
-            if 'OpenSSL' in str(error):
-              raise command_errors.Error(_INSTALL_PY_OPEN_SSL_MESSAGE)
+            if 'cryptography' in str(error):
+              raise command_errors.Error(_INSTALL_CRYPTOGRAPHY_MESSAGE)
             raise
         else:
           raise command_errors.Error(_PROVIDE_SERVICE_ACCOUNT_MESSAGE)

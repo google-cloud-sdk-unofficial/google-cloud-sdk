@@ -15,14 +15,20 @@
 """Common utilities for Orchestration Pipelines commands."""
 
 from collections.abc import Mapping
+import contextlib
 import os
 import pathlib
 import re
-from typing import Any, Dict, Optional
+import threading
+from typing import Any, Dict, Iterable, Optional
+
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import exceptions as api_exceptions
+from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.orchestration_pipelines import deployment_model
+from googlecloudsdk.command_lib.orchestration_pipelines import git_context
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
@@ -230,11 +236,12 @@ def _expand_environment_resources(
       if r.name:
         selected_names = [r.name]
 
-      loaded_defs = _load_resource_profile(
-          path,
-          names=selected_names,
-          context=context,
-      )
+      with allow_secret_resolution():
+        loaded_defs = _load_resource_profile(
+            path,
+            names=selected_names,
+            context=context,
+        )
 
       # If we loaded a single resource and we have a specific name for it
       # in the profile, we should apply it (e.g. for single-file profiles
@@ -637,12 +644,44 @@ def _validate_dataproc_cluster(
         e, error_format="Failed to check Dataproc cluster: {message}"
     )
 
+_SECRET_RESOLUTION_ALLOWED = threading.local()
+
+
+class SecretValue:
+  """A wrapper for secret values that fails on __str__ unless allowed."""
+
+  def __init__(self, value: str):
+    self._value = value
+
+  def __str__(self) -> str:
+    if getattr(_SECRET_RESOLUTION_ALLOWED, "value", False):
+      return self._value
+    raise ValueError(
+        "Secret value cannot be converted to string in this context."
+    )
+
+
+@contextlib.contextmanager
+def allow_secret_resolution():
+  """Context manager to allow SecretValue to be converted to string."""
+  old_value = getattr(_SECRET_RESOLUTION_ALLOWED, "value", False)
+  _SECRET_RESOLUTION_ALLOWED.value = True
+  try:
+    yield
+  finally:
+    _SECRET_RESOLUTION_ALLOWED.value = old_value
+
 
 def resolve_string_templates(
     yaml_content: str, variables: Mapping[str, Any]
 ) -> str:
+  """Resolves template variables in a string."""
   for key, value in variables.items():
-    placeholder_pattern = r"{{\s*" + re.escape(key) + r"\s*}}"
+    placeholder_pattern = (
+        r"(?:{{\s*|__OPEN_TAG__\s*)"
+        + re.escape(key)
+        + r"(?:\s*}}|\s*__CLOSE_TAG__)"
+    )
     # Use a lambda to evaluate str(value) only if a match is found.
     # This allows passing objects that raise errors on __str__ conversion
     # to control when that error occurs (only if used).
@@ -652,17 +691,21 @@ def resolve_string_templates(
   return yaml_content
 
 
-def check_for_missing_variables(content: str) -> None:
+def check_for_missing_variables(
+    content: str, allowed_missing: Iterable[str] = ()
+) -> None:
   """Checks if there are any unsubstituted variables in the content."""
   pattern = r"{{\s*([A-Za-z0-9_]+)\s*}}"
-  match = re.search(pattern, content)
-  if match:
+
+  matches = re.finditer(pattern, content)
+  for match in matches:
     var_name = match.group(1)
-    raise BadFileError(
-        f"Variable '{var_name}' is not resolved in the content. Please ensure"
-        " that all variables are defined using deployment file, environment"
-        " variables, or substitutions argument."
-    )
+    if var_name not in allowed_missing:
+      raise BadFileError(
+          f"Variable '{var_name}' is not resolved in the content. Please ensure"
+          " that all variables are defined using deployment file, environment"
+          " variables, or substitutions argument."
+      )
 
 
 def load_all_environments(
@@ -705,6 +748,77 @@ def load_environment(
       env,
       external_variables,
   )
+
+
+def collect_external_vars(
+    args: Any, bundle_path: pathlib.Path
+) -> Dict[str, Any]:
+  """Collects external variables from environment, file, and args."""
+  external_vars = {}
+  substitutions_file_vars = {}
+  if getattr(args, "substitutions_file", None):
+    try:
+      substitutions_file_vars = yaml.load_path(args.substitutions_file)
+      if not isinstance(substitutions_file_vars, dict):
+        raise calliope_exceptions.BadFileException(
+            f"Substitutions file {args.substitutions_file} "
+            "must contain a dictionary."
+        )
+    except yaml.Error as e:
+      raise calliope_exceptions.BadFileException(
+          f"Error parsing substitutions file {args.substitutions_file}: {e}"
+      ) from e
+
+  env_vars = collect_environment_variables()
+  external_vars.update(env_vars)
+  external_vars.update(substitutions_file_vars)
+
+  substitutions = getattr(args, "substitutions", None)
+  if substitutions:
+    external_vars.update(substitutions)
+
+  # 4. Collect special values (COMMIT_SHA)
+  if getattr(args, "rollback", False) and getattr(args, "version", None):
+    if "COMMIT_SHA" in external_vars:
+      log.warning(
+          "Both --version and COMMIT_SHA provided. COMMIT_SHA will be"
+          " ignored in favor of --version for rollback."
+      )
+    external_vars["COMMIT_SHA"] = args.version
+
+  if "COMMIT_SHA" not in external_vars:
+
+    external_vars["COMMIT_SHA"] = git_context.SafeCommitSha.CreateLazy(
+        bundle_path=bundle_path,
+        is_local=getattr(args, "local", False),
+    )
+
+  return external_vars
+
+
+def add_substitution_flags(parser: Any) -> None:
+  """Adds --substitutions and --substitutions-file flags to the parser."""
+  parser.add_argument(
+      "--substitutions",
+      metavar="KEY=VALUE",
+      type=arg_parsers.ArgDict(),
+      help="Variables to substitute in the pipeline configuration.",
+  )
+  parser.add_argument(
+      "--substitutions-file",
+      help=(
+          "Path to a YAML file containing variable substitutions for the "
+          "pipeline configuration."
+      ),
+  )
+
+
+def load_environment_with_args(args: Any) -> deployment_model.EnvironmentModel:
+  """Loads the environment configuration based on command-line arguments."""
+  bundle_path = pathlib.Path.cwd()
+  external_vars = collect_external_vars(args, bundle_path)
+  deployment_path = bundle_path / DEPLOYMENT_FILE_NAME
+  return load_environment(str(deployment_path), args.environment, external_vars)
 
 
 def validate_environment(
@@ -750,7 +864,7 @@ def parse_deployment(
     deployment_path: str,
     env: str,
     external_variables: Optional[Dict[str, Any]] = None,
-) -> tuple[Dict[str, Any], Dict[str, Any]]:
+) -> tuple[Dict[str, Any], Dict[str, Any], deployment_model.EnvironmentModel]:
   """Extracts storage and environment specific configuration."""
   environment = load_environment(deployment_path, env, external_variables)
   environment = validate_environment(environment, env)
@@ -782,7 +896,7 @@ def parse_deployment(
       **result.get("variables", {}),
   }
 
-  return result, combined_variables
+  return result, combined_variables, environment
 
 
 def collect_environment_variables() -> dict[str, str]:
@@ -799,10 +913,26 @@ def collect_environment_variables() -> dict[str, str]:
   return env_vars
 
 
+def _extract_resource_profile_paths(config: Any) -> list[str]:
+  """Recursively extracts resource profile paths from a pipeline config."""
+  paths = []
+  if isinstance(config, dict):
+    for k, v in config.items():
+      if k == "resourceProfile" and isinstance(v, dict) and "path" in v:
+        paths.append(v["path"])
+      else:
+        paths.extend(_extract_resource_profile_paths(v))
+  elif isinstance(config, list):
+    for item in config:
+      paths.extend(_extract_resource_profile_paths(item))
+  return paths
+
+
 def validate_pipeline_l1(
     bundle_dir: pathlib.Path,
     pipeline_paths: list[str],
     combined_variables: Optional[Mapping[str, Any]] = None,
+    secret_keys: Iterable[str] = (),
 ) -> None:
   """Performs L1 validation for all pipelines in an environment.
 
@@ -813,10 +943,11 @@ def validate_pipeline_l1(
     bundle_dir: The directory where pipeline bundles are located.
     pipeline_paths: The list of pipeline file paths to validate.
     combined_variables: Dictionary of variables for template substitution.
+    secret_keys: Optional list of secret keys to check against.
 
   Raises:
     BadFileError: If a pipeline file cannot be read or parsed, or if variable
-    substitution fails.
+    substitution fails, or if secrets are used.
     exceptions.Error: If model validation fails.
   """
 
@@ -829,8 +960,19 @@ def validate_pipeline_l1(
       raise BadFileError(f"Error reading {full_pipeline_path}: {e}") from e
 
     resolved_yaml_content = resolve_string_templates(
-        yaml_content, combined_variables
+        yaml_content, combined_variables or {}
     )
+
+    if secret_keys:
+      for key in secret_keys:
+        pattern = r"{{\s*" + re.escape(key) + r"\s*}}"
+        if re.search(pattern, resolved_yaml_content):
+          raise BadFileError(
+              "Secrets are only supported in the resources section of "
+              "deployment.yaml, but found secret reference "
+              f"'{{{{ {key} }}}}' in pipeline file {pipeline_path}."
+          )
+
     check_for_missing_variables(resolved_yaml_content)
 
     try:
@@ -839,6 +981,26 @@ def validate_pipeline_l1(
       raise BadFileError(
           f"Failed to parse pipeline YAML after variable substitution: {e}"
       ) from e
+
+    profile_paths = _extract_resource_profile_paths(resolved_pipeline)
+    for pp in profile_paths:
+      if not pp.startswith(("gs://", "/")):
+        full_pp = bundle_dir / pp
+        if full_pp.exists():
+          try:
+            profile_content = files.ReadFileContents(full_pp)
+            if secret_keys:
+              for key in secret_keys:
+                pattern = r"{{\s*" + re.escape(key) + r"\s*}}"
+                if re.search(pattern, profile_content):
+                  raise BadFileError(
+                      "Secrets are only supported in the resources section of "
+                      "deployment.yaml, but found secret reference "
+                      f"'{{{{ {key} }}}}' in resource profile {pp} "
+                      f"referenced by pipeline {pipeline_path}."
+                  )
+          except files.Error:
+            pass
 
     _build_orchestration_pipelines_model(resolved_pipeline)
 
@@ -884,6 +1046,35 @@ def _get_pre_deployment_data(
     raise BadFileError(f"Error reading or parsing deployment.yaml: {e}") from e
 
 
+def _contains_secret_reference(value: Any, secret_keys: Iterable[str]) -> bool:
+  """Checks if a value contains a reference to any of the secrets."""
+  if isinstance(value, str):
+    for key in secret_keys:
+      pattern = r"__OPEN_TAG__\s*" + re.escape(key) + r"\s*__CLOSE_TAG__"
+      if re.search(pattern, value):
+        return True
+  elif isinstance(value, dict):
+    return any(
+        _contains_secret_reference(v, secret_keys) for v in value.values()
+    )
+  elif isinstance(value, list):
+    return any(_contains_secret_reference(v, secret_keys) for v in value)
+  return False
+
+
+def _resolve_templates_in_dict(data: Any, variables: Mapping[str, Any]) -> Any:
+  """Recursively resolves string templates in a dictionary or list."""
+  if isinstance(data, str):
+    return resolve_string_templates(data, variables)
+  elif isinstance(data, dict):
+    return {
+        k: _resolve_templates_in_dict(v, variables) for k, v in data.items()
+    }
+  elif isinstance(data, list):
+    return [_resolve_templates_in_dict(v, variables) for v in data]
+  return data
+
+
 def _load_environment_from_pre_parsed(
     deployment_path: str,
     yaml_content: str,
@@ -899,6 +1090,10 @@ def _load_environment_from_pre_parsed(
     raise BadFileError(f"Environment '{env}' not found in deployment file.")
 
   env_dict = pre_deployment_yaml[ENVIRONMENTS_KEY][env]
+  if not isinstance(env_dict, dict):
+    raise BadFileError(
+        f"Environment '{env}' configuration must be a dictionary."
+    )
 
   # Extract resolved variables
   resolved_variables = {}
@@ -916,43 +1111,86 @@ def _load_environment_from_pre_parsed(
   if external_variables:
     resolved_variables.update(external_variables)
 
+  raw_secrets = {}
   if SECRETS_KEY in env_dict:
     raw_secrets = env_dict[SECRETS_KEY] or {}
-    if raw_secrets:
-      sm_version = apis.ResolveVersion("secretmanager")
-      client = apis.GetClientInstance("secretmanager", sm_version)
-      messages = apis.GetMessagesModule("secretmanager", sm_version)
-      for k, secret_name in raw_secrets.items():
-        if k in resolved_variables:
-          continue
-        if isinstance(secret_name, str):
-          secret_name = secret_name.replace("__OPEN_TAG__", "{{").replace(
-              "__CLOSE_TAG__", "}}"
-          )
-          secret_name = resolve_string_templates(
-              secret_name, resolved_variables
-          )
-        try:
-          req = messages.SecretmanagerProjectsSecretsVersionsAccessRequest(
-              name=secret_name
-          )
-          response = client.projects_secrets_versions.Access(req)
-          resolved_variables[k] = response.payload.data.decode("utf-8")
-        except Exception as e:
-          raise BadFileError(
-              f"Failed to fetch secret '{secret_name}' from Secret Manager: {e}"
-          ) from e
 
-  # 3. Substitute on raw content
-  resolved_content = resolve_string_templates(yaml_content, resolved_variables)
+  # Prevent recursive workarounds
+  if VARIABLES_KEY in env_dict:
+    raw_vars = env_dict[VARIABLES_KEY] or {}
+    if _contains_secret_reference(raw_vars, raw_secrets.keys()):
+      raise BadFileError("Variables cannot reference secrets.")
 
-  check_for_missing_variables(resolved_content)
+  # Enforce secrets only in resources
+  for key, value in env_dict.items():
+    if key == "resources":
+      continue
+    if _contains_secret_reference(value, raw_secrets.keys()):
+      raise BadFileError(
+          "Secrets are only supported in the resources section, but found in "
+          f"section '{key}'."
+      )
+
+  secret_variables = {}
+  if raw_secrets:
+    sm_version = apis.ResolveVersion("secretmanager")
+    client = apis.GetClientInstance("secretmanager", sm_version)
+    messages = apis.GetMessagesModule("secretmanager", sm_version)
+    for k, secret_name in raw_secrets.items():
+      if k in resolved_variables:
+        continue
+      if isinstance(secret_name, str):
+        secret_name = secret_name.replace("__OPEN_TAG__", "{{").replace(
+            "__CLOSE_TAG__", "}}"
+        )
+        secret_name = resolve_string_templates(
+            secret_name, resolved_variables
+        )
+      try:
+        req = messages.SecretmanagerProjectsSecretsVersionsAccessRequest(
+            name=secret_name
+        )
+        response = client.projects_secrets_versions.Access(req)
+        secret_variables[k] = SecretValue(response.payload.data.decode("utf-8"))
+      except Exception as e:
+        raise BadFileError(
+            f"Failed to fetch secret '{secret_name}' from Secret Manager: {e}"
+        ) from e
+
+  # 3. Substitute on raw content (only non-secret variables)
+  resolved_content = resolve_string_templates(
+      yaml_content, resolved_variables
+  )
+
+  check_for_missing_variables(resolved_content, allowed_missing=raw_secrets.keys())
+
+  # Mask unresolved secrets to make it valid YAML
+  masked_for_yaml = resolved_content
+  for key in raw_secrets.keys():
+    pattern = r"{{\s*" + re.escape(key) + r"\s*}}"
+    masked_for_yaml = re.sub(
+        pattern, f"__OPEN_TAG__ {key} __CLOSE_TAG__", masked_for_yaml
+    )
 
   # 4. Final Parse
   try:
-    deployment_yaml = yaml.load(resolved_content)
+    deployment_yaml = yaml.load(masked_for_yaml)
   except yaml.Error as e:
     raise BadFileError(f"Error parsing deployment.yaml: {e}") from e
+
+  # Resolve secrets in resources section of deployment_yaml
+  if (
+      "environments" in deployment_yaml
+      and env in deployment_yaml["environments"]
+  ):
+    env_data = deployment_yaml["environments"][env]
+    if "resources" in env_data:
+      with allow_secret_resolution():
+        env_data["resources"] = _resolve_templates_in_dict(
+            env_data["resources"], {**resolved_variables, **secret_variables}
+        )
+
+  deployment_yaml["environments"][env]["secrets"] = secret_variables
 
   try:
     deployment = deployment_model.DeploymentModel.build(deployment_yaml)
@@ -965,7 +1203,9 @@ def _load_environment_from_pre_parsed(
 
   # Expand resources after building the model
   _expand_environment_resources(
-      environments[env], deployment_path, context=resolved_variables
+      environments[env],
+      deployment_path,
+      context={**resolved_variables, **secret_variables},
   )
 
   return environments[env]

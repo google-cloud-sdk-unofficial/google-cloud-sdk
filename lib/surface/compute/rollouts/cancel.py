@@ -22,7 +22,9 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.UniverseCompatible
 class Cancel(base.Command):
   """Cancel Google Compute Engine rollouts."""
@@ -48,7 +50,8 @@ class Cancel(base.Command):
             name='name', help_text='Name of rollout to cancel.'
         ),
         project=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
-        api_version='beta',
+        api_version='v1',
+
     )
     presentation_spec = presentation_specs.ResourcePresentationSpec(
         'name',

@@ -462,8 +462,6 @@ class _Sections(object):
       Cloud SDK.
     kuberun: Section, The section containing kuberun properties for the Cloud
       SDK.
-    lifesciences: Section, The section containing lifesciencs properties for the
-      Cloud SDK.
     looker: Section, The section containing looker properties for the Cloud SDK.
     lustre: Section, The section containing lustre properties for the Cloud SDK.
     media_asset: Section, the section containing mediaasset protperties for the
@@ -579,7 +577,6 @@ class _Sections(object):
     self.inframanager = _SectionInfraManager()
     self.interactive = _SectionInteractive()
     self.kuberun = _SectionKubeRun()
-    self.lifesciences = _SectionLifeSciences()
     self.lustre = _SectionLustre()
     self.looker = _SectionLooker()
     self.media_asset = _SectionMediaAsset()
@@ -665,7 +662,6 @@ class _Sections(object):
         self.inframanager,
         self.interactive,
         self.kuberun,
-        self.lifesciences,
         self.looker,
         self.lustre,
         self.media_asset,
@@ -1394,7 +1390,6 @@ class _SectionApiEndpointOverrides(_Section):
     self.inframanager = self._Add(
         'config', command='gcloud infra-manager')
     self.language = self._Add('language', command='gcloud ml language')
-    self.lifesciences = self._Add('lifesciences', command='gcloud lifesciences')
     self.logging = self._Add('logging', command='gcloud logging')
     self.looker = self._Add('looker', command='gcloud looker')
     self.lustre = self._Add('lustre', command='gcloud lustre', hidden=True)
@@ -2061,6 +2056,15 @@ class _SectionCompute(_Section):
         default=False,
         help_text='Bool that force all requests are sent as batch request',
         hidden=True)
+    self.disable_batch_request = self._AddBool(
+        'disable_batch_request',
+        default=False,
+        help_text=(
+            'If True, all requests are sent as individual requests instead '
+            'of batch requests.'
+        ),
+        hidden=True,
+    )
     self.allow_partial_error = self._AddBool(
         'allow_partial_error',
         default=True,
@@ -3099,19 +3103,6 @@ class _SectionKubeRun(_Section):
         hidden=True)
 
 
-class _SectionLifeSciences(_Section):
-  """Contains the properties for the 'lifesciences' section."""
-
-  def __init__(self):
-    super(_SectionLifeSciences, self).__init__('lifesciences')
-    self.location = self._Add(
-        'location',
-        default='us-central1',
-        help_text='Default location to use when working with Cloud Life Sciences  '
-        'resources. When a `--location` flag is required but not provided, the  '
-        'command will fall back to this value.')
-
-
 class _SectionLooker(_Section):
   """Contains the properties for the 'looker' section."""
 
@@ -4009,6 +4000,19 @@ class _SectionStorage(_Section):
             ' using --delete-unmatched-destination-objects flag along with'
             ' other flags such as --no-clobber, --skip-unsupported and'
             ' --skip-if-dest-has-newer-mtime just as it would with gsutil.'
+        ),
+    )
+
+    self.use_rsync_unmatched_gstmp_handling = self._AddBool(
+        'use_rsync_unmatched_gstmp_handling',
+        default=False,
+        hidden=True,
+        help_text=(
+            'If True, rsync with --delete-unmatched-destination-objects will'
+            ' delete unmatched destination gstmp files after the rsync is'
+            ' successfully complete. In case of a failed rsync, the unmatched'
+            ' destination gstmp files will be deleted only if the customer has'
+            ' specified --continue-on-error.'
         ),
     )
 

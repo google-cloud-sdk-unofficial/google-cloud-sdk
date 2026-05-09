@@ -680,8 +680,6 @@ def AddHPAProfilesFlag(parser, hidden=False):
 def AddAutoprovisioningFlags(
     parser,
     hidden=False,
-    for_create=False,
-    napless=False,
 ):
   """Adds node autoprovisioning related flags to parser.
 
@@ -692,15 +690,12 @@ def AddAutoprovisioningFlags(
   Args:
     parser: A given parser.
     hidden: If true, suppress help text for added options.
-    for_create: Add flags for create request.
-    napless: If true, allows to configure NAP settings without NAP being
-      enabled.
   """
 
   group = parser.add_argument_group('Node autoprovisioning', hidden=hidden)
   group.add_argument(
       '--enable-autoprovisioning',
-      required=not napless,
+      required=False,
       default=None,
       help="""\
 Enables  node autoprovisioning for a cluster.
@@ -789,11 +784,12 @@ can be specified in the 'bootDiskKmsKey' field.
   )
   from_flags_group.add_argument(
       '--max-cpu',
-      required=for_create and not napless,
+      required=False,
       help="""\
 Maximum number of cores in the cluster.
 
-Maximum number of cores to which the cluster can scale.""",
+Maximum number of cores to which the cluster can scale.
+Required to be set when --enable-autoprovisioning is used.""",
       hidden=hidden,
       type=int,
   )
@@ -808,11 +804,12 @@ Minimum number of cores to which the cluster can scale.""",
   )
   from_flags_group.add_argument(
       '--max-memory',
-      required=for_create and not napless,
+      required=False,
       help="""\
 Maximum memory in the cluster.
 
-Maximum number of gigabytes of memory to which the cluster can scale.""",
+Maximum number of gigabytes of memory to which the cluster can scale.
+Required to be set when --enable-autoprovisioning is used.""",
       hidden=hidden,
       type=int,
   )
@@ -5769,12 +5766,17 @@ net.ipv4.tcp_max_tw_buckets                        | Must be between [4096, 2147
 net.ipv4.tcp_syn_retries                           | Must be between [1, 127]
 net.ipv4.tcp_ecn                                   | Must be {0, 1, 2}
 net.ipv4.tcp_congestion_control                    | Supported values for COS: 'reno', 'cubic', 'bbr', 'lp', 'htcp'. Supported values for Ubuntu: 'reno', 'cubic', 'bbr', 'lp', 'htcp', 'vegas', 'dctcp', 'bic', 'cdg', 'highspeed', 'hybla', 'illinois', 'nv', 'scalable', 'veno', 'westwood', 'yeah'.
+net.ipv4.neigh.default.gc_thresh1                  | Must be between [0, 262144]
+net.ipv4.neigh.default.gc_thresh2                  | Must be between [512, 524288]
+net.ipv4.neigh.default.gc_thresh3                  | Must be between [1024, 1048576]
 net.netfilter.nf_conntrack_max                     | Must be between [65536, 4194304]
 net.netfilter.nf_conntrack_buckets                 | Must be between [65536, 524288]. Recommend setting: nf_conntrack_max = nf_conntrack_buckets * 4
 net.netfilter.nf_conntrack_tcp_timeout_close_wait  | Must be between [60, 3600]
 net.netfilter.nf_conntrack_tcp_timeout_time_wait   | Must be between [1, 600]
 net.netfilter.nf_conntrack_tcp_timeout_established | Must be between [600, 86400]
 net.netfilter.nf_conntrack_acct                    | Must be {0, 1}
+kernel.keys.maxkeys                                | Must be between [200, 1048576]
+kernel.keys.maxbytes                               | Must be between [20000, 2097152]
 kernel.shmmni                                      | Must be between [4096, 32768]
 kernel.shmmax                                      | Must be between [0, 18446744073692774399]
 kernel.shmall                                      | Must be between [0, 18446744073692774399]
@@ -8680,29 +8682,26 @@ def AddControlPlaneEgressFlag(parser):
   help_text = """\
   Configures the egress policy for the GKE control plane to control outbound
   traffic from the kube-apiserver.
-
-  * `NONE`: (Recommended) Provides maximum security. This mode removes the control
-    plane's public IP address and blocks all outbound traffic from the
-    kube-apiserver by default, preventing unexpected data exfiltration. Webhooks
-    that use `clientConfig.url` will be disabled. Essential GKE-managed services
-    are still permitted to function via an internal allowlist.
-
-  * `VIA_CONTROL_PLANE`: (Default) Maintains backward compatibility. The control
-    plane retains its public IP address and allows egress traffic from the
-    kube-apiserver.
   """
   parser.add_argument(
       '--control-plane-egress',
       default=None,
-      # TODO(b/436076409): Remove hidden flag once the feature is ready.
-      hidden=True,
+      hidden=False,
       choices={
-          'NONE': """\
-                (Recommended) Provides maximum security by removing the control plane's
-                public IP and blocking api server egress.""",
-          'VIA_CONTROL_PLANE': """\
-                (Default) Maintains backward compatibility by retaining the control
-                plane's public IP and api server allowing egress.""",
+          'NONE': (
+              """\
+                (Recommended) Provides maximum security. This mode removes the control
+                plane's public IP address and blocks all outbound traffic from the
+                kube-apiserver by default, preventing unexpected data exfiltration. Webhooks
+                that use `clientConfig.url` will be disabled. Essential GKE-managed services
+                are still permitted to function via an internal allowlist."""
+          ),
+          'VIA_CONTROL_PLANE': (
+              """\
+                (Default) Maintains backward compatibility. The control
+                plane retains its public IP address and allows egress traffic from the
+                kube-apiserver."""
+          ),
       },
       help=help_text,
   )
@@ -8898,6 +8897,40 @@ def AddNodeDrainSettingsFlag(parser, hidden=False):
       action='store_true',
       help="""\
       Whether to respect PDBs when deleting nodes in the node pool.
+      """,
+  )
+
+
+def AddNodePoolMaintenanceExclusionsFlag(parser, hidden=False, is_update=False):
+  """Adds the node pool maintenance exclusions flag to parser.
+
+  Args:
+    parser: A given parser.
+    hidden: Indicates that the flags are hidden.
+    is_update: Indicates that the flags are for update.
+  """
+  group = parser.add_group(help='Node pool maintenance exclusions', mutex=True,
+                           hidden=hidden)
+  group.add_argument(
+      '--add-maintenance-exclusion-until-end-of-support',
+      default=None,
+      hidden=hidden,
+      action='store_true',
+      help="""\
+      Add node pool maintenance exclusion until the end of support.
+      """,
+  )
+
+  if not is_update:
+    return
+
+  group.add_argument(
+      '--remove-maintenance-exclusion-until-end-of-support',
+      default=None,
+      hidden=hidden,
+      action='store_true',
+      help="""\
+      Remove node pool maintenance exclusion until the end of support.
       """,
   )
 

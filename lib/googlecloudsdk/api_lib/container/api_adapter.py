@@ -14,7 +14,6 @@
 # limitations under the License.
 """Api client adapter containers commands."""
 
-
 import functools
 import operator
 import os
@@ -1850,6 +1849,8 @@ class CreateNodePoolOptions(object):
       enable_otlp_ingestion_endpoint=None,
       enable_workload_log_collection=None,
       linked_runner_subnet=None,
+      add_maintenance_exclusion_until_end_of_support=None,
+      remove_maintenance_exclusion_until_end_of_support=None,
   ):
     self.machine_type = machine_type
     self.disk_size_gb = disk_size_gb
@@ -1973,6 +1974,12 @@ class CreateNodePoolOptions(object):
     self.enable_system_telemetry_collection = enable_system_telemetry_collection
     self.enable_otlp_ingestion_endpoint = enable_otlp_ingestion_endpoint
     self.enable_workload_log_collection = enable_workload_log_collection
+    self.add_maintenance_exclusion_until_end_of_support = (
+        add_maintenance_exclusion_until_end_of_support
+    )
+    self.remove_maintenance_exclusion_until_end_of_support = (
+        remove_maintenance_exclusion_until_end_of_support
+    )
 
 
 class UpdateNodePoolOptions(object):
@@ -2036,6 +2043,8 @@ class UpdateNodePoolOptions(object):
       enable_lustre_multi_nic=None,
       datapath_provider=None,
       node_architecture_taint_behavior=None,
+      add_maintenance_exclusion_until_end_of_support=None,
+      remove_maintenance_exclusion_until_end_of_support=None,
   ):
     self.enable_autorepair = enable_autorepair
     self.enable_autoupgrade = enable_autoupgrade
@@ -2102,6 +2111,12 @@ class UpdateNodePoolOptions(object):
     )
     self.enable_lustre_multi_nic = enable_lustre_multi_nic
     self.datapath_provider = datapath_provider
+    self.add_maintenance_exclusion_until_end_of_support = (
+        add_maintenance_exclusion_until_end_of_support
+    )
+    self.remove_maintenance_exclusion_until_end_of_support = (
+        remove_maintenance_exclusion_until_end_of_support
+    )
 
   def IsAutoscalingUpdate(self):
     return (
@@ -2170,6 +2185,8 @@ class UpdateNodePoolOptions(object):
         or self.enable_system_telemetry_collection is not None
         or self.enable_otlp_ingestion_endpoint is not None
         or self.enable_workload_log_collection is not None
+        or self.add_maintenance_exclusion_until_end_of_support is not None
+        or self.remove_maintenance_exclusion_until_end_of_support is not None
     )
 
 
@@ -2602,7 +2619,8 @@ class APIAdapter(object):
 
     if options.linked_runners_mode is not None:
       cluster.linkedRunnersConfig = _GetLinkedRunnersConfig(
-          options.linked_runners_mode, self.messages)
+          options.linked_runners_mode, self.messages
+      )
 
     if options.tag_bindings:
       # Assign the dictionary to the cluster.tags field
@@ -2906,7 +2924,7 @@ class APIAdapter(object):
           minorVersionDisruptionInterval=(
               options.maintenance_minor_version_disruption_interval
           )
-          )
+      )
     if options.maintenance_patch_version_disruption_interval is not None:
       if disruption_budget is None:
         disruption_budget = self.messages.DisruptionBudget()
@@ -2917,7 +2935,7 @@ class APIAdapter(object):
       if cluster.maintenancePolicy is None:
         cluster.maintenancePolicy = self.messages.MaintenancePolicy(
             disruptionBudget=disruption_budget
-            )
+        )
       else:
         cluster.maintenancePolicy.disruptionBudget = disruption_budget
 
@@ -4394,12 +4412,7 @@ class APIAdapter(object):
       The operation to be executed.
     """
     cluster = self.CreateClusterCommon(cluster_ref, options)
-    if (
-        options.enable_autoprovisioning is not None
-        or options.autoscaling_profile is not None
-        or options.enable_default_compute_class is not None
-        or options.autopilot_general_profile is not None
-    ):
+    if _ClusterAutoscalingOptionsChanged(options):
       cluster.autoscaling = self.CreateClusterAutoscalingCommon(
           cluster_ref, options, False
       )
@@ -4515,74 +4528,71 @@ class APIAdapter(object):
       enable_secure_boot = None
       enable_integrity_monitoring = None
 
-    if options.enable_autoprovisioning is not None:
-      autoscaling.enableNodeAutoprovisioning = options.enable_autoprovisioning
-      if resource_limits is None:
-        resource_limits = []
-      autoscaling.resourceLimits = resource_limits
-      if scopes is None:
-        scopes = []
-      management = None
-      upgrade_settings = None
-      if (
-          max_surge_upgrade is not None
-          or max_unavailable_upgrade is not None
-          or options.enable_autoprovisioning_blue_green_upgrade
-          or options.enable_autoprovisioning_surge_upgrade
-          or options.autoprovisioning_standard_rollout_policy is not None
-          or options.autoprovisioning_node_pool_soak_duration is not None
-      ):
-        upgrade_settings = self.UpdateUpgradeSettingsForNAP(
-            options, max_surge_upgrade, max_unavailable_upgrade
-        )
-      if enable_autorepair is not None or enable_autoupgrade is not None:
-        management = self.messages.NodeManagement(
-            autoUpgrade=enable_autoupgrade, autoRepair=enable_autorepair
-        )
-      shielded_instance_config = None
-      if (
-          enable_secure_boot is not None
-          or enable_integrity_monitoring is not None
-      ):
-        shielded_instance_config = self.messages.ShieldedInstanceConfig()
-        shielded_instance_config.enableSecureBoot = enable_secure_boot
-        shielded_instance_config.enableIntegrityMonitoring = (
-            enable_integrity_monitoring
-        )
-      if for_update:
-        autoscaling.autoprovisioningNodePoolDefaults = (
-            self.messages.AutoprovisioningNodePoolDefaults(
-                serviceAccount=service_account,
-                oauthScopes=scopes,
-                upgradeSettings=upgrade_settings,
-                management=management,
-                minCpuPlatform=min_cpu_platform,
-                bootDiskKmsKey=boot_disk_kms_key,
-                diskSizeGb=disk_size_gb,
-                diskType=disk_type,
-                imageType=autoprovisioning_image_type,
-                shieldedInstanceConfig=shielded_instance_config,
-            )
-        )
-      else:
-        autoscaling.autoprovisioningNodePoolDefaults = (
-            self.messages.AutoprovisioningNodePoolDefaults(
-                serviceAccount=service_account,
-                oauthScopes=scopes,
-                upgradeSettings=upgrade_settings,
-                management=management,
-                minCpuPlatform=min_cpu_platform,
-                bootDiskKmsKey=boot_disk_kms_key,
-                diskSizeGb=disk_size_gb,
-                diskType=disk_type,
-                imageType=autoprovisioning_image_type,
-                shieldedInstanceConfig=shielded_instance_config,
-            )
-        )
-      if autoprovisioning_locations:
-        autoscaling.autoprovisioningLocations = sorted(
-            autoprovisioning_locations
-        )
+    autoscaling.enableNodeAutoprovisioning = options.enable_autoprovisioning
+    if resource_limits is None:
+      resource_limits = []
+    autoscaling.resourceLimits = resource_limits
+    if scopes is None:
+      scopes = []
+    management = None
+    upgrade_settings = None
+    if (
+        max_surge_upgrade is not None
+        or max_unavailable_upgrade is not None
+        or options.enable_autoprovisioning_blue_green_upgrade
+        or options.enable_autoprovisioning_surge_upgrade
+        or options.autoprovisioning_standard_rollout_policy is not None
+        or options.autoprovisioning_node_pool_soak_duration is not None
+    ):
+      upgrade_settings = self.UpdateUpgradeSettingsForNAP(
+          options, max_surge_upgrade, max_unavailable_upgrade
+      )
+    if enable_autorepair is not None or enable_autoupgrade is not None:
+      management = self.messages.NodeManagement(
+          autoUpgrade=enable_autoupgrade, autoRepair=enable_autorepair
+      )
+    shielded_instance_config = None
+    if (
+        enable_secure_boot is not None
+        or enable_integrity_monitoring is not None
+    ):
+      shielded_instance_config = self.messages.ShieldedInstanceConfig()
+      shielded_instance_config.enableSecureBoot = enable_secure_boot
+      shielded_instance_config.enableIntegrityMonitoring = (
+          enable_integrity_monitoring
+      )
+    if for_update:
+      autoscaling.autoprovisioningNodePoolDefaults = (
+          self.messages.AutoprovisioningNodePoolDefaults(
+              serviceAccount=service_account,
+              oauthScopes=scopes,
+              upgradeSettings=upgrade_settings,
+              management=management,
+              minCpuPlatform=min_cpu_platform,
+              bootDiskKmsKey=boot_disk_kms_key,
+              diskSizeGb=disk_size_gb,
+              diskType=disk_type,
+              imageType=autoprovisioning_image_type,
+              shieldedInstanceConfig=shielded_instance_config,
+          )
+      )
+    else:
+      autoscaling.autoprovisioningNodePoolDefaults = (
+          self.messages.AutoprovisioningNodePoolDefaults(
+              serviceAccount=service_account,
+              oauthScopes=scopes,
+              upgradeSettings=upgrade_settings,
+              management=management,
+              minCpuPlatform=min_cpu_platform,
+              bootDiskKmsKey=boot_disk_kms_key,
+              diskSizeGb=disk_size_gb,
+              diskType=disk_type,
+              imageType=autoprovisioning_image_type,
+              shieldedInstanceConfig=shielded_instance_config,
+          )
+      )
+    if autoprovisioning_locations:
+      autoscaling.autoprovisioningLocations = sorted(autoprovisioning_locations)
 
     if options.autoscaling_profile is not None:
       autoscaling.autoscalingProfile = self.CreateAutoscalingProfileCommon(
@@ -4717,50 +4727,43 @@ class APIAdapter(object):
     """
     if autoscaling.enableNodeAutoprovisioning:
       if not for_update or autoscaling.resourceLimits:
-        cpu_found = any(
-            limit.resourceType == 'cpu' for limit in autoscaling.resourceLimits
-        )
-        mem_found = any(
-            limit.resourceType == 'memory'
+        cpu_max_set = any(
+            limit.resourceType == 'cpu' and limit.maximum is not None
             for limit in autoscaling.resourceLimits
         )
-        if not cpu_found or not mem_found:
+        mem_max_set = any(
+            limit.resourceType == 'memory' and limit.maximum is not None
+            for limit in autoscaling.resourceLimits
+        )
+        if not cpu_max_set or not mem_max_set:
           raise util.Error(NO_AUTOPROVISIONING_LIMITS_ERROR_MSG)
-        defaults = autoscaling.autoprovisioningNodePoolDefaults
-        if defaults:
-          if defaults.upgradeSettings:
-            max_surge_found = defaults.upgradeSettings.maxSurge is not None
-            max_unavailable_found = (
-                defaults.upgradeSettings.maxUnavailable is not None
-            )
-            if max_unavailable_found != max_surge_found:
-              raise util.Error(BOTH_AUTOPROVISIONING_UPGRADE_SETTINGS_ERROR_MSG)
-          if defaults.management:
-            auto_upgrade_found = defaults.management.autoUpgrade is not None
-            auto_repair_found = defaults.management.autoRepair is not None
-            if auto_repair_found != auto_upgrade_found:
-              raise util.Error(
-                  BOTH_AUTOPROVISIONING_MANAGEMENT_SETTINGS_ERROR_MSG
-              )
-          if defaults.shieldedInstanceConfig:
-            secure_boot_found = (
-                defaults.shieldedInstanceConfig.enableSecureBoot is not None
-            )
-            integrity_monitoring_found = (
-                defaults.shieldedInstanceConfig.enableIntegrityMonitoring
-                is not None
-            )
-            if secure_boot_found != integrity_monitoring_found:
-              raise util.Error(
-                  BOTH_AUTOPROVISIONING_SHIELDED_INSTANCE_SETTINGS_ERROR_MSG
-              )
-    elif autoscaling.resourceLimits:
-      raise util.Error(LIMITS_WITHOUT_AUTOPROVISIONING_MSG)
-    elif autoscaling.autoprovisioningNodePoolDefaults and (
-        autoscaling.autoprovisioningNodePoolDefaults.serviceAccount
-        or autoscaling.autoprovisioningNodePoolDefaults.oauthScopes
-    ):
-      raise util.Error(DEFAULTS_WITHOUT_AUTOPROVISIONING_MSG)
+
+    defaults = autoscaling.autoprovisioningNodePoolDefaults
+    if defaults:
+      if defaults.upgradeSettings:
+        max_surge_found = defaults.upgradeSettings.maxSurge is not None
+        max_unavailable_found = (
+            defaults.upgradeSettings.maxUnavailable is not None
+        )
+        if max_unavailable_found != max_surge_found:
+          raise util.Error(BOTH_AUTOPROVISIONING_UPGRADE_SETTINGS_ERROR_MSG)
+      if defaults.management:
+        auto_upgrade_found = defaults.management.autoUpgrade is not None
+        auto_repair_found = defaults.management.autoRepair is not None
+        if auto_repair_found != auto_upgrade_found:
+          raise util.Error(BOTH_AUTOPROVISIONING_MANAGEMENT_SETTINGS_ERROR_MSG)
+      if defaults.shieldedInstanceConfig:
+        secure_boot_found = (
+            defaults.shieldedInstanceConfig.enableSecureBoot is not None
+        )
+        integrity_monitoring_found = (
+            defaults.shieldedInstanceConfig.enableIntegrityMonitoring
+            is not None
+        )
+        if secure_boot_found != integrity_monitoring_found:
+          raise util.Error(
+              BOTH_AUTOPROVISIONING_SHIELDED_INSTANCE_SETTINGS_ERROR_MSG
+          )
 
   def _GetClusterTelemetryType(
       self, options, logging_service, monitoring_service
@@ -5076,12 +5079,7 @@ class APIAdapter(object):
       )
     elif options.locations:
       update = self.messages.ClusterUpdate(desiredLocations=options.locations)
-    elif (
-        options.enable_autoprovisioning is not None
-        or options.autoscaling_profile is not None
-        or options.enable_default_compute_class is not None
-        or options.autopilot_general_profile is not None
-    ):
+    elif _ClusterAutoscalingOptionsChanged(options):
       autoscaling = self.CreateClusterAutoscalingCommon(
           cluster_ref, options, True
       )
@@ -6576,10 +6574,13 @@ class APIAdapter(object):
     return self._SendMaintenancePolicyRequest(cluster_ref, existing_policy)
 
   def SetMaintenanceDisruptionBudget(
-      self, cluster_ref, existing_policy, minor_version_disruption_interval,
+      self,
+      cluster_ref,
+      existing_policy,
+      minor_version_disruption_interval,
       patch_version_disruption_interval,
       clear_minor_version_disruption_interval,
-      clear_patch_version_disruption_interval
+      clear_patch_version_disruption_interval,
   ):
     """Sets the maintenance disruption budget for a cluster."""
     if existing_policy is None:
@@ -6599,9 +6600,11 @@ class APIAdapter(object):
     if clear_patch_version_disruption_interval:
       existing_policy.disruptionBudget.patchVersionDisruptionInterval = None
 
-    if (existing_policy.disruptionBudget.minorVersionDisruptionInterval is None
-        and existing_policy.disruptionBudget.patchVersionDisruptionInterval is
-        None):
+    if (
+        existing_policy.disruptionBudget.minorVersionDisruptionInterval is None
+        and existing_policy.disruptionBudget.patchVersionDisruptionInterval
+        is None
+    ):
       return None
 
     return self._SendMaintenancePolicyRequest(cluster_ref, existing_policy)
@@ -6815,9 +6818,7 @@ class APIAdapter(object):
     ):
       node_config.runnerPoolConfig = self.messages.RunnerPoolConfig(
           controlNodePool=(
-              options.control_node_pool
-              if options.control_node_pool
-              else None
+              options.control_node_pool if options.control_node_pool else None
           ),
       )
 
@@ -6859,20 +6860,16 @@ class APIAdapter(object):
             self.messages.RunnerTelemetryConfig()
         )
         if options.enable_system_telemetry_collection is not None:
-          node_config.runnerPoolConfig.runnerTelemetryConfig.systemTelemetryConfig = (
-              self.messages.SystemTelemetryConfig(
-                  enableSystemTelemetryCollection=options.enable_system_telemetry_collection
-              )
+          node_config.runnerPoolConfig.runnerTelemetryConfig.systemTelemetryConfig = self.messages.SystemTelemetryConfig(
+              enableSystemTelemetryCollection=options.enable_system_telemetry_collection
           )
         if (
             options.enable_otlp_ingestion_endpoint is not None
             or options.enable_workload_log_collection is not None
         ):
-          node_config.runnerPoolConfig.runnerTelemetryConfig.applicationTelemetryConfig = (
-              self.messages.ApplicationTelemetryConfig(
-                  enableOtlpIngestionEndpoint=options.enable_otlp_ingestion_endpoint,
-                  enableWorkloadLogCollection=options.enable_workload_log_collection,
-              )
+          node_config.runnerPoolConfig.runnerTelemetryConfig.applicationTelemetryConfig = self.messages.ApplicationTelemetryConfig(
+              enableOtlpIngestionEndpoint=options.enable_otlp_ingestion_endpoint,
+              enableWorkloadLogCollection=options.enable_workload_log_collection,
           )
 
       if options.linked_runner_subnet:
@@ -7079,6 +7076,10 @@ class APIAdapter(object):
 
     if options.capacity_wait_duration is not None:
       node_config.capacityWaitDuration = options.capacity_wait_duration
+
+    maintenance_policy = _GetNodePoolMaintenancePolicy(options, self.messages)
+    if maintenance_policy:
+      pool.maintenancePolicy = maintenance_policy
 
     return pool
 
@@ -7422,11 +7423,9 @@ class APIAdapter(object):
     elif options.node_architecture_taint_behavior is not None:
       if update_request.taintConfig is None:
         update_request.taintConfig = self.messages.TaintConfig()
-      update_request.taintConfig.architectureTaintBehavior = (
-          _ArchitectureTaintBehaviorEnum(
-              self.messages.TaintConfig.ArchitectureTaintBehaviorValueValuesEnum,
-              options.node_architecture_taint_behavior,
-          )
+      update_request.taintConfig.architectureTaintBehavior = _ArchitectureTaintBehaviorEnum(
+          self.messages.TaintConfig.ArchitectureTaintBehaviorValueValuesEnum,
+          options.node_architecture_taint_behavior,
       )
     elif options.tags is not None:
       node_tags = self.messages.NetworkTags()
@@ -7554,6 +7553,14 @@ class APIAdapter(object):
       update_request.lustreConfig.multiRail = self.messages.MultiRail(
           enabled=options.enable_lustre_multi_nic
       )
+    elif (
+        options.add_maintenance_exclusion_until_end_of_support is not None
+        or options.remove_maintenance_exclusion_until_end_of_support is not None
+    ):
+      maintenance_policy = _GetNodePoolMaintenancePolicy(options, self.messages)
+      if maintenance_policy:
+        update_request.maintenancePolicy = maintenance_policy
+
     return update_request
 
   def UpdateNodePool(self, node_pool_ref, options):
@@ -7995,7 +8002,9 @@ class APIAdapter(object):
     """Returns a list of maintenance exclusion names from the policy."""
     return [
         p.key
-        for p in maintenance_policy.window.maintenanceExclusions.additionalProperties
+        for p in (
+            maintenance_policy.window.maintenanceExclusions.additionalProperties
+        )
     ]
 
   def AddMaintenanceExclusion(
@@ -8835,31 +8844,7 @@ class V1Beta1Adapter(V1Adapter):
         cluster.addonsConfig.istioConfig = self.messages.IstioConfig(
             disabled=False, auth=istio_auth
         )
-    if (
-        options.enable_autoprovisioning is not None
-        or options.max_cpu is not None
-        or options.min_cpu is not None
-        or options.max_memory is not None
-        or options.min_memory is not None
-        or options.autoprovisioning_image_type is not None
-        or options.max_accelerator is not None
-        or options.min_accelerator is not None
-        or options.autoprovisioning_service_account is not None
-        or options.autoprovisioning_scopes is not None
-        or options.enable_autoprovisioning_surge_upgrade is not None
-        or options.enable_autoprovisioning_blue_green_upgrade is not None
-        or options.autoprovisioning_max_surge_upgrade is not None
-        or options.autoprovisioning_max_unavailable_upgrade is not None
-        or options.autoprovisioning_standard_rollout_policy is not None
-        or options.autoprovisioning_node_pool_soak_duration is not None
-        or options.enable_autoprovisioning_autoupgrade is not None
-        or options.enable_autoprovisioning_autorepair is not None
-        or options.autoprovisioning_locations is not None
-        or options.autoprovisioning_min_cpu_platform is not None
-        or options.autoscaling_profile is not None
-        or options.enable_default_compute_class is not None
-        or options.autopilot_general_profile is not None
-    ):
+    if _ClusterAutoscalingOptionsChanged(options):
       cluster.autoscaling = self.CreateClusterAutoscalingCommon(
           None, options, False
       )
@@ -9247,31 +9232,7 @@ class V1Beta1Adapter(V1Adapter):
       )
     elif options.locations:
       update = self.messages.ClusterUpdate(desiredLocations=options.locations)
-    elif (
-        options.enable_autoprovisioning is not None
-        or options.max_cpu is not None
-        or options.min_cpu is not None
-        or options.max_memory is not None
-        or options.min_memory is not None
-        or options.autoprovisioning_image_type is not None
-        or options.max_accelerator is not None
-        or options.min_accelerator is not None
-        or options.autoprovisioning_service_account is not None
-        or options.autoprovisioning_scopes is not None
-        or options.enable_autoprovisioning_surge_upgrade is not None
-        or options.enable_autoprovisioning_blue_green_upgrade is not None
-        or options.autoprovisioning_max_surge_upgrade is not None
-        or options.autoprovisioning_max_unavailable_upgrade is not None
-        or options.autoprovisioning_standard_rollout_policy is not None
-        or options.autoprovisioning_node_pool_soak_duration is not None
-        or options.enable_autoprovisioning_autoupgrade is not None
-        or options.enable_autoprovisioning_autorepair is not None
-        or options.autoprovisioning_locations is not None
-        or options.autoprovisioning_min_cpu_platform is not None
-        or options.autoscaling_profile is not None
-        or options.enable_default_compute_class is not None
-        or options.autopilot_general_profile is not None
-    ):
+    elif _ClusterAutoscalingOptionsChanged(options):
       autoscaling = self.CreateClusterAutoscalingCommon(
           cluster_ref, options, True
       )
@@ -10193,7 +10154,8 @@ class V1Beta1Adapter(V1Adapter):
     if options.linked_runners_mode is not None:
       update = self.messages.ClusterUpdate(
           desiredLinkedRunnersConfig=_GetLinkedRunnersConfig(
-              options.linked_runners_mode, self.messages)
+              options.linked_runners_mode, self.messages
+          )
       )
     if options.enable_ambient_networking is not None:
       update = self.messages.ClusterUpdate(
@@ -10751,31 +10713,7 @@ class V1Alpha1Adapter(V1Beta1Adapter):
 
   def CreateCluster(self, cluster_ref, options):
     cluster = self.CreateClusterCommon(cluster_ref, options)
-    if (
-        options.enable_autoprovisioning is not None
-        or options.max_cpu is not None
-        or options.min_cpu is not None
-        or options.max_memory is not None
-        or options.min_memory is not None
-        or options.autoprovisioning_image_type is not None
-        or options.max_accelerator is not None
-        or options.min_accelerator is not None
-        or options.autoprovisioning_service_account is not None
-        or options.autoprovisioning_scopes is not None
-        or options.enable_autoprovisioning_surge_upgrade is not None
-        or options.enable_autoprovisioning_blue_green_upgrade is not None
-        or options.autoprovisioning_max_surge_upgrade is not None
-        or options.autoprovisioning_max_unavailable_upgrade is not None
-        or options.autoprovisioning_standard_rollout_policy is not None
-        or options.autoprovisioning_node_pool_soak_duration is not None
-        or options.enable_autoprovisioning_autoupgrade is not None
-        or options.enable_autoprovisioning_autorepair is not None
-        or options.autoprovisioning_locations is not None
-        or options.autoprovisioning_min_cpu_platform is not None
-        or options.autoscaling_profile is not None
-        or options.enable_default_compute_class is not None
-        or options.autopilot_general_profile is not None
-    ):
+    if _ClusterAutoscalingOptionsChanged(options):
       cluster.autoscaling = self.CreateClusterAutoscalingCommon(
           None, options, False
       )
@@ -11559,9 +11497,7 @@ def _AddNodeLabelsToNodeConfig(node_config, options):
 def _ArchitectureTaintBehaviorEnum(taint_enum, api_value):
   """Returns the ArchitectureTaintBehavior enum value for the given API value."""
   if api_value == 'unspecified':
-    return (
-        taint_enum.ARCHITECTURE_TAINT_BEHAVIOR_UNSPECIFIED
-    )
+    return taint_enum.ARCHITECTURE_TAINT_BEHAVIOR_UNSPECIFIED
   elif api_value == 'none':
     return taint_enum.NONE
   elif api_value == 'arm':
@@ -11581,7 +11517,7 @@ def _AddNodeArchitectureTaintBehaviorToNodeConfig(
   node_config.taintConfig.architectureTaintBehavior = (
       _ArchitectureTaintBehaviorEnum(
           taint_config_class.ArchitectureTaintBehaviorValueValuesEnum,
-          options.node_architecture_taint_behavior
+          options.node_architecture_taint_behavior,
       )
   )
 
@@ -12774,3 +12710,49 @@ def _GetNodeCreationConfig(options, messages):
       )
     config.nodeCreationMode = modes[options.node_creation_mode]
   return config
+
+
+def _GetNodePoolMaintenancePolicy(options, messages):
+  """Gets NodePoolMaintenancePolicy from options."""
+  if options.add_maintenance_exclusion_until_end_of_support is not None:
+    return messages.NodePoolMaintenancePolicy(
+        exclusionUntilEndOfSupport=messages.ExclusionUntilEndOfSupport(
+            enabled=True
+        )
+    )
+  if options.remove_maintenance_exclusion_until_end_of_support is not None:
+    return messages.NodePoolMaintenancePolicy(
+        exclusionUntilEndOfSupport=messages.ExclusionUntilEndOfSupport(
+            enabled=False
+        )
+    )
+  return None
+
+
+def _ClusterAutoscalingOptionsChanged(options):
+  """Returns whether the cluster autoscaling options have changed."""
+  return (
+      options.enable_autoprovisioning is not None
+      or options.max_cpu is not None
+      or options.min_cpu is not None
+      or options.max_memory is not None
+      or options.min_memory is not None
+      or options.autoprovisioning_image_type is not None
+      or options.max_accelerator is not None
+      or options.min_accelerator is not None
+      or options.autoprovisioning_service_account is not None
+      or options.autoprovisioning_scopes is not None
+      or options.enable_autoprovisioning_surge_upgrade is not None
+      or options.enable_autoprovisioning_blue_green_upgrade is not None
+      or options.autoprovisioning_max_surge_upgrade is not None
+      or options.autoprovisioning_max_unavailable_upgrade is not None
+      or options.autoprovisioning_standard_rollout_policy is not None
+      or options.autoprovisioning_node_pool_soak_duration is not None
+      or options.enable_autoprovisioning_autoupgrade is not None
+      or options.enable_autoprovisioning_autorepair is not None
+      or options.autoprovisioning_locations is not None
+      or options.autoprovisioning_min_cpu_platform is not None
+      or options.autoscaling_profile is not None
+      or options.enable_default_compute_class is not None
+      or options.autopilot_general_profile is not None
+  )

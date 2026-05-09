@@ -39,6 +39,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         response_encoding=response_encoding)
     self.backupRuns = self.BackupRunsService(self)
     self.backups = self.BackupsService(self)
+    self.blueGreenDeployments = self.BlueGreenDeploymentsService(self)
     self.connect = self.ConnectService(self)
     self.databases = self.DatabasesService(self)
     self.flags = self.FlagsService(self)
@@ -305,6 +306,151 @@ class SqladminV1beta4(base_api.BaseApiClient):
         relative_path='sql/v1beta4/{+name}',
         request_field='backup',
         request_type_name='SqlBackupsUpdateBackupRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class BlueGreenDeploymentsService(base_api.BaseApiService):
+    """Service class for the blueGreenDeployments resource."""
+
+    _NAME = 'blueGreenDeployments'
+
+    def __init__(self, client):
+      super(SqladminV1beta4.BlueGreenDeploymentsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a blue-green deployment under a given project and location. This deployment provisions a synchronized green environment (target instance) from a blue production environment (source instance), facilitating updates like major version upgrades on the green instance without impacting the blue instance.
+
+      Args:
+        request: (SqlBlueGreenDeploymentsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='sql/v1beta4/projects/{projectsId}/locations/{locationsId}/blueGreenDeployments',
+        http_method='POST',
+        method_id='sql.blueGreenDeployments.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['blueGreenDeploymentId'],
+        relative_path='sql/v1beta4/{+parent}/blueGreenDeployments',
+        request_field='blueGreenDeployment',
+        request_type_name='SqlBlueGreenDeploymentsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a blue-green deployment, including metadata and underlying resources based on the deployment state. If issued before switchover, this deletes the green instance. If issued after switchover, this deletes the old blue instance (source instance) if the `delete_old_source` field in the request is set to true. All blue-green deployment metadata is permanently deleted. Resources deleted as a result of this operation are no longer accessible and can't be restored.
+
+      Args:
+        request: (SqlBlueGreenDeploymentsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='sql/v1beta4/projects/{projectsId}/locations/{locationsId}/blueGreenDeployments/{blueGreenDeploymentsId}',
+        http_method='DELETE',
+        method_id='sql.blueGreenDeployments.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['deleteOldSource'],
+        relative_path='sql/v1beta4/{+name}',
+        request_field='',
+        request_type_name='SqlBlueGreenDeploymentsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Retrieves a blue-green deployment resource under a given project and location.
+
+      Args:
+        request: (SqlBlueGreenDeploymentsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (BlueGreenDeployment) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='sql/v1beta4/projects/{projectsId}/locations/{locationsId}/blueGreenDeployments/{blueGreenDeploymentsId}',
+        http_method='GET',
+        method_id='sql.blueGreenDeployments.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='sql/v1beta4/{+name}',
+        request_field='',
+        request_type_name='SqlBlueGreenDeploymentsGetRequest',
+        response_type_name='BlueGreenDeployment',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists blue-green deployments under a given project.
+
+      Args:
+        request: (SqlBlueGreenDeploymentsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListBlueGreenDeploymentsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='sql/v1beta4/projects/{projectsId}/locations/{locationsId}/blueGreenDeployments',
+        http_method='GET',
+        method_id='sql.blueGreenDeployments.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='sql/v1beta4/{+parent}/blueGreenDeployments',
+        request_field='',
+        request_type_name='SqlBlueGreenDeploymentsListRequest',
+        response_type_name='ListBlueGreenDeploymentsResponse',
+        supports_download=False,
+    )
+
+    def Switchover(self, request, global_params=None):
+      r"""Switches over to green instance for a blue-green deployment.
+
+      Args:
+        request: (SqlBlueGreenDeploymentsSwitchoverRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Switchover')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Switchover.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='sql/v1beta4/projects/{projectsId}/locations/{locationsId}/blueGreenDeployments/{blueGreenDeploymentsId}:switchover',
+        http_method='POST',
+        method_id='sql.blueGreenDeployments.switchover',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='sql/v1beta4/{+name}:switchover',
+        request_field='switchoverBlueGreenDeploymentRequest',
+        request_type_name='SqlBlueGreenDeploymentsSwitchoverRequest',
         response_type_name='Operation',
         supports_download=False,
     )

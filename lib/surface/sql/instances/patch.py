@@ -390,8 +390,8 @@ def AddBetaArgs(parser):
   flags.AddUncMappings(unc_mappings_group)
   flags.AddClearUncMappings(unc_mappings_group)
   flags.AddPerformanceCaptureConfig(parser, hidden=False)
-  flags.AddEnablePscAutoDns(parser, hidden=True)
-  flags.AddEnablePscWriteEndpointDns(parser, hidden=True)
+  flags.AddEnablePscAutoDns(parser)
+  flags.AddEnablePscWriteEndpointDns(parser)
 
 
 def AddAlphaArgs(unused_parser):

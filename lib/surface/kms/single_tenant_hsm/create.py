@@ -66,6 +66,15 @@ class Create(base.Command):
         ),
     )
 
+    parser.add_argument(
+        '--key-portability-enabled',
+        action='store_true',
+        help=(
+            'If set, the single tenant HSM instance will be able to perform'
+            ' key portability operations.'
+        ),
+    )
+
   def CreateRequest(self, args):
     messages = cloudkms_base.GetMessagesModule()
     location_ref = args.CONCEPTS.location.Parse()
@@ -85,6 +94,7 @@ class Create(base.Command):
             parent=parent,
             singleTenantHsmInstanceId=stchi_id,
             singleTenantHsmInstance=messages.SingleTenantHsmInstance(
+                keyPortabilityEnabled=args.key_portability_enabled,
                 quorumAuth=messages.QuorumAuth(
                     totalApproverCount=int(args.total_approver_count),
                 ),

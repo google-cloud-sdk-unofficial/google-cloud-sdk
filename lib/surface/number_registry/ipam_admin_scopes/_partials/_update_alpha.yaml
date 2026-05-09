@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Update the parameters of a single IPAM admin scope resource
     description: |
@@ -43,10 +42,14 @@
         Addon platforms that are enabled for this IPAM admin scope. Cloud Number
         Registry only discovers the IP addresses from the enabled platforms.
       choices:
+      - arg_value: compute-engine
+        enum_value: COMPUTE_ENGINE
+        help_text: |-
+          Google Compute Engine.
       - arg_value: gce
         enum_value: GCE
         help_text: |-
-          Google Compute Engine.
+          Deprecated: Use COMPUTE_ENGINE instead.
     - arg_name: scopes
       api_field: ipamAdminScope.scopes
       required: false

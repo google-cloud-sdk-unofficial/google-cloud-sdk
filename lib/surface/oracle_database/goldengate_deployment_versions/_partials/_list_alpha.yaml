@@ -20,12 +20,12 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: List goldengateDeploymentVersions
-    description: List goldengateDeploymentVersions
+    brief: List all Goldengate deployment versions.
+    description: Lists all valid Oracle Goldengate versions for the given project and location.
     examples: |-
-      To list all goldengateDeploymentVersions, run:
+      To list all Goldengate deployment versions in the location `us-east4`, run:
 
-          $ {command}
+        $ {command} --location=us-east4
   arguments:
     params:
     - help_text: |-

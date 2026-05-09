@@ -262,6 +262,27 @@ def GenerateExecutionSpecForUpdateRequest(args):
   return executionspec
 
 
+def GenerateExecutionIdentity(args):
+  """Generate ExecutionIdentity From Arguments."""
+  module = dataplex_api.GetMessageModule()
+  execution_identity = None
+
+  if (
+      args.IsKnownAndSpecified('use_user_credential')
+      and args.use_user_credential
+  ):
+    execution_identity = module.GoogleCloudDataplexV1ExecutionIdentity(
+        userCredential=module.GoogleCloudDataplexV1ExecutionIdentityUserCredential()
+    )
+  elif args.IsKnownAndSpecified('service_account') and args.service_account:
+    execution_identity = module.GoogleCloudDataplexV1ExecutionIdentity(
+        serviceAccount=module.GoogleCloudDataplexV1ExecutionIdentityServiceAccount(
+            email=args.service_account
+        )
+    )
+  return execution_identity
+
+
 def GenerateUpdateMask(args: parser_extensions.Namespace):
   """Create Update Mask for Datascan."""
   update_mask = []
@@ -334,6 +355,7 @@ def GenerateDatascanForCreateRequest(args: parser_extensions.Namespace):
       ),
       data=GenerateData(args),
       executionSpec=GenerateExecutionSpecForCreateRequest(args),
+      executionIdentity=GenerateExecutionIdentity(args),
   )
   if args.scan_type == 'PROFILE':
     if args.IsKnownAndSpecified('data_quality_spec_file'):

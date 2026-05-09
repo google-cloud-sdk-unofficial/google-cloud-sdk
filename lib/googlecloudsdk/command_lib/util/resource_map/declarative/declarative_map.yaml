@@ -3795,16 +3795,6 @@ language:
     supported_apis:
     - v1
     - v1beta2
-lifesciences:
-  projects:
-    supported_apis:
-    - v2beta
-  projects.locations:
-    supported_apis:
-    - v2beta
-  projects.locations.operations:
-    supported_apis:
-    - v2beta
 logging:
   billingAccounts:
     supported_apis:

@@ -22,7 +22,6 @@ class CompositeHealthChecks(base.Group):
   """Manage composite health checks."""
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class CompositeHealthChecksGa(CompositeHealthChecks):

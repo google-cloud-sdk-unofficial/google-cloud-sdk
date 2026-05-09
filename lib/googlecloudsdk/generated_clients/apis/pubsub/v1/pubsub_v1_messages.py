@@ -409,20 +409,22 @@ class BigtableConfig(_messages.Message):
     Values:
       STATE_UNSPECIFIED: Default value. This value is unused.
       ACTIVE: The subscription can actively send messages to Bigtable.
-      NOT_FOUND: Cannot write to Bigtable because the instance, table, or app
-        profile does not exist.
-      APP_PROFILE_MISCONFIGURED: Cannot write to Bigtable because the app
-        profile is not configured for single-cluster routing.
+      NOT_FOUND: Unused in the current implementation. Placeholder for future
+        use.
+      APP_PROFILE_MISCONFIGURED: Unused in the current implementation.
+        Placeholder for future use.
       PERMISSION_DENIED: Cannot write to Bigtable because of permission denied
-        errors. This can happen if: - The Pub/Sub service agent has not been
+        errors. This can happen if: - The Bigtable instance, table, or app
+        profile does not exist. - The Pub/Sub service agent has not been
         granted the [appropriate Bigtable IAM permission bigtable.tables.mutat
         eRows]({$universe.dns_names.final_documentation_domain}/bigtable/docs/
         access-control#permissions) - The bigtable.googleapis.com API is not
         enabled for the project ([instructions]({$universe.dns_names.final_doc
         umentation_domain}/service-usage/docs/enable-disable))
       SCHEMA_MISMATCH: Cannot write to Bigtable because of a missing column
-        family ("data") or if there is no structured row key for the
-        subscription name + message ID.
+        family ("data"), or if there is no structured row key for the
+        subscription name + message ID, if because the app profile is not
+        configured for single-cluster routing.
       IN_TRANSIT_LOCATION_RESTRICTION: Cannot write to the destination because
         enforce_in_transit is set to true and the destination locations are
         not in the allowed regions.
@@ -2972,9 +2974,10 @@ class Status(_messages.Message):
 
 
 class Subscription(_messages.Message):
-  r"""A subscription resource. If none of `push_config`, `bigquery_config`, or
-  `cloud_storage_config` is set, then the subscriber will pull and ack
-  messages using API methods. At most one of these fields may be set.
+  r"""A subscription resource. If none of `push_config`, `bigquery_config`,
+  `cloud_storage_config`, or `bigtable_config` is set, then the subscriber
+  will pull and ack messages using API methods. At most one of these fields
+  may be set.
 
   Enums:
     StateValueValuesEnum: Output only. An output-only field indicating whether

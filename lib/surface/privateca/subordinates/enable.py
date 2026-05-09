@@ -23,6 +23,7 @@ from googlecloudsdk.command_lib.privateca import resource_args
 from googlecloudsdk.core import log
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class EnableGA(base.SilentCommand):
   r"""Enable a subordinate certificate authority.

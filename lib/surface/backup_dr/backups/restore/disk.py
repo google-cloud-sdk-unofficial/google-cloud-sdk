@@ -28,7 +28,9 @@ from googlecloudsdk.core import log
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Disk(base.Command):
   """Restores a Compute Disk Backup."""
 
@@ -136,6 +138,7 @@ class Disk(base.Command):
       restore_config['KmsKey'] = args.kms_key
     if args.labels:
       restore_config['Labels'] = args.labels
+    if args.confidential_compute:
       restore_config['ConfidentialCompute'] = args.confidential_compute
     if args.resource_policies:
       restore_config['ResourcePolicies'] = self._ParseResourcePolicies(

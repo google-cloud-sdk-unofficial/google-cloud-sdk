@@ -28,6 +28,26 @@
       - api_field: name
         help_text: |-
           Name of location.
+    - group:
+        api_field: saas.applicationTemplate
+        required: false
+        help_text: |-
+          CompositeRef represents a reference to a composite resource.
+        params:
+        - arg_name: application-template
+          api_field: saas.applicationTemplate.applicationTemplate
+          required: true
+          repeated: false
+          help_text: |-
+            Reference to the ApplicationTemplate resource.
+        - arg_name: application-template-revision
+          api_field: saas.applicationTemplate.revision
+          required: false
+          repeated: false
+          help_text: |-
+            Revision of the ApplicationTemplate to use.
+            Changes to revision will trigger manual resynchronization.
+            If empty, ApplicationTemplate will be ignored.
     - arg_name: labels
       api_field: saas.labels
       required: false

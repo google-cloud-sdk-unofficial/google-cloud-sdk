@@ -18,9 +18,9 @@
 import textwrap
 
 from googlecloudsdk.api_lib.container.fleet import util as fleet_util
-from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import gateway
 from googlecloudsdk.command_lib.container.fleet import resources
+from googlecloudsdk.core import properties
 
 
 class GetCredentials(gateway.GetCredentialsCommand):
@@ -37,6 +37,13 @@ class GetCredentials(gateway.GetCredentialsCommand):
 
   Upon success, this command will switch the current context to the target
   cluster if other contexts are already present in the `kubeconfig` file.
+
+  To force the use of Application Default Credentials (ADC) for authentication,
+  you can set the `container/use_application_default_credentials` property to
+  `true`:
+
+    $ gcloud config set container/use_application_default_credentials true
+
 
   ## EXAMPLES
 
@@ -87,24 +94,12 @@ class GetCredentials(gateway.GetCredentialsCommand):
           Force the use of Connect Agent-based transport.
         """),
     )
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      parser.add_argument(
-          '--use-application-default-credentials',
-          action='store_true',
-          required=False,
-          help=textwrap.dedent("""\
-            Force the use of Application Default Credentials for authentication.
-          """),
-      )
 
   def Run(self, args):
     membership_name = resources.ParseMembershipArg(args)
     location = fleet_util.MembershipLocation(membership_name)
     membership_id = fleet_util.MembershipShortname(membership_name)
-    use_adc = (
-        self.ReleaseTrack() == base.ReleaseTrack.ALPHA
-        and getattr(args, 'use_application_default_credentials', False)
-    )
+    use_adc = properties.VALUES.container.use_app_default_credentials.GetBool()
 
     if args.use_client_side_generation:
       self.RunGetCredentials(membership_id, location)

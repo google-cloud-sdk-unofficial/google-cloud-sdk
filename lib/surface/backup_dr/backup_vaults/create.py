@@ -208,3 +208,31 @@ class CreateAlpha(Create):
     return _run(
         args
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create a Backup and DR backup vault."""
+
+  @staticmethod
+  def Args(parser):
+    """Specifies additional command flags.
+
+    Args:
+      parser: argparse.Parser: Parser object for command line inputs.
+    """
+    _add_common_args(parser)
+
+  def Run(self, args: argparse.Namespace):
+    """Constructs and sends request.
+
+    Args:
+      args: argparse.Namespace, An object that contains the values for the
+        arguments specified in the .Args() method.
+
+    Returns:
+      ProcessHttpResponse of the request made.
+    """
+    return _run(
+        args
+    )

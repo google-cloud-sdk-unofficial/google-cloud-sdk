@@ -26,13 +26,14 @@ from googlecloudsdk.core import properties
 DETAILED_HELP = {
     'brief':
         """
-          Create multiple Compute Engine disks.
+          Create multiple Compute Engine disks or a consistency group of instant snapshots.
         """,
     'DESCRIPTION':
         """
         *{command}* facilitates the creation of multiple Compute Engine
         disks with a single command. This includes cloning a set of Async PD
-        secondary disks with the same consistency group policy.
+        secondary disks with the same consistency group policy or a consistency
+        group of instant snapshots.
         """,
     'EXAMPLES':
         """
@@ -48,6 +49,16 @@ def _AlphaArgs(parser):
   disks_flags.AddBulkCreateArgsAlpha(parser)
   disks_flags.SOURCE_INSTANT_SNAPSHOT_GROUP_ARG.AddArgument(parser)
   disks_flags.SOURCE_SNAPSHOT_GROUP_ARG.AddArgument(parser)
+
+
+def _BetaArgs(parser):
+  disks_flags.AddBulkCreateArgsBeta(parser)
+  disks_flags.SOURCE_INSTANT_SNAPSHOT_GROUP_ARG.AddArgument(parser)
+
+
+def _CommonArgs(parser):
+  disks_flags.AddBulkCreateArgs(parser)
+  disks_flags.SOURCE_INSTANT_SNAPSHOT_GROUP_ARG.AddArgument(parser)
 
 
 def _GetOperations(compute_client,
@@ -110,14 +121,14 @@ class BulkCreate(base.Command):
 
   @classmethod
   def Args(cls, parser):
-    disks_flags.AddBulkCreateArgs(parser)
+    _CommonArgs(parser)
 
   @classmethod
   def _GetApiHolder(cls, no_http=False):
     return base_classes.ComputeApiHolder(cls.ReleaseTrack(), no_http)
 
   def Run(self, args):
-    return self._Run(args)
+    return self._Run(args, support_multiple_source_restore=True)
 
   def _Run(self, args, support_multiple_source_restore=False):
     compute_holder = self._GetApiHolder()
@@ -131,37 +142,45 @@ class BulkCreate(base.Command):
             project=project,
             zone=args.zone,
             bulkInsertDiskResource=client.messages.BulkInsertDiskResource(
-                sourceConsistencyGroupPolicy=policy_url))
+                sourceConsistencyGroupPolicy=policy_url
+            ),
+        )
         request = (client.apitools_client.disks, 'BulkInsert', request)
       else:
         request = client.messages.ComputeRegionDisksBulkInsertRequest(
             project=project,
             region=args.region,
             bulkInsertDiskResource=client.messages.BulkInsertDiskResource(
-                sourceConsistencyGroupPolicy=policy_url))
+                sourceConsistencyGroupPolicy=policy_url
+            ),
+        )
         request = (client.apitools_client.regionDisks, 'BulkInsert', request)
     else:
-      isg_ref = disks_flags.SOURCE_INSTANT_SNAPSHOT_GROUP_ARG.ResolveAsResource(
-          args,
-          compute_holder.resources,
-          scope_lister=flags.GetDefaultScopeLister(client),
-      )
-      if isg_ref is not None:
-        isg_params = client.messages.InstantSnapshotGroupParameters(
-            sourceInstantSnapshotGroup=isg_ref.SelfLink(),
+      isg_params = None
+      ssg_params = None
+      if policy_url is None:
+        isg_ref = (
+            disks_flags.SOURCE_INSTANT_SNAPSHOT_GROUP_ARG.ResolveAsResource(
+                args,
+                compute_holder.resources,
+                scope_lister=flags.GetDefaultScopeLister(client),
+            )
         )
-      else:
-        isg_params = None
-      ssg_ref = disks_flags.SOURCE_SNAPSHOT_GROUP_ARG.ResolveAsResource(
-          args,
-          compute_holder.resources,
-      )
-      if ssg_ref is not None:
-        ssg_params = client.messages.SnapshotGroupParameters(
-            sourceSnapshotGroup=ssg_ref.SelfLink(),
-        )
-      else:
-        ssg_params = None
+        if isg_ref is not None:
+          isg_params = client.messages.InstantSnapshotGroupParameters(
+              sourceInstantSnapshotGroup=isg_ref.SelfLink(),
+          )
+        else:
+          # source-snapshot-group is only available in Alpha.
+          if hasattr(args, 'source_snapshot_group'):
+            ssg_ref = disks_flags.SOURCE_SNAPSHOT_GROUP_ARG.ResolveAsResource(
+                args,
+                compute_holder.resources,
+            )
+            if ssg_ref is not None:
+              ssg_params = client.messages.SnapshotGroupParameters(
+                  sourceSnapshotGroup=ssg_ref.SelfLink(),
+              )
       if args.IsSpecified('zone'):
         request = client.messages.ComputeDisksBulkInsertRequest(
             project=project,
@@ -224,10 +243,11 @@ class BulkCreateBeta(BulkCreate):
 
   @classmethod
   def Args(cls, parser):
-    disks_flags.AddBulkCreateArgs(parser)
+    _BetaArgs(parser)
 
   def Run(self, args):
-    return self._Run(args)
+    return self._Run(args,
+                     support_multiple_source_restore=True)
 
 
 BulkCreateBeta.detailed_help = DETAILED_HELP

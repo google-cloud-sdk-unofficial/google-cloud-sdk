@@ -44,6 +44,7 @@ class NetappV1beta1(base_api.BaseApiClient):
     self.projects_locations_hostGroups = self.ProjectsLocationsHostGroupsService(self)
     self.projects_locations_kmsConfigs = self.ProjectsLocationsKmsConfigsService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
+    self.projects_locations_storagePools_backupConfigs = self.ProjectsLocationsStoragePoolsBackupConfigsService(self)
     self.projects_locations_storagePools_ontap = self.ProjectsLocationsStoragePoolsOntapService(self)
     self.projects_locations_storagePools = self.ProjectsLocationsStoragePoolsService(self)
     self.projects_locations_volumes_quotaRules = self.ProjectsLocationsVolumesQuotaRulesService(self)
@@ -1095,6 +1096,43 @@ class NetappV1beta1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsStoragePoolsBackupConfigsService(base_api.BaseApiService):
+    """Service class for the projects_locations_storagePools_backupConfigs resource."""
+
+    _NAME = 'projects_locations_storagePools_backupConfigs'
+
+    def __init__(self, client):
+      super(NetappV1beta1.ProjectsLocationsStoragePoolsBackupConfigsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def List(self, request, global_params=None):
+      r"""Lists backup configurations for all volumes in an ONTAP-mode Storage Pool.
+
+      Args:
+        request: (NetappProjectsLocationsStoragePoolsBackupConfigsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListBackupConfigsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/storagePools/{storagePoolsId}/backupConfigs',
+        http_method='GET',
+        method_id='netapp.projects.locations.storagePools.backupConfigs.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1beta1/{+parent}/backupConfigs',
+        request_field='',
+        request_type_name='NetappProjectsLocationsStoragePoolsBackupConfigsListRequest',
+        response_type_name='ListBackupConfigsResponse',
+        supports_download=False,
+    )
+
   class ProjectsLocationsStoragePoolsOntapService(base_api.BaseApiService):
     """Service class for the projects_locations_storagePools_ontap resource."""
 
@@ -1354,6 +1392,33 @@ class NetappV1beta1(base_api.BaseApiClient):
         relative_path='v1beta1/{+name}',
         request_field='storagePool',
         request_type_name='NetappProjectsLocationsStoragePoolsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def RestoreVolume(self, request, global_params=None):
+      r"""Restores a backup to an ONTAP-mode volume.
+
+      Args:
+        request: (NetappProjectsLocationsStoragePoolsRestoreVolumeRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('RestoreVolume')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    RestoreVolume.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/storagePools/{storagePoolsId}:restoreVolume',
+        http_method='POST',
+        method_id='netapp.projects.locations.storagePools.restoreVolume',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}:restoreVolume',
+        request_field='restoreVolumeRequest',
+        request_type_name='NetappProjectsLocationsStoragePoolsRestoreVolumeRequest',
         response_type_name='Operation',
         supports_download=False,
     )

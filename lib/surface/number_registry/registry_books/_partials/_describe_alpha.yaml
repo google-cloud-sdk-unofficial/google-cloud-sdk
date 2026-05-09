@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Gets details of a single registry book resource
     description: |
@@ -35,6 +34,24 @@
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.number_registry.v1alpha_resources:projects_locations_registry_books
       required: true
+    - arg_name: view
+      api_field: view
+      required: false
+      help_text: |-
+        The view of the RegistryBook.
+      choices:
+      - arg_value: basic
+        enum_value: BASIC
+        help_text: |-
+          Basic view.
+      - arg_value: full
+        enum_value: FULL
+        help_text: |-
+          Full view. Includes the same data as the BASIC view.
+      - arg_value: aggregate
+        enum_value: AGGREGATE
+        help_text: |-
+          Aggregate includes data about the child resources of the RegistryBook.
   request:
     api_version: v1alpha
     collection:

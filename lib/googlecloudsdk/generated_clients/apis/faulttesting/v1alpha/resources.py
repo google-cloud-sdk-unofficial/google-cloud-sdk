@@ -41,6 +41,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_EXCLUSIONWINDOWS = (
+      'projects.locations.exclusionWindows',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'exclusionWindows/{exclusionWindowsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_EXPERIMENTTEMPLATES = (
       'projects.locations.experimentTemplates',
       '{+name}',

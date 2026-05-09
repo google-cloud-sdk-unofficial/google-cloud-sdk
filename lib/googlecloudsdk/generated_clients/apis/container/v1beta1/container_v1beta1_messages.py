@@ -2427,6 +2427,7 @@ class CompleteConvertToAutopilotRequest(_messages.Message):
   """
 
 
+
 class CompleteIPRotationRequest(_messages.Message):
   r"""CompleteIPRotationRequest moves the cluster master back into single-IP
   mode.
@@ -2457,6 +2458,7 @@ class CompleteNodePoolUpgradeRequest(_messages.Message):
   r"""CompleteNodePoolUpgradeRequest sets the name of target node pool to
   complete upgrade.
   """
+
 
 
 class CompliancePostureConfig(_messages.Message):
@@ -3936,6 +3938,7 @@ class Empty(_messages.Message):
   or the response type of an API method. For instance: service Foo { rpc
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
+
 
 
 class EncryptionConfig(_messages.Message):
@@ -5831,6 +5834,11 @@ class MaintenanceWindow(_messages.Message):
       maintenance operation window.
     maintenanceExclusions: Exceptions to maintenance window. Non-emergency
       maintenance should not occur in these windows.
+    recurringMaintenanceWindow: RecurringMaintenanceWindow specifies some
+      number of recurring time periods for maintenance to occur. The time
+      windows may be overlapping. If no maintenance windows are set,
+      maintenance can occur at any time. Alternative to RecurringWindow, with
+      renamed fields.
     recurringWindow: RecurringWindow specifies some number of recurring time
       periods for maintenance to occur. The time windows may be overlapping.
       If no maintenance windows are set, maintenance can occur at any time.
@@ -5865,7 +5873,8 @@ class MaintenanceWindow(_messages.Message):
 
   dailyMaintenanceWindow = _messages.MessageField('DailyMaintenanceWindow', 1)
   maintenanceExclusions = _messages.MessageField('MaintenanceExclusionsValue', 2)
-  recurringWindow = _messages.MessageField('RecurringTimeWindow', 3)
+  recurringMaintenanceWindow = _messages.MessageField('RecurringMaintenanceWindow', 3)
+  recurringWindow = _messages.MessageField('RecurringTimeWindow', 4)
 
 
 class ManagedConfig(_messages.Message):
@@ -6572,9 +6581,8 @@ class NodeAffinity(_messages.Message):
 
 
 class NodeConfig(_messages.Message):
-  r"""Parameters that describe the nodes in a cluster.
-
-  GKE Autopilot clusters do not recognize parameters in `NodeConfig`. Use
+  r"""Parameters that describe the nodes in a cluster. GKE Autopilot clusters
+  do not recognize parameters in `NodeConfig`. Use
   AutoprovisioningNodePoolDefaults instead.
 
   Enums:
@@ -6931,14 +6939,10 @@ class NodeConfig(_messages.Message):
   diskIoScheduler = _messages.MessageField('DiskIoScheduler', 9)
   diskSizeGb = _messages.IntegerField(10, variant=_messages.Variant.INT32)
   diskType = _messages.StringField(11)
-  effectiveCgroupMode = _messages.EnumField(
-      'EffectiveCgroupModeValueValuesEnum', 12
-  )
+  effectiveCgroupMode = _messages.EnumField('EffectiveCgroupModeValueValuesEnum', 12)
   enableConfidentialStorage = _messages.BooleanField(13)
   ephemeralStorageConfig = _messages.MessageField('EphemeralStorageConfig', 14)
-  ephemeralStorageLocalSsdConfig = _messages.MessageField(
-      'EphemeralStorageLocalSsdConfig', 15
-  )
+  ephemeralStorageLocalSsdConfig = _messages.MessageField('EphemeralStorageLocalSsdConfig', 15)
   fastSocket = _messages.MessageField('FastSocket', 16)
   flexStart = _messages.BooleanField(17)
   gcfsConfig = _messages.MessageField('GcfsConfig', 18)
@@ -6949,13 +6953,9 @@ class NodeConfig(_messages.Message):
   kubeletConfig = _messages.MessageField('NodeKubeletConfig', 23)
   labels = _messages.MessageField('LabelsValue', 24)
   linuxNodeConfig = _messages.MessageField('LinuxNodeConfig', 25)
-  localNvmeSsdBlockConfig = _messages.MessageField(
-      'LocalNvmeSsdBlockConfig', 26
-  )
+  localNvmeSsdBlockConfig = _messages.MessageField('LocalNvmeSsdBlockConfig', 26)
   localSsdCount = _messages.IntegerField(27, variant=_messages.Variant.INT32)
-  localSsdEncryptionMode = _messages.EnumField(
-      'LocalSsdEncryptionModeValueValuesEnum', 28
-  )
+  localSsdEncryptionMode = _messages.EnumField('LocalSsdEncryptionModeValueValuesEnum', 28)
   loggingConfig = _messages.MessageField('NodePoolLoggingConfig', 29)
   lustreConfig = _messages.MessageField('LustreConfig', 30)
   machineType = _messages.StringField(31)
@@ -6972,12 +6972,8 @@ class NodeConfig(_messages.Message):
   runnerPoolConfig = _messages.MessageField('RunnerPoolConfig', 42)
   runnerPoolControl = _messages.MessageField('RunnerPoolControl', 43)
   sandboxConfig = _messages.MessageField('SandboxConfig', 44)
-  secondaryBootDiskUpdateStrategy = _messages.MessageField(
-      'SecondaryBootDiskUpdateStrategy', 45
-  )
-  secondaryBootDisks = _messages.MessageField(
-      'SecondaryBootDisk', 46, repeated=True
-  )
+  secondaryBootDiskUpdateStrategy = _messages.MessageField('SecondaryBootDiskUpdateStrategy', 45)
+  secondaryBootDisks = _messages.MessageField('SecondaryBootDisk', 46, repeated=True)
   serviceAccount = _messages.StringField(47)
   shieldedInstanceConfig = _messages.MessageField('ShieldedInstanceConfig', 48)
   soleTenantConfig = _messages.MessageField('SoleTenantConfig', 49)
@@ -8569,6 +8565,33 @@ class RayOperatorConfig(_messages.Message):
   rayClusterMonitoringConfig = _messages.MessageField('RayClusterMonitoringConfig', 3)
 
 
+class RecurringMaintenanceWindow(_messages.Message):
+  r"""Represents an arbitrary window of time that recurs. Alternative to
+  RecurringTimeWindow, with renamed fields.
+
+  Fields:
+    delayUntil: Optional. Windows will not be scheduled before that day.
+      Depending on the recurrence, this may be the date the first window
+      appears. Days are measured in the UTC timezone. This setting must be
+      used when INTERVAL>1 or FREQ=WEEKLY/MONTHLY and no BYDAY specified.
+    recurrence: Required. An RRULE
+      (https://tools.ietf.org/html/rfc5545#section-3.8.5.3) for how this
+      window reccurs. For example, to have something repeat every weekday,
+      you'd use: `FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR` To repeat some window
+      daily (equivalent to the DailyMaintenanceWindow): `FREQ=DAILY` For the
+      first weekend of every month: `FREQ=MONTHLY;BYSETPOS=1;BYDAY=SA,SU` The
+      FREQ values of HOURLY, MINUTELY, and SECONDLY are not supported.
+    windowDuration: Required. Duration of the window.
+    windowStartTime: Required. Start time of the window on days that it is
+      scheduled, assuming UTC timezone.
+  """
+
+  delayUntil = _messages.MessageField('Date', 1)
+  recurrence = _messages.StringField(2)
+  windowDuration = _messages.StringField(3)
+  windowStartTime = _messages.MessageField('TimeOfDay', 4)
+
+
 class RecurringTimeWindow(_messages.Message):
   r"""Represents an arbitrary window of time that recurs.
 
@@ -9192,6 +9215,7 @@ class SecondaryBootDiskUpdateStrategy(_messages.Message):
   r"""SecondaryBootDiskUpdateStrategy is a placeholder which will be extended
   in the future to define different options for updating secondary boot disks.
   """
+
 
 
 class SecretManagerConfig(_messages.Message):
@@ -10310,6 +10334,30 @@ class TaintConfig(_messages.Message):
     ARM = 2
 
   architectureTaintBehavior = _messages.EnumField('ArchitectureTaintBehaviorValueValuesEnum', 1)
+
+
+class TimeOfDay(_messages.Message):
+  r"""Represents a time of day. The date and time zone are either not
+  significant or are specified elsewhere. An API may choose to allow leap
+  seconds. Related types are google.type.Date and `google.protobuf.Timestamp`.
+
+  Fields:
+    hours: Hours of a day in 24 hour format. Must be greater than or equal to
+      0 and typically must be less than or equal to 23. An API may choose to
+      allow the value "24:00:00" for scenarios like business closing time.
+    minutes: Minutes of an hour. Must be greater than or equal to 0 and less
+      than or equal to 59.
+    nanos: Fractions of seconds, in nanoseconds. Must be greater than or equal
+      to 0 and less than or equal to 999,999,999.
+    seconds: Seconds of a minute. Must be greater than or equal to 0 and
+      typically must be less than or equal to 59. An API may allow the value
+      60 if it allows leap-seconds.
+  """
+
+  hours = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  minutes = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  nanos = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  seconds = _messages.IntegerField(4, variant=_messages.Variant.INT32)
 
 
 class TimeWindow(_messages.Message):

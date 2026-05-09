@@ -1590,16 +1590,12 @@ class Workstation(_messages.Message):
       STATE_STOPPING: The workstation is being stopped.
       STATE_STOPPED: The workstation is stopped and will not be able to
         receive requests until it is started.
-      STATE_SUSPENDING: The workstation is being suspended.
-      STATE_SUSPENDED: The workstation is suspended.
     """
     STATE_UNSPECIFIED = 0
     STATE_STARTING = 1
     STATE_RUNNING = 2
     STATE_STOPPING = 3
     STATE_STOPPED = 4
-    STATE_SUSPENDING = 5
-    STATE_SUSPENDED = 6
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AnnotationsValue(_messages.Message):
@@ -2016,21 +2012,19 @@ class WorkstationConfig(_messages.Message):
       default zones within the region are used. Immutable after the
       workstation configuration is created.
     runningTimeout: Optional. Number of seconds that a workstation can run
-      until it is automatically shut down. This field applies to workstations
-      in both STATE_RUNNING and STATE_SUSPENDED. We recommend that
-      workstations be shut down daily to reduce costs and so that security
-      updates can be applied upon restart. The idle_timeout and
-      running_timeout fields are independent of each other. Note that the
-      running_timeout field shuts down VMs after the specified time,
-      regardless of whether or not the VMs are idle. Provide duration
-      terminated by `s` for seconds-for example, `"54000s"` (15 hours).
-      Defaults to `"43200s"` (12 hours). A value of `"0s"` indicates that
-      workstations using this configuration should never time out. If
-      encryption_key is set, it must be greater than `"0s"` and less than
-      `"86400s"` (24 hours). Warning: A value of `"0s"` indicates that Cloud
-      Workstations VMs created with this configuration have no maximum running
-      time. This is strongly discouraged because you incur costs and will not
-      pick up security updates.
+      until it is automatically shut down. We recommend that workstations be
+      shut down daily to reduce costs and so that security updates can be
+      applied upon restart. The idle_timeout and running_timeout fields are
+      independent of each other. Note that the running_timeout field shuts
+      down VMs after the specified time, regardless of whether or not the VMs
+      are idle. Provide duration terminated by `s` for seconds-for example,
+      `"54000s"` (15 hours). Defaults to `"43200s"` (12 hours). A value of
+      `"0s"` indicates that workstations using this configuration should never
+      time out. If encryption_key is set, it must be greater than `"0s"` and
+      less than `"86400s"` (24 hours). Warning: A value of `"0s"` indicates
+      that Cloud Workstations VMs created with this configuration have no
+      maximum running time. This is strongly discouraged because you incur
+      costs and will not pick up security updates.
     satisfiesPzi: Output only. Reserved for future use.
     satisfiesPzs: Output only. Reserved for future use.
     uid: Output only. A system-assigned unique identifier for this workstation

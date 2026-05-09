@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, GA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: List Data Sources
     description: Displays all data sources in a project.

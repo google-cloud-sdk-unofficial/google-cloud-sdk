@@ -21,6 +21,5 @@ from googlecloudsdk.calliope import base
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
 @base.UniverseCompatible
-@base.Hidden
 class ServiceAgents(base.Group):
   """Manage Service Agents for Workload Identity."""

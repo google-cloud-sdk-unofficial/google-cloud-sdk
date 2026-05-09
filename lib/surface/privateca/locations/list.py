@@ -20,6 +20,7 @@ from googlecloudsdk.api_lib.privateca import locations
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List supported locations for the Private CA GA API."""

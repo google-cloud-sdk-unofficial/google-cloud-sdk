@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, GA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: Show details of the data source.
     description: Show all configuration data associated with the specified data source.

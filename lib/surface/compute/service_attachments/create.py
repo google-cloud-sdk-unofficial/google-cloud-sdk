@@ -60,15 +60,18 @@ class CreateHelper(object):
   PRODUCER_FORWARDING_RULE_ARG = None
   NAT_SUBNETWORK_ARG = None
 
-  def __init__(self, holder):
+  def __init__(self, holder, support_nat_ips_per_endpoint):
     self._holder = holder
+    self._support_nat_ips_per_endpoint = support_nat_ips_per_endpoint
 
   @classmethod
-  def Args(cls, parser):
+  def Args(cls, parser, support_nat_ips_per_endpoint):
     """Create a Google Compute Engine service attachment.
 
     Args:
       parser: the parser that parses the input from the user.
+      support_nat_ips_per_endpoint: whether the command supports the
+        nat-ips-per-endpoint flag.
     """
     cls.SERVICE_ATTACHMENT_ARG = flags.ServiceAttachmentArgument()
     cls.SERVICE_ATTACHMENT_ARG.AddArgument(parser, operation_type='create')
@@ -92,6 +95,8 @@ class CreateHelper(object):
     flags.AddConsumerAcceptListOld(parser)
     flags.AddDomainNames(parser)
     flags.AddPropagatedConnectionLimit(parser)
+    if support_nat_ips_per_endpoint:
+      flags.AddNatIpsPerEndpoint(parser)
 
   def Run(self, args):
     """Issue a service attachment INSERT request."""
@@ -152,6 +157,10 @@ class CreateHelper(object):
       service_attachment.propagatedConnectionLimit = (
           args.propagated_connection_limit
       )
+    if self._support_nat_ips_per_endpoint and args.IsSpecified(
+        'nat_ips_per_endpoint'
+    ):
+      service_attachment.natIpsPerEndpoint = args.nat_ips_per_endpoint
 
     request = client.messages.ComputeServiceAttachmentsInsertRequest(
         project=service_attachment_ref.project,
@@ -166,15 +175,16 @@ class CreateHelper(object):
 class Create(base.CreateCommand):
   """Create a Google Compute Engine service attachment."""
 
+  _support_nat_ips_per_endpoint = False
   detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):
-    CreateHelper.Args(parser)
+    CreateHelper.Args(parser, cls._support_nat_ips_per_endpoint)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return CreateHelper(holder).Run(args)
+    return CreateHelper(holder, self._support_nat_ips_per_endpoint).Run(args)
 
 
 @base.ReleaseTracks(
@@ -183,6 +193,7 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
   """Create a Google Compute Engine service attachment."""
 
+  _support_nat_ips_per_endpoint = False
   detailed_help = _DetailedHelp()
 
 
@@ -192,4 +203,5 @@ class CreateBeta(Create):
 class CreateAlpha(Create):
   """Create a Google Compute Engine service attachment."""
 
+  _support_nat_ips_per_endpoint = True
   detailed_help = _DetailedHelp()

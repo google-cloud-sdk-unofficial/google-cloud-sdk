@@ -73,6 +73,6 @@ class StartIapTunnel(base.Command):
     """Runs the command."""
     tunneler = run_iap_tunnel.CloudRunIAPWebsocketTunnelHelper(args)
     iap_tunnel_helper = iap_tunnel.IapTunnelStdinHelper(
-        tunneler, with_graceful_shutdown=True
+        tunneler, with_graceful_shutdown=True, ignore_windows_broken_pipe=True
     )
     iap_tunnel_helper.Run()

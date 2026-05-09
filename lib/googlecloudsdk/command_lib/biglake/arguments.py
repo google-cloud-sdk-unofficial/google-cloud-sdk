@@ -25,7 +25,7 @@ def AddDescriptionArg(parser):
   """Adds argument for description."""
   parser.add_argument(
       '--description',
-      help='Description of the resource being created.',
+      help='Description of the resource.',
   )
 
 
@@ -135,13 +135,11 @@ def AddFederatedCatalogArgs(parser):
   """Adds arguments for federated catalogs."""
   parser.add_argument(
       '--federated-catalog-type',
-      hidden=True,
       choices=['unity'],
       help='Type of the federated catalog.',
   )
   parser.add_argument(
       '--secret-name',
-      hidden=True,
       help=(
           'The secret resource name in Secret Manager, in the format'
           ' `projects/{project_id}/locations/{location}/secrets/{secret_id}`'
@@ -151,37 +149,34 @@ def AddFederatedCatalogArgs(parser):
   )
   parser.add_argument(
       '--unity-instance-name',
-      hidden=True,
       help=(
           'The instance name is the first part of the URL when you log into'
-          ' your Databricks deployment. For example, for a Databricks on GCP'
-          ' workspace URL https://1.1.gcp.databricks.com, the instance name is'
-          ' 1.1.gcp.databricks.com.'
+          ' your Databricks deployment. For example, for a Databricks on'
+          ' Google Cloud workspace URL https://1.1.gcp.databricks.com, the'
+          ' instance name is 1.1.gcp.databricks.com.'
       ),
   )
   parser.add_argument(
       '--unity-catalog-name',
-      hidden=True,
       help='Name of the catalog in Unity Catalog.',
   )
   parser.add_argument(
       '--refresh-interval',
-      hidden=True,
       type=arg_parsers.Duration(),
       help=(
           'The interval for refreshing metadata from the remote catalog (e.g.,'
-          ' "1hr5m30s"). Defaults to seconds if no unit is specified.'
+          ' "1hr5m30s"). Defaults to seconds if no unit is specified. If unset,'
+          ' the refresh interval will be set to 0s (background refresh'
+          ' disabled).'
       ),
   )
   parser.add_argument(
       '--namespace-filters',
-      hidden=True,
       type=arg_parsers.ArgList(),
       metavar='NAMESPACE',
       help=(
           'Filters to determine which namespaces are included in the refresh'
-          ' process. - empty list means include all namespaces. -'
-          ' "[namespaces]" means include the specified namespaces.'
+          ' process. Empty list means include all namespaces.'
       ),
   )
 
@@ -190,7 +185,6 @@ def AddUpdateFederatedCatalogArgs(parser):
   """Adds arguments for updating federated catalogs."""
   parser.add_argument(
       '--secret-name',
-      hidden=True,
       help=(
           'Resource name of the Secret Manager secret, in the format'
           ' `projects/{project_id}/locations/{location}/secrets/{secret_id}`'
@@ -200,21 +194,20 @@ def AddUpdateFederatedCatalogArgs(parser):
   )
   parser.add_argument(
       '--refresh-interval',
-      hidden=True,
       type=arg_parsers.Duration(),
       help=(
           'Interval for refreshing metadata from the remote catalog (e.g.,'
-          ' "1hr5m30s"). Defaults to seconds if no unit is specified.'
+          ' "1hr5m30s"). Defaults to seconds if no unit is specified. If unset,'
+          ' the refresh interval will be set to 0s (background refresh'
+          ' disabled).'
       ),
   )
   parser.add_argument(
       '--namespace-filters',
-      hidden=True,
       type=arg_parsers.ArgList(),
       metavar='NAMESPACE',
       help=(
           'Filters to determine which namespaces are included in the refresh'
-          ' process. - empty list means include all namespaces. -'
-          ' "[namespaces]" means include the specified namespaces.'
+          ' process. Empty list means include all namespaces.'
       ),
   )

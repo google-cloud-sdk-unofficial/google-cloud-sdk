@@ -30,7 +30,6 @@ class UpdateFromFile(base.Command):
   """Update a Compute Engine virtual machine instance using a configuration file."""
 
   _support_secure_tag = False
-  _support_discard_local_ssd = False
   detailed_help = {
       'DESCRIPTION':
           """\
@@ -87,17 +86,16 @@ class UpdateFromFile(base.Command):
               'If specified, all secure tags bound to this instance will be'
               ' removed.'
           ))
-    if cls._support_discard_local_ssd:
-      parser.add_argument(
-          '--discard-local-ssd',
-          dest='discard_local_ssd',
-          action='store_true',
-          default=None,
-          help=(
-              'If specified, all local SSDs data attached to this instance '
-              'will be discarded. This is only used with '
-              'most-disruptive-allowed-action set to RESTART.'
-          ))
+    parser.add_argument(
+        '--discard-local-ssd',
+        dest='discard_local_ssd',
+        action='store_true',
+        default=None,
+        help=(
+            'If specified, all local SSDs data attached to this instance '
+            'will be discarded. This is only used with '
+            'most-disruptive-allowed-action set to RESTART.'
+        ))
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -142,7 +140,7 @@ class UpdateFromFile(base.Command):
         mostDisruptiveAllowedAction=most_disruptive_allowed_action)
     if self._support_secure_tag and args.clear_secure_tag:
       request.clearSecureTag = True
-    if self._support_discard_local_ssd and args.discard_local_ssd:
+    if args.discard_local_ssd:
       request.discardLocalSsd = True
 
     client.MakeRequests([(client.apitools_client.instances, 'Update', request)])
@@ -154,7 +152,6 @@ class UpdateFromFile(base.Command):
 class UpdateFromFileBeta(UpdateFromFile):
   """Update a Compute Engine virtual machine instance using a configuration file."""
   _support_secure_tag = False
-  _support_discard_local_ssd = False
 
 
 @base.UniverseCompatible
@@ -162,4 +159,3 @@ class UpdateFromFileBeta(UpdateFromFile):
 class UpdateFromFileAlpha(UpdateFromFile):
   """Update a Compute Engine virtual machine instance using a configuration file."""
   _support_secure_tag = True
-  _support_discard_local_ssd = True

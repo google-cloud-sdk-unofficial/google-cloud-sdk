@@ -21,8 +21,8 @@ from googlecloudsdk.command_lib.projects import util
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 class Profiles(base.Group):
   """Quickstart engine for GKE workload optimization."""
 

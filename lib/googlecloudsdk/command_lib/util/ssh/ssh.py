@@ -123,6 +123,7 @@ class Environment(object):
     suite: Suite, The suite for this environment.
     bin_path: str, The path where the commands are located. If None, use
       standard `$PATH`.
+    is_windows: bool, True if the environment is Windows.
     ssh: str, Location of ssh command (or None if not found).
     ssh_term: str, Location of ssh terminal command (or None if not found), for
       interactive sessions.
@@ -153,16 +154,23 @@ class Environment(object):
       Suite.PUTTY: 1,  # Only `plink`, `putty` always gives 0
   }
 
-  def __init__(self, suite, bin_path=None):
+  def __init__(self, suite, bin_path=None, is_windows=None):
     """Create a new environment by supplying a suite and command directory.
 
     Args:
       suite: Suite, the suite for this environment.
       bin_path: str, the path where the commands are located. If None, use
         standard $PATH.
+      is_windows: bool or None, True if the environment is Windows. Defaults to
+        platforms.OperatingSystem.IsWindows().
     """
     self.suite = suite
     self.bin_path = bin_path
+    self.is_windows = (
+        platforms.OperatingSystem.IsWindows()
+        if is_windows is None
+        else is_windows
+    )
     self.ssh = None
     self.ssh_term = None
     self.scp = None
@@ -1014,17 +1022,20 @@ def FeatureEnabledInMetadata(
   return feature_enabled
 
 
-def CheckSshSecurityKeySupport():
+def CheckSshSecurityKeySupport(env=None):
   """Check the local SSH installation for security key support.
 
   Runs 'ssh -Q key' and looks for keys starting with 'sk-'.
   PuTTY on Windows will return False.
 
+  Args:
+    env: The environment to check for SSH support.
+
   Returns:
     True if SSH supports security keys, False if not, and None if support
     cannot be determined.
   """
-  env = Environment.Current()
+  env = env or Environment.Current()
 
   # Security Keys are not currently supported in PuTTy.
   if env.suite == Suite.PUTTY:
@@ -1278,6 +1289,7 @@ def GetOsloginState(
     instance_enable_security_keys=None,
     instance_require_certificates=None,
     messages=None,
+    env=None,
 ):
   """Check instance/project metadata for oslogin and return updated username.
 
@@ -1320,6 +1332,7 @@ def GetOsloginState(
       otherwise. An override to be used when the instance cannot be passed
       through the "instance" argument. None if not specified.
     messages: API messages class, The compute API messages.
+    env: Environment, The environment to be used to get the OS Login state.
 
   Returns:
     object, An object containing the OS Login state, with values indicating
@@ -1376,14 +1389,14 @@ def GetOsloginState(
         instance_override=instance_require_certificates,
     )
 
-  env = Environment.Current()
+  env = env or Environment.Current()
   if env.suite == Suite.PUTTY:
     oslogin_state.environment = 'putty'
   else:
     oslogin_state.environment = 'ssh'
 
   if oslogin_state.security_keys_enabled:
-    oslogin_state.ssh_security_key_support = CheckSshSecurityKeySupport()
+    oslogin_state.ssh_security_key_support = CheckSshSecurityKeySupport(env)
   oslogin = oslogin_client.OsloginClient(release_track)
   user_email = (
       properties.VALUES.auth.impersonate_service_account.Get()
@@ -1682,6 +1695,8 @@ def _EscapeProxyCommandArg(s, env):
   # 1 OpenSSH does percent unescape.
   # 2 bash does unescape.
   # We do the corresponding escapes in reverse.
+  if env.is_windows:
+    s = s.replace('\\', '/')
   return _EscapeForBash(s).replace('%', '%%')
 
 
@@ -2038,7 +2053,7 @@ class SSHCommand(object):
       port_flag = '-P' if env.suite is Suite.PUTTY else '-p'
       args.extend([port_flag, self.port])
 
-    if self.cert_file:
+    if self.cert_file and env.suite is Suite.OPENSSH:
       args.extend(['-o CertificateFile={}'.format(self.cert_file)])
 
     if self.identity_list:

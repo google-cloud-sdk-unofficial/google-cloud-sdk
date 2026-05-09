@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,8 +29,9 @@
   arguments:
     params:
     - help_text: |-
-        The validation from which to list validation resources.
-        Format: projects/{project}/locations/{location}/validations/{validation}
+        The `Validation` dry run from which to list validation resources.
+        Format:
+        `projects/{projectId}/locations/{location}/validations/{validationId}`.
       is_positional: false
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.fault_testing.v1alpha_resources:projects_locations_validations

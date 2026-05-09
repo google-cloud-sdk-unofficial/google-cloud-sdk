@@ -57,7 +57,7 @@ class ServicehealthV1beta(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Retrieves a resource containing information about an event affecting an organization .
+      r"""Retrieves a resource containing information about an event affecting an organization.
 
       Args:
         request: (ServicehealthOrganizationsLocationsOrganizationEventsGetRequest) input message

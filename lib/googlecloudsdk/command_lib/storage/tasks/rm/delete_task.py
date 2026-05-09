@@ -71,8 +71,38 @@ class DeleteTask(task.Task):
 class DeleteFileTask(DeleteTask):
   """Task to delete a file."""
 
+  def __init__(
+      self,
+      url,
+      user_request_args=None,
+      verbose=True,
+      raise_file_not_found_error=True,
+  ):
+    super().__init__(url, user_request_args, verbose)
+    self._raise_file_not_found_error = raise_file_not_found_error
+
   def _perform_deletion(self):
-    os.remove(self._url.resource_name)
+    try:
+      os.remove(self._url.resource_name)
+    except FileNotFoundError:
+      if self._raise_file_not_found_error:
+        raise
+      log.debug(
+          'Could not delete file {}. File not found.'.format(
+              self._url.resource_name
+          )
+      )
+
+  def __eq__(self, other):
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return (
+        self._url == other._url
+        and self._user_request_args == other._user_request_args
+        and self._verbose == other._verbose
+        and self._raise_file_not_found_error
+        == other._raise_file_not_found_error
+    )
 
 
 class CloudDeleteTask(DeleteTask):

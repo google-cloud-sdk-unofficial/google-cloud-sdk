@@ -530,19 +530,3 @@ def ConvertEntrypoint(entrypoint):
   if entrypoint.startswith('exec '):
     entrypoint = entrypoint[len('exec '):]
   return {'shell': entrypoint}
-
-
-def CommaSeparatedStringToList(input_str: str | None) -> list[str]:
-  """Converts a comma-separated string to a list of strings.
-
-  Args:
-    input_str: A string containing one or more tags, separated by commas, or
-      None. Handles empty strings and None by returning an empty list.
-
-  Returns:
-    A list of strings. The returned strings are stripped and empty strings are
-    filtered from the list.
-  """
-  if not input_str:
-    return []
-  return [v.strip() for v in input_str.split(',') if v.strip()]

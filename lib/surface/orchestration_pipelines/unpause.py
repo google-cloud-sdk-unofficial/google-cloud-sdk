@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.orchestration_pipelines.tools import composer_utils
 from googlecloudsdk.command_lib.orchestration_pipelines.tools import gcs_utils
+from googlecloudsdk.command_lib.orchestration_pipelines.tools import yaml_processor
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
@@ -76,6 +77,7 @@ class Unpause(calliope_base.Command):
             " background."
         ),
     )
+    yaml_processor.add_substitution_flags(parser)
 
   def Run(self, args):
     api_version = util.GetApiVersion(self.ReleaseTrack())
@@ -84,9 +86,13 @@ class Unpause(calliope_base.Command):
     list_filter = composer_utils.build_dags_filter_tags(
         bundle=args.bundle, pipeline=args.pipeline, is_current=True
     )
-    resource_name = composer_utils.build_resource_name(
-        args.environment, args.runner
-    )
+    if args.runner:
+      resource_name = composer_utils.build_resource_name(runner=args.runner)
+    else:
+      environment_model = yaml_processor.load_environment_with_args(args)
+      resource_name = composer_utils.build_resource_name(
+          env_model=environment_model
+      )
     environment_ref = resources.REGISTRY.ParseRelativeName(
         resource_name,
         collection="composer.projects.locations.environments",

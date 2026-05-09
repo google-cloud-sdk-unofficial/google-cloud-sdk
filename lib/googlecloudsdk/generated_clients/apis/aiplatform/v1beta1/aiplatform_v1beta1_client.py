@@ -281,6 +281,8 @@ class AiplatformV1beta1(base_api.BaseApiClient):
     self.projects_locations_schedules = self.ProjectsLocationsSchedulesService(self)
     self.projects_locations_semanticGovernancePolicies_operations = self.ProjectsLocationsSemanticGovernancePoliciesOperationsService(self)
     self.projects_locations_semanticGovernancePolicies = self.ProjectsLocationsSemanticGovernancePoliciesService(self)
+    self.projects_locations_semanticGovernancePolicyEngine_operations = self.ProjectsLocationsSemanticGovernancePolicyEngineOperationsService(self)
+    self.projects_locations_semanticGovernancePolicyEngine = self.ProjectsLocationsSemanticGovernancePolicyEngineService(self)
     self.projects_locations_serverlessRayJobs = self.ProjectsLocationsServerlessRayJobsService(self)
     self.projects_locations_solvers_operations = self.ProjectsLocationsSolversOperationsService(self)
     self.projects_locations_solvers = self.ProjectsLocationsSolversService(self)
@@ -339,6 +341,8 @@ class AiplatformV1beta1(base_api.BaseApiClient):
     self.schedules = self.SchedulesService(self)
     self.semanticGovernancePolicies_operations = self.SemanticGovernancePoliciesOperationsService(self)
     self.semanticGovernancePolicies = self.SemanticGovernancePoliciesService(self)
+    self.semanticGovernancePolicyEngine_operations = self.SemanticGovernancePolicyEngineOperationsService(self)
+    self.semanticGovernancePolicyEngine = self.SemanticGovernancePolicyEngineService(self)
     self.solvers_operations = self.SolversOperationsService(self)
     self.solvers = self.SolversService(self)
     self.specialistPools_operations = self.SpecialistPoolsOperationsService(self)
@@ -28445,6 +28449,33 @@ class AiplatformV1beta1(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+    def AsyncQuery(self, request, global_params=None):
+      r"""Async query using a reasoning engine.
+
+      Args:
+        request: (AiplatformProjectsLocationsReasoningEnginesAsyncQueryRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('AsyncQuery')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    AsyncQuery.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/reasoningEngines/{reasoningEnginesId}:asyncQuery',
+        http_method='POST',
+        method_id='aiplatform.projects.locations.reasoningEngines.asyncQuery',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}:asyncQuery',
+        request_field='googleCloudAiplatformV1beta1AsyncQueryReasoningEngineRequest',
+        request_type_name='AiplatformProjectsLocationsReasoningEnginesAsyncQueryRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
     def Create(self, request, global_params=None):
       r"""Creates a reasoning engine.
 
@@ -29375,6 +29406,161 @@ class AiplatformV1beta1(base_api.BaseApiClient):
         response_type_name='GoogleLongrunningOperation',
         supports_download=False,
     )
+
+  class ProjectsLocationsSemanticGovernancePolicyEngineOperationsService(base_api.BaseApiService):
+    """Service class for the projects_locations_semanticGovernancePolicyEngine_operations resource."""
+
+    _NAME = 'projects_locations_semanticGovernancePolicyEngine_operations'
+
+    def __init__(self, client):
+      super(AiplatformV1beta1.ProjectsLocationsSemanticGovernancePolicyEngineOperationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Cancel(self, request, global_params=None):
+      r"""Starts asynchronous cancellation on a long-running operation. The server makes a best effort to cancel the operation, but success is not guaranteed. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`. Clients can use Operations.GetOperation or other methods to check whether the cancellation succeeded or whether the operation completed despite cancellation. On successful cancellation, the operation is not deleted; instead, it becomes an operation with an Operation.error value with a google.rpc.Status.code of `1`, corresponding to `Code.CANCELLED`.
+
+      Args:
+        request: (AiplatformProjectsLocationsSemanticGovernancePolicyEngineOperationsCancelRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleProtobufEmpty) The response message.
+      """
+      config = self.GetMethodConfig('Cancel')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Cancel.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/semanticGovernancePolicyEngine/operations/{operationsId}:cancel',
+        http_method='POST',
+        method_id='aiplatform.projects.locations.semanticGovernancePolicyEngine.operations.cancel',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}:cancel',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsSemanticGovernancePolicyEngineOperationsCancelRequest',
+        response_type_name='GoogleProtobufEmpty',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a long-running operation. This method indicates that the client is no longer interested in the operation result. It does not cancel the operation. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`.
+
+      Args:
+        request: (AiplatformProjectsLocationsSemanticGovernancePolicyEngineOperationsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleProtobufEmpty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/semanticGovernancePolicyEngine/operations/{operationsId}',
+        http_method='DELETE',
+        method_id='aiplatform.projects.locations.semanticGovernancePolicyEngine.operations.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsSemanticGovernancePolicyEngineOperationsDeleteRequest',
+        response_type_name='GoogleProtobufEmpty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.
+
+      Args:
+        request: (AiplatformProjectsLocationsSemanticGovernancePolicyEngineOperationsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/semanticGovernancePolicyEngine/operations/{operationsId}',
+        http_method='GET',
+        method_id='aiplatform.projects.locations.semanticGovernancePolicyEngine.operations.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsSemanticGovernancePolicyEngineOperationsGetRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists operations that match the specified filter in the request. If the server doesn't support this method, it returns `UNIMPLEMENTED`.
+
+      Args:
+        request: (AiplatformProjectsLocationsSemanticGovernancePolicyEngineOperationsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningListOperationsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/semanticGovernancePolicyEngine/operations',
+        http_method='GET',
+        method_id='aiplatform.projects.locations.semanticGovernancePolicyEngine.operations.list',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['filter', 'pageSize', 'pageToken', 'returnPartialSuccess'],
+        relative_path='v1beta1/{+name}/operations',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsSemanticGovernancePolicyEngineOperationsListRequest',
+        response_type_name='GoogleLongrunningListOperationsResponse',
+        supports_download=False,
+    )
+
+    def Wait(self, request, global_params=None):
+      r"""Waits until the specified long-running operation is done or reaches at most a specified timeout, returning the latest state. If the operation is already done, the latest state is immediately returned. If the timeout specified is greater than the default HTTP/RPC timeout, the HTTP/RPC timeout is used. If the server does not support this method, it returns `google.rpc.Code.UNIMPLEMENTED`. Note that this method is on a best-effort basis. It may return the latest state before the specified timeout (including immediately), meaning even an immediate response is no guarantee that the operation is done.
+
+      Args:
+        request: (AiplatformProjectsLocationsSemanticGovernancePolicyEngineOperationsWaitRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Wait')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Wait.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/semanticGovernancePolicyEngine/operations/{operationsId}:wait',
+        http_method='POST',
+        method_id='aiplatform.projects.locations.semanticGovernancePolicyEngine.operations.wait',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['timeout'],
+        relative_path='v1beta1/{+name}:wait',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsSemanticGovernancePolicyEngineOperationsWaitRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsSemanticGovernancePolicyEngineService(base_api.BaseApiService):
+    """Service class for the projects_locations_semanticGovernancePolicyEngine resource."""
+
+    _NAME = 'projects_locations_semanticGovernancePolicyEngine'
+
+    def __init__(self, client):
+      super(AiplatformV1beta1.ProjectsLocationsSemanticGovernancePolicyEngineService, self).__init__(client)
+      self._upload_configs = {
+          }
 
   class ProjectsLocationsServerlessRayJobsService(base_api.BaseApiService):
     """Service class for the projects_locations_serverlessRayJobs resource."""
@@ -32945,7 +33131,7 @@ class AiplatformV1beta1(base_api.BaseApiClient):
     )
 
     def GetSemanticGovernancePolicyEngine(self, request, global_params=None):
-      r"""Gets a SemanticGovernancePolicyEngine. A singleton resource is implicitly created when its parent is created, and implicitly deleted when its parent is deleted. This method retrieves the current state of the singleton.
+      r"""Gets a SemanticGovernancePolicyEngine. A SemanticGovernancePolicyEngine is a singleton resource that is created when its parent is created, and deleted when its parent is deleted. This method retrieves the current state of the Semantic Governance Policy Engine.
 
       Args:
         request: (AiplatformProjectsLocationsGetSemanticGovernancePolicyEngineRequest) input message
@@ -32972,7 +33158,7 @@ class AiplatformV1beta1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the ListLocationsRequest.name field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
       Args:
         request: (AiplatformProjectsLocationsListRequest) input message
@@ -36396,6 +36582,33 @@ class AiplatformV1beta1(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+    def AsyncQuery(self, request, global_params=None):
+      r"""Async query using a reasoning engine.
+
+      Args:
+        request: (AiplatformReasoningEnginesAsyncQueryRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('AsyncQuery')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    AsyncQuery.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/reasoningEngines/{reasoningEnginesId}:asyncQuery',
+        http_method='POST',
+        method_id='aiplatform.reasoningEngines.asyncQuery',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}:asyncQuery',
+        request_field='googleCloudAiplatformV1beta1AsyncQueryReasoningEngineRequest',
+        request_type_name='AiplatformReasoningEnginesAsyncQueryRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
     def Create(self, request, global_params=None):
       r"""Creates a reasoning engine.
 
@@ -36917,6 +37130,161 @@ class AiplatformV1beta1(base_api.BaseApiClient):
 
     def __init__(self, client):
       super(AiplatformV1beta1.SemanticGovernancePoliciesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class SemanticGovernancePolicyEngineOperationsService(base_api.BaseApiService):
+    """Service class for the semanticGovernancePolicyEngine_operations resource."""
+
+    _NAME = 'semanticGovernancePolicyEngine_operations'
+
+    def __init__(self, client):
+      super(AiplatformV1beta1.SemanticGovernancePolicyEngineOperationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Cancel(self, request, global_params=None):
+      r"""Starts asynchronous cancellation on a long-running operation. The server makes a best effort to cancel the operation, but success is not guaranteed. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`. Clients can use Operations.GetOperation or other methods to check whether the cancellation succeeded or whether the operation completed despite cancellation. On successful cancellation, the operation is not deleted; instead, it becomes an operation with an Operation.error value with a google.rpc.Status.code of `1`, corresponding to `Code.CANCELLED`.
+
+      Args:
+        request: (AiplatformSemanticGovernancePolicyEngineOperationsCancelRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleProtobufEmpty) The response message.
+      """
+      config = self.GetMethodConfig('Cancel')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Cancel.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/semanticGovernancePolicyEngine/operations/{operationsId}:cancel',
+        http_method='POST',
+        method_id='aiplatform.semanticGovernancePolicyEngine.operations.cancel',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}:cancel',
+        request_field='',
+        request_type_name='AiplatformSemanticGovernancePolicyEngineOperationsCancelRequest',
+        response_type_name='GoogleProtobufEmpty',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a long-running operation. This method indicates that the client is no longer interested in the operation result. It does not cancel the operation. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`.
+
+      Args:
+        request: (AiplatformSemanticGovernancePolicyEngineOperationsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleProtobufEmpty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/semanticGovernancePolicyEngine/operations/{operationsId}',
+        http_method='DELETE',
+        method_id='aiplatform.semanticGovernancePolicyEngine.operations.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='AiplatformSemanticGovernancePolicyEngineOperationsDeleteRequest',
+        response_type_name='GoogleProtobufEmpty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.
+
+      Args:
+        request: (AiplatformSemanticGovernancePolicyEngineOperationsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/semanticGovernancePolicyEngine/operations/{operationsId}',
+        http_method='GET',
+        method_id='aiplatform.semanticGovernancePolicyEngine.operations.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='AiplatformSemanticGovernancePolicyEngineOperationsGetRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists operations that match the specified filter in the request. If the server doesn't support this method, it returns `UNIMPLEMENTED`.
+
+      Args:
+        request: (AiplatformSemanticGovernancePolicyEngineOperationsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningListOperationsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/semanticGovernancePolicyEngine/operations',
+        http_method='GET',
+        method_id='aiplatform.semanticGovernancePolicyEngine.operations.list',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['filter', 'pageSize', 'pageToken', 'returnPartialSuccess'],
+        relative_path='v1beta1/{+name}/operations',
+        request_field='',
+        request_type_name='AiplatformSemanticGovernancePolicyEngineOperationsListRequest',
+        response_type_name='GoogleLongrunningListOperationsResponse',
+        supports_download=False,
+    )
+
+    def Wait(self, request, global_params=None):
+      r"""Waits until the specified long-running operation is done or reaches at most a specified timeout, returning the latest state. If the operation is already done, the latest state is immediately returned. If the timeout specified is greater than the default HTTP/RPC timeout, the HTTP/RPC timeout is used. If the server does not support this method, it returns `google.rpc.Code.UNIMPLEMENTED`. Note that this method is on a best-effort basis. It may return the latest state before the specified timeout (including immediately), meaning even an immediate response is no guarantee that the operation is done.
+
+      Args:
+        request: (AiplatformSemanticGovernancePolicyEngineOperationsWaitRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Wait')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Wait.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/semanticGovernancePolicyEngine/operations/{operationsId}:wait',
+        http_method='POST',
+        method_id='aiplatform.semanticGovernancePolicyEngine.operations.wait',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['timeout'],
+        relative_path='v1beta1/{+name}:wait',
+        request_field='',
+        request_type_name='AiplatformSemanticGovernancePolicyEngineOperationsWaitRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+  class SemanticGovernancePolicyEngineService(base_api.BaseApiService):
+    """Service class for the semanticGovernancePolicyEngine resource."""
+
+    _NAME = 'semanticGovernancePolicyEngine'
+
+    def __init__(self, client):
+      super(AiplatformV1beta1.SemanticGovernancePolicyEngineService, self).__init__(client)
       self._upload_configs = {
           }
 

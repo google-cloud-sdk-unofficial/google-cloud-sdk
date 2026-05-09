@@ -28,41 +28,53 @@ class Action(_messages.Message):
 
 
 class AffectedResource(_messages.Message):
-  r"""Cloud resource that is affected by an experiment.
+  r"""Represents a specific Google Cloud resource, like a virtual machine or
+  database that is targeted by an experiment.
 
   Enums:
-    StateValueValuesEnum: The current state of the affected resource.
+    StateValueValuesEnum: The current state of this resource within the
+      experiment. Example: `PREPARING`, `INJECTED`, `COMPLETED`.
 
   Fields:
-    affectedResourceUri: Required. The URI of a GCP cloud resource.
-    cloudConsoleUrl: Output only. The URL to see this resource in the google
-      cloud console
-    displayName: Optional. The display name of the AffectedResource.
-    error: Output only. The error encountered when preparing, injecting, or
-      stopping the experiment for this resource.
-    name: Identifier. The resource name of the AffectedResource, of the form:
-      projects/{project_id}/locations/{location}/experiments/{experiment_id}/a
-      ffectedResources/{affected_resource_id}.
-    state: The current state of the affected resource.
-    stateMessage: A human-readable description of what is happening to the
-      affected resource.
+    affectedResourceUri: Required. The full unique address (URI) of the Google
+      Cloud resource affected by this `Experiment`. Example: the full path to
+      a specific Compute Engine instance.
+    cloudConsoleUrl: Output only. A direct link to view this specific resource
+      in the Google Cloud Console.
+    displayName: Optional. A human-readable name for the affected resource
+      record.
+    error: Output only. Details of any error that occurred while setting up,
+      running, or stopping the experiment on this specific resource. Empty if
+      no errors occurred.
+    name: Identifier. Unique identifier for this record, linking it to a
+      specific experiment and resource. Format: `projects/{project_id}/locatio
+      ns/{location}/experiments/{experiment_id}/affectedResources/{affected_re
+      source_id}`.
+    state: The current state of this resource within the experiment. Example:
+      `PREPARING`, `INJECTED`, `COMPLETED`.
+    stateMessage: A plain-language explanation of what is currently happening
+      with this resource in the experiment.
   """
 
   class StateValueValuesEnum(_messages.Enum):
-    r"""The current state of the affected resource.
+    r"""The current state of this resource within the experiment. Example:
+    `PREPARING`, `INJECTED`, `COMPLETED`.
 
     Values:
-      STATE_UNSPECIFIED: Not used.
-      PREPARING: The experiment resources are being identified and checked for
+      STATE_UNSPECIFIED: The state is not known or not set.
+      PREPARING: The system is identifying the target Google Cloud resources
+        for the `Experiment` or `Validation` and checking necessary
         permissions.
-      PREPARED: It is ready to run.
-      INJECTING: The resources associated with the experiment are being
-        modified.
-      INJECTED: The resources have been modified and we are waiting for the
-        test duration to expire.
-      REVERTING: It is in the process of stopping.
-      COMPLETED: This is experiment has completed and no further actions will
-        happen on its behalf.
+      PREPARED: The experiment is fully set up and ready to start.
+      INJECTING: The system is actively applying the fault to the targeted
+        resources. Example: Slowing down responses, triggering errors.
+      INJECTED: The fault is active on the targeted resources. The
+        `Experiment` is now running for its planned duration.
+      REVERTING: The `Experiment` is being stopped, and FIT is removing the
+        fault and restoring the resources to their normal operational state.
+      COMPLETED: The `Experiment` or `Validation` has finished, and the
+        resources are back to their normal state. No further actions will
+        occur.
     """
     STATE_UNSPECIFIED = 0
     PREPARING = 1
@@ -106,77 +118,111 @@ class Empty(_messages.Message):
 
 
 
-class Experiment(_messages.Message):
-  r"""A prospective, current, or past run of a failure-injection experiment.
-
-  Enums:
-    EndReasonValueValuesEnum: Output only. The reason the experiment ended.
-      This should be set as soon as state becomes REVERTING.
-    StateValueValuesEnum: Output only. The current state of the experiment.
+class ExclusionWindow(_messages.Message):
+  r"""A period during which experiments are not supposed to run.
 
   Fields:
-    createTime: Output only. Time the experiment was created.
-    description: Optional. Optional user-provided description or notes. Min
-      length 0, max length 2000.
-    displayName: Optional. Human-readable name of the experiment
-    effectiveAction: Output only. The fault-injection action to be performed.
-      This is a copy of the Action in the referenced ExperimentTemplate.
-    endNotes: Output only. If end_reason is CANCELLED, this can have notes
-      from the user about the circumstances.
-    endReason: Output only. The reason the experiment ended. This should be
-      set as soon as state becomes REVERTING.
-    experimentTemplate: Required. The resource name of an ExperimentTemplate
-      to create this experiment from. Required. Format projects/{project_id}/l
-      ocations/{location}/experimentTemplates/{experimentTemplateId}. The
-      server will read the named template and use its contents to fill
-      template_display_name, template_description, template_duration, and
-      effective_action.
-    name: Identifier. The resource name of the Experiment, of the form:
-      projects/{project_id}/locations/{location}/experiments/{experiment_id}.
-    startTime: Output only. Time the experiment started running.
-    state: Output only. The current state of the experiment.
-    stateUpdateTime: Output only. Time of the most recent state change.
-    stopTime: Output only. Time the experiment terminated. Specifically when
-      the experiment state becomes COMPLETED. The presence of this field can
-      be used to determine if the experiment is stopped or not.
-    templateDescription: Output only. The description of the
-      ExperimentTemplate this experiment was created from. Min length 0, max
-      length 2000.
-    templateDisplayName: Output only. The display name of the
-      ExperimentTemplate this experiment was created from. Min length 0, max
-      length is 1000.
-    templateDuration: Output only. The intended duration of the Experiment.
-      Min duration 1 minute, max 10 days.
+    description: Optional. Optional user-provided description. Min length 0.
+      Max length 2000.
+    duration: Required. How long the exclusion window lasts once started.
+    endTime: Output only. When the exclusion window ends, or empty if it has
+      not been started.
+    name: Identifier. The resource name of the exclusion window. Format: `proj
+      ects/{project}/locations/{location}/exclusionWindows/{exclusion_window}`
+    startTime: Output only. When the exclusion window started, or empty if it
+      has not been started.
+  """
+
+  description = _messages.StringField(1)
+  duration = _messages.StringField(2)
+  endTime = _messages.StringField(3)
+  name = _messages.StringField(4)
+  startTime = _messages.StringField(5)
+
+
+class Experiment(_messages.Message):
+  r"""Represents a single fault injection experiment where faults are
+  deliberately introduced to your cloud resources to see how your application
+  responds.
+
+  Enums:
+    EndReasonValueValuesEnum: Output only. Why the experiment stopped.
+      Example: It finished normally, or was cancelled by a user.
+    StateValueValuesEnum: Output only. The current state of the experiment.
+      Example: `PREPARING`, `INJECTED`, `COMPLETED`.
+
+  Fields:
+    createTime: Output only. The date and time when the experiment record was
+      created.
+    description: Optional. Notes or details to describe the purpose or context
+      of the experiment. Minimum length is 0, maximum length is 2000.
+    displayName: Optional. A human-readable name of the experiment.
+    effectiveAction: Output only. The specific fault that was introduced
+      during the experiment. Examples: Triggering a database failover, adding
+      delays to web requests. This field comes from the experiment template.
+    endNotes: Output only. Optional user-added notes explaining why the
+      experiment was stopped, particularly if it was manually cancelled.
+    endReason: Output only. Why the experiment stopped. Example: It finished
+      normally, or was cancelled by a user.
+    experimentTemplate: Required. The unique identifier of the reusable
+      experiment template used to configure the experiment. This field
+      determines the type of fault, target, and duration. Format: `projects/{p
+      roject_id}/locations/{location}/experimentTemplates/{experimentTemplateI
+      d}`.
+    name: Identifier. Unique identifier for the experiment. Format:
+      `projects/{project_id}/locations/{location}/experiments/{experiment_id}`
+      .
+    startTime: Output only. The date and time when the fault injection
+      actually began.
+    state: Output only. The current state of the experiment. Example:
+      `PREPARING`, `INJECTED`, `COMPLETED`.
+    stateUpdateTime: Output only. The date and time when the experiment's
+      state was last updated.
+    stopTime: Output only. The date and time when the experiment finished and
+      the faults were removed.
+    templateDescription: Output only. The description from the experiment
+      template used for the experiment. Minimum length is 0, maximum length is
+      2000.
+    templateDisplayName: Output only. The human-readable name of the
+      experiment template used for the experiment. Minimum length is 0,
+      maximum length is 1000.
+    templateDuration: Output only. The planned duration of the experiment, as
+      defined in the experiment template. Minimum duration is 1 minute,
+      maximum is 10 days.
   """
 
   class EndReasonValueValuesEnum(_messages.Enum):
-    r"""Output only. The reason the experiment ended. This should be set as
-    soon as state becomes REVERTING.
+    r"""Output only. Why the experiment stopped. Example: It finished
+    normally, or was cancelled by a user.
 
     Values:
-      END_REASON_UNSPECIFIED: No EndReason has been set.
-      CANCELLED: The experiment was stopped by the user.
-      COMPLETED: The experiment finished normally.
+      END_REASON_UNSPECIFIED: The reason for stopping is not specified.
+      CANCELLED: A user manually stopped the experiment.
+      COMPLETED: The experiment finished normally after its duration.
     """
     END_REASON_UNSPECIFIED = 0
     CANCELLED = 1
     COMPLETED = 2
 
   class StateValueValuesEnum(_messages.Enum):
-    r"""Output only. The current state of the experiment.
+    r"""Output only. The current state of the experiment. Example:
+    `PREPARING`, `INJECTED`, `COMPLETED`.
 
     Values:
-      STATE_UNSPECIFIED: Not used.
-      PREPARING: The experiment resources are being identified and checked for
+      STATE_UNSPECIFIED: The state is not known or not set.
+      PREPARING: The system is identifying the target Google Cloud resources
+        for the `Experiment` or `Validation` and checking necessary
         permissions.
-      PREPARED: It is ready to run.
-      INJECTING: The resources associated with the experiment are being
-        modified.
-      INJECTED: The resources have been modified and we are waiting for the
-        test duration to expire.
-      REVERTING: It is in the process of stopping.
-      COMPLETED: This is experiment has completed and no further actions will
-        happen on its behalf.
+      PREPARED: The experiment is fully set up and ready to start.
+      INJECTING: The system is actively applying the fault to the targeted
+        resources. Example: Slowing down responses, triggering errors.
+      INJECTED: The fault is active on the targeted resources. The
+        `Experiment` is now running for its planned duration.
+      REVERTING: The `Experiment` is being stopped, and FIT is removing the
+        fault and restoring the resources to their normal operational state.
+      COMPLETED: The `Experiment` or `Validation` has finished, and the
+        resources are back to their normal state. No further actions will
+        occur.
     """
     STATE_UNSPECIFIED = 0
     PREPARING = 1
@@ -230,19 +276,127 @@ class ExperimentTemplate(_messages.Message):
   updateTime = _messages.StringField(7)
 
 
+class FaulttestingProjectsLocationsExclusionWindowsCreateRequest(_messages.Message):
+  r"""A FaulttestingProjectsLocationsExclusionWindowsCreateRequest object.
+
+  Fields:
+    exclusionWindow: A ExclusionWindow resource to be passed as the request
+      body.
+    exclusionWindowId: Required. The ID to use for the exclusion_window, which
+      will become the final component of the exclusion_window's resource name.
+      Required. This value should be 4-63 characters, and valid characters are
+      /a-z-/. Must start with a letter and cannot end with a hyphen.
+    parent: Required. The project and location where this ExclusionWindow will
+      be created. Format: projects/{project}/locations/{location}
+  """
+
+  exclusionWindow = _messages.MessageField('ExclusionWindow', 1)
+  exclusionWindowId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class FaulttestingProjectsLocationsExclusionWindowsDeleteRequest(_messages.Message):
+  r"""A FaulttestingProjectsLocationsExclusionWindowsDeleteRequest object.
+
+  Fields:
+    name: Required. The name of the ExclusionWindow to delete. Format: project
+      s/{project}/locations/{location}/exclusionWindows/{exclusion_window}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class FaulttestingProjectsLocationsExclusionWindowsGetRequest(_messages.Message):
+  r"""A FaulttestingProjectsLocationsExclusionWindowsGetRequest object.
+
+  Fields:
+    name: Required. The name of the ExclusionWindow. Format: projects/{project
+      }/locations/{location}/exclusionWindows/{exclusion_window}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class FaulttestingProjectsLocationsExclusionWindowsListRequest(_messages.Message):
+  r"""A FaulttestingProjectsLocationsExclusionWindowsListRequest object.
+
+  Fields:
+    pageSize: Optional. The maximum number of ExclusionWindows to return from
+      this call. The service may return fewer than this value. If unspecified,
+      at most 1000 will be returned. The maximum value is 1000; values above
+      1000 will be coerced to 1000.
+    pageToken: Optional. A page token, received from a previous
+      `ListExclusionWindows` call. Provide this to retrieve the subsequent
+      page. When paginating, all other parameters provided to
+      `ListExclusionWindows` must match the call that provided the page token.
+    parent: Required. The project and location from which to list
+      ExclusionWindows. Format: projects/{project}/locations/{location}
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class FaulttestingProjectsLocationsExclusionWindowsPatchRequest(_messages.Message):
+  r"""A FaulttestingProjectsLocationsExclusionWindowsPatchRequest object.
+
+  Fields:
+    exclusionWindow: A ExclusionWindow resource to be passed as the request
+      body.
+    name: Identifier. The resource name of the exclusion window. Format: `proj
+      ects/{project}/locations/{location}/exclusionWindows/{exclusion_window}`
+    updateMask: Optional. The mask to control which fields get updated. If the
+      mask is not present, all fields will be updated.
+  """
+
+  exclusionWindow = _messages.MessageField('ExclusionWindow', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
+
+
+class FaulttestingProjectsLocationsExclusionWindowsStartRequest(_messages.Message):
+  r"""A FaulttestingProjectsLocationsExclusionWindowsStartRequest object.
+
+  Fields:
+    name: Required. The resource name of the ExclusionWindow to start. Format:
+      projects/{project}/locations/{location}/exclusionWindows/{exclusion_wind
+      ow}
+    startExclusionWindowRequest: A StartExclusionWindowRequest resource to be
+      passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  startExclusionWindowRequest = _messages.MessageField('StartExclusionWindowRequest', 2)
+
+
+class FaulttestingProjectsLocationsExclusionWindowsStopRequest(_messages.Message):
+  r"""A FaulttestingProjectsLocationsExclusionWindowsStopRequest object.
+
+  Fields:
+    name: Required. The resource name of the ExclusionWindow to stop. Format:
+      projects/{project}/locations/{location}/exclusionWindows/{exclusion_wind
+      ow}
+    stopExclusionWindowRequest: A StopExclusionWindowRequest resource to be
+      passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  stopExclusionWindowRequest = _messages.MessageField('StopExclusionWindowRequest', 2)
+
+
 class FaulttestingProjectsLocationsExperimentTemplatesCreateRequest(_messages.Message):
   r"""A FaulttestingProjectsLocationsExperimentTemplatesCreateRequest object.
 
   Fields:
     experimentTemplate: A ExperimentTemplate resource to be passed as the
       request body.
-    experimentTemplateId: Optional. The ID to use for the experiment_template,
-      which will become the final component of the experiment_template's
-      resource name. Required. This value should be 4-63 characters, and valid
-      characters are /a-z-/. Must start with a letter and cannot end with a
-      hyphen.
-    parent: Required. The project where this experiment template will be
-      created. Format: projects/{project}/locations/{location}
+    experimentTemplateId: Optional. The ID to use for the experiment template,
+      which will become the final component of the resource name. This value
+      should be 4-63 characters, start with a letter, end with a letter or
+      number, and contain only lowercase letters, numbers, and hyphens.
+    parent: Required. The project and location where this experiment template
+      will be created. Format: `projects/{projectId}/locations/{location}`.
   """
 
   experimentTemplate = _messages.MessageField('ExperimentTemplate', 1)
@@ -254,9 +408,9 @@ class FaulttestingProjectsLocationsExperimentTemplatesDeleteRequest(_messages.Me
   r"""A FaulttestingProjectsLocationsExperimentTemplatesDeleteRequest object.
 
   Fields:
-    name: Required. The name of the experiment template to delete. Format: pro
-      jects/{project}/locations/{location}/experimentTemplates/{experiment_tem
-      plate}
+    name: Required. The resource name of the experiment template to delete.
+      Format: `projects/{projectId}/locations/{location}/experimentTemplates/{
+      experimentTemplateId}`.
   """
 
   name = _messages.StringField(1, required=True)
@@ -266,8 +420,9 @@ class FaulttestingProjectsLocationsExperimentTemplatesGetRequest(_messages.Messa
   r"""A FaulttestingProjectsLocationsExperimentTemplatesGetRequest object.
 
   Fields:
-    name: Required. The name of the experiment template. Format: projects/{pro
-      ject}/locations/{location}/experimentTemplates/{experiment_template}
+    name: Required. The resource name of the experiment template to retrieve.
+      Format: `projects/{projectId}/locations/{location}/experimentTemplates/{
+      experimentTemplateId}`.
   """
 
   name = _messages.StringField(1, required=True)
@@ -277,17 +432,15 @@ class FaulttestingProjectsLocationsExperimentTemplatesListRequest(_messages.Mess
   r"""A FaulttestingProjectsLocationsExperimentTemplatesListRequest object.
 
   Fields:
-    pageSize: Optional. The maximum number of experiment templates to return
-      from this call. The service may return fewer than this value. If
-      unspecified, at most 1000 experiment templates will be returned. The
-      maximum value is 1000; values above 1000 will be coerced to 1000.
-    pageToken: Optional. A page token, received from a previous
-      `ListExperimentTemplates` call. Provide this to retrieve the subsequent
-      page. When paginating, all other parameters provided to
-      `ListExperimentTemplates` must match the call that provided the page
-      token.
+    pageSize: Optional. The maximum number of templates to return. FIT may
+      return fewer. If unspecified, at most 1000 will be returned. The maximum
+      value is 1000; values above 1000 will be coerced to 1000.
+    pageToken: Optional. A page token received from a previous list call, used
+      to retrieve the subsequent page. When paginating, all other parameters
+      provided to `ListExperimentTemplates` must match the call that provided
+      the page token.
     parent: Required. The project and location from which to list experiment
-      templates. Format: projects/{project}/locations/{location}
+      templates. Format: `projects/{project}/locations/{location}`.
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -304,8 +457,9 @@ class FaulttestingProjectsLocationsExperimentTemplatesPatchRequest(_messages.Mes
     name: Identifier. The resource name of this experiment template. Format: `
       projects/{project}/locations/{location}/experimentTemplates/{experiment_
       template}`
-    updateMask: Optional. The mask to control which fields get updated. If the
-      mask is not present, all fields will be updated.
+    updateMask: Optional. A comma-separated list of fields to update. If not
+      provided, all editable fields will be considered for updates. Fields
+      like `name` and `createTime` cannot be updated.
   """
 
   experimentTemplate = _messages.MessageField('ExperimentTemplate', 1)
@@ -318,9 +472,9 @@ class FaulttestingProjectsLocationsExperimentsAffectedResourcesGetRequest(_messa
   object.
 
   Fields:
-    name: Required. The name of the affected resource. Format: projects/{proje
-      ct}/locations/{location}/experiments/{experiment}/affectedResources/{aff
-      ected_resource}
+    name: Required. The resource name of the affected resource. Format: `proje
+      cts/{projectId}/locations/{location}/experiments/{experimentId}/affected
+      Resources/{affectedResourceId}`.
   """
 
   name = _messages.StringField(1, required=True)
@@ -331,18 +485,19 @@ class FaulttestingProjectsLocationsExperimentsAffectedResourcesListRequest(_mess
   object.
 
   Fields:
-    filter: Optional. Filtering results
+    filter: Optional. A filter expression to restrict the affected resources
+      returned. Follows https://google.aip.dev/160 and supports all fields.
     pageSize: Optional. The maximum number of affected resources to return.
-      The service may return fewer than this value. If unspecified, at most
-      1000 affected resources will be returned. The maximum value is 1000;
-      values above 1000 will be coerced to 1000.
-    pageToken: Optional. A page token, received from a previous
-      `ListAffectedResources` call. Provide this to retrieve the subsequent
-      page. When paginating, all other parameters provided to
-      `ListAffectedResources` must match the call that provided the page
-      token.
-    parent: Required. The experiment from which to list affected resources.
-      Format: projects/{project}/locations/{location}/experiments/{experiment}
+      Fault Injection Testing may return fewer. If unspecified, at most 1000
+      will be returned. The maximum value is 1000; values above 1000 will be
+      coerced to 1000.
+    pageToken: Optional. A page token received from a previous list call, used
+      to retrieve the subsequent page. When paginating, all other parameters
+      provided to `ListAffectedResources` must match the call that provided
+      the page token.
+    parent: Required. The `Experiment` from which to list affected resources.
+      Format:
+      `projects/{projectId}/locations/{location}/experiments/{experimentId}`.
   """
 
   filter = _messages.StringField(1)
@@ -356,13 +511,13 @@ class FaulttestingProjectsLocationsExperimentsCreateRequest(_messages.Message):
 
   Fields:
     experiment: A Experiment resource to be passed as the request body.
-    experimentId: Optional. The ID to use for the experiment, which will
-      become the final component of the experiment's resource name. Optional.
-      If omitted, the server will create a UUID. This value should be 4-63
-      characters, and valid characters are /a-z-/. Cannot start or end with a
-      hyphen.
-    parent: Required. The project where this experiment will be created.
-      Format: projects/{project}/locations/{location}
+    experimentId: Optional. The ID to use for the `Experiment`, which will
+      become the final component of the resource name. If not provided, a UUID
+      will be generated. This value should be 4-63 characters, start with a
+      letter or number, end with a letter or number, and contain only
+      lowercase letters, numbers, and hyphens.
+    parent: Required. The project and location where this `Experiment` will be
+      created. Format: `projects/{projectId}/locations/{location}`.
   """
 
   experiment = _messages.MessageField('Experiment', 1)
@@ -375,11 +530,11 @@ class FaulttestingProjectsLocationsExperimentsDeleteRequest(_messages.Message):
 
   Fields:
     force: Optional. Should always be set to true. If set to true, any
-      AffectedResources under this Experiment will also be deleted.
-      (Otherwise, the request will only work if the Experiment has no
-      AffectedResources.)
-    name: Required. The name of the experiment to delete. Format:
-      projects/{project}/locations/{location}/experiments/{experiment}
+      affected resources under this experiment will also be deleted.
+      Otherwise, the request will only work if the experiment has no affected
+      resources.
+    name: Required. The resource name of the experiment to delete. Format:
+      `projects/{projectId}/locations/{location}/experiments/{experimentId}`.
   """
 
   force = _messages.BooleanField(1)
@@ -390,8 +545,8 @@ class FaulttestingProjectsLocationsExperimentsGetRequest(_messages.Message):
   r"""A FaulttestingProjectsLocationsExperimentsGetRequest object.
 
   Fields:
-    name: Required. The name of the experiment. Format:
-      projects/{project}/locations/{location}/experiments/{experiment}
+    name: Required. The resource name of the experiment to retrieve. Format:
+      `projects/{projectId}/locations/{location}/experiments/{experimentId}`.
   """
 
   name = _messages.StringField(1, required=True)
@@ -401,20 +556,20 @@ class FaulttestingProjectsLocationsExperimentsListRequest(_messages.Message):
   r"""A FaulttestingProjectsLocationsExperimentsListRequest object.
 
   Fields:
-    filter: Optional. Filter expression to restrict the experiments returned.
-      Returns only experiments matching the expression. Example:
-      'state="INJECTED"'. Follows https://google.aip.dev/160 and supports all
+    filter: Optional. A filter expression to restrict the experiments
+      returned. Example: `state="INJECTED"`. Returns only experiments matching
+      the expression. Follows https://google.aip.dev/160 and supports all
       fields.
-    pageSize: Optional. The maximum number of experiments to return. The
-      service may return fewer than this value. If unspecified, at most 1000
-      experiments will be returned. The maximum value is 1000; values above
-      1000 will be coerced to 1000.
-    pageToken: Optional. A page token, received from a previous
-      `ListExperiments` call. Provide this to retrieve the subsequent page.
-      When paginating, all other parameters provided to `ListExperiments` must
-      match the call that provided the page token.
+    pageSize: Optional. The maximum number of experiments to return. Fault
+      Injection Testing may return fewer. If unspecified, at most 1000 will be
+      returned. The maximum value is 1000; values above 1000 will be coerced
+      to 1000.
+    pageToken: Optional. A page token received from a previous list call, used
+      to retrieve the subsequent page. When paginating, all other parameters
+      provided to `ListExperiments` must match the call that provided the page
+      token.
     parent: Required. The project and location from which to list experiments.
-      Format: projects/{project}/locations/{location}
+      Format: `projects/{projectId}/locations/{location}`.
   """
 
   filter = _messages.StringField(1)
@@ -428,7 +583,7 @@ class FaulttestingProjectsLocationsExperimentsStartRequest(_messages.Message):
 
   Fields:
     name: Required. The resource name of the experiment to start. Format:
-      projects/{project}/locations/{location}/experiments/{experiment}
+      `projects/{projectId}/locations/{location}/experiments/{experimentId}`.
     startExperimentRequest: A StartExperimentRequest resource to be passed as
       the request body.
   """
@@ -441,9 +596,8 @@ class FaulttestingProjectsLocationsExperimentsStopAllRequest(_messages.Message):
   r"""A FaulttestingProjectsLocationsExperimentsStopAllRequest object.
 
   Fields:
-    parent: Required. The parent of the resources to stop. Format:
-      projects/{project}/locations/{location}. All experiments under this
-      location are stopped.
+    parent: Required. The project and location where all experiments will be
+      stopped. Format: `projects/{projectId}/locations/{location}`.
     stopAllExperimentsRequest: A StopAllExperimentsRequest resource to be
       passed as the request body.
   """
@@ -457,7 +611,7 @@ class FaulttestingProjectsLocationsExperimentsStopRequest(_messages.Message):
 
   Fields:
     name: Required. The resource name of the experiment to stop. Format:
-      projects/{project}/locations/{location}/experiments/{experiment}
+      `projects/{projectId}/locations/{location}/experiments/{experimentId}`.
     stopExperimentRequest: A StopExperimentRequest resource to be passed as
       the request body.
   """
@@ -561,14 +715,14 @@ class FaulttestingProjectsLocationsValidationsCreateRequest(_messages.Message):
   r"""A FaulttestingProjectsLocationsValidationsCreateRequest object.
 
   Fields:
-    parent: Required. The project where this Validation will be created.
-      Format: projects/{project}/locations/{location}
+    parent: Required. The project and location where this dry run will be
+      created. Format: `projects/{projectId}/locations/{location}`.
     validation: A Validation resource to be passed as the request body.
-    validationId: Optional. The ID to use for the Validation, which will
-      become the final component of the Validation's resource name. Optional.
-      If omitted, the server will create a UUID. This value should be 4-63
-      characters, and valid characters are /a-z-/. Cannot start or end with a
-      hyphen.
+    validationId: Optional. The ID to use for the dry run, which will become
+      the final component of the resource name. If not provided, a UUID will
+      be generated. This value should be 4-63 characters, start with a letter
+      or number, end with a letter or number, and contain only lowercase
+      letters, numbers, and hyphens.
   """
 
   parent = _messages.StringField(1, required=True)
@@ -581,11 +735,11 @@ class FaulttestingProjectsLocationsValidationsDeleteRequest(_messages.Message):
 
   Fields:
     force: Optional. Should always be set to true. If set to true, any
-      ValidationResources under this Validation will also be deleted.
-      (Otherwise, the request will only work if the Validation has no
-      ValidationResources.)
-    name: Required. The name of the Validation to delete. Format:
-      projects/{project}/locations/{location}/validations/{validation}
+      `ValidationResource`s under this `Validation` will also be deleted.
+      Otherwise, the request will only work if the `Validation` has no
+      `ValidationResource`s.
+    name: Required. The resource name of the dry run to delete. Format:
+      `projects/{projectId}/locations/{location}/validations/{validationId}`.
   """
 
   force = _messages.BooleanField(1)
@@ -596,8 +750,8 @@ class FaulttestingProjectsLocationsValidationsGetRequest(_messages.Message):
   r"""A FaulttestingProjectsLocationsValidationsGetRequest object.
 
   Fields:
-    name: Required. The name of the Validation. Format:
-      projects/{project}/locations/{location}/validations/{validation}
+    name: Required. The resource name of the dry run to retrieve. Format:
+      `projects/{projectId}/locations/{location}/validations/{validationId}`.
   """
 
   name = _messages.StringField(1, required=True)
@@ -607,18 +761,19 @@ class FaulttestingProjectsLocationsValidationsListRequest(_messages.Message):
   r"""A FaulttestingProjectsLocationsValidationsListRequest object.
 
   Fields:
-    filter: Optional. Filter expression to restrict the validations returned.
-      Example: 'status=RUNNING'.
-    pageSize: Optional. The maximum number of Validations to return. The
-      service may return fewer than this value. If unspecified, at most 1000
-      validations will be returned. The maximum value is 1000; values above
-      1000 will be coerced to 1000.
-    pageToken: Optional. A page token, received from a previous
-      `ListValidations` call. Provide this to retrieve the subsequent page.
-      When paginating, all other parameters provided to `ListValidations` must
-      match the call that provided the page token.
-    parent: Required. The project and location from which to list Validations.
-      Format: projects/{project}/locations/{location}
+    filter: Optional. A filter expression to restrict the dry runs returned.
+      Example: `state="COMPLETED"`. Returns only dry runs matching the
+      expression. Follows https://google.aip.dev/160 and supports all fields.
+    pageSize: Optional. The maximum number of dry runs to return. Fault
+      Injection Testing may return fewer. If unspecified, at most 1000 will be
+      returned. The maximum value is 1000; values above 1000 will be coerced
+      to 1000.
+    pageToken: Optional. A page token received from a previous list call, used
+      to retrieve the subsequent page. When paginating, all other parameters
+      provided to `ListValidations` must match the call that provided the page
+      token.
+    parent: Required. The project and location from which to list dry runs.
+      Format: `projects/{projectId}/locations/{location}`.
   """
 
   filter = _messages.StringField(1)
@@ -632,9 +787,9 @@ class FaulttestingProjectsLocationsValidationsValidationResourcesGetRequest(_mes
   object.
 
   Fields:
-    name: Required. The name of the validation resource. Format: projects/{pro
-      ject}/locations/{location}/validations/{validation}/validationResources/
-      {validation_resource}
+    name: Required. The resource name of the validation resource to retrieve.
+      Format: `projects/{projectId}/locations/{location}/validations/{validati
+      onId}/validationResources/{validationResourceId}`.
   """
 
   name = _messages.StringField(1, required=True)
@@ -645,18 +800,20 @@ class FaulttestingProjectsLocationsValidationsValidationResourcesListRequest(_me
   object.
 
   Fields:
-    filter: Optional. Filtering results
+    filter: Optional. A filter expression to restrict the validation resources
+      returned. Follows https://google.aip.dev/160 and supports all fields.
     pageSize: Optional. The maximum number of validation resources to return.
-      The service may return fewer than this value. If unspecified, at most
-      1000 validation resources will be returned. The maximum value is 1000;
-      values above 1000 will be coerced to 1000.
+      Fault Injection Testing may return fewer. If unspecified, at most 1000
+      will be returned. The maximum value is 1000; values above 1000 will be
+      coerced to 1000.
     pageToken: Optional. A page token, received from a previous
       `ListValidationResources` call. Provide this to retrieve the subsequent
       page. When paginating, all other parameters provided to
       `ListValidationResources` must match the call that provided the page
       token.
-    parent: Required. The validation from which to list validation resources.
-      Format: projects/{project}/locations/{location}/validations/{validation}
+    parent: Required. The `Validation` dry run from which to list validation
+      resources. Format:
+      `projects/{projectId}/locations/{location}/validations/{validationId}`.
   """
 
   filter = _messages.StringField(1)
@@ -669,8 +826,6 @@ class GCEFailCompute(_messages.Message):
   r"""GCEFailCompute specifies which instances to fail.
 
   Fields:
-    instance: Specifies a single instance by name. Format:
-      `projects/{project}/zones/{zone}/instances/{instance}`
     instances: Specifies a list of instances.
     location: Specifies that an entire zone or region should be affected.
     mig: Specifies a managed instance group. Can be zonal or regional.
@@ -680,11 +835,10 @@ class GCEFailCompute(_messages.Message):
       details on tags. Format: `{project}/{tag_key}/{tag_value}`.
   """
 
-  instance = _messages.StringField(1)
-  instances = _messages.MessageField('InstanceList', 2)
-  location = _messages.StringField(3)
-  mig = _messages.MessageField('MigElement', 4)
-  secureTagValue = _messages.StringField(5)
+  instances = _messages.MessageField('InstanceList', 1)
+  location = _messages.StringField(2)
+  mig = _messages.MessageField('MigElement', 3)
+  secureTagValue = _messages.StringField(4)
 
 
 class GKEFailCompute(_messages.Message):
@@ -782,8 +936,24 @@ class ListAffectedResourcesResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListExclusionWindowsResponse(_messages.Message):
+  r"""Response message for FaultTesting.ListExclusionWindows.
+
+  Fields:
+    exclusionWindows: The ExclusionWindows from the specified project.
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+    unreachable: Unordered list. Locations that could not be reached, each
+      with the format `projects/{project}/locations/{location}`.
+  """
+
+  exclusionWindows = _messages.MessageField('ExclusionWindow', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListExperimentTemplatesResponse(_messages.Message):
-  r"""Request message for FaultTesting.ListExperimentTemplates.
+  r"""Response message for FaultTesting.ListExperimentTemplates.
 
   Fields:
     experimentTemplates: The experiment templates from the specified project.
@@ -798,7 +968,7 @@ class ListExperimentTemplatesResponse(_messages.Message):
 
 
 class ListExperimentsResponse(_messages.Message):
-  r"""List out Experiments from a specified project.
+  r"""List experiments for a specified project.
 
   Fields:
     experiments: The experiments from the specified project, ordered from
@@ -852,7 +1022,7 @@ class ListValidationResourcesResponse(_messages.Message):
       next page. If this field is omitted, there are no subsequent pages.
     unreachable: Unordered list. Locations that could not be reached.
     validationResources: The validation resources from the specified
-      validation, ordered from newest to oldest based on creation time.
+      `Validation`, ordered from newest to oldest based on creation time.
   """
 
   nextPageToken = _messages.StringField(1)
@@ -861,14 +1031,14 @@ class ListValidationResourcesResponse(_messages.Message):
 
 
 class ListValidationsResponse(_messages.Message):
-  r"""List out Validations from a specified project.
+  r"""List dry runs for a specified project.
 
   Fields:
     nextPageToken: A token, which can be sent as `page_token` to retrieve the
       next page. If this field is omitted, there are no subsequent pages.
     unreachable: Unordered list. Locations that could not be reached.
-    validations: The Validations from the specified project, ordered from
-      newest to oldest based on creation time.
+    validations: The dry runs from the specified project, ordered from newest
+      to oldest based on creation time.
   """
 
   nextPageToken = _messages.StringField(1)
@@ -1172,6 +1342,10 @@ class StandardQueryParameters(_messages.Message):
   upload_protocol = _messages.StringField(12)
 
 
+class StartExclusionWindowRequest(_messages.Message):
+  r"""Request message for FaultTesting.StartExclusionWindow."""
+
+
 class StartExperimentRequest(_messages.Message):
   r"""Request message for FaultTesting.StartExperiment."""
 
@@ -1237,15 +1411,19 @@ class StopAllExperimentsResponse(_messages.Message):
 
   Fields:
     errors: Errors that occurred while listing or stopping experiments. For
-      every Experiment which fails the internal StopExperiment call there will
-      be one entry in this list.
+      every Experiment which fails the internal `StopExperiment` call there
+      will be one entry in this list.
     stoppedExperimentsCount: The number of experiments in being stopped. These
       are all experiments found in reachable locations with status appropriate
-      to be stopped which did not get an error from StopExperiment.
+      to be stopped which did not get an error from `StopExperiment`.
   """
 
   errors = _messages.MessageField('Status', 1, repeated=True)
   stoppedExperimentsCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+
+
+class StopExclusionWindowRequest(_messages.Message):
+  r"""Request message for FaultTesting.StopExclusionWindow."""
 
 
 class StopExperimentRequest(_messages.Message):
@@ -1253,45 +1431,46 @@ class StopExperimentRequest(_messages.Message):
 
 
 class Validation(_messages.Message):
-  r"""A Validation is a test of an ExperimentTemplate's Action. It can have
-  child ValidationResources which indicate the list of resources that will be
-  affected if an Experiment is run from a template using this Action.
+  r"""Represents a `Validation` dry run of a fault injection.
 
   Enums:
-    StateValueValuesEnum: Output only. The current state of the Validation.
-      Will be either PREPARING or COMPLETED.
+    StateValueValuesEnum: Output only. The current state of the `Validation`
+      dry run. Either `PREPARING` or `COMPLETED`.
 
   Fields:
-    action: Required. The fault-injection action to be validated.
-    createTime: Output only. Time the Validation was created.
-    description: Optional. Optional user-provided description or notes. Min
-      length 0, max length 2000.
-    displayName: Optional. Human-readable name of the Validation.
-    name: Identifier. The resource name of the Validation, of the form:
-      projects/{project_id}/locations/{location}/validations/{validation}.
-    state: Output only. The current state of the Validation. Will be either
-      PREPARING or COMPLETED.
-    stopTime: Output only. Time the Validation finished. Specifically when the
-      Validation state becomes COMPLETED. The presence of this field can be
-      used to determine if the Validation is done or not.
+    action: Required. The fault injection action being checked.
+    createTime: Output only. The date and time when this `Validation` dry run
+      was started (RFC3339 UTC "Zulu" format).
+    description: Optional. Notes or details about the `Validation` dry run.
+      Minimum length is 0, maximum length is 2000.
+    displayName: Optional. A human-readable name of the `Validation` dry run.
+    name: Identifier. Unique identifier for the `Validation` dry run. Format:
+      `projects/{project_id}/locations/{location}/validations/{validationId}`.
+    state: Output only. The current state of the `Validation` dry run. Either
+      `PREPARING` or `COMPLETED`.
+    stopTime: Output only. The date and time when this `Validation` dry run
+      finished (RFC3339 UTC "Zulu" format).
   """
 
   class StateValueValuesEnum(_messages.Enum):
-    r"""Output only. The current state of the Validation. Will be either
-    PREPARING or COMPLETED.
+    r"""Output only. The current state of the `Validation` dry run. Either
+    `PREPARING` or `COMPLETED`.
 
     Values:
-      STATE_UNSPECIFIED: Not used.
-      PREPARING: The experiment resources are being identified and checked for
+      STATE_UNSPECIFIED: The state is not known or not set.
+      PREPARING: The system is identifying the target Google Cloud resources
+        for the `Experiment` or `Validation` and checking necessary
         permissions.
-      PREPARED: It is ready to run.
-      INJECTING: The resources associated with the experiment are being
-        modified.
-      INJECTED: The resources have been modified and we are waiting for the
-        test duration to expire.
-      REVERTING: It is in the process of stopping.
-      COMPLETED: This is experiment has completed and no further actions will
-        happen on its behalf.
+      PREPARED: The experiment is fully set up and ready to start.
+      INJECTING: The system is actively applying the fault to the targeted
+        resources. Example: Slowing down responses, triggering errors.
+      INJECTED: The fault is active on the targeted resources. The
+        `Experiment` is now running for its planned duration.
+      REVERTING: The `Experiment` is being stopped, and FIT is removing the
+        fault and restoring the resources to their normal operational state.
+      COMPLETED: The `Experiment` or `Validation` has finished, and the
+        resources are back to their normal state. No further actions will
+        occur.
     """
     STATE_UNSPECIFIED = 0
     PREPARING = 1
@@ -1311,44 +1490,50 @@ class Validation(_messages.Message):
 
 
 class ValidationResource(_messages.Message):
-  r"""Cloud resource potentially affected by the action of a Validation.
+  r"""Represents a specific Google Cloud resource that a `Validation` dry run
+  identified as *potentially* being affected.
 
   Enums:
-    StateValueValuesEnum: The current state of the validation resource. Will
-      be PREPARING or COMPLETED.
+    StateValueValuesEnum: The current state of this resource within the dry
+      run. Typically `COMPLETED`.
 
   Fields:
-    affectedResourceUri: Required. The URI of a GCP cloud resource.
-    cloudConsoleUrl: Output only. The URL to see this resource in the google
-      cloud console
-    displayName: Optional. The display name of the ValidationResource.
-    error: Output only. The error encountered when validating this resource,
-      if any.
-    name: Identifier. The resource name of the ValidationResource, of the
-      form: projects/{project}/locations/{location}/validations/{validation}/v
-      alidationResources/{validation_resource}.
-    state: The current state of the validation resource. Will be PREPARING or
-      COMPLETED.
-    stateMessage: A human-readable description of what is happening to the
-      validation resource.
+    affectedResourceUri: Required. The full unique address (URI) of the Google
+      Cloud resource that was identified.
+    cloudConsoleUrl: Output only. A direct link to view this specific resource
+      in the Google Cloud Console.
+    displayName: Optional. A human-readable name for the `ValidationResource`
+      record.
+    error: Output only. Details of any error encountered while checking the
+      resource during the dry run. Empty if the check was successful.
+    name: Identifier. Unique identifier for this specific record within the
+      `Validation` results. Format: `projects/{project}/locations/{location}/v
+      alidations/{validation}/validationResources/{validationResourceId}`.
+    state: The current state of this resource within the dry run. Typically
+      `COMPLETED`.
+    stateMessage: A human-readable description of the validation status for
+      this resource.
   """
 
   class StateValueValuesEnum(_messages.Enum):
-    r"""The current state of the validation resource. Will be PREPARING or
-    COMPLETED.
+    r"""The current state of this resource within the dry run. Typically
+    `COMPLETED`.
 
     Values:
-      STATE_UNSPECIFIED: Not used.
-      PREPARING: The experiment resources are being identified and checked for
+      STATE_UNSPECIFIED: The state is not known or not set.
+      PREPARING: The system is identifying the target Google Cloud resources
+        for the `Experiment` or `Validation` and checking necessary
         permissions.
-      PREPARED: It is ready to run.
-      INJECTING: The resources associated with the experiment are being
-        modified.
-      INJECTED: The resources have been modified and we are waiting for the
-        test duration to expire.
-      REVERTING: It is in the process of stopping.
-      COMPLETED: This is experiment has completed and no further actions will
-        happen on its behalf.
+      PREPARED: The experiment is fully set up and ready to start.
+      INJECTING: The system is actively applying the fault to the targeted
+        resources. Example: Slowing down responses, triggering errors.
+      INJECTED: The fault is active on the targeted resources. The
+        `Experiment` is now running for its planned duration.
+      REVERTING: The `Experiment` is being stopped, and FIT is removing the
+        fault and restoring the resources to their normal operational state.
+      COMPLETED: The `Experiment` or `Validation` has finished, and the
+        resources are back to their normal state. No further actions will
+        occur.
     """
     STATE_UNSPECIFIED = 0
     PREPARING = 1

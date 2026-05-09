@@ -80,6 +80,8 @@
       repeated: false
       help_text: |-
         The password for the default ADMIN user.
+        Note: Only one of `admin_password_secret_version` or `admin_password` can
+        be populated.
     - arg_name: admin-password-secret-version
       api_field: autonomousDatabase.adminPasswordSecretVersion
       required: false

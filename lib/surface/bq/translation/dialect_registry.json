@@ -1,80 +1,279 @@
 {
-  "input_dialects": [
-    {
-      "name": "BigQuery",
-      "legacy_batch_name": "BigQuery"
-    },
-    {
-      "name": "Teradata",
-      "legacy_batch_name": "Teradata"
-    },
-    {
-      "name": "Teradata_BTEQ",
-      "legacy_batch_name": "Bteq"
-    },
-    {
-      "name": "Redshift",
-      "legacy_batch_name": "Redshift"
-    },
-    {
-      "name": "Oracle",
-      "legacy_batch_name": "Oracle"
-    },
-    {
-      "name": "Hive",
-      "legacy_batch_name": "HiveQL"
-    },
-    {
-      "name": "SparkSQL",
-      "legacy_batch_name": "SparkSQL"
-    },
-    {
-      "name": "Snowflake",
-      "legacy_batch_name": "Snowflake"
-    },
-    {
-      "name": "Netezza",
-      "legacy_batch_name": "Netezza"
-    },
-    {
-      "name": "AzureSynapse",
-      "legacy_batch_name": "AzureSynapse"
-    },
-    {
-      "name": "Vertica",
-      "legacy_batch_name": "Vertica"
-    },
-    {
-      "name": "SQLServer",
-      "legacy_batch_name": "SQLServer"
-    },
-    {
-      "name": "Impala",
-      "legacy_batch_name": "Impala"
-    },
-    {
-      "name": "Presto",
-      "legacy_batch_name": "Presto"
-    },
-    {
-      "name": "MySQL",
-      "legacy_batch_name": "MySQL"
-    },
-    {
-      "name": "Postgresql",
-      "legacy_batch_name": "Postgresql"
-    },
-    {
-      "name": "Db2",
-      "legacy_batch_name": "Db2"
-    },
-    {
-      "name": "SQLite",
-      "legacy_batch_name": "SQLite"
-    },
-    {
-      "name": "Greenplum",
-      "legacy_batch_name": "Greenplum"
-    }
-  ]
+  "input_dialects": [{
+    "name": "BigQuery",
+    "status": "GA",
+    "engine_name": "BIGQUERY",
+    "legacy_batch_name": "BigQuery"
+  }, {
+    "name": "Teradata",
+    "status": "GA",
+    "engine_name": "TERADATA",
+    "legacy_batch_name": "Teradata"
+  }, {
+    "name": "Teradata_BTEQ",
+    "status": "GA",
+    "engine_name": "BTEQ",
+    "legacy_batch_name": "Bteq"
+  }, {
+    "name": "Redshift",
+    "status": "GA",
+    "engine_name": "REDSHIFT",
+    "legacy_batch_name": "Redshift"
+  }, {
+    "name": "Oracle",
+    "status": "GA",
+    "engine_name": "ORACLE",
+    "legacy_batch_name": "Oracle"
+  }, {
+    "name": "Hive",
+    "status": "GA",
+    "engine_name": "HIVE",
+    "legacy_batch_name": "HiveQL"
+  }, {
+    "name": "SparkSQL",
+    "status": "GA",
+    "engine_name": "SPARKSQL",
+    "legacy_batch_name": "SparkSQL"
+  }, {
+    "name": "Snowflake",
+    "status": "GA",
+    "engine_name": "SNOWFLAKE",
+    "legacy_batch_name": "Snowflake"
+  }, {
+    "name": "Netezza",
+    "status": "GA",
+    "engine_name": "NETEZZA",
+    "legacy_batch_name": "Netezza"
+  }, {
+    "name": "AzureSynapse",
+    "status": "GA",
+    "engine_name": "AZURESYNAPE",
+    "legacy_batch_name": "AzureSynapse"
+  }, {
+    "name": "Vertica",
+    "status": "GA",
+    "engine_name": "VERTICA",
+    "legacy_batch_name": "Vertica"
+  }, {
+    "name": "SQLServer",
+    "status": "GA",
+    "engine_name": "SQLSERVER",
+    "legacy_batch_name": "SQLServer"
+  }, {
+    "name": "Impala",
+    "status": "GA",
+    "engine_name": "IMPALA",
+    "legacy_batch_name": "Impala"
+  }, {
+    "name": "Presto",
+    "status": "GA",
+    "engine_name": "PRESTO",
+    "legacy_batch_name": "Presto"
+  }, {
+    "name": "MySQL",
+    "status": "GA",
+    "engine_name": "MYSQL",
+    "legacy_batch_name": "MySQL"
+  }, {
+    "name": "Postgresql",
+    "status": "GA",
+    "engine_name": "POSTGRES",
+    "legacy_batch_name": "Postgresql"
+  }, {
+    "name": "Db2",
+    "status": "GA",
+    "engine_name": "DB2",
+    "legacy_batch_name": "Db2"
+  }, {
+    "name": "SQLite",
+    "status": "GA",
+    "engine_name": "SQLITE",
+    "legacy_batch_name": "SQLite"
+  }, {
+    "name": "Greenplum",
+    "status": "GA",
+    "engine_name": "GREENPLUM",
+    "legacy_batch_name": "Greenplum"
+  }],
+  "output_dialects": [{
+    "name": "BigQuery",
+    "status": "GA",
+    "engine_name": "BIGQUERY",
+    "legacy_batch_name": "BigQuery"
+  }, {
+    "name": "Postgresql",
+    "status": "GA",
+    "engine_name": "POSTGRES",
+    "legacy_batch_name": "Postgresql"
+  }, {
+    "name": "Hive",
+    "status": "GA",
+    "engine_name": "HIVE",
+    "legacy_batch_name": "HiveQL"
+  }, {
+    "name": "Impala",
+    "status": "GA",
+    "engine_name": "IMPALA",
+    "legacy_batch_name": "Impala"
+  }, {
+    "name": "SparkSQL",
+    "status": "GA",
+    "engine_name": "SPARKSQL",
+    "legacy_batch_name": "SparkSQL"
+  }, {
+    "name": "Redshift",
+    "status": "GA",
+    "engine_name": "REDSHIFT",
+    "legacy_batch_name": "Redshift"
+  }, {
+    "name": "Snowflake",
+    "status": "GA",
+    "engine_name": "SNOWFLAKE",
+    "legacy_batch_name": "Snowflake"
+  }],
+  "dialect_pairs": [{
+    "source_name": "Teradata",
+    "target_name": "BigQuery",
+    "status": "GA",
+    "legacy_batch_name": ["Teradata2BigQuery_Translation", "Translation_Teradata", "Translation_Teradata2BQ"],
+    "legacy_batch_supported": true
+  }, {
+    "source_name": "Teradata_BTEQ",
+    "target_name": "BigQuery",
+    "status": "GA",
+    "legacy_batch_name": ["Bteq2BigQuery_Translation", "Translation_Bteq", "Translation_Bteq2BQ"],
+    "legacy_batch_supported": true
+  }, {
+    "source_name": "Redshift",
+    "target_name": "BigQuery",
+    "status": "GA",
+    "legacy_batch_name": ["Redshift2BigQuery_Translation", "Translation_Redshift2BQ"],
+    "legacy_batch_supported": true
+  }, {
+    "source_name": "Oracle",
+    "target_name": "BigQuery",
+    "status": "GA",
+    "legacy_batch_name": ["Oracle2BigQuery_Translation", "Translation_Oracle2BQ"]
+  }, {
+    "source_name": "Hive",
+    "target_name": "BigQuery",
+    "status": "GA",
+    "legacy_batch_name": ["HiveQL2BigQuery_Translation", "Translation_HiveQL2BQ"]
+  }, {
+    "source_name": "Impala",
+    "target_name": "BigQuery",
+    "status": "GA",
+    "legacy_batch_name": ["Impala2BigQuery_Translation", "Translation_Impala2BQ"]
+  }, {
+    "source_name": "SparkSQL",
+    "target_name": "BigQuery",
+    "status": "GA",
+    "legacy_batch_name": ["SparkSQL2BigQuery_Translation", "Translation_SparkSQL2BQ"]
+  }, {
+    "source_name": "Snowflake",
+    "target_name": "BigQuery",
+    "status": "GA",
+    "legacy_batch_name": ["Snowflake2BigQuery_Translation", "Translation_Snowflake2BQ"]
+  }, {
+    "source_name": "Netezza",
+    "target_name": "BigQuery",
+    "status": "GA",
+    "legacy_batch_name": ["Netezza2BigQuery_Translation", "Translation_Netezza2BQ"]
+  }, {
+    "source_name": "AzureSynapse",
+    "target_name": "BigQuery",
+    "status": "GA",
+    "legacy_batch_name": ["AzureSynapse2BigQuery_Translation", "Translation_AzureSynapse2BQ"]
+  }, {
+    "source_name": "Vertica",
+    "target_name": "BigQuery",
+    "status": "GA",
+    "legacy_batch_name": ["Vertica2BigQuery_Translation", "Translation_Vertica2BQ"]
+  }, {
+    "source_name": "SQLServer",
+    "target_name": "BigQuery",
+    "status": "GA",
+    "legacy_batch_name": ["SQLServer2BigQuery_Translation", "Translation_SQLServer2BQ"]
+  }, {
+    "source_name": "Presto",
+    "target_name": "BigQuery",
+    "status": "GA",
+    "legacy_batch_name": ["Presto2BigQuery_Translation", "Translation_Presto2BQ"]
+  }, {
+    "source_name": "MySQL",
+    "target_name": "BigQuery",
+    "status": "GA",
+    "legacy_batch_name": ["MySQL2BigQuery_Translation", "Translation_MySQL2BQ"]
+  }, {
+    "source_name": "Postgresql",
+    "target_name": "BigQuery",
+    "status": "GA",
+    "legacy_batch_name": ["Postgresql2BigQuery_Translation", "Translation_Postgresql2BQ"]
+  }, {
+    "source_name": "Db2",
+    "target_name": "BigQuery",
+    "status": "GA",
+    "legacy_batch_name": ["Db22BigQuery_Translation", "Translation_Db2ToBQ"]
+  }, {
+    "source_name": "BigQuery",
+    "target_name": "BigQuery",
+    "status": "GA",
+    "legacy_batch_name": ["BigQuery2BigQuery_Translation"],
+    "legacy_batch_supported": true
+  }, {
+    "source_name": "SQLite",
+    "target_name": "BigQuery",
+    "status": "GA",
+    "legacy_batch_name": ["SQLite2BigQuery_Translation", "Translation_SQLite2BQ"]
+  }, {
+    "source_name": "Greenplum",
+    "target_name": "BigQuery",
+    "status": "GA",
+    "legacy_batch_name": ["Greenplum2BigQuery_Translation", "Translation_GreenplumToBQ"]
+  }, {
+    "source_name": "BigQuery",
+    "target_name": "Hive",
+    "status": "GA",
+    "legacy_batch_name": ["BigQuery2HiveQL_Translation", "Translation_BQ2HiveQL"]
+  }, {
+    "source_name": "BigQuery",
+    "target_name": "SparkSQL",
+    "status": "GA",
+    "legacy_batch_name": ["BigQuery2SparkSQL_Translation", "Translation_BQ2SparkSQL"]
+  }, {
+    "source_name": "BigQuery",
+    "target_name": "Postgresql",
+    "status": "GA",
+    "legacy_batch_name": ["BigQuery2Postgresql_Translation", "Translation_BQ2Postgresql"]
+  }, {
+    "source_name": "BigQuery",
+    "target_name": "Redshift",
+    "status": "GA",
+    "legacy_batch_name": ["BigQuery2Redshift_Translation"]
+  }, {
+    "source_name": "BigQuery",
+    "target_name": "Snowflake",
+    "status": "GA",
+    "legacy_batch_name": ["BigQuery2Snowflake_Translation"]
+  }, {
+    "source_name": "Oracle",
+    "target_name": "Postgresql",
+    "status": "GA",
+    "legacy_batch_name": ["Oracle2Postgresql_Translation", "Translation_Oracle2Postgresql"]
+  }, {
+    "source_name": "SQLServer",
+    "target_name": "Postgresql",
+    "status": "GA",
+    "legacy_batch_name": ["SQLServer2Postgresql_Translation", "Translation_SQLServer2Postgresql"]
+  }, {
+    "source_name": "Hive",
+    "target_name": "Hive",
+    "status": "GA",
+    "legacy_batch_name": ["HiveQL2HiveQL_Translation"]
+  }, {
+    "source_name": "BigQuery",
+    "target_name": "BigQuery",
+    "status": "EXPERIMENTAL",
+    "legacy_batch_name": ["Experimental_Lineage"]
+  }]
 }

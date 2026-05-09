@@ -344,3 +344,11 @@ class DownloadInstallScript(base.Command):
       )
 
     return None
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+class DownloadInstallScriptGa(DownloadInstallScript):
+  """Download an installation script for a Monitoring Point."""
+  pass

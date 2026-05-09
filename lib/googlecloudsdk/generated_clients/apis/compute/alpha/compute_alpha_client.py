@@ -66,6 +66,7 @@ class ComputeAlpha(base_api.BaseApiClient):
     self.httpHealthChecks = self.HttpHealthChecksService(self)
     self.httpsHealthChecks = self.HttpsHealthChecksService(self)
     self.imageFamilyViews = self.ImageFamilyViewsService(self)
+    self.imageViews = self.ImageViewsService(self)
     self.images = self.ImagesService(self)
     self.instanceGroupManagerResizeRequests = self.InstanceGroupManagerResizeRequestsService(self)
     self.instanceGroupManagers = self.InstanceGroupManagersService(self)
@@ -6336,6 +6337,71 @@ deprecated and is rolled out in the specified zone.
         request_field='',
         request_type_name='ComputeImageFamilyViewsGetRequest',
         response_type_name='ImageFamilyView',
+        supports_download=False,
+    )
+
+  class ImageViewsService(base_api.BaseApiService):
+    """Service class for the imageViews resource."""
+
+    _NAME = 'imageViews'
+
+    def __init__(self, client):
+      super(ComputeAlpha.ImageViewsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Returns the specified global Image resource by providing a regional.
+context to read the metadata from the Global Clone in the region.
+
+      Args:
+        request: (ComputeImageViewsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ImageView) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.imageViews.get',
+        ordered_params=['project', 'region', 'resourceId'],
+        path_params=['project', 'region', 'resourceId'],
+        query_params=[],
+        relative_path='projects/{project}/regions/{region}/imageViews/{resourceId}',
+        request_field='',
+        request_type_name='ComputeImageViewsGetRequest',
+        response_type_name='ImageView',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Retrieves the list of global Image resources available to the project by.
+providing a regional context to read the metadata from the Global Clone in
+the region.
+
+      Args:
+        request: (ComputeImageViewsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ImageViewsListResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.imageViews.list',
+        ordered_params=['project', 'region'],
+        path_params=['project', 'region'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
+        relative_path='projects/{project}/regions/{region}/imageViews',
+        request_field='',
+        request_type_name='ComputeImageViewsListRequest',
+        response_type_name='ImageViewsListResponse',
         supports_download=False,
     )
 
@@ -32798,7 +32864,7 @@ following the provisioning.
           }
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a specified zone VM extension policy.
+      r"""Deletes a specified zone VM extension policy within a project.
 
       Args:
         request: (ComputeZoneVmExtensionPoliciesDeleteRequest) input message
@@ -32824,7 +32890,7 @@ following the provisioning.
     )
 
     def Get(self, request, global_params=None):
-      r"""Retrieves details of a specific zone VM extension policy.
+      r"""Retrieves details of a specific zone VM extension policy within a project.
 
       Args:
         request: (ComputeZoneVmExtensionPoliciesGetRequest) input message
@@ -32850,7 +32916,7 @@ following the provisioning.
     )
 
     def GetVmExtension(self, request, global_params=None):
-      r"""Retrieves details of a specific VM extension.
+      r"""Retrieves details of a specific VM extension within a project.
 
       Args:
         request: (ComputeZoneVmExtensionPoliciesGetVmExtensionRequest) input message
@@ -32955,7 +33021,7 @@ This is a read-only API.
     )
 
     def Update(self, request, global_params=None):
-      r"""Modifies an existing zone VM extension policy.
+      r"""Modifies an existing zone VM extension policy within a project.
 
       Args:
         request: (ComputeZoneVmExtensionPoliciesUpdateRequest) input message

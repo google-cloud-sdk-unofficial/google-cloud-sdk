@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,8 +30,8 @@
   arguments:
     params:
     - help_text: |-
-        Identifier. The resource name of the Experiment, of the form:
-        projects/{project_id}/locations/{location}/experiments/{experiment_id}.
+        Identifier. Unique identifier for the experiment. Format:
+        `projects/{project_id}/locations/{location}/experiments/{experiment_id}`.
       is_positional: true
       is_primary_resource: true
       request_id_field: experimentId
@@ -42,21 +42,20 @@
       required: false
       repeated: false
       help_text: |-
-        Human-readable name of the experiment
+        A human-readable name of the experiment.
     - arg_name: description
       api_field: experiment.description
       required: false
       repeated: false
       help_text: |-
-        Optional user-provided description or notes. Min length 0, max length 2000.
+        Notes or details to describe the purpose or context
+        of the experiment. Minimum length is 0, maximum length is 2000.
     - arg_name: experiment-template
       help_text: |-
-        The resource name of an ExperimentTemplate to create this experiment
-        from. Required. Format
-        projects/{project_id}/locations/{location}/experimentTemplates/{experimentTemplateId}.
-        The server will read the named template and use its contents to fill
-        template_display_name, template_description,
-        template_duration, and effective_action.
+        The unique identifier of the reusable experiment template used to
+        configure the experiment. This field determines the type of fault,
+        target, and duration. Format:
+        `projects/{project_id}/locations/{location}/experimentTemplates/{experimentTemplateId}`.
       is_positional: false
       is_primary_resource: false
       resource_spec: !REF googlecloudsdk.command_lib.fault_testing.v1alpha_resources:projects_locations_experiment_templates

@@ -27,6 +27,7 @@ import secrets
 import socket
 import subprocess
 import time
+from typing import Optional
 
 from google.auth.transport import requests as google_auth_requests
 from google.auth.transport.requests import _MutualTlsOffloadAdapter
@@ -642,7 +643,11 @@ def Session(
       log.warning(_INVALID_HTTPS_PROXY_ENV_VAR_WARNING)
 
   client_side_certificate = None
-  if client_certificate is not None and client_key is not None and ca_certs is not None:
+  # We only require client_certificate and client_key to be present. The
+  # ca_certs parameter can be None if the caller wants to use the system
+  # default CA bundle to verify the server (e.g. when authenticating to
+  # standard Google endpoints).
+  if client_certificate is not None and client_key is not None:
     log.debug(
         'Using provided server certificate %s, client certificate %s, client certificate key %s',
         ca_certs, client_certificate, client_key)
@@ -771,9 +776,20 @@ class RequestWrapper(transport.RequestWrapper):
     return response
 
 
-def GoogleAuthRequest():
-  """Returns a gcloud's requests session to refresh google-auth credentials."""
-  session = GetSession()
+def GoogleAuthRequest(
+    *,
+    client_certificate: Optional[str] = None,
+    client_key: Optional[str] = None,
+) -> google_auth_requests.Request:
+  """Returns a gcloud's requests session to refresh google-auth credentials.
+
+  Args:
+    client_certificate: str, Path to the client certificate file.
+    client_key: str, Path to the client key file.
+  """
+  session = GetSession(
+      client_certificate=client_certificate,
+      client_key=client_key)
 
   # Ensure requests to the GCE metadata server are not proxied. We respect the
   # same env vars for overriding the metadata server hostname/IP as google-auth:

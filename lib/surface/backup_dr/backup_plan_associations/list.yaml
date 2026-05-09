@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, GA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: List Backup and DR backup plan associations
     description: List backup plan associations in the project for a specified location.

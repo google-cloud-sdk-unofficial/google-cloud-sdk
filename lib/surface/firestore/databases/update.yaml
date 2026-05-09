@@ -28,3 +28,4 @@
     - _REF_: googlecloudsdk.command_lib.firestore.flags:type
     - _REF_: googlecloudsdk.command_lib.firestore.flags:enable_delete_protection
     - _REF_: googlecloudsdk.command_lib.firestore.flags:enable_pitr
+    - _REF_: googlecloudsdk.command_lib.firestore.flags:concurrency_mode

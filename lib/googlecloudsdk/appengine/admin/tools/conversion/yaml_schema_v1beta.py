@@ -199,7 +199,7 @@ SCHEMA = s.Message(
             converter=lambda x: [x],
             network=s.Value(converter=c.ToJsonString),
             subnet=s.Value(converter=c.ToJsonString),
-            tags=s.Value(converter=c.CommaSeparatedStringToList),
+            tags=s.RepeatedField(element=s.Value(converter=c.ToJsonString)),
         ),
         vpc_egress=s.Value(converter=c.ToVpcEgressSettingEnum),
     ),

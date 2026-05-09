@@ -25,6 +25,13 @@ properties:
     description: Unknown API fields that cannot be imported.
     items:
       type: string
+  cachePolicy:
+    description: |-
+      Specifies the cache policy configuration for matched traffic. Available
+      only for Global `EXTERNAL_MANAGED` load balancer schemes. At least one
+      property must be specified. This policy cannot be specified if any target
+      backend has Identity-Aware Proxy enabled.
+    $ref: CachePolicy.yaml
   corsPolicy:
     description: |-
       The specification for allowing client-side cross-origin requests. For more

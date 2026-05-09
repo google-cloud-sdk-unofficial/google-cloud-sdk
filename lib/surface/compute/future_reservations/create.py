@@ -71,7 +71,7 @@ class CreateV1(base.CreateCommand):
   _support_dws_gpu = True
   _support_cuds = True
   _support_dws_tpu = True
-  _support_resource_manager_tags = False
+  _support_resource_manager_tags = True
 
   @classmethod
   def Args(cls, parser):
@@ -115,7 +115,7 @@ class CreateBeta(CreateV1):
   _support_dws_gpu = True
   _support_cuds = True
   _support_dws_tpu = True
-  _support_resource_manager_tags = False
+  _support_resource_manager_tags = True
 
   @classmethod
   def Args(cls, parser):

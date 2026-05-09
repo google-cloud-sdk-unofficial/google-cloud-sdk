@@ -16,7 +16,9 @@
 
 import copy
 from typing import Any
+
 from apitools.base.protorpclite import messages
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.command_lib.orchestration_pipelines.handlers import base
 from googlecloudsdk.core import exceptions
 
@@ -285,16 +287,86 @@ class ComputeForwardingRuleHandler(base.GcpResourceHandler):
       existing_resource: messages.Message,
       resource_message: messages.Message,
       changed_fields: list[str],
-  ) -> messages.Message:
-    return self.messages.ComputeForwardingRulesPatchRequest(
-        project=self.environment.project,
-        region=self.environment.region,
-        forwardingRule=self.get_resource_id(),
-        forwardingRuleResource=resource_message,
-    )
+  ) -> dict[str, Any]:
+    requests = {}
+
+    if "labels" in changed_fields:
+      labels_properties = []
+      if resource_message.labels and hasattr(
+          resource_message.labels, "additionalProperties"
+      ):
+        for prop in resource_message.labels.additionalProperties:
+          labels_properties.append(
+              self.messages.RegionSetLabelsRequest.LabelsValue.AdditionalProperty(
+                  key=prop.key, value=prop.value
+              )
+          )
+
+      requests["set_labels"] = (
+          self.messages.ComputeForwardingRulesSetLabelsRequest(
+              project=self.environment.project,
+              region=self.location,
+              resource=self.get_resource_id(),
+              regionSetLabelsRequest=self.messages.RegionSetLabelsRequest(
+                  labelFingerprint=existing_resource.labelFingerprint,
+                  labels=self.messages.RegionSetLabelsRequest.LabelsValue(
+                      additionalProperties=labels_properties
+                  ),
+              ),
+          )
+      )
+
+    if "target" in changed_fields:
+      requests["set_target"] = (
+          self.messages.ComputeForwardingRulesSetTargetRequest(
+              project=self.environment.project,
+              forwardingRule=self.get_resource_id(),
+              region=self.location,
+              targetReference=self.messages.TargetReference(
+                  target=resource_message.target
+              ),
+          )
+      )
+
+    # Filter out labels and target from changed_fields for Patch
+    other_fields = [f for f in changed_fields if f not in ["labels", "target"]]
+
+    if other_fields:
+      update_resource = self.messages.ForwardingRule()
+      for field in other_fields:
+        if hasattr(resource_message, field):
+          setattr(update_resource, field, getattr(resource_message, field))
+
+      requests["patch"] = self.messages.ComputeForwardingRulesPatchRequest(
+          project=self.environment.project,
+          region=self.location,
+          forwardingRule=self.get_resource_id(),
+          forwardingRuleResource=update_resource,
+      )
+
+    return requests
 
   def get_update_method(self) -> Any:
-    return self._api_client_collection.Patch
+
+    def _update(request: dict[str, Any]):
+      response = None
+
+      if "set_labels" in request:
+        response = self._api_client_collection.SetLabels(request["set_labels"])
+
+      if "set_target" in request:
+        if response:
+          self.wait_for_operation(response)
+        response = self._api_client_collection.SetTarget(request["set_target"])
+
+      if "patch" in request:
+        if response:
+          self.wait_for_operation(response)
+        response = self._api_client_collection.Patch(request["patch"])
+
+      return response
+
+    return _update
 
 
 class ComputeAddressHandler(base.GcpResourceHandler):
@@ -303,10 +375,39 @@ class ComputeAddressHandler(base.GcpResourceHandler):
   description = (
       "Compute Address resources.\n"
       "Special handling:\n"
-      " - updates: in-place updates are not supported"
+      " - updates: in-place updates are supported only for labels"
   )
   api_prefix = ""
   api_client_collection_path = "addresses"
+
+  def get_local_definition(self) -> dict[str, Any]:
+    definition = super().get_local_definition()
+    if definition.get("name") and definition["name"] != self.resource.name:
+      raise ValueError(
+          f"The name inside the definition block ('{definition['name']}') "
+          "cannot be different from the logical name of the resource "
+          f"('{self.resource.name}'). Please remove it from the definition."
+      )
+    definition["name"] = self.resource.name
+    return definition
+
+  def get_labels_field_name(self) -> str | None:
+    """Disable base handler's label detection to handle it manually."""
+    return None
+
+  def to_resource_message(self, definition: dict[str, Any]) -> messages.Message:
+    """Converts a dictionary definition to a resource message."""
+    definition_copy = copy.deepcopy(definition)
+    labels_dict = definition_copy.pop("labels", {})
+    labels_dict[base.IMPLICIT_LABEL_KEY] = base.IMPLICIT_LABEL_VALUE
+
+    resource_msg = super().to_resource_message(definition_copy)
+
+    resource_msg.labels = self._build_labels_value(
+        self.messages.Address.LabelsValue, labels_dict
+    )
+
+    return resource_msg
 
   def build_get_request(self) -> messages.Message:
     return self.messages.ComputeAddressesGetRequest(
@@ -327,20 +428,65 @@ class ComputeAddressHandler(base.GcpResourceHandler):
   def get_create_method(self) -> Any:
     return self._api_client_collection.Insert
 
+  def should_retry_create(self, exception: Exception) -> bool:
+    if isinstance(exception, apitools_exceptions.HttpError):
+      return exception.response.status == 409
+    return False
+
   def build_update_request(
       self,
       existing_resource: messages.Message,
       resource_message: messages.Message,
       changed_fields: list[str],
-  ) -> messages.Message:
-    # Addresses can't typically be updated in place like this, but we
-    # provide the method structure. Usually they are static or recreated
-    # if properties change drastically.
-    raise NotImplementedError("Compute Addresses update not fully supported.")
+  ) -> dict[str, Any]:
+    unsupported_fields = [f for f in changed_fields if f != "labels"]
+    if unsupported_fields:
+      raise NotImplementedError(
+          "ComputeAddressHandler does not support updating fields:"
+          f" {unsupported_fields}. Only 'labels' can be updated in-place."
+      )
+
+    requests = {}
+
+    if "labels" in changed_fields:
+      labels_properties = []
+      if resource_message.labels and hasattr(
+          resource_message.labels, "additionalProperties"
+      ):
+        for prop in resource_message.labels.additionalProperties:
+          labels_properties.append(
+              self.messages.RegionSetLabelsRequest.LabelsValue.AdditionalProperty(
+                  key=prop.key, value=prop.value
+              )
+          )
+
+      requests["set_labels"] = self.messages.ComputeAddressesSetLabelsRequest(
+          project=self.environment.project,
+          region=self.environment.region,
+          resource=self.get_resource_id(),
+          regionSetLabelsRequest=self.messages.RegionSetLabelsRequest(
+              labelFingerprint=existing_resource.labelFingerprint,
+              labels=self.messages.RegionSetLabelsRequest.LabelsValue(
+                  additionalProperties=labels_properties
+              ),
+          ),
+      )
+
+    return requests
+
+  def get_update_method(self) -> Any:
+    def _update(request):
+      response = None
+      if "set_labels" in request:
+        response = self._api_client_collection.SetLabels(request["set_labels"])
+      return response
+
+    return _update
 
   def build_delete_request(
       self, existing_resource: messages.Message
-  ) -> messages.Message:  # pylint: disable=unused-argument
+  ) -> messages.Message:
+    del existing_resource  # Unused
     return self.messages.ComputeAddressesDeleteRequest(
         project=self.environment.project,
         region=self.environment.region,
@@ -491,7 +637,7 @@ class ComputeInstanceTemplateHandler(base.GcpResourceHandler):
       existing_resource: messages.Message,
       resource_message: messages.Message,
       changed_fields: list[str],
-  ) -> messages.Message:  # pylint: disable=unused-argument
+  ) -> messages.Message:
     raise NotImplementedError(
         "Compute Instance Templates cannot be updated in-place."
     )
@@ -499,6 +645,7 @@ class ComputeInstanceTemplateHandler(base.GcpResourceHandler):
   def build_delete_request(
       self, existing_resource: messages.Message
   ) -> messages.Message:
+    del existing_resource  # Unused
     return self.messages.ComputeInstanceTemplatesDeleteRequest(
         project=self.environment.project,
         instanceTemplate=self.get_resource_id(),
@@ -610,13 +757,14 @@ class ComputeRouteHandler(base.GcpResourceHandler):
       existing_resource: messages.Message,
       resource_message: messages.Message,
       changed_fields: list[str],
-  ) -> messages.Message:  # pylint: disable=unused-argument
+  ) -> messages.Message:
     # Cannot patch routes
     raise NotImplementedError("Compute Routes update not fully supported.")
 
   def build_delete_request(
       self, existing_resource: messages.Message
   ) -> messages.Message:
+    del existing_resource  # Unused
     return self.messages.ComputeRoutesDeleteRequest(
         project=self.environment.project,
         route=self.get_resource_id(),
@@ -725,7 +873,7 @@ class ComputeTargetInstanceHandler(base.GcpResourceHandler):
       existing_resource: messages.Message,
       resource_message: messages.Message,
       changed_fields: list[str],
-  ) -> messages.Message:  # pylint: disable=unused-argument
+  ) -> messages.Message:
     raise NotImplementedError("Update is not supported for target instances.")
 
   def get_update_method(self) -> Any:
@@ -734,6 +882,7 @@ class ComputeTargetInstanceHandler(base.GcpResourceHandler):
   def build_delete_request(
       self, existing_resource: messages.Message
   ) -> messages.Message:
+    del existing_resource  # Unused
     return self.messages.ComputeTargetInstancesDeleteRequest(
         project=self.environment.project,
         zone=self.location,

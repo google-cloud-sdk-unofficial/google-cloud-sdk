@@ -72,15 +72,16 @@ class GatewayClient:
       The GenerateCredentialsResponse message.
     """
     kwargs = {
-        "name": name,
-        "forceUseAgent": force_use_agent,
-        "version": version,
-        "kubernetesNamespace": kubernetes_namespace,
-        "operatingSystem": operating_system,
+        'name': name,
+        'forceUseAgent': force_use_agent,
+        'version': version,
+        'kubernetesNamespace': kubernetes_namespace,
+        'operatingSystem': operating_system,
     }
-    if self.release_track == base.ReleaseTrack.ALPHA:
-      kwargs["applicationDefaultCredentials"] = application_default_credentials
-    req = self.messages.ConnectgatewayProjectsLocationsMembershipsGenerateCredentialsRequest(
-        **kwargs
+    if application_default_credentials:
+      kwargs['applicationDefaultCredentials'] = application_default_credentials
+    return self.client.projects_locations_memberships.GenerateCredentials(
+        self.messages.ConnectgatewayProjectsLocationsMembershipsGenerateCredentialsRequest(
+            **kwargs
+        )
     )
-    return self.client.projects_locations_memberships.GenerateCredentials(req)

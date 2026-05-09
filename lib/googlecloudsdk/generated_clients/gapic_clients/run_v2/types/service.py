@@ -105,6 +105,9 @@ class UpdateServiceRequest(proto.Message):
             caller must have 'run.services.create'
             permissions if this is set to true and the
             Service does not exist.
+        force_build (bool):
+            Optional. If set to true, ensures a build is
+            executed even if BuildConfig has not changed.
         force_new_revision (bool):
             Optional. If set to true, a new revision will
             be created from the template even if the system
@@ -137,6 +140,10 @@ class UpdateServiceRequest(proto.Message):
     allow_missing: bool = proto.Field(
         proto.BOOL,
         number=4,
+    )
+    force_build: bool = proto.Field(
+        proto.BOOL,
+        number=6,
     )
     force_new_revision: bool = proto.Field(
         proto.BOOL,

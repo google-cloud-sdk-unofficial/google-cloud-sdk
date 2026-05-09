@@ -24,7 +24,6 @@ class HealthAggregationPolicies(base.Group):
   """Manage health aggregation policies."""
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class HealthAggregationPoliciesGa(HealthAggregationPolicies):

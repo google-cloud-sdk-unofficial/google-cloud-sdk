@@ -35,7 +35,6 @@ _detailed_help = {
           To update a Security Profile Group with new threat prevention profile `my-new-security-profile`, run:
 
               $ {command} my-security-profile-group --organization=1234 --location=global --threat-prevention-profile=`organizations/1234/locations/global/securityProfiles/my-new-security-profile` --description='New Security Profile of type threat prevention'
-
         """,
 }
 
@@ -166,11 +165,22 @@ class UpdateProfileGroup(base.UpdateCommand):
     if description is not None:
       update_mask.append('description')
 
+    if (
+        self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+        and labels_update.needs_update
+    ):
+      update_mask.append('labels')
+
     if not update_mask:
+      attributes = (
+          '`description`, `security profile` and/or `labels`'
+          if self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+          else '`description` and/or `security profile`'
+      )
       raise core_exceptions.Error(
-          'Operation failed to satisfy minimum qualification. Please specify'
-          ' the attribute which needs an update. `description` and/or `security'
-          ' profile` can be updated.'
+          'Operation failed to satisfy minimum qualification. '
+          'Please specify the attribute which needs an update. '
+          f'{attributes} can be updated.'
       )
 
     response = client.UpdateSecurityProfileGroup(

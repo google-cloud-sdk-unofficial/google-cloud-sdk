@@ -89,6 +89,12 @@ def _format_exapool(pool):
   return pool
 
 
+def _calculate_utilization(used: float, provisioned: float) -> float:
+  if provisioned == 0:
+    return 0.0
+  return 100 * (used / provisioned)
+
+
 def _add_capacity(pool, is_exapool=False):
   """Add capacity formatting for regular storage pools.
 
@@ -111,10 +117,14 @@ def _add_capacity(pool, is_exapool=False):
     )
     exapool_provisioned_capacity_tb = exapool_provisioned_capacity_gb / TB_IN_GB
 
+    utilization = _calculate_utilization(
+        used_capacity_tb, exapool_provisioned_capacity_tb
+    )
+
     formatted_capacity = "{:,.1f}/{:,.0f} ({:.1f}%)".format(
         used_capacity_tb,
         exapool_provisioned_capacity_tb,
-        100 * (used_capacity_tb / exapool_provisioned_capacity_tb),
+        utilization,
     )
 
   else:
@@ -124,10 +134,14 @@ def _add_capacity(pool, is_exapool=False):
     used_capacity_bytes = int(pool["status"]["poolUsedCapacityBytes"])
     used_capacity_tb = used_capacity_bytes / TB
 
+    utilization = _calculate_utilization(
+        used_capacity_bytes, provisioned_capacity_bytes
+    )
+
     formatted_capacity = "{:,.1f}/{:,.0f} ({:.1f}%)".format(
         used_capacity_tb,
         provisioned_capacity_tb,
-        100 * (used_capacity_bytes / provisioned_capacity_bytes),
+        utilization,
     )
 
   pool["formattedCapacity"] = formatted_capacity
@@ -153,8 +167,10 @@ def _add_iops(pool):
   provisioned_iops = int(pool["poolProvisionedIops"])
   used_iops = int(pool["status"]["poolUsedIops"])
 
+  utilization = _calculate_utilization(used_iops, provisioned_iops)
+
   formatted_iops = "{:,}/{:,} ({:.1f}%)".format(
-      used_iops, provisioned_iops, 100 * (used_iops / provisioned_iops)
+      used_iops, provisioned_iops, utilization
   )
 
   pool["formattedIops"] = formatted_iops
@@ -182,10 +198,12 @@ def _add_throughput(pool):
   provisioned_throughput = int(pool["poolProvisionedThroughput"])
   used_throughput = int(pool["status"]["poolUsedThroughput"])
 
+  utilization = _calculate_utilization(used_throughput, provisioned_throughput)
+
   formatted_throughput = "{:,}/{:,} (%{:.1f})".format(
       used_throughput,
       provisioned_throughput,
-      100 * (used_throughput / provisioned_throughput),
+      utilization,
   )
 
   pool["formattedThroughput"] = formatted_throughput

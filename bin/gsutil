@@ -127,6 +127,7 @@ setup_cloudsdk_python() {
       then
         if [ -f "$GLOBAL_CONFIG/virtenv/enabled" ];
         then
+          # shellcheck source=/dev/null
           . "$GLOBAL_CONFIG/virtenv/bin/activate"
         fi
       fi

@@ -345,7 +345,11 @@ class Deploy(base.Command):
     version = constants.BETA_VERSION
     is_hf_model = '@' not in args.model
 
-    region = 'us-central1' if _IsDefaultUniverse() else args.region
+    region = (
+        'us-central1'
+        if _IsDefaultUniverse() and not is_custom_weights_model
+        else args.region
+    )
     with endpoint_util.AiplatformEndpointOverrides(version, region=region):
       # Custom weights model deployment.
       if is_custom_weights_model:
@@ -385,30 +389,27 @@ class Deploy(base.Command):
           )
 
         # Deploy the model.
-        with endpoint_util.AiplatformEndpointOverrides(
-            version, region=args.region
-        ):
-          default_endpoint_name = '-'.join([
-              'custom-weights',
-              str(time.time()).split('.')[0],
-              'mg-cli-deploy',
-          ])
-          mg_client = client_mg.ModelGardenClient()
-          operation_client = operations.OperationsClient(version=version)
-          endpoint_name = (
-              args.endpoint_display_name
-              if args.endpoint_display_name
-              else default_endpoint_name
-          )
+        default_endpoint_name = '-'.join([
+            'custom-weights',
+            str(time.time()).split('.')[0],
+            'mg-cli-deploy',
+        ])
+        mg_client = client_mg.ModelGardenClient()
+        operation_client = operations.OperationsClient(version=version)
+        endpoint_name = (
+            args.endpoint_display_name
+            if args.endpoint_display_name
+            else default_endpoint_name
+        )
 
-          model_garden_utils.Deploy(
-              args,
-              machine_spec,
-              endpoint_name,
-              args.model,
-              operation_client,
-              mg_client,
-          )
+        model_garden_utils.Deploy(
+            args,
+            machine_spec,
+            endpoint_name,
+            args.model,
+            operation_client,
+            mg_client,
+        )
       else:
         # Model Garden model deployment.
         # Step 1: Fetch PublisherModel data, including deployment configs. Use

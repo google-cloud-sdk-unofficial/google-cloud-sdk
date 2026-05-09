@@ -32,8 +32,11 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
-    'DESCRIPTION': '*{command}* updates a Compute Engine persistent disk.',
-    'EXAMPLES': """\
+    'DESCRIPTION': (
+        '*{command}* updates a Compute Engine Hyperdisk or Persistent Disk.'
+    ),
+    'EXAMPLES': (
+        """\
         To update labels 'k0' and 'k1' and remove label 'k3' of a disk, run:
 
             $ {command} example-disk --zone=us-central1-a --update-labels=k0=value1,k1=value2 --remove-labels=k3
@@ -59,7 +62,8 @@ DETAILED_HELP = {
         To replace a license on the disk, run:
 
             $ {command} example-disk --zone=us-central1-a --replace-license=projects/license-project/global/licenses/old-license,projects/license-project/global/licenses/new-license
-        """,
+        """
+    ),
 }
 
 
@@ -252,7 +256,7 @@ def _GuestOsFeatureFlagsIncluded(args):
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Update(base.UpdateCommand):
-  r"""Update a Compute Engine persistent disk."""
+  r"""Update a Compute Engine Hyperdisk or Persistent Disk."""
 
   DISK_ARG = None
 

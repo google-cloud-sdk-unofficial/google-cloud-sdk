@@ -27,7 +27,7 @@ from googlecloudsdk.core.util import files
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.Hidden
 class Create(base.Command):
   """Generate optimized Kubernetes manifests for a given workload profile."""
@@ -78,27 +78,40 @@ class Create(base.Command):
     parser.display_info.AddFormat("manifests")
     resource_printer.RegisterFormatter("manifests", ManifestPrinter)
 
+  def GetOptionClass(self, messages):
+    """Returns the track-specific Option class."""
+    return messages.Option
+
+  def GetRequestClass(self, messages):
+    """Returns the track-specific request class."""
+    return messages.GenerateOptimizationSetManifestRequest
+
+  def GetClientVersion(self, client):
+    """Returns the track-specific client version."""
+    return client.v1
+
   def Run(self, args):
     """This is what gets called when the user runs this command."""
-    client = util.GetClientInstance(base.ReleaseTrack.ALPHA)
-    messages = util.GetMessagesModule(base.ReleaseTrack.ALPHA)
+    track = self.ReleaseTrack()
+    client = util.GetClientInstance(track)
+    messages = util.GetMessagesModule(track)
 
-    options = []
-    if args.options:
-      for key, value in args.options.items():
-        options.append(
-            messages.GoogleCloudGkerecommenderV1alpha1Option(
-                key=key, value=value
-            )
-        )
+    option_class = self.GetOptionClass(messages)
+    options = (
+        [option_class(key=k, value=v) for k, v in args.options.items()]
+        if args.options
+        else []
+    )
 
-    req = messages.GoogleCloudGkerecommenderV1alpha1GenerateOptimizedManifestRequest(
+    request_class = self.GetRequestClass(messages)
+    req = request_class(
         optimizationSet=args.workload,
         clusterVersion=args.cluster_version,
         options=options,
     )
 
-    resp = client.v1alpha1.GenerateOptimizedManifest(req)
+    version_client = self.GetClientVersion(client)
+    resp = version_client.GenerateOptimizationSetManifest(req)
 
     if args.output_path:
       _SaveOutputToFile(resp, args, args.output_path)
@@ -136,3 +149,24 @@ class ManifestPrinter(resource_printer_base.ResourcePrinter):
 
     if parts:
       self._out.write("\n".join(parts) + "\n")
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Hidden
+class CreateAlpha(Create):
+  """Generate optimized Kubernetes manifests for a given workload profile."""
+
+  def GetOptionClass(self, messages):
+    """Returns the track-specific Option class."""
+    return messages.GoogleCloudGkerecommenderV1alpha1Option
+
+  def GetRequestClass(self, messages):
+    """Returns the track-specific request class."""
+    return (
+        messages.GoogleCloudGkerecommenderV1alpha1GenerateOptimizationSetManifestRequest
+    )
+
+  def GetClientVersion(self, client):
+    """Returns the track-specific client version."""
+    return client.v1alpha1

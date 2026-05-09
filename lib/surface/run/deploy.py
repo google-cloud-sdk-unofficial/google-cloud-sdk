@@ -802,7 +802,9 @@ class Deploy(base.Command):
         include_upload_source=bool(build_from_source),
         include_build=requires_build,
         include_create_repo=repo_to_create is not None,
-        include_iap=iap is not None,
+        # Include IAP stage if enabling IAP, or if disabling IAP on an existing
+        # service (to clean up IAM bindings).
+        include_iap=(iap or (iap is not None and service is not None)),
         include_domain_mapping=getattr(args, 'domain', None) is not None,
         regions_list=self._GetRegionsForMultiRegion(),
     )
@@ -934,14 +936,29 @@ class Deploy(base.Command):
           'rrdata:label=CONTENTS)',
       )
 
-  def _GetIap(self, args):
+  def _GetIap(self, args, service):
     """Returns the IAP status of the service."""
+    # Determine the desired IAP state based on flags.
     if flags.FlagIsExplicitlySet(args, 'iap'):
-      return args.iap
-    return None
+      iap = args.iap
+    elif flags.FlagIsExplicitlySet(args, 'public') and args.public:
+      iap = False
+    else:
+      # Neither flag is specified, so we don't want to change the IAP state.
+      return None
+
+    # Optimization: If we want to disable IAP (either explicitly or via
+    # --public), and the service does not exist yet (service is None), we can
+    # skip the call to disable it because it is already disabled by default.
+    # This also prevents the tracker from being shown for this operation.
+    if not iap and not service:
+      return None
+
+    return iap
 
   def Run(self, args):
     """Deploy a container to Cloud Run."""
+    flags.ValidatePublicFlags(args)
     self.__multi_region_regions = flags.GetMultiRegion(args)
     platform = flags.GetAndValidatePlatform(
         args, self.ReleaseTrack(), flags.Product.RUN
@@ -1089,7 +1106,7 @@ class Deploy(base.Command):
           service is None or traffic.LATEST_REVISION_KEY in service.spec_traffic
       )
 
-      iap = self._GetIap(args)
+      iap = self._GetIap(args, service)
 
       if iap:
         if iap_util.IsOrglessProject(
@@ -1402,6 +1419,7 @@ class AlphaDeploy(BetaDeploy):
 
     # Flags specific to managed CR
     flags.AddRuntimeFlag(parser)
+    flags.AddPublicFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.IDENTITY_FLAG.AddToParser(parser)
     flags.IDENTITY_CERTIFICATE_FLAG.AddToParser(parser)

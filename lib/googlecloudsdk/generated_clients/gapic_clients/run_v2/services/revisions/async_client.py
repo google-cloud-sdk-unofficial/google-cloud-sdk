@@ -69,6 +69,8 @@ class RevisionsAsyncClient:
     _DEFAULT_ENDPOINT_TEMPLATE = RevisionsClient._DEFAULT_ENDPOINT_TEMPLATE
     _DEFAULT_UNIVERSE = RevisionsClient._DEFAULT_UNIVERSE
 
+    build_path = staticmethod(RevisionsClient.build_path)
+    parse_build_path = staticmethod(RevisionsClient.parse_build_path)
     connector_path = staticmethod(RevisionsClient.connector_path)
     parse_connector_path = staticmethod(RevisionsClient.parse_connector_path)
     crypto_key_path = staticmethod(RevisionsClient.crypto_key_path)

@@ -165,6 +165,33 @@ class GkerecommenderOptimizedManifestRequest(_messages.Message):
   targetNtpotMilliseconds = _messages.IntegerField(7, variant=_messages.Variant.INT32)
 
 
+class GoogleCloudGkerecommenderV1alpha1GenerateOptimizationSetManifestRequest(_messages.Message):
+  r"""Request message for WorkloadOptimizer.GenerateOptimizationSetManifest.
+
+  Fields:
+    clusterVersion: Required. The GKE version to generate the manifest for.
+    optimizationSet: Required. The name of the optimization set to generate
+      the manifest for. This specifies the workload, workload version, and
+      workload characterization to optimize for. E.g. "redis-7-caching"
+    options: Optional. Allows specifying additional configuration options.
+      e.g. [{key: "machineType", value: "c4d-highmem-16,c4a-highmem-16"}]
+  """
+
+  clusterVersion = _messages.StringField(1)
+  optimizationSet = _messages.StringField(2)
+  options = _messages.MessageField('GoogleCloudGkerecommenderV1alpha1Option', 3, repeated=True)
+
+
+class GoogleCloudGkerecommenderV1alpha1GenerateOptimizationSetManifestResponse(_messages.Message):
+  r"""Response message for WorkloadOptimizer.GenerateOptimizationSetManifest.
+
+  Fields:
+    kubernetesManifests: A list of generated Kubernetes manifests.
+  """
+
+  kubernetesManifests = _messages.MessageField('GoogleCloudGkerecommenderV1alpha1KubernetesManifest', 1, repeated=True)
+
+
 class GoogleCloudGkerecommenderV1alpha1GenerateOptimizedManifestRequest(_messages.Message):
   r"""Request message for WorkloadOptimizer.GenerateOptimizedManifest.
 
@@ -173,8 +200,8 @@ class GoogleCloudGkerecommenderV1alpha1GenerateOptimizedManifestRequest(_message
     optimizationSet: Required. The name of the optimization set to generate
       the manifest for. This specifies the workload, workload version, and
       workload characterization to optimize for. E.g. "redis-7-caching"
-    options: Optional. Includes machine series to use for provisioning nodes
-      e.g. [{key: "machine_series", value: "c4d-highmem-16,c4a-highmem-16"}]
+    options: Optional. Allows specifying additional configuration options.
+      e.g. [{key: "machineType", value: "c4d-highmem-16,c4a-highmem-16"}]
   """
 
   clusterVersion = _messages.StringField(1)

@@ -1,0 +1,28 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Test IAM permissions for an Agent Identity connector.
+    description: |
+      Returns permissions that a caller has on the specified resource.
+    examples: |
+      To test if the caller has 'iamconnectors.connectors.get' permission on a connector, run:
+
+        $ {command} my-connector --location=us-central1 --permissions=iamconnectors.connectors.get
+
+  request:
+    api_version: v1alpha
+    collection: iamconnectors.projects.locations.connectors
+    method: testIamPermissions
+
+  command_type: GENERIC
+
+  arguments:
+    resource:
+      help_text: The connector for which to test permissions.
+      spec: !REF googlecloudsdk.command_lib.agent_identity.v1alpha_resources:projects_locations_connectors
+    params:
+    - arg_name: permissions
+      api_field: testIamPermissionsRequest.permissions
+      required: true
+      repeated: true
+      help_text: |-
+        The permissions to test.

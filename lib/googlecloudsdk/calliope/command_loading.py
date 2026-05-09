@@ -557,8 +557,12 @@ def CreateYamlLoader(impl_path):
           )
       return value
 
-  loader = yaml.YAML()
+  # Use the 'safe' loader for better performance. This implies we cannot write
+  # back to disk without erasing comments and formatting, which is fine because
+  # this file is read-only.
+  loader = yaml.YAML(typ='safe')
   loader.Constructor = Constructor
+
   loader.constructor.add_constructor(
       Constructor.INCLUDE_COMMON_MACRO, Constructor.IncludeCommon
   )

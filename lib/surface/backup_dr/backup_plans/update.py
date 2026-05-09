@@ -29,7 +29,9 @@ from googlecloudsdk.core import yaml
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Update(base.UpdateCommand):
   """Update a specific backup plan."""
 
@@ -184,6 +186,7 @@ class Update(base.UpdateCommand):
     flags.AddRemoveBackupRule(parser)
     flags.AddBackupRulesFromFile(parser)
     flags.AddDiskBackupPlanProperties(parser)
+    flags.AddComputeInstanceBackupPlanProperties(parser)
 
     description_help = """\
         Provide a description of the backup plan, such as specific use cases and
@@ -227,6 +230,7 @@ class Update(base.UpdateCommand):
     add_backup_rules = args.add_backup_rule
     remove_backup_rules = args.remove_backup_rule
     disk_properties = args.disk_properties
+    compute_instance_properties = args.compute_instance_properties
 
     if backup_rules_file_content and (
         update_backup_rules or add_backup_rules or remove_backup_rules
@@ -259,6 +263,7 @@ class Update(base.UpdateCommand):
           log_retention_days,
           max_custom_on_demand_retention_days,
           disk_properties,
+          compute_instance_properties,
       )
       update_mask = []
       if (
@@ -279,6 +284,10 @@ class Update(base.UpdateCommand):
         update_mask.append('maxCustomOnDemandRetentionDays')
       if args.IsSpecified('disk_properties'):
         update_mask.append('disk_backup_plan_properties.guest_flush')
+      if args.IsSpecified('compute_instance_properties'):
+        update_mask.append(
+            'compute_instance_backup_plan_properties.guest_flush'
+        )
       if any([
           update_backup_rules,
           add_backup_rules,

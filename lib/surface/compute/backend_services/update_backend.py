@@ -44,17 +44,25 @@ class UpdateBackend(base.UpdateCommand):
   remove-backend` and `gcloud compute backend-services add-backend` commands.
   """
 
-  @staticmethod
-  def Args(parser):
+  # If true, EXTERNAL_PASSTHROUGH load balancing scheme and associated
+  # validations are enabled.
+  # TODO(b/502655802) - Remove all references on promotion to GA.
+  support_external_passthrough = False
+
+  @classmethod
+  def Args(cls, parser):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     backend_flags.AddDescription(parser)
     flags.AddInstanceGroupAndNetworkEndpointGroupArgs(parser, 'update in')
-    backend_flags.AddBalancingMode(parser)
+    backend_flags.AddBalancingMode(
+        parser, support_external_passthrough=cls.support_external_passthrough
+    )
     backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
     backend_flags.AddFailover(parser, default=None)
     backend_flags.AddPreference(parser)
     backend_flags.AddCustomMetrics(parser, add_clear_argument=True)
+    backend_flags.AddTrafficDuration(parser)
 
   def _GetGetRequest(self, client, backend_service_ref):
     if backend_service_ref.Collection() == 'compute.regionBackendServices':
@@ -152,7 +160,7 @@ class UpdateBackend(base.UpdateCommand):
       backend_to_update.description = None
 
     self._ModifyBalancingModeArgs(
-        client, args, backend_to_update, self.ReleaseTrack()
+        client, args, backend_to_update
     )
 
     if backend_to_update is not None and args.failover is not None:
@@ -163,14 +171,7 @@ class UpdateBackend(base.UpdateCommand):
           client.messages.Backend.PreferenceValueValuesEnum(args.preference)
       )
 
-    if (
-        (
-            self.ReleaseTrack() == base.ReleaseTrack.ALPHA
-            or self.ReleaseTrack() == base.ReleaseTrack.BETA
-        )
-        and backend_to_update is not None
-        and args.traffic_duration is not None
-    ):
+    if backend_to_update is not None and args.traffic_duration is not None:
       backend_to_update.trafficDuration = (
           client.messages.Backend.TrafficDurationValueValuesEnum(
               args.traffic_duration
@@ -187,7 +188,7 @@ class UpdateBackend(base.UpdateCommand):
     return replacement
 
   def _ModifyBalancingModeArgs(
-      self, client, args, backend_to_update, release_track=None
+      self, client, args, backend_to_update
   ):
     """Update balancing mode fields in backend_to_update according to args.
 
@@ -195,10 +196,9 @@ class UpdateBackend(base.UpdateCommand):
       client: The compute client.
       args: The arguments given to the update-backend command.
       backend_to_update: The backend message to modify.
-      release_track: The release track of the command.
     """
     _ModifyBalancingModeArgs(
-        client.messages, args, backend_to_update, release_track
+        client.messages, args, backend_to_update
     )
 
   def _ValidateArgs(self, args):
@@ -218,6 +218,10 @@ class UpdateBackend(base.UpdateCommand):
         args.max_connections is not None,
         args.max_connections_per_instance is not None,
         args.max_connections_per_endpoint is not None,
+        args.max_in_flight_requests is not None,
+        args.max_in_flight_requests_per_instance is not None,
+        args.max_in_flight_requests_per_endpoint is not None,
+        args.traffic_duration is not None,
         args.capacity_scaler is not None,
         args.failover is not None,
         args.preference is not None,
@@ -274,6 +278,9 @@ class UpdateBackendBeta(UpdateBackend):
   https://cloud.google.com/load-balancing/docs/backend-service.
   """
 
+  # TODO(b/502655796) - Set true for Beta promotion.
+  support_external_passthrough = False
+
   @classmethod
   def Args(cls, parser):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
@@ -281,8 +288,10 @@ class UpdateBackendBeta(UpdateBackend):
         parser, 'update in', support_inline_service=True
     )
     backend_flags.AddDescription(parser)
-    backend_flags.AddBalancingMode(parser, release_track=cls.ReleaseTrack())
-    backend_flags.AddCapacityLimits(parser, release_track=cls.ReleaseTrack())
+    backend_flags.AddBalancingMode(
+        parser, support_external_passthrough=cls.support_external_passthrough
+    )
+    backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
     backend_flags.AddFailover(parser, default=None)
     backend_flags.AddPreference(parser)
@@ -339,6 +348,8 @@ class UpdateBackendAlpha(UpdateBackendBeta):
   https://cloud.google.com/load-balancing/docs/backend-service.
   """
 
+  support_external_passthrough = True
+
   def _ValidateArgs(self, args):
     """Overrides."""
 
@@ -367,7 +378,7 @@ class UpdateBackendAlpha(UpdateBackendBeta):
           'At least one property must be modified.')
 
 
-def _ClearMutualExclusiveBackendCapacityThresholds(backend, release_track=None):
+def _ClearMutualExclusiveBackendCapacityThresholds(backend):
   """Initialize the backend's mutually exclusive capacity thresholds."""
   backend.maxRate = None
   backend.maxRatePerInstance = None
@@ -375,72 +386,58 @@ def _ClearMutualExclusiveBackendCapacityThresholds(backend, release_track=None):
   backend.maxConnectionsPerInstance = None
   backend.maxRatePerEndpoint = None
   backend.maxConnectionsPerEndpoint = None
-  if (
-      release_track == base.ReleaseTrack.ALPHA
-      or release_track == base.ReleaseTrack.BETA
-  ):
-    backend.maxInFlightRequests = None
-    backend.maxInFlightRequestsPerInstance = None
-    backend.maxInFlightRequestsPerEndpoint = None
+  backend.maxInFlightRequests = None
+  backend.maxInFlightRequestsPerInstance = None
+  backend.maxInFlightRequestsPerEndpoint = None
 
 
-def _ModifyBalancingModeArgs(
-    messages, args, backend_to_update, release_track=None
-):
+def _ModifyBalancingModeArgs(messages, args, backend_to_update):
   """Update balancing mode fields in backend_to_update according to args.
 
   Args:
     messages: API messages class, determined by the release track.
     args: The arguments given to the update-backend command.
     backend_to_update: The backend message to modify.
-    release_track: The release track of the command.
   """
 
   backend_services_utils.ValidateBalancingModeArgs(
-      messages, args, backend_to_update.balancingMode, release_track)
+      messages, args, backend_to_update.balancingMode
+  )
 
   if args.balancing_mode:
     backend_to_update.balancingMode = (
-        messages.Backend.BalancingModeValueValuesEnum(
-            args.balancing_mode))
+        messages.Backend.BalancingModeValueValuesEnum(args.balancing_mode)
+    )
 
     # If the balancing mode is being changed to RATE (CONNECTION), we must
     # clear the max utilization, max inflight requests and max connections
     # (rate) fields. If the balancing mode is being chagned to IN_FLIGHT,
     # we must clear the max rate and max connections fields otherwise the
     # server will reject the request.
-    if (backend_to_update.balancingMode ==
-        messages.Backend.BalancingModeValueValuesEnum.RATE):
+    if (
+        backend_to_update.balancingMode
+        == messages.Backend.BalancingModeValueValuesEnum.RATE
+    ):
       backend_to_update.maxUtilization = None
       backend_to_update.maxConnections = None
       backend_to_update.maxConnectionsPerInstance = None
       backend_to_update.maxConnectionsPerEndpoint = None
-      if (
-          release_track == base.ReleaseTrack.ALPHA
-          or release_track == base.ReleaseTrack.BETA
-      ):
-        backend_to_update.maxInFlightRequests = None
-        backend_to_update.maxInFlightRequestsPerInstance = None
-        backend_to_update.maxInFlightRequestsPerEndpoint = None
-    elif (backend_to_update.balancingMode ==
-          messages.Backend.BalancingModeValueValuesEnum.CONNECTION):
+      backend_to_update.maxInFlightRequests = None
+      backend_to_update.maxInFlightRequestsPerInstance = None
+      backend_to_update.maxInFlightRequestsPerEndpoint = None
+    elif (
+        backend_to_update.balancingMode
+        == messages.Backend.BalancingModeValueValuesEnum.CONNECTION
+    ):
       backend_to_update.maxUtilization = None
       backend_to_update.maxRate = None
       backend_to_update.maxRatePerInstance = None
       backend_to_update.maxRatePerEndpoint = None
-      if (
-          release_track == base.ReleaseTrack.ALPHA
-          or release_track == base.ReleaseTrack.BETA
-      ):
-        backend_to_update.maxInFlightRequests = None
-        backend_to_update.maxInFlightRequestsPerInstance = None
-        backend_to_update.maxInFlightRequestsPerEndpoint = None
+      backend_to_update.maxInFlightRequests = None
+      backend_to_update.maxInFlightRequestsPerInstance = None
+      backend_to_update.maxInFlightRequestsPerEndpoint = None
     elif (
-        (
-            release_track == base.ReleaseTrack.ALPHA
-            or release_track == base.ReleaseTrack.BETA
-        )
-        and backend_to_update.balancingMode
+        backend_to_update.balancingMode
         == messages.Backend.BalancingModeValueValuesEnum.IN_FLIGHT
     ):
       backend_to_update.maxRate = None
@@ -471,37 +468,29 @@ def _ModifyBalancingModeArgs(
   elif args.max_connections_per_instance is not None:
     _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
     backend_to_update.maxConnectionsPerInstance = (
-        args.max_connections_per_instance)
+        args.max_connections_per_instance
+    )
   elif args.max_rate_per_endpoint is not None:
     _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
     backend_to_update.maxRatePerEndpoint = args.max_rate_per_endpoint
   elif args.max_connections_per_endpoint is not None:
     _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
     backend_to_update.maxConnectionsPerEndpoint = (
-        args.max_connections_per_endpoint)
-  elif (
-      release_track == base.ReleaseTrack.ALPHA
-      or release_track == base.ReleaseTrack.BETA
-  ):
-    if args.max_in_flight_requests is not None:
-      _ClearMutualExclusiveBackendCapacityThresholds(
-          backend_to_update, release_track
-      )
-      backend_to_update.maxInFlightRequests = args.max_in_flight_requests
-    elif args.max_in_flight_requests_per_instance is not None:
-      _ClearMutualExclusiveBackendCapacityThresholds(
-          backend_to_update, release_track
-      )
-      backend_to_update.maxInFlightRequestsPerInstance = (
-          args.max_in_flight_requests_per_instance
-      )
-    elif args.max_in_flight_requests_per_endpoint is not None:
-      _ClearMutualExclusiveBackendCapacityThresholds(
-          backend_to_update, release_track
-      )
-      backend_to_update.maxInFlightRequestsPerEndpoint = (
-          args.max_in_flight_requests_per_endpoint
-      )
+        args.max_connections_per_endpoint
+    )
+  elif args.max_in_flight_requests is not None:
+    _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
+    backend_to_update.maxInFlightRequests = args.max_in_flight_requests
+  elif args.max_in_flight_requests_per_instance is not None:
+    _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
+    backend_to_update.maxInFlightRequestsPerInstance = (
+        args.max_in_flight_requests_per_instance
+    )
+  elif args.max_in_flight_requests_per_endpoint is not None:
+    _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
+    backend_to_update.maxInFlightRequestsPerEndpoint = (
+        args.max_in_flight_requests_per_endpoint
+    )
 
   if args.capacity_scaler is not None:
     backend_to_update.capacityScaler = args.capacity_scaler

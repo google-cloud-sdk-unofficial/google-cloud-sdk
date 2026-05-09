@@ -193,3 +193,33 @@ class UpdateAlpha(Update):
 
   def GetUpdateMask(self, args):
     return _get_update_mask(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Update the specified Backup."""
+
+  @staticmethod
+  def Args(parser: argparse.ArgumentParser) -> None:
+    _add_common_args(parser)
+
+  def ParseUpdate(self, backup, args, client):
+    updated_enforced_retention = command_util.VerifyDateInFuture(
+        args.enforced_retention_end_time, 'enforced-retention-end-time'
+    )
+
+    expire_time = command_util.VerifyDateInFuture(
+        args.expire_time, 'expire-time'
+    )
+
+    return client.ParseUpdate(
+        backup,
+        updated_enforced_retention,
+        expire_time,
+        args.update_labels,
+        args.remove_labels,
+        args.clear_labels,
+    )
+
+  def GetUpdateMask(self, args):
+    return _get_update_mask(args)

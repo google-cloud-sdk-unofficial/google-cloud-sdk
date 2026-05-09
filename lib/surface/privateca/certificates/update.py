@@ -23,6 +23,7 @@ from googlecloudsdk.command_lib.privateca import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Update an existing certificate.

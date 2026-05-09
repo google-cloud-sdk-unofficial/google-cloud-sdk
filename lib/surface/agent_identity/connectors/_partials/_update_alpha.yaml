@@ -147,6 +147,7 @@
         Scopes appearing in `blocked_scopes` are disallowed even if they appear in
         `allowed_scopes`.
         The number of allowed scopes is limited to 200.
+        Scopes must be comma-separated.
       clearable: true
     - arg_name: blocked-scopes
       api_field: connector.blockedScopes
@@ -158,6 +159,7 @@
         appears in `allowed_scopes`. `blocked_scopes` takes precedence over
         `allowed_scopes`.
         The number of blocked scopes is limited to 200.
+        Scopes must be comma-separated.
       clearable: true
     - arg_name: description
       api_field: connector.description

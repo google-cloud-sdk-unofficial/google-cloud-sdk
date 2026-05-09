@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.composer import dags_util
 from googlecloudsdk.api_lib.composer import util
 from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.orchestration_pipelines.tools import composer_utils
+from googlecloudsdk.command_lib.orchestration_pipelines.tools import yaml_processor
 from googlecloudsdk.core import resources
 
 
@@ -55,6 +56,7 @@ class List(calliope_base.Command):
         "--version",
         help="The version of the bundle to list pipeline runs for.",
     )
+    yaml_processor.add_substitution_flags(parser)
 
   def Run(self, args):
     api_version = util.GetApiVersion(self.ReleaseTrack())
@@ -63,9 +65,13 @@ class List(calliope_base.Command):
     list_filter = composer_utils.build_dag_runs_filter_dag_id(
         bundle=args.bundle, pipeline=args.pipeline, version=args.version
     )
-    resource_name = composer_utils.build_resource_name(
-        args.environment, args.runner
-    )
+    if args.runner:
+      resource_name = composer_utils.build_resource_name(runner=args.runner)
+    else:
+      environment_model = yaml_processor.load_environment_with_args(args)
+      resource_name = composer_utils.build_resource_name(
+          env_model=environment_model
+      )
 
     dag_ref = resources.REGISTRY.ParseRelativeName(
         resource_name + "/dags/-",

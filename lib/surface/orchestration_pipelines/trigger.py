@@ -21,6 +21,7 @@ from googlecloudsdk.api_lib.composer import dags_util
 from googlecloudsdk.api_lib.composer import util
 from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.orchestration_pipelines.tools import composer_utils
+from googlecloudsdk.command_lib.orchestration_pipelines.tools import yaml_processor
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
@@ -64,6 +65,7 @@ class Trigger(calliope_base.Command):
         action="store_true",
         help="Whether to trigger the pipeline run asynchronously.",
     )
+    yaml_processor.add_substitution_flags(parser)
 
   def Run(self, args):
     api_version = util.GetApiVersion(self.ReleaseTrack())
@@ -72,8 +74,13 @@ class Trigger(calliope_base.Command):
     list_filter = composer_utils.build_dags_filter_tags(
         bundle=args.bundle, pipeline=args.pipeline, is_current=True
     )
+    if args.runner:
+      env_model = None
+    else:
+      env_model = yaml_processor.load_environment_with_args(args)
+
     dags_list = composer_utils.list_pipelines_with_filter(
-        list_filter, args.environment, args.runner, api_version
+        list_filter, env_model, args.runner, api_version
     )
 
     if len(dags_list.dags) == 0:

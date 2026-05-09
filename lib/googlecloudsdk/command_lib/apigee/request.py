@@ -34,8 +34,10 @@ from six.moves import urllib
 
 APIGEE_GLOBAL_HOST = "apigee.googleapis.com"
 APIGEE_LEP_HOST = "%s-apigee.googleapis.com"
+APIGEE_MREP_HOST = "apigee.%s.rep.googleapis.com"
 ERROR_FIELD = "error"
 MESSAGE_FIELD = "message"
+SUPPORTED_MREP_REGIONS = ["us", "eu", "in"]
 
 
 def _ResourceIdentifier(identifiers, entity_path):
@@ -116,8 +118,11 @@ def _GetApigeeHostByOrganization(organization):
 
 def _GetApigeeHostByLocation(location=None):
   """Returns the Apigee host based on the location."""
-  if location is None or location == "global" or not location:
+  if not location or location == "global":
     return APIGEE_GLOBAL_HOST
+
+  if location in SUPPORTED_MREP_REGIONS:
+    return APIGEE_MREP_HOST % location
 
   return APIGEE_LEP_HOST % location
 

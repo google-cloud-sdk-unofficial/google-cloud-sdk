@@ -234,6 +234,32 @@ class GkerecommenderV1alpha1(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+    def GenerateOptimizationSetManifest(self, request, global_params=None):
+      r"""Generates optimized deployment manifests for a given optimization set, GKE version, and other optional input requirements.
+
+      Args:
+        request: (GoogleCloudGkerecommenderV1alpha1GenerateOptimizationSetManifestRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudGkerecommenderV1alpha1GenerateOptimizationSetManifestResponse) The response message.
+      """
+      config = self.GetMethodConfig('GenerateOptimizationSetManifest')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GenerateOptimizationSetManifest.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='gkerecommender.generateOptimizationSetManifest',
+        ordered_params=[],
+        path_params=[],
+        query_params=[],
+        relative_path='v1alpha1:generateOptimizationSetManifest',
+        request_field='<request>',
+        request_type_name='GoogleCloudGkerecommenderV1alpha1GenerateOptimizationSetManifestRequest',
+        response_type_name='GoogleCloudGkerecommenderV1alpha1GenerateOptimizationSetManifestResponse',
+        supports_download=False,
+    )
+
     def GenerateOptimizedManifest(self, request, global_params=None):
       r"""Generates optimized deployment manifests for a given optimization set, GKE version, and other optional input requirements.
 

@@ -36,14 +36,13 @@ from googlecloudsdk.core.util import files
 
 
 @functools.cache
-def _get_dialect_map():
-  """Gets a mapping from lower-cased dialect names to their canonical names.
+def _get_dialect_registry():
+  """Gets dialect registry: input_dialects, output_dialects, dialect_pairs.
 
   The mapping is loaded from a JSON resource file.
 
   Returns:
-    A dict mapping lower-cased dialect names (or legacy batch names) to their
-    canonical names.
+    A dict with dialect registry.
 
   Raises:
     exceptions.Error: If the dialect registry fails to load.
@@ -51,26 +50,54 @@ def _get_dialect_map():
   try:
     file_path = os.path.join(os.path.dirname(__file__), 'dialect_registry.json')
     registry = json.loads(files.ReadFileContents(file_path))
-    dialect_map = {}
-    for dialect in registry.get('input_dialects', []):
-      legacy_name = dialect.get('legacy_batch_name')
-      name = dialect.get('name')
-      if legacy_name:
-        dialect_map[legacy_name.lower()] = legacy_name
-      elif name:
-        dialect_map[name.lower()] = name
-    return dialect_map
+    return registry
   except Exception as e:
     raise exceptions.Error(f'Failed to load dialect registry: {e}')
 
 
-def _get_task_type(source_dialect: str) -> str:
+def _get_task_type(source_dialect: str, target_dialect: str = None) -> str:
   """Returns the migration task type based on the source dialect."""
-  dialect_map = _get_dialect_map()
-  mapped_dialect = dialect_map.get(
-      source_dialect.lower(), source_dialect.capitalize()
+  registry = _get_dialect_registry()
+  source_dialect_map = {}
+  for dialect in registry.get('input_dialects', []):
+    legacy_name = dialect.get('legacy_batch_name')
+    name = dialect.get('name')
+    if legacy_name:
+      if name:
+        source_dialect_map[name.lower()] = legacy_name
+      source_dialect_map[legacy_name.lower()] = legacy_name
+    elif name:
+      source_dialect_map[name.lower()] = name
+  source_legacy_batch_name = source_dialect_map.get(
+      source_dialect.lower(), source_dialect
   )
-  return f'{mapped_dialect}2BigQuery_Translation'
+  target_dialect_map = {}
+  for dialect in registry.get('output_dialects', []):
+    legacy_name = dialect.get('legacy_batch_name')
+    name = dialect.get('name')
+    if legacy_name:
+      if name:
+        target_dialect_map[name.lower()] = legacy_name
+      target_dialect_map[legacy_name.lower()] = legacy_name
+    elif name:
+      target_dialect_map[name.lower()] = name
+  target_legacy_batch_name = target_dialect_map.get(
+      target_dialect.lower(), target_dialect
+  )
+  task_type = (
+      f'{source_legacy_batch_name}2{target_legacy_batch_name}_Translation'
+  )
+  valid_task_type = False
+  for pair in registry['dialect_pairs']:
+    if task_type in pair.get('legacy_batch_name', []):
+      valid_task_type = True
+      break
+  if not valid_task_type:
+    raise exceptions.Error(
+        f'Translation from {source_dialect} to {target_dialect} is not'
+        ' supported.'
+    )
+  return task_type
 
 
 def _build_translation_details(
@@ -157,9 +184,10 @@ def _build_migration_workflow(
     explanation_output_file=None,
     translation_config_files=None,
     metadata_gcs_uri=None,
+    target_dialect=None,
 ):
   """Builds the migration workflow message and returns it with the task type."""
-  task_type = _get_task_type(source_dialect)
+  task_type = _get_task_type(source_dialect, target_dialect)
   translation_details = _build_translation_details(
       messages,
       query,
@@ -365,7 +393,18 @@ To translate a Snowflake query from a file and save the output and logs to files
   def Args(parser):
     parser.add_argument(
         '--source-dialect',
-        help='Source dialect of the query.',
+        help=(
+            'Source dialect of the query. See supported dialects in'
+            ' https://docs.cloud.google.com/bigquery/docs/batch-sql-translator#supported_sql_dialects'
+        ),
+        required=True,
+    )
+    parser.add_argument(
+        '--target-dialect',
+        help=(
+            'Target dialect of the query. See supported dialects in'
+            ' https://docs.cloud.google.com/bigquery/docs/batch-sql-translator#supported_sql_dialects'
+        ),
         required=True,
     )
     parser.add_argument(
@@ -442,6 +481,7 @@ To translate a Snowflake query from a file and save the output and logs to files
         args.explanation_output_file,
         args.translation_config_files,
         args.metadata_gcs_uri,
+        target_dialect=args.target_dialect,
     )
 
     request_type = api_util.GetMigrationApiMessage(

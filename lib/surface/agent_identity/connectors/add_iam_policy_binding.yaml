@@ -1,0 +1,24 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Add IAM policy binding to an Agent Identity connector.
+    description: |
+      Add an IAM policy binding to the IAM policy of an Agent Identity connector. One binding consists of a member,
+      and a role.
+
+    examples: |
+      To add an IAM policy binding for the role of 'roles/iamconnectors.user' for the user 'test-user@gmail.com'
+      with connector 'my-connector' and location 'us-central1', run:
+
+        $ {command} my-connector --location='us-central1' --member='user:test-user@gmail.com' --role='roles/iamconnectors.user'
+
+  request:
+    api_version: v1alpha
+    collection: iamconnectors.projects.locations.connectors
+
+  arguments:
+    resource:
+      help_text: The connector for which to add the IAM policy binding.
+      spec: !REF googlecloudsdk.command_lib.agent_identity.v1alpha_resources:projects_locations_connectors
+
+  iam:
+    enable_condition: false

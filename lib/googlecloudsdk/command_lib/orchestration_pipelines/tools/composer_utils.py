@@ -15,10 +15,9 @@
 """Utilities for interacting with the Composer DAG API."""
 
 import json
-import pathlib
+
 from googlecloudsdk.api_lib.composer import dags_util
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
-from googlecloudsdk.command_lib.orchestration_pipelines.tools import yaml_processor
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -44,18 +43,18 @@ def _build_triggers(dag):
   }]
 
 
-def build_resource_name(environment=None, runner=None):
+def build_resource_name(env_model=None, runner=None):
   """Builds a resource name.
 
   The resource name is in the format of
   projects/{project}/locations/{location}/environments/{environment}.
 
   Args:
-    environment: Optional; The name of the environment configuration to use from
-      deployment.yaml. Used if 'runner' is not provided.
+    env_model: Optional; The loaded environment model. Used if 'runner' is not
+      provided.
     runner: Optional; The full resource name to use. For now it supports only
       Composer environment full resource name. If provided, this argument takes
-      precedence over 'environment'.
+      precedence over 'env_model'.
 
   Returns:
     The resource name string.
@@ -73,15 +72,11 @@ def build_resource_name(environment=None, runner=None):
       )
     return runner[len(prefix) :]
   else:
-    work_dir = pathlib.Path.cwd()
-    bundle_dir = work_dir
-    deployment_path = bundle_dir / DEPLOYMENT_FILE
-    environment_config = yaml_processor.load_environment(
-        deployment_path, environment
-    )
-    project = environment_config.project
-    location = environment_config.region
-    environment = environment_config.composer_environment
+    if not env_model:
+      raise ValueError('Either env_model or runner must be provided')
+    project = env_model.project
+    location = env_model.region
+    environment = env_model.composer_environment
     return f'projects/{project}/locations/{location}/environments/{environment}'
 
 
@@ -143,13 +138,12 @@ def build_dag_runs_filter_dag_id(bundle, pipeline, version=None):
   return f'dag_id="{bundle_id}__v__{version_id}__{pipeline_id}"'
 
 
-def list_pipelines_with_filter(list_filter, environment, runner, api_version):
+def list_pipelines_with_filter(list_filter, env_model, runner, api_version):
   """Lists pipelines with the given filter.
 
   Args:
     list_filter: The filter to apply when listing pipelines.
-    environment: The name of the environment configuration to use from
-      deployment.yaml.
+    env_model: The loaded environment model.
     runner: The full resource name to use.
     api_version: The API version to use for the Composer API.
 
@@ -157,7 +151,7 @@ def list_pipelines_with_filter(list_filter, environment, runner, api_version):
     A list of DAGs matching the filter.
   """
   environment_resource_name = build_resource_name(
-      environment, runner
+      env_model, runner
   )
   environment_ref = resources.REGISTRY.ParseRelativeName(
       environment_resource_name,

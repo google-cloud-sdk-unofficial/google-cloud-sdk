@@ -21,6 +21,14 @@
             --collection-group=Events \
             --disable-ttl
 
+      The following command sets the `expiry` field of the `Events` collection group (kind) to be
+      the TTL field, with an expiration offset of one week:
+
+        $ {command} expiry \
+            --collection-group=Events \
+            --enable-ttl \
+            --expiration-offset=7d
+
   request:
     collection: firestore.projects.databases.collectionGroups.fields
     modify_request_hooks:
@@ -48,10 +56,18 @@
         required: true
         mutex: true
         params:
-        - help_text: Set to enable this field as the TTL for its collection group.
-          arg_name: "enable-ttl"
-          action: store_true
-          type: bool
+        - group:
+            params:
+            - help_text: Set to enable this field as the TTL for its collection group.
+              arg_name: "enable-ttl"
+              action: store_true
+              type: bool
+              required: true
+            - help_text: |
+                The offset, relative to the timestamp value from the TTL-enabled field, used to
+                determine the document's expiration time. If unset, defaults to 0.
+              arg_name: "expiration-offset"
+              type: "googlecloudsdk.calliope.arg_parsers:Duration:"
         - help_text: Set to make this field no longer the TTL for its collection group.
           arg_name: "disable-ttl"
           action: store_true

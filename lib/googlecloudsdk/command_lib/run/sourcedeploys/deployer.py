@@ -324,7 +324,7 @@ def _BuildFromSource(
   tracker.UpdateHeaderMessage('Building Container.')
   tracker.UpdateStage(
       stages.BUILD_READY,
-      'Logs are available at [{build_log_url}].'.format(
+      'Logs are available at [ {build_log_url} ].'.format(
           build_log_url=build_log_url
       ),
   )
@@ -463,7 +463,7 @@ def _SubmitBuild(
   tracker.UpdateHeaderMessage('Building Container.')
   tracker.UpdateStage(
       stages.BUILD_READY,
-      'Logs are available at [{build_log_url}].'.format(
+      'Logs are available at [ {build_log_url} ].'.format(
           build_log_url=build_log_url
       ),
   )

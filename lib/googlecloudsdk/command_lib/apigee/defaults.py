@@ -289,9 +289,4 @@ def GetOrganizationLocation(organization):
   if mapping:
     return mapping.get("location", None)
 
-  log.warning("No Apigee organization is known for GCP project %s.", project)
-  log.warning(
-      "Please provide the argument [--organization] on the command "
-      "line, or set the property [api_endpoint_overrides/apigee]."
-  )
   raise errors.LocationResolutionError()

@@ -65,7 +65,6 @@ _RESOURCE_HANDLERS = {
     "dataproc.cluster": dataproc.DataprocClusterHandler,
     "dataproc.workflowTemplate": dataproc.DataprocWorkflowTemplateHandler,
     "iam.serviceAccount": iam.IamServiceAccountHandler,
-    "iam.serviceAccountIamPolicy": iam.IamServiceAccountIamPolicyHandler,
     "iam.workloadIdentityPool": iam.IamWorkloadIdentityPoolHandler,
     "iam.workloadIdentityPoolProvider": (
         iam.IamWorkloadIdentityPoolProviderHandler
@@ -78,7 +77,6 @@ _RESOURCE_HANDLERS = {
     "sqladmin.instance.database": sqladmin.SqladminDatabaseHandler,
     "sqladmin.instance.user": sqladmin.SqladminUserHandler,
     "storage.bucket": storage.StorageBucketHandler,
-    "storage.bucket.iamPolicy": storage.StorageBucketIamPolicyHandler,
     "storage.bucket.notification": storage.StorageNotificationHandler,
     # go/keep-sorted end
 }

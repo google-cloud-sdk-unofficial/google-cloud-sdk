@@ -100,6 +100,9 @@ def _GetResourceLimitsChanges(args, non_ingress_type=False):
     )
     if args.gpu == '0':
       changes.append(config_changes.GpuTypeChange(gpu_type=''))
+      changes.append(
+          config_changes.GpuZonalRedundancyChange(gpu_zonal_redundancy=None)
+      )
   return changes
 
 

@@ -26,20 +26,20 @@ class Describe(base.DescribeCommand):
 
   Returns metadata for the given single tenant HSM instance.
 
-    ## EXAMPLES
+  ## EXAMPLES
 
   The following command returns the metadata for the single tenant HSM instance
-  with the name `my_sthi` in the location `us-east1`using the fully specified
+  with the name `my_sthi` in the location `us-east1` using the fully specified
   name:
 
-    $ {command}
-    projects/my-project/locations/us-east1/singleTenantHsmInstances/mysthi
+  $ {command}
+  projects/my-project/locations/us-east1/singleTenantHsmInstances/mysthi
 
   The following command returns the metadata for the singletenanthsm instance
   with the name `mysthi` in the location `us-east1` using the location and
   resource id:
 
-    $ {command} mysthi --location=us-east1
+  $ {command} mysthi --location=us-east1
   """
 
   @staticmethod

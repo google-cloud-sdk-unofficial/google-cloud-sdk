@@ -43,6 +43,7 @@ __protobuf__ = proto.module(
         'TCPSocketAction',
         'GRPCAction',
         'BuildInfo',
+        'BuildConfiguration',
         'SourceCode',
     },
 )
@@ -120,6 +121,9 @@ class Container(proto.Message):
         build_info (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.BuildInfo):
             Output only. The build info of the container
             image.
+        build_config (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.BuildConfiguration):
+            Optional. The build configuration for the
+            container image.
     """
 
     name: str = proto.Field(
@@ -194,6 +198,11 @@ class Container(proto.Message):
         proto.MESSAGE,
         number=15,
         message='BuildInfo',
+    )
+    build_config: 'BuildConfiguration' = proto.Field(
+        proto.MESSAGE,
+        number=19,
+        message='BuildConfiguration',
     )
 
 
@@ -921,6 +930,8 @@ class BuildInfo(proto.Message):
         source_location (str):
             Output only. Source code location of the
             image.
+        build_id (str):
+            Output only. The build ID.
     """
 
     function_target: str = proto.Field(
@@ -930,6 +941,150 @@ class BuildInfo(proto.Message):
     source_location: str = proto.Field(
         proto.STRING,
         number=2,
+    )
+    build_id: str = proto.Field(
+        proto.STRING,
+        number=3,
+    )
+
+
+class BuildConfiguration(proto.Message):
+    r"""Build configuration for a container.
+
+    This message has `oneof`_ fields (mutually exclusive fields).
+    For each oneof, at most one member field can be set at the same time.
+    Setting any member of the oneof automatically clears all other
+    members.
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
+    Attributes:
+        image_repository_uri (str):
+            Required. Artifact Registry URI to store the
+            built image.
+        buildpacks_build (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.BuildConfiguration.BuildpacksBuild):
+            Optional. Builds the source using Buildpacks.
+
+            This field is a member of `oneof`_ ``build_type``.
+        docker_build (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.BuildConfiguration.DockerBuild):
+            Optional. Builds the source using Docker.
+
+            This field is a member of `oneof`_ ``build_type``.
+        worker_configuration (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.BuildConfiguration.WorkerConfiguration):
+            Optional. Configuration for the worker.
+        tags (MutableSequence[str]):
+            Optional. Tags to add to the build.
+    """
+
+    class DockerBuild(proto.Message):
+        r"""Docker build configuration.
+        """
+
+    class BuildpacksBuild(proto.Message):
+        r"""Buildpacks build configuration.
+
+        Attributes:
+            build_base_image_uri (str):
+                Optional. Specify base image other than the
+                default.
+            cache_image_uri (str):
+                Optional. Cache image URI.
+            environment_variables (MutableMapping[str, str]):
+                Optional. Environment variables for the
+                build.
+        """
+
+        build_base_image_uri: str = proto.Field(
+            proto.STRING,
+            number=1,
+        )
+        cache_image_uri: str = proto.Field(
+            proto.STRING,
+            number=2,
+        )
+        environment_variables: MutableMapping[str, str] = proto.MapField(
+            proto.STRING,
+            proto.STRING,
+            number=3,
+        )
+
+    class CloudBuildWorkerConfiguration(proto.Message):
+        r"""Configuration for Cloud Build worker.
+
+        This message has `oneof`_ fields (mutually exclusive fields).
+        For each oneof, at most one member field can be set at the same time.
+        Setting any member of the oneof automatically clears all other
+        members.
+
+        .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
+        Attributes:
+            worker_pool (str):
+                Optional. The name of the Cloud Build worker
+                pool.
+
+                This field is a member of `oneof`_ ``worker_config``.
+            machine_type (str):
+                Optional. The machine type for the Cloud
+                Build worker.
+
+                This field is a member of `oneof`_ ``worker_config``.
+        """
+
+        worker_pool: str = proto.Field(
+            proto.STRING,
+            number=1,
+            oneof='worker_config',
+        )
+        machine_type: str = proto.Field(
+            proto.STRING,
+            number=2,
+            oneof='worker_config',
+        )
+
+    class WorkerConfiguration(proto.Message):
+        r"""Configuration for the worker.
+
+        .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
+        Attributes:
+            cloud_build_worker_configuration (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.BuildConfiguration.CloudBuildWorkerConfiguration):
+                Optional. Cloud Build worker configuration.
+
+                This field is a member of `oneof`_ ``config``.
+        """
+
+        cloud_build_worker_configuration: 'BuildConfiguration.CloudBuildWorkerConfiguration' = proto.Field(
+            proto.MESSAGE,
+            number=1,
+            oneof='config',
+            message='BuildConfiguration.CloudBuildWorkerConfiguration',
+        )
+
+    image_repository_uri: str = proto.Field(
+        proto.STRING,
+        number=1,
+    )
+    buildpacks_build: BuildpacksBuild = proto.Field(
+        proto.MESSAGE,
+        number=2,
+        oneof='build_type',
+        message=BuildpacksBuild,
+    )
+    docker_build: DockerBuild = proto.Field(
+        proto.MESSAGE,
+        number=3,
+        oneof='build_type',
+        message=DockerBuild,
+    )
+    worker_configuration: WorkerConfiguration = proto.Field(
+        proto.MESSAGE,
+        number=4,
+        message=WorkerConfiguration,
+    )
+    tags: MutableSequence[str] = proto.RepeatedField(
+        proto.STRING,
+        number=5,
     )
 
 

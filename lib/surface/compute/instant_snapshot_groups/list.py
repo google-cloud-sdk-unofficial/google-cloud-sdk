@@ -29,13 +29,15 @@ def _CommonArgs(parser):
   parser.display_info.AddCacheUpdater(completers.InstantSnapshotGroupsCompleter)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 @base.DefaultUniverseOnly
 class List(base.ListCommand):
-  """List Compute Engine instant snapshot groups.
+  """List Compute Engine consistency groups of instant snapshots.
 
-  This command lists all Compute Engine instant snapshot groups in a project in
-  the provided zone/region.
+  This command lists all Compute Engine consistency groups of instant snapshots
+  in a project in the provided zone/region.
   """
 
   @classmethod

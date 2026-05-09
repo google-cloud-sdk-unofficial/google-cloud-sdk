@@ -190,8 +190,8 @@ def AddBetaArgs(parser):
   flags.AddEnableAcceleratedReplicaMode(parser)
   flags.AddPerformanceCaptureConfig(parser, hidden=False)
   flags.AddUncMappings(parser)
-  flags.AddEnablePscAutoDns(parser, hidden=True)
-  flags.AddEnablePscWriteEndpointDns(parser, hidden=True)
+  flags.AddEnablePscAutoDns(parser)
+  flags.AddEnablePscWriteEndpointDns(parser)
 
 
 def AddAlphaArgs(unused_parser):

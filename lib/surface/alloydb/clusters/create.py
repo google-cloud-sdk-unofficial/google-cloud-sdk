@@ -64,6 +64,7 @@ class Create(base.CreateCommand):
     flags.AddNetwork(parser)
     flags.AddPassword(parser)
     flags.AddAllocatedIPRangeName(parser)
+    flags.AddBackupDRBackupPlan(parser)
     kms_resource_args.AddKmsKeyResourceArg(
         parser,
         'cluster',
@@ -214,7 +215,6 @@ class CreateAlpha(CreateBeta):
   @classmethod
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
-    flags.AddBackupDRBackupPlan(parser)
 
   def ConstructCreateRequestFromArgs(
       self, alloydb_messages, location_ref, args

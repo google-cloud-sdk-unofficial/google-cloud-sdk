@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.privateca import text_utils
 from googlecloudsdk.core import properties
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List subordinate certificate authorities.

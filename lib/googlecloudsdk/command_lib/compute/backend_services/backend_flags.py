@@ -20,11 +20,8 @@
 import textwrap
 
 from googlecloudsdk.calliope import arg_parsers
-from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.core import log
-
-ReleaseTrack = base.ReleaseTrack
 
 
 def AddDescription(parser):
@@ -68,14 +65,22 @@ def WarnOnDeprecatedFlags(args):
         ' instead. It will be removed in a future release.')
 
 
-def _GetBalancingModes(release_track=None):
+def _GetBalancingModes(support_external_passthrough=False):
   """Returns the --balancing-modes flag value choices name:description dict."""
   per_rate_flags = '*--max-rate-per-instance*'
   per_connection_flags = '*--max-connections-per-instance*'
   per_rate_flags += '/*--max-rate-per-endpoint*'
   per_connection_flags += '*--max-max-per-endpoint*'
-  utilization_extra_help = (
-      'This is incompatible with --network-endpoint-group.')
+  rate_and_utilization_protocols = (
+      '`INTERNAL_MANAGED`, `INTERNAL_SELF_MANAGED`, or `EXTERNAL`'
+  )
+  if support_external_passthrough:
+    # Include EXTERNAL_PASSTHROUGH in the list of supported protocols for
+    # RATE and UTILIZATION balancing modes.
+    rate_and_utilization_protocols = (
+        '`INTERNAL_MANAGED`, `INTERNAL_SELF_MANAGED`, `EXTERNAL` or '
+        '`EXTERNAL_PASSTHROUGH`'
+    )
   balancing_modes = {
       'CONNECTION': textwrap.dedent("""
           Available if the backend service's load balancing scheme is either
@@ -93,22 +98,20 @@ def _GetBalancingModes(release_track=None):
 
           For backend services where `--load-balancing-scheme` is `INTERNAL`,
           you must omit all of these parameters.
-          """).format(per_rate_flags),
-      'RATE': textwrap.dedent("""
-          Available if the backend service's load balancing scheme is
-          `INTERNAL_MANAGED`, `INTERNAL_SELF_MANAGED`, or `EXTERNAL`. Available
-          if the backend service's protocol is one of HTTP, HTTPS, or HTTP/2.
+          """),
+      'RATE': textwrap.dedent(f"""
+          Available if the backend service's load balancing scheme is {rate_and_utilization_protocols}.
+          Available if the backend service's protocol is one of HTTP, HTTPS, or HTTP/2.
 
           Spreads load based on how many HTTP requests per second (RPS) the
           backend can handle.
 
           You must specify exactly one of these additional parameters:
           `--max-rate`, `--max-rate-per-instance`, or `--max-rate-per-endpoint`.
-          """).format(utilization_extra_help),
-      'UTILIZATION': textwrap.dedent("""
-          Available if the backend service's load balancing scheme is
-          `INTERNAL_MANAGED`, `INTERNAL_SELF_MANAGED`, or `EXTERNAL`. Available only
-          for managed or unmanaged instance group backends.
+          """),
+      'UTILIZATION': textwrap.dedent(f"""
+          Available if the backend service's load balancing scheme is {rate_and_utilization_protocols}.
+          Available only for managed or unmanaged instance group backends.
 
           Spreads load based on the backend utilization of instances in a backend
           instance group.
@@ -117,14 +120,15 @@ def _GetBalancingModes(release_track=None):
           `--max-utilization`, `--max-rate`, `--max-rate-per-instance`,
           `--max-connections`, `--max-connections-per-instance`.
           For valid combinations, see `--max-utilization`.
-          """).format(per_connection_flags),
-      'CUSTOM_METRICS': """
+          """),
+      'CUSTOM_METRICS': (
+          """
           Spreads load based on custom defined and reported metrics.
-          """,
-  }
-  if release_track == ReleaseTrack.ALPHA or release_track == ReleaseTrack.BETA:
-    balancing_modes['IN_FLIGHT'] = """
-                    Available if the backend service's load balancing scheme is
+          """
+      ),
+      'IN_FLIGHT': (
+          """
+          Available if the backend service's load balancing scheme is
           `INTERNAL_MANAGED`, `INTERNAL_SELF_MANAGED`, or `EXTERNAL_MANAGED`. Available
           if the backend service's protocol is one of HTTP, HTTPS, or HTTP/2.
 
@@ -134,13 +138,18 @@ def _GetBalancingModes(release_track=None):
           `--max-in-flight-requests`, `--max-in-flight-requests-per-instance`, or
           `--max-in-flight-requests-per-endpoint`, and `--traffic-duration=LONG`.
           """
+      ),
+  }
 
   return balancing_modes
 
 
-def AddBalancingMode(parser,
-                     support_global_neg=False,
-                     support_region_neg=False, release_track=None):
+def AddBalancingMode(
+    parser,
+    support_global_neg=False,
+    support_region_neg=False,
+    support_external_passthrough=False,
+):
   """Adds balancing mode argument to the argparse."""
   help_text = """\
   Defines how to measure whether a backend can handle additional traffic or is
@@ -160,15 +169,17 @@ def AddBalancingMode(parser,
     """.format(_JoinTypes(incompatible_types))
   parser.add_argument(
       '--balancing-mode',
-      choices=_GetBalancingModes(release_track),
+      choices=_GetBalancingModes(
+          support_external_passthrough=support_external_passthrough
+      ),
       type=lambda x: x.upper(),
-      help=help_text)
+      help=help_text,
+  )
 
 
 def AddCapacityLimits(parser,
                       support_global_neg=False,
-                      support_region_neg=False,
-                      release_track=None):
+                      support_region_neg=False):
   """Adds capacity thresholds arguments to the argparse."""
   AddMaxUtilization(parser)
   capacity_group = parser.add_group(mutex=True)
@@ -249,30 +260,29 @@ def AddCapacityLimits(parser,
       by the number of instances in the instance group, and then dividing by
       the number of healthy instances.
       """)
-  if release_track == ReleaseTrack.ALPHA or release_track == ReleaseTrack.BETA:
-    capacity_group.add_argument(
-        '--max-in-flight-requests',
-        type=int,
-        help="""\
-        Maximum number of in-flight requests that the backend can handle.
-        """ + append_help_text,
-    )
-    capacity_group.add_argument(
-        '--max-in-flight-requests-per-instance',
-        type=int,
-        help="""\
-        Only valid for instance group backends. Defines the maximum number of
-        in-flight requests per instance.
-        """ + append_help_text,
-    )
-    capacity_group.add_argument(
-        '--max-in-flight-requests-per-endpoint',
-        type=int,
-        help="""\
-        Only valid for network endpoint group backends. Defines the maximum number
-        of in-flight requests per endpoint.
-        """ + append_help_text,
-    )
+  capacity_group.add_argument(
+      '--max-in-flight-requests',
+      type=int,
+      help="""\
+      Maximum number of in-flight requests that the backend can handle.
+      """ + append_help_text,
+  )
+  capacity_group.add_argument(
+      '--max-in-flight-requests-per-instance',
+      type=int,
+      help="""\
+      Only valid for instance group backends. Defines the maximum number of
+      in-flight requests per instance.
+      """ + append_help_text,
+  )
+  capacity_group.add_argument(
+      '--max-in-flight-requests-per-endpoint',
+      type=int,
+      help="""\
+      Only valid for network endpoint group backends. Defines the maximum number
+      of in-flight requests per endpoint.
+      """ + append_help_text,
+  )
 
 
 def AddMaxUtilization(parser):

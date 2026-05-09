@@ -4549,12 +4549,15 @@ class InitializeServiceRequest(_messages.Message):
     resourceType: Required. The resource type to which the default service
       config will be applied. Examples include,
       "compute.googleapis.com/Instance" and "storage.googleapis.com/Bucket".
+    validateOnly: Optional. If set, validates the request and returns the
+      result, but does not actually run it.
   """
 
   backupPlanLocation = _messages.StringField(1)
   cloudSqlInstanceInitializationConfig = _messages.MessageField('CloudSqlInstanceInitializationConfig', 2)
   requestId = _messages.StringField(3)
   resourceType = _messages.StringField(4)
+  validateOnly = _messages.BooleanField(5)
 
 
 class InitiateBackupRequest(_messages.Message):
