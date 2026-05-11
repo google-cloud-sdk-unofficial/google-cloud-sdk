@@ -111,6 +111,7 @@ class RequestWrapper(
       wrapped_request = http_client.request
       http_client.request = orig_request
 
+      transport.ValidateCredentialedRequestUrl(url)
       creds.before_request(auth_request, method, url, headers)
 
       http_client.request = wrapped_request

@@ -116,6 +116,13 @@ class RequestWrapper(transport.CredentialWrappingMixin,
       http_client = google_auth_httplib2.AuthorizedHttp(creds, http_client)
     else:
       http_client = creds.authorize(http_client)
+    orig_request = http_client.request
+
+    def WrappedRequest(uri, *args, **kwargs):
+      transport.ValidateCredentialedRequestUrl(uri)
+      return orig_request(uri, *args, **kwargs)
+
+    http_client.request = WrappedRequest
     return http_client
 
   def WrapQuota(
