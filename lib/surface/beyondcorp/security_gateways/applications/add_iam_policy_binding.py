@@ -36,6 +36,13 @@ class AddIamPolicyBinding(base.Command):
         $ {command} my-app --security-gateway=my-security-gateway \
         --member='user:test-user@gmail.com' \
         --role='roles/beyondcorp.sgApplicationUser' --location=global
+
+        To add the same binding with a condition:
+
+        $ {command} my-app --security-gateway=my-security-gateway \
+        --member='user:test-user@gmail.com' \
+        --role='roles/beyondcorp.sgApplicationUser' --location=global \
+        --condition="expression=request.time < timestamp('2026-01-01T00:00:00Z'),title=expires_2026"
   """
 
   @staticmethod
@@ -45,7 +52,7 @@ class AddIamPolicyBinding(base.Command):
         'The security gateway application for which to add the IAM policy'
         ' binding.',
     )
-    iam_util.AddArgsForAddIamPolicyBinding(parser)
+    iam_util.AddArgsForAddIamPolicyBinding(parser, add_condition=True)
 
   def Run(self, args):
     client = api_util.GetClientInstance(self.ReleaseTrack())
@@ -54,14 +61,26 @@ class AddIamPolicyBinding(base.Command):
 
     # Get current policy
     get_req = messages.BeyondcorpProjectsLocationsSecurityGatewaysApplicationsGetIamPolicyRequest(
-        resource=ref.RelativeName())
+        resource=ref.RelativeName(),
+        options_requestedPolicyVersion=3)
     policy = (
         client.projects_locations_securityGateways_applications.GetIamPolicy(
             get_req))
 
+    condition = iam_util.ValidateAndExtractConditionMutexRole(args)
+
     # Add binding using the correct message type
-    iam_util.AddBindingToIamPolicy(
-        messages.GoogleIamV1Binding, policy, args.member, args.role)
+    iam_util.AddBindingToIamPolicyWithCondition(
+        messages.GoogleIamV1Binding,
+        messages.GoogleTypeExpr,
+        policy,
+        args.member,
+        args.role,
+        condition,
+    )
+
+    if condition:
+      policy.version = 3
 
     # Set updated policy
     set_req = messages.BeyondcorpProjectsLocationsSecurityGatewaysApplicationsSetIamPolicyRequest(

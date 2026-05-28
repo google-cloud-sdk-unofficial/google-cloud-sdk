@@ -297,6 +297,49 @@
           required: false
           help_text: |
             If specified, catalog integration will be disabled, otherwise it will be enabled by default.
+    # Group for Release Channel
+    - group:
+        required: false
+        release_tracks: [ALPHA]
+        help_text: |
+          Release Channel - Looker (Google Cloud core) releases updates to your instance through
+          release channels.
+        params:
+        - api_field: instance.releaseChannel
+          arg_name: release-channel
+          help_text: |
+            The selected release channel for the instance.
+          choices:
+          - arg_value: rapid
+            enum_value: RAPID
+            help_text: |
+              Versions in the Rapid channel let you test new releases before they're qualified for
+              production use or general availability. We recommend using the Rapid channel to test
+              newer Looker versions and API on pre-production environments.
+          - arg_value: regular
+            enum_value: REGULAR
+            help_text: |
+              Versions in the Regular channel have been qualified over a longer period. They offer a
+              balance of feature availability and release stability. We recommend the Regular
+              channel for most users.
+          - arg_value: stable
+            enum_value: STABLE
+            help_text: |
+              Versions in the Stable channel prioritize stability and are ideal for production
+              workloads that require the most conservative update schedule.
+    # Group for Accelerated Security Patch
+    - group:
+        required: false
+        release_tracks: [ALPHA]
+        help_text: |
+          Accelerated Security Patch - Looker (Google Cloud core) releases security patches to your instance.
+        params:
+        - api_field: instance.acceleratedSecurityPatchEnabled
+          arg_name: accelerated-security-patch-enabled
+          type: bool
+          required: false
+          help_text: |
+            If specified, accelerated security patch will be enabled, otherwise it will be disabled by default.
 
   async:
     collection: looker.projects.locations.operations
@@ -304,6 +347,8 @@
   request:
     ALPHA:
       api_version: v1alpha2
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.looker.instances_util:SetDefaultReleaseChannel
     GA:
       api_version: v1
 

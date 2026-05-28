@@ -18,7 +18,10 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+)
 @base.DefaultUniverseOnly
 class Databases(base.Group):
   """Manage BigLake Hive databases."""

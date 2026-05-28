@@ -125,6 +125,18 @@ class Delete(bigquery_command.BigqueryCmd):
         'Delete a migration workflow.',
         flag_values=fv,
     )
+    flags.DEFINE_boolean(
+        'row_access_policy',
+        None,
+        'Delete a row access policy.',
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
+        'target_table',
+        None,
+        'The table on which the row access policy is applied.',
+        flag_values=fv,
+    )
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier: str) -> Optional[int]:
@@ -150,6 +162,8 @@ class Delete(bigquery_command.BigqueryCmd):
           assignment_name
       bq rm --reservation_group --project_id=proj --location=us
           reservation_group_name
+      bq rm --row_access_policy --project_id=proj --location=us
+          --target_table=target_table policy_id
     """
 
     client = bq_cached_client.Client.Get()
@@ -173,7 +187,9 @@ class Delete(bigquery_command.BigqueryCmd):
 
     if self.t:
       reference = bq_client_utils.GetTableReference(
-          id_fallbacks=client, identifier=identifier
+          id_fallbacks=client,
+          identifier=identifier,
+          allow_pcnt_identifier_format=True,
       )
     elif self.m:
       reference = bq_client_utils.GetModelReference(
@@ -275,11 +291,28 @@ class Delete(bigquery_command.BigqueryCmd):
       client_connection.DeleteConnection(
           client=client.GetConnectionV1ApiClient(), reference=reference
       )
+    elif self.row_access_policy:
+      try:
+        reference = bq_client_utils.GetRowAccessPolicyReference(
+            id_fallbacks=client,
+            table_identifier=self.target_table,
+            policy_id=identifier,
+        )
+        client_row_access_policy.delete_row_access_policy(
+            client, reference, self.force
+        )
+        print("Row access policy '%s' successfully deleted." % identifier)
+      except BaseException as e:
+        raise bq_error.BigqueryError(
+            "Failed to delete row access policy '%s': %s" % (identifier, e)
+        )
     elif self.migration_workflow:
       reference = identifier
     else:
       reference = bq_client_utils.GetReference(
-          id_fallbacks=client, identifier=identifier
+          id_fallbacks=client,
+          identifier=identifier,
+          allow_pcnt_identifier_format=True,
       )
       bq_id_utils.typecheck(
           reference,

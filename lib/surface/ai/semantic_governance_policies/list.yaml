@@ -26,6 +26,8 @@ request:
   method: list
   resource_method_params:
     parent: projects/{projectsId}/locations/{locationsId}
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.ai.semantic_governance_policies.util:set_regional_endpoint
 output:
   format: |
     table(

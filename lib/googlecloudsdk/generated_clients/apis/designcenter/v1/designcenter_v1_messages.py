@@ -2569,6 +2569,22 @@ class DesigncenterProjectsLocationsSpacesApplicationsFetchAssessmentReportReques
   name = _messages.StringField(1, required=True)
 
 
+class DesigncenterProjectsLocationsSpacesApplicationsGenerateAssessmentReportRequest(_messages.Message):
+  r"""A DesigncenterProjectsLocationsSpacesApplicationsGenerateAssessmentRepor
+  tRequest object.
+
+  Fields:
+    generateApplicationAssessmentReportRequest: A
+      GenerateApplicationAssessmentReportRequest resource to be passed as the
+      request body.
+    name: Required. The application name in the following format: projects/$pr
+      oject/locations/$location/spaces/$space/applications/$application
+  """
+
+  generateApplicationAssessmentReportRequest = _messages.MessageField('GenerateApplicationAssessmentReportRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class DesigncenterProjectsLocationsSpacesApplicationsGenerateRequest(_messages.Message):
   r"""A DesigncenterProjectsLocationsSpacesApplicationsGenerateRequest object.
 
@@ -3697,6 +3713,10 @@ class GKEDeploymentTarget(_messages.Message):
   kubernetesServiceAccount = _messages.StringField(2)
   kubernetesServiceAccountCreation = _messages.BooleanField(3)
   namespace = _messages.StringField(4)
+
+
+class GenerateApplicationAssessmentReportRequest(_messages.Message):
+  r"""Message for generating an application assessment report."""
 
 
 class GenerateApplicationIaCRequest(_messages.Message):

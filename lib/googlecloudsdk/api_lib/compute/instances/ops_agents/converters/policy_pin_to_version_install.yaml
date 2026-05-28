@@ -4,6 +4,8 @@ mode: ENFORCEMENT
 allowNoResourceGroupMatch: true
 resourceGroups:
 - inventoryFilters:
+  - osShortName: centos
+    osVersion: '8'
   - osShortName: rocky
     osVersion: '8.*'
   - osShortName: rhel
@@ -22,6 +24,22 @@ resourceGroups:
     osVersion: '9.*'
   - osShortName: rhel
     osVersion: '9.*'
+  resources:
+  - id: install-agent
+    exec:
+      validate:
+        script: "[ $(rpm --query --queryformat '%{VERSION}' 'google-cloud-ops-agent' | cut -d~ -f 1) == '$agent_version' ] && exit 100 || exit 101;"
+        interpreter: SHELL
+      enforce:
+        script: curl -sSO https://dl.google.com/cloudagents/add-google-cloud-ops-agent-repo.sh; sudo bash add-google-cloud-ops-agent-repo.sh --also-install --version=$agent_version;
+        interpreter: SHELL
+- inventoryFilters:
+  - osShortName: centos
+    osVersion: '10'
+  - osShortName: rocky
+    osVersion: '10.*'
+  - osShortName: rhel
+    osVersion: '10.*'
   resources:
   - id: install-agent
     exec:
@@ -72,6 +90,18 @@ resourceGroups:
 - inventoryFilters:
   - osShortName: debian
     osVersion: '12'
+  resources:
+  - id: install-agent
+    exec:
+      validate:
+        script: "[ $(dpkg-query --show --showformat '${Version}' 'google-cloud-ops-agent' | cut -d~ -f 1) == '$agent_version' ] && exit 100 || exit 101;"
+        interpreter: SHELL
+      enforce:
+        script: curl -sSO https://dl.google.com/cloudagents/add-google-cloud-ops-agent-repo.sh; sudo bash add-google-cloud-ops-agent-repo.sh --also-install --version=$agent_version;
+        interpreter: SHELL
+- inventoryFilters:
+  - osShortName: debian
+    osVersion: '13'
   resources:
   - id: install-agent
     exec:
@@ -164,6 +194,26 @@ resourceGroups:
 - inventoryFilters:
   - osShortName: ubuntu
     osVersion: '24.04'
+  resources:
+  - id: wait-for-cloud-init
+    exec:
+      validate:
+        script: "cloud-init status --wait; exit 100;"
+        interpreter: SHELL
+      enforce:
+        script: "echo hello"
+        interpreter: SHELL
+  - id: install-agent
+    exec:
+      validate:
+        script: "[ $(dpkg-query --show --showformat '${Version}' 'google-cloud-ops-agent' | cut -d~ -f 1) == '$agent_version' ] && exit 100 || exit 101;"
+        interpreter: SHELL
+      enforce:
+        script: curl -sSO https://dl.google.com/cloudagents/add-google-cloud-ops-agent-repo.sh; sudo bash add-google-cloud-ops-agent-repo.sh --also-install --version=$agent_version;
+        interpreter: SHELL
+- inventoryFilters:
+  - osShortName: ubuntu
+    osVersion: '25.10'
   resources:
   - id: wait-for-cloud-init
     exec:

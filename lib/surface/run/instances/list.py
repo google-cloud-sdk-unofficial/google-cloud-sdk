@@ -15,14 +15,17 @@
 """Command for listing Instances."""
 
 
+from googlecloudsdk.api_lib.run import global_methods
 from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run.printers import instance_printer
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.resource import resource_printer
 
 
@@ -71,11 +74,26 @@ class List(commands.List):
 
   def Run(self, args):
     """List instances."""
-    # Use the mixer for global request if there's no --region flag.
-    namespace_ref = args.CONCEPTS.namespace.Parse()
-    conn_context = connection_context.GetConnectionContext(
-        args, flags.Product.RUN, self.ReleaseTrack()
-    )
-    with serverless_operations.Connect(conn_context) as client:
-      self.SetCompleteApiEndpoint(conn_context.endpoint)
-      return commands.SortByName(client.ListInstances(namespace_ref))
+    if not args.IsSpecified('region'):
+      endpoint_mode = properties.VALUES.regional.endpoint_mode.Get()
+      if endpoint_mode == properties.VALUES.regional.REGIONAL:
+        raise exceptions.ArgumentError(
+            'You must specify a region using the `--region` flag when '
+            'regional endpoints are enabled.'
+        )
+      client = global_methods.GetServerlessClientInstance()
+      self.SetPartialApiEndpoint(client.url)
+      namespace_ref = args.CONCEPTS.namespace.Parse()  # Error if no proj.
+      # Don't consider region property here, we'll default to all regions
+      return commands.SortByName(
+          global_methods.ListInstances(client, namespace_ref)
+      )
+    else:
+      namespace_ref = args.CONCEPTS.namespace.Parse()
+      conn_context = connection_context.GetConnectionContext(
+          args, flags.Product.RUN, self.ReleaseTrack()
+      )
+      with serverless_operations.Connect(conn_context) as client:
+        self.SetCompleteApiEndpoint(conn_context.endpoint)
+        return commands.SortByName(client.ListInstances(namespace_ref))
+

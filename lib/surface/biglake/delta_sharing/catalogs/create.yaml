@@ -15,6 +15,7 @@
       spec:
         name: catalog
         collection: biglake.deltasharing.v1alpha.projects.catalogs
+        request_id_field: deltaSharingCatalogId
         attributes:
         - attribute_name: project
           parameter_name: projectsId
@@ -33,3 +34,6 @@
       help_text: The interval for refreshing metadata from the remote catalog (e.g. 300s or 5m).
       type: "googlecloudsdk.calliope.arg_parsers:Duration:"
       processor: googlecloudsdk.command_lib.biglake.delta_sharing:GetDurationString
+    - arg_name: service-directory-name
+      api_field: deltaSharingCatalog.federatedCatalogOptions.serviceDirectoryName
+      help_text: The service directory resource name for private networking.

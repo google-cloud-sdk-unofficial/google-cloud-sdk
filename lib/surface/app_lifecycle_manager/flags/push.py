@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import pprint
+import re
 from typing import Any, Callable
 from apitools.base.protorpclite import messages as rpclite_messages
 from apitools.base.py import encoding
@@ -47,6 +48,9 @@ VALUE_TYPE_HANDLERS: dict[str, tuple[str, type[Any]]] = {
     'FLAG_VALUE_TYPE_DOUBLE': ('doubleValue', float),
     'FLAG_VALUE_TYPE_STRING': ('stringValue', str),
 }
+
+_NON_ALPHANUM_PATTERN = re.compile(r'[^a-z0-9]+')
+_LEADING_NON_CHAR_PATTERN = re.compile(r'^[^a-z]+')
 
 
 def _ValidFlagType(flag_type: str | None) -> bool:
@@ -218,6 +222,34 @@ def _GetExistingFlag(
     return None
 
 
+def _SanitizeFlagId(flag_key: str) -> str:
+  """Sanitizes a flag key into a valid Google Cloud resource ID.
+
+  Converts the provided flag key into a string that adheres to Google Cloud
+  resource ID naming conventions, specifically matching the regular expression:
+  ^[a-z]([-a-z0-9]{0,61}[a-z0-9])?$
+
+  Args:
+    flag_key: The original flag key from the manifest file.
+
+  Returns:
+    A sanitized string valid for use as a Google Cloud resource ID.
+
+  Raises:
+    exceptions.InvalidDataError: If the flag key contains no alphabetic
+      characters and cannot be sanitized into a valid ID.
+  """
+  alphanums_hyphens = _NON_ALPHANUM_PATTERN.sub('-', flag_key.lower())
+  stripped_leading = _LEADING_NON_CHAR_PATTERN.sub('', alphanums_hyphens)
+  flag_id = stripped_leading[:63].rstrip('-')
+
+  if not flag_id:
+    raise exceptions.InvalidDataError(
+        f'Flag {flag_key!r} invalid. Flag key must contain at least one letter.'
+    )
+  return flag_id
+
+
 def _CreateFlag(
     flags_service: ezclient.SaasservicemgmtV1beta1.ProjectsLocationsFlagsService,
     parent: str,
@@ -225,10 +257,11 @@ def _CreateFlag(
     validate_only: bool = False,
 ) -> None:
   """Creates a flag in the App Lifecycle Manager API."""
+  flag_id = _SanitizeFlagId(flag_msg.key)
   flags_create_req = (
       ezmessages.SaasservicemgmtProjectsLocationsFlagsCreateRequest(
           parent=parent,
-          flagId=flag_msg.key,
+          flagId=flag_id,
           validateOnly=validate_only,
           flag=flag_msg,
       )
@@ -251,18 +284,18 @@ def _CreateFlag(
 
   except exceptions.HttpError as e:
     if _IsFlagAlreadyExistsError(e):
-      existing_flag = _GetExistingFlag(flags_service, parent, flag_msg.key)
+      existing_flag = _GetExistingFlag(flags_service, parent, flag_id)
       if existing_flag is None:
         raise
 
       log.debug(
-          f'\nFlag {flag_msg.key} already exists. Existing'
+          f'\nFlag {flag_id!r} already exists. Existing'
           f' flag:\n{pprint.pformat(encoding.MessageToDict(existing_flag))}'
       )
 
       if existing_flag.flagValueType != flag_msg.flagValueType:
         raise exceptions.InvalidDataError(
-            f'Flag {flag_msg.key!r} of type {flag_msg.flagValueType!r} already'
+            f'Flag {flag_id!r} of type {flag_msg.flagValueType!r} already'
             f' exists with different value type {existing_flag.flagValueType}'
         ) from e
       else:

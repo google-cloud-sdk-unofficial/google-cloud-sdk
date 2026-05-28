@@ -278,10 +278,19 @@ class ApiClientHelper:
     typename = None
 
   class ReservationReference(Reference):
+    """A reference to a BigQuery reservation."""
     _required_fields = frozenset(('projectId', 'location', 'reservationId'))
     _format_str = '%(projectId)s:%(location)s.%(reservationId)s'
     _path_str = 'projects/%(projectId)s/locations/%(location)s/reservations/%(reservationId)s'
     typename = 'reservation'
+
+    def __init__(self, **kwds):
+      # pylint: disable=invalid-name Aligns with API
+      self.projectId: str = kwds['projectId']
+      self.location: str = kwds['location']
+      self.reservationId: str = kwds['reservationId']
+      # pylint: enable=invalid-name
+      super().__init__(**kwds)
 
     def path(self) -> str:  # pylint: disable=invalid-name Legacy
       return self._path_str % dict(self)
@@ -310,13 +319,23 @@ class ApiClientHelper:
   class ReservationAssignmentReference(Reference):
     """Helper class to provide a reference to reservation assignment."""
 
-    _required_fields = frozenset(
-        ('projectId', 'location', 'reservationId', 'reservationAssignmentId')
-    )
+    _required_fields = frozenset(('projectId', 'location', 'reservationId'))
+    _optional_fields = frozenset(('reservationAssignmentId',))
     _format_str = '%(projectId)s:%(location)s.%(reservationId)s.%(reservationAssignmentId)s'
     _path_str = 'projects/%(projectId)s/locations/%(location)s/reservations/%(reservationId)s/assignments/%(reservationAssignmentId)s'
     _reservation_format_str = '%(projectId)s:%(location)s.%(reservationId)s'
     typename = 'reservation assignment'
+
+    def __init__(self, **kwds):
+      # pylint: disable=invalid-name Aligns with API
+      self.projectId: str = kwds.get('projectId', '')
+      self.location: str = kwds.get('location', '')
+      self.reservationId: str = kwds.get('reservationId', '')
+      self.reservationAssignmentId: str = kwds.get(
+          'reservationAssignmentId', ''
+      )
+      # pylint: enable=invalid-name
+      super().__init__(**kwds)
 
     def path(self) -> str:  # pylint: disable=invalid-name Legacy
       return self._path_str % dict(self)

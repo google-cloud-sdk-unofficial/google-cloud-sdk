@@ -303,6 +303,10 @@ class List(base.ListCommand):
     Returns:
       The list of insights for this Google Cloud Resource.
     """
+    if args.location and args.insight_type:
+      insights_client = insight.CreateClient(self.ReleaseTrack())
+      parent_name = flags.GetInsightTypeName(args)
+      return insights_client.List(parent_name, args.page_size)
 
     # Collect Assets and Locations
     resource_locations = self.CollectAssets(args)

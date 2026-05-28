@@ -46,7 +46,7 @@
               required: true
               type: bool
               help_text: |
-                Creates a Key configured for websites.
+                Configures the Key for websites.
             - arg_name: allow-amp-traffic
               api_field: googleCloudRecaptchaenterpriseV1Key.webSettings.allowAmpTraffic
               help_text: |
@@ -102,7 +102,7 @@
               required: true
               type: bool
               help_text: |
-                Creates a Key configured for iOS devices.
+                Configures the Key for iOS devices.
             - group:
                 mutex: true
                 required: false
@@ -150,7 +150,7 @@
               required: true
               type: bool
               help_text: |
-                Creates a Key configured for Android devices.
+                Configures the Key for Android devices.
             - group:
                 mutex: true
                 required: true
@@ -174,6 +174,19 @@
               required: true
               type: bool
               help_text: |
-                Creates a Key configured for Express assessments.
+                Configures the Key for Express assessments.
+        - group:
+            # TODO b/501106150 - Unhide.
+            hidden: true
+            help_text: |
+              Options for the creation of a Universal site key.
+            params:
+            - arg_name: universal
+              required: true
+              # TODO b/501106150 - Unhide.
+              hidden: true
+              type: bool
+              help_text: |
+                Configures the Key as Universal.
   output:
     format: none

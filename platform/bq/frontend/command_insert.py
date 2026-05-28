@@ -116,7 +116,9 @@ class Insert(bigquery_command.BigqueryCmd):
     """Insert the contents of the file into a table."""
     client = bq_cached_client.Client.Get()
     reference = bq_client_utils.GetReference(
-        id_fallbacks=client, identifier=identifier
+        id_fallbacks=client,
+        identifier=identifier,
+        allow_pcnt_identifier_format=True,
     )
     bq_id_utils.typecheck(
         reference,

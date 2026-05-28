@@ -27,10 +27,7 @@ class List(base.ListCommand):
 
   @classmethod
   def Args(cls, parser):
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      parser.display_info.AddFormat(flags.ALPHA_AGGREGATED_LIST_FORMAT)
-    else:
-      parser.display_info.AddFormat(flags.DEFAULT_AGGREGATED_LIST_FORMAT)
+    parser.display_info.AddFormat(flags.DEFAULT_AGGREGATED_LIST_FORMAT)
     lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
 
   def Run(self, args):

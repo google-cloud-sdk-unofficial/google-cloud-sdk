@@ -142,8 +142,8 @@ class SnapshotGroupsCompleter(compute_completers.ListCommandCompleter):
   def __init__(self, **kwargs):
     super(SnapshotGroupsCompleter, self).__init__(
         collection='compute.snapshotGroups',
-        list_command='alpha compute snapshot-groups list --uri',
-        api_version='alpha',
+        list_command='beta compute snapshot-groups list --uri',
+        api_version='beta',
         **kwargs)
 
 

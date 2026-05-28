@@ -186,12 +186,13 @@ class FileDownloadTask(copy_util.ObjectCopyTaskWithExitHandler):
 
     return (download_component_task_list, finalize_sliced_download_task_list)
 
-  def _restart_download(self):
+  def _restart_download(self, delete_tracker_files=True):
     log.status.Print('Temporary download file corrupt.'
                      ' Restarting download {}'.format(self._source_resource))
     temporary_download_url = self._temporary_destination_resource.storage_url
     os.remove(temporary_download_url.resource_name)
-    tracker_file_util.delete_download_tracker_files(temporary_download_url)
+    if delete_tracker_files:
+      tracker_file_util.delete_download_tracker_files(temporary_download_url)
 
   def execute(self, task_status_queue=None):
     """Creates appropriate download tasks."""
@@ -250,7 +251,9 @@ class FileDownloadTask(copy_util.ObjectCopyTaskWithExitHandler):
       else:
         if temporary_download_file_exists:
           # Component count may have changed, invalidating earlier download.
-          self._restart_download()
+          # tracker_file_util.read_or_create_download_tracker_file already
+          # deleted tracker files if they were corrupt and created new ones.
+          self._restart_download(delete_tracker_files=False)
         log.debug('Launching sliced download with {} components.'.format(
             len(download_component_task_list)))
 

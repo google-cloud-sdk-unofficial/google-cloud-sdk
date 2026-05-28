@@ -179,6 +179,7 @@ class UpdateBeta(Update):
   """Updates properties of an existing Compute Engine subnetwork."""
 
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
+  _include_ipv6_secondary_ranges = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

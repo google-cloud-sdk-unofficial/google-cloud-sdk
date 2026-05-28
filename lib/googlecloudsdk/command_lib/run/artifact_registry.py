@@ -14,14 +14,22 @@
 # limitations under the License.
 """Utilities for working with Artifact Registry repositories."""
 
+import re
+
 from apitools.base.py import exceptions as base_exceptions
 from googlecloudsdk.api_lib.util import waiter
+from googlecloudsdk.calliope import exceptions as c_exceptions
+from googlecloudsdk.command_lib.artifacts import docker_util
 from googlecloudsdk.command_lib.artifacts import requests
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
+
+_AR_IMAGE_URI_REGEX = r'([\w-]+)-docker\.pkg\.dev/([\w-]+)/([\w-]+)'
+_AR_LENIENT_IMAGE_URI_REGEX = r'^[^/]+/([\w-]+)/([\w-]+)/([\w-]+)'
 
 
 def _RegionFromZone(zone):
@@ -143,3 +151,57 @@ def CreateRepository(repo, skip_activation_prompt=False):
       ),
       op_resource,
   )
+
+
+def ValidateAndGetArRepository(
+    annotated_build_image_uri, already_activated_services
+):
+  """Checks the format and existence of the repository in Artifact Registry."""
+  is_default_universe = properties.IsDefaultUniverse()
+
+  # 1. Primary Check: Standard GDU format with regional existence validation
+  match = re.match(_AR_IMAGE_URI_REGEX, annotated_build_image_uri)
+
+  if match:
+    region = match.group(1)
+    project_id = match.group(2)
+    repo_id = match.group(3)
+    ar_repo = docker_util.DockerRepo(
+        project_id=project_id,
+        location_id=region,
+        repo_id=repo_id,
+    )
+    # Raise an error if the repo doesn't exist, will not attempt to create it.
+    if ShouldCreateRepository(
+        ar_repo,
+        skip_activation_prompt=already_activated_services,
+        skip_console_prompt=True,
+    ):
+      raise c_exceptions.InvalidArgumentException(
+          '--image',
+          'The artifact repository provided does not exist: '
+          f'{annotated_build_image_uri}.'
+          ' Please create the repository and try again.',
+      )
+    return ar_repo.GetDockerString()
+
+  # 2. Fallback Check: Lenient structural validation for custom/future domains
+  # Matches a hostname followed by exactly three path segments (e.g.
+  # prefix/project/repo)
+  # Only apply this fallback in non-default universes.
+  if not is_default_universe:
+    match = re.match(_AR_LENIENT_IMAGE_URI_REGEX, annotated_build_image_uri)
+    if match:
+      return match.group(0)
+
+  # 3. Neither matched, raise standard format error
+  raise c_exceptions.InvalidArgumentException(
+      '--image',
+      'The artifact repository found for the function '
+      'was not in the expected format '
+      '[REGION]-docker.pkg.dev/[PROJECT-ID]/[REPO-NAME] or\n'
+      '[REGION]-docker.pkg.dev/[PROJECT-ID]/[REPO-NAME]/[SERVICE-NAME],'
+      ' please try again. \n'
+      f'Retrieved value was: {annotated_build_image_uri}',
+  )
+

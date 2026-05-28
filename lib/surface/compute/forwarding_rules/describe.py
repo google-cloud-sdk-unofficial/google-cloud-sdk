@@ -84,6 +84,17 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     Describe.FORWARDING_RULE_ARG = _Args(parser)
+    parser.add_argument(
+        '--view',
+        choices=['BASIC', 'FULL'],
+        hidden=True,
+        help=(
+            'The view of the forwarding rule to return. '
+            'BASIC includes the standard fields. '
+            'FULL includes standard fields plus any '
+            'extensions attached to the forwarding rule.'
+        ),
+    )
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

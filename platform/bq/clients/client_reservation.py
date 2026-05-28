@@ -5,6 +5,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from collections.abc import Mapping
 from typing import Any, Dict, NamedTuple, Optional, Set, Tuple
 
 from googleapiclient import discovery
@@ -13,6 +14,21 @@ from clients import utils as bq_client_utils
 from frontend import utils as frontend_utils
 from utils import bq_error
 from utils import bq_id_utils
+
+
+def FormatReservationGroupPath(
+    project_id: str, location: str, reservation_group_id: str
+) -> str:
+  """Formats a reservation group ID into a full path if necessary."""
+  if not reservation_group_id:
+    return reservation_group_id
+  if reservation_group_id.startswith('projects/'):
+    return reservation_group_id
+  return bq_id_utils.ApiClientHelper.ReservationGroupReference(
+      projectId=project_id,
+      location=location,
+      reservationGroupId=reservation_group_id,
+  ).path()
 
 
 def GetBodyForCreateReservation(
@@ -112,6 +128,7 @@ def GetBodyForCreateReservationAssignment(
     assignee_id: str,
     scheduling_policy_max_slots: Optional[int] = None,
     scheduling_policy_concurrency: Optional[int] = None,
+    principal: Optional[str] = None,
 ) -> Dict[str, Any]:
   """Creates a reservation assignment for a given project/folder/organization.
 
@@ -125,6 +142,9 @@ def GetBodyForCreateReservationAssignment(
       assigned.
     scheduling_policy_max_slots: Max slots for the scheduling policy.
     scheduling_policy_concurrency: Concurrency for the scheduling policy.
+    principal: IAM Principal Identifier (v2 format) of a user to specify more
+      specific reservation routing for. Only users and service accounts are
+      supported at the moment.
 
   Returns:
     ReservationAssignment object that was created.
@@ -168,6 +188,8 @@ def GetBodyForCreateReservationAssignment(
     reservation_assignment['scheduling_policy'][
         'concurrency'
     ] = scheduling_policy_concurrency
+  if principal is not None:
+    reservation_assignment['principal'] = principal
 
   return reservation_assignment
 
@@ -814,13 +836,13 @@ def CreateReservationAssignment(
     priority: Optional[str] = None,
     scheduling_policy_max_slots: Optional[int] = None,
     scheduling_policy_concurrency: Optional[int] = None,
+    principal: Optional[str] = None,
 ):
   """Creates a reservation assignment for a given project/folder/organization.
 
   Arguments:
     client: The client used to make the request.
-    reference: Reference to the project reservation is assigned. Location must
-      be the same location as the reservation.
+    reference: Reference to the reservation assignment to be created.
     assignee_type: Type of assignees for the reservation assignment.
     assignee_id: Project/folder/organization ID, to which the reservation is
       assigned.
@@ -830,6 +852,9 @@ def CreateReservationAssignment(
       within the reservation.
     scheduling_policy_concurrency: Soft cap on job concurrency for a specific
       project within the reservation.
+    principal: IAM Principal Identifier (v2 format) of a user to specify more
+      specific reservation routing for. Only users and service accounts are
+      supported at the moment.
 
   Returns:
     ReservationAssignment object that was created.
@@ -845,6 +870,11 @@ def CreateReservationAssignment(
       assignee_id,
       scheduling_policy_max_slots,
       scheduling_policy_concurrency,
+      principal,
+  )
+  parent = (
+      f'projects/{reference.projectId}/locations/{reference.location}/'
+      f'reservations/{reference.reservationId}'
   )
 
   return (
@@ -852,7 +882,11 @@ def CreateReservationAssignment(
       .locations()
       .reservations()
       .assignments()
-      .create(parent=reference.path(), body=reservation_assignment)
+      .create(
+          parent=parent,
+          body=reservation_assignment,
+          assignmentId=reference.reservationAssignmentId,
+      )
       .execute()
   )
 
@@ -979,20 +1013,59 @@ def ListReservationAssignments(client, reference, page_size, page_token):
   )
 
 
+def _FindMatchingAssignment(
+    response: Mapping[str, Any],
+    job_type: str,
+    principal: Optional[str] = None,
+) -> Dict[str, Any]:
+  """Finds a matching assignment in the response.
+
+  Args:
+    response: The response from the searchAssignments call.
+    job_type: Type of job to be queried.
+    principal: Principal of the reservation assignment. If None or empty,
+      matches assignments with no principal specified.
+
+  Returns:
+    ReservationAssignment object if it exists.
+
+  Raises:
+    bq_error.BigqueryError: If no matching assignment is found.
+  """
+  for assignment in response.get('assignments', []):
+    if assignment['jobType'] == job_type:
+      assignment_principal = assignment.get('principal', '')
+      if (principal and assignment_principal == principal) or (
+          not principal and not assignment_principal
+      ):
+        return assignment
+  error_message = f'Reservation assignment not found for job_type="{job_type}"'
+  if principal:
+    error_message += f' and principal="{principal}"'
+  raise bq_error.BigqueryError(error_message)
+
+
 
 
 def SearchAllReservationAssignments(
-    client, location: str, job_type: str, assignee_type: str, assignee_id: str
+    client,
+    location: str,
+    job_type: str,
+    assignee_type: str,
+    assignee_id: str,
+    principal: Optional[str] = None,
 ) -> Dict[str, Any]:
   """Searches reservations assignments for given assignee.
 
-  Arguments:
+  Args:
     client: The client used to make the request.
     location: location of interest.
-    job_type: type of job to be queried.
+    job_type: Type of job to be queried.
     assignee_type: Type of assignees for the reservation assignment.
     assignee_id: Project/folder/organization ID, to which the reservation is
       assigned.
+    principal: Principal of the reservation assignment. If None or empty,
+      matches assignments with no principal specified.
 
   Returns:
     ReservationAssignment object if it exists.
@@ -1021,11 +1094,11 @@ def SearchAllReservationAssignments(
       .searchAllAssignments(parent=parent, query=query)
       .execute()
   )
-  if 'assignments' in response:
-    for assignment in response['assignments']:
-      if assignment['jobType'] == job_type:
-        return assignment
-  raise bq_error.BigqueryError('Reservation assignment not found')
+  return _FindMatchingAssignment(
+      response,
+      job_type,
+      principal,
+  )
 
 
 def CreateReservationGroup(

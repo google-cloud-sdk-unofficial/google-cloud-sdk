@@ -306,6 +306,10 @@ class List(base.ListCommand):
     Returns:
       The list of recommendations for this project.
     """
+    if args.location and args.recommender:
+      recommendations_client = recommendation.CreateClient(self.ReleaseTrack())
+      parent_name = flags.GetRecommenderName(args)
+      return recommendations_client.List(parent_name, args.page_size)
 
     # Collect Assets and Locations
     resource_locations = self.CollectAssets(args)

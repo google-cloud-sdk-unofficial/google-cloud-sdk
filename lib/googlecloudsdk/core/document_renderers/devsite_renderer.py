@@ -30,6 +30,7 @@ class DevSiteRenderer(html_renderer.HTMLRenderer):
   """
 
   def __init__(self, *args, **kwargs):
+    self.book_path = kwargs.pop('book_path', '/sdk/_book.yaml')
     super(DevSiteRenderer, self).__init__(*args, **kwargs)
     self._opentag = False
     self._whole_example = ''
@@ -44,7 +45,7 @@ class DevSiteRenderer(html_renderer.HTMLRenderer):
         '<meta http-equiv="Content-Type" content="text/html; '
         'charset=UTF-8">\n'
         '<meta name="project_path" value="/sdk/docs/_project.yaml">\n'
-        '<meta name="book_path" value="/sdk/_book.yaml">\n'
+        '<meta name="book_path" value="{}">\n'.format(self.book_path)
     )
     for comment, script in devsite_scripts.SCRIPTS:
       self._out.write(

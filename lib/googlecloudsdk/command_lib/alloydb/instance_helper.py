@@ -236,6 +236,10 @@ def _ConstructInstanceFromArgsBeta(client, alloydb_messages, args):
     An AlloyDB instance to create with the specified command line arguments.
   """
   instance_resource = _ConstructInstanceFromArgs(client, alloydb_messages, args)
+  instance_resource.labels = labels_util.ParseCreateArgs(
+      args,
+      alloydb_messages.Instance.LabelsValue,
+  )
   observability_config_track_active_query_plan = getattr(
       args, 'observability_config_track_active_query_plan', None)
   observability_config_track_client_address = getattr(
@@ -382,9 +386,14 @@ def _ConstructSecondaryInstanceFromArgsBeta(client, alloydb_messages, args):
     arguments.
   """
 
-  return _ConstructSecondaryInstanceFromArgs(
+  instance_resource = _ConstructSecondaryInstanceFromArgs(
       client, alloydb_messages, args
   )
+  instance_resource.labels = labels_util.ParseCreateArgs(
+      args,
+      alloydb_messages.Instance.LabelsValue,
+  )
+  return instance_resource
 
 
 def _ConstructSecondaryInstanceFromArgsAlpha(client, alloydb_messages, args):
@@ -1462,6 +1471,23 @@ def ConstructInstanceAndUpdatePathsFromArgsBeta(
   instance_resource, paths = ConstructInstanceAndUpdatePathsFromArgs(
       alloydb_messages, instance_ref, args, release_track
   )
+
+  def GetLabels():
+    """Gets the existing labels from the instance."""
+    client = api_util.AlloyDBClient(release_track)
+    req = alloydb_messages.AlloydbProjectsLocationsClustersInstancesGetRequest(
+        name=instance_ref.RelativeName()
+    )
+    return client.alloydb_client.projects_locations_clusters_instances.Get(
+        req
+    ).labels
+
+  labels_update = labels_util.ProcessUpdateArgsLazy(
+      args, alloydb_messages.Instance.LabelsValue, GetLabels
+  )
+  if labels_update.needs_update:
+    instance_resource.labels = labels_update.labels
+    paths.append('labels')
 
   if args.update_mode:
     instance_resource.updatePolicy = alloydb_messages.UpdatePolicy(

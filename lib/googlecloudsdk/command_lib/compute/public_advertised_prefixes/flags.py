@@ -25,7 +25,7 @@ def MakePublicAdvertisedPrefixesArg():
       global_collection='compute.publicAdvertisedPrefixes')
 
 
-def AddCreatePapArgsToParser(parser):
+def AddCreatePapArgsToParser(parser, support_network_tier=False):
   """Adds public advertised prefixes create related flags to parser."""
 
   parser.add_argument(
@@ -59,6 +59,15 @@ def AddCreatePapArgsToParser(parser):
           'Specifies the IPv6 access type of the public advertised prefix.'
       ),
   ).AddToParser(parser)
+  if support_network_tier:
+    parser.add_argument(
+        '--network-tier',
+        type=lambda x: x.upper(),
+        help="""\
+        The network tier to assign to the public advertised prefix. ``NETWORK_TIER''
+        must be one of: `PREMIUM`, `STANDARD`. The default value is `PREMIUM`.
+        """,
+    )
 
 
 def AddUpdatePapArgsToParser(parser):

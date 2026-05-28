@@ -81,7 +81,9 @@ class Partition(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstr
     formatter = utils_flags.get_formatter_from_flags()
 
     source_table_prefix = bq_client_utils.GetReference(
-        id_fallbacks=client, identifier=source_prefix
+        id_fallbacks=client,
+        identifier=source_prefix,
+        allow_pcnt_identifier_format=True,
     )
     bq_id_utils.typecheck(
         source_table_prefix,
@@ -94,7 +96,9 @@ class Partition(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstr
         bq_id_utils.ApiClientHelper.TableReference, source_table_prefix
     )
     destination_table = bq_client_utils.GetReference(
-        id_fallbacks=client, identifier=destination_table
+        id_fallbacks=client,
+        identifier=destination_table,
+        allow_pcnt_identifier_format=True,
     )
     bq_id_utils.typecheck(
         destination_table,

@@ -139,3 +139,17 @@ def ParseTimeOfDay(time_of_day, messages):
   hour = int(hour_and_min[0])
   minute = int(hour_and_min[1])
   return messages.TimeOfDay(hours=hour, minutes=minute)
+
+
+def SetDefaultReleaseChannel(unused_instance_ref, args, create_request):
+  """Set default release channel if not specified by user."""
+  if not args.IsSpecified('release_channel'):
+    if 'trial' in args.edition or 'nonprod' in args.edition:
+      create_request.instance.releaseChannel = (
+          create_request.instance.ReleaseChannelValueValuesEnum.RAPID
+      )
+    else:
+      create_request.instance.releaseChannel = (
+          create_request.instance.ReleaseChannelValueValuesEnum.REGULAR
+      )
+  return create_request

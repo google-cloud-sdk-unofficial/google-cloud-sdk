@@ -35,14 +35,44 @@ DETAILED_HELP = {
 
 
 def _CommonArgs(parser):
-  """A helper function to build args for ALPHA API version."""
-  Delete.SnapshotGroupArg = flags.MakeSnapshotGroupArg(plural=True)
-  Delete.SnapshotGroupArg.AddArgument(parser, operation_type='delete')
+  """A helper function to build args for all API versions."""
+  flags.MakeSnapshotGroupArg(plural=True).AddArgument(
+      parser, operation_type='delete'
+  )
+
+
+def _RunDelete(self, args):
+  """Shared logic for deleting snapshot groups."""
+  holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+  client = holder.client
+
+  snapshot_group_refs = flags.MakeSnapshotGroupArg(
+      plural=True
+  ).ResolveAsResource(
+      args,
+      holder.resources,
+      scope_lister=compute_flags.GetDefaultScopeLister(client),
+      default_scope=compute_scope.ScopeEnum.GLOBAL,
+  )
+
+  utils.PromptForDeletion(snapshot_group_refs)
+  requests = []
+  for snapshot_group_ref in snapshot_group_refs:
+    requests.append((
+        client.apitools_client.snapshotGroups,
+        DELETE,
+        client.messages.ComputeSnapshotGroupsDeleteRequest(
+            project=snapshot_group_ref.project,
+            snapshotGroup=snapshot_group_ref.snapshotGroup,
+        ),
+    ))
+
+  return client.MakeRequests(requests)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
-class Delete(base.DeleteCommand):
+class DeleteAlpha(base.DeleteCommand):
   """Delete Compute Engine snapshot groups.
 
   *{command}* deletes one or more Compute Engine snapshot groups.
@@ -55,29 +85,24 @@ class Delete(base.DeleteCommand):
     _CommonArgs(parser)
 
   def Run(self, args):
-    return self._Run(args)
+    return _RunDelete(self, args)
 
-  def _Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
 
-    snapshot_group_refs = Delete.SnapshotGroupArg.ResolveAsResource(
-        args,
-        holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client),
-        default_scope=compute_scope.ScopeEnum.GLOBAL,
-    )
+@base.Hidden  # Hide this command from public documentation
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
+class DeleteBeta(base.DeleteCommand):
+  """Delete Compute Engine snapshot groups.
 
-    utils.PromptForDeletion(snapshot_group_refs)
-    requests = []
-    for snapshot_group_ref in snapshot_group_refs:
-      requests.append((
-          client.apitools_client.snapshotGroups,
-          DELETE,
-          client.messages.ComputeSnapshotGroupsDeleteRequest(
-              project=snapshot_group_ref.project,
-              snapshotGroup=snapshot_group_ref.snapshotGroup,
-          ),
-      ))
+  *{command}* deletes one or more Compute Engine snapshot groups.
+  """
 
-    return client.MakeRequests(requests)
+  detailed_help = DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser)
+
+  def Run(self, args):
+    return _RunDelete(self, args)
+

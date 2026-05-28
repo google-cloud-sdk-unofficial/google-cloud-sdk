@@ -25,7 +25,8 @@ DEFAULT_LIST_FORMAT = """\
     table(
       name,
       profile,
-      minTlsVersion
+      minTlsVersion,
+      postQuantumKeyExchange
     )"""
 
 # The default output format for the list sub-command.
@@ -34,25 +35,10 @@ DEFAULT_AGGREGATED_LIST_FORMAT = """\
       name,
       region.basename(),
       profile,
-      minTlsVersion
-    )"""
-
-ALPHA_LIST_FORMAT = """\
-    table(
-      name,
-      profile,
       minTlsVersion,
       postQuantumKeyExchange
     )"""
 
-ALPHA_AGGREGATED_LIST_FORMAT = """\
-    table(
-      name,
-      region.basename(),
-      profile,
-      minTlsVersion,
-      postQuantumKeyExchange
-    )"""
 
 # Mapping between user supplied argument to the string expected by API.
 _TLS_VERSION_MAP = {

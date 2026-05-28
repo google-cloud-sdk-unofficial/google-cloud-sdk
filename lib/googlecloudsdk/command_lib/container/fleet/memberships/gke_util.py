@@ -109,8 +109,14 @@ def ConstructGKEClusterResourceLinkAndURI(
   container_endpoint = core_apis.GetEffectiveApiEndpoint('container', 'v1')
   if container_endpoint.endswith('/'):
     container_endpoint = container_endpoint[:-1]
+
+  universe_domain = properties.VALUES.core.universe_domain.Get()
+  canonical_endpoint = container_endpoint.replace(
+      f'.mtls.{universe_domain}', f'.{universe_domain}'
+  )
+
   gke_resource_link = '//{}/projects/{}/locations/{}/clusters/{}'.format(
-      container_endpoint.replace('https://', '', 1).replace('http://', '', 1),
+      canonical_endpoint.replace('https://', '', 1).replace('http://', '', 1),
       project_id,
       cluster_location,
       cluster_name,

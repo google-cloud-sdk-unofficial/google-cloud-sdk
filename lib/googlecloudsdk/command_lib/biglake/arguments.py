@@ -109,10 +109,25 @@ def AddServiceDirectoryNameArg(parser):
   """Adds argument for service directory name."""
   parser.add_argument(
       '--service-directory-name',
+      help=(
+          'The service directory resource name for request routing, in the'
+          ' format'
+          ' `projects/{project_id}/locations/{location}/namespaces/{namespace}/services/{service_name}`.'
+          ' see https://docs.cloud.google.com/lakehouse/docs/set-up-cross-cloud-lakehouse#setup-cci.'
+      ),
+  )
+
+
+def AddServicePrincipalApplicationIdArg(parser):
+  """Adds argument for service principal application ID."""
+  parser.add_argument(
+      '--service-principal-application-id',
       hidden=True,
       help=(
-          'The service directory resource name for request routing. See'
-          ' cross-cloud interconnect documentation for more details.'
+          'Optional. The application ID of the Databricks service principal'
+          ' that will be used to access the Unity Catalog in the OIDC'
+          ' authentication flow. With OIDC, the secret-name argument is not'
+          ' used.'
       ),
   )
 
@@ -148,16 +163,7 @@ def AddFederatedCatalogArgs(parser):
           'versions/{version_id}`.'
       ),
   )
-  parser.add_argument(
-      '--service-principal-application-id',
-      hidden=True,
-      help=(
-          'Optional. The application ID of the Databricks service principal'
-          ' that will be used to access the Unity Catalog in the OIDC'
-          ' authentication flow. With OIDC, the secret-name argument is not'
-          ' used.'
-      ),
-  )
+
   parser.add_argument(
       '--unity-instance-name',
       help=(
@@ -225,16 +231,7 @@ def AddUpdateFederatedCatalogArgs(parser):
           'versions/{version_id}`.'
       ),
   )
-  parser.add_argument(
-      '--service-principal-application-id',
-      hidden=True,
-      help=(
-          'Optional. The application ID of the Databricks service principal'
-          ' that will be used to access the Unity Catalog in the OIDC'
-          ' authentication flow. With OIDC, the secret-name argument is not'
-          ' used.'
-      ),
-  )
+
   parser.add_argument(
       '--refresh-interval',
       type=arg_parsers.Duration(),

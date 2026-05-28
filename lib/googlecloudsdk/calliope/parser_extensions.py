@@ -904,6 +904,12 @@ class ArgumentParser(argparse.ArgumentParser):
         # Command group choices will be displayed in the usage message.
         message += '\n\nValid choices are [{0}].'.format(
             ', '.join([six.text_type(c) for c in choices]))
+    else:
+      # Show subcommands for (non top-level) groups.
+      if len(self._calliope_command.GetPath()) > 1:
+        message += '\nMaybe you meant:\n  '
+        path = self._calliope_command.GetPath()
+        message += '\n  '.join([' '.join(path + [c]) for c in choices])
 
     # Log to analytics the attempt to execute a command.
     # We don't know if the user entered 'value' is a mistyped command or

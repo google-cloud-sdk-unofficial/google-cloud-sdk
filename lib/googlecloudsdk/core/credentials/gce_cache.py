@@ -49,7 +49,10 @@ _POSSIBLE_ERRORS_GCE_METADATA_CONNECTION = (
     SslCertificateError,
 )
 
-_DOMAIN_NAME_RESOLVE_ERROR_MSG = 'Name or service not known'
+_DOMAIN_NAME_RESOLVE_ERROR_MSGS = (
+    'Name or service not known',  # Linux
+    'nodename nor servname provided',  # macOS
+)
 
 
 def _ShouldRetryMetadataServerConnection(exc_type, exc_value, exc_traceback,
@@ -59,9 +62,9 @@ def _ShouldRetryMetadataServerConnection(exc_type, exc_value, exc_traceback,
   if not isinstance(exc_value, _POSSIBLE_ERRORS_GCE_METADATA_CONNECTION):
     return False
   # The domain name cannot be resolved, which happens when not on GCE.
-  if isinstance(
-      exc_value, urllib.error.URLError
-  ) and _DOMAIN_NAME_RESOLVE_ERROR_MSG in str(exc_value):
+  if isinstance(exc_value, urllib.error.URLError) and any(
+      msg in str(exc_value) for msg in _DOMAIN_NAME_RESOLVE_ERROR_MSGS
+  ):
     return False
 
   if isinstance(exc_value, urllib.error.HTTPError):

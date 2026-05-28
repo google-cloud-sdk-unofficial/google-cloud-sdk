@@ -50,6 +50,7 @@ SERVICE_ACCOUNT_CREDENTIAL_FILE = flags.DEFINE_string(
     None,
     'Only for the gcloud wrapper use.'
 )
+
 OAUTH_ACCESS_TOKEN = flags.DEFINE_string(
     'oauth_access_token',
     '',

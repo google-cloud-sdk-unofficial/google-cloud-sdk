@@ -46,8 +46,7 @@ class List(base.ListCommand):
         table(
             name.basename(),
             sourceInstance.basename():label=SOURCE_INSTANCE,
-            targetInstance.basename():label=TARGET_INSTANCE,
-            state
+            switchoverTargetInstance.basename():label=TARGET_INSTANCE
         )
     """).strip())
 

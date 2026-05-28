@@ -20,7 +20,6 @@ from typing import Any
 
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
-import googlecloudsdk.generated_clients.apis.networkconnectivity.v1.networkconnectivity_v1_messages as v1
 import googlecloudsdk.generated_clients.apis.networkconnectivity.v1beta.networkconnectivity_v1beta_messages as v1beta
 
 
@@ -315,33 +314,6 @@ def CheckForRouteTableAndHubWildcardMismatch(unused_ref, unused_args, request):
         "A route table must be specified if a hub is specified"
     )
   return request
-
-
-def ProhibitHybridInspection(unused_ref, unused_args, request):
-  """Reject requests with HYBRID_INSPECTION preset topology.
-
-  Args:
-    request: A CreateHubRequest object.
-
-  Returns:
-    The unmodified request object.
-  Raises:
-    InvalidInputError: If the CreateHubRequest has the HYBRID_INSPECTION preset
-    topology.
-  """
-  if not hasattr(request.hub, "presetTopology"):
-    return request
-  if (
-      request.hub.presetTopology
-      != v1.Hub.PresetTopologyValueValuesEnum.HYBRID_INSPECTION
-  ):
-    return request
-
-  raise InvalidInputError(
-      "HYBRID_INSPECTION unsupported in the GA component; "
-      "use the beta component instead. "
-      "See https://cloud.google.com/sdk/gcloud#release_levels"
-  )
 
 
 def AddDefaultLocationToList(ref, args, req):

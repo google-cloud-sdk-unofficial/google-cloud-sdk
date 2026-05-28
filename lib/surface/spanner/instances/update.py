@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.spanner import instances
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import resource_args
+from googlecloudsdk.command_lib.util.args import labels_util
 
 
 @base.UniverseCompatible
@@ -83,6 +84,7 @@ class Update(base.Command):
             ),
         },
     ).AddToParser(parser)
+    labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -116,6 +118,7 @@ class Update(base.Command):
         expire_behavior=expire_behavior,
         edition=args.edition,
         default_backup_schedule_type=args.default_backup_schedule_type,
+        args=args,
     )
     if args.async_:
       return op
@@ -181,6 +184,7 @@ class BetaUpdate(base.Command):
             ),
         },
     ).AddToParser(parser)
+    labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -214,6 +218,7 @@ class BetaUpdate(base.Command):
         expire_behavior=expire_behavior,
         edition=args.edition,
         default_backup_schedule_type=args.default_backup_schedule_type,
+        args=args,
     )
     if args.async_:
       return op
@@ -283,6 +288,7 @@ class AlphaUpdate(base.Command):
             ),
         },
     ).AddToParser(parser)
+    labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -317,6 +323,7 @@ class AlphaUpdate(base.Command):
         ssd_cache_id=args.ssd_cache,
         edition=args.edition,
         default_backup_schedule_type=args.default_backup_schedule_type,
+        args=args,
     )
     if args.async_:
       return op

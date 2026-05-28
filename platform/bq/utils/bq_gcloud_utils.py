@@ -115,6 +115,7 @@ def process_config(flag_values: flags._flagvalues.FlagValues) -> None:
       gcloud_property_name='use_client_certificate',
   )
 
+
   if not auth_config or not core_config:
     return
   try:

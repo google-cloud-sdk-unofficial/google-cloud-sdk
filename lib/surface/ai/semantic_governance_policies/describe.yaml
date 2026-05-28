@@ -29,3 +29,5 @@ request:
   method: get
   resource_method_params:
     name: projects/{projectsId}/locations/{locationsId}/semanticGovernancePolicies/{semanticGovernancePoliciesId}
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.ai.semantic_governance_policies.util:set_regional_endpoint

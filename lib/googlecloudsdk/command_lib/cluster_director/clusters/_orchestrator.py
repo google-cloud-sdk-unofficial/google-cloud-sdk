@@ -678,4 +678,110 @@ def MakeClusterSlurmOrchestratorPatch(
       slurm.loginNodes.storageConfigs = new_storage_configs
       update_mask.add("orchestrator.slurm.login_nodes")
 
+  # Prolog scripts
+  prolog_scripts = []
+  if (
+      existing_cluster
+      and existing_cluster.orchestrator
+      and existing_cluster.orchestrator.slurm
+  ):
+    prolog_scripts = existing_cluster.orchestrator.slurm.prologBashScripts or []
+
+  is_prolog_updated = False
+  if args.IsSpecified("remove_slurm_prolog_scripts"):
+    prolog_scripts = [
+        s for s in prolog_scripts if s not in args.remove_slurm_prolog_scripts
+    ]
+    is_prolog_updated = True
+  if args.IsSpecified("add_slurm_prolog_scripts"):
+    prolog_scripts.extend(args.add_slurm_prolog_scripts)
+    is_prolog_updated = True
+
+  if is_prolog_updated:
+    slurm.prologBashScripts = prolog_scripts
+    update_mask.add("orchestrator.slurm.prolog_bash_scripts")
+
+  # Epilog scripts
+  epilog_scripts = []
+  if (
+      existing_cluster
+      and existing_cluster.orchestrator
+      and existing_cluster.orchestrator.slurm
+  ):
+    epilog_scripts = existing_cluster.orchestrator.slurm.epilogBashScripts or []
+
+  is_epilog_updated = False
+  if args.IsSpecified("remove_slurm_epilog_scripts"):
+    epilog_scripts = [
+        s for s in epilog_scripts if s not in args.remove_slurm_epilog_scripts
+    ]
+    is_epilog_updated = True
+  if args.IsSpecified("add_slurm_epilog_scripts"):
+    epilog_scripts.extend(args.add_slurm_epilog_scripts)
+    is_epilog_updated = True
+
+  if is_epilog_updated:
+    slurm.epilogBashScripts = epilog_scripts
+    update_mask.add("orchestrator.slurm.epilog_bash_scripts")
+
+  # Task Prolog scripts (v1alpha only or safe check)
+  if args.IsKnownAndSpecified(
+      "remove_slurm_task_prolog_scripts"
+  ) or args.IsKnownAndSpecified("add_slurm_task_prolog_scripts"):
+    task_prolog_scripts = []
+    if (
+        existing_cluster
+        and existing_cluster.orchestrator
+        and existing_cluster.orchestrator.slurm
+    ):
+      task_prolog_scripts = (
+          existing_cluster.orchestrator.slurm.taskPrologBashScripts or []
+      )
+
+    is_task_prolog_updated = False
+    if args.IsKnownAndSpecified("remove_slurm_task_prolog_scripts"):
+      task_prolog_scripts = [
+          s
+          for s in task_prolog_scripts
+          if s not in args.remove_slurm_task_prolog_scripts
+      ]
+      is_task_prolog_updated = True
+    if args.IsKnownAndSpecified("add_slurm_task_prolog_scripts"):
+      task_prolog_scripts.extend(args.add_slurm_task_prolog_scripts)
+      is_task_prolog_updated = True
+
+    if is_task_prolog_updated:
+      slurm.taskPrologBashScripts = task_prolog_scripts
+      update_mask.add("orchestrator.slurm.task_prolog_bash_scripts")
+
+  # Task Epilog scripts (v1alpha only or safe check)
+  if args.IsKnownAndSpecified(
+      "remove_slurm_task_epilog_scripts"
+  ) or args.IsKnownAndSpecified("add_slurm_task_epilog_scripts"):
+    task_epilog_scripts = []
+    if (
+        existing_cluster
+        and existing_cluster.orchestrator
+        and existing_cluster.orchestrator.slurm
+    ):
+      task_epilog_scripts = (
+          existing_cluster.orchestrator.slurm.taskEpilogBashScripts or []
+      )
+
+    is_task_epilog_updated = False
+    if args.IsKnownAndSpecified("remove_slurm_task_epilog_scripts"):
+      task_epilog_scripts = [
+          s
+          for s in task_epilog_scripts
+          if s not in args.remove_slurm_task_epilog_scripts
+      ]
+      is_task_epilog_updated = True
+    if args.IsKnownAndSpecified("add_slurm_task_epilog_scripts"):
+      task_epilog_scripts.extend(args.add_slurm_task_epilog_scripts)
+      is_task_epilog_updated = True
+
+    if is_task_epilog_updated:
+      slurm.taskEpilogBashScripts = task_epilog_scripts
+      update_mask.add("orchestrator.slurm.task_epilog_bash_scripts")
+
   return slurm

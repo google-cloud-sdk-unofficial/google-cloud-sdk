@@ -935,8 +935,17 @@ class MarkdownRenderer(object):
     return self._Finish()
 
 
-def RenderDocument(style='text', fin=None, out=None, width=80, notes=None,
-                   title=None, command_metadata=None, command_node=None):
+def RenderDocument(
+    style='text',
+    fin=None,
+    out=None,
+    width=80,
+    notes=None,
+    title=None,
+    command_metadata=None,
+    command_node=None,
+    book_path=None,
+):
   """Renders markdown to a selected document style.
 
   Args:
@@ -948,6 +957,7 @@ def RenderDocument(style='text', fin=None, out=None, width=80, notes=None,
     title: The document title.
     command_metadata: Optional metadata of command, including available flags.
     command_node: The command object that the document is being rendered for.
+    book_path: Optional book_path for DevSite metadata.
 
   Raises:
     DocumentStyleError: The markdown style was unknown.
@@ -955,9 +965,16 @@ def RenderDocument(style='text', fin=None, out=None, width=80, notes=None,
 
   if style not in STYLES:
     raise DocumentStyleError(style)
-  style_renderer = STYLES[style](out=out or sys.stdout, title=title,
-                                 width=width, command_metadata=command_metadata,
-                                 command_node=command_node)
+  kwargs = {
+      'out': out or sys.stdout,
+      'title': title,
+      'width': width,
+      'command_metadata': command_metadata,
+      'command_node': command_node,
+  }
+  if book_path:
+    kwargs['book_path'] = book_path
+  style_renderer = STYLES[style](**kwargs)
   MarkdownRenderer(style_renderer, fin=fin or sys.stdin, notes=notes,
                    command_metadata=command_metadata).Run()
 

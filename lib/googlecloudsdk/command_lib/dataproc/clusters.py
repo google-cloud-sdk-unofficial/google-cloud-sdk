@@ -843,6 +843,15 @@ If you want to enable all scopes use the 'cloud-platform' scope.
       type=bool,
   )
 
+  parser.add_argument(
+      '--enable-ssh',
+      action=arg_parsers.StoreTrueFalseAction,
+      hidden=True,
+      help="""\
+      Enable SSH access for the cluster.
+      """,
+  )
+
   autoscaling_group = parser.add_argument_group()
   flags.AddAutoscalingPolicyResourceArgForCluster(
       autoscaling_group, api_version='v1'
@@ -1616,28 +1625,37 @@ def GetClusterConfig(
           % constants.ENABLE_DYNAMIC_MULTI_TENANCY_PROPERTY,
       )
 
-    if args.identity_config_file or args.secure_multi_tenancy_user_mapping:
-      if cluster_config.securityConfig is None:
-        cluster_config.securityConfig = dataproc.messages.SecurityConfig()
+  if (
+      getattr(args, 'identity_config_file', None)
+      or getattr(args, 'secure_multi_tenancy_user_mapping', None)
+      or getattr(args, 'enable_ssh', None) is not None
+  ):
+    if cluster_config.securityConfig is None:
+      cluster_config.securityConfig = dataproc.messages.SecurityConfig()
+    if cluster_config.securityConfig.identityConfig is None:
+      cluster_config.securityConfig.identityConfig = (
+          dataproc.messages.IdentityConfig()
+      )
 
-      if args.identity_config_file:
-        cluster_config.securityConfig.identityConfig = ParseIdentityConfigFile(
-            dataproc, args.identity_config_file
-        )
-      else:
-        user_service_account_mapping = (
-            ParseSecureMultiTenancyUserServiceAccountMappingString(
-                args.secure_multi_tenancy_user_mapping
-            )
-        )
-        identity_config = dataproc.messages.IdentityConfig()
-        identity_config.userServiceAccountMapping = (
-            encoding.DictToAdditionalPropertyMessage(
-                user_service_account_mapping,
-                dataproc.messages.IdentityConfig.UserServiceAccountMappingValue,
-            )
-        )
-        cluster_config.securityConfig.identityConfig = identity_config
+    if getattr(args, 'identity_config_file', None):
+      cluster_config.securityConfig.identityConfig = ParseIdentityConfigFile(
+          dataproc, args.identity_config_file
+      )
+    elif getattr(args, 'secure_multi_tenancy_user_mapping', None):
+      user_service_account_mapping = (
+          ParseSecureMultiTenancyUserServiceAccountMappingString(
+              args.secure_multi_tenancy_user_mapping
+          )
+      )
+      cluster_config.securityConfig.identityConfig.userServiceAccountMapping = (
+          encoding.DictToAdditionalPropertyMessage(
+              user_service_account_mapping,
+              dataproc.messages.IdentityConfig.UserServiceAccountMappingValue,
+          )
+      )
+
+    if getattr(args, 'enable_ssh', None) is not None:
+      cluster_config.securityConfig.identityConfig.enableSsh = args.enable_ssh
 
   if args.autoscaling_policy:
     cluster_config.autoscalingConfig = dataproc.messages.AutoscalingConfig(

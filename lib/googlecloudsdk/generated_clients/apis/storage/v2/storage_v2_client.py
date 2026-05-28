@@ -46,7 +46,6 @@ class StorageV2(base_api.BaseApiClient):
     self.projects_buckets_folders = self.ProjectsBucketsFoldersService(self)
     self.projects_buckets_snapshots = self.ProjectsBucketsSnapshotsService(self)
     self.projects_buckets = self.ProjectsBucketsService(self)
-    self.projects_locations_featureConfigs = self.ProjectsLocationsFeatureConfigsService(self)
     self.projects_locations_intelligenceFindings_revisions = self.ProjectsLocationsIntelligenceFindingsRevisionsService(self)
     self.projects_locations_intelligenceFindings = self.ProjectsLocationsIntelligenceFindingsService(self)
     self.projects_locations_objectIndexes = self.ProjectsLocationsObjectIndexesService(self)
@@ -393,6 +392,33 @@ class StorageV2(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+    def BulkDelete(self, request, global_params=None):
+      r"""Bulk deletes folders. This operation is only applicable to a hierarchical namespace enabled bucket. It is an internal only API used by internal GCS services.
+
+      Args:
+        request: (StorageProjectsBucketsFoldersBulkDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (BulkDeleteFoldersResponse) The response message.
+      """
+      config = self.GetMethodConfig('BulkDelete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    BulkDelete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/buckets/{bucketsId}/folders:bulkDelete',
+        http_method='POST',
+        method_id='storage.projects.buckets.folders.bulkDelete',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v2/{+parent}/folders:bulkDelete',
+        request_field='bulkDeleteFoldersRequest',
+        request_type_name='StorageProjectsBucketsFoldersBulkDeleteRequest',
+        response_type_name='BulkDeleteFoldersResponse',
+        supports_download=False,
+    )
+
     def Create(self, request, global_params=None):
       r"""Creates a new folder. This operation is only applicable to a hierarchical namespace enabled bucket.
 
@@ -710,6 +736,33 @@ class StorageV2(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+    def GetReplicationStatus(self, request, global_params=None):
+      r"""Returns the replication status for a given dual-region bucket.
+
+      Args:
+        request: (StorageProjectsBucketsGetReplicationStatusRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ReplicationStatus) The response message.
+      """
+      config = self.GetMethodConfig('GetReplicationStatus')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetReplicationStatus.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/buckets/{bucketsId}/replicationStatus',
+        http_method='GET',
+        method_id='storage.projects.buckets.getReplicationStatus',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v2/{+name}/replicationStatus',
+        request_field='',
+        request_type_name='StorageProjectsBucketsGetReplicationStatusRequest',
+        response_type_name='ReplicationStatus',
+        supports_download=False,
+    )
+
     def GetStorageLayout(self, request, global_params=None):
       r"""Returns the storage layout configuration for a given bucket.
 
@@ -734,151 +787,6 @@ class StorageV2(base_api.BaseApiClient):
         request_field='',
         request_type_name='StorageProjectsBucketsGetStorageLayoutRequest',
         response_type_name='StorageLayout',
-        supports_download=False,
-    )
-
-  class ProjectsLocationsFeatureConfigsService(base_api.BaseApiService):
-    """Service class for the projects_locations_featureConfigs resource."""
-
-    _NAME = 'projects_locations_featureConfigs'
-
-    def __init__(self, client):
-      super(StorageV2.ProjectsLocationsFeatureConfigsService, self).__init__(client)
-      self._upload_configs = {
-          }
-
-    def Create(self, request, global_params=None):
-      r"""Creates a new `FeatureConfig` to configure and manage Smart Storage features within a given project.
-
-      Args:
-        request: (StorageProjectsLocationsFeatureConfigsCreateRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (Operation) The response message.
-      """
-      config = self.GetMethodConfig('Create')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    Create.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v2/projects/{projectsId}/locations/{locationsId}/featureConfigs',
-        http_method='POST',
-        method_id='storage.projects.locations.featureConfigs.create',
-        ordered_params=['parent'],
-        path_params=['parent'],
-        query_params=['featureConfigId', 'requestId'],
-        relative_path='v2/{+parent}/featureConfigs',
-        request_field='featureConfig',
-        request_type_name='StorageProjectsLocationsFeatureConfigsCreateRequest',
-        response_type_name='Operation',
-        supports_download=False,
-    )
-
-    def Delete(self, request, global_params=None):
-      r"""Deletes the `FeatureConfig` resource.
-
-      Args:
-        request: (StorageProjectsLocationsFeatureConfigsDeleteRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (Operation) The response message.
-      """
-      config = self.GetMethodConfig('Delete')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    Delete.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v2/projects/{projectsId}/locations/{locationsId}/featureConfigs/{featureConfigsId}',
-        http_method='DELETE',
-        method_id='storage.projects.locations.featureConfigs.delete',
-        ordered_params=['name'],
-        path_params=['name'],
-        query_params=[],
-        relative_path='v2/{+name}',
-        request_field='',
-        request_type_name='StorageProjectsLocationsFeatureConfigsDeleteRequest',
-        response_type_name='Operation',
-        supports_download=False,
-    )
-
-    def Get(self, request, global_params=None):
-      r"""Gets the `FeatureConfig` resource.
-
-      Args:
-        request: (StorageProjectsLocationsFeatureConfigsGetRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (FeatureConfig) The response message.
-      """
-      config = self.GetMethodConfig('Get')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    Get.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v2/projects/{projectsId}/locations/{locationsId}/featureConfigs/{featureConfigsId}',
-        http_method='GET',
-        method_id='storage.projects.locations.featureConfigs.get',
-        ordered_params=['name'],
-        path_params=['name'],
-        query_params=[],
-        relative_path='v2/{+name}',
-        request_field='',
-        request_type_name='StorageProjectsLocationsFeatureConfigsGetRequest',
-        response_type_name='FeatureConfig',
-        supports_download=False,
-    )
-
-    def List(self, request, global_params=None):
-      r"""Lists the `FeatureConfig` resources for the specified project.
-
-      Args:
-        request: (StorageProjectsLocationsFeatureConfigsListRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (ListFeatureConfigsResponse) The response message.
-      """
-      config = self.GetMethodConfig('List')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    List.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v2/projects/{projectsId}/locations/{locationsId}/featureConfigs',
-        http_method='GET',
-        method_id='storage.projects.locations.featureConfigs.list',
-        ordered_params=['parent'],
-        path_params=['parent'],
-        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
-        relative_path='v2/{+parent}/featureConfigs',
-        request_field='',
-        request_type_name='StorageProjectsLocationsFeatureConfigsListRequest',
-        response_type_name='ListFeatureConfigsResponse',
-        supports_download=False,
-    )
-
-    def Patch(self, request, global_params=None):
-      r"""Updates the `FeatureConfig` resource.
-
-      Args:
-        request: (StorageProjectsLocationsFeatureConfigsPatchRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (Operation) The response message.
-      """
-      config = self.GetMethodConfig('Patch')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    Patch.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v2/projects/{projectsId}/locations/{locationsId}/featureConfigs/{featureConfigsId}',
-        http_method='PATCH',
-        method_id='storage.projects.locations.featureConfigs.patch',
-        ordered_params=['name'],
-        path_params=['name'],
-        query_params=['requestId', 'updateMask'],
-        relative_path='v2/{+name}',
-        request_field='featureConfig',
-        request_type_name='StorageProjectsLocationsFeatureConfigsPatchRequest',
-        response_type_name='Operation',
         supports_download=False,
     )
 

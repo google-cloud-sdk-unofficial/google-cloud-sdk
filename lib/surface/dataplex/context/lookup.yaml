@@ -49,6 +49,12 @@
       - arg_value: xml
       default: yaml
       is_positional: false
+    - arg_name: all-schema-fields
+      help_text: |
+        Includes all schema fields in the context.
+      type: bool
+      action: store_true
+      is_positional: false
     - arg_name: options
       help_text: |
         Additional options for the command. This can be provided as a JSON string.

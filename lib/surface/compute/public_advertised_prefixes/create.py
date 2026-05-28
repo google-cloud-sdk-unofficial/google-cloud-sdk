@@ -25,7 +25,6 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA,
     base.ReleaseTrack.BETA,
     base.ReleaseTrack.GA,
     base.ReleaseTrack.PREVIEW,
@@ -47,10 +46,14 @@ class Create(base.CreateCommand):
       --dns-verification-ip=120.120.10.15 --pdp-scope=REGIONAL
   """
 
+  _support_network_tier = False
+
   @classmethod
   def Args(cls, parser):
     flags.MakePublicAdvertisedPrefixesArg().AddArgument(parser)
-    flags.AddCreatePapArgsToParser(parser)
+    flags.AddCreatePapArgsToParser(
+        parser, support_network_tier=cls._support_network_tier
+    )
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -76,6 +79,13 @@ class Create(base.CreateCommand):
     if args.dns_verification_ip:
       input_dns_verification_ip = args.dns_verification_ip
 
+    input_network_tier = None
+    if self._support_network_tier and args.network_tier:
+      input_network_tier = arg_utils.ChoiceToEnum(
+          args.network_tier,
+          pap.NetworkTierValueValuesEnum,
+      )
+
     result = pap_client.Create(
         pap_ref,
         ip_cidr_range=args.range,
@@ -85,6 +95,33 @@ class Create(base.CreateCommand):
         if args.pdp_scope
         else None,
         ipv6_access_type=input_ipv6_access_type,
+        network_tier=input_network_tier,
     )
     log.CreatedResource(pap_ref.Name(), 'public advertised prefix')
     return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  r"""Creates a Compute Engine public advertised prefix.
+
+    ## EXAMPLES
+
+    To create a public advertised prefix:
+
+      $ {command} my-public-advertised-prefix --range=120.120.10.0/24 \
+        --dns-verification-ip=120.120.10.15
+
+    To create a v2 public advertised prefix:
+
+      $ {command} my-v2-public-advertised-prefix --range=120.120.10.0/24 \
+        --dns-verification-ip=120.120.10.15 --pdp-scope=REGIONAL
+
+    To create an IPv4 v2 public advertised prefix in Standard tier:
+
+      $ {command} my-v2-public-advertised-prefix --range=120.120.0.0/23 \
+        --network-tier=STANDARD \
+        --dns-verification-ip=120.120.10.15 --pdp-scope=REGIONAL
+  """
+
+  _support_network_tier = True

@@ -154,7 +154,7 @@ class AddBeta(Add):
 
   enable_ipv6_assignment = False
   support_igmp_query = False
-  support_alias_ipv6_ranges = False
+  support_alias_ipv6_ranges = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -362,7 +362,7 @@ class BetaUpdate(Update):
 
   input_flags = (
       '`--update-env-vars`, `--memory`, `--concurrency`, `--timeout`,'
-      ' `--connectivity`, `--image`, `--iap`'
+      ' `--connectivity`, `--image`, `--iap`, `--ssh`'
   )
 
   @classmethod
@@ -371,6 +371,7 @@ class BetaUpdate(Update):
 
     flags.AddCpuUtilizationFlag(parser)
     flags.AddConcurrencyUtilizationFlag(parser)
+    flags.AddSshFlag(parser)
 
     # Flags specific to managed CR
     flags.SERVICE_MESH_FLAG.AddToParser(parser)

@@ -1,16 +1,16 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: Delete a BigLake Hive catalog.
     description: |
       Deletes a BigLake Hive catalog.
     examples: |-
       To delete a BigLake Hive catalog named 'my-catalog', run:
+
         $ {command} my-catalog
 
   request:
     collection: biglake.hive.v1beta.projects.catalogs
-    ALPHA:
-      api_version: v1beta
+    api_version: v1beta
     method: delete
 
   arguments:

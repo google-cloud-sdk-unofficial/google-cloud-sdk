@@ -1140,7 +1140,6 @@ def AddUseProjectServiceAccountFlag(parser):
   parser.add_argument(
       '--use-project-service-account',
       action='store_true',
-      hidden=True,
       required=False,
       default=False,
       help=(

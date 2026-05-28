@@ -532,6 +532,7 @@ class Load(bigquery_command.BigqueryCmd):
         id_fallbacks=client,
         identifier=destination_table,
         default_dataset_id=default_dataset_id,
+        allow_pcnt_identifier_format=True,
     )
     opts = {
         'encoding': self.encoding,

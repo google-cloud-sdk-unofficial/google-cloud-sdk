@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright 2017 The Abseil Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +15,7 @@
 
 """Abseil Python logging module implemented on top of standard logging.
 
-Simple usage:
+Simple usage::
 
     from absl import logging
 
@@ -34,34 +35,58 @@ Usage note: Do not pre-format the strings in your program code.
 Instead, let the logging module perform argument interpolation.
 This saves cycles because strings that don't need to be printed
 are never formatted.  Note that this module does not attempt to
-interpolate arguments when no arguments are given.  In other words
+interpolate arguments when no arguments are given.  In other words::
 
     logging.info('Interesting Stuff: %s')
 
 does not raise an exception because logging.info() has only one
 argument, the message string.
 
-"Lazy" evaluation for debugging:
+"Lazy" evaluation for debugging
+-------------------------------
 
-If you do something like this:
+If you do something like this::
+
     logging.debug('Thing: %s', thing.ExpensiveOp())
+
 then the ExpensiveOp will be evaluated even if nothing
-is printed to the log. To avoid this, use the level_debug() function:
+is printed to the log. To avoid this, use the level_debug() function::
+
   if logging.level_debug():
     logging.debug('Thing: %s', thing.ExpensiveOp())
 
 Per file level logging is supported by logging.vlog() and
-logging.vlog_is_on(). For example:
+logging.vlog_is_on(). For example::
 
     if logging.vlog_is_on(2):
       logging.vlog(2, very_expensive_debug_message())
 
-Notes on Unicode:
+Notes on Unicode
+----------------
 
 The log output is encoded as UTF-8.  Don't pass data in other encodings in
 bytes() instances -- instead pass unicode string instances when you need to
 (for both the format string and arguments).
 
+# absl:google3-begin(C++ logging only)
+This module can operate in two modes: Python mode and C++ mode.
+In Python mode logging messages are handled by the code in this module.
+In C++ mode logging calls are translated to the C++ code.
+This requires that the google.base.python.pywrapbase shared library has been
+compiled and is available.  Python mode is the default.  C++ mode is enabled
+by calling use_cpp_logging(), which is called automatically by absl.app if
+pywrapbase is importable.
+
+In Python mode output defaults to stderr unless
+1) logging.get_absl_handler().start_logging_to_file() is called or
+2) logging.get_absl_handler().use_absl_log_file() is called when
+   logging.LOGTOSTDERR.value is False.
+
+In C++ mode output defaults to files unless
+logging.get_absl_handler().use_absl_log_file() is called when
+logging.LOGTOSTDERR.value is True.
+
+# absl:google3-end
 Note on critical and fatal:
 Standard logging module defines fatal as an alias to critical, but it's not
 documented, and it does NOT actually terminate the program.
@@ -71,12 +96,10 @@ program.
 The differences in behavior are historical and unfortunate.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import collections
+from collections.abc import Mapping
 import getpass
+import inspect
 import io
 import itertools
 import logging
@@ -84,27 +107,31 @@ import os
 import socket
 import struct
 import sys
+import tempfile
+import threading
 import time
 import timeit
 import traceback
-import types
 import warnings
 
 from absl import flags
-from absl._collections_abc import abc
 from absl.logging import converter
-import six
 
-if six.PY2:
-  import thread as _thread_lib  # For .get_ident().
-else:
-  import threading as _thread_lib  # For .get_ident().
-
+# pylint: disable=g-import-not-at-top
 try:
   from typing import NoReturn
 except ImportError:
   pass
 
+# absl:google3-begin(C++ logging only)
+try:
+  from absl.flags import _cpp_flags
+  from google.base.python import pywrapbase
+except ImportError:
+  _cpp_flags = None
+  pywrapbase = None
+# absl:google3-end
+# pylint: enable=g-import-not-at-top
 
 FLAGS = flags.FLAGS
 
@@ -124,7 +151,8 @@ ABSL_LOGGING_PREFIX_REGEX = (
     r'(?P<hour>\d\d):(?P<minute>\d\d):(?P<second>\d\d)'
     r'\.(?P<microsecond>\d\d\d\d\d\d) +'
     r'(?P<thread_id>-?\d+) '
-    r'(?P<filename>[a-zA-Z<][\w._<>-]+):(?P<line>\d+)')
+    r'(?P<filename>[a-zA-Z<][\w._<>-]+):(?P<line>\d+)'
+)
 
 
 # Mask to convert integer thread ids to unsigned quantities for logging purposes
@@ -152,7 +180,7 @@ _CPP_NAME_TO_LEVELS = {
     'warning': '1',
     'warn': '1',
     'error': '2',
-    'fatal': '3'
+    'fatal': '3',
 }
 
 _CPP_LEVEL_TO_NAMES = {
@@ -167,10 +195,9 @@ class _VerbosityFlag(flags.Flag):
   """Flag class for -v/--verbosity."""
 
   def __init__(self, *args, **kwargs):
-    super(_VerbosityFlag, self).__init__(
-        flags.IntegerParser(),
-        flags.ArgumentSerializer(),
-        *args, **kwargs)
+    super().__init__(
+        flags.IntegerParser(), flags.ArgumentSerializer(), *args, **kwargs
+    )
 
   @property
   def value(self):
@@ -178,6 +205,19 @@ class _VerbosityFlag(flags.Flag):
 
   @value.setter
   def value(self, v):
+    # absl:google3-begin(C++ logging only)
+    if _cpp_flags:
+      cpp_verbosity = max(v, 0)
+      cpp_minloglevel = min(max(-v, 0), 3)
+      _cpp_flags.set_flag('v', cpp_verbosity)
+      # TODO(b/67580226): This flag is missing in PORTABLE_BASE right now.
+      try:
+        _cpp_flags.set_flag('minloglevel', cpp_minloglevel)
+      except ValueError:
+        pass
+    elif pywrapbase:
+      pywrapbase.SetVlogLevel(v)
+    # absl:google3-end
     self._value = v
     self._update_logging_levels()
 
@@ -209,10 +249,9 @@ class _LoggerLevelsFlag(flags.Flag):
   """Flag class for --logger_levels."""
 
   def __init__(self, *args, **kwargs):
-    super(_LoggerLevelsFlag, self).__init__(
-        _LoggerLevelsParser(),
-        _LoggerLevelsSerializer(),
-        *args, **kwargs)
+    super().__init__(
+        _LoggerLevelsParser(), _LoggerLevelsSerializer(), *args, **kwargs
+    )
 
   @property
   def value(self):
@@ -238,7 +277,7 @@ class _LoggerLevelsParser(flags.ArgumentParser):
   """Parser for --logger_levels flag."""
 
   def parse(self, value):
-    if isinstance(value, abc.Mapping):
+    if isinstance(value, Mapping):
       return value
 
     pairs = [pair.strip() for pair in value.split(',') if pair.strip()]
@@ -253,24 +292,22 @@ class _LoggerLevelsParser(flags.ArgumentParser):
     return levels
 
 
-class _LoggerLevelsSerializer(object):
+class _LoggerLevelsSerializer:
   """Serializer for --logger_levels flag."""
 
   def serialize(self, value):
-    if isinstance(value, six.string_types):
+    if isinstance(value, str):
       return value
-    return ','.join(
-        '{}:{}'.format(name, level) for name, level in value.items())
+    return ','.join(f'{name}:{level}' for name, level in value.items())
 
 
 class _StderrthresholdFlag(flags.Flag):
   """Flag class for --stderrthreshold."""
 
   def __init__(self, *args, **kwargs):
-    super(_StderrthresholdFlag, self).__init__(
-        flags.ArgumentParser(),
-        flags.ArgumentSerializer(),
-        *args, **kwargs)
+    super().__init__(
+        flags.ArgumentParser(), flags.ArgumentSerializer(), *args, **kwargs
+    )
 
   @property
   def value(self):
@@ -292,49 +329,113 @@ class _StderrthresholdFlag(flags.Flag):
       raise ValueError(
           '--stderrthreshold must be one of (case-insensitive) '
           "'debug', 'info', 'warning', 'error', 'fatal', "
-          "or '0', '1', '2', '3', not '%s'" % v)
+          f"or '0', '1', '2', '3', not '{v}'"
+      )
+    # absl:google3-begin(C++ logging only)
+    if _cpp_flags:
+      # TODO(b/67580226): This flag is missing in PORTABLE_BASE right now.
+      try:
+        _cpp_flags.set_flag('stderrthreshold', cpp_value)
+      except ValueError:
+        pass
+    elif pywrapbase:
+      pywrapbase.SetStderrLogging(cpp_value)
+    # absl:google3-end
 
     self._value = v
 
 
-flags.DEFINE_boolean('logtostderr',
-                     False,
-                     'Should only log to stderr?', allow_override_cpp=True)
-flags.DEFINE_boolean('alsologtostderr',
-                     False,
-                     'also log to stderr?', allow_override_cpp=True)
-flags.DEFINE_string('log_dir',
-                    os.getenv('TEST_TMPDIR', ''),
-                    'directory to write logfiles into',
-                    allow_override_cpp=True)
-flags.DEFINE_flag(_VerbosityFlag(
-    'verbosity', -1,
-    'Logging verbosity level. Messages logged at this level or lower will '
-    'be included. Set to 1 for debug logging. If the flag was not set or '
-    'supplied, the value will be changed from the default of -1 (warning) to '
-    '0 (info) after flags are parsed.',
-    short_name='v', allow_hide_cpp=True))
-flags.DEFINE_flag(
+# absl:google3-begin(Only applies to google3 until b/33671522 is fixed)
+# TODO(b/33671522): pkgutil.walk_packages will try importing third_party
+# packages twice with and without google3.third_party.py prefix.
+# Raising ImportError the second time makes walk_packages happy.
+if 'logtostderr' in FLAGS:
+  raise ImportError(
+      '--logtostderr is already defined. This is likely caused by importing '
+      'absl.logging twice with and without google3.third_party.py.'
+  )
+# absl:google3-end
+
+
+LOGTOSTDERR = flags.DEFINE_boolean(
+    'logtostderr',
+    # absl:google3-begin(Google-only environment variable)
+    os.getenv('GOOGLE_LOGTOSTDERR') or False,
+    # absl:google3-end
+    # absl:oss-insert False,
+    'Should only log to stderr?',
+    allow_override_cpp=True,
+)
+ALSOLOGTOSTDERR = flags.DEFINE_boolean(
+    'alsologtostderr',
+    # absl:google3-begin(Google-only environment variable)
+    os.getenv('GOOGLE_ALSOLOGTOSTDERR') or False,
+    # absl:google3-end
+    # absl:oss-insert False,
+    'also log to stderr?',
+    allow_override_cpp=True,
+)
+LOG_DIR = flags.DEFINE_string(
+    'log_dir',
+    # absl:google3-begin(Google-only environment variable)
+    os.getenv('GOOGLE_LOG_DIR', os.getenv('TEST_TMPDIR', '')),
+    # absl:google3-end
+    # absl:oss-insert os.getenv('TEST_TMPDIR', ''),
+    'directory to write logfiles into',
+    allow_override_cpp=True,
+)
+VERBOSITY = flags.DEFINE_flag(
+    _VerbosityFlag(
+        'verbosity',
+        -1,
+        (
+            'Logging verbosity level. Messages logged at this level or lower'
+            ' will be included. Set to 1 for debug logging. If the flag was not'
+            ' set or supplied, the value will be changed from the default of -1'
+            ' (warning) to 0 (info) after flags are parsed.'
+        ),
+        short_name='v',
+        allow_hide_cpp=True,
+    )
+)
+LOGGER_LEVELS = flags.DEFINE_flag(
     _LoggerLevelsFlag(
-        'logger_levels', {},
-        'Specify log level of loggers. The format is a CSV list of '
-        '`name:level`. Where `name` is the logger name used with '
-        '`logging.getLogger()`, and `level` is a level name  (INFO, DEBUG, '
-        'etc). e.g. `myapp.foo:INFO,other.logger:DEBUG`'))
-flags.DEFINE_flag(_StderrthresholdFlag(
-    'stderrthreshold', 'fatal',
-    'log messages at this level, or more severe, to stderr in '
-    'addition to the logfile.  Possible values are '
-    "'debug', 'info', 'warning', 'error', and 'fatal'.  "
-    'Obsoletes --alsologtostderr. Using --alsologtostderr '
-    'cancels the effect of this flag. Please also note that '
-    'this flag is subject to --verbosity and requires logfile '
-    'not be stderr.', allow_hide_cpp=True))
-flags.DEFINE_boolean('showprefixforinfo', True,
-                     'If False, do not prepend prefix to info messages '
-                     'when it\'s logged to stderr, '
-                     '--verbosity is set to INFO level, '
-                     'and python logging is used.')
+        'logger_levels',
+        {},
+        (
+            'Specify log level of loggers. The format is a CSV list of '
+            '`name:level`. Where `name` is the logger name used with '
+            '`logging.getLogger()`, and `level` is a level name  (INFO, DEBUG, '
+            'etc). e.g. `myapp.foo:INFO,other.logger:DEBUG`'
+        ),
+    )
+)
+STDERRTHRESHOLD = flags.DEFINE_flag(
+    _StderrthresholdFlag(
+        'stderrthreshold',
+        'fatal',
+        (
+            'log messages at this level, or more severe, to stderr in '
+            'addition to the logfile.  Possible values are '
+            "'debug', 'info', 'warning', 'error', and 'fatal'.  "
+            'Obsoletes --alsologtostderr. Using --alsologtostderr '
+            'cancels the effect of this flag. Please also note that '
+            'this flag is subject to --verbosity and requires logfile '
+            'not be stderr.'
+        ),
+        allow_hide_cpp=True,
+    )
+)
+SHOWPREFIXFORINFO = flags.DEFINE_boolean(
+    'showprefixforinfo',
+    True,
+    (
+        'If False, do not prepend prefix to info messages '
+        "when it's logged to stderr, "
+        '--verbosity is set to INFO level, '
+        'and python logging is used.'
+    ),
+)
 
 
 def get_verbosity():
@@ -350,8 +451,8 @@ def set_verbosity(v):
 
   Args:
     v: int|str, the verbosity level as an integer or string. Legal string values
-        are those that can be coerced to an integer as well as case-insensitive
-        'debug', 'info', 'warning', 'error', and 'fatal'.
+      are those that can be coerced to an integer as well as case-insensitive
+      'debug', 'info', 'warning', 'error', and 'fatal'.
   """
   try:
     new_level = int(v)
@@ -364,9 +465,9 @@ def set_stderrthreshold(s):
   """Sets the stderr threshold to the value passed in.
 
   Args:
-    s: str|int, valid strings values are case-insensitive 'debug',
-        'info', 'warning', 'error', and 'fatal'; valid integer values are
-        logging.DEBUG|INFO|WARNING|ERROR|FATAL.
+    s: str|int, valid strings values are case-insensitive 'debug', 'info',
+      'warning', 'error', and 'fatal'; valid integer values are
+      logging.DEBUG|INFO|WARNING|ERROR|FATAL.
 
   Raises:
       ValueError: Raised when s is an invalid value.
@@ -380,7 +481,8 @@ def set_stderrthreshold(s):
         'set_stderrthreshold only accepts integer absl logging level '
         'from -3 to 1, or case-insensitive string values '
         "'debug', 'info', 'warning', 'error', and 'fatal'. "
-        'But found "{}" ({}).'.format(s, type(s)))
+        f'But found "{s}" ({type(s)}).'
+    )
 
 
 def fatal(msg, *args, **kwargs):
@@ -399,15 +501,14 @@ def warning(msg, *args, **kwargs):
   log(WARNING, msg, *args, **kwargs)
 
 
-if six.PY2:
-  warn = warning  # Deprecated function.
-else:
-
-  def warn(msg, *args, **kwargs):
-    """Deprecated, use 'warning' instead."""
-    warnings.warn("The 'warn' function is deprecated, use 'warning' instead",
-                  DeprecationWarning, 2)
-    log(WARNING, msg, *args, **kwargs)
+def warn(msg, *args, **kwargs):
+  """Deprecated, use 'warning' instead."""
+  warnings.warn(
+      "The 'warn' function is deprecated, use 'warning' instead",
+      DeprecationWarning,
+      2,
+  )
+  log(WARNING, msg, *args, **kwargs)
 
 
 def info(msg, *args, **kwargs):
@@ -417,12 +518,49 @@ def info(msg, *args, **kwargs):
 
 def debug(msg, *args, **kwargs):
   """Logs a debug message."""
+  # absl:google3-begin(C++ logging only)
+  if pywrapbase:
+    # Check VlogIsOn here early, instead of deferring to ABSLLogger.log.
+    # This makes findCaller faster because it traverses fewer frames.
+    filename = _absl_logger.findCaller()[0]
+    caller_vlog_is_on = pywrapbase.VlogIsOn(filename, 1)
+    if caller_vlog_is_on:
+      # Bump the level to INFO. This is OK because those logs:
+      # 1. will be logged if and only if verbosity is INFO or less severe.
+      # 2. share the same prefix with INFO logs.
+      # This also ensures VlogIsOn isn't called again in ABSLLogger.log.
+      log(INFO, msg, *args, **kwargs)
+    return
+  # absl:google3-end
   log(DEBUG, msg, *args, **kwargs)
 
 
-def exception(msg, *args):
+def exception(msg, *args, exc_info=True, **kwargs):
   """Logs an exception, with traceback and message."""
-  error(msg, *args, exc_info=True)
+  error(msg, *args, exc_info=exc_info, **kwargs)
+
+
+def _fast_stack_trace():
+  """A fast stack trace that gets us the minimal information we need.
+
+  Compared to using `get_absl_logger().findCaller(stack_info=True)`, this
+  function is ~100x faster.
+
+  Returns:
+    A tuple of tuples of (filename, line_number, last_instruction_offset).
+  """
+  cur_stack = inspect.currentframe()
+  if cur_stack is None or cur_stack.f_back is None:
+    return tuple()
+  # We drop the first frame, which is this function itself.
+  cur_stack = cur_stack.f_back
+  call_stack = []
+  while cur_stack.f_back:
+    cur_stack = cur_stack.f_back
+    call_stack.append(
+        (cur_stack.f_code.co_filename, cur_stack.f_lineno, cur_stack.f_lasti)
+    )
+  return tuple(call_stack)
 
 
 # Counter to keep track of number of log entries per token.
@@ -444,8 +582,8 @@ def _get_next_log_count_per_token(token):
   return next(_log_counter_per_token.setdefault(token, itertools.count()))
 
 
-def log_every_n(level, msg, n, *args):
-  """Logs 'msg % args' at level 'level' once per 'n' times.
+def log_every_n(level, msg, n, *args, use_call_stack=False, **kwargs):
+  """Logs ``msg % args`` at level 'level' once per 'n' times.
 
   Logs the 1st call, (N+1)st call, (2N+1)st call,  etc.
   Not threadsafe.
@@ -455,9 +593,16 @@ def log_every_n(level, msg, n, *args):
     msg: str, the message to be logged.
     n: int, the number of times this should be called before it is logged.
     *args: The args to be substituted into the msg.
+    use_call_stack: bool, whether to include the call stack when counting the
+      number of times the message is logged.
+    **kwargs: May contain exc_info to add exception traceback to message.
   """
-  count = _get_next_log_count_per_token(get_absl_logger().findCaller())
-  log_if(level, msg, not (count % n), *args)
+  caller_info = get_absl_logger().findCaller()
+  if use_call_stack:
+    # To reduce storage costs, we hash the call stack.
+    caller_info = (*caller_info[0:3], hash(_fast_stack_trace()))
+  count = _get_next_log_count_per_token(caller_info)
+  log_if(level, msg, not (count % n), *args, **kwargs)
 
 
 # Keeps track of the last log time of the given token.
@@ -491,8 +636,10 @@ def _seconds_have_elapsed(token, num_seconds):
     return False
 
 
-def log_every_n_seconds(level, msg, n_seconds, *args):
-  """Logs 'msg % args' at level 'level' iff 'n_seconds' elapsed since last call.
+def log_every_n_seconds(
+    level, msg, n_seconds, *args, use_call_stack=False, **kwargs
+):
+  """Logs ``msg % args`` at level ``level`` iff ``n_seconds`` elapsed since last call.
 
   Logs the first call, logs subsequent calls if 'n' seconds have elapsed since
   the last logging call from the same call site (file + line). Not thread-safe.
@@ -502,13 +649,20 @@ def log_every_n_seconds(level, msg, n_seconds, *args):
     msg: str, the message to be logged.
     n_seconds: float or int, seconds which should elapse before logging again.
     *args: The args to be substituted into the msg.
+    use_call_stack: bool, whether to include the call stack when counting the
+      number of times the message is logged.
+    **kwargs: May contain exc_info to add exception traceback to message.
   """
-  should_log = _seconds_have_elapsed(get_absl_logger().findCaller(), n_seconds)
-  log_if(level, msg, should_log, *args)
+  caller_info = get_absl_logger().findCaller()
+  if use_call_stack:
+    # To reduce storage costs, we hash the call stack.
+    caller_info = (*caller_info[0:3], hash(_fast_stack_trace()))
+  should_log = _seconds_have_elapsed(caller_info, n_seconds)
+  log_if(level, msg, should_log, *args, **kwargs)
 
 
-def log_first_n(level, msg, n, *args):
-  """Logs 'msg % args' at level 'level' only first 'n' times.
+def log_first_n(level, msg, n, *args, use_call_stack=False, **kwargs):
+  """Logs ``msg % args`` at level ``level`` only first ``n`` times.
 
   Not threadsafe.
 
@@ -517,32 +671,53 @@ def log_first_n(level, msg, n, *args):
     msg: str, the message to be logged.
     n: int, the maximal number of times the message is logged.
     *args: The args to be substituted into the msg.
+    use_call_stack: bool, whether to include the call stack when counting the
+      number of times the message is logged.
+    **kwargs: May contain exc_info to add exception traceback to message.
   """
-  count = _get_next_log_count_per_token(get_absl_logger().findCaller())
-  log_if(level, msg, count < n, *args)
+  caller_info = get_absl_logger().findCaller()
+  if use_call_stack:
+    # To reduce storage costs, we hash the call stack.
+    caller_info = (*caller_info[0:3], hash(_fast_stack_trace()))
+  count = _get_next_log_count_per_token(caller_info)
+  log_if(level, msg, count < n, *args, **kwargs)
 
 
-def log_if(level, msg, condition, *args):
-  """Logs 'msg % args' at level 'level' only if condition is fulfilled."""
+def log_if(level, msg, condition, *args, **kwargs):
+  """Logs ``msg % args`` at level ``level`` only if condition is fulfilled."""
   if condition:
-    log(level, msg, *args)
+    log(level, msg, *args, **kwargs)
 
 
 def log(level, msg, *args, **kwargs):
-  """Logs 'msg % args' at absl logging level 'level'.
+  """Logs ``msg % args`` at absl logging level ``level``.
 
   If no args are given just print msg, ignoring any interpolation specifiers.
 
   Args:
     level: int, the absl logging level at which to log the message
-        (logging.DEBUG|INFO|WARNING|ERROR|FATAL). While some C++ verbose logging
-        level constants are also supported, callers should prefer explicit
-        logging.vlog() calls for such purpose.
-
+      (logging.DEBUG|INFO|WARNING|ERROR|FATAL). While some C++ verbose logging
+      level constants are also supported, callers should prefer explicit
+      logging.vlog() calls for such purpose.
     msg: str, the message to be logged.
     *args: The args to be substituted into the msg.
     **kwargs: May contain exc_info to add exception traceback to message.
   """
+  # absl:google3-begin(C++ logging only)
+  if level >= DEBUG and pywrapbase:
+    # Check VlogIsOn here early, instead of deferring to ABSLLogger.log.
+    # This makes findCaller faster because it traverses fewer frames.
+    filename = _absl_logger.findCaller()[0]
+    caller_vlog_is_on = pywrapbase.VlogIsOn(filename, level)
+    if caller_vlog_is_on:
+      # Bump the level to INFO. This is OK because those logs:
+      # 1. will be logged if and only if verbosity is INFO or less severe.
+      # 2. share the same prefix with INFO logs.
+      # This also ensures VlogIsOn isn't called again in ABSLLogger.log.
+      level = INFO
+    else:
+      return
+  # absl:google3-end
   if level > converter.ABSL_DEBUG:
     # Even though this function supports level that is greater than 1, users
     # should use logging.vlog instead for such cases.
@@ -563,16 +738,35 @@ def log(level, msg, *args, **kwargs):
 
 
 def vlog(level, msg, *args, **kwargs):
-  """Log 'msg % args' at C++ vlog level 'level'.
+  """Log ``msg % args`` at C++ vlog level ``level``.
 
   Args:
-    level: int, the C++ verbose logging level at which to log the message,
-        e.g. 1, 2, 3, 4... While absl level constants are also supported,
-        callers should prefer logging.log|debug|info|... calls for such purpose.
+    level: int, the C++ verbose logging level at which to log the message, e.g.
+      1, 2, 3, 4... While absl level constants are also supported, callers
+      should prefer logging.log|debug|info|... calls for such purpose.
     msg: str, the message to be logged.
     *args: The args to be substituted into the msg.
     **kwargs: May contain exc_info to add exception traceback to message.
   """
+  # absl:google3-begin(C++ logging only)
+  # NOTE: Tensorflow expects this function to be defined as a different one from
+  # `log`, so we can't define `vlog = log` even though they are the same.
+  # NOTE: this logic is replicated in part in functions vlog_is_on(), log()
+  # and ABSLLogger.log(). Keep these in sync until this is refactored.
+  if level >= DEBUG and pywrapbase:
+    # Check VlogIsOn here early, instead of deferring to ABSLLogger.log.
+    # This makes findCaller faster because it traverses fewer frames.
+    filename = _absl_logger.findCaller()[0]
+    caller_vlog_is_on = pywrapbase.VlogIsOn(filename, level)
+    if caller_vlog_is_on:
+      # Bump the level to INFO. This is OK because those logs:
+      # 1. will be logged if and only if verbosity is INFO or less severe.
+      # 2. share the same prefix with INFO logs.
+      # This also ensures VlogIsOn isn't called again in ABSLLogger.log.
+      level = INFO
+    else:
+      return
+  # absl:google3-end
   log(level, msg, *args, **kwargs)
 
 
@@ -580,14 +774,23 @@ def vlog_is_on(level):
   """Checks if vlog is enabled for the given level in caller's source file.
 
   Args:
-    level: int, the C++ verbose logging level at which to log the message,
-        e.g. 1, 2, 3, 4... While absl level constants are also supported,
-        callers should prefer level_debug|level_info|... calls for
-        checking those.
+    level: int, the C++ verbose logging level at which to log the message, e.g.
+      1, 2, 3, 4... While absl level constants are also supported, callers
+      should prefer level_debug|level_info|... calls for checking those.
 
   Returns:
     True if logging is turned on for that level.
   """
+  # absl:google3-begin(C++ logging only)
+  # NOTE: this logic is replicated in part in functions vlog(), log() and
+  # ABSLLogger.log(). Keep these in sync until this is refactored.
+  if level >= DEBUG and pywrapbase:
+    filename = _absl_logger.findCaller()[0]
+    if pywrapbase.VlogIsOn(filename, level):
+      level = INFO
+    else:
+      return False
+  # absl:google3-end
 
   if level > converter.ABSL_DEBUG:
     # Even though this function supports level that is greater than 1, users
@@ -629,6 +832,16 @@ def level_error():
   return get_verbosity() >= ERROR
 
 
+# absl:google3-begin(C++ logging only)
+def _ensure_pywrapbase():
+  if not pywrapbase:
+    raise AssertionError(
+        'The google.base.python.pywrapbase module must be'
+        ' imported before C++ handlers are called. '
+    )
+
+
+# absl:google3-end
 def get_log_file_name(level=INFO):
   """Returns the name of the log file.
 
@@ -636,6 +849,12 @@ def get_log_file_name(level=INFO):
   empty string if it logs to stderr/stdout or the log stream has no `name`
   attribute.
 
+  # absl:google3-begin(C++ logging only)
+  For C++ logging, it returns different files for each non-DEBUG level if the
+  file is already created, otherwise an empty string. It returns the INFO file
+  for DEBUG level since there is no DEBUG level in C++ logging.
+
+  # absl:google3-end
   Args:
     level: int, the absl.logging level.
 
@@ -643,10 +862,18 @@ def get_log_file_name(level=INFO):
     ValueError: Raised when `level` has an invalid value.
   """
   if level not in converter.ABSL_LEVELS:
-    raise ValueError('Invalid absl.logging level {}'.format(level))
+    raise ValueError(f'Invalid absl.logging level {level}')
+  # absl:google3-begin(C++ logging only)
+  if is_using_cpp_logging():
+    cpp_level = converter.absl_to_cpp(level)
+    return pywrapbase.GetLogPath(cpp_level)
+  # absl:google3-end
   stream = get_absl_handler().python_handler.stream
-  if (stream == sys.stderr or stream == sys.stdout or
-      not hasattr(stream, 'name')):
+  if (
+      stream == sys.stderr
+      or stream == sys.stdout
+      or not hasattr(stream, 'name')
+  ):
     return ''
   else:
     return stream.name
@@ -656,23 +883,21 @@ def find_log_dir_and_names(program_name=None, log_dir=None):
   """Computes the directory and filename prefix for log file.
 
   Args:
-    program_name: str|None, the filename part of the path to the program that
-        is running without its extension.  e.g: if your program is called
-        'usr/bin/foobar.py' this method should probably be called with
-        program_name='foobar' However, this is just a convention, you can
-        pass in any string you want, and it will be used as part of the
-        log filename. If you don't pass in anything, the default behavior
-        is as described in the example.  In python standard logging mode,
-        the program_name will be prepended with py_ if it is the program_name
-        argument is omitted.
+    program_name: str|None, the filename part of the path to the program that is
+      running without its extension.  e.g: if your program is called
+      ``usr/bin/foobar.py`` this method should probably be called with
+      ``program_name='foobar`` However, this is just a convention, you can pass
+      in any string you want, and it will be used as part of the log filename.
+      If you don't pass in anything, the default behavior is as described in the
+      example.  In python standard logging mode, the program_name will be
+      prepended with ``py_`` if it is the ``program_name`` argument is omitted.
     log_dir: str|None, the desired log directory.
 
   Returns:
     (log_dir, file_prefix, symlink_prefix)
 
   Raises:
-    FileNotFoundError: raised in Python 3 when it cannot find a log directory.
-    OSError: raised in Python 2 when it cannot find a log directory.
+    FileNotFoundError: raised when it cannot find a log directory.
   """
   if not program_name:
     # Strip the extension (foobar.par becomes foobar, and
@@ -682,7 +907,7 @@ def find_log_dir_and_names(program_name=None, log_dir=None):
 
     # Prepend py_ to files so that python code gets a unique file, and
     # so that C++ libraries do not try to write to the same log files as us.
-    program_name = 'py_%s' % program_name
+    program_name = f'py_{program_name}'
 
   actual_log_dir = find_log_dir(log_dir=log_dir)
 
@@ -696,7 +921,7 @@ def find_log_dir_and_names(program_name=None, log_dir=None):
     else:
       username = 'unknown'
   hostname = socket.gethostname()
-  file_prefix = '%s.%s.%s.log' % (program_name, hostname, username)
+  file_prefix = f'{program_name}.{hostname}.{username}.log'
 
   return actual_log_dir, file_prefix, program_name
 
@@ -706,15 +931,17 @@ def find_log_dir(log_dir=None):
 
   Args:
     log_dir: str|None, if specified, the logfile(s) will be created in that
-        directory.  Otherwise if the --log_dir command-line flag is provided,
-        the logfile will be created in that directory.  Otherwise the logfile
-        will be created in a standard location.
+      directory.  Otherwise if the --log_dir command-line flag is provided, the
+      logfile will be created in that directory.  Otherwise the logfile will be
+      created in a standard location.
 
   Raises:
-    FileNotFoundError: raised in Python 3 when it cannot find a log directory.
-    OSError: raised in Python 2 when it cannot find a log directory.
+    FileNotFoundError: raised when it cannot find a log directory.
   """
   # Get a list of possible log dirs (will try to use them in order).
+  # NOTE: Google's internal implementation has a special handling for Google
+  # machines, which uses a list of directories. Hence the following uses `dirs`
+  # instead of a single directory.
   if log_dir:
     # log_dir was explicitly specified as an arg, so use it and it alone.
     dirs = [log_dir]
@@ -722,16 +949,22 @@ def find_log_dir(log_dir=None):
     # log_dir flag was provided, so use it and it alone (this mimics the
     # behavior of the same flag in logging.cc).
     dirs = [FLAGS['log_dir'].value]
+  # absl:google3-begin(Google production machine)
+  elif os.path.exists('/export/hda3/tmp') and os.path.isdir('/export/hda3/tmp'):
+    # Google production machine.  Drop /tmp as we don't want to fill up
+    # the root filesystem.
+    dirs = ['/export/hda3/tmp/', './']
+  # absl:google3-end
   else:
-    dirs = ['/tmp/', './']
+    dirs = [tempfile.gettempdir()]
 
   # Find the first usable log dir.
   for d in dirs:
     if os.path.isdir(d) and os.access(d, os.W_OK):
       return d
-  exception_class = OSError if six.PY2 else FileNotFoundError
-  raise exception_class(
-      "Can't find a writable directory for logs, tried %s" % dirs)
+  raise FileNotFoundError(
+      f"Can't find a writable directory for logs, tried {dirs}"
+  )
 
 
 def get_absl_log_prefix(record):
@@ -763,14 +996,15 @@ def get_absl_log_prefix(record):
       _get_thread_id(),
       record.filename,
       record.lineno,
-      critical_prefix)
+      critical_prefix,
+  )
 
 
 def skip_log_prefix(func):
-  """Skips reporting the prefix of a given function or name by ABSLLogger.
+  """Skips reporting the prefix of a given function or name by :class:`~absl.logging.ABSLLogger`.
 
   This is a convenience wrapper function / decorator for
-  `ABSLLogger.register_frame_to_skip`.
+  :meth:`~absl.logging.ABSLLogger.register_frame_to_skip`.
 
   If a callable function is provided, only that function will be skipped.
   If a function name is provided, all functions with the same name in the
@@ -788,31 +1022,34 @@ def skip_log_prefix(func):
     ValueError: The input is callable but does not have a function code object.
     TypeError: The input is neither callable nor a string.
   """
-  if callable(func):
-    func_code = getattr(func, '__code__', None)
-    if func_code is None:
-      raise ValueError('Input callable does not have a function code object.')
-    file_name = func_code.co_filename
-    func_name = func_code.co_name
-    func_lineno = func_code.co_firstlineno
-  elif isinstance(func, six.string_types):
-    file_name = get_absl_logger().findCaller()[0]
-    func_name = func
-    func_lineno = None
-  else:
-    raise TypeError('Input is neither callable nor a string.')
+  match func:
+    case _ if callable(func):
+      func_code = getattr(func, '__code__', None)
+      if func_code is None:
+        raise ValueError('Input callable does not have a function code object.')
+      file_name = func_code.co_filename
+      func_name = func_code.co_name
+      func_lineno = func_code.co_firstlineno
+    case str():
+      file_name = get_absl_logger().findCaller()[0]
+      func_name = func
+      func_lineno = None
+    case _:
+      raise TypeError('Input is neither callable nor a string.')
   ABSLLogger.register_frame_to_skip(file_name, func_name, func_lineno)
   return func
 
 
 def _is_non_absl_fatal_record(log_record):
-  return (log_record.levelno >= logging.FATAL and
-          not log_record.__dict__.get(_ABSL_LOG_FATAL, False))
+  return log_record.levelno >= logging.FATAL and not log_record.__dict__.get(
+      _ABSL_LOG_FATAL, False
+  )
 
 
 def _is_absl_fatal_record(log_record):
-  return (log_record.levelno >= logging.FATAL and
-          log_record.__dict__.get(_ABSL_LOG_FATAL, False))
+  return log_record.levelno >= logging.FATAL and log_record.__dict__.get(
+      _ABSL_LOG_FATAL, False
+  )
 
 
 # Indicates if we still need to warn about pre-init logs going to stderr.
@@ -823,7 +1060,7 @@ class PythonHandler(logging.StreamHandler):
   """The handler class used by Abseil Python logging implementation."""
 
   def __init__(self, stream=None, formatter=None):
-    super(PythonHandler, self).__init__(stream)
+    super().__init__(stream)
     self.setFormatter(formatter or PythonFormatter())
 
   def start_logging_to_file(self, program_name=None, log_dir=None):
@@ -831,18 +1068,14 @@ class PythonHandler(logging.StreamHandler):
     FLAGS.logtostderr = False
 
     actual_log_dir, file_prefix, symlink_prefix = find_log_dir_and_names(
-        program_name=program_name, log_dir=log_dir)
+        program_name=program_name, log_dir=log_dir
+    )
 
-    basename = '%s.INFO.%s.%d' % (
-        file_prefix,
-        time.strftime('%Y%m%d-%H%M%S', time.localtime(time.time())),
-        os.getpid())
+    timestamp = time.strftime('%Y%m%d-%H%M%S', time.localtime(time.time()))
+    basename = f'{file_prefix}.INFO.{timestamp}.{os.getpid()}'
     filename = os.path.join(actual_log_dir, basename)
 
-    if six.PY2:
-      self.stream = open(filename, 'a')
-    else:
-      self.stream = open(filename, 'a', encoding='utf-8')
+    self.stream = open(filename, 'a', encoding='utf-8')
 
     # os.symlink is not available on Windows Python 2.
     if getattr(os, 'symlink', None):
@@ -852,7 +1085,7 @@ class PythonHandler(logging.StreamHandler):
         if os.path.islink(symlink):
           os.unlink(symlink)
         os.symlink(os.path.basename(filename), symlink)
-      except EnvironmentError:
+      except OSError:
         # If it fails, we're sad but it's no error.  Commonly, this
         # fails because the symlink was created by another user and so
         # we can't modify it
@@ -869,8 +1102,9 @@ class PythonHandler(logging.StreamHandler):
     """Flushes all log files."""
     self.acquire()
     try:
-      self.stream.flush()
-    except (EnvironmentError, ValueError):
+      if self.stream and hasattr(self.stream, 'flush'):
+        self.stream.flush()
+    except (OSError, ValueError):
       # A ValueError is thrown if we try to flush a closed file.
       pass
     finally:
@@ -890,20 +1124,20 @@ class PythonHandler(logging.StreamHandler):
     old_stream = self.stream
     self.stream = sys.stderr
     try:
-      super(PythonHandler, self).emit(record)
+      super().emit(record)
     finally:
       self.stream = old_stream
 
   def emit(self, record):
     """Prints a record out to some streams.
 
-    If FLAGS.logtostderr is set, it will print to sys.stderr ONLY.
-    If FLAGS.alsologtostderr is set, it will print to sys.stderr.
-    If FLAGS.logtostderr is not set, it will log to the stream
-      associated with the current thread.
+    1. If ``FLAGS.logtostderr`` is set, it will print to ``sys.stderr`` ONLY.
+    2. If ``FLAGS.alsologtostderr`` is set, it will print to ``sys.stderr``.
+    3. If ``FLAGS.logtostderr`` is not set, it will log to the stream
+        associated with the current thread.
 
     Args:
-      record: logging.LogRecord, the record to emit.
+      record: :class:`logging.LogRecord`, the record to emit.
     """
     # People occasionally call logging functions at import time before
     # our flags may have even been defined yet, let alone even parsed, as we
@@ -916,17 +1150,20 @@ class PythonHandler(logging.StreamHandler):
       global _warn_preinit_stderr
       if _warn_preinit_stderr:
         sys.stderr.write(
-            'WARNING: Logging before flag parsing goes to stderr.\n')
+            'WARNING: Logging before flag parsing goes to stderr.\n'
+        )
         _warn_preinit_stderr = False
       self._log_to_stderr(record)
     elif FLAGS['logtostderr'].value:
       self._log_to_stderr(record)
     else:
-      super(PythonHandler, self).emit(record)
+      super().emit(record)
       stderr_threshold = converter.string_to_standard(
-          FLAGS['stderrthreshold'].value)
-      if ((FLAGS['alsologtostderr'].value or level >= stderr_threshold) and
-          self.stream != sys.stderr):
+          FLAGS['stderrthreshold'].value
+      )
+      if (
+          FLAGS['alsologtostderr'].value or level >= stderr_threshold
+      ) and self.stream != sys.stderr:
         self._log_to_stderr(record)
     # Die when the record is created from ABSLLogger and level is FATAL.
     if _is_absl_fatal_record(record):
@@ -947,23 +1184,145 @@ class PythonHandler(logging.StreamHandler):
         # explicitly.
         user_managed = sys.stderr, sys.stdout, sys.__stderr__, sys.__stdout__
         if self.stream not in user_managed and (
-            not hasattr(self.stream, 'isatty') or not self.stream.isatty()):
+            not hasattr(self.stream, 'isatty') or not self.stream.isatty()
+        ):
           self.stream.close()
       except ValueError:
         # A ValueError is thrown if we try to run isatty() on a closed file.
         pass
-      super(PythonHandler, self).close()
+      super().close()
     finally:
       self.release()
 
 
+# absl:google3-begin(C++ logging only)
+class _CppLogFormatter(logging.Formatter):
+
+  def format(self, record):
+    message = super().format(record)
+    if _is_non_absl_fatal_record(record):
+      message = _CRITICAL_PREFIX + message
+    return message
+
+
+def _elide_long_message(message):
+  """Elides the middle portion of a message if it exceeds 15K bytes."""
+  # C++ logging has a limit of 15K (b/62514939). Elide the middle portion
+  # of the message if it exceeds this limit to prevent truncation of the
+  # tail (which usually contains the most useful traceback info).
+  max_bytes = 15_000
+  message_bytes = message.encode('utf-8')
+  if len(message_bytes) > max_bytes:
+    keep_bytes = 7_000
+    elided_bytes = len(message_bytes) - (keep_bytes * 2)
+    # Handle characters that may be split when slicing the byte string.
+    prefix = message_bytes[:keep_bytes].decode('utf-8', errors='ignore')
+    suffix = message_bytes[-keep_bytes:].decode('utf-8', errors='ignore')
+    return (
+        f'{prefix}\n... [{elided_bytes:_} bytes elided due to b/62514939]'
+        f' ...\n{suffix}'
+    )
+  else:
+    return message
+
+
+class CppHandler(logging.Handler):
+  """Writes LogRecords using the pywrapbase module."""
+
+  def __init__(self):
+    super().__init__()
+    self.setFormatter(_CppLogFormatter())
+
+  def start_logging_to_file(self, program_name=None, log_dir=None):
+    """Send log messages to files instead of standard error."""
+    _ensure_pywrapbase()
+    FLAGS.logtostderr = False
+
+    actual_log_dir, file_prefix, symlink_prefix = find_log_dir_and_names(
+        program_name=program_name, log_dir=log_dir
+    )
+
+    absolute_prefix = os.path.join(actual_log_dir, file_prefix)
+
+    pywrapbase.SetLogDestination(pywrapbase.INFO, f'{absolute_prefix}.INFO.')
+    pywrapbase.SetLogSymlink(pywrapbase.INFO, symlink_prefix)
+    pywrapbase.SetLogDestination(
+        pywrapbase.WARNING, f'{absolute_prefix}.WARNING.'
+    )
+    pywrapbase.SetLogSymlink(pywrapbase.WARNING, symlink_prefix)
+    pywrapbase.SetLogDestination(pywrapbase.ERROR, f'{absolute_prefix}.ERROR.')
+    pywrapbase.SetLogSymlink(pywrapbase.ERROR, symlink_prefix)
+    pywrapbase.SetLogDestination(pywrapbase.FATAL, f'{absolute_prefix}.FATAL.')
+    pywrapbase.SetLogSymlink(pywrapbase.FATAL, symlink_prefix)
+
+  def emit(self, record):
+    """Emits the record to the pywrapbase LogMessageScript method."""
+    _ensure_pywrapbase()
+    try:
+      level = record.levelno
+      if _is_non_absl_fatal_record(record):
+        # When the level is FATAL, but not logged from absl, lower the level so
+        # it's treated as ERROR.
+        level = logging.ERROR
+      cpp_level = converter.standard_to_cpp(level)
+      # (formatter should not add prefix, LogMessageScript() will do that)
+      formatted_message = self.format(record)
+      message_to_log = _elide_long_message(formatted_message)
+
+      pywrapbase.LogMessageScript(
+          record.pathname, record.lineno, cpp_level, message_to_log
+      )
+    except Exception:  # pylint:disable=broad-except
+      self.handleError(record)
+
+  def flush(self):
+    """Flushes all log files."""
+    # This will be None at time of exit if we didn't activate_cpp_handler
+    if pywrapbase:
+      pywrapbase.FlushLogSinks()
+
+  def handle(self, record):
+    """Conditionally emits the specified logging record.
+
+    This method is identical to parent class implementation, except that
+    emit() is not wrapped with acquire() and release(). Serialization of
+    logging calls is handled by C++ logging.
+
+    This provides minor performance improvement: there is one locking layer
+    less and stalls in C++ logging do not force concurrent python logging
+    calls to be serialized on python lock, requiring them to reacquire GIL,
+    I/O lock, format the log buffer, and call C++ logging after the stall is
+    over.
+
+    Args:
+      record: logging.LogRecord, the record to be formatted.
+
+    Returns:
+      True if record was processed.
+    """
+    rv = self.filter(record)
+    if rv:
+      self.emit(record)
+    return rv
+
+  def use_absl_log_file(self, program_name=None, log_dir=None):
+    """Conditionally log to files, based on --logtostderr."""
+    _ensure_pywrapbase()
+    if FLAGS['logtostderr'].value:
+      pywrapbase.LogToStderr()
+    else:
+      self.start_logging_to_file(program_name=program_name, log_dir=log_dir)
+
+
+# absl:google3-end
 class ABSLHandler(logging.Handler):
   """Abseil Python logging module's log handler."""
 
   def __init__(self, python_logging_formatter):
-    super(ABSLHandler, self).__init__()
+    super().__init__()
 
     self._python_handler = PythonHandler(formatter=python_logging_formatter)
+    self._cpp_handler = CppHandler()  # absl:google3-only(C++ logging only)
     self.activate_python_handler()
 
   def format(self, record):
@@ -979,7 +1338,7 @@ class ABSLHandler(logging.Handler):
     self._current_handler.flush()
 
   def close(self):
-    super(ABSLHandler, self).close()
+    super().close()
     self._current_handler.close()
 
   def handle(self, record):
@@ -996,6 +1355,22 @@ class ABSLHandler(logging.Handler):
     """Uses the Python logging handler as the current logging handler."""
     self._current_handler = self._python_handler
 
+  # absl:google3-begin(C++ logging only)
+  @property
+  def cpp_handler(self):
+    return self._cpp_handler
+
+  def activate_cpp_handler(self):
+    """Uses the C++ logging handler as the current logging handler."""
+    # Get the module only if it has already been imported.  Not forcing
+    # the import here allows us to test both behaviors in one unittest.
+    _ensure_pywrapbase()
+    self._current_handler = self._cpp_handler
+
+  def is_using_cpp_logging(self):
+    return isinstance(self._current_handler, CppHandler)
+
+  # absl:google3-end
   def use_absl_log_file(self, program_name=None, log_dir=None):
     self._current_handler.use_absl_log_file(program_name, log_dir)
 
@@ -1004,7 +1379,7 @@ class ABSLHandler(logging.Handler):
 
 
 class PythonFormatter(logging.Formatter):
-  """Formatter class used by PythonHandler."""
+  """Formatter class used by :class:`~absl.logging.PythonHandler`."""
 
   def format(self, record):
     """Appends the message from the record to the results of the prefix.
@@ -1015,14 +1390,16 @@ class PythonFormatter(logging.Formatter):
     Returns:
       The formatted string representing the record.
     """
-    if (not FLAGS['showprefixforinfo'].value and
-        FLAGS['verbosity'].value == converter.ABSL_INFO and
-        record.levelno == logging.INFO and
-        _absl_handler.python_handler.stream == sys.stderr):
+    if (
+        not FLAGS['showprefixforinfo'].value
+        and FLAGS['verbosity'].value == converter.ABSL_INFO
+        and record.levelno == logging.INFO
+        and _absl_handler.python_handler.stream == sys.stderr
+    ):
       prefix = ''
     else:
       prefix = get_absl_log_prefix(record)
-    return prefix + super(PythonFormatter, self).format(record)
+    return prefix + super().format(record)
 
 
 class ABSLLogger(logging.getLoggerClass()):
@@ -1037,6 +1414,7 @@ class ABSLLogger(logging.getLoggerClass()):
   ABSLLogger know which method from which file should be
   excluded from the walk backwards through the stack.
   """
+
   _frames_to_skip = set()
 
   def findCaller(self, stack_info=False, stacklevel=1):
@@ -1053,10 +1431,11 @@ class ABSLLogger(logging.getLoggerClass()):
 
     Args:
       stack_info: bool, when True, include the stack trace as a fourth item
-          returned.  On Python 3 there are always four items returned - the
-          fourth will be None when this is False.  On Python 2 the stdlib
-          base class API only returns three items.  We do the same when this
-          new parameter is unspecified or False for compatibility.
+        returned.  On Python 3 there are always four items returned - the fourth
+        will be None when this is False.  On Python 2 the stdlib base class API
+        only returns three items.  We do the same when this new parameter is
+        unspecified or False for compatibility.
+      stacklevel: int, if greater than 1, that number of frames will be skipped.
 
     Returns:
       (filename, lineno, methodname[, sinfo]) of the calling method.
@@ -1065,58 +1444,73 @@ class ABSLLogger(logging.getLoggerClass()):
     # Use sys._getframe(2) instead of logging.currentframe(), it's slightly
     # faster because there is one less frame to traverse.
     frame = sys._getframe(2)  # pylint: disable=protected-access
+    frame_to_return = None
 
     while frame:
       code = frame.f_code
-      if (_LOGGING_FILE_PREFIX not in code.co_filename and
-          (code.co_filename, code.co_name,
-           code.co_firstlineno) not in f_to_skip and
-          (code.co_filename, code.co_name) not in f_to_skip):
-        if six.PY2 and not stack_info:
-          return (code.co_filename, frame.f_lineno, code.co_name)
-        else:
-          sinfo = None
-          if stack_info:
-            out = io.StringIO()
-            out.write(u'Stack (most recent call last):\n')
-            traceback.print_stack(frame, file=out)
-            sinfo = out.getvalue().rstrip(u'\n')
-          return (code.co_filename, frame.f_lineno, code.co_name, sinfo)
+      if (
+          _LOGGING_FILE_PREFIX not in code.co_filename
+          and (code.co_filename, code.co_name, code.co_firstlineno)
+          not in f_to_skip
+          and (code.co_filename, code.co_name) not in f_to_skip
+      ):
+        frame_to_return = frame
+        stacklevel -= 1
+        if stacklevel <= 0:
+          break
       frame = frame.f_back
 
+    if frame_to_return is not None:
+      sinfo = None
+      if stack_info:
+        out = io.StringIO()
+        out.write('Stack (most recent call last):\n')
+        traceback.print_stack(frame, file=out)
+        sinfo = out.getvalue().rstrip('\n')
+      return (
+          frame_to_return.f_code.co_filename,
+          frame_to_return.f_lineno,
+          frame_to_return.f_code.co_name,
+          sinfo,
+      )
+
+    return None
+
   def critical(self, msg, *args, **kwargs):
-    """Logs 'msg % args' with severity 'CRITICAL'."""
+    """Logs ``msg % args`` with severity ``CRITICAL``."""
     self.log(logging.CRITICAL, msg, *args, **kwargs)
 
   def fatal(self, msg, *args, **kwargs):
-    """Logs 'msg % args' with severity 'FATAL'."""
+    """Logs ``msg % args`` with severity ``FATAL``."""
     self.log(logging.FATAL, msg, *args, **kwargs)
 
   def error(self, msg, *args, **kwargs):
-    """Logs 'msg % args' with severity 'ERROR'."""
+    """Logs ``msg % args`` with severity ``ERROR``."""
     self.log(logging.ERROR, msg, *args, **kwargs)
 
   def warn(self, msg, *args, **kwargs):
-    """Logs 'msg % args' with severity 'WARN'."""
-    if six.PY3:
-      warnings.warn("The 'warn' method is deprecated, use 'warning' instead",
-                    DeprecationWarning, 2)
+    """Logs ``msg % args`` with severity ``WARN``."""
+    warnings.warn(
+        "The 'warn' method is deprecated, use 'warning' instead",
+        DeprecationWarning,
+        2,
+    )
     self.log(logging.WARN, msg, *args, **kwargs)
 
   def warning(self, msg, *args, **kwargs):
-    """Logs 'msg % args' with severity 'WARNING'."""
+    """Logs ``msg % args`` with severity ``WARNING``."""
     self.log(logging.WARNING, msg, *args, **kwargs)
 
   def info(self, msg, *args, **kwargs):
-    """Logs 'msg % args' with severity 'INFO'."""
+    """Logs ``msg % args`` with severity ``INFO``."""
     self.log(logging.INFO, msg, *args, **kwargs)
 
   def debug(self, msg, *args, **kwargs):
-    """Logs 'msg % args' with severity 'DEBUG'."""
+    """Logs ``msg % args`` with severity ``DEBUG``."""
     self.log(logging.DEBUG, msg, *args, **kwargs)
 
   def log(self, level, msg, *args, **kwargs):
-    """Logs a message at a cetain level substituting in the supplied arguments.
+    """Logs a message at a certain level substituting in the supplied arguments.
 
     This method behaves differently in python and c++ modes.
 
@@ -1126,21 +1520,38 @@ class ABSLLogger(logging.getLoggerClass()):
       *args: The arguments to substitute in the message.
       **kwargs: The keyword arguments to substitute in the message.
     """
+    # absl:google3-begin(C++ logging only)
+    # NOTE: this logic is replicated in part in functions vlog(), log()
+    # and vlog_is_on(). Keep these in sync until this is refactored.
+    if level <= logging.DEBUG and pywrapbase:
+      # May need to bump the level based on the --vmodule flag.
+      cpp_verbosity_level = logging.DEBUG - (level - 1)
+      file_name = self.findCaller()[0]
+      caller_vlog_is_on = pywrapbase.VlogIsOn(file_name, cpp_verbosity_level)
+      if caller_vlog_is_on:
+        # Bump the level to INFO. This is OK because those logs:
+        # 1. will be logged if and only if verbosity is INFO or less severe.
+        # 2. share the same prefix with INFO logs.
+        level = logging.INFO
+      else:
+        return
+
+    # absl:google3-end
     if level >= logging.FATAL:
       # Add property to the LogRecord created by this logger.
       # This will be used by the ABSLHandler to determine whether it should
       # treat CRITICAL/FATAL logs as really FATAL.
       extra = kwargs.setdefault('extra', {})
       extra[_ABSL_LOG_FATAL] = True
-    super(ABSLLogger, self).log(level, msg, *args, **kwargs)
+    super().log(level, msg, *args, **kwargs)
 
   def handle(self, record):
-    """Calls handlers without checking Logger.disabled.
+    """Calls handlers without checking ``Logger.disabled``.
 
-    Non-root loggers are set to disabled after setup with logging.config if
-    it's not explicitly specified. Historically, absl logging will not be
+    Non-root loggers are set to disabled after setup with :func:`logging.config`
+    if it's not explicitly specified. Historically, absl logging will not be
     disabled by that. To maintaining this behavior, this function skips
-    checking the Logger.disabled bit.
+    checking the ``Logger.disabled`` bit.
 
     This logger can still be disabled by adding a filter that filters out
     everything.
@@ -1155,8 +1566,8 @@ class ABSLLogger(logging.getLoggerClass()):
   def register_frame_to_skip(cls, file_name, function_name, line_number=None):
     """Registers a function name to skip when walking the stack.
 
-    The ABSLLogger sometimes skips method calls on the stack
-    to make the log messages meaningful in their appropriate context.
+    The :class:`~absl.logging.ABSLLogger` sometimes skips method calls on the
+    stack to make the log messages meaningful in their appropriate context.
     This method registers a function from a particular file as one
     which should be skipped.
 
@@ -1164,8 +1575,8 @@ class ABSLLogger(logging.getLoggerClass()):
       file_name: str, the name of the file that contains the function.
       function_name: str, the name of the function to skip.
       line_number: int, if provided, only the function with this starting line
-          number will be skipped. Otherwise, all functions with the same name
-          in the file will be skipped.
+        number will be skipped. Otherwise, all functions with the same name in
+        the file will be skipped.
     """
     if line_number is not None:
       cls._frames_to_skip.add((file_name, function_name, line_number))
@@ -1183,20 +1594,35 @@ def _get_thread_id():
   Returns:
     Thread ID unique to this process (unsigned)
   """
-  thread_id = _thread_lib.get_ident()
+  # absl:google3-begin(C++ logging only)
+  if pywrapbase:
+    thread_id = pywrapbase.GetTID()
+  else:
+    thread_id = threading.get_ident()
+  # absl:google3-end
+  # absl:oss-insert thread_id = threading.get_ident()
   return thread_id & _THREAD_ID_MASK
 
 
 def get_absl_logger():
   """Returns the absl logger instance."""
+  assert _absl_logger is not None
   return _absl_logger
 
 
 def get_absl_handler():
   """Returns the absl handler instance."""
+  assert _absl_handler is not None
   return _absl_handler
 
 
+# absl:google3-begin(C++ logging only)
+def is_using_cpp_logging():
+  """Returns True if the current handler is a CppHandler."""
+  return _absl_handler.is_using_cpp_logging()
+
+
+# absl:google3-end
 def use_python_logging(quiet=False):
   """Uses the python implementation of the logging code.
 
@@ -1208,13 +1634,30 @@ def use_python_logging(quiet=False):
     info('Restoring pure python logging')
 
 
+# absl:google3-begin(C++ logging only)
+def use_cpp_logging(quiet=False):
+  """Diverts logging calls to the Abseil C++ logging code.
+
+  Args:
+    quiet: bool, if True, no logging message about switching logging type.
+  """
+  get_absl_handler().activate_cpp_handler()
+  if not quiet:
+    info(
+        'C++ logging enabled; logging.debug will only'
+        ' be visible when --verbosity/-v are 1 or higher'
+    )
+
+
+# absl:google3-end
 _attempted_to_remove_stderr_stream_handlers = False
 
 
 def use_absl_handler():
   """Uses the ABSL logging handler for logging.
 
-  This method is called in app.run() so the absl handler is used in absl apps.
+  This method is called in :func:`app.run()<absl.app.run>` so the absl handler
+  is used in absl apps.
   """
   global _attempted_to_remove_stderr_stream_handlers
   if not _attempted_to_remove_stderr_stream_handlers:
@@ -1223,8 +1666,10 @@ def use_absl_handler():
     # emit to stderr. Those handlers are most commonly added when
     # logging.info/debug is called before calling use_absl_handler().
     handlers = [
-        h for h in logging.root.handlers
-        if isinstance(h, logging.StreamHandler) and h.stream == sys.stderr]
+        h
+        for h in logging.root.handlers
+        if isinstance(h, logging.StreamHandler) and h.stream == sys.stderr
+    ]
     for h in handlers:
       logging.root.removeHandler(h)
     _attempted_to_remove_stderr_stream_handlers = True
@@ -1236,6 +1681,49 @@ def use_absl_handler():
     FLAGS['logger_levels']._update_logger_levels()  # pylint: disable=protected-access
 
 
+# absl:google3-begin(Google-only function)
+def gwq_status_message(msg):
+  """Writes the specified status message to the file ./STATUS.
+
+  The write is done atomically by writing the new data to a temporary file
+  and then renaming the temporary file over the STATUS file.
+
+  GWQ stands for Global Work Queue,
+  see https://glossary.googleplex.com/terms/25056.
+
+  See also google/base/logging.cc for the C++ implementation
+  (GWQStatusMessage).
+
+  Args:
+    msg: The message to be written to the ./STATUS file.
+  """
+  status_dir = os.getenv('GOOGLE_STATUS_DIR')
+  if status_dir is None:
+    return
+
+  real_file = os.path.join(status_dir, 'STATUS')
+  try:
+    # In python3 the default mode 'w+b' will not accept a string to be written,
+    # so set the default to text mode in both 2 and 3.
+    with tempfile.NamedTemporaryFile(
+        mode='w+', dir=status_dir, prefix='STATUS.', suffix='.new', delete=False
+    ) as f:
+      temp_file = f.name
+      f.write(msg)
+  except OSError:
+    warning(
+        'could not write temp file like %s/STATUS.XXX.new',
+        status_dir,
+        exc_info=True,
+    )
+    return
+  try:
+    os.rename(temp_file, real_file)
+  except OSError:
+    warning('could not rename %s to %s', temp_file, real_file, exc_info=True)
+
+
+# absl:google3-end
 def _initialize():
   """Initializes loggers and handlers."""
   global _absl_logger, _absl_handler

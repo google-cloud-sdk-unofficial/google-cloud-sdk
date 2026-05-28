@@ -22,6 +22,7 @@ def tests_impl(
     integration: bool = False,
     pytest_extra_args: list[str] = [],
     dependency_group: str = "dev",
+    no_default_groups: bool = False,
 ) -> None:
     # Retrieve sys info from the Python implementation under test
     # to avoid enabling memray when nox runs under CPython but tests PyPy
@@ -43,6 +44,7 @@ def tests_impl(
         "uv",
         "sync",
         "--frozen",
+        *("--no-default-groups",) if no_default_groups else (),
         "--group",
         dependency_group,
         *(f"--extra={extra}" for extra in (extras.split(",") if extras else ())),
@@ -70,7 +72,7 @@ def tests_impl(
 
     # Environment variables being passed to the pytest run.
     pytest_session_envvars = {
-        "PYTHONWARNINGS": "always::DeprecationWarning",
+        "PYTHONWARNINGS": "always::FutureWarning",
         "COVERAGE_CORE": "sysmon",
     }
 
@@ -104,7 +106,6 @@ def tests_impl(
 
 @nox.session(
     python=[
-        "3.9",
         "3.10",
         "3.11",
         "3.12",
@@ -112,7 +113,6 @@ def tests_impl(
         "3.14",
         "3.14t",
         "3.15",
-        "pypy3.10",
         "pypy3.11",
     ]
 )
@@ -126,6 +126,22 @@ def test_integration(session: nox.Session) -> None:
     """Run integration tests"""
     session.env["UV_PROJECT_ENVIRONMENT"] = session.virtualenv.location
     tests_impl(session, integration=True)
+
+
+# We use 3.13 in GitHub Actions.
+@nox.session(python="3.13")
+def test_min_pyopenssl(session: nox.Session) -> None:
+    """
+    Check that we do not break with the documented minimum supported
+    pyOpenSSL version.
+    """
+    session.env["UV_PROJECT_ENVIRONMENT"] = session.virtualenv.location
+    tests_impl(
+        session,
+        pytest_extra_args=["-k", "pyopenssl"],
+        dependency_group="dev-min-pyopenssl",
+        no_default_groups=True,
+    )
 
 
 @nox.session(python="3")
@@ -258,7 +274,7 @@ def emscripten(session: nox.Session, runner: str) -> None:
         dist_dir = Path(os.environ["PYODIDE_ROOT"]) / "dist"
     else:
         # we don't have a build tree
-        pyodide_version = "0.28.1"
+        pyodide_version = "0.29.3"
 
         pyodide_artifacts_path = Path(session.cache_dir) / f"pyodide-{pyodide_version}"
         if not pyodide_artifacts_path.exists():

@@ -12,8 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Describe the AutokeyConfig of a folder."""
-
+"""Describe the AutokeyConfig of a folder or project."""
 
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
@@ -21,38 +20,7 @@ from googlecloudsdk.command_lib.kms import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
-  r"""Describe the AutokeyConfig of a folder.
-
-  {command} can be used to retrieve the AutokeyConfig of a folder.
-
-  ## EXAMPLES
-
-  The following command retrieves the AutokeyConfig of a folder having folder-id
-  `123`:
-
-    $ {command} --folder=123
-  """
-
-  @staticmethod
-  def Args(parser):
-    flags.AddFolderIdFlag(parser, True)
-
-  def Run(self, args):
-    client = cloudkms_base.GetClientInstance()
-    messages = cloudkms_base.GetMessagesModule()
-    autokey_config_name = 'folders/{0}/autokeyConfig'.format(
-        args.folder)
-
-    return client.folders.GetAutokeyConfig(
-        messages.CloudkmsFoldersGetAutokeyConfigRequest(
-            name=autokey_config_name))
-
-
-@base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class DescribeFolderAndProject(base.DescribeCommand):
   r"""Describe the AutokeyConfig of a folder or project.
 
   {command} can be used to retrieve the AutokeyConfig of a folder or project.

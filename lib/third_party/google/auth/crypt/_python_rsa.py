@@ -22,6 +22,7 @@ certificates. There is no support for p12 files.
 from __future__ import absolute_import
 
 import io
+import warnings
 
 from pyasn1.codec.der import decoder  # type: ignore
 from pyasn1_modules import pem  # type: ignore
@@ -38,6 +39,11 @@ _CERTIFICATE_MARKER = b"-----BEGIN CERTIFICATE-----"
 _PKCS1_MARKER = ("-----BEGIN RSA PRIVATE KEY-----", "-----END RSA PRIVATE KEY-----")
 _PKCS8_MARKER = ("-----BEGIN PRIVATE KEY-----", "-----END PRIVATE KEY-----")
 _PKCS8_SPEC = PrivateKeyInfo()
+
+_warning_msg = (
+    "The 'rsa' library is deprecated and will be removed in a future release. "
+    "Please migrate to 'cryptography'."
+)
 
 
 def _bit_list_to_bytes(bit_list):
@@ -64,12 +70,21 @@ def _bit_list_to_bytes(bit_list):
 class RSAVerifier(base.Verifier):
     """Verifies RSA cryptographic signatures using public keys.
 
+    .. deprecated::
+        The `rsa` library has been archived. Please migrate to
+        `cryptography`.
+
     Args:
         public_key (rsa.key.PublicKey): The public key used to verify
             signatures.
     """
 
     def __init__(self, public_key):
+        warnings.warn(
+            _warning_msg,
+            category=DeprecationWarning,
+            stacklevel=2,
+        )
         self._pubkey = public_key
 
     @_helpers.copy_docstring(base.Verifier)
@@ -116,6 +131,10 @@ class RSAVerifier(base.Verifier):
 class RSASigner(base.Signer, base.FromServiceAccountMixin):
     """Signs messages with an RSA private key.
 
+    .. deprecated::
+        The `rsa` library has been archived. Please migrate to
+        `cryptography`.
+
     Args:
         private_key (rsa.key.PrivateKey): The private key to sign with.
         key_id (str): Optional key ID used to identify this private key. This
@@ -124,6 +143,11 @@ class RSASigner(base.Signer, base.FromServiceAccountMixin):
     """
 
     def __init__(self, private_key, key_id=None):
+        warnings.warn(
+            _warning_msg,
+            category=DeprecationWarning,
+            stacklevel=2,
+        )
         self._key = private_key
         self._key_id = key_id
 

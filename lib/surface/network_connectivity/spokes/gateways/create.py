@@ -28,7 +28,7 @@ from googlecloudsdk.core import resources
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create a new Gateway spoke.
 
@@ -37,7 +37,7 @@ class Create(base.Command):
 
   @staticmethod
   def Args(parser):
-    messages = apis.GetMessagesModule('networkconnectivity', 'v1beta')
+    messages = apis.GetMessagesModule('networkconnectivity', 'v1')
 
     flags.AddSpokeResourceArg(
         parser, 'to create', flags.ResourceLocationType.REGION_ONLY
@@ -49,10 +49,7 @@ class Create(base.Command):
     flags.AddGroupFlag(parser, required=True)
     flags.AddDescriptionFlag(parser, 'Description of the spoke to create.')
     flags.AddAsyncFlag(parser)
-    flags.AddLandingNetworkFlag(parser)
-    flags.AddCapacityFlag(
-        messages.GoogleCloudNetworkconnectivityV1betaGateway, parser
-    )
+    flags.AddCapacityFlag(messages.Gateway, parser)
     flags.AddIpRangeReservationsFlag(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
@@ -109,13 +106,6 @@ class Create(base.Command):
           for ip_range in args.ip_range_reservations
       ]
 
-      if args.landing_network:
-        landing_network = client.messages.LandingNetwork(
-            network=args.landing_network
-        )
-      else:
-        landing_network = None
-
       spoke = client.messages.Spoke(
           hub=args.hub,
           group=args.group,
@@ -123,7 +113,7 @@ class Create(base.Command):
               capacity=flags.GetCapacityArg(
                   client.messages.Gateway
               ).GetEnumForChoice(args.capacity),
-              landingNetwork=landing_network,
+              landingNetwork=None,
               ipRangeReservations=range_reservations,
           ),
           description=args.description,
@@ -158,18 +148,61 @@ class Create(base.Command):
     return res
 
 
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create a new Gateway spoke.
+
+  Create a new Gateway spoke.
+  """
+
+  @staticmethod
+  def Args(parser):
+    messages = apis.GetMessagesModule('networkconnectivity', 'v1beta')
+
+    flags.AddSpokeResourceArg(
+        parser, 'to create', flags.ResourceLocationType.REGION_ONLY
+    )
+    flags.AddRegionFlag(
+        parser, supports_region_wildcard=False, hidden=False, required=True
+    )
+    flags.AddHubFlag(parser)
+    flags.AddGroupFlag(parser, required=True)
+    flags.AddDescriptionFlag(parser, 'Description of the spoke to create.')
+    flags.AddAsyncFlag(parser)
+    flags.AddLandingNetworkFlag(parser)
+    flags.AddCapacityFlag(
+        messages.GoogleCloudNetworkconnectivityV1betaGateway, parser
+    )
+    flags.AddIpRangeReservationsFlag(parser)
+    labels_util.AddCreateLabelsFlags(parser)
+
+
 Create.detailed_help = {
     'EXAMPLES': """ \
-  To create a Gateway spoke named ``myspoke'' in us-central1, with a capacity of 10 Gbps and IP range reservations of 10.1.1.0/24
+  To create a Gateway spoke named ``myspoke'' in us-central1, with a capacity of 10 Gbps and IP range reservations of 10.1.0.0/23, run:
 
-    $ {command} myspoke --hub=my-hub --region us-central1 --group gateways --capacity 10g --ip-range-reservations 10.1.1.0/24
-
-  To create a Gateway spoke named ``myspoke'' in us-central1, with a capacity of 10 Gbps, IP range reservations of 10.1.1.0/24 and 10.1.2.0/24, and a landing network of my-vpc, run:
-
-    $ {command} myspoke --hub=my-hub --region us-central1 --group gateways --capacity 10g --ip-range-reservations 10.1.1.0/24,10.1.2.0/24  --landing-network my-vpc
+    $ {command} myspoke --hub=my-hub --region us-central1 --group gateways --capacity 10g --ip-range-reservations 10.1.0.0/23
   """,
     'API REFERENCE': """ \
   This command uses the networkconnectivity/v1 API. The full documentation
+  for this API can be found at:
+  https://cloud.google.com/network-connectivity/docs/reference/networkconnectivity/rest
+  """,
+}
+
+CreateBeta.detailed_help = {
+    'EXAMPLES': """ \
+  To create a Gateway spoke named ``myspoke'' in us-central1, with a capacity of 10 Gbps and IP range reservations of 10.1.0.0/23, run:
+
+    $ {command} myspoke --hub=my-hub --region us-central1 --group gateways --capacity 10g --ip-range-reservations 10.1.0.0/23
+
+  To create a Gateway spoke named ``myspoke'' in us-central1, with a capacity of 10 Gbps, IP range reservations of 10.1.0.0/23, and a landing network of my-vpc, run:
+
+    $ {command} myspoke --hub=my-hub --region us-central1 --group gateways --capacity 10g --ip-range-reservations 10.1.0.0/23 --landing-network my-vpc
+  """,
+    'API REFERENCE': """ \
+  This command uses the networkconnectivity/v1beta API. The full documentation
   for this API can be found at:
   https://cloud.google.com/network-connectivity/docs/reference/networkconnectivity/rest
   """,

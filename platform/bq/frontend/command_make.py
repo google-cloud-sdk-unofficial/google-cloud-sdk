@@ -609,7 +609,8 @@ class Make(bigquery_command.BigqueryCmd):
     flags.DEFINE_boolean(
         'reservation_assignment',
         None,
-        'Create a reservation assignment.',
+        'Create a reservation assignment.'
+        ' If assignment ID not specified, it will be assigned automatically.',
         flag_values=fv,
     )
     flags.DEFINE_enum(
@@ -898,6 +899,15 @@ class Make(bigquery_command.BigqueryCmd):
         ' reservation.',
         flag_values=fv,
     )
+    self.principal_flag = flags.DEFINE_string(
+        'principal',
+        '',
+        'IAM Principal Identifier (v2 format) of an entity for more'
+        ' specific reservation routing. Only users and service accounts are'
+        ' supported at the moment. An empty string is equivalent to not'
+        ' specifying a principal.',
+        flag_values=fv,
+    )
     self.null_marker_flag = frontend_flags.define_null_marker(flag_values=fv)
     self.null_markers_flag = frontend_flags.define_null_markers(flag_values=fv)
     self.time_zone_flag = frontend_flags.define_time_zone(flag_values=fv)
@@ -1106,20 +1116,27 @@ class Make(bigquery_command.BigqueryCmd):
         )
     elif self.reservation_assignment:
       try:
-        reference = bq_client_utils.GetReservationReference(
+        reservation_ref = bq_client_utils.GetReservationReference(
             id_fallbacks=client,
             default_location=bq_flags.LOCATION.value,
             identifier=self.reservation_id,
         )
+        assignment_ref = bq_client_utils.GetReservationAssignmentReference(
+            id_fallbacks=client,
+            identifier=identifier or None,
+            default_location=reservation_ref.location,
+            default_reservation_id=reservation_ref.reservationId,
+        )
         object_info = client_reservation.CreateReservationAssignment(
             client=client.GetReservationApiClient(),
-            reference=reference,
+            reference=assignment_ref,
             job_type=self.job_type,
             priority=self.priority,
             assignee_type=self.assignee_type,
             assignee_id=self.assignee_id,
             scheduling_policy_max_slots=self.scheduling_policy_max_slots,
             scheduling_policy_concurrency=self.scheduling_policy_concurrency,
+            principal=self.principal_flag.value,
         )
         reference = bq_client_utils.GetReservationAssignmentReference(
             id_fallbacks=client, path=object_info['name']

@@ -124,12 +124,11 @@ class Show(bigquery_command.BigqueryCmd):
     flags.DEFINE_boolean(
         'reservation_assignment',
         None,
-        'Looks up reservation assignments for a specified '
-        'project/folder/organization. Explicit reservation assignments will be '
-        'returned if exist. Otherwise implicit reservation assignments from '
-        'parents will be returned. '
-        'Used in conjunction with --job_type, --assignee_type and '
-        '--assignee_id.',
+        'Looks up reservation assignments for a specified'
+        ' project/folder/organization. Explicit reservation assignments will be'
+        ' returned if they exist. Otherwise implicit reservation assignments'
+        ' from parents will be returned. Used in conjunction with --job_type,'
+        ' --assignee_type, --assignee_id, and optionally, --principal.',
         flag_values=fv,
     )
     flags.DEFINE_boolean(
@@ -211,6 +210,30 @@ class Show(bigquery_command.BigqueryCmd):
         'Show details of migration workflow described by this identifier.',
         flag_values=fv,
     )
+    flags.DEFINE_boolean(
+        'row_access_policy',
+        None,
+        'Show details for the row access policy.',
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
+        'policy_id',
+        None,
+        'Show details for the row access policy with this ID.',
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
+        'target_table',
+        None,
+        'The table on which the row access policy is applied.',
+        flag_values=fv,
+    )
+    self._principal = flags.DEFINE_string(
+        'principal',
+        '',
+        'Principal of the reservation assignment.',
+        flag_values=fv,
+    )
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier: str = '') -> Optional[int]:
@@ -236,9 +259,14 @@ class Show(bigquery_command.BigqueryCmd):
           --assignee_type=FOLDER --assignee_id=123 --job_type=QUERY
       bq show --reservation_assignment --project_id=project --location=US
           --assignee_type=ORGANIZATION --assignee_id=456 --job_type=QUERY
+      bq show --reservation_assignment --project_id=project --location=US
+          --assignee_type=PROJECT --assignee_id=myproject --job_type=QUERY
+          --principal=principal://iam.googleapis.com/projects/-/serviceAccounts/service-account@example.com
       bq show --reservation_group --location=US --project_id=project
           reservation_group_name
       bq show --migration_workflow projects/p/locations/l/workflows/workflow_id
+      bq show --row_access_policy --target_table='dataset.table'
+          --policy_id='policy_id'
 
     Arguments:
       identifier: the identifier of the resource to show.
@@ -285,7 +313,9 @@ class Show(bigquery_command.BigqueryCmd):
             'Table schema output format must be json or prettyjson.'
         )
       reference = bq_client_utils.GetTableReference(
-          id_fallbacks=client, identifier=identifier
+          id_fallbacks=client,
+          identifier=identifier,
+          allow_pcnt_identifier_format=True,
       )
       custom_format = 'schema'
     elif self.transfer_config:
@@ -332,6 +362,7 @@ class Show(bigquery_command.BigqueryCmd):
             job_type=self.job_type,
             assignee_type=self.assignee_type,
             assignee_id=self.assignee_id,
+            principal=self._principal.value,
         )
       # Here we just need any object of ReservationAssignmentReference type, but
       # the value of the object doesn't matter here.
@@ -398,10 +429,27 @@ class Show(bigquery_command.BigqueryCmd):
           'show',
           identifier,
       )
+    elif self.row_access_policy:
+      try:
+        reference = bq_client_utils.GetRowAccessPolicyReference(
+            id_fallbacks=client,
+            table_identifier=self.target_table,
+            policy_id=self.policy_id,
+        )
+        object_info = client_row_access_policy.get_row_access_policy(
+            client, reference
+        )
+      except BaseException as e:
+        raise bq_error.BigqueryError(
+            "Failed to get row access policy '%s' on '%s': %s"
+            % (self.policy_id, self.target_table, e)
+        )
 
     else:
       reference = bq_client_utils.GetReference(
-          id_fallbacks=client, identifier=identifier
+          id_fallbacks=client,
+          identifier=identifier,
+          allow_pcnt_identifier_format=True,
       )
     if reference is None:
       raise app.UsageError('Must provide an identifier for show.')

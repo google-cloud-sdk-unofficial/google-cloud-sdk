@@ -2131,7 +2131,6 @@ class SSHCommand(object):
     # PuTTY and friends always ask on fingerprint mismatch
     if env.suite is Suite.PUTTY and putty_force_connect:
       in_str = 'y\n'
-      args.insert(1, '-legacy-stdio-prompts')
     else:
       in_str = None
 
@@ -2374,7 +2373,6 @@ class SCPCommand(object):
     # TODO(b/35355795): Work out a better solution for PuTTY.
     if env.suite is Suite.PUTTY and putty_force_connect:
       in_str = 'y\n'
-      args.insert(1, '-legacy-stdio-prompts')
     else:
       in_str = None
     status = execution_utils.Exec(args, no_exit=True, in_str=in_str)

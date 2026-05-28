@@ -86,6 +86,12 @@ class Create(base.CreateCommand):
         help='Cache entry time-to-live. Default to 24h if not provided.',
     )
 
+    parser.add_argument(
+        '--enable-ingest-on-write',
+        action=arg_parsers.StoreTrueFalseAction,
+        help='Enables the Ingest-on-Write feature on the bucket.',
+    )
+
     flags.add_admission_policy_flag(parser)
 
   def get_task_iterator(self, args, task_status_queue):
@@ -101,7 +107,11 @@ class Create(base.CreateCommand):
 
     for zone in args.zone:
       yield create_anywhere_cache_task.CreateAnywhereCacheTask(
-          url, zone, admission_policy=args.admission_policy, ttl=args.ttl
+          url,
+          zone,
+          admission_policy=args.admission_policy,
+          ttl=args.ttl,
+          enable_ingest_on_write=args.enable_ingest_on_write,
       )
 
   def Run(self, args):

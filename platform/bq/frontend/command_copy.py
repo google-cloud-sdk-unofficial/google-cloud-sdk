@@ -227,12 +227,18 @@ class Copy(bigquery_command.BigqueryCmd):
     """
     client = bq_cached_client.Client.Get()
     source_references = [
-        bq_client_utils.GetTableReference(id_fallbacks=client, identifier=src)
+        bq_client_utils.GetTableReference(
+            id_fallbacks=client,
+            identifier=src,
+            allow_pcnt_identifier_format=True,
+        )
         for src in source_tables.split(',')
     ]
     source_references_str = ', '.join(str(src) for src in source_references)
     dest_reference = bq_client_utils.GetTableReference(
-        id_fallbacks=client, identifier=dest_table
+        id_fallbacks=client,
+        identifier=dest_table,
+        allow_pcnt_identifier_format=True,
     )
 
     if self.append_table:

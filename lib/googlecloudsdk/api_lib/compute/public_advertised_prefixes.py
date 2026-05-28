@@ -35,7 +35,8 @@ class PublicAdvertisedPrefixesClient(object):
              dns_verification_ip,
              description,
              pdp_scope,
-             ipv6_access_type):
+             ipv6_access_type,
+             network_tier=None):
     """Creates a public advertised prefix."""
 
     if pdp_scope:
@@ -55,6 +56,9 @@ class PublicAdvertisedPrefixesClient(object):
 
     if ipv6_access_type is not None:
       public_advertised_prefix.ipv6AccessType = ipv6_access_type
+
+    if network_tier is not None:
+      public_advertised_prefix.networkTier = network_tier
 
     request = self.messages.ComputePublicAdvertisedPrefixesInsertRequest(
         publicAdvertisedPrefix=public_advertised_prefix,

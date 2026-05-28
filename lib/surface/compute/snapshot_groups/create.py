@@ -33,67 +33,96 @@ def _CommonArgs(parser):
   base.ASYNC_FLAG.AddToParser(parser)
 
 
+def _RunCreate(self, args):
+  """Shared logic for creating a snapshot group."""
+  holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+  client = holder.client.apitools_client
+  messages = holder.client.messages
+  sg_ref = holder.resources.Parse(
+      args.name,
+      params={
+          'project': properties.VALUES.core.project.GetOrFail,
+      },
+      collection='compute.snapshotGroups',
+  )
+
+  sg_message = messages.SnapshotGroup(
+      name=sg_ref.Name()
+  )
+
+  isg_ref = snap_flags.SOURCE_INSTANT_SNAPSHOT_GROUP_ARG.ResolveAsResource(
+      args,
+      holder.resources,
+      scope_lister=flags.GetDefaultScopeLister(holder.client),
+  )
+  sg_message.sourceInstantSnapshotGroup = isg_ref.SelfLink()
+
+  request = messages.ComputeSnapshotGroupsInsertRequest(
+      snapshotGroup=sg_message, project=sg_ref.project
+  )
+  result = client.snapshotGroups.Insert(request)
+  operation_ref = resources.REGISTRY.Parse(
+      result.name,
+      params={'project': sg_ref.project},
+      collection='compute.globalOperations',
+  )
+  if args.async_:
+    log.UpdatedResource(
+        operation_ref,
+        kind='gce snapshot group {0}'.format(sg_ref.Name()),
+        is_async=True,
+        details=(
+            'Use [gcloud compute operations describe] command '
+            'to check the status of this operation.'
+        ),
+    )
+    return result
+  operation_poller = poller.Poller(client.snapshotGroups, sg_ref)
+  return waiter.WaitFor(
+      operation_poller,
+      operation_ref,
+      'Creating gce snapshot group {0}'.format(sg_ref.Name()),
+  )
+
+
+DETAILED_HELP = {
+    'EXAMPLES': """\
+        To create a Compute Engine snapshot group named 'my-snapshot-group'
+        from an instant snapshot group 'my-isg' in zone 'us-central1-a', run:
+
+          $ {command} my-snapshot-group \\
+              --source-instant-snapshot-group=my-isg \\
+              --source-instant-snapshot-group-zone=us-central1-a
+        """,
+}
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
-class Create(base.Command):
+class CreateAlpha(base.Command):
   """Create a Compute Engine snapshot group."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
 
   def Run(self, args):
-    return self._Run(args)
+    return _RunCreate(self, args)
 
-  def _Run(
-      self,
-      args,
-  ):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client.apitools_client
-    messages = holder.client.messages
-    sg_ref = holder.resources.Parse(
-        args.name,
-        params={
-            'project': properties.VALUES.core.project.GetOrFail,
-        },
-        collection='compute.snapshotGroups',
-    )
 
-    sg_message = messages.SnapshotGroup(
-        name=sg_ref.Name()
-    )
+@base.Hidden  # Hide this command from public documentation
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
+class CreateBeta(base.Command):
+  """Create a Compute Engine snapshot group."""
 
-    isg_ref = snap_flags.SOURCE_INSTANT_SNAPSHOT_GROUP_ARG.ResolveAsResource(
-        args,
-        holder.resources,
-        scope_lister=flags.GetDefaultScopeLister(holder.client),
-    )
-    sg_message.sourceInstantSnapshotGroup = isg_ref.SelfLink()
+  detailed_help = DETAILED_HELP
 
-    request = messages.ComputeSnapshotGroupsInsertRequest(
-        snapshotGroup=sg_message, project=sg_ref.project
-    )
-    result = client.snapshotGroups.Insert(request)
-    operation_ref = resources.REGISTRY.Parse(
-        result.name,
-        params={'project': sg_ref.project},
-        collection='compute.globalOperations',
-    )
-    if args.async_:
-      log.UpdatedResource(
-          operation_ref,
-          kind='gce snapshot group {0}'.format(sg_ref.Name()),
-          is_async=True,
-          details=(
-              'Use [gcloud compute operations describe] command '
-              'to check the status of this operation.'
-          ),
-      )
-      return result
-    operation_poller = poller.Poller(client.snapshotGroups, sg_ref)
-    return waiter.WaitFor(
-        operation_poller,
-        operation_ref,
-        'Creating gce snapshot group {0}'.format(sg_ref.Name()),
-    )
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser)
+
+  def Run(self, args):
+    return _RunCreate(self, args)

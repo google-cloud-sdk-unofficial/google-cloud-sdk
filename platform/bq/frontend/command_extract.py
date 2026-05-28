@@ -147,7 +147,9 @@ class Extract(bigquery_command.BigqueryCmd):
       )
     else:
       reference = bq_client_utils.GetTableReference(
-          id_fallbacks=client, identifier=identifier
+          id_fallbacks=client,
+          identifier=identifier,
+          allow_pcnt_identifier_format=True,
       )
     job = client_job.Extract(
         client,

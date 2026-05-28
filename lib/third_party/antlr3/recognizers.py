@@ -36,6 +36,7 @@ from __future__ import print_function
 
 import inspect
 import sys
+import typing
 
 from antlr3 import runtime_version, runtime_version_str
 from antlr3.compat import set, frozenset, reversed
@@ -153,6 +154,8 @@ class BaseRecognizer(object):
   # overwritten in the generated recognizer, we assume a default of 3.0.1.
   antlr_version = (3, 0, 1, 0)
   antlr_version_str = "3.0.1"
+
+  input: typing.Any
 
   def __init__(self, state=None):
     # Input stream of the recognizer. Must be initialized by a subclass.
@@ -852,6 +855,7 @@ class BaseRecognizer(object):
 
     return self._getRuleInvocationStack(self.__module__)
 
+  @classmethod
   def _getRuleInvocationStack(cls, module):
     """
         A more general version of getRuleInvocationStack where you can
@@ -885,8 +889,6 @@ class BaseRecognizer(object):
       rules.append(code.co_name)
 
     return rules
-
-  _getRuleInvocationStack = classmethod(_getRuleInvocationStack)
 
   def getBacktrackingLevel(self):
     return self._state.backtracking

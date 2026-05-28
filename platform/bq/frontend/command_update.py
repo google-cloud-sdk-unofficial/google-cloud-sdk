@@ -29,7 +29,6 @@ from frontend import bq_cached_client
 from frontend import flags as frontend_flags
 from frontend import utils as frontend_utils
 from frontend import utils_data_transfer
-from frontend import utils_flags
 from frontend import utils_formatting
 from frontend import utils_id as frontend_id_utils
 from utils import bq_error
@@ -831,7 +830,9 @@ class Update(bigquery_command.BigqueryCmd):
       )
     if self.t:
       reference = bq_client_utils.GetTableReference(
-          id_fallbacks=client, identifier=identifier
+          id_fallbacks=client,
+          identifier=identifier,
+          allow_pcnt_identifier_format=True,
       )
     elif self.view:
       reference = bq_client_utils.GetTableReference(
@@ -1107,7 +1108,9 @@ class Update(bigquery_command.BigqueryCmd):
         )
     else:
       reference = bq_client_utils.GetReference(
-          id_fallbacks=client, identifier=identifier
+          id_fallbacks=client,
+          identifier=identifier,
+          allow_pcnt_identifier_format=True,
       )
       bq_id_utils.typecheck(
           reference,

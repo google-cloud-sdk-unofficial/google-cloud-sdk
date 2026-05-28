@@ -20,36 +20,66 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.snapshot_groups import flags as sg_flags
 
 
+DETAILED_HELP = {
+    'EXAMPLES': """\
+        To describe a Compute Engine snapshot group named 'my-snapshot-group',
+        run:
+
+          $ {command} my-snapshot-group
+        """,
+}
+
+
 def _CommonArgs(parser):
   """Set Args based on Release Track."""
-  Describe.SnapshotGroupArg = sg_flags.MakeSnapshotGroupArg()
-  Describe.SnapshotGroupArg.AddArgument(parser, operation_type='describe')
+  sg_flags.MakeSnapshotGroupArg().AddArgument(parser, operation_type='describe')
+
+
+def _RunDescribe(self, args):
+  """Shared logic for describing a snapshot group."""
+  holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+  client = holder.client
+
+  sg_ref = sg_flags.MakeSnapshotGroupArg().ResolveAsResource(
+      args,
+      holder.resources,
+      scope_lister=compute_flags.GetDefaultScopeLister(client)
+  )
+
+  request = client.messages.ComputeSnapshotGroupsGetRequest(
+      **sg_ref.AsDict())
+
+  return client.MakeRequests([(client.apitools_client.snapshotGroups, 'Get',
+                               request)])[0]
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
-class Describe(base.DescribeCommand):
+class DescribeAlpha(base.DescribeCommand):
   """Describe a Compute Engine snapshot group."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
 
   def Run(self, args):
-    return self._Run(args)
+    return _RunDescribe(self, args)
 
-  def _Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
 
-    sg_ref = Describe.SnapshotGroupArg.ResolveAsResource(
-        args,
-        holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client)
-    )
+@base.Hidden  # Hide this command from public documentation
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
+class DescribeBeta(base.DescribeCommand):
+  """Describe a Compute Engine snapshot group."""
 
-    request = client.messages.ComputeSnapshotGroupsGetRequest(
-        **sg_ref.AsDict())
+  detailed_help = DETAILED_HELP
 
-    return client.MakeRequests([(client.apitools_client.snapshotGroups, 'Get',
-                                 request)])[0]
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser)
+
+  def Run(self, args):
+    return _RunDescribe(self, args)
+

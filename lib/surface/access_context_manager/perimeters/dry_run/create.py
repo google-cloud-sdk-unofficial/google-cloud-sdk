@@ -75,24 +75,21 @@ def _AddCommonArgsForDryRunCreate(parser, prefix='', version='v1'):
       default=None,
       help="""Comma-separated list of IDs for access levels (in the same policy)
               that an intra-perimeter request must satisfy to be allowed.""")
-  if version != 'v1alpha':
-    _AddLegacyVpcAccessibleServicesArgsForCreate(parser, prefix=prefix)
-  else:
-    # Mutually exclusive group for VPC configuration
-    vpc_config_group = parser.add_mutually_exclusive_group()
+  # Mutually exclusive group for VPC configuration
+  vpc_config_group = parser.add_mutually_exclusive_group()
 
-    # New file-based argument
-    vpc_config_group.add_argument(
-        '--{}vpc-accessible-services'.format(prefix),
-        metavar='VPC_ACCESSIBLE_SERVICES_YAML_FILE',
-        type=perimeters.ParseVpcAccessibleServices(version),
-        help='Path to a YAML file containing a VpcAccessibleServices object.',
-    )
+  # New file-based argument
+  vpc_config_group.add_argument(
+      '--{}vpc-accessible-services'.format(prefix),
+      metavar='VPC_ACCESSIBLE_SERVICES_YAML_FILE',
+      type=perimeters.ParseVpcAccessibleServices(version),
+      help='Path to a YAML file containing a VpcAccessibleServices object.',
+  )
 
-    # Group for the old incremental flags
-    _AddLegacyVpcAccessibleServicesArgsForCreate(
-        vpc_config_group, prefix=prefix
-    )
+  # Group for the old incremental flags
+  _AddLegacyVpcAccessibleServicesArgsForCreate(
+      vpc_config_group, prefix=prefix
+  )
 
   parser.add_argument(
       '--{}ingress-policies'.format(prefix),
@@ -212,13 +209,10 @@ class CreatePerimeterDryRun(base.UpdateCommand):
         levels, perimeter_ref.accessPoliciesId)
     restricted_services = _ParseArgWithShortName(args, 'restricted_services')
 
-    vpc_accessible_services_config = None
-    if self._API_VERSION == 'v1alpha':
-      # Parse the new file-based config if present (will only be there for
-      # alpha)
-      vpc_accessible_services_config = _ParseArgWithShortName(
-          args, 'vpc_accessible_services'
-      )
+    # Parse the new file-based config if present
+    vpc_accessible_services_config = _ParseArgWithShortName(
+        args, 'vpc_accessible_services'
+    )
     vpc_allowed_services = _ParseArgWithShortName(args, 'vpc_allowed_services')
     ingress_policies, egress_policies = _ParseDirectionalPolicies(args)
     if (args.enable_vpc_accessible_services is None and

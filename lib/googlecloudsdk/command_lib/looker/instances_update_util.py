@@ -95,6 +95,20 @@ def _WarnForPscServiceAttachmentsRemovalUpdate():
   )
 
 
+def _WarnForReleaseChannelUpdate():
+  """Adds prompt that warns about release channel update."""
+  message = (
+      'Changing the release channel may trigger an immediate update or '
+      'cause the instance to remain on its current version until that version '
+      'is available in the new channel.'
+  )
+  console_io.PromptContinue(
+      message=message,
+      prompt_string='Do you want to proceed with update?',
+      cancel_on_no=True,
+  )
+
+
 def AddFieldToUpdateMask(field, patch_request):
   """Adds fields to the update mask of the patch request.
 
@@ -293,6 +307,23 @@ def UpdateCatalogIntegrationOptOut(unused_instance_ref, args, patch_request):
   if args.IsSpecified('catalog_integration_opt_out'):
     patch_request = AddFieldToUpdateMask(
         'catalog_integration_opt_out', patch_request
+    )
+  return patch_request
+
+
+def UpdateReleaseChannel(unused_instance_ref, args, patch_request):
+  """Hook to update release channel to the update mask of the request."""
+  if args.IsSpecified('release_channel'):
+    _WarnForReleaseChannelUpdate()
+    patch_request = AddFieldToUpdateMask('release_channel', patch_request)
+  return patch_request
+
+
+def UpdateAcceleratedSecurityPatch(unused_instance_ref, args, patch_request):
+  """Hook to update accelerated security patch to the update mask of the request."""
+  if args.IsSpecified('accelerated_security_patch_enabled'):
+    patch_request = AddFieldToUpdateMask(
+        'accelerated_security_patch_enabled', patch_request
     )
   return patch_request
 

@@ -828,6 +828,46 @@ def RestartWebServer(environment_ref, release_track=base.ReleaseTrack.GA):
       release_track=release_track).RestartWebServer(request_message)
 
 
+def Hibernate(environment_ref, release_track=base.ReleaseTrack.ALPHA):
+  """Calls the Composer Environments.Hibernate method.
+
+  Args:
+    environment_ref: Resource, the Composer environment resource to hibernate.
+    release_track: base.ReleaseTrack, the release track of command. Will dictate
+      which Composer client library will be used.
+
+  Returns:
+    Operation: the operation corresponding to hibernating the environment.
+  """
+  message_module = api_util.GetMessagesModule(release_track=release_track)
+  request_message = (
+      message_module.ComposerProjectsLocationsEnvironmentsHibernateRequest(
+          name=environment_ref.RelativeName()
+      )
+  )
+  return GetService(release_track=release_track).Hibernate(request_message)
+
+
+def Resume(environment_ref, release_track=base.ReleaseTrack.ALPHA):
+  """Calls the Composer Environments.Resume method.
+
+  Args:
+    environment_ref: Resource, the Composer environment resource to resume.
+    release_track: base.ReleaseTrack, the release track of command. Will dictate
+      which Composer client library will be used.
+
+  Returns:
+    Operation: the operation corresponding to resuming the environment.
+  """
+  message_module = api_util.GetMessagesModule(release_track=release_track)
+  request_message = (
+      message_module.ComposerProjectsLocationsEnvironmentsResumeRequest(
+          name=environment_ref.RelativeName()
+      )
+  )
+  return GetService(release_track=release_track).Resume(request_message)
+
+
 def SaveSnapshot(environment_ref,
                  snapshot_location,
                  release_track=base.ReleaseTrack.ALPHA):

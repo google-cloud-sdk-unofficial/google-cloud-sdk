@@ -74,17 +74,6 @@ class Collections(enum.Enum):
       ['project', 'location'],
       True
   )
-  PROJECTS_LOCATIONS_FEATURECONFIGS = (
-      'projects.locations.featureConfigs',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/featureConfigs/'
-              '{featureConfigsId}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS_LOCATIONS_INTELLIGENCEFINDINGS = (
       'projects.locations.intelligenceFindings',
       '{+name}',

@@ -44,14 +44,12 @@ class UpdatePerimetersGA(base.UpdateCommand):
     result = repeated.CachedResult.FromFunc(client.Get, perimeter_ref)
     policies.ValidateAccessPolicyArg(perimeter_ref, args)
 
-    vpc_accessible_services_config = None
-    vpc_yaml_flag_used = False
-    if self._API_VERSION == 'v1alpha':
-      vpc_accessible_services_config, vpc_yaml_flag_used = (
-          perimeters.ParseUpdateVpcAccessibleServicesArgs(
-              args, 'vpc-accessible-services'
-          )
-      )
+    # Check for the new set/clear flags with YAML.
+    vpc_accessible_services_config, vpc_yaml_flag_used = (
+        perimeters.ParseUpdateVpcAccessibleServicesArgs(
+            args, 'vpc-accessible-services'
+        )
+    )
     return self.Patch(
         client=client,
         args=args,

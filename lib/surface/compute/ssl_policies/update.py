@@ -41,17 +41,13 @@ class Update(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      parser.display_info.AddFormat(flags.ALPHA_LIST_FORMAT)
-    else:
-      parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.SSL_POLICY_ARG = flags.GetSslPolicyMultiScopeArgument()
     cls.SSL_POLICY_ARG.AddArgument(parser, operation_type='patch')
     flags.GetProfileFlag().AddToParser(parser)
     flags.GetMinTlsVersionFlag().AddToParser(parser)
     flags.GetCustomFeaturesFlag().AddToParser(parser)
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      flags.GetPostQuantumKeyExchangeFlag().AddToParser(parser)
+    flags.GetPostQuantumKeyExchangeFlag().AddToParser(parser)
 
   def Run(self, args):
     """Issues the request to update a SSL policy."""
@@ -68,11 +64,7 @@ class Update(base.UpdateCommand):
         profile=args.profile,
         min_tls_version=flags.ParseTlsVersion(args.min_tls_version),
         custom_features=custom_features,
-        post_quantum_key_exchange=(
-            args.post_quantum_key_exchange
-            if self.ReleaseTrack() == base.ReleaseTrack.ALPHA
-            else None
-        ),
+        post_quantum_key_exchange=args.post_quantum_key_exchange,
     )
     operation_ref = helper.Patch(
         ssl_policy_ref, patch_ssl_policy, include_custom_features and

@@ -18,7 +18,6 @@
 from __future__ import annotations
 
 import contextlib
-
 from typing import Any
 
 from googlecloudsdk.api_lib.storage import cloud_api
@@ -35,6 +34,7 @@ from googlecloudsdk.command_lib.storage.tasks.cp import download_util
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from six.moves.urllib.parse import urlparse
 
 # Default max metadata size(soft limit) for the client.
 _DEFAULT_MAX_METADATA_SIZE = 131_072  # 128KB
@@ -67,6 +67,15 @@ def _log_transfer_error(
       destination,
       error,
   )
+
+
+def _storage_address_override(address: str) -> str:
+  """Overrides the storage address if a gRPC override is present."""
+  grpc_override = properties.VALUES.api_endpoint_overrides.storage_grpc.Get()
+  if not grpc_override:
+    return address
+  parsed_url = urlparse(grpc_override)
+  return parsed_url.netloc
 
 
 class GcsGrpcBidiStreamingClient(cloud_api.CloudApi):
@@ -107,6 +116,7 @@ class GcsGrpcBidiStreamingClient(cloud_api.CloudApi):
           'v2',
           attempt_direct_path=properties.VALUES.storage.attempt_grpc_direct_path.GetBool(),
           redact_request_body_reason=redact_request_body_reason,
+          address_override_func=_storage_address_override,
           channel_options={
               'grpc.http2.lookahead_bytes': (
                   properties.VALUES.grpc.http2_lookahead_bytes.GetInt()

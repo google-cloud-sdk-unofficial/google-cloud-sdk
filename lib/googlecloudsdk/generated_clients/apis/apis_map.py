@@ -656,6 +656,14 @@ MAP = _ApiDefMap({
         ),
     },
     'biglake': {
+        'data_product_sharing_v1alpha': (
+            ('googlecloudsdk.generated_clients.apis.biglake.data_product_sharing_v1alpha', 'biglake_data_product_sharing_v1alpha_client.BiglakeDataProductSharingV1alpha', 'biglake_data_product_sharing_v1alpha_messages', 'https://biglake.googleapis.com/'),
+            None,
+            False,
+            True,
+            '',
+            {},
+        ),
         'delta_v1': (
             ('googlecloudsdk.generated_clients.apis.biglake.delta_v1', 'biglake_delta_v1_client.BiglakeDeltaV1', 'biglake_delta_v1_messages', 'https://biglake.googleapis.com/'),
             None,

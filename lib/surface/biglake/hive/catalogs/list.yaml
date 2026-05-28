@@ -1,15 +1,15 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: List BigLake Hive catalogs.
     description: |
       Lists BigLake Hive catalogs.
     examples: |-
       To list BigLake Hive catalogs in a project, run:
+
         $ {command}
   request:
     collection: biglake.hive.v1beta.projects.catalogs
-    ALPHA:
-      api_version: v1beta
+    api_version: v1beta
     method: list
 
   response:

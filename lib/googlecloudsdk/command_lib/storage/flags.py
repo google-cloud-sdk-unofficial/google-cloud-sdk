@@ -1364,14 +1364,13 @@ def check_if_use_gsutil_style(args):
 
 def add_batch_jobs_flags(parser, track=calliope_base.ReleaseTrack.GA):
   """Adds the flags for the batch-operations jobs create command."""
+  # Accepted to support test/command invocations specifying the release track.
+  del track
 
-  if track == calliope_base.ReleaseTrack.ALPHA:
-    source_help_text = (
-        'Source specifying objects to perform batch operations on. You can '
-        'specify either a bucket-based source or a project-based source.'
-    )
-  else:
-    source_help_text = ''
+  source_help_text = (
+      'Source specifying objects to perform batch operations on. You can '
+      'specify either a bucket-based source or a project-based source.'
+  )
 
   sources = parser.add_group(
       mutex=True,
@@ -1395,16 +1394,15 @@ def add_batch_jobs_flags(parser, track=calliope_base.ReleaseTrack.GA):
       ),
       type=str,
   )
-  if track == calliope_base.ReleaseTrack.ALPHA:
-    bucket.add_argument(
-        '--bucket-list',
-        help=(
-            'List of buckets containing the objects that the batch job will'
-            ' operate on.'
-        ),
-        type=arg_parsers.ArgList(),
-        metavar='BUCKETS',
-    )
+  bucket.add_argument(
+      '--bucket-list',
+      help=(
+          'List of buckets containing the objects that the batch job will'
+          ' operate on.'
+      ),
+      type=arg_parsers.ArgList(),
+      metavar='BUCKETS',
+  )
 
   object_config = bucket_source.add_group(
       mutex=True,
@@ -1439,86 +1437,85 @@ def add_batch_jobs_flags(parser, track=calliope_base.ReleaseTrack.GA):
       metavar='PREFIXES',
   )
 
-  if track == calliope_base.ReleaseTrack.ALPHA:
-    project_source = sources.add_group(
-        help='Use a project as the source.',
-        category='PROJECT_SOURCE',
-        mutex=True,
-    )
+  project_source = sources.add_group(
+      help='Use a project as the source.',
+      category='PROJECT_SOURCE',
+      mutex=True,
+  )
 
-    project_source_details = project_source.add_group()
-    project_source_details.add_argument(
-        '--target-project',
-        help=(
-            'Project name of the objects to be transformed. e.g. my-project or'
-            ' 123456.'
-        ),
-        type=str,
-        required=True,
-    )
-    project_source_details.add_argument(
-        '--insights-dataset-config',
-        help=(
-            'The resource identifier of the Storage Insights dataset'
-            ' configuration. Format:'
-            ' projects/{project}/locations/{location}/datasetConfigs/{datasetConfig}'
-        ),
-        type=str,
-        required=True,
-    )
-    project_source_details.add_argument(
-        '--bucket-filters',
-        help=(
-            'Filters expressed in Common Expression Language (CEL) to apply to '
-            'buckets. E.g. "bucket_name == \'my-bucket\'".'
-        ),
-        type=str,
-    )
-    project_source_details.add_argument(
-        '--object-filters',
-        help=(
-            'Filters expressed in Common Expression Language (CEL) to apply to'
-            ' objects. E.g. "size > 100".'
-        ),
-        type=str,
-    )
-    target_locations_group = project_source_details.add_group()
-    target_locations_group.add_argument(
-        '--target-locations',
-        help=(
-            'A comma-separated list of Cloud Storage locations (e.g.,'
-            ' us-central1) to include in the job. Only buckets and objects'
-            ' within these locations will be discovered from the configured'
-            ' Storage Insights dataset.'
-        ),
-        type=arg_parsers.ArgList(),
-        metavar='LOCATIONS',
-        required=True,
-    )
-    target_locations_group.add_argument(
-        '--target-snapshot-time',
-        help=(
-            'The exact Storage Insights snapshot timestamp to use for the job'
-            ' compatible with the RFC 3339 format (e.g.,'
-            ' 2024-01-02T03:04:00.123456Z).'
-            ' Can only be specified if --target-locations is specified. If'
-            ' omitted, the job automatically defaults to the most recent'
-            ' snapshot timestamp that is successfully populated in both object'
-            ' and bucket attributes views across all specified locations. This'
-            ' snapshot time is precise to the microsecond. Any finer precision'
-            ' is truncated.'
-        ),
-        type=arg_parsers.Datetime.Parse,
-    )
-    project_source.add_argument(
-        '--dry-run-job-id',
-        help=(
-            'The unique identifier of a dry run job to use as the baseline. '
-            'Specifying this ID ensures the job is executed against the same '
-            'set of objects validated during the dry run.'
-        ),
-        type=str,
-    )
+  project_source_details = project_source.add_group()
+  project_source_details.add_argument(
+      '--target-project',
+      help=(
+          'Project name of the objects to be transformed. e.g. my-project or'
+          ' 123456.'
+      ),
+      type=str,
+      required=True,
+  )
+  project_source_details.add_argument(
+      '--insights-dataset-config',
+      help=(
+          'The resource identifier of the Storage Insights dataset'
+          ' configuration. Format:'
+          ' projects/{project}/locations/{location}/datasetConfigs/{datasetConfig}'
+      ),
+      type=str,
+      required=True,
+  )
+  project_source_details.add_argument(
+      '--bucket-filters',
+      help=(
+          'Filters expressed in Common Expression Language (CEL) to apply to '
+          'buckets. E.g. "bucket_name == \'my-bucket\'".'
+      ),
+      type=str,
+  )
+  project_source_details.add_argument(
+      '--object-filters',
+      help=(
+          'Filters expressed in Common Expression Language (CEL) to apply to'
+          ' objects. E.g. "size > 100".'
+      ),
+      type=str,
+  )
+  target_locations_group = project_source_details.add_group()
+  target_locations_group.add_argument(
+      '--target-locations',
+      help=(
+          'A comma-separated list of Cloud Storage locations (e.g.,'
+          ' us-central1) to include in the job. Only buckets and objects'
+          ' within these locations will be discovered from the configured'
+          ' Storage Insights dataset.'
+      ),
+      type=arg_parsers.ArgList(),
+      metavar='LOCATIONS',
+      required=True,
+  )
+  target_locations_group.add_argument(
+      '--target-snapshot-time',
+      help=(
+          'The exact Storage Insights snapshot timestamp to use for the job'
+          ' compatible with the RFC 3339 format (e.g.,'
+          ' 2024-01-02T03:04:00.123456Z).'
+          ' Can only be specified if --target-locations is specified. If'
+          ' omitted, the job automatically defaults to the most recent'
+          ' snapshot timestamp that is successfully populated in both object'
+          ' and bucket attributes views across all specified locations. This'
+          ' snapshot time is precise to the microsecond. Any finer precision'
+          ' is truncated.'
+      ),
+      type=arg_parsers.Datetime.Parse,
+  )
+  project_source.add_argument(
+      '--dry-run-job-id',
+      help=(
+          'The unique identifier of a dry run job to use as the baseline. '
+          'Specifying this ID ensures the job is executed against the same '
+          'set of objects validated during the dry run.'
+      ),
+      type=str,
+  )
   transformation = parser.add_group(
       mutex=True,
       required=True,

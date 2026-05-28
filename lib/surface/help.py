@@ -17,6 +17,7 @@
 
 
 import argparse
+import errno
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.help_search import search
@@ -27,6 +28,7 @@ from googlecloudsdk.core import log
 _DEFAULT_LIMIT = 5
 
 
+@base.UniverseCompatible
 class Help(base.ListCommand):
   """Search gcloud help text.
 
@@ -118,8 +120,15 @@ For example, to search for commands that relate to the term `project` or
         # actions.RenderDocumentAction().Action().
         self.ExecuteCommandDoNotUse(args.command + ['--document=style=help'])
         return None
+      except (IOError, OSError) as e:
+        # If output is piped to a utility that closes the pipe early, we want to
+        # stop cleanly here. Ex: `gcloud help info | head -n 10`
+        if e.errno == errno.EPIPE:
+          return None
+        # If not a broken pipe, we're dealing with environment failures.
+        raise
       except Exception:  # pylint: disable=broad-except
-        # In this case, we will treat the arguments as search terms.
+        # In all other cases, we will treat the arguments as search terms.
         pass
 
     results = search.RunSearch(

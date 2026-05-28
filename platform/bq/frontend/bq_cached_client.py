@@ -173,17 +173,21 @@ class Client(object):
 
   @classmethod
   def _GetClientCacheKey(cls, **kwds) -> str:
+    """Computes a unique cache key based on client arguments and auth flags."""
     logging.debug('In Client._GetClientCacheKey: %s', kwds)
     client_args = Client._CollectArgs(**kwds)
-    return (
-        'client_args={client_args},'
-        'service_account_credential_file={service_account_credential_file},'
-        'apilog={apilog},'.format(
-            client_args=client_args,
-            service_account_credential_file=bq_auth_flags.SERVICE_ACCOUNT_CREDENTIAL_FILE.value,
-            apilog=bq_flags.APILOG.value,
-        )
-    )
+    cache_dict = {
+        'client_args': client_args,
+        'service_account_credential_file': (
+            bq_auth_flags.SERVICE_ACCOUNT_CREDENTIAL_FILE.value
+        ),
+        'apilog': bq_flags.APILOG.value,
+        'service_account': bq_auth_flags.SERVICE_ACCOUNT.value,
+        'service_account_private_key_file': (
+            bq_auth_flags.SERVICE_ACCOUNT_PRIVATE_KEY_FILE.value
+        ),
+    }
+    return ','.join(f'{k}={v}' for k, v in sorted(cache_dict.items()))
 
   @classmethod
   def Get(cls) -> bigquery_client_extended.BigqueryClientExtended:

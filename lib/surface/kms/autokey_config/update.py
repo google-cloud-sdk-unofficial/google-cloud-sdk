@@ -21,55 +21,7 @@ from googlecloudsdk.command_lib.kms import parsing
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class Describe(base.DescribeCommand):
-  r"""Updates the AutokeyConfig for a folder.
-
-  {command} can be used to update the AutokeyConfig of a folder.
-
-  ## EXAMPLES
-
-  The following command updates the AutokeyConfig for the folder mentioned in
-  the config.yaml file:
-
-    $ {command} config.yaml
-  """
-
-  @staticmethod
-  def Args(parser):
-    flags.AddAutokeyConfigFileFlag(parser)
-
-  def Run(self, args):
-    client = cloudkms_base.GetClientInstance()
-    messages = cloudkms_base.GetMessagesModule()
-
-    name, key_project, etag = parsing.ReadAutokeyConfigFromConfigFile(
-        args.CONFIG_FILE
-    )
-    if not etag:
-      return client.folders.UpdateAutokeyConfig(
-          messages.CloudkmsFoldersUpdateAutokeyConfigRequest(
-              autokeyConfig=messages.AutokeyConfig(
-                  name=name, keyProject=key_project
-              ),
-              name=name,
-              updateMask="keyProject",
-          ),
-      )
-    return client.folders.UpdateAutokeyConfig(
-        messages.CloudkmsFoldersUpdateAutokeyConfigRequest(
-            autokeyConfig=messages.AutokeyConfig(
-                name=name, keyProject=key_project, etag=etag
-            ),
-            name=name,
-            updateMask="keyProject",
-        )
-    )
-
-
-@base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class UpdateFolderAndProject(base.Command):
+class Update(base.Command):
   r"""Update the AutokeyConfig for a folder or project.
 
   {command} can be used to update the AutokeyConfig for a folder or project.

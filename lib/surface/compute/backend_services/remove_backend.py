@@ -115,7 +115,7 @@ class RemoveBackend(base.UpdateCommand):
 
   def Modify(self, client, resources, backend_service_ref, args, existing):
     replacement = encoding.CopyProtoMessage(existing)
-    if self.support_inline_service:
+    if self.support_inline_service and args.service:
       return self._RemoveInlineServiceBackend(
           args, backend_service_ref, existing
       )

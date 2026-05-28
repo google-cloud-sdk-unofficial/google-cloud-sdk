@@ -9,6 +9,10 @@
 
           $ {command} my-feature-flag --key=enable_new_feature --flag-value-type=bool --unit-kind=my-service-unit --variants='[{"id": "Enabled", "booleanValue": true}, {"id": "Disabled", "booleanValue": false}]' --evaluation-spec='{"defaultTarget": "Disabled"}' --location=global
 
+      To create a simple boolean flag including a flag set, description, state, and the default variants and evaluation spec, run:
+
+        $ {command} beta-feature --key=beta_rollout --flag-value-type=bool --unit-kind=my-service-unit --flag-set=my-flag-set --description="A beta feature flag" --state=in-development --location=global
+
       To create a percentage rollout (10% Enabled) using a `userID` attribute, run:
 
           $ {command} beta-feature --key=beta_rollout --flag-value-type=bool --unit-kind=my-service-unit --variants='[{"id": "Enabled", "booleanValue": true}, {"id": "Disabled", "booleanValue": false}]' --evaluation-spec='{"allocations": [{"id": "p10", "randomizedOn": "userID", "slots": [{"variant": "Disabled", "weight": 90}, {"variant": "Enabled", "weight": 10}]}], "defaultTarget": "p10", "attributes": ["projects/my-project/locations/global/flagAttributes/id-attr"]}' --location=global

@@ -87,7 +87,9 @@ class Head(bigquery_command.BigqueryCmd):
       )
     else:
       reference = bq_client_utils.GetTableReference(
-          id_fallbacks=client, identifier=identifier
+          id_fallbacks=client,
+          identifier=identifier,
+          allow_pcnt_identifier_format=True,
       )
 
     use_full_timestamp = False

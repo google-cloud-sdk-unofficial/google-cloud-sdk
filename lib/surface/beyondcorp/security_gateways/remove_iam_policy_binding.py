@@ -34,6 +34,12 @@ class RemoveIamPolicyBinding(base.Command):
 
         $ {command} my-security-gateway --member='user:test-user@gmail.com' \
         --role='roles/beyondcorp.serviceDiscoveryUser' --location=global
+
+        To remove a binding with a condition:
+
+        $ {command} my-security-gateway --member='user:test-user@gmail.com' \
+        --role='roles/beyondcorp.serviceDiscoveryUser' --location=global \
+        --condition="expression=request.time < timestamp('2026-01-01T00:00:00Z'),title=expires_2026"
   """
 
   @staticmethod
@@ -42,7 +48,7 @@ class RemoveIamPolicyBinding(base.Command):
         parser,
         'The security gateway for which to remove the IAM policy binding.',
     )
-    iam_util.AddArgsForRemoveIamPolicyBinding(parser)
+    iam_util.AddArgsForRemoveIamPolicyBinding(parser, add_condition=True)
 
   def Run(self, args):
     client = api_util.GetClientInstance(self.ReleaseTrack())
@@ -52,13 +58,17 @@ class RemoveIamPolicyBinding(base.Command):
     # Get current policy
     get_req = (
         messages.BeyondcorpProjectsLocationsSecurityGatewaysGetIamPolicyRequest(
-            resource=ref.RelativeName()
+            resource=ref.RelativeName(),
+            options_requestedPolicyVersion=3
         )
     )
     policy = client.projects_locations_securityGateways.GetIamPolicy(get_req)
 
+    condition = iam_util.ValidateAndExtractConditionMutexRole(args)
+
     # Remove binding
-    iam_util.RemoveBindingFromIamPolicy(policy, args.member, args.role)
+    iam_util.RemoveBindingFromIamPolicyWithCondition(
+        policy, args.member, args.role, condition, args.all)
 
     # Set updated policy
     set_req = messages.BeyondcorpProjectsLocationsSecurityGatewaysSetIamPolicyRequest(

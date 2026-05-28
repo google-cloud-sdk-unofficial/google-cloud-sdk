@@ -52,6 +52,14 @@ class Create(calliope_base.Command):
           --delete-object
 
       The following example command creates a batch job, named `my-job`,
+      that performs object deletion on buckets `my-bucket-1` and
+      `my-bucket-2` for all objects in them:
+
+          $ {command} my-job \
+          --bucket-list=my-bucket-1,my-bucket-2 \
+          --included-object-prefixes='' --delete-object
+
+      The following example command creates a batch job, named `my-job`,
       that updates object metadata `Content-Disposition` to `inline`,
       `Content-Language` to `en`, and sets object retention mode to `locked`
       on bucket `my-bucket` for objects with prefixes `prefix1` or `prefix2`:
@@ -76,6 +84,21 @@ class Create(calliope_base.Command):
           --put-metadata=Content-Disposition=inline,Content-Language=en
           --log-actions=transform --log-action-states=succeeded,failed
 
+      The following example command creates a batch job, named `my-job`, that
+      uses a project as the source and updates object retention:
+
+          $ {command} my-job --target-project=my-project
+          --insights-dataset-config=projects/my-project/locations/us-central1/datasetConfigs/my-config
+          --bucket-filters="bucket_name == 'my-bucket'" --object-filters="size > 100"
+          --put-metadata=Retain-Until=2025-01-01T00:00:00Z,Retention-Mode=locked
+
+      The following example command creates a batch job, named `my-job`, that
+      uses a project as the source with specific target locations and snapshot timestamp:
+
+          $ {command} my-job --target-project=my-project
+          --insights-dataset-config=projects/my-project/locations/us-central1/datasetConfigs/my-config
+          --target-locations=us-central1,us-east1 --target-snapshot-time=2024-01-02T03:04:05Z
+          --put-metadata=Retention-Mode=locked
       """
       ),
   }
@@ -124,12 +147,15 @@ class Create(calliope_base.Command):
 class CreateAlpha(Create):
   """Create a new batch operation job."""
   detailed_help = {
-      "DESCRIPTION": """
+      "DESCRIPTION": (
+          """
       Create a batch operation job, allowing you to perform operations
       such as deletion, updating metadata, and more on objects in a
       serverless manner.
-      """,
-      "EXAMPLES": """
+      """
+      ),
+      "EXAMPLES": (
+          """
       The following example command creates a batch job, named  `my-dry-run`,
       that performs a dry run of object deletion on bucket `my-bucket` for
       objects specified in the manifest file `gs://my-bucket/manifest.csv`:
@@ -161,6 +187,14 @@ class CreateAlpha(Create):
           --put-metadata=Content-Disposition=inline,Content-Language=en,Retain-Until=2025-01-01T00:00:00Z,Retention-Mode=locked
 
       The following example command creates a batch job, named `my-job`,
+      that removes the object custom context `key1` and updates `key2` to `val2`
+      and `key3` to `val3` on bucket `my-bucket` for objects with prefixes
+      `prefix1` or `prefix2`:
+
+          $ {command} my-job --bucket=my-bucket --included-object-prefixes=prefix1,prefix2
+          --clear-object-custom-contexts=key1 --update-object-custom-contexts=key2=val2,key3=val3
+
+      The following example command creates a batch job, named `my-job`,
       that puts object event based hold on objects in bucket `my-bucket`
       with logging config enabled for corresponding transform action and
       succeeded and failed action states:
@@ -184,7 +218,8 @@ class CreateAlpha(Create):
           --insights-dataset-config=projects/my-project/locations/us-central1/datasetConfigs/my-config
           --target-locations=us-central1,us-east1 --target-snapshot-time=2024-01-02T03:04:05Z
           --put-metadata=Retention-Mode=locked
-      """,
+      """
+      ),
   }
 
   @staticmethod

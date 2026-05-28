@@ -34,19 +34,19 @@ class List(base.ListCommand):
       'EXAMPLES': """\
       To list all open alerts:
 
-        $ {command} --filter="state='OPEN'"
+        $ {command} --filter="state=OPEN"
 
       To order alerts by when the alert was opened:
 
-        $ {command} --sort-by=openTime
+        $ {command} --sort-by=open_time
 
       To order alerts by when the alert was opened in reverse order:
 
-        $ {command} --sort-by="~openTime"
+        $ {command} --sort-by="open_time desc"
 
       To list alerts for a specific policy:
 
-        $ {command} --filter="policy.displayName='My Policy'"
+        $ {command} --filter="policy.display_name=\"My Policy\""
 
       More information can be found at
       https://cloud.google.com/sdk/gcloud/reference/topic/filters""",

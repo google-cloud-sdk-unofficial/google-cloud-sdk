@@ -242,6 +242,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_SPOKES_GATEWAYADVERTISEDROUTES = (
+      'projects.locations.spokes.gatewayAdvertisedRoutes',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/spokes/'
+              '{spokesId}/gatewayAdvertisedRoutes/{gatewayAdvertisedRoutesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_TRANSPORTS = (
       'projects.locations.transports',
       '{+name}',

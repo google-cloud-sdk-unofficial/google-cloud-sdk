@@ -1269,6 +1269,33 @@ class DesigncenterV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def GenerateAssessmentReport(self, request, global_params=None):
+      r"""Generate Assessment Reports of an application.
+
+      Args:
+        request: (DesigncenterProjectsLocationsSpacesApplicationsGenerateAssessmentReportRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('GenerateAssessmentReport')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GenerateAssessmentReport.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/spaces/{spacesId}/applications/{applicationsId}:generateAssessmentReport',
+        http_method='POST',
+        method_id='designcenter.projects.locations.spaces.applications.generateAssessmentReport',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:generateAssessmentReport',
+        request_field='generateApplicationAssessmentReportRequest',
+        request_type_name='DesigncenterProjectsLocationsSpacesApplicationsGenerateAssessmentReportRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Gets details about an application.
 

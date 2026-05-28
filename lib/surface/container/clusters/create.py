@@ -888,6 +888,7 @@ flags_to_add = {
             flags.AddAutopilotPrivilegedAdmissionFlag
         ),
         'podsnapshots': flags.AddPodSnapshotConfigFlags,
+        'agentsandbox': flags.AddAgentSandboxConfigFlags,
         'enableKernelModuleSignatureEnforcement': (
             flags.AddEnableKernelModuleSignatureEnforcementFlag
         ),

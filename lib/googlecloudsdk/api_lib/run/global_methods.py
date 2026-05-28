@@ -19,6 +19,7 @@ from apitools.base.py import exceptions as api_exceptions
 from googlecloudsdk.api_lib.container import api_adapter as container_api_adapter
 from googlecloudsdk.api_lib.container.fleet import client as hub_client
 from googlecloudsdk.api_lib.container.fleet import util as hub_util
+from googlecloudsdk.api_lib.run import instance
 from googlecloudsdk.api_lib.run import job
 from googlecloudsdk.api_lib.run import service
 from googlecloudsdk.api_lib.run import worker_pool
@@ -110,6 +111,37 @@ def ListServices(client, region=_ALL_REGIONS, field_selector=None):
 
   return [
       service.Service(item, client.MESSAGES_MODULE) for item in response.items
+  ]
+
+
+def ListInstances(client, namespace):
+  """Get the global instances for a OnePlatform project.
+
+  Args:
+    client: (base_api.BaseApiClient), instance of a client to use for the list
+      request.
+    namespace: namespace/project to list instances in
+
+  Returns:
+    List of googlecloudsdk.api_lib.run import instance.Instance objects.
+  """
+  request = client.MESSAGES_MODULE.RunNamespacesInstancesListRequest(
+      parent=namespace.RelativeName()
+  )
+  response = client.namespaces_instances.List(request)
+
+  # Log the regions that did not respond.
+  if response.unreachable:
+    log.warning(
+        'The following Cloud Run regions did not respond: {}. '
+        'List results may be incomplete.'.format(
+            ', '.join(sorted(response.unreachable))
+        )
+    )
+
+  return [
+      instance.Instance(item, client.MESSAGES_MODULE)
+      for item in response.items
   ]
 
 

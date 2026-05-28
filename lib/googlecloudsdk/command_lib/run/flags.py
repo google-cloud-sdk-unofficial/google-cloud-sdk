@@ -3778,7 +3778,7 @@ def PromptForRegion(parsed_args=None, release_track=None):
     all_regions = global_methods.ListRegions(client)
 
     image = getattr(parsed_args, 'image', None)
-    if release_track == base.ReleaseTrack.ALPHA and image:
+    if release_track != base.ReleaseTrack.GA and image:
       inferred_region, _ = resource_args.ParseArImage(image)
       if inferred_region and inferred_region in all_regions:
         if console_io.PromptContinue(

@@ -148,7 +148,10 @@ def _AddVpcAccessibleServicesFilter(args, req, version):
 
 def AddVpcAccessibleServicesGA(ref, args, req):
   del ref  # Unused
-  return AddVpcAccessibleServices(args, req, 'v1')
+  # Only apply incremental flag logic if the YAML file is NOT used.
+  if not args.IsSpecified('vpc_accessible_services'):
+    return _AddVpcAccessibleServicesFilter(args, req, 'v1')
+  return req
 
 
 def AddVpcAccessibleServicesAlpha(ref, args, req):
@@ -309,18 +312,14 @@ def AddPerimeterUpdateArgs(parser, version=None):
 
 def AddUpdateVpcAccessibleServicesGroupArgs(parser, version):
   """Conditional logic for VPC Accessible Services."""
-  if version == 'v1alpha':
-    mutex_group = parser.add_mutually_exclusive_group(
-        help=(
-            'These flags modify the VpcAccessibleServices of this '
-            'ServicePerimeter config.'
-        )
-    )
-    _AddSetClearVpcAccessibleServicesArgsAlpha(mutex_group)
-    _AddVpcRestrictionArgs(mutex_group)
-  else:
-    # GA behavior remains unchanged
-    _AddVpcRestrictionArgs(parser)
+  mutex_group = parser.add_mutually_exclusive_group(
+      help=(
+          'These flags modify the VpcAccessibleServices of this '
+          'ServicePerimeter config.'
+      )
+  )
+  _AddSetClearVpcAccessibleServicesArgs(mutex_group, version)
+  _AddVpcRestrictionArgs(mutex_group)
 
 
 def AddUpdateDirectionalPoliciesGroupArgs(parser, version=None):
@@ -474,7 +473,7 @@ def _AddUpdateEgressPoliciesGroupArgs(parser, api_version):
   clear_egress_policies_arg.AddToParser(group)
 
 
-def _AddSetClearVpcAccessibleServicesArgsAlpha(parser):
+def _AddSetClearVpcAccessibleServicesArgs(parser, version):
   """Add args for set/clear vpc accessible services."""
 
   set_vpc_accessible_services_help_text = (
@@ -490,7 +489,7 @@ def _AddSetClearVpcAccessibleServicesArgsAlpha(parser):
       '--set-vpc-accessible-services',
       metavar='YAML_FILE',
       help=set_vpc_accessible_services_help_text,
-      type=ParseVpcAccessibleServices('v1alpha'),
+      type=ParseVpcAccessibleServices(version),
   )
   clear_vpc_accessible_services_help_text = (
       'Empties existing enforced VpcAccessibleServices.'

@@ -109,7 +109,9 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
 
     if self.t:
       reference = bq_client_utils.GetTableReference(
-          id_fallbacks=client, identifier=identifier
+          id_fallbacks=client,
+          identifier=identifier,
+          allow_pcnt_identifier_format=True,
       )
     elif self.d:
       reference = bq_client_utils.GetDatasetReference(

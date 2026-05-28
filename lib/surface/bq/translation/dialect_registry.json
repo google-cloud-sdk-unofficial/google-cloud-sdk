@@ -136,29 +136,44 @@
     "target_name": "BigQuery",
     "status": "GA",
     "legacy_batch_name": ["Teradata2BigQuery_Translation", "Translation_Teradata", "Translation_Teradata2BQ"],
-    "legacy_batch_supported": true
+    "legacy_batch_supported": true,
+    "features": {
+      "enabled_features": ["CONSOLIDATED_INTERACTIVE_PROBER", "CONSOLIDATED_BATCH_PROBER", "ASSESSMENT_PROBER", "SUGGESTION_PROBER"]
+    }
   }, {
     "source_name": "Teradata_BTEQ",
     "target_name": "BigQuery",
     "status": "GA",
     "legacy_batch_name": ["Bteq2BigQuery_Translation", "Translation_Bteq", "Translation_Bteq2BQ"],
-    "legacy_batch_supported": true
+    "legacy_batch_supported": true,
+    "features": {
+      "enabled_features": ["LEGACY_BATCH_TRANSLATION_PROBER", "REPORTING_PROBER"]
+    }
   }, {
     "source_name": "Redshift",
     "target_name": "BigQuery",
     "status": "GA",
     "legacy_batch_name": ["Redshift2BigQuery_Translation", "Translation_Redshift2BQ"],
-    "legacy_batch_supported": true
+    "legacy_batch_supported": true,
+    "features": {
+      "enabled_features": ["LEGACY_BATCH_TRANSLATION_PROBER", "CONSOLIDATED_INTERACTIVE_PROBER", "CONSOLIDATED_BATCH_PROBER", "ASSESSMENT_PROBER", "REPORTING_PROBER"]
+    }
   }, {
     "source_name": "Oracle",
     "target_name": "BigQuery",
     "status": "GA",
-    "legacy_batch_name": ["Oracle2BigQuery_Translation", "Translation_Oracle2BQ"]
+    "legacy_batch_name": ["Oracle2BigQuery_Translation", "Translation_Oracle2BQ"],
+    "features": {
+      "enabled_features": ["LEGACY_BATCH_TRANSLATION_PROBER", "CONSOLIDATED_INTERACTIVE_PROBER", "CONSOLIDATED_BATCH_PROBER", "ASSESSMENT_PROBER"]
+    }
   }, {
     "source_name": "Hive",
     "target_name": "BigQuery",
     "status": "GA",
-    "legacy_batch_name": ["HiveQL2BigQuery_Translation", "Translation_HiveQL2BQ"]
+    "legacy_batch_name": ["HiveQL2BigQuery_Translation", "Translation_HiveQL2BQ"],
+    "features": {
+      "enabled_features": ["LEGACY_BATCH_TRANSLATION_PROBER", "CONSOLIDATED_INTERACTIVE_PROBER", "CONSOLIDATED_BATCH_PROBER", "ASSESSMENT_PROBER"]
+    }
   }, {
     "source_name": "Impala",
     "target_name": "BigQuery",
@@ -168,68 +183,107 @@
     "source_name": "SparkSQL",
     "target_name": "BigQuery",
     "status": "GA",
-    "legacy_batch_name": ["SparkSQL2BigQuery_Translation", "Translation_SparkSQL2BQ"]
+    "legacy_batch_name": ["SparkSQL2BigQuery_Translation", "Translation_SparkSQL2BQ"],
+    "features": {
+      "enabled_features": ["LEGACY_BATCH_TRANSLATION_PROBER", "CONSOLIDATED_INTERACTIVE_PROBER", "CONSOLIDATED_BATCH_PROBER"]
+    }
   }, {
     "source_name": "Snowflake",
     "target_name": "BigQuery",
     "status": "GA",
-    "legacy_batch_name": ["Snowflake2BigQuery_Translation", "Translation_Snowflake2BQ"]
+    "legacy_batch_name": ["Snowflake2BigQuery_Translation", "Translation_Snowflake2BQ"],
+    "features": {
+      "enabled_features": ["LEGACY_BATCH_TRANSLATION_PROBER", "CONSOLIDATED_INTERACTIVE_PROBER", "CONSOLIDATED_BATCH_PROBER", "ASSESSMENT_PROBER"]
+    }
   }, {
     "source_name": "Netezza",
     "target_name": "BigQuery",
     "status": "GA",
-    "legacy_batch_name": ["Netezza2BigQuery_Translation", "Translation_Netezza2BQ"]
+    "legacy_batch_name": ["Netezza2BigQuery_Translation", "Translation_Netezza2BQ"],
+    "features": {
+      "enabled_features": ["LEGACY_BATCH_TRANSLATION_PROBER", "CONSOLIDATED_INTERACTIVE_PROBER", "CONSOLIDATED_BATCH_PROBER"]
+    }
   }, {
     "source_name": "AzureSynapse",
     "target_name": "BigQuery",
     "status": "GA",
-    "legacy_batch_name": ["AzureSynapse2BigQuery_Translation", "Translation_AzureSynapse2BQ"]
+    "legacy_batch_name": ["AzureSynapse2BigQuery_Translation", "Translation_AzureSynapse2BQ"],
+    "features": {
+      "enabled_features": ["LEGACY_BATCH_TRANSLATION_PROBER", "CONSOLIDATED_INTERACTIVE_PROBER", "CONSOLIDATED_BATCH_PROBER"]
+    }
   }, {
     "source_name": "Vertica",
     "target_name": "BigQuery",
     "status": "GA",
-    "legacy_batch_name": ["Vertica2BigQuery_Translation", "Translation_Vertica2BQ"]
+    "legacy_batch_name": ["Vertica2BigQuery_Translation", "Translation_Vertica2BQ"],
+    "features": {
+      "enabled_features": ["LEGACY_BATCH_TRANSLATION_PROBER", "CONSOLIDATED_INTERACTIVE_PROBER", "CONSOLIDATED_BATCH_PROBER"]
+    }
   }, {
     "source_name": "SQLServer",
     "target_name": "BigQuery",
     "status": "GA",
-    "legacy_batch_name": ["SQLServer2BigQuery_Translation", "Translation_SQLServer2BQ"]
+    "legacy_batch_name": ["SQLServer2BigQuery_Translation", "Translation_SQLServer2BQ"],
+    "features": {
+      "enabled_features": ["LEGACY_BATCH_TRANSLATION_PROBER", "CONSOLIDATED_INTERACTIVE_PROBER", "CONSOLIDATED_BATCH_PROBER"]
+    }
   }, {
     "source_name": "Presto",
     "target_name": "BigQuery",
     "status": "GA",
-    "legacy_batch_name": ["Presto2BigQuery_Translation", "Translation_Presto2BQ"]
+    "legacy_batch_name": ["Presto2BigQuery_Translation", "Translation_Presto2BQ"],
+    "features": {
+      "enabled_features": ["LEGACY_BATCH_TRANSLATION_PROBER", "CONSOLIDATED_INTERACTIVE_PROBER", "CONSOLIDATED_BATCH_PROBER"]
+    }
   }, {
     "source_name": "MySQL",
     "target_name": "BigQuery",
     "status": "GA",
-    "legacy_batch_name": ["MySQL2BigQuery_Translation", "Translation_MySQL2BQ"]
+    "legacy_batch_name": ["MySQL2BigQuery_Translation", "Translation_MySQL2BQ"],
+    "features": {
+      "enabled_features": ["LEGACY_BATCH_TRANSLATION_PROBER", "CONSOLIDATED_INTERACTIVE_PROBER", "CONSOLIDATED_BATCH_PROBER"]
+    }
   }, {
     "source_name": "Postgresql",
     "target_name": "BigQuery",
     "status": "GA",
-    "legacy_batch_name": ["Postgresql2BigQuery_Translation", "Translation_Postgresql2BQ"]
+    "legacy_batch_name": ["Postgresql2BigQuery_Translation", "Translation_Postgresql2BQ"],
+    "features": {
+      "enabled_features": ["LEGACY_BATCH_TRANSLATION_PROBER", "CONSOLIDATED_INTERACTIVE_PROBER", "CONSOLIDATED_BATCH_PROBER"]
+    }
   }, {
     "source_name": "Db2",
     "target_name": "BigQuery",
     "status": "GA",
-    "legacy_batch_name": ["Db22BigQuery_Translation", "Translation_Db2ToBQ"]
+    "legacy_batch_name": ["Db22BigQuery_Translation", "Translation_Db2ToBQ"],
+    "features": {
+      "enabled_features": ["CONSOLIDATED_INTERACTIVE_PROBER"]
+    }
   }, {
     "source_name": "BigQuery",
     "target_name": "BigQuery",
     "status": "GA",
     "legacy_batch_name": ["BigQuery2BigQuery_Translation"],
-    "legacy_batch_supported": true
+    "legacy_batch_supported": true,
+    "features": {
+      "enabled_features": ["CONSOLIDATED_INTERACTIVE_PROBER", "CONSOLIDATED_BATCH_PROBER"]
+    }
   }, {
     "source_name": "SQLite",
     "target_name": "BigQuery",
     "status": "GA",
-    "legacy_batch_name": ["SQLite2BigQuery_Translation", "Translation_SQLite2BQ"]
+    "legacy_batch_name": ["SQLite2BigQuery_Translation", "Translation_SQLite2BQ"],
+    "features": {
+      "enabled_features": ["CONSOLIDATED_INTERACTIVE_PROBER"]
+    }
   }, {
     "source_name": "Greenplum",
     "target_name": "BigQuery",
     "status": "GA",
-    "legacy_batch_name": ["Greenplum2BigQuery_Translation", "Translation_Greenplum2BQ"]
+    "legacy_batch_name": ["Greenplum2BigQuery_Translation", "Translation_Greenplum2BQ"],
+    "features": {
+      "enabled_features": ["CONSOLIDATED_INTERACTIVE_PROBER"]
+    }
   }, {
     "source_name": "BigQuery",
     "target_name": "Hive",
@@ -239,7 +293,10 @@
       "allowed_projects": {
         "project_numbers": ["156432450703", "432181219624", "707202996403", "203355275444", "352088644680", "654035303476", "576339195321", "436269148319", "516716331685", "379044747528"]
       }
-    }]
+    }],
+    "features": {
+      "enabled_features": ["LEGACY_BATCH_TRANSLATION_PROBER"]
+    }
   }, {
     "source_name": "BigQuery",
     "target_name": "SparkSQL",
@@ -249,7 +306,10 @@
       "allowed_projects": {
         "project_numbers": ["981981711386", "437326525319", "156432450703", "993247605073", "626481067061", "111532551424", "93632483437", "262211509857", "1015352525110", "994204566810", "645018340152", "746153563714", "333136199399", "896218910806", "585157873019", "753395952630", "490853178550", "1060947097391", "1027806373027", "393727941108", "674615920152", "15412782479", "600365670470", "899667920020", "229266246478", "1093652211899", "1030168414449", "980907878239", "432181219624", "707202996403", "203355275444", "352088644680", "654035303476", "576339195321", "436269148319", "516716331685", "379044747528"]
       }
-    }]
+    }],
+    "features": {
+      "enabled_features": ["LEGACY_BATCH_TRANSLATION_PROBER"]
+    }
   }, {
     "source_name": "BigQuery",
     "target_name": "Postgresql",
@@ -292,7 +352,10 @@
     }, {
       "internal_access": {
       }
-    }]
+    }],
+    "features": {
+      "enabled_features": ["CONSOLIDATED_INTERACTIVE_PROBER"]
+    }
   }, {
     "source_name": "SQLServer",
     "target_name": "Postgresql",
@@ -315,7 +378,10 @@
       "allowed_projects": {
         "project_numbers": ["432181219624", "707202996403", "203355275444", "352088644680", "654035303476", "576339195321", "436269148319", "516716331685", "379044747528"]
       }
-    }]
+    }],
+    "features": {
+      "enabled_features": ["CONSOLIDATED_BATCH_PROBER"]
+    }
   }, {
     "source_name": "BigQuery",
     "target_name": "BigQuery",

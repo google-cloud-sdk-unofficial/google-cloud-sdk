@@ -134,7 +134,6 @@
       GA:
         processor: googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseEgressPolicies:api_version=v1
     - group:
-        release_tracks: [ALPHA]
         mutex: true
         required: false
         params:
@@ -153,6 +152,10 @@
             https://cloud.google.com/access-context-manager/docs/reference/rest/v1/accessPolicies.servicePerimeters
           ALPHA:
             processor: googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseVpcAccessibleServices:api_version=v1alpha
+          BETA:
+            processor: googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseVpcAccessibleServices:api_version=v1
+          GA:
+            processor: googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseVpcAccessibleServices:api_version=v1
         - group:
             mutex: false
             params:
@@ -171,22 +174,3 @@
               help_text: |
                 Whether to restrict API calls within the perimeter to those in the
                 vpc-allowed-services list.
-    - group:
-        release_tracks: [BETA, GA]
-        params:
-        - api_field: servicePerimeter.status.vpcAccessibleServices.allowedServices
-          arg_name: vpc-allowed-services
-          metavar: VPC_SERVICE
-          required: false
-          help_text: |
-            Comma-separated list of APIs accessible from within the Service
-            Perimeter. In order to include all restricted services, use
-            reference "RESTRICTED-SERVICES".
-            Requires vpc-accessible-services be enabled.
-        - api_field: servicePerimeter.status.vpcAccessibleServices.enableRestriction
-          arg_name: enable-vpc-accessible-services
-          required: false
-          type: bool
-          help_text: |
-            Whether to restrict API calls within the perimeter to those in the
-            vpc-allowed-services list.

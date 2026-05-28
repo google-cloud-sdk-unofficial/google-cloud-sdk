@@ -113,5 +113,3 @@
     method: create
     modify_request_hooks:
     - googlecloudsdk.command_lib.network_connectivity.util:AppendLocationsGlobalToParent
-    # TODO: b/420998347 - Remove this hook once v1 supports HYBRID_INSPECTION.
-    - googlecloudsdk.command_lib.network_connectivity.util:ProhibitHybridInspection

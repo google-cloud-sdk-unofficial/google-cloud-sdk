@@ -26,6 +26,7 @@ import hashlib
 import json
 import os
 import sqlite3
+import threading
 
 from google.auth import compute_engine as google_auth_compute_engine
 from google.auth import credentials as google_auth_creds
@@ -41,7 +42,6 @@ from googlecloudsdk.core.credentials import devshell as c_devshell
 from googlecloudsdk.core.credentials import exceptions as c_exceptions
 from googlecloudsdk.core.credentials import introspect as c_introspect
 from googlecloudsdk.core.util import files
-
 import six
 
 ADC_QUOTA_PROJECT_FIELD_NAME = 'quota_project_id'
@@ -326,31 +326,36 @@ class _SqlCursor(object):
 
   def __init__(self, store_file):
     self._store_file = store_file
-    self._connection = None
-    self._cursor = None
+    self._local = threading.local()
 
   def __enter__(self):
     # The default timeout to wait before raising an OperationalError when db is
     # locked is 5 seconds. Here we pass it explicitly in the constructor for the
     # ease of future debugging/investigation. Related bug: b/356223015
-    self._connection = sqlite3.connect(
+    self._local.connection = sqlite3.connect(
         self._store_file,
         timeout=5.0,
         detect_types=sqlite3.PARSE_DECLTYPES,
         isolation_level=None,  # Use autocommit mode.
-        check_same_thread=True  # Only creating thread may use the connection.
+        check_same_thread=True,  # Only creating thread may use the connection.
     )
-    self._cursor = self._connection.cursor()
+    self._local.cursor = self._local.connection.cursor()
     return self
 
   def __exit__(self, exc_type, unused_value, unused_traceback):
-    if not exc_type:
-      # Don't try to commit if exception is in progress.
-      self._connection.commit()
-    self._connection.close()
+    try:
+      connection = getattr(self._local, 'connection', None)
+      if connection:
+        if not exc_type:
+          # Don't try to commit if exception is in progress.
+          connection.commit()
+        connection.close()
+    finally:
+      self._local.connection = None
+      self._local.cursor = None
 
   def Execute(self, *args):
-    return self._cursor.execute(*args)
+    return self._local.cursor.execute(*args)
 
 
 class SqliteCredentialStore(CredentialStore):
@@ -559,7 +564,10 @@ class AccessTokenCache(object):
         'access_token TEXT, '
         'token_expiry TIMESTAMP, '
         'rapt_token TEXT, '
-        'id_token TEXT)'.format(_ACCESS_TOKEN_TABLE))
+        'id_token TEXT, '
+        'regional_access_boundary TEXT, '
+        'regional_access_boundary_expiry TIMESTAMP)'.format(_ACCESS_TOKEN_TABLE)
+    )
 
     # Older versions of the access_tokens database may not have the id_token
     # column, so we will add it if we can't access it.
@@ -569,6 +577,35 @@ class AccessTokenCache(object):
     except sqlite3.OperationalError:
       self._Execute('ALTER TABLE "{}" ADD COLUMN id_token TEXT'.format(
           _ACCESS_TOKEN_TABLE))
+    # Older versions of the access_tokens database may not have the
+    # regional_access_boundary column, so we will add it if we can't access it.
+    try:
+      self._Execute(
+          'SELECT regional_access_boundary FROM "{}" LIMIT 1'.format(
+              _ACCESS_TOKEN_TABLE
+          )
+      )
+    except sqlite3.OperationalError:
+      self._Execute(
+          'ALTER TABLE "{}" ADD COLUMN regional_access_boundary TEXT'.format(
+              _ACCESS_TOKEN_TABLE
+          )
+      )
+
+    # Older versions of the access_tokens database may not have the
+    # regional_access_boundary_expiry column, so we will add it if we can't
+    # access it.
+    try:
+      self._Execute(
+          'SELECT regional_access_boundary_expiry FROM "{}" LIMIT 1'.format(
+              _ACCESS_TOKEN_TABLE
+          )
+      )
+    except sqlite3.OperationalError:
+      self._Execute(
+          'ALTER TABLE "{}" ADD COLUMN regional_access_boundary_expiry'
+          ' TIMESTAMP'.format(_ACCESS_TOKEN_TABLE)
+      )
 
   def _Execute(self, *args):
     with self._cursor as cur:
@@ -581,14 +618,20 @@ class AccessTokenCache(object):
       formatted_account_id: str, The formatted account id.
 
     Returns:
-      tuple: The access_token, token_expiry, rapt_token, id_token tuple.
+      tuple: The access_token, token_expiry, rapt_token, id_token,
+      regional_access_boundary, regional_access_boundary_expiry tuple.
     """
-    with self._cursor as cur:
-      return cur.Execute(
-          'SELECT access_token, token_expiry, rapt_token, id_token '
-          'FROM "{}" WHERE account_id = ?'.format(_ACCESS_TOKEN_TABLE),
-          (formatted_account_id,),
-      ).fetchone()
+    try:
+      with self._cursor as cur:
+        return cur.Execute(
+            'SELECT access_token, token_expiry, rapt_token, id_token, '
+            'regional_access_boundary, regional_access_boundary_expiry '
+            'FROM "{}" WHERE account_id = ?'.format(_ACCESS_TOKEN_TABLE),
+            (formatted_account_id,),
+        ).fetchone()
+    except sqlite3.OperationalError as e:
+      log.warning('Could not load access token from cache: {}'.format(str(e)))
+      return None
 
   def Store(
       self,
@@ -597,6 +640,8 @@ class AccessTokenCache(object):
       token_expiry,
       rapt_token,
       id_token,
+      regional_access_boundary=None,
+      regional_access_boundary_expiry=None,
   ):
     """Stores the tokens into the access token cache.
 
@@ -606,6 +651,10 @@ class AccessTokenCache(object):
       token_expiry: datetime.datetime, The token expiry.
       rapt_token: str, The rapt token string to store.
       id_token: str, The ID token string to store.
+      regional_access_boundary: str, The regional access boundary string to
+        store.
+      regional_access_boundary_expiry: datetime.datetime, The regional access
+        boundary expiry string to store.
     """
     # This is used for the cases, when we want to cache the RAPT token but not
     # the access token. For example, when we generate a scoped access token
@@ -613,28 +662,75 @@ class AccessTokenCache(object):
     if self._cache_only_rapt:
       result = self.Load(formatted_account_id)
       if result:
-        access_token, token_expiry, _, id_token = result
+        (
+            access_token,
+            token_expiry,
+            _,
+            id_token,
+            regional_access_boundary,
+            regional_access_boundary_expiry,
+        ) = result
       else:
         # If the access token is not stored in the cache, we will set it to
         # None, as we only want to cache the RAPT token here.
         access_token = None
         token_expiry = None
         id_token = None
+        regional_access_boundary = None
+        regional_access_boundary_expiry = None
     try:
       self._Execute(
           'REPLACE INTO "{}" '
-          '(account_id, access_token, token_expiry, rapt_token, id_token) '
-          'VALUES (?,?,?,?,?)'.format(_ACCESS_TOKEN_TABLE),
+          '(account_id, access_token, token_expiry, rapt_token, id_token, '
+          'regional_access_boundary, regional_access_boundary_expiry) '
+          'VALUES (?,?,?,?,?,?,?)'.format(_ACCESS_TOKEN_TABLE),
           (
               formatted_account_id,
               access_token,
               token_expiry,
               rapt_token,
               id_token,
+              regional_access_boundary,
+              regional_access_boundary_expiry,
           ),
       )
     except sqlite3.OperationalError as e:
       log.warning('Could not store access token in cache: {}'.format(str(e)))
+
+  def StoreRegionalAccessBoundary(
+      self,
+      formatted_account_id,
+      regional_access_boundary,
+      regional_access_boundary_expiry,
+  ):
+    """Updates only the regional access boundary columns in the cache.
+
+    Args:
+      formatted_account_id: str, The formatted account id.
+      regional_access_boundary: str, The regional access boundary string to
+        store.
+      regional_access_boundary_expiry: datetime.datetime, The regional access
+        boundary expiry to store.
+    """
+    try:
+      self._Execute(
+          'INSERT INTO "{}" (account_id, regional_access_boundary,'
+          ' regional_access_boundary_expiry) VALUES (?,?,?) ON'
+          ' CONFLICT(account_id) DO UPDATE SET regional_access_boundary ='
+          ' excluded.regional_access_boundary, regional_access_boundary_expiry'
+          ' = excluded.regional_access_boundary_expiry'.format(
+              _ACCESS_TOKEN_TABLE
+          ),
+          (
+              formatted_account_id,
+              regional_access_boundary,
+              regional_access_boundary_expiry,
+          ),
+      )
+    except sqlite3.OperationalError as e:
+      log.warning(
+          'Could not store regional access boundary in cache: {}'.format(str(e))
+      )
 
   def Remove(self, formatted_account_id):
     """Removes the tokens from the access token cache.
@@ -685,7 +781,14 @@ class AccessTokenStoreGoogleAuth(object):
     """
     token_data = self._access_token_cache.Load(self._formatted_account_id)
     if token_data:
-      access_token, token_expiry, rapt_token, id_token = token_data
+      (
+          access_token,
+          token_expiry,
+          rapt_token,
+          id_token,
+          regional_access_boundary,
+          regional_access_boundary_expiry,
+      ) = token_data
       if UseSelfSignedJwt(self._credentials):
         # For self signed jwt flow we only use the loaded id_token. Access token
         # will be generated; rapt token is always None for service account.
@@ -702,6 +805,11 @@ class AccessTokenStoreGoogleAuth(object):
       # consistent with oauth2client, we add it.
       self._credentials._id_token = id_token  # pylint: disable=protected-access
       self._credentials.id_tokenb64 = id_token
+      if hasattr(self._credentials, '_set_regional_access_boundary'):
+        self._credentials._set_regional_access_boundary({  # pylint: disable=protected-access
+            'encodedLocations': regional_access_boundary,
+            'expiry': regional_access_boundary_expiry,
+        })
     return self._credentials
 
   def Put(self):
@@ -712,6 +820,12 @@ class AccessTokenStoreGoogleAuth(object):
     expiry = getattr(self._credentials, 'expiry', None)
     rapt_token = getattr(self._credentials, 'rapt_token', None)
     access_token = getattr(self._credentials, 'token', None)
+    regional_access_boundary = getattr(
+        self._credentials, 'regional_access_boundary', None
+    )
+    regional_access_boundary_expiry = getattr(
+        self._credentials, 'regional_access_boundary_expiry', None
+    )
     if UseSelfSignedJwt(self._credentials):
       # For self signed jwt, we only write the new ID token value into the
       # cache. For access token, expiry and rapt token we still use the
@@ -722,14 +836,46 @@ class AccessTokenStoreGoogleAuth(object):
       # self._credentials, then set these values to those from the access token
       # cache, so when we write these values back to the access token cache,
       # they don't change in the cache.
+      # Note: Regional Access Boundary (RAB) properties are explicitly NOT
+      # overwritten by the cache here. Since RAB constraints apply to the
+      # identity universally across token types, any fresh RAB boundaries
+      # fetched during a self-signed JWT before_request hook must be preserved
+      # and persisted to the cache.
       access_token = None
       expiry = None
       rapt_token = None
       token_data = self._access_token_cache.Load(self._formatted_account_id)
       if token_data:
-        access_token, expiry, rapt_token, _ = token_data
+        (
+            access_token,
+            expiry,
+            rapt_token,
+            _,
+            _,
+            _,
+        ) = token_data
     self._access_token_cache.Store(
-        self._formatted_account_id, access_token, expiry, rapt_token, id_token
+        self._formatted_account_id,
+        access_token,
+        expiry,
+        rapt_token,
+        id_token,
+        regional_access_boundary,
+        regional_access_boundary_expiry,
+    )
+
+  def PutRegionalAccessBoundary(self):
+    """Puts only the regional access boundary tokens of the credentials to the internal cache."""
+    regional_access_boundary = getattr(
+        self._credentials, 'regional_access_boundary', None
+    )
+    regional_access_boundary_expiry = getattr(
+        self._credentials, 'regional_access_boundary_expiry', None
+    )
+    self._access_token_cache.StoreRegionalAccessBoundary(
+        self._formatted_account_id,
+        regional_access_boundary,
+        regional_access_boundary_expiry,
     )
 
   def Delete(self):
@@ -791,6 +937,28 @@ def MaybeAttachAccessTokenCacheStoreGoogleAuth(
     store.Put()
 
   credentials.refresh = _WrappedRefresh
+
+  if hasattr(credentials, 'before_request'):
+    orig_before_request = credentials.before_request
+
+    def _WrappedBeforeRequest(request, method, url, headers):
+      # Capture potentially existing RAB state
+      old_rab = getattr(credentials, 'regional_access_boundary', None)
+      old_rab_expiry = getattr(
+          credentials, 'regional_access_boundary_expiry', None
+      )
+
+      orig_before_request(request, method, url, headers)
+
+      new_rab = getattr(credentials, 'regional_access_boundary', None)
+      new_rab_expiry = getattr(
+          credentials, 'regional_access_boundary_expiry', None
+      )
+
+      if new_rab != old_rab or new_rab_expiry != old_rab_expiry:
+        store.PutRegionalAccessBoundary()
+
+    credentials.before_request = _WrappedBeforeRequest
   return credentials
 
 
@@ -838,6 +1006,26 @@ class CredentialStoreWithCache(CredentialStore):
       store.Put()
 
     credentials.refresh = _WrappedRefresh
+    if hasattr(credentials, 'before_request'):
+      orig_before_request = credentials.before_request
+
+      def _WrappedBeforeRequest(request, method, url, headers):
+        old_rab = getattr(credentials, 'regional_access_boundary', None)
+        old_rab_expiry = getattr(
+            credentials, 'regional_access_boundary_expiry', None
+        )
+
+        orig_before_request(request, method, url, headers)
+
+        new_rab = getattr(credentials, 'regional_access_boundary', None)
+        new_rab_expiry = getattr(
+            credentials, 'regional_access_boundary_expiry', None
+        )
+
+        if new_rab != old_rab or new_rab_expiry != old_rab_expiry:
+          store.PutRegionalAccessBoundary()
+
+      credentials.before_request = _WrappedBeforeRequest
     return credentials
 
   def GetAccounts(self):
@@ -1196,8 +1384,7 @@ def FromJsonGoogleAuth(json_value):
     cred.client_id = json_key.get('client_id')
     # Enable self signed jwt if applicable for the cred created from cred store.
     EnableSelfSignedJwtIfApplicable(cred)
-    return cred
-  if cred_type == CredentialTypeGoogleAuth.P12_SERVICE_ACCOUNT:
+  elif cred_type == CredentialTypeGoogleAuth.P12_SERVICE_ACCOUNT:
     json_key['token_uri'] = GetEffectiveTokenUriFromCreds(json_key)
     from googlecloudsdk.core.credentials import p12_service_account  # pylint: disable=g-import-not-at-top
     cred = p12_service_account.CreateP12ServiceAccount(
@@ -1206,8 +1393,7 @@ def FromJsonGoogleAuth(json_value):
         service_account_email=json_key['client_email'],
         token_uri=json_key['token_uri'],
         scopes=config.CLOUDSDK_SCOPES)
-    return cred
-  if cred_type == CredentialTypeGoogleAuth.EXTERNAL_ACCOUNT:
+  elif cred_type == CredentialTypeGoogleAuth.EXTERNAL_ACCOUNT:
     # token_uri is not applicable to external account credentials.
     # A different endpoint is used for token exchange (GCP STS).
     # These credentials can also be user credentials EXTERNAL_ACCOUNT_USER.
@@ -1245,13 +1431,12 @@ def FromJsonGoogleAuth(json_value):
         from google.auth import identity_pool  # pylint: disable=g-import-not-at-top
         cred = identity_pool.Credentials.from_info(
             json_key, scopes=config.CLOUDSDK_SCOPES)
-    except (ValueError, TypeError, google_auth_exceptions.RefreshError):
+    except (ValueError, TypeError, google_auth_exceptions.RefreshError) as exc:
       raise InvalidCredentialsError(
-          'The provided external account credentials are invalid or '
-          'unsupported')
-    return WrapGoogleAuthExternalAccountRefresh(cred)
+          'The provided external account credentials are invalid or unsupported'
+      ) from exc
 
-  if cred_type == CredentialTypeGoogleAuth.EXTERNAL_ACCOUNT_AUTHORIZED_USER:
+  elif cred_type == CredentialTypeGoogleAuth.EXTERNAL_ACCOUNT_AUTHORIZED_USER:
     # token_uri is applicable to external account authorized user credentials
     # but is not configurable via auth properties. The config remains the
     # source of truth.
@@ -1267,13 +1452,13 @@ def FromJsonGoogleAuth(json_value):
       # Attempt to initialize external account authorized user credentials.
       cred = google_auth_external_account_authorized_user.Credentials.from_info(
           json_key)
-    except (ValueError, TypeError, google_auth_exceptions.RefreshError):
+    except (ValueError, TypeError, google_auth_exceptions.RefreshError) as exc:
       raise InvalidCredentialsError(
           'The provided external account authorized user credentials are '
-          'invalid or unsupported')
-    return WrapGoogleAuthExternalAccountRefresh(cred)
+          'invalid or unsupported'
+      ) from exc
 
-  if cred_type == CredentialTypeGoogleAuth.USER_ACCOUNT:
+  elif cred_type == CredentialTypeGoogleAuth.USER_ACCOUNT:
     json_key['token_uri'] = GetEffectiveTokenUriFromCreds(json_key)
     # Import only when necessary to decrease the startup time.
     # pylint: disable=g-import-not-at-top
@@ -1284,9 +1469,8 @@ def FromJsonGoogleAuth(json_value):
         json_key, scopes=json_key.get('scopes'))
     # token_uri is hard-coded in google-auth library, replace it.
     cred._token_uri = json_key['token_uri']  # pylint: disable=protected-access
-    return cred
 
-  if cred_type == CredentialTypeGoogleAuth.GCE:
+  elif cred_type == CredentialTypeGoogleAuth.GCE:
     cred = google_auth_compute_engine.Credentials(
         service_account_email=json_key['service_account_email'],
     )
@@ -1296,11 +1480,22 @@ def FromJsonGoogleAuth(json_value):
     # Set _universe_domain_cached to True to re-use the _universe_domain value
     # instead of fetching it from metadata server.
     cred._universe_domain_cached = True  # pylint: disable=protected-access
-    return cred
+  else:
+    raise UnknownCredentialsType(
+        'Google auth does not support deserialization of {} credentials.'
+        .format(json_key['type'])
+    )
 
-  raise UnknownCredentialsType(
-      'Google auth does not support deserialization of {} credentials.'.format(
-          json_key['type']))
+  if hasattr(cred, '_set_blocking_regional_access_boundary_lookup'):
+    cred._set_blocking_regional_access_boundary_lookup()  # pylint: disable=protected-access
+
+  if cred_type in (
+      CredentialTypeGoogleAuth.EXTERNAL_ACCOUNT,
+      CredentialTypeGoogleAuth.EXTERNAL_ACCOUNT_AUTHORIZED_USER,
+  ):
+    return WrapGoogleAuthExternalAccountRefresh(cred)
+
+  return cred
 
 
 def WrapGoogleAuthExternalAccountRefresh(cred):
@@ -1457,7 +1652,8 @@ def _DumpADCJsonToFile(adc, file_path):
   except files.Error as e:
     log.debug(e, exc_info=True)
     raise CredentialFileSaveError(
-        'Error saving Application Default Credentials: ' + six.text_type(e))
+        'Error saving Application Default Credentials: ' + six.text_type(e)
+    ) from e
   return os.path.abspath(file_path)
 
 
@@ -1500,7 +1696,16 @@ def _ConvertGoogleAuthCredentialsToADC(credentials):
   """Converts a google-auth credentials to application default credentials."""
   creds_type = CredentialTypeGoogleAuth.FromCredentials(credentials)
   if creds_type == CredentialTypeGoogleAuth.USER_ACCOUNT:
-    adc = credentials.to_json(strip=('token', 'token_uri', 'scopes', 'expiry'))
+    adc = credentials.to_json(
+        strip=(
+            'token',
+            'token_uri',
+            'scopes',
+            'expiry',
+            'regional_access_boundary',
+            'regional_access_boundary_expiry',
+        )
+    )
     adc = json.loads(adc)
     adc['type'] = creds_type.key
     return adc
@@ -1522,9 +1727,19 @@ def _ConvertGoogleAuthCredentialsToADC(credentials):
     adc_json = credentials.info
     adc_json.pop('client_id', None)
     adc_json.pop('client_secret', None)
+    adc_json.pop('regional_access_boundary', None)
+    adc_json.pop('regional_access_boundary_expiry', None)
     return adc_json
   if creds_type == CredentialTypeGoogleAuth.EXTERNAL_ACCOUNT_AUTHORIZED_USER:
-    adc_json = credentials.to_json(strip=('token', 'expiry', 'scopes'))
+    adc_json = credentials.to_json(
+        strip=(
+            'token',
+            'expiry',
+            'scopes',
+            'regional_access_boundary',
+            'regional_access_boundary_expiry',
+        )
+    )
     adc_json = json.loads(adc_json)
     if getattr(credentials, 'universe_domain', None) is not None:
       adc_json['universe_domain'] = credentials.universe_domain

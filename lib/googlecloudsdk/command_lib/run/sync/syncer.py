@@ -271,6 +271,9 @@ class CloudRunSyncer(BaseSyncer):
         log.error(
             'Remote command "%s" failed: %s', ' '.join(remote_command), stderr
         )
+
+      # Clear cache as the components can get stale and need to be refreshed.
+      self._cached_ssh_command_components = None
       # Re-raise the error so that the caller can handle it, but with the
       # decoded stderr and potentially better context.
       raise SyncError(

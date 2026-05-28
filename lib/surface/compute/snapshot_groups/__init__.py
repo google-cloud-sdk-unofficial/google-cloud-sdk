@@ -22,12 +22,22 @@ DETAILED_HELP = {  # Dict[str, str]
 }
 
 
-@base.UniverseCompatible
+# --- Alpha Group Definition ---
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SnapshotGroups(base.Group):
+@base.UniverseCompatible
+class SnapshotGroupsAlpha(base.Group):
   """Create, list, describe and delete Compute Engine snapshot groups."""
 
+  category = base.INSTANCES_CATEGORY
+  detailed_help = DETAILED_HELP.copy()
 
-SnapshotGroups.category = base.INSTANCES_CATEGORY
 
-SnapshotGroups.detailed_help = DETAILED_HELP
+# --- Beta Group Definition ---
+@base.Hidden  # This hides the BETA group from public documentation
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.UniverseCompatible
+class SnapshotGroupsBeta(base.Group):
+  """Create, list, describe and delete Compute Engine snapshot groups."""
+
+  category = base.INSTANCES_CATEGORY
+  detailed_help = DETAILED_HELP.copy()

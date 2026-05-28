@@ -24,14 +24,17 @@ def SanitizePlatformSettings(unused_ref, args, request):
     request.googleCloudRecaptchaenterpriseV1Key.iosSettings = None
     request.googleCloudRecaptchaenterpriseV1Key.webSettings = None
     request.googleCloudRecaptchaenterpriseV1Key.expressSettings = None
+    request.googleCloudRecaptchaenterpriseV1Key.universalSettings = None
   elif args.ios:
     request.googleCloudRecaptchaenterpriseV1Key.androidSettings = None
     request.googleCloudRecaptchaenterpriseV1Key.webSettings = None
     request.googleCloudRecaptchaenterpriseV1Key.expressSettings = None
+    request.googleCloudRecaptchaenterpriseV1Key.universalSettings = None
   elif args.web:
     request.googleCloudRecaptchaenterpriseV1Key.androidSettings = None
     request.googleCloudRecaptchaenterpriseV1Key.iosSettings = None
     request.googleCloudRecaptchaenterpriseV1Key.expressSettings = None
+    request.googleCloudRecaptchaenterpriseV1Key.universalSettings = None
   elif args.express:
     request.googleCloudRecaptchaenterpriseV1Key.expressSettings = (
         messages.GoogleCloudRecaptchaenterpriseV1ExpressKeySettings()
@@ -39,10 +42,20 @@ def SanitizePlatformSettings(unused_ref, args, request):
     request.googleCloudRecaptchaenterpriseV1Key.androidSettings = None
     request.googleCloudRecaptchaenterpriseV1Key.iosSettings = None
     request.googleCloudRecaptchaenterpriseV1Key.webSettings = None
+    request.googleCloudRecaptchaenterpriseV1Key.universalSettings = None
+  elif args.universal:
+    request.googleCloudRecaptchaenterpriseV1Key.androidSettings = None
+    request.googleCloudRecaptchaenterpriseV1Key.iosSettings = None
+    request.googleCloudRecaptchaenterpriseV1Key.webSettings = None
+    request.googleCloudRecaptchaenterpriseV1Key.expressSettings = None
+    request.googleCloudRecaptchaenterpriseV1Key.universalSettings = (
+        messages.GoogleCloudRecaptchaenterpriseV1UniversalKeySettings()
+    )
   else:
     request.googleCloudRecaptchaenterpriseV1Key.androidSettings = None
     request.googleCloudRecaptchaenterpriseV1Key.iosSettings = None
     request.googleCloudRecaptchaenterpriseV1Key.webSettings = None
     request.googleCloudRecaptchaenterpriseV1Key.expressSettings = None
+    request.googleCloudRecaptchaenterpriseV1Key.universalSettings = None
 
   return request

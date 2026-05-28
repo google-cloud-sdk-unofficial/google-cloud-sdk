@@ -259,6 +259,7 @@ class Configs:
           or (args.IsKnownAndSpecified('disk_size'))
           or (args.IsKnownAndSpecified('disk_source_snapshot'))
           or (args.IsKnownAndSpecified('disk_reclaim_policy'))
+          or (args.IsKnownAndSpecified('disk_archive_timeout'))
       )
 
       if use_disk_flags:
@@ -284,6 +285,13 @@ class Configs:
 
       # Not all instance types can take Hyperdisks, but this is validated on the
       # backend.
+      archive_timeout_str = None
+      if (
+          args.IsKnownAndSpecified('disk_archive_timeout')
+          and args.disk_archive_timeout is not None
+      ):
+        archive_timeout_str = f'{args.disk_archive_timeout}s'
+
       if disk_type == 'hyperdisk-balanced-ha':
         pd.gceHd = self.messages.GceHyperdiskBalancedHighAvailability(
             sizeGb=0 if source_snapshot else disk_size,
@@ -293,6 +301,7 @@ class Configs:
                 else self.messages.GceHyperdiskBalancedHighAvailability.ReclaimPolicyValueValuesEnum.DELETE
             ),
             sourceSnapshot=source_snapshot,
+            archiveTimeout=archive_timeout_str,
         )
       else:
         pd.gcePd = self.messages.GceRegionalPersistentDisk(
@@ -305,6 +314,7 @@ class Configs:
                 else self.messages.GceRegionalPersistentDisk.ReclaimPolicyValueValuesEnum.DELETE
             ),
             sourceSnapshot=source_snapshot,
+            archiveTimeout=archive_timeout_str,
         )
       config.persistentDirectories.append(pd)
 
@@ -710,7 +720,16 @@ class Configs:
     use_source_snapshot = args.IsKnownAndSpecified(
         'disk_source_snapshot'
     ) or args.IsKnownAndSpecified('pd_source_snapshot')
-    update_disk = use_disk_type or use_disk_size or use_source_snapshot
+    use_disk_archive_timeout = (
+        args.IsKnownAndSpecified('disk_archive_timeout')
+        and args.disk_archive_timeout is not None
+    )
+    update_disk = (
+        use_disk_type
+        or use_disk_size
+        or use_source_snapshot
+        or use_disk_archive_timeout
+    )
     if use_disk_type:
       disk_type: str = (
           args.disk_type
@@ -757,12 +776,18 @@ class Configs:
     if not old_config.persistentDirectories:
       config.persistentDirectories = [self.messages.PersistentDirectory()]
 
+    if use_disk_archive_timeout:
+      archive_timeout = f'{args.disk_archive_timeout}s'
+    else:
+      archive_timeout = extract_archive_timeout(old_config)
+
     if use_source_snapshot:
       if disk_type == 'hyperdisk-balanced-ha':
         config.persistentDirectories[0].gceHd = (
             self.messages.GceHyperdiskBalancedHighAvailability(
                 sizeGb=0,
                 sourceSnapshot=source_snapshot,
+                archiveTimeout=archive_timeout,
             )
         )
       else:
@@ -772,18 +797,22 @@ class Configs:
                 fsType='',
                 sourceSnapshot=source_snapshot,
                 diskType=disk_type,
+                archiveTimeout=archive_timeout,
             )
         )
     elif disk_type == 'hyperdisk-balanced-ha':
       config.persistentDirectories[0].gceHd = (
           self.messages.GceHyperdiskBalancedHighAvailability(
               sizeGb=disk_size,
+              archiveTimeout=archive_timeout,
           )
       )
     else:
       config.persistentDirectories[0].gcePd = (
           self.messages.GceRegionalPersistentDisk(
-              sizeGb=disk_size, diskType=disk_type
+              sizeGb=disk_size,
+              diskType=disk_type,
+              archiveTimeout=archive_timeout,
           )
       )
 
@@ -867,3 +896,15 @@ def extract_source_snapshot(old_config) -> str:
   ):
     return old_config.persistentDirectories[0].gcePd.sourceSnapshot
   return ''
+
+
+def extract_archive_timeout(old_config) -> str:
+  if old_config.persistentDirectories and getattr(
+      old_config.persistentDirectories[0], 'gceHd', False
+  ):
+    return old_config.persistentDirectories[0].gceHd.archiveTimeout
+  if old_config.persistentDirectories and getattr(
+      old_config.persistentDirectories[0], 'gcePd', False
+  ):
+    return old_config.persistentDirectories[0].gcePd.archiveTimeout
+  return None

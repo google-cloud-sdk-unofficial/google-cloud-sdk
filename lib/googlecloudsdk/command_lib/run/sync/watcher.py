@@ -23,6 +23,7 @@ from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run.sync import sync_rule_util
 from googlecloudsdk.command_lib.run.sync import syncer as syncer_lib
 from googlecloudsdk.command_lib.util import gcloudignore
+from googlecloudsdk.core import log
 
 _DEFAULT_DEBOUNCE_DELAY_SECONDS = 0.3
 
@@ -208,4 +209,5 @@ class BaseWatcher(abc.ABC):
           self.syncer.Sync(sync_map, deleted_map)
         except Exception as e:  # pylint: disable=broad-exception-caught
           self._aggregator.RestoreChanges(syncs, deletes)
-          pretty_print.Info('Sync failed, will retry on next event: {e}', e=e)
+          log.debug('Sync failed with error: %s', e)
+          pretty_print.Info('Sync failed, will retry on next event')

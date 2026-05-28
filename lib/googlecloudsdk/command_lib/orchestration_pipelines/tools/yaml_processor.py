@@ -695,7 +695,7 @@ def load_all_environments(
     external_variables: Optional[Dict[str, Any]] = None,
 ) -> tuple[Dict[str, deployment_model.EnvironmentModel], Dict[str, Any]]:
   """Lists all deployment environments configuration."""
-  yaml_content, pre_deployment_yaml = _get_pre_deployment_data(deployment_path)
+  _, pre_deployment_yaml = _get_pre_deployment_data(deployment_path)
 
   environments = pre_deployment_yaml.get(ENVIRONMENTS_KEY)
   if isinstance(environments, Mapping):
@@ -705,7 +705,6 @@ def load_all_environments(
       try:
         all_environments[env] = _load_environment_from_pre_parsed(
             deployment_path,
-            yaml_content,
             pre_deployment_yaml,
             env,
             external_variables,
@@ -722,10 +721,9 @@ def load_environment(
     external_variables: Optional[Dict[str, Any]] = None,
 ) -> deployment_model.EnvironmentModel:
   """Loads the deployment environment configuration."""
-  yaml_content, pre_deployment_yaml = _get_pre_deployment_data(deployment_path)
+  _, pre_deployment_yaml = _get_pre_deployment_data(deployment_path)
   return _load_environment_from_pre_parsed(
       deployment_path,
-      yaml_content,
       pre_deployment_yaml,
       env,
       external_variables,
@@ -1096,7 +1094,6 @@ def _find_unresolved_variables(data: Any) -> list[str]:
 
 def _load_environment_from_pre_parsed(
     deployment_path: str,
-    yaml_content: str,
     pre_deployment_yaml: Optional[Dict[str, Any]],
     env: str,
     external_variables: Optional[Dict[str, Any]] = None,
@@ -1186,43 +1183,32 @@ def _load_environment_from_pre_parsed(
         if isinstance(c, dict) and "variable" in c:
           captured_vars.add(c["variable"])
 
-  # 3. Substitute on raw content (only non-secret variables)
-  resolved_content = resolve_string_templates(
-      yaml_content, resolved_variables
-  )
+  # 3. Substitute on parsed env_dict (only non-secret variables)
+  resolved_env_dict = resolve_templates_in_dict(env_dict, resolved_variables)
 
-  check_for_missing_variables(
-      resolved_content,
-      allowed_missing=list(raw_secrets.keys()) + list(captured_vars),
-  )
+  # Check for missing variables
+  remaining_masked = _find_unresolved_variables(resolved_env_dict)
+  allowed_missing = set(raw_secrets.keys()) | captured_vars
+  for var in remaining_masked:
+    if var not in allowed_missing:
+      raise BadFileError(
+          f"Variable '{var}' is not resolved in the content. Please ensure"
+          " that all variables are defined using deployment file, environment"
+          " variables, or substitutions argument."
+      )
 
-  # Mask unresolved secrets and captured variables to make it valid YAML
-  masked_for_yaml = resolved_content
-  for key in list(raw_secrets.keys()) + list(captured_vars):
-    pattern = r"{{\s*" + re.escape(key) + r"\s*}}"
-    masked_for_yaml = re.sub(
-        pattern, f"__OPEN_TAG__ {key} __CLOSE_TAG__", masked_for_yaml
-    )
+  # Resolve secrets in resources section
+  if "resources" in resolved_env_dict:
+    with allow_secret_resolution():
+      resolved_env_dict["resources"] = resolve_templates_in_dict(
+          resolved_env_dict["resources"],
+          {**resolved_variables, **secret_variables},
+      )
 
-  # 4. Final Parse
-  try:
-    deployment_yaml = yaml.load(masked_for_yaml)
-  except yaml.Error as e:
-    raise BadFileError(f"Error parsing deployment.yaml: {e}") from e
+  resolved_env_dict["secrets"] = secret_variables
 
-  # Resolve secrets in resources section of deployment_yaml
-  if (
-      "environments" in deployment_yaml
-      and env in deployment_yaml["environments"]
-  ):
-    env_data = deployment_yaml["environments"][env]
-    if "resources" in env_data:
-      with allow_secret_resolution():
-        env_data["resources"] = resolve_templates_in_dict(
-            env_data["resources"], {**resolved_variables, **secret_variables}
-        )
-
-  deployment_yaml["environments"][env]["secrets"] = secret_variables
+  # Reconstruct deployment_yaml for DeploymentModel.build
+  deployment_yaml = {"environments": {env: resolved_env_dict}}
 
   try:
     deployment = deployment_model.DeploymentModel.build(deployment_yaml)

@@ -14,16 +14,21 @@
 # limitations under the License.
 """Build utils."""
 
+import os.path
 import re
+
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.iam import util as iam_api_util
+from googlecloudsdk.api_lib.run import service as service_lib
 from googlecloudsdk.command_lib.iam import iam_util
+from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import exceptions as serverless_exceptions
+from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.core import log
 
-
 _LEGACY_BUILD_SA_FORMAT = r'^\d+@cloudbuild\.gserviceaccount\.com$'
+_PROJECT_TOML_FILE_NAME = 'project.toml'
 
 
 def _GetDefaultBuildServiceAccount(project_id, region='global'):
@@ -96,7 +101,7 @@ def ValidateBuildServiceAccountAndPromptWarning(
         f' service account {build_service_account}. If the deployment fails,'
         f' please ensure {build_service_account} is active.'
     )
-  except apitools_exceptions.HttpNotFoundError:
+  except apitools_exceptions.HttpNotFoundError as exc:
     log.warning(
         f'The build service account {build_service_account} does not exist. If'
         ' you just created this account, or if this is your first time'
@@ -106,4 +111,102 @@ def ValidateBuildServiceAccountAndPromptWarning(
     )
     raise serverless_exceptions.ServiceAccountError(
         f'Build service account {build_service_account} does not exist.'
+    ) from exc
+
+
+def CreateBuildPack(container):
+  """A helper method to configure buildpack."""
+  pack = [{'image': container.image}]
+  changes = []
+  source = container.source
+  project_toml_file = source + '/' + _PROJECT_TOML_FILE_NAME
+  command_arg = getattr(container, 'command', None)
+  function_arg = getattr(container, 'function', None)
+  if command_arg is not None:
+    command = ' '.join(command_arg)
+    pack[0].update(
+        {'envs': ['GOOGLE_ENTRYPOINT="{command}"'.format(command=command)]}
     )
+  elif function_arg is not None:
+    pack[0].update({
+        'envs': [
+            'GOOGLE_FUNCTION_SIGNATURE_TYPE=http',
+            'GOOGLE_FUNCTION_TARGET={target}'.format(target=function_arg),
+        ]
+    })
+  if os.path.exists(project_toml_file):
+    pack[0].update({'project_descriptor': _PROJECT_TOML_FILE_NAME})
+  return pack, changes
+
+
+def GetBuildWorkerPool(args, annotated_build_worker_pool, service, changes):
+  """Gets the build worker pool from user flags and annotations.
+
+  Args:
+    args: argparse.Namespace, Command line arguments
+    annotated_build_worker_pool: Build worker pool value from service
+      annotations.
+    service: Existing Cloud Run service.
+    changes: List of config changes.
+
+  Returns:
+    build_worker_pool value or
+    None meaning clear-worker-pool flag was set
+    or build-worker-pool was an empty string.
+  """
+  if _ShouldClearBuildWorkerPool(args):
+    worker_pool_key = service_lib.RUN_FUNCTIONS_BUILD_WORKER_POOL_ANNOTATION
+    if service and service.annotations.get(worker_pool_key):
+      changes.append(config_changes.DeleteAnnotationChange(worker_pool_key))
+    return None
+  return (
+      args.build_worker_pool
+      if flags.FlagIsExplicitlySet(args, 'build_worker_pool')
+      else annotated_build_worker_pool
+  )
+
+
+def _ShouldClearBuildWorkerPool(args):
+  return flags.FlagIsExplicitlySet(args, 'clear_build_worker_pool') or (
+      flags.FlagIsExplicitlySet(args, 'build_worker_pool')
+      and not args.build_worker_pool
+  )
+
+
+def GetBuildServiceAccount(
+    args, annotated_build_service_account, container, service, changes
+):
+  """Returns cloud build service account.
+
+  Args:
+    args: argparse.Namespace, Command line arguments
+    annotated_build_service_account: string. The build service account annotated
+      on the service used by cloud run functions.
+    container: Container. The container to deploy.
+    service: Service. The service being changed.
+    changes: List of config changes.
+
+  Returns:
+    build service account value where
+    None means there were no annotations, user specified to clear the
+    build service account, or the build service account was an empty string.
+  """
+  build_sa_key = service_lib.RUN_FUNCTIONS_BUILD_SERVICE_ACCOUNT_ANNOTATION
+  build_service_account = getattr(container, 'build_service_account', None)
+  if _ShouldClearBuildServiceAccount(args, build_service_account):
+    if service and service.annotations.get(build_sa_key):
+      changes.append(config_changes.DeleteAnnotationChange(build_sa_key))
+    return None
+  return build_service_account or annotated_build_service_account
+
+
+def _ShouldClearBuildServiceAccount(args, build_service_account):
+  if flags.FlagIsExplicitlySet(args, 'clear_build_service_account'):
+    return True
+  if (
+      flags.FlagIsExplicitlySet(args, 'build_service_account')
+      and not build_service_account
+  ):
+    return True
+  return False
+

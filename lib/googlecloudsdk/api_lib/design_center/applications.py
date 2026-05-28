@@ -448,3 +448,23 @@ class ApplicationsClient(object):
             ),
         )
     )
+
+  def GenerateAssessmentReport(self, name: str) -> Any | None:
+    """Calls the GenerateAssessmentReport RPC.
+
+    Args:
+      name: The full resource name of the Application.
+
+    Returns:
+      The response from the API call.
+    """
+    if not name:
+      raise ValueError('Application name cannot be empty or None.')
+
+    return self._service.GenerateAssessmentReport(
+        self.messages.DesigncenterProjectsLocationsSpacesApplicationsGenerateAssessmentReportRequest(
+            name=name,
+            generateApplicationAssessmentReportRequest=self.messages.GenerateApplicationAssessmentReportRequest(),
+        )
+    )
+

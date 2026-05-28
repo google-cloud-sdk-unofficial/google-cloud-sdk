@@ -39,6 +39,22 @@ _HELP_HTML_DATA_FILES = [
     '_title_.html',
 ]
 
+_FLATTENING_TRACKS = ['alpha', 'beta', 'preview']
+
+_OVERVIEW_TAB = """    - name: Overview
+      path: /sdk/docs
+      contents:
+      - include: /sdk/_overview_tab.yaml\n"""
+
+_GUIDES_TAB = """    - name: "Guides"
+      path: /sdk/docs/overview
+      contents:
+      - include: /sdk/_guides_tab.yaml\n"""
+
+_RESOURCES_TAB = """    - name: "Resources"
+      contents:
+      - include: /sdk/_resources_tab.yaml\n"""
+
 
 class DevSiteGenerator(walker.Walker):
   """Generates DevSite reference HTML in a directory hierarchy.
@@ -51,6 +67,7 @@ class DevSiteGenerator(walker.Walker):
       This prevents the creation of empty 'section:' tags in the '_toc' files.
     _toc_root: The root TOC output stream.
     _toc_main: The current main (just under root) TOC output stream.
+    _toc_sub: The current sub (under alpha/beta/preview) TOC output stream.
   """
 
   _REFERENCE = '/sdk/gcloud/reference'  # TOC reference directory offset.
@@ -83,6 +100,8 @@ class DevSiteGenerator(walker.Walker):
     self._toc_root.write('  path: %s\n' % self._REFERENCE)
     self._toc_root.write('  section:\n')
     self._toc_main = None
+    self._toc_sub = None
+    self._top_level_items = []
 
   def Visit(self, node, parent, is_group):
     """Updates the TOC and Renders a DevSite doc for each node in the CLI tree.
@@ -95,47 +114,115 @@ class DevSiteGenerator(walker.Walker):
     Returns:
       The parent value, ignored here.
     """
+    command = node.GetPath()
+    depth = len(command) - 1
+    # Flattening points: depth 1, and depth 2 under alpha/beta/preview groups.
+    is_flattening_item = depth == 1 or (
+        depth == 2 and command[1] in _FLATTENING_TRACKS
+    )
+    if is_flattening_item:
+      item_path = '/'.join(command[1:])
+      if (item_path, is_group) not in self._top_level_items:
+        self._top_level_items.append((item_path, is_group))
 
     def _UpdateTOC():
       """Updates the DevSIte TOC."""
       depth = len(command) - 1
       if not depth:
         return
-      title = ' '.join(command)
+
+      if depth == 1:
+        title = ' '.join(command)
+      else:
+        title = command[-1]
+
       while depth >= len(self._need_section_tag):
         self._need_section_tag.append(False)
-      if depth == 1:
-        if is_group:
-          if self._toc_main:
-            # Close the current main group toc if needed.
-            self._toc_main.close()
-          # Create a new main group toc.
-          toc_path = os.path.join(directory, self._TOC)
-          toc = files.FileWriter(toc_path)
-          self._toc_main = toc
-          toc.write('toc:\n')
-          toc.write('- title: "%s"\n' % title)
-          toc.write('  path: %s\n' % '/'.join([self._REFERENCE] + command[1:]))
-          self._need_section_tag[depth] = True
 
+      if depth == 1:
         toc = self._toc_root
         indent = '  '
+        # Depth 1 groups are flat links in the root TOC to reduce bloat.
         if is_group:
-          toc.write(
-              '%s- include: %s\n'
-              % (
-                  indent,
-                  '/'.join([self._REFERENCE] + command[1:] + [self._TOC]),
-              )
+          if self._toc_sub:
+            self._toc_sub.close()
+            self._toc_sub = None
+          if self._toc_main:
+            self._toc_main.close()
+          toc_path = os.path.join(directory, self._TOC)
+          self._toc_main = files.FileWriter(toc_path)
+          self._toc_main.write('toc:\n')
+          self._toc_main.write('- title: "gcloud %s"\n' % command[1])
+          self._toc_main.write(
+              '  path: %s\n' % '/'.join([self._REFERENCE, command[1]])
           )
-          return
-      else:
-        toc = self._toc_main
-        indent = '  ' * (depth - 1)
+          self._need_section_tag[depth] = True
+
         if self._need_section_tag[depth - 1]:
           self._need_section_tag[depth - 1] = False
-          toc.write('%ssection:\n' % indent)
+          if indent or toc == self._toc_root:
+            toc.write('%ssection:\n' % indent)
+
+        # Write the item to the root TOC.
+        toc.write('%s- title: "%s"\n' % (indent, title))
+        toc.write(
+            '%s  path: %s\n'
+            % (indent, '/'.join([self._REFERENCE] + command[1:]))
+        )
+        self._need_section_tag[depth] = is_group
+        return
+
+      elif depth == 2 and command[1] in _FLATTENING_TRACKS:
+        toc = self._toc_main
+        indent = '  '  # Children of the track start at indent 2 in modular TOC.
+
+        if self._need_section_tag[depth - 1]:
+          self._need_section_tag[depth - 1] = False
+          if indent or toc == self._toc_root:
+            toc.write('%ssection:\n' % indent)
+
+        # Depth 2 groups under alpha/beta/preview are flat links in track TOC.
+        if is_group:
+          if self._toc_sub:
+            self._toc_sub.close()
+            self._toc_sub = None
+          toc_path = os.path.join(directory, self._TOC)
+          self._toc_sub = files.FileWriter(toc_path)
+          self._toc_sub.write('toc:\n')
+          self._toc_sub.write('- title: "%s"\n' % command[-1])
+          self._toc_sub.write(
+              '  path: %s\n' % '/'.join([self._REFERENCE] + command[1:])
+          )
+          self._need_section_tag[depth] = True
+
+        # Write the item to the track TOC.
+        toc.write('%s- title: "%s"\n' % (indent, title))
+        toc.write(
+            '%s  path: %s\n'
+            % (indent, '/'.join([self._REFERENCE] + command[1:]))
+        )
+        self._need_section_tag[depth] = is_group
+        return
+
+      else:
+        if command[1] in _FLATTENING_TRACKS and self._toc_sub:
+          toc = self._toc_sub
+          indent = '  ' * (depth - 2)
+        elif self._toc_main:
+          toc = self._toc_main
+          indent = '  ' * (depth - 1)
+        else:
+          toc = self._toc_root
+          indent = '  ' * (depth - 1)
+
+        if self._need_section_tag[depth - 1]:
+          self._need_section_tag[depth - 1] = False
+          # Modular TOCs should not have a 'section:' header at indent 0.
+          if indent or toc == self._toc_root:
+            toc.write('%ssection:\n' % indent)
         title = command[-1]
+
+      # Write the item to the selected TOC
       toc.write('%s- title: "%s"\n' % (indent, title))
       toc.write(
           '%s  path: %s\n' % (indent, '/'.join([self._REFERENCE] + command[1:]))
@@ -149,6 +236,21 @@ class DevSiteGenerator(walker.Walker):
       files.MakeDir(directory, mode=0o755)
     else:
       directory = os.path.join(self._directory, *command[1:-1])
+
+    # Determine book_path for group-specific sidebar.
+    book_path = '/sdk/_book.yaml'
+    if len(command) > 1:
+      # Prefer deeper flattening groups (depth 2 for alpha/beta)
+      if len(command) > 2 and command[1] in ['alpha', 'beta', 'preview']:
+        sub_group = '/'.join(command[1:3])
+        if (sub_group, True) in self._top_level_items:
+          book_path = '/'.join([self._REFERENCE, sub_group, '_book.yaml'])
+
+      # Fallback to top-level flattening group
+      if book_path == '/sdk/_book.yaml':
+        top_item = command[1]
+        if (top_item, True) in self._top_level_items:
+          book_path = '/'.join([self._REFERENCE, top_item, '_book.yaml'])
 
     # Render the DevSite document.
     path = (
@@ -172,6 +274,7 @@ class DevSiteGenerator(walker.Walker):
           fin=io.StringIO(md),
           out=f,
           command_node=node,
+          book_path=book_path,
       )
 
     # reset universe_domain
@@ -180,10 +283,80 @@ class DevSiteGenerator(walker.Walker):
     return parent
 
   def Done(self):
-    """Closes the TOC files after the CLI tree walk is done."""
+    """Closes the TOC files and generates _book.yaml files."""
     self._toc_root.close()
     if self._toc_main:
       self._toc_main.close()
+    if self._toc_sub:
+      self._toc_sub.close()
+      self._toc_sub = None
+
+    # Generate _book.yaml for each flattening group.
+    groups = sorted([path for path, is_g in self._top_level_items if is_g])
+    roots = sorted([i for i, g in self._top_level_items if '/' not in i])
+
+    # Constants moved here to allow dynamic formatting if needed.
+    for group in groups:
+      book_path = os.path.join(self._directory, group, '_book.yaml')
+      with files.FileWriter(book_path) as f:
+        f.write('# WARNING: THIS FILE IS AUTO-GENERATED, DO NOT EDIT\n')
+        f.write('extends: /docs/_book.yaml\n\n')
+        f.write('upper_tabs:\n')
+        f.write('  global-documentation-upper:\n')
+        f.write('    lower_tabs:\n')
+        f.write(_OVERVIEW_TAB)
+        f.write(_GUIDES_TAB)
+        f.write('    - name: "Reference"\n')
+        f.write('      contents:\n')
+        f.write('      - heading: "Cloud Client Libraries"\n')
+        f.write('      - title: "Cloud Client Libraries references"\n')
+        f.write('        path: /sdk/docs/libraries-reference\n')
+        f.write('      - heading: "Google Cloud CLI"\n')
+        f.write('      - title: "gcloud Reference"\n')
+        f.write('        path: %s\n' % self._REFERENCE)
+        f.write('        section:\n')
+
+        for root in roots:
+          if root == group:
+            # Active top-level group, expand it.
+            f.write(
+                '        - include: %s\n'
+                % '/'.join([self._REFERENCE, root, self._TOC])
+            )
+          elif root in _FLATTENING_TRACKS:
+            # Alpha/Beta/Preview section.
+            is_active_root = group == root or group.startswith(root + '/')
+            f.write('        - title: "gcloud %s"\n' % root)
+            f.write('          path: %s\n' % '/'.join([self._REFERENCE, root]))
+            if is_active_root:
+              f.write('          section:\n')
+              # List all flattened sub-groups under alpha/beta.
+              subs = sorted([
+                  i
+                  for i, g in self._top_level_items
+                  if i.startswith(root + '/')
+              ])
+              for sub in subs:
+                name = sub.split('/')[-1]
+                if sub == group:
+                  # Active sub-group, expand it.
+                  f.write(
+                      '          - include: %s\n'
+                      % '/'.join([self._REFERENCE, sub, self._TOC])
+                  )
+                else:
+                  # Sibling sub-group, show as flat link.
+                  f.write('          - title: "%s"\n' % name)
+                  f.write(
+                      '            path: %s\n'
+                      % '/'.join([self._REFERENCE, sub])
+                  )
+          else:
+            # Other top-level group, show as flat link.
+            f.write('        - title: "gcloud %s"\n' % root)
+            f.write('          path: %s\n' % '/'.join([self._REFERENCE, root]))
+
+        f.write(_RESOURCES_TAB)
 
 
 class HelpTextGenerator(walker.Walker):

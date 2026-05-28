@@ -24,6 +24,9 @@ import six
 from six.moves import configparser
 
 
+_PROPERTIES_BY_PATH = {}
+
+
 class Error(exceptions.Error):
   """Exceptions for the properties_file module."""
 
@@ -56,16 +59,13 @@ class PropertiesFile(object):
     Args:
       properties_path: str, Path to the file containing properties info.
     """
-    parsed_config = configparser.ConfigParser()
-    try:
-      parsed_config.read(properties_path)
-    except configparser.ParsingError as e:
-      raise PropertiesParseError(str(e))
+    # Check the cache first.
+    properties = _LoadPropertiesFile(properties_path)
 
-    for section in parsed_config.sections():
+    for section in properties:
       if section not in self._properties:
         self._properties[section] = {}
-      self._properties[section].update(dict(parsed_config.items(section)))
+      self._properties[section].update(properties[section])
 
   def Get(self, section, name):
     """Gets the value of the given property.
@@ -88,8 +88,29 @@ class PropertiesFile(object):
     return dict(self._properties)
 
 
+def _LoadPropertiesFile(properties_path):
+  """Loads properties from the given file, then caches it."""
+  # Check the cache first.
+  if properties_path in _PROPERTIES_BY_PATH:
+    return _PROPERTIES_BY_PATH[properties_path]
+
+  parsed_config = configparser.ConfigParser()
+  try:
+    parsed_config.read(properties_path)
+  except configparser.ParsingError as e:
+    raise PropertiesParseError(str(e))
+
+  _PROPERTIES_BY_PATH[properties_path] = {
+      section: dict(parsed_config.items(section))
+      for section in parsed_config.sections()
+  }
+  return _PROPERTIES_BY_PATH[properties_path]
+
+
 def PersistProperty(file_path, section, name, value):
   """Persists a value for a given property to a specific property file.
+
+  Updates the properties cache if the file being written to is in the cache.
 
   Args:
     file_path: str, The path to the property file to update.
@@ -104,11 +125,19 @@ def PersistProperty(file_path, section, name, value):
     if value is None:
       return
     parsed_config.add_section(section)
+    if file_path in _PROPERTIES_BY_PATH:
+      _PROPERTIES_BY_PATH[file_path][section] = {}
 
   if value is None:
     parsed_config.remove_option(section, name)
+    if file_path in _PROPERTIES_BY_PATH:
+      _PROPERTIES_BY_PATH[file_path][section].pop(name, None)
   else:
     parsed_config.set(section, name, six.text_type(value))
+    if file_path in _PROPERTIES_BY_PATH:
+      if section not in _PROPERTIES_BY_PATH[file_path]:
+        _PROPERTIES_BY_PATH[file_path][section] = {}
+      _PROPERTIES_BY_PATH[file_path][section][name] = str(value)
 
   properties_dir, unused_name = os.path.split(file_path)
   files.MakeDir(properties_dir)

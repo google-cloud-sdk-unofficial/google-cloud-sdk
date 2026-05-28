@@ -125,7 +125,9 @@ def GetCatalogTypeEnumMapper(release_track):
   return arg_utils.ChoiceEnumMapper(
       '--catalog-type',
       catalog_type_enum,
-      hidden_choices=['biglake', 'federated'],
+      hidden_choices=['biglake', 'federated']
+      if release_track == base.ReleaseTrack.GA
+      else ['biglake'],
       required=True,
       help_str='Catalog type to create the catalog with.',
       custom_mappings={
@@ -269,17 +271,18 @@ def CheckValidUnityArgCombinations(args):
   Raises:
     arg_parsers.ArgumentTypeError: If an invalid argument combination is found.
   """
-  if not args.IsSpecified('secret_name') and not args.IsSpecified(
-      'service_principal_application_id'
-  ):
+  oidc_specified = (
+      hasattr(args, 'service_principal_application_id')
+      and args.IsSpecified('service_principal_application_id')
+  )
+
+  if not args.IsSpecified('secret_name') and not oidc_specified:
     # TODO: b/502209000 - Update this error message once application ID is
     # visible.
     raise arg_parsers.ArgumentTypeError(
         '--secret-name must be specified when federated catalog type is unity.'
     )
-  if args.IsSpecified('secret_name') and args.IsSpecified(
-      'service_principal_application_id'
-  ):
+  if args.IsSpecified('secret_name') and oidc_specified:
     raise arg_parsers.ArgumentTypeError(
         'Only one of --secret-name or --service-principal-application-id can be'
         ' specified when federated catalog type is unity.'
@@ -382,7 +385,7 @@ def CheckValidFederatedArgCombinations(args):
   else:
     # Check that federated flags are not specified for non-federated catalogs.
     for flag in federated_flags:
-      if args.IsSpecified(flag):
+      if hasattr(args, flag) and args.IsSpecified(flag):
         raise arg_parsers.ArgumentTypeError(
             '--{} is only supported for federated catalogs.'.format(
                 flag.replace('_', '-')

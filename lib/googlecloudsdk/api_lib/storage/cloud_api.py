@@ -130,7 +130,12 @@ class CloudApi(object):
   MAX_OBJECT_NAME_LENGTH = 1024
 
   def create_anywhere_cache(
-      self, bucket_name, zone, admission_policy=None, ttl=None
+      self,
+      bucket_name,
+      zone,
+      admission_policy=None,
+      ttl=None,
+      enable_ingest_on_write=None,
   ):
     """Creates Anywhere Cache for given bucket.
 
@@ -142,6 +147,7 @@ class CloudApi(object):
       admission_policy (str|None): The cache admission policy decides for each
         cache miss, that is whether to insert the missed block or not.
       ttl (str|None): Cache entry time-to-live in seconds
+      enable_ingest_on_write (bool|None): Whether to enable ingest on write.
 
     Returns:
       GoogleLongrunningOperation Apitools object for creating caches.
@@ -233,7 +239,12 @@ class CloudApi(object):
     raise NotImplementedError('list_anywhere_cache must be overridden.')
 
   def patch_anywhere_cache(
-      self, bucket_name, anywhere_cache_id, admission_policy=None, ttl=None
+      self,
+      bucket_name,
+      anywhere_cache_id,
+      admission_policy=None,
+      ttl=None,
+      enable_ingest_on_write=None,
   ):
     """Updates Anywhere Cache instance of a bucket.
 
@@ -244,6 +255,7 @@ class CloudApi(object):
       admission_policy (str|None): The cache admission policy decides for each
         cache miss, that is whether to insert the missed block or not.
       ttl (str|None): Cache entry time-to-live in seconds
+      enable_ingest_on_write (bool|None): Whether to enable ingest on write.
 
     Returns:
       GoogleLongrunningOperation Apitools object for creating caches.

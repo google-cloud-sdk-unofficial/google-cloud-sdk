@@ -24,7 +24,14 @@ from googlecloudsdk.core import log
 class CreateAnywhereCacheTask(task.Task):
   """Creates an Anywhere Cache instance in particular zone of a bucket."""
 
-  def __init__(self, bucket_url, zone, admission_policy=None, ttl=None):
+  def __init__(
+      self,
+      bucket_url,
+      zone,
+      admission_policy=None,
+      ttl=None,
+      enable_ingest_on_write=None,
+  ):
     """Initializes task.
 
     Args:
@@ -35,12 +42,14 @@ class CreateAnywhereCacheTask(task.Task):
       admission_policy (str|None): The cache admission policy decides for each
         cache miss, that is whether to insert the missed block or not.
       ttl (str|None): Cache entry time-to-live in seconds
+      enable_ingest_on_write (bool|None): Whether to enable ingest on write.
     """
     super(CreateAnywhereCacheTask, self).__init__()
     self._bucket_url = bucket_url
     self._zone = zone
     self._admission_policy = admission_policy
     self._ttl = ttl
+    self._enable_ingest_on_write = enable_ingest_on_write
     self.parallel_processing_key = '{}/{}'.format(bucket_url.bucket_name, zone)
 
   def execute(self, task_status_queue=None):
@@ -57,6 +66,7 @@ class CreateAnywhereCacheTask(task.Task):
         self._zone,
         admission_policy=self._admission_policy,
         ttl=self._ttl,
+        enable_ingest_on_write=self._enable_ingest_on_write,
     )
 
     log.status.Print(
@@ -77,4 +87,5 @@ class CreateAnywhereCacheTask(task.Task):
         and self._zone == other._zone
         and self._admission_policy == other._admission_policy
         and self._ttl == other._ttl
+        and self._enable_ingest_on_write == other._enable_ingest_on_write
     )

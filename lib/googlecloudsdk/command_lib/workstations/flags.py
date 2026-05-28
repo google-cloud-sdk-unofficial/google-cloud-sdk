@@ -598,6 +598,7 @@ def AddNoPersistentStorageOrPdOrDisk(parser):
   disk_group = top_level_mutex_group.add_group()
   AddDiskTypeFlag(disk_group)
   AddDiskReclaimPolicyFlag(disk_group)
+  AddDiskArchiveTimeoutFlag(disk_group)
   disk_size_snapshot_group = disk_group.add_mutually_exclusive_group()
   AddDiskSizeFlag(disk_size_snapshot_group)
   AddDiskSnapshotFlag(disk_size_snapshot_group)
@@ -668,6 +669,7 @@ def AddPdSourceSnapshotArg():
 
 def AddPersistentDirectoriesOrHyperdisks(parser, use_default=True):
   """Adds a --pd-disk-size, --pd-disk-type, and --pd-source-snapshot flag to the given parser."""
+  AddDiskArchiveTimeoutFlag(parser)
   group = parser.add_mutually_exclusive_group()
   # OPTION 1: "--pd-source-snapshot"
   AddPdSourceSnapshotArg().AddToParser(group)
@@ -754,6 +756,21 @@ def AddDiskSnapshotFlag(parser):
   parser.add_argument(
       '--disk-source-snapshot',
       default='',
+      help=help_text,
+  )
+
+
+def AddDiskArchiveTimeoutFlag(parser):
+  """Adds a --disk-archive-timeout flag to the given parser."""
+  help_text = """\
+  Number of seconds to wait after initially creating or subsequently
+  shutting down the workstation before converting its disk into a
+  snapshot to save costs. A value of 0 indicates that the disk will never be
+  archived.
+  """
+  parser.add_argument(
+      '--disk-archive-timeout',
+      type=int,
       help=help_text,
   )
 

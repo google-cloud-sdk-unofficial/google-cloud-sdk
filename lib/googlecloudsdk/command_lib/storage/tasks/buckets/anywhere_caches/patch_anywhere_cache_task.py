@@ -26,7 +26,12 @@ class PatchAnywhereCacheTask(task.Task):
   """Updates an Anywhere Cache instance."""
 
   def __init__(
-      self, bucket_name, anywhere_cache_id, admission_policy=None, ttl=None
+      self,
+      bucket_name,
+      anywhere_cache_id,
+      admission_policy=None,
+      ttl=None,
+      enable_ingest_on_write=None,
   ):
     """Initializes task.
 
@@ -38,12 +43,14 @@ class PatchAnywhereCacheTask(task.Task):
       admission_policy (str|None): The cache admission policy decides for each
         cache miss, that is whether to insert the missed block or not.
       ttl (str|None): Cache entry time-to-live in seconds
+      enable_ingest_on_write (bool|None): Whether to enable ingest on write.
     """
     super(PatchAnywhereCacheTask, self).__init__()
     self._bucket_name = bucket_name
     self._anywhere_cache_id = anywhere_cache_id
     self._admission_policy = admission_policy
     self._ttl = ttl
+    self._enable_ingest_on_write = enable_ingest_on_write
     self.parallel_processing_key = '{}/{}'.format(
         bucket_name, anywhere_cache_id
     )
@@ -62,6 +69,7 @@ class PatchAnywhereCacheTask(task.Task):
         self._anywhere_cache_id,
         admission_policy=self._admission_policy,
         ttl=self._ttl,
+        enable_ingest_on_write=self._enable_ingest_on_write,
     )
 
     log.status.Print(
@@ -82,4 +90,5 @@ class PatchAnywhereCacheTask(task.Task):
         and self._anywhere_cache_id == other._anywhere_cache_id
         and self._admission_policy == other._admission_policy
         and self._ttl == other._ttl
+        and self._enable_ingest_on_write == other._enable_ingest_on_write
     )

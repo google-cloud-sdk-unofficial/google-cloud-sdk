@@ -254,7 +254,7 @@
           "enumDescriptions": [
             "Default value of ScalingMode.",
             "The reservation will scale up only using slots from autoscaling. It will not use any idle slots even if there may be some available. The upper limit that autoscaling can scale up to will be max_slots - baseline. For example, if max_slots is 1000, baseline is 200 and customer sets ScalingMode to AUTOSCALE_ONLY, then autoscalerg will scale up to 800 slots and no idle slots will be used. Please note, in this mode, the ignore_idle_slots field must be set to true. Otherwise the request will be rejected with error code `google.rpc.Code.INVALID_ARGUMENT`.",
-            "The reservation will scale up using only idle slots contributed by other reservations or from unassigned commitments. If no idle slots are available it will not scale up further. If the idle slots which it is using are reclaimed by the contributing reservation(s) it may be forced to scale down. The max idle slots the reservation can be max_slots - baseline capacity. For example, if max_slots is 1000, baseline is 200 and customer sets ScalingMode to IDLE_SLOTS_ONLY, 1. if there are 1000 idle slots available in other reservations, the reservation will scale up to 1000 slots with 200 baseline and 800 idle slots. 2. if there are 500 idle slots available in other reservations, the reservation will scale up to 700 slots with 200 baseline and 300 idle slots. Please note, in this mode, the reservation might not be able to scale up to max_slots. Please note, in this mode, the ignore_idle_slots field must be set to false. Otherwise the request will be rejected with error code `google.rpc.Code.INVALID_ARGUMENT`.",
+            "The reservation will scale up using only idle slots contributed by other reservations or from unassigned commitments. If no idle slots are available it will not scale up further. If the idle slots which it is using are reclaimed by the contributing reservation(s) it may be forced to scale down. The max idle slots the reservation can be max_slots - baseline capacity. For example, if max_slots is 1000, baseline is 200 and customer sets ScalingMode to IDLE_SLOTS_ONLY, 1. if there are 1000 idle slots available in other reservations, the reservation will scale up to 1000 slots with 200 baseline and 800 idle slots. 2. if there are 500 idle slots available in other reservations, the reservation will scale up to 700 slots with 200 baseline and 500 idle slots. Please note, in this mode, the reservation might not be able to scale up to max_slots. Please note, in this mode, the ignore_idle_slots field must be set to false. Otherwise the request will be rejected with error code `google.rpc.Code.INVALID_ARGUMENT`.",
             "The reservation will scale up using all slots available to it. It will use idle slots contributed by other reservations or from unassigned commitments first. If no idle slots are available it will scale up using autoscaling. For example, if max_slots is 1000, baseline is 200 and customer sets ScalingMode to ALL_SLOTS, 1. if there are 800 idle slots available in other reservations, the reservation will scale up to 1000 slots with 200 baseline and 800 idle slots. 2. if there are 500 idle slots available in other reservations, the reservation will scale up to 1000 slots with 200 baseline, 500 idle slots and 300 autoscaling slots. 3. if there are no idle slots available in other reservations, it will scale up to 1000 slots with 200 baseline and 800 autoscaling slots. Please note, in this mode, the ignore_idle_slots field must be set to false. Otherwise the request will be rejected with error code `google.rpc.Code.INVALID_ARGUMENT`."
           ],
           "enum": [
@@ -721,7 +721,8 @@
             "Continuous SQL jobs will use this reservation. Reservations with continuous assignments cannot be mixed with non-continuous assignments.",
             "Finer granularity background jobs for capturing changes in a source database and streaming them into BigQuery. Reservations with this job type take priority over a default BACKGROUND reservation assignment (if it exists).",
             "Finer granularity background jobs for refreshing cached metadata for BigQuery tables. Reservations with this job type take priority over a default BACKGROUND reservation assignment (if it exists).",
-            "Finer granularity background jobs for refreshing search indexes upon BigQuery table columns. Reservations with this job type take priority over a default BACKGROUND reservation assignment (if it exists)."
+            "Finer granularity background jobs for refreshing search indexes upon BigQuery table columns. Reservations with this job type take priority over a default BACKGROUND reservation assignment (if it exists).",
+            "Automated materialized view refresh jobs will use the reservation. Reservations with this job type will take priority over a default QUERY reservation assignment (if it exists)."
           ],
           "enum": [
             "JOB_TYPE_UNSPECIFIED",
@@ -733,7 +734,8 @@
             "CONTINUOUS",
             "BACKGROUND_CHANGE_DATA_CAPTURE",
             "BACKGROUND_COLUMN_METADATA_INDEX",
-            "BACKGROUND_SEARCH_INDEX_REFRESH"
+            "BACKGROUND_SEARCH_INDEX_REFRESH",
+            "AUTOMATIC_MATERIALIZED_VIEW_REFRESH"
           ]
         },
         "state": {
@@ -789,7 +791,7 @@
           "$ref": "SchedulingPolicy"
         },
         "principal": {
-          "description": "Optional. Represents the principal for this assignment. If not empty, jobs run by this principal will utilize the associated reservation. Otherwise, jobs will fall back to using the reservation assigned to the project, folder, or organization (in that order). If no reservation is assigned at any of these levels, on-demand capacity will be used. The supported formats are: * `principal:\/\/goog\/subject\/USER_EMAIL_ADDRESS` for users, * `principal:\/\/iam.googleapis.com\/projects\/-\/serviceAccounts\/SA_EMAIL_ADDRESS` for service accounts, * `principal:\/\/iam.googleapis.com\/projects\/PROJECT_NUMBER\/locations\/global\/workloadIdentityPools\/POOL_ID\/subject\/SUBJECT_ID` for workload identity pool identities.",
+          "description": "Optional. Represents the principal for this assignment. If not empty, jobs run by this principal will utilize the associated reservation. Otherwise, jobs will fall back to using the reservation assigned to the project, folder, or organization (in that order). If no reservation is assigned at any of these levels, on-demand capacity will be used. The supported formats are: * `principal:\/\/goog\/subject\/USER_EMAIL_ADDRESS` for users, * `principal:\/\/iam.googleapis.com\/projects\/-\/serviceAccounts\/SA_EMAIL_ADDRESS` for service accounts, * `principal:\/\/iam.googleapis.com\/projects\/PROJECT_NUMBER\/locations\/global\/workloadIdentityPools\/POOL_ID\/subject\/SUBJECT_ID` for workload identity pool identities. * The special value `unknown_or_deleted_user` represents principals which cannot be read from the user info service, for example deleted users.",
           "type": "string"
         }
       }
@@ -1045,6 +1047,9 @@
         },
         "bindingId": {
           "type": "string"
+        },
+        "pamBindingId": {
+          "$ref": "PamBindingId"
         }
       }
     },
@@ -1068,6 +1073,69 @@
         "location": {
           "description": "Optional. String indicating the location of the expression for error reporting, e.g. a file name and a position in the file.",
           "type": "string"
+        }
+      }
+    },
+    "PamBindingId": {
+      "id": "PamBindingId",
+      "description": "Represents a composite unique identifier for a PAM Grant which is {Org\/Folder\/Project identifier, grant Unique Identifier} tuple. If PAM is managing the elevated access, PamBindingId is written to an Identity and Access Management (IAM) policy, which specifies access controls for resources. PamBindingId is intended to be used for Audit Logging purposes. If access is granted via PAM backed elevated access, corresponding Cloud Audit Log will have PamBindingId as a metadata. -- For details, refer: go\/pal-v1-solution-hld. --",
+      "type": "object",
+      "properties": {
+        "project": {
+          "description": "GCP Project at which the PAM Grant is created.",
+          "$ref": "AttachmentProject"
+        },
+        "folder": {
+          "description": "GCP Folder at which the PAM Grant is created.",
+          "$ref": "AttachmentFolder"
+        },
+        "organization": {
+          "description": "GCP Organization at which the PAM Grant is created.",
+          "$ref": "AttachmentOrganization"
+        },
+        "grantUuid": {
+          "description": "Output only. - Represents the unique identifier for the PAM grant. - Full_resource_name_pattern for PAM Grant is: \/\/privilegedaccessmanager.googleapis.com\/ (projects|folders|organizations)\/$0\/locations\/$1\/entitlements\/$2\/ grants\/$3 where $3 is the grant_uuid.",
+          "readOnly": true,
+          "type": "string"
+        }
+      }
+    },
+    "AttachmentProject": {
+      "id": "AttachmentProject",
+      "description": "Represents a GCP Project.",
+      "type": "object",
+      "properties": {
+        "project": {
+          "description": "Output only. GCP Project number.",
+          "readOnly": true,
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "AttachmentFolder": {
+      "id": "AttachmentFolder",
+      "description": "Represents a GCP Folder.",
+      "type": "object",
+      "properties": {
+        "folder": {
+          "description": "Output only. GCP Folder number.",
+          "readOnly": true,
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "AttachmentOrganization": {
+      "id": "AttachmentOrganization",
+      "description": "Represents a GCP Organization.",
+      "type": "object",
+      "properties": {
+        "organization": {
+          "description": "Output only. GCP Organization number.",
+          "readOnly": true,
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -1386,6 +1454,10 @@
             "DATA_READ",
             "DATA_WRITE"
           ]
+        },
+        "agentMetadata": {
+          "description": "If an agent is making the request, metadata about the agent making the request. Used by the Cloud Audit Logging system to enrich the audit log.",
+          "$ref": "AgentMetadata"
         }
       }
     },
@@ -1411,6 +1483,17 @@
             "DATA_READ",
             "DATA_WRITE"
           ]
+        }
+      }
+    },
+    "AgentMetadata": {
+      "id": "AgentMetadata",
+      "description": "Metadata about the agent that is used for logging.",
+      "type": "object",
+      "properties": {
+        "agentName": {
+          "description": "The name of the agent being used. This is expected to be populated with either \"aiplatform\" (for Vertex AI) or \"geminicloudassist\" (for Gemini Cloud Assist).",
+          "type": "string"
         }
       }
     },

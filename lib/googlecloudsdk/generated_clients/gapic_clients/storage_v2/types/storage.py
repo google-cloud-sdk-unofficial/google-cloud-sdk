@@ -494,6 +494,13 @@ class ComposeObjectRequest(proto.Message):
             in the compose request.
 
             This field is a member of `oneof`_ ``_delete_source_objects``.
+        drop_context_groups (MutableSequence[str]):
+            Optional. Specifies which groups of Object
+            Contexts from the source object(s) should be
+            dropped on the destination object during the
+            Compose operation. An accepted value is
+            "custom". Specified contexts in the destination
+            metadata will not be dropped.
     """
 
     class SourceObject(proto.Message):
@@ -589,6 +596,10 @@ class ComposeObjectRequest(proto.Message):
         proto.BOOL,
         number=11,
         optional=True,
+    )
+    drop_context_groups: MutableSequence[str] = proto.RepeatedField(
+        proto.STRING,
+        number=12,
     )
 
 
@@ -2471,6 +2482,13 @@ class RewriteObjectRequest(proto.Message):
             Optional. The checksums of the complete
             object. This is used to validate the destination
             object after rewriting.
+        drop_context_groups (MutableSequence[str]):
+            Optional. Specifies which groups of Object
+            Contexts from the source object should be
+            dropped on the destination object during the
+            Rewrite operation. An accepted value is
+            "custom". Specified contexts in the destination
+            metadata will not be dropped.
     """
 
     destination_name: str = proto.Field(
@@ -2575,6 +2593,10 @@ class RewriteObjectRequest(proto.Message):
         proto.MESSAGE,
         number=29,
         message='ObjectChecksums',
+    )
+    drop_context_groups: MutableSequence[str] = proto.RepeatedField(
+        proto.STRING,
+        number=30,
     )
 
 
@@ -3541,9 +3563,8 @@ class Bucket(proto.Message):
 
                 Attributes:
                     type_ (str):
-                        Optional. Type of the action. Currently, only ``Delete``,
-                        ``SetStorageClass``, and ``AbortIncompleteMultipartUpload``
-                        are supported.
+                        Optional. Type of action. Supported values are ``Delete``,
+                        ``SetStorageClass``, and ``AbortIncompleteMultipartUpload``.
                     storage_class (str):
                         Optional. Target storage class. Required iff
                         the type of the action is SetStorageClass.
@@ -3630,6 +3651,16 @@ class Bucket(proto.Message):
                         Optional. List of object name suffixes. If
                         any suffix exactly matches the end of the object
                         name, the condition evaluates to true.
+                    size_above_bytes (int):
+                        Optional. Objects having a size greater than
+                        this value in bytes will be matched.
+
+                        This field is a member of `oneof`_ ``_size_above_bytes``.
+                    size_below_bytes (int):
+                        Optional. Objects having a size less than
+                        this value in bytes will be matched.
+
+                        This field is a member of `oneof`_ ``_size_below_bytes``.
                 """
 
                 age_days: int = proto.Field(
@@ -3683,6 +3714,16 @@ class Bucket(proto.Message):
                 matches_suffix: MutableSequence[str] = proto.RepeatedField(
                     proto.STRING,
                     number=12,
+                )
+                size_above_bytes: int = proto.Field(
+                    proto.SFIXED64,
+                    number=13,
+                    optional=True,
+                )
+                size_below_bytes: int = proto.Field(
+                    proto.SFIXED64,
+                    number=14,
+                    optional=True,
                 )
 
             action: 'Bucket.Lifecycle.Rule.Action' = proto.Field(

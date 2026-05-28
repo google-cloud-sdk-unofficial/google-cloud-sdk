@@ -543,16 +543,15 @@ class Query(bigquery_command.BigqueryCmd):
       }
       target_dataset = self.target_dataset
       if self.destination_table:
-        target_dataset = (
-            bq_client_utils.GetTableReference(
-                id_fallbacks=client, identifier=self.destination_table
-            )
-            .GetDatasetReference()
-            .datasetId
+        destination_table_reference = bq_client_utils.GetTableReference(
+            id_fallbacks=client,
+            identifier=self.destination_table,
+            allow_pcnt_identifier_format=True,
         )
-        destination_table = bq_client_utils.GetTableReference(
-            id_fallbacks=client, identifier=self.destination_table
-        ).tableId
+        target_dataset = (
+            destination_table_reference.GetDatasetReference().datasetId
+        )
+        destination_table = destination_table_reference.tableId
         params['destination_table_name_template'] = destination_table
       if self.append_table:
         params['write_disposition'] = 'WRITE_APPEND'
@@ -637,8 +636,9 @@ class Query(bigquery_command.BigqueryCmd):
       use_full_timestamp = False
       logging.debug('Calling client_job.RunQueryRpc(%s, %s)', query, kwds)
       fields, rows, execution = client_job.RunQueryRpc(
-          client, query,
-          **kwds
+          client,
+          query,
+          **kwds,
       )
       if self.dry_run:
         frontend_utils.PrintDryRunInfo(execution)
@@ -691,7 +691,9 @@ class Query(bigquery_command.BigqueryCmd):
       client_table.update_table(
           apiclient=client.apiclient,
           reference=bq_client_utils.GetTableReference(
-              id_fallbacks=client, identifier=self.destination_table
+              id_fallbacks=client,
+              identifier=self.destination_table,
+              allow_pcnt_identifier_format=True,
           ),
           schema=read_schema,
       )

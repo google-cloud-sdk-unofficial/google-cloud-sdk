@@ -22,6 +22,7 @@ from cloudsdk.google.protobuf import timestamp_pb2
 from googlecloudsdk.api_lib.spanner import response_util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.command_lib.iam import iam_util
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
@@ -223,6 +224,7 @@ def Create(
     edition=None,
     default_backup_schedule_type=None,
     tags=None,
+    labels=None,
 ):
   """Create a new instance.
 
@@ -252,6 +254,7 @@ def Create(
     edition: The edition to use.
     default_backup_schedule_type: The type of default backup schedule to use.
     tags: The parsed tags value.
+    labels: The parsed labels value.
 
   Returns:
     The created instance.
@@ -321,6 +324,13 @@ def Create(
         additionalProperties=[
             msgs.Instance.TagsValue.AdditionalProperty(key=key, value=value)
             for key, value in sorted(tags.items())
+        ]
+    )
+  if labels is not None:
+    instance_obj.labels = msgs.Instance.LabelsValue(
+        additionalProperties=[
+            msgs.Instance.LabelsValue.AdditionalProperty(key=key, value=value)
+            for key, value in sorted(labels.items())
         ]
     )
 
@@ -433,6 +443,7 @@ def Patch(
     ssd_cache_id=None,
     edition=None,
     default_backup_schedule_type=None,
+    args=None,
 ):
   """Update an instance."""
   fields = []
@@ -569,6 +580,18 @@ def Patch(
             default_backup_schedule_type
         )
     )
+
+  if args is not None:
+
+    def GetLabels():
+      return Get(instance).labels
+
+    labels_update = labels_util.ProcessUpdateArgsLazy(
+        args, msgs.Instance.LabelsValue, GetLabels
+    )
+    if labels_update.needs_update:
+      instance_obj.labels = labels_update.labels
+      fields.append('labels')
 
   ref = resources.REGISTRY.Parse(
       instance,

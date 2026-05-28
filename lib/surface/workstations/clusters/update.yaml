@@ -26,6 +26,16 @@
       type: bool
       help_text: |
         Enable or disable HTTP/2 for the workstation cluster.
+    - arg_name: workstation-authorization-url
+      api_field: workstationCluster.workstationAuthorizationUrl
+      type: str
+      help_text: |
+        The redirect URL for unauthorized requests.
+    - arg_name: workstation-launch-url
+      api_field: workstationCluster.workstationLaunchUrl
+      type: str
+      help_text: |
+        The launch URL for workstations.
     labels:
       api_field: workstationCluster.labels
 

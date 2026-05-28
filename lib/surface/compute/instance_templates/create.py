@@ -1375,7 +1375,7 @@ class CreateBeta(Create):
   _support_preemption_notice_duration = True
   _support_enable_vpc_scoped_dns = False
   _support_workload_identity_config = False
-  _support_alias_ipv6_ranges = False
+  _support_alias_ipv6_ranges = True
 
   @classmethod
   def Args(cls, parser):

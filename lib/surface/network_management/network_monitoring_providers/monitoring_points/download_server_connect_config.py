@@ -117,7 +117,6 @@ class DownloadServerConnectConfig(base.Command):
     return None
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class DownloadServerConnectConfigGa(DownloadServerConnectConfig):

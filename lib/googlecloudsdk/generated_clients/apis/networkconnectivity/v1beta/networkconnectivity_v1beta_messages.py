@@ -2036,6 +2036,7 @@ class GoogleCloudNetworkconnectivityV1betaRemoteTransportProfile(_messages.Messa
     FlowValueValuesEnum: Output only. Type of provisioning flows supported by
       this profile.
     OrderStateValueValuesEnum: Output only. Order state for this profile.
+    ProviderTypeValueValuesEnum: Output only. Provider type for this profile.
     SlaValueValuesEnum: Output only. Availability class that will be
       configured for this particular RemoteTransportProfile.
     SupportedBandwidthsValueListEntryValuesEnum:
@@ -2058,6 +2059,7 @@ class GoogleCloudNetworkconnectivityV1betaRemoteTransportProfile(_messages.Messa
       is being established. If the profile provides facility-level selection,
       this is an identity of the facility any connections on this profile are
       going through.
+    providerType: Output only. Provider type for this profile.
     sla: Output only. Availability class that will be configured for this
       particular RemoteTransportProfile.
     supportedBandwidths: Output only. List of bandwidth enum values that are
@@ -2093,6 +2095,18 @@ class GoogleCloudNetworkconnectivityV1betaRemoteTransportProfile(_messages.Messa
     STATE_UNSPECIFIED = 0
     CLOSED = 1
     OPEN = 2
+
+  class ProviderTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. Provider type for this profile.
+
+    Values:
+      PROVIDER_TYPE_UNSPECIFIED: Unspecified provider type.
+      CLOUD: Represents a Cloud service provider for PCCI.
+      NETWORK: Represents a Network service provider for PCCI last mile.
+    """
+    PROVIDER_TYPE_UNSPECIFIED = 0
+    CLOUD = 1
+    NETWORK = 2
 
   class SlaValueValuesEnum(_messages.Enum):
     r"""Output only. Availability class that will be configured for this
@@ -2176,8 +2190,9 @@ class GoogleCloudNetworkconnectivityV1betaRemoteTransportProfile(_messages.Messa
   orderState = _messages.EnumField('OrderStateValueValuesEnum', 6)
   provider = _messages.StringField(7)
   providerSite = _messages.StringField(8)
-  sla = _messages.EnumField('SlaValueValuesEnum', 9)
-  supportedBandwidths = _messages.EnumField('SupportedBandwidthsValueListEntryValuesEnum', 10, repeated=True)
+  providerType = _messages.EnumField('ProviderTypeValueValuesEnum', 9)
+  sla = _messages.EnumField('SlaValueValuesEnum', 10)
+  supportedBandwidths = _messages.EnumField('SupportedBandwidthsValueListEntryValuesEnum', 11, repeated=True)
 
 
 class GoogleCloudNetworkconnectivityV1betaRoute(_messages.Message):

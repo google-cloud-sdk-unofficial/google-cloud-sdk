@@ -274,11 +274,23 @@ def _get_sliced_download_tracker_file_paths(destination_url):
   tracker_file_paths = [parallel_tracker_file_path]
 
   tracker_file = None
+  total_components = 0
   try:
     tracker_file = files.FileReader(parallel_tracker_file_path)
     total_components = json.load(tracker_file)['total_components']
   except files.MissingFileError:
     return tracker_file_paths
+  except json.JSONDecodeError:
+    total_components = max(
+        total_components,
+        properties.VALUES.storage.sliced_object_download_max_components.GetInt(),
+    )
+    log.debug(
+        'Could not decode JSON from tracker file %s. Assuming %s components. '
+        'There may be orphaned tracker files if the download was resumed with a'
+        ' different number of components.',
+        parallel_tracker_file_path, total_components
+    )
   finally:
     if tracker_file:
       tracker_file.close()
@@ -685,9 +697,14 @@ def get_rewrite_token_from_tracker_file(tracker_file_path,
   if not os.path.exists(tracker_file_path):
     return None
   with files.FileReader(tracker_file_path) as tracker_file:
-    existing_hash, rewrite_token = [
-        line.rstrip('\n') for line in tracker_file.readlines()
-    ]
+    lines = [line.rstrip('\n') for line in tracker_file.readlines()]
+    if len(lines) != 2:
+      log.debug(
+          'Invalid rewrite tracker file %s with %s lines.',
+          tracker_file_path, len(lines)
+      )
+      return None
+    existing_hash, rewrite_token = lines
     if existing_hash == rewrite_parameters_hash:
       return rewrite_token
   return None

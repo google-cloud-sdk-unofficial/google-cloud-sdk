@@ -89,9 +89,15 @@ def TransformLookupContextOptionsToRequest(
     parsed_options = {}
 
   context_format_arg = getattr(args, 'context_format', None)
+  all_schema_fields_arg = getattr(args, 'all_schema_fields', None)
   options_dict = {
       **parsed_options,
       **({'format': context_format_arg} if context_format_arg else {}),
+      **(
+          {'all_schema_fields': str(all_schema_fields_arg).lower()}
+          if all_schema_fields_arg is not None
+          else {}
+      ),
   }
 
   final_options = {

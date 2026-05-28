@@ -41,18 +41,14 @@ class Create(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     """Set up arguments for this command."""
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      parser.display_info.AddFormat(flags.ALPHA_LIST_FORMAT)
-    else:
-      parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     parser.display_info.AddCacheUpdater(flags.SslPoliciesCompleter)
     cls.SSL_POLICY_ARG.AddArgument(parser, operation_type='create')
     flags.GetDescriptionFlag().AddToParser(parser)
     flags.GetProfileFlag(default='COMPATIBLE').AddToParser(parser)
     flags.GetMinTlsVersionFlag(default='1.0').AddToParser(parser)
     flags.GetCustomFeaturesFlag().AddToParser(parser)
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      flags.GetPostQuantumKeyExchangeFlag().AddToParser(parser)
+    flags.GetPostQuantumKeyExchangeFlag().AddToParser(parser)
 
   def Run(self, args):
     """Issues the request to create a new SSL policy."""
@@ -69,11 +65,7 @@ class Create(base.CreateCommand):
         profile=args.profile,
         min_tls_version=flags.ParseTlsVersion(args.min_tls_version),
         custom_features=custom_features,
-        post_quantum_key_exchange=(
-            args.post_quantum_key_exchange
-            if self.ReleaseTrack() == base.ReleaseTrack.ALPHA
-            else None
-        ),
+        post_quantum_key_exchange=args.post_quantum_key_exchange,
     )
     operation_ref = helper.Create(ssl_policy_ref, ssl_policy_to_insert)
     return helper.WaitForOperation(ssl_policy_ref, operation_ref,

@@ -92,17 +92,20 @@ def AddUpdateExcludeExportRangesFlag(
 
 
 def GetCapacityArg(gateway_message):
+  custom_mappings = {
+      'CAPACITY_1_GBPS': ('1g', 'Gateway will have capacity of 1 Gbps'),
+      'CAPACITY_10_GBPS': ('10g', 'Gateway will have capacity of 10 Gbps'),
+  }
+  if 'CAPACITY_100_GBPS' in gateway_message.CapacityValueValuesEnum.names():
+    custom_mappings['CAPACITY_100_GBPS'] = (
+        '100g',
+        'Gateway will have capacity of 100 Gbps',
+    )
+
   return arg_utils.ChoiceEnumMapper(
       arg_name='--capacity',
       message_enum=gateway_message.CapacityValueValuesEnum,
-      custom_mappings={
-          'CAPACITY_1_GBPS': ('1g', 'Gateway will have capacity of 1 Gbps'),
-          'CAPACITY_10_GBPS': ('10g', 'Gateway will have capacity of 10 Gbps'),
-          'CAPACITY_100_GBPS': (
-              '100g',
-              'Gateway will have capacity of 100 Gbps',
-          ),
-      },
+      custom_mappings=custom_mappings,
       help_str='Set the capacity of the gateway in Gbps.',
       required=True,
   )

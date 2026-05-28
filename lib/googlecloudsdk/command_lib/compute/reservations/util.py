@@ -181,12 +181,6 @@ def MakeShareSettingsWithArgs(
           projectMap=project_map,
       )
     if setting_configs == 'folders':
-      if not args.IsSpecified(share_with):
-        raise exceptions.InvalidArgumentException(
-            '--share_with',
-            'The folders this reservation is to be shared with must be '
-            'specified.',
-        )
       return messages.ShareSettings(
           shareType=messages.ShareSettings.ShareTypeValueValuesEnum.DIRECT_PROJECTS_UNDER_SPECIFIC_FOLDERS,
           folderMap=MakeFolderMapFromFolderList(
@@ -389,13 +383,14 @@ def MakeProjectMapFromProjectList(messages, projects):
 
 def MakeFolderMapFromFolderList(messages, folders):
   additional_properties = []
-  for folder in folders:
-    additional_properties.append(
-        messages.ShareSettings.FolderMapValue.AdditionalProperty(
-            key=folder,
-            value=messages.ShareSettingsFolderConfig(folderId=folder),
-        )
-    )
+  if folders:
+    for folder in folders:
+      additional_properties.append(
+          messages.ShareSettings.FolderMapValue.AdditionalProperty(
+              key=folder,
+              value=messages.ShareSettingsFolderConfig(folderId=folder),
+          )
+      )
   return messages.ShareSettings.FolderMapValue(
       additionalProperties=additional_properties
   )

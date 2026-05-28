@@ -1,17 +1,16 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: Update a BigLake Hive catalog.
     description: |
       Updates a BigLake Hive catalog.
     examples: |-
-      To update a BigLake Hive catalog named 'my-catalog' with the following
-        arguments, run:
+      To update a BigLake Hive catalog named 'my-catalog' with the following arguments, run:
+
         $ {command} my-catalog --description="My updated catalog"
 
   request:
     collection: biglake.hive.v1beta.projects.catalogs
-    ALPHA:
-      api_version: v1beta
+    api_version: v1beta
     method: patch
     modify_request_hooks:
     - googlecloudsdk.command_lib.biglake.hooks:ValidateCatalogUpdateArgs

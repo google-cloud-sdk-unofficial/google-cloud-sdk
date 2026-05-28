@@ -1169,6 +1169,178 @@ class Filter(_messages.Message):
   srcRange = _messages.StringField(4)
 
 
+class Gateway(_messages.Message):
+  r"""A gateway that can apply specialized traffic processing.
+
+  Enums:
+    CapacityValueValuesEnum: Optional. The aggregate processing capacity of
+      this gateway.
+
+  Fields:
+    capacity: Optional. The aggregate processing capacity of this gateway.
+    cloudRouters: Output only. The list of Cloud Routers that are connected to
+      this gateway. Should be in the form: https://www.googleapis.com/compute/
+      v1/projects/{project}/regions/{region}/routers/{router}
+    ipRangeReservations: Optional. A list of IP ranges that are reserved for
+      this gateway's internal intfrastructure.
+    landingNetwork: Optional. This field will be deprecated and replaced
+      before gateway spokes reach General Availability.
+    sacAttachment: Output only. The URI of the connected SACAttachment. Should
+      be in the form:
+      projects/{project}/locations/{location}/sacAttachments/{sac_attachment}
+  """
+
+  class CapacityValueValuesEnum(_messages.Enum):
+    r"""Optional. The aggregate processing capacity of this gateway.
+
+    Values:
+      GATEWAY_CAPACITY_UNSPECIFIED: The gateway capacity is unspecified.
+      CAPACITY_1_GBPS: The gateway has 1 Gbps of aggregate processing capacity
+      CAPACITY_10_GBPS: The gateway has 10 Gbps of aggregate processing
+        capacity
+    """
+    GATEWAY_CAPACITY_UNSPECIFIED = 0
+    CAPACITY_1_GBPS = 1
+    CAPACITY_10_GBPS = 2
+
+  capacity = _messages.EnumField('CapacityValueValuesEnum', 1)
+  cloudRouters = _messages.StringField(2, repeated=True)
+  ipRangeReservations = _messages.MessageField('IpRangeReservation', 3, repeated=True)
+  landingNetwork = _messages.MessageField('LandingNetwork', 4)
+  sacAttachment = _messages.StringField(5)
+
+
+class GatewayAdvertisedRoute(_messages.Message):
+  r"""A gateway advertised route is a route that a gateway spoke advertises
+  somewhere.
+
+  Enums:
+    RecipientValueValuesEnum: Optional. The recipient of this advertised
+      route.
+    StateValueValuesEnum: Output only. The current lifecycle state of this
+      gateway advertised route.
+
+  Messages:
+    LabelsValue: Optional labels in key-value pair format. For more
+      information about labels, see [Requirements for
+      labels](https://cloud.google.com/resource-manager/docs/creating-
+      managing-labels#requirements).
+
+  Fields:
+    createTime: Output only. The time the gateway advertised route was
+      created.
+    description: An optional description of the gateway advertised route.
+    ipRange: Immutable. This route's advertised IP address range. Must be a
+      valid CIDR-formatted prefix. If an IP address is provided without a
+      subnet mask, it is interpreted as, for IPv4, a `/32` singular IP address
+      range, and, for IPv6, `/128`.
+    labels: Optional labels in key-value pair format. For more information
+      about labels, see [Requirements for
+      labels](https://cloud.google.com/resource-manager/docs/creating-
+      managing-labels#requirements).
+    name: Identifier. The name of the gateway advertised route. Route names
+      must be unique and use the following form: `projects/{project_number}/lo
+      cations/{region}/spokes/{spoke}/gatewayAdvertisedRoutes/{gateway_adverti
+      sed_route_id}`
+    priority: Optional. The priority of this advertised route. You can choose
+      a value from `0` to `65335`. If you don't provide a value, Google Cloud
+      assigns a priority of `100` to the ranges.
+    recipient: Optional. The recipient of this advertised route.
+    state: Output only. The current lifecycle state of this gateway advertised
+      route.
+    uniqueId: Output only. The Google-generated UUID for the gateway
+      advertised route. This value is unique across all gateway advertised
+      route resources. If a gateway advertised route is deleted and another
+      with the same name is created, the new route is assigned a different
+      `unique_id`.
+    updateTime: Output only. The time the gateway advertised route was last
+      updated.
+  """
+
+  class RecipientValueValuesEnum(_messages.Enum):
+    r"""Optional. The recipient of this advertised route.
+
+    Values:
+      RECIPIENT_UNSPECIFIED: No recipient specified. By default routes are
+        advertised to the hub.
+      ADVERTISE_TO_HUB: Advertises a route toward the hub. Other spokes
+        reachable from this spoke will receive the route.
+    """
+    RECIPIENT_UNSPECIFIED = 0
+    ADVERTISE_TO_HUB = 1
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current lifecycle state of this gateway advertised
+    route.
+
+    Values:
+      STATE_UNSPECIFIED: No state information available
+      CREATING: The resource's create operation is in progress.
+      ACTIVE: The resource is active
+      DELETING: The resource's delete operation is in progress.
+      ACTIVATING: The resource's activate operation is in progress.
+      DEACTIVATING: The resource's deactivate operation is in progress.
+      ACCEPTING: The resource's accept operation is in progress.
+      REJECTING: The resource's reject operation is in progress.
+      UPDATING: The resource's update operation is in progress.
+      INACTIVE: The resource is inactive.
+      OBSOLETE: The hub associated with this spoke resource has been deleted.
+        This state applies to spoke resources only.
+      FAILED: The resource is in an undefined state due to resource creation
+        or deletion failure. You can try to delete the resource later or
+        contact support for help.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    DELETING = 3
+    ACTIVATING = 4
+    DEACTIVATING = 5
+    ACCEPTING = 6
+    REJECTING = 7
+    UPDATING = 8
+    INACTIVE = 9
+    OBSOLETE = 10
+    FAILED = 11
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional labels in key-value pair format. For more information about
+    labels, see [Requirements for labels](https://cloud.google.com/resource-
+    manager/docs/creating-managing-labels#requirements).
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  ipRange = _messages.StringField(3)
+  labels = _messages.MessageField('LabelsValue', 4)
+  name = _messages.StringField(5)
+  priority = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  recipient = _messages.EnumField('RecipientValueValuesEnum', 7)
+  state = _messages.EnumField('StateValueValuesEnum', 8)
+  uniqueId = _messages.StringField(9)
+  updateTime = _messages.StringField(10)
+
+
 class GoogleLongrunningCancelOperationRequest(_messages.Message):
   r"""The request message for Operations.CancelOperation."""
 
@@ -1929,6 +2101,40 @@ class InternalRange(_messages.Message):
   users = _messages.StringField(17, repeated=True)
 
 
+class IpRangeReservation(_messages.Message):
+  r"""A list of IP ranges that are reserved for this gateway's internal
+  intfrastructure.
+
+  Fields:
+    ipRange: Required. A block of IP addresses used to allocate supporting
+      infrastructure for this gateway. This block must not overlap with
+      subnets in any spokes or peer VPC networks that the gateway can
+      communicate with. Example: "10.1.2.0/24"
+  """
+
+  ipRange = _messages.StringField(1)
+
+
+class LandingNetwork(_messages.Message):
+  r"""Information about the landing network connected to this gateway.
+
+  Fields:
+    network: Optional. A VPC network containing Interconnect VLAN attachments.
+      We will initiate peering to this network; you probably want to
+      reciprocate by peering `network` with `peer_network`.
+    peerNetwork: Optional. We'll initiate peering to `landing_network_uri`
+      from this VPC network. You should reciprocate peering to this network.
+    targetIp: Optional. To egress traffic to the Internet, you should create a
+      static route in the landing network that directs traffic toward this IP
+      address. We will pass traffic through any services attached to this
+      gateway en route to or from the Internet.
+  """
+
+  network = _messages.StringField(1)
+  peerNetwork = _messages.StringField(2)
+  targetIp = _messages.StringField(3)
+
+
 class LinkedInterconnectAttachments(_messages.Message):
   r"""A collection of VLAN attachment resources. These resources should be
   redundant attachments that all advertise the same prefixes to Google Cloud.
@@ -2115,6 +2321,22 @@ class ListDestinationsResponse(_messages.Message):
   """
 
   destinations = _messages.MessageField('Destination', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListGatewayAdvertisedRoutesResponse(_messages.Message):
+  r"""Response for HubService.ListGatewayAdvertisedRoutes method.
+
+  Fields:
+    gatewayAdvertisedRoutes: The requested gateway advertised routes.
+    nextPageToken: The token for the next page of the response. To see more
+      results, use this value as the page_token for your next request. If this
+      value is empty, there are no more results.
+    unreachable: Hubs that could not be reached.
+  """
+
+  gatewayAdvertisedRoutes = _messages.MessageField('GatewayAdvertisedRoute', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
   unreachable = _messages.StringField(3, repeated=True)
 
@@ -3653,9 +3875,8 @@ class NetworkconnectivityProjectsLocationsListRequest(_messages.Message):
   r"""A NetworkconnectivityProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -4720,6 +4941,132 @@ class NetworkconnectivityProjectsLocationsSpokesDeleteRequest(_messages.Message)
 
   name = _messages.StringField(1, required=True)
   requestId = _messages.StringField(2)
+
+
+class NetworkconnectivityProjectsLocationsSpokesGatewayAdvertisedRoutesCreateRequest(_messages.Message):
+  r"""A NetworkconnectivityProjectsLocationsSpokesGatewayAdvertisedRoutesCreat
+  eRequest object.
+
+  Fields:
+    gatewayAdvertisedRoute: A GatewayAdvertisedRoute resource to be passed as
+      the request body.
+    gatewayAdvertisedRouteId: Required. Unique id for the route to create.
+    parent: Required. The parent resource.
+    requestId: Optional. A request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server knows to
+      ignore the request if it has already been completed. The server
+      guarantees that a request doesn't result in creation of duplicate
+      commitments for at least 60 minutes. For example, consider a situation
+      where you make an initial request and the request times out. If you make
+      the request again with the same request ID, the server can check to see
+      whether the original operation was received. If it was, the server
+      ignores the second request. This behavior prevents clients from
+      mistakenly creating duplicate commitments. The request ID must be a
+      valid UUID, with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+  """
+
+  gatewayAdvertisedRoute = _messages.MessageField('GatewayAdvertisedRoute', 1)
+  gatewayAdvertisedRouteId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class NetworkconnectivityProjectsLocationsSpokesGatewayAdvertisedRoutesDeleteRequest(_messages.Message):
+  r"""A NetworkconnectivityProjectsLocationsSpokesGatewayAdvertisedRoutesDelet
+  eRequest object.
+
+  Fields:
+    name: Required. The name of the gateway advertised route to delete.
+    requestId: Optional. A request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server knows to
+      ignore the request if it has already been completed. The server
+      guarantees that a request doesn't result in creation of duplicate
+      commitments for at least 60 minutes. For example, consider a situation
+      where you make an initial request and the request times out. If you make
+      the request again with the same request ID, the server can check to see
+      whether the original operation was received. If it was, the server
+      ignores the second request. This behavior prevents clients from
+      mistakenly creating duplicate commitments. The request ID must be a
+      valid UUID, with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class NetworkconnectivityProjectsLocationsSpokesGatewayAdvertisedRoutesGetRequest(_messages.Message):
+  r"""A
+  NetworkconnectivityProjectsLocationsSpokesGatewayAdvertisedRoutesGetRequest
+  object.
+
+  Fields:
+    name: Required. The name of the gateway advertised route to get.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworkconnectivityProjectsLocationsSpokesGatewayAdvertisedRoutesListRequest(_messages.Message):
+  r"""A
+  NetworkconnectivityProjectsLocationsSpokesGatewayAdvertisedRoutesListRequest
+  object.
+
+  Fields:
+    filter: An expression that filters the list of results.
+    orderBy: Sort the results by a certain order.
+    pageSize: Optional. The maximum number of results per page that should be
+      returned.
+    pageToken: Optional. A page token, received from a previous
+      `ListGatewayAdvertisedRoutes` call. Provide this to retrieve the
+      subsequent page. When paginating, all other parameters provided to
+      `ListGatewayAdvertisedRoutes` must match the call that provided the page
+      token.
+    parent: Required. The parent resource's name.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class NetworkconnectivityProjectsLocationsSpokesGatewayAdvertisedRoutesPatchRequest(_messages.Message):
+  r"""A NetworkconnectivityProjectsLocationsSpokesGatewayAdvertisedRoutesPatch
+  Request object.
+
+  Fields:
+    gatewayAdvertisedRoute: A GatewayAdvertisedRoute resource to be passed as
+      the request body.
+    name: Identifier. The name of the gateway advertised route. Route names
+      must be unique and use the following form: `projects/{project_number}/lo
+      cations/{region}/spokes/{spoke}/gatewayAdvertisedRoutes/{gateway_adverti
+      sed_route_id}`
+    requestId: Optional. A request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server knows to
+      ignore the request if it has already been completed. The server
+      guarantees that a request doesn't result in creation of duplicate
+      commitments for at least 60 minutes. For example, consider a situation
+      where you make an initial request and the request times out. If you make
+      the request again with the same request ID, the server can check to see
+      whether the original operation was received. If it was, the server
+      ignores the second request. This behavior prevents clients from
+      mistakenly creating duplicate commitments. The request ID must be a
+      valid UUID, with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. In the case of an update to an existing group, field
+      mask is used to specify the fields to be overwritten. The fields
+      specified in the update_mask are relative to the resource, not the full
+      request. A field is overwritten if it is in the mask. If the user does
+      not provide a mask, then all fields are overwritten.
+  """
+
+  gatewayAdvertisedRoute = _messages.MessageField('GatewayAdvertisedRoute', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
 
 
 class NetworkconnectivityProjectsLocationsSpokesGetIamPolicyRequest(_messages.Message):
@@ -6497,6 +6844,8 @@ class Spoke(_messages.Message):
       the client has an up-to-date value before proceeding.
     fieldPathsPendingUpdate: Optional. The list of fields waiting for hub
       administrator's approval.
+    gateway: Optional. This is a gateway that can apply specialized processing
+      to traffic going through it.
     group: Optional. The name of the group that this spoke is associated with.
     hub: Immutable. The name of the hub that this spoke is attached to.
     labels: Optional labels in key-value pair format. For more information
@@ -6534,6 +6883,7 @@ class Spoke(_messages.Message):
       INTERCONNECT_ATTACHMENT: Spokes associated with VLAN attachments.
       ROUTER_APPLIANCE: Spokes associated with router appliance instances.
       VPC_NETWORK: Spokes associated with VPC networks.
+      GATEWAY: Spokes that are NCC gateways.
       PRODUCER_VPC_NETWORK: Spokes that are backed by a producer VPC network.
     """
     SPOKE_TYPE_UNSPECIFIED = 0
@@ -6541,7 +6891,8 @@ class Spoke(_messages.Message):
     INTERCONNECT_ATTACHMENT = 2
     ROUTER_APPLIANCE = 3
     VPC_NETWORK = 4
-    PRODUCER_VPC_NETWORK = 5
+    GATEWAY = 5
+    PRODUCER_VPC_NETWORK = 6
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. The current lifecycle state of this spoke.
@@ -6606,20 +6957,21 @@ class Spoke(_messages.Message):
   description = _messages.StringField(2)
   etag = _messages.StringField(3)
   fieldPathsPendingUpdate = _messages.StringField(4, repeated=True)
-  group = _messages.StringField(5)
-  hub = _messages.StringField(6)
-  labels = _messages.MessageField('LabelsValue', 7)
-  linkedInterconnectAttachments = _messages.MessageField('LinkedInterconnectAttachments', 8)
-  linkedProducerVpcNetwork = _messages.MessageField('LinkedProducerVpcNetwork', 9)
-  linkedRouterApplianceInstances = _messages.MessageField('LinkedRouterApplianceInstances', 10)
-  linkedVpcNetwork = _messages.MessageField('LinkedVpcNetwork', 11)
-  linkedVpnTunnels = _messages.MessageField('LinkedVpnTunnels', 12)
-  name = _messages.StringField(13)
-  reasons = _messages.MessageField('StateReason', 14, repeated=True)
-  spokeType = _messages.EnumField('SpokeTypeValueValuesEnum', 15)
-  state = _messages.EnumField('StateValueValuesEnum', 16)
-  uniqueId = _messages.StringField(17)
-  updateTime = _messages.StringField(18)
+  gateway = _messages.MessageField('Gateway', 5)
+  group = _messages.StringField(6)
+  hub = _messages.StringField(7)
+  labels = _messages.MessageField('LabelsValue', 8)
+  linkedInterconnectAttachments = _messages.MessageField('LinkedInterconnectAttachments', 9)
+  linkedProducerVpcNetwork = _messages.MessageField('LinkedProducerVpcNetwork', 10)
+  linkedRouterApplianceInstances = _messages.MessageField('LinkedRouterApplianceInstances', 11)
+  linkedVpcNetwork = _messages.MessageField('LinkedVpcNetwork', 12)
+  linkedVpnTunnels = _messages.MessageField('LinkedVpnTunnels', 13)
+  name = _messages.StringField(14)
+  reasons = _messages.MessageField('StateReason', 15, repeated=True)
+  spokeType = _messages.EnumField('SpokeTypeValueValuesEnum', 16)
+  state = _messages.EnumField('StateValueValuesEnum', 17)
+  uniqueId = _messages.StringField(18)
+  updateTime = _messages.StringField(19)
 
 
 class SpokeStateCount(_messages.Message):
@@ -6756,6 +7108,7 @@ class SpokeTypeCount(_messages.Message):
       INTERCONNECT_ATTACHMENT: Spokes associated with VLAN attachments.
       ROUTER_APPLIANCE: Spokes associated with router appliance instances.
       VPC_NETWORK: Spokes associated with VPC networks.
+      GATEWAY: Spokes that are NCC gateways.
       PRODUCER_VPC_NETWORK: Spokes that are backed by a producer VPC network.
     """
     SPOKE_TYPE_UNSPECIFIED = 0
@@ -6763,7 +7116,8 @@ class SpokeTypeCount(_messages.Message):
     INTERCONNECT_ATTACHMENT = 2
     ROUTER_APPLIANCE = 3
     VPC_NETWORK = 4
-    PRODUCER_VPC_NETWORK = 5
+    GATEWAY = 5
+    PRODUCER_VPC_NETWORK = 6
 
   count = _messages.IntegerField(1)
   spokeType = _messages.EnumField('SpokeTypeValueValuesEnum', 2)

@@ -21,6 +21,59 @@ from apitools.base.protorpclite import messages
 from googlecloudsdk.api_lib.ai import util as ai_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.command_lib.ai import constants
+from googlecloudsdk.command_lib.ai import endpoint_util
+from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
+
+# Locations that should be served from the global aiplatform endpoint
+# (i.e., not prefixed with the region in the hostname).
+_GLOBAL_LOCATIONS = frozenset(['global'])
+
+
+def set_regional_endpoint(
+    ref: resources.Resource | None,
+    args: argparse.Namespace,
+    request: messages.Message,
+) -> messages.Message:
+  """Overrides the aiplatform endpoint with the regional endpoint.
+
+  Vertex AI requires that requests for regional resources be sent to the
+  matching regional endpoint (e.g.,
+  ``https://us-central1-aiplatform.<universe-domain>/``) rather than the
+  default global endpoint. Without this override, the API rejects the
+  request with ``The provided location ID doesn't match the endpoint.''
+
+  This is registered as a `modify_request_hooks` entry in the YAML command
+  spec so that it runs after argument parsing but before the apitools client
+  is constructed inside `method.Call`. The override is set on the
+  `api_endpoint_overrides.aiplatform` property, which is read by
+  `apis.GetClientInstance` when the client is built.
+
+  Args:
+    ref: The parsed primary resource reference. For most semantic governance
+      policy commands, this carries the `locationsId` attribute. May be `None`
+      for commands that don't have a primary resource reference.
+    args: The parsed command-line arguments. Used as a fallback source for the
+      location when `ref` does not carry it.
+    request: The request message to be sent. Returned unmodified.
+
+  Returns:
+    The request message, unchanged.
+  """
+  if ref is not None and hasattr(ref, 'locationsId'):
+    location = getattr(ref, 'locationsId')
+  elif hasattr(args, 'location'):
+    location = getattr(args, 'location')
+  else:
+    location = None
+
+  if not location or location in _GLOBAL_LOCATIONS:
+    return request
+  endpoint = endpoint_util.GetEffectiveEndpoint(
+      version=constants.BETA_VERSION, region=location
+  )
+  properties.VALUES.api_endpoint_overrides.aiplatform.Set(endpoint)
+  return request
 
 
 # Fields to move from args to the policy object.

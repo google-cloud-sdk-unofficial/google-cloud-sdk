@@ -383,13 +383,21 @@ class JsonClient(cloud_api.CloudApi):
     return None
 
   @error_util.catch_http_error_raise_gcs_api_error()
-  def create_anywhere_cache(self, bucket_name, zone, admission_policy, ttl):
+  def create_anywhere_cache(
+      self,
+      bucket_name,
+      zone,
+      admission_policy=None,
+      ttl=None,
+      enable_ingest_on_write=None,
+  ):
     """See super class."""
     request = self.messages.AnywhereCache(
         bucket=bucket_name,
         zone=zone,
         admissionPolicy=admission_policy,
-        ttl=ttl
+        ttl=ttl,
+        ingestOnWrite=enable_ingest_on_write,
     )
     with self._apitools_request_headers_context(
         {'x-goog-gcs-idempotency-token': uuid.uuid4().hex}
@@ -460,14 +468,18 @@ class JsonClient(cloud_api.CloudApi):
       anywhere_cache_id,
       admission_policy,
       ttl,
+      enable_ingest_on_write,
   ):
     """See super class."""
-    request = self.messages.AnywhereCache(
-        bucket=bucket_name,
-        anywhereCacheId=anywhere_cache_id,
-        admissionPolicy=admission_policy,
-        ttl=ttl
-    )
+    kwargs = {'bucket': bucket_name, 'anywhereCacheId': anywhere_cache_id}
+    if admission_policy is not None:
+      kwargs['admissionPolicy'] = admission_policy
+    if ttl is not None:
+      kwargs['ttl'] = ttl
+    if enable_ingest_on_write is not None:
+      kwargs['ingestOnWrite'] = enable_ingest_on_write
+
+    request = self.messages.AnywhereCache(**kwargs)
     with self._apitools_request_headers_context(
         {'x-goog-gcs-idempotency-token': uuid.uuid4().hex}
     ):

@@ -2442,13 +2442,6 @@ class StorageAsyncClient:
         # and friendly error handling.
         rpc = self._client._transport._wrapped_methods[self._client._transport.bidi_read_object]
 
-        header_params = {}
-
-        if header_params:
-            metadata = tuple(metadata) + (
-                gapic_v1.routing_header.to_grpc_metadata(header_params),
-            )
-
         # Validate the universe domain.
         self._client._validate_universe_domain()
 
@@ -2762,23 +2755,7 @@ class StorageAsyncClient:
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
             metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> Awaitable[AsyncIterable[storage.BidiWriteObjectResponse]]:
-        r"""Stores a new object and metadata.
-
-        This is similar to the ``WriteObject`` call with the added
-        support for manual flushing of persisted state, and the ability
-        to determine current persisted size without closing the stream.
-
-        The client might specify one or both of the ``state_lookup`` and
-        ``flush`` fields in each ``BidiWriteObjectRequest``. If
-        ``flush`` is specified, the data written so far is persisted to
-        storage. If ``state_lookup`` is specified, the service responds
-        with a ``BidiWriteObjectResponse`` that contains the persisted
-        size. If both ``flush`` and ``state_lookup`` are specified, the
-        flush always occurs before a ``state_lookup``, so that both
-        might be set in the same request and the returned state is the
-        state of the object post-flush. When the stream is closed, a
-        ``BidiWriteObjectResponse`` is always sent to the client,
-        regardless of the value of ``state_lookup``.
+        r"""
 
         .. code-block:: python
 

@@ -92,21 +92,7 @@ class Create(base.CreateCommand):
             f' {utils.EnumTypeToChoices(messages.HaController.FailoverInitiationValueValuesEnum)}'
         ),
     )
-    parser.add_argument(
-        '--failover-capacity',
-        required=True,
-        type=lambda x: arg_utils.ChoiceToEnum(
-            x,
-            messages.HaController.FailoverCapacityValueValuesEnum,
-        ),
-        help=(
-            'Determines the capacity guarantee in the secondary zone. Use'
-            ' BEST_EFFORT_CAPACITY to create a VM based on capacity'
-            ' availability at the time of failover, suitable for workloads that'
-            ' can tolerate longer recovery times. Must be one of:'
-            f' {utils.EnumTypeToChoices(messages.HaController.FailoverCapacityValueValuesEnum)}'
-        ),
-    )
+
     parser.add_argument(
         '--zone-configuration',
         required=True,
@@ -235,7 +221,6 @@ class Create(base.CreateCommand):
         description=args.description,
         instanceName=args.instance_name,
         failoverInitiation=args.failover_initiation,
-        failoverCapacity=args.failover_capacity,
         zoneConfigurations=utils.MakeZoneConfiguration(args.zone_configuration),
         networkingAutoConfiguration=utils.MakeNetworkConfiguration(
             args.network_auto_configuration

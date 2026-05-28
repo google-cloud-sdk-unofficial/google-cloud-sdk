@@ -49,6 +49,22 @@
       To mark a flag for cleanup (remove from Units in the next rollout), run:
 
           $ {command} my-flag --location=global --state=cleanup --description="Ready for permanent deletion."
+
+      To update which flag set a flag is associated with, run:
+
+          $ {command} my-flag --location=global --flag-set=new-flag-set
+
+      To update a percentage rollout (50% Enabled) using a userID attribute, run:
+
+        $ {command} my-flag --location=global --evaluation-spec='{"allocations": [{"id": "p10", "randomizedOn": "userID", "slots": [{"variant": "Disabled", "weight": 50}, {"variant": "Enabled", "weight": 50}]}], "defaultTarget": "p10", "attributes": ["projects/my-project/locations/global/flagAttributes/id-attr"]}'
+
+      To add labels to a flag, run:
+
+        $ {command} my-flag --location=global --labels=environment=prod,team=frontend
+
+      To clear optional fields, run:
+
+        $ {command} my-flag --location=global --clear-description --clear-flag-set --clear-labels --clear-annotations
   arguments:
     params:
     - help_text: |-

@@ -1,4 +1,4 @@
-release_tracks: [ALPHA, BETA]
+release_tracks: [ALPHA, BETA, GA]
 
 help_text:
   brief: |
@@ -17,6 +17,16 @@ arguments:
       Realm to be created.
   params:
   - arg_name: security-service
+    release_tracks: [GA]
+    required: true
+    api_field: sACRealm.securityService
+    help_text: |
+      Security service supporting this realm.
+    choices:
+    - arg_value: prisma-access
+      enum_value: PALO_ALTO_PRISMA_ACCESS
+  - arg_name: security-service
+    release_tracks: [ALPHA, BETA]
     required: true
     api_field: sACRealm.securityService
     help_text: |
@@ -27,6 +37,7 @@ arguments:
     - arg_value: symantec-cloud-swg
       enum_value: SYMANTEC_CLOUD_SWG
   - arg_name: symantec-secret
+    release_tracks: [ALPHA, BETA]
     api_field: sACRealm.symantecOptions.secretPath
     help_text: |
       ID of the Secret in Secret Manager containing the Symantec credentials.
@@ -46,5 +57,7 @@ request: &request
     api_version: v1alpha1
   BETA:
     api_version: v1beta1
+  GA:
+    api_version: v1
   collection: networksecurity.projects.locations.sacRealms
   method: create

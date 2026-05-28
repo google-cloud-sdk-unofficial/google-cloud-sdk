@@ -37,9 +37,7 @@ help_text_alpha = textwrap.dedent("""\
     """)
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class UpdateCatalog(base.UpdateCommand):
   """Update a BigLake Iceberg REST catalog."""
@@ -51,6 +49,7 @@ class UpdateCatalog(base.UpdateCommand):
   _support_catalog_type_biglake = False
   _support_service_directory_name = False
   _support_federated_catalog = False
+  _support_service_principal_application_id = False
 
   @classmethod
   def Args(cls, parser):
@@ -61,11 +60,13 @@ class UpdateCatalog(base.UpdateCommand):
     ).choice_arg.AddToParser(parser)
     if cls._support_catalog_type_biglake:
       util.GetUpdateCatalogTypeEnumMapper(
-          base.ReleaseTrack.ALPHA
+          cls.ReleaseTrack()
       ).choice_arg.AddToParser(parser)
       util.AddRestrictedLocationsArg(parser)
     if cls._support_service_directory_name:
       arguments.AddServiceDirectoryNameArg(parser)
+    if cls._support_service_principal_application_id:
+      arguments.AddServicePrincipalApplicationIdArg(parser)
     if cls._support_federated_catalog:
       arguments.AddUpdateFederatedCatalogArgs(parser)
 
@@ -84,7 +85,9 @@ class UpdateCatalog(base.UpdateCommand):
     if args.IsSpecified('secret_name'):
       update_mask.append('federated_catalog_options.secret_name')
       catalog.federated_catalog_options.secret_name = args.secret_name
-    if args.IsSpecified('service_principal_application_id'):
+    if hasattr(args, 'service_principal_application_id') and args.IsSpecified(
+        'service_principal_application_id'
+    ):
       update_mask.append(
           'federated_catalog_options.unity_catalog_info.service_principal_application_id'
       )
@@ -169,9 +172,15 @@ class UpdateCatalog(base.UpdateCommand):
 
     if self._support_federated_catalog:
       if (
-          args.IsSpecified('service_directory_name')
+          (
+              hasattr(args, 'service_directory_name')
+              and args.IsSpecified('service_directory_name')
+          )
           or args.IsSpecified('secret_name')
-          or args.IsSpecified('service_principal_application_id')
+          or (
+              hasattr(args, 'service_principal_application_id')
+              and args.IsSpecified('service_principal_application_id')
+          )
           or args.IsSpecified('refresh_interval')
           or args.IsSpecified('namespace_filters')
       ):
@@ -210,12 +219,19 @@ class UpdateCatalog(base.UpdateCommand):
     return response
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateCatalog):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(UpdateCatalog):
   """Update a BigLake Iceberg REST catalog."""
   detailed_help = {
       'EXAMPLES': help_text + '\n\n' + help_text_alpha,
   }
+  _support_federated_catalog = True
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
+  """Update a BigLake Iceberg REST catalog."""
+
   _support_catalog_type_biglake = True
   _support_service_directory_name = True
-  _support_federated_catalog = True
+  _support_service_principal_application_id = True

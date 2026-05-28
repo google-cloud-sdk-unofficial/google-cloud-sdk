@@ -194,6 +194,7 @@ def define_parent_group(
   return flags.DEFINE_string(
       'parent_group',
       None,
-      'The new full resource name of the parent reservation group.',
+      'The resource name of the parent reservation group. It can be a full '
+      'resource name or just the reservation group ID.',
       flag_values=flag_values,
   )

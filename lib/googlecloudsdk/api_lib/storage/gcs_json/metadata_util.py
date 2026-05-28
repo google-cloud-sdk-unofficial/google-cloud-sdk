@@ -308,6 +308,7 @@ def get_anywhere_cache_resource_from_metadata(metadata):
       bucket=metadata.bucket,
       create_time=metadata.createTime,
       id_string=metadata.id,
+      ingest_on_write=metadata.ingestOnWrite,
       kind=metadata.kind,
       metadata=metadata,
       pending_update=metadata.pendingUpdate,

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright 2017 The Abseil Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,16 +26,7 @@ The specific function used determines how the flag is parsed, checked,
 and optionally type-converted, when it's seen on the command line.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-import getopt
-import os
-import re
 import sys
-import types
-import warnings
 
 from absl.flags import _argument_parser
 from absl.flags import _defines
@@ -43,7 +35,82 @@ from absl.flags import _flag
 from absl.flags import _flagvalues
 from absl.flags import _helpers
 from absl.flags import _validators
-import six
+
+__all__ = (
+    'DEFINE',
+    'DEFINE_flag',
+    'DEFINE_string',
+    'DEFINE_boolean',
+    'DEFINE_bool',
+    'DEFINE_float',
+    'DEFINE_integer',
+    'DEFINE_enum',
+    'DEFINE_enum_class',
+    'DEFINE_list',
+    'DEFINE_spaceseplist',
+    'DEFINE_multi',
+    'DEFINE_multi_string',
+    'DEFINE_multi_integer',
+    'DEFINE_multi_float',
+    'DEFINE_multi_enum',
+    'DEFINE_multi_enum_class',
+    'DEFINE_alias',
+    # Flag validators.
+    'register_validator',
+    'validator',
+    'register_multi_flags_validator',
+    'multi_flags_validator',
+    'mark_flag_as_required',
+    'mark_flags_as_required',
+    'mark_flags_as_mutual_exclusive',
+    'mark_bool_flags_as_mutual_exclusive',
+    # Flag modifiers.
+    'set_default',
+    'override_value',
+    # Key flag related functions.
+    'declare_key_flag',
+    'adopt_module_key_flags',
+    'disclaim_key_flags',
+    # Module exceptions.
+    'Error',
+    'CantOpenFlagFileError',
+    'DuplicateFlagError',
+    'IllegalFlagValueError',
+    'UnrecognizedFlagError',
+    'UnparsedFlagAccessError',
+    'ValidationError',
+    'FlagNameConflictsWithMethodError',
+    # Public classes.
+    'Flag',
+    'BooleanFlag',
+    'EnumFlag',
+    'EnumClassFlag',
+    'MultiFlag',
+    'MultiEnumClassFlag',
+    'FlagHolder',
+    'FlagValues',
+    'ArgumentParser',
+    'BooleanParser',
+    'EnumParser',
+    'EnumClassParser',
+    'ArgumentSerializer',
+    'FloatParser',
+    'IntegerParser',
+    'BaseListParser',
+    'ListParser',
+    'ListSerializer',
+    'EnumClassListSerializer',
+    'CsvListSerializer',
+    'WhitespaceSeparatedListParser',
+    'EnumClassSerializer',
+    # Helper functions.
+    'get_help_width',
+    'text_wrap',
+    'flag_dict_to_args',
+    'doc_to_help',
+    # The global FlagValues instance.
+    'FLAGS',
+)
 
 # Initialize the FLAGS_MODULE as early as possible.
 # It's only used by adopt_module_key_flags to take SPECIAL_FLAGS into account.
@@ -82,7 +149,13 @@ multi_flags_validator = _validators.multi_flags_validator
 mark_flag_as_required = _validators.mark_flag_as_required
 mark_flags_as_required = _validators.mark_flags_as_required
 mark_flags_as_mutual_exclusive = _validators.mark_flags_as_mutual_exclusive
-mark_bool_flags_as_mutual_exclusive = _validators.mark_bool_flags_as_mutual_exclusive
+mark_bool_flags_as_mutual_exclusive = (
+    _validators.mark_bool_flags_as_mutual_exclusive
+)
+
+# Flag modifiers.
+set_default = _defines.set_default
+override_value = _defines.override_value
 
 # Key flag related functions.
 declare_key_flag = _defines.declare_key_flag
@@ -135,16 +208,33 @@ doc_to_help = _helpers.doc_to_help
 _helpers.SPECIAL_FLAGS = FlagValues()
 
 DEFINE_string(
-    'flagfile', '',
+    'flagfile',
+    '',
     'Insert flag definitions from the given file into the command line.',
-    _helpers.SPECIAL_FLAGS)  # pytype: disable=wrong-arg-types
+    _helpers.SPECIAL_FLAGS,
+)  # pytype: disable=wrong-arg-types
 
-DEFINE_string('undefok', '',
-              'comma-separated list of flag names that it is okay to specify '
-              'on the command line even if the program does not define a flag '
-              'with that name.  IMPORTANT: flags in this list that have '
-              'arguments MUST use the --flag=value format.',
-              _helpers.SPECIAL_FLAGS)  # pytype: disable=wrong-arg-types
+DEFINE_string(
+    'undefok',
+    '',
+    'comma-separated list of flag names that it is okay to specify '
+    'on the command line even if the program does not define a flag '
+    'with that name.  IMPORTANT: flags in this list that have '
+    'arguments MUST use the --flag=value format.',
+    _helpers.SPECIAL_FLAGS,
+)  # pytype: disable=wrong-arg-types
 
-# The global FlagValues instance.
+#: The global FlagValues instance.
 FLAGS = _flagvalues.FLAGS
+
+# absl:google3-begin(C++ flags)
+# Provide C++ flags support in `FLAGS.set_default`.
+try:
+  # pytype: disable=import-error
+  from absl.flags import _cpp_flags_internal  # pylint: disable=g-import-not-at-top
+except ImportError:
+  pass
+else:
+  FLAGS._register_unknown_flag_setter(_cpp_flags_internal.set_default)  # pylint: disable=protected-access
+  FLAGS._set_is_retired_flag_func(_cpp_flags_internal.is_retired)  # pylint: disable=protected-access
+# absl:google3-end

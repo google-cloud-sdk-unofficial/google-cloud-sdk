@@ -97,7 +97,6 @@ def _ParseReservationIdentifier(
   Raises:
     bq_error.BigqueryError: if the identifier could not be parsed.
   """
-
   pattern = re.compile(
       r"""
   ^((?P<project_id>[\w:\-.]*[\w:\-]+):)?
@@ -143,7 +142,7 @@ def ParseReservationPath(
       +
       # Accept a suffix of '/reservations/<reservation ID>' or
       # one of '/biReservation'
-      r'/(reservations/(?P<reservation_id>[\w\-/]+)'
+      r'/(reservations/(?P<reservation_id>[\w/-]+)'
       + r'|(?P<bi_id>biReservation)'
       + r')$',
       re.X,
@@ -257,8 +256,8 @@ def _ParseReservationAssignmentIdentifier(
   Args:
     identifier: String specifying the reservation assignment identifier in the
       format "project_id:reservation_id.assignment_id",
-      "project_id:location.reservation_id.assignment_id", or
-      "reservation_id.assignment_id".
+      "project_id:location.reservation_id.assignment_id",
+      "reservation_id.assignment_id", or "assignment_id".
 
   Returns:
     A tuple of three elements: containing project_id, location, and
@@ -271,15 +270,17 @@ def _ParseReservationAssignmentIdentifier(
 
   pattern = re.compile(
       r"""
-  ^((?P<project_id>[\w:\-.]*[\w:\-]+):)?
-  ((?P<location>[\w\-]+)\.)?
-  (?P<reservation_id>[\w\-\/]+)\.
-  (?P<reservation_assignment_id>[\w\-_]+)$
+  ((?P<project_id>[\w:.-]*[\w:-]+):)?   # Optional project_id
+  (?:
+    (?:(?P<location>[\w-]+)\.)?  # Optional location.
+    (?P<reservation_id>[\w/-]+)\.  # Required reservation ID.
+  )?  # This whole group is optional
+  (?P<reservation_assignment_id>[\w_-]+)  # Required reservation assignment ID
   """,
       re.X,
   )
 
-  match = re.search(pattern, identifier)
+  match = pattern.fullmatch(identifier)
   if not match:
     raise bq_error.BigqueryError(
         'Could not parse reservation assignment identifier: %s' % identifier
@@ -319,7 +320,7 @@ def ParseReservationAssignmentPath(
   ^projects\/(?P<project_id>[\w:\-.]*[\w:\-]+)?
   \/locations\/(?P<location>[\w\-]+)?
   \/reservations\/(?P<reservation_id>[\w\-]+)
-  \/assignments\/(?P<reservation_assignment_id>[\w\-_]+)$
+  \/assignments\/(?P<reservation_assignment_id>[\w_-]+)$
   """,
       re.X,
   )
@@ -472,7 +473,7 @@ def ParseConnectionPath(
       r"""
   ^projects\/(?P<project_id>[\w:\-.]*[\w:\-]+)?
   \/locations\/(?P<location>[\w\-]+)?
-  \/connections\/(?P<connection_id>[\w\-\/]+)$
+  \/connections\/(?P<connection_id>[\w/-]+)$
   """,
       re.X,
   )
@@ -663,7 +664,9 @@ def _ShiftInformationSchema(dataset_id: str, table_id: str) -> Tuple[str, str]:
   return '.'.join(dataset_parts[:-1]), 'INFORMATION_SCHEMA.' + table_id
 
 
-def _ParseIdentifier(identifier: str) -> Tuple[str, str, str]:
+def _ParseIdentifier(
+    identifier: str, allow_pcnt_identifier_format: Optional[bool] = False
+) -> Tuple[str, str, str]:
   """Parses identifier into a tuple of (possibly empty) identifiers.
 
   This will parse the identifier into a tuple of the form
@@ -675,6 +678,8 @@ def _ParseIdentifier(identifier: str) -> Tuple[str, str, str]:
 
   Args:
     identifier: string, identifier to parse
+    allow_pcnt_identifier_format: bool, whether to allow dot separated format
+      for project_id
 
   Returns:
     project_id, dataset_id, table_id: (string, string, string)
@@ -683,7 +688,32 @@ def _ParseIdentifier(identifier: str) -> Tuple[str, str, str]:
   # form domain.com:proj separately.
   if re.search(r'^\w[\w.]*\.[\w.]+:\w[\w\d_-]*:?$', identifier):
     return identifier, '', ''
-  project_id, _, dataset_and_table_id = identifier.rpartition(':')
+
+  # Check if the identifier may be using the colon format.
+  lhs, sep, rhs = identifier.partition(':')
+  if not sep:
+    lhs, rhs = '', identifier
+
+  has_domain = bool(re.search(r'^\w[\w.]*\.[\w.]+$', lhs)) if lhs else False
+  # Identifier is of the form domain.com:project:<dataset and table>
+  is_colon_format_with_domain = ':' in rhs and has_domain
+  # Identifier is of the form project:<dataset and table>
+  is_colon_format = lhs and not has_domain
+
+  if (
+      not is_colon_format
+      and not is_colon_format_with_domain
+      and rhs.count('.') >= 3
+      and allow_pcnt_identifier_format
+  ):
+    # Support the format project.catalog.namespace.table
+    project_id, _, dataset_and_table_id = rhs.partition('.')
+    # Include the domain in the project_id for identifier of the form
+    # domain.com:project.catalog.namespace.table
+    if has_domain:
+      project_id = f'{lhs}:{project_id}'
+  else:
+    project_id, _, dataset_and_table_id = identifier.rpartition(':')
 
   if '.' in dataset_and_table_id:
     dataset_id, _, table_id = dataset_and_table_id.rpartition('.')
@@ -750,8 +780,12 @@ def GetDatasetReference(
     # identifier is 'foo'
     project_id = id_fallbacks.project_id
     dataset_id = table_id
+  elif not project_id and dataset_id and table_id:
+    # identifier is 'foo.bar'
+    project_id = id_fallbacks.project_id
+    dataset_id = dataset_id + '.' + table_id
   elif project_id and dataset_id and table_id:
-    # Identifier was foo::bar.baz.qux.
+    # identifier is foo:bar.baz.qux.
     dataset_id = dataset_id + '.' + table_id
   elif project_id and dataset_id and not table_id:
     # identifier is 'foo:bar'
@@ -761,7 +795,6 @@ def GetDatasetReference(
     raise bq_error.BigqueryError(
         'Cannot determine dataset described by %s' % (dataset_identifier,)
     )
-
   try:
     return bq_id_utils.ApiClientHelper.DatasetReference.Create(
         projectId=project_id, datasetId=dataset_id
@@ -783,9 +816,12 @@ def GetTableReference(
     ),
     identifier: str = '',
     default_dataset_id: str = '',
+    allow_pcnt_identifier_format: Optional[bool] = False,
 ) -> bq_id_utils.ApiClientHelper.TableReference:
   """Determine a TableReference from an identifier and fallbacks."""
-  project_id, dataset_id, table_id = _ParseIdentifier(identifier)
+  project_id, dataset_id, table_id = _ParseIdentifier(
+      identifier, allow_pcnt_identifier_format
+  )
   if not dataset_id:
     project_id, dataset_id = _ParseDatasetIdentifier(id_fallbacks.dataset_id)
   if default_dataset_id and not dataset_id:
@@ -901,6 +937,7 @@ def GetReference(
         ],
     ),
     identifier: str = '',
+    allow_pcnt_identifier_format: Optional[bool] = False,
 ) -> Union[
     bq_id_utils.ApiClientHelper.TableReference,
     bq_id_utils.ApiClientHelper.DatasetReference,
@@ -915,6 +952,7 @@ def GetReference(
   Args:
     id_fallbacks: The IDs cached on BigqueryClient.
     identifier: string, Identifier to create a reference for.
+    allow_pcnt_identifier_format: Whether to allow the project dot format.
 
   Returns:
     A valid ProjectReference, DatasetReference, or TableReference.
@@ -923,7 +961,11 @@ def GetReference(
     bq_error.BigqueryError: if no valid reference can be determined.
   """
   try:
-    return GetTableReference(id_fallbacks, identifier)
+    return GetTableReference(
+        id_fallbacks,
+        identifier,
+        allow_pcnt_identifier_format=allow_pcnt_identifier_format,
+    )
   except bq_error.BigqueryError:
     pass
   try:
@@ -981,8 +1023,10 @@ def GetReservationReference(
     check_reservation_project: bool = True,
 ) -> bq_id_utils.ApiClientHelper.ReservationReference:
   """Determine a ReservationReference from an identifier and location."""
-  project_id, location, reservation_id = _ParseReservationIdentifier(
-      identifier=identifier
+  project_id, location, reservation_id = (
+      (None, None, None)
+      if identifier is None
+      else _ParseReservationIdentifier(identifier=identifier)
   )
   # For MoveAssignment rpc, reservation reference project can be different
   # from the project_id_fallback. We'll skip this check in this case.
@@ -1095,16 +1139,16 @@ def GetReservationAssignmentReference(
     default_reservation_assignment_id: Optional[str] = None,
 ) -> bq_id_utils.ApiClientHelper.ReservationAssignmentReference:
   """Determine a ReservationAssignmentReference from inputs."""
-  if identifier is not None:
-    (project_id, location, reservation_id, reservation_assignment_id) = (
+  if identifier:
+    project_id, location, reservation_id, reservation_assignment_id = (
         _ParseReservationAssignmentIdentifier(identifier)
     )
-  elif path is not None:
-    (project_id, location, reservation_id, reservation_assignment_id) = (
+  elif path:
+    project_id, location, reservation_id, reservation_assignment_id = (
         ParseReservationAssignmentPath(path)
     )
   else:
-    raise bq_error.BigqueryError('Either identifier or path must be specified.')
+    project_id = location = reservation_id = reservation_assignment_id = None
   project_id = project_id or id_fallbacks.project_id
   if not project_id:
     raise bq_error.BigqueryError('Project id not specified.')
@@ -1112,6 +1156,8 @@ def GetReservationAssignmentReference(
   if not location:
     raise bq_error.BigqueryError('Location not specified.')
   reservation_id = reservation_id or default_reservation_id
+  if not reservation_id:
+    raise bq_error.BigqueryError('Reservation id not specified.')
   reservation_assignment_id = (
       reservation_assignment_id or default_reservation_assignment_id
   )
@@ -1138,13 +1184,11 @@ def GetReservationGroupReference(
 ) -> bq_id_utils.ApiClientHelper.ReservationGroupReference:
   """Determines a ReservationGroupReference from inputs."""
   if identifier is not None:
-    (project_id, location, reservation_group_id) = (
+    project_id, location, reservation_group_id = (
         _ParseReservationGroupIdentifier(identifier)
     )
   elif path is not None:
-    (project_id, location, reservation_group_id) = ParseReservationGroupPath(
-        path
-    )
+    project_id, location, reservation_group_id = ParseReservationGroupPath(path)
   else:
     raise bq_error.BigqueryError('Either identifier or path must be specified.')
 
@@ -1197,11 +1241,9 @@ def GetConnectionReference(
 ) -> bq_id_utils.ApiClientHelper.ConnectionReference:
   """Determine a ConnectionReference from an identifier and location."""
   if identifier is not None:
-    (project_id, location, connection_id) = _ParseConnectionIdentifier(
-        identifier
-    )
+    project_id, location, connection_id = _ParseConnectionIdentifier(identifier)
   elif path is not None:
-    (project_id, location, connection_id) = ParseConnectionPath(path)
+    project_id, location, connection_id = ParseConnectionPath(path)
   project_id = project_id or id_fallbacks.project_id
   if not project_id:
     raise bq_error.BigqueryError('Project id not specified.')

@@ -1,0 +1,84 @@
+# -*- coding: utf-8 -*- #
+# Copyright 2026 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""Cancel organization rollout command."""
+
+from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope.concepts import concepts
+from googlecloudsdk.command_lib.util.concepts import concept_parsers
+from googlecloudsdk.command_lib.util.concepts import presentation_specs
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
+class Cancel(base.Command):
+  """Cancel Google Compute Engine organization rollouts."""
+
+  detailed_help = {
+      'brief': 'Cancel an organization rollout.',
+      'DESCRIPTION': 'Cancel an organization rollout.',
+      'EXAMPLES': (
+          r"""
+    To cancel an organization rollout named 'my-org-rollout' in organization '123456789', run:
+
+      $ {command} my-org-rollout --organization=123456789
+    """
+      ),
+  }
+
+  @staticmethod
+  def Args(parser):
+    org_rollout_resource_spec = concepts.ResourceSpec(
+        'compute.organizationRollouts',
+        api_version='beta',
+        resource_name='organization rollout',
+        organizationsId=concepts.ResourceParameterAttributeConfig(
+            name='organization', help_text='The Google Cloud organization ID.'
+        ),
+        rollout=concepts.ResourceParameterAttributeConfig(
+            name='name', help_text='Name of the organization rollout to cancel.'
+        ),
+    )
+    presentation_spec = presentation_specs.ResourcePresentationSpec(
+        'name',
+        org_rollout_resource_spec,
+        'Name of the organization rollout to cancel.',
+        required=True,
+    )
+    concept_parsers.ConceptParser([presentation_spec]).AddToParser(parser)
+    parser.add_argument(
+        '--rollback',
+        action='store_true',
+        default=False,
+        help="""
+        If true, then the ongoing organization rollout must be rolled back. Else, just cancel
+        the organization rollout without taking any further actions.
+        """,
+    )
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+    service = client.apitools_client.organizationRollouts
+    messages = holder.client.messages
+    org_rollout_ref = args.CONCEPTS.name.Parse()
+
+    request = messages.ComputeOrganizationRolloutsCancelRequest(
+        organization='organizations/' + org_rollout_ref.organizationsId,
+        rollout=org_rollout_ref.Name(),
+        rollback=args.rollback,
+    )
+
+    return service.Cancel(request)

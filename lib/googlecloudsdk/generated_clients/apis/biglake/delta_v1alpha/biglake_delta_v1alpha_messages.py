@@ -155,6 +155,8 @@ class DeltaSharingCatalog(_messages.Message):
 
   Fields:
     createTime: Output only. The creation time of the catalog.
+    federatedCatalogOptions: Optional. Configuration options for federated
+      catalogs.
     location: Required. Immutable. The user-provided GCP location of the
       catalog. This field is immutable.
     name: Identifier. The resource name. Format:
@@ -170,12 +172,13 @@ class DeltaSharingCatalog(_messages.Message):
   """
 
   createTime = _messages.StringField(1)
-  location = _messages.StringField(2)
-  name = _messages.StringField(3)
-  refreshOptions = _messages.MessageField('RefreshOptions', 4)
-  sapConfig = _messages.MessageField('SapConfig', 5)
-  serviceAccount = _messages.StringField(6)
-  updateTime = _messages.StringField(7)
+  federatedCatalogOptions = _messages.MessageField('FederatedCatalogOptions', 2)
+  location = _messages.StringField(3)
+  name = _messages.StringField(4)
+  refreshOptions = _messages.MessageField('RefreshOptions', 5)
+  sapConfig = _messages.MessageField('SapConfig', 6)
+  serviceAccount = _messages.StringField(7)
+  updateTime = _messages.StringField(8)
 
 
 class DeltaSharingSchema(_messages.Message):
@@ -225,6 +228,19 @@ class Empty(_messages.Message):
   or the response type of an API method. For instance: service Foo { rpc
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
+
+
+class FederatedCatalogOptions(_messages.Message):
+  r"""Configuration options for federated catalog.
+
+  Fields:
+    serviceDirectoryName: Optional. The service directory resource name for
+      routing traffic over a private network connection through Cross-Cloud
+      Interconnect, in the format `projects/{project_id}/locations/{location_i
+      d}/namespaces/{namespace_id}/services/{service_id}`.
+  """
+
+  serviceDirectoryName = _messages.StringField(1)
 
 
 class ListDeltaSharingCatalogsResponse(_messages.Message):

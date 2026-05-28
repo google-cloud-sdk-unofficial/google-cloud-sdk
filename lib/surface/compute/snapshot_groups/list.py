@@ -28,9 +28,23 @@ def _CommonArgs(parser):
       )""")
 
 
+def _RunList(self, args):
+  """Shared logic for listing snapshot groups."""
+  holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+  client = holder.client
+
+  request_data = lister.ParseNamesAndRegexpFlags(args, holder.resources)
+
+  list_implementation = lister.GlobalLister(
+      client, client.apitools_client.snapshotGroups
+  )
+
+  return lister.Invoke(request_data, list_implementation)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
-class List(base.ListCommand):
+class ListAlpha(base.ListCommand):
   """List Compute Engine snapshot groups."""
 
   @staticmethod
@@ -38,20 +52,23 @@ class List(base.ListCommand):
     _CommonArgs(parser)
 
   def Run(self, args):
-    return self._Run(args)
-
-  def _Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
-    request_data = lister.ParseNamesAndRegexpFlags(args, holder.resources)
-
-    list_implementation = lister.GlobalLister(
-        client, client.apitools_client.snapshotGroups
-    )
-
-    return lister.Invoke(request_data, list_implementation)
+    return _RunList(self, args)
 
 
-List.detailed_help = base_classes.GetGlobalListerHelp('snapshot groups')
+@base.Hidden  # Hide this command from public documentation
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
+class ListBeta(base.ListCommand):
+  """List Compute Engine snapshot groups."""
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser)
+
+  def Run(self, args):
+    return _RunList(self, args)
+
+
+ListAlpha.detailed_help = base_classes.GetGlobalListerHelp('snapshot groups')
+ListBeta.detailed_help = base_classes.GetGlobalListerHelp('snapshot groups')
 

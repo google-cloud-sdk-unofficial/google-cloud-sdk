@@ -19,15 +19,20 @@ from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AttachmentsAlpha(base.Group):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Attachments(base.Group):
   """Manage Secure Access Connect attachments."""
   category = base.NETWORK_SECURITY_CATEGORY
 
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class AttachmentsBeta(base.Group):
+class AttachmentsBeta(Attachments):
   """Manage Secure Access Connect attachments."""
-  category = base.NETWORK_SECURITY_CATEGORY
+
+
+@base.DefaultUniverseOnly
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AttachmentsAlpha(AttachmentsBeta):
+  """Manage Secure Access Connect attachments."""

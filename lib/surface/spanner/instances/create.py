@@ -21,6 +21,7 @@ from googlecloudsdk.api_lib.spanner import instances
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import resource_args
+from googlecloudsdk.command_lib.util.args import labels_util
 
 
 @base.UniverseCompatible
@@ -93,6 +94,7 @@ class Create(base.CreateCommand):
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.InstanceCompleter)
     flags.AddTags(parser)
+    labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -127,6 +129,7 @@ class Create(base.CreateCommand):
         edition=args.edition,
         default_backup_schedule_type=args.default_backup_schedule_type,
         tags=args.tags,
+        labels=args.labels,
     )
     if args.async_:
       return op
@@ -203,6 +206,7 @@ class BetaCreate(base.CreateCommand):
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.InstanceCompleter)
     flags.AddTags(parser)
+    labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -237,6 +241,7 @@ class BetaCreate(base.CreateCommand):
         edition=args.edition,
         default_backup_schedule_type=args.default_backup_schedule_type,
         tags=args.tags,
+        labels=args.labels,
     )
     if args.async_:
       return op
@@ -299,6 +304,7 @@ class AlphaCreate(Create):
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.InstanceCompleter)
     flags.AddTags(parser)
+    labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -334,6 +340,7 @@ class AlphaCreate(Create):
         edition=args.edition,
         default_backup_schedule_type=args.default_backup_schedule_type,
         tags=args.tags,
+        labels=args.labels,
     )
     if args.async_:
       return op

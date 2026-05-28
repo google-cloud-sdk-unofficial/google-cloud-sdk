@@ -425,6 +425,39 @@ rollout:
     attribute_name: rollout
     help: The name of the Google Compute Engine rollout.
 
+org_rollout_plan:
+  name: Org Rollout Plan
+  collection: compute.organizationRolloutPlans
+  attributes:
+  - parameter_name: organizationsId
+    attribute_name: organization
+    help: The organization ID.
+  - parameter_name: rolloutPlan
+    attribute_name: rollout_plan
+    help: The name of the Google Compute Engine organization rollout plan.
+
+org_rollout:
+  name: Org Rollout
+  collection: compute.organizationRollouts
+  attributes:
+  - parameter_name: organizationsId
+    attribute_name: organization
+    help: The organization ID.
+  - parameter_name: rollout
+    attribute_name: rollout
+    help: The name of the Google Compute Engine organization rollout.
+
+global_organization_operation:
+  name: Global Organization Operation
+  collection: compute.globalOrganizationOperations
+  attributes:
+  - parameter_name: organizationsId
+    attribute_name: organization
+    help: The organization ID.
+  - parameter_name: operation
+    attribute_name: operation
+    help: The name of the Google Compute Engine organization operation.
+
 host:
   name: host
   collection: compute.hosts

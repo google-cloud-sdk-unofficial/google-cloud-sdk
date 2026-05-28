@@ -723,6 +723,7 @@ class CreateBeta(Create):
   """Create a subnet in the Beta release track."""
 
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
+  _include_ipv6_secondary_ranges = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

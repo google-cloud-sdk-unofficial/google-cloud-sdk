@@ -21,6 +21,16 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.forwarding_rules import flags
 
 
+def _TransformIpAddress(resource):
+  # Depending on the API endpoint (list vs aggregatedList) and the resource
+  # printer serialization, keys may be in PascalCase or camelCase. Check both
+  # to guarantee IP addresses are correctly retrieved in all scenarios.
+  ip_addresses = resource.get('IPAddresses') or resource.get('ipAddresses')
+  if ip_addresses:
+    return ','.join(sorted(ip_addresses))
+  return resource.get('IPAddress') or resource.get('ipAddress', '')
+
+
 def _Args(parser):
   """Add flags to list forwarding rules to the parser."""
 
@@ -28,7 +38,7 @@ def _Args(parser):
       table(
         name,
         region.basename(),
-        IPAddress,
+        ip_address():label=IP_ADDRESS,
         IPProtocol,
         firstof(
             target,
@@ -36,6 +46,7 @@ def _Args(parser):
       )
       """)
   lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
+  parser.display_info.AddTransforms({'ip_address': _TransformIpAddress})
   parser.display_info.AddCacheUpdater(flags.ForwardingRulesCompleter)
 
 
@@ -60,6 +71,7 @@ def _Run(args, holder):
     base.ReleaseTrack.ALPHA,
     base.ReleaseTrack.PREVIEW,
 )
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List forwarding rules."""
 

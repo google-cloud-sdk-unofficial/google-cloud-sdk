@@ -187,6 +187,7 @@ message Action {
     NotebookAction notebook = 3;
     SqlAction sql = 4;
     PipelineAction pipeline = 5;
+    DataIngestionAction data_ingestion = 6;
   }
 }
 
@@ -394,4 +395,33 @@ message DbtAirflowExecution {
 // Configuration for executing Dataform on Airflow Worker.
 message DataformAirflowExecution {
   string project_directory_path = 1 [(pipeline_models.validation.is_required) = true];
+}
+
+/////////////////////////
+// Data Ingestion Action
+////////////////////////
+message DataIngestionAction {
+  string name = 1 [
+    (pipeline_models.validation.is_required) = true,
+    (pipeline_models.validation.regex) = "^[a-zA-Z0-9_.-]+$",
+    (pipeline_models.validation.min_len) = 1,
+    (pipeline_models.validation.max_len) = 64
+  ];
+  repeated string depends_on = 2;
+  string execution_timeout = 3 [(pipeline_models.validation.is_iso8601_duration) = true];
+
+  oneof config {
+    BigQueryDtsSpec bigquery_dts = 4;
+  }
+}
+
+message BigQueryDtsSpec {
+  oneof transfer_config {
+    string transfer_config_id = 1 [(pipeline_models.validation.is_required) = true];
+  }
+
+  google.protobuf.Struct runtime_params = 2;
+  repeated string impersonation_chain = 3;
+  string project_id = 4;
+  string location = 5;
 }

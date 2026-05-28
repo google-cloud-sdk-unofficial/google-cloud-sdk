@@ -20,7 +20,10 @@ from googlecloudsdk.command_lib.biglake import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+)
 @base.DefaultUniverseOnly
 class GetIamPolicy(base.ListCommand):
   """Get the IAM policy for a BigLake Hive catalog."""

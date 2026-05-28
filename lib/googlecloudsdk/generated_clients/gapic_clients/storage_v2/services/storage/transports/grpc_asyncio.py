@@ -1105,24 +1105,6 @@ class StorageGrpcAsyncIOTransport(StorageTransport):
             Awaitable[storage.BidiWriteObjectResponse]]:
         r"""Return a callable for the bidi write object method over gRPC.
 
-        Stores a new object and metadata.
-
-        This is similar to the ``WriteObject`` call with the added
-        support for manual flushing of persisted state, and the ability
-        to determine current persisted size without closing the stream.
-
-        The client might specify one or both of the ``state_lookup`` and
-        ``flush`` fields in each ``BidiWriteObjectRequest``. If
-        ``flush`` is specified, the data written so far is persisted to
-        storage. If ``state_lookup`` is specified, the service responds
-        with a ``BidiWriteObjectResponse`` that contains the persisted
-        size. If both ``flush`` and ``state_lookup`` are specified, the
-        flush always occurs before a ``state_lookup``, so that both
-        might be set in the same request and the returned state is the
-        state of the object post-flush. When the stream is closed, a
-        ``BidiWriteObjectResponse`` is always sent to the client,
-        regardless of the value of ``state_lookup``.
-
         Returns:
             Callable[[~.BidiWriteObjectRequest],
                     Awaitable[~.BidiWriteObjectResponse]]:

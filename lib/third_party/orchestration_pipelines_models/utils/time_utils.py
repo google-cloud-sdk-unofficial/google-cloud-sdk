@@ -106,8 +106,8 @@ def check_cron_expression(value):
 def check_timezone(value):
     try:
         pytz.timezone(value)
-    except (pytz.UnknownTimeZoneError, AttributeError, TypeError):
-        raise ValueError(f"'{value}' is not a valid timezone")
+    except (pytz.UnknownTimeZoneError, AttributeError, TypeError) as e:
+        raise ValueError(f"'{value}' is not a valid timezone") from e
 
 
 def check_duration(value):

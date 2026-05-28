@@ -75,8 +75,7 @@ auto_flags = [
     'autopilotPrivilegedAdmission',
     'enablePodSnapshots',
     'disablePodSnapshots',
-    'enableAgentSandbox',
-    'disableAgentSandbox',
+    'agentsandbox',
     'enableKernelModuleSignatureEnforcement',
     'enableLustreMultiNic',
     'autopilotGeneralProfile',
@@ -131,8 +130,6 @@ def AddAutoFlags(parser, release_track):
   flags.AddAnonymousAuthenticationConfigFlag(parser)
   flags.AddEnableLegacyLustrePortFlag(parser, hidden=False)
   flags.AddPodSnapshotConfigFlags(parser)
-  if release_track != base.ReleaseTrack.GA:
-    flags.AddAgentSandboxConfigFlags(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

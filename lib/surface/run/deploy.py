@@ -53,10 +53,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.resource import resource_printer
 
-_PROJECT_TOML_FILE_NAME = 'project.toml'
 _GPU_BUILD_MACHINE_TYPE = 'E2_HIGHCPU_8'
-_AR_IMAGE_URI_REGEX = r'([\w-]+)-docker\.pkg\.dev/([\w-]+)/([\w-]+)'
-_AR_LENIENT_IMAGE_URI_REGEX = r'^[^/]+/([\w-]+)/([\w-]+)/([\w-]+)'
 
 
 class BuildType(enum.Enum):
@@ -175,7 +172,7 @@ class Deploy(base.Command):
         'SERVICE',
         resource_args.GetServiceResourceSpec(
             prompt=True,
-            allow_project_prompt=cls.ReleaseTrack() == base.ReleaseTrack.ALPHA,
+            allow_project_prompt=cls.ReleaseTrack() != base.ReleaseTrack.GA,
         ),
         'Service to deploy to.',
         required=True,
@@ -489,7 +486,7 @@ class Deploy(base.Command):
             ' the base image.',
         )
     else:
-      pack, changes = _CreateBuildPack(container_args)
+      pack, changes = build_util.CreateBuildPack(container_args)
       build_type = BuildType.BUILDPACKS
     image = None if pack else container_args.image
 
@@ -497,14 +494,14 @@ class Deploy(base.Command):
         base_image is not None and base_image != service_lib.DEFAULT_BASE_IMAGE
     ):
       image = pack[0].get('image') if pack else image
-    build_service_account = _GetBuildServiceAccount(
+    build_service_account = build_util.GetBuildServiceAccount(
         args, annotated_build_service_account, container_args, service, changes
     )
     operation_message = (
         'Building using {build_type} and deploying container to'
     ).format(build_type=build_type.value)
 
-    build_worker_pool = _GetBuildWorkerPool(
+    build_worker_pool = build_util.GetBuildWorkerPool(
         args, annotated_build_worker_pool, service, changes
     )
     old_build_env_vars = (
@@ -564,7 +561,7 @@ class Deploy(base.Command):
     """
     repo_to_create = None
     if container_args.image:
-      docker_string = _ValidateArRepository(
+      docker_string = artifact_registry.ValidateAndGetArRepository(
           container_args.image, already_activated_services
       )
       validators.ValidateServiceNameFromImage(
@@ -572,7 +569,7 @@ class Deploy(base.Command):
       )
       return docker_string, repo_to_create
     elif annotated_build_image_uri:
-      docker_string = _ValidateArRepository(
+      docker_string = artifact_registry.ValidateAndGetArRepository(
           annotated_build_image_uri, already_activated_services
       )
       return docker_string, repo_to_create
@@ -1100,156 +1097,6 @@ class Deploy(base.Command):
       return service
 
 
-def _ValidateArRepository(
-    annotated_build_image_uri, already_activated_services
-):
-  """Checks the format and existence of the repository in Artifact Registry."""
-  is_default_universe = properties.IsDefaultUniverse()
-
-  # 1. Primary Check: Standard GDU format with regional existence validation
-  match = re.match(_AR_IMAGE_URI_REGEX, annotated_build_image_uri)
-
-  if match:
-    region = match.group(1)
-    project_id = match.group(2)
-    repo_id = match.group(3)
-    ar_repo = docker_util.DockerRepo(
-        project_id=project_id,
-        location_id=region,
-        repo_id=repo_id,
-    )
-    # Raise an error if the repo doesn't exist, will not attempt to create it.
-    if artifact_registry.ShouldCreateRepository(
-        ar_repo,
-        skip_activation_prompt=already_activated_services,
-        skip_console_prompt=True,
-    ):
-      raise c_exceptions.InvalidArgumentException(
-          '--image',
-          'The artifact repository provided does not exist: '
-          f'{annotated_build_image_uri}.'
-          ' Please create the repository and try again.',
-      )
-    return ar_repo.GetDockerString()
-
-  # 2. Fallback Check: Lenient structural validation for custom/future domains
-  # Matches a hostname followed by exactly three path segments (e.g.
-  # prefix/project/repo)
-  # Only apply this fallback in non-default universes.
-  if not is_default_universe:
-    match = re.match(_AR_LENIENT_IMAGE_URI_REGEX, annotated_build_image_uri)
-    if match:
-      return match.group(0)
-
-  # 3. Neither matched, raise standard format error
-  raise c_exceptions.InvalidArgumentException(
-      '--image',
-      'The artifact repository found for the function '
-      'was not in the expected format '
-      '[REGION]-docker.pkg.dev/[PROJECT-ID]/[REPO-NAME] or\n'
-      '[REGION]-docker.pkg.dev/[PROJECT-ID]/[REPO-NAME]/[SERVICE-NAME],'
-      ' please try again. \n'
-      f'Retrieved value was: {annotated_build_image_uri}',
-  )
-
-
-def _CreateBuildPack(container):
-  """A helper method to configure buildpack."""
-  pack = [{'image': container.image}]
-  changes = []
-  source = container.source
-  project_toml_file = source + '/' + _PROJECT_TOML_FILE_NAME
-  command_arg = getattr(container, 'command', None)
-  function_arg = getattr(container, 'function', None)
-  if command_arg is not None:
-    command = ' '.join(command_arg)
-    pack[0].update(
-        {'envs': ['GOOGLE_ENTRYPOINT="{command}"'.format(command=command)]}
-    )
-  elif function_arg is not None:
-    pack[0].update({
-        'envs': [
-            'GOOGLE_FUNCTION_SIGNATURE_TYPE=http',
-            'GOOGLE_FUNCTION_TARGET={target}'.format(target=function_arg),
-        ]
-    })
-  if os.path.exists(project_toml_file):
-    pack[0].update({'project_descriptor': _PROJECT_TOML_FILE_NAME})
-  return pack, changes
-
-
-def _GetBuildWorkerPool(args, annotated_build_worker_pool, service, changes):
-  """Gets the build worker pool from user flags and annotations.
-
-  Args:
-    args: argparse.Namespace, Command line arguments
-    annotated_build_worker_pool: Build worker pool value from service
-      annotations.
-    service: Existing Cloud Run service.
-    changes: List of config changes.
-
-  Returns:
-    build_worker_pool value or
-    None meaning clear-worker-pool flag was set
-    or build-worker-pool was an empty string.
-  """
-  if _ShouldClearBuildWorkerPool(args):
-    worker_pool_key = service_lib.RUN_FUNCTIONS_BUILD_WORKER_POOL_ANNOTATION
-    if service and service.annotations.get(worker_pool_key):
-      changes.append(config_changes.DeleteAnnotationChange(worker_pool_key))
-    return None
-  return (
-      args.build_worker_pool
-      if flags.FlagIsExplicitlySet(args, 'build_worker_pool')
-      else annotated_build_worker_pool
-  )
-
-
-def _ShouldClearBuildWorkerPool(args):
-  return flags.FlagIsExplicitlySet(args, 'clear_build_worker_pool') or (
-      flags.FlagIsExplicitlySet(args, 'build_worker_pool')
-      and not args.build_worker_pool
-  )
-
-
-def _GetBuildServiceAccount(
-    args, annotated_build_service_account, container, service, changes
-):
-  """Returns cloud build service account.
-
-  Args:
-    args: argparse.Namespace, Command line arguments
-    annotated_build_service_account: string. The build service account annotated
-      on the service used by cloud run functions.
-    container: Container. The container to deploy.
-    service: Service. The service being changed.
-    changes: List of config changes.
-
-  Returns:
-    build service account value where
-    None means there were no annotations, user specified to clear the
-    build service account, or the build service account was an empty string.
-  """
-  build_sa_key = service_lib.RUN_FUNCTIONS_BUILD_SERVICE_ACCOUNT_ANNOTATION
-  build_service_account = getattr(container, 'build_service_account', None)
-  if _ShouldClearBuildServiceAccount(args, build_service_account):
-    if service and service.annotations.get(build_sa_key):
-      changes.append(config_changes.DeleteAnnotationChange(build_sa_key))
-    return None
-  return build_service_account or annotated_build_service_account
-
-
-def _ShouldClearBuildServiceAccount(args, build_service_account):
-  if flags.FlagIsExplicitlySet(args, 'clear_build_service_account'):
-    return True
-  if (
-      flags.FlagIsExplicitlySet(args, 'build_service_account')
-      and not build_service_account
-  ):
-    return True
-  return False
-
-
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.RegionalEndpointsSupported
 class BetaDeploy(Deploy):
@@ -1262,6 +1109,7 @@ class BetaDeploy(Deploy):
     cls.CommonArgs(parser)
     flags.AddCpuUtilizationFlag(parser)
     flags.AddConcurrencyUtilizationFlag(parser)
+    flags.AddSshFlag(parser)
 
     # Flags specific to managed CR
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
@@ -1270,6 +1118,16 @@ class BetaDeploy(Deploy):
     container_parser.AddContainerFlags(
         parser, container_args, cls.ReleaseTrack()
     )
+    concept_parsers.ConceptParser([
+        presentation_specs.ResourcePresentationSpec(
+            '--domain',
+            resource_args.GetDomainResourceSpec(),
+            'The domain name to map to this Cloud Run service. '
+            'For example, example.com or subdomain.example.com.',
+            prefixes=False,
+            flag_name_overrides={'project': ''},
+        )
+    ]).AddToParser(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

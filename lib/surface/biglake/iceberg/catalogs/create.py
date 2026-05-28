@@ -33,10 +33,10 @@ help_text = textwrap.dedent("""\
       $ {command} my-catalog-bucket --catalog-type=gcs-bucket --credential-mode=vended-credentials
     """)
 
-help_text_alpha = textwrap.dedent("""\
+help_text_preview = textwrap.dedent("""\
     To create a unity federated catalog `my-federated-catalog`, run:
 
-      $ {command} my-federated-catalog --catalog-type=federated --federated-catalog-type=unity --secret-name=projects/my-project/locations/us/secrets/my-secret --unity-instance-name=instance.cloud.databricks.com --unity-catalog-name=my-catalog --primary-location=us
+      $ {command} my-federated-catalog --catalog-type=federated --federated-catalog-type=unity --secret-name=projects/my-project/locations/us/secrets/my-secret --service-directory-name=projects/my-project/locations/us/namespaces/my-namespace/services/my-service --unity-instance-name=instance.cloud.databricks.com --unity-catalog-name=my-catalog --primary-location=us
     """)
 
 
@@ -44,12 +44,14 @@ def _BuildFederatedCatalogMessage(args, messages):
   """Builds FederatedCatalogMessage for federated catalogs."""
   if args.federated_catalog_type == 'unity':
     federated_catalog_options = messages.FederatedCatalogOptions(
-        service_directory_name=args.service_directory_name,
+        service_directory_name=getattr(args, 'service_directory_name', None),
         secret_name=args.secret_name,
         unity_catalog_info=messages.UnityCatalogInfo(
             instance_name=args.unity_instance_name,
             catalog_name=args.unity_catalog_name,
-            service_principal_application_id=args.service_principal_application_id,
+            service_principal_application_id=getattr(
+                args, 'service_principal_application_id', None
+            ),
         ),
     )
   elif args.federated_catalog_type == 'glue':
@@ -79,9 +81,7 @@ def _BuildFederatedCatalogMessage(args, messages):
   return federated_catalog_options
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class CreateCatalog(base.CreateCommand):
   """Create a BigLake Iceberg REST catalog."""
@@ -91,10 +91,10 @@ class CreateCatalog(base.CreateCommand):
   }
   # Not supported in beta yet.
   _support_catalog_type_biglake = False
-  _support_primary_location = False
   _support_service_directory_name = False
   _support_federated_catalog = False
   _support_glue_catalog = False
+  _support_service_principal_application_id = False
 
   @classmethod
   def Args(cls, parser):
@@ -106,8 +106,7 @@ class CreateCatalog(base.CreateCommand):
     util.GetCatalogTypeEnumMapper(
         cls.ReleaseTrack()
     ).choice_arg.AddToParser(parser)
-    if cls._support_primary_location:
-      arguments.AddCatalogsCreateArgs(parser)
+    arguments.AddCatalogsCreateArgs(parser)
     if cls._support_federated_catalog:
       arguments.AddFederatedCatalogArgs(parser)
     if cls._support_glue_catalog:
@@ -117,6 +116,8 @@ class CreateCatalog(base.CreateCommand):
       util.AddRestrictedLocationsArg(parser)
     if cls._support_service_directory_name:
       arguments.AddServiceDirectoryNameArg(parser)
+    if cls._support_service_principal_application_id:
+      arguments.AddServicePrincipalApplicationIdArg(parser)
 
   def Run(self, args):
     if self._support_catalog_type_biglake:
@@ -161,7 +162,7 @@ class CreateCatalog(base.CreateCommand):
         args.catalog,
         catalog,
         primary_location=(
-            args.primary_location if self._support_primary_location else None
+            args.primary_location
         ),
     )
     if response:
@@ -181,14 +182,20 @@ class CreateCatalog(base.CreateCommand):
     return response
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateCatalog):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(CreateCatalog):
   """Create a BigLake Iceberg REST catalog."""
   detailed_help = {
-      'EXAMPLES': help_text + '\n\n' + help_text_alpha,
+      'EXAMPLES': help_text + '\n\n' + help_text_preview,
   }
-  _support_catalog_type_biglake = True
-  _support_primary_location = True
-  _support_service_directory_name = True
   _support_federated_catalog = True
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create a BigLake Iceberg REST catalog."""
+
+  _support_catalog_type_biglake = True
+  _support_service_directory_name = True
+  _support_service_principal_application_id = True
   _support_glue_catalog = True

@@ -70,7 +70,8 @@ def ReadSchemaAndJobRows(
         bqclient.apiclient, bqclient.max_rows_per_request, job_ref
     )
   return reader.ReadSchemaAndRows(
-      start_row, max_rows,
+      start_row,
+      max_rows,
   )
 
 
@@ -1061,7 +1062,7 @@ def RunQueryRpc(
             location=location,
         )
       if result['jobComplete']:
-        (schema, rows) = ReadSchemaAndJobRows(
+        schema, rows = ReadSchemaAndJobRows(
             bqclient,
             dict(job_reference) if job_reference else {},
             start_row=0,
@@ -1210,7 +1211,9 @@ def Query(
   if destination_table:
     try:
       reference = bq_client_utils.GetTableReference(
-          id_fallbacks=bqclient, identifier=destination_table
+          id_fallbacks=bqclient,
+          identifier=destination_table,
+          allow_pcnt_identifier_format=True,
       )
     except bq_error.BigqueryError as e:
       raise bq_error.BigqueryError(
@@ -1453,9 +1456,8 @@ def Load(
       content and writing them to new files.
     source_column_match: Optional. Controls the strategy used to match loaded
       columns to the schema.
-    timestamp_target_precision: Precision (maximum number of total
-      digits in base 10) for second of TIMESTAMP type.
-      Available for the formats: CSV.
+    timestamp_target_precision: Precision (maximum number of total digits in
+      base 10) for second of TIMESTAMP type. Available for the formats: CSV.
     **kwds: Passed on to ExecuteJob.
 
   Returns:
