@@ -14,6 +14,7 @@
 # limitations under the License.
 """List Backup and DR backup vaults."""
 
+from googlecloudsdk.api_lib.backupdr import util
 from googlecloudsdk.api_lib.backupdr.backup_vaults import BackupVaultsClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.backupdr import flags
@@ -73,5 +74,6 @@ class List(base.ListCommand):
 
   def Run(self, args):
     parent_ref = args.CONCEPTS.location.Parse()
-    client = BackupVaultsClient()
+    api_version = util.GetApiVersion(self.ReleaseTrack())
+    client = BackupVaultsClient(api_version=api_version)
     return client.List(parent_ref)

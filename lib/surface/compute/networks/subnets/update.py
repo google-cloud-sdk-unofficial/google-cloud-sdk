@@ -52,6 +52,7 @@ class Update(base.UpdateCommand):
   _api_version = compute_api.COMPUTE_GA_API_VERSION
   _update_purpose_to_private = True
   _include_ipv6_secondary_ranges = False
+  _include_ipv6_network_tier = False
   detailed_help = _DetailedHelp()
 
   @classmethod
@@ -72,6 +73,7 @@ class Update(base.UpdateCommand):
         cls._api_version,
         cls._update_purpose_to_private,
         cls._include_ipv6_secondary_ranges,
+        cls._include_ipv6_network_tier,
     )
 
   def Run(self, args):
@@ -114,6 +116,10 @@ class Update(base.UpdateCommand):
 
     external_ipv6_prefix = getattr(args, 'external_ipv6_prefix', None)
     internal_ipv6_prefix = getattr(args, 'internal_ipv6_prefix', None)
+
+    ipv6_network_tier = None
+    if self._include_ipv6_network_tier:
+      ipv6_network_tier = getattr(args, 'ipv6_network_tier', None)
 
     ip_collection = None
     if args.ip_collection:
@@ -164,6 +170,7 @@ class Update(base.UpdateCommand):
         external_ipv6_prefix=external_ipv6_prefix,
         internal_ipv6_prefix=internal_ipv6_prefix,
         ip_collection=ip_collection,
+        ipv6_network_tier=ipv6_network_tier,
     )
 
 
@@ -182,3 +189,4 @@ class UpdateAlpha(UpdateBeta):
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION
   _update_purpose_to_private = True
   _include_ipv6_secondary_ranges = True
+  _include_ipv6_network_tier = True

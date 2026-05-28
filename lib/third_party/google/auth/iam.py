@@ -28,6 +28,7 @@ from google.auth import _helpers
 from google.auth import credentials
 from google.auth import crypt
 from google.auth import exceptions
+from google.auth.transport import _mtls_helper
 
 IAM_RETRY_CODES = {
     http_client.INTERNAL_SERVER_ERROR,
@@ -38,25 +39,31 @@ IAM_RETRY_CODES = {
 
 _IAM_SCOPE = ["https://www.googleapis.com/auth/iam"]
 
-_IAM_ENDPOINT = (
-    "https://iamcredentials.googleapis.com/v1/projects/-"
-    + "/serviceAccounts/{}:generateAccessToken"
-)
+# Determine if we should use mTLS.
+if (
+    hasattr(_mtls_helper, "check_use_client_cert")
+    and _mtls_helper.check_use_client_cert()
+):
+    # Construct the template domain using the library's DEFAULT_UNIVERSE_DOMAIN constant.
+    _IAM_DOMAIN = f"iamcredentials.mtls.{credentials.DEFAULT_UNIVERSE_DOMAIN}"
+else:
+    _IAM_DOMAIN = f"iamcredentials.{credentials.DEFAULT_UNIVERSE_DOMAIN}"
 
-_IAM_SIGN_ENDPOINT = (
-    "https://iamcredentials.googleapis.com/v1/projects/-"
-    + "/serviceAccounts/{}:signBlob"
-)
+# 3. Create the common base URL template
+# We use double brackets {{}} so .format() can be called later for the email.
+_IAM_BASE_URL = f"https://{_IAM_DOMAIN}/v1/projects/-/serviceAccounts/{{}}"
 
-_IAM_SIGNJWT_ENDPOINT = (
-    "https://iamcredentials.googleapis.com/v1/projects/-"
-    + "/serviceAccounts/{}:signJwt"
-)
+# 4. Define the endpoints as templates
+_IAM_ENDPOINT = _IAM_BASE_URL + ":generateAccessToken"
+_IAM_SIGN_ENDPOINT = _IAM_BASE_URL + ":signBlob"
+_IAM_SIGNJWT_ENDPOINT = _IAM_BASE_URL + ":signJwt"
+_IAM_IDTOKEN_ENDPOINT = _IAM_BASE_URL + ":generateIdToken"
 
-_IAM_IDTOKEN_ENDPOINT = (
-    "https://iamcredentials.googleapis.com/v1/"
-    + "projects/-/serviceAccounts/{}:generateIdToken"
-)
+
+# Regional Access Boundary (RAB) Lookup Endpoints
+_SERVICE_ACCOUNT_REGIONAL_ACCESS_BOUNDARY_LOOKUP_ENDPOINT = f"https://{_IAM_DOMAIN}/v1/projects/-/serviceAccounts/{{service_account_email}}/allowedLocations"
+_WORKFORCE_POOL_REGIONAL_ACCESS_BOUNDARY_LOOKUP_ENDPOINT = f"https://{_IAM_DOMAIN}/v1/locations/global/workforcePools/{{pool_id}}/allowedLocations"
+_WORKLOAD_IDENTITY_POOL_REGIONAL_ACCESS_BOUNDARY_LOOKUP_ENDPOINT = f"https://{_IAM_DOMAIN}/v1/projects/{{project_number}}/locations/global/workloadIdentityPools/{{pool_id}}/allowedLocations"
 
 
 class Signer(crypt.Signer):

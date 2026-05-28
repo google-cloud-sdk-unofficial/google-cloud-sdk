@@ -16,6 +16,7 @@
 
 
 import random
+import re
 import string
 import time
 
@@ -153,6 +154,12 @@ AR_TO_CLOUD_BUILD_REGIONS = {
     'europe': 'europe-west4',
     'asia': 'asia-east1',
 }
+
+_SENSITIVE_CREDENTIAL_PATTERNS = (
+    re.compile(r'(aws_access_key_id=)([^\s\'",\]]+)'),
+    re.compile(r'(aws_secret_access_key=)([^\s\'",\]]+)'),
+    re.compile(r'(aws_session_token=)([^\s\'",\]]+)'),
+)
 
 
 class FilteredLogTailer(cb_logs.GCSLogTailer):
@@ -558,6 +565,23 @@ def _CurrentRolesForAccount(project_iam_policy, account):
              if account in binding.members)
 
 
+def _SanitizedBuildStr(build_config) -> str:
+  """Sanitizes the string representation of build_config to mask sensitive credentials.
+
+  Args:
+    build_config: A cloud build Build message.
+
+  Returns:
+    A string representation of the build_config with sensitive credentials
+    masked.
+  """
+
+  s = repr(build_config)
+  for pattern in _SENSITIVE_CREDENTIAL_PATTERNS:
+    s = re.sub(pattern, r'\g<1>***', s)
+  return s
+
+
 def _CreateCloudBuild(build_config, client, messages):
   """Create a build in cloud build.
 
@@ -570,7 +594,7 @@ def _CreateCloudBuild(build_config, client, messages):
     Tuple containing a cloud build build object and the resource reference
     for that build.
   """
-  log.debug('submitting build: {0}'.format(repr(build_config)))
+  log.debug('submitting build: %s', _SanitizedBuildStr(build_config))
   op = client.projects_builds.Create(
       messages.CloudbuildProjectsBuildsCreateRequest(
           build=build_config, projectId=properties.VALUES.core.project.Get()))
@@ -605,7 +629,7 @@ def _CreateRegionalCloudBuild(build_config, client, messages, build_region):
     Tuple containing a cloud build build object and the resource reference
     for that build.
   """
-  log.debug('submitting build: {0}'.format(repr(build_config)))
+  log.debug('submitting build: %s', _SanitizedBuildStr(build_config))
 
   parent_resource = resources.REGISTRY.Create(
       collection='cloudbuild.projects.locations',

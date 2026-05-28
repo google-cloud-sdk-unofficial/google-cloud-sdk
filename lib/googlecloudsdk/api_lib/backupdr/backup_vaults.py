@@ -33,8 +33,8 @@ class AccessRestriction(enum.Enum):
 class BackupVaultsClient(util.BackupDrClientBase):
   """Cloud Backup and DR Backup Vault client."""
 
-  def __init__(self):
-    super(BackupVaultsClient, self).__init__()
+  def __init__(self, api_version=util.DEFAULT_API_VERSION):
+    super(BackupVaultsClient, self).__init__(api_version=api_version)
     self.service = self.client.projects_locations_backupVaults
 
   def Create(

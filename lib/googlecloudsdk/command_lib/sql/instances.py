@@ -812,6 +812,15 @@ class _BaseInstances(object):
     if read_pool_auto_scale_config is not None:
       settings.readPoolAutoScaleConfig = read_pool_auto_scale_config
 
+    if args.IsKnownAndSpecified('performance_capture_config'):
+      performance_capture_config = reducers.PerformanceCaptureConfig(
+          sql_messages,
+          performance_capture_config=args.performance_capture_config,
+          current_config=None,
+      )
+      if performance_capture_config is not None:
+        settings.performanceCaptureConfig = performance_capture_config
+
     # BETA args.
     if IsBetaOrNewer(release_track):
       settings.userLabels = labels_util.ParseCreateArgs(
@@ -829,15 +838,6 @@ class _BaseInstances(object):
       )
       if db_aligned_atomic_writes_config is not None:
         settings.dbAlignedAtomicWritesConfig = db_aligned_atomic_writes_config
-
-      if args.IsKnownAndSpecified('performance_capture_config'):
-        performance_capture_config = reducers.PerformanceCaptureConfig(
-            sql_messages,
-            performance_capture_config=args.performance_capture_config,
-            current_config=None,
-        )
-        if performance_capture_config is not None:
-          settings.performanceCaptureConfig = performance_capture_config
 
       if args.IsKnownAndSpecified('unc_mappings'):
         settings.uncMappings = reducers.UncMappings(
@@ -1063,6 +1063,15 @@ class _BaseInstances(object):
     if read_pool_auto_scale_config is not None:
       settings.readPoolAutoScaleConfig = read_pool_auto_scale_config
 
+    if args.IsKnownAndSpecified('performance_capture_config'):
+      performance_capture_config = reducers.PerformanceCaptureConfig(
+          sql_messages,
+          performance_capture_config=args.performance_capture_config,
+          current_config=original_settings.performanceCaptureConfig,
+      )
+      if performance_capture_config is not None:
+        settings.performanceCaptureConfig = performance_capture_config
+
     # BETA args.
     if IsBetaOrNewer(release_track):
       labels_diff = labels_util.ExplicitNullificationDiff.FromUpdateArgs(args)
@@ -1085,15 +1094,6 @@ class _BaseInstances(object):
             unc_mappings=args.unc_mappings,
             clear_unc_mappings=args.clear_unc_mappings,
         )
-
-      if args.IsKnownAndSpecified('performance_capture_config'):
-        performance_capture_config = reducers.PerformanceCaptureConfig(
-            sql_messages,
-            performance_capture_config=args.performance_capture_config,
-            current_config=original_settings.performanceCaptureConfig,
-        )
-        if performance_capture_config is not None:
-          settings.performanceCaptureConfig = performance_capture_config
 
     # ALPHA args.
     if _IsAlpha(release_track):

@@ -26,8 +26,8 @@ from googlecloudsdk.generated_clients.apis.backupdr.v1 import backupdr_v1_messag
 class BackupPlanAssociationsClient(util.BackupDrClientBase):
   """Cloud Backup and DR Backup plan associations client."""
 
-  def __init__(self):
-    super(BackupPlanAssociationsClient, self).__init__()
+  def __init__(self, api_version=util.DEFAULT_API_VERSION):
+    super(BackupPlanAssociationsClient, self).__init__(api_version=api_version)
     self.service = self.client.projects_locations_backupPlanAssociations
 
   def Create(

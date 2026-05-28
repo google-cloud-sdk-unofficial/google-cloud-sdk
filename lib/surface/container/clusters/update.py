@@ -1385,7 +1385,7 @@ class UpdateBeta(Update):
     flags.AddEnableSliceControllerFlag(group, hidden=True)
     flags.AddAutopilotGeneralProfileFlag(group)
     flags.AddLinkedRunnersModeFlag(group, hidden=True)
-    flags.AddNodePoolUpgradeConcurrencyConfigFlag(group, hidden=True)
+    flags.AddNodePoolUpgradeConcurrencyConfigFlag(group, hidden=False)
 
     group_scheduled_upgrade_flags = group.add_group(mutex=True)
     flags.AddEnableScheduledUpgradesFlag(group_scheduled_upgrade_flags)
@@ -1797,7 +1797,7 @@ class UpdateAlpha(Update):
     flags.AddEnableSliceControllerFlag(group, hidden=True)
     flags.AddAutopilotGeneralProfileFlag(group)
     flags.AddLinkedRunnersModeFlag(group, hidden=True)
-    flags.AddNodePoolUpgradeConcurrencyConfigFlag(group, hidden=True)
+    flags.AddNodePoolUpgradeConcurrencyConfigFlag(group, hidden=False)
 
     group_scheduled_upgrade_flags = group.add_group(mutex=True)
     flags.AddEnableScheduledUpgradesFlag(group_scheduled_upgrade_flags)

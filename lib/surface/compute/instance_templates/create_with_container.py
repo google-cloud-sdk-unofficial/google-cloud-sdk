@@ -42,6 +42,7 @@ def _Args(
     support_multi_writer=True,
     support_region_instance_template=False,
     support_specific_then_x_affinity=False,
+    support_any_reservation_then_fail_affinity=False,
     support_disk_labels=False,
     support_ipv6_only=False,
     support_flex_start=False,
@@ -103,6 +104,7 @@ def _Args(
       group_text="""Specifies the reservation for instances created from this template.""",
       affinity_text="""The type of reservation for instances created from this template.""",
       support_specific_then_x_affinity=support_specific_then_x_affinity,
+      support_any_reservation_then_fail_affinity=support_any_reservation_then_fail_affinity,
   )
   instances_flags.AddProvisioningModelVmArgs(
       parser, support_flex_start=support_flex_start
@@ -163,6 +165,7 @@ class CreateWithContainer(base.CreateCommand):
   """Command for creating VM instance templates hosting Docker images."""
 
   _support_specific_then_x_affinity = False
+  _support_any_reservation_then_fail_affinity = False
   _support_disk_labels = False
   _support_skip_guest_os_shutdown = True
   _support_workload_identity_config = False
@@ -176,6 +179,7 @@ class CreateWithContainer(base.CreateCommand):
         support_multi_writer=False,
         support_region_instance_template=False,
         support_specific_then_x_affinity=False,
+        support_any_reservation_then_fail_affinity=False,
         support_disk_labels=False,
         support_ipv6_only=True,
         support_skip_guest_os_shutdown=True,
@@ -458,6 +462,7 @@ class CreateWithContainer(base.CreateCommand):
         args,
         client,
         support_specific_then_x_affinity=self._support_specific_then_x_affinity,
+        support_any_reservation_then_fail_affinity=self._support_any_reservation_then_fail_affinity,
     )
 
     request = client.messages.ComputeInstanceTemplatesInsertRequest(
@@ -479,6 +484,7 @@ class CreateWithContainerBeta(CreateWithContainer):
   """Command for creating VM instance templates hosting Docker images."""
 
   _support_specific_then_x_affinity = True
+  _support_any_reservation_then_fail_affinity = False
   _support_disk_labels = True
   _support_skip_guest_os_shutdown = True
   _support_workload_identity_config = False
@@ -492,6 +498,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         enable_guest_accelerators=True,
         support_region_instance_template=False,
         support_specific_then_x_affinity=True,
+        support_any_reservation_then_fail_affinity=False,
         support_disk_labels=True,
         support_ipv6_only=True,
         support_flex_start=True,
@@ -612,6 +619,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         args,
         client,
         support_specific_then_x_affinity=self._support_specific_then_x_affinity,
+        support_any_reservation_then_fail_affinity=self._support_any_reservation_then_fail_affinity,
     )
 
     request = client.messages.ComputeInstanceTemplatesInsertRequest(
@@ -633,6 +641,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   """Command for creating VM instance templates hosting Docker images."""
 
   _support_specific_then_x_affinity = True
+  _support_any_reservation_then_fail_affinity = True
   _support_disk_labels = True
   _support_ipv6_only = True
   _support_skip_guest_os_shutdown = True
@@ -647,6 +656,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         enable_guest_accelerators=True,
         support_region_instance_template=True,
         support_specific_then_x_affinity=True,
+        support_any_reservation_then_fail_affinity=True,
         support_disk_labels=True,
         support_ipv6_only=True,
         support_flex_start=True,
@@ -767,6 +777,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         args,
         client,
         support_specific_then_x_affinity=self._support_specific_then_x_affinity,
+        support_any_reservation_then_fail_affinity=self._support_any_reservation_then_fail_affinity,
     )
 
     request = client.messages.ComputeInstanceTemplatesInsertRequest(

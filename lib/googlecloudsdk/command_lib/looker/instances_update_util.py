@@ -20,7 +20,6 @@ details.
 """
 
 
-from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.core.console import console_io
 
 
@@ -164,6 +163,11 @@ def UpdateOauthClient(unused_instance_ref, args, patch_request):
     )
     patch_request = AddFieldToUpdateMask(
         'oauth_config.client_secret', patch_request
+    )
+    # Disable shared OAuth when updating custom credentials.
+    patch_request.instance.oauthConfig.sharedOauthClientEnabled = False
+    patch_request = AddFieldToUpdateMask(
+        'oauth_config.shared_oauth_client_enabled', patch_request
     )
 
   return patch_request

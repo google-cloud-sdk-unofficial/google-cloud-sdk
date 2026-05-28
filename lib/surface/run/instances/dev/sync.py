@@ -76,8 +76,7 @@ class Sync(base.Command):
 
   @classmethod
   def CommonArgs(cls, parser):
-    flags.SkipDeployArg(parser)
-    flags.KeepAliveAfterDevSyncFlag(parser)
+    flags.DevSyncCleanupFlag(parser)
     parser.add_argument(
         '--iap-tunnel-url-override',
         hidden=True,
@@ -119,22 +118,25 @@ class Sync(base.Command):
       )
       log.DeletedResource(instance_ref.instancesId, 'instance')
 
+  def _GetInstance(self, args, instance_ref):
+    conn_context = connection_context.GetConnectionContext(
+        args, flags.Product.RUN, self.ReleaseTrack()
+    )
+    with serverless_operations.Connect(conn_context) as client:
+      return client.GetInstance(instance_ref)
+
   def Run(self, args):
     instance_ref = args.CONCEPTS.instance.Parse()
+    flags.ValidateResource(instance_ref)
+    args.release_track = self.ReleaseTrack()
     args.project = flags.GetProjectID(args)
+
     args.region = flags.GetRegion(args, prompt=False)
     if not args.region:
       raise exceptions.ArgumentError(
           'Missing required argument [region]. Set --region flag or set'
           ' run/region property.'
       )
-    args.release_track = self.ReleaseTrack()
-    args.deployment_name = instance_ref.Name()
-    build_env_var_flags = map_util.GetMapFlagsFromArgs('build-env-vars', args)
-    args.build_env_vars = (
-        map_util.ApplyMapFlags(None, **build_env_var_flags) or {}
-    )
-    args.build_env_vars['GOOGLE_DEVSYNC'] = 'true'
 
     if not args.source:
       if console_io.CanPrompt():
@@ -145,7 +147,23 @@ class Sync(base.Command):
             ' sync.'
         )
 
-    if not args.skip_deploy:
+    build_env_var_flags = map_util.GetMapFlagsFromArgs('build-env-vars', args)
+    args.build_env_vars = (
+        map_util.ApplyMapFlags(None, **build_env_var_flags) or {}
+    )
+    args.build_env_vars['GOOGLE_DEVSYNC'] = 'true'
+
+    args.deployment_name = instance_ref.Name()
+    instance = self._GetInstance(args, instance_ref)
+    instance_exists = instance is not None
+
+    if instance_exists:
+      if args.cleanup:
+        raise exceptions.ArgumentError(
+            'The --cleanup flag is not supported for dev sync to an existing'
+            ' Instance.'
+        )
+    else:
       changes = sync_util.NecessaryChangesForInstancesDevSync(args)
       deploy_util.DeployInstanceFromSource(
           instance_ref=instance_ref,
@@ -168,5 +186,5 @@ class Sync(base.Command):
           'Received Keyboard Interrupt... Dev Sync Session terminated'
       )
     finally:
-      if not args.keep_alive_after_dev_sync and not args.skip_deploy:
+      if args.cleanup and not instance_exists:
         self._Cleanup(args, instance_ref)

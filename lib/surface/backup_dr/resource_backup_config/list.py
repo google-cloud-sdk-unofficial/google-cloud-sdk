@@ -17,6 +17,7 @@
 
 from googlecloudsdk.api_lib.backupdr import rbc_filter_rewrite
 from googlecloudsdk.api_lib.backupdr import resource_backup_config
+from googlecloudsdk.api_lib.backupdr import util
 from googlecloudsdk.api_lib.util import common_args
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -122,7 +123,10 @@ class List(base.ListCommand):
           'Location for which the resource backup config should be listed.',
       )
 
-    client = resource_backup_config.ResourceBackupConfigClient()
+    api_version = util.GetApiVersion(self.ReleaseTrack())
+    client = resource_backup_config.ResourceBackupConfigClient(
+        api_version=api_version
+    )
     parent_ref = args.CONCEPTS.location.Parse()
 
     # Client and server side filtering.

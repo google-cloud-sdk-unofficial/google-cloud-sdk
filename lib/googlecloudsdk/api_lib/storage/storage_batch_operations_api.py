@@ -14,6 +14,7 @@
 # limitations under the License.
 """Clients for interacting with Storage Batch Operations."""
 
+from typing import List, Optional
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.storage import errors
 from googlecloudsdk.api_lib.storage import storage_batch_operations_util
@@ -38,23 +39,23 @@ class StorageBatchOperationsApi:
 
   def _instantiate_job_with_source(
       self,
-      bucket_names,
-      manifest_location=None,
-      included_object_prefixes=None,
-      description=None,
-      dry_run=False,
+      bucket_names: List[str],
+      manifest_location: Optional[str] = None,
+      included_object_prefixes: Optional[List[str]] = None,
+      description: Optional[str] = None,
+      dry_run: bool = False,
   ):
     """Instatiates a Job object using the source and description provided.
 
     Args:
-      bucket_names (list[str]): Bucket names that contain the source objects
-        described by the manifest or prefix list.
-      manifest_location (str): Absolute path to the manifest source file in a
-        Google Cloud Storage bucket.
-      included_object_prefixes (list[str]): list of object prefixes to describe
-        the objects being transformed.
-      description (str): Description of the job.
-      dry_run (bool): If true, job will be created in dry run mode.
+      bucket_names: Bucket names that contain the source objects described by
+        the manifest or prefix list.
+      manifest_location: Absolute path to the manifest source file in a Google
+        Cloud Storage bucket.
+      included_object_prefixes: list of object prefixes to describe the objects
+        being transformed.
+      description: Description of the job.
+      dry_run: If true, job will be created in dry run mode.
 
     Returns:
       A Job object.
@@ -99,11 +100,67 @@ class StorageBatchOperationsApi:
         )
     return job
 
-  def _create_job(self, batch_job_name, job):
+  def _instantiate_job_with_project_source(
+      self,
+      *,
+      target_project: str,
+      insights_dataset_config: Optional[str] = None,
+      bucket_filters: Optional[str] = None,
+      object_filters: Optional[str] = None,
+      dry_run_job_id: Optional[str] = None,
+      description: Optional[str] = None,
+      dry_run: bool = False,
+  ):
+    """Instantiates a Job object using ProjectSource.
+
+    Args:
+      target_project: Target project to run the job on.
+      insights_dataset_config: Insights dataset config.
+      bucket_filters: CEL expression for bucket filters.
+      object_filters: CEL expression for object filters.
+      dry_run_job_id: Dry run job ID.
+      description: Description of the job.
+      dry_run: If true, job will be created in dry run mode.
+
+    Returns:
+      A Job object.
+    """
+    job = self.messages.Job(
+        description=description,
+    )
+    if dry_run:
+      job.dryRun = True
+
+    # Prepend 'projects/' if not already present.
+    project_name = (
+        target_project if target_project.startswith("projects/")
+        else f"projects/{target_project}"
+    )
+
+    project_source = self.messages.ProjectSource(
+        project=project_name,
+    )
+    if insights_dataset_config is not None:
+      project_source.insightsDatasetConfig = insights_dataset_config
+    if bucket_filters is not None:
+      project_source.bucketFilters = self.messages.Expr(
+          expression=bucket_filters
+      )
+    if object_filters is not None:
+      project_source.objectFilters = self.messages.Expr(
+          expression=object_filters
+      )
+    if dry_run_job_id is not None:
+      project_source.dryRunJobId = dry_run_job_id
+
+    job.projectSource = project_source
+    return job
+
+  def _create_job(self, batch_job_name: str, job):
     """Creates a job by building a CreateJobRequest and calling Create.
 
     Args:
-      batch_job_name (str): Resource name of the batch job.
+      batch_job_name: Resource name of the batch job.
       job: A Job object to create.
 
     Returns:
@@ -170,8 +227,7 @@ class StorageBatchOperationsApi:
 
     Args:
       job: A Job object to modify.
-      put_metadata_dict (dict): A dictionary of metadata fields and values to
-        apply.
+      put_metadata_dict: A dictionary of metadata fields and values to apply.
 
     Raises:
       errors.StorageBatchOperationsApiError: If an invalid value is provided
@@ -296,14 +352,27 @@ class StorageBatchOperationsApi:
 
   def create_batch_job(self, args, batch_job_name):
     """Creates a batch job based on command arguments."""
-    bucket_names = getattr(args, "bucket_list", None) or [args.bucket]
-    job = self._instantiate_job_with_source(
-        bucket_names,
-        manifest_location=args.manifest_location,
-        included_object_prefixes=args.included_object_prefixes,
-        description=args.description,
-        dry_run=getattr(args, "dry_run", False),
-    )
+    if getattr(args, "target_project", None) is not None:
+      job = self._instantiate_job_with_project_source(
+          target_project=args.target_project,
+          insights_dataset_config=getattr(
+              args, "insights_dataset_config", None
+          ),
+          bucket_filters=getattr(args, "bucket_filters", None),
+          object_filters=getattr(args, "object_filters", None),
+          dry_run_job_id=getattr(args, "dry_run_job_id", None),
+          description=args.description,
+          dry_run=getattr(args, "dry_run", False),
+      )
+    else:
+      bucket_names = getattr(args, "bucket_list", None) or [args.bucket]
+      job = self._instantiate_job_with_source(
+          bucket_names,
+          manifest_location=args.manifest_location,
+          included_object_prefixes=args.included_object_prefixes,
+          description=args.description,
+          dry_run=getattr(args, "dry_run", False),
+      )
     if (
         args.put_object_temporary_hold is not None
         or args.put_object_event_based_hold is not None

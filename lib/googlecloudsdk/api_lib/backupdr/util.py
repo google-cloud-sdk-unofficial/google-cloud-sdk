@@ -19,6 +19,7 @@ import datetime
 
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import waiter
+from googlecloudsdk.calliope import base
 from googlecloudsdk.core import resources
 
 DEFAULT_API_NAME = 'backupdr'
@@ -32,6 +33,14 @@ ASYNC_OPERATION_MESSAGE = (
     'Run [backup-dr operations describe {}]'
     ' to check the status of this operation.'
 )
+
+
+def GetApiVersion(release_track):
+  if release_track == base.ReleaseTrack.ALPHA:
+    return 'v1alpha'
+  if release_track == base.ReleaseTrack.BETA:
+    return 'v1beta'
+  return 'v1'
 
 
 class BackupDrClientBase(object):

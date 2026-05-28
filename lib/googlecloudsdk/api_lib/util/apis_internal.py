@@ -302,7 +302,7 @@ def _GetGapicClientInstance(
     if endpoint_override is not None:
       return address
 
-    # Note that regionalized endpoints are incompatible with mTLS / non-Google
+    # Note that regionalized endpoints are incompatible with non-Google
     # universe domains.
     if _ShouldUseRegionalEndpoints(api_name, api_version, region):
       return _GetRegionalizedEndpoint(address, region)
@@ -362,12 +362,15 @@ def _GetRegionalizedEndpoint(domain, region):
   """
   if region is None:
     raise ValueError('Region must be provided.')
-  if domain.count('.') > 2:
-    raise ValueError(
-        'Base URLs should have form {service}.googleapis.com;'
-        f' received: [{domain}].')
   service, base_domain = domain.split('.', 1)
-  return f'{service}.{region}.rep.{base_domain}'
+  match base_domain:
+    case 'googleapis.com' | 'mtls.googleapis.com':
+      return f'{service}.{region}.rep.{base_domain}'
+    case _:
+      raise ValueError(
+          'Base URLs should have form {service}.googleapis.com;'
+          f' received: [{domain}].'
+      )
 
 
 class UnsupportedEndpointModeError(exceptions.Error):
@@ -541,16 +544,18 @@ def _GetEffectiveApiEndpoint(
   client_base_url = _GetBaseUrlFromApi(api_name, api_version)
   if endpoint_override:
     address = _BuildEndpointOverride(endpoint_override, client_base_url)
+  # Note that regionalized endpoints are incompatible with non-Google
+  # universe domains.
+  elif _ShouldUseRegionalEndpoints(api_name, api_version, region):
+    if _MtlsEnabled(api_name, api_version):
+      client_base_url = _GetMtlsEndpoint(api_name, api_version, client_class)
+    url_base = urlparse(client_base_url)
+    regionalized_domain = _GetRegionalizedEndpoint(url_base.netloc, region)
+    address = urlunparse(url_base._replace(netloc=regionalized_domain))
   elif _MtlsEnabled(api_name, api_version):
     address = UniversifyAddress(
         _GetMtlsEndpoint(api_name, api_version, client_class)
     )
-  # Note that regionalized endpoints are incompatible with mTLS / non-Google
-  # universe domains.
-  elif _ShouldUseRegionalEndpoints(api_name, api_version, region):
-    url_base = urlparse(client_base_url)
-    regionalized_domain = _GetRegionalizedEndpoint(url_base.netloc, region)
-    address = urlunparse(url_base._replace(netloc=regionalized_domain))
   else:
     address = client_base_url
 

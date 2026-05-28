@@ -42,6 +42,7 @@ def _Args(
     support_confidential_compute_type_tdx=False,
     support_snp_svsm=False,
     support_specific_then_x_affinity=False,
+    support_any_reservation_then_fail_affinity=False,
     support_disk_labels=False,
     support_ipv6_only=False,
     support_graceful_shutdown=False,
@@ -118,6 +119,7 @@ def _Args(
       group_text='Specifies the reservation for the instance.',
       affinity_text='The type of reservation for the instance.',
       support_specific_then_x_affinity=support_specific_then_x_affinity,
+      support_any_reservation_then_fail_affinity=support_any_reservation_then_fail_affinity,
   )
 
   maintenance_flags.AddResourcePoliciesArgs(parser, 'added to', 'instance')
@@ -175,6 +177,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_snp_svsm = False
   _support_local_ssd_recovery_timeout = True
   _support_specific_then_x_affinity = False
+  _support_any_reservation_then_fail_affinity = False
   _support_disk_labels = False
   _support_max_run_duration = True
   _support_graceful_shutdown = True
@@ -192,6 +195,7 @@ class CreateWithContainer(base.CreateCommand):
         support_confidential_compute_type_tdx=True,
         support_snp_svsm=False,
         support_specific_then_x_affinity=False,
+        support_any_reservation_then_fail_affinity=False,
         support_disk_labels=False,
         support_ipv6_only=True,
         support_skip_guest_os_shutdown=True,
@@ -529,7 +533,10 @@ class CreateWithContainer(base.CreateCommand):
 
       request.instance.reservationAffinity = (
           instance_utils.GetReservationAffinity(
-              args, compute_client, self._support_specific_then_x_affinity
+              args,
+              compute_client,
+              self._support_specific_then_x_affinity,
+              self._support_any_reservation_then_fail_affinity,
           )
       )
       requests.append(
@@ -555,6 +562,7 @@ class CreateWithContainerBeta(CreateWithContainer):
   _support_numa_node_count = False
   _support_local_ssd_recovery_timeout = True
   _support_specific_then_x_affinity = True
+  _support_any_reservation_then_fail_affinity = False
   _support_disk_labels = True
   _support_skip_guest_os_shutdown = True
   _support_workload_identity_config = False
@@ -569,6 +577,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         support_confidential_compute_type_tdx=True,
         support_snp_svsm=False,
         support_specific_then_x_affinity=True,
+        support_any_reservation_then_fail_affinity=False,
         support_disk_labels=True,
         support_graceful_shutdown=True,
         support_ipv6_only=True,
@@ -606,6 +615,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   _support_snp_svsm = True
   _support_local_ssd_recovery_timeout = True
   _support_specific_then_x_affinity = True
+  _support_any_reservation_then_fail_affinity = True
   _support_disk_labels = True
   _support_ipv6_only = True
   _support_skip_guest_os_shutdown = True
@@ -621,6 +631,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         support_confidential_compute_type_tdx=True,
         support_snp_svsm=True,
         support_specific_then_x_affinity=True,
+        support_any_reservation_then_fail_affinity=True,
         support_disk_labels=True,
         support_ipv6_only=True,
         support_graceful_shutdown=True,

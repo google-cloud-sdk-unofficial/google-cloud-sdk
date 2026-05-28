@@ -171,6 +171,7 @@ def AddBaseArgs(parser):
   flags.AddReadPoolAutoScaleConfig(parser)
   flags.AddDataApiAccess(parser)
   flags.AddSqlServerEntraId(parser)
+  flags.AddPerformanceCaptureConfig(parser)
 
   # When adding a new field for instance creation, determine if it should also
   # be included in the restore to new instance command. This command uses backup
@@ -188,7 +189,6 @@ def AddBetaArgs(parser):
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
   flags.AddEnableDbAlignedAtomicWrites(parser)
   flags.AddEnableAcceleratedReplicaMode(parser)
-  flags.AddPerformanceCaptureConfig(parser, hidden=False)
   flags.AddUncMappings(parser)
   flags.AddEnablePscAutoDns(parser)
   flags.AddEnablePscWriteEndpointDns(parser)

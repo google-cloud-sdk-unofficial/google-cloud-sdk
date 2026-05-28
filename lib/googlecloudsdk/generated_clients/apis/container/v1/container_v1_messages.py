@@ -2185,7 +2185,6 @@ class CompleteConvertToAutopilotRequest(_messages.Message):
   """
 
 
-
 class CompleteIPRotationRequest(_messages.Message):
   r"""CompleteIPRotationRequest moves the cluster master back into single-IP
   mode.
@@ -2216,7 +2215,6 @@ class CompleteNodePoolUpgradeRequest(_messages.Message):
   r"""CompleteNodePoolUpgradeRequest sets the name of target node pool to
   complete upgrade.
   """
-
 
 
 class CompliancePostureConfig(_messages.Message):
@@ -3653,7 +3651,6 @@ class Empty(_messages.Message):
   """
 
 
-
 class EncryptionConfig(_messages.Message):
   r"""Defines encryption settings for the swap space.
 
@@ -4743,6 +4740,18 @@ class KueueConfig(_messages.Message):
 
   Fields:
     enabled: Optional. Whether managed Kueue is enabled in the cluster.
+    loggingConfig: Optional. Logging configuration for Kueue controller.
+  """
+
+  enabled = _messages.BooleanField(1)
+  loggingConfig = _messages.MessageField('KueueLoggingConfig', 2)
+
+
+class KueueLoggingConfig(_messages.Message):
+  r"""Configuration options for Kueue logging.
+
+  Fields:
+    enabled: Optional. Enable log collection for Kueue controller.
   """
 
   enabled = _messages.BooleanField(1)
@@ -8430,7 +8439,6 @@ class SecondaryBootDiskUpdateStrategy(_messages.Message):
   r"""SecondaryBootDiskUpdateStrategy is a placeholder which will be extended
   in the future to define different options for updating secondary boot disks.
   """
-
 
 
 class SecretManagerConfig(_messages.Message):

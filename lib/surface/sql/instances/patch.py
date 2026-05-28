@@ -377,6 +377,7 @@ def AddBaseArgs(parser):
   flags.AddReconcilePsaNetworking(parser)
   flags.AddSqlServerEntraId(parser)
   flags.AddClearEntraIdConfig(parser)
+  flags.AddPerformanceCaptureConfig(parser)
 
 
 def AddBetaArgs(parser):
@@ -389,7 +390,6 @@ def AddBetaArgs(parser):
   unc_mappings_group = parser.add_mutually_exclusive_group(hidden=True)
   flags.AddUncMappings(unc_mappings_group)
   flags.AddClearUncMappings(unc_mappings_group)
-  flags.AddPerformanceCaptureConfig(parser, hidden=False)
   flags.AddEnablePscAutoDns(parser)
   flags.AddEnablePscWriteEndpointDns(parser)
   flags.AddEnablePscAutoConnectionPolicy(parser, hidden=True)

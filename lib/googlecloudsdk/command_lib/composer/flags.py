@@ -342,6 +342,11 @@ DAG_PROCESSOR_PARAMETERS_FLAG_GROUP_DESCRIPTION = (
     'or greater.'.format(MIN_COMPOSER3_VERSION)
 )
 
+TRAFFIC_ROUTING_FLAG_GROUP_DESCRIPTION = (
+    'Group of arguments for configuring traffic routing in Composer {} or '
+    'greater.'.format(MIN_COMPOSER3_VERSION)
+)
+
 TRIGGERER_ENABLED_GROUP_DESCRIPTION = (
     'Group of arguments for setting triggerer settings during update '
     'in Composer {} or greater.'.format(MIN_TRIGGERER_COMPOSER_VERSION))
@@ -975,6 +980,24 @@ ENVIRONMENT_SIZE_ALPHA = arg_utils.ChoiceEnumMapper(
         release_track=base.ReleaseTrack.ALPHA
     ).EnvironmentConfig.EnvironmentSizeValueValuesEnum,
     custom_mappings=_ENVIRONMENT_SIZE_MAPPING_ALPHA,
+)
+
+CLOUD_RUN_FUNCTIONS_ROUTING_BETA = arg_utils.ChoiceEnumMapper(
+    arg_name='--cloud-run-functions-routing',
+    help_str='Controls how network traffic to Cloud Run functions is routed.',
+    message_enum=api_util.GetMessagesModule(
+        release_track=base.ReleaseTrack.BETA
+    ).TrafficRoutingConfig.CloudRunFunctionsRoutingValueValuesEnum,
+    hidden_choices=['routing-mode-unspecified'],
+)
+
+CLOUD_RUN_FUNCTIONS_ROUTING_ALPHA = arg_utils.ChoiceEnumMapper(
+    arg_name='--cloud-run-functions-routing',
+    help_str='Controls how network traffic to Cloud Run functions is routed.',
+    message_enum=api_util.GetMessagesModule(
+        release_track=base.ReleaseTrack.ALPHA
+    ).TrafficRoutingConfig.CloudRunFunctionsRoutingValueValuesEnum,
+    hidden_choices=['routing-mode-unspecified'],
 )
 
 AIRFLOW_DATABASE_RETENTION_DAYS = base.Argument(
@@ -1900,11 +1923,12 @@ def AddCloudDataLineageIntegrationUpdateFlagsToGroup(update_type_group):
       update_enable_disable_group)
 
 
-def AddComposer3FlagsToGroup(update_type_group):
+def AddComposer3FlagsToGroup(update_type_group, release_track=None):
   """Adds Composer 3 flags to an update group.
 
   Args:
     update_type_group: argument group, the group to which flags should be added.
+    release_track: base.ReleaseTrack, the release track of command.
   """
   SUPPORT_WEB_SERVER_PLUGINS.AddToParser(update_type_group)
 
@@ -1927,6 +1951,19 @@ def AddComposer3FlagsToGroup(update_type_group):
 
   ENABLE_PRIVATE_ENVIRONMENT_UPDATE_FLAG.AddToParser(update_type_group)
   DISABLE_PRIVATE_ENVIRONMENT_UPDATE_FLAG.AddToParser(update_type_group)
+
+  traffic_routing_group = update_type_group.add_argument_group(
+      TRAFFIC_ROUTING_FLAG_GROUP_DESCRIPTION,
+      hidden=release_track == base.ReleaseTrack.GA,
+  )
+  if release_track == base.ReleaseTrack.BETA:
+    CLOUD_RUN_FUNCTIONS_ROUTING_BETA.choice_arg.AddToParser(
+        traffic_routing_group
+    )
+  elif release_track == base.ReleaseTrack.ALPHA:
+    CLOUD_RUN_FUNCTIONS_ROUTING_ALPHA.choice_arg.AddToParser(
+        traffic_routing_group
+    )
 
 
 def FallthroughToLocationProperty(location_refs, flag_name, failure_msg):

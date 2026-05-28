@@ -219,7 +219,6 @@ class Empty(_messages.Message):
   """
 
 
-
 class ListDeltaSharingCatalogsResponse(_messages.Message):
   r"""Response message for the ListDeltaSharingCatalogs method.
 
@@ -278,10 +277,13 @@ class SapBdcEnrollmentConfig(_messages.Message):
   Fields:
     connectorEndpoint: Optional. The unique SAP BDC Connector Endpoint.
     invitationCode: Optional. An invitation code from SAP.
+    invitationUrl: Optional. The combined invitation URL containing both
+      endpoint and code.
   """
 
   connectorEndpoint = _messages.StringField(1)
   invitationCode = _messages.StringField(2)
+  invitationUrl = _messages.StringField(3)
 
 
 class SapConfig(_messages.Message):

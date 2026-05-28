@@ -1863,14 +1863,14 @@ def AddDeployHealthCheckFlag(parser):
   )
 
 
-def AddDefaultUrlFlag(parser):
+def AddDefaultUrlFlag(parser, resource_kind='service'):
   """Add flag enable and disable default url."""
   parser.add_argument(
       '--default-url',
       action=arg_parsers.StoreTrueFalseAction,
       help=(
-          'Toggles the default url for a run service. This is enabled by'
-          ' default if not specified.'
+          f'Toggles the default url for a run {resource_kind}. This is enabled'
+          ' by default if not specified.'
       ),
   )
 
@@ -3700,6 +3700,10 @@ def GetInstanceConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
             invoker_iam_check=args.invoker_iam_check
         )
     )
+  if FlagIsExplicitlySet(args, 'default_url'):
+    changes.append(
+        config_changes.DefaultUrlChange(default_url=args.default_url)
+    )
 
   _PrependClientNameAndVersionChange(args, changes)
 
@@ -5269,18 +5273,9 @@ def AddClearPresetFlag(parser):
   )
 
 
-def SkipDeployArg(parser):
+def DevSyncCleanupFlag(parser):
   return parser.add_argument(
-      '--skip-deploy',
-      action='store_true',
-      default=False,
-      help='Skip the deploy step during dev sync.',
-  )
-
-
-def KeepAliveAfterDevSyncFlag(parser):
-  return parser.add_argument(
-      '--keep-alive-after-dev-sync',
+      '--cleanup',
       action='store_true',
       default=False,
       help=(

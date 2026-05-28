@@ -471,7 +471,6 @@ class AppEngineToCloudRun(deploy.Deploy):
           args.version,
           args.destination_repository,
           api_client=self.api_client,
-          export_service_account=None,
       )
 
       return translate.translate_from_exported_image(

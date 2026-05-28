@@ -28,7 +28,6 @@ from googlecloudsdk.core.util import files
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class Create(base.Command):
   """Generate optimized Kubernetes manifests for a given workload profile."""
 

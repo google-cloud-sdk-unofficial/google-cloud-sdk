@@ -29,8 +29,8 @@ from googlecloudsdk.core import properties
 class BackupPlansClient(util.BackupDrClientBase):
   """Cloud Backup Plans client."""
 
-  def __init__(self):
-    super(BackupPlansClient, self).__init__()
+  def __init__(self, api_version=util.DEFAULT_API_VERSION):
+    super(BackupPlansClient, self).__init__(api_version=api_version)
     self.service = self.client.projects_locations_backupPlans
 
   def _ParseBackupRules(self, backup_rules):

@@ -16,15 +16,18 @@
 
 import json
 import logging
-from os import environ, path
+from os import environ, getenv, path
 import re
 import subprocess
 
+from google.auth import _agent_identity_utils
+from google.auth import environment_vars
 from google.auth import exceptions
 
 CONTEXT_AWARE_METADATA_PATH = "~/.secureConnect/context_aware_metadata.json"
+
+# Default gcloud config path, to be used with path.expanduser for cross-platform compatibility.
 CERTIFICATE_CONFIGURATION_DEFAULT_PATH = "~/.config/gcloud/certificate_config.json"
-_CERTIFICATE_CONFIGURATION_ENV = "GOOGLE_API_CERTIFICATE_CONFIG"
 _CERT_PROVIDER_COMMAND = "cert_provider_command"
 _CERT_REGEX = re.compile(
     b"-----BEGIN CERTIFICATE-----.+-----END CERTIFICATE-----\r?\n?", re.DOTALL
@@ -45,6 +48,20 @@ _LOGGER = logging.getLogger(__name__)
 
 _PASSPHRASE_REGEX = re.compile(
     b"-----BEGIN PASSPHRASE-----(.+)-----END PASSPHRASE-----", re.DOTALL
+)
+
+# Temporary patch to accomodate incorrect cert config in Cloud Run prod environment.
+_WELL_KNOWN_CLOUD_RUN_CERT_PATH = (
+    "/var/run/secrets/workload-spiffe-credentials/certificates.pem"
+)
+_WELL_KNOWN_CLOUD_RUN_KEY_PATH = (
+    "/var/run/secrets/workload-spiffe-credentials/private_key.pem"
+)
+_INCORRECT_CLOUD_RUN_CERT_PATH = (
+    "/var/lib/volumes/certificate/workload-certificates/certificates.pem"
+)
+_INCORRECT_CLOUD_RUN_KEY_PATH = (
+    "/var/lib/volumes/certificate/workload-certificates/private_key.pem"
 )
 
 
@@ -88,7 +105,9 @@ def _load_json_file(path):
     return json_data
 
 
-def _get_workload_cert_and_key(certificate_config_path=None):
+def _get_workload_cert_and_key(
+    certificate_config_path=None, include_context_aware=True
+):
     """Read the workload identity cert and key files specified in the certificate config provided.
     If no config path is provided, check the environment variable: "GOOGLE_API_CERTIFICATE_CONFIG"
     first, then the well known gcloud location: "~/.config/gcloud/certificate_config.json".
@@ -96,6 +115,8 @@ def _get_workload_cert_and_key(certificate_config_path=None):
     Args:
         certificate_config_path (string): The certificate config path. If no path is provided,
         the environment variable will be checked first, then the well known gcloud location.
+        include_context_aware (bool): If context aware metadata path should be checked for the
+        SecureConnect mTLS configuration.
 
     Returns:
         Tuple[Optional[bytes], Optional[bytes]]: client certificate bytes in PEM format and key
@@ -106,7 +127,9 @@ def _get_workload_cert_and_key(certificate_config_path=None):
         the certificate or key information.
     """
 
-    cert_path, key_path = _get_workload_cert_and_key_paths(certificate_config_path)
+    cert_path, key_path = _get_workload_cert_and_key_paths(
+        certificate_config_path, include_context_aware
+    )
 
     if cert_path is None and key_path is None:
         return None, None
@@ -114,7 +137,7 @@ def _get_workload_cert_and_key(certificate_config_path=None):
     return _read_cert_and_key_files(cert_path, key_path)
 
 
-def _get_cert_config_path(certificate_config_path=None):
+def _get_cert_config_path(certificate_config_path=None, include_context_aware=True):
     """Get the certificate configuration path based on the following order:
 
     1: Explicit override, if set
@@ -126,17 +149,26 @@ def _get_cert_config_path(certificate_config_path=None):
     Args:
         certificate_config_path (string): The certificate config path. If provided, the well known
         location and environment variable will be ignored.
+        include_context_aware (bool): If context aware metadata path should be checked for the
+        SecureConnect mTLS configuration.
 
     Returns:
         The absolute path of the certificate config file, and None if the file does not exist.
     """
 
     if certificate_config_path is None:
-        env_path = environ.get(_CERTIFICATE_CONFIGURATION_ENV, None)
+        env_path = environ.get(environment_vars.GOOGLE_API_CERTIFICATE_CONFIG, None)
         if env_path is not None and env_path != "":
             certificate_config_path = env_path
         else:
-            certificate_config_path = CERTIFICATE_CONFIGURATION_DEFAULT_PATH
+            env_path = environ.get(
+                environment_vars.CLOUDSDK_CONTEXT_AWARE_CERTIFICATE_CONFIG_FILE_PATH,
+                None,
+            )
+            if include_context_aware and env_path is not None and env_path != "":
+                certificate_config_path = env_path
+            else:
+                certificate_config_path = CERTIFICATE_CONFIGURATION_DEFAULT_PATH
 
     certificate_config_path = path.expanduser(certificate_config_path)
     if not path.exists(certificate_config_path):
@@ -144,8 +176,8 @@ def _get_cert_config_path(certificate_config_path=None):
     return certificate_config_path
 
 
-def _get_workload_cert_and_key_paths(config_path):
-    absolute_path = _get_cert_config_path(config_path)
+def _get_workload_cert_and_key_paths(config_path, include_context_aware=True):
+    absolute_path = _get_cert_config_path(config_path, include_context_aware)
     if absolute_path is None:
         return None, None
 
@@ -159,29 +191,41 @@ def _get_workload_cert_and_key_paths(config_path):
         )
     cert_configs = data["cert_configs"]
 
+    # We return None, None if the expected workload fields are not present.
+    # The certificate config might be present for other types of connections (e.g. gECC),
+    # and we want to gracefully fallback to testing other mTLS configurations
+    # like SecureConnect instead of throwing an exception.
+
     if "workload" not in cert_configs:
-        raise exceptions.ClientCertError(
-            'Certificate config file {} is in an invalid format, a "workload" cert config is expected'.format(
-                absolute_path
-            )
-        )
+        return None, None
     workload = cert_configs["workload"]
 
     if "cert_path" not in workload:
-        raise exceptions.ClientCertError(
-            'Certificate config file {} is in an invalid format, a "cert_path" is expected in the workload cert config'.format(
-                absolute_path
-            )
-        )
+        return None, None
     cert_path = workload["cert_path"]
 
     if "key_path" not in workload:
-        raise exceptions.ClientCertError(
-            'Certificate config file {} is in an invalid format, a "key_path" is expected in the workload cert config'.format(
-                absolute_path
-            )
-        )
+        return None, None
     key_path = workload["key_path"]
+
+    # == BEGIN Temporary Cloud Run PATCH ==
+    # See https://github.com/googleapis/google-auth-library-python/issues/1881
+    if (cert_path == _INCORRECT_CLOUD_RUN_CERT_PATH) and (
+        key_path == _INCORRECT_CLOUD_RUN_KEY_PATH
+    ):
+        if not path.exists(cert_path) and not path.exists(key_path):
+            _LOGGER.debug(
+                "Applying Cloud Run certificate path patch. "
+                "Configured paths not found: %s, %s. "
+                "Using well-known paths: %s, %s",
+                cert_path,
+                key_path,
+                _WELL_KNOWN_CLOUD_RUN_CERT_PATH,
+                _WELL_KNOWN_CLOUD_RUN_KEY_PATH,
+            )
+            cert_path = _WELL_KNOWN_CLOUD_RUN_CERT_PATH
+            key_path = _WELL_KNOWN_CLOUD_RUN_KEY_PATH
+    # == END Temporary Cloud Run PATCH ==
 
     return cert_path, key_path
 
@@ -279,7 +323,7 @@ def _run_cert_provider_command(command, expect_encrypted_key=False):
 def get_client_ssl_credentials(
     generate_encrypted_key=False,
     context_aware_metadata_path=CONTEXT_AWARE_METADATA_PATH,
-    certificate_config_path=CERTIFICATE_CONFIGURATION_DEFAULT_PATH,
+    certificate_config_path=None,
 ):
     """Returns the client side certificate, private key and passphrase.
 
@@ -306,13 +350,10 @@ def get_client_ssl_credentials(
             the cert, key and passphrase.
     """
 
-    # 1. Check for certificate config json.
-    cert_config_path = _check_config_path(certificate_config_path)
-    if cert_config_path:
-        # Attempt to retrieve X.509 Workload cert and key.
-        cert, key = _get_workload_cert_and_key(cert_config_path)
-        if cert and key:
-            return True, cert, key, None
+    # 1.  Attempt to retrieve X.509 Workload cert and key.
+    cert, key = _get_workload_cert_and_key(certificate_config_path)
+    if cert and key:
+        return True, cert, key, None
 
     # 2. Check for context aware metadata json
     metadata_path = _check_config_path(context_aware_metadata_path)
@@ -405,3 +446,86 @@ def decrypt_private_key(key, passphrase):
 
     # Then dump the decrypted key bytes
     return crypto.dump_privatekey(crypto.FILETYPE_PEM, pkey)
+
+
+def check_use_client_cert():
+    """Returns boolean for whether the client certificate should be used for mTLS.
+
+    If GOOGLE_API_USE_CLIENT_CERTIFICATE is set to true or false, a corresponding
+    bool value will be returned. If the value is set to an unexpected string, it
+    will default to False.
+    If GOOGLE_API_USE_CLIENT_CERTIFICATE is unset, the value will be inferred
+    by reading a file pointed at by GOOGLE_API_CERTIFICATE_CONFIG, and verifying
+    it contains a "workload" section. If so, the function will return True,
+    otherwise False.
+
+    Returns:
+        bool: Whether the client certificate should be used for mTLS connection.
+    """
+    use_client_cert = getenv(environment_vars.GOOGLE_API_USE_CLIENT_CERTIFICATE)
+    if use_client_cert is None or use_client_cert == "":
+        use_client_cert = getenv(
+            environment_vars.CLOUDSDK_CONTEXT_AWARE_USE_CLIENT_CERTIFICATE
+        )
+
+    # Check if the value of GOOGLE_API_USE_CLIENT_CERTIFICATE is set.
+    if use_client_cert:
+        return use_client_cert.lower() == "true"
+    else:
+        # Check if the value of GOOGLE_API_CERTIFICATE_CONFIG is set.
+        cert_path = getenv(environment_vars.GOOGLE_API_CERTIFICATE_CONFIG)
+        if cert_path is None:
+            cert_path = getenv(
+                environment_vars.CLOUDSDK_CONTEXT_AWARE_CERTIFICATE_CONFIG_FILE_PATH
+            )
+
+        if cert_path:
+            try:
+                with open(cert_path, "r") as f:
+                    content = json.load(f)
+                    # verify json has workload key
+                    content["cert_configs"]["workload"]
+                    return True
+            except (
+                FileNotFoundError,
+                OSError,
+                KeyError,
+                TypeError,
+                json.JSONDecodeError,
+            ) as e:
+                _LOGGER.debug("error decoding certificate: %s", e)
+        return False
+
+
+def check_parameters_for_unauthorized_response(cached_cert):
+    """Returns the cached and current cert fingerprint for reconfiguring mTLS.
+
+    Args:
+        cached_cert(bytes): The cached client certificate.
+
+    Returns:
+        bytes: The client callback cert bytes.
+        bytes: The client callback key bytes.
+        str: The base64-encoded SHA256 cached fingerprint.
+        str: The base64-encoded SHA256 current cert fingerprint.
+    """
+    call_cert_bytes, call_key_bytes = call_client_cert_callback()
+    cert_obj = _agent_identity_utils.parse_certificate(call_cert_bytes)
+    current_cert_fingerprint = _agent_identity_utils.calculate_certificate_fingerprint(
+        cert_obj
+    )
+    if cached_cert:
+        cached_fingerprint = _agent_identity_utils.get_cached_cert_fingerprint(
+            cached_cert
+        )
+    else:
+        cached_fingerprint = current_cert_fingerprint
+    return call_cert_bytes, call_key_bytes, cached_fingerprint, current_cert_fingerprint
+
+
+def call_client_cert_callback():
+    """Calls the client cert callback and returns the certificate and key."""
+    _, cert_bytes, key_bytes, passphrase = get_client_ssl_credentials(
+        generate_encrypted_key=True
+    )
+    return cert_bytes, key_bytes

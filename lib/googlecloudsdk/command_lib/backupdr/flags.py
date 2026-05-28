@@ -1126,7 +1126,6 @@ def AddComputeInstanceBackupPlanProperties(parser):
   parser.add_argument(
       '--compute-instance-properties',
       metavar='PROPERTY=VALUE',
-      hidden=True,
       type=arg_parsers.ArgDict(
           spec={
               'guest-flush': arg_parsers.ArgBoolean(),

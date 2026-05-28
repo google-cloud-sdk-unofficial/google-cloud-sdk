@@ -48,6 +48,14 @@ class MetadataModel:
 
 
 @dataclasses.dataclass
+class CaptureModel:
+  """Model for capturing values from resources."""
+  field: str
+  variable: str
+  regex: str | None = None
+
+
+@dataclasses.dataclass
 class ResourceModel:
   """Generalized model for ordinary resources."""
   type: str
@@ -57,6 +65,7 @@ class ResourceModel:
   definition: dict[str, Any] = dataclasses.field(default_factory=dict)
   metadata: MetadataModel = dataclasses.field(default_factory=MetadataModel)
   update_action: Literal['patch', 'skip', 'recreate'] = 'patch'
+  capture: list[CaptureModel] = dataclasses.field(default_factory=list)
 
 
 AnyResource = ResourceProfileModel | ResourceModel
@@ -114,6 +123,23 @@ def build_resource(resource_def: Mapping[str, Any]) -> AnyResource:
         path=resource_def.get('path'),
     )
 
+  capture_defs = resource_def.get('capture', [])
+  capture = []
+  for c in capture_defs:
+    if 'field' not in c or 'variable' not in c:
+      raise ValueError(
+          'Capture definition missing required fields'
+          ' (\'field\' or \'variable\'):'
+          f' {c}'
+      )
+    capture.append(
+        CaptureModel(
+            field=c['field'],
+            variable=c['variable'],
+            regex=c.get('regex'),
+        )
+    )
+
   # For all other resources, use the generalized ResourceModel
   # Keep original casing for definition fields, but extract known top-level ones
   return ResourceModel(
@@ -124,6 +150,7 @@ def build_resource(resource_def: Mapping[str, Any]) -> AnyResource:
       api_version=resource_def.get('apiVersion'),
       metadata=_build_metadata(resource_def.get('metadata')),
       update_action=resource_def.get('updateAction', 'patch'),
+      capture=capture,
   )
 
 

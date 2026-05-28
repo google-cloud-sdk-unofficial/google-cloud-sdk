@@ -69,7 +69,8 @@ class DeleteAlpha(base.DeleteCommand):
     Returns:
       ProcessHttpResponse of the request made.
     """
-    client = ManagementServersClient()
+    api_version = util.GetApiVersion(self.ReleaseTrack())
+    client = ManagementServersClient(api_version=api_version)
     is_async = args.async_
 
     management_server = args.CONCEPTS.management_server.Parse()

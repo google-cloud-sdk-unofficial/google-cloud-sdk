@@ -9,6 +9,12 @@
         $ {command} OPERATION
 
   request:
+    GA:
+      api_version: v1
+    BETA:
+      api_version: v1beta
+    ALPHA:
+      api_version: v1alpha
     collection: backupdr.projects.locations.operations
 
   arguments:

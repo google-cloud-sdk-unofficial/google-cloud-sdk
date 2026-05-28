@@ -15,7 +15,6 @@
 """Reducer functions to generate instance props from prior state and flags."""
 
 
-
 import argparse
 import datetime
 
@@ -984,27 +983,71 @@ def PerformanceCaptureConfig(
       'running-threads-threshold': 'runningThreadsThreshold',
       'seconds-behind-source-threshold': 'secondsBehindSourceThreshold',
       'transaction-duration-threshold': 'transactionDurationThreshold',
+      'cpu-utilization-threshold-percent': 'cpuUtilizationThresholdPercent',
+      'memory-usage-threshold-percent': 'memoryUsageThresholdPercent',
+      'transaction-lock-wait-threshold-count': (
+          'transactionLockWaitThresholdCount'
+      ),
+      'semaphore-wait-threshold-count': 'semaphoreWaitThresholdCount',
+      'history-list-length-threshold-count': 'historyListLengthThresholdCount',
+      'transaction-kill-threshold-seconds': 'transactionKillThresholdSeconds',
+  }
+  list_keys = {
+      'transaction-kill-excluded-user-hosts': (
+          'transactionKillExcludedUserHosts'
+      ),
+  }
+  enum_keys = {
+      'transaction-kill-type': (
+          'transactionKillType',
+          sql_messages.PerformanceCaptureConfig.TransactionKillTypeValueValuesEnum,
+      ),
   }
 
   for key, value in sorted(performance_capture_config.items()):
     if key in bool_keys:
-      if value.lower() not in ['true', 'false']:
+      val_str = value.lower()
+      if val_str not in ['true', 'false']:
         raise exceptions.InvalidArgumentException(
             '--performance-capture-config',
-            'Invalid boolean value for key [{0}]: {1}'.format(key, value),
+            f'Invalid boolean value for key [{key}]: {value}',
         )
-      setattr(config, bool_keys[key], value.lower() == 'true')
+      setattr(config, bool_keys[key], val_str == 'true')
     elif key in int_keys:
       try:
         setattr(config, int_keys[key], int(value))
-      except ValueError:
+      except ValueError as exc:
         raise exceptions.InvalidArgumentException(
             '--performance-capture-config',
-            'Invalid integer value for key [{0}]: {1}'.format(key, value),
+            f'Invalid integer value for key [{key}]: {value}',
+        ) from exc
+    elif key in list_keys:
+      if value is None:
+        setattr(config, list_keys[key], [])
+        continue
+      if not isinstance(value, str):
+        raise exceptions.InvalidArgumentException(
+            '--performance-capture-config',
+            f'Invalid value for key [{key}]: expected string.',
         )
+      setattr(
+          config,
+          list_keys[key],
+          [v.strip() for v in value.split(';')] if value else [],
+      )
+    elif key in enum_keys:
+      attr_name, enum_cls = enum_keys[key]
+      try:
+        enum_val = enum_cls.lookup_by_name(value.upper())
+        setattr(config, attr_name, enum_val)
+      except KeyError as exc:
+        raise exceptions.InvalidArgumentException(
+            '--performance-capture-config',
+            f'Invalid value for key [{key}]: {value}',
+        ) from exc
     else:
       raise exceptions.InvalidArgumentException(
-          '--performance-capture-config', 'Unknown key: {0}'.format(key)
+          '--performance-capture-config', f'Unknown key: {key}'
       )
 
   return config

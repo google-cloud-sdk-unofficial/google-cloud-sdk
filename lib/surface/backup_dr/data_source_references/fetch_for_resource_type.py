@@ -15,6 +15,7 @@
 """Command to fetch data source references for a resource type."""
 
 from googlecloudsdk.api_lib.backupdr import data_source_references
+from googlecloudsdk.api_lib.backupdr import util
 from googlecloudsdk.api_lib.util import common_args
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -124,8 +125,9 @@ class FetchForResourceType(base.ListCommand):
     """
     location = args.location
     resource_type = args.resource_type
+    api_version = util.GetApiVersion(self.ReleaseTrack())
     try:
-      client = DataSourceReferencesClient()
+      client = DataSourceReferencesClient(api_version=api_version)
       result = client.FetchForResourceType(
           location,
           resource_type,

@@ -15,6 +15,7 @@
 """Flags and helpers for the compute subnetworks commands."""
 
 
+from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import utils as compute_api
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import arg_parsers
@@ -145,6 +146,7 @@ def AddUpdateArgs(
     api_version,
     update_purpose_to_private,
     include_ipv6_secondary_ranges,
+    include_ipv6_network_tier,
 ):
   """Add args to the parser for subnet update.
 
@@ -154,6 +156,7 @@ def AddUpdateArgs(
     api_version: The api version of the request.
     update_purpose_to_private: Allow updating purpose to private.
     include_ipv6_secondary_ranges: Include IPv6 secondary ranges args.
+    include_ipv6_network_tier: Include IPv6 network tier arg.
   """
   messages = apis.GetMessagesModule('compute',
                                     compute_api.COMPUTE_GA_API_VERSION)
@@ -395,6 +398,18 @@ def AddUpdateArgs(
         metavar='RANGE_NAME',
         help='Removes secondary IPv6 ranges from the subnetwork.',
     )
+
+  if include_ipv6_network_tier:
+    AddIpv6NetworkTierArg(parser)
+
+
+def AddIpv6NetworkTierArg(parser):
+  """Adds IPv6 network tier for subnetwork."""
+  return parser.add_argument(
+      '--ipv6-network-tier',
+      choices=constants.SUBNET_IPV6_NETWORK_TIER_CHOICES,
+      type=arg_utils.ChoiceToEnumName,
+      help='The network tier for EXTERNAL IPv6 addresses in this subnetwork.')
 
 
 def GetPrivateIpv6GoogleAccessTypeFlagMapper(messages):

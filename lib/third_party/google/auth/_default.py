@@ -16,16 +16,21 @@
 
 Implements application default credentials and project ID detection.
 """
+from __future__ import annotations
 
 import io
 import json
 import logging
 import os
+from typing import Optional, Sequence, TYPE_CHECKING
 import warnings
 
 from google.auth import environment_vars
 from google.auth import exceptions
-import google.auth.transport._http_client
+
+if TYPE_CHECKING:  # pragma: NO COVER
+    import google.auth.credentials.Credentials  # type: ignore
+    import google.auth.transport.Request  # type: ignore
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -59,6 +64,38 @@ or "API not enabled" error. See the following page for troubleshooting: \
 https://cloud.google.com/docs/authentication/adc-troubleshooting/user-creds. \
 """
 
+_GENERIC_LOAD_METHOD_WARNING = """\
+The {} method is deprecated because of a potential security risk.
+
+This method does not validate the credential configuration. The security
+risk occurs when a credential configuration is accepted from a source that
+is not under your control and used without validation on your side.
+
+If you know that you will be loading credential configurations of a
+specific type, it is recommended to use a credential-type-specific
+load method.
+This will ensure that an unexpected credential type with potential for
+malicious intent is not loaded unintentionally. You might still have to do
+validation for certain credential types. Please follow the recommendations
+for that method. For example, if you want to load only service accounts,
+you can create the service account credentials explicitly:
+
+```
+from google.oauth2 import service_account
+creds = service_account.Credentials.from_service_account_file(filename)
+```
+
+If you are loading your credential configuration from an untrusted source and have
+not mitigated the risks (e.g. by validating the configuration yourself), make
+these changes as soon as possible to prevent security risks to your environment.
+
+Regardless of the method used, it is always your responsibility to validate
+configurations received from external sources.
+
+Refer to https://cloud.google.com/docs/authentication/external/externally-sourced-credentials
+for more details.
+"""
+
 # The subject token type used for AWS external_account credentials.
 _AWS_SUBJECT_TOKEN_TYPE = "urn:ietf:params:aws:token-type:aws4_request"
 
@@ -74,6 +111,20 @@ def _warn_about_problematic_credentials(credentials):
 
     if credentials.client_id == _cloud_sdk.CLOUD_SDK_CLIENT_ID:
         warnings.warn(_CLOUD_SDK_CREDENTIALS_WARNING)
+
+
+def _warn_about_generic_load_method(method_name):  # pragma: NO COVER
+    """Warns that a generic load method is being used.
+
+    This is to discourage use of the generic load methods in favor of
+    more specific methods. The generic methods are more likely to lead to
+    security issues if the input is not validated.
+
+    Args:
+        method_name (str): The name of the method being used.
+    """
+
+    warnings.warn(_GENERIC_LOAD_METHOD_WARNING.format(method_name), DeprecationWarning)
 
 
 def load_credentials_from_file(
@@ -121,6 +172,8 @@ def load_credentials_from_file(
         google.auth.exceptions.DefaultCredentialsError: if the file is in the
             wrong format or is missing.
     """
+    _warn_about_generic_load_method("load_credentials_from_file")
+
     if not os.path.exists(filename):
         raise exceptions.DefaultCredentialsError(
             "File {} was not found.".format(filename)
@@ -184,6 +237,7 @@ def load_credentials_from_dict(
         google.auth.exceptions.DefaultCredentialsError: if the file is in the
             wrong format or is missing.
     """
+    _warn_about_generic_load_method("load_credentials_from_dict")
     if not isinstance(info, dict):
         raise exceptions.DefaultCredentialsError(
             "info object was of type {} but dict type was expected.".format(type(info))
@@ -256,15 +310,17 @@ def _get_gcloud_sdk_credentials(quota_project_id=None):
         _LOGGER.debug("Cloud SDK credentials not found on disk; not using them")
         return None, None
 
-    credentials, project_id = load_credentials_from_file(
-        credentials_filename, quota_project_id=quota_project_id
-    )
-    credentials._cred_file_path = credentials_filename
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        credentials, project_id = load_credentials_from_file(
+            credentials_filename, quota_project_id=quota_project_id
+        )
+        credentials._cred_file_path = credentials_filename
 
-    if not project_id:
-        project_id = _cloud_sdk.get_project_id()
+        if not project_id:
+            project_id = _cloud_sdk.get_project_id()
 
-    return credentials, project_id
+        return credentials, project_id
 
 
 def _get_explicit_environ_credentials(quota_project_id=None):
@@ -273,29 +329,32 @@ def _get_explicit_environ_credentials(quota_project_id=None):
     from google.auth import _cloud_sdk
 
     cloud_sdk_adc_path = _cloud_sdk.get_application_default_credentials_path()
-    explicit_file = os.environ.get(environment_vars.CREDENTIALS)
+    explicit_file = os.environ.get(environment_vars.CREDENTIALS, "")
 
     _LOGGER.debug(
-        "Checking %s for explicit credentials as part of auth process...", explicit_file
+        "Checking '%s' for explicit credentials as part of auth process...",
+        explicit_file,
     )
 
-    if explicit_file is not None and explicit_file == cloud_sdk_adc_path:
+    if explicit_file != "" and explicit_file == cloud_sdk_adc_path:
         # Cloud sdk flow calls gcloud to fetch project id, so if the explicit
         # file path is cloud sdk credentials path, then we should fall back
         # to cloud sdk flow, otherwise project id cannot be obtained.
         _LOGGER.debug(
-            "Explicit credentials path %s is the same as Cloud SDK credentials path, fall back to Cloud SDK credentials flow...",
+            "Explicit credentials path '%s' is the same as Cloud SDK credentials path, fall back to Cloud SDK credentials flow...",
             explicit_file,
         )
         return _get_gcloud_sdk_credentials(quota_project_id=quota_project_id)
 
-    if explicit_file is not None:
-        credentials, project_id = load_credentials_from_file(
-            os.environ[environment_vars.CREDENTIALS], quota_project_id=quota_project_id
-        )
-        credentials._cred_file_path = f"{explicit_file} file via the GOOGLE_APPLICATION_CREDENTIALS environment variable"
-
-        return credentials, project_id
+    if explicit_file != "":
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            credentials, project_id = load_credentials_from_file(
+                os.environ[environment_vars.CREDENTIALS],
+                quota_project_id=quota_project_id,
+            )
+            credentials._cred_file_path = f"{explicit_file} file via the GOOGLE_APPLICATION_CREDENTIALS environment variable"
+            return credentials, project_id
 
     else:
         return None, None
@@ -330,22 +389,19 @@ def _get_gae_credentials():
 
 def _get_gce_credentials(request=None, quota_project_id=None):
     """Gets credentials and project ID from the GCE Metadata Service."""
-    # Ping requires a transport, but we want application default credentials
-    # to require no arguments. So, we'll use the _http_client transport which
-    # uses http.client. This is only acceptable because the metadata server
-    # doesn't do SSL and never requires proxies.
-
     # While this library is normally bundled with compute_engine, there are
     # some cases where it's not available, so we tolerate ImportError.
+    # Compute Engine requires optional `requests` dependency.
     try:
         from google.auth import compute_engine
         from google.auth.compute_engine import _metadata
+        import google.auth.transport.requests
     except ImportError:
         _LOGGER.warning("Import of Compute Engine auth library failed.")
         return None, None
 
     if request is None:
-        request = google.auth.transport._http_client.Request()
+        request = google.auth.transport.requests.Request()
 
     if _metadata.is_on_gce(request=request):
         # Get the project ID.
@@ -484,8 +540,10 @@ def _get_impersonated_service_account_credentials(filename, info, scopes):
     from google.auth import impersonated_credentials
 
     try:
-        credentials = impersonated_credentials.Credentials.from_impersonated_service_account_info(
-            info, scopes=scopes
+        credentials = (
+            impersonated_credentials.Credentials.from_impersonated_service_account_info(
+                info, scopes=scopes
+            )
         )
     except ValueError as caught_exc:
         msg = "Failed to load impersonated service account credentials from {}".format(
@@ -500,8 +558,8 @@ def _get_gdch_service_account_credentials(filename, info):
     from google.oauth2 import gdch_credentials
 
     try:
-        credentials = gdch_credentials.ServiceAccountCredentials.from_service_account_info(
-            info
+        credentials = (
+            gdch_credentials.ServiceAccountCredentials.from_service_account_info(info)
         )
     except ValueError as caught_exc:
         msg = "Failed to load GDCH service account credentials from {}".format(filename)
@@ -532,7 +590,12 @@ def _apply_quota_project_id(credentials, quota_project_id):
     return credentials
 
 
-def default(scopes=None, request=None, quota_project_id=None, default_scopes=None):
+def default(
+    scopes: Optional[Sequence[str]] = None,
+    request: Optional["google.auth.transport.Request"] = None,
+    quota_project_id: Optional[str] = None,
+    default_scopes: Optional[Sequence[str]] = None,
+) -> tuple["google.auth.credentials.Credentials", Optional[str]]:
     """Gets the default credentials for the current environment.
 
     `Application Default Credentials`_ provides an easy way to obtain

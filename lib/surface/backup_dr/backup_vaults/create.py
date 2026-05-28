@@ -50,18 +50,21 @@ def _add_common_args(parser: argparse.ArgumentParser):
 
 
 def _run(
+    self,
     args: argparse.Namespace,
 ):
   """Constructs and sends request.
 
   Args:
+    self: The calling object instance.
     args: argparse.Namespace, An object that contains the values for the
       arguments specified in the .Args() method.
 
   Returns:
     ProcessHttpResponse of the request made.
   """
-  client = BackupVaultsClient()
+  api_version = util.GetApiVersion(self.ReleaseTrack())
+  client = BackupVaultsClient(api_version=api_version)
   backup_vault = args.CONCEPTS.backup_vault.Parse()
   backup_min_enforced_retention = command_util.ConvertIntToStr(
       args.backup_min_enforced_retention
@@ -178,7 +181,7 @@ class Create(base.CreateCommand):
       ProcessHttpResponse of the request made.
     """
     return _run(
-        args
+        self, args
     )
 
 
@@ -206,7 +209,7 @@ class CreateAlpha(Create):
       ProcessHttpResponse of the request made.
     """
     return _run(
-        args
+        self, args
     )
 
 
@@ -234,5 +237,5 @@ class CreateBeta(Create):
       ProcessHttpResponse of the request made.
     """
     return _run(
-        args
+        self, args
     )

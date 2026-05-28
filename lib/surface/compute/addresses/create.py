@@ -426,10 +426,22 @@ class CreateBeta(Create):
     $ {command} psc-address-1 --global --addresses=10.110.0.10 \
       --purpose=PRIVATE_SERVICE_CONNECT --network=default
 
+  To reserve an external IPv4 address for global passthrough Network Load
+  Balancer in availability group 0, run:
+
+    $ {command} gnlb-ipv4-address-0 --global --ip-version=IPV4 \
+      --purpose=PASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP0
+
+  To reserve an external IPv6 address for global passthrough Network Load
+  Balancer in availability group 1, run:
+
+    $ {command} gnlb-ipv6-address-1 --global --ip-version=IPV6 \
+      --purpose=PASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP1
+
   """
 
   _support_psc_google_apis = True
-  _support_passthrough_lb_availability_groups = False
+  _support_passthrough_lb_availability_groups = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

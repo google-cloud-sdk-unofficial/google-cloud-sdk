@@ -21,8 +21,8 @@ from googlecloudsdk.api_lib.backupdr import util
 class ServiceConfigClient(util.BackupDrClientBase):
   """Cloud Backup and DR Service Config client."""
 
-  def __init__(self):
-    super(ServiceConfigClient, self).__init__()
+  def __init__(self, api_version=util.DEFAULT_API_VERSION):
+    super(ServiceConfigClient, self).__init__(api_version=api_version)
     self.service = self.client.projects_locations_serviceConfig
 
   def Init(self, location, resource_type, cloudsql_edition):

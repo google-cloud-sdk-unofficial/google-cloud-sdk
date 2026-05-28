@@ -81,7 +81,6 @@ class AppengineApiClient(appengine_api_client_base.AppengineApiClientBase):
   def ExportImageAndWait(self, *, app_id: str, service_id: str,
                          version_id: str,
                          destination_repository: str | None = None,
-                         export_service_account: str | None = None,
                         ) -> ExportImageResult:
     """Calls ExportAppImage and polls the LRO.
 
@@ -90,7 +89,6 @@ class AppengineApiClient(appengine_api_client_base.AppengineApiClientBase):
       service_id: The service ID.
       version_id: The version ID.
       destination_repository: Optional Artifact Registry repo URI.
-      export_service_account: Optional service account to use for the export.
 
     Returns:
       An ExportImageResult object.
@@ -101,7 +99,6 @@ class AppengineApiClient(appengine_api_client_base.AppengineApiClientBase):
     version_name = f'apps/{app_id}/services/{service_id}/versions/{version_id}'
     inner_request = self.messages.ExportAppImageRequest(
         destinationRepository=destination_repository,
-        serviceAccount=export_service_account,
     )
     outer_request = (
         self.messages.AppengineAppsServicesVersionsExportAppImageRequest(

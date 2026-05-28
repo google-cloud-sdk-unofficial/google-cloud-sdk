@@ -5,6 +5,72 @@ Copyright 2014-2026 Google Inc. All rights reserved.
 Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
 
 
+## 568.0.0 (2026-05-12)
+
+### Google Cloud CLI
+
+* Updated Linux bundled Python for the `gcloud` CLI to 3.14.4 with pyOpenSSL 26.0.0 and cryptography 46.0.7.
+
+### Apigee
+
+* Added support for DRZ endpoints for SA region.
+
+### App Optimize
+
+* Modified `gcloud beta app-optimize reports read` to show the Report data in
+a tabular format by default.
+
+### Cloud Backup DR
+
+* Added `--compute-instance-properties` flag to `gcloud backup-dr backup-plans create` and `update` to support workload-specific properties for Compute Engine instance backups.
+
+### Cloud Composer
+
+*   Added `--cloud-run-functions-routing` flag to `gcloud composer environments create` and `gcloud composer environments update` (alpha and beta).
+
+### Cloud Firestore
+
+* Added `search-config` option to `field-config` flag in `gcloud firestore indexes composite create` in beta.
+* Added `search-index-options` option to `gcloud firestore indexes composite create` in beta.
+
+### Cloud Identity-Aware Proxy
+
+* Promoted `gcloud iap tcp` IAM commands to beta.
+
+### Compute Engine
+
+* Promoted `gcloud compute global-vm-extension-policies` to GA.
+* Promoted `PASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP0` and `PASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP1` values of `--purpose` flag on `gcloud compute addresses create` to beta.
+* Promoted `--view` flag on `gcloud compute forwarding-rules describe` to beta.
+* Added support for displaying dynamic fields (such as `TERMINATION_TIMESTAMP`) to `gcloud compute instance-groups managed list-instances` in beta.
+
+### Kpt
+
+* Updated kpt to v1.0.0-beta.62. See <https://github.com/kptdev/kpt/releases/tag/v1.0.0-beta.62> for more details.
+
+### Kubernetes Engine
+
+* Added `--node-pool-upgrade-concurrency-config` flag in `gcloud container clusters create/create-auto/update`.
+* Added `--node-architecture-taint-behavior` flag to
+`gcloud container clusters create`, `gcloud container node-pools create` and
+`gcloud container node-pools update` to control architecture taints for nodes
+specifically for ARM nodes.
+* Added `gcloud container container workload profiles manifests create`
+command. This command Provides optimized deployment manifests for non-inference
+workloads running on GKE.
+
+### Pubsub Emulator
+
+*   Add support for keep alive pings.
+
+### Workbench
+
+* Added `--data-disk-resource-policies` flag to `gcloud workbench instances update` to support attaching and updating snapshot schedule resource policies on data disks.
+
+
+Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
+
+
 ## 567.0.0 (2026-05-05)
 
 ### Google Cloud CLI

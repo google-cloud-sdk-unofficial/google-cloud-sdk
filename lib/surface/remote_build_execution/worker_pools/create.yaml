@@ -59,17 +59,11 @@
       arg_name: disk-type
       required: false
       default: pd-standard
-      choices:
-      - arg_value: pd-standard
-        enum_value: pd-standard
-        help_text: |
-          Standard persistent disk.
-      - arg_value: pd-ssd
-        enum_value: pd-ssd
-        help_text: |
-          SSD persistent disk.
       help_text: |
-        Type of persistent disk the worker VMs will use. Default is pd-standard.
+        Type of persistent disk the worker VMs will use. Default is pd-standard. To get a list of
+        valid disk types, use the following command:
+
+        $ gcloud compute disk-types list
     - api_field: workerPool.workerConfig.machineType
       arg_name: machine-type
       required: false
@@ -107,18 +101,8 @@
         - api_field: workerPool.workerConfig.attachedDisks.dockerRootDisk.diskType
           arg_name: docker-root-disk-type
           required: true
-          choices:
-          - arg_value: pd-standard
-            enum_value: pd-standard
-            help_text: |
-              Standard persistent disk.
-          - arg_value: pd-ssd
-            enum_value: pd-ssd
-            help_text: |
-              SSD persistent disk.
           help_text: |
-            The disk type to use for the user-provided docker root disk. Must be one of
-            pd-ssd and pd-standard.
+            The disk type to use for the user-provided docker root disk.
         - api_field: workerPool.workerConfig.attachedDisks.dockerRootDisk.diskSizeGb
           arg_name: docker-root-disk-size
           required: true

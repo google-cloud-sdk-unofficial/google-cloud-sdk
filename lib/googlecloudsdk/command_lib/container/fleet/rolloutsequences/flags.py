@@ -144,6 +144,23 @@ class RolloutSequenceFlags:
         hidden=True,
     )
 
+  def AddUpgradeFlags(self):
+    group = self.parser.add_mutually_exclusive_group(required=True)
+    group.add_argument(
+        '--control-plane-version',
+        type=str,
+        help=textwrap.dedent("""\
+            The GKE cluster version to upgrade the control plane to.
+        """),
+    )
+    group.add_argument(
+        '--node-version',
+        type=str,
+        help=textwrap.dedent("""\
+            The GKE version to upgrade the nodes to.
+        """),
+    )
+
   def AddRolloutSequenceResourceArg(self):
     fleet_resources.AddRolloutSequenceResourceArg(
         parser=self.parser,
@@ -358,3 +375,24 @@ class RolloutSequenceFlagParser:
       bool, True if specified, False if unspecified.
     """
     return self.args.async_
+
+  def UpgradeType(
+      self,
+  ) -> (
+      fleet_messages_alpha.UpgradeRolloutSequenceRequest.UpgradeTypeValueValuesEnum
+      | None
+  ):
+    """Parses upgrade type based on flags."""
+    if self.args.control_plane_version:
+      return (
+          self.messages.UpgradeRolloutSequenceRequest.UpgradeTypeValueValuesEnum.CONTROL_PLANE
+      )
+    if self.args.node_version:
+      return (
+          self.messages.UpgradeRolloutSequenceRequest.UpgradeTypeValueValuesEnum.NODE
+      )
+    return None
+
+  def Version(self) -> str | None:
+    """Parses version based on flags."""
+    return self.args.control_plane_version or self.args.node_version

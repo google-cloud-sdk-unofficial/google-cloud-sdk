@@ -274,11 +274,12 @@ class Create(base.Command):
 
   detailed_help = DETAILED_HELP
   _support_max_pods_per_node = False
+  _support_traffic_routing_config = False
 
   @classmethod
   def Args(cls, parser, release_track=base.ReleaseTrack.GA):
     _CommonArgs(parser, cls._support_max_pods_per_node, release_track)
-    AddComposer3Flags(parser)
+    AddComposer3Flags(parser, release_track)
     AddLineageIntegrationParser(parser)
 
   def Run(self, args):
@@ -567,6 +568,10 @@ class Create(base.Command):
         'enable-private-builds-only': args.enable_private_builds_only,
         'disable-private-builds-only': args.disable_private_builds_only,
     }
+    if self._support_traffic_routing_config:
+      possible_args['cloud-run-functions-routing'] = (
+          args.cloud_run_functions_routing
+      )
 
     for k, v in possible_args.items():
       if v is not None and not is_composer3:
@@ -799,6 +804,7 @@ class CreateBeta(Create):
   """
 
   _support_max_pods_per_node = True
+  _support_traffic_routing_config = True
 
   @classmethod
   def Args(cls, parser, release_track=base.ReleaseTrack.BETA):
@@ -824,6 +830,7 @@ class CreateBeta(Create):
         python_version=args.python_version,
         image_version=self.image_version,
         use_ip_aliases=args.enable_ip_alias,
+        cloud_run_functions_routing=args.cloud_run_functions_routing,
         cluster_secondary_range_name=args.cluster_secondary_range_name,
         services_secondary_range_name=args.services_secondary_range_name,
         cluster_ipv4_cidr_block=args.cluster_ipv4_cidr,
@@ -952,7 +959,7 @@ def AddLineageIntegrationParser(parser):
   )
 
 
-def AddComposer3Flags(parser):
+def AddComposer3Flags(parser, release_track):
   """Adds Composer 3 flags to the parser."""
   # web-server-plugins-support
   flags.SUPPORT_WEB_SERVER_PLUGINS.AddToParser(parser)
@@ -971,6 +978,19 @@ def AddComposer3Flags(parser):
   flags.ENABLE_PRIVATE_BUILDS_ONLY.AddToParser(private_builds_only_group)
   flags.DISABLE_PRIVATE_BUILDS_ONLY.AddToParser(private_builds_only_group)
 
+  traffic_routing_group = parser.add_argument_group(
+      flags.TRAFFIC_ROUTING_FLAG_GROUP_DESCRIPTION,
+      hidden=release_track == base.ReleaseTrack.GA,
+  )
+  if release_track == base.ReleaseTrack.BETA:
+    flags.CLOUD_RUN_FUNCTIONS_ROUTING_BETA.choice_arg.AddToParser(
+        traffic_routing_group
+    )
+  elif release_track == base.ReleaseTrack.ALPHA:
+    flags.CLOUD_RUN_FUNCTIONS_ROUTING_ALPHA.choice_arg.AddToParser(
+        traffic_routing_group
+    )
+
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -982,6 +1002,8 @@ class CreateAlpha(CreateBeta):
 
     {top_command} composer operations describe
   """
+
+  _support_traffic_routing_config = True
 
   @classmethod
   def Args(cls, parser, release_track=base.ReleaseTrack.ALPHA):
@@ -1021,6 +1043,7 @@ class CreateAlpha(CreateBeta):
         image_version=self.image_version,
         airflow_executor_type=args.airflow_executor_type,
         use_ip_aliases=args.enable_ip_alias,
+        cloud_run_functions_routing=args.cloud_run_functions_routing,
         cluster_secondary_range_name=args.cluster_secondary_range_name,
         services_secondary_range_name=args.services_secondary_range_name,
         cluster_ipv4_cidr_block=args.cluster_ipv4_cidr,

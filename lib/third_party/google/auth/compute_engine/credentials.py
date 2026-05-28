@@ -20,6 +20,9 @@ Compute Engine using the Compute Engine metadata server.
 """
 
 import datetime
+import logging
+from typing import Optional, TYPE_CHECKING
+
 
 from google.auth import _helpers
 from google.auth import credentials
@@ -30,11 +33,17 @@ from google.auth import metrics
 from google.auth.compute_engine import _metadata
 from google.oauth2 import _client
 
+if TYPE_CHECKING:  # pragma: NO COVER
+    import google.auth.transport
+
+_LOGGER = logging.getLogger(__name__)
+
 
 class Credentials(
     credentials.Scoped,
     credentials.CredentialsWithQuotaProject,
     credentials.CredentialsWithUniverseDomain,
+    credentials.CredentialsWithRegionalAccessBoundary,
 ):
     """Compute Engine Credentials.
 
@@ -61,6 +70,7 @@ class Credentials(
         scopes=None,
         default_scopes=None,
         universe_domain=None,
+        trust_boundary=None,
     ):
         """
         Args:
@@ -76,6 +86,7 @@ class Credentials(
                 provided or None, credential will attempt to fetch the value
                 from metadata server. If metadata server doesn't have universe
                 domain endpoint, then the default googleapis.com will be used.
+            trust_boundary (Mapping[str,str]): A credential trust boundary.
         """
         super(Credentials, self).__init__()
         self._service_account_email = service_account_email
@@ -86,6 +97,8 @@ class Credentials(
         if universe_domain:
             self._universe_domain = universe_domain
             self._universe_domain_cached = True
+
+        self._trust_boundary = trust_boundary
 
     def _retrieve_info(self, request):
         """Retrieve information about the service account.
@@ -100,16 +113,22 @@ class Credentials(
             request, service_account=self._service_account_email
         )
 
+        if not info or "email" not in info:
+            raise exceptions.RefreshError(
+                "Unexpected response from metadata server: "
+                "service account info is missing 'email' field."
+            )
+
         self._service_account_email = info["email"]
 
         # Don't override scopes requested by the user.
         if self._scopes is None:
-            self._scopes = info["scopes"]
+            self._scopes = info.get("scopes")
 
     def _metric_header_for_usage(self):
         return metrics.CRED_TYPE_SA_MDS
 
-    def refresh(self, request):
+    def _perform_refresh_token(self, request):
         """Refresh the access token and scopes.
 
         Args:
@@ -121,15 +140,65 @@ class Credentials(
                 service can't be reached if if the instance has not
                 credentials.
         """
-        scopes = self._scopes if self._scopes is not None else self._default_scopes
         try:
             self._retrieve_info(request)
+            scopes = self._scopes if self._scopes is not None else self._default_scopes
+            # Always fetch token with default service account email.
             self.token, self.expiry = _metadata.get_service_account_token(
-                request, service_account=self._service_account_email, scopes=scopes
+                request, service_account="default", scopes=scopes
             )
         except exceptions.TransportError as caught_exc:
             new_exc = exceptions.RefreshError(caught_exc)
             raise new_exc from caught_exc
+
+    def _build_regional_access_boundary_lookup_url(
+        self, request: "Optional[google.auth.transport.Request]" = None  # noqa: F821
+    ):
+        """Builds and returns the URL for the regional access boundary lookup API for GCE.
+
+        Args:
+            request (Optional[google.auth.transport.Request]): The object used to make
+                HTTP requests.
+
+        Returns:
+            Optional[str]: The URL for the regional access boundary lookup,
+                or None if it fails to fetch the service account email from
+                the metadata server (due to TransportError or missing email field).
+        """
+        # If the service account email is 'default', we need to get the
+        # actual email address from the metadata server.
+        if self._service_account_email == "default":
+            if request is None:
+                try:
+                    from google.auth.transport import requests as google_auth_requests
+
+                    request = google_auth_requests.Request()
+                except ImportError:
+                    from google.auth.transport import _http_client
+
+                    request = _http_client.Request()
+            try:
+                info = _metadata.get_service_account_info(request, "default")
+                if not info or "email" not in info:
+                    _LOGGER.error(
+                        "Unexpected response from metadata server: "
+                        "service account info is missing 'email' field. Cannot build Regional Access Boundary lookup URL."
+                    )
+                    return None
+                self._service_account_email = info["email"]
+
+            except exceptions.TransportError as e:
+                # If fetching the service account email fails due to a transport error,
+                # it means we cannot build the regional access boundary lookup URL.
+                _LOGGER.error(
+                    "Failed to get service account email to build Regional Access Boundary lookup URL: %s",
+                    e,
+                )
+                return None
+
+        return iam._SERVICE_ACCOUNT_REGIONAL_ACCESS_BOUNDARY_LOOKUP_ENDPOINT.format(
+            service_account_email=self.service_account_email
+        )
 
     @property
     def service_account_email(self):
@@ -149,11 +218,16 @@ class Credentials(
         if self._universe_domain_cached:
             return self._universe_domain
 
-        from google.auth.transport import requests as google_auth_requests
+        try:
+            from google.auth.transport import requests as google_auth_requests
 
-        self._universe_domain = _metadata.get_universe_domain(
-            google_auth_requests.Request()
-        )
+            request = google_auth_requests.Request()
+        except ImportError:
+            from google.auth.transport import _http_client
+
+            request = _http_client.Request()
+
+        self._universe_domain = _metadata.get_universe_domain(request)
         self._universe_domain_cached = True
         return self._universe_domain
 
@@ -165,16 +239,23 @@ class Credentials(
             "principal": self.service_account_email,
         }
 
-    @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
-    def with_quota_project(self, quota_project_id):
+    def _make_copy(self):
         creds = self.__class__(
             service_account_email=self._service_account_email,
-            quota_project_id=quota_project_id,
+            quota_project_id=self._quota_project_id,
             scopes=self._scopes,
             default_scopes=self._default_scopes,
+            universe_domain=self._universe_domain,
+            trust_boundary=self._trust_boundary,
         )
-        creds._universe_domain = self._universe_domain
         creds._universe_domain_cached = self._universe_domain_cached
+        self._copy_regional_access_boundary_manager(creds)
+        return creds
+
+    @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
+    def with_quota_project(self, quota_project_id):
+        creds = self._make_copy()
+        creds._quota_project_id = quota_project_id
         return creds
 
     @_helpers.copy_docstring(credentials.Scoped)
@@ -182,25 +263,17 @@ class Credentials(
         # Compute Engine credentials can not be scoped (the metadata service
         # ignores the scopes parameter). App Engine, Cloud Run and Flex support
         # requesting scopes.
-        creds = self.__class__(
-            scopes=scopes,
-            default_scopes=default_scopes,
-            service_account_email=self._service_account_email,
-            quota_project_id=self._quota_project_id,
-        )
-        creds._universe_domain = self._universe_domain
-        creds._universe_domain_cached = self._universe_domain_cached
+        creds = self._make_copy()
+        creds._scopes = scopes
+        creds._default_scopes = default_scopes
         return creds
 
     @_helpers.copy_docstring(credentials.CredentialsWithUniverseDomain)
     def with_universe_domain(self, universe_domain):
-        return self.__class__(
-            scopes=self._scopes,
-            default_scopes=self._default_scopes,
-            service_account_email=self._service_account_email,
-            quota_project_id=self._quota_project_id,
-            universe_domain=universe_domain,
-        )
+        creds = self._make_copy()
+        creds._universe_domain = universe_domain
+        creds._universe_domain_cached = True
+        return creds
 
 
 _DEFAULT_TOKEN_LIFETIME_SECS = 3600  # 1 hour in seconds
@@ -274,7 +347,7 @@ class IDTokenCredentials(
 
         if use_metadata_identity_endpoint:
             if token_uri or additional_claims or service_account_email or signer:
-                raise exceptions.MalformedError(
+                raise ValueError(
                     "If use_metadata_identity_endpoint is set, token_uri, "
                     "additional_claims, service_account_email, signer arguments"
                     " must not be set"
@@ -337,7 +410,6 @@ class IDTokenCredentials(
 
     @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
     def with_quota_project(self, quota_project_id):
-
         # since the signer is already instantiated,
         # the request is not needed
         if self._use_metadata_identity_endpoint:
@@ -361,11 +433,10 @@ class IDTokenCredentials(
 
     @_helpers.copy_docstring(credentials.CredentialsWithTokenUri)
     def with_token_uri(self, token_uri):
-
         # since the signer is already instantiated,
         # the request is not needed
         if self._use_metadata_identity_endpoint:
-            raise exceptions.MalformedError(
+            raise ValueError(
                 "If use_metadata_identity_endpoint is set, token_uri" " must not be set"
             )
         else:
@@ -438,7 +509,7 @@ class IDTokenCredentials(
             raise new_exc from caught_exc
 
         _, payload, _, _ = jwt._unverified_decode(id_token)
-        return id_token, datetime.datetime.utcfromtimestamp(payload["exp"])
+        return id_token, _helpers.utcfromtimestamp(payload["exp"])
 
     def refresh(self, request):
         """Refreshes the ID token.

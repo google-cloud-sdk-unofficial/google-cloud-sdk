@@ -914,6 +914,7 @@ def validate_pipeline_l1(
     pipeline_paths: list[str],
     combined_variables: Optional[Mapping[str, Any]] = None,
     secret_keys: Iterable[str] = (),
+    allowed_missing: Iterable[str] = (),
 ) -> list[OrchestrationPipelinesModel]:
   """Performs L1 validation for all pipelines in an environment.
 
@@ -925,6 +926,7 @@ def validate_pipeline_l1(
     pipeline_paths: The list of pipeline file paths to validate.
     combined_variables: Dictionary of variables for template substitution.
     secret_keys: Optional list of secret keys to check against.
+    allowed_missing: Optional list of variables allowed to be missing.
 
   Returns:
     A list of `OrchestrationPipelinesModel` instances for the validated
@@ -958,7 +960,7 @@ def validate_pipeline_l1(
               f"'{{{{ {key} }}}}' in pipeline file {pipeline_path}."
           )
 
-    check_for_missing_variables(resolved_yaml_content)
+    check_for_missing_variables(resolved_yaml_content, allowed_missing)
 
     try:
       resolved_pipeline = yaml.load(resolved_yaml_content)
@@ -1051,17 +1053,34 @@ def _contains_secret_reference(value: Any, secret_keys: Iterable[str]) -> bool:
   return False
 
 
-def _resolve_templates_in_dict(data: Any, variables: Mapping[str, Any]) -> Any:
+def resolve_templates_in_dict(data: Any, variables: Mapping[str, Any]) -> Any:
   """Recursively resolves string templates in a dictionary or list."""
   if isinstance(data, str):
     return resolve_string_templates(data, variables)
   elif isinstance(data, dict):
     return {
-        k: _resolve_templates_in_dict(v, variables) for k, v in data.items()
+        k: resolve_templates_in_dict(v, variables) for k, v in data.items()
     }
   elif isinstance(data, list):
-    return [_resolve_templates_in_dict(v, variables) for v in data]
+    return [resolve_templates_in_dict(v, variables) for v in data]
   return data
+
+
+def _find_unresolved_variables(data: Any) -> list[str]:
+  """Recursively finds masked unresolved variables in a dict or list."""
+  unresolved = []
+  if isinstance(data, str):
+    # Matches any characters between __OPEN_TAG__ and __CLOSE_TAG__,
+    # allowing for variable names with special characters like hyphens.
+    matches = re.findall(r"__OPEN_TAG__\s*(.*?)\s*__CLOSE_TAG__", data)
+    unresolved.extend(matches)
+  elif isinstance(data, dict):
+    for v in data.values():
+      unresolved.extend(_find_unresolved_variables(v))
+  elif isinstance(data, list):
+    for v in data:
+      unresolved.extend(_find_unresolved_variables(v))
+  return unresolved
 
 
 def _load_environment_from_pre_parsed(
@@ -1146,16 +1165,29 @@ def _load_environment_from_pre_parsed(
             f"Failed to fetch secret '{secret_name}' from Secret Manager: {e}"
         ) from e
 
+  # Extract captured variables to allow them to be missing in initial validation
+  captured_vars = set()
+  resources_def = env_dict.get("resources", [])
+  for r in resources_def:
+    if isinstance(r, dict):
+      capture_defs = r.get("capture", [])
+      for c in capture_defs:
+        if isinstance(c, dict) and "variable" in c:
+          captured_vars.add(c["variable"])
+
   # 3. Substitute on raw content (only non-secret variables)
   resolved_content = resolve_string_templates(
       yaml_content, resolved_variables
   )
 
-  check_for_missing_variables(resolved_content, allowed_missing=raw_secrets.keys())
+  check_for_missing_variables(
+      resolved_content,
+      allowed_missing=list(raw_secrets.keys()) + list(captured_vars),
+  )
 
-  # Mask unresolved secrets to make it valid YAML
+  # Mask unresolved secrets and captured variables to make it valid YAML
   masked_for_yaml = resolved_content
-  for key in raw_secrets.keys():
+  for key in list(raw_secrets.keys()) + list(captured_vars):
     pattern = r"{{\s*" + re.escape(key) + r"\s*}}"
     masked_for_yaml = re.sub(
         pattern, f"__OPEN_TAG__ {key} __CLOSE_TAG__", masked_for_yaml
@@ -1175,7 +1207,7 @@ def _load_environment_from_pre_parsed(
     env_data = deployment_yaml["environments"][env]
     if "resources" in env_data:
       with allow_secret_resolution():
-        env_data["resources"] = _resolve_templates_in_dict(
+        env_data["resources"] = resolve_templates_in_dict(
             env_data["resources"], {**resolved_variables, **secret_variables}
         )
 
@@ -1185,6 +1217,29 @@ def _load_environment_from_pre_parsed(
     deployment = deployment_model.DeploymentModel.build(deployment_yaml)
   except (KeyError, TypeError, ValueError, AttributeError) as e:
     raise BadFileError(f"Error parsing deployment configuration: {e}") from e
+
+  env_model = deployment.environments[env]
+  available_vars = set(resolved_variables.keys()) | set(secret_variables.keys())
+
+  for resource in env_model.resources:
+    if isinstance(resource, deployment_model.ResourceModel):
+      unresolved = []
+      if resource.definition:
+        unresolved.extend(_find_unresolved_variables(resource.definition))
+      if resource.name:
+        unresolved.extend(_find_unresolved_variables(resource.name))
+      if resource.parent:
+        unresolved.extend(_find_unresolved_variables(resource.parent))
+
+      for var in unresolved:
+        if var not in available_vars:
+          raise BadFileError(
+              f"Resource '{resource.name}' uses variable '{var}' "
+              "before it is defined or captured."
+          )
+      # Add captured variables to available_vars
+      for c in resource.capture:
+        available_vars.add(c.variable)
 
   environments = getattr(deployment, ENVIRONMENTS_KEY)
   if env not in environments:

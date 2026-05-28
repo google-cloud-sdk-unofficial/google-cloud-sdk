@@ -25,7 +25,6 @@ def export_image(
     version: str,
     destination_repository: str,
     api_client: appengine_api_client.AppengineApiClient,
-    export_service_account: str | None = None,
 ) -> appengine_api_client.ExportImageResult:
   """Exports the App Engine image to Artifact Registry.
 
@@ -35,7 +34,6 @@ def export_image(
     version: The version ID.
     destination_repository: The destination Artifact Registry repository.
     api_client: The App Engine API client.
-    export_service_account: The service account to use for exporting the image.
 
   Returns:
     An ExportImageResult object.
@@ -50,7 +48,6 @@ def export_image(
         service_id=service,
         version_id=version,
         destination_repository=destination_repository,
-        export_service_account=export_service_account,
     )
   except exceptions.Error as e:
     raise exceptions.Error(f'Failed to export image: {e!r}') from e

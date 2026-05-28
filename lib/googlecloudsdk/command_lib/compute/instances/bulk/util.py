@@ -38,6 +38,7 @@ class SupportedFeatures:
       support_max_count_per_zone,
       support_custom_hostnames,
       support_specific_then_x_affinity,
+      support_any_reservation_then_fail_affinity,
       support_watchdog_timer,
       support_graceful_shutdown,
       support_source_snapshot_region,
@@ -53,6 +54,9 @@ class SupportedFeatures:
     self.support_max_count_per_zone = support_max_count_per_zone
     self.support_custom_hostnames = support_custom_hostnames
     self.support_specific_then_x_affinity = support_specific_then_x_affinity
+    self.support_any_reservation_then_fail_affinity = (
+        support_any_reservation_then_fail_affinity
+    )
     self.support_watchdog_timer = support_watchdog_timer
     self.support_replica_zones = True
     self.support_graceful_shutdown = support_graceful_shutdown
@@ -484,7 +488,10 @@ def CreateBulkInsertInstanceResource(
     )
 
   reservation_affinity = instance_utils.GetReservationAffinity(
-      args, compute_client, supported_features.support_specific_then_x_affinity
+      args,
+      compute_client,
+      supported_features.support_specific_then_x_affinity,
+      supported_features.support_any_reservation_then_fail_affinity,
   )
   workload_identity_config = instance_utils.CreateWorkloadIdentityConfigMessage(
       args,

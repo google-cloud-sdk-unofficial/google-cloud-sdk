@@ -35,18 +35,13 @@ def _ValidateGlobalTargetArgs(args, support_external_passthrough):
         'You cannot specify [--target-pool] for a global '
         'forwarding rule.')
 
-  if getattr(args, 'backend_service', None):
-    load_balancing_scheme = getattr(args, 'load_balancing_scheme', None)
-    if not support_external_passthrough:
-      raise exceptions.ArgumentError(
-          'You cannot specify [--backend-service] for a global '
-          'forwarding rule with EXTERNAL_PASSTHROUGH load balancing scheme.'
-      )
-    elif load_balancing_scheme != 'EXTERNAL_PASSTHROUGH':
-      raise exceptions.ArgumentError(
-          'You can only specify [--backend-service] for a global '
-          'forwarding rule with EXTERNAL_PASSTHROUGH load balancing scheme.'
-      )
+  if (
+      getattr(args, 'backend_service', None)
+      and not support_external_passthrough
+  ):
+    raise exceptions.ArgumentError(
+        'You cannot specify [--backend-service] for a global '
+        'forwarding rule.')
 
   if getattr(args, 'target_vpn_gateway', None):
     raise exceptions.ArgumentError(

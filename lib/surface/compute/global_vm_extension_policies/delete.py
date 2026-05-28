@@ -21,7 +21,9 @@ from googlecloudsdk.command_lib.compute.global_vm_extension_policies import flag
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Delete(base.DeleteCommand):
   """Delete a Compute Engine global VM extension policy."""
 

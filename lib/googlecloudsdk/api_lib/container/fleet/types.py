@@ -173,6 +173,13 @@ GkehubProjectsLocationsRolloutSequencesDeleteRequest = (
     # | ga_messages.GkehubProjectsLocationsRolloutSequencesDeleteRequest
 )
 
+GkehubProjectsLocationsRolloutSequencesUpgradeRequest = (
+    alpha_messages.GkehubProjectsLocationsRolloutSequencesUpgradeRequest
+    # RolloutSequences are not yet available in beta or GA.
+    # | beta_messages.GkehubProjectsLocationsRolloutSequencesUpgradeRequest
+    # | ga_messages.GkehubProjectsLocationsRolloutSequencesUpgradeRequest
+)
+
 GkehubProjectsLocationsRolloutSequencesPatchRequest = (
     alpha_messages.GkehubProjectsLocationsRolloutSequencesPatchRequest
     # RolloutSequences are not yet available in beta or GA.

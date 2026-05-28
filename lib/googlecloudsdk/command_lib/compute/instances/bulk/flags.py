@@ -406,6 +406,7 @@ def AddCommonBulkInsertArgs(
     support_max_count_per_zone=False,
     support_custom_hostnames=False,
     support_specific_then_x_affinity=False,
+    support_any_reservation_then_fail_affinity=False,
     support_watchdog_timer=False,
     support_igmp_query=False,
     support_graceful_shutdown=False,
@@ -490,6 +491,7 @@ def AddCommonBulkInsertArgs(
       group_text='Specifies the reservation for the instance.',
       affinity_text='The type of reservation for the instance.',
       support_specific_then_x_affinity=support_specific_then_x_affinity,
+      support_any_reservation_then_fail_affinity=support_any_reservation_then_fail_affinity,
   )
 
   maintenance_flags.AddResourcePoliciesArgs(parser, 'added to', 'instance')

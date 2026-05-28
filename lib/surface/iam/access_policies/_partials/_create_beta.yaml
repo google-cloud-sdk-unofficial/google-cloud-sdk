@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@
     examples: |-
       To create a policy instance called `my-policy`, run:
 
-      $ {command} my-policy --organization=123 --location=global --details.rules=rule1.json
+      $ {command} my-policy --organization=123 --location=global --details-rules=rule1.json
   arguments:
     params:
     - help_text: |-
@@ -153,7 +153,9 @@
               The conditions that determine whether this rule applies to a request.
               Conditions are identified by their key, which is the FQDN of the service
               that they are relevant to. For example: `"conditions": {
-               "iam.googleapis.com": <cel expression>
+               "iam.googleapis.com": {
+                "expression": <cel expression>
+               }
               }`. Each rule is evaluated independently. If this rule does not apply
               to a request, other rules might still apply.
               Currently supported keys are as follows:

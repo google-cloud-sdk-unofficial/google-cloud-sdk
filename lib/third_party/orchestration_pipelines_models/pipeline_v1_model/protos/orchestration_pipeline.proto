@@ -133,41 +133,30 @@ message DataprocEphemeralConfiguration {
 
 message DataprocClusterResourceProfile {
   message InlineConfig {
-      oneof config_alias {
-        // A Dataproc cluster config.
-        // See: https://docs.cloud.google.com/dataproc/docs/reference/rest/v1/ClusterConfig
-        google.protobuf.Struct cluster_config = 1 [deprecated = true];
-
-        // A Dataproc cluster config.
-        // See: https://docs.cloud.google.com/dataproc/docs/reference/rest/v1/ClusterConfig
-        google.protobuf.Struct config = 2;
-      }
+      // A Dataproc cluster config.
+      // See: https://cloud.google.com/dataproc/docs/reference/rpc/google.cloud.dataproc.v1#clusterconfig
+      google.protobuf.Struct cluster_config = 1;
   }
   oneof config {
       InlineConfig inline = 1;
       string path = 2;
       string external_config_path = 3;
    }
-  // Overrides are applied with deep merge onto the provided config. Works with inline, path and external config path.
-  InlineConfig overrides = 4;
 }
 
 message DataprocBatchResourceProfile {
   message InlineConfig {
     // A Dataproc runtime config for a batch job.
-    // See: https://docs.cloud.google.com/dataproc-serverless/docs/reference/rest/v1/RuntimeConfig
+    // See: https://cloud.google.com/dataproc/docs/reference/rpc/google.cloud.dataproc.v1#runtimeconfig
     google.protobuf.Struct runtime_config = 1;
     // A Dataproc environment config for a batch job.
-    // See: https://docs.cloud.google.com/dataproc-serverless/docs/reference/rest/v1/EnvironmentConfig
+    // See: https://cloud.google.com/dataproc/docs/reference/rpc/google.cloud.dataproc.v1#environmentconfig
     google.protobuf.Struct environment_config = 2;
   }
   oneof config {
     InlineConfig inline = 1;
     string path = 2;
-    string external_config_path = 3;
   }
-  // Overrides are applied with deep merge onto the provided config. Works with inline, path and external config path.
-  InlineConfig overrides = 4;
 }
 
 message DataprocServerlessBatchEngine {
@@ -248,7 +237,6 @@ message PysparkAction {
   repeated string archive_uris = 6;
   string staging_bucket = 7;
   repeated string py_files = 8;
-  PysparkEnvironment environment = 9;
 }
 
 message PysparkEngine {
@@ -258,14 +246,6 @@ message PysparkEngine {
   }
 }
 
-message PysparkEnvironment {
-  message Requirements {
-    oneof requirements {
-      string path = 1;
-    }
-  }
-  Requirements requirements = 1;
-}
 
 /////////////////////////
 // Notebook Action
@@ -283,7 +263,6 @@ message NotebookAction {
   string main_file_path = 5 [(pipeline_models.validation.is_required) = true];
   repeated string archive_uris = 6;
   string staging_bucket = 7;
-  NotebookEnvironment environment = 8;
 }
 
 message NotebookEngine {
@@ -293,14 +272,6 @@ message NotebookEngine {
   }
 }
 
-message NotebookEnvironment {
-  message Requirements {
-    oneof requirements {
-      string path = 1;
-    }
-  }
-  Requirements requirements = 1;
-}
 
 /////////////////////////
 // SQL Action
@@ -329,7 +300,6 @@ message SqlEngine {
   oneof engine {
     BigQueryEngine bigquery = 1;
     DataprocServerlessBatchEngine dataproc_serverless = 2;
-    DataprocOnGceEngine dataproc_on_gce = 3;
   }
 }
 

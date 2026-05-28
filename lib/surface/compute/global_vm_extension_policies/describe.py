@@ -21,22 +21,28 @@ from googlecloudsdk.command_lib.compute.global_vm_extension_policies import flag
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine global VM extension policy."""
 
   detailed_help = {
       'brief': 'Describe a Compute Engine global VM extension policy.',
-      'EXAMPLES': """
+      'EXAMPLES': (
+          """
      To describe a global VM extension policy, run:
 
        $ {command} test-policy-name
-   """,
+   """
+      ),
   }
 
   @staticmethod
   def Args(parser):
-    Describe.GlobalVmExtensionPoliciesArg = flags.MakeGlobalVmExtensionPolicyArg()
+    Describe.GlobalVmExtensionPoliciesArg = (
+        flags.MakeGlobalVmExtensionPolicyArg()
+    )
     Describe.GlobalVmExtensionPoliciesArg.AddArgument(
         parser, operation_type='describe'
     )

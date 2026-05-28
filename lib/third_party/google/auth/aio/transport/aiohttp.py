@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Transport adapter for Asynchronous HTTP Requests based on aiohttp.
-"""
+"""Transport adapter for Asynchronous HTTP Requests based on aiohttp."""
 
 import asyncio
-from typing import AsyncGenerator, Mapping, Optional
+import logging
+from typing import AsyncGenerator, Mapping, Optional, TYPE_CHECKING, Union
 
 try:
     import aiohttp  # type: ignore
@@ -27,7 +27,19 @@ except ImportError as caught_exc:  # pragma: NO COVER
 
 from google.auth import _helpers
 from google.auth import exceptions
+from google.auth.aio import _helpers as _helpers_async
 from google.auth.aio import transport
+
+if TYPE_CHECKING:  # pragma: NO COVER
+    from aiohttp import ClientTimeout  # type: ignore
+
+else:
+    try:
+        from aiohttp import ClientTimeout
+    except (ImportError, AttributeError):
+        ClientTimeout = None
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class Response(transport.Response):
@@ -100,7 +112,7 @@ class Request(transport.Request):
         # Custom aiohttp Session Example:
         session = session=aiohttp.ClientSession(auto_decompress=False)
         request = google.auth.aio.transport.aiohttp.Request(session=session)
-        auth_sesion = google.auth.aio.transport.sessions.AsyncAuthorizedSession(auth_request=request)
+        auth_session = google.auth.aio.transport.sessions.AsyncAuthorizedSession(auth_request=request)
 
     Args:
         session (aiohttp.ClientSession): An instance :class:`aiohttp.ClientSession` used
@@ -109,7 +121,7 @@ class Request(transport.Request):
     .. automethod:: __call__
     """
 
-    def __init__(self, session: aiohttp.ClientSession = None):
+    def __init__(self, session: Optional[aiohttp.ClientSession] = None):
         self._session = session
         self._closed = False
 
@@ -119,7 +131,7 @@ class Request(transport.Request):
         method: str = "GET",
         body: Optional[bytes] = None,
         headers: Optional[Mapping[str, str]] = None,
-        timeout: float = transport._DEFAULT_TIMEOUT_SECONDS,
+        timeout: Union[float, ClientTimeout] = transport._DEFAULT_TIMEOUT_SECONDS,
         **kwargs,
     ) -> transport.Response:
         """
@@ -154,7 +166,11 @@ class Request(transport.Request):
             if not self._session:
                 self._session = aiohttp.ClientSession()
 
-            client_timeout = aiohttp.ClientTimeout(total=timeout)
+            if isinstance(timeout, aiohttp.ClientTimeout):
+                client_timeout = timeout
+            else:
+                client_timeout = aiohttp.ClientTimeout(total=timeout)
+            _helpers.request_log(_LOGGER, method, url, body, headers)
             response = await self._session.request(
                 method,
                 url,
@@ -163,6 +179,7 @@ class Request(transport.Request):
                 timeout=client_timeout,
                 **kwargs,
             )
+            await _helpers_async.response_log_async(_LOGGER, response)
             return Response(response)
 
         except aiohttp.ClientError as caught_exc:
@@ -170,8 +187,12 @@ class Request(transport.Request):
             raise client_exc from caught_exc
 
         except asyncio.TimeoutError as caught_exc:
+            if isinstance(timeout, aiohttp.ClientTimeout):
+                timeout_seconds = timeout.total
+            else:
+                timeout_seconds = timeout
             timeout_exc = exceptions.TimeoutError(
-                f"Request timed out after {timeout} seconds."
+                f"Request timed out after {timeout_seconds} seconds."
             )
             raise timeout_exc from caught_exc
 

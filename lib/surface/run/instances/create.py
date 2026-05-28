@@ -108,7 +108,7 @@ class Create(base.Command):
     flags.AddServiceAccountFlag(parser)
     flags.AddSetCloudSQLFlag(parser)
     flags.AddVpcConnectorArg(parser)
-    flags.AddVpcNetworkGroupFlagsForCreate(parser, resource_kind='job')
+    flags.AddVpcNetworkGroupFlagsForCreate(parser, resource_kind='instance')
     flags.AddEgressSettingsFlag(parser)
     flags.AddClientNameAndVersionFlags(parser)
     flags.AddBinAuthzPolicyFlags(parser, with_clear=False)
@@ -122,6 +122,7 @@ class Create(base.Command):
     flags.AddIngressFlag(parser)
     flags.AddInvokerIamCheckFlag(parser)
     flags.AddTimeoutFlag(parser)
+    flags.AddDefaultUrlFlag(parser, resource_kind='instance')
 
     polling_group = parser.add_mutually_exclusive_group()
     flags.AddAsyncFlag(polling_group)

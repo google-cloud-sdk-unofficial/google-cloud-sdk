@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -61,6 +61,37 @@ organizations_locations:
   - *organization
   - *location
   disable_auto_completers: true
+folders_or_organizations_or_projects_locations_access_policies:
+  name: accessPolicy
+  plural_name: accessPolicies
+  resources:
+  - name: accessPolicy
+    plural_name: accessPolicies
+    collection: iam.folders.locations.accessPolicies
+    attributes:
+    - *folder
+    - *location
+    - &accessPolicy
+      parameter_name: accessPoliciesId
+      attribute_name: access_policy
+      help: The accessPolicy id of the {resource} resource.
+    disable_auto_completers: true
+  - name: accessPolicy
+    plural_name: accessPolicies
+    collection: iam.organizations.locations.accessPolicies
+    attributes:
+    - *organization
+    - *location
+    - *accessPolicy
+    disable_auto_completers: true
+  - name: accessPolicy
+    plural_name: accessPolicies
+    collection: iam.projects.locations.accessPolicies
+    attributes:
+    - *project
+    - *location
+    - *accessPolicy
+    disable_auto_completers: true
 folders_or_organizations_or_projects_locations_policy_bindings:
   name: policyBinding
   plural_name: policyBindings

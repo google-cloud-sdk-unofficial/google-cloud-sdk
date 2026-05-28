@@ -18,6 +18,7 @@ import pathlib
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.command_lib.orchestration_pipelines import deployment_model
 from googlecloudsdk.command_lib.orchestration_pipelines import gcp_deployer
 from googlecloudsdk.command_lib.orchestration_pipelines.handlers import registry
 from googlecloudsdk.command_lib.orchestration_pipelines.tools import yaml_processor
@@ -157,11 +158,19 @@ class Validate(calliope_base.Command):
       has_environment = env is not None
       pipeline_models = []
 
+      captured_vars = set()
+      if env:
+        for r in env.resources:
+          if isinstance(r, deployment_model.ResourceModel):
+            for c in r.capture:
+              captured_vars.add(c.variable)
+
       if pipeline_paths:
         pipeline_models = yaml_processor.validate_pipeline_l1(
             work_dir,
             pipeline_paths,
             combined_vars,
+            allowed_missing=captured_vars,
         )
       context["pipeline_models"] = pipeline_models
 
@@ -197,6 +206,7 @@ class Validate(calliope_base.Command):
       pipeline_models = context["pipeline_models"]
       resources = context["resources"]
       env_name = context["name"]
+      combined_vars = context["combined_vars"]
       has_environment = env is not None
 
       if pipeline_models:
@@ -211,7 +221,7 @@ class Validate(calliope_base.Command):
           if resource.type == "resourceProfile":
             continue
           handler = registry.GetHandler(resource, env)
-          gcp_deployer.validate_gcp_resource_l2(handler)
+          gcp_deployer.validate_gcp_resource_l2(handler, combined_vars)
 
       if has_environment:
         print(

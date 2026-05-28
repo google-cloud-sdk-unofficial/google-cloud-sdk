@@ -222,7 +222,8 @@ class Update(base.UpdateCommand):
     Returns:
       ProcessHttpResponse of the request made.
     """
-    client = backup_plans.BackupPlansClient()
+    api_version = util.GetApiVersion(self.ReleaseTrack())
+    client = backup_plans.BackupPlansClient(api_version=api_version)
 
     backup_plan = args.CONCEPTS.backup_plan.Parse()
     backup_rules_file_content = args.backup_rules_from_file

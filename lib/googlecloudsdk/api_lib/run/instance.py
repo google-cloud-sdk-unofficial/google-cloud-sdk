@@ -77,7 +77,7 @@ class Instance(container_resource.ContainerResource):
 
   @property
   def is_running(self):
-    return self.conditions.get('Running', False)
+    return self.conditions.IsReady()
 
   @property
   def template(self):
@@ -121,8 +121,7 @@ class Instance(container_resource.ContainerResource):
       duration = times.ParseDuration(str(value), default_suffix='s')
       self.spec.timeout = times.FormatDurationForJson(duration)
 
-  @property
-  def status(self):
+  def _get_running_status(self):
     """Return the status of this instance."""
     ready_cond = self.conditions.get(self.READY_CONDITION, None)
     if ready_cond and ready_cond['status']:
@@ -144,7 +143,7 @@ class Instance(container_resource.ContainerResource):
 
   def ReadySymbolAndColor(self):
     """Return a tuple of ready_symbol and display color for this object."""
-    status = self.status
+    status = self._get_running_status()
     encoding = console_attr.GetConsoleAttr().GetEncoding()
     instance_symbol = self.INSTANCE_SYMBOLS.get(
         status, InstanceSymbol(best='?', alt='?')

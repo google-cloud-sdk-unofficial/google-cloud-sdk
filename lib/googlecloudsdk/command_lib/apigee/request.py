@@ -37,7 +37,7 @@ APIGEE_LEP_HOST = "%s-apigee.googleapis.com"
 APIGEE_MREP_HOST = "apigee.%s.rep.googleapis.com"
 ERROR_FIELD = "error"
 MESSAGE_FIELD = "message"
-SUPPORTED_MREP_REGIONS = ["us", "eu", "in"]
+SUPPORTED_MREP_REGIONS = ["us", "eu", "in", "sa"]
 
 
 def _ResourceIdentifier(identifiers, entity_path):

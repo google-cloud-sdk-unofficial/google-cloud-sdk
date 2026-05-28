@@ -233,42 +233,42 @@
   }, {
     "source_name": "BigQuery",
     "target_name": "Hive",
-    "status": "GA",
+    "status": "PRIVATE_PREVIEW",
     "legacy_batch_name": ["BigQuery2HiveQL_Translation", "Translation_BQ2HiveQL"]
   }, {
     "source_name": "BigQuery",
     "target_name": "SparkSQL",
-    "status": "GA",
+    "status": "PRIVATE_PREVIEW",
     "legacy_batch_name": ["BigQuery2SparkSQL_Translation", "Translation_BQ2SparkSQL"]
   }, {
     "source_name": "BigQuery",
     "target_name": "Postgresql",
-    "status": "GA",
+    "status": "PRIVATE_PREVIEW",
     "legacy_batch_name": ["BigQuery2Postgresql_Translation", "Translation_BQ2Postgresql"]
   }, {
     "source_name": "BigQuery",
     "target_name": "Redshift",
-    "status": "GA",
+    "status": "PRIVATE_PREVIEW",
     "legacy_batch_name": ["BigQuery2Redshift_Translation"]
   }, {
     "source_name": "BigQuery",
     "target_name": "Snowflake",
-    "status": "GA",
+    "status": "PRIVATE_PREVIEW",
     "legacy_batch_name": ["BigQuery2Snowflake_Translation"]
   }, {
     "source_name": "Oracle",
     "target_name": "Postgresql",
-    "status": "GA",
+    "status": "PRIVATE_PREVIEW",
     "legacy_batch_name": ["Oracle2Postgresql_Translation", "Translation_Oracle2Postgresql"]
   }, {
     "source_name": "SQLServer",
     "target_name": "Postgresql",
-    "status": "GA",
+    "status": "PRIVATE_PREVIEW",
     "legacy_batch_name": ["SQLServer2Postgresql_Translation", "Translation_SQLServer2Postgresql"]
   }, {
     "source_name": "Hive",
     "target_name": "Hive",
-    "status": "GA",
+    "status": "PRIVATE_PREVIEW",
     "legacy_batch_name": ["HiveQL2HiveQL_Translation"]
   }, {
     "source_name": "BigQuery",

@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.storage.tasks import task
 from googlecloudsdk.command_lib.storage.tasks import task_util
 from googlecloudsdk.command_lib.storage.tasks.cp import copy_util
 from googlecloudsdk.command_lib.storage.tasks.cp import delete_temporary_components_task
+from googlecloudsdk.core import properties
 
 
 class FinalizeCompositeUploadTask(copy_util.ObjectCopyTaskWithExitHandler):
@@ -92,12 +93,16 @@ class FinalizeCompositeUploadTask(copy_util.ObjectCopyTaskWithExitHandler):
             key=lambda component: component.component_number)
     ]
 
+    delete_source_objects = (
+        properties.VALUES.storage.delete_source_objects_in_compose.GetBool()
+    )
     compose_task = compose_objects_task.ComposeObjectsTask(
         uploaded_objects,
         self._destination_resource,
         original_source_resource=self._source_resource,
         posix_to_set=self._posix_to_set,
         user_request_args=self._user_request_args,
+        delete_source_objects=delete_source_objects,
     )
     compose_task_output = compose_task.execute(
         task_status_queue=task_status_queue

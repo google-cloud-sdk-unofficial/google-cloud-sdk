@@ -21,7 +21,13 @@ from googlecloudsdk.command_lib.projects import util
 
 
 @base.UniverseCompatible
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Manifests(base.Group):
+  """Generate optimized Kubernetes manifests."""
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Hidden
+class ManifestsAlpha(Manifests):
   """Generate optimized Kubernetes manifests."""

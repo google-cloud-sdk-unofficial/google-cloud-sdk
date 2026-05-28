@@ -66,7 +66,8 @@ class Delete(base.DeleteCommand):
     Returns:
       ProcessHttpResponse of the request made.
     """
-    client = BackupPlansClient()
+    api_version = util.GetApiVersion(self.ReleaseTrack())
+    client = BackupPlansClient(api_version=api_version)
     is_async = args.async_
 
     backup_plan = args.CONCEPTS.backup_plan.Parse()

@@ -14,8 +14,6 @@
 # limitations under the License.
 """Functions for Backupdr gcloud declarative commands."""
 
-from googlecloudsdk.generated_clients.apis.backupdr.v1 import backupdr_v1_messages
-
 
 def SetBasicViewByDefaultRequestHook(ref, args, request):
   """Add basic view as a default field to list request.
@@ -29,8 +27,9 @@ def SetBasicViewByDefaultRequestHook(ref, args, request):
     Modified request that includes the view field set to basic view.
   """
   del ref, args  # Unused.
-  request.view = (
-      backupdr_v1_messages.BackupdrProjectsLocationsBackupVaultsDataSourcesBackupsListRequest.ViewValueValuesEnum.BACKUP_VIEW_BASIC
-  )
+  # Access the ViewValueValuesEnum from the request instance's own class.
+  # This ensures compatibility across v1, v1beta, and v1alpha.
+  if hasattr(request, 'ViewValueValuesEnum'):
+    request.view = request.ViewValueValuesEnum.BACKUP_VIEW_BASIC
 
   return request

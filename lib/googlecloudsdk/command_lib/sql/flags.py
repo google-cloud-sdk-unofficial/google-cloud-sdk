@@ -3709,7 +3709,7 @@ def AddClearEntraIdConfig(parser, hidden=False):
   )
 
 
-def AddPerformanceCaptureConfig(parser, hidden=True):
+def AddPerformanceCaptureConfig(parser, hidden=False):
   """Adds --performance-capture-config argument."""
   parser.add_argument(
       '--performance-capture-config',
@@ -3722,9 +3722,21 @@ def AddPerformanceCaptureConfig(parser, hidden=True):
           ' Available case-sensitive keys are: enabled (boolean),'
           ' probing-interval-seconds (integer), probe-threshold (integer),'
           ' running-threads-threshold (integer),'
-          ' seconds-behind-source-threshold (integer), '
-          ' and transaction-duration-threshold (integer). Example:'
-          ' --performance-capture-config enabled=true,probe-threshold=5'
+          ' seconds-behind-source-threshold (integer),'
+          ' transaction-duration-threshold (integer),'
+          ' cpu-utilization-threshold-percent (integer),'
+          ' memory-usage-threshold-percent (integer),'
+          ' transaction-lock-wait-threshold-count (integer),'
+          ' semaphore-wait-threshold-count (integer),'
+          ' history-list-length-threshold-count (integer),'
+          ' transaction-kill-threshold-seconds (integer),'
+          ' transaction-kill-type (string),'
+          ' transaction-kill-excluded-user-hosts (string, semicolon-separated'
+          ' list) Example: --performance-capture-config'
+          ' enabled=true,probe-threshold=5,'
+          ' cpu-utilization-threshold-percent=80,'
+          ' transaction-kill-excluded-user-hosts=user1@host1;user2@%,'
+          ' transaction-kill-type=READ_ONLY_TRANSACTIONS'
       ),
       hidden=hidden,
   )

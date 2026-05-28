@@ -251,29 +251,35 @@ def _GetRelativePath(path: str) -> str:
   return path
 
 
-def _DeployGcpResources(parsed_deployment: dict[str, Any]) -> int:
+def _DeployGcpResources(
+    parsed_deployment: dict[str, Any], combined_variables: dict[str, Any]
+) -> tuple[int, dict[str, Any]]:
   """Deploys GCP resources based on a deployment dict.
 
   Args:
     parsed_deployment: The already parsed deployment dict.
+    combined_variables: The initial variables for substitution.
 
   Returns:
-    The number of resources deployed.
+    A tuple containing the number of resources deployed and the updated
+    variables map.
   """
   resources_deployed_count = 0
   deployment_resources = parsed_deployment.get("resources", [])
 
   environment_obj = types.SimpleNamespace(**parsed_deployment)
+  dynamic_variables = combined_variables.copy()
 
   for resource in deployment_resources:
     if resource.type == "resourceProfile":
       log.status.Print(f"Skipping resource profile '{resource.name}'.")
       continue
+
     handler = registry.GetHandler(resource, environment_obj)
-    gcp_deployer.validate_gcp_resource_l1(handler)
-    gcp_deployer.deploy_gcp_resource(handler)
+    gcp_deployer.deploy_gcp_resource(handler, dynamic_variables)
     resources_deployed_count += 1
-  return resources_deployed_count
+
+  return resources_deployed_count, dynamic_variables
 
 
 def _ArtifactsExist(artifact_uri: str) -> bool:
@@ -520,7 +526,9 @@ class Deploy(calliope_base.Command):
             f"Deployment file {deployment_path.name} found, deploying "
             "resources..."
         )
-        resources_deployed_count = _DeployGcpResources(parsed_deployment)
+        resources_deployed_count, dynamic_variables = _DeployGcpResources(
+            parsed_deployment, combined_variables
+        )
         if resources_deployed_count > 0:
           status["resource_deployment"] = "SUCCESS"
         else:
@@ -559,7 +567,7 @@ class Deploy(calliope_base.Command):
             else []
         )
         pipeline_models = yaml_processor.validate_pipeline_l1(
-            bundle_dir, pipelines, combined_variables, secret_keys=secret_keys
+            bundle_dir, pipelines, dynamic_variables, secret_keys=secret_keys
         )
         composer_bucket = _GetComposerBucket(
             parsed_deployment["composer_env"],
@@ -577,7 +585,7 @@ class Deploy(calliope_base.Command):
               composer_bucket=composer_bucket,
               is_local=getattr(args, "local", False),
               parsed_deployment=parsed_deployment,
-              combined_variables=combined_variables,
+              combined_variables=dynamic_variables,
               pipelines=pipelines,
           )
         status["version"] = version_id

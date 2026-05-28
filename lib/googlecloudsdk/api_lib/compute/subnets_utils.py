@@ -128,6 +128,7 @@ def MakeSubnetworkUpdateRequest(
     external_ipv6_prefix=None,
     internal_ipv6_prefix=None,
     ip_collection=None,
+    ipv6_network_tier=None,
 ):
   """Make the appropriate update request for the args.
 
@@ -168,6 +169,7 @@ def MakeSubnetworkUpdateRequest(
       subnet. When ULA is enabled, the prefix will be ignored.
     ip_collection: The IP collection that provisions BYOIP v6 addresses for this
       subnet.
+    ipv6_network_tier: The IPv6 network tier for this subnet.
 
   Returns:
     response, result of sending the update request for the subnetwork
@@ -346,6 +348,7 @@ def MakeSubnetworkUpdateRequest(
       or ipv6_access_type is not None
       or external_ipv6_prefix is not None
       or internal_ipv6_prefix is not None
+      or ipv6_network_tier is not None
   ):
     subnetwork = client.messages.Subnetwork()
     original_subnetwork = client.MakeRequests([(
@@ -370,6 +373,12 @@ def MakeSubnetworkUpdateRequest(
       subnetwork.internalIpv6Prefix = internal_ipv6_prefix
     if ip_collection is not None:
       subnetwork.ipCollection = ip_collection
+    if ipv6_network_tier is not None:
+      subnetwork.ipv6NetworkTier = (
+          client.messages.Subnetwork.Ipv6NetworkTierValueValuesEnum(
+              ipv6_network_tier
+          )
+      )
     return client.MakeRequests(
         [CreateSubnetworkPatchRequest(client, subnet_ref, subnetwork)]
     )

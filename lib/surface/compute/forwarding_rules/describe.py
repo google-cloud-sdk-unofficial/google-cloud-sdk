@@ -61,9 +61,7 @@ def _Run(args, holder, forwarding_rules_arg):
   return client.MakeRequests([(service, 'Get', request)])[0]
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.PREVIEW
-)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class Describe(base.DescribeCommand):
   """Display detailed information about a forwarding rule.
@@ -92,8 +90,8 @@ class Describe(base.DescribeCommand):
     return _Run(args, holder, self.FORWARDING_RULE_ARG)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(Describe):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class DescribeBeta(Describe):
   """Display detailed information about a forwarding rule.
 
   *{command}* displays all data associated with a forwarding rule
@@ -115,7 +113,7 @@ class DescribeAlpha(Describe):
 
   @staticmethod
   def Args(parser):
-    DescribeAlpha.FORWARDING_RULE_ARG = _Args(parser)
+    DescribeBeta.FORWARDING_RULE_ARG = _Args(parser)
     parser.add_argument(
         '--view',
         choices=['BASIC', 'FULL'],

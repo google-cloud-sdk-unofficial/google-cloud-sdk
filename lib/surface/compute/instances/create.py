@@ -112,6 +112,7 @@ def _CommonArgs(
     support_source_instant_snapshot=False,
     support_enable_confidential_compute=False,
     support_specific_then_x_affinity=False,
+    support_any_reservation_then_fail_affinity=False,
     support_ipv6_only=False,
     support_graceful_shutdown=False,
     support_igmp_query=True,
@@ -210,6 +211,7 @@ def _CommonArgs(
       group_text='Specifies the reservation for the instance.',
       affinity_text='The type of reservation for the instance.',
       support_specific_then_x_affinity=support_specific_then_x_affinity,
+      support_any_reservation_then_fail_affinity=support_any_reservation_then_fail_affinity,
   )
 
   maintenance_flags.AddResourcePoliciesArgs(parser, 'added to', 'instance')
@@ -325,6 +327,7 @@ class Create(base.CreateCommand):
   _support_partner_metadata = False
   _support_enable_confidential_compute = True
   _support_specific_then_x_affinity = False
+  _support_any_reservation_then_fail_affinity = False
   _support_graceful_shutdown = False
   _support_igmp_query = True
   _support_watchdog_timer = False
@@ -357,6 +360,7 @@ class Create(base.CreateCommand):
         support_vlan_nic=cls._support_vlan_nic,
         support_enable_confidential_compute=cls._support_enable_confidential_compute,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
+        support_any_reservation_then_fail_affinity=cls._support_any_reservation_then_fail_affinity,
         support_graceful_shutdown=cls._support_graceful_shutdown,
         support_igmp_query=cls._support_igmp_query,
         support_watchdog_timer=cls._support_watchdog_timer,
@@ -734,7 +738,10 @@ class Create(base.CreateCommand):
 
       request.instance.reservationAffinity = (
           instance_utils.GetReservationAffinity(
-              args, compute_client, self._support_specific_then_x_affinity
+              args,
+              compute_client,
+              self._support_specific_then_x_affinity,
+              self._support_any_reservation_then_fail_affinity,
           )
       )
 
@@ -861,6 +868,7 @@ class CreateBeta(Create):
   _support_partner_metadata = True
   _support_enable_confidential_compute = True
   _support_specific_then_x_affinity = True
+  _support_any_reservation_then_fail_affinity = False
   _support_graceful_shutdown = True
   _support_igmp_query = True
   _support_watchdog_timer = False
@@ -909,6 +917,7 @@ class CreateBeta(Create):
         support_vlan_nic=cls._support_vlan_nic,
         support_enable_confidential_compute=cls._support_enable_confidential_compute,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
+        support_any_reservation_then_fail_affinity=cls._support_any_reservation_then_fail_affinity,
         support_graceful_shutdown=cls._support_graceful_shutdown,
         support_igmp_query=cls._support_igmp_query,
         support_watchdog_timer=cls._support_watchdog_timer,
@@ -991,6 +1000,7 @@ class CreateAlpha(CreateBeta):
   _support_partner_metadata = True
   _support_enable_confidential_compute = True
   _support_specific_then_x_affinity = True
+  _support_any_reservation_then_fail_affinity = True
   _support_ipv6_only = True
   _support_graceful_shutdown = True
   _support_igmp_query = True
@@ -1027,6 +1037,7 @@ class CreateAlpha(CreateBeta):
         support_source_instant_snapshot=cls._support_source_instant_snapshot,
         support_enable_confidential_compute=cls._support_enable_confidential_compute,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
+        support_any_reservation_then_fail_affinity=cls._support_any_reservation_then_fail_affinity,
         support_ipv6_only=cls._support_ipv6_only,
         support_graceful_shutdown=cls._support_graceful_shutdown,
         support_igmp_query=cls._support_igmp_query,

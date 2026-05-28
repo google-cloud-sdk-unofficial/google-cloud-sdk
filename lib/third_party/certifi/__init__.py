@@ -1,4 +1,3 @@
 from .core import contents, where
 
-__all__ = ["contents", "where"]
-__version__ = "2026.02.25"
+__version__ = "2024.08.30"

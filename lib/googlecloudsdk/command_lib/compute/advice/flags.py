@@ -315,6 +315,19 @@ def AddMaxRunDurationFlag(parser):
   )
 
 
+def AddAcceleratorTopologyFlag(parser):
+  """Add the --accelerator-topology flag."""
+  parser.add_argument(
+      "--accelerator-topology",
+      type=str,
+      required=False,
+      help="""\
+Topology required to create a partition for VMs that have interconnected GPUs
+or TPUs. For example, `2x2` for `ct5l-hightpu-4t`.
+""",
+  )
+
+
 def ValidateZonesAndRegionFlags(args, resources):
   """Validate --zones and --region flags."""
   if not args.zones:

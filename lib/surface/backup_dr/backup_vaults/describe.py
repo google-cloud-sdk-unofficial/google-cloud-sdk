@@ -14,6 +14,7 @@
 # limitations under the License.
 """Show the metadata for a Backup and DR backup vault."""
 
+from googlecloudsdk.api_lib.backupdr import util
 from googlecloudsdk.api_lib.backupdr.backup_vaults import BackupVaultsClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.backupdr import flags
@@ -79,7 +80,8 @@ class Describe(base.DescribeCommand):
     flags.AddOutputFormat(parser, Describe.DEFAULT_DESCRIBE_FORMAT)
 
   def Run(self, args):
-    client = BackupVaultsClient()
+    api_version = util.GetApiVersion(self.ReleaseTrack())
+    client = BackupVaultsClient(api_version=api_version)
     backup_vault = args.CONCEPTS.backup_vault.Parse()
     bv_details = client.Describe(backup_vault)
     bv_details.backupMinimumEnforcedRetentionDuration = (

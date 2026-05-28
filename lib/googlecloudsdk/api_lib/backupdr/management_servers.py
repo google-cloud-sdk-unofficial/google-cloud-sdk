@@ -21,8 +21,8 @@ from googlecloudsdk.api_lib.backupdr import util
 class ManagementServersClient(util.BackupDrClientBase):
   """Cloud Backup and DR Management client."""
 
-  def __init__(self):
-    super(ManagementServersClient, self).__init__()
+  def __init__(self, api_version=util.DEFAULT_API_VERSION):
+    super(ManagementServersClient, self).__init__(api_version=api_version)
     self.service = self.client.projects_locations_managementServers
 
   def Create(self, resource, network=None):

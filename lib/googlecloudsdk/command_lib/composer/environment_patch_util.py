@@ -175,6 +175,7 @@ def ConstructPatch(
     disable_private_environment=None,
     enable_high_resilience=None,
     enable_logs_in_cloud_logging_only=None,
+    cloud_run_functions_routing=None,
 ):
   """Constructs an environment patch.
 
@@ -306,6 +307,8 @@ def ConstructPatch(
     enable_logs_in_cloud_logging_only: bool or None, defines whether logs in
       cloud logging only feature should be enabled for given environment. Can be
       specified only in composer 2.
+    cloud_run_functions_routing: str or None, defines the routing mode for cloud
+      run functions. Can be specified only in Composer 3.
 
   Returns:
     (str, Environment), the field mask and environment to use for update.
@@ -381,6 +384,10 @@ def ConstructPatch(
   if support_web_server_plugins is not None:
     return _ConstructWebServerPluginsModePatch(
         support_web_server_plugins, release_track
+    )
+  if cloud_run_functions_routing is not None:
+    return _ConstructTrafficRoutingConfigPatch(
+        cloud_run_functions_routing, release_track
     )
   if (
       disable_vpc_connectivity is not None
@@ -567,6 +574,32 @@ def _ConstructVpcConnectivityPatch(
     update_mask = 'config.node_config.network,config.node_config.subnetwork'
     node_config.network = network
     node_config.subnetwork = subnetwork
+  return (
+      update_mask,
+      messages.Environment(config=config),
+  )
+
+
+def _ConstructTrafficRoutingConfigPatch(
+    cloud_run_functions_routing, release_track=base.ReleaseTrack.GA
+):
+  """Constructs an environment patch for traffic routing config.
+
+  Args:
+    cloud_run_functions_routing: RoutingMode enum value.
+    release_track: base.ReleaseTrack, the release track of command.
+
+  Returns:
+    (str, Environment), the field mask and environment to use for update.
+  """
+  messages = api_util.GetMessagesModule(release_track=release_track)
+  node_config = messages.NodeConfig(
+      trafficRoutingConfig=messages.TrafficRoutingConfig(
+          cloudRunFunctionsRouting=cloud_run_functions_routing
+      )
+  )
+  config = messages.EnvironmentConfig(nodeConfig=node_config)
+  update_mask = 'config.node_config.traffic_routing_config'
   return (
       update_mask,
       messages.Environment(config=config),

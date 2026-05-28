@@ -133,7 +133,8 @@ def _run(
   Raises:
     exceptions.HttpException: if the http request fails.
   """
-  client = BackupVaultsClient()
+  api_version = util.GetApiVersion(self.ReleaseTrack())
+  client = BackupVaultsClient(api_version=api_version)
   backup_vault = args.CONCEPTS.backup_vault.Parse()
   no_async = args.no_async
   force_update_access_restriction = args.force_update_access_restriction

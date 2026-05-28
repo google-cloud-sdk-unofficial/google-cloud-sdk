@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.storage.tasks import task
 from googlecloudsdk.command_lib.storage.tasks.cp import copy_component_util
 from googlecloudsdk.command_lib.storage.tasks.rm import delete_task
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
 def _try_delete_and_return_permissions_error(component_url):
@@ -77,6 +78,15 @@ class DeleteTemporaryComponentsTask(task.Task):
         component_number='')
     # Matches all paths, regardless of component number:
     component_tracker_paths = glob.iglob(component_tracker_path_prefix + '*')
+
+    use_compose_delete = (
+        properties.VALUES.storage.delete_source_objects_in_compose.GetBool()
+    )
+
+    if use_compose_delete:
+      for component_tracker_path in component_tracker_paths:
+        os.remove(component_tracker_path)
+      return task.Output(additional_task_iterators=[], messages=None)
 
     component_urls = []
     found_permissions_error = permissions_error = None

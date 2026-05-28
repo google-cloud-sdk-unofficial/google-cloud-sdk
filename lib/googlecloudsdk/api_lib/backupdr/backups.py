@@ -106,8 +106,8 @@ class DiskRestoreConfig(util.RestrictedDict):
 class BackupsClient(util.BackupDrClientBase):
   """Cloud Backup and DR Backups client."""
 
-  def __init__(self):
-    super(BackupsClient, self).__init__()
+  def __init__(self, api_version=util.DEFAULT_API_VERSION):
+    super(BackupsClient, self).__init__(api_version=api_version)
     self.service = (
         self.client.projects_locations_backupVaults_dataSources_backups
     )

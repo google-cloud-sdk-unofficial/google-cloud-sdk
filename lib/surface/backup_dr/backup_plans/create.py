@@ -169,7 +169,8 @@ class Create(base.CreateCommand):
     Returns:
       ProcessHttpResponse of the request made.
     """
-    client = backup_plans.BackupPlansClient()
+    api_version = util.GetApiVersion(self.ReleaseTrack())
+    client = backup_plans.BackupPlansClient(api_version=api_version)
     is_async = args.async_
 
     backup_plan = args.CONCEPTS.backup_plan.Parse()

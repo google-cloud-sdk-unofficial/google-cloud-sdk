@@ -19,6 +19,8 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.composer import util as api_util
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.composer.flags import CLOUD_RUN_FUNCTIONS_ROUTING_ALPHA
+from googlecloudsdk.command_lib.composer.flags import CLOUD_RUN_FUNCTIONS_ROUTING_BETA
 from googlecloudsdk.command_lib.composer.flags import CONNECTION_TYPE_FLAG_ALPHA
 from googlecloudsdk.command_lib.composer.flags import CONNECTION_TYPE_FLAG_BETA
 from googlecloudsdk.command_lib.composer.flags import CONNECTION_TYPE_FLAG_GA
@@ -185,6 +187,8 @@ class CreateEnvironmentFlags:
       for private only builds.
     storage_bucket: str or None. An existing Cloud Storage bucket to be used by
       the environment.
+    cloud_run_functions_routing: str or None, the routing method for cloud run
+      functions. Can be DIRECT or VIA_NETWORK_ATTACHMENT.
   """
 
   # TODO(b/154131605): This a type that is an immutable data object. Can't use
@@ -274,6 +278,7 @@ class CreateEnvironmentFlags:
       enable_private_builds_only=None,
       disable_private_builds_only=None,
       storage_bucket=None,
+      cloud_run_functions_routing=None,
   ):
     self.node_count = node_count
     self.environment_size = environment_size
@@ -359,6 +364,7 @@ class CreateEnvironmentFlags:
     self.enable_private_builds_only = enable_private_builds_only
     self.disable_private_builds_only = disable_private_builds_only
     self.storage_bucket = storage_bucket
+    self.cloud_run_functions_routing = cloud_run_functions_routing
 
 
 def _CreateNodeConfig(messages, flags):
@@ -369,7 +375,8 @@ def _CreateNodeConfig(messages, flags):
           flags.cluster_secondary_range_name or flags.network_attachment or
           flags.services_secondary_range_name or flags.cluster_ipv4_cidr_block
           or flags.services_ipv4_cidr_block or flags.enable_ip_masq_agent or
-          flags.composer_internal_ipv4_cidr_block):
+          flags.composer_internal_ipv4_cidr_block or
+          flags.cloud_run_functions_routing):
     return None
 
   config = messages.NodeConfig(
@@ -379,6 +386,20 @@ def _CreateNodeConfig(messages, flags):
       subnetwork=flags.subnetwork,
       serviceAccount=flags.service_account,
       diskSizeGb=flags.disk_size_gb)
+  if flags.cloud_run_functions_routing:
+    routing_enum = None
+    if flags.release_track == base.ReleaseTrack.BETA:
+      routing_enum = CLOUD_RUN_FUNCTIONS_ROUTING_BETA.GetEnumForChoice(
+          flags.cloud_run_functions_routing
+      )
+    elif flags.release_track == base.ReleaseTrack.ALPHA:
+      routing_enum = CLOUD_RUN_FUNCTIONS_ROUTING_ALPHA.GetEnumForChoice(
+          flags.cloud_run_functions_routing
+      )
+    if routing_enum is not None:
+      config.trafficRoutingConfig = messages.TrafficRoutingConfig(
+          cloudRunFunctionsRouting=routing_enum
+      )
   if flags.network_attachment:
     config.composerNetworkAttachment = flags.network_attachment
   if flags.composer_internal_ipv4_cidr_block:

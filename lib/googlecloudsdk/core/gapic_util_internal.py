@@ -1076,10 +1076,11 @@ def MakeChannelOptions(channel_options=None):
 
 
 def _GetAddress(client_class, address_override_func, mtls_enabled):
-  if mtls_enabled:
-    return client_class.DEFAULT_MTLS_ENDPOINT
-
-  address = client_class.DEFAULT_ENDPOINT
+  address = (
+      client_class.DEFAULT_MTLS_ENDPOINT
+      if mtls_enabled
+      else client_class.DEFAULT_ENDPOINT
+  )
   if address_override_func:
     address = address_override_func(address)
   return address

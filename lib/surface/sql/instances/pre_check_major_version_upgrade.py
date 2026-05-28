@@ -32,9 +32,13 @@ DESCRIPTION = """
 """
 
 EXAMPLES = """
-    To perform pre-checks before upgrading to a target version:
+    To perform pre-checks before upgrading a PostgreSQL instance to a target version (supported in both GA and Beta):
 
       $ {command} test-instance --target-database-version=POSTGRES_15
+
+    To perform pre-checks before upgrading a MySQL instance to a target version (supported in Beta only):
+
+      $ {command} test-instance --target-database-version=MYSQL_8_0
 """
 
 DETAILED_HELP = {
@@ -43,7 +47,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class PreCheckMajorVersionUpgrade(base.Command):
   """Performs pre-checks for a major version upgrade of a Cloud SQL instance."""
@@ -75,6 +79,16 @@ class PreCheckMajorVersionUpgrade(base.Command):
         params={'project': properties.VALUES.core.project.GetOrFail},
         collection='sql.instances',
     )
+
+    target_version = args.target_database_version.upper()
+    release_track = self.ReleaseTrack()
+
+    if release_track == base.ReleaseTrack.GA:
+      if not target_version.startswith('POSTGRES'):
+        raise exceptions.InvalidArgumentException(
+            'target-database-version',
+            'GA track is only applicable to PostgreSQL instances.',
+        )
 
     try:
       try:

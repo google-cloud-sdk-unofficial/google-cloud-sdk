@@ -298,7 +298,7 @@ def AddCreateGcsBuckets(
         id: ID of the bucket resource, used to refer to this resource in storage-configs.
         name: Name of the Cloud Storage bucket to create in your project in the format of bucket-1.
 
-        For e.g. --{name} id=my-bucket,name=bucket-1,storageClass=STANDARD,terminalStorageClass=TERMINAL_STORAGE_CLASS_NEARLINE,enableHNS=true
+        For e.g. --{name} id=my-bucket,name=bucket-1,storageClass=STANDARD,terminalStorageClass=NEARLINE,enableHNS=true
 
         Supported storageClass values:
         - STANDARD
@@ -307,8 +307,8 @@ def AddCreateGcsBuckets(
         - ARCHIVE
 
         Supported terminalStorageClass values:
-        - TERMINAL_STORAGE_CLASS_NEARLINE
-        - TERMINAL_STORAGE_CLASS_ARCHIVE
+        - NEARLINE
+        - ARCHIVE
 
         Defaults:
         - storageClass: STANDARD

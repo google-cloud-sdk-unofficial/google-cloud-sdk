@@ -1193,6 +1193,7 @@ class _SectionApiClientOverrides(_Section):
         'api_client_overrides', hidden=True)
     self.alloydb = self._Add('alloydb')
     self.appengine = self._Add('appengine')
+    self.backupdr = self._Add('backupdr')
     self.baremetalsolution = self._Add('baremetalsolution')
     self.cloudidentity = self._Add('cloudidentity')
     self.compute = self._Add('compute')

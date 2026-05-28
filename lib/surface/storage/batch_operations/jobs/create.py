@@ -75,6 +75,7 @@ class Create(calliope_base.Command):
           $ {command} my-job --bucket=my-bucket --put-object-event-based-hold
           --put-metadata=Content-Disposition=inline,Content-Language=en
           --log-actions=transform --log-action-states=succeeded,failed
+
       """
       ),
   }
@@ -167,6 +168,14 @@ class CreateAlpha(Create):
           $ {command} my-job --bucket=my-bucket --put-object-event-based-hold
           --put-metadata=Content-Disposition=inline,Content-Language=en
           --log-actions=transform --log-action-states=succeeded,failed
+
+      The following example command creates a batch job, named `my-job`, that
+      uses a project as the source and updates object retention:
+
+          $ {command} my-job --target-project=my-project
+          --insights-dataset-config=projects/my-project/locations/us-central1/datasetConfigs/my-config
+          --bucket-filters="bucket_name == 'my-bucket'" --object-filters="size > 100"
+          --put-metadata=Retain-Until=2025-01-01T00:00:00Z,Retention-Mode=locked
       """,
   }
 

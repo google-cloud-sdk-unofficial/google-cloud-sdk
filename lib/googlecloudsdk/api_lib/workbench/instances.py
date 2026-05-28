@@ -270,6 +270,18 @@ def GetDataDisk(args, messages):
   ]
 
 
+def GetUpdateDataDisk(args, messages):
+  if not args.IsSpecified('data_disk_resource_policies'):
+    return []
+
+  data_disk_message = messages.DataDisk
+  return [
+      data_disk_message(
+          resourcePolicies=args.data_disk_resource_policies,
+      )
+  ]
+
+
 def CreateContainerImageFromArgs(args, messages):
   if not (
       args.IsSpecified('container_repository')
@@ -537,6 +549,7 @@ def CreateUpdateMask(args):
       'tags': 'gce_setup.tags',
       'container_repository': 'gce_setup.container_image.repository',
       'container_tag': 'gce_setup.container_image.tag',
+      'data_disk_resource_policies': 'gce_setup.data_disks.resource_policies',
   }
   for key, value in sorted(field_mask_dict.items()):
     if args.IsSpecified(key):
@@ -628,6 +641,7 @@ def UpdateInstance(args, messages):
       shieldedInstanceConfig=GetShieldedInstanceConfigFromArgs(args, messages),
       tags=GetTagsFromArgs(args),
       containerImage=CreateContainerImageFromArgs(args, messages),
+      dataDisks=GetUpdateDataDisk(args, messages),
   )
 
   instance = messages.Instance(

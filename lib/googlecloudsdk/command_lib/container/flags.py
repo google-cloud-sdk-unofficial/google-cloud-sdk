@@ -1987,9 +1987,8 @@ To read more about node-taints, see https://cloud.google.com/kubernetes-engine/d
   )
 
 
-# TODO(b/480021770): ydubovskoi@ Unhide the flag once the feature is ready.
 def AddNodeArchitectureTaintBehaviorFlag(
-    parser, for_node_pool=False, for_update=False, hidden=True
+    parser, for_node_pool=False, for_update=False, hidden=False
 ):
   """Adds a --node-architecture-taint-behavior flag to the given parser."""
 

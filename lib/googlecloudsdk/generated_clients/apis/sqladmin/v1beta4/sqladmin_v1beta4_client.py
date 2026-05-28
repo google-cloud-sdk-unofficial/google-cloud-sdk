@@ -393,7 +393,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.blueGreenDeployments.get',
         ordered_params=['name'],
         path_params=['name'],
-        query_params=[],
+        query_params=['view'],
         relative_path='sql/v1beta4/{+name}',
         request_field='',
         request_type_name='SqlBlueGreenDeploymentsGetRequest',

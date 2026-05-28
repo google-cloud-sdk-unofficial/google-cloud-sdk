@@ -73,7 +73,7 @@ class BootDisk(_messages.Message):
       based on the machine type. If this field is cleared, the system will
       continue to use the current image family.
     sizeGb: Required. Immutable. Size of the disk in gigabytes. Must be at
-      least 10GB.
+      least 40GB.
     type: Required. Immutable. [Persistent disk
       type](https://cloud.google.com/compute/docs/disks#disk-types), in the
       format `projects/{project}/zones/{zone}/diskTypes/{disk_type}`.
@@ -936,12 +936,12 @@ class GcsAutoclassConfig(_messages.Message):
 
     Values:
       TERMINAL_STORAGE_CLASS_UNSPECIFIED: Unspecified terminal storage class
-      TERMINAL_STORAGE_CLASS_NEARLINE: Nearline terminal storage class
-      TERMINAL_STORAGE_CLASS_ARCHIVE: Archive terminal storage class
+      NEARLINE: Nearline terminal storage class
+      ARCHIVE: Archive terminal storage class
     """
     TERMINAL_STORAGE_CLASS_UNSPECIFIED = 0
-    TERMINAL_STORAGE_CLASS_NEARLINE = 1
-    TERMINAL_STORAGE_CLASS_ARCHIVE = 2
+    NEARLINE = 1
+    ARCHIVE = 2
 
   enabled = _messages.BooleanField(1)
   terminalStorageClass = _messages.EnumField('TerminalStorageClassValueValuesEnum', 2)
@@ -1105,9 +1105,8 @@ class HypercomputeclusterProjectsLocationsListRequest(_messages.Message):
   r"""A HypercomputeclusterProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -1994,9 +1993,11 @@ class MonitoredEvent(_messages.Message):
     Values:
       EVENT_TYPE_UNSPECIFIED: Event type not specified.
       PERFORMANCE_DEGRADATION: Performance degradation event.
+      SLICE_DEGRADATION: Slice degradation event.
     """
     EVENT_TYPE_UNSPECIFIED = 0
     PERFORMANCE_DEGRADATION = 1
+    SLICE_DEGRADATION = 2
 
   analyzerInsightFound = _messages.BooleanField(1)
   analyzerReports = _messages.MessageField('AnalyzerReport', 2, repeated=True)
@@ -3531,8 +3532,8 @@ class StorageConfig(_messages.Message):
 
 
 class StorageResource(_messages.Message):
-  r"""A resource representing a form of persistent storage that is accessible
-  to compute resources in the cluster.
+  r"""A resource representing a form of persistent storage that can be mounted
+  onto compute resources in the cluster.
 
   Fields:
     bucket: Output only. Reference to a Google Cloud Storage bucket. Populated

@@ -63,6 +63,7 @@ def _CommonArgs(
     support_network_queue_count=False,
     support_maintenance_interval=False,
     support_specific_then_x_affinity=False,
+    support_any_reservation_then_fail_affinity=False,
     support_graceful_shutdown=False,
     support_ipv6_only=False,
     support_vlan_nic=True,
@@ -201,6 +202,7 @@ Specifies the reservation for instances created from this template.
 The type of reservation for instances created from this template.
 """,
       support_specific_then_x_affinity=support_specific_then_x_affinity,
+      support_any_reservation_then_fail_affinity=support_any_reservation_then_fail_affinity,
   )
 
   parser.display_info.AddCacheUpdater(completers.InstanceTemplatesCompleter)
@@ -583,6 +585,7 @@ def _RunCreate(
     support_partner_metadata=False,
     support_maintenance_interval=False,
     support_specific_then_x_affinity=False,
+    support_any_reservation_then_fail_affinity=False,
     support_graceful_shutdown=False,
     support_watchdog_timer=False,
     support_disk_labels=False,
@@ -639,6 +642,8 @@ def _RunCreate(
         set.
       support_specific_then_x_affinity: Indicate whether specific_then_x was
         set.
+      support_any_reservation_then_fail_affinity: Indicate whether
+        any_reservation_then_fail was set.
       support_graceful_shutdown: Indicate whether graceful shutdown is
         supported.
       support_watchdog_timer: Indicate whether the watchdog timer is supported.
@@ -1011,7 +1016,10 @@ def _RunCreate(
 
   instance_template.properties.reservationAffinity = (
       instance_utils.GetReservationAffinity(
-          args, client, support_specific_then_x_affinity
+          args,
+          client,
+          support_specific_then_x_affinity,
+          support_any_reservation_then_fail_affinity,
       )
   )
 
@@ -1206,6 +1214,7 @@ class Create(base.CreateCommand):
   _support_partner_metadata = False
   _support_local_ssd_recovery_timeout = True
   _support_specific_then_x_affinity = False
+  _support_any_reservation_then_fail_affinity = False
   _support_graceful_shutdown = False
   _support_vlan_nic = True
   _support_watchdog_timer = False
@@ -1240,6 +1249,7 @@ class Create(base.CreateCommand):
         support_network_queue_count=cls._support_network_queue_count,
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
+        support_any_reservation_then_fail_affinity=cls._support_any_reservation_then_fail_affinity,
         support_graceful_shutdown=cls._support_graceful_shutdown,
         support_vlan_nic=cls._support_vlan_nic,
         support_watchdog_timer=cls._support_watchdog_timer,
@@ -1300,6 +1310,7 @@ class Create(base.CreateCommand):
         support_partner_metadata=self._support_partner_metadata,
         support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout,
         support_specific_then_x_affinity=self._support_specific_then_x_affinity,
+        support_any_reservation_then_fail_affinity=self._support_any_reservation_then_fail_affinity,
         support_graceful_shutdown=self._support_graceful_shutdown,
         support_watchdog_timer=self._support_watchdog_timer,
         support_disk_labels=self._support_disk_labels,
@@ -1351,6 +1362,7 @@ class CreateBeta(Create):
   _support_partner_metadata = True
   _support_maintenance_interval = True
   _support_specific_then_x_affinity = True
+  _support_any_reservation_then_fail_affinity = False
   _support_graceful_shutdown = True
   _support_vlan_nic = True
   _support_watchdog_timer = False
@@ -1385,6 +1397,7 @@ class CreateBeta(Create):
         support_network_queue_count=cls._support_network_queue_count,
         support_maintenance_interval=cls._support_maintenance_interval,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
+        support_any_reservation_then_fail_affinity=cls._support_any_reservation_then_fail_affinity,
         support_graceful_shutdown=cls._support_graceful_shutdown,
         support_vlan_nic=cls._support_vlan_nic,
         support_watchdog_timer=cls._support_watchdog_timer,
@@ -1448,6 +1461,7 @@ class CreateBeta(Create):
         support_partner_metadata=self._support_partner_metadata,
         support_maintenance_interval=self._support_maintenance_interval,
         support_specific_then_x_affinity=self._support_specific_then_x_affinity,
+        support_any_reservation_then_fail_affinity=self._support_any_reservation_then_fail_affinity,
         support_graceful_shutdown=self._support_graceful_shutdown,
         support_watchdog_timer=self._support_watchdog_timer,
         support_disk_labels=self._support_disk_labels,
@@ -1498,6 +1512,7 @@ class CreateAlpha(Create):
   _support_partner_metadata = True
   _support_maintenance_interval = True
   _support_specific_then_x_affinity = True
+  _support_any_reservation_then_fail_affinity = True
   _support_graceful_shutdown = True
   _support_vlan_nic = True
   _support_ipv6_only = True
@@ -1533,6 +1548,7 @@ class CreateAlpha(Create):
         support_network_queue_count=cls._support_network_queue_count,
         support_maintenance_interval=cls._support_maintenance_interval,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
+        support_any_reservation_then_fail_affinity=cls._support_any_reservation_then_fail_affinity,
         support_graceful_shutdown=cls._support_graceful_shutdown,
         support_ipv6_only=cls._support_ipv6_only,
         support_vlan_nic=cls._support_vlan_nic,
@@ -1599,6 +1615,7 @@ class CreateAlpha(Create):
         support_partner_metadata=self._support_partner_metadata,
         support_maintenance_interval=self._support_maintenance_interval,
         support_specific_then_x_affinity=self._support_specific_then_x_affinity,
+        support_any_reservation_then_fail_affinity=self._support_any_reservation_then_fail_affinity,
         support_graceful_shutdown=self._support_graceful_shutdown,
         support_watchdog_timer=self._support_watchdog_timer,
         support_disk_labels=self._support_disk_labels,

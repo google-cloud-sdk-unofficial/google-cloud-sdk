@@ -21,9 +21,15 @@ from googlecloudsdk.command_lib.projects import util
 
 
 @base.UniverseCompatible
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Workload(base.Group):
   """Manage Workload Optimizer related workloads for GKE."""
 
   category = base.SDK_TOOLS_CATEGORY
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Hidden
+class WorkloadAlpha(Workload):
+  """Manage Workload Optimizer related workloads for GKE."""

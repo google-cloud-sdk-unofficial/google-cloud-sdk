@@ -52,6 +52,7 @@ class Create(base.CreateCommand):
   _support_max_count_per_zone = False
   _support_custom_hostnames = True
   _support_specific_then_x = True
+  _support_any_reservation_then_fail_affinity = True
   _support_watchdog_timer = True
   _support_igmp_query = True
   _support_graceful_shutdown = True
@@ -74,6 +75,7 @@ class Create(base.CreateCommand):
         support_max_count_per_zone=cls._support_max_count_per_zone,
         support_custom_hostnames=cls._support_custom_hostnames,
         support_specific_then_x_affinity=cls._support_specific_then_x,
+        support_any_reservation_then_fail_affinity=cls._support_any_reservation_then_fail_affinity,
         support_watchdog_timer=cls._support_watchdog_timer,
         support_igmp_query=cls._support_igmp_query,
         support_graceful_shutdown=cls._support_graceful_shutdown,
@@ -147,6 +149,7 @@ class Create(base.CreateCommand):
         self._support_max_count_per_zone,
         self._support_custom_hostnames,
         self._support_specific_then_x,
+        self._support_any_reservation_then_fail_affinity,
         self._support_watchdog_timer,
         self._support_graceful_shutdown,
         self._support_source_snapshot_region,

@@ -71,7 +71,7 @@ def UploadThroughCloudRun(
   )
 
   messages = run_util.GetMessagesModule(release_track)
-  run_client = run_util.GetClientInstance(release_track)
+  run_client = run_util.GetClientInstance(region, release_track)
   request = messages.RunProjectsLocationsSourceUploadsUploadRequest(
       parent=parent,
       googleCloudRunV2UploadSourceRequest=messages.GoogleCloudRunV2UploadSourceRequest(

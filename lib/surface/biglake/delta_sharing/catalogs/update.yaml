@@ -25,8 +25,9 @@
     - arg_name: connector-endpoint
       api_field: deltaSharingCatalog.sapConfig.sapBdcEnrollmentConfig.connectorEndpoint
       help_text: The SAP BDC Connector Endpoint.
-      required: true
     - arg_name: invitation-code
       api_field: deltaSharingCatalog.sapConfig.sapBdcEnrollmentConfig.invitationCode
       help_text: The SAP BDC Invitation Code.
-      required: true
+    - arg_name: invitation-url
+      api_field: deltaSharingCatalog.sapConfig.sapBdcEnrollmentConfig.invitationUrl
+      help_text: The combined invitation URL containing both endpoint and code.

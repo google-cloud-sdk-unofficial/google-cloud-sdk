@@ -85,7 +85,8 @@ class Init(base.Command):
     Returns:
       ProcessHttpResponse of the request made.
     """
-    client = ServiceConfigClient()
+    api_version = util.GetApiVersion(self.ReleaseTrack())
+    client = ServiceConfigClient(api_version=api_version)
     location = args.CONCEPTS.location.Parse().RelativeName()
     resource_type = args.resource_type
     cloudsql_edition = args.cloudsql_edition

@@ -16,6 +16,7 @@
 
 
 from googlecloudsdk.api_lib.backupdr import backups
+from googlecloudsdk.api_lib.backupdr import util
 from googlecloudsdk.api_lib.util import common_args
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -107,8 +108,9 @@ class FetchForResourceType(base.ListCommand):
     """Run the command."""
     resource_type = args.resource_type
     data_source_ref = args.CONCEPTS.data_source.Parse()
+    api_version = util.GetApiVersion(self.ReleaseTrack())
     try:
-      client = BackupsClient()
+      client = BackupsClient(api_version=api_version)
       result = client.FetchForResourceType(
           data_source_ref,
           resource_type,

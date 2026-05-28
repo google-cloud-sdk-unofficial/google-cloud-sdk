@@ -2169,7 +2169,7 @@ MAP = {
                     messages_modulepath='dns_v2_messages'),
                 default_version=False,
                 enable_mtls=True,
-                mtls_endpoint_override='https://dns.mtls.googleapis.com/dns/v2/',
+                mtls_endpoint_override='https://dns.mtls.googleapis.com/',
                 regional_endpoints={}),
     },
     'documentai': {

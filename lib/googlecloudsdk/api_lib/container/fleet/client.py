@@ -1601,6 +1601,12 @@ class FleetClient(object):
     """Deletes a rollout sequence."""
     return self.client.projects_locations_rolloutSequences.Delete(req)
 
+  def UpgradeRolloutSequence(
+      self, req: types.GkehubProjectsLocationsRolloutSequencesUpgradeRequest
+  ) -> types.Operation:
+    """Upgrades a rollout sequence."""
+    return self.client.projects_locations_rolloutSequences.Upgrade(req)
+
 
 class OperationClient:
   """Client for the GKE Hub API long-running operations."""

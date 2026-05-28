@@ -212,14 +212,22 @@ def AddPurpose(
         'PASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP0',
         'PASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP1',
     ])
+  help_text = 'The purpose of the address resource.'
+  if not support_passthrough_lb_availability_groups:
+    help_text += ' This field is not applicable to external addresses.'
+  else:
+    help_text += (
+        ' VPC_PEERING, SHARED_LOADBALANCER_VIP, GCE_ENDPOINT, '
+        'IPSEC_INTERCONNECT, and PRIVATE_SERVICE_CONNECT are only applicable '
+        'to internal addresses. PASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP0 '
+        'and PASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP1 are only applicable '
+        'to global external addresses.')
+
   parser.add_argument(
       '--purpose',
       choices=choices,
       type=lambda x: x.upper(),
-      help="""\
-      The purpose of the address resource. This field is not applicable to
-      external addresses.
-      """)
+      help=help_text)
 
 
 def AddMoveArguments(parser):

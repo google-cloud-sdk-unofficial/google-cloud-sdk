@@ -1134,7 +1134,7 @@ class Component(_messages.Message):
       which includes possible parameter values. values.
     connectionsParameters: Output only. The connection parameters of the
       component.
-    createTime: Output only.
+    createTime: Output only. The component creation timestamp.
     displayName: Optional. The component display name.
     name: Identifier. The component name.
     parameters: Optional. The component parameters.
@@ -1222,7 +1222,8 @@ class ComponentParameters(_messages.Message):
     component: Required. The name of the component parameter.
     componentParameterSchema: Output only. The component parameter schema,
       which includes possible parameter values.
-    connectionsParameters: Output only.
+    connectionsParameters: Output only. A list of connections associated with
+      the component.
     effectiveApplicationInfo: Output only. The effective application
       associated with the component. This is the server set application field.
     parameters: Optional. A list of parameters associated with the component.
@@ -3545,7 +3546,6 @@ class Empty(_messages.Message):
   or the response type of an API method. For instance: service Foo { rpc
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
-
 
 
 class Environment(_messages.Message):
@@ -6005,8 +6005,7 @@ class TFBlueprintMetadata(_messages.Message):
   Fields:
     apis: Output only. APIs that must be enabled to deploy the template, in
       the form of "compute.googleapis.com".
-    connections: Output only. TODO b/358313147 - Check if connection field is
-      required here. Union of all the Terraform input connections.
+    connections: Output only. Union of all the Terraform input connections.
     deploymentDuration: Optional. The time estimate for deploying the
       blueprint.
     iconUri: Output only. The icon URI for the blueprint.

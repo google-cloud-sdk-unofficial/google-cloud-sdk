@@ -23,8 +23,8 @@ from googlecloudsdk.calliope import exceptions
 class ResourceBackupConfigClient(util.BackupDrClientBase):
   """Resource Backup Configs API Client for Protection Summary."""
 
-  def __init__(self):
-    super(ResourceBackupConfigClient, self).__init__()
+  def __init__(self, api_version=util.DEFAULT_API_VERSION):
+    super(ResourceBackupConfigClient, self).__init__(api_version=api_version)
     self.service = self.client.projects_locations_resourceBackupConfigs
 
   def List(self, parent, filters, page_size=None, limit=None, order_by=None):

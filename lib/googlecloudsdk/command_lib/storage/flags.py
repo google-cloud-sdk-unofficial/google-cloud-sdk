@@ -1365,8 +1365,30 @@ def check_if_use_gsutil_style(args):
 def add_batch_jobs_flags(parser, track=calliope_base.ReleaseTrack.GA):
   """Adds the flags for the batch-operations jobs create command."""
 
-  bucket_source = parser.add_group(mutex=True, required=True)
-  bucket_source.add_argument(
+  if track == calliope_base.ReleaseTrack.ALPHA:
+    source_help_text = (
+        'Source specifying objects to perform batch operations on. You can '
+        'specify either a bucket-based source or a project-based source.'
+    )
+  else:
+    source_help_text = ''
+
+  sources = parser.add_group(
+      mutex=True,
+      required=True,
+      category='SOURCE',
+      help=source_help_text,
+  )
+
+  bucket_source = sources.add_group(
+      help='Use bucket(s) as the source.',
+      category='BUCKET_SOURCE',
+      required=False,
+  )
+  bucket = bucket_source.add_group(
+      mutex=True,
+      required=True)
+  bucket.add_argument(
       '--bucket',
       help=(
           'Bucket containing the objects that the batch job will operate on.'
@@ -1374,7 +1396,7 @@ def add_batch_jobs_flags(parser, track=calliope_base.ReleaseTrack.GA):
       type=str,
   )
   if track == calliope_base.ReleaseTrack.ALPHA:
-    bucket_source.add_argument(
+    bucket.add_argument(
         '--bucket-list',
         help=(
             'List of buckets containing the objects that the batch job will'
@@ -1384,10 +1406,9 @@ def add_batch_jobs_flags(parser, track=calliope_base.ReleaseTrack.GA):
         metavar='BUCKETS',
     )
 
-  source = parser.add_group(
+  object_config = bucket_source.add_group(
       mutex=True,
       required=True,
-      category='SOURCE',
       help=(
           'Source specifying objects to perform batch operations on. '
           'Must be one of `--manifest-location=``MANIFEST_LOCATION'
@@ -1396,7 +1417,7 @@ def add_batch_jobs_flags(parser, track=calliope_base.ReleaseTrack.GA):
           '`'
       ),
   )
-  source.add_argument(
+  object_config.add_argument(
       '--manifest-location',
       help=(
           'An absolute path to the manifest source file in a Google Cloud'
@@ -1408,7 +1429,7 @@ def add_batch_jobs_flags(parser, track=calliope_base.ReleaseTrack.GA):
       ),
       type=str,
   )
-  source.add_argument(
+  object_config.add_argument(
       '--included-object-prefixes',
       help=(
           'A comma-separated list of object prefixes to describe the objects'
@@ -1417,6 +1438,59 @@ def add_batch_jobs_flags(parser, track=calliope_base.ReleaseTrack.GA):
       type=arg_parsers.ArgList(),
       metavar='PREFIXES',
   )
+
+  if track == calliope_base.ReleaseTrack.ALPHA:
+    project_source = sources.add_group(
+        help='Use a project as the source.',
+        category='PROJECT_SOURCE',
+        mutex=True,
+    )
+
+    project_source_details = project_source.add_group()
+    project_source_details.add_argument(
+        '--target-project',
+        help=(
+            'Project name of the objects to be transformed. e.g. my-project or'
+            ' 123456.'
+        ),
+        type=str,
+        required=True,
+    )
+    project_source_details.add_argument(
+        '--insights-dataset-config',
+        help=(
+            'The resource identifier of the Storage Insights dataset'
+            ' configuration. Format:'
+            ' projects/{project}/locations/{location}/datasetConfigs/{datasetConfig}'
+        ),
+        type=str,
+        required=True,
+    )
+    project_source_details.add_argument(
+        '--bucket-filters',
+        help=(
+            'Filters expressed in Common Expression Language (CEL) to apply to '
+            'buckets. E.g. "bucket_name == \'my-bucket\'".'
+        ),
+        type=str,
+    )
+    project_source_details.add_argument(
+        '--object-filters',
+        help=(
+            'Filters expressed in Common Expression Language (CEL) to apply to'
+            ' objects. E.g. "size > 100".'
+        ),
+        type=str,
+    )
+    project_source.add_argument(
+        '--dry-run-job-id',
+        help=(
+            'The unique identifier of a dry run job to use as the baseline. '
+            'Specifying this ID ensures the job is executed against the same '
+            'set of objects validated during the dry run.'
+        ),
+        type=str,
+    )
   transformation = parser.add_group(
       mutex=True,
       required=True,

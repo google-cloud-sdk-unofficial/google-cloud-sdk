@@ -756,6 +756,9 @@ workforce_pool_provider:
 
       Each additional scope may be at most 256
       characters. A maximum of 10 additional scopes may be configured.
+
+      Updating this field replaces any existing values.
+      Include the full list of additional scopes to avoid losing existing values.
   oidc_web_sso_group:
     group:
       required: true
@@ -790,6 +793,9 @@ workforce_pool_provider:
 
           Each additional scope may be at most 256
           characters. A maximum of 10 additional scopes may be configured.
+
+          Updating this field replaces any existing values.
+          Include the full list of additional scopes to avoid losing existing values.
   oidc_jwks_json_path:
     api_field: workforcePoolProvider.oidc.jwksJson
     type: "googlecloudsdk.calliope.arg_parsers:FileContents:"

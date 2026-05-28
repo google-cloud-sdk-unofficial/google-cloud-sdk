@@ -799,6 +799,16 @@ def AddUpdateInstanceFlags(parser):
           'this defaults to the latest tag.'
       ),
   )
+  data_group = gce_setup_group.add_group(help='Data disk configurations.')
+  data_group.add_argument(
+      '--data-disk-resource-policies',
+      help=(
+          'Resource policies to apply to the data disk. Format:'
+          ' `projects/{project}/regions/{region}/resourcePolicies/{policy}`.'
+      ),
+      type=arg_parsers.ArgList(),
+      metavar='RESOURCE_POLICIES',
+  )
 
 
 def AddDiagnoseInstanceFlags(parser):

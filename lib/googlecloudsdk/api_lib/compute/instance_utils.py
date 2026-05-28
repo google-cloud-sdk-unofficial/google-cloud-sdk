@@ -1092,7 +1092,12 @@ def ResolveInstantSnapshotURI(user_project, instant_snapshot, resource_parser):
   return None
 
 
-def GetReservationAffinity(args, client, support_specific_then_x_affinity):
+def GetReservationAffinity(
+    args,
+    client,
+    support_specific_then_x_affinity,
+    support_any_reservation_then_fail_affinity,
+):
   """Returns the message of reservation affinity for the instance."""
   if args.IsSpecified('reservation_affinity'):
     type_msgs = (
@@ -1126,6 +1131,11 @@ def GetReservationAffinity(args, client, support_specific_then_x_affinity):
       # capacity from.
       reservation_key = _RESERVATION_AFFINITY_KEY
       reservation_values = [args.reservation]
+    elif (
+        support_any_reservation_then_fail_affinity
+        and args.reservation_affinity == 'any-reservation-then-fail'
+    ):
+      reservation_type = type_msgs.ANY_RESERVATION_THEN_FAIL
     else:
       reservation_type = type_msgs.ANY_RESERVATION
 

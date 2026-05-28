@@ -998,7 +998,7 @@ flags_to_add = {
         'notificationconfig': flags.AddNotificationConfigFlag,
         'nodepoolupgradeconcurrencyconfig': (
             lambda p: flags.AddNodePoolUpgradeConcurrencyConfigFlag(
-                p, hidden=True
+                p, hidden=False
             )
         ),
         'num_nodes': flags.AddNumNodes,
@@ -1247,7 +1247,7 @@ flags_to_add = {
         'notificationconfig': flags.AddNotificationConfigFlag,
         'nodepoolupgradeconcurrencyconfig': (
             lambda p: flags.AddNodePoolUpgradeConcurrencyConfigFlag(
-                p, hidden=True
+                p, hidden=False
             )
         ),
         'num_nodes': flags.AddNumNodes,

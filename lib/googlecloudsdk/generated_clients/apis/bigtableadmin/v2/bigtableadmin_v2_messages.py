@@ -170,7 +170,7 @@ class AutomatedBackupPolicy(_messages.Message):
     locations: Optional. A list of Cloud Bigtable zones where automated
       backups are allowed to be created. If empty, automated backups will be
       created in all zones of the instance. Locations are in the format
-      `projects/{project}/locations/{zone}`. This field can only set for
+      `projects/{project}/locations/{zone}`. You can set this field only for
       tables in Enterprise Plus instances.
     retentionPeriod: Required. How long the automated backups should be
       retained. Values must be at least 3 days and at most 90 days.
@@ -1874,9 +1874,8 @@ class BigtableadminProjectsLocationsListRequest(_messages.Message):
   r"""A BigtableadminProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -4369,7 +4368,7 @@ class Policy(_messages.Message):
 
 
 class ProtoSchema(_messages.Message):
-  r"""Represents a protobuf schema.
+  r"""Represents a collection of protobuf schemas.
 
   Fields:
     protoDescriptors: Required. Contains a protobuf-serialized [google.protobu
@@ -4804,7 +4803,8 @@ class Table(_messages.Message):
 
     Values:
       TIMESTAMP_GRANULARITY_UNSPECIFIED: The user did not specify a
-        granularity. Should not be returned.
+        granularity. Should not be returned. When specified during table
+        creation, MILLIS will be used.
       MILLIS: The table keeps data versioned at a granularity of 1ms.
     """
     TIMESTAMP_GRANULARITY_UNSPECIFIED = 0

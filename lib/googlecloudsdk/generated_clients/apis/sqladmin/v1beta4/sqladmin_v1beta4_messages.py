@@ -861,29 +861,32 @@ class BinLogCoordinates(_messages.Message):
 
 
 class BlueGreenDeployment(_messages.Message):
-  r"""A BlueGreenDeployment resource represents a Cloud SQL Blue/Green
-  Deployment setup. It orchestrates the lifecycle of creating a synchronized
-  "Green" environment from a "Blue" production environment, performing
+  r"""A `BlueGreenDeployment` resource represents a Cloud SQL blue-green
+  deployment setup. It orchestrates the lifecycle of creating a synchronized
+  "green" environment from a "blue" production environment, performing
   updates, and managing the switchover process to minimize downtime.
 
   Enums:
-    StateValueValuesEnum: Output only. The current state of the Blue/Green
-      Deployment.
+    StateValueValuesEnum: Output only. The current state of the blue-green
+      deployment.
 
   Fields:
     createTime: Output only. The time when the deployment was created.
+    deploymentMappings: Output only. A list representing the pairs of source
+      and target instances in the deployment.
     description: Optional. User-provided description for the deployment.
     errorDetail: Output only. Provides an error message with details on why
       switchover is not possible.
     name: Output only. Identifier. The full resource name of the deployment.
       Format: projects/{project}/locations/{location}/blueGreenDeployments/{de
       ployment_id}
-    pairedNodes: Output only. A list representing the pairs of source and
-      target instances in the deployment.
+    pairedNodes: Output only. Deprecated: Use deployment_mappings instead.
+      Output only. A list representing the pairs of source and target
+      instances in the deployment.
     sourceInstance: Required. Immutable. Required on create, and immutable.
       The full resource name of the source instance (the "blue" instance).
       Format: projects/{project}/instances/{instance}
-    state: Output only. The current state of the Blue/Green Deployment.
+    state: Output only. The current state of the blue-green deployment.
     switchoverTargetInstance: Output only. Details about the primary target
       instance (the "Green" instance) that will be promoted during switchover.
     targetConfig: Optional. Immutable. Optional on create, and immutable. The
@@ -892,7 +895,7 @@ class BlueGreenDeployment(_messages.Message):
   """
 
   class StateValueValuesEnum(_messages.Enum):
-    r"""Output only. The current state of the Blue/Green Deployment.
+    r"""Output only. The current state of the blue-green deployment.
 
     Values:
       STATE_UNSPECIFIED: The state of the deployment is unknown.
@@ -913,14 +916,15 @@ class BlueGreenDeployment(_messages.Message):
     DELETING = 6
 
   createTime = _messages.StringField(1)
-  description = _messages.StringField(2)
-  errorDetail = _messages.StringField(3)
-  name = _messages.StringField(4)
-  pairedNodes = _messages.MessageField('SourceTargetPairedNode', 5, repeated=True)
-  sourceInstance = _messages.StringField(6)
-  state = _messages.EnumField('StateValueValuesEnum', 7)
-  switchoverTargetInstance = _messages.StringField(8)
-  targetConfig = _messages.MessageField('TargetConfig', 9)
+  deploymentMappings = _messages.MessageField('SourceTargetPairedNode', 2, repeated=True)
+  description = _messages.StringField(3)
+  errorDetail = _messages.StringField(4)
+  name = _messages.StringField(5)
+  pairedNodes = _messages.MessageField('SourceTargetPairedNode', 6, repeated=True)
+  sourceInstance = _messages.StringField(7)
+  state = _messages.EnumField('StateValueValuesEnum', 8)
+  switchoverTargetInstance = _messages.StringField(9)
+  targetConfig = _messages.MessageField('TargetConfig', 10)
 
 
 class CloneContext(_messages.Message):
@@ -991,6 +995,22 @@ class Column(_messages.Message):
 
   name = _messages.StringField(1)
   type = _messages.StringField(2)
+
+
+class ConfigDiff(_messages.Message):
+  r"""Represents a specific configuration difference between Blue and Green
+  instances.
+
+  Fields:
+    field: Output only. The name of the field that differs, fully-qualified.
+      Example: settings.tier
+    sourceValue: Output only. The value on the source instance.
+    targetValue: Output only. The value on the target instance.
+  """
+
+  field = _messages.StringField(1)
+  sourceValue = _messages.StringField(2)
+  targetValue = _messages.StringField(3)
 
 
 class ConnectPoolNodeConfig(_messages.Message):
@@ -3804,10 +3824,10 @@ class ListBackupsResponse(_messages.Message):
 
 
 class ListBlueGreenDeploymentsResponse(_messages.Message):
-  r"""The response message for listing BlueGreenDeployments.
+  r"""The response message for listing blue-green deployment resources.
 
   Fields:
-    blueGreenDeployments: The list of blue-green deployments.
+    blueGreenDeployments: The list of blue-green deployment resources.
     nextPageToken: A token to retrieve the next page of results, or empty if
       there are no more results.
   """
@@ -4225,6 +4245,13 @@ class Operation(_messages.Message):
         in the read pool.
       CREATE_READ_POOL: Creates a Cloud SQL read pool instance.
       PRE_CHECK_MAJOR_VERSION_UPGRADE: Pre-checks for major version upgrade.
+      CREATE_BLUE_GREEN_DEPLOYMENT: Creates a new Blue-Green deployment.
+      SWITCHOVER_BLUE_GREEN_DEPLOYMENT: Switches over a Blue-Green deployment.
+      DELETE_BLUE_GREEN_DEPLOYMENT: Deletes a Blue-Green deployment.
+      SETUP_MIGRATION: This operation type represents individual steps in a
+        multi-step setup migration workflow: including configuration,
+        replication, switchover/back, and data reseeding, as defined by
+        operation's intent..
     """
     SQL_OPERATION_TYPE_UNSPECIFIED = 0
     IMPORT = 1
@@ -4279,6 +4306,10 @@ class Operation(_messages.Message):
     REPAIR_READ_POOL = 50
     CREATE_READ_POOL = 51
     PRE_CHECK_MAJOR_VERSION_UPGRADE = 52
+    CREATE_BLUE_GREEN_DEPLOYMENT = 53
+    SWITCHOVER_BLUE_GREEN_DEPLOYMENT = 54
+    DELETE_BLUE_GREEN_DEPLOYMENT = 55
+    SETUP_MIGRATION = 56
 
   class StatusValueValuesEnum(_messages.Enum):
     r"""The status of an operation.
@@ -4456,6 +4487,13 @@ class PerformDiskShrinkContext(_messages.Message):
 class PerformanceCaptureConfig(_messages.Message):
   r"""Performance capture configuration.
 
+  Enums:
+    TransactionKillTypeValueValuesEnum: Optional. Determines which
+      transactions are allowed to be terminated when they exceed
+      `transaction_kill_threshold_seconds`. This allows protecting write-heavy
+      transactions from auto-termination if desired. Defaults to
+      `READ_ONLY_TRANSACTIONS` if unspecified.
+
   Fields:
     cpuUtilizationThresholdPercent: Optional. Specifies the minimum percentage
       of CPU utilization to trigger the performance capture. Valid integers
@@ -4491,11 +4529,6 @@ class PerformanceCaptureConfig(_messages.Message):
       'user@%', excluding the user from any host. Wildcard '%' is allowed in
       the host part of the 'user@host' format. Example: `["app_user",
       "db_admin@10.1.2.3", "report_user@%"]`
-    transactionKillNonReadonly: Optional. Specifies whether to terminate the
-      transactions that have performed write operations. If false (default),
-      only transactions that are read-only are eligible for termination. If
-      true, transactions with write operations (such as INSERT, UPDATE,
-      DELETE, or DDL) are also eligible.
     transactionKillThresholdSeconds: Optional. Specifies the amount of time in
       seconds that a transaction needs to have been open before the watcher
       starts terminating it. Valid integers range from `60` to `604800` (7
@@ -4503,11 +4536,33 @@ class PerformanceCaptureConfig(_messages.Message):
       greater than or equal to `transaction_duration_threshold`.
       Configurations where `0 < transaction_kill_threshold_seconds <
       transaction_duration_threshold` will be rejected.
+    transactionKillType: Optional. Determines which transactions are allowed
+      to be terminated when they exceed `transaction_kill_threshold_seconds`.
+      This allows protecting write-heavy transactions from auto-termination if
+      desired. Defaults to `READ_ONLY_TRANSACTIONS` if unspecified.
     transactionLockWaitThresholdCount: Optional. Specifies the minimum allowed
       number of transactions in lock wait state to trigger the performance
       capture. Valid integers range from `10` to `10000`. Enter `0` to disable
       the check.
   """
+
+  class TransactionKillTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. Determines which transactions are allowed to be terminated
+    when they exceed `transaction_kill_threshold_seconds`. This allows
+    protecting write-heavy transactions from auto-termination if desired.
+    Defaults to `READ_ONLY_TRANSACTIONS` if unspecified.
+
+    Values:
+      TRANSACTION_KILL_TYPE_UNSPECIFIED: Unspecified.
+      READ_ONLY_TRANSACTIONS: Only read-only transactions are eligible for
+        termination.
+      ALL_TRANSACTIONS: All transactions are eligible for termination,
+        including those with write operations (such as INSERT, UPDATE, DELETE,
+        or DDL).
+    """
+    TRANSACTION_KILL_TYPE_UNSPECIFIED = 0
+    READ_ONLY_TRANSACTIONS = 1
+    ALL_TRANSACTIONS = 2
 
   cpuUtilizationThresholdPercent = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   enabled = _messages.BooleanField(2)
@@ -4520,8 +4575,8 @@ class PerformanceCaptureConfig(_messages.Message):
   semaphoreWaitThresholdCount = _messages.IntegerField(9, variant=_messages.Variant.INT32)
   transactionDurationThreshold = _messages.IntegerField(10, variant=_messages.Variant.INT32)
   transactionKillExcludedUserHosts = _messages.StringField(11, repeated=True)
-  transactionKillNonReadonly = _messages.BooleanField(12)
-  transactionKillThresholdSeconds = _messages.IntegerField(13, variant=_messages.Variant.INT32)
+  transactionKillThresholdSeconds = _messages.IntegerField(12, variant=_messages.Variant.INT32)
+  transactionKillType = _messages.EnumField('TransactionKillTypeValueValuesEnum', 13)
   transactionLockWaitThresholdCount = _messages.IntegerField(14, variant=_messages.Variant.INT32)
 
 
@@ -5550,6 +5605,7 @@ class SourceTargetPairedNode(_messages.Message):
     currentlyServingTraffic: Output only. Deprecated: Indicates which instance
       (SOURCE or TARGET) in the pair is currently live. Used for internal
       implementation and deprecated for external use.
+    diffs: Output only. Describes the list of differences for this pair.
     source: Output only. Resource name of the source instance in this pair.
     state: Output only. The current state of this specific source-target pair.
     target: Output only. Details of the corresponding target instance in this
@@ -5595,10 +5651,11 @@ class SourceTargetPairedNode(_messages.Message):
     DELETING = 6
 
   currentlyServingTraffic = _messages.EnumField('CurrentlyServingTrafficValueValuesEnum', 1)
-  source = _messages.MessageField('NodeInfo', 2)
-  state = _messages.EnumField('StateValueValuesEnum', 3)
-  target = _messages.MessageField('NodeInfo', 4)
-  tasks = _messages.MessageField('DeploymentTask', 5, repeated=True)
+  diffs = _messages.MessageField('ConfigDiff', 2, repeated=True)
+  source = _messages.MessageField('NodeInfo', 3)
+  state = _messages.EnumField('StateValueValuesEnum', 4)
+  target = _messages.MessageField('NodeInfo', 5)
+  tasks = _messages.MessageField('DeploymentTask', 6, repeated=True)
 
 
 class SqlActiveDirectoryConfig(_messages.Message):
@@ -5822,13 +5879,39 @@ class SqlBlueGreenDeploymentsDeleteRequest(_messages.Message):
 class SqlBlueGreenDeploymentsGetRequest(_messages.Message):
   r"""A SqlBlueGreenDeploymentsGetRequest object.
 
+  Enums:
+    ViewValueValuesEnum: Optional. Specifies whether to return the basic or
+      detailed view of the resource in the response.
+
   Fields:
     name: Required. The name of the blue-green deployment to retrieve. Format:
       projects/{project}/locations/{location}/blueGreenDeployments/{blue_green
       _deployment}
+    view: Optional. Specifies whether to return the basic or detailed view of
+      the resource in the response.
   """
 
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. Specifies whether to return the basic or detailed view of
+    the resource in the response.
+
+    Values:
+      BLUE_GREEN_DEPLOYMENT_VIEW_UNSPECIFIED: Blue-green deployment view
+        enumeration. This allows the caller to specify what view they query.
+        If unspecified (BLUE_GREEN_DEPLOYMENT_VIEW_UNSPECIFIED), the behavior
+        is the same as BASIC.
+      BASIC: Includes basic metadata about the blue-green deployment. `BASIC`
+        is the default view.
+      DETAILED: Includes basic metadata and configuration differences between
+        source and target instances (`database_version`, `tier`, `edition`,
+        `availability_type`, `data_disk_size_gb`, and `data_disk_type`).
+    """
+    BLUE_GREEN_DEPLOYMENT_VIEW_UNSPECIFIED = 0
+    BASIC = 1
+    DETAILED = 2
+
   name = _messages.StringField(1, required=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 2)
 
 
 class SqlBlueGreenDeploymentsListRequest(_messages.Message):
@@ -7772,7 +7855,7 @@ class Status(_messages.Message):
 
 
 class SwitchoverBlueGreenDeploymentRequest(_messages.Message):
-  r"""Request message for switching over a BlueGreenDeployment."""
+  r"""Request message for switching over a `BlueGreenDeployment` resource."""
 
 
 class SyncFlags(_messages.Message):

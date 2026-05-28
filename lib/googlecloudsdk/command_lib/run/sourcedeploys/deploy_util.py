@@ -21,6 +21,7 @@ import os.path
 from typing import Any, Optional, Tuple
 import uuid
 
+from googlecloudsdk.api_lib.run import api_enabler
 from googlecloudsdk.api_lib.run import instance
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import docker_util
@@ -103,6 +104,13 @@ def _BuildImageFromArgs(
   return f'{ar_repo.GetDockerString()}/{image_suffix}', repo_to_create
 
 
+def _GetRequiredApis():
+  apis = [api_enabler.get_run_api()]
+  apis.append('artifactregistry.googleapis.com')
+  apis.append('cloudbuild.googleapis.com')
+  return apis
+
+
 def DeployInstanceFromSource(
     instance_ref: resources.Resource | None,
     source: str,
@@ -135,8 +143,13 @@ def DeployInstanceFromSource(
     changes = []
 
   is_async = getattr(args, 'async_', False)
+  already_activated_services = api_enabler.check_and_enable_apis(
+      properties.VALUES.core.project.Get(), _GetRequiredApis()
+  )
+
   instance_name = None
   project = properties.VALUES.core.project.Get(required=True)
+
   if instance_ref:
     parent_ref = instance_ref.Parent()
     instance_name = instance_ref.Name()
@@ -160,7 +173,9 @@ def DeployInstanceFromSource(
   changes.append(config_changes.SetLaunchStageAnnotationChange(release_track))
 
   messages_util.MaybeLogDefaultGpuTypeMessage(args, resource=None)
-  with serverless_operations.Connect(conn_context) as operations:
+  with serverless_operations.Connect(
+      conn_context, already_activated_services
+  ) as operations:
     pretty_print.Info(
         messages_util.GetStartCreateInstanceMessage(
             conn_context, parent_ref, instance_name
@@ -196,7 +211,7 @@ def DeployInstanceFromSource(
               build_pack=build_pack,
               repo_to_create=repo_to_create,
               release_track=release_track,
-              already_activated_services=False,
+              already_activated_services=already_activated_services,
               region=region,
               resource_ref=instance_ref,
               build_env_vars=getattr(args, 'build_env_vars', None),

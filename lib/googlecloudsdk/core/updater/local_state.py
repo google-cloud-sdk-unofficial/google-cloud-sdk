@@ -606,6 +606,7 @@ class InstallationState(object):
             '|platform/google_appengine'
             '|gslib/vendored/boto/boto/iam/connection.py'
             '|gslib/vendored/boto/tests/'
+            '|gslib/vendored/boto/boto/manage/volume.py'
             '|third_party/.*/python2/'
             '|third_party/yaml/[a-z]*.py'
             '|third_party/yaml/lib2/'

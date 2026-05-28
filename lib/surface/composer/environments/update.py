@@ -52,6 +52,7 @@ class Update(base.Command):
   _support_autoscaling = True
   _support_maintenance_window = True
   _support_environment_size = True
+  _support_traffic_routing_config = False
 
   @staticmethod
   def Args(parser, release_track=base.ReleaseTrack.GA):
@@ -97,7 +98,7 @@ class Update(base.Command):
 
     flags.AddEnvUpgradeFlagsToGroup(Update.update_type_group)
 
-    flags.AddComposer3FlagsToGroup(Update.update_type_group)
+    flags.AddComposer3FlagsToGroup(Update.update_type_group, release_track)
 
   def _ConstructPatch(self, env_ref, args):
     env_obj = environments_api_util.Get(
@@ -399,6 +400,10 @@ class Update(base.Command):
         'subnetwork': args.subnetwork,
         'clear-maintenance-window': args.clear_maintenance_window,
     }
+    if self._support_traffic_routing_config:
+      possible_args['cloud-run-functions-routing'] = (
+          args.cloud_run_functions_routing
+      )
     for k, v in possible_args.items():
       if v is not None and not is_composer3:
         raise command_util.InvalidUserInputError(
@@ -446,6 +451,18 @@ class Update(base.Command):
 
     if args.support_web_server_plugins is not None:
       params['support_web_server_plugins'] = args.support_web_server_plugins
+    if self._support_traffic_routing_config:
+      if args.cloud_run_functions_routing is not None:
+        rmode = None
+        if self.ReleaseTrack() == base.ReleaseTrack.BETA:
+          rmode = flags.CLOUD_RUN_FUNCTIONS_ROUTING_BETA.GetEnumForChoice(
+              args.cloud_run_functions_routing
+          )
+        elif self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+          rmode = flags.CLOUD_RUN_FUNCTIONS_ROUTING_ALPHA.GetEnumForChoice(
+              args.cloud_run_functions_routing
+          )
+        params['cloud_run_functions_routing'] = rmode
     if args.enable_private_builds_only or args.disable_private_builds_only:
       params['support_private_builds_only'] = (
           True if args.enable_private_builds_only else False
@@ -550,6 +567,7 @@ class UpdateBeta(Update):
   _support_autoscaling = True
   _support_maintenance_window = True
   _support_environment_size = True
+  _support_traffic_routing_config = True
 
   @staticmethod
   def AlphaAndBetaArgs(parser, release_track=base.ReleaseTrack.BETA):
@@ -586,6 +604,7 @@ class UpdateAlpha(UpdateBeta):
   """Update properties of a Cloud Composer environment."""
 
   _support_autoscaling = True
+  _support_traffic_routing_config = True
 
   @staticmethod
   def Args(parser):

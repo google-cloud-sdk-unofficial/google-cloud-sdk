@@ -18,6 +18,7 @@
 import textwrap
 
 from googlecloudsdk.api_lib.backupdr import backup_plan_associations
+from googlecloudsdk.api_lib.backupdr import util
 from googlecloudsdk.api_lib.util import common_args
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -106,8 +107,10 @@ class FetchForResourceType(base.ListCommand):
     """Run the command."""
     location = args.location
     resource_type = args.resource_type
+    api_version = util.GetApiVersion(self.ReleaseTrack())
+
     try:
-      client = BackupPlanAssociationsClient()
+      client = BackupPlanAssociationsClient(api_version=api_version)
       result = client.FetchForResourceType(
           location,
           resource_type,

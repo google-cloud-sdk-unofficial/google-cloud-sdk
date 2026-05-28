@@ -11,6 +11,12 @@
 
       $ {command} --backup-vault=my-vault --location=my-location
   request:
+    GA:
+      api_version: v1
+    BETA:
+      api_version: v1beta
+    ALPHA:
+      api_version: v1alpha
     collection: backupdr.projects.locations.backupVaults.dataSources
 
   response:

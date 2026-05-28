@@ -286,20 +286,16 @@ apis:
   bigtableadmin:
     v2:
       discovery_doc: bigtableadmin_v2.json
-      skip:
-        bug: b/508381783
       resources:
         projects:
           path: projects/{projectId}
         projects.instances.tables.authorizedViews:
-          path: 
+          path:
             projects/{projectsId}/instances/{instancesId}/tables/{tablesId}/authorizedViews/{authorizedViewsId}
   binaryauthorization:
     v1alpha2:
       default: true
       discovery_doc: binaryauthorization_v1alpha2.json
-      skip:
-        bug: b/508381738
       resources:
         projects.policy:
           path: projects/{projectsId}/policy
@@ -956,7 +952,7 @@ apis:
       discovery_doc: dns_v1alpha2.json
     v2:
       discovery_doc: dns_v2.json
-      mtls_endpoint_override: https://dns.mtls.googleapis.com/dns/v2/
+      mtls_endpoint_override: https://dns.mtls.googleapis.com/
       resources:
         projects:
           path: projects/{project}
@@ -1142,8 +1138,6 @@ apis:
     v1alpha:
       discovery_doc: hypercomputecluster_v1alpha.json
       default: true
-      skip:
-        bug: b/508381401
       resources:
         projects.locations:
           path: projects/{projectsId}/locations/{locationsId}

@@ -70,7 +70,8 @@ DETAILED_HELP = {
             --max-run-duration=1d \
             --size=10 \
             --instance-selection-machine-types="ct5lp-hightpu-4t" \
-            --target-distribution-shape="any-single-zone"
+            --target-distribution-shape="any-single-zone" \
+            --accelerator-topology="2x2"
       """,
 }
 
@@ -130,6 +131,7 @@ class Capacity(base.Command):
     flags.AddRegionFlag(parser)
     flags.AddProvisioningModelFlag(parser)
     flags.AddMaxRunDurationFlag(parser)
+    flags.AddAcceleratorTopologyFlag(parser)
     parser.add_argument(
         "--size",
         type=int,
@@ -246,6 +248,8 @@ class Capacity(base.Command):
 
     instance_properties = messages.CapacityAdviceRequestInstanceProperties(
         scheduling=scheduling)
+    if args.IsSpecified("accelerator_topology"):
+      instance_properties.acceleratorTopology = args.accelerator_topology
 
     # Distribution Policy
     target_shape = None

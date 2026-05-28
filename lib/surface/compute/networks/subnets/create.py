@@ -56,6 +56,7 @@ def _AddArgs(
     api_version,
     include_peer_migration_purpose,
     include_ipv6_secondary_ranges,
+    include_ipv6_network_tier=False,
 ):
   """Add subnetwork create arguments to parser."""
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT_WITH_IPV6_FIELD)
@@ -381,6 +382,9 @@ def _AddArgs(
         help='Adds a secondary IPv6 range to the subnetwork.',
     )
 
+  if include_ipv6_network_tier:
+    flags.AddIpv6NetworkTierArg(parser)
+
 
 def GetPrivateIpv6GoogleAccessTypeFlagMapper(messages):
   return arg_utils.ChoiceEnumMapper(
@@ -409,6 +413,7 @@ def _CreateSubnetwork(
     include_custom_hardware_link,
     ip_collection_ref,
     include_peer_migration_purpose,
+    ipv6_network_tier,
 ):
   """Create the subnet resource."""
   subnetwork = messages.Subnetwork(
@@ -543,6 +548,11 @@ def _CreateSubnetwork(
             args.resolve_subnet_mask
         )
     )
+
+  if ipv6_network_tier:
+    subnetwork.ipv6NetworkTier = (
+        messages.Subnetwork.Ipv6NetworkTierValueValuesEnum(ipv6_network_tier)
+    )
   return subnetwork
 
 
@@ -571,6 +581,7 @@ def _Run(
     include_custom_hardware_link,
     include_peer_migration_purpose,
     include_ipv6_secondary_ranges,
+    include_ipv6_network_tier,
 ):
   """Issues a list of requests necessary for adding a subnetwork."""
   client = holder.client
@@ -587,6 +598,10 @@ def _Run(
     ip_collection_ref = flags.IpCollectionArgument().ResolveAsResource(
         args, holder.resources)
 
+  ipv6_network_tier = None
+  if include_ipv6_network_tier:
+    ipv6_network_tier = getattr(args, 'ipv6_network_tier', None)
+
   subnetwork = _CreateSubnetwork(
       client.messages,
       subnet_ref,
@@ -598,6 +613,7 @@ def _Run(
       include_custom_hardware_link,
       ip_collection_ref,
       include_peer_migration_purpose,
+      ipv6_network_tier=ipv6_network_tier,
   )
   request = client.messages.ComputeSubnetworksInsertRequest(
       subnetwork=subnetwork,
@@ -643,6 +659,7 @@ class Create(base.CreateCommand):
   _include_custom_hardware_link = False
   _include_peer_migration_purpose = True
   _include_ipv6_secondary_ranges = False
+  _include_ipv6_network_tier = False
 
   detailed_help = _DetailedHelp()
 
@@ -657,6 +674,7 @@ class Create(base.CreateCommand):
         cls._api_version,
         cls._include_peer_migration_purpose,
         cls._include_ipv6_secondary_ranges,
+        cls._include_ipv6_network_tier,
     )
 
   def Run(self, args):
@@ -671,6 +689,7 @@ class Create(base.CreateCommand):
         self._include_custom_hardware_link,
         self._include_peer_migration_purpose,
         self._include_ipv6_secondary_ranges,
+        self._include_ipv6_network_tier,
     )
 
 
@@ -692,3 +711,4 @@ class CreateAlpha(CreateBeta):
   _include_custom_hardware_link = True
   _include_peer_migration_purpose = True
   _include_ipv6_secondary_ranges = True
+  _include_ipv6_network_tier = True

@@ -21,8 +21,8 @@ from googlecloudsdk.core import properties
 class DataSourceReferencesClient(util.BackupDrClientBase):
   """Cloud Backup and DR Data Source References client."""
 
-  def __init__(self):
-    super(DataSourceReferencesClient, self).__init__()
+  def __init__(self, api_version=util.DEFAULT_API_VERSION):
+    super(DataSourceReferencesClient, self).__init__(api_version=api_version)
     self.service = self.client.projects_locations_dataSourceReferences
 
   def FetchForResourceType(

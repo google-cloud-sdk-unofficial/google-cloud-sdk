@@ -576,6 +576,10 @@ class Update(base.Command):
                 pi_and_jailbreak_filter_settings_confidence_level
             )
         )
+      else:
+        floor_setting_updated.filterConfig.piAndJailbreakFilterSettings.confidenceLevel = messages.PiAndJailbreakFilterSettings.ConfidenceLevelValueValuesEnum(
+            pi_and_jailbreak_filter_settings_confidence_level
+        )
 
   def _UpdateMultiLanguageDetection(
       self, messages, args, floor_setting_updated

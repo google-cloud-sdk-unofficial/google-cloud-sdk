@@ -137,6 +137,64 @@ field_config:
     help_text: |
       Specifies the configuration for a vector field. Exactly one of
       'order', 'array-config', or 'vector-config' must be specified.
+  - api_field: searchConfig
+    release_tracks: [ALPHA, BETA]
+    json_name: search-config
+    help_text: |
+      Specifies the configuration for a search field. An index definition must
+      contain either only 'search-config' fields or only non 'search-config'
+      fields.
+
+      Examples:
+
+      Text search:
+
+        --field-config=field-path=title,search-config='{"text-spec": {"index-specs": [{"index-type": "TOKENIZED", "match-type": "MATCH_GLOBALLY"}]}}'
+
+      Geo search:
+
+        --field-config=field-path=location,search-config='{"geo-spec": {"geo-json-indexing-disabled": true}}'
+
+      With file:
+
+        --field-config=field-path=text,search-config='/path/to/configs/search-config.json'
+
+      For complex configurations, it is recommended to use a file.
+
+    spec:
+    - api_field: textSpec
+      json_name: text-spec
+      type: arg_object
+      help_text: Optional. The specification for building a text search index for a field.
+      spec:
+      - api_field: indexSpecs
+        json_name: index-specs
+        type: arg_object
+        help_text: Optional. Array of specifications for how the field should be indexed.
+        spec:
+        - api_field: indexType
+          json_name: index-type
+          help_text: |
+            Required. How to index the text field value.
+            Valid options are:
+            * `TOKENIZED`: Field values are tokenized.
+        - api_field: matchType
+          json_name: match-type
+          help_text: |
+            Required. How to match the text field value.
+            Valid options are:
+            * `MATCH_GLOBALLY`: Match on any indexed field.
+    - api_field: geoSpec
+      json_name: geo-spec
+      type: arg_object
+      help_text: Optional. The specification for building a geo search index for a field.
+      spec:
+      - api_field: geoJsonIndexingDisabled
+        json_name: geo-json-indexing-disabled
+        type: bool
+        help_text: |
+          Optional. Disables geoJSON indexing for the field. By default, geoJSON points
+          are indexed.
 
 index:
   api_field: googleFirestoreAdminV1Field.indexConfig.indexes
@@ -196,7 +254,7 @@ multikey:
     array index. For multikey indexes, at most one of the paths in the index
     definition reach or traverse an array, except via an explicit array
     index. Violations will result in errors. Note this field only applies to
-    index with MONGODB_COMPATIBLE_API ApiScope.
+    index with 'MONGODB_COMPATIBLE_API' ApiScope.
   action: store_true
 
 unique:
@@ -207,6 +265,32 @@ unique:
     Optional. Whether it is an unique index. Unique index ensures all values for
     the indexed field(s) are unique across documents.
   action: store_true
+
+search_index_options:
+  api_field: googleFirestoreAdminV1Index.searchIndexOptions
+  arg_name: search-index-options
+  required: false
+  release_tracks: [ALPHA, BETA]
+  help_text: |
+    Optional. Configuration options for search indexes.
+  type: arg_object
+  spec:
+  - api_field: textLanguage
+    json_name: text-language
+    help_text: |
+      Optional. The language to use for text search indexes. Used
+      as the default language if not overridden at the document level by
+      specifying the 'text-language-override-field-path'. The language is specified
+      as a BCP 47 language code. For indexes with 'MONGODB_COMPATIBLE_API'
+      ApiScope: If unspecified, the default language is English. For indexes
+      with 'ANY_API' ApiScope: If unspecified, the default behavior is
+      autodetect.
+  - api_field: textLanguageOverrideFieldPath
+    json_name: text-language-override-field-path
+    help_text: |
+      Optional. The field in the document that specifies which language to use
+      for that specific document. If unspecified, the language is taken from the
+      'language' document field if it exists or from 'text-language' if it does not.
 
 clear_exemption:
   arg_name: clear-exemption

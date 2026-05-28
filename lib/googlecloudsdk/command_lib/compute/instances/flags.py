@@ -3375,6 +3375,7 @@ def AddReservationAffinityGroup(
     group_text,
     affinity_text,
     support_specific_then_x_affinity,
+    support_any_reservation_then_fail_affinity,
 ):
   """Adds the argument group to handle reservation affinity configurations."""
   group = parser.add_group(help=group_text)
@@ -3394,6 +3395,12 @@ def AddReservationAffinityGroup(
             'Prefer to consume from a specific reservation, but still'
             ' consume from the on-demand pool if the specified reservation'
             ' is not available or exhausted.'
+        ),
+    })
+  if support_any_reservation_then_fail_affinity:
+    choices.update({
+        'any-reservation-then-fail': (
+            'Must consume from any automatic reservation; fail otherwise.'
         ),
     })
   group.add_argument(
