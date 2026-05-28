@@ -26,7 +26,6 @@ if TYPE_CHECKING:
   from googlecloudsdk.generated_clients.apis.storage.v2 import storage_v2_messages  # pylint: disable=g-import-not-at-top
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class List(base.ListCommand):
   """Intelligence findings list."""

@@ -312,6 +312,16 @@ def AddCaPoolIssuancePolicyFlag(parser):
   ).AddToParser(parser)
 
 
+def AddRequestedNotBeforeTimeFlag(parser):
+  base.Argument(
+      '--requested-not-before-time',
+      help=(
+          'The requested not before time for the certificate, in ISO 8601'
+          ' format (e.g., 2026-04-29T23:18:06Z).'
+      ),
+  ).AddToParser(parser)
+
+
 def AddEncodingFormatFlag(parser):
   _ENCODING_FORMAT_MAPPER.choice_arg.AddToParser(parser)
 

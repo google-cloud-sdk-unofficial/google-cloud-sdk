@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.compute.routers import flags
 from googlecloudsdk.command_lib.compute.routers import router_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
-import six
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
@@ -112,7 +111,7 @@ class AddBgpPeer(base.UpdateCommand):
           'advertisedIpRanges': ranges,
       }
 
-      for attr, value in six.iteritems(attrs):
+      for attr, value in attrs.items():
         if value is not None:
           setattr(peer, attr, value)
 

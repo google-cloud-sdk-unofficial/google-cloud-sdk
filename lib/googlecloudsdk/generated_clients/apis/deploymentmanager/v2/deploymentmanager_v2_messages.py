@@ -192,11 +192,13 @@ class BulkInsertOperationStatus(_messages.Message):
       CREATING: Rolling forward - creating VMs.
       ROLLING_BACK: Rolling back - cleaning up after an error.
       DONE: Done
+      PENDING: Pending - waiting until the capacity is available.
     """
     STATUS_UNSPECIFIED = 0
     CREATING = 1
     ROLLING_BACK = 2
     DONE = 3
+    PENDING = 4
 
   createdVmCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   deletedVmCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)

@@ -984,6 +984,33 @@ class ClouddeployV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def DeployCloudRun(self, request, global_params=None):
+      r"""Deploys a Cloud Run workload.
+
+      Args:
+        request: (ClouddeployProjectsLocationsDeliveryPipelinesDeployCloudRunRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('DeployCloudRun')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    DeployCloudRun.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/deliveryPipelines:deployCloudRun',
+        http_method='POST',
+        method_id='clouddeploy.projects.locations.deliveryPipelines.deployCloudRun',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1/{+parent}/deliveryPipelines:deployCloudRun',
+        request_field='deployCloudRunRequest',
+        request_type_name='ClouddeployProjectsLocationsDeliveryPipelinesDeployCloudRunRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Gets details of a single DeliveryPipeline.
 
@@ -1781,7 +1808,7 @@ class ClouddeployV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the ListLocationsRequest.name field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
       Args:
         request: (ClouddeployProjectsLocationsListRequest) input message

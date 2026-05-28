@@ -21,7 +21,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.composer import resource_args
 from googlecloudsdk.command_lib.composer import util as command_util
 from googlecloudsdk.core import log
-import six
 
 DETAILED_HELP = {
     'EXAMPLES':
@@ -76,5 +75,8 @@ class RestartWebServer(base.Command):
               env_resource.RelativeName(), operation.name),
           release_track=self.ReleaseTrack())
     except command_util.Error as e:
-      raise command_util.Error('Error restarting web server [{}]: {}'.format(
-          env_resource.RelativeName(), six.text_type(e)))
+      raise command_util.Error(
+          'Error restarting web server [{}]: {}'.format(
+              env_resource.RelativeName(), str(e)
+          )
+      )

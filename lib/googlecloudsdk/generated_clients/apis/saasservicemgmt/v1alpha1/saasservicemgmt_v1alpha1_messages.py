@@ -5191,12 +5191,16 @@ class UnitCondition(_messages.Message):
       TYPE_PROVISIONED: Condition type is provisioned.
       TYPE_OPERATION_ERROR: Condition type is operationError. True when the
         last unit operation fails with a non-ignorable error.
+      TYPE_FLAGS_CONFIG_INITIALIZED: Condition type is flagsConfigInitialized.
+        True when the flags configuration is synchronized and ready to be
+        served.
     """
     TYPE_UNSPECIFIED = 0
     TYPE_READY = 1
     TYPE_UPDATING = 2
     TYPE_PROVISIONED = 3
     TYPE_OPERATION_ERROR = 4
+    TYPE_FLAGS_CONFIG_INITIALIZED = 5
 
   lastTransitionTime = _messages.StringField(1)
   message = _messages.StringField(2)

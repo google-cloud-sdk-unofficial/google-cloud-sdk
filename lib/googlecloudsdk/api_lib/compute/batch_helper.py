@@ -19,10 +19,10 @@ import json
 
 from apitools.base.py import batch
 from apitools.base.py import exceptions
-
 from googlecloudsdk.api_lib.compute import operation_quota_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.util import exceptions as api_exceptions
 from googlecloudsdk.core import properties
 
 # Upper bound on batch size
@@ -117,8 +117,10 @@ def MakeRequests(requests, http, batch_url=None):
         try:
           data = json.loads(response.exception.content)
           if utils.JsonErrorHasDetails(data):
-            error_message = (response.exception.status_code,
-                             BuildMessageForErrorWithDetails(data))
+            error_message = (
+                response.exception.status_code,
+                BuildMessageForErrorWithDetails(data, response.exception),
+            )
           else:
             error_message = (response.exception.status_code,
                              data.get('error', {}).get('message'))
@@ -135,9 +137,27 @@ def MakeRequests(requests, http, batch_url=None):
   return objects, errors
 
 
-def BuildMessageForErrorWithDetails(json_data):
-  if (operation_quota_utils.IsJsonOperationQuotaError(
-      json_data.get('error', {}))):
+def BuildMessageForErrorWithDetails(json_data, exception=None):
+  if operation_quota_utils.IsJsonOperationQuotaError(
+      json_data.get('error', {})
+  ):
     return operation_quota_utils.CreateOperationQuotaExceededMsg(json_data)
-  else:
-    return json_data.get('error', {}).get('message')
+  # TODO(b/416512775): Add support for all AE error types.
+  elif IsPermissionDeniedError(json_data.get('error', {})):
+    return api_exceptions.HttpException(exception).message
+  return json_data.get('error', {}).get('message')
+
+
+def IsPermissionDeniedError(error):
+  """Returns true if the given loaded json is an permission denied error.
+  """
+  try:
+    for item in error.get('details'):
+      try:
+        if item.get('reason') == 'IAM_PERMISSION_DENIED':
+          return True
+      except (KeyError, AttributeError, TypeError):
+        pass
+  except (KeyError, AttributeError, TypeError):
+    return False
+  return False

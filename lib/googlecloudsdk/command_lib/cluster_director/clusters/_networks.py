@@ -18,6 +18,8 @@
 from __future__ import annotations
 from typing import Any
 
+from googlecloudsdk.command_lib.cluster_director.clusters import _validator
+
 
 def _GetNetworkName(args: Any, cluster_ref: Any, network: str) -> str:
   """Returns the full network name including project.
@@ -71,6 +73,7 @@ def MakeClusterNetworks(
   networks = message_module.Cluster.NetworkResourcesValue()
   if args.IsSpecified("create_network"):
     network_id = args.create_network.get("name")
+    _validator.ValidateResourceID(network_id)
     network_name = _GetNetworkName(args, cluster_ref, network_id)
     networks.additionalProperties.append(
         message_module.Cluster.NetworkResourcesValue.AdditionalProperty(

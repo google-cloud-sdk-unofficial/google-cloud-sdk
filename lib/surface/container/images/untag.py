@@ -22,7 +22,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
-import six
 
 
 class Untag(base.DeleteCommand):
@@ -83,20 +82,20 @@ class Untag(base.DeleteCommand):
       for tag in tags:
         try:
           # Resolve tags to digests. Throws InvalidImageNameError on 404.
-          digests[tag] = util.GetDigestFromName(six.text_type(tag))
-        except util.InvalidImageNameError:
+          digests[tag] = util.GetDigestFromName(str(tag))
+        except util.InvalidImageNameError as exc:
           # We already validated the image string in _ParseArgs, this is a 404
           raise util.InvalidImageNameError(
-              'Image could not be found: [{}]'.format(six.text_type(tag)))
+              'Image could not be found: [{}]'.format(str(tag))
+          ) from exc
 
       if not tags:
         log.warning('No tags found matching image names [%s].',
                     ', '.join(args.image_names))
         return
-      for tag, digest in six.iteritems(digests):
-        log.status.Print('Tag: [{}]'.format(six.text_type(tag)))
-        log.status.Print('- referencing digest: [{}]'.format(
-            six.text_type(digest)))
+      for tag, digest in digests.items():
+        log.status.Print('Tag: [{}]'.format(str(tag)))
+        log.status.Print('- referencing digest: [{}]'.format(str(digest)))
         log.status.Print('')
 
       console_io.PromptContinue(
@@ -110,7 +109,7 @@ class Untag(base.DeleteCommand):
       result = []
       for tag in tags:
         self._DeleteDockerTag(tag, digests, http_obj)
-        result.append({'name': six.text_type(tag)})
+        result.append({'name': str(tag)})
       return result
 
   def _ParseArgs(self, image_names):

@@ -139,7 +139,7 @@ class Update(base.UpdateCommand):
     flags.AddNodeDrainSettingsFlag(group)
     flags.AddEnableLustreMultiRailFlag(group, for_node_pool=True, hidden=True)
     flags.AddNodePoolMaintenanceExclusionsFlag(
-        group, hidden=True, is_update=True)
+        group, hidden=False, is_update=True)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -360,7 +360,7 @@ class UpdateBeta(Update):
     )
     flags.AddEnableLustreMultiRailFlag(group, for_node_pool=True, hidden=True)
     flags.AddNodePoolMaintenanceExclusionsFlag(
-        group, hidden=True, is_update=True)
+        group, hidden=False, is_update=True)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -513,7 +513,7 @@ class UpdateAlpha(Update):
     )
     flags.AddEnableLustreMultiRailFlag(group, for_node_pool=True, hidden=True)
     flags.AddNodePoolMaintenanceExclusionsFlag(
-        group, hidden=True, is_update=True)
+        group, hidden=False, is_update=True)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)

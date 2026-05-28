@@ -966,9 +966,11 @@ class GoogleCloudVectorsearchV1betaRanker(_messages.Message):
 
   Fields:
     rrf: Reciprocal Rank Fusion ranking.
+    vertexRanker: Optional. Vertex AI ranking.
   """
 
   rrf = _messages.MessageField('GoogleCloudVectorsearchV1betaReciprocalRankFusion', 1)
+  vertexRanker = _messages.MessageField('GoogleCloudVectorsearchV1betaVertexRanker', 2)
 
 
 class GoogleCloudVectorsearchV1betaReciprocalRankFusion(_messages.Message):
@@ -1099,10 +1101,13 @@ class GoogleCloudVectorsearchV1betaSearchResponseMetadata(_messages.Message):
     usedIndex: Indicates that the search used a particular index.
     usedKnn: Output only. If true, the search used the system's default
       K-Nearest Neighbor (KNN) index engine.
+    warnings: Output only. Warnings or non-fatal errors that occurred during
+      execution.
   """
 
   usedIndex = _messages.MessageField('GoogleCloudVectorsearchV1betaSearchResponseMetadataIndexInfo', 1)
   usedKnn = _messages.BooleanField(2)
+  warnings = _messages.MessageField('GoogleRpcStatus', 3, repeated=True)
 
 
 class GoogleCloudVectorsearchV1betaSearchResponseMetadataIndexInfo(_messages.Message):
@@ -1447,6 +1452,41 @@ class GoogleCloudVectorsearchV1betaVertexEmbeddingConfig(_messages.Message):
   modelId = _messages.StringField(1)
   taskType = _messages.EnumField('TaskTypeValueValuesEnum', 2)
   textTemplate = _messages.StringField(3)
+
+
+class GoogleCloudVectorsearchV1betaVertexRanker(_messages.Message):
+  r"""Defines a ranker using the Vertex AI ranking service. See
+  https://cloud.google.com/generative-ai-app-builder/docs/ranking for details.
+
+  Fields:
+    model: Required. The model used for ranking documents. The list of
+      available models is described in
+      https://docs.cloud.google.com/generative-ai-app-
+      builder/docs/ranking#models. Currently, only `semantic-ranker-
+      fast@latest` is supported.
+    textRecordSpec: The record spec for text search.
+    topN: Required. The number of documents to be processed for ranking.
+  """
+
+  model = _messages.StringField(1)
+  textRecordSpec = _messages.MessageField('GoogleCloudVectorsearchV1betaVertexRankerTextRecordSpec', 2)
+  topN = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+
+
+class GoogleCloudVectorsearchV1betaVertexRankerTextRecordSpec(_messages.Message):
+  r"""The record spec for text search.
+
+  Fields:
+    contentTemplate: Optional. The template used to generate the record's
+      content.
+    query: Required. The query against which the records are ranked and
+      scored.
+    titleTemplate: Optional. The template used to generate the record's title.
+  """
+
+  contentTemplate = _messages.StringField(1)
+  query = _messages.StringField(2)
+  titleTemplate = _messages.StringField(3)
 
 
 class GoogleLongrunningCancelOperationRequest(_messages.Message):
@@ -2186,9 +2226,8 @@ class VectorsearchProjectsLocationsListRequest(_messages.Message):
   r"""A VectorsearchProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).

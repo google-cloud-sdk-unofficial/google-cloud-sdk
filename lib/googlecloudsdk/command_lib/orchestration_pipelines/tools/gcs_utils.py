@@ -17,6 +17,8 @@
 import json
 import subprocess
 import time
+from apitools.base.py import exceptions as api_exceptions
+from googlecloudsdk.api_lib.storage import storage_api
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
@@ -206,3 +208,31 @@ def TouchPipelineFile(subprocess_mod, pipeline_gcs_path):
     raise calliope_exceptions.HttpException(
         f"Failed to touch pipeline file {pipeline_gcs_path}: {e.stderr}"
     )
+
+
+class GcsError(core_exceptions.Error):
+  """An exception raised when GCS validation or operations fail."""
+
+  pass
+
+
+def ValidateBucketExistsAndHasPermissions(bucket_name):
+  """Validates that a GCS bucket exists and is accessible.
+
+  Args:
+    bucket_name: str, the name of the bucket.
+
+  Raises:
+    GcsError: If the bucket is not found or inaccessible.
+  """
+  storage_client = storage_api.StorageClient()
+  try:
+    storage_client.GetBucket(bucket_name)
+  except storage_api.BucketNotFoundError as e:
+    raise GcsError(f"Bucket 'gs://{bucket_name}' does not exist.") from e
+  except api_exceptions.HttpError as e:
+    if e.status_code == 403:
+      raise GcsError(
+          f"Permission denied for bucket 'gs://{bucket_name}'."
+      ) from e
+    raise GcsError(f"Failed to check bucket 'gs://{bucket_name}': {e}") from e

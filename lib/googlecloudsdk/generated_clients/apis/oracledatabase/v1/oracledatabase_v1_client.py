@@ -57,6 +57,13 @@ class OracledatabaseV1(base_api.BaseApiClient):
     self.projects_locations_exascaleDbStorageVaults = self.ProjectsLocationsExascaleDbStorageVaultsService(self)
     self.projects_locations_giVersions_minorVersions = self.ProjectsLocationsGiVersionsMinorVersionsService(self)
     self.projects_locations_giVersions = self.ProjectsLocationsGiVersionsService(self)
+    self.projects_locations_goldengateConnectionAssignments = self.ProjectsLocationsGoldengateConnectionAssignmentsService(self)
+    self.projects_locations_goldengateConnectionTypes = self.ProjectsLocationsGoldengateConnectionTypesService(self)
+    self.projects_locations_goldengateConnections = self.ProjectsLocationsGoldengateConnectionsService(self)
+    self.projects_locations_goldengateDeploymentEnvironments = self.ProjectsLocationsGoldengateDeploymentEnvironmentsService(self)
+    self.projects_locations_goldengateDeploymentTypes = self.ProjectsLocationsGoldengateDeploymentTypesService(self)
+    self.projects_locations_goldengateDeploymentVersions = self.ProjectsLocationsGoldengateDeploymentVersionsService(self)
+    self.projects_locations_goldengateDeployments = self.ProjectsLocationsGoldengateDeploymentsService(self)
     self.projects_locations_odbNetworks_odbSubnets = self.ProjectsLocationsOdbNetworksOdbSubnetsService(self)
     self.projects_locations_odbNetworks = self.ProjectsLocationsOdbNetworksService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
@@ -1587,6 +1594,697 @@ class OracledatabaseV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsGoldengateConnectionAssignmentsService(base_api.BaseApiService):
+    """Service class for the projects_locations_goldengateConnectionAssignments resource."""
+
+    _NAME = 'projects_locations_goldengateConnectionAssignments'
+
+    def __init__(self, client):
+      super(OracledatabaseV1.ProjectsLocationsGoldengateConnectionAssignmentsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new GoldengateConnectionAssignment in a given project and location.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/goldengateConnectionAssignments',
+        http_method='POST',
+        method_id='oracledatabase.projects.locations.goldengateConnectionAssignments.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['goldengateConnectionAssignmentId', 'requestId'],
+        relative_path='v1/{+parent}/goldengateConnectionAssignments',
+        request_field='goldengateConnectionAssignment',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single GoldengateConnectionAssignment.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/goldengateConnectionAssignments/{goldengateConnectionAssignmentsId}',
+        http_method='DELETE',
+        method_id='oracledatabase.projects.locations.goldengateConnectionAssignments.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single GoldengateConnectionAssignment.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoldengateConnectionAssignment) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/goldengateConnectionAssignments/{goldengateConnectionAssignmentsId}',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.goldengateConnectionAssignments.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsGetRequest',
+        response_type_name='GoldengateConnectionAssignment',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists GoldengateConnectionAssignments in a given project and location.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListGoldengateConnectionAssignmentsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/goldengateConnectionAssignments',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.goldengateConnectionAssignments.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/goldengateConnectionAssignments',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsListRequest',
+        response_type_name='ListGoldengateConnectionAssignmentsResponse',
+        supports_download=False,
+    )
+
+    def Test(self, request, global_params=None):
+      r"""Tests a single GoldengateConnectionAssignment.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsTestRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TestGoldengateConnectionAssignmentResponse) The response message.
+      """
+      config = self.GetMethodConfig('Test')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Test.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/goldengateConnectionAssignments/{goldengateConnectionAssignmentsId}:test',
+        http_method='POST',
+        method_id='oracledatabase.projects.locations.goldengateConnectionAssignments.test',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:test',
+        request_field='testGoldengateConnectionAssignmentRequest',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsTestRequest',
+        response_type_name='TestGoldengateConnectionAssignmentResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsGoldengateConnectionTypesService(base_api.BaseApiService):
+    """Service class for the projects_locations_goldengateConnectionTypes resource."""
+
+    _NAME = 'projects_locations_goldengateConnectionTypes'
+
+    def __init__(self, client):
+      super(OracledatabaseV1.ProjectsLocationsGoldengateConnectionTypesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single GoldengateConnectionType.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateConnectionTypesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoldengateConnectionType) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/goldengateConnectionTypes/{goldengateConnectionTypesId}',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.goldengateConnectionTypes.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateConnectionTypesGetRequest',
+        response_type_name='GoldengateConnectionType',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists GoldengateConnectionTypes in a given project and location.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateConnectionTypesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListGoldengateConnectionTypesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/goldengateConnectionTypes',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.goldengateConnectionTypes.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/goldengateConnectionTypes',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateConnectionTypesListRequest',
+        response_type_name='ListGoldengateConnectionTypesResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsGoldengateConnectionsService(base_api.BaseApiService):
+    """Service class for the projects_locations_goldengateConnections resource."""
+
+    _NAME = 'projects_locations_goldengateConnections'
+
+    def __init__(self, client):
+      super(OracledatabaseV1.ProjectsLocationsGoldengateConnectionsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new GoldengateConnection in a given project and location.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateConnectionsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/goldengateConnections',
+        http_method='POST',
+        method_id='oracledatabase.projects.locations.goldengateConnections.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['goldengateConnectionId', 'requestId'],
+        relative_path='v1/{+parent}/goldengateConnections',
+        request_field='goldengateConnection',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateConnectionsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single GoldengateConnection.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateConnectionsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/goldengateConnections/{goldengateConnectionsId}',
+        http_method='DELETE',
+        method_id='oracledatabase.projects.locations.goldengateConnections.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateConnectionsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single GoldengateConnection.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateConnectionsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoldengateConnection) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/goldengateConnections/{goldengateConnectionsId}',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.goldengateConnections.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateConnectionsGetRequest',
+        response_type_name='GoldengateConnection',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists all the GoldengateConnections for the given project and location.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateConnectionsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListGoldengateConnectionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/goldengateConnections',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.goldengateConnections.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/goldengateConnections',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateConnectionsListRequest',
+        response_type_name='ListGoldengateConnectionsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsGoldengateDeploymentEnvironmentsService(base_api.BaseApiService):
+    """Service class for the projects_locations_goldengateDeploymentEnvironments resource."""
+
+    _NAME = 'projects_locations_goldengateDeploymentEnvironments'
+
+    def __init__(self, client):
+      super(OracledatabaseV1.ProjectsLocationsGoldengateDeploymentEnvironmentsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single GoldengateDeploymentEnvironment.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateDeploymentEnvironmentsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoldengateDeploymentEnvironment) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/goldengateDeploymentEnvironments/{goldengateDeploymentEnvironmentsId}',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.goldengateDeploymentEnvironments.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateDeploymentEnvironmentsGetRequest',
+        response_type_name='GoldengateDeploymentEnvironment',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists GoldengateDeploymentEnvironments in a given project and location.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateDeploymentEnvironmentsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListGoldengateDeploymentEnvironmentsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/goldengateDeploymentEnvironments',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.goldengateDeploymentEnvironments.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/goldengateDeploymentEnvironments',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateDeploymentEnvironmentsListRequest',
+        response_type_name='ListGoldengateDeploymentEnvironmentsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsGoldengateDeploymentTypesService(base_api.BaseApiService):
+    """Service class for the projects_locations_goldengateDeploymentTypes resource."""
+
+    _NAME = 'projects_locations_goldengateDeploymentTypes'
+
+    def __init__(self, client):
+      super(OracledatabaseV1.ProjectsLocationsGoldengateDeploymentTypesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single GoldenGateDeploymentType.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateDeploymentTypesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoldengateDeploymentType) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/goldengateDeploymentTypes/{goldengateDeploymentTypesId}',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.goldengateDeploymentTypes.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateDeploymentTypesGetRequest',
+        response_type_name='GoldengateDeploymentType',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists GoldenGateDeploymentTypes in a given project and location.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateDeploymentTypesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListGoldengateDeploymentTypesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/goldengateDeploymentTypes',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.goldengateDeploymentTypes.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/goldengateDeploymentTypes',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateDeploymentTypesListRequest',
+        response_type_name='ListGoldengateDeploymentTypesResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsGoldengateDeploymentVersionsService(base_api.BaseApiService):
+    """Service class for the projects_locations_goldengateDeploymentVersions resource."""
+
+    _NAME = 'projects_locations_goldengateDeploymentVersions'
+
+    def __init__(self, client):
+      super(OracledatabaseV1.ProjectsLocationsGoldengateDeploymentVersionsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single GoldengateDeploymentVersion.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateDeploymentVersionsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoldengateDeploymentVersion) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/goldengateDeploymentVersions/{goldengateDeploymentVersionsId}',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.goldengateDeploymentVersions.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateDeploymentVersionsGetRequest',
+        response_type_name='GoldengateDeploymentVersion',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists GoldengateDeploymentVersions in a given project and location.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateDeploymentVersionsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListGoldengateDeploymentVersionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/goldengateDeploymentVersions',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.goldengateDeploymentVersions.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/goldengateDeploymentVersions',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateDeploymentVersionsListRequest',
+        response_type_name='ListGoldengateDeploymentVersionsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsGoldengateDeploymentsService(base_api.BaseApiService):
+    """Service class for the projects_locations_goldengateDeployments resource."""
+
+    _NAME = 'projects_locations_goldengateDeployments'
+
+    def __init__(self, client):
+      super(OracledatabaseV1.ProjectsLocationsGoldengateDeploymentsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new GoldengateDeployment in a given project and location.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateDeploymentsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/goldengateDeployments',
+        http_method='POST',
+        method_id='oracledatabase.projects.locations.goldengateDeployments.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['goldengateDeploymentId', 'requestId'],
+        relative_path='v1/{+parent}/goldengateDeployments',
+        request_field='goldengateDeployment',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateDeploymentsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single GoldengateDeployment.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateDeploymentsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/goldengateDeployments/{goldengateDeploymentsId}',
+        http_method='DELETE',
+        method_id='oracledatabase.projects.locations.goldengateDeployments.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateDeploymentsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single GoldengateDeployment.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateDeploymentsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoldengateDeployment) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/goldengateDeployments/{goldengateDeploymentsId}',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.goldengateDeployments.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateDeploymentsGetRequest',
+        response_type_name='GoldengateDeployment',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists all the GoldengateDeployments for the given project and location.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateDeploymentsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListGoldengateDeploymentsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/goldengateDeployments',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.goldengateDeployments.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/goldengateDeployments',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateDeploymentsListRequest',
+        response_type_name='ListGoldengateDeploymentsResponse',
+        supports_download=False,
+    )
+
+    def Start(self, request, global_params=None):
+      r"""Starts a single GoldengateDeployment.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateDeploymentsStartRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Start')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Start.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/goldengateDeployments/{goldengateDeploymentsId}:start',
+        http_method='POST',
+        method_id='oracledatabase.projects.locations.goldengateDeployments.start',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:start',
+        request_field='startGoldengateDeploymentRequest',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateDeploymentsStartRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Stop(self, request, global_params=None):
+      r"""Stops a single GoldengateDeployment.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateDeploymentsStopRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Stop')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Stop.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/goldengateDeployments/{goldengateDeploymentsId}:stop',
+        http_method='POST',
+        method_id='oracledatabase.projects.locations.goldengateDeployments.stop',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:stop',
+        request_field='stopGoldengateDeploymentRequest',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateDeploymentsStopRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class ProjectsLocationsOdbNetworksOdbSubnetsService(base_api.BaseApiService):
     """Service class for the projects_locations_odbNetworks_odbSubnets resource."""
 
@@ -2043,7 +2741,7 @@ class OracledatabaseV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the ListLocationsRequest.name field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
       Args:
         request: (OracledatabaseProjectsLocationsListRequest) input message

@@ -33,9 +33,12 @@ class Collections(enum.Enum):
   )
   ORGANIZATIONS_LOCATIONS = (
       'organizations.locations',
-      'organizations/{organizationsId}/locations/{locationsId}',
-      {},
-      ['organizationsId', 'locationsId'],
+      '{+name}',
+      {
+          '':
+              'organizations/{organizationsId}/locations/{locationsId}',
+      },
+      ['name'],
       True
   )
   ORGANIZATIONS_LOCATIONS_ADDRESSGROUPS = (
@@ -187,6 +190,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_FIREWALLENDPOINTS = (
+      'projects.locations.firewallEndpoints',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'firewallEndpoints/{firewallEndpointsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_GATEWAYSECURITYPOLICIES = (
       'projects.locations.gatewaySecurityPolicies',
       '{+name}',
@@ -307,6 +321,50 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/operations/'
               '{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_SACATTACHMENTS = (
+      'projects.locations.sacAttachments',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/sacAttachments/'
+              '{sacAttachmentsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_SACREALMS = (
+      'projects.locations.sacRealms',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/sacRealms/'
+              '{sacRealmsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_SECURITYPROFILEGROUPS = (
+      'projects.locations.securityProfileGroups',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'securityProfileGroups/{securityProfileGroupsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_SECURITYPROFILES = (
+      'projects.locations.securityProfiles',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'securityProfiles/{securityProfilesId}',
       },
       ['name'],
       True

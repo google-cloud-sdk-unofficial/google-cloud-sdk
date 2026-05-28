@@ -284,7 +284,8 @@ def _CreateAndUploadTarball(
       ignore_file=ignore_file,
       hide_logs=hide_logs,
   )
-  return f'gs://{staged_source_obj.bucket}/{staged_source_obj.name}'
+  gcs_uri = f'gs://{staged_source_obj.bucket}/{staged_source_obj.name}#{staged_source_obj.generation}'
+  return gcs_uri
 
 
 def _SetVersion(
@@ -545,7 +546,7 @@ def _StageGcsObject(
         actual_source, collection='storage.objects'
     )
     staged_source_obj = gcs_client.Rewrite(gcs_obj, gcs_source_staging)
-    gcs_uri = f'gs://{staged_source_obj.bucket}/{staged_source_obj.name}'
+    gcs_uri = f'gs://{staged_source_obj.bucket}/{staged_source_obj.name}#{staged_source_obj.generation}'
   else:
     # If a Skaffold file should be generated
     if kubernetes_manifest or cloud_run_manifest:
@@ -578,7 +579,7 @@ def _StageGcsObject(
       staged_source_obj = gcs_client.CopyFileToGCS(
           actual_source, gcs_source_staging
       )
-      gcs_uri = f'gs://{staged_source_obj.bucket}/{staged_source_obj.name}'
+      gcs_uri = f'gs://{staged_source_obj.bucket}/{staged_source_obj.name}#{staged_source_obj.generation}'
   return gcs_uri
 
 
@@ -1242,7 +1243,7 @@ def _SetStorageSource(
   storage_source = messages.GoogleCloudStorageSource(
       bucket=storage_object.bucket_name,
       object=storage_object.resource_name,
-      generation=storage_object.generation,
+      generation=int(storage_object.generation),
   )
   if not release_config.source:
     release_config.source = messages.Source(storageSource=storage_source)

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -65,6 +65,22 @@
           type: bool
           help_text: |-
             Whether to enable traces.
+          default: null
+        - arg_name: conversational-analytics-setting-feedback-enabled
+          api_field: gdaObservabilitySetting.conversationalAnalyticsSetting.feedbackEnabled
+          action: store_true
+          required: false
+          type: bool
+          help_text: |-
+            Whether to enable feedback.
+          default: null
+        - arg_name: conversational-analytics-setting-logging-enabled
+          api_field: gdaObservabilitySetting.conversationalAnalyticsSetting.loggingEnabled
+          action: store_true
+          required: false
+          type: bool
+          help_text: |-
+            Whether to enable logging.
           default: null
     - arg_name: request-id
       api_field: requestId

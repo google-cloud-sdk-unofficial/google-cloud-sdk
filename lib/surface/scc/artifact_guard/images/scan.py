@@ -54,7 +54,6 @@ class SbomExtractorCommand(binary_operations.BinaryBackedOperation):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 @base.DefaultUniverseOnly
 class Scan(base.Command):
   """Scan an image with Artifact Guard."""

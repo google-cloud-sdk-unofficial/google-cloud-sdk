@@ -1960,9 +1960,8 @@ class FirestoreProjectsLocationsListRequest(_messages.Message):
   r"""A FirestoreProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -2368,10 +2367,15 @@ class GoogleFirestoreAdminV1Database(_messages.Message):
   Enums:
     AppEngineIntegrationModeValueValuesEnum: The App Engine integration mode
       to use for this database.
-    ConcurrencyModeValueValuesEnum: The concurrency control mode to use for
-      this database. If unspecified in a CreateDatabase request, this will
-      default based on the database edition: Optimistic for Enterprise and
-      Pessimistic for all other databases.
+    ConcurrencyModeValueValuesEnum: The default concurrency control mode to
+      use for this database. If unspecified in a CreateDatabase request, this
+      will default based on the database edition: Optimistic for Enterprise
+      and Pessimistic for all other databases. While transactions can
+      explicitly specify their own concurrency mode, this setting defines the
+      default behavior when left unspecified. Important: This database-level
+      setting is not respected for Firestore with MongoDB compatibility. All
+      transactions through the MongoDB compatibility layer will use optimistic
+      concurrency control, regardless of this setting.
     DatabaseEditionValueValuesEnum: Immutable. The edition of the database.
     DeleteProtectionStateValueValuesEnum: State of delete protection for the
       database.
@@ -2402,10 +2406,15 @@ class GoogleFirestoreAdminV1Database(_messages.Message):
       database.
     cmekConfig: Optional. Presence indicates CMEK is enabled for this
       database.
-    concurrencyMode: The concurrency control mode to use for this database. If
-      unspecified in a CreateDatabase request, this will default based on the
-      database edition: Optimistic for Enterprise and Pessimistic for all
-      other databases.
+    concurrencyMode: The default concurrency control mode to use for this
+      database. If unspecified in a CreateDatabase request, this will default
+      based on the database edition: Optimistic for Enterprise and Pessimistic
+      for all other databases. While transactions can explicitly specify their
+      own concurrency mode, this setting defines the default behavior when
+      left unspecified. Important: This database-level setting is not
+      respected for Firestore with MongoDB compatibility. All transactions
+      through the MongoDB compatibility layer will use optimistic concurrency
+      control, regardless of this setting.
     createTime: Output only. The timestamp at which this database was created.
       Databases created before 2016 do not populate create_time.
     databaseEdition: Immutable. The edition of the database.
@@ -2492,10 +2501,14 @@ class GoogleFirestoreAdminV1Database(_messages.Message):
     DISABLED = 2
 
   class ConcurrencyModeValueValuesEnum(_messages.Enum):
-    r"""The concurrency control mode to use for this database. If unspecified
-    in a CreateDatabase request, this will default based on the database
-    edition: Optimistic for Enterprise and Pessimistic for all other
-    databases.
+    r"""The default concurrency control mode to use for this database. If
+    unspecified in a CreateDatabase request, this will default based on the
+    database edition: Optimistic for Enterprise and Pessimistic for all other
+    databases. While transactions can explicitly specify their own concurrency
+    mode, this setting defines the default behavior when left unspecified.
+    Important: This database-level setting is not respected for Firestore with
+    MongoDB compatibility. All transactions through the MongoDB compatibility
+    layer will use optimistic concurrency control, regardless of this setting.
 
     Values:
       CONCURRENCY_MODE_UNSPECIFIED: Not used.
@@ -3033,8 +3046,7 @@ class GoogleFirestoreAdminV1Index(_messages.Message):
       collections descended from a specific document, specified at query time,
       and that have the same collection ID as this index.
     searchIndexOptions: Optional. Options for search indexes that are at the
-      index definition level. This field is only currently supported for
-      indexes with MONGODB_COMPATIBLE_API ApiScope.
+      index definition level.
     shardCount: Optional. The number of shards for the index.
     state: Output only. The serving state of the index.
     unique: Optional. Whether it is an unique index. Unique index ensures all
@@ -3225,9 +3237,7 @@ class GoogleFirestoreAdminV1IndexField(_messages.Message):
       name of the field or may be omitted.
     order: Indicates that this field supports ordering by the specified order
       or comparing using =, !=, <, <=, >, >=.
-    searchConfig: Indicates that this field supports search operations. This
-      field is only currently supported for indexes with
-      MONGODB_COMPATIBLE_API ApiScope.
+    searchConfig: Indicates that this field supports search operations.
     vectorConfig: Indicates that this field supports nearest neighbor and
       distance operations on vector.
   """
@@ -3576,7 +3586,8 @@ class GoogleFirestoreAdminV1SearchGeoSpec(_messages.Message):
 
   Fields:
     geoJsonIndexingDisabled: Optional. Disables geoJSON indexing for the
-      field. By default, geoJSON points are indexed.
+      field. By default, geoJSON points are indexed. Firestore GeoPoints are
+      indexed regardless of this value.
   """
 
   geoJsonIndexingDisabled = _messages.BooleanField(1)
@@ -3594,10 +3605,9 @@ class GoogleFirestoreAdminV1SearchIndexOptions(_messages.Message):
       with `ANY_API` ApiScope: If unspecified, the default behavior is
       autodetect.
     textLanguageOverrideFieldPath: Optional. The field in the document that
-      specifies which language to use for that specific document. For indexes
-      with MONGODB_COMPATIBLE_API ApiScope: if unspecified, the language is
-      taken from the "language" field if it exists or from `text_language` if
-      it does not.
+      specifies which language to use for that specific document. If
+      unspecified, the language is taken from the "language" field if it
+      exists or from `text_language` if it does not.
   """
 
   textLanguage = _messages.StringField(1)
@@ -3623,8 +3633,7 @@ class GoogleFirestoreAdminV1SearchTextIndexSpec(_messages.Message):
     Values:
       TEXT_INDEX_TYPE_UNSPECIFIED: The index type is unspecified. Not a valid
         option.
-      TOKENIZED: Field values are tokenized. This is the only way currently
-        supported for MONGODB_COMPATIBLE_API.
+      TOKENIZED: Field values are tokenized.
     """
     TEXT_INDEX_TYPE_UNSPECIFIED = 0
     TOKENIZED = 1
@@ -3635,8 +3644,7 @@ class GoogleFirestoreAdminV1SearchTextIndexSpec(_messages.Message):
     Values:
       TEXT_MATCH_TYPE_UNSPECIFIED: The match type is unspecified. Not a valid
         option.
-      MATCH_GLOBALLY: Match on any indexed field. This is the only way
-        currently supported for MONGODB_COMPATIBLE_API.
+      MATCH_GLOBALLY: Match on any indexed field.
     """
     TEXT_MATCH_TYPE_UNSPECIFIED = 0
     MATCH_GLOBALLY = 1
@@ -4459,14 +4467,45 @@ class ReadOnly(_messages.Message):
 
 class ReadWrite(_messages.Message):
   r"""Options for a transaction that can be used to read and write documents.
-  Firestore does not allow 3rd party auth requests to create read-write.
-  transactions.
+
+  Enums:
+    ConcurrencyModeValueValuesEnum: Optional. The concurrency control mode to
+      use for this transaction. A database is able to use different
+      concurrency modes for different transactions simultaneously. 3rd party
+      auth requests are only allowed to create optimistic read-write
+      transactions and must specify that here even if the database-level
+      setting is already configured to optimistic.
 
   Fields:
+    concurrencyMode: Optional. The concurrency control mode to use for this
+      transaction. A database is able to use different concurrency modes for
+      different transactions simultaneously. 3rd party auth requests are only
+      allowed to create optimistic read-write transactions and must specify
+      that here even if the database-level setting is already configured to
+      optimistic.
     retryTransaction: An optional transaction to retry.
   """
 
-  retryTransaction = _messages.BytesField(1)
+  class ConcurrencyModeValueValuesEnum(_messages.Enum):
+    r"""Optional. The concurrency control mode to use for this transaction. A
+    database is able to use different concurrency modes for different
+    transactions simultaneously. 3rd party auth requests are only allowed to
+    create optimistic read-write transactions and must specify that here even
+    if the database-level setting is already configured to optimistic.
+
+    Values:
+      CONCURRENCY_MODE_UNSPECIFIED: Start the transaction with the database-
+        level default concurrency mode.
+      OPTIMISTIC: Use optimistic concurrency control for the new transaction.
+      PESSIMISTIC: Use pessimistic concurrency control for the new
+        transaction.
+    """
+    CONCURRENCY_MODE_UNSPECIFIED = 0
+    OPTIMISTIC = 1
+    PESSIMISTIC = 2
+
+  concurrencyMode = _messages.EnumField('ConcurrencyModeValueValuesEnum', 1)
+  retryTransaction = _messages.BytesField(2)
 
 
 class RollbackRequest(_messages.Message):

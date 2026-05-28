@@ -24,7 +24,6 @@ from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.resource import resource_printer
-import six
 
 
 class Delete(base.DeleteCommand):
@@ -111,7 +110,7 @@ class Delete(base.DeleteCommand):
 
       # Resolve tags to digests.
       for tag in explicit_tags:
-        digests.add(util.GetDigestFromName(six.text_type(tag)))
+        digests.add(util.GetDigestFromName(str(tag)))
 
       # Find all the tags that reference digests to be deleted.
       all_tags = set()
@@ -124,7 +123,7 @@ class Delete(base.DeleteCommand):
       if implicit_tags and not args.force_delete_tags:
         log.error('Tags:')
         for tag in explicit_tags:
-          log.error('- ' + six.text_type(tag))
+          log.error('- ' + str(tag))
         raise exceptions.Error(
             'This operation will implicitly delete the tags listed above. '
             'Please manually remove with the `untag` command or re-run with '
@@ -140,7 +139,7 @@ class Delete(base.DeleteCommand):
       if explicit_tags:
         log.status.Print('Tags:')
       for tag in explicit_tags:
-        log.status.Print('- ' + six.text_type(tag))
+        log.status.Print('- ' + str(tag))
 
       # Prompt the user for consent to delete all the above.
       console_io.PromptContinue(
@@ -156,10 +155,10 @@ class Delete(base.DeleteCommand):
       result = []
       for tag in explicit_tags:  # tags must be deleted before digests
         self._DeleteDockerTagOrDigest(tag, http_obj)
-        result.append({'name': six.text_type(tag)})
+        result.append({'name': str(tag)})
       for digest in digests:
         self._DeleteDockerTagOrDigest(digest, http_obj)
-        result.append({'name': six.text_type(digest)})
+        result.append({'name': str(digest)})
       return result
 
   def _ProcessImageNames(self, image_names):
@@ -181,7 +180,7 @@ class Delete(base.DeleteCommand):
     log.DeletedResource(tag_or_digest)
 
   def _PrintDigest(self, digest, http_obj):
-    log.status.Print('- ' + six.text_type(digest))
+    log.status.Print('- ' + str(digest))
     self._DisplayDigestTags(digest, http_obj)
 
   def _DisplayDigestTags(self, digest, http_obj):

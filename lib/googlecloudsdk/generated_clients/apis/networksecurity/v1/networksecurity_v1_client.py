@@ -51,6 +51,7 @@ class NetworksecurityV1(base_api.BaseApiClient):
     self.projects_locations_clientTlsPolicies = self.ProjectsLocationsClientTlsPoliciesService(self)
     self.projects_locations_dnsThreatDetectors = self.ProjectsLocationsDnsThreatDetectorsService(self)
     self.projects_locations_firewallEndpointAssociations = self.ProjectsLocationsFirewallEndpointAssociationsService(self)
+    self.projects_locations_firewallEndpoints = self.ProjectsLocationsFirewallEndpointsService(self)
     self.projects_locations_gatewaySecurityPolicies_rules = self.ProjectsLocationsGatewaySecurityPoliciesRulesService(self)
     self.projects_locations_gatewaySecurityPolicies = self.ProjectsLocationsGatewaySecurityPoliciesService(self)
     self.projects_locations_interceptDeploymentGroups = self.ProjectsLocationsInterceptDeploymentGroupsService(self)
@@ -62,6 +63,10 @@ class NetworksecurityV1(base_api.BaseApiClient):
     self.projects_locations_mirroringEndpointGroupAssociations = self.ProjectsLocationsMirroringEndpointGroupAssociationsService(self)
     self.projects_locations_mirroringEndpointGroups = self.ProjectsLocationsMirroringEndpointGroupsService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
+    self.projects_locations_sacAttachments = self.ProjectsLocationsSacAttachmentsService(self)
+    self.projects_locations_sacRealms = self.ProjectsLocationsSacRealmsService(self)
+    self.projects_locations_securityProfileGroups = self.ProjectsLocationsSecurityProfileGroupsService(self)
+    self.projects_locations_securityProfiles = self.ProjectsLocationsSecurityProfilesService(self)
     self.projects_locations_serverTlsPolicies = self.ProjectsLocationsServerTlsPoliciesService(self)
     self.projects_locations_tlsInspectionPolicies = self.ProjectsLocationsTlsInspectionPoliciesService(self)
     self.projects_locations_urlLists = self.ProjectsLocationsUrlListsService(self)
@@ -318,6 +323,33 @@ class NetworksecurityV1(base_api.BaseApiClient):
         request_field='removeAddressGroupItemsRequest',
         request_type_name='NetworksecurityOrganizationsLocationsAddressGroupsRemoveItemsRequest',
         response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def TestIamPermissions(self, request, global_params=None):
+      r"""Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may "fail open" without warning.
+
+      Args:
+        request: (NetworksecurityOrganizationsLocationsAddressGroupsTestIamPermissionsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleIamV1TestIamPermissionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('TestIamPermissions')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/organizations/{organizationsId}/locations/{locationsId}/addressGroups/{addressGroupsId}:testIamPermissions',
+        http_method='POST',
+        method_id='networksecurity.organizations.locations.addressGroups.testIamPermissions',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v1/{+resource}:testIamPermissions',
+        request_field='googleIamV1TestIamPermissionsRequest',
+        request_type_name='NetworksecurityOrganizationsLocationsAddressGroupsTestIamPermissionsRequest',
+        response_type_name='GoogleIamV1TestIamPermissionsResponse',
         supports_download=False,
     )
 
@@ -883,6 +915,60 @@ class NetworksecurityV1(base_api.BaseApiClient):
       super(NetworksecurityV1.OrganizationsLocationsService, self).__init__(client)
       self._upload_configs = {
           }
+
+    def Get(self, request, global_params=None):
+      r"""Gets information about a location.
+
+      Args:
+        request: (NetworksecurityOrganizationsLocationsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Location) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/organizations/{organizationsId}/locations/{locationsId}',
+        http_method='GET',
+        method_id='networksecurity.organizations.locations.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityOrganizationsLocationsGetRequest',
+        response_type_name='Location',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the ListLocationsRequest.name field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
+
+      Args:
+        request: (NetworksecurityOrganizationsLocationsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListLocationsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/organizations/{organizationsId}/locations',
+        http_method='GET',
+        method_id='networksecurity.organizations.locations.list',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['extraLocationTypes', 'filter', 'pageSize', 'pageToken'],
+        relative_path='v1/{+name}/locations',
+        request_field='',
+        request_type_name='NetworksecurityOrganizationsLocationsListRequest',
+        response_type_name='ListLocationsResponse',
+        supports_download=False,
+    )
 
   class OrganizationsService(base_api.BaseApiService):
     """Service class for the organizations resource."""
@@ -2337,6 +2423,151 @@ class NetworksecurityV1(base_api.BaseApiClient):
         relative_path='v1/{+name}',
         request_field='firewallEndpointAssociation',
         request_type_name='NetworksecurityProjectsLocationsFirewallEndpointAssociationsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsFirewallEndpointsService(base_api.BaseApiService):
+    """Service class for the projects_locations_firewallEndpoints resource."""
+
+    _NAME = 'projects_locations_firewallEndpoints'
+
+    def __init__(self, client):
+      super(NetworksecurityV1.ProjectsLocationsFirewallEndpointsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new FirewallEndpoint in a given project and location.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsFirewallEndpointsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/firewallEndpoints',
+        http_method='POST',
+        method_id='networksecurity.projects.locations.firewallEndpoints.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['firewallEndpointId', 'requestId'],
+        relative_path='v1/{+parent}/firewallEndpoints',
+        request_field='firewallEndpoint',
+        request_type_name='NetworksecurityProjectsLocationsFirewallEndpointsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single project Endpoint.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsFirewallEndpointsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/firewallEndpoints/{firewallEndpointsId}',
+        http_method='DELETE',
+        method_id='networksecurity.projects.locations.firewallEndpoints.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsFirewallEndpointsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single project Endpoint.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsFirewallEndpointsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (FirewallEndpoint) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/firewallEndpoints/{firewallEndpointsId}',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.firewallEndpoints.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsFirewallEndpointsGetRequest',
+        response_type_name='FirewallEndpoint',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists FirewallEndpoints in a given project and location.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsFirewallEndpointsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListFirewallEndpointsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/firewallEndpoints',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.firewallEndpoints.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/firewallEndpoints',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsFirewallEndpointsListRequest',
+        response_type_name='ListFirewallEndpointsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Update a single project Endpoint.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsFirewallEndpointsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/firewallEndpoints/{firewallEndpointsId}',
+        http_method='PATCH',
+        method_id='networksecurity.projects.locations.firewallEndpoints.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1/{+name}',
+        request_field='firewallEndpoint',
+        request_type_name='NetworksecurityProjectsLocationsFirewallEndpointsPatchRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -3909,6 +4140,532 @@ class NetworksecurityV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsSacAttachmentsService(base_api.BaseApiService):
+    """Service class for the projects_locations_sacAttachments resource."""
+
+    _NAME = 'projects_locations_sacAttachments'
+
+    def __init__(self, client):
+      super(NetworksecurityV1.ProjectsLocationsSacAttachmentsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new SACAttachment in a given project and location.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsSacAttachmentsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/sacAttachments',
+        http_method='POST',
+        method_id='networksecurity.projects.locations.sacAttachments.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['requestId', 'sacAttachmentId'],
+        relative_path='v1/{+parent}/sacAttachments',
+        request_field='sACAttachment',
+        request_type_name='NetworksecurityProjectsLocationsSacAttachmentsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes the specified attachment.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsSacAttachmentsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/sacAttachments/{sacAttachmentsId}',
+        http_method='DELETE',
+        method_id='networksecurity.projects.locations.sacAttachments.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsSacAttachmentsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Returns the specified attachment.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsSacAttachmentsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SACAttachment) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/sacAttachments/{sacAttachmentsId}',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.sacAttachments.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsSacAttachmentsGetRequest',
+        response_type_name='SACAttachment',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists SACAttachments in a given project and location.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsSacAttachmentsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListSACAttachmentsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/sacAttachments',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.sacAttachments.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/sacAttachments',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsSacAttachmentsListRequest',
+        response_type_name='ListSACAttachmentsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsSacRealmsService(base_api.BaseApiService):
+    """Service class for the projects_locations_sacRealms resource."""
+
+    _NAME = 'projects_locations_sacRealms'
+
+    def __init__(self, client):
+      super(NetworksecurityV1.ProjectsLocationsSacRealmsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new SACRealm in a given project.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsSacRealmsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/sacRealms',
+        http_method='POST',
+        method_id='networksecurity.projects.locations.sacRealms.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['requestId', 'sacRealmId'],
+        relative_path='v1/{+parent}/sacRealms',
+        request_field='sACRealm',
+        request_type_name='NetworksecurityProjectsLocationsSacRealmsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes the specified realm.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsSacRealmsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/sacRealms/{sacRealmsId}',
+        http_method='DELETE',
+        method_id='networksecurity.projects.locations.sacRealms.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsSacRealmsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Returns the specified realm.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsSacRealmsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SACRealm) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/sacRealms/{sacRealmsId}',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.sacRealms.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsSacRealmsGetRequest',
+        response_type_name='SACRealm',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists SACRealms in a given project.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsSacRealmsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListSACRealmsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/sacRealms',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.sacRealms.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/sacRealms',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsSacRealmsListRequest',
+        response_type_name='ListSACRealmsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsSecurityProfileGroupsService(base_api.BaseApiService):
+    """Service class for the projects_locations_securityProfileGroups resource."""
+
+    _NAME = 'projects_locations_securityProfileGroups'
+
+    def __init__(self, client):
+      super(NetworksecurityV1.ProjectsLocationsSecurityProfileGroupsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new SecurityProfileGroup in a given project and location.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsSecurityProfileGroupsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/securityProfileGroups',
+        http_method='POST',
+        method_id='networksecurity.projects.locations.securityProfileGroups.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['securityProfileGroupId'],
+        relative_path='v1/{+parent}/securityProfileGroups',
+        request_field='securityProfileGroup',
+        request_type_name='NetworksecurityProjectsLocationsSecurityProfileGroupsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single SecurityProfileGroup.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsSecurityProfileGroupsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/securityProfileGroups/{securityProfileGroupsId}',
+        http_method='DELETE',
+        method_id='networksecurity.projects.locations.securityProfileGroups.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['etag'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsSecurityProfileGroupsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single SecurityProfileGroup.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsSecurityProfileGroupsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SecurityProfileGroup) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/securityProfileGroups/{securityProfileGroupsId}',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.securityProfileGroups.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsSecurityProfileGroupsGetRequest',
+        response_type_name='SecurityProfileGroup',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists SecurityProfileGroups in a given project and location.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsSecurityProfileGroupsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListSecurityProfileGroupsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/securityProfileGroups',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.securityProfileGroups.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/securityProfileGroups',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsSecurityProfileGroupsListRequest',
+        response_type_name='ListSecurityProfileGroupsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single SecurityProfileGroup.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsSecurityProfileGroupsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/securityProfileGroups/{securityProfileGroupsId}',
+        http_method='PATCH',
+        method_id='networksecurity.projects.locations.securityProfileGroups.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1/{+name}',
+        request_field='securityProfileGroup',
+        request_type_name='NetworksecurityProjectsLocationsSecurityProfileGroupsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsSecurityProfilesService(base_api.BaseApiService):
+    """Service class for the projects_locations_securityProfiles resource."""
+
+    _NAME = 'projects_locations_securityProfiles'
+
+    def __init__(self, client):
+      super(NetworksecurityV1.ProjectsLocationsSecurityProfilesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new SecurityProfile in a given project and location.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsSecurityProfilesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/securityProfiles',
+        http_method='POST',
+        method_id='networksecurity.projects.locations.securityProfiles.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['securityProfileId'],
+        relative_path='v1/{+parent}/securityProfiles',
+        request_field='securityProfile',
+        request_type_name='NetworksecurityProjectsLocationsSecurityProfilesCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single SecurityProfile.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsSecurityProfilesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/securityProfiles/{securityProfilesId}',
+        http_method='DELETE',
+        method_id='networksecurity.projects.locations.securityProfiles.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['etag'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsSecurityProfilesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single SecurityProfile.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsSecurityProfilesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SecurityProfile) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/securityProfiles/{securityProfilesId}',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.securityProfiles.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsSecurityProfilesGetRequest',
+        response_type_name='SecurityProfile',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists SecurityProfiles in a given project and location.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsSecurityProfilesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListSecurityProfilesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/securityProfiles',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.securityProfiles.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/securityProfiles',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsSecurityProfilesListRequest',
+        response_type_name='ListSecurityProfilesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single SecurityProfile.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsSecurityProfilesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/securityProfiles/{securityProfilesId}',
+        http_method='PATCH',
+        method_id='networksecurity.projects.locations.securityProfiles.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1/{+name}',
+        request_field='securityProfile',
+        request_type_name='NetworksecurityProjectsLocationsSecurityProfilesPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class ProjectsLocationsServerTlsPoliciesService(base_api.BaseApiService):
     """Service class for the projects_locations_serverTlsPolicies resource."""
 
@@ -4463,7 +5220,7 @@ class NetworksecurityV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the ListLocationsRequest.name field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
       Args:
         request: (NetworksecurityProjectsLocationsListRequest) input message

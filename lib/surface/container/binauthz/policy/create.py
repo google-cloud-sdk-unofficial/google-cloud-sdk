@@ -21,7 +21,6 @@ from googlecloudsdk.api_lib.util import messages as messages_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import flags
 from googlecloudsdk.command_lib.container.binauthz import parsing
-import six
 
 
 @base.DefaultUniverseOnly
@@ -71,7 +70,8 @@ class Create(base.CreateCommand):
     policy_obj = parsing.LoadResourceFile(
         # Avoid 'u' prefix in Python 2 when this file path gets embedded in
         # error messages.
-        six.ensure_str(args.policy_file))
+        str(args.policy_file)
+    )
 
     # Decode the dict into a PlatformPolicy message, allowing DecodeErrors to
     # bubble up to the user if they are raised.

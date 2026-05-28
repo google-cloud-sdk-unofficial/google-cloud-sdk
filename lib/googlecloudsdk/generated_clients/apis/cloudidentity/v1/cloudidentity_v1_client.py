@@ -1805,6 +1805,59 @@ class CloudidentityV1(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+    def Create(self, request, global_params=None):
+      r"""Create a policy.
+
+      Args:
+        request: (Policy) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='cloudidentity.policies.create',
+        ordered_params=[],
+        path_params=[],
+        query_params=[],
+        relative_path='v1/policies',
+        request_field='<request>',
+        request_type_name='Policy',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Delete a policy.
+
+      Args:
+        request: (CloudidentityPoliciesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/policies/{policiesId}',
+        http_method='DELETE',
+        method_id='cloudidentity.policies.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='CloudidentityPoliciesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Get a policy.
 
@@ -1855,5 +1908,32 @@ class CloudidentityV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='CloudidentityPoliciesListRequest',
         response_type_name='ListPoliciesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Update a policy.
+
+      Args:
+        request: (Policy) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/policies/{policiesId}',
+        http_method='PATCH',
+        method_id='cloudidentity.policies.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='<request>',
+        request_type_name='Policy',
+        response_type_name='Operation',
         supports_download=False,
     )

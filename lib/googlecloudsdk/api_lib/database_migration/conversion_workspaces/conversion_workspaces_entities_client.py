@@ -37,10 +37,10 @@ class ConversionWorkspacesEntitiesClient(
       filter_expr: str,
       page_size: int,
   ):
-    """Describes database entities in a conversion worksapce.
+    """Describes database entities in a conversion workspace.
 
     Args:
-      name: str, the name for conversion worksapce being described.
+      name: str, the name for conversion workspace being described.
       commit_id: str, the commit ID to describe issues for.
       uncommitted: bool, whether to describe issues for uncommitted changes.
       tree_type: str, the tree type to describe issues for.
@@ -48,7 +48,7 @@ class ConversionWorkspacesEntitiesClient(
       page_size: int, the page size to use.
 
     Yields:
-      Described entities for the conversion worksapce.
+      Described entities for the conversion workspace.
     """
     yield from list_pager.YieldFromList(
         service=self.cw_service,
@@ -75,10 +75,10 @@ class ConversionWorkspacesEntitiesClient(
       filter_expr: str,
       page_size: int,
   ):
-    """Describe DDLs in a conversion worksapce.
+    """Describe DDLs in a conversion workspace.
 
     Args:
-      name: str, the name for conversion worksapce being described.
+      name: str, the name for conversion workspace being described.
       commit_id: str, the commit ID to describe issues for.
       uncommitted: bool, whether to describe issues for uncommitted changes.
       tree_type: str, the tree type to describe issues for.
@@ -86,7 +86,7 @@ class ConversionWorkspacesEntitiesClient(
       page_size: int, the page size to use.
 
     Yields:
-      DDLs for the entities of the conversion worksapce.
+      DDLs for the entities of the conversion workspace.
     """
     yield from list_pager.YieldFromList(
         service=self.cw_service,
@@ -113,17 +113,17 @@ class ConversionWorkspacesEntitiesClient(
       filter_expr: str,
       page_size: int,
   ):
-    """Describe database entity issues in a conversion worksapce.
+    """Describe database entity issues in a conversion workspace.
 
     Args:
-      name: str, the name for conversion worksapce being described.
+      name: str, the name for conversion workspace being described.
       commit_id: str, the commit ID to describe issues for.
       uncommitted: bool, whether to describe issues for uncommitted changes.
       filter_expr: str, the filter expression to use.
       page_size: int, the page size to use.
 
     Yields:
-      Issues found for the database entities of the conversion worksapce.
+      Issues found for the database entities of the conversion workspace.
     """
     for tree_type in ('SOURCE', 'DRAFT'):
       yield from list_pager.YieldFromList(
@@ -238,7 +238,7 @@ class ConversionWorkspacesEntitiesClient(
       entities_field: The field in the response containing the entities.
 
     Yields:
-      Entities for the conversion worksapce.
+      Entities for the conversion workspace.
     """
     for entity in getattr(response, entities_field):
       builder = entity_builder.EntityBuilder(database_entity_proto=entity)
@@ -257,7 +257,7 @@ class ConversionWorkspacesEntitiesClient(
       entities_field: The field in the response containing the entities.
 
     Yields:
-      DDLs for the entities of the conversion worksapce.
+      DDLs for the entities of the conversion workspace.
     """
     for entity in getattr(response, entities_field):
       builder = entity_builder.EntityBuilder(database_entity_proto=entity)
@@ -279,7 +279,7 @@ class ConversionWorkspacesEntitiesClient(
 
     Yields:
       Issues with high severity found for the database entities of the
-      conversion worksapce.
+      conversion workspace.
     """
     for entity in getattr(response, entities_field):
       builder = entity_builder.EntityBuilder(database_entity_proto=entity)

@@ -20,7 +20,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.dataproc import workflow_templates
 from googlecloudsdk.core import log
-import six
 
 DETAILED_HELP = {
     'EXAMPLES':
@@ -53,7 +52,7 @@ class SetDagTimeout(base.CreateCommand):
     workflow_template = dataproc.GetRegionsWorkflowTemplate(
         template_ref, args.version)
 
-    workflow_template.dagTimeout = six.text_type(args.dag_timeout) + 's'
+    workflow_template.dagTimeout = str(args.dag_timeout) + 's'
 
     response = dataproc.client.projects_regions_workflowTemplates.Update(
         workflow_template)

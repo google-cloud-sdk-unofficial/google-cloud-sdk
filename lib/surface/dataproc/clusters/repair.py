@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
-import six
 
 
 @base.UniverseCompatible
@@ -230,7 +229,7 @@ class Repair(base.Command):
 
       if args.graceful_decommission_timeout is not None:
         repair_cluster_request.gracefulDecommissionTimeout = (
-            six.text_type(args.graceful_decommission_timeout) + 's'
+            str(args.graceful_decommission_timeout) + 's'
         )
 
       console_io.PromptContinue(

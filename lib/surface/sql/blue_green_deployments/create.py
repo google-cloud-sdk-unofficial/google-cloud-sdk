@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.command_lib.sql import flags as sql_flags
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
@@ -41,33 +42,11 @@ class Create(base.CreateCommand):
         the command line after this command. Positional arguments are allowed.
     """
     del cls  # Unused.
-    parser.add_argument(
-        'deployment',
-        help='The ID of the blue-green deployment.',
-    )
-    parser.add_argument(
-        '--source-instance',
-        required=True,
-        help=(
-            'Cloud SQL instance to be used as source for the blue-green'
-            ' deployment.'
-        ),
-    )
-    parser.add_argument(
-        '--region',
-        help='The region of the blue-green deployment.',
-    )
-    parser.add_argument(
-        '--description',
-        help='User-provided description for the blue-green deployment.',
-    )
-    parser.add_argument(
-        '--target-database-version',
-        help=(
-            'Database version for the target instance, for major version'
-            ' upgrade.'
-        ),
-    )
+    sql_flags.AddDeploymentId(parser)
+    sql_flags.AddSourceInstance(parser)
+    sql_flags.AddRegion(parser, required=False, specify_default_region=False)
+    sql_flags.AddDeploymentDescription(parser)
+    sql_flags.AddTargetDatabaseVersion(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddFormat('default')
 

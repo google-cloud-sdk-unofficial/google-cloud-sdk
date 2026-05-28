@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
-import six
 
 DESCRIPTION = """\
     Reencrypt a Cloud SQL CMEK instance with the primary key version.
@@ -116,5 +115,5 @@ class Reencrypt(base.Command):
       )
 
     except exceptions.HttpError:
-      log.debug('operation : %s', six.text_type(operation_ref))
+      log.debug('operation : %s', str(operation_ref))
       raise

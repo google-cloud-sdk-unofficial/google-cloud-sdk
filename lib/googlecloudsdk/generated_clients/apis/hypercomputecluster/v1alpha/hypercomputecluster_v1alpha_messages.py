@@ -74,6 +74,13 @@ class BootDisk(_messages.Message):
       continue to use the current image family.
     sizeGb: Required. Immutable. Size of the disk in gigabytes. Must be at
       least 40GB.
+    storagePools: Optional. Unstable: Contact hypercompute-service-eng@ before
+      using. The [storage
+      pools](https://docs.cloud.google.com/compute/docs/disks/storage-pools)
+      used for creating the boot disk, in the format:
+      `projects/{project}/zones/{zone}/storagePools/{storage_pool}`.
+      Currently, only one Hyperdisk Balanced storage pool is supported. The
+      storage pool must reside in the same zone as the compute instance.
     type: Required. Immutable. [Persistent disk
       type](https://cloud.google.com/compute/docs/disks#disk-types), in the
       format `projects/{project}/zones/{zone}/diskTypes/{disk_type}`.
@@ -82,7 +89,8 @@ class BootDisk(_messages.Message):
   effectiveImage = _messages.StringField(1)
   image = _messages.StringField(2)
   sizeGb = _messages.IntegerField(3)
-  type = _messages.StringField(4)
+  storagePools = _messages.StringField(4, repeated=True)
+  type = _messages.StringField(5)
 
 
 class BucketReference(_messages.Message):
@@ -318,6 +326,55 @@ class ComputeEngineNodeDetails(_messages.Message):
   state = _messages.StringField(3)
 
 
+class ComputeEngineOrchestrator(_messages.Message):
+  r"""When set in Orchestrator, indicates that the cluster should create nodes
+  using Compute Engine.
+
+  Messages:
+    ManagedInstanceGroupsValue: Optional. Managed instance groups that should
+      be created by the orchestrator. Keys must conform to
+      [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034) (lower-case,
+      alphanumeric, and at most 63 characters).
+
+  Fields:
+    managedInstanceGroups: Optional. Managed instance groups that should be
+      created by the orchestrator. Keys must conform to
+      [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034) (lower-case,
+      alphanumeric, and at most 63 characters).
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ManagedInstanceGroupsValue(_messages.Message):
+    r"""Optional. Managed instance groups that should be created by the
+    orchestrator. Keys must conform to
+    [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034) (lower-case,
+    alphanumeric, and at most 63 characters).
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        ManagedInstanceGroupsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        ManagedInstanceGroupsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ManagedInstanceGroupsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A ManagedInstanceGroup attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('ManagedInstanceGroup', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  managedInstanceGroups = _messages.MessageField('ManagedInstanceGroupsValue', 1)
+
+
 class ComputeInstance(_messages.Message):
   r"""Details about a Compute Engine
   [instance](https://cloud.google.com/compute/docs/instances).
@@ -400,6 +457,8 @@ class ComputeResourceConfig(_messages.Message):
   r"""Describes how a compute resource should be created at runtime.
 
   Fields:
+    existingInstances: Optional. Immutable. If set, indicates that this
+      resource should use existing VMs.
     newFlexStartInstances: Optional. Immutable. If set, indicates that this
       resource should use flex-start VMs.
     newOnDemandInstances: Optional. Immutable. If set, indicates that this
@@ -410,10 +469,11 @@ class ComputeResourceConfig(_messages.Message):
       resource should use spot VMs.
   """
 
-  newFlexStartInstances = _messages.MessageField('NewFlexStartInstancesConfig', 1)
-  newOnDemandInstances = _messages.MessageField('NewOnDemandInstancesConfig', 2)
-  newReservedInstances = _messages.MessageField('NewReservedInstancesConfig', 3)
-  newSpotInstances = _messages.MessageField('NewSpotInstancesConfig', 4)
+  existingInstances = _messages.MessageField('ExistingInstancesConfig', 1)
+  newFlexStartInstances = _messages.MessageField('NewFlexStartInstancesConfig', 2)
+  newOnDemandInstances = _messages.MessageField('NewOnDemandInstancesConfig', 3)
+  newReservedInstances = _messages.MessageField('NewReservedInstancesConfig', 4)
+  newSpotInstances = _messages.MessageField('NewSpotInstancesConfig', 5)
 
 
 class Configs(_messages.Message):
@@ -803,6 +863,73 @@ class ExistingFilestoreConfig(_messages.Message):
   """
 
   filestore = _messages.StringField(1)
+
+
+class ExistingInstancesConfig(_messages.Message):
+  r"""When set in a ComputeResourceConfig, indicates that VM instances should
+  be imported from an existing source.
+
+  Messages:
+    LabelsValue: Optional. Immutable. Labels specifying the instances to
+      include. Instances from the source will be included only if they contain
+      each of these labels. If no labels are specified, all instances from the
+      source will be included. Example: {"env": "prod", "app": "worker"}
+
+  Fields:
+    instanceGroupManager: Optional. Immutable. Managed instance group
+      containing the instances, in the format `projects/{project}/zones/{zone}
+      /instanceGroupManagers/{instanceGroupManager}`.
+    labels: Optional. Immutable. Labels specifying the instances to include.
+      Instances from the source will be included only if they contain each of
+      these labels. If no labels are specified, all instances from the source
+      will be included. Example: {"env": "prod", "app": "worker"}
+    regionInstanceGroupManager: Optional. Immutable. Regional managed instance
+      group containing the instances, in the format `projects/{project}/region
+      s/{region}/instanceGroupManagers/{instanceGroupManager}`.
+    reservation: Optional. Immutable. Reservation containing the instances, in
+      the format `projects/{project}/zones/{zone}/reservations/{reservation}`.
+    reservationBlock: Optional. Immutable. Reservation block containing the
+      instances, in the format `projects/{project}/zones/{zone}/reservations/{
+      reservation}/reservationBlocks/{reservationBlock}`.
+    reservationSubBlock: Optional. Immutable. Reservation sub block containing
+      the instances, in the format `projects/{project}/zones/{zone}/reservatio
+      ns/{reservation}/reservationBlocks/{reservationBlock}/reservationSubBloc
+      ks/{reservationSubBlock}`.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Immutable. Labels specifying the instances to include.
+    Instances from the source will be included only if they contain each of
+    these labels. If no labels are specified, all instances from the source
+    will be included. Example: {"env": "prod", "app": "worker"}
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  instanceGroupManager = _messages.StringField(1)
+  labels = _messages.MessageField('LabelsValue', 2)
+  regionInstanceGroupManager = _messages.StringField(3)
+  reservation = _messages.StringField(4)
+  reservationBlock = _messages.StringField(5)
+  reservationSubBlock = _messages.StringField(6)
 
 
 class ExistingLustreConfig(_messages.Message):
@@ -1941,6 +2068,26 @@ class MaintenanceWindow(_messages.Message):
   startTime = _messages.MessageField('TimeOfDay', 3)
 
 
+class ManagedInstanceGroup(_messages.Message):
+  r"""A managed instance group based on a compute resource.
+
+  Fields:
+    computeId: Required. ID of the compute resource used to create this
+      managed instance group.
+    instanceTemplate: Output only. Instance template used to create instances
+      in this group.
+    storageConfigs: Optional. How storage resources should be mounted on each
+      instance in this managed instance group.
+    targetSize: Optional. Target number of running instances for this managed
+      instance group.
+  """
+
+  computeId = _messages.StringField(1)
+  instanceTemplate = _messages.StringField(2)
+  storageConfigs = _messages.MessageField('StorageConfig', 3, repeated=True)
+  targetSize = _messages.IntegerField(4)
+
+
 class Metrics(_messages.Message):
   r"""Deprecated: Use Cloud Logging to retrieve metrics information. Metrics
   for a Machine Learning run.
@@ -1994,10 +2141,12 @@ class MonitoredEvent(_messages.Message):
       EVENT_TYPE_UNSPECIFIED: Event type not specified.
       PERFORMANCE_DEGRADATION: Performance degradation event.
       SLICE_DEGRADATION: Slice degradation event.
+      HANG: Hang event.
     """
     EVENT_TYPE_UNSPECIFIED = 0
     PERFORMANCE_DEGRADATION = 1
     SLICE_DEGRADATION = 2
+    HANG = 3
 
   analyzerInsightFound = _messages.BooleanField(1)
   analyzerReports = _messages.MessageField('AnalyzerReport', 2, repeated=True)
@@ -2754,11 +2903,14 @@ class Orchestrator(_messages.Message):
   cluster at runtime.
 
   Fields:
+    computeEngine: Optional. If set, indicates that the cluster should use
+      Compute Engine as the orchestrator.
     slurm: Optional. If set, indicates that the cluster should use Slurm as
       the orchestrator.
   """
 
-  slurm = _messages.MessageField('SlurmOrchestrator', 1)
+  computeEngine = _messages.MessageField('ComputeEngineOrchestrator', 1)
+  slurm = _messages.MessageField('SlurmOrchestrator', 2)
 
 
 class ProfileSession(_messages.Message):
@@ -2937,12 +3089,12 @@ class ResourcePolicyConfig(_messages.Message):
   r"""Policy describing how VM instances should be created.
 
   Fields:
-    topology: Optional. Specifies the topology required to create a partition
-      for VMs that have interconnected accelerators, in the format `AxB` or
-      `AxBxC`, where `A`, `B`, and `C` are integers.
+    acceleratorTopology: Optional. Specifies the topology required to create a
+      partition for VMs that have interconnected accelerators, in the format
+      `AxB` or `AxBxC`, where `A`, `B`, and `C` are integers.
   """
 
-  topology = _messages.StringField(1)
+  acceleratorTopology = _messages.StringField(1)
 
 
 class ServiceAccount(_messages.Message):

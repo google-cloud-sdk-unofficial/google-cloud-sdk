@@ -112,9 +112,8 @@ class ArtifactregistryProjectsLocationsListRequest(_messages.Message):
   r"""A ArtifactregistryProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -1550,10 +1549,11 @@ class CheckPrewarmedArtifactRequest(_messages.Message):
   Fields:
     streamLocation: Optional. The location of the prewarmed artifact. multi-
       region is not supported for this field.
-    tag: The artifact tag Format:projects/{project}/locations/{location}/repos
-      itories/{repository}/packages/{package}/tags/{tag}
-    version: The artifact version Format: projects/{project}/locations/{locati
-      on}/repositories/{repository}/packages/{package}/versions/{version}
+    tag: Optional. The artifact tag Format:projects/{project}/locations/{locat
+      ion}/repositories/{repository}/packages/{package}/tags/{tag}
+    version: Optional. The artifact version Format: projects/{project}/locatio
+      ns/{location}/repositories/{repository}/packages/{package}/versions/{ver
+      sion}
   """
 
   streamLocation = _messages.StringField(1)
@@ -3313,10 +3313,11 @@ class PrewarmArtifactRequest(_messages.Message):
     streamLocation: Optional. The location to cache the artifact in. If not
       specified, the artifact will be cached in the same location as the
       artifact. multi-region is not supported for this field.
-    tag: The artifact tag Format:projects/{project}/locations/{location}/repos
-      itories/{repository}/packages/{package}/tags/{tag}
-    version: The artifact version Format: projects/{project}/locations/{locati
-      on}/repositories/{repository}/packages/{package}/versions/{version}
+    tag: Optional. The artifact tag Format:projects/{project}/locations/{locat
+      ion}/repositories/{repository}/packages/{package}/tags/{tag}
+    version: Optional. The artifact version Format: projects/{project}/locatio
+      ns/{location}/repositories/{repository}/packages/{package}/versions/{ver
+      sion}
   """
 
   force = _messages.BooleanField(1)
@@ -3544,10 +3545,11 @@ class RemovePrewarmedArtifactRequest(_messages.Message):
   Fields:
     streamLocation: Optional. The location of the prewarmed artifact. multi-
       region is not supported for this field.
-    tag: The artifact tag Format:projects/{project}/locations/{location}/repos
-      itories/{repository}/packages/{package}/tags/{tag}
-    version: The artifact version Format: projects/{project}/locations/{locati
-      on}/repositories/{repository}/packages/{package}/versions/{version}
+    tag: Optional. The artifact tag Format:projects/{project}/locations/{locat
+      ion}/repositories/{repository}/packages/{package}/tags/{tag}
+    version: Optional. The artifact version Format: projects/{project}/locatio
+      ns/{location}/repositories/{repository}/packages/{package}/versions/{ver
+      sion}
   """
 
   streamLocation = _messages.StringField(1)

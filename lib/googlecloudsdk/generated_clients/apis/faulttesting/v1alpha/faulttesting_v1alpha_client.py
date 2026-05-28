@@ -58,7 +58,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""CreateExclusionWindow creates a new ExclusionWindow. Once created, an ExclusionWindow must be started with StartExclusionWindow to take effect.
+      r"""Creates a new exclusion window. Once created, an exclusion window must be started with `StartExclusionWindow` to take effect.
 
       Args:
         request: (FaulttestingProjectsLocationsExclusionWindowsCreateRequest) input message
@@ -85,7 +85,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""DeleteExclusionWindow deletes an ExclusionWindow.
+      r"""Deletes an exclusion window.
 
       Args:
         request: (FaulttestingProjectsLocationsExclusionWindowsDeleteRequest) input message
@@ -112,7 +112,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Get the details of an ExclusionWindow.
+      r"""Get the details of an exclusion window.
 
       Args:
         request: (FaulttestingProjectsLocationsExclusionWindowsGetRequest) input message
@@ -139,7 +139,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""ListExclusionWindows lists all ExclusionWindows in a project and region, or all ExclusionWindows in a project in all regions if the location is given as "-".
+      r"""Lists all exclusion windows in a project and region, or all exclusion windows in a project in all regions if the location is given as "-".
 
       Args:
         request: (FaulttestingProjectsLocationsExclusionWindowsListRequest) input message
@@ -166,7 +166,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""UpdateExclusionWindow updates an ExclusionWindow.
+      r"""Updates an exclusion window.
 
       Args:
         request: (FaulttestingProjectsLocationsExclusionWindowsPatchRequest) input message
@@ -193,7 +193,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
     )
 
     def Start(self, request, global_params=None):
-      r"""StartExclusionWindow starts (or restarts) an existing ExclusionWindow. This sets start_time to the current time and end_time to current time plus duration.
+      r"""Starts or restarts an existing exclusion window. This method sets `start_time` to the current time and `end_time` to current time plus the duration.
 
       Args:
         request: (FaulttestingProjectsLocationsExclusionWindowsStartRequest) input message
@@ -220,7 +220,7 @@ class FaulttestingV1alpha(base_api.BaseApiClient):
     )
 
     def Stop(self, request, global_params=None):
-      r"""StopExclusionWindow stops an active ExclusionWindow. This sets end_time to the current time.
+      r"""Stops an active exclusion window. This method sets `end_time` to the current time.
 
       Args:
         request: (FaulttestingProjectsLocationsExclusionWindowsStopRequest) input message

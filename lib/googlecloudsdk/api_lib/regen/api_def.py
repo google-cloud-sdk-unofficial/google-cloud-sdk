@@ -14,6 +14,7 @@
 # limitations under the License.
 """Base template using which the apis_map.py is generated."""
 
+import collections.abc
 
 
 class APIDef(object):
@@ -153,3 +154,77 @@ class GapicClientDef(object):
 
   def __repr__(self):
     return self.get_init_source()
+
+
+class _ApiVersionMap(collections.abc.MutableMapping):
+  """Lazy mapping for API versions."""
+
+  def __init__(self, raw_data):
+    self._raw = raw_data
+    self._cache = {}
+
+  def __getitem__(self, key):
+    if key not in self._cache:
+      val = self._raw[key]
+      apitools_def = None
+      if val[0]:
+        apitools_def = ApitoolsClientDef(*val[0])
+      gapic_def = None
+      if val[1]:
+        gapic_def = GapicClientDef(*val[1])
+      self._cache[key] = APIDef(
+          apitools=apitools_def,
+          gapic=gapic_def,
+          default_version=val[2],
+          enable_mtls=val[3],
+          mtls_endpoint_override=val[4],
+          regional_endpoints=val[5],
+      )
+    return self._cache[key]
+
+  def __setitem__(self, key, value):
+    self._cache[key] = value
+    if key not in self._raw:
+      self._raw[key] = None
+
+  def __delitem__(self, key):
+    if key in self._cache:
+      del self._cache[key]
+    if key in self._raw:
+      del self._raw[key]
+
+  def __iter__(self):
+    return iter(self._raw)
+
+  def __len__(self):
+    return len(self._raw)
+
+
+class _ApiDefMap(collections.abc.MutableMapping):
+  """Lazy mapping for API names."""
+
+  def __init__(self, raw_data):
+    self._raw = raw_data
+    self._cache = {}
+
+  def __getitem__(self, key):
+    if key not in self._cache:
+      self._cache[key] = _ApiVersionMap(self._raw[key])
+    return self._cache[key]
+
+  def __setitem__(self, key, value):
+    self._cache[key] = value
+    if key not in self._raw:
+      self._raw[key] = None
+
+  def __delitem__(self, key):
+    if key in self._cache:
+      del self._cache[key]
+    if key in self._raw:
+      del self._raw[key]
+
+  def __iter__(self):
+    return iter(self._raw)
+
+  def __len__(self):
+    return len(self._raw)

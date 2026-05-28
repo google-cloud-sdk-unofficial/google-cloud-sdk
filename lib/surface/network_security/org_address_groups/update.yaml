@@ -31,6 +31,12 @@ arguments:
       enum_value: DEFAULT
     - arg_value: CLOUD-ARMOR
       enum_value: CLOUD_ARMOR
+  - arg_name: rollout-plan
+    release_tracks: [ALPHA]
+    hidden: true
+    api_field: addressGroup.rolloutOperation.rolloutInput.name
+    help_text: |
+      Name of the rollout plan.
   labels:
     api_field: addressGroup.labels
 

@@ -26,10 +26,8 @@ from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 
-import six
 
-
-class UnknownCheckException(Exception):
+class UnknownCheckError(Exception):
   """An exception when unknown lint check is requested."""
 
 
@@ -37,7 +35,7 @@ class LintException(exceptions.Error):
   """One or more lint errors found."""
 
 
-class LintError(object):
+class LintError:
   """Validation failure.
 
   Attributes:
@@ -53,7 +51,7 @@ class LintError(object):
         cmd='.'.join(command.GetPath()), msg=error_message)
 
 
-class Checker(object):
+class Checker:
   """The abstract base class for all the checks.
 
   Attributes:
@@ -78,7 +76,7 @@ class NameChecker(Checker):
   description = 'Verifies all existing flags not to have underscores.'
 
   def __init__(self):
-    super(NameChecker, self).__init__()
+    super().__init__()
     self._issues = []
 
   def _ForEvery(self, cmd_or_group):
@@ -88,31 +86,30 @@ class NameChecker(Checker):
       self._issues.append(LintError(
           name=NameChecker.name,
           command=cmd_or_group,
-          error_message='command name [{0}] has underscores'.format(
-              cmd_or_group.cli_name)))
+          error_message=(
+              f'command name [{cmd_or_group.cli_name}] has underscores')))
 
     if not (cmd_or_group.cli_name.islower() or cmd_or_group.cli_name.isupper()):
       self._issues.append(LintError(
           name=NameChecker.name,
           command=cmd_or_group,
-          error_message='command name [{0}] mixed case'.format(
-              cmd_or_group.cli_name)))
+          error_message=f'command name [{cmd_or_group.cli_name}] mixed case'))
 
     for flag in cmd_or_group.GetSpecificFlags():
-      if not any(f.startswith('--') for f in flag.option_strings):
-        if len(flag.option_strings) != 1 or flag.option_strings[0] != '-h':
-          self._issues.append(LintError(
-              name=NameChecker.name,
-              command=cmd_or_group,
-              error_message='flag [{0}] has no long form'.format(
-                  ','.join(flag.option_strings))))
+      if not any(f.startswith('--') for f in flag.option_strings) and (
+          len(flag.option_strings) != 1 or flag.option_strings[0] != '-h'):
+        self._issues.append(LintError(
+            name=NameChecker.name,
+            command=cmd_or_group,
+            error_message=(
+                f'flag [{",".join(flag.option_strings)}] has no long form')))
       for flag_option_string in flag.option_strings:
         msg = None
         if '_' in flag_option_string:
-          msg = 'flag [%s] has underscores' % flag_option_string
+          msg = f'flag [{flag_option_string}] has underscores'
         if (flag_option_string.startswith('--')
             and not flag_option_string.islower()):
-          msg = 'long flag [%s] has upper case characters' % flag_option_string
+          msg = f'long flag [{flag_option_string}] has upper case characters'
         if msg:
           self._issues.append(LintError(
               name=NameChecker.name, command=cmd_or_group, error_message=msg))
@@ -134,19 +131,24 @@ class BadListsChecker(Checker):
   description = 'Verifies all flags implement lists properly.'
 
   def __init__(self):
-    super(BadListsChecker, self).__init__()
+    super().__init__()
     self._issues = []
 
   def _ForEvery(self, cmd_or_group):
+    """Checks every command and group."""
     for flag in cmd_or_group.GetSpecificFlags():
       if flag.nargs not in [None, 0, 1]:
-        self._issues.append(LintError(
-            name=BadListsChecker.name,
-            command=cmd_or_group,
-            error_message=(
-                'flag [{flg}] has nargs={nargs}'.format(
-                    flg=flag.option_strings[0],
-                    nargs="'{}'".format(six.text_type(flag.nargs))))))
+        self._issues.append(
+            LintError(
+                name=BadListsChecker.name,
+                command=cmd_or_group,
+                error_message=(
+                    'flag [{flg}] has nargs={nargs}'.format(
+                        flg=flag.option_strings[0], nargs=f"'{str(flag.nargs)}'"
+                    )
+                ),
+            )
+        )
       if isinstance(flag.type, arg_parsers.ArgObject):
         # No metavar requirements for ArgObject.
         return
@@ -157,17 +159,14 @@ class BadListsChecker(Checker):
                   name=BadListsChecker.name,
                   command=cmd_or_group,
                   error_message=(
-                      ('dict flag [{flg}] has no metavar and type.spec'
-                       ' (at least one needed)'
-                      ).format(flg=flag.option_strings[0]))))
-      elif isinstance(flag.type, arg_parsers.ArgList):
-        if not flag.metavar:
-          self._issues.append(LintError(
-              name=BadListsChecker.name,
-              command=cmd_or_group,
-              error_message=(
-                  'list flag [{flg}] has no metavar'.format(
-                      flg=flag.option_strings[0]))))
+                      f'dict flag [{flag.option_strings[0]}] has no '
+                      'metavar and type.spec (at least one needed)')))
+      elif isinstance(flag.type, arg_parsers.ArgList) and not flag.metavar:
+        self._issues.append(LintError(
+            name=BadListsChecker.name,
+            command=cmd_or_group,
+            error_message=(
+                f'list flag [{flag.option_strings[0]}] has no metavar')))
 
   def ForEveryGroup(self, group):
     self._ForEvery(group)
@@ -196,7 +195,7 @@ class VocabularyChecker(Checker):
   description = 'Verifies that every command is allowlisted.'
 
   def __init__(self):
-    super(VocabularyChecker, self).__init__()
+    super().__init__()
     self._allowlist = _GetAllowlistedCommandVocabulary()
     self._issues = []
 
@@ -208,8 +207,8 @@ class VocabularyChecker(Checker):
       self._issues.append(LintError(
           name=self.name,
           command=command,
-          error_message='command name [{0}] is not allowlisted'.format(
-              command.cli_name)))
+          error_message=(
+              f'command name [{command.cli_name}] is not allowlisted')))
 
   def End(self):
     return self._issues
@@ -226,12 +225,11 @@ def _WalkGroupTree(group):
 
   yield group
 
-  for sub_group in six.itervalues(group.groups):
-    for value in _WalkGroupTree(sub_group):
-      yield value
+  for sub_group in group.groups.values():
+    yield from _WalkGroupTree(sub_group)
 
 
-class Linter(object):
+class Linter:
   """Lints gcloud commands."""
 
   def __init__(self):
@@ -245,11 +243,14 @@ class Linter(object):
     for group in _WalkGroupTree(group_root):
       for check in self._checks:
         check.ForEveryGroup(group)
-      for command in six.itervalues(group.commands):
+      for command in group.commands.values():
         for check in self._checks:
           check.ForEveryCommand(command)
 
-    return [issue for check in self._checks for issue in check.End()]
+    issues = []
+    for check in self._checks:
+      issues.extend(check.End())
+    return issues
 
 
 # List of registered checks, all are run by default.
@@ -271,6 +272,7 @@ def _FormatCheckList(check_list):
   return buf.getvalue()
 
 
+@base.DefaultUniverseOnly
 class Lint(base.Command):
   """Validate gcloud flags according to Cloud SDK CLI Style."""
 
@@ -313,8 +315,8 @@ Available Checks:
           unknown_checks.append(check)
 
     if unknown_checks:
-      raise UnknownCheckException(
-          'Unknown lint checks: %s' % ','.join(unknown_checks))
+      raise UnknownCheckError(
+          f'Unknown lint checks: {",".join(unknown_checks)}')
 
     return linter.Run(group)
 

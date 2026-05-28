@@ -326,7 +326,7 @@ class Create(base.CreateCommand):
     flags.AddDataCacheCountFlag(parser, for_node_pool=True)
     flags.AddAcceleratorNetworkProfileFlag(parser, hidden=False)
     flags.AddNodeDrainSettingsFlag(parser)
-    flags.AddNodePoolMaintenanceExclusionsFlag(parser, hidden=True)
+    flags.AddNodePoolMaintenanceExclusionsFlag(parser, hidden=False)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -499,7 +499,7 @@ class CreateBeta(Create):
     flags.AddEnableOtlpIngestionEndpointFlag(runner_pool_group, hidden=True)
     flags.AddEnableWorkloadLogCollectionFlag(runner_pool_group, hidden=True)
     flags.AddNodeDrainSettingsFlag(parser)
-    flags.AddNodePoolMaintenanceExclusionsFlag(parser, hidden=True)
+    flags.AddNodePoolMaintenanceExclusionsFlag(parser, hidden=False)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -765,6 +765,6 @@ class CreateAlpha(Create):
     flags.AddEnableWorkloadLogCollectionFlag(runner_pool_group, hidden=True)
     flags.AddNodeDrainSettingsFlag(parser)
     flags.AddLinkedRunnerSubnetFlag(parser, hidden=True)
-    flags.AddNodePoolMaintenanceExclusionsFlag(parser, hidden=True)
+    flags.AddNodePoolMaintenanceExclusionsFlag(parser, hidden=False)
 
 Create.detailed_help = DETAILED_HELP

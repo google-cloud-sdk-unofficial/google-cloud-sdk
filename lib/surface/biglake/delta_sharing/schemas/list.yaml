@@ -4,8 +4,8 @@
     description: |
       List BigLake Delta Sharing schemas.
   request:
-    collection: biglake.deltasharing.v1.projects.catalogs.shares.schemas
-    api_version: delta_v1
+    collection: biglake.deltasharing.v1alpha.projects.catalogs.shares.schemas
+    api_version: delta_v1alpha
     method: list
     modify_request_hooks:
     - googlecloudsdk.command_lib.biglake.delta_sharing:SetParentForList
@@ -14,7 +14,7 @@
       help_text: The share to list schemas from.
       spec:
         name: share
-        collection: biglake.deltasharing.v1.projects.catalogs.shares
+        collection: biglake.deltasharing.v1alpha.projects.catalogs.shares
         attributes:
         - attribute_name: project
           parameter_name: projectsId

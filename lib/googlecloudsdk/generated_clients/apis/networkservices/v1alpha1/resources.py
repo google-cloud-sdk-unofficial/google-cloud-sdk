@@ -129,6 +129,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_GLOBAL_GOOGLETAGGATEWAYPOLICIES = (
+      'projects.locations.global.googleTagGatewayPolicies',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/global/'
+              'googleTagGatewayPolicies/{googleTagGatewayPoliciesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_GRPCROUTES = (
       'projects.locations.grpcRoutes',
       '{+name}',

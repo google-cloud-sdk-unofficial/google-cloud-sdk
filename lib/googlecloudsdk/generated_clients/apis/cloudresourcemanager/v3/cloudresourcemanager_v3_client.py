@@ -57,6 +57,7 @@ class CloudresourcemanagerV3(base_api.BaseApiClient):
     self.tagKeys = self.TagKeysService(self)
     self.tagValues_tagHolds = self.TagValuesTagHoldsService(self)
     self.tagValues = self.TagValuesService(self)
+    self.v3 = self.V3Service(self)
 
   class EffectiveTagsService(base_api.BaseApiService):
     """Service class for the effectiveTags resource."""
@@ -2316,5 +2317,41 @@ class CloudresourcemanagerV3(base_api.BaseApiClient):
         request_field='testIamPermissionsRequest',
         request_type_name='CloudresourcemanagerTagValuesTestIamPermissionsRequest',
         response_type_name='TestIamPermissionsResponse',
+        supports_download=False,
+    )
+
+  class V3Service(base_api.BaseApiService):
+    """Service class for the v3 resource."""
+
+    _NAME = 'v3'
+
+    def __init__(self, client):
+      super(CloudresourcemanagerV3.V3Service, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def FetchResourceSemantics(self, request, global_params=None):
+      r"""Returns the semantics associated with the specified resource.
+
+      Args:
+        request: (CloudresourcemanagerFetchResourceSemanticsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (FetchResourceSemanticsResponse) The response message.
+      """
+      config = self.GetMethodConfig('FetchResourceSemantics')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    FetchResourceSemantics.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='cloudresourcemanager.fetchResourceSemantics',
+        ordered_params=[],
+        path_params=[],
+        query_params=['fullResourceName'],
+        relative_path='v3:fetchResourceSemantics',
+        request_field='',
+        request_type_name='CloudresourcemanagerFetchResourceSemanticsRequest',
+        response_type_name='FetchResourceSemanticsResponse',
         supports_download=False,
     )

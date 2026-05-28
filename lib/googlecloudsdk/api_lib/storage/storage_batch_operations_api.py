@@ -20,6 +20,7 @@ from googlecloudsdk.api_lib.storage import errors
 from googlecloudsdk.api_lib.storage import storage_batch_operations_util
 from googlecloudsdk.api_lib.util import apis as core_apis
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.util import times
 
 
 # Backend has a limit of 500.
@@ -108,6 +109,8 @@ class StorageBatchOperationsApi:
       bucket_filters: Optional[str] = None,
       object_filters: Optional[str] = None,
       dry_run_job_id: Optional[str] = None,
+      target_locations: Optional[List[str]] = None,
+      target_snapshot_time: Optional[str] = None,
       description: Optional[str] = None,
       dry_run: bool = False,
   ):
@@ -119,6 +122,9 @@ class StorageBatchOperationsApi:
       bucket_filters: CEL expression for bucket filters.
       object_filters: CEL expression for object filters.
       dry_run_job_id: Dry run job ID.
+      target_locations: List of target locations.
+      target_snapshot_time: Target snapshot timestamp in RFC 3339 format. Can
+        only be specified if `target_locations` is also provided.
       description: Description of the job.
       dry_run: If true, job will be created in dry run mode.
 
@@ -152,6 +158,13 @@ class StorageBatchOperationsApi:
       )
     if dry_run_job_id is not None:
       project_source.dryRunJobId = dry_run_job_id
+
+    if target_locations is not None:
+      target_locations_msg = self.messages.TargetLocations(
+          locations=target_locations,
+          snapshotTime=target_snapshot_time,
+      )
+      project_source.targetLocations = target_locations_msg
 
     job.projectSource = project_source
     return job
@@ -353,6 +366,13 @@ class StorageBatchOperationsApi:
   def create_batch_job(self, args, batch_job_name):
     """Creates a batch job based on command arguments."""
     if getattr(args, "target_project", None) is not None:
+      target_snapshot_time = getattr(args, "target_snapshot_time", None)
+      if target_snapshot_time:
+        target_snapshot_time = times.FormatDateTime(
+            target_snapshot_time,
+            "%Y-%m-%dT%H:%M:%S.%6f%Ez",
+            tzinfo=times.UTC,
+        )
       job = self._instantiate_job_with_project_source(
           target_project=args.target_project,
           insights_dataset_config=getattr(
@@ -361,6 +381,8 @@ class StorageBatchOperationsApi:
           bucket_filters=getattr(args, "bucket_filters", None),
           object_filters=getattr(args, "object_filters", None),
           dry_run_job_id=getattr(args, "dry_run_job_id", None),
+          target_locations=getattr(args, "target_locations", None),
+          target_snapshot_time=target_snapshot_time,
           description=args.description,
           dry_run=getattr(args, "dry_run", False),
       )

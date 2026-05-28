@@ -94,6 +94,15 @@ class Update(base.UpdateCommand):
         most_disruptive_allowed_action_enum,
     )
 
+    minimal_action = (
+        messages.ComputeInstancesUpdateRequest.MinimalActionValueValuesEnum.NO_EFFECT
+    )
+    if getattr(args, 'minimal_action', None) is not None:
+      minimal_action = arg_utils.ChoiceToEnum(
+          args.minimal_action,
+          messages.ComputeInstancesUpdateRequest.MinimalActionValueValuesEnum,
+      )
+
     restart_only_args = ['identity', 'identity_certificate']
     specified_restart_only_args = []
     for arg in restart_only_args:
@@ -144,7 +153,8 @@ class Update(base.UpdateCommand):
         args.partner_metadata or args.partner_metadata_from_file
     ):
       partner_metadata_operation_ref = self._GetPartnerMetadataOperationRef(
-          args, instance_ref, holder, most_disruptive_allowed_action
+          args, instance_ref, holder, most_disruptive_allowed_action,
+          minimal_action
       )
     if (
         hasattr(args, 'graceful_shutdown')
@@ -154,7 +164,8 @@ class Update(base.UpdateCommand):
         and args.IsSpecified('graceful_shutdown_max_duration')
     ):
       graceful_shutdown_operation_ref = self._GetGracefulShutdownOperationRef(
-          args, instance_ref, holder, most_disruptive_allowed_action
+          args, instance_ref, holder, most_disruptive_allowed_action,
+          minimal_action
       )
 
     # Update instance fields requiring restart.
@@ -162,7 +173,8 @@ class Update(base.UpdateCommand):
     if specified_restart_only_args:
       instance_update_operation_ref = (
           self._GetUpdateInstanceRefRequiringRestart(
-              instance_ref, args, holder, most_disruptive_allowed_action
+              instance_ref, args, holder, most_disruptive_allowed_action,
+              minimal_action
           )
       )
 
@@ -251,7 +263,8 @@ class Update(base.UpdateCommand):
     if instance_utils.IsAnySpecified(args, 'node', 'node_affinity_file',
                                      'node_group', 'clear_node_affinities'):
       update_scheduling_ref = self._GetUpdateInstanceSchedulingRef(
-          instance_ref, args, holder, most_disruptive_allowed_action)
+          instance_ref, args, holder, most_disruptive_allowed_action,
+          minimal_action)
       result = self._WaitForResult(
           operation_poller,
           update_scheduling_ref, 'Updating the scheduling of instance [{0}]',
@@ -260,7 +273,8 @@ class Update(base.UpdateCommand):
     return result
 
   def _GetUpdateInstanceSchedulingRef(self, instance_ref, args, holder,
-                                      most_disruptive_allowed_action):
+                                      most_disruptive_allowed_action,
+                                      minimal_action):
     client = holder.client.apitools_client
     messages = holder.client.messages
     if instance_utils.IsAnySpecified(args, 'node', 'node_affinity_file',
@@ -281,8 +295,7 @@ class Update(base.UpdateCommand):
         project=instance_ref.project,
         zone=instance_ref.zone,
         instanceResource=instance,
-        minimalAction=messages.ComputeInstancesUpdateRequest
-        .MinimalActionValueValuesEnum.NO_EFFECT,
+        minimalAction=minimal_action,
         mostDisruptiveAllowedAction=most_disruptive_allowed_action)
 
     operation = client.instances.Update(request)
@@ -399,7 +412,8 @@ class Update(base.UpdateCommand):
         operation.selfLink, collection='compute.zoneOperations')
 
   def _GetGracefulShutdownOperationRef(self, args, instance_ref, holder,
-                                       most_disruptive_allowed_action):
+                                       most_disruptive_allowed_action,
+                                       minimal_action):
     messages = holder.client.messages
     client = holder.client.apitools_client
     instance = client.instances.Get(
@@ -433,7 +447,7 @@ class Update(base.UpdateCommand):
         project=instance_ref.project,
         zone=instance_ref.zone,
         instanceResource=instance,
-        minimalAction=messages.ComputeInstancesUpdateRequest.MinimalActionValueValuesEnum.NO_EFFECT,
+        minimalAction=minimal_action,
         mostDisruptiveAllowedAction=most_disruptive_allowed_action,
     )
 
@@ -443,7 +457,8 @@ class Update(base.UpdateCommand):
     )
 
   def _GetPartnerMetadataOperationRef(self, args, instance_ref, holder,
-                                      most_disruptive_allowed_action):
+                                      most_disruptive_allowed_action,
+                                      minimal_action):
     messages = holder.client.messages
     client = holder.client.apitools_client
     partner_metadata_dict = (
@@ -468,8 +483,7 @@ class Update(base.UpdateCommand):
         project=instance_ref.project,
         zone=instance_ref.zone,
         instanceResource=instance,
-        minimalAction=messages.ComputeInstancesUpdateRequest
-        .MinimalActionValueValuesEnum.NO_EFFECT,
+        minimalAction=minimal_action,
         mostDisruptiveAllowedAction=most_disruptive_allowed_action)
 
     operation = client.instances.Update(request)
@@ -496,7 +510,8 @@ class Update(base.UpdateCommand):
       )
 
   def _GetUpdateInstanceRefRequiringRestart(self, instance_ref, args, holder,
-                                            most_disruptive_allowed_action):
+                                            most_disruptive_allowed_action,
+                                            minimal_action):
     client = holder.client.apitools_client
     messages = holder.client.messages
     instance = client.instances.Get(
@@ -510,7 +525,7 @@ class Update(base.UpdateCommand):
         project=instance_ref.project,
         zone=instance_ref.zone,
         instanceResource=instance,
-        minimalAction=messages.ComputeInstancesUpdateRequest.MinimalActionValueValuesEnum.NO_EFFECT,
+        minimalAction=minimal_action,
         mostDisruptiveAllowedAction=most_disruptive_allowed_action,
     )
 
@@ -566,5 +581,6 @@ class UpdateAlpha(UpdateBeta):
     flags.AddGracefulShutdownArgs(parser)
     flags.AddWorkloadIdentityConfigArgs(parser)
     flags.AddMostDisruptiveAllowedActionArgs(parser)
+    flags.AddMinimalActionArgs(parser)
 
 Update.detailed_help = DETAILED_HELP

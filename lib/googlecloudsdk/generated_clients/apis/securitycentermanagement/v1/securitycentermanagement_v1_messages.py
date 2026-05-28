@@ -2652,9 +2652,8 @@ class SecuritycentermanagementProjectsLocationsListRequest(_messages.Message):
   r"""A SecuritycentermanagementProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -3085,6 +3084,8 @@ class SimulatedFinding(_messages.Message):
         attack paths converge, based on attack path simulations (APS).
       EXTERNAL_EXPOSURE: Describes a potential security risk due to the
         resource being exposed to the internet.
+      SECRET: Describes a potential security risk due to plaintext
+        credentials, keys, or tokens being exposed in an asset or workload.
     """
     FINDING_CLASS_UNSPECIFIED = 0
     THREAT = 1
@@ -3096,6 +3097,7 @@ class SimulatedFinding(_messages.Message):
     TOXIC_COMBINATION = 7
     CHOKEPOINT = 8
     EXTERNAL_EXPOSURE = 9
+    SECRET = 10
 
   class SeverityValueValuesEnum(_messages.Enum):
     r"""The severity of the finding. This field is managed by the source that

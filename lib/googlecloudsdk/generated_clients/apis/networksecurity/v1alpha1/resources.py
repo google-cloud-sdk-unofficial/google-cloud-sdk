@@ -33,9 +33,12 @@ class Collections(enum.Enum):
   )
   ORGANIZATIONS_LOCATIONS = (
       'organizations.locations',
-      'organizations/{organizationsId}/locations/{locationsId}',
-      {},
-      ['organizationsId', 'locationsId'],
+      '{+name}',
+      {
+          '':
+              'organizations/{organizationsId}/locations/{locationsId}',
+      },
+      ['name'],
       True
   )
   ORGANIZATIONS_LOCATIONS_ADDRESSGROUPS = (

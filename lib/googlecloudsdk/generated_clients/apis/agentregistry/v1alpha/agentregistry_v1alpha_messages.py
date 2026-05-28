@@ -435,9 +435,8 @@ class AgentregistryProjectsLocationsListRequest(_messages.Message):
   r"""A AgentregistryProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -1537,8 +1536,8 @@ class SearchAgentsRequest(_messages.Message):
       Yes | No | Included | | skills.name | No | Yes | No | Included | |
       skills.description | No | Yes | No | Included | | skills.tags | No | Yes
       | No | Included | | skills.examples | No | Yes | No | Included |
-      Examples: * `agentId=urn:agent:projects-123:projects:123:locations:us-
-      central1:reasoningEngines:1234` to find the agent with the specified
+      Examples: * `agentId="urn:agent:projects-123:projects:123:locations:us-
+      central1:reasoningEngines:1234"` to find the agent with the specified
       agent ID. * `name:important` to find agents whose name contains
       `important` as a word. * `displayName:works*` to find agents whose
       display name contains words that start with `works`. *
@@ -1592,8 +1591,8 @@ class SearchMcpServersRequest(_messages.Message):
       |--------------------|-----|-----|-----|----------------| | mcpServerId
       | Yes | Yes | Yes | Included | | name | No | Yes | Yes | Included | |
       displayName | No | Yes | Yes | Included | Examples: *
-      `mcpServerId=urn:mcp:projects-123:projects:123:locations:us-
-      central1:agentregistry:services:service-id` to find the MCP Server with
+      `mcpServerId="urn:mcp:projects-123:projects:123:locations:us-
+      central1:agentregistry:services:service-id"` to find the MCP Server with
       the specified MCP Server ID. * `name:important` to find MCP Servers
       whose name contains `important` as a word. * `displayName:works*` to
       find MCP Servers whose display name contains words that start with

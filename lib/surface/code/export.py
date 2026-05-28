@@ -21,7 +21,6 @@ from googlecloudsdk.command_lib.code import local_files
 from googlecloudsdk.command_lib.code.cloud import cloud
 from googlecloudsdk.command_lib.code.cloud import cloud_files
 from googlecloudsdk.core.util import files
-import six
 
 
 @base.Hidden
@@ -83,8 +82,8 @@ class Export(base.Command):
       file_generator = local_files.LocalRuntimeFiles(settings)
 
     with files.FileWriter(args.kubernetes_file) as output:
-      output.write(six.u(file_generator.KubernetesConfig()))
+      output.write(file_generator.KubernetesConfig())
 
     if not args.no_skaffold_file:
       with files.FileWriter(args.skaffold_file) as output:
-        output.write(six.u(file_generator.SkaffoldConfig(args.kubernetes_file)))
+        output.write(file_generator.SkaffoldConfig(args.kubernetes_file))

@@ -57,7 +57,7 @@ class BiglakeDeltasharingV1ProjectsCatalogsListRequest(_messages.Message):
 
   Fields:
     pageSize: Optional. The maximum number of catalogs to return. The service
-      may return fewer than this value. If unspecified, at most 50 catalogs
+      may return fewer than this value. If unspecified, at most 100 catalogs
       will be returned. The maximum value is 1000; values above 1000 will be
       coerced to 1000.
     pageToken: Optional. A page token, received from a previous
@@ -94,8 +94,8 @@ class BiglakeDeltasharingV1ProjectsCatalogsSharesListRequest(_messages.Message):
 
   Fields:
     pageSize: Optional. The maximum number of shares to return. The service
-      may return fewer than this value. If unspecified, at most 50 shares will
-      be returned. The maximum value is 1000; values above 1000 will be
+      may return fewer than this value. If unspecified, at most 100 shares
+      will be returned. The maximum value is 1000; values above 1000 will be
       coerced to 1000.
     pageToken: Optional. A page token, received from a previous
       `ListDeltaSharingShares` call.
@@ -113,7 +113,7 @@ class BiglakeDeltasharingV1ProjectsCatalogsSharesSchemasListRequest(_messages.Me
 
   Fields:
     pageSize: Optional. The maximum number of schemas to return. The service
-      may return fewer than this value. If unspecified, at most 50 schemas
+      may return fewer than this value. If unspecified, at most 100 schemas
       will be returned. The maximum value is 1000; values above 1000 will be
       coerced to 1000.
     pageToken: Optional. A page token, received from a previous
@@ -133,8 +133,8 @@ class BiglakeDeltasharingV1ProjectsCatalogsSharesSchemasTablesListRequest(_messa
 
   Fields:
     pageSize: Optional. The maximum number of tables to return. The service
-      may return fewer than this value. If unspecified, at most 50 tables will
-      be returned. The maximum value is 1000; values above 1000 will be
+      may return fewer than this value. If unspecified, at most 100 tables
+      will be returned. The maximum value is 1000; values above 1000 will be
       coerced to 1000.
     pageToken: Optional. A page token, received from a previous
       `ListDeltaSharingTables` call.
@@ -189,14 +189,17 @@ class DeltaSharingShare(_messages.Message):
 
   Fields:
     name: Identifier. The resource name. Format:
-      projects/{project}/catalogs/{catalog}/shares/{delta_sharing_share}
+      projects/{project}/catalogs/{catalog}/shares/{delta_sharing_share} Note:
+      {delta_sharing_share} is a system-generated, user-friendly name (e.g.,
+      suitable for BigQuery), not the original upstream SAP URN.
+    originalName: Output only. The original share name (e.g. native SAP URN)
+      of the share.
     shareId: Output only. The unique identifier of the share.
-    userFriendlyName: Output only. The user-friendly name of the share.
   """
 
   name = _messages.StringField(1)
-  shareId = _messages.StringField(2)
-  userFriendlyName = _messages.StringField(3)
+  originalName = _messages.StringField(2)
+  shareId = _messages.StringField(3)
 
 
 class DeltaSharingTable(_messages.Message):
@@ -217,6 +220,7 @@ class Empty(_messages.Message):
   or the response type of an API method. For instance: service Foo { rpc
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
+
 
 
 class ListDeltaSharingCatalogsResponse(_messages.Message):
@@ -300,9 +304,16 @@ class SapConfig(_messages.Message):
       BigLake catalog resource created earlier with the
       `SapBdcEnrollmentConfig`. Once the `SapBdcEnrollmentConfig` is set, it
       is immutable.
+    sapRegion: Optional. Immutable. The GCP region to use for SAP BDC APIs.
+      When the catalog's metadata is stored in a multi-region (e.g., 'us') but
+      the physical SAP BDC instance resides in a single region (e.g., 'us-
+      central1'), this field must be explicitly set to point to that single
+      region. If not set, the location provided during catalog creation will
+      be used by default.
   """
 
   sapBdcEnrollmentConfig = _messages.MessageField('SapBdcEnrollmentConfig', 1)
+  sapRegion = _messages.StringField(2)
 
 
 class StandardQueryParameters(_messages.Message):

@@ -615,6 +615,7 @@ class InstallationState(object):
             '|google/cloud/appengine_'
             '|google/cloud/bigquery_logging_v1'
             '|third_party/fancy_urllib/'
+            '|third_party/pluggy/_callers.py'
             '|platform/bq/third_party/gflags'
             '|platform/ext-runtime/nodejs/test/'
             '|platform/gsutil/third_party/apitools/ez_setup'

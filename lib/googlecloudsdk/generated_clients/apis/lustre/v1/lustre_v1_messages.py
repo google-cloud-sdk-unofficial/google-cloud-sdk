@@ -223,17 +223,16 @@ class Instance(_messages.Message):
   Fields:
     accessRulesOptions: Optional. The access rules options for the instance.
     capacityGib: Required. The storage capacity of the instance in gibibytes
-      (GiB). Allowed values are from `9000` to `7632000`, depending on the
-      `perUnitStorageThroughput`. See [Performance tiers and maximum storage
-      capacities](https://cloud.google.com/managed-lustre/docs/create-
-      instance#performance-tiers) for specific minimums, maximums, and step
+      (GiB). Allowed values depend on the `perUnitStorageThroughput`. See
+      [Performance tiers](https://docs.cloud.google.com/managed-
+      lustre/docs/performance-tiers) for specific minimums, maximums, and step
       sizes for each performance tier.
     createTime: Output only. Timestamp when the instance was created.
     description: Optional. A user-readable description of the instance.
     dynamicTierOptions: Optional. Immutable. Specifies whether the instance is
-      on the Dynamic tier. See [Performance tiers and maximum storage
-      capacities](https://cloud.google.com/managed-lustre/docs/create-
-      instance#performance-tiers) for more information.
+      on the Dynamic tier. See [Performance
+      tiers](https://docs.cloud.google.com/managed-lustre/docs/performance-
+      tiers) for more information.
     filesystem: Required. Immutable. The filesystem name for this instance.
       This name is used by client-side tools, including when mounting the
       instance. Must be eight characters or less and can only contain letters
@@ -258,11 +257,10 @@ class Instance(_messages.Message):
       the instance is connected. Must be in the format
       `projects/{project_id}/global/networks/{network_name}`.
     perUnitStorageThroughput: Optional. The throughput of the instance in MBps
-      per TiB. Valid values are 125, 250, 500, 1000. See [Performance tiers
-      and maximum storage capacities](https://cloud.google.com/managed-
-      lustre/docs/create-instance#performance-tiers) for more information. If
-      the instance is using the Dynamic tier, this field must not be set or
-      must be set to zero.
+      per TiB. Valid values are 0, 125, 250, 500, 1000. See [Performance
+      tiers](https://docs.cloud.google.com/managed-lustre/docs/performance-
+      tiers) for more information. If the instance is using the Dynamic tier,
+      this field must not be set or must be set to zero.
     placementPolicy: Optional. The placement policy name for the instance in
       the format of projects/{project}/locations/{location}/resourcePolicies/{
       resource_policy}
@@ -288,8 +286,8 @@ class Instance(_messages.Message):
       REPAIRING: The instance is being repaired.
       STOPPED: The instance is stopped.
       UPDATING: The instance is being updated.
-      SUSPENDED: The instance is suspended due to an issue related to KMS. The
-        details are available in suspension_reason.
+      SUSPENDED: The instance is suspended due to an issue related to Cloud
+        KMS. The details are available in state_reason.
     """
     STATE_UNSPECIFIED = 0
     ACTIVE = 1
@@ -661,9 +659,8 @@ class LustreProjectsLocationsListRequest(_messages.Message):
   r"""A LustreProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).

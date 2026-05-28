@@ -91,6 +91,8 @@ class ComputeBeta(base_api.BaseApiClient):
     self.nodeGroups = self.NodeGroupsService(self)
     self.nodeTemplates = self.NodeTemplatesService(self)
     self.nodeTypes = self.NodeTypesService(self)
+    self.organizationRolloutPlans = self.OrganizationRolloutPlansService(self)
+    self.organizationRollouts = self.OrganizationRolloutsService(self)
     self.organizationSecurityPolicies = self.OrganizationSecurityPoliciesService(self)
     self.packetMirrorings = self.PacketMirroringsService(self)
     self.previewFeatures = self.PreviewFeaturesService(self)
@@ -14118,6 +14120,323 @@ project.
         supports_download=False,
     )
 
+  class OrganizationRolloutPlansService(base_api.BaseApiService):
+    """Service class for the organizationRolloutPlans resource."""
+
+    _NAME = 'organizationRolloutPlans'
+
+    def __init__(self, client):
+      super(ComputeBeta.OrganizationRolloutPlansService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes an OrganizationRolloutPlan.
+
+      Args:
+        request: (ComputeOrganizationRolloutPlansDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='organizations/{organizationsId}/global/rolloutPlans/{rolloutPlan}',
+        http_method='DELETE',
+        method_id='compute.organizationRolloutPlans.delete',
+        ordered_params=['organization', 'rolloutPlan'],
+        path_params=['organization', 'rolloutPlan'],
+        query_params=['requestId'],
+        relative_path='{+organization}/global/rolloutPlans/{rolloutPlan}',
+        request_field='',
+        request_type_name='ComputeOrganizationRolloutPlansDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single organization-scoped RolloutPlan.
+
+      Args:
+        request: (ComputeOrganizationRolloutPlansGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (RolloutPlan) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='organizations/{organizationsId}/global/rolloutPlans/{rolloutPlan}',
+        http_method='GET',
+        method_id='compute.organizationRolloutPlans.get',
+        ordered_params=['organization', 'rolloutPlan'],
+        path_params=['organization', 'rolloutPlan'],
+        query_params=[],
+        relative_path='{+organization}/global/rolloutPlans/{rolloutPlan}',
+        request_field='',
+        request_type_name='ComputeOrganizationRolloutPlansGetRequest',
+        response_type_name='RolloutPlan',
+        supports_download=False,
+    )
+
+    def Insert(self, request, global_params=None):
+      r"""Creates a new RolloutPlan in a given organization and location.
+
+      Args:
+        request: (ComputeOrganizationRolloutPlansInsertRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Insert')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Insert.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='organizations/{organizationsId}/global/rolloutPlans',
+        http_method='POST',
+        method_id='compute.organizationRolloutPlans.insert',
+        ordered_params=['organization'],
+        path_params=['organization'],
+        query_params=['requestId'],
+        relative_path='{+organization}/global/rolloutPlans',
+        request_field='rolloutPlan',
+        request_type_name='ComputeOrganizationRolloutPlansInsertRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists OrganizationRolloutPlans in a given organization and location.
+
+      Args:
+        request: (ComputeOrganizationRolloutPlansListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (RolloutPlansListResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='organizations/{organizationsId}/global/rolloutPlans',
+        http_method='GET',
+        method_id='compute.organizationRolloutPlans.list',
+        ordered_params=['organization'],
+        path_params=['organization'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
+        relative_path='{+organization}/global/rolloutPlans',
+        request_field='',
+        request_type_name='ComputeOrganizationRolloutPlansListRequest',
+        response_type_name='RolloutPlansListResponse',
+        supports_download=False,
+    )
+
+  class OrganizationRolloutsService(base_api.BaseApiService):
+    """Service class for the organizationRollouts resource."""
+
+    _NAME = 'organizationRollouts'
+
+    def __init__(self, client):
+      super(ComputeBeta.OrganizationRolloutsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Advance(self, request, global_params=None):
+      r"""Advances a Rollout to the next wave, or completes it if no waves remain.
+
+      Args:
+        request: (ComputeOrganizationRolloutsAdvanceRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Advance')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Advance.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='organizations/{organizationsId}/global/rollouts/{rollout}/advance',
+        http_method='POST',
+        method_id='compute.organizationRollouts.advance',
+        ordered_params=['organization', 'rollout'],
+        path_params=['organization', 'rollout'],
+        query_params=['currentWaveNumber', 'requestId'],
+        relative_path='{+organization}/global/rollouts/{rollout}/advance',
+        request_field='',
+        request_type_name='ComputeOrganizationRolloutsAdvanceRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Cancel(self, request, global_params=None):
+      r"""Cancels a Rollout.
+
+      Args:
+        request: (ComputeOrganizationRolloutsCancelRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Cancel')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Cancel.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='organizations/{organizationsId}/global/rollouts/{rollout}',
+        http_method='PATCH',
+        method_id='compute.organizationRollouts.cancel',
+        ordered_params=['organization', 'rollout'],
+        path_params=['organization', 'rollout'],
+        query_params=['requestId', 'rollback'],
+        relative_path='{+organization}/global/rollouts/{rollout}',
+        request_field='',
+        request_type_name='ComputeOrganizationRolloutsCancelRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a Rollout.
+
+      Args:
+        request: (ComputeOrganizationRolloutsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='organizations/{organizationsId}/global/rollouts/{rollout}',
+        http_method='DELETE',
+        method_id='compute.organizationRollouts.delete',
+        ordered_params=['organization', 'rollout'],
+        path_params=['organization', 'rollout'],
+        query_params=['requestId'],
+        relative_path='{+organization}/global/rollouts/{rollout}',
+        request_field='',
+        request_type_name='ComputeOrganizationRolloutsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single organization-scoped Rollout.
+
+      Args:
+        request: (ComputeOrganizationRolloutsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Rollout) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='organizations/{organizationsId}/global/rollouts/{rollout}',
+        http_method='GET',
+        method_id='compute.organizationRollouts.get',
+        ordered_params=['organization', 'rollout'],
+        path_params=['organization', 'rollout'],
+        query_params=[],
+        relative_path='{+organization}/global/rollouts/{rollout}',
+        request_field='',
+        request_type_name='ComputeOrganizationRolloutsGetRequest',
+        response_type_name='Rollout',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists Rollouts in a given organization and location.
+
+      Args:
+        request: (ComputeOrganizationRolloutsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (OrganizationRolloutsListResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='organizations/{organizationsId}/global/rollouts',
+        http_method='GET',
+        method_id='compute.organizationRollouts.list',
+        ordered_params=['organization'],
+        path_params=['organization'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
+        relative_path='{+organization}/global/rollouts',
+        request_field='',
+        request_type_name='ComputeOrganizationRolloutsListRequest',
+        response_type_name='OrganizationRolloutsListResponse',
+        supports_download=False,
+    )
+
+    def Pause(self, request, global_params=None):
+      r"""Pauses a Rollout.
+
+      Args:
+        request: (ComputeOrganizationRolloutsPauseRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Pause')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Pause.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='organizations/{organizationsId}/global/rollouts/{rollout}/pause',
+        http_method='POST',
+        method_id='compute.organizationRollouts.pause',
+        ordered_params=['organization', 'rollout'],
+        path_params=['organization', 'rollout'],
+        query_params=['etag', 'requestId'],
+        relative_path='{+organization}/global/rollouts/{rollout}/pause',
+        request_field='',
+        request_type_name='ComputeOrganizationRolloutsPauseRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Resume(self, request, global_params=None):
+      r"""Resumes a Rollout.
+
+      Args:
+        request: (ComputeOrganizationRolloutsResumeRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Resume')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Resume.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='organizations/{organizationsId}/global/rollouts/{rollout}/resume',
+        http_method='POST',
+        method_id='compute.organizationRollouts.resume',
+        ordered_params=['organization', 'rollout'],
+        path_params=['organization', 'rollout'],
+        query_params=['etag', 'requestId'],
+        relative_path='{+organization}/global/rollouts/{rollout}/resume',
+        request_field='',
+        request_type_name='ComputeOrganizationRolloutsResumeRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class OrganizationSecurityPoliciesService(base_api.BaseApiService):
     """Service class for the organizationSecurityPolicies resource."""
 
@@ -24824,6 +25143,32 @@ Replaces any existing policy.
       self._upload_configs = {
           }
 
+    def Advance(self, request, global_params=None):
+      r"""Advances a Rollout to the next wave, or completes it if no waves remain.
+
+      Args:
+        request: (ComputeRolloutsAdvanceRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Advance')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Advance.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.rollouts.advance',
+        ordered_params=['project', 'rollout'],
+        path_params=['project', 'rollout'],
+        query_params=['currentWaveNumber', 'requestId'],
+        relative_path='projects/{project}/global/rollouts/{rollout}/advance',
+        request_field='',
+        request_type_name='ComputeRolloutsAdvanceRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Cancel(self, request, global_params=None):
       r"""Cancels a Rollout.
 
@@ -24925,6 +25270,58 @@ Replaces any existing policy.
         request_field='',
         request_type_name='ComputeRolloutsListRequest',
         response_type_name='RolloutsListResponse',
+        supports_download=False,
+    )
+
+    def Pause(self, request, global_params=None):
+      r"""Pauses a Rollout.
+
+      Args:
+        request: (ComputeRolloutsPauseRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Pause')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Pause.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.rollouts.pause',
+        ordered_params=['project', 'rollout'],
+        path_params=['project', 'rollout'],
+        query_params=['etag', 'requestId'],
+        relative_path='projects/{project}/global/rollouts/{rollout}/pause',
+        request_field='',
+        request_type_name='ComputeRolloutsPauseRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Resume(self, request, global_params=None):
+      r"""Resumes a Rollout.
+
+      Args:
+        request: (ComputeRolloutsResumeRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Resume')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Resume.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.rollouts.resume',
+        ordered_params=['project', 'rollout'],
+        path_params=['project', 'rollout'],
+        query_params=['etag', 'requestId'],
+        relative_path='projects/{project}/global/rollouts/{rollout}/resume',
+        request_field='',
+        request_type_name='ComputeRolloutsResumeRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

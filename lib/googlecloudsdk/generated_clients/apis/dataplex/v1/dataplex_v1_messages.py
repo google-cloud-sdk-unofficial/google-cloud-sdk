@@ -892,6 +892,21 @@ class DataplexProjectsLocationsDataProductsPatchRequest(_messages.Message):
   validateOnly = _messages.BooleanField(4)
 
 
+class DataplexProjectsLocationsDataProductsRequestAccessRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsDataProductsRequestAccessRequest object.
+
+  Fields:
+    googleCloudDataplexV1RequestDataProductAccessRequest: A
+      GoogleCloudDataplexV1RequestDataProductAccessRequest resource to be
+      passed as the request body.
+    parent: Required. The resource name of the data product. Format: projects/
+      {project_number}/locations/{location_id}/dataProducts/{data_product_id}
+  """
+
+  googleCloudDataplexV1RequestDataProductAccessRequest = _messages.MessageField('GoogleCloudDataplexV1RequestDataProductAccessRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
 class DataplexProjectsLocationsDataProductsSetIamPolicyRequest(_messages.Message):
   r"""A DataplexProjectsLocationsDataProductsSetIamPolicyRequest object.
 
@@ -928,10 +943,11 @@ class DataplexProjectsLocationsDataScansCreateRequest(_messages.Message):
   r"""A DataplexProjectsLocationsDataScansCreateRequest object.
 
   Fields:
-    dataScanId: Required. DataScan identifier. Must contain only lowercase
-      letters, numbers and hyphens. Must start with a letter. Must end with a
-      number or a letter. Must be between 1-63 characters. Must be unique
-      within the customer project / location.
+    dataScanId: Optional. DataScan identifier. If not provided, a unique ID
+      will be generated with the prefix "data-scan-". Must contain only
+      lowercase letters, numbers and hyphens. Must start with a letter. Must
+      end with a number or a letter. Must be between 1-63 characters. Must be
+      unique within the customer project / location.
     googleCloudDataplexV1DataScan: A GoogleCloudDataplexV1DataScan resource to
       be passed as the request body.
     parent: Required. The resource name of the parent location:
@@ -1620,7 +1636,9 @@ class DataplexProjectsLocationsEntryGroupsEntriesGetRequest(_messages.Message):
 
   Enums:
     ViewValueValuesEnum: Optional. View to control which parts of an entry the
-      service should return.
+      service should return. Please check the limitations on returned aspects
+      in the Entry view documentation. Amount of returned aspects depends on
+      the selected Entry View.
 
   Fields:
     aspectTypes: Optional. Limits the aspects returned to the provided aspect
@@ -1630,12 +1648,16 @@ class DataplexProjectsLocationsEntryGroupsEntriesGetRequest(_messages.Message):
     paths: Optional. Limits the aspects returned to those associated with the
       provided paths within the Entry. It only works for CUSTOM view.
     view: Optional. View to control which parts of an entry the service should
-      return.
+      return. Please check the limitations on returned aspects in the Entry
+      view documentation. Amount of returned aspects depends on the selected
+      Entry View.
   """
 
   class ViewValueValuesEnum(_messages.Enum):
     r"""Optional. View to control which parts of an entry the service should
-    return.
+    return. Please check the limitations on returned aspects in the Entry view
+    documentation. Amount of returned aspects depends on the selected Entry
+    View.
 
     Values:
       ENTRY_VIEW_UNSPECIFIED: Unspecified EntryView. Defaults to FULL.
@@ -3687,9 +3709,8 @@ class DataplexProjectsLocationsListRequest(_messages.Message):
   r"""A DataplexProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like "displayName=tokyo", and is
       documented in more detail in AIP-160 (https://google.aip.dev/160).
@@ -3777,7 +3798,9 @@ class DataplexProjectsLocationsLookupEntryRequest(_messages.Message):
 
   Enums:
     ViewValueValuesEnum: Optional. View to control which parts of an entry the
-      service should return.
+      service should return. Please check the limitations on returned aspects
+      in the Entry view documentation. Amount of returned aspects depends on
+      the selected Entry View.
 
   Fields:
     aspectTypes: Optional. Limits the aspects returned to the provided aspect
@@ -3789,12 +3812,16 @@ class DataplexProjectsLocationsLookupEntryRequest(_messages.Message):
     paths: Optional. Limits the aspects returned to those associated with the
       provided paths within the Entry. It only works for CUSTOM view.
     view: Optional. View to control which parts of an entry the service should
-      return.
+      return. Please check the limitations on returned aspects in the Entry
+      view documentation. Amount of returned aspects depends on the selected
+      Entry View.
   """
 
   class ViewValueValuesEnum(_messages.Enum):
     r"""Optional. View to control which parts of an entry the service should
-    return.
+    return. Please check the limitations on returned aspects in the Entry view
+    documentation. Amount of returned aspects depends on the selected Entry
+    View.
 
     Values:
       ENTRY_VIEW_UNSPECIFIED: Unspecified EntryView. Defaults to FULL.
@@ -4057,63 +4084,6 @@ class DataplexProjectsLocationsOperationsListRequest(_messages.Message):
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   returnPartialSuccess = _messages.BooleanField(5)
-
-
-class DataplexProjectsLocationsPolicyIntentsGetIamPolicyRequest(_messages.Message):
-  r"""A DataplexProjectsLocationsPolicyIntentsGetIamPolicyRequest object.
-
-  Fields:
-    options_requestedPolicyVersion: Optional. The maximum policy version that
-      will be used to format the policy.Valid values are 0, 1, and 3. Requests
-      specifying an invalid value will be rejected.Requests for policies with
-      any conditional role bindings must specify version 3. Policies with no
-      conditional role bindings may specify any valid value or leave the field
-      unset.The policy in the response might use the policy version that you
-      specified, or it might use a lower policy version. For example, if you
-      specify version 3, but the policy has no conditional role bindings, the
-      response uses version 1.To learn which resources support conditions in
-      their IAM policies, see the IAM documentation
-      (https://cloud.google.com/iam/help/conditions/resource-policies).
-    resource: REQUIRED: The resource for which the policy is being requested.
-      See Resource names (https://cloud.google.com/apis/design/resource_names)
-      for the appropriate value for this field.
-  """
-
-  options_requestedPolicyVersion = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  resource = _messages.StringField(2, required=True)
-
-
-class DataplexProjectsLocationsPolicyIntentsSetIamPolicyRequest(_messages.Message):
-  r"""A DataplexProjectsLocationsPolicyIntentsSetIamPolicyRequest object.
-
-  Fields:
-    googleIamV1SetIamPolicyRequest: A GoogleIamV1SetIamPolicyRequest resource
-      to be passed as the request body.
-    resource: REQUIRED: The resource for which the policy is being specified.
-      See Resource names (https://cloud.google.com/apis/design/resource_names)
-      for the appropriate value for this field.
-  """
-
-  googleIamV1SetIamPolicyRequest = _messages.MessageField('GoogleIamV1SetIamPolicyRequest', 1)
-  resource = _messages.StringField(2, required=True)
-
-
-class DataplexProjectsLocationsPolicyIntentsTestIamPermissionsRequest(_messages.Message):
-  r"""A DataplexProjectsLocationsPolicyIntentsTestIamPermissionsRequest
-  object.
-
-  Fields:
-    googleIamV1TestIamPermissionsRequest: A
-      GoogleIamV1TestIamPermissionsRequest resource to be passed as the
-      request body.
-    resource: REQUIRED: The resource for which the policy detail is being
-      requested. See Resource names
-      (https://cloud.google.com/apis/design/resource_names) for the
-      appropriate value for this field.
-  """
-
-  googleIamV1TestIamPermissionsRequest = _messages.MessageField('GoogleIamV1TestIamPermissionsRequest', 1)
-  resource = _messages.StringField(2, required=True)
 
 
 class DataplexProjectsLocationsQueryCatalogRequest(_messages.Message):
@@ -5100,6 +5070,269 @@ class GoogleCloudDataplexV1CancelMetadataJobRequest(_messages.Message):
   r"""Cancel metadata job request."""
 
 
+class GoogleCloudDataplexV1ChangeRequest(_messages.Message):
+  r"""Represents a proposed change to a metadata resource.
+
+  Enums:
+    ChangeTypeValueValuesEnum: Output only. The type of change represented by
+      the change_payload. This field is derived from the populated field in
+      the change_payload oneof.
+    StateValueValuesEnum: Output only. The current state of the ChangeRequest.
+
+  Messages:
+    LabelsValue: Optional. User-defined labels for the ChangeRequest.
+
+  Fields:
+    approver: Output only. The email address of the user who approved/rejected
+      the ChangeRequest.
+    author: Output only. The email address of the user who created the
+      ChangeRequest.
+    changeType: Output only. The type of change represented by the
+      change_payload. This field is derived from the populated field in the
+      change_payload oneof.
+    createEntry: Payload for creating an Entry.
+    createEntryLink: Payload for creating an EntryLink.
+    createGlossary: Payload for creating a Glossary.
+    createGlossaryCategory: Payload for creating a GlossaryCategory.
+    createGlossaryTerm: Payload for creating a GlossaryTerm.
+    createTime: Output only. The time when the ChangeRequest was created.
+    deleteEntry: Payload for deleting an Entry.
+    deleteEntryLink: Payload for deleting an EntryLink.
+    deleteGlossary: Payload for deleting a Glossary.
+    deleteGlossaryCategory: Payload for deleting a GlossaryCategory.
+    deleteGlossaryTerm: Payload for deleting a GlossaryTerm.
+    etag: Optional. This checksum is computed by the service. It can be sent
+      on update and delete requests to ensure the client has an up-to-date
+      value before proceeding.
+    justification: Optional. Justification of the ChangeRequest. This should
+      explain why the change is needed or why it should be approved.
+    labels: Optional. User-defined labels for the ChangeRequest.
+    name: Identifier. The relative resource name of the ChangeRequest, of the
+      form: projects/{project_number}/locations/{location_id}/changeRequests/{
+      change_request_id}
+    rejectionComment: Output only. The reason provided for rejecting the
+      ChangeRequest.
+    resource: Output only. The full resource name of the target resource to be
+      modified. Example: //dataplex.googleapis.com/projects/my-
+      project/locations/us-central1/entryGroups/my-group/entries/my-entry
+    state: Output only. The current state of the ChangeRequest.
+    uid: Output only. System generated globally unique ID for the
+      ChangeRequest.
+    updateEntry: Payload for updating an Entry.
+    updateGlossary: Payload for updating a Glossary.
+    updateGlossaryCategory: Payload for updating a GlossaryCategory.
+    updateGlossaryTerm: Payload for updating a GlossaryTerm.
+    updateTime: Output only. The time when the ChangeRequest was last updated.
+  """
+
+  class ChangeTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The type of change represented by the change_payload.
+    This field is derived from the populated field in the change_payload
+    oneof.
+
+    Values:
+      CHANGE_TYPE_UNSPECIFIED: State unspecified.
+      CREATE_ENTRY: Request to create an Entry.
+      UPDATE_ENTRY: Request to update an Entry.
+      DELETE_ENTRY: Request to delete an Entry.
+      CREATE_ENTRY_LINK: Request to create an EntryLink.
+      DELETE_ENTRY_LINK: Request to delete an EntryLink.
+      CREATE_GLOSSARY: Request to create a Glossary.
+      UPDATE_GLOSSARY: Request to update a Glossary.
+      DELETE_GLOSSARY: Request to delete a Glossary.
+      CREATE_GLOSSARY_CATEGORY: Request to create a GlossaryCategory.
+      UPDATE_GLOSSARY_CATEGORY: Request to update a GlossaryCategory.
+      DELETE_GLOSSARY_CATEGORY: Request to delete a GlossaryCategory.
+      CREATE_GLOSSARY_TERM: Request to create a GlossaryTerm.
+      UPDATE_GLOSSARY_TERM: Request to update a GlossaryTerm.
+      DELETE_GLOSSARY_TERM: Request to delete a GlossaryTerm.
+    """
+    CHANGE_TYPE_UNSPECIFIED = 0
+    CREATE_ENTRY = 1
+    UPDATE_ENTRY = 2
+    DELETE_ENTRY = 3
+    CREATE_ENTRY_LINK = 4
+    DELETE_ENTRY_LINK = 5
+    CREATE_GLOSSARY = 6
+    UPDATE_GLOSSARY = 7
+    DELETE_GLOSSARY = 8
+    CREATE_GLOSSARY_CATEGORY = 9
+    UPDATE_GLOSSARY_CATEGORY = 10
+    DELETE_GLOSSARY_CATEGORY = 11
+    CREATE_GLOSSARY_TERM = 12
+    UPDATE_GLOSSARY_TERM = 13
+    DELETE_GLOSSARY_TERM = 14
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current state of the ChangeRequest.
+
+    Values:
+      STATE_UNSPECIFIED: State unspecified.
+      NEW: The change is proposed and new.
+      APPROVED: The change has been approved.
+      REJECTED: The change has been rejected.
+      EXPIRED: The change request has expired.
+      REVOKED: The approved change has been revoked.
+    """
+    STATE_UNSPECIFIED = 0
+    NEW = 1
+    APPROVED = 2
+    REJECTED = 3
+    EXPIRED = 4
+    REVOKED = 5
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. User-defined labels for the ChangeRequest.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  approver = _messages.StringField(1)
+  author = _messages.StringField(2)
+  changeType = _messages.EnumField('ChangeTypeValueValuesEnum', 3)
+  createEntry = _messages.MessageField('GoogleCloudDataplexV1CreateEntryRequest', 4)
+  createEntryLink = _messages.MessageField('GoogleCloudDataplexV1CreateEntryLinkRequest', 5)
+  createGlossary = _messages.MessageField('GoogleCloudDataplexV1CreateGlossaryRequest', 6)
+  createGlossaryCategory = _messages.MessageField('GoogleCloudDataplexV1CreateGlossaryCategoryRequest', 7)
+  createGlossaryTerm = _messages.MessageField('GoogleCloudDataplexV1CreateGlossaryTermRequest', 8)
+  createTime = _messages.StringField(9)
+  deleteEntry = _messages.MessageField('GoogleCloudDataplexV1DeleteEntryRequest', 10)
+  deleteEntryLink = _messages.MessageField('GoogleCloudDataplexV1DeleteEntryLinkRequest', 11)
+  deleteGlossary = _messages.MessageField('GoogleCloudDataplexV1DeleteGlossaryRequest', 12)
+  deleteGlossaryCategory = _messages.MessageField('GoogleCloudDataplexV1DeleteGlossaryCategoryRequest', 13)
+  deleteGlossaryTerm = _messages.MessageField('GoogleCloudDataplexV1DeleteGlossaryTermRequest', 14)
+  etag = _messages.StringField(15)
+  justification = _messages.StringField(16)
+  labels = _messages.MessageField('LabelsValue', 17)
+  name = _messages.StringField(18)
+  rejectionComment = _messages.StringField(19)
+  resource = _messages.StringField(20)
+  state = _messages.EnumField('StateValueValuesEnum', 21)
+  uid = _messages.StringField(22)
+  updateEntry = _messages.MessageField('GoogleCloudDataplexV1UpdateEntryRequest', 23)
+  updateGlossary = _messages.MessageField('GoogleCloudDataplexV1UpdateGlossaryRequest', 24)
+  updateGlossaryCategory = _messages.MessageField('GoogleCloudDataplexV1UpdateGlossaryCategoryRequest', 25)
+  updateGlossaryTerm = _messages.MessageField('GoogleCloudDataplexV1UpdateGlossaryTermRequest', 26)
+  updateTime = _messages.StringField(27)
+
+
+class GoogleCloudDataplexV1CreateEntryLinkRequest(_messages.Message):
+  r"""Request message for CreateEntryLink.
+
+  Fields:
+    entryLink: Required. Entry Link resource.
+    entryLinkId: Required. Entry Link identifier * Must contain only lowercase
+      letters, numbers and hyphens. * Must start with a letter. * Must be
+      between 1-63 characters. * Must end with a number or a letter. * Must be
+      unique within the EntryGroup.
+    parent: Required. The resource name of the parent Entry Group: projects/{p
+      roject_id_or_number}/locations/{location_id}/entryGroups/{entry_group_id
+      }.
+  """
+
+  entryLink = _messages.MessageField('GoogleCloudDataplexV1EntryLink', 1)
+  entryLinkId = _messages.StringField(2)
+  parent = _messages.StringField(3)
+
+
+class GoogleCloudDataplexV1CreateEntryRequest(_messages.Message):
+  r"""Create Entry request.
+
+  Fields:
+    entry: Required. Entry resource.
+    entryId: Required. Entry identifier. It has to be unique within an Entry
+      Group.Entries corresponding to Google Cloud resources use an Entry ID
+      format based on full resource names (https://cloud.google.com/apis/desig
+      n/resource_names#full_resource_name). The format is a full resource name
+      of the resource without the prefix double slashes in the API service
+      name part of the full resource name. This allows retrieval of entries
+      using their associated resource name.For example, if the full resource
+      name of a resource is
+      //library.googleapis.com/shelves/shelf1/books/book2, then the suggested
+      entry_id is library.googleapis.com/shelves/shelf1/books/book2.It is also
+      suggested to follow the same convention for entries corresponding to
+      resources from providers or systems other than Google Cloud.The maximum
+      size of the field is 4000 characters.
+    parent: Required. The resource name of the parent Entry Group:
+      projects/{project}/locations/{location}/entryGroups/{entry_group}.
+  """
+
+  entry = _messages.MessageField('GoogleCloudDataplexV1Entry', 1)
+  entryId = _messages.StringField(2)
+  parent = _messages.StringField(3)
+
+
+class GoogleCloudDataplexV1CreateGlossaryCategoryRequest(_messages.Message):
+  r"""Creates a new GlossaryCategory under the specified Glossary.
+
+  Fields:
+    category: Required. The GlossaryCategory to create.
+    categoryId: Required. GlossaryCategory identifier.
+    parent: Required. The parent resource where this GlossaryCategory will be
+      created. Format: projects/{project_id_or_number}/locations/{location_id}
+      /glossaries/{glossary_id} where locationId refers to a Google Cloud
+      region.
+  """
+
+  category = _messages.MessageField('GoogleCloudDataplexV1GlossaryCategory', 1)
+  categoryId = _messages.StringField(2)
+  parent = _messages.StringField(3)
+
+
+class GoogleCloudDataplexV1CreateGlossaryRequest(_messages.Message):
+  r"""Create Glossary Request
+
+  Fields:
+    glossary: Required. The Glossary to create.
+    glossaryId: Required. Glossary ID: Glossary identifier.
+    parent: Required. The parent resource where this Glossary will be created.
+      Format: projects/{project_id_or_number}/locations/{location_id} where
+      location_id refers to a Google Cloud region.
+    validateOnly: Optional. Validates the request without actually creating
+      the Glossary. Default: false.
+  """
+
+  glossary = _messages.MessageField('GoogleCloudDataplexV1Glossary', 1)
+  glossaryId = _messages.StringField(2)
+  parent = _messages.StringField(3)
+  validateOnly = _messages.BooleanField(4)
+
+
+class GoogleCloudDataplexV1CreateGlossaryTermRequest(_messages.Message):
+  r"""Creates a new GlossaryTerm under the specified Glossary.
+
+  Fields:
+    parent: Required. The parent resource where the GlossaryTerm will be
+      created. Format: projects/{project_id_or_number}/locations/{location_id}
+      /glossaries/{glossary_id} where location_id refers to a Google Cloud
+      region.
+    term: Required. The GlossaryTerm to create.
+    termId: Required. GlossaryTerm identifier.
+  """
+
+  parent = _messages.StringField(1)
+  term = _messages.MessageField('GoogleCloudDataplexV1GlossaryTerm', 2)
+  termId = _messages.StringField(3)
+
+
 class GoogleCloudDataplexV1DataAccessSpec(_messages.Message):
   r"""DataAccessSpec holds the access control configuration to be enforced on
   data stored within resources (eg: rows, columns in BigQuery Tables). When
@@ -5824,6 +6057,8 @@ class GoogleCloudDataplexV1DataProduct(_messages.Message):
       "environment": "production", "billing": "marketing-department" }
 
   Fields:
+    accessApprovalConfig: Optional. Configuration for access approval for the
+      data product.
     accessGroups: Optional. Data product access groups by access group id as
       key. If data product is used only for packaging data assets, then access
       groups may be empty. However, if a data product is used for sharing data
@@ -5912,18 +6147,31 @@ class GoogleCloudDataplexV1DataProduct(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  accessGroups = _messages.MessageField('AccessGroupsValue', 1)
-  assetCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  createTime = _messages.StringField(3)
-  description = _messages.StringField(4)
-  displayName = _messages.StringField(5)
-  etag = _messages.StringField(6)
-  icon = _messages.BytesField(7)
-  labels = _messages.MessageField('LabelsValue', 8)
-  name = _messages.StringField(9)
-  ownerEmails = _messages.StringField(10, repeated=True)
-  uid = _messages.StringField(11)
-  updateTime = _messages.StringField(12)
+  accessApprovalConfig = _messages.MessageField('GoogleCloudDataplexV1DataProductAccessApprovalConfig', 1)
+  accessGroups = _messages.MessageField('AccessGroupsValue', 2)
+  assetCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  createTime = _messages.StringField(4)
+  description = _messages.StringField(5)
+  displayName = _messages.StringField(6)
+  etag = _messages.StringField(7)
+  icon = _messages.BytesField(8)
+  labels = _messages.MessageField('LabelsValue', 9)
+  name = _messages.StringField(10)
+  ownerEmails = _messages.StringField(11, repeated=True)
+  uid = _messages.StringField(12)
+  updateTime = _messages.StringField(13)
+
+
+class GoogleCloudDataplexV1DataProductAccessApprovalConfig(_messages.Message):
+  r"""Configuration for access approval for the data product.
+
+  Fields:
+    approverEmails: Optional. Specifies the email addresses of users who are
+      potential approvers and are notified when an access request is made for
+      the data product. The maximum number of emails allowed is 10.
+  """
+
+  approverEmails = _messages.StringField(1, repeated=True)
 
 
 class GoogleCloudDataplexV1DataProductAccessGroup(_messages.Message):
@@ -5954,9 +6202,13 @@ class GoogleCloudDataplexV1DataProductPrincipal(_messages.Message):
   Fields:
     googleGroup: Optional. Email of the Google Group, as per
       https://cloud.google.com/iam/docs/principals-overview#google-group.
+    serviceAccount: Optional. Specifies the email of the producer service
+      account, as per https://cloud.google.com/iam/docs/principals-
+      overview#service-account.
   """
 
   googleGroup = _messages.StringField(1)
+  serviceAccount = _messages.StringField(2)
 
 
 class GoogleCloudDataplexV1DataProfileResult(_messages.Message):
@@ -7906,6 +8158,68 @@ class GoogleCloudDataplexV1DataTaxonomy(_messages.Message):
   name = _messages.StringField(8)
   uid = _messages.StringField(9)
   updateTime = _messages.StringField(10)
+
+
+class GoogleCloudDataplexV1DeleteEntryLinkRequest(_messages.Message):
+  r"""Request message for DeleteEntryLink.
+
+  Fields:
+    name: Required. The resource name of the Entry Link: projects/{project_id_
+      or_number}/locations/{location_id}/entryGroups/{entry_group_id}/entryLin
+      ks/{entry_link_id}.
+  """
+
+  name = _messages.StringField(1)
+
+
+class GoogleCloudDataplexV1DeleteEntryRequest(_messages.Message):
+  r"""Delete Entry request.
+
+  Fields:
+    name: Required. The resource name of the Entry: projects/{project}/locatio
+      ns/{location}/entryGroups/{entry_group}/entries/{entry}.
+  """
+
+  name = _messages.StringField(1)
+
+
+class GoogleCloudDataplexV1DeleteGlossaryCategoryRequest(_messages.Message):
+  r"""Delete GlossaryCategory Request
+
+  Fields:
+    name: Required. The name of the GlossaryCategory to delete. Format: projec
+      ts/{project_id_or_number}/locations/{location_id}/glossaries/{glossary_i
+      d}/categories/{category_id}
+  """
+
+  name = _messages.StringField(1)
+
+
+class GoogleCloudDataplexV1DeleteGlossaryRequest(_messages.Message):
+  r"""Delete Glossary Request
+
+  Fields:
+    etag: Optional. The etag of the Glossary. If this is provided, it must
+      match the server's etag. If the etag is provided and does not match the
+      server-computed etag, the request must fail with a ABORTED error code.
+    name: Required. The name of the Glossary to delete. Format: projects/{proj
+      ect_id_or_number}/locations/{location_id}/glossaries/{glossary_id}
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2)
+
+
+class GoogleCloudDataplexV1DeleteGlossaryTermRequest(_messages.Message):
+  r"""Delete GlossaryTerm Request
+
+  Fields:
+    name: Required. The name of the GlossaryTerm to delete. Format: projects/{
+      project_id_or_number}/locations/{location_id}/glossaries/{glossary_id}/t
+      erms/{term_id}
+  """
+
+  name = _messages.StringField(1)
 
 
 class GoogleCloudDataplexV1DiscoveryEvent(_messages.Message):
@@ -10090,6 +10404,8 @@ class GoogleCloudDataplexV1LookupContextRequest(_messages.Message):
       amount.
 
   Fields:
+    context: Optional. The text representing contextual information for which
+      metadata context is being requested.
     options: Optional. Allows to configure the context.Supported options:
       format - The format of the context (one of yaml, xml, json, default is
       yaml). context_budget - If provided, the output will be intelligently
@@ -10130,8 +10446,9 @@ class GoogleCloudDataplexV1LookupContextRequest(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  options = _messages.MessageField('OptionsValue', 1)
-  resources = _messages.StringField(2, repeated=True)
+  context = _messages.StringField(1)
+  options = _messages.MessageField('OptionsValue', 2)
+  resources = _messages.StringField(3, repeated=True)
 
 
 class GoogleCloudDataplexV1LookupContextResponse(_messages.Message):
@@ -10858,6 +11175,32 @@ class GoogleCloudDataplexV1QueryCatalogResponseQueryResult(_messages.Message):
   nextPageToken = _messages.StringField(1)
   rows = _messages.MessageField('RowsValueListEntry', 2, repeated=True)
   totalRows = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+
+
+class GoogleCloudDataplexV1RequestDataProductAccessRequest(_messages.Message):
+  r"""Message for requesting access to a Data Product.
+
+  Fields:
+    changeRequest: Required. The change request for the data product access
+      request.
+    validateOnly: Optional. Validates the request without actually creating
+      the access change request. Defaults to false.
+  """
+
+  changeRequest = _messages.MessageField('GoogleCloudDataplexV1ChangeRequest', 1)
+  validateOnly = _messages.BooleanField(2)
+
+
+class GoogleCloudDataplexV1RequestDataProductAccessResponse(_messages.Message):
+  r"""Response message for requesting access to a Data Product.
+
+  Fields:
+    changeRequestName: The resource name of the created ChangeRequest. Format:
+      projects/{project_number}/locations/{location_id}/changeRequests/{change
+      _request_id}
+  """
+
+  changeRequestName = _messages.StringField(1)
 
 
 class GoogleCloudDataplexV1ResourceAccessSpec(_messages.Message):
@@ -11932,6 +12275,86 @@ class GoogleCloudDataplexV1TriggerSchedule(_messages.Message):
   cron = _messages.StringField(1)
 
 
+class GoogleCloudDataplexV1UpdateEntryRequest(_messages.Message):
+  r"""Update Entry request.
+
+  Fields:
+    allowMissing: Optional. If set to true and the entry doesn't exist, the
+      service will create it.
+    aspectKeys: Optional. The map keys of the Aspects which the service should
+      modify. It supports the following syntaxes: - matches an aspect of the
+      given type and empty path. @path - matches an aspect of the given type
+      and specified path. For example, to attach an aspect to a field that is
+      specified by the schema aspect, the path should have the format Schema..
+      @* - matches aspects of the given type for all paths. *@path - matches
+      aspects of all types on the given path.The service will not remove
+      existing aspects matching the syntax unless delete_missing_aspects is
+      set to true.If this field is left empty, the service treats it as
+      specifying exactly those Aspects present in the request.
+    deleteMissingAspects: Optional. If set to true and the aspect_keys specify
+      aspect ranges, the service deletes any existing aspects from that range
+      that weren't provided in the request.
+    entry: Required. Entry resource.
+    updateMask: Optional. Mask of fields to update. To update Aspects, the
+      update_mask must contain the value "aspects".If the update_mask is
+      empty, the service will update all modifiable fields present in the
+      request.
+  """
+
+  allowMissing = _messages.BooleanField(1)
+  aspectKeys = _messages.StringField(2, repeated=True)
+  deleteMissingAspects = _messages.BooleanField(3)
+  entry = _messages.MessageField('GoogleCloudDataplexV1Entry', 4)
+  updateMask = _messages.StringField(5)
+
+
+class GoogleCloudDataplexV1UpdateGlossaryCategoryRequest(_messages.Message):
+  r"""Update GlossaryCategory Request
+
+  Fields:
+    category: Required. The GlossaryCategory to update. The GlossaryCategory's
+      name field is used to identify the GlossaryCategory to update. Format: p
+      rojects/{project_id_or_number}/locations/{location_id}/glossaries/{gloss
+      ary_id}/categories/{category_id}
+    updateMask: Required. The list of fields to update.
+  """
+
+  category = _messages.MessageField('GoogleCloudDataplexV1GlossaryCategory', 1)
+  updateMask = _messages.StringField(2)
+
+
+class GoogleCloudDataplexV1UpdateGlossaryRequest(_messages.Message):
+  r"""Update Glossary Request
+
+  Fields:
+    glossary: Required. The Glossary to update. The Glossary's name field is
+      used to identify the Glossary to update. Format: projects/{project_id_or
+      _number}/locations/{location_id}/glossaries/{glossary_id}
+    updateMask: Required. The list of fields to update.
+    validateOnly: Optional. Validates the request without actually updating
+      the Glossary. Default: false.
+  """
+
+  glossary = _messages.MessageField('GoogleCloudDataplexV1Glossary', 1)
+  updateMask = _messages.StringField(2)
+  validateOnly = _messages.BooleanField(3)
+
+
+class GoogleCloudDataplexV1UpdateGlossaryTermRequest(_messages.Message):
+  r"""Update GlossaryTerm Request
+
+  Fields:
+    term: Required. The GlossaryTerm to update. The GlossaryTerm's name field
+      is used to identify the GlossaryTerm to update. Format: projects/{projec
+      t_id_or_number}/locations/{location_id}/glossaries/{glossary_id}/terms/{
+      term_id}
+    updateMask: Required. The list of fields to update.
+  """
+
+  term = _messages.MessageField('GoogleCloudDataplexV1GlossaryTerm', 1)
+  updateMask = _messages.StringField(2)
+
+
 class GoogleCloudDataplexV1Zone(_messages.Message):
   r"""A zone represents a logical group of related assets within a lake. A
   zone can be used to map to organizational structure or represent stages of
@@ -12818,5 +13241,3 @@ encoding.AddCustomJsonFieldMapping(
     DataplexProjectsLocationsLakesZonesGetIamPolicyRequest, 'options_requestedPolicyVersion', 'options.requestedPolicyVersion')
 encoding.AddCustomJsonFieldMapping(
     DataplexProjectsLocationsLakesZonesAssetsGetIamPolicyRequest, 'options_requestedPolicyVersion', 'options.requestedPolicyVersion')
-encoding.AddCustomJsonFieldMapping(
-    DataplexProjectsLocationsPolicyIntentsGetIamPolicyRequest, 'options_requestedPolicyVersion', 'options.requestedPolicyVersion')

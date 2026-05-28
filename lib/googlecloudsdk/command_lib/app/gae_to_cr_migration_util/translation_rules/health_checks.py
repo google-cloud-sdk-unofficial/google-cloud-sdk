@@ -16,6 +16,8 @@
 
 from collections.abc import Mapping, Sequence
 from typing import Any
+from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.common import util
+
 _GAE_TO_CR_PROBE_KEY_MAP = {
     'path': 'httpGet.path',
     'timeout_sec': 'timeoutSeconds',
@@ -138,3 +140,65 @@ def translate_all_health_checks(
   return _translate_liveness_check(
       input_flatten_as_appyaml
   ) + _translate_readiness_check(input_flatten_as_appyaml)
+
+
+def _get_probe_dict(
+    *,
+    input_flatten_as_appyaml: Mapping[str, Any],
+    check_name: str,
+    default_period: int,
+    supported_keys: Sequence[str],
+) -> dict[str, Any]:
+  """Translates GAE health checks to Cloud Run probe dictionary."""
+  if check_name not in (key.split('.')[0] for key in input_flatten_as_appyaml):
+    return {}
+
+  defaults = {
+      'path': '/_ah/health',
+      'timeout_sec': 4,
+      'check_interval_sec': default_period,
+      'failure_threshold': 2,
+      'success_threshold': 2,
+      'initial_delay_sec': 0,
+  }
+
+  probe_dict = {}
+  for gae_key, cr_key in _GAE_TO_CR_PROBE_KEY_MAP.items():
+    if cr_key in supported_keys:
+      value = input_flatten_as_appyaml.get(
+          f'{check_name}.{gae_key}', defaults.get(gae_key)
+      )
+      if value is not None:
+        if cr_key == 'httpGet.path':
+          probe_dict['httpGet'] = {'path': value}
+        else:
+          probe_dict[cr_key] = value
+
+  return probe_dict
+
+
+def update_service_yaml_with_health_checks(
+    service_yaml: dict[str, Any],
+    input_flatten_as_appyaml: Mapping[str, Any],
+) -> None:
+  """Updates the service_yaml dict with health checks from app.yaml."""
+  if not util.is_flex_env(input_flatten_as_appyaml):
+    return
+  liveness_check = _get_probe_dict(
+      input_flatten_as_appyaml=input_flatten_as_appyaml,
+      check_name='liveness_check',
+      default_period=30,
+      supported_keys=_LIVENESS_PROBE_KEYS,
+  )
+  readiness_check = _get_probe_dict(
+      input_flatten_as_appyaml=input_flatten_as_appyaml,
+      check_name='readiness_check',
+      default_period=5,
+      supported_keys=_READINESS_PROBE_KEYS,
+  )
+
+  container = service_yaml['spec']['template']['spec']['containers'][0]
+  if liveness_check:
+    container['livenessProbe'] = liveness_check
+  if readiness_check:
+    container['readinessProbe'] = readiness_check

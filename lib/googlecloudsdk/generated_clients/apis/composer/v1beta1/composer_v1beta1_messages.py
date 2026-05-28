@@ -2317,6 +2317,8 @@ class OperationMetadata(_messages.Message):
       DATABASE_FAILOVER: Triggers failover of environment's Cloud SQL instance
         (only for highly resilient environments).
       MIGRATE: Migrates resource to a new major version.
+      HIBERNATE: Hibernates a resource.
+      RESUME: Resumes a resource.
     """
     TYPE_UNSPECIFIED = 0
     CREATE = 1
@@ -2327,6 +2329,8 @@ class OperationMetadata(_messages.Message):
     LOAD_SNAPSHOT = 6
     DATABASE_FAILOVER = 7
     MIGRATE = 8
+    HIBERNATE = 9
+    RESUME = 10
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. The current operation state.
@@ -3370,6 +3374,8 @@ class UserWorkloadsSecret(_messages.Message):
     name: Identifier. The resource name of the Secret, in the form: "projects/
       {projectId}/locations/{locationId}/environments/{environmentId}/userWork
       loadsSecrets/{userWorkloadsSecretId}"
+    type: Optional. The "type" field of Kubernetes Secret. For details see:
+      https://kubernetes.io/docs/concepts/configuration/secret/#secret-types
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -3404,6 +3410,7 @@ class UserWorkloadsSecret(_messages.Message):
 
   data = _messages.MessageField('DataValue', 1)
   name = _messages.StringField(2)
+  type = _messages.StringField(3)
 
 
 class WebServerConfig(_messages.Message):

@@ -2500,14 +2500,45 @@ class ReadOnly(_messages.Message):
 
 class ReadWrite(_messages.Message):
   r"""Options for a transaction that can be used to read and write documents.
-  Firestore does not allow 3rd party auth requests to create read-write.
-  transactions.
+
+  Enums:
+    ConcurrencyModeValueValuesEnum: Optional. The concurrency control mode to
+      use for this transaction. A database is able to use different
+      concurrency modes for different transactions simultaneously. 3rd party
+      auth requests are only allowed to create optimistic read-write
+      transactions and must specify that here even if the database-level
+      setting is already configured to optimistic.
 
   Fields:
+    concurrencyMode: Optional. The concurrency control mode to use for this
+      transaction. A database is able to use different concurrency modes for
+      different transactions simultaneously. 3rd party auth requests are only
+      allowed to create optimistic read-write transactions and must specify
+      that here even if the database-level setting is already configured to
+      optimistic.
     retryTransaction: An optional transaction to retry.
   """
 
-  retryTransaction = _messages.BytesField(1)
+  class ConcurrencyModeValueValuesEnum(_messages.Enum):
+    r"""Optional. The concurrency control mode to use for this transaction. A
+    database is able to use different concurrency modes for different
+    transactions simultaneously. 3rd party auth requests are only allowed to
+    create optimistic read-write transactions and must specify that here even
+    if the database-level setting is already configured to optimistic.
+
+    Values:
+      CONCURRENCY_MODE_UNSPECIFIED: Start the transaction with the database-
+        level default concurrency mode.
+      OPTIMISTIC: Use optimistic concurrency control for the new transaction.
+      PESSIMISTIC: Use pessimistic concurrency control for the new
+        transaction.
+    """
+    CONCURRENCY_MODE_UNSPECIFIED = 0
+    OPTIMISTIC = 1
+    PESSIMISTIC = 2
+
+  concurrencyMode = _messages.EnumField('ConcurrencyModeValueValuesEnum', 1)
+  retryTransaction = _messages.BytesField(2)
 
 
 class RollbackRequest(_messages.Message):

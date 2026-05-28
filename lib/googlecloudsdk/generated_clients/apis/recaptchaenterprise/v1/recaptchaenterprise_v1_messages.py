@@ -452,7 +452,12 @@ class GoogleCloudRecaptchaenterpriseV1Bot(_messages.Message):
   Fields:
     botType: Optional. Enumerated field representing the type of bot.
     name: Optional. Enumerated string value that indicates the identity of the
-      bot, formatted in kebab-case.
+      bot, formatted in kebab-case. Current example values include the
+      following: * google-agent * browser-base * chat-gpt * aws-bedrock *
+      cybaa-bot * cloudflare * payhawk Ensure that your applications can
+      handle identifier values not explicitly listed here. Deprecated values
+      might take some time to stop showing up in responses. New values can be
+      pushed so this list should be taken as non exhaustive.
   """
 
   class BotTypeValueValuesEnum(_messages.Enum):
@@ -577,6 +582,31 @@ class GoogleCloudRecaptchaenterpriseV1ChallengeRuleNoChallengeOutcome(_messages.
   user.
   """
 
+
+
+class GoogleCloudRecaptchaenterpriseV1ClientSettings(_messages.Message):
+  r"""Configuration for clients to protect with reCAPTCHA.
+
+  Fields:
+    allowAllDomains: Optional. If set to true, it means allowed_domains are
+      not enforced.
+    allowedDomains: Optional. Domains or subdomains of websites allowed to use
+      the policy. All subdomains of an allowed domain are automatically
+      allowed. A valid domain requires a host and must not include any path,
+      port, query or fragment. Examples: 'example.com' or
+      'subdomain.example.com' Each policy supports a maximum of 250 domains.
+      To use a policy on more domains, set `allow_all_domains` to true. When
+      this is set, you are responsible for validating the hostname by checking
+      the `token_properties.hostname` field in each assessment response
+      against your list of allowed domains.
+    protectedEndpointGroup: Optional. Configuration for all API endpoints to
+      protect with reCAPTCHA. If this field is not set, reCAPTCHA will not
+      automatically request tokens on any API endpoints.
+  """
+
+  allowAllDomains = _messages.BooleanField(1)
+  allowedDomains = _messages.StringField(2, repeated=True)
+  protectedEndpointGroup = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1ProtectedEndpointGroup', 3)
 
 
 class GoogleCloudRecaptchaenterpriseV1EndpointVerificationInfo(_messages.Message):
@@ -1061,6 +1091,7 @@ class GoogleCloudRecaptchaenterpriseV1Key(_messages.Message):
     name: Identifier. The resource name for the Key in the format
       `projects/{project}/keys/{key}`.
     testingOptions: Optional. Options for user acceptance testing.
+    universalSettings: Settings for keys that are configured via their Policy.
     wafSettings: Optional. Settings for Web Application Firewall (WAF).
     webSettings: Settings for keys that can be used by websites.
   """
@@ -1098,8 +1129,9 @@ class GoogleCloudRecaptchaenterpriseV1Key(_messages.Message):
   labels = _messages.MessageField('LabelsValue', 6)
   name = _messages.StringField(7)
   testingOptions = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1TestingOptions', 8)
-  wafSettings = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1WafSettings', 9)
-  webSettings = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1WebKeySettings', 10)
+  universalSettings = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1UniversalKeySettings', 9)
+  wafSettings = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1WafSettings', 10)
+  webSettings = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1WebKeySettings', 11)
 
 
 class GoogleCloudRecaptchaenterpriseV1ListFirewallPoliciesResponse(_messages.Message):
@@ -1238,16 +1270,18 @@ class GoogleCloudRecaptchaenterpriseV1Policy(_messages.Message):
     challengeRuleGroups: Optional. Rules to configure the behavior of
       reCAPTCHA for showing a challenge. Rule groups are evaluated in top down
       sequence. Evaluation stops when the first matching rule group is found.
+    clientSettings: Optional. Configuration for clients protected by this
+      policy.
     name: Identifier. Resource name/identifier for this policy. Format:
       "projects/{project}/keys/{key}/policy" for a policy under a key.
-    protectedEndpointGroup: Optional. Configuration for all API endpoints to
-      protect with reCAPTCHA. If this field is not set, reCAPTCHA will not
-      automatically request tokens on any API endpoints.
+    protectedEndpointGroup: Optional. Deprecated: use
+      `client_settings.protected_endpoint_group` instead
   """
 
   challengeRuleGroups = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1ChallengeRuleGroup', 1, repeated=True)
-  name = _messages.StringField(2)
-  protectedEndpointGroup = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1ProtectedEndpointGroup', 3)
+  clientSettings = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1ClientSettings', 2)
+  name = _messages.StringField(3)
+  protectedEndpointGroup = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1ProtectedEndpointGroup', 4)
 
 
 class GoogleCloudRecaptchaenterpriseV1PrivatePasswordLeakVerification(_messages.Message):
@@ -1678,11 +1712,9 @@ class GoogleCloudRecaptchaenterpriseV1TokenProperties(_messages.Message):
       = false.
     iosBundleId: Output only. The ID of the iOS bundle with which the token
       was generated (iOS keys only).
-    valid: Output only. Whether the provided user response token is valid.
-      When valid = false, the reason could be specified in invalid_reason or
-      it could also be due to a user failing to solve a challenge or a sitekey
-      mismatch (i.e the sitekey used to generate the token was different than
-      the one specified in the assessment).
+    valid: Output only. Indicates whether the provided user response token is
+      valid. If `false`, the token is invalid, either because the user failed
+      the challenge or for a reason provided in the `invalid_reason` field.
   """
 
   class InvalidReasonValueValuesEnum(_messages.Enum):
@@ -1978,6 +2010,10 @@ class GoogleCloudRecaptchaenterpriseV1TransactionEvent(_messages.Message):
   eventType = _messages.EnumField('EventTypeValueValuesEnum', 2)
   reason = _messages.StringField(3)
   value = _messages.FloatField(4)
+
+
+class GoogleCloudRecaptchaenterpriseV1UniversalKeySettings(_messages.Message):
+  r"""Settings for keys that are configured via their Policy."""
 
 
 class GoogleCloudRecaptchaenterpriseV1UserId(_messages.Message):

@@ -21,8 +21,6 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.configurations import named_configs
 from googlecloudsdk.core.configurations import properties_file
 
-import six
-
 
 class List(base.ListCommand):
   """Lists existing named configurations."""
@@ -54,7 +52,7 @@ class List(base.ListCommand):
         properties.compute.zone:label=COMPUTE_DEFAULT_ZONE,
         properties.compute.region:label=COMPUTE_DEFAULT_REGION)
     """
-    for _, config in sorted(six.iteritems(configs)):
+    for _, config in sorted(configs.items()):
       props = properties.VALUES.AllValues(
           list_unset=True,
           include_hidden=True,
@@ -79,7 +77,7 @@ class List(base.ListCommand):
 
   def Run(self, args):
     configs = named_configs.ConfigurationStore.AllConfigs()
-    for _, config in sorted(six.iteritems(configs)):
+    for _, config in sorted(configs.items()):
       props = properties.VALUES.AllValues(
           list_unset=True,
           properties_file=properties_file.PropertiesFile([config.file_path]),

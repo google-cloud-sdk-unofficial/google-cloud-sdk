@@ -1133,9 +1133,8 @@ class SaasservicemgmtProjectsLocationsListRequest(_messages.Message):
   r"""A SaasservicemgmtProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -2711,12 +2710,16 @@ class UnitCondition(_messages.Message):
       TYPE_PROVISIONED: Condition type is provisioned.
       TYPE_OPERATION_ERROR: Condition type is operationError. True when the
         last unit operation fails with a non-ignorable error.
+      TYPE_FLAGS_CONFIG_INITIALIZED: Condition type is flagsConfigInitialized.
+        True when the flags configuration is synchronized and ready to be
+        served.
     """
     TYPE_UNSPECIFIED = 0
     TYPE_READY = 1
     TYPE_UPDATING = 2
     TYPE_PROVISIONED = 3
     TYPE_OPERATION_ERROR = 4
+    TYPE_FLAGS_CONFIG_INITIALIZED = 5
 
   lastTransitionTime = _messages.StringField(1)
   message = _messages.StringField(2)
@@ -3105,6 +3108,10 @@ class UnitOperationCondition(_messages.Message):
       TYPE_APP_CREATED: Indicates if AppHub app has been created.
       TYPE_APP_COMPONENTS_REGISTERED: Indicates if services and workloads have
         been registered with AppHub.
+      TYPE_WORKLOAD_SUCCEEDED: Indicates if the UnitOperation's core workload
+        execution completed successfully. The workload is the core execution
+        operation performed for a UnitOperation (e.g., provisioning, updating,
+        or deprovisioning resources) excluding post-operation checks.
     """
     TYPE_UNSPECIFIED = 0
     TYPE_SCHEDULED = 1
@@ -3113,6 +3120,7 @@ class UnitOperationCondition(_messages.Message):
     TYPE_CANCELLED = 4
     TYPE_APP_CREATED = 5
     TYPE_APP_COMPONENTS_REGISTERED = 6
+    TYPE_WORKLOAD_SUCCEEDED = 7
 
   lastTransitionTime = _messages.StringField(1)
   message = _messages.StringField(2)

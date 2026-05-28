@@ -16,8 +16,9 @@
 """
 
 
-from apitools.base.py import exceptions as apitools_exceptions
+import http.client
 
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import exceptions
 from googlecloudsdk.api_lib.sql import validate
@@ -26,7 +27,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
-import six.moves.http_client
 
 DESCRIPTION = ("""\
 
@@ -116,7 +116,7 @@ class GetLatestRecoveryTime(base.Command):
         )
       return sql_client.projects_instances.GetLatestRecoveryTime(request)
     except apitools_exceptions.HttpError as error:
-      if error.status_code == six.moves.http_client.FORBIDDEN:
+      if error.status_code == http.client.FORBIDDEN:
         raise exceptions.ResourceNotFoundError(
             "There's no instance found at {} or you're not authorized to "
             'access it.'.format(instance_ref.RelativeName()))
@@ -188,7 +188,7 @@ class GetLatestRecoveryTimeBeta(base.Command):
         )
       return sql_client.projects_instances.GetLatestRecoveryTime(request)
     except apitools_exceptions.HttpError as error:
-      if error.status_code == six.moves.http_client.FORBIDDEN:
+      if error.status_code == http.client.FORBIDDEN:
         raise exceptions.ResourceNotFoundError(
             "There's no instance found at {} or you're not authorized to "
             'access it.'.format(instance_ref.RelativeName()))

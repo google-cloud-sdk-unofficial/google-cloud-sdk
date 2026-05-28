@@ -162,8 +162,8 @@
   }, {
     "source_name": "Impala",
     "target_name": "BigQuery",
-    "status": "GA",
-    "legacy_batch_name": ["Impala2BigQuery_Translation", "Translation_Impala2BQ"]
+    "status": "PUBLIC_PREVIEW",
+    "legacy_batch_name": ["Impala2BigQuery_Translation", "Translation_Impala2BigQuery"]
   }, {
     "source_name": "SparkSQL",
     "target_name": "BigQuery",
@@ -229,47 +229,93 @@
     "source_name": "Greenplum",
     "target_name": "BigQuery",
     "status": "GA",
-    "legacy_batch_name": ["Greenplum2BigQuery_Translation", "Translation_GreenplumToBQ"]
+    "legacy_batch_name": ["Greenplum2BigQuery_Translation", "Translation_Greenplum2BQ"]
   }, {
     "source_name": "BigQuery",
     "target_name": "Hive",
     "status": "PRIVATE_PREVIEW",
-    "legacy_batch_name": ["BigQuery2HiveQL_Translation", "Translation_BQ2HiveQL"]
+    "legacy_batch_name": ["BigQuery2HiveQL_Translation", "Translation_BQ2HiveQL"],
+    "visibility_rules": [{
+      "allowed_projects": {
+        "project_numbers": ["156432450703", "432181219624", "707202996403", "203355275444", "352088644680", "654035303476", "576339195321", "436269148319", "516716331685", "379044747528"]
+      }
+    }]
   }, {
     "source_name": "BigQuery",
     "target_name": "SparkSQL",
     "status": "PRIVATE_PREVIEW",
-    "legacy_batch_name": ["BigQuery2SparkSQL_Translation", "Translation_BQ2SparkSQL"]
+    "legacy_batch_name": ["BigQuery2SparkSQL_Translation", "Translation_BQ2SparkSQL"],
+    "visibility_rules": [{
+      "allowed_projects": {
+        "project_numbers": ["981981711386", "437326525319", "156432450703", "993247605073", "626481067061", "111532551424", "93632483437", "262211509857", "1015352525110", "994204566810", "645018340152", "746153563714", "333136199399", "896218910806", "585157873019", "753395952630", "490853178550", "1060947097391", "1027806373027", "393727941108", "674615920152", "15412782479", "600365670470", "899667920020", "229266246478", "1093652211899", "1030168414449", "980907878239", "432181219624", "707202996403", "203355275444", "352088644680", "654035303476", "576339195321", "436269148319", "516716331685", "379044747528"]
+      }
+    }]
   }, {
     "source_name": "BigQuery",
     "target_name": "Postgresql",
     "status": "PRIVATE_PREVIEW",
-    "legacy_batch_name": ["BigQuery2Postgresql_Translation", "Translation_BQ2Postgresql"]
+    "legacy_batch_name": ["BigQuery2Postgresql_Translation", "Translation_BQ2Postgresql"],
+    "visibility_rules": [{
+      "allowed_projects": {
+        "project_numbers": ["968630191778", "432181219624", "707202996403", "203355275444", "352088644680", "654035303476", "576339195321", "436269148319", "516716331685", "379044747528"]
+      }
+    }]
   }, {
     "source_name": "BigQuery",
     "target_name": "Redshift",
     "status": "PRIVATE_PREVIEW",
-    "legacy_batch_name": ["BigQuery2Redshift_Translation"]
+    "legacy_batch_name": ["BigQuery2Redshift_Translation"],
+    "visibility_rules": [{
+      "allowed_projects": {
+        "project_numbers": ["432181219624", "707202996403", "203355275444", "352088644680", "654035303476", "576339195321", "436269148319", "516716331685", "379044747528"]
+      }
+    }]
   }, {
     "source_name": "BigQuery",
     "target_name": "Snowflake",
     "status": "PRIVATE_PREVIEW",
-    "legacy_batch_name": ["BigQuery2Snowflake_Translation"]
+    "legacy_batch_name": ["BigQuery2Snowflake_Translation"],
+    "visibility_rules": [{
+      "allowed_projects": {
+        "project_numbers": ["432181219624", "707202996403", "203355275444", "352088644680", "654035303476", "576339195321", "436269148319", "516716331685", "379044747528"]
+      }
+    }]
   }, {
     "source_name": "Oracle",
     "target_name": "Postgresql",
     "status": "PRIVATE_PREVIEW",
-    "legacy_batch_name": ["Oracle2Postgresql_Translation", "Translation_Oracle2Postgresql"]
+    "legacy_batch_name": ["Oracle2Postgresql_Translation", "Translation_Oracle2Postgresql"],
+    "visibility_rules": [{
+      "allowed_projects": {
+        "project_numbers": ["176831871897", "441397585119", "269568303780", "90576999691", "115442998937", "392286309048", "986591402613", "142436971231", "239215824399", "543576121968", "610915574154", "84346304631", "169718103979", "258424658826", "716759042812", "670624513911", "940078518845", "25986883652", "226877854727", "319586213088", "107515402080", "272212477060", "137280156690", "96488207398", "432181219624", "707202996403", "203355275444", "352088644680", "654035303476", "576339195321", "436269148319", "516716331685", "379044747528"]
+      }
+    }, {
+      "internal_access": {
+      }
+    }]
   }, {
     "source_name": "SQLServer",
     "target_name": "Postgresql",
     "status": "PRIVATE_PREVIEW",
-    "legacy_batch_name": ["SQLServer2Postgresql_Translation", "Translation_SQLServer2Postgresql"]
+    "legacy_batch_name": ["SQLServer2Postgresql_Translation", "Translation_SQLServer2Postgresql"],
+    "visibility_rules": [{
+      "allowed_projects": {
+        "project_numbers": ["269568303780", "169718103979", "137280156690", "432181219624", "707202996403", "203355275444", "352088644680", "654035303476", "576339195321", "436269148319", "516716331685", "379044747528"]
+      }
+    }, {
+      "internal_access": {
+      }
+    }]
   }, {
     "source_name": "Hive",
     "target_name": "Hive",
     "status": "PRIVATE_PREVIEW",
-    "legacy_batch_name": ["HiveQL2HiveQL_Translation"]
+    "legacy_batch_name": ["HiveQL2HiveQL_Translation"],
+    "visibility_rules": [{
+      "allowed_projects": {
+        "project_numbers": ["432181219624", "707202996403", "203355275444", "352088644680", "654035303476", "576339195321", "436269148319", "516716331685", "379044747528"]
+      }
+    }]
   }, {
     "source_name": "BigQuery",
     "target_name": "BigQuery",

@@ -799,9 +799,10 @@ class FederatedCatalogOptions(_messages.Message):
       ons/{version_id}`. The project ID must match the catalog's project and
       location must match the catalog's location. If the version is not
       specified, the latest version will be used.
-    service_directory_name: Optional. The service directory resource name in
-      the format `projects/{project_id}/locations/{location_id}/namespaces/{na
-      mespace_id}/services/{service_id}`.
+    service_directory_name: Optional. The service directory resource name for
+      routing traffic over a private network connection through Cross-Cloud
+      Interconnect, in the format `projects/{project_id}/locations/{location_i
+      d}/namespaces/{namespace_id}/services/{service_id}`.
     unity_catalog_info: Optional. Info specific to a Unity Catalog by
       Databricks.
   """
@@ -1314,7 +1315,9 @@ class RefreshSchedule(_messages.Message):
   Fields:
     refresh_interval: Optional. The interval for refreshing metadata from the
       remote catalog. If unset or if the value is <= 0, the background refresh
-      will be disabled.
+      will be disabled. If this field is updated for an existing federated
+      catalog, the previous background refresh must complete before the new
+      refresh interval will take effect.
   """
 
   refresh_interval = _messages.StringField(1)
@@ -1642,7 +1645,7 @@ class UnityCatalogInfo(_messages.Message):
   Fields:
     catalog_name: Required. Name of the catalog in Unity Catalog.
     instance_name: Required. The instance name is the first part of the URL
-      when you log into your Databricks deployment. For example, for a
+      when logging into the Databricks deployment. For example, for a
       Databricks on GCP workspace URL https://1.1.gcp.databricks.com, the
       instance name is 1.1.gcp.databricks.com.
     service_principal_application_id: Optional. The application ID of the

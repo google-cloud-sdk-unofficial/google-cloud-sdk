@@ -16,7 +16,7 @@
 """Translate supported features found at app.yaml to equivalent Cloud Run flags."""
 
 import itertools
-from typing import Mapping, Sequence
+from typing import Any, Mapping, Sequence
 
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.common import util
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.config import feature_helper
@@ -153,3 +153,58 @@ def _generate_envs_output(envs: Mapping[str, str]) -> str:
   for key, value in envs.items():
     output_str += f'{key}={value}{delimiter}'
   return output_str[:-1]
+
+
+def update_service_yaml_with_supported_features(
+    service_yaml: dict[str, Any],
+    input_data: Mapping[str, Any],
+    project_cli_flag: str,
+) -> None:
+  """Updates the service_yaml dict with supported features."""
+  spec = service_yaml.setdefault('spec', {})
+  template = spec.setdefault('template', {})
+  template_spec = template.setdefault('spec', {})
+  template_spec.setdefault('containers', [{}])
+
+  container = service_yaml['spec']['template']['spec']['containers'][0]
+
+  env_variables_key_from_input = util.get_feature_key_from_input(
+      input_data, [_ALLOW_ENV_VARIABLES_KEY]
+  )
+  if env_variables_key_from_input:
+    env_variables_raw = input_data[env_variables_key_from_input]
+    if isinstance(env_variables_raw, list):
+      env_variables_dict = {
+          value['key']: value['value'] for value in env_variables_raw
+      }
+    else:
+      env_variables_dict = env_variables_raw
+
+    if 'env' not in container:
+      container['env'] = []
+
+    for k, v in env_variables_dict.items():
+      container['env'].append({'name': k, 'value': v})
+
+  input_has_service_account_key = util.get_feature_key_from_input(
+      input_data, [_ALLOW_SERVICE_ACCOUNT_KEY]
+  )
+
+  if not input_has_service_account_key:
+    project_id = (
+        project_cli_flag
+        if project_cli_flag is not None
+        else properties.VALUES.core.project.Get()
+    )
+    service_account = f'{project_id}@appspot.gserviceaccount.com'
+  else:
+    service_account = input_data[
+        util.get_feature_key_from_input(
+            input_data, [_ALLOW_SERVICE_ACCOUNT_KEY]
+        )
+    ]
+
+  if service_account:
+    service_yaml['spec']['template']['spec'][
+        'serviceAccountName'
+    ] = service_account

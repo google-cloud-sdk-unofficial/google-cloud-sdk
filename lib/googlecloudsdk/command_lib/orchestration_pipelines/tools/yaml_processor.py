@@ -19,6 +19,7 @@ import contextlib
 import os
 import pathlib
 import re
+import textwrap
 import threading
 from typing import Any, Dict, Iterable, Optional
 from apitools.base.py import exceptions as apitools_exceptions
@@ -732,7 +733,7 @@ def load_environment(
 
 
 def collect_external_vars(
-    args: Any, bundle_path: pathlib.Path
+    args: Any, bundle_path: pathlib.Path, enforce_clean: bool = False
 ) -> Dict[str, Any]:
   """Collects external variables from environment, file, and args."""
   external_vars = {}
@@ -770,6 +771,7 @@ def collect_external_vars(
   if "COMMIT_SHA" not in external_vars:
 
     external_vars["COMMIT_SHA"] = git_context.SafeCommitSha.CreateLazy(
+        enforce_clean,
         bundle_path=bundle_path,
         is_local=getattr(args, "local", False),
     )
@@ -830,6 +832,15 @@ def validate_environment(
           f"Environment '{env}' has invalid artifact_storage in deployment"
           " file."
       )
+    if (
+        environment.artifact_storage.bucket
+        and environment.artifact_storage.bucket.startswith("gs:")
+    ):
+      raise BadFileError(textwrap.dedent(f"""\
+              Environment '{env}' has an invalid bucket format in
+              artifact_storage in the deployment file.
+              Expected only the bucket name (e.g. 'my-bucket'),
+              without the 'gs://' prefix."""))
   if not environment.variables:
     log.info(f"Environment '{env}' has no variables in deployment file.")
   else:

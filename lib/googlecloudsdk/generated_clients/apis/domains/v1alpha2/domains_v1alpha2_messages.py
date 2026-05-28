@@ -472,9 +472,8 @@ class DomainsProjectsLocationsListRequest(_messages.Message):
   r"""A DomainsProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -706,11 +705,14 @@ class DomainsProjectsLocationsRegistrationsPatchRequest(_messages.Message):
     updateMask: Required. The field mask describing which fields to update as
       a comma-separated list. For example, if only the labels are being
       updated, the `update_mask` is `"labels"`.
+    validateOnly: Optional. If set, validates the request without actually
+      updating the registration.
   """
 
   name = _messages.StringField(1, required=True)
   registration = _messages.MessageField('Registration', 2)
   updateMask = _messages.StringField(3)
+  validateOnly = _messages.BooleanField(4)
 
 
 class DomainsProjectsLocationsRegistrationsRegisterRequest(_messages.Message):
@@ -1230,9 +1232,12 @@ class InitiatePushTransferRequest(_messages.Message):
   Fields:
     tag: Required. The Tag of the new registrar. Can be found at [List of
       registrars](https://nominet.uk/registrar-list/).
+    validateOnly: Optional. If set, validates the request without actually
+      initiating the transfer.
   """
 
   tag = _messages.StringField(1)
+  validateOnly = _messages.BooleanField(2)
 
 
 class ListLocationsResponse(_messages.Message):

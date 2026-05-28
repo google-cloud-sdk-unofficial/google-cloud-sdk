@@ -15,10 +15,11 @@
 """The Open Console command."""
 
 
+import urllib.parse
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.app import browser_dispatcher
 from googlecloudsdk.core import properties
-from six.moves import urllib
 
 
 CONSOLE_URL = 'https://console.developers.google.com/appengine?{query}'

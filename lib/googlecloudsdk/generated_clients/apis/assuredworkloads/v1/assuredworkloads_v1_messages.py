@@ -426,6 +426,43 @@ class GoogleCloudAssuredworkloadsV1ApplyWorkloadUpdateResponse(_messages.Message
   appliedUpdate = _messages.MessageField('GoogleCloudAssuredworkloadsV1WorkloadUpdate', 1)
 
 
+class GoogleCloudAssuredworkloadsV1ArchiveResourceEventsRequest(_messages.Message):
+  r"""Request for archiving resource events.
+
+  Fields:
+    archiveTime: Optional. Time to set as ArchiveTime in the archive table. If
+      not provided, the current time is used.
+    batchSize: Required. The number of events to process in a single
+      transaction batch.
+    eventCutoffTime: Required. Only events with EventTime earlier than this
+      cutoff will be archived.
+    maxEventsMove: Required. The maximum total number of events to move in
+      this request.
+    organizationId: Required. The organization ID for which to archive events.
+    region: Required. The region of the workload(s) whose events should be
+      archived. This is used to filter workloads based on
+      AssurantWorkloadData.region.
+  """
+
+  archiveTime = _messages.StringField(1)
+  batchSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  eventCutoffTime = _messages.StringField(3)
+  maxEventsMove = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  organizationId = _messages.IntegerField(5)
+  region = _messages.StringField(6)
+
+
+class GoogleCloudAssuredworkloadsV1ArchiveResourceEventsResponse(_messages.Message):
+  r"""Response for archiving resource events.
+
+  Fields:
+    movedEventsCount: The total number of events successfully moved to the
+      archive table.
+  """
+
+  movedEventsCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+
+
 class GoogleCloudAssuredworkloadsV1AssetMoveAnalysis(_messages.Message):
   r"""Represents move analysis results for an asset.
 
@@ -840,6 +877,45 @@ class GoogleCloudAssuredworkloadsV1RestrictAllowedResourcesRequest(_messages.Mes
 
 class GoogleCloudAssuredworkloadsV1RestrictAllowedResourcesResponse(_messages.Message):
   r"""Response for restricting the list of allowed resources."""
+
+
+class GoogleCloudAssuredworkloadsV1RevertArchivedResourceEventsRequest(_messages.Message):
+  r"""Request for reverting archived resource events.
+
+  Fields:
+    archiveEndTime: Required. Only events within this time range will be
+      reverted. This helps prevent reverting everything when something goes
+      wrong.
+    archiveStartTime: Required. Only events within this time range will be
+      reverted. This helps prevent reverting everything when something goes
+      wrong.
+    batchSize: Required. The number of events to process in a single
+      transaction batch.
+    maxEventsMove: Required. The maximum total number of events to move in
+      this request.
+    organizationId: Required. The organization ID for which to revert events.
+    region: Required. The region of the workload(s) whose events should be
+      reverted. This is used to filter workloads based on
+      AssurantWorkloadData.region.
+  """
+
+  archiveEndTime = _messages.StringField(1)
+  archiveStartTime = _messages.StringField(2)
+  batchSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  maxEventsMove = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  organizationId = _messages.IntegerField(5)
+  region = _messages.StringField(6)
+
+
+class GoogleCloudAssuredworkloadsV1RevertArchivedResourceEventsResponse(_messages.Message):
+  r"""Response for reverting archived resource events.
+
+  Fields:
+    movedEventsCount: The total number of events successfully moved to the
+      original table.
+  """
+
+  movedEventsCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
 
 
 class GoogleCloudAssuredworkloadsV1UpdateDetails(_messages.Message):

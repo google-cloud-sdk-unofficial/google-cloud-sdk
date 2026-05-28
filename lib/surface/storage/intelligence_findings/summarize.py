@@ -23,7 +23,6 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.generated_clients.apis.storage.v2 import storage_v2_messages
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class Summarize(base.ListCommand):
   """Intelligence findings summary."""

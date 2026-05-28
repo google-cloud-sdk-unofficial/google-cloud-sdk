@@ -2171,6 +2171,66 @@ class GatewayRouteView(_messages.Message):
   routeType = _messages.StringField(5)
 
 
+class GoogleTagGatewayPolicy(_messages.Message):
+  r"""Google Tag Gateway for Advertisers (GTG) allows organizations to host
+  Google tags, used for analytics and advertising, through their own website's
+  domain infrastructure.
+
+  Fields:
+    createTime: Output only. The timestamp when the resource was created.
+    description: Optional. A human-readable description of the resource
+      (limited to 1024 characters).
+    etag: Output only. An opaque value that uniquely identifies a version of a
+      resource. The caller may set it in Update or Delete request to make sure
+      they only delete if the caller and the server agree on the current
+      version. See go/ccfe-etag.
+    name: Required. Identifier. Standard resource metadata
+    perDomainConfig: List of Google Tag Gateway settings, one element per
+      domain.
+    updateTime: Output only. The timestamp when the resource was updated.
+  """
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  etag = _messages.StringField(3)
+  name = _messages.StringField(4)
+  perDomainConfig = _messages.MessageField('GoogleTagGatewayPolicyPerDomainConfig', 5, repeated=True)
+  updateTime = _messages.StringField(6)
+
+
+class GoogleTagGatewayPolicyPerDomainConfig(_messages.Message):
+  r"""Settings for a named `domain`.
+
+  Fields:
+    domain: Required. Domain or subdomain name to match (e.g., "example.com"
+      or "www.example.com"). Only exact matches or wildcard prefixes are
+      supported. Wildcard prefixes must be of the form: `*.`.
+    enableGtg: Whether to enable Google Tag Gateway features (tag setup,
+      measurement requests) for this domain. Default value: `true`.
+    logSampleRate: Cloud logging sample rate for measurement requests, in
+      range [0.0, 1.0], with 0.0 meaning log no measurement requests, and 1.0
+      meaning log all measurement requests. Default value: 0.0 (no logging).
+    measurementPath: The subpath under the domain to which measurement
+      requests are sent (e.g., `"/gtg_measure"`). Must start with `/`. The
+      routing rules that Google Tag Gateway adds take precedence over existing
+      `UrlMap` config.
+    performTagInitialization: If `true`, the script added to the web page will
+      include code that performs initial tag setup. Default value: `false`
+      (the script added to the to web page assumes tag setup is already
+      complete).
+    tagId: The Google Tag ID (e.g., `"GT-XXXXXX"`, `"G-XXXXXX"`, `"AW-
+      XXXXXX"`) associated with this domain's Google Tag Gateway
+      configuration.
+  """
+
+  domain = _messages.StringField(1)
+  enableGtg = _messages.BooleanField(2)
+  logSampleRate = _messages.FloatField(3, variant=_messages.Variant.FLOAT)
+  measurementPath = _messages.StringField(4)
+  performTagInitialization = _messages.BooleanField(5)
+  tagId = _messages.StringField(6)
+
+
 class GrpcRoute(_messages.Message):
   r"""GrpcRoute is the resource defining how gRPC traffic routed by a Mesh or
   Gateway resource is routed.
@@ -4216,6 +4276,19 @@ class ListGatewaysResponse(_messages.Message):
   gateways = _messages.MessageField('Gateway', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
   unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListGoogleTagGatewayPoliciesResponse(_messages.Message):
+  r"""Message for response to listing `GoogleTagGatewayPolicy` resources.
+
+  Fields:
+    googleTagGatewayPolicies: The list of `GoogleTagGatewayPolicy` resources.
+    nextPageToken: A token identifying a page of results that the server
+      returns.
+  """
+
+  googleTagGatewayPolicies = _messages.MessageField('GoogleTagGatewayPolicy', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
 
 
 class ListGrpcRoutesResponse(_messages.Message):
@@ -7025,6 +7098,126 @@ class NetworkservicesProjectsLocationsGlobalGetServiceObserverRequest(_messages.
   name = _messages.StringField(1, required=True)
 
 
+class NetworkservicesProjectsLocationsGlobalGoogleTagGatewayPoliciesCreateRequest(_messages.Message):
+  r"""A
+  NetworkservicesProjectsLocationsGlobalGoogleTagGatewayPoliciesCreateRequest
+  object.
+
+  Fields:
+    googleTagGatewayPolicy: A GoogleTagGatewayPolicy resource to be passed as
+      the request body.
+    googleTagGatewayPolicyId: Required. User-provided ID of the
+      `GoogleTagGatewayPolicy` resource to be created. ID must be between 1
+      and 63 characters long and is restricted to lower-cased letters, numbers
+      and hyphens. The first character must be a letter and the last a letter
+      or a number."
+    parent: Required. The parent resource of the `GoogleTagGatewayPolicy`
+      resource. Must be in the format
+      `projects/{project}/locations/{location}`.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      can ignore the request if it has already been completed. The server
+      guarantees that for 60 minutes since the first request. For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server ignores the second request This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+  """
+
+  googleTagGatewayPolicy = _messages.MessageField('GoogleTagGatewayPolicy', 1)
+  googleTagGatewayPolicyId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class NetworkservicesProjectsLocationsGlobalGoogleTagGatewayPoliciesDeleteRequest(_messages.Message):
+  r"""A
+  NetworkservicesProjectsLocationsGlobalGoogleTagGatewayPoliciesDeleteRequest
+  object.
+
+  Fields:
+    name: Required. The name of the `GoogleTagGatewayPolicy` resource to
+      delete. Must be in the format `projects/{project}/locations/global/googl
+      eTagGatewayPolicies/{google_tag_gateway_policy}`
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      can ignore the request if it has already been completed. The server
+      guarantees that for at least 60 minutes after the first request. For
+      example, consider a situation where you make an initial request and the
+      request times out. If you make the request again with the same request
+      ID, the server can check if original operation with the same request ID
+      was received, and if so, ignores the second request. This prevents
+      clients from accidentally creating duplicate commitments. The request ID
+      must be a valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class NetworkservicesProjectsLocationsGlobalGoogleTagGatewayPoliciesGetRequest(_messages.Message):
+  r"""A
+  NetworkservicesProjectsLocationsGlobalGoogleTagGatewayPoliciesGetRequest
+  object.
+
+  Fields:
+    name: Required. A name of the `GoogleTagGatewayPolicy` resource to get.
+      Must be in the format `projects/{project}/location/{location}/googleTagG
+      atewayPolicies/{google_tag_gateway_policy}`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworkservicesProjectsLocationsGlobalGoogleTagGatewayPoliciesListRequest(_messages.Message):
+  r"""A
+  NetworkservicesProjectsLocationsGlobalGoogleTagGatewayPoliciesListRequest
+  object.
+
+  Fields:
+    pageSize: Optional. Requested page size. The server might return fewer
+      items than requested. If unspecified, the server picks an appropriate
+      default.
+    pageToken: Optional. A token identifying a page of results that the server
+      returns.
+    parent: Required. The project and location from which the
+      `GoogleTagGatewayPolicy` resources are listed. These values are
+      specified in the following format:
+      `projects/{project}/location/{location}`.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class NetworkservicesProjectsLocationsGlobalGoogleTagGatewayPoliciesPatchRequest(_messages.Message):
+  r"""A
+  NetworkservicesProjectsLocationsGlobalGoogleTagGatewayPoliciesPatchRequest
+  object.
+
+  Fields:
+    allowMissing: Optional. Whether to permit creation of a new resource if
+      called with a resource that doesn't exist.
+    googleTagGatewayPolicy: A GoogleTagGatewayPolicy resource to be passed as
+      the request body.
+    name: Required. Identifier. Standard resource metadata
+    updateMask: Optional. Used to specify the fields to be overwritten in the
+      `GoogleTagGatewayPolicy.` resource by the update. The fields specified
+      in the `update_mask` are relative to the resource, not the full request.
+      A field is overwritten if it is in the mask. If the user does not
+      specify a mask, then all fields are overwritten.
+  """
+
+  allowMissing = _messages.BooleanField(1)
+  googleTagGatewayPolicy = _messages.MessageField('GoogleTagGatewayPolicy', 2)
+  name = _messages.StringField(3, required=True)
+  updateMask = _messages.StringField(4)
+
+
 class NetworkservicesProjectsLocationsGlobalUpdateServiceObserverRequest(_messages.Message):
   r"""A NetworkservicesProjectsLocationsGlobalUpdateServiceObserverRequest
   object.
@@ -7133,11 +7326,13 @@ class NetworkservicesProjectsLocationsHttpFiltersCreateRequest(_messages.Message
       created. E.g. "CustomFilter".
     parent: Required. The parent resource of the HttpFilter. Must be in the
       format `projects/*/locations/global`.
+    requestId: Optional. Idempotent request UUID.
   """
 
   httpFilter = _messages.MessageField('HttpFilter', 1)
   httpFilterId = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
 
 
 class NetworkservicesProjectsLocationsHttpFiltersDeleteRequest(_messages.Message):
@@ -7166,6 +7361,7 @@ class NetworkservicesProjectsLocationsHttpFiltersListRequest(_messages.Message):
   r"""A NetworkservicesProjectsLocationsHttpFiltersListRequest object.
 
   Fields:
+    filter: Optional. Filter expression to restrict the list.
     pageSize: Maximum number of HttpFilters to return per call.
     pageToken: The value returned by the last `ListHttpFiltersResponse`
       Indicates that this is a continuation of a prior `ListHttpFilters` call,
@@ -7174,9 +7370,10 @@ class NetworkservicesProjectsLocationsHttpFiltersListRequest(_messages.Message):
       should be listed, specified in the format `projects/*/locations/global`.
   """
 
-  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
 
 
 class NetworkservicesProjectsLocationsHttpFiltersPatchRequest(_messages.Message):
@@ -7206,11 +7403,13 @@ class NetworkservicesProjectsLocationsHttpRoutesCreateRequest(_messages.Message)
     httpRouteId: Required. Short name of the HttpRoute resource to be created.
     parent: Required. The parent resource of the HttpRoute. Must be in the
       format `projects/*/locations/*`.
+    requestId: Optional. Idempotent request UUID.
   """
 
   httpRoute = _messages.MessageField('HttpRoute', 1)
   httpRouteId = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
 
 
 class NetworkservicesProjectsLocationsHttpRoutesDeleteRequest(_messages.Message):
@@ -7239,6 +7438,7 @@ class NetworkservicesProjectsLocationsHttpRoutesListRequest(_messages.Message):
   r"""A NetworkservicesProjectsLocationsHttpRoutesListRequest object.
 
   Fields:
+    filter: Optional. Filter expression to restrict the list.
     pageSize: Maximum number of HttpRoutes to return per call.
     pageToken: The value returned by the last `ListHttpRoutesResponse`
       Indicates that this is a continuation of a prior `ListHttpRoutes` call,
@@ -7250,10 +7450,11 @@ class NetworkservicesProjectsLocationsHttpRoutesListRequest(_messages.Message):
       locations is down or unreachable, the Aggregated List request will fail.
   """
 
-  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
-  returnPartialSuccess = _messages.BooleanField(4)
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+  returnPartialSuccess = _messages.BooleanField(5)
 
 
 class NetworkservicesProjectsLocationsHttpRoutesPatchRequest(_messages.Message):
@@ -7883,9 +8084,8 @@ class NetworkservicesProjectsLocationsListRequest(_messages.Message):
   r"""A NetworkservicesProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -13404,24 +13604,27 @@ class WasmPlugin(_messages.Message):
   Fields:
     createTime: Output only. The timestamp when the resource was created.
     description: Optional. A human-readable description of the resource.
-    kmsKeyName: Optional. The name of the customer managed Cloud KMS key to be
-      used to encrypt the `WasmPlugin` image (provided by image_uri) and
-      configuration (provided by plugin_config_data or plugin_config_uri) that
-      are stored by the `Service Extensions` product at rest. Format: "project
-      s/{project}/locations/{location}/keyRings/{keyring}/cryptoKeys/{key}" By
-      default, Google Cloud automatically encrypts all data at rest using
-      Google-owned and Google-managed encryption keys. If you need ownership
-      and control of the keys that protect your data at rest, you can specify
-      a customer-managed encryption key (CMEK) to encrypt your `WasmPlugin`
-      data. For more information, see [Using customer-managed encryption
-      keys](https://cloud.google.com/kms/docs/cmek).
-    kmsKeyVersion: Output only. The name of the specific CryptoKeyVersion used
-      to encrypt the `WasmPlugin` data, if the kms_key_name field is set.
-      Format: "projects/{project}/locations/{location}/keyRings/{keyring}/cryp
-      toKeys/{key}/cryptoKeyVersions/{version}" This is a read-only field.
-      `WasmPlugin` data is automatically encrypted using the most recent
-      `CryptoKeyVersion` of the `CryptoKey` provided in the `kms_key_name`
-      field. See [Cloud KMS
+    kmsKeyName: Optional. The name of the customer-managed [CryptoKey](https:/
+      /cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings
+      .cryptoKeys) to be used to encrypt the `WasmPlugin` image (provided by
+      image_uri) and configuration (provided by plugin_config_data or
+      plugin_config_uri) that are stored by the `Service Extensions` product
+      at rest. Format: `projects/{project}/locations/{location}/keyRings/{keyr
+      ing}/cryptoKeys/{key}` By default, Google Cloud automatically encrypts
+      all data at rest using Google-owned and Google-managed encryption keys.
+      If you need ownership and control of the keys that protect your data at
+      rest, you can specify a customer-managed encryption key (CMEK) to
+      encrypt your `WasmPlugin` data. For more information, see [Using
+      customer-managed encryption keys](https://cloud.google.com/service-
+      extensions/docs/cmek).
+    kmsKeyVersion: Output only. The name of the specific [CryptoKeyVersion](ht
+      tps://cloud.google.com/kms/docs/reference/rest/v1/projects.locations.key
+      Rings.cryptoKeys.cryptoKeyVersions) used to encrypt the `WasmPlugin`
+      data, if the kms_key_name field is set. Format: `projects/{project}/loca
+      tions/{location}/keyRings/{keyring}/cryptoKeys/{key}/cryptoKeyVersions/{
+      version}` This is a read-only field. `WasmPlugin` data is automatically
+      encrypted using the most recent `CryptoKeyVersion` of the `CryptoKey`
+      provided in the `kms_key_name` field. See [Cloud KMS
       resources](https://cloud.google.com/kms/docs/resource-hierarchy) for
       more information.
     labels: Optional. Set of labels associated with the `WasmPlugin` resource.

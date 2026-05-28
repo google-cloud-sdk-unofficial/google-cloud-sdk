@@ -496,7 +496,9 @@ class Deploy(calliope_base.Command):
       bundle_name = _GetRepoName(self._subprocess)
 
     try:
-      external_vars = yaml_processor.collect_external_vars(args, bundle_dir)
+      external_vars = yaml_processor.collect_external_vars(
+          args, bundle_dir, enforce_clean=True
+      )
       parsed_deployment, combined_variables, environment_model = (
           yaml_processor.parse_deployment(
               str(deployment_path), args.environment, external_vars
@@ -569,6 +571,13 @@ class Deploy(calliope_base.Command):
         pipeline_models = yaml_processor.validate_pipeline_l1(
             bundle_dir, pipelines, dynamic_variables, secret_keys=secret_keys
         )
+        if (
+            environment_model.artifact_storage
+            and environment_model.artifact_storage.bucket
+        ):
+          gcs_utils.ValidateBucketExistsAndHasPermissions(
+              environment_model.artifact_storage.bucket
+          )
         composer_bucket = _GetComposerBucket(
             parsed_deployment["composer_env"],
             parsed_deployment["region"],

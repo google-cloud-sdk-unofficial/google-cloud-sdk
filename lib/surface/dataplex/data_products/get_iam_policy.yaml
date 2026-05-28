@@ -1,0 +1,15 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Get the IAM policy for a Dataplex data product.
+    description: |
+      Get the IAM policy for a Dataplex data product.
+    examples: |
+      To get the IAM policy for the data product `test-dp` in location `us-central1`, run:
+
+        $ {command} test-dp --location=us-central1
+  request:
+    collection: dataplex.projects.locations.dataProducts
+  arguments:
+    resource:
+      help_text: The Dataplex data product for which to get the IAM policy.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:data_product

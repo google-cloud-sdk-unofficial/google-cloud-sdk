@@ -980,6 +980,26 @@ class ChildRolloutJobs(_messages.Message):
   createRolloutJobs = _messages.MessageField('Job', 2, repeated=True)
 
 
+class CloudRunBinaryAuthorization(_messages.Message):
+  r"""Settings for Binary Authorization feature with Cloud Run.
+
+  Fields:
+    breakglassJustification: Optional. If present, indicates to use Breakglass
+      using this justification. If use_default is False, then it must be
+      empty. For more information on breakglass, see
+      https://cloud.google.com/binary-authorization/docs/using-breakglass
+    policy: Optional. The path to a binary authorization policy. Format:
+      `projects/{project}/platforms/cloudRun/{policy-name}`.
+    useDefault: Optional. If True, indicates to use the default project's
+      binary authorization policy. If False, binary authorization will be
+      disabled.
+  """
+
+  breakglassJustification = _messages.StringField(1)
+  policy = _messages.StringField(2)
+  useDefault = _messages.BooleanField(3)
+
+
 class CloudRunConfig(_messages.Message):
   r"""CloudRunConfig contains the Cloud Run runtime configuration.
 
@@ -1000,6 +1020,47 @@ class CloudRunConfig(_messages.Message):
   canaryRevisionTags = _messages.StringField(2, repeated=True)
   priorRevisionTags = _messages.StringField(3, repeated=True)
   stableRevisionTags = _messages.StringField(4, repeated=True)
+
+
+class CloudRunContainer(_messages.Message):
+  r"""A single application container for Cloud Run. This specifies both the
+  container to run, the command to run in the container and the arguments to
+  supply to it.
+
+  Fields:
+    args: Optional. Arguments to the entrypoint.
+    baseImageUri: Optional. Base image for this container. Only supported for
+      services.
+    command: Optional. Entrypoint array. Not executed within a shell.
+    dependsOn: Optional. Names of the containers that must start before this
+      container.
+    env: Optional. List of environment variables to set in the container.
+    image: Required. Name of the container image in Dockerhub, Google Artifact
+      Registry, or Google Container Registry.
+    livenessProbe: Optional. Periodic probe of container liveness.
+    name: Optional. Name of the container specified as a DNS_LABEL (RFC 1123).
+    ports: Optional. List of ports to expose from the container.
+    readinessProbe: Optional. Readiness probe to be used for health checks.
+    resources: Optional. Compute Resource requirements by this container.
+    startupProbe: Optional. Startup probe of application within the container.
+    volumeMounts: Optional. Volume to mount into the container's filesystem.
+    workingDir: Optional. Container's working directory.
+  """
+
+  args = _messages.StringField(1, repeated=True)
+  baseImageUri = _messages.StringField(2)
+  command = _messages.StringField(3, repeated=True)
+  dependsOn = _messages.StringField(4, repeated=True)
+  env = _messages.MessageField('EnvVar', 5, repeated=True)
+  image = _messages.StringField(6)
+  livenessProbe = _messages.MessageField('Probe', 7)
+  name = _messages.StringField(8)
+  ports = _messages.MessageField('ContainerPort', 9, repeated=True)
+  readinessProbe = _messages.MessageField('Probe', 10)
+  resources = _messages.MessageField('ResourceRequirements', 11)
+  startupProbe = _messages.MessageField('Probe', 12)
+  volumeMounts = _messages.MessageField('VolumeMount', 13, repeated=True)
+  workingDir = _messages.StringField(14)
 
 
 class CloudRunDeploymentOptions(_messages.Message):
@@ -1057,6 +1118,16 @@ class CloudRunMetadata(_messages.Message):
   workerPool = _messages.StringField(6)
 
 
+class CloudRunNodeSelector(_messages.Message):
+  r"""Hardware constraints configuration for Cloud Run.
+
+  Fields:
+    accelerator: Optional. GPU accelerator type to attach to an instance.
+  """
+
+  accelerator = _messages.StringField(1)
+
+
 class CloudRunRenderMetadata(_messages.Message):
   r"""CloudRunRenderMetadata contains Cloud Run information associated with a
   `Release` render.
@@ -1081,6 +1152,158 @@ class CloudRunRenderMetadata(_messages.Message):
   workerPool = _messages.StringField(4)
 
 
+class CloudRunServiceDefinition(_messages.Message):
+  r"""Cloud Run Service definition.
+
+  Enums:
+    IngressValueValuesEnum: Optional. Provides the ingress settings for this
+      Service.
+    LaunchStageValueValuesEnum: Optional. The launch stage as defined by
+      [Google Cloud Platform Launch
+      Stages](https://cloud.google.com/terms/launch-stages). Cloud Run
+      supports `ALPHA`, `BETA`, and `GA`. If no value is specified, GA is
+      assumed.
+
+  Messages:
+    AnnotationsValue: Optional. Unstructured key value map that may be set by
+      external tools to store any arbitrary metadata.
+    LabelsValue: Optional. Unstructured key value map that can be used to
+      organize and categorize objects.
+
+  Fields:
+    annotations: Optional. Unstructured key value map that may be set by
+      external tools to store any arbitrary metadata.
+    binaryAuthorization: Optional. Settings for the Binary Authorization
+      feature.
+    customAudiences: Optional. One or more custom audiences that you want this
+      service to support. Specify each custom audience as the full URL in a
+      string. The custom audiences are encoded in the token and used to
+      authenticate requests. For more information, see
+      https://cloud.google.com/run/docs/configuring/custom-audiences.
+    defaultUriDisabled: Optional. Disables public resolution of the default
+      URI of this service.
+    description: Optional. User-provided description of the Service.
+    iapEnabled: Optional. IAP settings on the Service.
+    ingress: Optional. Provides the ingress settings for this Service.
+    invokerIamDisabled: Optional. Disables IAM permission check for
+      run.routes.invoke for callers of this service. For more information,
+      visit https://cloud.google.com/run/docs/securing/managing-
+      access#invoker_check.
+    labels: Optional. Unstructured key value map that can be used to organize
+      and categorize objects.
+    launchStage: Optional. The launch stage as defined by [Google Cloud
+      Platform Launch Stages](https://cloud.google.com/terms/launch-stages).
+      Cloud Run supports `ALPHA`, `BETA`, and `GA`. If no value is specified,
+      GA is assumed.
+    scaling: Optional. Specifies service-level scaling settings
+    serviceId: Required. The ID of the Service.
+    template: Required. The template used to create revisions for this
+      Service.
+  """
+
+  class IngressValueValuesEnum(_messages.Enum):
+    r"""Optional. Provides the ingress settings for this Service.
+
+    Values:
+      CLOUD_RUN_INGRESS_TRAFFIC_UNSPECIFIED: Unspecified
+      CLOUD_RUN_INGRESS_TRAFFIC_ALL: All outbound traffic is allowed.
+      CLOUD_RUN_INGRESS_TRAFFIC_INTERNAL_ONLY: Only internal traffic is
+        allowed.
+      CLOUD_RUN_INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER: Both internal and
+        Google Cloud Load Balancer traffic is allowed.
+      CLOUD_RUN_INGRESS_TRAFFIC_NONE: No ingress traffic is allowed.
+    """
+    CLOUD_RUN_INGRESS_TRAFFIC_UNSPECIFIED = 0
+    CLOUD_RUN_INGRESS_TRAFFIC_ALL = 1
+    CLOUD_RUN_INGRESS_TRAFFIC_INTERNAL_ONLY = 2
+    CLOUD_RUN_INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER = 3
+    CLOUD_RUN_INGRESS_TRAFFIC_NONE = 4
+
+  class LaunchStageValueValuesEnum(_messages.Enum):
+    r"""Optional. The launch stage as defined by [Google Cloud Platform Launch
+    Stages](https://cloud.google.com/terms/launch-stages). Cloud Run supports
+    `ALPHA`, `BETA`, and `GA`. If no value is specified, GA is assumed.
+
+    Values:
+      CLOUD_RUN_LAUNCH_STAGE_UNSPECIFIED: Do not use this default value.
+      ALPHA: Alpha is a limited availability test for releases before they are
+        cleared for widespread use.
+      BETA: Beta is the point at which we are ready to open a release for any
+        customer to use.
+      GA: GA features are open to all developers and are considered stable and
+        fully qualified for production use.
+    """
+    CLOUD_RUN_LAUNCH_STAGE_UNSPECIFIED = 0
+    ALPHA = 1
+    BETA = 2
+    GA = 3
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AnnotationsValue(_messages.Message):
+    r"""Optional. Unstructured key value map that may be set by external tools
+    to store any arbitrary metadata.
+
+    Messages:
+      AdditionalProperty: An additional property for a AnnotationsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type AnnotationsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AnnotationsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Unstructured key value map that can be used to organize and
+    categorize objects.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  annotations = _messages.MessageField('AnnotationsValue', 1)
+  binaryAuthorization = _messages.MessageField('CloudRunBinaryAuthorization', 2)
+  customAudiences = _messages.StringField(3, repeated=True)
+  defaultUriDisabled = _messages.BooleanField(4)
+  description = _messages.StringField(5)
+  iapEnabled = _messages.BooleanField(6)
+  ingress = _messages.EnumField('IngressValueValuesEnum', 7)
+  invokerIamDisabled = _messages.BooleanField(8)
+  labels = _messages.MessageField('LabelsValue', 9)
+  launchStage = _messages.EnumField('LaunchStageValueValuesEnum', 10)
+  scaling = _messages.MessageField('ServiceScaling', 11)
+  serviceId = _messages.StringField(12)
+  template = _messages.MessageField('RevisionTemplate', 13)
+
+
 class CloudRunStatusCheck(_messages.Message):
   r"""CloudRunStatusCheck contains the Cloud Run status check options.
 
@@ -1095,6 +1318,66 @@ class CloudRunStatusCheck(_messages.Message):
   disabled = _messages.BooleanField(1)
   timeout = _messages.StringField(2)
   tolerateFailures = _messages.BooleanField(3)
+
+
+class CloudRunVPCAccess(_messages.Message):
+  r"""Cloud Run VPC Access settings. For more information on sending traffic
+  to a VPC network, visit
+  https://cloud.google.com/run/docs/configuring/connecting-vpc.
+
+  Enums:
+    EgressValueValuesEnum: Optional. Traffic VPC egress settings. If not
+      provided, it defaults to PRIVATE_RANGES_ONLY.
+
+  Fields:
+    connector: Optional. VPC Access connector name. Format:
+      `projects/{project}/locations/{location}/connectors/{connector}`. For
+      more information on sending traffic to a VPC network via a connector,
+      visit https://cloud.google.com/run/docs/configuring/vpc-connectors.
+    egress: Optional. Traffic VPC egress settings. If not provided, it
+      defaults to PRIVATE_RANGES_ONLY.
+    networkInterfaces: Optional. Direct VPC egress settings.
+  """
+
+  class EgressValueValuesEnum(_messages.Enum):
+    r"""Optional. Traffic VPC egress settings. If not provided, it defaults to
+    PRIVATE_RANGES_ONLY.
+
+    Values:
+      VPC_EGRESS_UNSPECIFIED: Unspecified
+      ALL_TRAFFIC: All outbound traffic is routed through the VPC connector.
+      PRIVATE_RANGES_ONLY: Only private IP ranges are routed through the VPC
+        connector.
+    """
+    VPC_EGRESS_UNSPECIFIED = 0
+    ALL_TRAFFIC = 1
+    PRIVATE_RANGES_ONLY = 2
+
+  connector = _messages.StringField(1)
+  egress = _messages.EnumField('EgressValueValuesEnum', 2)
+  networkInterfaces = _messages.MessageField('NetworkInterface', 3, repeated=True)
+
+
+class CloudRunVolume(_messages.Message):
+  r"""Volume represents a named volume in a container.
+
+  Fields:
+    cloudSqlInstance: Optional. For Cloud SQL volumes, contains the specific
+      instances that should be mounted.
+    emptyDir: Optional. Ephemeral storage used as a shared volume.
+    gcs: Optional. Persistent storage backed by a Google Cloud Storage bucket.
+    name: Required. Volume's name.
+    nfs: Optional. For NFS Volumes, contains the path to the nfs Volume
+    secret: Optional. Secret represents a secret that should populate this
+      volume.
+  """
+
+  cloudSqlInstance = _messages.MessageField('CloudSqlInstance', 1)
+  emptyDir = _messages.MessageField('EmptyDirVolumeSource', 2)
+  gcs = _messages.MessageField('GCSVolumeSource', 3)
+  name = _messages.StringField(4)
+  nfs = _messages.MessageField('NFSVolumeSource', 5)
+  secret = _messages.MessageField('SecretVolumeSource', 6)
 
 
 class CloudServiceMesh(_messages.Message):
@@ -1124,6 +1407,16 @@ class CloudServiceMesh(_messages.Message):
   podSelectorLabel = _messages.StringField(4)
   routeUpdateWaitTime = _messages.StringField(5)
   service = _messages.StringField(6)
+
+
+class CloudSqlInstance(_messages.Message):
+  r"""Represents a set of Cloud SQL instances.
+
+  Fields:
+    instances: Optional. A list of Cloud SQL instance connection names.
+  """
+
+  instances = _messages.StringField(1, repeated=True)
 
 
 class ClouddeployProjectsLocationsCustomTargetTypesCreateRequest(_messages.Message):
@@ -1587,6 +1880,21 @@ class ClouddeployProjectsLocationsDeliveryPipelinesDeleteRequest(_messages.Messa
   name = _messages.StringField(4, required=True)
   requestId = _messages.StringField(5)
   validateOnly = _messages.BooleanField(6)
+
+
+class ClouddeployProjectsLocationsDeliveryPipelinesDeployCloudRunRequest(_messages.Message):
+  r"""A ClouddeployProjectsLocationsDeliveryPipelinesDeployCloudRunRequest
+  object.
+
+  Fields:
+    deployCloudRunRequest: A DeployCloudRunRequest resource to be passed as
+      the request body.
+    parent: Required. The parent collection to use for Cloud Deploy. The
+      format is: projects/{project}/locations/{location}.
+  """
+
+  deployCloudRunRequest = _messages.MessageField('DeployCloudRunRequest', 1)
+  parent = _messages.StringField(2, required=True)
 
 
 class ClouddeployProjectsLocationsDeliveryPipelinesGetIamPolicyRequest(_messages.Message):
@@ -2264,9 +2572,8 @@ class ClouddeployProjectsLocationsListRequest(_messages.Message):
   r"""A ClouddeployProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -2557,6 +2864,18 @@ class Config(_messages.Message):
   supportedVersions = _messages.MessageField('SkaffoldVersion', 4, repeated=True)
 
 
+class ContainerPort(_messages.Message):
+  r"""ContainerPort represents a network port in a single container.
+
+  Fields:
+    containerPort: Optional. Port number the container listens on.
+    name: Optional. If specified, used to specify which protocol to use.
+  """
+
+  containerPort = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  name = _messages.StringField(2)
+
+
 class ContainerTask(_messages.Message):
   r"""This task is represented by a container that is executed in the Cloud
   Build execution environment.
@@ -2571,6 +2890,8 @@ class ContainerTask(_messages.Message):
       overrides the default entrypoint defined in the container image.
     env: Optional. Environment variables that are set in the container.
     image: Required. Image is the container image to use.
+    script: Optional. Shell script to execute. If provided then command and
+      args cannot be specified.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -2601,6 +2922,7 @@ class ContainerTask(_messages.Message):
   command = _messages.StringField(2, repeated=True)
   env = _messages.MessageField('EnvValue', 3)
   image = _messages.StringField(4)
+  script = _messages.StringField(5)
 
 
 class CreateChildRolloutJob(_messages.Message):
@@ -3033,14 +3355,14 @@ class DeliveryPipeline(_messages.Message):
   Messages:
     AnnotationsValue: Optional. User annotations. These attributes can only be
       set and used by the user, and not by Cloud Deploy.
-    LabelsValue: Labels are attributes that can be set and used by both the
-      user and by Cloud Deploy. Labels must meet the following constraints: *
-      Keys and values can contain only lowercase letters, numeric characters,
-      underscores, and dashes. * All characters must use UTF-8 encoding, and
-      international characters are allowed. * Keys must start with a lowercase
-      letter or international character. * Each resource is limited to a
-      maximum of 64 labels. Both keys and values are additionally constrained
-      to be <= 128 bytes.
+    LabelsValue: Optional. Labels are attributes that can be set and used by
+      both the user and by Cloud Deploy. Labels must meet the following
+      constraints: * Keys and values can contain only lowercase letters,
+      numeric characters, underscores, and dashes. * All characters must use
+      UTF-8 encoding, and international characters are allowed. * Keys must
+      start with a lowercase letter or international character. * Each
+      resource is limited to a maximum of 64 labels. Both keys and values are
+      additionally constrained to be <= 128 bytes.
 
   Fields:
     annotations: Optional. User annotations. These attributes can only be set
@@ -3048,19 +3370,23 @@ class DeliveryPipeline(_messages.Message):
     condition: Output only. Information around the state of the Delivery
       Pipeline.
     createTime: Output only. Time at which the pipeline was created.
+    deployManaged: Optional. Whether the `DeliveryPipeline` is managed by one
+      of the "Deploy" methods, e.g. `DeployCloudRun`. If set to false then the
+      `DeliveryPipeline` switches to user-managed and can no longer be used
+      with the "Deploy" methods.
     description: Optional. Description of the `DeliveryPipeline`. Max length
       is 255 characters.
     etag: This checksum is computed by the server based on the value of other
       fields, and may be sent on update and delete requests to ensure the
       client has an up-to-date value before proceeding.
-    labels: Labels are attributes that can be set and used by both the user
-      and by Cloud Deploy. Labels must meet the following constraints: * Keys
-      and values can contain only lowercase letters, numeric characters,
-      underscores, and dashes. * All characters must use UTF-8 encoding, and
-      international characters are allowed. * Keys must start with a lowercase
-      letter or international character. * Each resource is limited to a
-      maximum of 64 labels. Both keys and values are additionally constrained
-      to be <= 128 bytes.
+    labels: Optional. Labels are attributes that can be set and used by both
+      the user and by Cloud Deploy. Labels must meet the following
+      constraints: * Keys and values can contain only lowercase letters,
+      numeric characters, underscores, and dashes. * All characters must use
+      UTF-8 encoding, and international characters are allowed. * Keys must
+      start with a lowercase letter or international character. * Each
+      resource is limited to a maximum of 64 labels. Both keys and values are
+      additionally constrained to be <= 128 bytes.
     name: Identifier. Name of the `DeliveryPipeline`. Format is `projects/{pro
       ject}/locations/{location}/deliveryPipelines/{deliveryPipeline}`. The
       `deliveryPipeline` component must match
@@ -3102,9 +3428,9 @@ class DeliveryPipeline(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""Labels are attributes that can be set and used by both the user and by
-    Cloud Deploy. Labels must meet the following constraints: * Keys and
-    values can contain only lowercase letters, numeric characters,
+    r"""Optional. Labels are attributes that can be set and used by both the
+    user and by Cloud Deploy. Labels must meet the following constraints: *
+    Keys and values can contain only lowercase letters, numeric characters,
     underscores, and dashes. * All characters must use UTF-8 encoding, and
     international characters are allowed. * Keys must start with a lowercase
     letter or international character. * Each resource is limited to a maximum
@@ -3134,14 +3460,15 @@ class DeliveryPipeline(_messages.Message):
   annotations = _messages.MessageField('AnnotationsValue', 1)
   condition = _messages.MessageField('PipelineCondition', 2)
   createTime = _messages.StringField(3)
-  description = _messages.StringField(4)
-  etag = _messages.StringField(5)
-  labels = _messages.MessageField('LabelsValue', 6)
-  name = _messages.StringField(7)
-  serialPipeline = _messages.MessageField('SerialPipeline', 8)
-  suspended = _messages.BooleanField(9)
-  uid = _messages.StringField(10)
-  updateTime = _messages.StringField(11)
+  deployManaged = _messages.BooleanField(4)
+  description = _messages.StringField(5)
+  etag = _messages.StringField(6)
+  labels = _messages.MessageField('LabelsValue', 7)
+  name = _messages.StringField(8)
+  serialPipeline = _messages.MessageField('SerialPipeline', 9)
+  suspended = _messages.BooleanField(10)
+  uid = _messages.StringField(11)
+  updateTime = _messages.StringField(12)
 
 
 class DeliveryPipelineAttribute(_messages.Message):
@@ -3246,6 +3573,269 @@ class DeployArtifact(_messages.Message):
 
   artifactUri = _messages.StringField(1)
   manifestPaths = _messages.StringField(2, repeated=True)
+
+
+class DeployCloudRunRequest(_messages.Message):
+  r"""The request object for `DeployCloudRun`.
+
+  Messages:
+    DeployParametersValue: Optional. Deploy parameters used for substitutions
+      in manifests and env vars in tasks.
+
+  Fields:
+    analysis: Optional. Configuration for the analysis job. If this is not
+      configured, the analysis job will not be present.
+    artifactStorage: Optional. Cloud Storage location in which to store
+      execution outputs. This can either be a bucket ("gs://my-bucket") or a
+      path within a bucket ("gs://my-bucket/my-dir"). If unspecified, a
+      default bucket located in the same region will be used.
+    cancelActive: Optional. Whether to cancel any active deployments in favor
+      of the one in this request.
+    cloudBuildWorkerPool: Optional. Cloud Build `WorkerPool` used for
+      executing Builds, with the format:
+      `projects/{project}/locations/{location}/workerPools/{worker_pool}`. If
+      not specified then the default Cloud Build pool is used.
+    cloudRunLocation: Required. The location of the Cloud Run workload. Format
+      must be `projects/{project}/locations/{location}`.
+    deployParameters: Optional. Deploy parameters used for substitutions in
+      manifests and env vars in tasks.
+    id: Required. ID to use for the `DeliveryPipeline` that is used to
+      facilitate deploying to Cloud Run. Limit of 56 characters.
+    overrideDeployPolicy: Optional. Deploy policies to override. Format is
+      `projects/{project}/locations/{location}/deployPolicies/{deployPolicy}`.
+    postdeploy: Optional. Configuration for the postdeploy job. If this is not
+      configured, the postdeploy job will not be present.
+    predeploy: Optional. Configuration for the predeploy job. If this is not
+      configured, the predeploy job will not be present.
+    repair: Optional. Options for repairing the deployment in case of rollout
+      failure.
+    serviceAccount: Optional. Google service account to use for execution and
+      Automation. If unspecified, the project execution service account
+      (-compute@developer.gserviceaccount.com) is used.
+    source: Optional. Source provided to the created `Release`.
+    verify: Optional. Configuration for the verify job. If this is not
+      configured, the verify job will not be present.
+    workloadDefinition: Optional. Definition of the Cloud Run Service to
+      deploy.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class DeployParametersValue(_messages.Message):
+    r"""Optional. Deploy parameters used for substitutions in manifests and
+    env vars in tasks.
+
+    Messages:
+      AdditionalProperty: An additional property for a DeployParametersValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        DeployParametersValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a DeployParametersValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  analysis = _messages.MessageField('DeployCloudRunRequestAnalysis', 1)
+  artifactStorage = _messages.StringField(2)
+  cancelActive = _messages.BooleanField(3)
+  cloudBuildWorkerPool = _messages.StringField(4)
+  cloudRunLocation = _messages.StringField(5)
+  deployParameters = _messages.MessageField('DeployParametersValue', 6)
+  id = _messages.StringField(7)
+  overrideDeployPolicy = _messages.StringField(8, repeated=True)
+  postdeploy = _messages.MessageField('DeployCloudRunRequestPostdeploy', 9)
+  predeploy = _messages.MessageField('DeployCloudRunRequestPredeploy', 10)
+  repair = _messages.MessageField('DeployCloudRunRequestRepair', 11)
+  serviceAccount = _messages.StringField(12)
+  source = _messages.MessageField('DeployCloudRunRequestSource', 13)
+  verify = _messages.MessageField('DeployCloudRunRequestVerify', 14)
+  workloadDefinition = _messages.MessageField('DeployCloudRunRequestRuntimeWorkloadDefinition', 15)
+
+
+class DeployCloudRunRequestAlertPolicyCheck(_messages.Message):
+  r"""AlertPolicyCheck configures a set of Cloud Monitoring alerting policies
+  that will be periodically polled for alerts. If any of the listed policies
+  have an active alert, the analysis check will fail when deploying with
+  `DeployCloudRun`.
+
+  Messages:
+    LabelsValue: Optional. A set of labels to filter active alerts. If set,
+      only alerts having all of the specified labels will be considered.
+      Otherwise, all active alerts will be considered.
+
+  Fields:
+    alertPolicies: Required. The Cloud Monitoring Alert Policies to check for
+      active alerts. Format is
+      `projects/{project}/alertPolicies/{alert_policy}`.
+    labels: Optional. A set of labels to filter active alerts. If set, only
+      alerts having all of the specified labels will be considered. Otherwise,
+      all active alerts will be considered.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. A set of labels to filter active alerts. If set, only alerts
+    having all of the specified labels will be considered. Otherwise, all
+    active alerts will be considered.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  alertPolicies = _messages.StringField(1, repeated=True)
+  labels = _messages.MessageField('LabelsValue', 2)
+
+
+class DeployCloudRunRequestAnalysis(_messages.Message):
+  r"""Analysis configuration for a Cloud Run deployment with `DeployCloudRun`.
+
+  Fields:
+    customChecks: Optional. Custom analysis checks from 3P metric providers.
+    duration: Required. The amount of time in minutes the analysis on the
+      target will last. If all analysis checks have successfully completed
+      before the specified duration, the analysis is successful. If a check is
+      still running while the specified duration passes, it will wait for that
+      check to complete to determine if the analysis is successful. The
+      maximum duration is 48 hours.
+    googleCloud: Optional. Google Cloud - based analysis checks.
+  """
+
+  customChecks = _messages.MessageField('DeployCloudRunRequestCustomCheck', 1, repeated=True)
+  duration = _messages.StringField(2)
+  googleCloud = _messages.MessageField('DeployCloudRunRequestGoogleCloudAnalysis', 3)
+
+
+class DeployCloudRunRequestCustomCheck(_messages.Message):
+  r"""CustomCheck configures a third-party metric provider to run the
+  analysis, via a Task that runs at a specified frequency when deploying with
+  `DeployCloudRun`.
+
+  Fields:
+    frequency: Optional. The frequency at which the custom check will be run,
+      with a minimum and default of 5 minutes.
+    task: Required. The Task to be run for this custom check.
+  """
+
+  frequency = _messages.StringField(1)
+  task = _messages.MessageField('DeployCloudRunRequestTask', 2)
+
+
+class DeployCloudRunRequestGoogleCloudAnalysis(_messages.Message):
+  r"""GoogleCloudAnalysis is a set of Google Cloud-based checks to perform
+  when deploying with `DeployCloudRun`.
+
+  Fields:
+    alertPolicyChecks: Optional. A list of Cloud Monitoring Alert Policy
+      checks to perform as part of the analysis.
+  """
+
+  alertPolicyChecks = _messages.MessageField('DeployCloudRunRequestAlertPolicyCheck', 1, repeated=True)
+
+
+class DeployCloudRunRequestPostdeploy(_messages.Message):
+  r"""Configuration for the postdeploy job when deploying with
+  `DeployCloudRun`.
+
+  Fields:
+    tasks: Optional. The tasks that will run as a part of the postdeploy job.
+      The tasks are executed sequentially in the order specified.
+  """
+
+  tasks = _messages.MessageField('DeployCloudRunRequestTask', 1, repeated=True)
+
+
+class DeployCloudRunRequestPredeploy(_messages.Message):
+  r"""Configuration for the predeploy job when deploying with
+  `DeployCloudRun`.
+
+  Fields:
+    tasks: Optional. The tasks that will run as a part of the predeploy job.
+      The tasks are executed sequentially in the order specified.
+  """
+
+  tasks = _messages.MessageField('DeployCloudRunRequestTask', 1, repeated=True)
+
+
+class DeployCloudRunRequestRepair(_messages.Message):
+  r"""Repair configures the repair action to take if the deployment fails when
+  deploying with `DeployCloudRun`.
+
+  Fields:
+    rollback: Optional. Whether to rollback to the last successful Release if
+      the deployment fails.
+  """
+
+  rollback = _messages.BooleanField(1)
+
+
+class DeployCloudRunRequestRuntimeWorkloadDefinition(_messages.Message):
+  r"""The workload definitions for a Cloud Run deployment with
+  `DeployCloudRun`.
+
+  Fields:
+    cloudRunService: Optional. The Cloud Run Service definition to deploy.
+  """
+
+  cloudRunService = _messages.MessageField('CloudRunServiceDefinition', 1)
+
+
+class DeployCloudRunRequestSource(_messages.Message):
+  r"""Source contains the location of the source files for `DeployCloudRun`.
+
+  Fields:
+    storageSource: Optional. Cloud Storage source.
+  """
+
+  storageSource = _messages.MessageField('GoogleCloudStorageSource', 1)
+
+
+class DeployCloudRunRequestTask(_messages.Message):
+  r"""Task configuration used when deploying with `DeployCloudRun`.
+
+  Fields:
+    container: Optional. This task is represented by a container that is
+      executed in the Cloud Build execution environment.
+  """
+
+  container = _messages.MessageField('ContainerTask', 1)
+
+
+class DeployCloudRunRequestVerify(_messages.Message):
+  r"""Configuration for the verify job when deploying with `DeployCloudRun`.
+
+  Fields:
+    tasks: Optional. The tasks that will run as a part of the verify job. The
+      tasks are executed sequentially in the order specified.
+  """
+
+  tasks = _messages.MessageField('DeployCloudRunRequestTask', 1, repeated=True)
 
 
 class DeployJob(_messages.Message):
@@ -3750,6 +4340,60 @@ class Empty(_messages.Message):
 
 
 
+class EmptyDirVolumeSource(_messages.Message):
+  r"""In memory (tmpfs) ephemeral storage.
+
+  Enums:
+    MediumValueValuesEnum: Optional. The medium on which the data is stored.
+
+  Fields:
+    medium: Optional. The medium on which the data is stored.
+    sizeLimit: Optional. Limit on the storage usable by this EmptyDir volume.
+  """
+
+  class MediumValueValuesEnum(_messages.Enum):
+    r"""Optional. The medium on which the data is stored.
+
+    Values:
+      MEDIUM_UNSPECIFIED: When not specified, falls back to the default
+        implementation which is currently in memory (this may change over
+        time).
+      MEMORY: Explicitly set the EmptyDir to be in memory. Uses tmpfs.
+      DISK: Explicitly sets the EmptyDir to be a disk.
+    """
+    MEDIUM_UNSPECIFIED = 0
+    MEMORY = 1
+    DISK = 2
+
+  medium = _messages.EnumField('MediumValueValuesEnum', 1)
+  sizeLimit = _messages.StringField(2)
+
+
+class EnvVar(_messages.Message):
+  r"""EnvVar represents an environment variable present in a Container.
+
+  Fields:
+    name: Required. Name of the environment variable.
+    value: Optional. Literal value of the environment variable.
+    valueSource: Optional. Source for the environment variable's value.
+  """
+
+  name = _messages.StringField(1)
+  value = _messages.StringField(2)
+  valueSource = _messages.MessageField('EnvVarSource', 3)
+
+
+class EnvVarSource(_messages.Message):
+  r"""EnvVarSource represents a source for the value of an EnvVar.
+
+  Fields:
+    secretKeyRef: Optional. Selects a secret and a specific version from Cloud
+      Secret Manager.
+  """
+
+  secretKeyRef = _messages.MessageField('SecretKeySelector', 1)
+
+
 class ExecutionConfig(_messages.Message):
   r"""Configuration of the environment to use when calling Skaffold.
 
@@ -3862,6 +4506,37 @@ class FailedAlertPolicy(_messages.Message):
   alerts = _messages.StringField(2, repeated=True)
 
 
+class GCSVolumeSource(_messages.Message):
+  r"""Represents a volume backed by a Cloud Storage bucket using Cloud Storage
+  FUSE.
+
+  Fields:
+    bucket: Optional. Cloud Storage Bucket name.
+    mountOptions: Optional. A list of additional flags to pass to the gcsfuse
+      CLI.
+    readOnly: Optional. If true, the volume will be mounted as read only for
+      all mounts.
+  """
+
+  bucket = _messages.StringField(1)
+  mountOptions = _messages.StringField(2, repeated=True)
+  readOnly = _messages.BooleanField(3)
+
+
+class GRPCAction(_messages.Message):
+  r"""GRPCAction specifies an action involving a gRPC port.
+
+  Fields:
+    port: Optional. Port number to access on the container.
+    service: Optional. Service is the name of the service to place in the gRPC
+      HealthCheckRequest (see
+      https://github.com/grpc/grpc/blob/master/doc/health-checking.md)
+  """
+
+  port = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  service = _messages.StringField(2)
+
+
 class GatewayServiceMesh(_messages.Message):
   r"""Information about the Kubernetes Gateway API service mesh configuration.
 
@@ -3940,16 +4615,41 @@ class GoogleCloudStorageSource(_messages.Message):
   r"""GoogleCloudStorageSource contains the Cloud Storage source information.
 
   Fields:
-    bucket: Optional. Bucket containing the source object.
-    generation: Optional. Generation of the object, if not provided then
-      latest is retrieved.
-    object: Optional. Object that contains the source files, must be a
+    bucket: Required. Bucket containing the source object.
+    generation: Required. Generation of the object, must be provided.
+    object: Required. Object that contains the source files, must be a
       tarball.
   """
 
   bucket = _messages.StringField(1)
-  generation = _messages.StringField(2)
+  generation = _messages.IntegerField(2)
   object = _messages.StringField(3)
+
+
+class HTTPGetAction(_messages.Message):
+  r"""HTTPGetAction describes an action based on HTTP Get requests.
+
+  Fields:
+    httpHeaders: Optional. Custom headers to set in the request.
+    path: Optional. Path to access on the HTTP server.
+    port: Optional. Port number to access on the container.
+  """
+
+  httpHeaders = _messages.MessageField('HTTPHeader', 1, repeated=True)
+  path = _messages.StringField(2)
+  port = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+
+
+class HTTPHeader(_messages.Message):
+  r"""HTTPHeader describes a custom header to be used in HTTP probes
+
+  Fields:
+    name: Required. The header field name.
+    value: Optional. The header field value.
+  """
+
+  name = _messages.StringField(1)
+  value = _messages.StringField(2)
 
 
 class HelmChart(_messages.Message):
@@ -4654,6 +5354,37 @@ class MultiTarget(_messages.Message):
   targetIds = _messages.StringField(1, repeated=True)
 
 
+class NFSVolumeSource(_messages.Message):
+  r"""Represents an NFS mount.
+
+  Fields:
+    path: Optional. Path that is exported by the NFS server.
+    readOnly: Optional. If true, the volume will be mounted as read only for
+      all mounts.
+    server: Optional. Hostname or IP address of the NFS server
+  """
+
+  path = _messages.StringField(1)
+  readOnly = _messages.BooleanField(2)
+  server = _messages.StringField(3)
+
+
+class NetworkInterface(_messages.Message):
+  r"""Direct VPC egress settings.
+
+  Fields:
+    network: Optional. The VPC network that the Cloud Run resource will be
+      able to send traffic to.
+    subnetwork: Optional. The VPC subnetwork that the Cloud Run resource will
+      get IPs from.
+    tags: Optional. Network tags applied to this Cloud Run resource.
+  """
+
+  network = _messages.StringField(1)
+  subnetwork = _messages.StringField(2)
+  tags = _messages.StringField(3, repeated=True)
+
+
 class OneTimeWindow(_messages.Message):
   r"""One-time window within which actions are restricted. For example,
   blocking actions over New Year's Eve from December 31st at 5pm to January
@@ -5261,6 +5992,36 @@ class PrivatePool(_messages.Message):
   workerPool = _messages.StringField(3)
 
 
+class Probe(_messages.Message):
+  r"""Probe describes a health check to be performed against a container to
+  determine whether it is alive or ready to receive traffic.
+
+  Fields:
+    failureThreshold: Optional. Minimum consecutive failures for the probe to
+      be considered failed after having succeeded.
+    grpc: Optional. GRPCAction specifies an action involving a gRPC port.
+    httpGet: Optional. HTTPGet specifies the http request to perform.
+    initialDelaySeconds: Optional. Number of seconds after the container has
+      started before the probe is initiated.
+    periodSeconds: Optional. How often (in seconds) to perform the probe.
+    successThreshold: Optional. Minimum consecutive successes for the probe to
+      be considered successful after having failed.
+    tcpSocket: Optional. TCPSocketAction specifies an action involving a TCP
+      port.
+    timeoutSeconds: Optional. Number of seconds after which the probe times
+      out.
+  """
+
+  failureThreshold = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  grpc = _messages.MessageField('GRPCAction', 2)
+  httpGet = _messages.MessageField('HTTPGetAction', 3)
+  initialDelaySeconds = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  periodSeconds = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  successThreshold = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  tcpSocket = _messages.MessageField('TCPSocketAction', 7)
+  timeoutSeconds = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+
+
 class PromoteReleaseOperation(_messages.Message):
   r"""Contains the information of an automated promote-release operation.
 
@@ -5335,14 +6096,14 @@ class Release(_messages.Message):
     DeployParametersValue: Optional. The deploy parameters to use for all
       targets in this release.
     EffectiveTargetConfigsValue: Output only. Resolved target configurations.
-    LabelsValue: Labels are attributes that can be set and used by both the
-      user and by Cloud Deploy. Labels must meet the following constraints: *
-      Keys and values can contain only lowercase letters, numeric characters,
-      underscores, and dashes. * All characters must use UTF-8 encoding, and
-      international characters are allowed. * Keys must start with a lowercase
-      letter or international character. * Each resource is limited to a
-      maximum of 64 labels. Both keys and values are additionally constrained
-      to be <= 128 bytes.
+    LabelsValue: Optional. Labels are attributes that can be set and used by
+      both the user and by Cloud Deploy. Labels must meet the following
+      constraints: * Keys and values can contain only lowercase letters,
+      numeric characters, underscores, and dashes. * All characters must use
+      UTF-8 encoding, and international characters are allowed. * Keys must
+      start with a lowercase letter or international character. * Each
+      resource is limited to a maximum of 64 labels. Both keys and values are
+      additionally constrained to be <= 128 bytes.
     TargetArtifactsValue: Output only. Map from target ID to the target
       artifacts created during the render operation.
     TargetRendersValue: Output only. Map from target ID to details of the
@@ -5370,14 +6131,14 @@ class Release(_messages.Message):
     etag: This checksum is computed by the server based on the value of other
       fields, and may be sent on update and delete requests to ensure the
       client has an up-to-date value before proceeding.
-    labels: Labels are attributes that can be set and used by both the user
-      and by Cloud Deploy. Labels must meet the following constraints: * Keys
-      and values can contain only lowercase letters, numeric characters,
-      underscores, and dashes. * All characters must use UTF-8 encoding, and
-      international characters are allowed. * Keys must start with a lowercase
-      letter or international character. * Each resource is limited to a
-      maximum of 64 labels. Both keys and values are additionally constrained
-      to be <= 128 bytes.
+    labels: Optional. Labels are attributes that can be set and used by both
+      the user and by Cloud Deploy. Labels must meet the following
+      constraints: * Keys and values can contain only lowercase letters,
+      numeric characters, underscores, and dashes. * All characters must use
+      UTF-8 encoding, and international characters are allowed. * Keys must
+      start with a lowercase letter or international character. * Each
+      resource is limited to a maximum of 64 labels. Both keys and values are
+      additionally constrained to be <= 128 bytes.
     name: Identifier. Name of the `Release`. Format is `projects/{project}/loc
       ations/{location}/deliveryPipelines/{deliveryPipeline}/releases/{release
       }`. The `release` component must match `[a-z]([a-z0-9-]{0,61}[a-z0-9])?`
@@ -5505,9 +6266,9 @@ class Release(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""Labels are attributes that can be set and used by both the user and by
-    Cloud Deploy. Labels must meet the following constraints: * Keys and
-    values can contain only lowercase letters, numeric characters,
+    r"""Optional. Labels are attributes that can be set and used by both the
+    user and by Cloud Deploy. Labels must meet the following constraints: *
+    Keys and values can contain only lowercase letters, numeric characters,
     underscores, and dashes. * All characters must use UTF-8 encoding, and
     international characters are allowed. * Keys must start with a lowercase
     letter or international character. * Each resource is limited to a maximum
@@ -5878,6 +6639,52 @@ class RepairRolloutRule(_messages.Message):
   repairPhases = _messages.MessageField('RepairPhaseConfig', 5, repeated=True)
 
 
+class ResourceRequirements(_messages.Message):
+  r"""ResourceRequirements describes the compute resource requirements.
+
+  Messages:
+    LimitsValue: Optional. Only `memory`, `cpu` and `nvidia.com/gpu` keys in
+      the map are supported.
+
+  Fields:
+    cpuIdle: Optional. Determines whether CPU is only allocated during
+      requests (true by default).
+    limits: Optional. Only `memory`, `cpu` and `nvidia.com/gpu` keys in the
+      map are supported.
+    startupCpuBoost: Optional. Determines whether CPU should be boosted on
+      startup of a new container instance.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LimitsValue(_messages.Message):
+    r"""Optional. Only `memory`, `cpu` and `nvidia.com/gpu` keys in the map
+    are supported.
+
+    Messages:
+      AdditionalProperty: An additional property for a LimitsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LimitsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LimitsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  cpuIdle = _messages.BooleanField(1)
+  limits = _messages.MessageField('LimitsValue', 2)
+  startupCpuBoost = _messages.BooleanField(3)
+
+
 class Retry(_messages.Message):
   r"""Retries the failed job.
 
@@ -6003,6 +6810,179 @@ class RetryPhase(_messages.Message):
   attempts = _messages.MessageField('RetryAttempt', 1, repeated=True)
   backoffMode = _messages.EnumField('BackoffModeValueValuesEnum', 2)
   totalAttempts = _messages.IntegerField(3)
+
+
+class RevisionScaling(_messages.Message):
+  r"""Settings for revision-level scaling settings.
+
+  Fields:
+    concurrencyUtilization: Optional. Determines a threshold for concurrency
+      utilization before scaling begins.
+    cpuUtilization: Optional. Determines a threshold for CPU utilization
+      before scaling begins.
+    maxInstanceCount: Optional. Maximum number of serving instances that this
+      resource should have.
+    minInstanceCount: Optional. Minimum number of serving instances that this
+      resource should have.
+  """
+
+  concurrencyUtilization = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
+  cpuUtilization = _messages.FloatField(2, variant=_messages.Variant.FLOAT)
+  maxInstanceCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  minInstanceCount = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+
+
+class RevisionTemplate(_messages.Message):
+  r"""RevisionTemplate describes the data a revision should have when created
+  from a template.
+
+  Enums:
+    EncryptionKeyRevocationActionValueValuesEnum: Optional. The action to take
+      if the encryption key is revoked.
+    ExecutionEnvironmentValueValuesEnum: Optional. The sandbox environment to
+      host this Revision.
+
+  Messages:
+    AnnotationsValue: Optional. Unstructured key value map that may be set by
+      external tools to store any arbitrary metadata.
+    LabelsValue: Optional. Unstructured key value map that can be used to
+      organize and categorize objects.
+
+  Fields:
+    annotations: Optional. Unstructured key value map that may be set by
+      external tools to store any arbitrary metadata.
+    containers: Required. Holds the list which define the units of execution
+      for this Revision.
+    encryptionKey: Optional. A reference to a customer managed encryption key
+      (CMEK) to use to encrypt this container image. For more information, go
+      to https://cloud.google.com/run/docs/securing/using-cmek.
+    encryptionKeyRevocationAction: Optional. The action to take if the
+      encryption key is revoked.
+    encryptionKeyShutdownDuration: Optional. If
+      encryption_key_revocation_action is SHUTDOWN, the duration before
+      shutting down all instances.
+    executionEnvironment: Optional. The sandbox environment to host this
+      Revision.
+    gpuZonalRedundancyDisabled: Optional. True if GPU zonal redundancy is
+      disabled on this revision.
+    healthCheckDisabled: Optional. Disables health checking containers during
+      deployment.
+    labels: Optional. Unstructured key value map that can be used to organize
+      and categorize objects.
+    maxInstanceRequestConcurrency: Optional. Sets the maximum number of
+      requests that each serving instance can receive.
+    nodeSelector: Optional. The node selector for the revision template.
+    revision: Optional. The unique name for the revision. If this field is
+      omitted, it will be automatically generated.
+    scaling: Optional. Scaling settings for this Revision.
+    serviceAccount: Optional. Email address of the IAM service account
+      associated with the revision of the service. The service account
+      represents the identity of the running revision, and determines what
+      permissions the revision has. If not provided, the revision will use the
+      project's default service account.
+    sessionAffinity: Optional. Enable session affinity.
+    timeout: Optional. Max allowed time for an instance to respond to a
+      request.
+    volumes: Optional. A list of Volumes to make available to containers.
+    vpcAccess: Optional. VPC Access configuration to use for this Revision.
+      For more information, visit
+      https://cloud.google.com/run/docs/configuring/connecting-vpc.
+  """
+
+  class EncryptionKeyRevocationActionValueValuesEnum(_messages.Enum):
+    r"""Optional. The action to take if the encryption key is revoked.
+
+    Values:
+      CLOUD_RUN_ENCRYPTION_KEY_REVOCATION_ACTION_UNSPECIFIED: Unspecified.
+      PREVENT_NEW: Prevents the creation of new instances.
+      SHUTDOWN: Shuts down existing instances, and prevents creation of new
+        ones.
+    """
+    CLOUD_RUN_ENCRYPTION_KEY_REVOCATION_ACTION_UNSPECIFIED = 0
+    PREVENT_NEW = 1
+    SHUTDOWN = 2
+
+  class ExecutionEnvironmentValueValuesEnum(_messages.Enum):
+    r"""Optional. The sandbox environment to host this Revision.
+
+    Values:
+      CLOUD_RUN_EXECUTION_ENVIRONMENT_UNSPECIFIED: Unspecified.
+      EXECUTION_ENVIRONMENT_GEN1: Uses the First Generation environment.
+      EXECUTION_ENVIRONMENT_GEN2: Uses Second Generation environment.
+    """
+    CLOUD_RUN_EXECUTION_ENVIRONMENT_UNSPECIFIED = 0
+    EXECUTION_ENVIRONMENT_GEN1 = 1
+    EXECUTION_ENVIRONMENT_GEN2 = 2
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AnnotationsValue(_messages.Message):
+    r"""Optional. Unstructured key value map that may be set by external tools
+    to store any arbitrary metadata.
+
+    Messages:
+      AdditionalProperty: An additional property for a AnnotationsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type AnnotationsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AnnotationsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Unstructured key value map that can be used to organize and
+    categorize objects.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  annotations = _messages.MessageField('AnnotationsValue', 1)
+  containers = _messages.MessageField('CloudRunContainer', 2, repeated=True)
+  encryptionKey = _messages.StringField(3)
+  encryptionKeyRevocationAction = _messages.EnumField('EncryptionKeyRevocationActionValueValuesEnum', 4)
+  encryptionKeyShutdownDuration = _messages.StringField(5)
+  executionEnvironment = _messages.EnumField('ExecutionEnvironmentValueValuesEnum', 6)
+  gpuZonalRedundancyDisabled = _messages.BooleanField(7)
+  healthCheckDisabled = _messages.BooleanField(8)
+  labels = _messages.MessageField('LabelsValue', 9)
+  maxInstanceRequestConcurrency = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  nodeSelector = _messages.MessageField('CloudRunNodeSelector', 11)
+  revision = _messages.StringField(12)
+  scaling = _messages.MessageField('RevisionScaling', 13)
+  serviceAccount = _messages.StringField(14)
+  sessionAffinity = _messages.BooleanField(15)
+  timeout = _messages.StringField(16)
+  volumes = _messages.MessageField('CloudRunVolume', 17, repeated=True)
+  vpcAccess = _messages.MessageField('CloudRunVPCAccess', 18)
 
 
 class Rollback(_messages.Message):
@@ -6613,6 +7593,41 @@ class RuntimeConfigFiles(_messages.Message):
   rawYaml = _messages.MessageField('RawYAML', 3)
 
 
+class RuntimeWorkloadDefinition(_messages.Message):
+  r"""The workload definition applied to the runtime during a deployment.
+
+  Fields:
+    cloudRunService: Optional. The Cloud Run Service definition to deploy.
+  """
+
+  cloudRunService = _messages.MessageField('CloudRunServiceDefinition', 1)
+
+
+class SecretKeySelector(_messages.Message):
+  r"""SecretEnvVarSource represents a source for the value of an EnvVar.
+
+  Fields:
+    secret: Required. The name of the secret in Cloud Secret Manager.
+    version: Optional. The Cloud Secret Manager secret version.
+  """
+
+  secret = _messages.StringField(1)
+  version = _messages.StringField(2)
+
+
+class SecretVolumeSource(_messages.Message):
+  r"""SecretVolumeSource represents a source for the value of an EnvVar.
+
+  Fields:
+    items: Optional. If unspecified, the volume will expose a file whose name
+      is the secret.
+    secret: Required. The name of the secret in Cloud Secret Manager.
+  """
+
+  items = _messages.MessageField('VersionToPath', 1, repeated=True)
+  secret = _messages.StringField(2)
+
+
 class SerialPipeline(_messages.Message):
   r"""SerialPipeline defines a sequential set of stages for a
   `DeliveryPipeline`.
@@ -6645,6 +7660,39 @@ class ServiceNetworking(_messages.Message):
   disablePodOverprovisioning = _messages.BooleanField(2)
   podSelectorLabel = _messages.StringField(3)
   service = _messages.StringField(4)
+
+
+class ServiceScaling(_messages.Message):
+  r"""Scaling settings applied at the service level rather than at the
+  revision level.
+
+  Enums:
+    ScalingModeValueValuesEnum: Optional. The scaling mode for the service.
+
+  Fields:
+    manualInstanceCount: Optional. Total instance count for the service in
+      manual scaling mode.
+    maxInstanceCount: Optional. Total max instances for the service.
+    minInstanceCount: Optional. Total min instances for the service.
+    scalingMode: Optional. The scaling mode for the service.
+  """
+
+  class ScalingModeValueValuesEnum(_messages.Enum):
+    r"""Optional. The scaling mode for the service.
+
+    Values:
+      SCALING_MODE_UNSPECIFIED: Unspecified.
+      AUTOMATIC: Scale based on traffic between min and max instances.
+      MANUAL: Scale to exactly min instances and ignore max instances.
+    """
+    SCALING_MODE_UNSPECIFIED = 0
+    AUTOMATIC = 1
+    MANUAL = 2
+
+  manualInstanceCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  maxInstanceCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  minInstanceCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  scalingMode = _messages.EnumField('ScalingModeValueValuesEnum', 4)
 
 
 class SetIamPolicyRequest(_messages.Message):
@@ -6976,6 +8024,16 @@ class Strategy(_messages.Message):
   standard = _messages.MessageField('Standard', 2)
 
 
+class TCPSocketAction(_messages.Message):
+  r"""TCPSocketAction specifies an action involving a TCP port.
+
+  Fields:
+    port: Optional. Port number to access on the container.
+  """
+
+  port = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+
+
 class Target(_messages.Message):
   r"""A `Target` resource in the Cloud Deploy API. A `Target` defines a
   location to which a Skaffold configuration can be deployed.
@@ -7022,6 +8080,10 @@ class Target(_messages.Message):
       regex: `^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$`.
     createTime: Output only. Time at which the `Target` was created.
     customTarget: Optional. Information specifying a Custom Target.
+    deployManaged: Output only. Whether the `Target` is managed by one of the
+      "Deploy" methods, e.g. `DeployCloudRun`. To switch the `Target` to user-
+      managed set the `deploy_managed` field on the `DeliveryPipeline` used by
+      the "Deploy" method to `false`.
     deployParameters: Optional. The deploy parameters to use for this target.
     description: Optional. Description of the `Target`. Max length is 255
       characters.
@@ -7179,19 +8241,20 @@ class Target(_messages.Message):
   associatedEntities = _messages.MessageField('AssociatedEntitiesValue', 3)
   createTime = _messages.StringField(4)
   customTarget = _messages.MessageField('CustomTarget', 5)
-  deployParameters = _messages.MessageField('DeployParametersValue', 6)
-  description = _messages.StringField(7)
-  etag = _messages.StringField(8)
-  executionConfigs = _messages.MessageField('ExecutionConfig', 9, repeated=True)
-  gke = _messages.MessageField('GkeCluster', 10)
-  labels = _messages.MessageField('LabelsValue', 11)
-  multiTarget = _messages.MessageField('MultiTarget', 12)
-  name = _messages.StringField(13)
-  requireApproval = _messages.BooleanField(14)
-  run = _messages.MessageField('CloudRunLocation', 15)
-  targetId = _messages.StringField(16)
-  uid = _messages.StringField(17)
-  updateTime = _messages.StringField(18)
+  deployManaged = _messages.BooleanField(6)
+  deployParameters = _messages.MessageField('DeployParametersValue', 7)
+  description = _messages.StringField(8)
+  etag = _messages.StringField(9)
+  executionConfigs = _messages.MessageField('ExecutionConfig', 10, repeated=True)
+  gke = _messages.MessageField('GkeCluster', 11)
+  labels = _messages.MessageField('LabelsValue', 12)
+  multiTarget = _messages.MessageField('MultiTarget', 13)
+  name = _messages.StringField(14)
+  requireApproval = _messages.BooleanField(15)
+  run = _messages.MessageField('CloudRunLocation', 16)
+  targetId = _messages.StringField(17)
+  uid = _messages.StringField(18)
+  updateTime = _messages.StringField(19)
 
 
 class TargetArtifact(_messages.Message):
@@ -7293,9 +8356,15 @@ class TargetConfig(_messages.Message):
   Fields:
     runtimeConfig: Optional. The configuration applied to the runtime during a
       deployment.
+    runtimeConfigFiles: Optional. Specify the runtime configuration via files
+      provided in the `Release` source.
+    runtimeWorkloadDefinition: Optional. Specify the runtime configuration
+      inline.
   """
 
   runtimeConfig = _messages.MessageField('RuntimeConfigFiles', 1)
+  runtimeConfigFiles = _messages.MessageField('RuntimeConfigFiles', 2)
+  runtimeWorkloadDefinition = _messages.MessageField('RuntimeWorkloadDefinition', 3)
 
 
 class TargetConfigSelection(_messages.Message):
@@ -7796,6 +8865,39 @@ class VerifyJobRunMetadata(_messages.Message):
   """
 
   custom = _messages.MessageField('CustomMetadata', 1)
+
+
+class VersionToPath(_messages.Message):
+  r"""VersionToPath maps a specific version of a secret to a relative file to
+  mount.
+
+  Fields:
+    mode: Optional. Integer octal mode bits to use on this file, must be a
+      value between 01 and 0777 (octal). If 0 or not set, the Volume's default
+      mode will be used.
+    path: Required. The relative path of the secret in the container.
+    version: Optional. The Cloud Secret Manager secret version.
+  """
+
+  mode = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  path = _messages.StringField(2)
+  version = _messages.StringField(3)
+
+
+class VolumeMount(_messages.Message):
+  r"""VolumeMount describes a mounting of a Volume within a container.
+
+  Fields:
+    mountPath: Required. Path within the container at which the volume should
+      be mounted.
+    name: Required. This must match the Name of a Volume.
+    subPath: Optional. Path within the volume from which the container's
+      volume should be mounted.
+  """
+
+  mountPath = _messages.StringField(1)
+  name = _messages.StringField(2)
+  subPath = _messages.StringField(3)
 
 
 class WeeklyWindow(_messages.Message):

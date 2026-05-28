@@ -23,8 +23,9 @@ import functools
 import json
 import random
 import string
-import time
 from typing import List
+from typing import NoReturn
+from typing import Optional
 
 from apitools.base.protorpclite import messages as api_messages
 from apitools.base.py import encoding
@@ -67,7 +68,6 @@ from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.universe_descriptor import universe_descriptor
 from googlecloudsdk.core.util import retry
 import six
-
 
 DEFAULT_ENDPOINT_VERSION = 'v1'
 
@@ -1528,23 +1528,7 @@ class ServerlessOperations(object):
     except api_exceptions.HttpBadRequestError as e:
       exceptions.reraise(serverless_exceptions.HttpError(e))
     except api_exceptions.HttpNotFoundError as e:
-      parsed_err = api_lib_exceptions.HttpException(e)
-      if (
-          hasattr(parsed_err.payload, 'domain_details')
-          and 'run.googleapis.com' in parsed_err.payload.domain_details
-      ):
-        raise parsed_err
-      error_msg = 'Deployment endpoint was not found.'
-      all_regions = global_methods.ListRegions(self._op_client)
-      if self._region not in all_regions:
-        regions = ['* {}'.format(r) for r in all_regions]
-        error_msg += (
-            ' The provided region was invalid. '
-            'Pass the `--region` flag or set the '
-            '`run/region` property to a valid region and retry.'
-            '\nAvailable regions:\n{}'.format('\n'.join(regions))
-        )
-      raise serverless_exceptions.DeploymentFailedError(error_msg)
+      self._ReraiseDeploymentNotFoundError(e)
     except api_exceptions.HttpError as e:
       exceptions.reraise(e)
 
@@ -2172,6 +2156,12 @@ class ServerlessOperations(object):
     """
     messages = self.messages_module
     new_instance = instance.Instance.New(self._client, parent_ref.Name())
+    if tracker is None:
+      tracker = progress_tracker.NoOpStagedProgressTracker(
+          stages.InstanceStages(),
+          interruptable=True,
+          aborted_message='aborted',
+      )
 
     if instance_name:
       new_instance.name = instance_name
@@ -2217,14 +2207,14 @@ class ServerlessOperations(object):
 
     return created_instance
 
-  def ReplaceInstance(
+  def UpdateOrCreateInstance(
       self,
-      instance_ref,
-      config_changes,
-      tracker=None,
-      asyn=False,
-  ):
-    """Replace an existing Cloud Run Instance.
+      instance_ref: resources.Resource,
+      config_changes: list[config_changes_mod.ConfigChanger],
+      tracker: Optional[progress_tracker._BaseProgressTracker] = None,
+      asyn: bool = False,
+  ) -> instance.Instance:
+    """Update an existing Cloud Run Instance or create a new one.
 
     Args:
       instance_ref: Resource, the instance to replace.
@@ -2236,33 +2226,83 @@ class ServerlessOperations(object):
     Returns:
       An instance.Instance object.
     """
-    update_instance = self.GetInstance(instance_ref)
-    if update_instance is not None:
-      self.DeleteInstance(instance_ref)
-      if tracker:
-        tracker.UpdateHeaderMessage(
-            'Waiting for instance deletion to complete...'
-        )
-      max_retries = 120
-      while max_retries > 0 and self.GetInstance(instance_ref) is not None:
-        time.sleep(1)
-        max_retries -= 1
-      if max_retries <= 0:
-        raise serverless_exceptions.DeploymentFailedError(
-            'Timed out waiting for instance [{}] to be deleted.'.format(
-                instance_ref.Name()
-            )
-        )
-      if tracker:
-        tracker.UpdateHeaderMessage('Deleted existing instance. Recreating...')
+    existing_instance = self.GetInstance(instance_ref)
+    if existing_instance is None:
+      return self.CreateInstance(
+          instance_ref.Parent(),
+          instance_ref.Name(),
+          config_changes,
+          tracker,
+          asyn,
+      )
 
-    return self.CreateInstance(
-        instance_ref.Parent(),
-        instance_ref.Name(),
+    return self.UpdateInstance(
+        instance_ref,
+        existing_instance,
         config_changes,
         tracker,
         asyn,
     )
+
+  def UpdateInstance(
+      self,
+      instance_ref: resources.Resource,
+      existing_instance: instance.Instance,
+      config_changes: list[config_changes_mod.ConfigChanger],
+      tracker: Optional[progress_tracker._BaseProgressTracker] = None,
+      asyn: bool = False,
+  ) -> instance.Instance:
+    """Update or create instance."""
+    messages = self.messages_module
+    if existing_instance.metadata.deletionTimestamp is not None:
+      raise serverless_exceptions.DeploymentFailedError(
+          f'Instance [{instance_ref.Name()}] is in the process of being'
+          ' deleted.'
+      )
+    if tracker is None:
+      tracker = progress_tracker.NoOpStagedProgressTracker(
+          stages.InstanceStages(),
+          interruptable=True,
+          aborted_message='aborted',
+      )
+
+    try:
+      # PUT the changed Instance
+      changed_instance = config_changes_mod.WithChanges(
+          existing_instance, config_changes
+      )
+      instance_name = instance_ref.RelativeName()
+      update_req = messages.RunNamespacesInstancesReplaceInstanceRequest(
+          instance=changed_instance.Message(),
+          name=instance_name,
+      )
+      with metrics.RecordDuration(metric_names.UPDATE_INSTANCE):
+        raw_instance = self._client.namespaces_instances.ReplaceInstance(
+            update_req
+        )
+      updated_instance = instance.Instance(raw_instance, messages)
+      # If the instance is running and not in async mode, wait for it to be
+      # updated and restarted.
+      if not asyn and existing_instance and existing_instance.is_running:
+        if updated_instance.operation_id is None:
+          getter = functools.partial(self.GetInstance, instance_ref)
+        else:
+          getter = functools.partial(
+              self.WaitInstance, updated_instance.operation_id
+          )
+        poller = op_pollers.InstanceConditionPoller(
+            getter, tracker, dependencies=stages.InstanceDependencies()
+        )
+        self.WaitForCondition(poller)
+        updated_instance = poller.GetResource()
+
+      return updated_instance
+    except api_exceptions.HttpBadRequestError as e:
+      exceptions.reraise(serverless_exceptions.HttpError(e))
+    except api_exceptions.HttpNotFoundError as e:
+      self._ReraiseDeploymentNotFoundError(e)
+    except api_exceptions.HttpError as e:
+      exceptions.reraise(e)
 
   def DeleteInstance(self, instance_ref):
     """Delete the provided Instance.
@@ -2654,3 +2694,25 @@ class ServerlessOperations(object):
       for name, value in env_vars.items():
         env_var_list.append(self.messages_module.EnvVar(name=name, value=value))
     return env_var_list
+
+  def _ReraiseDeploymentNotFoundError(
+      self, e: api_exceptions.HttpNotFoundError
+  ) -> NoReturn:
+    """Raise DeploymentFailedError with a helpful error message."""
+    parsed_err = api_lib_exceptions.HttpException(e)
+    if (
+        hasattr(parsed_err.payload, 'domain_details')
+        and 'run.googleapis.com' in parsed_err.payload.domain_details
+    ):
+      raise parsed_err
+    error_msg = 'Deployment endpoint was not found.'
+    all_regions = global_methods.ListRegions(self._op_client)
+    if self._region not in all_regions:
+      regions = ['* {}'.format(r) for r in all_regions]
+      error_msg += (
+          ' The provided region was invalid. '
+          'Pass the `--region` flag or set the '
+          '`run/region` property to a valid region and retry.'
+          '\nAvailable regions:\n{}'.format('\n'.join(regions))
+      )
+    raise serverless_exceptions.DeploymentFailedError(error_msg)

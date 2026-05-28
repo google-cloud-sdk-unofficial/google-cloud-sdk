@@ -20,9 +20,7 @@ class AuditReport(_messages.Message):
 
   Fields:
     complianceFramework: Output only. Compliance framework to use for the
-      audit report. For example, `CIS_GCP_FOUNDATIONS_V1_2_0`. To find the
-      list of supported frameworks, use the ListBuiltinComplianceFrameworks
-      method.
+      audit report. For example, `CIS_GCP_FOUNDATIONS_V1_2_0`.
     complianceStandard: Output only. Deprecated. Compliance standard to be
       audited against. Use the `compliance_framework` field instead.
     controlDetails: Output only. Overall status of the controls.
@@ -89,7 +87,8 @@ class AuditScopeReport(_messages.Message):
     name: Identifier. Name for the audit scope report, in one of the following
       formats: * `projects/{project}/locations/{location}/auditScopeReports/{a
       udit_scope_report}` * `folders/{folder}/locations/{location}/auditScopeR
-      eports/{audit_scope_report}`
+      eports/{audit_scope_report}` * `organizations/{organization}/locations/{
+      location}/auditScopeReports/{audit_scope_report}`
     scopeReportContents: Audit scope report content in byte format.
   """
 
@@ -591,9 +590,8 @@ class AuditmanagerProjectsLocationsListRequest(_messages.Message):
   r"""A AuditmanagerProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -824,8 +822,7 @@ class ControlDetails(_messages.Message):
       control.
     control: Control that the findings are being reported for.
     controlReportSummary: A control report summary that provides a high-level
-      overview of the compliance controls, the assessment status, and a
-      responsibilities matrix.
+      overview of the compliance controls and the assessment status.
   """
 
   class ComplianceStateValueValuesEnum(_messages.Enum):
@@ -881,9 +878,9 @@ class EligibleDestination(_messages.Message):
   r"""Details about the bucket where you want to upload the audit report.
 
   Fields:
-    eligibleGcsBucket: Location of the Cloud Storage bucket where you want to
-      upload the audit report and evidences during the GenerateAuditReport API
-      call.
+    eligibleGcsBucket: The location of the Cloud Storage bucket where you want
+      to upload the audit report and evidence during the GenerateAuditReport
+      API call.
   """
 
   eligibleGcsBucket = _messages.StringField(1)
@@ -937,9 +934,8 @@ class GenerateAuditReportRequest(_messages.Message):
     ReportFormatValueValuesEnum: Required. Format for the audit report.
 
   Fields:
-    complianceFramework: Required. Framework that's used for the audit report.
-      For example, `NIST_800_53`. To find the list of supported frameworks,
-      use the ListBuiltinComplianceFrameworks method.
+    complianceFramework: Required. The framework that's used for the audit
+      report. For example, `NIST_800_53`.
     complianceStandard: Optional. Deprecated. Compliance standard for the
       audit report. Use the `compliance_framework` field instead.
     gcsUri: URL for the Cloud Storage bucket where the report and evidence is
@@ -972,9 +968,7 @@ class GenerateAuditScopeReportRequest(_messages.Message):
 
   Fields:
     complianceFramework: Required. Framework (set of controls) that the audit
-      scope report is generated against. For example, `NIST_800_53`. To find
-      the list of supported frameworks, use the
-      ListBuiltinComplianceFrameworks method.
+      scope report is generated against. For example, `NIST_800_53`.
     complianceStandard: Optional. Deprecated. The standard (industry or
       regulatory requirements) that the audit scope report is run against. Use
       the `compliance_framework` field instead.
@@ -1324,9 +1318,9 @@ class ReportGenerationProgress(_messages.Message):
         generation process is in progress.
       OPERATION_STATE_EVIDENCE_REPORT_GENERATION_DONE: Report generation
         process is completed.
-      OPERATION_STATE_EVIDENCE_UPLOAD_IN_PROGRESS: Audit report and evidences
-        are being uploaded to your bucket.
-      OPERATION_STATE_DONE: Audit reports and evidences are uploaded to your
+      OPERATION_STATE_EVIDENCE_UPLOAD_IN_PROGRESS: The audit report and
+        evidence are being uploaded to your bucket.
+      OPERATION_STATE_DONE: The audit report and evidence are uploaded to your
         bucket.
       OPERATION_STATE_FAILED: Audit report generation process failed.
     """

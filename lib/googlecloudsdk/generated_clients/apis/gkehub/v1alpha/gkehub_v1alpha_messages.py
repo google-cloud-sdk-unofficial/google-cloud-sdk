@@ -3608,9 +3608,8 @@ class GkehubProjectsLocationsListRequest(_messages.Message):
   r"""A GkehubProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -6894,6 +6893,65 @@ class OperationMetadata(_messages.Message):
   verb = _messages.StringField(7)
 
 
+class OperationalState(_messages.Message):
+  r"""Operational state of the Rollout Sequence.
+
+  Enums:
+    ReasonsValueListEntryValuesEnum:
+    StateValueValuesEnum: Output only. State of the Rollout Sequence.
+
+  Fields:
+    reasons: Output only. Reasons for the Rollout Sequence state.
+    state: Output only. State of the Rollout Sequence.
+    stateChangeTime: Output only. The timestamp at which the operational state
+      was last changed. Used to track how long it has been in the current
+      state.
+  """
+
+  class ReasonsValueListEntryValuesEnum(_messages.Enum):
+    r"""ReasonsValueListEntryValuesEnum enum type.
+
+    Values:
+      REASON_UNSPECIFIED: Default unspecified value.
+      FLEET_FEATURE_DELETED_ERROR: A fleet feature is deleted.
+      FLEET_DELETED_ERROR: A fleet is deleted.
+      EMPTY_STAGE_WARNING: A stage is empty.
+      MIXED_RELEASE_CHANNELS_WARNING: Mixed release channels in the sequence.
+      INTERNAL_ERROR: Internal error, for example when host project is soft-
+        deleted.
+    """
+    REASON_UNSPECIFIED = 0
+    FLEET_FEATURE_DELETED_ERROR = 1
+    FLEET_DELETED_ERROR = 2
+    EMPTY_STAGE_WARNING = 3
+    MIXED_RELEASE_CHANNELS_WARNING = 4
+    INTERNAL_ERROR = 5
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. State of the Rollout Sequence.
+
+    Values:
+      STATE_CODE_UNSPECIFIED: The default value. This value is used if the
+        state is omitted.
+      ACTIVE: The Rollout Sequence is active.
+      INACTIVE: The Rollout Sequence is inactive.
+      WARNING: The Rollout Sequence has warnings. It is still functioning but
+        performance may be degraded.
+      ERROR: The Rollout Sequence has errors and is not functioning.
+      INITIALIZING: The Rollout Sequence is being initialized.
+    """
+    STATE_CODE_UNSPECIFIED = 0
+    ACTIVE = 1
+    INACTIVE = 2
+    WARNING = 3
+    ERROR = 4
+    INITIALIZING = 5
+
+  reasons = _messages.EnumField('ReasonsValueListEntryValuesEnum', 1, repeated=True)
+  state = _messages.EnumField('StateValueValuesEnum', 2)
+  stateChangeTime = _messages.StringField(3)
+
+
 class Origin(_messages.Message):
   r"""Origin defines where this MembershipFeatureSpec originated from.
 
@@ -8217,16 +8275,22 @@ class RolloutMembershipState(_messages.Message):
 
 
 class RolloutSequence(_messages.Message):
-  r"""RolloutSequence defines the desired order of upgrades.
+  r"""RolloutSequence defines the desired order of upgrades. Next ID: 20
 
   Enums:
     ComputedReleaseChannelValueValuesEnum: Output only. The computed release
       channel used for the Rollout Sequence.
 
   Messages:
+    AnnotationsValue: Optional. Internal-only annotations for development and
+      testing purposes. This field is not intended for public use and will not
+      be exposed in any public API version.
     LabelsValue: Optional. Labels for this Rollout Sequence.
 
   Fields:
+    annotations: Optional. Internal-only annotations for development and
+      testing purposes. This field is not intended for public use and will not
+      be exposed in any public API version.
     autoUpgradeConfig: Optional. Configuration for automatic upgrades. If this
       message is `unset`, the system applies default behavior.
     computedReleaseChannel: Output only. The computed release channel used for
@@ -8248,8 +8312,8 @@ class RolloutSequence(_messages.Message):
     lastQualifiedNodeVersion: Output only. The last qualified node version.
     name: Identifier. Name of the rollout sequence in the format of:
       projects/{PROJECT_ID}/locations/global/rolloutSequences/{NAME}
+    operationalState: Output only. Operational state of the Rollout Sequence.
     stages: Required. Ordered list of stages that constitutes this Rollout.
-    state: Output only. State of the Rollout Sequence as a whole.
     targetControlPlaneVersion: Output only. The target control plane version
       of the Rollout Sequence.
     targetNodeVersion: Output only. The target node version of the Rollout
@@ -8284,6 +8348,33 @@ class RolloutSequence(_messages.Message):
     NO_CHANNEL = 5
 
   @encoding.MapUnrecognizedFields('additionalProperties')
+  class AnnotationsValue(_messages.Message):
+    r"""Optional. Internal-only annotations for development and testing
+    purposes. This field is not intended for public use and will not be
+    exposed in any public API version.
+
+    Messages:
+      AdditionalProperty: An additional property for a AnnotationsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type AnnotationsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AnnotationsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
     r"""Optional. Labels for this Rollout Sequence.
 
@@ -8307,82 +8398,25 @@ class RolloutSequence(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  autoUpgradeConfig = _messages.MessageField('AutoUpgradeConfig', 1)
-  computedReleaseChannel = _messages.EnumField('ComputedReleaseChannelValueValuesEnum', 2)
-  createTime = _messages.StringField(3)
-  deleteTime = _messages.StringField(4)
-  displayName = _messages.StringField(5)
-  effectiveAutoUpgradeConfig = _messages.MessageField('AutoUpgradeConfig', 6)
-  etag = _messages.StringField(7)
-  ignoredClustersSelector = _messages.MessageField('ClusterSelector', 8)
-  labels = _messages.MessageField('LabelsValue', 9)
-  lastQualifiedControlPlaneVersion = _messages.StringField(10)
-  lastQualifiedNodeVersion = _messages.StringField(11)
-  name = _messages.StringField(12)
-  stages = _messages.MessageField('Stage', 13, repeated=True)
-  state = _messages.MessageField('RolloutSequenceState', 14)
-  targetControlPlaneVersion = _messages.StringField(15)
-  targetNodeVersion = _messages.StringField(16)
-  uid = _messages.StringField(17)
-  updateTime = _messages.StringField(18)
-
-
-class RolloutSequenceState(_messages.Message):
-  r"""State and reasons of the Rollout Sequence.
-
-  Enums:
-    LifecycleStateValueValuesEnum: Output only. Lifecycle state of the Rollout
-      Sequence.
-    StateReasonsValueListEntryValuesEnum:
-
-  Fields:
-    lastStateChangeTime: Output only. The timestamp at which the
-      LifecycleState was last changed. Used to track how long it has been in
-      the current state.
-    lifecycleState: Output only. Lifecycle state of the Rollout Sequence.
-    stateReasons: Output only. StateReason represents the reason for the
-      Rollout Sequence state.
-  """
-
-  class LifecycleStateValueValuesEnum(_messages.Enum):
-    r"""Output only. Lifecycle state of the Rollout Sequence.
-
-    Values:
-      LIFECYCLE_STATE_UNSPECIFIED: The default value. This value is used if
-        the state is omitted.
-      LIFECYCLE_STATE_ACTIVE: The Rollout Sequence is active.
-      LIFECYCLE_STATE_INACTIVE: The Rollout Sequence is inactive.
-      LIFECYCLE_STATE_WARNING: The Rollout Sequence has warnings.
-      LIFECYCLE_STATE_ERROR: The Rollout Sequence has errors.
-    """
-    LIFECYCLE_STATE_UNSPECIFIED = 0
-    LIFECYCLE_STATE_ACTIVE = 1
-    LIFECYCLE_STATE_INACTIVE = 2
-    LIFECYCLE_STATE_WARNING = 3
-    LIFECYCLE_STATE_ERROR = 4
-
-  class StateReasonsValueListEntryValuesEnum(_messages.Enum):
-    r"""StateReasonsValueListEntryValuesEnum enum type.
-
-    Values:
-      STATE_REASON_UNSPECIFIED: Default unspecified value.
-      FLEET_FEATURE_DELETED_ERROR: A fleet feature is deleted.
-      FLEET_DELETED_ERROR: A fleet is deleted.
-      EMPTY_STAGE_WARNING: A stage is empty.
-      MIXED_RELEASE_CHANNELS_WARNING: Mixed release channels in the sequence.
-      INTERNAL_ERROR: Internal error, for example when host project is soft-
-        deleted.
-    """
-    STATE_REASON_UNSPECIFIED = 0
-    FLEET_FEATURE_DELETED_ERROR = 1
-    FLEET_DELETED_ERROR = 2
-    EMPTY_STAGE_WARNING = 3
-    MIXED_RELEASE_CHANNELS_WARNING = 4
-    INTERNAL_ERROR = 5
-
-  lastStateChangeTime = _messages.StringField(1)
-  lifecycleState = _messages.EnumField('LifecycleStateValueValuesEnum', 2)
-  stateReasons = _messages.EnumField('StateReasonsValueListEntryValuesEnum', 3, repeated=True)
+  annotations = _messages.MessageField('AnnotationsValue', 1)
+  autoUpgradeConfig = _messages.MessageField('AutoUpgradeConfig', 2)
+  computedReleaseChannel = _messages.EnumField('ComputedReleaseChannelValueValuesEnum', 3)
+  createTime = _messages.StringField(4)
+  deleteTime = _messages.StringField(5)
+  displayName = _messages.StringField(6)
+  effectiveAutoUpgradeConfig = _messages.MessageField('AutoUpgradeConfig', 7)
+  etag = _messages.StringField(8)
+  ignoredClustersSelector = _messages.MessageField('ClusterSelector', 9)
+  labels = _messages.MessageField('LabelsValue', 10)
+  lastQualifiedControlPlaneVersion = _messages.StringField(11)
+  lastQualifiedNodeVersion = _messages.StringField(12)
+  name = _messages.StringField(13)
+  operationalState = _messages.MessageField('OperationalState', 14)
+  stages = _messages.MessageField('Stage', 15, repeated=True)
+  targetControlPlaneVersion = _messages.StringField(16)
+  targetNodeVersion = _messages.StringField(17)
+  uid = _messages.StringField(18)
+  updateTime = _messages.StringField(19)
 
 
 class RolloutStage(_messages.Message):
@@ -8928,6 +8962,12 @@ class ServiceMeshCondition(_messages.Message):
       NON_STANDARD_BINARY_USAGE: Non-standard binary usage error code
       UNSUPPORTED_GATEWAY_CLASS: Unsupported gateway class error code
       MANAGED_CNI_NOT_ENABLED: Managed CNI not enabled error code
+      MODERNIZATION_INCOMPATIBLE_POD_ANNOTATION: One or more Pods have
+        unsupported annotations.
+      MODERNIZATION_INCOMPATIBLE_POD_IP_SCALE: Cluster exceeds service mesh
+        pod IP scalability limits.
+      MODERNIZATION_INCOMPATIBLE_CONFIG: Incompatible config found in the
+        cluster.
       MODERNIZATION_SCHEDULED: Modernization is scheduled for a cluster.
       MODERNIZATION_IN_PROGRESS: Modernization is in progress for a cluster.
       MODERNIZATION_COMPLETED: Modernization is completed for a cluster.
@@ -8953,6 +8993,13 @@ class ServiceMeshCondition(_messages.Message):
         a fleet. Rollback is no longer allowed.
       MODERNIZATION_ROLLING_BACK_FLEET: Rollback is in progress for
         modernization of all clusters in a fleet.
+      MODERNIZATION_MODERNIZED: Modernization of all the fleet's clusters is
+        complete. Soaking before finalizing the modernization.
+      MODERNIZATION_INCOMPATIBLE_SERVICES_SCALE: Fleet exceeds service mesh
+        services scalability limits.
+      MODERNIZATION_COMPATIBLE: Fleet is compatible for modernization.
+      MODERNIZATION_INCOMPATIBLE: Fleet is not yet compatible for
+        modernization.
     """
     CODE_UNSPECIFIED = 0
     MESH_IAM_PERMISSION_DENIED = 1
@@ -8992,22 +9039,29 @@ class ServiceMeshCondition(_messages.Message):
     NON_STANDARD_BINARY_USAGE = 35
     UNSUPPORTED_GATEWAY_CLASS = 36
     MANAGED_CNI_NOT_ENABLED = 37
-    MODERNIZATION_SCHEDULED = 38
-    MODERNIZATION_IN_PROGRESS = 39
-    MODERNIZATION_COMPLETED = 40
-    MODERNIZATION_ABORTED = 41
-    MODERNIZATION_PREPARING = 42
-    MODERNIZATION_STALLED = 43
-    MODERNIZATION_PREPARED = 44
-    MODERNIZATION_MIGRATING_WORKLOADS = 45
-    MODERNIZATION_ROLLING_BACK_CLUSTER = 46
-    MODERNIZATION_WILL_BE_SCHEDULED = 47
-    MODERNIZATION_MANUAL = 48
-    MODERNIZATION_ELIGIBLE = 49
-    MODERNIZATION_MODERNIZING = 50
-    MODERNIZATION_MODERNIZED_SOAKING = 51
-    MODERNIZATION_FINALIZED = 52
-    MODERNIZATION_ROLLING_BACK_FLEET = 53
+    MODERNIZATION_INCOMPATIBLE_POD_ANNOTATION = 38
+    MODERNIZATION_INCOMPATIBLE_POD_IP_SCALE = 39
+    MODERNIZATION_INCOMPATIBLE_CONFIG = 40
+    MODERNIZATION_SCHEDULED = 41
+    MODERNIZATION_IN_PROGRESS = 42
+    MODERNIZATION_COMPLETED = 43
+    MODERNIZATION_ABORTED = 44
+    MODERNIZATION_PREPARING = 45
+    MODERNIZATION_STALLED = 46
+    MODERNIZATION_PREPARED = 47
+    MODERNIZATION_MIGRATING_WORKLOADS = 48
+    MODERNIZATION_ROLLING_BACK_CLUSTER = 49
+    MODERNIZATION_WILL_BE_SCHEDULED = 50
+    MODERNIZATION_MANUAL = 51
+    MODERNIZATION_ELIGIBLE = 52
+    MODERNIZATION_MODERNIZING = 53
+    MODERNIZATION_MODERNIZED_SOAKING = 54
+    MODERNIZATION_FINALIZED = 55
+    MODERNIZATION_ROLLING_BACK_FLEET = 56
+    MODERNIZATION_MODERNIZED = 57
+    MODERNIZATION_INCOMPATIBLE_SERVICES_SCALE = 58
+    MODERNIZATION_COMPATIBLE = 59
+    MODERNIZATION_INCOMPATIBLE = 60
 
   class SeverityValueValuesEnum(_messages.Enum):
     r"""Severity level of the condition.
@@ -9310,6 +9364,12 @@ class ServiceMeshFeatureCondition(_messages.Message):
       NON_STANDARD_BINARY_USAGE: Non-standard binary usage error code.
       UNSUPPORTED_GATEWAY_CLASS: Unsupported gateway class error code.
       MANAGED_CNI_NOT_ENABLED: Managed CNI not enabled error code.
+      MODERNIZATION_INCOMPATIBLE_POD_ANNOTATION: One or more Pods have
+        unsupported annotations.
+      MODERNIZATION_INCOMPATIBLE_POD_IP_SCALE: Cluster exceeds service mesh
+        pod IP scalability limits.
+      MODERNIZATION_INCOMPATIBLE_CONFIG: Incompatible config found in the
+        cluster.
       MODERNIZATION_SCHEDULED: Modernization is scheduled for a cluster.
       MODERNIZATION_IN_PROGRESS: Modernization is in progress for a cluster.
       MODERNIZATION_COMPLETED: Modernization is completed for a cluster.
@@ -9335,6 +9395,13 @@ class ServiceMeshFeatureCondition(_messages.Message):
         a fleet. Rollback is no longer allowed.
       MODERNIZATION_ROLLING_BACK_FLEET: Rollback is in progress for
         modernization of all clusters in a fleet.
+      MODERNIZATION_MODERNIZED: Modernization of all clusters in the fleet is
+        complete. Soaking before finalizing the modernization.
+      MODERNIZATION_INCOMPATIBLE_SERVICES_SCALE: Fleet exceeds service mesh
+        services scalability limits.
+      MODERNIZATION_COMPATIBLE: Fleet is compatible for modernization.
+      MODERNIZATION_INCOMPATIBLE: Fleet is not yet compatible for
+        modernization.
     """
     CODE_UNSPECIFIED = 0
     MESH_IAM_PERMISSION_DENIED = 1
@@ -9374,22 +9441,29 @@ class ServiceMeshFeatureCondition(_messages.Message):
     NON_STANDARD_BINARY_USAGE = 35
     UNSUPPORTED_GATEWAY_CLASS = 36
     MANAGED_CNI_NOT_ENABLED = 37
-    MODERNIZATION_SCHEDULED = 38
-    MODERNIZATION_IN_PROGRESS = 39
-    MODERNIZATION_COMPLETED = 40
-    MODERNIZATION_ABORTED = 41
-    MODERNIZATION_PREPARING = 42
-    MODERNIZATION_STALLED = 43
-    MODERNIZATION_PREPARED = 44
-    MODERNIZATION_MIGRATING_WORKLOADS = 45
-    MODERNIZATION_ROLLING_BACK_CLUSTER = 46
-    MODERNIZATION_WILL_BE_SCHEDULED = 47
-    MODERNIZATION_MANUAL = 48
-    MODERNIZATION_ELIGIBLE = 49
-    MODERNIZATION_MODERNIZING = 50
-    MODERNIZATION_MODERNIZED_SOAKING = 51
-    MODERNIZATION_FINALIZED = 52
-    MODERNIZATION_ROLLING_BACK_FLEET = 53
+    MODERNIZATION_INCOMPATIBLE_POD_ANNOTATION = 38
+    MODERNIZATION_INCOMPATIBLE_POD_IP_SCALE = 39
+    MODERNIZATION_INCOMPATIBLE_CONFIG = 40
+    MODERNIZATION_SCHEDULED = 41
+    MODERNIZATION_IN_PROGRESS = 42
+    MODERNIZATION_COMPLETED = 43
+    MODERNIZATION_ABORTED = 44
+    MODERNIZATION_PREPARING = 45
+    MODERNIZATION_STALLED = 46
+    MODERNIZATION_PREPARED = 47
+    MODERNIZATION_MIGRATING_WORKLOADS = 48
+    MODERNIZATION_ROLLING_BACK_CLUSTER = 49
+    MODERNIZATION_WILL_BE_SCHEDULED = 50
+    MODERNIZATION_MANUAL = 51
+    MODERNIZATION_ELIGIBLE = 52
+    MODERNIZATION_MODERNIZING = 53
+    MODERNIZATION_MODERNIZED_SOAKING = 54
+    MODERNIZATION_FINALIZED = 55
+    MODERNIZATION_ROLLING_BACK_FLEET = 56
+    MODERNIZATION_MODERNIZED = 57
+    MODERNIZATION_INCOMPATIBLE_SERVICES_SCALE = 58
+    MODERNIZATION_COMPATIBLE = 59
+    MODERNIZATION_INCOMPATIBLE = 60
 
   class SeverityValueValuesEnum(_messages.Enum):
     r"""Severity level of the condition.
@@ -9419,10 +9493,27 @@ class ServiceMeshFeatureSpec(_messages.Message):
   Enums:
     ModernizationValueValuesEnum: Optional. Specifies modernization for the
       fleet.
+    ModernizationCompatibilityValueValuesEnum: Optional. Specifies
+      modernization compatibility for the fleet.
 
   Fields:
     modernization: Optional. Specifies modernization for the fleet.
+    modernizationCompatibility: Optional. Specifies modernization
+      compatibility for the fleet.
   """
+
+  class ModernizationCompatibilityValueValuesEnum(_messages.Enum):
+    r"""Optional. Specifies modernization compatibility for the fleet.
+
+    Values:
+      MODERNIZATION_COMPATIBILITY_UNSPECIFIED: Unspecified.
+      VALIDATION_ENABLED: Google should report modernization eligibility gaps.
+      VALIDATION_DISABLED: Google should not report modernization eligibility
+        gaps.
+    """
+    MODERNIZATION_COMPATIBILITY_UNSPECIFIED = 0
+    VALIDATION_ENABLED = 1
+    VALIDATION_DISABLED = 2
 
   class ModernizationValueValuesEnum(_messages.Enum):
     r"""Optional. Specifies modernization for the fleet.
@@ -9439,6 +9530,7 @@ class ServiceMeshFeatureSpec(_messages.Message):
     COMPATIBILITY_VALIDATION_ENABLED = 3
 
   modernization = _messages.EnumField('ModernizationValueValuesEnum', 1)
+  modernizationCompatibility = _messages.EnumField('ModernizationCompatibilityValueValuesEnum', 2)
 
 
 class ServiceMeshFeatureState(_messages.Message):
@@ -9978,6 +10070,9 @@ class UpgradeRolloutSequenceRequest(_messages.Message):
     UpgradeTypeValueValuesEnum: Required. The type of upgrade.
 
   Fields:
+    force: Optional. If set to true, any rollout already running on the first
+      stage of the sequence will be cancelled to allow for the creation of the
+      new rollout.
     upgradeType: Required. The type of upgrade.
     version: Required. GKE version to upgrade to. A valid GKE version
       available on the release channel used by the sequence. Patch versions
@@ -10006,8 +10101,9 @@ class UpgradeRolloutSequenceRequest(_messages.Message):
     CONTROL_PLANE = 1
     NODE = 2
 
-  upgradeType = _messages.EnumField('UpgradeTypeValueValuesEnum', 1)
-  version = _messages.StringField(2)
+  force = _messages.BooleanField(1)
+  upgradeType = _messages.EnumField('UpgradeTypeValueValuesEnum', 2)
+  version = _messages.StringField(3)
 
 
 class ValidateCreateMembershipRequest(_messages.Message):

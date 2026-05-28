@@ -20,7 +20,6 @@ from googlecloudsdk.api_lib.app import operations_util
 from googlecloudsdk.api_lib.app import service_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import exceptions
-import six
 
 
 class IngressSettingError(exceptions.Error):
@@ -79,7 +78,7 @@ class Update(base.Command):
             api_client.SetIngressTrafficAllowed, service.id,
             ingress_traffic_allowed)
       except operations_util.MiscOperationError as err:
-        errors[service.id] = six.text_type(err)
+        errors[service.id] = str(err)
     if errors:
       combined_error_msg = 'Error updating service(s): '
       for service, error_msg in errors.items():

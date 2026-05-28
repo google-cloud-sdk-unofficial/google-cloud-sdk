@@ -55,7 +55,7 @@ def _AddNetworkEndpointGroupType(parser, support_neg_type):
     ).AddToParser(parser)
 
 
-def _AddNetworkEndpointType(parser):
+def _AddNetworkEndpointType(parser, support_dedicated_backend=False):
   """Adds endpoint type argument for creating network endpoint groups."""
   endpoint_type_choices = [
       'gce-vm-ip-port',
@@ -67,6 +67,10 @@ def _AddNetworkEndpointType(parser):
       'private-service-connect',
       'gce-vm-ip-portmap',
   ]
+  hidden_choices = []
+  if support_dedicated_backend:
+    endpoint_type_choices.append('gce-vm-ip-dedicated-backend')
+    hidden_choices.append('gce-vm-ip-dedicated-backend')
 
   help_text = """\
       Determines the spec of endpoints attached to this group.
@@ -128,6 +132,7 @@ def _AddNetworkEndpointType(parser):
       '--network-endpoint-type',
       hidden=False,
       choices=endpoint_type_choices,
+      hidden_choices=hidden_choices,
       default='gce-vm-ip-port',
       help_str=help_text,
   ).AddToParser(parser)
@@ -410,11 +415,13 @@ def AddCreateNegArgsToParser(
     parser,
     support_neg_type=False,
     support_serverless_deployment=False,
+    support_dedicated_backend=False,
 ):
   """Adds flags for creating a network endpoint group to the parser."""
 
   _AddNetworkEndpointGroupType(parser, support_neg_type)
-  _AddNetworkEndpointType(parser)
+  _AddNetworkEndpointType(parser, support_dedicated_backend)
+
   _AddNetwork(parser)
   _AddSubnet(parser)
   _AddDefaultPort(parser)

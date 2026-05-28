@@ -98,6 +98,7 @@ class Compute(base.Command):
     compute_flags.AddKeyRevocationActionTypeArg(parser, False)
     compute_flags.AddInstanceKmsKeyArg(parser, False)
     compute_flags.AddClearEncryptionKeyArg(parser)
+    flags.AddUseProjectServiceAccountFlag(parser)
 
   def _ParseResourcePolicies(self, resource_policies, project, zone):
     """Parses the resource policies flag."""
@@ -228,6 +229,10 @@ class Compute(base.Command):
     if args.clear_encryption_key:
       restore_config['ClearOverridesFieldMask'] = (
           'compute_instance_restore_properties.disks.*.disk_encryption_key'
+      )
+    if args.use_project_service_account:
+      restore_config['UseProjectServiceAccount'] = (
+          args.use_project_service_account
       )
     try:
       operation = client.RestoreCompute(backup, restore_config)

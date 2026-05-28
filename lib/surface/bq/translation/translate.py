@@ -55,7 +55,7 @@ def _get_dialect_registry():
     raise exceptions.Error(f'Failed to load dialect registry: {e}')
 
 
-def _get_task_type(source_dialect: str, target_dialect: str = None) -> str:
+def _get_task_type(source_dialect: str, target_dialect: str) -> str:
   """Returns the migration task type based on the source dialect."""
   registry = _get_dialect_registry()
   source_dialect_map = {}
@@ -106,6 +106,7 @@ def _build_translation_details(
     explanation_output_file=None,
     translation_config_files=None,
     metadata_gcs_uri=None,
+    generated_ddl_output_file=None,
 ):
   """Builds the translation details message for the migration task."""
   target_return_literals = ['sql/query.sql']
@@ -120,6 +121,11 @@ def _build_translation_details(
           )
       )
   ]
+
+  if generated_ddl_output_file:
+    target_return_literals.append('source_sql_metadata_generation_suggestion/')
+    if 'suggestion' not in target_types:
+      target_types.append('suggestion')
 
   if explanation_output_file:
     target_return_literals.append(
@@ -181,10 +187,11 @@ def _build_migration_workflow(
     messages,
     query,
     source_dialect,
+    target_dialect,
     explanation_output_file=None,
     translation_config_files=None,
     metadata_gcs_uri=None,
-    target_dialect=None,
+    generated_ddl_output_file=None,
 ):
   """Builds the migration workflow message and returns it with the task type."""
   task_type = _get_task_type(source_dialect, target_dialect)
@@ -194,6 +201,7 @@ def _build_migration_workflow(
       explanation_output_file,
       translation_config_files,
       metadata_gcs_uri,
+      generated_ddl_output_file,
   )
 
   task = messages.GoogleCloudBigqueryMigrationV2MigrationTask(
@@ -217,6 +225,7 @@ def _parse_task_result(wait_response):
   """Parses the workflow wait response into component task details."""
   translated_sql = None
   explanation = None
+  generated_ddl = None
   result_task = None
   console_uri = ''
   report_log_messages = []
@@ -246,6 +255,10 @@ def _parse_task_result(wait_response):
             == 'translation_explanation_suggestion/query.sql'
         ):
           explanation = literal.literalString
+        elif (
+            literal.relativePath == 'source_sql_metadata_generation_suggestion/'
+        ):
+          generated_ddl = literal.literalString
       console_uri = result_task.taskResult.translationTaskResult.consoleUri
       report_log_messages = (
           result_task.taskResult.translationTaskResult.reportLogMessages
@@ -255,6 +268,7 @@ def _parse_task_result(wait_response):
       result_task,
       translated_sql,
       explanation,
+      generated_ddl,
       console_uri,
       report_log_messages,
   )
@@ -316,9 +330,14 @@ def _handle_task_failure(wait_response, result_task):
 
 def _process_workflow_result(wait_response, task_type, args):
   """Processes the completed workflow and handles output/logging."""
-  result_task, translated_sql, explanation, console_uri, report_log_messages = (
-      _parse_task_result(wait_response)
-  )
+  (
+      result_task,
+      translated_sql,
+      explanation,
+      generated_ddl,
+      console_uri,
+      report_log_messages,
+  ) = _parse_task_result(wait_response)
 
   result = _format_log_result(
       wait_response, task_type, result_task, console_uri, report_log_messages
@@ -349,6 +368,12 @@ def _process_workflow_result(wait_response, task_type, args):
     log.status.Print(
         'Successfully saved translation explanation to'
         f' {args.explanation_output_file}.'
+    )
+
+  if args.generated_ddl_output_file and generated_ddl:
+    files.WriteFileContents(args.generated_ddl_output_file, generated_ddl)
+    log.status.Print(
+        f'Successfully saved generated DDL to {args.generated_ddl_output_file}.'
     )
 
   if args.translation_log_file:
@@ -455,6 +480,11 @@ To translate a Snowflake query from a file and save the output and logs to files
         ),
         required=False,
     )
+    parser.add_argument(
+        '--generated-ddl-output-file',
+        help='File to which to write the generated DDL.',
+        required=False,
+    )
 
   def Run(self, args):
     query = console_io.ReadFromFileOrStdin(args.input_file or '-', binary=False)
@@ -478,10 +508,11 @@ To translate a Snowflake query from a file and save the output and logs to files
         messages,
         query,
         args.source_dialect,
-        args.explanation_output_file,
-        args.translation_config_files,
-        args.metadata_gcs_uri,
-        target_dialect=args.target_dialect,
+        args.target_dialect,
+        explanation_output_file=args.explanation_output_file,
+        translation_config_files=args.translation_config_files,
+        metadata_gcs_uri=args.metadata_gcs_uri,
+        generated_ddl_output_file=args.generated_ddl_output_file,
     )
 
     request_type = api_util.GetMigrationApiMessage(

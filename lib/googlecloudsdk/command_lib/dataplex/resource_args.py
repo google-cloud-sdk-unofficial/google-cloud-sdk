@@ -264,6 +264,17 @@ def GetMetadataJobResourceSpec():
   )
 
 
+def GetDataProductResourceSpec():
+  """Gets Data Product resource spec."""
+  return concepts.ResourceSpec(
+      'dataplex.projects.locations.dataProducts',
+      resource_name='data product',
+      projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+      locationsId=LocationAttributeConfig(),
+      dataProductsId=DataProductAttributeConfig(),
+  )
+
+
 def GetEncryptionConfigResourceSpec():
   """Gets EncryptionConfig resource spec."""
   return concepts.ResourceSpec(
@@ -464,6 +475,13 @@ def TaskAttributeConfig():
   )
 
 
+def DataProductAttributeConfig():
+  return concepts.ResourceParameterAttributeConfig(
+      name='data_product',
+      help_text='The identifier of the Dataplex data product resource.',
+  )
+
+
 def AddLakeResourceArg(parser, verb, positional=True):
   """Adds a resource argument for a Dataplex Lake."""
   name = 'lake' if positional else '--lake'
@@ -523,6 +541,18 @@ def AddTaskResourceArg(parser, verb, positional=True):
       'Arguments and flags that define the Dataplex task you want {}'.format(
           verb
       ),
+      required=True,
+  ).AddToParser(parser)
+
+
+def AddDataProductResourceArg(parser, verb, positional=True):
+  """Adds a resource argument for a Dataplex Data Product."""
+  name = 'data_product' if positional else '--data-product'
+  return concept_parsers.ConceptParser.ForResource(
+      name,
+      GetDataProductResourceSpec(),
+      'Arguments and flags that define the Dataplex data product you want {}'
+      .format(verb),
       required=True,
   ).AddToParser(parser)
 

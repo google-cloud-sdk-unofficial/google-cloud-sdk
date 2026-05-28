@@ -224,8 +224,6 @@ class FlagTypes:
         "zone": str,
         "machineType": str,
     }
-    if self.is_alpha:
-      spec["atmTags"] = LABEL
     return arg_parsers.ArgObject(
         spec=spec,
         required_keys=["id", "zone", "machineType"],
@@ -242,8 +240,6 @@ class FlagTypes:
             self.messages.NewSpotInstancesConfig.TerminationActionValueValuesEnum
         ),
     }
-    if self.is_alpha:
-      spec["atmTags"] = LABEL
     return arg_parsers.ArgObject(
         spec=spec,
         required_keys=["id", "zone", "machineType"],
@@ -258,7 +254,6 @@ class FlagTypes:
     }
     if self.is_alpha:
       spec.update({
-          "atmTags": LABEL,
           "reservationBlock": str,
           "reservationSubBlock": str,
       })
@@ -276,8 +271,6 @@ class FlagTypes:
         "machineType": str,
         "maxDuration": str,
     }
-    if self.is_alpha:
-      spec["atmTags"] = LABEL
     return arg_parsers.ArgObject(
         spec=spec,
         required_keys=["id", "zone", "machineType", "maxDuration"],
@@ -350,8 +343,6 @@ class FlagTypes:
         "id": str,
         "nodeSetIds": arg_parsers.ArgObject(value_type=str, repeated=True),
     }
-    if self.is_alpha:
-      spec["exclusive"] = bool
     return spec
 
   def GetSlurmPartitionsObject(self) -> arg_parsers.ArgObject:
@@ -382,7 +373,6 @@ class FlagTypes:
               "enablePublicIps": bool,
               "startupScript": arg_parsers.ArgObject(),
               "labels": LABEL,
-              "serviceAccount": str,
               "bootDisk": self.GetProtoBootDiskType(),
               "storageConfigs": STORAGE_CONFIG,
           },
@@ -435,7 +425,6 @@ class FlagTypes:
       new_on_demand_instances_spec = {
           "machineType": str,
           "zone": str,
-          "atmTags": LABEL,
       }
       new_spot_instances_spec = new_on_demand_instances_spec | {
           "terminationAction": str
@@ -572,9 +561,9 @@ class FlagTypes:
                           ),
                           "partitions": arg_parsers.ArgObject(
                               spec={
-                                  "exclusive": bool,
                                   "id": str,
                                   "nodeSetIds": arg_parsers.ArgObject(
+                                      value_type=str,
                                       repeated=True,
                                   ),
                               },
@@ -582,10 +571,6 @@ class FlagTypes:
                           ),
                           "prologBashScripts": arg_parsers.ArgList(),
                           "epilogBashScripts": arg_parsers.ArgList(),
-                          "taskPrologBashScripts": arg_parsers.ArgList(),
-                          "taskEpilogBashScripts": arg_parsers.ArgList(),
-                          "config": SLURM_CONFIG_TYPE,
-                          "disableHealthCheckProgram": bool,
                       }
                   ),
               }

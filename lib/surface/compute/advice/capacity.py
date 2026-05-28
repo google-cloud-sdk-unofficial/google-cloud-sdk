@@ -14,9 +14,7 @@
 # limitations under the License.
 """Command to get capacity advice for Compute Engine resources."""
 
-import collections
-import re
-
+from apitools.base.py import encoding
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
@@ -76,49 +74,8 @@ DETAILED_HELP = {
 }
 
 
-class ArgMultiValueDict:
-  """Converts argument values into multi-valued mappings.
-
-  Values for repeated keys are collected in a list. Ensures all values are
-  key-value pairs and handles invalid cases.
-  """
-
-  def __init__(self):
-    ops = "="
-    key_op_value_pattern = r"([^\s{ops}]+)\s*{ops}\s*(.*)".format(ops=ops)
-    self._key_op_value = re.compile(key_op_value_pattern, re.DOTALL)
-
-  def __call__(self, arg_value):
-    arg_list = [item.strip() for item in arg_value.split(",")]
-    arg_dict = collections.OrderedDict()
-    for arg in arg_list:
-      # Enforce key-value pair structure
-      if "=" not in arg:
-        raise arg_parsers.ArgumentTypeError(
-            "Invalid flag value [{0}]".format(arg)
-        )
-      match = self._key_op_value.match(arg)
-      if not match:
-        raise arg_parsers.ArgumentTypeError(
-            "Invalid flag value [{0}]".format(arg)
-        )
-      key, value = match.group(1).strip(), match.group(2).strip()
-      if not key or not value:
-        raise arg_parsers.ArgumentTypeError(
-            "Invalid flag value [{0}]".format(arg)
-        )
-      # Prevent values from containing '='
-      if "=" in value:
-        raise arg_parsers.ArgumentTypeError(
-            "Invalid flag value [{0}]".format(arg)
-        )
-      arg_dict.setdefault(key, []).append(value)
-
-    return arg_dict
-
-
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Capacity(base.Command):
   """Get capacity advice for Compute Engine resources."""
 
@@ -139,27 +96,7 @@ class Capacity(base.Command):
         help="The total number of VMs being requested in the capacity query.",
     )
 
-    instance_selection_group = parser.add_group(
-        required=True,
-        help="Specifies the machine types for which advice is being sought.",
-    )
-    instance_selection_group.add_argument(
-        "--instance-selection-machine-types",
-        type=arg_parsers.ArgList(),
-        metavar="MACHINE_TYPE",
-        help="Specifies a comma-separated list of preferred machine types for "
-        "creating virtual machines.",
-        action="append",
-    )
-    instance_selection_group.add_argument(
-        "--instance-selection",
-        help='Named selection of machine types. For '
-        'example, --instance-selection="name=instance-selection-1,'
-        'machine-type=e2-standard-8,machine-type=t2d-standard-8".',
-        metavar="INSTANCE_SELECTION",
-        type=ArgMultiValueDict(),
-        action="append",
-    )
+    flags.AddInstanceFlexibilityPolicyArgs(parser)
 
     flags.AddTargetDistributionShapeFlag(parser)
     parser.add_argument(
@@ -182,13 +119,6 @@ class Capacity(base.Command):
     client = holder.client
     messages = client.messages
     flags.ValidateZonesAndRegionFlags(args, holder.resources)
-
-    if args.IsSpecified("instance_selection") and args.IsSpecified(
-        "instance_selection_machine_types"
-    ):
-      raise exceptions.ConflictingArgumentsException(
-          "Exactly one 'instance-selection' must be specified."
-      )
 
     if args.instance_selection and len(args.instance_selection) > 1:
       raise exceptions.InvalidArgumentException(
@@ -274,7 +204,52 @@ class Capacity(base.Command):
     if zone_configs:
       distribution_policy.zones = zone_configs
     selections_map = {}
-    if args.instance_selection:
+    if args.instance_flexibility_policy:
+      raw_selections = args.instance_flexibility_policy.get(
+          "instanceSelections",
+          args.instance_flexibility_policy.get("instance-selections", {})
+      )
+      items = []
+      if isinstance(raw_selections, dict):
+        items = list(raw_selections.items())
+      elif isinstance(raw_selections, list):
+        for sel in raw_selections:
+          if not isinstance(sel, dict):
+            raise exceptions.InvalidArgumentException(
+                "--instance-flexibility-policy",
+                "Each instance selection must be a dictionary.",
+            )
+          if "name" not in sel:
+            raise exceptions.InvalidArgumentException(
+                "--instance-flexibility-policy",
+                "Missing instance selection name."
+            )
+          items.append((sel["name"], sel))
+
+      for name, selection_info in items:
+        machine_types = selection_info.get(
+            "machineTypes",
+            selection_info.get("machine-types", [])
+        )
+        selection = messages.CapacityAdviceRequestInstanceFlexibilityPolicyInstanceSelection(
+            machineTypes=machine_types,
+        )
+        if "rank" in selection_info:
+          selection.rank = int(selection_info["rank"])
+        min_cpu = selection_info.get("minCpuPlatform") or selection_info.get(
+            "min-cpu-platform"
+        )
+        if min_cpu:
+          selection.minCpuPlatform = min_cpu
+        if "disks" in selection_info:
+          disks = []
+          for disk_dict in selection_info["disks"]:
+            disks.append(
+                encoding.DictToMessage(disk_dict, messages.AttachedDisk)
+            )
+          selection.disks = disks
+        selections_map[name] = selection
+    elif args.instance_selection:
       for i, selection in enumerate(args.instance_selection):
         selection_name_list = selection.get("name")
         selection_name = (
@@ -289,12 +264,19 @@ class Capacity(base.Command):
                   selection_name
               ),
           )
-        selections_map[selection_name] = (
-            messages.CapacityAdviceRequestInstanceFlexibilityPolicyInstanceSelection(
-                machineTypes=selection.get("machine-type"),
-            )
+        inst_sel = messages.CapacityAdviceRequestInstanceFlexibilityPolicyInstanceSelection(
+            machineTypes=selection.get("machine-type"),
         )
-    if args.instance_selection_machine_types:
+        if "rank" in selection:
+          inst_sel.rank = int(selection["rank"][0])
+        if "min-cpu-platform" in selection:
+          min_cpu_platform = selection["min-cpu-platform"]
+          if isinstance(min_cpu_platform, list):
+            inst_sel.minCpuPlatform = min_cpu_platform[0]
+          else:
+            inst_sel.minCpuPlatform = min_cpu_platform
+        selections_map[selection_name] = inst_sel
+    elif args.instance_selection_machine_types:
       for i, machine_types_list in enumerate(
           args.instance_selection_machine_types
       ):

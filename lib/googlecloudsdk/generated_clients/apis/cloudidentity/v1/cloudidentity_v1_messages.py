@@ -1340,6 +1340,17 @@ class CloudidentityInboundSsoAssignmentsPatchRequest(_messages.Message):
   updateMask = _messages.StringField(3)
 
 
+class CloudidentityPoliciesDeleteRequest(_messages.Message):
+  r"""A CloudidentityPoliciesDeleteRequest object.
+
+  Fields:
+    name: Required. The name of the policy to delete. Format:
+      `policies/{policy}`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
 class CloudidentityPoliciesGetRequest(_messages.Message):
   r"""A CloudidentityPoliciesGetRequest object.
 

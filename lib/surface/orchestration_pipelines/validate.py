@@ -21,7 +21,22 @@ from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.orchestration_pipelines import deployment_model
 from googlecloudsdk.command_lib.orchestration_pipelines import gcp_deployer
 from googlecloudsdk.command_lib.orchestration_pipelines.handlers import registry
+from googlecloudsdk.command_lib.orchestration_pipelines.tools import gcs_utils
 from googlecloudsdk.command_lib.orchestration_pipelines.tools import yaml_processor
+
+
+def _validate_artifact_bucket(env, _, pipeline_models):
+  """Validates that the GCS bucket for the environment exists and is accessible."""
+  if not (
+      env
+      and env.artifact_storage
+      and env.artifact_storage.bucket
+      and pipeline_models
+  ):
+    return
+
+  gcs_utils.ValidateBucketExistsAndHasPermissions(env.artifact_storage.bucket)
+
 
 DEPLOYMENT_FILE_NAME = "deployment.yaml"
 
@@ -208,6 +223,8 @@ class Validate(calliope_base.Command):
       env_name = context["name"]
       combined_vars = context["combined_vars"]
       has_environment = env is not None
+
+      _validate_artifact_bucket(env, env_name, pipeline_models)
 
       if pipeline_models:
         yaml_processor.validate_pipeline_l2(

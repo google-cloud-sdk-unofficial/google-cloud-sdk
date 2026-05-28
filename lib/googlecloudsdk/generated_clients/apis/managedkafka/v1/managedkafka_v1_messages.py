@@ -19,9 +19,12 @@ class AccessConfig(_messages.Message):
     networkConfigs: Required. Virtual Private Cloud (VPC) networks that must
       be granted direct access to the Kafka cluster. Minimum of 1 network is
       required. Maximum 10 networks can be specified.
+    publicClusterConfig: Optional. The configuration for public connectivity
+      to the Kafka cluster.
   """
 
   networkConfigs = _messages.MessageField('NetworkConfig', 1, repeated=True)
+  publicClusterConfig = _messages.MessageField('PublicClusterConfig', 2)
 
 
 class Acl(_messages.Message):
@@ -1922,9 +1925,8 @@ class ManagedkafkaProjectsLocationsListRequest(_messages.Message):
   r"""A ManagedkafkaProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -3020,6 +3022,18 @@ class PauseConnectorResponse(_messages.Message):
   r"""Response for PauseConnector."""
 
 
+class PublicClusterConfig(_messages.Message):
+  r"""The configuration for a public Kafka cluster
+
+  Fields:
+    allowedSourceIpRanges: Required. The list of IPv4 ranges in CIDR notation
+      that are allowed to connect to the public Kafka broker endpoints. This
+      field is required if PublicClusterConfig is specified.
+  """
+
+  allowedSourceIpRanges = _messages.StringField(1, repeated=True)
+
+
 class RebalanceConfig(_messages.Message):
   r"""Defines rebalancing behavior of a Kafka cluster.
 
@@ -3232,6 +3246,25 @@ class SchemaRegistry(_messages.Message):
 
   contexts = _messages.StringField(1, repeated=True)
   name = _messages.StringField(2)
+
+
+class SchemaSubject(_messages.Message):
+  r"""Subject defines the evolution scope of schemas as a holder of schema
+  versions.
+
+  Fields:
+    name: Identifier. The name of the subject. Structured like: `projects/{pro
+      ject}/locations/{location}/schemaRegistries/{schema_registry}/subjects/{
+      subject}` or `projects/{project}/locations/{location}/schemaRegistries/{
+      schema_registry}/contexts/{context}/subjects/{subject}` Subject name
+      {subject} can contain the following: * Up to 255 UTF-8 bytes. * Allowed
+      characters: letters (uppercase or lowercase), numbers, and the following
+      special characters: `.`, `-`, `_`, `+`, `%`, and `~`.
+    versions: Optional. The versions of the subject.
+  """
+
+  name = _messages.StringField(1)
+  versions = _messages.StringField(2, repeated=True)
 
 
 class SchemaVersion(_messages.Message):

@@ -359,3 +359,46 @@ def ValidateZonesAndRegionFlags(args, resources):
           "--zones",
           "Specified zones are not in specified region [{0}].".format(region),
       )
+
+
+def AddInstanceFlexibilityPolicyArgs(parser):
+  """Add instance selection args, including instance-flexibility-policy."""
+  flex_policy_mutex_group = parser.add_mutually_exclusive_group(
+      required=True,
+      help="Specifies the machine types for which advice is being sought.",
+  )
+  flex_policy_mutex_group.add_argument(
+      "--instance-flexibility-policy",
+      help=(
+          "Specifies the instance flexibility policy. This policy lets you "
+          "define one or more named selections of machine types for which "
+          "capacity advice is sought. Within each selection, you can list your "
+          "preferred machine types, assign an optional rank to indicate "
+          "priority (lower rank values are considered higher priority), and "
+          "specify additional instance properties, such as minimum CPU "
+          "platform and disk configurations."
+      ),
+      metavar="INSTANCE_FLEXIBILITY_POLICY",
+      type=compute_flags.QuotedArgDict(includes_json=True, allow_key_only=True),
+      default={},
+  )
+  instance_selection_group = flex_policy_mutex_group.add_group()
+  instance_selection_group.add_argument(
+      "--instance-selection-machine-types",
+      type=arg_parsers.ArgList(),
+      metavar="MACHINE_TYPE",
+      help="Specifies a comma-separated list of preferred machine types for "
+      "creating virtual machines.",
+      action="append",
+  )
+  instance_selection_group.add_argument(
+      "--instance-selection",
+      type=compute_flags.ArgMultiValueDict(),
+      help=(
+          "Named selection of machine types. For "
+          'example, --instance-selection="name=instance-selection-1,'
+          'machine-type=e2-standard-8,machine-type=t2d-standard-8".'
+      ),
+      metavar="INSTANCE_SELECTION",
+      action="append",
+  )

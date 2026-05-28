@@ -24,7 +24,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.pubsub import flags
 from googlecloudsdk.command_lib.pubsub import resource_args
 from googlecloudsdk.command_lib.pubsub import util
-import six
 
 MESSAGE_FORMAT = """\
 table[box](
@@ -73,7 +72,7 @@ def _Run(args, max_messages, return_immediately=False):
       # same status.
       if not ack_ids_and_failure_reasons:
         for ack_id in ack_ids:
-          failed_ack_ids[ack_id] = 'FAILURE_' + six.text_type(error.status_code)
+          failed_ack_ids[ack_id] = 'FAILURE_' + str(error.status_code)
 
     if not failed_ack_ids:
       for ack_ids_and_failure_reason in ack_ids_and_failure_reasons:

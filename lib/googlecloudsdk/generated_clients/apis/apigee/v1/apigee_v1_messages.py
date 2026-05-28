@@ -7108,6 +7108,10 @@ class GoogleCloudApigeeV1ApiProxyRevision(_messages.Message):
       designed to provide visibility into the contents of the API proxy.
     lastModifiedAt: Time that the API proxy revision was last modified in
       milliseconds since epoch.
+    mcp: Output only. Whether this proxy revision is detected as an MCP (Model
+      Context Protocol) proxy. A proxy revision is identified as MCP if it has
+      a proxy endpoint with the `/mcp` base path that routes to the MCP target
+      URL.
     name: Name of the API proxy.
     policies: List of policy names included in the API proxy revision..
     proxies: List of proxy names included in the API proxy revision.
@@ -7173,20 +7177,21 @@ class GoogleCloudApigeeV1ApiProxyRevision(_messages.Message):
   hasExtensiblePolicy = _messages.BooleanField(9)
   integrationEndpoints = _messages.StringField(10, repeated=True)
   lastModifiedAt = _messages.IntegerField(11)
-  name = _messages.StringField(12)
-  policies = _messages.StringField(13, repeated=True)
-  proxies = _messages.StringField(14, repeated=True)
-  proxyEndpoints = _messages.StringField(15, repeated=True)
-  resourceFiles = _messages.MessageField('GoogleCloudApigeeV1ResourceFiles', 16)
-  resources = _messages.StringField(17, repeated=True)
-  revision = _messages.StringField(18)
-  sharedFlows = _messages.StringField(19, repeated=True)
-  spec = _messages.StringField(20)
-  targetEndpoints = _messages.StringField(21, repeated=True)
-  targetServers = _messages.StringField(22, repeated=True)
-  targets = _messages.StringField(23, repeated=True)
-  teams = _messages.StringField(24, repeated=True)
-  type = _messages.StringField(25)
+  mcp = _messages.BooleanField(12)
+  name = _messages.StringField(13)
+  policies = _messages.StringField(14, repeated=True)
+  proxies = _messages.StringField(15, repeated=True)
+  proxyEndpoints = _messages.StringField(16, repeated=True)
+  resourceFiles = _messages.MessageField('GoogleCloudApigeeV1ResourceFiles', 17)
+  resources = _messages.StringField(18, repeated=True)
+  revision = _messages.StringField(19)
+  sharedFlows = _messages.StringField(20, repeated=True)
+  spec = _messages.StringField(21)
+  targetEndpoints = _messages.StringField(22, repeated=True)
+  targetServers = _messages.StringField(23, repeated=True)
+  targets = _messages.StringField(24, repeated=True)
+  teams = _messages.StringField(25, repeated=True)
+  type = _messages.StringField(26)
 
 
 class GoogleCloudApigeeV1ApiSecurityConfig(_messages.Message):

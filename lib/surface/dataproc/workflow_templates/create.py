@@ -20,7 +20,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.dataproc import workflow_templates
 from googlecloudsdk.command_lib.util.args import labels_util
-import six
 
 DETAILED_HELP = {
     'EXAMPLES':
@@ -64,7 +63,7 @@ class Create(base.CreateCommand):
             args, messages.WorkflowTemplate.LabelsValue))
 
     if args.dag_timeout:
-      workflow_template.dagTimeout = six.text_type(args.dag_timeout) + 's'
+      workflow_template.dagTimeout = str(args.dag_timeout) + 's'
 
     if args.kms_key:
       workflow_template.encryptionConfig = (

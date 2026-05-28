@@ -230,7 +230,7 @@ class Update(base.Command):
     if iap:
       if iap_util.IsOrglessProject(
           project_id
-      ) and not iap_util.IsIapAlreadyEnabled(self):
+      ) and not iap_util.IsIapAlreadyEnabled(self.ReleaseTrack()):
         pretty_print.Info(
             '\n {bold}**[Warning]**{reset} Deploying services with IAP'
             ' enabled in a project outside of an Organization and may require'

@@ -1562,6 +1562,8 @@ class Workstation(_messages.Message):
       that are applied to the workstation and that are also propagated to the
       underlying Compute Engine resources.
     name: Identifier. Full name of this workstation.
+    persistentDirectories: Optional. Directories to persist across workstation
+      sessions.
     reconciling: Output only. Indicates whether this workstation is currently
       being updated to match its intended state.
     runtimeHost: Optional. Output only. Runtime host for the workstation when
@@ -1686,15 +1688,16 @@ class Workstation(_messages.Message):
   kmsKey = _messages.StringField(11)
   labels = _messages.MessageField('LabelsValue', 12)
   name = _messages.StringField(13)
-  reconciling = _messages.BooleanField(14)
-  runtimeHost = _messages.MessageField('RuntimeHost', 15)
-  satisfiesPzi = _messages.BooleanField(16)
-  satisfiesPzs = _messages.BooleanField(17)
-  sourceWorkstation = _messages.StringField(18)
-  startTime = _messages.StringField(19)
-  state = _messages.EnumField('StateValueValuesEnum', 20)
-  uid = _messages.StringField(21)
-  updateTime = _messages.StringField(22)
+  persistentDirectories = _messages.MessageField('WorkstationPersistentDirectory', 14, repeated=True)
+  reconciling = _messages.BooleanField(15)
+  runtimeHost = _messages.MessageField('RuntimeHost', 16)
+  satisfiesPzi = _messages.BooleanField(17)
+  satisfiesPzs = _messages.BooleanField(18)
+  sourceWorkstation = _messages.StringField(19)
+  startTime = _messages.StringField(20)
+  state = _messages.EnumField('StateValueValuesEnum', 21)
+  uid = _messages.StringField(22)
+  updateTime = _messages.StringField(23)
 
 
 class WorkstationBoostConfig(_messages.Message):
@@ -2114,6 +2117,35 @@ class WorkstationConfig(_messages.Message):
   satisfiesPzs = _messages.BooleanField(28)
   uid = _messages.StringField(29)
   updateTime = _messages.StringField(30)
+
+
+class WorkstationGceRegionalPersistentDisk(_messages.Message):
+  r"""A Persistent Directory backed by a Compute Engine regional persistent
+  disk within the workstation.
+
+  Fields:
+    name: The name of the persistent directory.
+    sizeGb: Required. The desired size of the persistent directory in GB.
+  """
+
+  name = _messages.StringField(1)
+  sizeGb = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+
+
+class WorkstationPersistentDirectory(_messages.Message):
+  r"""A directory to persist across workstation sessions. Updates to this
+  field will only take effect on this workstation after it is restarted.
+
+  Fields:
+    gcePd: A PersistentDirectory backed by a Compute Engine persistent disk.
+    mountPath: Optional. The mount path of the persistent directory.
+    sizeGb: Optional. Size of the persistent directory in GB. If specified in
+      an update request, this is the desired size of the directory.
+  """
+
+  gcePd = _messages.MessageField('WorkstationGceRegionalPersistentDisk', 1)
+  mountPath = _messages.StringField(2)
+  sizeGb = _messages.IntegerField(3, variant=_messages.Variant.INT32)
 
 
 class WorkstationsProjectsLocationsOperationsCancelRequest(_messages.Message):

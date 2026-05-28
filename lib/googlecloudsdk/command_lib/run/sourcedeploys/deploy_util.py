@@ -18,23 +18,27 @@
 
 import argparse
 import os.path
-from typing import Any, Optional, Tuple
+import re
+from typing import Any, Tuple
 import uuid
 
 from googlecloudsdk.api_lib.run import api_enabler
 from googlecloudsdk.api_lib.run import instance
+from googlecloudsdk.api_lib.run import service
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import docker_util
 from googlecloudsdk.command_lib.run import artifact_registry
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags as run_flags
+from googlecloudsdk.command_lib.run import iap_util
 from googlecloudsdk.command_lib.run import messages_util
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.command_lib.run.sourcedeploys import deployer
 from googlecloudsdk.core import exceptions
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import progress_tracker
@@ -79,7 +83,7 @@ def _CreateBuildPack(
 
 def _BuildImageFromArgs(
     project: str, image_suffix: str, args: _Namespace
-) -> Tuple[str, Optional[docker_util.DockerRepo]]:
+) -> Tuple[str, docker_util.DockerRepo | None]:
   """Prepares the build image name and repository to create.
 
   Args:
@@ -109,6 +113,19 @@ def _GetRequiredApis():
   apis.append('artifactregistry.googleapis.com')
   apis.append('cloudbuild.googleapis.com')
   return apis
+
+
+def _GetSourceBucketFromBuildSourceLocation(
+    source_location: str | None,
+) -> str | None:
+  log.debug('source_location: %s', source_location)
+  if not source_location:
+    return None
+  x = re.search(r'gs://([^/]+)/.*', source_location)
+  if x:
+    return x.group(1)
+  log.debug('source_location does not match pattern gs://([^/]+)/.*')
+  return None
 
 
 def DeployInstanceFromSource(
@@ -259,3 +276,179 @@ def DeployInstanceFromSource(
         )
 
     return result_instance
+
+
+def _GetIap(args: _Namespace, service_obj: Any) -> bool | None:
+  """Gives the IAP state based on flags and service state.
+
+  Args:
+    args: The argparse namespace containing command-line arguments.
+    service_obj: The existing service object, or None if the service does not
+      exist yet.
+
+  Returns:
+    True or False: based on IAP flags for existing services.
+    True: If flag is set to true for new service.
+    None: If flag is set to false for new service, or if the flags are not
+      explicitly set, or if the service does not exist and the flag was set
+      to False.
+  """
+  if run_flags.FlagIsExplicitlySet(args, 'iap'):
+    iap = args.iap
+  elif run_flags.FlagIsExplicitlySet(args, 'public') and args.public:
+    iap = False
+  else:
+    # Neither flag is specified, so we don't want to change the IAP state.
+    return None
+
+  if not iap and not service_obj:
+    return None
+
+  return iap
+
+
+def DeployServiceFromSource(
+    service_ref: resources.Resource | None,
+    source: str,
+    region: str,
+    args: _Namespace,
+    release_track: base.ReleaseTrack,
+    changes: list[config_changes.ConfigChanger] | None = None,
+) -> service.Service:
+  """Deploys a Cloud Run service from source.
+
+  Args:
+    service_ref: The fully parsed resource reference to the service to deploy,
+      or None to create a service with a generated name.
+    source: The path to the source to deploy.
+    region: The region to deploy to.
+    args: The arguments passed to the command.
+    release_track: The release track of the command.
+    changes: The list of config changes to apply.
+
+  Returns:
+    The created service object.
+  """
+  if not source:
+    raise ValueError('Source is required for source deployment.')
+
+  if changes is None:
+    changes = []
+
+  is_async = getattr(args, 'async_', False)
+  already_activated_services = api_enabler.check_and_enable_apis(
+      properties.VALUES.core.project.Get(), _GetRequiredApis()
+  )
+
+  service_name = service_ref.Name()
+  project = properties.VALUES.core.project.Get(required=True)
+
+  conn_context = connection_context.GetConnectionContext(
+      args,
+      product=run_flags.Product.RUN,
+      release_track=release_track,
+      region_label=region,
+  )
+  changes.extend(run_flags.GetServiceConfigurationChanges(args, release_track))
+  changes.append(config_changes.SetLaunchStageAnnotationChange(release_track))
+
+  messages_util.MaybeLogDefaultGpuTypeMessage(args, resource=None)
+  with serverless_operations.Connect(
+      conn_context, already_activated_services
+  ) as client:
+    pretty_print.Info(
+        messages_util.GetStartDeployMessage(
+            conn_context, service_ref, service_name
+        )
+    )
+    build_image, repo_to_create = _BuildImageFromArgs(
+        project, service_name, args
+    )
+    changes.append(config_changes.ImageChange(build_image))
+
+    service_obj = client.GetService(service_ref)
+    iap = _GetIap(args, service_obj)
+
+    if iap:
+      if iap_util.IsOrglessProject(
+          project
+      ) and not iap_util.IsIapAlreadyEnabled(release_track):
+        pretty_print.Info(
+            '\n {bold}**[Warning]**{reset} Deploying services with IAP'
+            ' enabled in a project outside of an Organization and may require'
+            ' initial setup via the Cloud Console. Please use the Cloud Run'
+            ' UI to enable IAP for the first time in the project. '
+            'https://cloud.google.com/run/docs/securing/identity-aware-proxy-cloud-run#custom-oauth-client\n'
+        )
+
+    source_bucket = (
+        _GetSourceBucketFromBuildSourceLocation(service_obj.source_location)
+        if service_obj
+        else None
+    )
+    allow_unauth = run_flags.GetAllowUnauthenticated(
+        args,
+        client=client,
+        service_ref=service_ref,
+        prompt=service_obj is None,
+    )
+
+    header = 'Deploying service...'
+
+    with progress_tracker.StagedProgressTracker(
+        header,
+        stages.ServiceStages(
+            include_iam_policy_set=allow_unauth is not None,
+            include_validate_service=True,
+            include_upload_source=True,
+            include_build=True,
+            # Include IAP stage if enabling IAP, or if disabling IAP on an
+            # existing service (to clean up IAM bindings).
+            include_iap=(iap or (iap is not None and service_obj is not None)),
+            include_create_repo=repo_to_create is not None,
+        ),
+        failure_message='Service failed to deploy',
+        suppress_output=is_async,
+    ) as tracker:
+      docker_file = os.path.join(source, 'Dockerfile')
+      build_pack = None
+      if not os.path.exists(docker_file):
+        build_pack = _CreateBuildPack(build_image, source, args)
+
+      deployed_service = client.ReleaseService(
+          service_ref,
+          changes,
+          release_track,
+          tracker,
+          asyn=is_async,
+          allow_unauthenticated=allow_unauth,
+          prefetch=service_obj,
+          build_image=build_image,
+          build_source=source,
+          build_pack=build_pack,
+          repo_to_create=repo_to_create,
+          build_region=region,
+          already_activated_services=already_activated_services,
+          source_bucket=source_bucket,
+          iap_enabled=iap,
+          build_env_vars=getattr(args, 'build_env_vars', None),
+      )
+
+    if is_async:
+      pretty_print.Success(
+          f'Service [{{bold}}{deployed_service.name}{{reset}}] is being'
+          ' deployed asynchronously.'
+      )
+    else:
+      pretty_print.Success(
+          f'Service [{{bold}}{deployed_service.name}{{reset}}] has successfully'
+          ' been deployed.'
+      )
+      url = deployed_service.latest_url or (
+          deployed_service.status.url if deployed_service.status else ''
+      )
+
+      if url:
+        pretty_print.Success(f'Service URL: {{bold}}{url}{{reset}}')
+
+    return deployed_service

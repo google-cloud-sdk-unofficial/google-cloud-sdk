@@ -19,8 +19,7 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class Images(base.Group):
-  """Scan images with Artifact Guard."""
+  """Manage Artifact Guard image scanning."""

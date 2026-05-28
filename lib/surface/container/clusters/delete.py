@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
-import six
 
 
 @base.DefaultUniverseOnly
@@ -116,8 +115,8 @@ class Delete(base.DeleteCommand):
         operations.append((op_ref, cluster_ref))
       except apitools_exceptions.HttpError as error:
         errors.append(
-            six.text_type(
-                exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)))
+            str(exceptions.HttpException(error, util.HTTP_ERROR_FORMAT))
+        )
       except util.Error as error:
         errors.append(error)
     if not args.async_:

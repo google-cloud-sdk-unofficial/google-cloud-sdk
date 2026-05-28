@@ -322,6 +322,11 @@ class AuthzPolicy(_messages.Message):
     name: Required. Identifier. Name of the `AuthzPolicy` resource in the
       following format:
       `projects/{project}/locations/{location}/authzPolicies/{authz_policy}`.
+    networkRules: Optional. A list of authorization network rules to match
+      against the incoming request. A policy match occurs when at least one
+      network rule matches the request. At least one network rule is required
+      for Allow or Deny Action if no HTTP rules are provided. Network rules
+      are mutually exclusive with HTTP rules. Limited to 5 rules.
     policyProfile: Optional. Immutable. Defines the type of authorization
       being performed. If not specified, `REQUEST_AUTHZ` is applied. This
       field cannot be changed once AuthzPolicy is created.
@@ -412,9 +417,10 @@ class AuthzPolicy(_messages.Message):
   httpRules = _messages.MessageField('AuthzPolicyAuthzRule', 5, repeated=True)
   labels = _messages.MessageField('LabelsValue', 6)
   name = _messages.StringField(7)
-  policyProfile = _messages.EnumField('PolicyProfileValueValuesEnum', 8)
-  target = _messages.MessageField('AuthzPolicyTarget', 9)
-  updateTime = _messages.StringField(10)
+  networkRules = _messages.MessageField('AuthzPolicyAuthzRule', 8, repeated=True)
+  policyProfile = _messages.EnumField('PolicyProfileValueValuesEnum', 9)
+  target = _messages.MessageField('AuthzPolicyTarget', 10)
+  updateTime = _messages.StringField(11)
 
 
 class AuthzPolicyAuthzRule(_messages.Message):
@@ -662,6 +668,11 @@ class AuthzPolicyAuthzRuleToRequestOperation(_messages.Message):
       Authorization Policy. Note that this path match includes the query
       parameters. For gRPC services, this should be a fully-qualified name of
       the form /package.service/method.
+    snis: Optional. A list of SNIs to match against. The match can be one of
+      exact, prefix, suffix, or contains (substring match). If there is no SNI
+      (i.e. plaintext HTTP traffic), the request will be denied. Matches are
+      always case sensitive unless the ignoreCase is set. Limited to 10 SNIs
+      per Authorization Policy.
   """
 
   headerSet = _messages.MessageField('AuthzPolicyAuthzRuleToRequestOperationHeaderSet', 1)
@@ -669,6 +680,7 @@ class AuthzPolicyAuthzRuleToRequestOperation(_messages.Message):
   mcp = _messages.MessageField('AuthzPolicyAuthzRuleToRequestOperationMCP', 3)
   methods = _messages.StringField(4, repeated=True)
   paths = _messages.MessageField('AuthzPolicyAuthzRuleStringMatch', 5, repeated=True)
+  snis = _messages.MessageField('AuthzPolicyAuthzRuleStringMatch', 6, repeated=True)
 
 
 class AuthzPolicyAuthzRuleToRequestOperationHeaderSet(_messages.Message):
@@ -2767,6 +2779,36 @@ class ListOperationsResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListSACAttachmentsResponse(_messages.Message):
+  r"""Response for `ListSACAttachments` method.
+
+  Fields:
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    sacAttachments: The list of SACAttachments.
+    unreachable: Locations that could not be reached.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  sacAttachments = _messages.MessageField('SACAttachment', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListSACRealmsResponse(_messages.Message):
+  r"""Response for `ListSACRealms` method.
+
+  Fields:
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    sacRealms: The list of SACRealms.
+    unreachable: Locations that could not be reached.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  sacRealms = _messages.MessageField('SACRealm', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListSecurityProfileGroupsResponse(_messages.Message):
   r"""Response returned by the ListSecurityProfileGroups method.
 
@@ -3805,6 +3847,25 @@ class NetworksecurityOrganizationsLocationsAddressGroupsRemoveItemsRequest(_mess
   removeAddressGroupItemsRequest = _messages.MessageField('RemoveAddressGroupItemsRequest', 2)
 
 
+class NetworksecurityOrganizationsLocationsAddressGroupsTestIamPermissionsRequest(_messages.Message):
+  r"""A
+  NetworksecurityOrganizationsLocationsAddressGroupsTestIamPermissionsRequest
+  object.
+
+  Fields:
+    googleIamV1TestIamPermissionsRequest: A
+      GoogleIamV1TestIamPermissionsRequest resource to be passed as the
+      request body.
+    resource: REQUIRED: The resource for which the policy detail is being
+      requested. See [Resource
+      names](https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+  """
+
+  googleIamV1TestIamPermissionsRequest = _messages.MessageField('GoogleIamV1TestIamPermissionsRequest', 1)
+  resource = _messages.StringField(2, required=True)
+
+
 class NetworksecurityOrganizationsLocationsFirewallEndpointsCreateRequest(_messages.Message):
   r"""A NetworksecurityOrganizationsLocationsFirewallEndpointsCreateRequest
   object.
@@ -3919,6 +3980,39 @@ class NetworksecurityOrganizationsLocationsFirewallEndpointsPatchRequest(_messag
   name = _messages.StringField(2, required=True)
   requestId = _messages.StringField(3)
   updateMask = _messages.StringField(4)
+
+
+class NetworksecurityOrganizationsLocationsGetRequest(_messages.Message):
+  r"""A NetworksecurityOrganizationsLocationsGetRequest object.
+
+  Fields:
+    name: Resource name for the location.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityOrganizationsLocationsListRequest(_messages.Message):
+  r"""A NetworksecurityOrganizationsLocationsListRequest object.
+
+  Fields:
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
+    filter: A filter to narrow down results to a preferred subset. The
+      filtering language accepts strings like `"displayName=tokyo"`, and is
+      documented in more detail in [AIP-160](https://google.aip.dev/160).
+    name: The resource that owns the locations collection, if applicable.
+    pageSize: The maximum number of results to return. If not set, the service
+      selects a default.
+    pageToken: A page token received from the `next_page_token` field in the
+      response. Send that page token to receive the subsequent page.
+  """
+
+  extraLocationTypes = _messages.StringField(1, repeated=True)
+  filter = _messages.StringField(2)
+  name = _messages.StringField(3, required=True)
+  pageSize = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(5)
 
 
 class NetworksecurityOrganizationsLocationsOperationsCancelRequest(_messages.Message):
@@ -5178,6 +5272,117 @@ class NetworksecurityProjectsLocationsFirewallEndpointAssociationsPatchRequest(_
   updateMask = _messages.StringField(4)
 
 
+class NetworksecurityProjectsLocationsFirewallEndpointsCreateRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsFirewallEndpointsCreateRequest object.
+
+  Fields:
+    firewallEndpoint: A FirewallEndpoint resource to be passed as the request
+      body.
+    firewallEndpointId: Required. Id of the requesting object. If auto-
+      generating Id server-side, remove this field and firewall_endpoint_id
+      from the method_signature of Create RPC.
+    parent: Required. Value for parent.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  firewallEndpoint = _messages.MessageField('FirewallEndpoint', 1)
+  firewallEndpointId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class NetworksecurityProjectsLocationsFirewallEndpointsDeleteRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsFirewallEndpointsDeleteRequest object.
+
+  Fields:
+    name: Required. Name of the resource
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class NetworksecurityProjectsLocationsFirewallEndpointsGetRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsFirewallEndpointsGetRequest object.
+
+  Fields:
+    name: Required. Name of the resource
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityProjectsLocationsFirewallEndpointsListRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsFirewallEndpointsListRequest object.
+
+  Fields:
+    filter: Optional. Filtering results
+    orderBy: Hint for how to order the results
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: A token identifying a page of results the server should return.
+    parent: Required. Parent value for ListEndpointsRequest
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class NetworksecurityProjectsLocationsFirewallEndpointsPatchRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsFirewallEndpointsPatchRequest object.
+
+  Fields:
+    firewallEndpoint: A FirewallEndpoint resource to be passed as the request
+      body.
+    name: Immutable. Identifier. Name of resource.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    updateMask: Required. Field mask is used to specify the fields to be
+      overwritten in the Endpoint resource by the update. The fields specified
+      in the update_mask are relative to the resource, not the full request. A
+      field will be overwritten if it is in the mask. If the user does not
+      provide a mask then all fields will be overwritten.
+  """
+
+  firewallEndpoint = _messages.MessageField('FirewallEndpoint', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
+
+
 class NetworksecurityProjectsLocationsGatewaySecurityPoliciesCreateRequest(_messages.Message):
   r"""A NetworksecurityProjectsLocationsGatewaySecurityPoliciesCreateRequest
   object.
@@ -5798,9 +6003,8 @@ class NetworksecurityProjectsLocationsListRequest(_messages.Message):
   r"""A NetworksecurityProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -6299,6 +6503,358 @@ class NetworksecurityProjectsLocationsOperationsListRequest(_messages.Message):
   returnPartialSuccess = _messages.BooleanField(5)
 
 
+class NetworksecurityProjectsLocationsSacAttachmentsCreateRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsSacAttachmentsCreateRequest object.
+
+  Fields:
+    parent: Required. The parent, in the form
+      `projects/{project}/locations/{location}`.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    sACAttachment: A SACAttachment resource to be passed as the request body.
+    sacAttachmentId: Required. ID of the created attachment. The ID must be
+      1-63 characters long, and comply with RFC1035. Specifically, it must be
+      1-63 characters long and match the regular expression
+      `[a-z]([-a-z0-9]*[a-z0-9])?` which means the first character must be a
+      lowercase letter, and all following characters must be a dash, lowercase
+      letter, or digit, except the last character, which cannot be a dash.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  sACAttachment = _messages.MessageField('SACAttachment', 3)
+  sacAttachmentId = _messages.StringField(4)
+
+
+class NetworksecurityProjectsLocationsSacAttachmentsDeleteRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsSacAttachmentsDeleteRequest object.
+
+  Fields:
+    name: Required. Name of the resource, in the form
+      `projects/{project}/locations/{location}/sacAttachments/{sac_attachment}
+      `.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class NetworksecurityProjectsLocationsSacAttachmentsGetRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsSacAttachmentsGetRequest object.
+
+  Fields:
+    name: Required. Name of the resource, in the form
+      `projects/{project}/locations/{location}/sacAttachments/{sac_attachment}
+      `.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityProjectsLocationsSacAttachmentsListRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsSacAttachmentsListRequest object.
+
+  Fields:
+    filter: Optional. An expression that filters the list of results.
+    orderBy: Optional. Sort the results by a certain order.
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. The parent, in the form
+      `projects/{project}/locations/{location}`.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class NetworksecurityProjectsLocationsSacRealmsCreateRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsSacRealmsCreateRequest object.
+
+  Fields:
+    parent: Required. The parent, in the form
+      `projects/{project}/locations/global`.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    sACRealm: A SACRealm resource to be passed as the request body.
+    sacRealmId: Required. ID of the created realm. The ID must be 1-63
+      characters long, and comply with RFC1035. Specifically, it must be 1-63
+      characters long and match the regular expression
+      `[a-z]([-a-z0-9]*[a-z0-9])?` which means the first character must be a
+      lowercase letter, and all following characters must be a dash, lowercase
+      letter, or digit, except the last character, which cannot be a dash.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  sACRealm = _messages.MessageField('SACRealm', 3)
+  sacRealmId = _messages.StringField(4)
+
+
+class NetworksecurityProjectsLocationsSacRealmsDeleteRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsSacRealmsDeleteRequest object.
+
+  Fields:
+    name: Required. Name of the resource, in the form
+      `projects/{project}/locations/global/sacRealms/{sacRealm}`.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class NetworksecurityProjectsLocationsSacRealmsGetRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsSacRealmsGetRequest object.
+
+  Fields:
+    name: Required. Name of the resource, in the form
+      `projects/{project}/locations/global/sacRealms/{sacRealm}`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityProjectsLocationsSacRealmsListRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsSacRealmsListRequest object.
+
+  Fields:
+    filter: Optional. An expression that filters the list of results.
+    orderBy: Optional. Sort the results by a certain order.
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. The parent, in the form
+      `projects/{project}/locations/global`.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class NetworksecurityProjectsLocationsSecurityProfileGroupsCreateRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsSecurityProfileGroupsCreateRequest
+  object.
+
+  Fields:
+    parent: Required. The parent resource of the SecurityProfileGroup. Must be
+      in the format `projects|organizations/*/locations/{location}`.
+    securityProfileGroup: A SecurityProfileGroup resource to be passed as the
+      request body.
+    securityProfileGroupId: Required. Short name of the SecurityProfileGroup
+      resource to be created. This value should be 1-63 characters long,
+      containing only letters, numbers, hyphens, and underscores, and should
+      not start with a number. E.g. "security_profile_group1".
+  """
+
+  parent = _messages.StringField(1, required=True)
+  securityProfileGroup = _messages.MessageField('SecurityProfileGroup', 2)
+  securityProfileGroupId = _messages.StringField(3)
+
+
+class NetworksecurityProjectsLocationsSecurityProfileGroupsDeleteRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsSecurityProfileGroupsDeleteRequest
+  object.
+
+  Fields:
+    etag: Optional. If client provided etag is out of date, delete will return
+      FAILED_PRECONDITION error.
+    name: Required. A name of the SecurityProfileGroup to delete. Must be in
+      the format `projects|organizations/*/locations/{location}/securityProfil
+      eGroups/{security_profile_group}`.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetworksecurityProjectsLocationsSecurityProfileGroupsGetRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsSecurityProfileGroupsGetRequest
+  object.
+
+  Fields:
+    name: Required. A name of the SecurityProfileGroup to get. Must be in the
+      format `projects|organizations/*/locations/{location}/securityProfileGro
+      ups/{security_profile_group}`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityProjectsLocationsSecurityProfileGroupsListRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsSecurityProfileGroupsListRequest
+  object.
+
+  Fields:
+    pageSize: Optional. Maximum number of SecurityProfileGroups to return per
+      call.
+    pageToken: Optional. The value returned by the last
+      `ListSecurityProfileGroupsResponse` Indicates that this is a
+      continuation of a prior `ListSecurityProfileGroups` call, and that the
+      system should return the next page of data.
+    parent: Required. The project or organization and location from which the
+      SecurityProfileGroups should be listed, specified in the format
+      `projects|organizations/*/locations/{location}`.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class NetworksecurityProjectsLocationsSecurityProfileGroupsPatchRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsSecurityProfileGroupsPatchRequest
+  object.
+
+  Fields:
+    name: Immutable. Identifier. Name of the SecurityProfileGroup resource. It
+      matches pattern `projects|organizations/*/locations/{location}/securityP
+      rofileGroups/{security_profile_group}`.
+    securityProfileGroup: A SecurityProfileGroup resource to be passed as the
+      request body.
+    updateMask: Required. Field mask is used to specify the fields to be
+      overwritten in the SecurityProfileGroup resource by the update. The
+      fields specified in the update_mask are relative to the resource, not
+      the full request. A field will be overwritten if it is in the mask.
+  """
+
+  name = _messages.StringField(1, required=True)
+  securityProfileGroup = _messages.MessageField('SecurityProfileGroup', 2)
+  updateMask = _messages.StringField(3)
+
+
+class NetworksecurityProjectsLocationsSecurityProfilesCreateRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsSecurityProfilesCreateRequest object.
+
+  Fields:
+    parent: Required. The parent resource of the SecurityProfile. Must be in
+      the format `projects|organizations/*/locations/{location}`.
+    securityProfile: A SecurityProfile resource to be passed as the request
+      body.
+    securityProfileId: Required. Short name of the SecurityProfile resource to
+      be created. This value should be 1-63 characters long, containing only
+      letters, numbers, hyphens, and underscores, and should not start with a
+      number. E.g. "security_profile1".
+  """
+
+  parent = _messages.StringField(1, required=True)
+  securityProfile = _messages.MessageField('SecurityProfile', 2)
+  securityProfileId = _messages.StringField(3)
+
+
+class NetworksecurityProjectsLocationsSecurityProfilesDeleteRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsSecurityProfilesDeleteRequest object.
+
+  Fields:
+    etag: Optional. If client provided etag is out of date, delete will return
+      FAILED_PRECONDITION error.
+    name: Required. A name of the SecurityProfile to delete. Must be in the
+      format `projects|organizations/*/locations/{location}/securityProfiles/{
+      security_profile_id}`.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetworksecurityProjectsLocationsSecurityProfilesGetRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsSecurityProfilesGetRequest object.
+
+  Fields:
+    name: Required. A name of the SecurityProfile to get. Must be in the
+      format `projects|organizations/*/locations/{location}/securityProfiles/{
+      security_profile_id}`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityProjectsLocationsSecurityProfilesListRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsSecurityProfilesListRequest object.
+
+  Fields:
+    pageSize: Optional. Maximum number of SecurityProfiles to return per call.
+    pageToken: Optional. The value returned by the last
+      `ListSecurityProfilesResponse` Indicates that this is a continuation of
+      a prior `ListSecurityProfiles` call, and that the system should return
+      the next page of data.
+    parent: Required. The project or organization and location from which the
+      SecurityProfiles should be listed, specified in the format
+      `projects|organizations/*/locations/{location}`.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class NetworksecurityProjectsLocationsSecurityProfilesPatchRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsSecurityProfilesPatchRequest object.
+
+  Fields:
+    name: Immutable. Identifier. Name of the SecurityProfile resource. It
+      matches pattern `projects|organizations/*/locations/{location}/securityP
+      rofiles/{security_profile}`.
+    securityProfile: A SecurityProfile resource to be passed as the request
+      body.
+    updateMask: Required. Field mask is used to specify the fields to be
+      overwritten in the SecurityProfile resource by the update. The fields
+      specified in the update_mask are relative to the resource, not the full
+      request. A field will be overwritten if it is in the mask.
+  """
+
+  name = _messages.StringField(1, required=True)
+  securityProfile = _messages.MessageField('SecurityProfile', 2)
+  updateMask = _messages.StringField(3)
+
+
 class NetworksecurityProjectsLocationsServerTlsPoliciesCreateRequest(_messages.Message):
   r"""A NetworksecurityProjectsLocationsServerTlsPoliciesCreateRequest object.
 
@@ -6794,6 +7350,184 @@ class Rule(_messages.Message):
 
   destinations = _messages.MessageField('Destination', 1, repeated=True)
   sources = _messages.MessageField('Source', 2, repeated=True)
+
+
+class SACAttachment(_messages.Message):
+  r"""Represents a Secure Access Connect (SAC) attachment resource. A Secure
+  Access Connect attachment enables NCC Gateway to process traffic with an SSE
+  product.
+
+  Enums:
+    StateValueValuesEnum: Output only. State of the attachment.
+
+  Messages:
+    LabelsValue: Optional. Optional list of labels applied to the resource.
+
+  Fields:
+    createTime: Output only. Timestamp when the attachment was created.
+    labels: Optional. Optional list of labels applied to the resource.
+    name: Identifier. Resource name, in the form
+      `projects/{project}/locations/{location}/sacAttachments/{sac_attachment}
+      `.
+    nccGateway: Required. NCC Gateway associated with the attachment. This can
+      be input as an ID or a full resource name. The output always has the
+      form
+      `projects/{project_number}/locations/{location}/spokes/{ncc_gateway}`.
+    sacRealm: Required. SAC Realm which owns the attachment. This can be input
+      as an ID or a full resource name. The output always has the form
+      `projects/{project_number}/locations/{location}/sacRealms/{sac_realm}`.
+    state: Output only. State of the attachment.
+    updateTime: Output only. Timestamp when the attachment was last updated.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. State of the attachment.
+
+    Values:
+      STATE_UNSPECIFIED: No state specified. This should not be used.
+      PENDING_PARTNER_ATTACHMENT: Has never been attached to a partner.
+      PARTNER_ATTACHED: Currently attached to a partner.
+      PARTNER_DETACHED: Was once attached to a partner but has been detached.
+    """
+    STATE_UNSPECIFIED = 0
+    PENDING_PARTNER_ATTACHMENT = 1
+    PARTNER_ATTACHED = 2
+    PARTNER_DETACHED = 3
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Optional list of labels applied to the resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  labels = _messages.MessageField('LabelsValue', 2)
+  name = _messages.StringField(3)
+  nccGateway = _messages.StringField(4)
+  sacRealm = _messages.StringField(5)
+  state = _messages.EnumField('StateValueValuesEnum', 6)
+  updateTime = _messages.StringField(7)
+
+
+class SACRealm(_messages.Message):
+  r"""Represents a Secure Access Connect (SAC) realm resource. A Secure Access
+  Connect realm establishes a connection between your Google Cloud project and
+  an SSE service.
+
+  Enums:
+    SecurityServiceValueValuesEnum: Immutable. SSE service provider associated
+      with the realm.
+    StateValueValuesEnum: Output only. State of the realm.
+
+  Messages:
+    LabelsValue: Optional. Optional list of labels applied to the resource.
+
+  Fields:
+    createTime: Output only. Timestamp when the realm was created.
+    labels: Optional. Optional list of labels applied to the resource.
+    name: Identifier. Resource name, in the form
+      `projects/{project}/locations/global/sacRealms/{sacRealm}`.
+    pairingKey: Output only. Key to be shared with SSE service provider during
+      pairing.
+    securityService: Immutable. SSE service provider associated with the
+      realm.
+    state: Output only. State of the realm.
+    updateTime: Output only. Timestamp when the realm was last updated.
+  """
+
+  class SecurityServiceValueValuesEnum(_messages.Enum):
+    r"""Immutable. SSE service provider associated with the realm.
+
+    Values:
+      SECURITY_SERVICE_UNSPECIFIED: The default value. This value is used if
+        the state is omitted.
+      PALO_ALTO_PRISMA_ACCESS: [Palo Alto Networks Prisma
+        Access](https://www.paloaltonetworks.com/sase/access).
+    """
+    SECURITY_SERVICE_UNSPECIFIED = 0
+    PALO_ALTO_PRISMA_ACCESS = 1
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. State of the realm.
+
+    Values:
+      STATE_UNSPECIFIED: No state specified. This should not be used.
+      PENDING_PARTNER_ATTACHMENT: Has never been attached to a partner. Used
+        only for Prisma Access.
+      PARTNER_ATTACHED: Currently attached to a partner.
+      PARTNER_DETACHED: Was once attached to a partner but has been detached.
+      KEY_EXPIRED: Is not attached to a partner and has an expired pairing
+        key. Used only for Prisma Access.
+    """
+    STATE_UNSPECIFIED = 0
+    PENDING_PARTNER_ATTACHMENT = 1
+    PARTNER_ATTACHED = 2
+    PARTNER_DETACHED = 3
+    KEY_EXPIRED = 4
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Optional list of labels applied to the resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  labels = _messages.MessageField('LabelsValue', 2)
+  name = _messages.StringField(3)
+  pairingKey = _messages.MessageField('SACRealmPairingKey', 4)
+  securityService = _messages.EnumField('SecurityServiceValueValuesEnum', 5)
+  state = _messages.EnumField('StateValueValuesEnum', 6)
+  updateTime = _messages.StringField(7)
+
+
+class SACRealmPairingKey(_messages.Message):
+  r"""Key to be shared with SSE service provider to establish global
+  handshake.
+
+  Fields:
+    expireTime: Output only. Timestamp in UTC of when this resource is
+      considered expired. It expires 7 days after creation.
+    key: Output only. Key value.
+  """
+
+  expireTime = _messages.StringField(1)
+  key = _messages.StringField(2)
 
 
 class SecurityProfile(_messages.Message):

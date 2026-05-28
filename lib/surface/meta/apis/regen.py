@@ -34,8 +34,6 @@ from googlecloudsdk.core.util import encoding
 from googlecloudsdk.core.util import files
 
 import ruamel.yaml
-import six
-from six.moves import map
 
 _API_REGEX = '([a-z0-9_]+)/([a-z0-9_]+)'
 
@@ -78,7 +76,7 @@ class Regen(base.Command):
     if args.api_discovery_doc:
       if not os.path.isfile(args.api_discovery_doc):
         raise regen_utils.DiscoveryDocError(
-            'File not found {}'.format(args.api_discovery_doc))
+            f'File not found {args.api_discovery_doc}')
       if len(args.api) != 1:
         raise parser_errors.ArgumentError(
             'Can only specify one api when discovery doc is provided.')
@@ -86,8 +84,8 @@ class Regen(base.Command):
       match = re.match(_API_REGEX, args.api[0])
       if not match:
         raise regen_utils.DiscoveryDocError(
-            'Api name must match {} pattern when discovery doc '
-            'is specified'.format(_API_REGEX))
+            f'Api name must match {_API_REGEX} pattern when discovery doc '
+            'is specified')
 
       api_name, api_version = match.group(1), match.group(2)
       if api_name not in config['apis']:
@@ -106,7 +104,7 @@ class Regen(base.Command):
           os.path.join(args.base_dir, root_dir, discovery_doc))
 
       if new_discovery_doc != old_discovery_doc:
-        log.status.Print('Copying in {}'.format(new_discovery_doc))
+        log.status.Print(f'Copying in {new_discovery_doc}')
         shutil.copyfile(new_discovery_doc, old_discovery_doc)
 
       if api_version_config['discovery_doc'] != discovery_doc:
@@ -118,28 +116,23 @@ class Regen(base.Command):
       ]
     else:
       regex_patern = '|'.join(map(fnmatch.translate, args.api))
-      regenerate_list = [
-          (api_name, api_version, api_config)
-          for api_name, api_version_config in six.iteritems(config['apis'])
-          for api_version, api_config in six.iteritems(api_version_config)
-          if re.match(regex_patern, api_name + '/' + api_version)
-      ]
+      regenerate_list = []
+      for api_name, api_version_config in config['apis'].items():
+        for api_version, api_config in api_version_config.items():
+          if re.match(regex_patern, api_name + '/' + api_version):
+            regenerate_list.append((api_name, api_version, api_config))
 
     if not regenerate_list:
       raise regen_utils.UnknownApi(
-          'api [{api_name}] not found in "apis" section of '
-          '{config_file}. Use [gcloud meta apis list] to see available apis.'
-          .format(api_name=','.join(args.api),
-                  config_file=args.config))
+          f'api [{",".join(args.api)}] not found in "apis" section of '
+          f'{args.config}. Use [gcloud meta apis list] to see available apis.')
 
     base_dir = args.base_dir or os.path.dirname(
         os.path.dirname(googlecloudsdk.__file__))
     for api_name, api_version, api_config in sorted(regenerate_list):
       log.status.Print(
-          'Generating {} {} from {}'
-          .format(api_name,
-                  api_version,
-                  os.path.join(root_dir, api_config['discovery_doc'])))
+          f'Generating {api_name} {api_version} from '
+          f'{os.path.join(root_dir, api_config["discovery_doc"])}')
       discovery_doc = os.path.join(
           base_dir, root_dir, api_config['discovery_doc'])
       output_dir = os.path.join(base_dir, root_dir)
@@ -182,11 +175,10 @@ def _LoadConfig(config_file_name=None):
       'regen_apis_config.yaml')
 
   if not os.path.isfile(config_file_name):
-    raise regen_utils.ConfigFileError('{} Not found'.format(config_file_name))
+    raise regen_utils.ConfigFileError(f'{config_file_name} Not found')
   with files.FileReader(config_file_name) as stream:
     config = ruamel.yaml.round_trip_load(stream)
   if not config or 'root_dir' not in config:
     raise regen_utils.ConfigFileError(
-        '{} does not have format of gcloud api config file'
-        .format(config_file_name))
+        f'{config_file_name} does not have format of gcloud api config file')
   return config

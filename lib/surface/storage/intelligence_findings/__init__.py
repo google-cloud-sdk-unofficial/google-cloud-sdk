@@ -17,7 +17,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class IntelligenceFindings(base.Group):
   """Findings for Cloud Storage usage."""

@@ -22,7 +22,6 @@ from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.command_lib.source import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from six import text_type
 
 _ERROR_FORMAT = ('ResponseError: status=[{status_description}], '
                  'code=[{status_code}], message=[{message}]. '
@@ -97,7 +96,7 @@ class Create(base.CreateCommand):
     except exceptions.HttpError as error:
       exc = c_exc.HttpException(error)
       exc.error_format = _ERROR_FORMAT
-      if 'API is not enabled' in text_type(exc):
+      if 'API is not enabled' in str(exc):
         link = _LINK_FORMAT.format(
             project=properties.VALUES.core.project.GetOrFail())
         exc.error_format += link

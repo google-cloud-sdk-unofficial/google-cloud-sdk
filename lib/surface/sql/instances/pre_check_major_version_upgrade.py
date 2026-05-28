@@ -15,6 +15,7 @@
 
 """Performs pre-checks for a major version upgrade of a Cloud SQL instance."""
 
+import http.client
 import time
 
 from apitools.base.py import exceptions as apitools_exceptions
@@ -24,7 +25,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
-import six.moves.http_client
 
 
 DESCRIPTION = """
@@ -151,7 +151,7 @@ class PreCheckMajorVersionUpgrade(base.Command):
       for resp in precheck_responses:
         raw_message = resp.message
 
-          # Remove unwanted suffix if present
+        # Remove unwanted suffix if present
         if raw_message.endswith('"]'):
           raw_message = raw_message[:-2]
 
@@ -187,7 +187,7 @@ class PreCheckMajorVersionUpgrade(base.Command):
       }
 
     except apitools_exceptions.HttpError as error:
-      if error.status_code == six.moves.http_client.FORBIDDEN:
+      if error.status_code == http.client.FORBIDDEN:
         raise exceptions.HttpException(
             "There's no instance found at {} or you're not authorized to"
             ' access it.'.format(instance_ref.RelativeName())

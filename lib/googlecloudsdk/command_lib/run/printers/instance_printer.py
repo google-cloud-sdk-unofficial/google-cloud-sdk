@@ -63,12 +63,6 @@ class InstancePrinter(cp.CustomPrinterBase):
   @staticmethod
   def GetConfig(record):
     config = []
-    if record.timeout:
-      config.append(
-          cp.Labeled(
-              [('Timeout', k8s_util.FormatDurationShort(record.timeout))]
-          )
-      )
     return cp.Lines(config)
 
   @staticmethod

@@ -15,6 +15,7 @@
 """Factory for ExecutionConfig message."""
 
 
+from apitools.base.py import encoding
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.command_lib.dataproc.shared_messages import (
     authentication_config_factory as acf)
@@ -63,6 +64,17 @@ class ExecutionConfigFactory(object):
 
     if args.tags:
       kwargs['networkTags'] = args.tags
+
+    resource_manager_tags = args.resource_manager_tag
+    if resource_manager_tags:
+      merged_tags = {}
+      for d in resource_manager_tags:
+        merged_tags.update(d)
+      kwargs['resourceManagerTags'] = encoding.DictToAdditionalPropertyMessage(
+          merged_tags,
+          self.dataproc.messages.ExecutionConfig.ResourceManagerTagsValue,
+          sort_items=True,
+      )
 
     if args.network:
       kwargs['networkUri'] = args.network
@@ -122,6 +134,19 @@ def AddArguments(parser):
       help='Network tags for traffic control.')
 
   parser.add_argument('--kms-key', help='Cloud KMS key to use for encryption.')
+
+  parser.add_argument(
+      '--resource-manager-tag',
+      type=arg_parsers.ArgDict(min_length=1, max_length=1),
+      action='append',
+      default=[],
+      metavar='KEY=VALUE',
+      help=(
+          'Resource Manager Tags to be associated with the compute resources'
+          ' created for the workload. Only one key-value pair can be specified'
+          ' per flag. Repeat the flag to specify multiple tags.'
+      ),
+  )
 
   parser.add_argument(
       '--staging-bucket',

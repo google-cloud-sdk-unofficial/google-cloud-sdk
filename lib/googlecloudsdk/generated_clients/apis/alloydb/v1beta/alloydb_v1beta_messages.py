@@ -2111,6 +2111,8 @@ class ConnectionPoolConfig(_messages.Message):
       pairs.
 
   Fields:
+    authproxyPoolerCount: Output only. The number of running AuthProxy poolers
+      per instance.
     enabled: Optional. Whether to enable Managed Connection Pool (MCP).
     flags: Optional. Connection Pool flags, as a list of "key": "value" pairs.
     poolerCount: Output only. The number of running poolers per instance.
@@ -2140,9 +2142,10 @@ class ConnectionPoolConfig(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  enabled = _messages.BooleanField(1)
-  flags = _messages.MessageField('FlagsValue', 2)
-  poolerCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  authproxyPoolerCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  enabled = _messages.BooleanField(2)
+  flags = _messages.MessageField('FlagsValue', 3)
+  poolerCount = _messages.IntegerField(4, variant=_messages.Variant.INT32)
 
 
 class ContinuousBackupConfig(_messages.Message):
@@ -5586,7 +5589,7 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceId(_messages.Message)
 
 
 class StorageDatabasecenterPartnerapiV1mainDatabaseResourceMetadata(_messages.Message):
-  r"""Common model for database resource instance metadata. Next ID: 32
+  r"""Common model for database resource instance metadata. Next ID: 34
 
   Enums:
     CurrentStateValueValuesEnum: Current state of the instance.
@@ -5602,7 +5605,15 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceMetadata(_messages.Me
     SuspensionReasonValueValuesEnum: Optional. Suspension reason for the
       resource.
 
+  Messages:
+    AdditionalMetadataValue: Field to ingest additional metadata whichd does
+      not support proto format.
+    InternalAdditionalMetadataValue: Field to ingest additional metadata which
+      support proto format.
+
   Fields:
+    additionalMetadata: Field to ingest additional metadata whichd does not
+      support proto format.
     availabilityConfiguration: Availability configuration for this instance
     backupConfiguration: Backup configuration for this instance
     backupRun: Latest backup run information for this instance
@@ -5621,6 +5632,8 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceMetadata(_messages.Me
     gcbdrConfiguration: GCBDR configuration for the resource.
     id: Required. Unique identifier for a Database resource
     instanceType: The type of the instance. Specified at creation time.
+    internalAdditionalMetadata: Field to ingest additional metadata which
+      support proto format.
     isDeletionProtectionEnabled: Optional. Whether deletion protection is
       enabled for this resource.
     location: The resource location. REQUIRED
@@ -5785,35 +5798,89 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceMetadata(_messages.Me
     ENCRYPTION_KEY_INACCESSIBLE = 5
     REPLICATED_CLUSTER_ENCRYPTION_KEY_INACCESSIBLE = 6
 
-  availabilityConfiguration = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainAvailabilityConfiguration', 1)
-  backupConfiguration = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainBackupConfiguration', 2)
-  backupRun = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainBackupRun', 3)
-  backupdrConfiguration = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainBackupDRConfiguration', 4)
-  creationTime = _messages.StringField(5)
-  currentState = _messages.EnumField('CurrentStateValueValuesEnum', 6)
-  customMetadata = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainCustomMetadataData', 7)
-  edition = _messages.EnumField('EditionValueValuesEnum', 8)
-  entitlements = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainEntitlement', 9, repeated=True)
-  expectedState = _messages.EnumField('ExpectedStateValueValuesEnum', 10)
-  gcbdrConfiguration = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainGCBDRConfiguration', 11)
-  id = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainDatabaseResourceId', 12)
-  instanceType = _messages.EnumField('InstanceTypeValueValuesEnum', 13)
-  isDeletionProtectionEnabled = _messages.BooleanField(14)
-  location = _messages.StringField(15)
-  machineConfiguration = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainMachineConfiguration', 16)
-  maintenanceInfo = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainResourceMaintenanceInfo', 17)
-  modes = _messages.EnumField('ModesValueListEntryValuesEnum', 18, repeated=True)
-  primaryResourceId = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainDatabaseResourceId', 19)
-  primaryResourceLocation = _messages.StringField(20)
-  product = _messages.MessageField('StorageDatabasecenterProtoCommonProduct', 21)
-  resourceContainer = _messages.StringField(22)
-  resourceFlags = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainResourceFlags', 23, repeated=True)
-  resourceName = _messages.StringField(24)
-  suspensionReason = _messages.EnumField('SuspensionReasonValueValuesEnum', 25)
-  tagsSet = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainTags', 26)
-  updationTime = _messages.StringField(27)
-  userLabelSet = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainUserLabels', 28)
-  zone = _messages.StringField(29)
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AdditionalMetadataValue(_messages.Message):
+    r"""Field to ingest additional metadata whichd does not support proto
+    format.
+
+    Messages:
+      AdditionalProperty: An additional property for a AdditionalMetadataValue
+        object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AdditionalMetadataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class InternalAdditionalMetadataValue(_messages.Message):
+    r"""Field to ingest additional metadata which support proto format.
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        InternalAdditionalMetadataValue object.
+
+    Fields:
+      additionalProperties: Properties of the object. Contains field @type
+        with type URL.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a InternalAdditionalMetadataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  additionalMetadata = _messages.MessageField('AdditionalMetadataValue', 1)
+  availabilityConfiguration = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainAvailabilityConfiguration', 2)
+  backupConfiguration = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainBackupConfiguration', 3)
+  backupRun = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainBackupRun', 4)
+  backupdrConfiguration = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainBackupDRConfiguration', 5)
+  creationTime = _messages.StringField(6)
+  currentState = _messages.EnumField('CurrentStateValueValuesEnum', 7)
+  customMetadata = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainCustomMetadataData', 8)
+  edition = _messages.EnumField('EditionValueValuesEnum', 9)
+  entitlements = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainEntitlement', 10, repeated=True)
+  expectedState = _messages.EnumField('ExpectedStateValueValuesEnum', 11)
+  gcbdrConfiguration = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainGCBDRConfiguration', 12)
+  id = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainDatabaseResourceId', 13)
+  instanceType = _messages.EnumField('InstanceTypeValueValuesEnum', 14)
+  internalAdditionalMetadata = _messages.MessageField('InternalAdditionalMetadataValue', 15)
+  isDeletionProtectionEnabled = _messages.BooleanField(16)
+  location = _messages.StringField(17)
+  machineConfiguration = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainMachineConfiguration', 18)
+  maintenanceInfo = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainResourceMaintenanceInfo', 19)
+  modes = _messages.EnumField('ModesValueListEntryValuesEnum', 20, repeated=True)
+  primaryResourceId = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainDatabaseResourceId', 21)
+  primaryResourceLocation = _messages.StringField(22)
+  product = _messages.MessageField('StorageDatabasecenterProtoCommonProduct', 23)
+  resourceContainer = _messages.StringField(24)
+  resourceFlags = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainResourceFlags', 25, repeated=True)
+  resourceName = _messages.StringField(26)
+  suspensionReason = _messages.EnumField('SuspensionReasonValueValuesEnum', 27)
+  tagsSet = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainTags', 28)
+  updationTime = _messages.StringField(29)
+  userLabelSet = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainUserLabels', 30)
+  zone = _messages.StringField(31)
 
 
 class StorageDatabasecenterPartnerapiV1mainDatabaseResourceRecommendationSignalData(_messages.Message):

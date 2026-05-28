@@ -230,6 +230,24 @@ def _convert_admin_api_input_to_app_yaml(
   return result
 
 
+def _get_basic_service_yaml(service_name: str) -> dict[str, Any]:
+  """Returns a basic service.yaml structure as a dictionary."""
+  return {
+      'apiVersion': 'serving.knative.dev/v1',
+      'kind': 'Service',
+      'metadata': {
+          'name': service_name,
+      },
+      'spec': {
+          'template': {
+              'spec': {
+                  'containers': [{}],
+              }
+          }
+      },
+  }
+
+
 def _get_cloud_run_flags(
     input_data: Mapping[str, any],
     input_flatten_as_appyaml: Mapping[str, any],
@@ -274,6 +292,38 @@ def _get_cloud_run_flags(
     entrypoint_flags = [f'--command={derived_entrypoint}']
   else:
     entrypoint_flags = []
+
+  # We will keep adding flags to this service_yaml as we process the input
+  # data, and in the end return the completed service_yaml and remove the
+  # corresponding flags from the return value.
+  target_service = _get_service_name(input_data)
+  service_yaml = _get_basic_service_yaml(target_service)
+  health_checks.update_service_yaml_with_health_checks(
+      service_yaml, input_flatten_as_appyaml
+  )
+  timeout.update_service_yaml_with_timeout(
+      service_yaml, input_flatten_as_appyaml
+  )
+  volumes.update_service_yaml_with_volumes(
+      service_yaml, input_flatten_as_appyaml
+  )
+  concurrent_requests.update_service_yaml_with_concurrent_requests(
+      service_yaml, input_flatten_as_appyaml, range_limited_features_app_yaml
+  )
+  cpu_memory.update_service_yaml_with_cpu_memory(
+      service_yaml, input_flatten_as_appyaml
+  )
+  scaling.update_service_yaml_with_scaling(
+      service_yaml, input_flatten_as_appyaml, range_limited_features_app_yaml
+  )
+  supported_features.update_service_yaml_with_supported_features(
+      service_yaml,
+      input_flatten_as_appyaml,
+      project,
+  )
+  network.update_service_yaml_with_network(
+      service_yaml, input_flatten_as_appyaml
+  )
 
   return (
       concurrent_requests.translate_concurrent_requests_features(

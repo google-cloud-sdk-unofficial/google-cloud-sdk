@@ -20,7 +20,6 @@ from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core import log
-import six
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
@@ -57,7 +56,8 @@ class Resize(base.Command):
         size=args.size, requestId=util.GetUniqueId())
     if args.graceful_decommission_timeout is not None:
       resize_request.gracefulDecommissionTimeout = (
-          six.text_type(args.graceful_decommission_timeout) + 's')
+          str(args.graceful_decommission_timeout) + 's'
+      )
 
     request = messages.DataprocProjectsRegionsClustersNodeGroupsResizeRequest(
         name=node_group.RelativeName(), resizeNodeGroupRequest=resize_request)

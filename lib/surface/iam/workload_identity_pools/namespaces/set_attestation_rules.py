@@ -27,7 +27,6 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources as sdkresources
 from googlecloudsdk.core import yaml
-import six
 
 
 @base.Hidden
@@ -85,7 +84,7 @@ class AddAttestationRule(base.Command):
       # Raised when the input file is not properly formatted YAML policy file.
       raise gcloud_exceptions.BadFileException(
           'Policy file [{0}] is not a properly formatted YAML or JSON '
-          'policy file. {1}'.format(args.policy_file, six.text_type(e))
+          'policy file. {1}'.format(args.policy_file, str(e))
       )
 
     lro_ref = client.projects_locations_workloadIdentityPools_namespaces.SetAttestationRules(

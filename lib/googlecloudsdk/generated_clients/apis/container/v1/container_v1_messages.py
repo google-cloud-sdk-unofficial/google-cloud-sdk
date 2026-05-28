@@ -2185,6 +2185,7 @@ class CompleteConvertToAutopilotRequest(_messages.Message):
   """
 
 
+
 class CompleteIPRotationRequest(_messages.Message):
   r"""CompleteIPRotationRequest moves the cluster master back into single-IP
   mode.
@@ -2215,6 +2216,7 @@ class CompleteNodePoolUpgradeRequest(_messages.Message):
   r"""CompleteNodePoolUpgradeRequest sets the name of target node pool to
   complete upgrade.
   """
+
 
 
 class CompliancePostureConfig(_messages.Message):
@@ -3433,23 +3435,23 @@ class DatabaseEncryption(_messages.Message):
 
 
 class DataplaneV2Config(_messages.Message):
-  r"""DataplaneV2Config is the configuration for DPv2. This configuration is
-  currently only for internal use.
+  r"""DataplaneV2Config is the configuration for DPv2.
 
   Enums:
-    ScalabilityModeValueValuesEnum: Scalability mode for the cluster.
+    ScalabilityModeValueValuesEnum: Optional. Scalability mode for the
+      cluster.
 
   Fields:
-    scalabilityMode: Scalability mode for the cluster.
+    scalabilityMode: Optional. Scalability mode for the cluster.
   """
 
   class ScalabilityModeValueValuesEnum(_messages.Enum):
-    r"""Scalability mode for the cluster.
+    r"""Optional. Scalability mode for the cluster.
 
     Values:
       SCALABILITY_MODE_UNSPECIFIED: Default value.
-      DISABLED: Disable mode uses the default scaling profile.
-      SCALE_OPTIMIZED: Enable scalability mode. go/dpv2-scalability-mode
+      DISABLED: Disables the scale optimized mode for DPv2.
+      SCALE_OPTIMIZED: Enables the scale optimized mode for DPv2.
     """
     SCALABILITY_MODE_UNSPECIFIED = 0
     DISABLED = 1
@@ -3649,6 +3651,7 @@ class Empty(_messages.Message):
   or the response type of an API method. For instance: service Foo { rpc
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
+
 
 
 class EncryptionConfig(_messages.Message):
@@ -5695,7 +5698,8 @@ class NetworkConfig(_messages.Message):
       mode on this cluster.
     datapathProvider: The desired datapath provider for this cluster. By
       default, uses the IPTables-based kube-proxy implementation.
-    dataplaneV2Config: DataplaneV2Config specifies the DPv2 configuration.
+    dataplaneV2Config: Optional. DataplaneV2Config specifies the DPv2
+      configuration.
     defaultEnablePrivateNodes: Controls whether by default nodes have private
       IP addresses only. It is invalid to specify both
       PrivateClusterConfig.enablePrivateNodes and this field at the same time.
@@ -6771,6 +6775,7 @@ class NodeNetworkConfig(_messages.Message):
     enablePrivateNodes: Whether nodes have internal IP addresses only. If
       enable_private_nodes is not specified, then the value is derived from
       Cluster.NetworkConfig.default_enable_private_nodes
+    network: Optional. Immutable. The VPC network for the node pool.
     networkPerformanceConfig: Network bandwidth tier configuration.
     networkTierConfig: Output only. The network tier configuration for the
       node pool inherits from the cluster-level configuration and remains
@@ -6839,13 +6844,14 @@ class NodeNetworkConfig(_messages.Message):
   createPodRange = _messages.BooleanField(4)
   datapathProvider = _messages.EnumField('DatapathProviderValueValuesEnum', 5)
   enablePrivateNodes = _messages.BooleanField(6)
-  networkPerformanceConfig = _messages.MessageField('NetworkPerformanceConfig', 7)
-  networkTierConfig = _messages.MessageField('NetworkTierConfig', 8)
-  podCidrOverprovisionConfig = _messages.MessageField('PodCIDROverprovisionConfig', 9)
-  podIpv4CidrBlock = _messages.StringField(10)
-  podIpv4RangeUtilization = _messages.FloatField(11)
-  podRange = _messages.StringField(12)
-  subnetwork = _messages.StringField(13)
+  network = _messages.StringField(7)
+  networkPerformanceConfig = _messages.MessageField('NetworkPerformanceConfig', 8)
+  networkTierConfig = _messages.MessageField('NetworkTierConfig', 9)
+  podCidrOverprovisionConfig = _messages.MessageField('PodCIDROverprovisionConfig', 10)
+  podIpv4CidrBlock = _messages.StringField(11)
+  podIpv4RangeUtilization = _messages.FloatField(12)
+  podRange = _messages.StringField(13)
+  subnetwork = _messages.StringField(14)
 
 
 class NodePool(_messages.Message):
@@ -8439,6 +8445,7 @@ class SecondaryBootDiskUpdateStrategy(_messages.Message):
   r"""SecondaryBootDiskUpdateStrategy is a placeholder which will be extended
   in the future to define different options for updating secondary boot disks.
   """
+
 
 
 class SecretManagerConfig(_messages.Message):

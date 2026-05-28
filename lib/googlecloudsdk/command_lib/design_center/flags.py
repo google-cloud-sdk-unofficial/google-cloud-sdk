@@ -672,3 +672,21 @@ def AddPreviewApplicationFlags(parser):
       action='store_true',
       help='Create a new service account for the preview.',
   )
+
+
+def AddGenerateAssessmentReportFlags(parser):
+  """Adds flags for GenerateAssessmentReport command."""
+  parser.add_argument(
+      '--service-account',
+      help=textwrap.dedent('''\
+          The full resource name of the service account to use for this
+          assessment report generation operation.
+
+          * This service account will be used to execute the assessment report
+            generation process.
+          * The caller must have the "iam.serviceAccounts.actAs" permission on
+            this service account.
+          Format: `projects/{PROJECT}/serviceAccounts/{EMAIL_ADDRESS}`
+          '''),
+      required=False,
+  )

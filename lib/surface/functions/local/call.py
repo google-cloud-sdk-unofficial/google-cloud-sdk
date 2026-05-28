@@ -22,9 +22,6 @@ from googlecloudsdk.command_lib.functions.local import flags as local_flags
 from googlecloudsdk.command_lib.functions.local import util
 
 
-import six
-
-
 _DETAILED_HELP = {
     'DESCRIPTION': """
         `{command}` Call a locally deployed Google Cloud Function.
@@ -50,6 +47,6 @@ class Call(base.Command):
 
     name = args.NAME[0]
     port = util.FindContainerPort(name)
-    localhost = 'http://localhost:' + six.text_type(port)
+    localhost = 'http://localhost:' + str(port)
 
     return call_util.MakePostRequest(localhost, args)

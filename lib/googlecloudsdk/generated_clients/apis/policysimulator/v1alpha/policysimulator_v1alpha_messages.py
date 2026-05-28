@@ -1042,8 +1042,8 @@ class GoogleCloudPolicysimulatorV1alphaActivityBacktestAccessDecisionChangeSumma
   r"""Summary of the access changes detected during the activity backtest.
 
   Fields:
-    impactedLocations: Output only. List of resource locations for which at
-      least one access changed.
+    impactedLocationSummaries: Output only. List of location summaries that
+      were impacted by the proposed policy change.
     impactedPrincipalsCount: Output only. Principals for which at least one
       access changed.
     impactedResourcesCount: Output only. Resources for which at least one
@@ -1052,10 +1052,32 @@ class GoogleCloudPolicysimulatorV1alphaActivityBacktestAccessDecisionChangeSumma
       deny.
   """
 
-  impactedLocations = _messages.StringField(1, repeated=True)
+  impactedLocationSummaries = _messages.MessageField('GoogleCloudPolicysimulatorV1alphaActivityBacktestAccessDecisionChangeSummaryLocationSummary', 1, repeated=True)
   impactedPrincipalsCount = _messages.IntegerField(2)
   impactedResourcesCount = _messages.IntegerField(3)
   newlyDeniedCount = _messages.IntegerField(4)
+
+
+class GoogleCloudPolicysimulatorV1alphaActivityBacktestAccessDecisionChangeSummaryLocationSummary(_messages.Message):
+  r"""Summary of impacted locations. Detailed information for a specific cloud
+  location and the location group it belongs to. For Example: location: "us-
+  central1" (Cloud region) location_group: "US" (Country code)
+
+  Fields:
+    impactedResourcesCount: Output only. The number of resources in this
+      location for which at least one access changed.
+    location: Output only. The cloud location where the resources are located.
+      Expected format is the Google Cloud region name (e.g., "us-central1").
+      See https://cloud.google.com/compute/docs/regions-zones for supported
+      formats.
+    locationGroup: Output only. The cloud location group that the above
+      location belongs to. Expected format is the CLF location group name
+      (e.g., "//cloudLocationGroups/us").
+  """
+
+  impactedResourcesCount = _messages.IntegerField(1)
+  location = _messages.StringField(2)
+  locationGroup = _messages.StringField(3)
 
 
 class GoogleCloudPolicysimulatorV1alphaActivityBacktestActivityBacktestSummary(_messages.Message):
@@ -2514,15 +2536,9 @@ class GoogleCloudPolicysimulatorV1alphaIamV3RegionalAccessBoundaryPolicyRule(_me
   Fields:
     description: Optional. The description of the regional access boundary
       policy rule. Must be less than or equal to 256 characters.
-    locations: Describes the list of authorized locations. It is in the format
-      of value groups with the following syntax:
-      "//GoogleValueGroups/Locations/LOCATION" Where LOCATION can either be
-      "Mandatory/version_number_here" (the locations which are required for
-      inclusion for all customers) or a specific country-based location. Note
-      the Mandatory Locations value group will be versioned to allow Google to
-      remove locations from this group without causing breaking changes.
-      Examples: "//GoogleValueGroups/Locations/Mandatory/v1".
-      "//GoogleValueGroups/Locations/US". "//GoogleValueGroups/Locations/JP".
+    locations: Describes the list of authorized location groups. See
+      google.iam.v3.RegionalAccessBoundaryPolicyRule.locations for the
+      accepted formats.
   """
 
   description = _messages.StringField(1)
@@ -3103,7 +3119,7 @@ class GoogleCloudPolicysimulatorV1alphaPolicyBinding(_messages.Message):
       `principal.subject.endsWith()` Allowed operations for `principal.type`:
       - `principal.type == ` - `principal.type != ` - `principal.type in []`
       Supported principal types are workspace, workforce pool, workload pool,
-      service account, and Agent Identity. Allowed string must be one of: -
+      service account, and agent identity. Allowed string must be one of: -
       `iam.googleapis.com/WorkspaceIdentity` -
       `iam.googleapis.com/WorkforcePoolIdentity` -
       `iam.googleapis.com/WorkloadPoolIdentity` -
@@ -3322,6 +3338,9 @@ class GoogleCloudPolicysimulatorV1alphaPrincipalAccessBoundaryPolicyRule(_messag
       policy rule. Must be less than or equal to 256 characters.
     effect: Required. The access relationship of principals to the resources
       in this rule.
+    operation: Optional. The operation attributes that determine whether this
+      rule applies to a request. If this field is not specified, the rule
+      applies to all operations.
     resources: Required. A list of Resource Manager resources. If a resource
       is listed in the rule, then the rule applies for that resource and its
       descendants. The number of resources in a policy is limited to 500
@@ -3346,7 +3365,43 @@ class GoogleCloudPolicysimulatorV1alphaPrincipalAccessBoundaryPolicyRule(_messag
 
   description = _messages.StringField(1)
   effect = _messages.EnumField('EffectValueValuesEnum', 2)
-  resources = _messages.StringField(3, repeated=True)
+  operation = _messages.MessageField('GoogleCloudPolicysimulatorV1alphaPrincipalAccessBoundaryPolicyRuleOperation', 3)
+  resources = _messages.StringField(4, repeated=True)
+
+
+class GoogleCloudPolicysimulatorV1alphaPrincipalAccessBoundaryPolicyRuleOperation(_messages.Message):
+  r"""An operation attribute that defines the permissions applicable to this
+  rule.
+
+  Fields:
+    excludedPermissions: Optional. Specifies the permissions that this rule
+      excludes from the set of affected permissions given by `permissions`.
+      The number of excluded permission strings in this field is limited to
+      50. If a permission appears in both `permissions` and
+      `excluded_permissions` then it will _not_ be subject to the policy
+      effect. The excluded permissions can be specified using the same syntax
+      as `permissions`.
+    permissions: Optional. The permissions that are explicitly affected by
+      this rule. The number of permission strings in this field is limited to
+      50. Each permission uses the format `{service_fqdn}/{resource}.{verb}`,
+      where `{service_fqdn}` is the fully qualified domain name for the
+      service. `*` can be used as a wildcard to match all permissions for a
+      specific service, resource type, or verb. The following formats are
+      supported: * `{service_fqdn}/{resource}.{verb}`: A specific permission.
+      * `{service_fqdn}/{resource}.*`: All permissions for a specific resource
+      type. * `{service_fqdn}/*.*`: All permissions for all resource types
+      under a specific service. * `{service_fqdn}/*.{verb}`: All permissions
+      with a specific verb under a specific service. * `*`: All permissions
+      across all services. For example,
+      `compute.googleapis.com/*.setIamPolicy` refers to all setIamPolicy
+      permissions for any compute resource. Wildcards expand only to the
+      permissions specified in the `enforcement_version` of the policy. If the
+      `enforcement_version` is updated, the wildcard will automatically expand
+      to include new permissions in the updated version.
+  """
+
+  excludedPermissions = _messages.StringField(1, repeated=True)
+  permissions = _messages.StringField(2, repeated=True)
 
 
 class GoogleCloudPolicysimulatorV1alphaProposedChange(_messages.Message):

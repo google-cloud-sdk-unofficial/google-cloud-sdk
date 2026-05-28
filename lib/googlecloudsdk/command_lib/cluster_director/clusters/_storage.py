@@ -19,6 +19,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Set
 
+from googlecloudsdk.command_lib.cluster_director.clusters import _validator
 from googlecloudsdk.command_lib.cluster_director.clusters import errors
 
 ClusterDirectorError = errors.ClusterDirectorError
@@ -88,10 +89,13 @@ def MakeClusterStorages(
   if args.IsSpecified("create_filestores"):
     for filestore in args.create_filestores:
       storage_id = filestore.get("id")
+      _validator.ValidateResourceID(storage_id)
       if storage_id in storage_ids:
         raise ClusterDirectorError(
             f"Duplicate storage resource id: {storage_id}"
         )
+      if filestore.get("capacityGb") is not None:
+        _validator.ValidateFilestoreCapacity(filestore.get("capacityGb"))
       storage_ids.add(storage_id)
       storages.additionalProperties.append(
           message_module.Cluster.StorageResourcesValue.AdditionalProperty(
@@ -119,6 +123,7 @@ def MakeClusterStorages(
   if args.IsSpecified("filestores"):
     for filestore in args.filestores:
       storage_id = filestore.get("id")
+      _validator.ValidateResourceID(storage_id)
       if storage_id in storage_ids:
         raise ClusterDirectorError(
             f"Duplicate storage resource id: {storage_id}"
@@ -141,10 +146,13 @@ def MakeClusterStorages(
   if args.IsSpecified("create_lustres"):
     for lustre in args.create_lustres:
       storage_id = lustre.get("id")
+      _validator.ValidateResourceID(storage_id)
       if storage_id in storage_ids:
         raise ClusterDirectorError(
             f"Duplicate storage resource id: {storage_id}"
         )
+      if lustre.get("capacityGb") is not None:
+        _validator.ValidateLustreCapacity(lustre.get("capacityGb"))
       storage_ids.add(storage_id)
       storages.additionalProperties.append(
           message_module.Cluster.StorageResourcesValue.AdditionalProperty(
@@ -169,6 +177,7 @@ def MakeClusterStorages(
   if args.IsSpecified("lustres"):
     for lustre in args.lustres:
       storage_id = lustre.get("id")
+      _validator.ValidateResourceID(storage_id)
       if storage_id in storage_ids:
         raise ClusterDirectorError(
             f"Duplicate storage resource id: {storage_id}"
@@ -191,6 +200,7 @@ def MakeClusterStorages(
   if args.IsSpecified("create_buckets"):
     for gcs_bucket in args.create_buckets:
       storage_id = gcs_bucket.get("id")
+      _validator.ValidateResourceID(storage_id)
       if storage_id in storage_ids:
         raise ClusterDirectorError(
             f"Duplicate storage resource id: {storage_id}"
@@ -198,6 +208,13 @@ def MakeClusterStorages(
       storage_ids.add(storage_id)
       gcs = message_module.NewBucketConfig(
           bucket=gcs_bucket.get("name"),
+      )
+      _validator.ValidateGcsBucketExclusiveOptions(
+          bool(gcs_bucket.get("storageClass")),
+          bool(
+              gcs_bucket.get("enableAutoclass")
+              or gcs_bucket.get("terminalStorageClass")
+          ),
       )
       if "storageClass" in gcs_bucket:
         gcs.storageClass = gcs_bucket.get("storageClass")
@@ -226,6 +243,7 @@ def MakeClusterStorages(
   if args.IsSpecified("buckets"):
     for gcs_bucket in args.buckets:
       storage_id = gcs_bucket.get("id")
+      _validator.ValidateResourceID(storage_id)
       if storage_id in storage_ids:
         raise ClusterDirectorError(
             f"Duplicate storage resource id: {storage_id}"
@@ -364,10 +382,13 @@ def MakeClusterStoragesPatch(
   if args.IsSpecified("add_new_filestore_instances"):
     for filestore in args.add_new_filestore_instances:
       storage_id = filestore.get("id")
+      _validator.ValidateResourceID(storage_id)
       if storage_id in storages:
         raise ClusterDirectorError(
             f"Duplicate storage resource id: {storage_id}"
         )
+      if filestore.get("capacityGb") is not None:
+        _validator.ValidateFilestoreCapacity(filestore.get("capacityGb"))
       filestore_name = _GetFilestoreName(cluster_ref, filestore.get("name"))
       for storage_resource in storages.values():
         config = storage_resource.config
@@ -406,6 +427,7 @@ def MakeClusterStoragesPatch(
   if args.IsSpecified("add_filestore_instances"):
     for filestore in args.add_filestore_instances:
       storage_id = filestore.get("id")
+      _validator.ValidateResourceID(storage_id)
       if storage_id in storages:
         raise ClusterDirectorError(
             f"Duplicate storage resource id: {storage_id}"
@@ -439,10 +461,13 @@ def MakeClusterStoragesPatch(
   if args.IsSpecified("add_new_lustre_instances"):
     for lustre in args.add_new_lustre_instances:
       storage_id = lustre.get("id")
+      _validator.ValidateResourceID(storage_id)
       if storage_id in storages:
         raise ClusterDirectorError(
             f"Duplicate storage resource id: {storage_id}"
         )
+      if lustre.get("capacityGb") is not None:
+        _validator.ValidateLustreCapacity(lustre.get("capacityGb"))
       lustre_name = _GetLustreName(cluster_ref, lustre.get("name"))
       for storage_resource in storages.values():
         config = storage_resource.config
@@ -473,6 +498,7 @@ def MakeClusterStoragesPatch(
   if args.IsSpecified("add_lustre_instances"):
     for lustre in args.add_lustre_instances:
       storage_id = lustre.get("id")
+      _validator.ValidateResourceID(storage_id)
       if storage_id in storages:
         raise ClusterDirectorError(
             f"Duplicate storage resource id: {storage_id}"
@@ -501,6 +527,7 @@ def MakeClusterStoragesPatch(
   if args.IsSpecified("add_storage_buckets"):
     for bucket in args.add_storage_buckets:
       storage_id = bucket.get("id")
+      _validator.ValidateResourceID(storage_id)
       if storage_id in storages:
         raise ClusterDirectorError(
             f"Duplicate storage resource id: {storage_id}"
@@ -533,6 +560,7 @@ def MakeClusterStoragesPatch(
   if args.IsSpecified("add_new_storage_buckets"):
     for gcs_bucket in args.add_new_storage_buckets:
       storage_id = gcs_bucket.get("id")
+      _validator.ValidateResourceID(storage_id)
       if storage_id in storages:
         raise ClusterDirectorError(
             f"Duplicate storage resource id: {storage_id}"
@@ -552,6 +580,13 @@ def MakeClusterStoragesPatch(
           )
       gcs = message_module.NewBucketConfig(
           bucket=gcs_bucket.get("name"),
+      )
+      _validator.ValidateGcsBucketExclusiveOptions(
+          bool(gcs_bucket.get("storageClass")),
+          bool(
+              gcs_bucket.get("enableAutoclass")
+              or gcs_bucket.get("terminalStorageClass")
+          ),
       )
       if "storageClass" in gcs_bucket:
         gcs.storageClass = gcs_bucket.get("storageClass")

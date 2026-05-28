@@ -19,10 +19,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 @base.DefaultUniverseOnly
-
-
 class Connectors(base.Group):
   """Manage Cloud Security Command Center (SCC) artifact guard connectors."""
 

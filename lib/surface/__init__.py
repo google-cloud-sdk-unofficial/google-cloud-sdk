@@ -26,6 +26,9 @@ from googlecloudsdk.core import properties
 if not hasattr(properties, '_B_468088880_FIXED'):
   import sys
   if 'darwin' in sys.platform and 'components' in sys.argv and 'update' in sys.argv:  # pylint:disable=line-too-long
+    # We must use raw print() here instead of the recommended log.status
+    # because this early startup hotfix runs before the Calliope logging
+    # framework is fully initialized.
     print(
         'WARNING: Known issue encountered updating Python modules. Please run'
         ' `gcloud components update-macos-python` to retry this step. This'

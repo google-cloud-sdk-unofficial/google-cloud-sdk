@@ -14,28 +14,27 @@
 ## limitations under the License.
 ${api_def_source}
 
-MAP = {
+MAP = _ApiDefMap({
 % for api_name, api_versions in sorted(apis_map.items()):
     '${api_name}': {
       % for api_version, api_def in sorted(api_versions.items()):
-        '${api_version}':
-            APIDef(
-                % if api_def.apitools:
-                apitools=ApitoolsClientDef(
-                    class_path='${api_def.apitools.class_path}',
-                    client_classpath='${api_def.apitools.client_classpath}',
-                    base_url='${api_def.apitools.base_url}',
-                    messages_modulepath='${api_def.apitools.messages_modulepath}'),
-                % endif
-                % if api_def.gapic:
-                gapic=GapicClientDef(
-                    class_path='${api_def.gapic.class_path}'),
-                % endif
-                default_version=${api_def.default_version},
-                enable_mtls=${api_def.enable_mtls},
-                mtls_endpoint_override='${api_def.mtls_endpoint_override}',
-                regional_endpoints=${api_def.regional_endpoints}),
+        '${api_version}': (
+            % if api_def.apitools:
+            ('${api_def.apitools.class_path}', '${api_def.apitools.client_classpath}', '${api_def.apitools.messages_modulepath}', '${api_def.apitools.base_url}'),
+            % else:
+            None,
+            % endif
+            % if api_def.gapic:
+            ('${api_def.gapic.class_path}',),
+            % else:
+            None,
+            % endif
+            ${api_def.default_version},
+            ${api_def.enable_mtls},
+            '${api_def.mtls_endpoint_override}',
+            ${api_def.regional_endpoints},
+        ),
       % endfor
     },
 % endfor
-}
+})

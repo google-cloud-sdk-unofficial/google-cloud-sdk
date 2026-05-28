@@ -16,7 +16,8 @@
 """Translation rule for app resources (instance_class, cpu, memory)."""
 
 import logging
-from typing import Mapping, Sequence, Tuple
+from typing import Any, Mapping, Sequence, Tuple
+
 import frozendict
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.common import util
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.translation_rules import scaling
@@ -301,3 +302,46 @@ def _format_cloud_run_memory_unit(value: float) -> str:
   # memory requirement.
   # Allowed values are [m, k, M, G, T, Ki, Mi, Gi, Ti, Pi, Ei]
   return f'{value}Gi'
+
+
+def update_service_yaml_with_cpu_memory(
+    service_yaml: dict[str, Any],
+    input_data: Mapping[str, Any],
+) -> None:
+  """Updates the service_yaml dict with CPU and memory settings."""
+  if util.is_flex_env(input_data):
+    cpu = float(input_data.get('resources.cpu') or _DEFAULT_CPU)
+    memory = float(input_data.get('resources.memory_gb') or _DEFAULT_MEMORY)
+    cpu, memory = _convert_cpu_memory(cpu, memory)
+  else:
+    instance_class_key_from_input = util.get_feature_key_from_input(
+        input_data, [_ALLOW_INSTANCE_CLASS_KEY]
+    )
+    if instance_class_key_from_input:
+      instance_class = input_data[instance_class_key_from_input]
+      instance_config = _INSTANCE_CLASS_MAP[instance_class]
+      cpu_value = instance_config['cpu']
+      memory_value = instance_config['memory']
+      cpu, memory = _convert_cpu_memory(cpu_value, memory_value)
+    else:
+      scaling_features_used = scaling.get_scaling_features_used(input_data)
+      if scaling_features_used and len(scaling_features_used) == 1:
+        scaling_method = scaling_features_used[0]
+        default_instance_class = _DEFAULT_CPU_MEM_CONFIG[scaling_method]
+        instance_config = _INSTANCE_CLASS_MAP[default_instance_class]
+        cpu_value = instance_config['cpu']
+        memory_value = instance_config['memory']
+        cpu, memory = _convert_cpu_memory(cpu_value, memory_value)
+      else:
+        return
+
+  container = service_yaml['spec']['template']['spec']['containers'][0]
+  if 'resources' not in container:
+    container['resources'] = {}
+  if 'limits' not in container['resources']:
+    container['resources']['limits'] = {}
+
+  container['resources']['limits']['cpu'] = str(cpu)
+  container['resources']['limits']['memory'] = _format_cloud_run_memory_unit(
+      memory
+  )

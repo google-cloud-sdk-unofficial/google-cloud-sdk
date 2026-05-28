@@ -52,6 +52,15 @@ def _BuildFederatedCatalogMessage(args, messages):
             service_principal_application_id=args.service_principal_application_id,
         ),
     )
+  elif args.federated_catalog_type == 'glue':
+    federated_catalog_options = messages.FederatedCatalogOptions(
+        service_directory_name=args.service_directory_name,
+        glue_catalog_info=messages.GlueCatalogInfo(
+            warehouse=args.glue_warehouse,
+            aws_region=args.glue_aws_region,
+            aws_role_arn=args.glue_aws_role_arn,
+        ),
+    )
   else:
     federated_catalog_options = messages.FederatedCatalogOptions()
   # Refresh options are supported for all federated catalog types.
@@ -85,6 +94,7 @@ class CreateCatalog(base.CreateCommand):
   _support_primary_location = False
   _support_service_directory_name = False
   _support_federated_catalog = False
+  _support_glue_catalog = False
 
   @classmethod
   def Args(cls, parser):
@@ -100,6 +110,8 @@ class CreateCatalog(base.CreateCommand):
       arguments.AddCatalogsCreateArgs(parser)
     if cls._support_federated_catalog:
       arguments.AddFederatedCatalogArgs(parser)
+    if cls._support_glue_catalog:
+      arguments.AddGlueCatalogArgs(parser)
     if cls._support_catalog_type_biglake:
       util.AddDefaultLocationArg(parser)
       util.AddRestrictedLocationsArg(parser)
@@ -179,3 +191,4 @@ class CreateAlpha(CreateCatalog):
   _support_primary_location = True
   _support_service_directory_name = True
   _support_federated_catalog = True
+  _support_glue_catalog = True

@@ -308,7 +308,7 @@ class FirebasedataconnectV1alpha(base_api.BaseApiClient):
     )
 
     def ImpersonateMutation(self, request, global_params=None):
-      r"""Impersonate a mutation defined on a Firebase Data Connect connector. It grants the admin SDK access to mutations defined in the given connector. The caller can choose to impersonate a particular Firebase Auth user, or skip @auth completely.
+      r"""Impersonate a mutation defined on a Firebase SQL Connect connector. It grants the admin SDK access to mutations defined in the given connector. The caller can choose to impersonate a particular Firebase Auth user, or skip @auth completely.
 
       Args:
         request: (FirebasedataconnectProjectsLocationsServicesConnectorsImpersonateMutationRequest) input message
@@ -335,7 +335,7 @@ class FirebasedataconnectV1alpha(base_api.BaseApiClient):
     )
 
     def ImpersonateQuery(self, request, global_params=None):
-      r"""Impersonate a query defined on a Firebase Data Connect connector. It grants the admin SDK access to queries defined in the given connector. The caller can choose to impersonate a particular Firebase Auth user, or skip @auth completely.
+      r"""Impersonate a query defined on a Firebase SQL Connect connector. It grants the admin SDK access to queries defined in the given connector. The caller can choose to impersonate a particular Firebase Auth user, or skip @auth completely.
 
       Args:
         request: (FirebasedataconnectProjectsLocationsServicesConnectorsImpersonateQueryRequest) input message
@@ -625,7 +625,7 @@ class FirebasedataconnectV1alpha(base_api.BaseApiClient):
     )
 
     def ExecuteGraphql(self, request, global_params=None):
-      r"""Execute any GraphQL query and mutation against the Firebase Data Connect's generated GraphQL schema. Grants full read and write access to the connected data sources. Note: Use introspection query to explore the generated GraphQL schema.
+      r"""Execute any GraphQL query or mutation against the Firebase SQL Connect's generated GraphQL schema. Grants full read and write access to the connected data sources. Note: Use introspection query to explore the generated GraphQL schema.
 
       Args:
         request: (FirebasedataconnectProjectsLocationsServicesExecuteGraphqlRequest) input message
@@ -652,7 +652,7 @@ class FirebasedataconnectV1alpha(base_api.BaseApiClient):
     )
 
     def ExecuteGraphqlRead(self, request, global_params=None):
-      r"""Execute any GraphQL query against the Firebase Data Connect's generated GraphQL schema. Grants full read to the connected data sources. `ExecuteGraphqlRead` is identical to `ExecuteGraphql` except it only accepts read-only query.
+      r"""Execute any GraphQL query against the Firebase SQL Connect's generated GraphQL schema. Grants full read to the connected data sources. `ExecuteGraphqlRead` is identical to `ExecuteGraphql` except it only accepts read-only query.
 
       Args:
         request: (FirebasedataconnectProjectsLocationsServicesExecuteGraphqlReadRequest) input message
@@ -675,6 +675,60 @@ class FirebasedataconnectV1alpha(base_api.BaseApiClient):
         request_field='graphqlRequest',
         request_type_name='FirebasedataconnectProjectsLocationsServicesExecuteGraphqlReadRequest',
         response_type_name='GraphqlResponse',
+        supports_download=False,
+    )
+
+    def GenerateQuery(self, request, global_params=None):
+      r"""Generates a GraphQL query based on a natural language prompt and the provided schema context. This is a stateless method; the schema is provided per request to support local development states. Streams results with real-time status and output chunks.
+
+      Args:
+        request: (FirebasedataconnectProjectsLocationsServicesGenerateQueryRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GenerateQueryResponse) The response message.
+      """
+      config = self.GetMethodConfig('GenerateQuery')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GenerateQuery.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/services/{servicesId}:generateQuery',
+        http_method='POST',
+        method_id='firebasedataconnect.projects.locations.services.generateQuery',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:generateQuery',
+        request_field='generateQueryRequest',
+        request_type_name='FirebasedataconnectProjectsLocationsServicesGenerateQueryRequest',
+        response_type_name='GenerateQueryResponse',
+        supports_download=False,
+    )
+
+    def GenerateSchema(self, request, global_params=None):
+      r"""Generates GraphQL schema based on a natural language prompt or data description. This allows users to scaffold new types and tables quickly. Streams results with real-time status and output chunks.
+
+      Args:
+        request: (FirebasedataconnectProjectsLocationsServicesGenerateSchemaRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GenerateSchemaResponse) The response message.
+      """
+      config = self.GetMethodConfig('GenerateSchema')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GenerateSchema.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/services/{servicesId}:generateSchema',
+        http_method='POST',
+        method_id='firebasedataconnect.projects.locations.services.generateSchema',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:generateSchema',
+        request_field='generateSchemaRequest',
+        request_type_name='FirebasedataconnectProjectsLocationsServicesGenerateSchemaRequest',
+        response_type_name='GenerateSchemaResponse',
         supports_download=False,
     )
 
@@ -706,7 +760,7 @@ class FirebasedataconnectV1alpha(base_api.BaseApiClient):
     )
 
     def IntrospectGraphql(self, request, global_params=None):
-      r"""Execute introspection query against the Firebase Data Connect's generated GraphQL schema. GraphQL introspection query provides metadata such as what tables the schema have, what queries and mutations can be performed on the schema, and so on. Read more at https://graphql.org/learn/introspection. IntrospectGraphql can read schema metadata but cannot read rows from Cloud SQL instance, which can be done via ExecuteGraphqlRead.
+      r"""Execute introspection query against the Firebase SQL Connect's generated GraphQL schema. GraphQL introspection query provides metadata such as what tables the schema have, what queries and mutations can be performed on the schema, and so on. Read more at https://graphql.org/learn/introspection. IntrospectGraphql can read schema metadata but cannot read rows from Cloud SQL instance, which can be done via ExecuteGraphqlRead.
 
       Args:
         request: (FirebasedataconnectProjectsLocationsServicesIntrospectGraphqlRequest) input message
@@ -824,7 +878,7 @@ class FirebasedataconnectV1alpha(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the ListLocationsRequest.name field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
       Args:
         request: (FirebasedataconnectProjectsLocationsListRequest) input message

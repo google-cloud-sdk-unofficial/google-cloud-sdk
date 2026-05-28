@@ -168,20 +168,9 @@ class AlphaReplace(base.Command):
           failure_message='Instance failed to deploy',
           suppress_output=args.async_,
       ) as tracker:
-
-        if instance_obj:
-          instance_obj = client.ReplaceInstance(
-              instance_ref, changes, tracker, asyn=args.async_
-          )
-        else:
-          parent_ref = instance_ref.Parent()
-          instance_obj = client.CreateInstance(
-              parent_ref,
-              instance_ref.Name(),
-              changes,
-              tracker,
-              asyn=args.async_,
-          )
+        instance_obj = client.UpdateOrCreateInstance(
+            instance_ref, changes, tracker, asyn=args.async_
+        )
 
       operation = 'created' if is_create else 'replaced'
       if args.async_:

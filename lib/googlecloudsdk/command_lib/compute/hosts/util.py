@@ -17,19 +17,34 @@
 
 def CreateAssociationHook(unused_ref, args, request):
   """Constructs association path from reservation and block_name flags."""
+
+  # If user explicitly specified association, use it.
+  if args.IsKnownAndSpecified('association') and args.association:
+    request.association = args.association
+    return request
+
+  if request.association and not (
+      request.association.startswith('reservations/')
+      or request.association.startswith('reservationBlocks/')
+  ):
+    request.association = ''
+
   association = []
   if args.IsKnownAndSpecified('reservation') and args.reservation:
-    association.append('reservations/{}'.format(args.reservation))
-    if args.IsKnownAndSpecified('reservation_block') and args.reservation_block:
-      block_name = args.reservation_block
-    elif args.IsKnownAndSpecified('block_name') and args.block_name:
-      block_name = args.block_name
-    else:
-      block_name = None
+    association.append(f'reservations/{args.reservation}')
 
-    if block_name:
-      association.append('reservationBlocks/{}'.format(block_name))
+  block_name = None
+  if args.IsKnownAndSpecified('reservation_block') and args.reservation_block:
+    block_name = args.reservation_block
+  elif args.IsKnownAndSpecified('block_name') and args.block_name:
+    block_name = args.block_name
+
+  if block_name:
+    association.append(f'reservationBlocks/{block_name}')
 
   if association:
     request.association = '/'.join(association)
+  else:
+    request.association = ''
+
   return request

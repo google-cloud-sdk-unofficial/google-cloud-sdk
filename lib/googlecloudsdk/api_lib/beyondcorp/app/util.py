@@ -19,7 +19,11 @@
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 
-VERSION_MAP = {base.ReleaseTrack.ALPHA: 'v1alpha', base.ReleaseTrack.BETA: 'v1'}
+VERSION_MAP = {
+    base.ReleaseTrack.GA: 'v1',
+    base.ReleaseTrack.BETA: 'v1',
+    base.ReleaseTrack.ALPHA: 'v1alpha'
+}
 
 
 def GetMessagesModule(release_track=base.ReleaseTrack.ALPHA):

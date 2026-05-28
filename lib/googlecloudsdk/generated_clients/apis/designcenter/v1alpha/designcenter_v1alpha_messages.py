@@ -3548,6 +3548,7 @@ class Empty(_messages.Message):
   """
 
 
+
 class Environment(_messages.Message):
   r"""Environment of the Application, Service, or Workload
 

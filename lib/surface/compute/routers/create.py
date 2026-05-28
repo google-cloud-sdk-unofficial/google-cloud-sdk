@@ -26,7 +26,6 @@ from googlecloudsdk.command_lib.compute.routers import flags
 from googlecloudsdk.command_lib.compute.routers import router_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
-import six
 
 
 @base.UniverseCompatible
@@ -143,7 +142,7 @@ class Create(base.CreateCommand):
       # Create an empty bgp field if not generated yet.
       if args.asn is None:
         router_resource.bgp = messages.RouterBgp()
-      for attr, value in six.iteritems(attrs):
+      for attr, value in attrs.items():
         if value is not None:
           setattr(router_resource.bgp, attr, value)
 
@@ -213,7 +212,7 @@ class Create(base.CreateCommand):
     params = messages.RouterParams
     additional_properties = [
         params.ResourceManagerTagsValue.AdditionalProperty(key=key, value=value)
-        for key, value in sorted(six.iteritems(resource_manager_tags_map))
+        for key, value in sorted(resource_manager_tags_map.items())
     ]
     return params(
         resourceManagerTags=params.ResourceManagerTagsValue(

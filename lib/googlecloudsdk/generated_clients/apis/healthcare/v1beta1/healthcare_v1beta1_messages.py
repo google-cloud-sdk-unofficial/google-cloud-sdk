@@ -668,6 +668,10 @@ class BulkDeleteResourcesRequest(_messages.Message):
       are deleted. The time uses the format YYYY-MM-DDThh:mm:ss.sss+zz:zz. For
       example, `2015-02-07T13:28:17.239+02:00` or `2017-01-01T00:00:00Z`. The
       time must be specified to the second and include a time zone.
+    validateOnly: Optional. If set to true, the request will only perform a
+      dry run. By default (once the behavior change is fully rolled out), this
+      will default to true. During the transition period, the default depends
+      on the Mendel flag status for the project.
     versionConfig: Optional. Specifies which version of the resources to
       delete.
   """
@@ -690,7 +694,8 @@ class BulkDeleteResourcesRequest(_messages.Message):
   gcsDestination = _messages.MessageField('GoogleCloudHealthcareV1beta1FhirGcsDestination', 1)
   type = _messages.StringField(2)
   until = _messages.StringField(3)
-  versionConfig = _messages.EnumField('VersionConfigValueValuesEnum', 4)
+  validateOnly = _messages.BooleanField(4)
+  versionConfig = _messages.EnumField('VersionConfigValueValuesEnum', 5)
 
 
 class BulkExportGcsDestination(_messages.Message):
@@ -6646,9 +6651,8 @@ class HealthcareProjectsLocationsListRequest(_messages.Message):
   r"""A HealthcareProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).

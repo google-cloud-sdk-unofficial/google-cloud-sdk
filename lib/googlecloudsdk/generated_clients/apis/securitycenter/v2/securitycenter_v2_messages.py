@@ -1994,9 +1994,14 @@ class ExternalExposure(_messages.Message):
   finding.
 
   Fields:
+    backendBucket: The full resource name of the load balancer backend bucket,
+      for example, "//compute.googleapis.com/projects/{project-
+      id}/global/backendBuckets/{name}"
     backendService: The full resource name of load balancer backend service,
       for example, "//compute.googleapis.com/projects/{project-
       id}/global/backendServices/{name}".
+    exposedApplication: The name and version of the exposed web application,
+      for example, "Jenkins 2.184".
     exposedEndpoint: The resource which is running the exposed service, for
       example, "//compute.googleapis.com/projects/{project-
       id}/zones/{zone}/instances/{instance}."
@@ -2005,9 +2010,16 @@ class ExternalExposure(_messages.Message):
     forwardingRule: The full resource name of the forwarding rule, for
       example, "//compute.googleapis.com/projects/{project-
       id}/global/forwardingRules/{forwarding-rule-name}".
+    hostnameUri: Hostname of the exposed application, for example,
+      "https://test-app.a.run.app/"
+    httpResponse: The http response returned by the web application.
     instanceGroup: The full resource name of the instance group, for example,
       "//compute.googleapis.com/projects/{project-
       id}/global/instanceGroups/{name}".
+    internalBackendService: The full resource name of load balancer backend
+      service in the internal project having resource exposed via PSC, for
+      example, "//compute.googleapis.com/projects/{project-
+      id}/global/backendServices/{name}".
     loadBalancerFirewallPolicy: The full resource name of the load balancer
       firewall policy, for example,
       "//compute.googleapis.com/projects/{project-
@@ -2015,8 +2027,20 @@ class ExternalExposure(_messages.Message):
     networkEndpointGroup: The full resource name of the network endpoint
       group, for example, "//compute.googleapis.com/projects/{project-
       id}/global/networkEndpointGroups/{name}".
+    networkIngressFirewallPolicy: The full resource name of the network
+      ingress firewall policy, for example,
+      "//compute.googleapis.com/projects/{project-
+      id}/global/firewallPolicies/{name}".
     privateIpAddress: Private IP address of the exposed endpoint.
     privatePort: Port number associated with private IP address.
+    pscNetworkAttachment: The full resource name of the PSC (Private Service
+      Connect) network attachment that network interface controller is
+      attached to, for example, "//compute.googleapis.com/projects/{project-
+      id}/regions/{region}/networkAttachments/{name}"
+    pscServiceAttachment: The full resource name of the PSC (Private Service
+      Connect) service attachment that the load balancer network endpoint
+      group targets, for example, "//compute.googleapis.com/projects/{project-
+      id}/regions/{region}/serviceAttachments/{name}"
     publicIpAddress: Public IP address of the exposed endpoint.
     publicPort: Public port number of the exposed endpoint.
     serviceFirewallPolicy: The full resource name of the firewall policy of
@@ -2025,18 +2049,26 @@ class ExternalExposure(_messages.Message):
       id}/global/firewallPolicies/{policy-name}".
   """
 
-  backendService = _messages.StringField(1)
-  exposedEndpoint = _messages.StringField(2)
-  exposedService = _messages.StringField(3)
-  forwardingRule = _messages.StringField(4)
-  instanceGroup = _messages.StringField(5)
-  loadBalancerFirewallPolicy = _messages.StringField(6)
-  networkEndpointGroup = _messages.StringField(7)
-  privateIpAddress = _messages.StringField(8)
-  privatePort = _messages.StringField(9)
-  publicIpAddress = _messages.StringField(10)
-  publicPort = _messages.StringField(11)
-  serviceFirewallPolicy = _messages.StringField(12)
+  backendBucket = _messages.StringField(1)
+  backendService = _messages.StringField(2)
+  exposedApplication = _messages.StringField(3)
+  exposedEndpoint = _messages.StringField(4)
+  exposedService = _messages.StringField(5)
+  forwardingRule = _messages.StringField(6)
+  hostnameUri = _messages.StringField(7)
+  httpResponse = _messages.MessageField('HttpResponse', 8, repeated=True)
+  instanceGroup = _messages.StringField(9)
+  internalBackendService = _messages.StringField(10)
+  loadBalancerFirewallPolicy = _messages.StringField(11)
+  networkEndpointGroup = _messages.StringField(12)
+  networkIngressFirewallPolicy = _messages.StringField(13)
+  privateIpAddress = _messages.StringField(14)
+  privatePort = _messages.StringField(15)
+  pscNetworkAttachment = _messages.StringField(16)
+  pscServiceAttachment = _messages.StringField(17)
+  publicIpAddress = _messages.StringField(18)
+  publicPort = _messages.StringField(19)
+  serviceFirewallPolicy = _messages.StringField(20)
 
 
 class File(_messages.Message):
@@ -2335,6 +2367,8 @@ class Finding(_messages.Message):
         attack paths converge, based on attack path simulations (APS).
       EXTERNAL_EXPOSURE: Describes a potential security risk due to the
         resource being exposed to the internet.
+      SECRET: Describes a potential security risk due to plaintext
+        credentials, keys, or tokens being exposed in an asset or workload.
     """
     FINDING_CLASS_UNSPECIFIED = 0
     THREAT = 1
@@ -2347,6 +2381,7 @@ class Finding(_messages.Message):
     SENSITIVE_DATA_RISK = 8
     CHOKEPOINT = 9
     EXTERNAL_EXPOSURE = 10
+    SECRET = 11
 
   class MuteValueValuesEnum(_messages.Enum):
     r"""Indicates the mute state of a finding (either muted, unmuted or
@@ -5483,9 +5518,14 @@ class GoogleCloudSecuritycenterV2ExternalExposure(_messages.Message):
   finding.
 
   Fields:
+    backendBucket: The full resource name of the load balancer backend bucket,
+      for example, "//compute.googleapis.com/projects/{project-
+      id}/global/backendBuckets/{name}"
     backendService: The full resource name of load balancer backend service,
       for example, "//compute.googleapis.com/projects/{project-
       id}/global/backendServices/{name}".
+    exposedApplication: The name and version of the exposed web application,
+      for example, "Jenkins 2.184".
     exposedEndpoint: The resource which is running the exposed service, for
       example, "//compute.googleapis.com/projects/{project-
       id}/zones/{zone}/instances/{instance}."
@@ -5494,9 +5534,16 @@ class GoogleCloudSecuritycenterV2ExternalExposure(_messages.Message):
     forwardingRule: The full resource name of the forwarding rule, for
       example, "//compute.googleapis.com/projects/{project-
       id}/global/forwardingRules/{forwarding-rule-name}".
+    hostnameUri: Hostname of the exposed application, for example,
+      "https://test-app.a.run.app/"
+    httpResponse: The http response returned by the web application.
     instanceGroup: The full resource name of the instance group, for example,
       "//compute.googleapis.com/projects/{project-
       id}/global/instanceGroups/{name}".
+    internalBackendService: The full resource name of load balancer backend
+      service in the internal project having resource exposed via PSC, for
+      example, "//compute.googleapis.com/projects/{project-
+      id}/global/backendServices/{name}".
     loadBalancerFirewallPolicy: The full resource name of the load balancer
       firewall policy, for example,
       "//compute.googleapis.com/projects/{project-
@@ -5504,8 +5551,20 @@ class GoogleCloudSecuritycenterV2ExternalExposure(_messages.Message):
     networkEndpointGroup: The full resource name of the network endpoint
       group, for example, "//compute.googleapis.com/projects/{project-
       id}/global/networkEndpointGroups/{name}".
+    networkIngressFirewallPolicy: The full resource name of the network
+      ingress firewall policy, for example,
+      "//compute.googleapis.com/projects/{project-
+      id}/global/firewallPolicies/{name}".
     privateIpAddress: Private IP address of the exposed endpoint.
     privatePort: Port number associated with private IP address.
+    pscNetworkAttachment: The full resource name of the PSC (Private Service
+      Connect) network attachment that network interface controller is
+      attached to, for example, "//compute.googleapis.com/projects/{project-
+      id}/regions/{region}/networkAttachments/{name}"
+    pscServiceAttachment: The full resource name of the PSC (Private Service
+      Connect) service attachment that the load balancer network endpoint
+      group targets, for example, "//compute.googleapis.com/projects/{project-
+      id}/regions/{region}/serviceAttachments/{name}"
     publicIpAddress: Public IP address of the exposed endpoint.
     publicPort: Public port number of the exposed endpoint.
     serviceFirewallPolicy: The full resource name of the firewall policy of
@@ -5514,18 +5573,26 @@ class GoogleCloudSecuritycenterV2ExternalExposure(_messages.Message):
       id}/global/firewallPolicies/{policy-name}".
   """
 
-  backendService = _messages.StringField(1)
-  exposedEndpoint = _messages.StringField(2)
-  exposedService = _messages.StringField(3)
-  forwardingRule = _messages.StringField(4)
-  instanceGroup = _messages.StringField(5)
-  loadBalancerFirewallPolicy = _messages.StringField(6)
-  networkEndpointGroup = _messages.StringField(7)
-  privateIpAddress = _messages.StringField(8)
-  privatePort = _messages.StringField(9)
-  publicIpAddress = _messages.StringField(10)
-  publicPort = _messages.StringField(11)
-  serviceFirewallPolicy = _messages.StringField(12)
+  backendBucket = _messages.StringField(1)
+  backendService = _messages.StringField(2)
+  exposedApplication = _messages.StringField(3)
+  exposedEndpoint = _messages.StringField(4)
+  exposedService = _messages.StringField(5)
+  forwardingRule = _messages.StringField(6)
+  hostnameUri = _messages.StringField(7)
+  httpResponse = _messages.MessageField('GoogleCloudSecuritycenterV2HttpResponse', 8, repeated=True)
+  instanceGroup = _messages.StringField(9)
+  internalBackendService = _messages.StringField(10)
+  loadBalancerFirewallPolicy = _messages.StringField(11)
+  networkEndpointGroup = _messages.StringField(12)
+  networkIngressFirewallPolicy = _messages.StringField(13)
+  privateIpAddress = _messages.StringField(14)
+  privatePort = _messages.StringField(15)
+  pscNetworkAttachment = _messages.StringField(16)
+  pscServiceAttachment = _messages.StringField(17)
+  publicIpAddress = _messages.StringField(18)
+  publicPort = _messages.StringField(19)
+  serviceFirewallPolicy = _messages.StringField(20)
 
 
 class GoogleCloudSecuritycenterV2ExternalSystem(_messages.Message):
@@ -5880,6 +5947,8 @@ class GoogleCloudSecuritycenterV2Finding(_messages.Message):
         attack paths converge, based on attack path simulations (APS).
       EXTERNAL_EXPOSURE: Describes a potential security risk due to the
         resource being exposed to the internet.
+      SECRET: Describes a potential security risk due to plaintext
+        credentials, keys, or tokens being exposed in an asset or workload.
     """
     FINDING_CLASS_UNSPECIFIED = 0
     THREAT = 1
@@ -5892,6 +5961,7 @@ class GoogleCloudSecuritycenterV2Finding(_messages.Message):
     SENSITIVE_DATA_RISK = 8
     CHOKEPOINT = 9
     EXTERNAL_EXPOSURE = 10
+    SECRET = 11
 
   class MuteValueValuesEnum(_messages.Enum):
     r"""Indicates the mute state of a finding (either muted, unmuted or
@@ -6241,6 +6311,20 @@ class GoogleCloudSecuritycenterV2GroupMembership(_messages.Message):
 
   groupId = _messages.StringField(1)
   groupType = _messages.EnumField('GroupTypeValueValuesEnum', 2)
+
+
+class GoogleCloudSecuritycenterV2HttpResponse(_messages.Message):
+  r"""The http response returned by the web application.
+
+  Fields:
+    path: The http path for which response code was returned by web
+      application, for example, "https://test-app.a.run.app/test".
+    statusCode: The http response code returned by the web application, for
+      example, 200.
+  """
+
+  path = _messages.StringField(1)
+  statusCode = _messages.StringField(2)
 
 
 class GoogleCloudSecuritycenterV2IamBinding(_messages.Message):
@@ -9079,6 +9163,20 @@ class GroupResult(_messages.Message):
 
   count = _messages.IntegerField(1)
   properties = _messages.MessageField('PropertiesValue', 2)
+
+
+class HttpResponse(_messages.Message):
+  r"""The http response returned by the web application.
+
+  Fields:
+    path: The http path for which response code was returned by web
+      application, for example, "https://test-app.a.run.app/test".
+    statusCode: The http response code returned by the web application, for
+      example, 200.
+  """
+
+  path = _messages.StringField(1)
+  statusCode = _messages.StringField(2)
 
 
 class IamBinding(_messages.Message):

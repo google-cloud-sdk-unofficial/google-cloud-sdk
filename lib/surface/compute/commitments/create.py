@@ -51,7 +51,7 @@ class Create(base.Command):
   _support_reservation_sharing_policy = False
   _support_60_month_plan = False
   _support_24_month_plan = False
-  _support_resource_manager_tags = False
+  _support_resource_manager_tags = True
 
   detailed_help = {'EXAMPLES': """
         To create a commitment called ``commitment-1'' in the ``us-central1''
@@ -191,7 +191,7 @@ class CreateBeta(Create):
   _support_reservation_sharing_policy = True
   _support_60_month_plan = False
   _support_24_month_plan = False
-  _support_resource_manager_tags = False
+  _support_resource_manager_tags = True
 
   @classmethod
   def Args(cls, parser):

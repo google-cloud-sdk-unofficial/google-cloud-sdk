@@ -1,6 +1,6 @@
 """Generated message classes for firebasedataconnect version v1alpha.
 
-Firebase Data Connect is a relational database service for mobile and web apps
+Firebase SQL Connect is a relational database service for mobile and web apps
 that lets you build and scale using a fully-managed PostgreSQL database
 powered by Cloud SQL. The REST API lets developers manage the connections to
 their database, change the schema of their database, and query the database.
@@ -53,6 +53,19 @@ class CloudSqlInstance(_messages.Message):
   """
 
   instance = _messages.StringField(1)
+
+
+class CodeChunk(_messages.Message):
+  r"""A chunk of code.
+
+  Fields:
+    code: Required. The code content string.
+    languageCode: Optional. Specifies the language if we expand support beyond
+      GraphQL (e.g., SQL or JSON) The standard is BCP-47 language code.
+  """
+
+  code = _messages.StringField(1)
+  languageCode = _messages.StringField(2)
 
 
 class Connector(_messages.Message):
@@ -145,7 +158,7 @@ class Connector(_messages.Message):
 
 
 class DataConnectProperties(_messages.Message):
-  r"""Data Connect specific properties for a path under response.data.
+  r"""SQL Connect specific properties for a path under response.data.
 
   Fields:
     entityId: A single Entity ID. Set if the path points to a single entity.
@@ -166,7 +179,7 @@ class DataConnectProperties(_messages.Message):
 
 
 class Datasource(_messages.Message):
-  r"""A data source that backs Firebase Data Connect services.
+  r"""A data source that backs Firebase SQL Connect services.
 
   Fields:
     httpGraphql: HTTP GraphQL server webhook configurations.
@@ -187,7 +200,7 @@ class Empty(_messages.Message):
 
 
 class ExecuteMutationRequest(_messages.Message):
-  r"""The ExecuteMutation request to Firebase Data Connect.
+  r"""The ExecuteMutation request to Firebase SQL Connect.
 
   Messages:
     VariablesValue: Optional. Values for GraphQL variables provided in this
@@ -230,7 +243,7 @@ class ExecuteMutationRequest(_messages.Message):
 
 
 class ExecuteMutationResponse(_messages.Message):
-  r"""The ExecuteMutation response from Firebase Data Connect.
+  r"""The ExecuteMutation response from Firebase SQL Connect.
 
   Messages:
     DataValue: The result of executing the requested operation.
@@ -271,7 +284,7 @@ class ExecuteMutationResponse(_messages.Message):
 
 
 class ExecuteQueryRequest(_messages.Message):
-  r"""The ExecuteQuery request to Firebase Data Connect.
+  r"""The ExecuteQuery request to Firebase SQL Connect.
 
   Messages:
     VariablesValue: Optional. Values for GraphQL variables provided in this
@@ -314,7 +327,7 @@ class ExecuteQueryRequest(_messages.Message):
 
 
 class ExecuteQueryResponse(_messages.Message):
-  r"""The ExecuteQuery response from Firebase Data Connect.
+  r"""The ExecuteQuery response from Firebase SQL Connect.
 
   Messages:
     DataValue: The result of executing the requested operation.
@@ -383,9 +396,8 @@ class FirebasedataconnectProjectsLocationsListRequest(_messages.Message):
   r"""A FirebasedataconnectProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -744,7 +756,7 @@ class FirebasedataconnectProjectsLocationsServicesExecuteGraphqlReadRequest(_mes
   Fields:
     graphqlRequest: A GraphqlRequest resource to be passed as the request
       body.
-    name: Required. The relative resource name of Firebase Data Connect
+    name: Required. The relative resource name of Firebase SQL Connect
       service, in the format: ```
       projects/{project}/locations/{location}/services/{service} ```
   """
@@ -760,12 +772,44 @@ class FirebasedataconnectProjectsLocationsServicesExecuteGraphqlRequest(_message
   Fields:
     graphqlRequest: A GraphqlRequest resource to be passed as the request
       body.
-    name: Required. The relative resource name of Firebase Data Connect
+    name: Required. The relative resource name of Firebase SQL Connect
       service, in the format: ```
       projects/{project}/locations/{location}/services/{service} ```
   """
 
   graphqlRequest = _messages.MessageField('GraphqlRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class FirebasedataconnectProjectsLocationsServicesGenerateQueryRequest(_messages.Message):
+  r"""A FirebasedataconnectProjectsLocationsServicesGenerateQueryRequest
+  object.
+
+  Fields:
+    generateQueryRequest: A GenerateQueryRequest resource to be passed as the
+      request body.
+    name: Required. The resource name of the service in which to generate the
+      query. Format:
+      projects/{project}/locations/{location}/services/{service}
+  """
+
+  generateQueryRequest = _messages.MessageField('GenerateQueryRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class FirebasedataconnectProjectsLocationsServicesGenerateSchemaRequest(_messages.Message):
+  r"""A FirebasedataconnectProjectsLocationsServicesGenerateSchemaRequest
+  object.
+
+  Fields:
+    generateSchemaRequest: A GenerateSchemaRequest resource to be passed as
+      the request body.
+    name: Required. The resource name of the service in which to generate the
+      schema. Format:
+      projects/{project}/locations/{location}/services/{service}
+  """
+
+  generateSchemaRequest = _messages.MessageField('GenerateSchemaRequest', 1)
   name = _messages.StringField(2, required=True)
 
 
@@ -787,7 +831,7 @@ class FirebasedataconnectProjectsLocationsServicesIntrospectGraphqlRequest(_mess
   Fields:
     graphqlRequest: A GraphqlRequest resource to be passed as the request
       body.
-    name: Required. The relative resource name of Firebase Data Connect
+    name: Required. The relative resource name of Firebase SQL Connect
       service, in the format: ```
       projects/{project}/locations/{location}/services/{service} ```
   """
@@ -824,10 +868,10 @@ class FirebasedataconnectProjectsLocationsServicesPatchRequest(_messages.Message
   Fields:
     allowMissing: Optional. If true and the Service is not found, a new
       Service will be created. In this case, `update_mask` is ignored.
-    name: Identifier. The relative resource name of the Firebase Data Connect
+    name: Identifier. The relative resource name of the Firebase SQL Connect
       service, in the format: ```
       projects/{project}/locations/{location}/services/{service} ``` Note that
-      the service ID is specific to Firebase Data Connect and does not
+      the service ID is specific to Firebase SQL Connect and does not
       correspond to any of the instance IDs of the underlying data source
       connections.
     requestId: Optional. An optional request ID to identify requests. Specify
@@ -1001,18 +1045,98 @@ class FirebasedataconnectProjectsLocationsServicesSchemasPatchRequest(_messages.
   validateOnly = _messages.BooleanField(6)
 
 
+class GenerateQueryRequest(_messages.Message):
+  r"""Request message for GenerateQuery.
+
+  Fields:
+    prompt: Required. The natural language description of the desired query.
+      Example: "Find all users who signed up in the last 7 days."
+    schemas: Optional. The user's locally defined FDC Schema(s). If not
+      defined, the backend will fetch the user's deployed schema.
+  """
+
+  prompt = _messages.StringField(1)
+  schemas = _messages.MessageField('Schema', 2, repeated=True)
+
+
+class GenerateQueryResponse(_messages.Message):
+  r"""Output for streaming generate query requests
+
+  Fields:
+    part: Required. The content from the current conversational turn.
+    status: Essential for providing responsive UI feedback (e.g., a spinner or
+      "Analyzing schema..." step).
+  """
+
+  part = _messages.MessageField('Part', 1)
+  status = _messages.MessageField('GenerationStatus', 2)
+
+
+class GenerateSchemaRequest(_messages.Message):
+  r"""Request message for GenerateSchema.
+
+  Fields:
+    prompt: Required. The natural language description of the data model to
+      generate. Example: "A blog system with Users, Posts, and Comments. Users
+      can have multiple posts."
+  """
+
+  prompt = _messages.StringField(1)
+
+
+class GenerateSchemaResponse(_messages.Message):
+  r"""Output for streaming generate schema requests
+
+  Fields:
+    part: The content from the current conversational turn.
+    status: Essential for providing responsive UI feedback (e.g., a spinner or
+      "Analyzing schema..." step).
+  """
+
+  part = _messages.MessageField('Part', 1)
+  status = _messages.MessageField('GenerationStatus', 2)
+
+
+class GenerationStatus(_messages.Message):
+  r"""Represents the progress of the server side generation request.
+
+  Enums:
+    StateValueValuesEnum: Output only. The state of generation.
+
+  Fields:
+    message: Output only. A message providing more details about the state.
+    state: Output only. The state of generation.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of generation.
+
+    Values:
+      STATE_UNSPECIFIED: Unspecified state.
+      ANALYZING_CODE: The agent is analyzing schema or operations.
+      GENERATING_CODE: The agent is generating code
+      COMPLETED: Generation is complete.
+    """
+    STATE_UNSPECIFIED = 0
+    ANALYZING_CODE = 1
+    GENERATING_CODE = 2
+    COMPLETED = 3
+
+  message = _messages.StringField(1)
+  state = _messages.EnumField('StateValueValuesEnum', 2)
+
+
 class GraphqlError(_messages.Message):
   r"""GraphqlError conforms to the GraphQL error spec.
-  https://spec.graphql.org/draft/#sec-Errors Firebase Data Connect API
-  surfaces `GraphqlError` in various APIs: - Upon compile error,
-  `UpdateSchema` and `UpdateConnector` return Code.Invalid_Argument with a
-  list of `GraphqlError` in error details. - Upon query compile error,
-  `ExecuteGraphql`, `ExecuteGraphqlRead` and `IntrospectGraphql` return
-  Code.OK with a list of `GraphqlError` in response body. - Upon query
-  execution error, `ExecuteGraphql`, `ExecuteGraphqlRead`, `ExecuteMutation`,
-  `ExecuteQuery`, `IntrospectGraphql`, `ImpersonateQuery` and
-  `ImpersonateMutation` all return Code.OK with a list of `GraphqlError` in
-  response body.
+  https://spec.graphql.org/draft/#sec-Errors Firebase SQL Connect API surfaces
+  `GraphqlError` in various APIs: - Upon compile error, `UpdateSchema` and
+  `UpdateConnector` return Code.Invalid_Argument with a list of `GraphqlError`
+  in error details. - Upon query compile error, `ExecuteGraphql`,
+  `ExecuteGraphqlRead` and `IntrospectGraphql` return Code.OK with a list of
+  `GraphqlError` in response body. - Upon query execution error,
+  `ExecuteGraphql`, `ExecuteGraphqlRead`, `ExecuteMutation`, `ExecuteQuery`,
+  `IntrospectGraphql`, `ImpersonateQuery` and `ImpersonateMutation` all return
+  Code.OK with a list of `GraphqlError` in response body.
 
   Fields:
     extensions: Additional error information.
@@ -1052,7 +1176,7 @@ class GraphqlErrorExtensions(_messages.Message):
       `Code.INTERNAL`.
     debugDetails: More detailed error message to assist debugging. It contains
       application business logic that are inappropriate to leak publicly. In
-      the emulator, Data Connect API always includes it to assist local
+      the emulator, SQL Connect API always includes it to assist local
       development and debugging. In the backend, ConnectorService always hides
       it. GraphqlService without impersonation always include it.
       GraphqlService with impersonation includes it only if explicitly opted-
@@ -1198,7 +1322,7 @@ class GraphqlErrorExtensions(_messages.Message):
 
 
 class GraphqlRequest(_messages.Message):
-  r"""The GraphQL request to Firebase Data Connect. It strives to match the
+  r"""The GraphQL request to Firebase SQL Connect. It strives to match the
   GraphQL over HTTP spec. https://github.com/graphql/graphql-over-
   http/blob/main/spec/GraphQLOverHTTP.md#post
 
@@ -1260,8 +1384,8 @@ class GraphqlRequestExtensions(_messages.Message):
 
 
 class GraphqlResponse(_messages.Message):
-  r"""The GraphQL response from Firebase Data Connect. It strives to match the
-  GraphQL over HTTP spec. Note: Firebase Data Connect always responds with
+  r"""The GraphQL response from Firebase SQL Connect. It strives to match the
+  GraphQL over HTTP spec. Note: Firebase SQL Connect always responds with
   `Content-Type: application/json`. https://github.com/graphql/graphql-over-
   http/blob/main/spec/GraphQLOverHTTP.md#body
 
@@ -1329,7 +1453,7 @@ class GraphqlResponseExtensions(_messages.Message):
   `GraphqlResponse` or `ExecuteQueryResponse`.
 
   Fields:
-    dataConnect: Data Connect specific GraphQL extension, a list of paths and
+    dataConnect: SQL Connect specific GraphQL extension, a list of paths and
       properties.
   """
 
@@ -1349,7 +1473,7 @@ class HttpGraphql(_messages.Message):
 
 
 class ImpersonateRequest(_messages.Message):
-  r"""The Impersonate request to Firebase Data Connect.
+  r"""The Impersonate request to Firebase SQL Connect.
 
   Messages:
     VariablesValue: Optional. Values for GraphQL variables provided in this
@@ -1749,74 +1873,94 @@ class OperationMetadata(_messages.Message):
   verb = _messages.StringField(7)
 
 
+class Part(_messages.Message):
+  r"""Represents a chunk of content.
+
+  Fields:
+    codeChunk: Optional. A chunk of code.
+    textChunk: Optional. A chunk of text.
+  """
+
+  codeChunk = _messages.MessageField('CodeChunk', 1)
+  textChunk = _messages.MessageField('TextChunk', 2)
+
+
 class PostgreSql(_messages.Message):
   r"""Settings for PostgreSQL data source.
 
   Enums:
     SchemaMigrationValueValuesEnum: Optional. Configure how to perform
-      Postgresql schema migration.
-    SchemaValidationValueValuesEnum: Optional. Configure how much Postgresql
-      schema validation to perform.
+      automatic PostgreSQL schema migration before deploying the FDC schema.
+      This is an additive-only operation.
+    SchemaValidationValueValuesEnum: Optional. Configure how much PostgreSQL
+      schema validation to perform against the live database before deploying
+      the FDC schema.
 
   Fields:
     cloudSql: Cloud SQL configurations.
     database: Required. Name of the PostgreSQL database.
-    ephemeral: Output only. Ephemeral is true if this data connect service is
+    ephemeral: Output only. Ephemeral is true if this SQL Connect service is
       served from temporary in-memory emulation of Postgres. While Cloud SQL
-      is being provisioned, the data connect service provides the ephemeral
+      is being provisioned, the SQL Connect service provides the ephemeral
       service to help developers get started. Once the Cloud SQL is
-      provisioned, Data Connect service will transfer its data on a best-
-      effort basis to the Cloud SQL instance. WARNING: Ephemeral data sources
-      will expire after 24 hour. The data will be lost if they aren't
-      transferred to the Cloud SQL instance. WARNING: When `ephemeral=true`,
-      mutations to the database are not guaranteed to be durably persisted,
-      even if an OK status code is returned. All or parts of the data may be
-      lost or reverted to earlier versions.
+      provisioned, SQL Connect service will transfer its data on a best-effort
+      basis to the Cloud SQL instance. WARNING: Ephemeral data sources will
+      expire after 24 hour. The data will be lost if they aren't transferred
+      to the Cloud SQL instance. WARNING: When `ephemeral=true`, mutations to
+      the database are not guaranteed to be durably persisted, even if an OK
+      status code is returned. All or parts of the data may be lost or
+      reverted to earlier versions.
     schema: Optional. User-configured PostgreSQL schema. Defaults to "public"
       if not specified.
-    schemaMigration: Optional. Configure how to perform Postgresql schema
-      migration.
-    schemaValidation: Optional. Configure how much Postgresql schema
-      validation to perform.
+    schemaMigration: Optional. Configure how to perform automatic PostgreSQL
+      schema migration before deploying the FDC schema. This is an additive-
+      only operation.
+    schemaValidation: Optional. Configure how much PostgreSQL schema
+      validation to perform against the live database before deploying the FDC
+      schema.
     unlinked: No Postgres data source is linked. If set, don't allow
       `database` and `schema_validation` to be configured.
   """
 
   class SchemaMigrationValueValuesEnum(_messages.Enum):
-    r"""Optional. Configure how to perform Postgresql schema migration.
+    r"""Optional. Configure how to perform automatic PostgreSQL schema
+    migration before deploying the FDC schema. This is an additive-only
+    operation.
 
     Values:
       SQL_SCHEMA_MIGRATION_UNSPECIFIED: Unspecified SQL schema migration.
-      MIGRATE_COMPATIBLE: Connect to the SQL database and identify any missing
-        SQL resources used in the given Firebase Data Connect Schema.
-        Automatically create necessary SQL resources (SQL table, column, etc)
-        before deploying the schema. During migration steps, the SQL Schema
-        must comply with the previous before_deploy setting in case the
-        migration is interrupted. Therefore, the previous before_deploy
-        setting must not be `schema_validation=STRICT`.
+      MIGRATE_COMPATIBLE: Waits for the Cloud SQL instance to be provisioned
+        and automatically creates necessary SQL resources (tables, columns,
+        etc.) to match the desired FDC schema. This operation is strictly
+        additive and executes as a Long-Running Operation during provisioning.
+        Rejects migrations on a non-empty existing SQL schema.
     """
     SQL_SCHEMA_MIGRATION_UNSPECIFIED = 0
     MIGRATE_COMPATIBLE = 1
 
   class SchemaValidationValueValuesEnum(_messages.Enum):
-    r"""Optional. Configure how much Postgresql schema validation to perform.
+    r"""Optional. Configure how much PostgreSQL schema validation to perform
+    against the live database before deploying the FDC schema.
 
     Values:
       SQL_SCHEMA_VALIDATION_UNSPECIFIED: Unspecified SQL schema validation.
-        Default to STRICT.
-      NONE: Skip no SQL schema validation. Use it with extreme caution.
-        CreateSchema or UpdateSchema will succeed even if SQL database is
-        unavailable or SQL schema is incompatible. Generated SQL may fail at
-        execution time.
-      STRICT: Connect to the SQL database and validate that the SQL DDL
-        matches the schema exactly. Surface any discrepancies as
-        `FAILED_PRECONDITION` with an `IncompatibleSqlSchemaError` error
-        detail.
-      COMPATIBLE: Connect to the SQL database and validate that the SQL DDL
-        has all the SQL resources used in the given Firebase Data Connect
-        Schema. Surface any missing resources as `FAILED_PRECONDITION` with an
-        `IncompatibleSqlSchemaError` error detail. Succeed even if there are
-        unknown tables and columns.
+        Defaults to STRICT.
+      NONE: Skips SQL schema validation. Deployment succeeds even if the
+        database is pending provisioning, unavailable, or incompatible. Under
+        NONE, newly created services route requests to a temporary ephemeral
+        database (in-memory emulation) so the API can be tested immediately.
+        Ephemeral data expires after 24 hours unless successfully validated or
+        migrated to a linked database.
+      STRICT: Connects to the SQL database and validates that the SQL DDL
+        matches the FDC schema exactly. Any discrepancies (extra or missing
+        tables/columns) result in a FAILED_PRECONDITION error with required
+        SQL diffs. Recommended for greenfield projects to ensure full schema
+        consistency.
+      COMPATIBLE: Connects to the SQL database and validates that it contains
+        all the SQL resources required by the FDC schema. Succeeds even if the
+        database contains additional tables or columns not used by FDC.
+        Suitable when sharing a database with other tools or legacy
+        applications.
     """
     SQL_SCHEMA_VALIDATION_UNSPECIFIED = 0
     NONE = 1
@@ -1833,7 +1977,7 @@ class PostgreSql(_messages.Message):
 
 
 class Schema(_messages.Message):
-  r"""The application schema of a Firebase Data Connect service.
+  r"""The application schema of a Firebase SQL Connect service.
 
   Messages:
     AnnotationsValue: Optional. Stores small amounts of arbitrary data.
@@ -1924,7 +2068,7 @@ class Schema(_messages.Message):
 
 
 class Service(_messages.Message):
-  r"""A Firebase Data Connect service.
+  r"""A Firebase SQL Connect service.
 
   Messages:
     AnnotationsValue: Optional. Stores small amounts of arbitrary data.
@@ -1939,10 +2083,10 @@ class Service(_messages.Message):
       ensure the client has an up-to-date value before proceeding.
       [AIP-154](https://google.aip.dev/154)
     labels: Optional. Labels as key value pairs.
-    name: Identifier. The relative resource name of the Firebase Data Connect
+    name: Identifier. The relative resource name of the Firebase SQL Connect
       service, in the format: ```
       projects/{project}/locations/{location}/services/{service} ``` Note that
-      the service ID is specific to Firebase Data Connect and does not
+      the service ID is specific to Firebase SQL Connect and does not
       correspond to any of the instance IDs of the underlying data source
       connections.
     reconciling: Output only. A field that if true, indicates that the system
@@ -2145,6 +2289,16 @@ class Status(_messages.Message):
   code = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   details = _messages.MessageField('DetailsValueListEntry', 2, repeated=True)
   message = _messages.StringField(3)
+
+
+class TextChunk(_messages.Message):
+  r"""A chunk of conversational text.
+
+  Fields:
+    text: Required. The text content string.
+  """
+
+  text = _messages.StringField(1)
 
 
 class Workaround(_messages.Message):

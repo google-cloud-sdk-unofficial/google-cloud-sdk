@@ -25,8 +25,6 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.resource import resource_printer
 
-import six
-
 
 class Parse(base.ListCommand):
   """Cloud SDK resource parser module tester.
@@ -74,9 +72,9 @@ class Parse(base.ListCommand):
         except (Exception, SystemExit) as e:  # pylint: disable=broad-except
           if args.stack_trace:
             exceptions.reraise(e)
-          log.error(six.text_type(e))
+          log.error(str(e))
           parsed_resources.append({
-              'error': six.text_type(e),
+              'error': str(e),
               'uri': uri,
           })
           continue
@@ -103,7 +101,7 @@ class Parse(base.ListCommand):
       except (Exception, SystemExit) as e:  # pylint: disable=broad-except
         if args.stack_trace:
           exceptions.reraise(e)
-        log.error(six.text_type(e))
+        log.error(str(e))
         continue
       resource_printer.Print(params, 'json')
     sys.stderr.write('\n')

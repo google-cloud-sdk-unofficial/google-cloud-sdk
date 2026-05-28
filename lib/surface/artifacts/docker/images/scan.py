@@ -29,7 +29,6 @@ from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.updater import local_state
 from googlecloudsdk.core.updater import update_manager
 from googlecloudsdk.core.util import platforms
-import six
 
 # Extract stage messages to constants for convenience.
 SCAN_MESSAGE = 'Scanning container image'
@@ -290,8 +289,8 @@ class Command(binary_operations.BinaryBackedOperation):
   ):
     args = [
         '--resource_uri=' + resource_uri,
-        '--remote=' + six.text_type(remote),
-        '--provide_fake_results=' + six.text_type(fake_extraction),
+        '--remote=' + str(remote),
+        '--provide_fake_results=' + str(fake_extraction),
         # Due to backwards compatibility issues between the gcloud command and
         # the local-extract binary, provide a list of all flags to --undefok
         # which were introduced after the first launch. In this way, new
@@ -312,16 +311,13 @@ class Command(binary_operations.BinaryBackedOperation):
       package_types += experimental_package_types
 
     if package_types:
-      args.append('--additional_package_types=' +
-                  six.text_type(','.join(package_types)))
+      args.append('--additional_package_types=' + str(','.join(package_types)))
 
     if skip_package_types:
-      args.append(
-          '--skip_package_types=' + six.text_type(','.join(skip_package_types))
-      )
+      args.append('--skip_package_types=' + str(','.join(skip_package_types)))
 
     if verbose_errors:
-      args.append('--verbose_errors=' + six.text_type(verbose_errors))
+      args.append('--verbose_errors=' + str(verbose_errors))
 
     args.append('--use_scalibr')
 

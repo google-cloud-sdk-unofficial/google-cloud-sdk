@@ -53,7 +53,7 @@ class CloudapiregistryV1alpha(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Gets a single McpTool.
+      r"""Deprecated: The GetMcpTool method is deprecated and will be removed in a future release. For similar functionality, you can use Agent Registry. Note: Agent Registry does not treat tools as a separate collection. To view the tools exposed by an MCP server, use the ListMcpServers or GetMcpServer methods in the Agent Registry API. For more information, see: https://docs.cloud.google.com/agent-registry/reference/rpc Gets a single McpTool.
 
       Args:
         request: (CloudapiregistryProjectsLocationsMcpServersMcpToolsGetRequest) input message
@@ -80,7 +80,7 @@ class CloudapiregistryV1alpha(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists McpTools in a given McpServer.
+      r"""Deprecated: The ListMcpTools method is deprecated and will be removed in a future release. For similar functionality, you can use Agent Registry. Note: AgentRegistry only lists MCP servers for service APIs that are enabled in a project. For more information, see: https://docs.cloud.google.com/agent-registry/reference/rpc Lists McpTools in a given McpServer.
 
       Args:
         request: (CloudapiregistryProjectsLocationsMcpServersMcpToolsListRequest) input message
@@ -117,7 +117,7 @@ class CloudapiregistryV1alpha(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Gets a single McpServer.
+      r"""Deprecated: The GetMcpServer method is deprecated and will be removed in a future release. Use AgentRegistry.GetMcpServer instead. For more information, see: https://docs.cloud.google.com/agent-registry/reference/rpc Gets a single McpServer.
 
       Args:
         request: (CloudapiregistryProjectsLocationsMcpServersGetRequest) input message
@@ -144,7 +144,7 @@ class CloudapiregistryV1alpha(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists McpServers in a given Project.
+      r"""Deprecated: The ListMcpServers method is deprecated and will be removed in a future release. Use AgentRegistry. ListMcpServers instead. Note: AgentRegistry only lists MCP servers for service APIs that are enabled in a project. For more information, see: https://docs.cloud.google.com/agent-registry/reference/rpc Lists McpServers in a given Project.
 
       Args:
         request: (CloudapiregistryProjectsLocationsMcpServersListRequest) input message
@@ -208,7 +208,7 @@ class CloudapiregistryV1alpha(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the ListLocationsRequest.name field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
       Args:
         request: (CloudapiregistryProjectsLocationsListRequest) input message

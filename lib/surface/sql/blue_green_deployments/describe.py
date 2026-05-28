@@ -21,6 +21,7 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.command_lib.sql import flags as sql_flags
 from googlecloudsdk.core import properties
 
 
@@ -42,24 +43,9 @@ class Describe(base.DescribeCommand):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
-    parser.add_argument(
-        'deployment',
-        metavar='DEPLOYMENT',
-        help='The ID of the blue-green deployment.',
-    )
-    parser.add_argument(
-        '--region',
-        help='The region of the blue-green deployment.',
-    )
-    parser.add_argument(
-        '--show-config-diff',
-        action='store_true',
-        default=False,
-        help=(
-            'Show the configuration difference between source and target'
-            ' instances.'
-        ),
-    )
+    sql_flags.AddDeploymentId(parser)
+    sql_flags.AddRegion(parser, required=False, specify_default_region=False)
+    sql_flags.AddShowConfigDiff(parser)
 
   def Run(self, args: argparse.Namespace) -> Any:
     """Retrieves information about a Cloud SQL blue-green deployment.

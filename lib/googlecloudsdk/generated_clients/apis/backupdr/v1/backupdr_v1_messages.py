@@ -961,8 +961,8 @@ class BackupPlan(_messages.Message):
       to be used by the BackupVault for taking backups. Specify the email
       address of the Backup Vault Service Account.
     computeInstanceBackupPlanProperties: Optional. Defines optional properties
-      specific to backups of disk-based resources, such as Compute Engine.
-      This includes settings like whether to perform a guest flush.
+      specific to backups of compute instance-based resources, such as Compute
+      Engine. This includes settings like whether to perform a guest flush.
     createTime: Output only. When the `BackupPlan` was created.
     description: Optional. The description of the `BackupPlan` resource. The
       description allows for additional details about `BackupPlan` and its use
@@ -1453,6 +1453,57 @@ class BackupWindow(_messages.Message):
 
   endHourOfDay = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   startHourOfDay = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+
+
+class BackupdrFoldersLocationsResourceBackupConfigsFetchRequest(_messages.Message):
+  r"""A BackupdrFoldersLocationsResourceBackupConfigsFetchRequest object.
+
+  Fields:
+    filter: Optional. Filtering results.
+    orderBy: Optional. Hint for how to order the results.
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will use 100 as default. Maximum
+      value is 500 and values above 500 will be coerced to 500.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. The project, folder or organization and location for
+      which to retrieve resource backup configs. Format:
+      'projects/{project_id}/locations/{location}',
+      'folders/{folder_id}/locations/{location}', or
+      'organizations/{organization_id}/locations/{location}'.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class BackupdrOrganizationsLocationsResourceBackupConfigsFetchRequest(_messages.Message):
+  r"""A BackupdrOrganizationsLocationsResourceBackupConfigsFetchRequest
+  object.
+
+  Fields:
+    filter: Optional. Filtering results.
+    orderBy: Optional. Hint for how to order the results.
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will use 100 as default. Maximum
+      value is 500 and values above 500 will be coerced to 500.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. The project, folder or organization and location for
+      which to retrieve resource backup configs. Format:
+      'projects/{project_id}/locations/{location}',
+      'folders/{folder_id}/locations/{location}', or
+      'organizations/{organization_id}/locations/{location}'.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
 
 
 class BackupdrProjectsLocationsBackupPlanAssociationsCreateRequest(_messages.Message):
@@ -2535,9 +2586,8 @@ class BackupdrProjectsLocationsListRequest(_messages.Message):
   r"""A BackupdrProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -2775,6 +2825,31 @@ class BackupdrProjectsLocationsOperationsListRequest(_messages.Message):
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   returnPartialSuccess = _messages.BooleanField(5)
+
+
+class BackupdrProjectsLocationsResourceBackupConfigsFetchRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsResourceBackupConfigsFetchRequest object.
+
+  Fields:
+    filter: Optional. Filtering results.
+    orderBy: Optional. Hint for how to order the results.
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will use 100 as default. Maximum
+      value is 500 and values above 500 will be coerced to 500.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. The project, folder or organization and location for
+      which to retrieve resource backup configs. Format:
+      'projects/{project_id}/locations/{location}',
+      'folders/{folder_id}/locations/{location}', or
+      'organizations/{organization_id}/locations/{location}'.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
 
 
 class BackupdrProjectsLocationsResourceBackupConfigsListRequest(_messages.Message):
@@ -3047,7 +3122,7 @@ class CloudSqlInstanceInitializationConfig(_messages.Message):
 
 
 class ComputeInstanceBackupPlanProperties(_messages.Message):
-  r"""--- ComputeInstanceBackupPlanProperties Message ---
+  r"""Properties for a compute instance backup plan.
 
   Fields:
     guestFlush: Optional. Indicates whether to perform a guest flush operation
@@ -3696,7 +3771,7 @@ class DataSourceReference(_messages.Message):
 
 
 class DiskBackupPlanProperties(_messages.Message):
-  r"""--- DiskBackupPlanProperties Message ---
+  r"""Properties for a disk backup plan.
 
   Fields:
     guestFlush: Optional. Indicates whether to perform a guest flush operation
@@ -4209,6 +4284,20 @@ class FetchMsComplianceMetadataResponse(_messages.Message):
   """
 
   isAssuredWorkload = _messages.BooleanField(1)
+
+
+class FetchResourceBackupConfigsResponse(_messages.Message):
+  r"""Response for FetchResourceBackupConfigs.
+
+  Fields:
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    resourceBackupConfigs: The list of ResourceBackupConfigs for the specified
+      scope.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  resourceBackupConfigs = _messages.MessageField('ResourceBackupConfig', 2, repeated=True)
 
 
 class FetchUsableBackupVaultsResponse(_messages.Message):
@@ -5427,6 +5516,67 @@ class Operation(_messages.Message):
   response = _messages.MessageField('ResponseValue', 5)
 
 
+class OperationMetadata(_messages.Message):
+  r"""Represents the metadata of the long-running operation.
+
+  Messages:
+    AdditionalInfoValue: Output only. AdditionalInfo contains additional Info
+      related to backup plan association resource.
+
+  Fields:
+    additionalInfo: Output only. AdditionalInfo contains additional Info
+      related to backup plan association resource.
+    apiVersion: Output only. API version used to start the operation.
+    createTime: Output only. The time the operation was created.
+    endTime: Output only. The time the operation finished running.
+    requestedCancellation: Output only. Identifies whether the user has
+      requested cancellation of the operation. Operations that have
+      successfully been cancelled have google.longrunning.Operation.error
+      value with a google.rpc.Status.code of 1, corresponding to
+      'Code.CANCELLED'.
+    statusMessage: Output only. Human-readable status of the operation, if
+      any.
+    target: Output only. Server-defined resource path for the target of the
+      operation.
+    verb: Output only. Name of the verb executed by the operation.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AdditionalInfoValue(_messages.Message):
+    r"""Output only. AdditionalInfo contains additional Info related to backup
+    plan association resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a AdditionalInfoValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type AdditionalInfoValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AdditionalInfoValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  additionalInfo = _messages.MessageField('AdditionalInfoValue', 1)
+  apiVersion = _messages.StringField(2)
+  createTime = _messages.StringField(3)
+  endTime = _messages.StringField(4)
+  requestedCancellation = _messages.BooleanField(5)
+  statusMessage = _messages.StringField(6)
+  target = _messages.StringField(7)
+  verb = _messages.StringField(8)
+
+
 class PitrSettings(_messages.Message):
   r"""Point in time recovery settings of the backup configuration resource.
 
@@ -6042,15 +6192,16 @@ class StandardSchedule(_messages.Message):
       and is not applicable otherwise. A validation error will occur if a
       value is supplied and `recurrence_type` is not `WEEKLY`.
     hourlyFrequency: Optional. Specifies frequency for hourly backups. A
-      hourly frequency of 2 means jobs will run every 2 hours from start time
+      hourly frequency of 1 means jobs will run every 1 hour from start time
       till end time defined. This is required for `recurrence_type`, `HOURLY`
       and is not applicable otherwise. A validation error will occur if a
-      value is supplied and `recurrence_type` is not `HOURLY`. Value of hourly
-      frequency should be between 4 and 23. Reason for limit : We found that
-      there is bandwidth limitation of 3GB/S for GMI while taking a backup and
-      5GB/S while doing a restore. Given the amount of parallel backups and
-      restore we are targeting, this will potentially take the backup time to
-      mins and hours (in worst case scenario).
+      value is supplied and `recurrence_type` is not `HOURLY`. The supported
+      values for each resource type are as follows: *
+      `compute.googleapis.com/Instance`: 4-23 * `compute.googleapis.com/Disk`:
+      1-23 * `sqladmin.googleapis.com/Instance`: 6-23 *
+      `alloydb.googleapis.com/Cluster`: 1-23 * `file.googleapis.com/Instance`:
+      1-23 Refer to link https://cloud.google.com/backup-disaster-
+      recovery/docs/concepts/cloud_best_practices for more details.
     months: Optional. Specifies the months of year, like `FEBRUARY` and/or
       `MAY`, on which jobs will run. This field is only applicable when
       `recurrence_type` is `YEARLY`. A validation error will occur if other

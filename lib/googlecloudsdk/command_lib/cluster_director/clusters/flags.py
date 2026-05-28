@@ -476,7 +476,7 @@ def AddOnDemandInstances(
   alpha_help = textwrap.dedent(f"""
         Parameters to define cluster on demand instances.
 
-        For e.g. --{name} id=c1,zone=us-central1-a,machineType=n1-standard-1,atmTags="tag1=val1"
+        For e.g. --{name} id=c1,zone=us-central1-a,machineType=n1-standard-1
       """)
   beta_help = textwrap.dedent(f"""
         Parameters to define cluster on demand instances.
@@ -522,7 +522,7 @@ def AddSpotInstances(
   alpha_help = textwrap.dedent(f"""
         Parameters to define cluster spot instances.
 
-        For e.g. --{name} id=c1,zone=us-central1-a,machineType=n1-standard-1,atmTags="tag1=val1"
+        For e.g. --{name} id=c1,zone=us-central1-a,machineType=n1-standard-1
       """)
   beta_help = textwrap.dedent(f"""
         Parameters to define cluster spot instances.
@@ -619,7 +619,7 @@ def AddFlexStartInstances(
   alpha_help = textwrap.dedent(f"""
         Parameters to define cluster Flex Start instances.
 
-        For e.g. --{name} id=c1,zone=us-central1-a,machineType=n1-standard-1,maxDuration=10000s,atmTags="tag1=val1"
+        For e.g. --{name} id=c1,zone=us-central1-a,machineType=n1-standard-1,maxDuration=10000s
       """)
   beta_help = textwrap.dedent(f"""
         Parameters to define cluster Flex Start instances.
@@ -667,7 +667,7 @@ def AddSlurmNodeSets(
   alpha_help = textwrap.dedent(f"""
         Parameters to define slurm cluster nodeset config.
 
-        For e.g. --{name} id=ns1,computeId=c1,type=gce,staticNodeCount=1,maxDynamicNodeCount=2,startupScript="echo hello",labels="k1=v1"
+        For e.g. --{name} id=ns1,computeId=c1,type=gce,staticNodeCount=1,maxDynamicNodeCount=2,startupScript="echo hello"
 
         To configure a node set backed by Google Kubernetes Engine, use type=gke. If type=gke is
         specified, Compute Engine specific fields (labels, startupScript, bootDisk,
@@ -766,7 +766,7 @@ def AddSlurmPartitions(
   alpha_help = textwrap.dedent(f"""
         Parameters to define slurm cluster partitions.
 
-        For e.g. --{name} id=p1,nodesetIds=[ns1,ns2],exclusive=false
+        For e.g. --{name} id=p1,nodesetIds=[ns1,ns2]
       """)
   beta_help = textwrap.dedent(f"""
         Parameters to define slurm cluster partitions.
@@ -785,7 +785,7 @@ def AddSlurmPartitions(
     alpha_update_help = textwrap.dedent(f"""
           Parameters to define and update slurm cluster partition config.
 
-          For e.g. --{update_flag_name} id=p1,nodesetIds=[ns1,ns2],exclusive=false
+          For e.g. --{update_flag_name} id=p1,nodesetIds=[ns1,ns2]
         """)
     beta_update_help = textwrap.dedent(f"""
           Parameters to define and update slurm cluster partition config.

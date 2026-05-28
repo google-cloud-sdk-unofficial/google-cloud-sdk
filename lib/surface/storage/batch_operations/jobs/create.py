@@ -176,6 +176,14 @@ class CreateAlpha(Create):
           --insights-dataset-config=projects/my-project/locations/us-central1/datasetConfigs/my-config
           --bucket-filters="bucket_name == 'my-bucket'" --object-filters="size > 100"
           --put-metadata=Retain-Until=2025-01-01T00:00:00Z,Retention-Mode=locked
+
+      The following example command creates a batch job, named `my-job`, that
+      uses a project as the source with specific target locations and snapshot timestamp:
+
+          $ {command} my-job --target-project=my-project
+          --insights-dataset-config=projects/my-project/locations/us-central1/datasetConfigs/my-config
+          --target-locations=us-central1,us-east1 --target-snapshot-time=2024-01-02T03:04:05Z
+          --put-metadata=Retention-Mode=locked
       """,
   }
 

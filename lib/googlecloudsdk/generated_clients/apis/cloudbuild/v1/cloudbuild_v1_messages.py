@@ -945,16 +945,17 @@ class BuildSecurityPolicy(_messages.Message):
   instance for Trusted Pools in TBI.
 
   Enums:
-    BcidLevelValueValuesEnum: Output only. Immutable. Max BCID level the
-      instance should be able to meet (affects what security settings will be
-      enabled for the instance, regardless of whether lower BCID-level builds
-      are sent through or not)
-    WorkflowTypeValueValuesEnum: Output only. Immutable. Determines whether
-      this instance handles presubmit or postsubmit builds.
+    BcidLevelValueValuesEnum: Optional. Immutable. Max BCID level the instance
+      should be able to meet (affects what security settings will be enabled
+      for the instance, regardless of whether lower BCID-level builds are sent
+      through or not)
+    WorkflowTypeValueValuesEnum: Optional. Immutable. Determines whether this
+      instance handles presubmit or postsubmit builds. Default is
+      WORKFLOW_TYPE_POSTSUBMIT.
 
   Fields:
-    bcidLevel: Output only. Immutable. Max BCID level the instance should be
-      able to meet (affects what security settings will be enabled for the
+    bcidLevel: Optional. Immutable. Max BCID level the instance should be able
+      to meet (affects what security settings will be enabled for the
       instance, regardless of whether lower BCID-level builds are sent through
       or not)
     enableNetworkEnforcement: Output only. Immutable. Determines whether
@@ -962,12 +963,13 @@ class BuildSecurityPolicy(_messages.Message):
     enableTcaEnforcement: Output only. Immutable. Determines whether
       additional restrictions needed to run TCA builds will be enabled on the
       instance or not for Trusted Pools in TBI.
-    workflowType: Output only. Immutable. Determines whether this instance
-      handles presubmit or postsubmit builds.
+    workflowType: Optional. Immutable. Determines whether this instance
+      handles presubmit or postsubmit builds. Default is
+      WORKFLOW_TYPE_POSTSUBMIT.
   """
 
   class BcidLevelValueValuesEnum(_messages.Enum):
-    r"""Output only. Immutable. Max BCID level the instance should be able to
+    r"""Optional. Immutable. Max BCID level the instance should be able to
     meet (affects what security settings will be enabled for the instance,
     regardless of whether lower BCID-level builds are sent through or not)
 
@@ -981,8 +983,8 @@ class BuildSecurityPolicy(_messages.Message):
     BCID_L3 = 2
 
   class WorkflowTypeValueValuesEnum(_messages.Enum):
-    r"""Output only. Immutable. Determines whether this instance handles
-    presubmit or postsubmit builds.
+    r"""Optional. Immutable. Determines whether this instance handles
+    presubmit or postsubmit builds. Default is WORKFLOW_TYPE_POSTSUBMIT.
 
     Values:
       WORKFLOW_TYPE_UNSPECIFIED: Unspecified workflow type.
@@ -5494,7 +5496,7 @@ class TrustedPoolConfig(_messages.Message):
   r"""Defines the configuration specific for Trusted Pools for TBI only.
 
   Fields:
-    buildSecurityPolicy: Output only. Build security policy sets the security
+    buildSecurityPolicy: Optional. Build security policy sets the security
       requirements for the trusted pool.
     defaultWorkloadAccount: Required. This BYOSA is used by the build to
       access resources while the build is running for example build step

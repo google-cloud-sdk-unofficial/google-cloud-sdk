@@ -16,7 +16,8 @@
 """Translation rule for concurrent_requests feature."""
 
 import logging
-from typing import Mapping, Sequence
+from typing import Any, Mapping, Sequence
+
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.common import util
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.config import feature_helper
 
@@ -83,3 +84,49 @@ def translate_concurrent_requests_features(
       input_value if feature.validate(input_value) else feature.range['max']
   )
   return util.generate_output_flags(feature.flags, target_value)
+
+
+def update_service_yaml_with_concurrent_requests(
+    service_yaml: dict[str, Any],
+    input_data: Mapping[str, Any],
+    range_limited_features: Mapping[str, Any],
+) -> None:
+  """Updates the service_yaml dict with concurrent requests settings."""
+  is_flex = util.is_flex_env(input_data)
+  feature_key = util.get_feature_key_from_input(
+      input_data, _ALLOW_MAX_CONCURRENT_REQ_KEYS
+  )
+  input_has_concurrent_requests = feature_key is not None
+
+  target_value = None
+  if not input_has_concurrent_requests:
+    feature = range_limited_features[_MAX_CONCURRENT_REQUESTS_KEY]
+    target_value = (
+        feature.range['max'] if is_flex else _DEFAULT_STANDARD_CONCURRENCY
+    )
+  else:
+    feature = range_limited_features[feature_key]
+    input_value = input_data[feature_key]
+    if input_value < feature.range['min']:
+      logging.warning(
+          '%s has invalid value of %s, minimum value is %s',
+          feature_key,
+          input_value,
+          feature.range['min'],
+      )
+    elif input_value > feature.range['max']:
+      logging.warning(
+          '%s has invalid value of %s, maximum value is %s.',
+          feature_key,
+          input_value,
+          feature.range['max'],
+      )
+      target_value = feature.range['max']
+    else:
+      target_value = (
+          input_value if feature.validate(input_value) else feature.range['max']
+      )
+
+  if target_value is not None:
+    spec = service_yaml['spec']['template']['spec']
+    spec['containerConcurrency'] = int(target_value)

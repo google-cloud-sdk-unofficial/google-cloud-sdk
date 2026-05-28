@@ -247,8 +247,12 @@ Config Sync repo, and print its values in a table, run:
       return membership_feature.spec.configmanagement
     if args.view == 'list':
       # Limit transforms to --view=list for simplicity; relax if necessary.
+      # Note: Do not pass in self.hubclient since AddTransforms holds onto
+      # references until near the end of command, resulting in a race condition
+      # between self.hubclient's connection closures and Python termination. See
+      # b/507547975.
       self.parser.display_info.AddTransforms(transforms.get_transforms(
-          self.hubclient, fdc_exists,
+          fdc_exists, self.hubclient.messages.Origin.TypeValueValuesEnum
       ))
       self.parser.display_info.AddFormat("""table(
           name.segment(-3):label=MEMBERSHIP,

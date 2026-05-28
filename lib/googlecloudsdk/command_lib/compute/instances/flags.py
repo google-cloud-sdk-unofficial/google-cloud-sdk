@@ -4276,3 +4276,16 @@ def AddMostDisruptiveAllowedActionArgs(parser):
           not specified, the default will be REFRESH.
       """,
   )
+
+
+def AddMinimalActionArgs(parser):
+  """Adds arguments for configuring minimal action on instances."""
+  parser.add_argument(
+      '--minimal-action',
+      choices=['NO_EFFECT', 'REFRESH', 'RESTART'],
+      help="""\
+          If specified, Compute Engine takes this action when updating an
+          instance even if the updated properties do not require it. If
+          not specified, the default will be NO_EFFECT.
+      """,
+  )

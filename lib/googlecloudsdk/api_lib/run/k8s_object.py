@@ -76,6 +76,8 @@ GCLB_DOMAIN_NAME_ANNOTATION = RUNAPPS_GROUP + '/gclb-domain-name'
 
 THREAT_DETECTION_ANNOTATION = RUN_GROUP + '/threat-detection'
 
+SSH_ENABLED_ANNOTATION = RUN_GROUP + '/ssh-enabled'
+
 
 def Meta(m):
   """Metadta class from messages module."""

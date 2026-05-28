@@ -15,7 +15,6 @@
 """Utilities for BigLake Delta Sharing commands."""
 
 
-
 def SetParentAndCatalogId(ref, args, request):
   """Hook to fix the parent and catalog ID parameters in Create request."""
   del args  # Unused
@@ -34,3 +33,10 @@ def SetParentForList(ref, args, request):
   if ref:
     request.parent = ref.RelativeName()
   return request
+
+
+def GetDurationString(value):
+  """Return API required format for duration specified by value."""
+  if value is None:
+    return None
+  return f'{value}s'

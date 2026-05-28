@@ -719,9 +719,9 @@ class AccesscontextmanagerPermissionsListRequest(_messages.Message):
 
   Fields:
     pageSize: Optional. This flag specifies the maximum number of services to
-      return per page. Default is 100.
-    pageToken: Optional. Token to start on a later page. Default is the first
-      page.
+      return per page. Default value is 100.
+    pageToken: Optional. Use this token to retrieve a specific page of
+      results. Default is the first page.
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -745,8 +745,9 @@ class AccesscontextmanagerServicesListRequest(_messages.Message):
 
   Fields:
     pageSize: This flag specifies the maximum number of services to return per
-      page. Default is 100.
-    pageToken: Token to start on a later page. Default is the first page.
+      page. Default value is 100.
+    pageToken: Use this token to retrieve a specific page of results. Default
+      is the first page.
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -1752,9 +1753,9 @@ class ListSupportedPermissionsResponse(_messages.Message):
   r"""A response to `ListSupportedPermissionsRequest`.
 
   Fields:
-    nextPageToken: The pagination token to retrieve the next page of results.
-      If the value is empty, no further results remain.
-    supportedPermissions: List of VPC-SC supported permissions.
+    nextPageToken: Use this pagination token to retrieve the next page of
+      results. An empty value indicates that no further results are available.
+    supportedPermissions: List of VPC Service Controls supported permissions.
   """
 
   nextPageToken = _messages.StringField(1)
@@ -1765,8 +1766,8 @@ class ListSupportedServicesResponse(_messages.Message):
   r"""A response to `ListSupportedServicesRequest`.
 
   Fields:
-    nextPageToken: The pagination token to retrieve the next page of results.
-      If the value is empty, no further results remain.
+    nextPageToken: Use this pagination token to retrieve the next page of
+      results. An empty value indicates that no further results are available.
     supportedServices: List of services supported by VPC-SC instances.
   """
 

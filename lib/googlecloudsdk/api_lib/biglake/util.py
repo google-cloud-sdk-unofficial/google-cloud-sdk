@@ -17,6 +17,7 @@
 
 import json
 import types
+from typing import Any, Dict
 from urllib import parse
 
 from googlecloudsdk.api_lib.util import apis
@@ -295,6 +296,49 @@ def CheckValidUnityArgCombinations(args):
     )
 
 
+def CheckValidGlueArgCombinations(args):
+  """Checks for valid combinations of Glue arguments.
+
+  Args:
+    args: The parsed command-line arguments.
+
+  Raises:
+    arg_parsers.ArgumentTypeError: If an invalid argument combination is found.
+  """
+  if not args.IsSpecified('glue_warehouse'):
+    raise arg_parsers.ArgumentTypeError(
+        '--glue-warehouse must be specified when federated catalog type is'
+        ' glue.'
+    )
+  if not args.IsSpecified('glue_aws_region'):
+    raise arg_parsers.ArgumentTypeError(
+        '--glue-aws-region must be specified when federated catalog type is'
+        ' glue.'
+    )
+  if not args.IsSpecified('glue_aws_role_arn'):
+    raise arg_parsers.ArgumentTypeError(
+        '--glue-aws-role-arn must be specified when federated catalog type is'
+        ' glue.'
+    )
+  if args.IsSpecified('secret_name'):
+    raise arg_parsers.ArgumentTypeError(
+        '--secret-name is not supported for Glue federated catalogs.'
+    )
+  if args.IsSpecified('unity_instance_name'):
+    raise arg_parsers.ArgumentTypeError(
+        '--unity-instance-name is not supported for Glue federated catalogs.'
+    )
+  if args.IsSpecified('unity_catalog_name'):
+    raise arg_parsers.ArgumentTypeError(
+        '--unity-catalog-name is not supported for Glue federated catalogs.'
+    )
+  if args.IsSpecified('service_principal_application_id'):
+    raise arg_parsers.ArgumentTypeError(
+        '--service-principal-application-id is not supported for Glue'
+        ' federated catalogs.'
+    )
+
+
 def CheckValidFederatedArgCombinations(args):
   """Checks for valid combinations of federated arguments.
 
@@ -315,6 +359,9 @@ def CheckValidFederatedArgCombinations(args):
       'unity_catalog_name',
       'refresh_interval',
       'namespace_filters',
+      'glue_warehouse',
+      'glue_aws_region',
+      'glue_aws_role_arn',
   ]
   is_federated = args.catalog_type == 'federated'
   if is_federated:
@@ -328,6 +375,10 @@ def CheckValidFederatedArgCombinations(args):
       raise arg_parsers.ArgumentTypeError(
           '--primary-location must be specified when catalog type is federated.'
       )
+    if args.federated_catalog_type == 'unity':
+      CheckValidUnityArgCombinations(args)
+    if args.federated_catalog_type == 'glue':
+      CheckValidGlueArgCombinations(args)
   else:
     # Check that federated flags are not specified for non-federated catalogs.
     for flag in federated_flags:
@@ -337,9 +388,6 @@ def CheckValidFederatedArgCombinations(args):
                 flag.replace('_', '-')
             )
         )
-    return
-  if is_federated and args.federated_catalog_type == 'unity':
-    CheckValidUnityArgCombinations(args)
 
 
 def ProcessNamespaceListResponse(parent_name, response):
@@ -456,6 +504,16 @@ def _BuildUnityCatalogInfo(unity_catalog_info_option):
   return unity_catalog_info
 
 
+def _BuildGlueCatalogInfo(glue_catalog_info_option: Any) -> Dict[str, Any]:
+  """Builds the Glue catalog info for the request body."""
+  glue_catalog_info = {
+      'warehouse': getattr(glue_catalog_info_option, 'warehouse', None),
+      'aws-region': getattr(glue_catalog_info_option, 'aws_region', None),
+      'aws-role-arn': getattr(glue_catalog_info_option, 'aws_role_arn', None),
+  }
+  return {k: v for k, v in glue_catalog_info.items() if v}
+
+
 def _BuildFederatedCatalogOptions(options):
   """Builds the federated catalog options for the request body."""
   federated_catalog_options = {}
@@ -472,6 +530,10 @@ def _BuildFederatedCatalogOptions(options):
     unity_catalog_info = _BuildUnityCatalogInfo(options.unity_catalog_info)
     if unity_catalog_info:
       federated_catalog_options['unity-catalog-info'] = unity_catalog_info
+  if hasattr(options, 'glue_catalog_info') and options.glue_catalog_info:
+    glue_catalog_info = _BuildGlueCatalogInfo(options.glue_catalog_info)
+    if glue_catalog_info:
+      federated_catalog_options['glue-catalog-info'] = glue_catalog_info
   if hasattr(options, 'refresh_options') and options.refresh_options:
     refresh_options = _BuildRefreshOptions(options.refresh_options)
     if refresh_options:

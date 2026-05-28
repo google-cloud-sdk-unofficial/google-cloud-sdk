@@ -517,13 +517,13 @@ class ConversionWorkspacesClient(object):
     return self._service.Apply(apply_req)
 
   def Describe(self, name):
-    """Describe a conversion worksapce.
+    """Describe a conversion workspace.
 
     Args:
-      name: str, the name for conversion worksapce being described.
+      name: str, the name for conversion workspace being described.
 
     Returns:
-      Described conversion worksapce Resource.
+      Described conversion workspace Resource.
     """
     describe_req = self.messages.DatamigrationProjectsLocationsConversionWorkspacesGetRequest(
         name=name
@@ -531,15 +531,15 @@ class ConversionWorkspacesClient(object):
     return self._service.Get(describe_req)
 
   def DescribeEntities(self, name, args=None):
-    """Describes database entities in a conversion worksapce.
+    """Describes database entities in a conversion workspace.
 
     Args:
-      name: str, the name for conversion worksapce being described.
+      name: str, the name for conversion workspace being described.
       args: argparse.Namespace, The arguments that this command was invoked
         with.
 
     Returns:
-      Described entities for the conversion worksapce.
+      Described entities for the conversion workspace.
     """
 
     entity_result = []
@@ -584,15 +584,15 @@ class ConversionWorkspacesClient(object):
     return status
 
   def DescribeDDLs(self, name, args=None):
-    """Describe DDLs in a conversion worksapce.
+    """Describe DDLs in a conversion workspace.
 
     Args:
-      name: str, the name for conversion worksapce being described.
+      name: str, the name for conversion workspace being described.
       args: argparse.Namespace, the arguments that this command was invoked
         with.
 
     Returns:
-      DDLs for the entities of the conversion worksapce.
+      DDLs for the entities of the conversion workspace.
     """
     entity_ddls = []
     page_size = 4000
@@ -611,7 +611,7 @@ class ConversionWorkspacesClient(object):
     return entity_ddls
 
   def GetIssuesHelper(self, entity):
-    """Get issues in a conversion worksapce."""
+    """Get issues in a conversion workspace."""
 
     entity_issues = []
     for issue in entity.issues:
@@ -632,7 +632,7 @@ class ConversionWorkspacesClient(object):
     return entity_issues
 
   def DescribeIssuesHelper(self, name, page_size, args, tree_type):
-    """Describe issues in a conversion worksapce."""
+    """Describe issues in a conversion workspace."""
     entity_issues = []
     describe_req = self._GetDescribeIssuesRequest(
         name,
@@ -652,15 +652,15 @@ class ConversionWorkspacesClient(object):
     return entity_issues
 
   def DescribeIssues(self, name, args=None):
-    """Describe database entity issues in a conversion worksapce.
+    """Describe database entity issues in a conversion workspace.
 
     Args:
-      name: str, the name for conversion worksapce being described.
+      name: str, the name for conversion workspace being described.
       args: argparse.Namespace, The arguments that this command was invoked
         with.
 
     Returns:
-      Issues found for the database entities of the conversion worksapce.
+      Issues found for the database entities of the conversion workspace.
     """
     page_size = 4000
     entity_issues = self.DescribeIssuesHelper(

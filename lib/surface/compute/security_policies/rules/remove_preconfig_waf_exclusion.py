@@ -82,7 +82,7 @@ class RemovePreconfigWafExclusionHelper(object):
   """
 
   @classmethod
-  def Args(cls, parser):
+  def Args(cls, parser, support_request_body_to_exclude=False):
     """Generates the flagset for a RemovePreconfigWafExclusion command."""
     cls.NAME_ARG = flags.PriorityArgument(
         'remove the exclusion configuration for preconfigured WAF evaluation'
@@ -107,6 +107,8 @@ class RemovePreconfigWafExclusionHelper(object):
     flags.AddRequestCookie(parser=parser, is_add=False)
     flags.AddRequestQueryParam(parser=parser, is_add=False)
     flags.AddRequestUri(parser=parser, is_add=False)
+    if support_request_body_to_exclude:
+      flags.AddRequestBody(parser=parser, is_add=False)
 
   @classmethod
   def _IsIdenticalTarget(cls,
@@ -152,7 +154,8 @@ class RemovePreconfigWafExclusionHelper(object):
                        request_headers=None,
                        request_cookies=None,
                        request_query_params=None,
-                       request_uris=None):
+                       request_uris=None,
+                       request_bodies=None):
     """Updates Exclusion."""
     new_exclusion = (
         compute_client.messages
@@ -194,10 +197,29 @@ class RemovePreconfigWafExclusionHelper(object):
         cls._RemoveRequestFields(existing_exclusion.requestUrisToExclude,
                                  request_uris_to_remove))
 
-    if not (new_exclusion.requestHeadersToExclude or
-            new_exclusion.requestCookiesToExclude or
-            new_exclusion.requestQueryParamsToExclude or
-            new_exclusion.requestUrisToExclude):
+    if request_bodies:
+      request_bodies_to_remove = []
+      for request_body in request_bodies:
+        request_bodies_to_remove.append(
+            cls._ConvertRequestFieldToAdd(compute_client, request_body)
+        )
+      new_exclusion.requestBodiesToExclude.extend(
+          cls._RemoveRequestFields(
+              existing_exclusion.requestBodiesToExclude,
+              request_bodies_to_remove,
+          )
+      )
+
+    if not (
+        new_exclusion.requestHeadersToExclude
+        or new_exclusion.requestCookiesToExclude
+        or new_exclusion.requestQueryParamsToExclude
+        or new_exclusion.requestUrisToExclude
+        or (
+            hasattr(new_exclusion, 'requestBodiesToExclude')
+            and new_exclusion.requestBodiesToExclude
+        )
+    ):
       return None
     return new_exclusion
 
@@ -210,10 +232,13 @@ class RemovePreconfigWafExclusionHelper(object):
       return new_preconfig_waf_config
 
     has_request_field_args = False
-    if (args.IsSpecified('request_header_to_exclude') or
-        args.IsSpecified('request_cookie_to_exclude') or
-        args.IsSpecified('request_query_param_to_exclude') or
-        args.IsSpecified('request_uri_to_exclude')):
+    if (
+        args.IsSpecified('request_header_to_exclude')
+        or args.IsSpecified('request_cookie_to_exclude')
+        or args.IsSpecified('request_query_param_to_exclude')
+        or args.IsSpecified('request_uri_to_exclude')
+        or getattr(args, 'request_body_to_exclude', None)
+    ):
       has_request_field_args = True
 
     if existing_rule.preconfiguredWafConfig:
@@ -226,9 +251,14 @@ class RemovePreconfigWafExclusionHelper(object):
                                 args.target_rule_ids or []):
         if has_request_field_args:
           new_exclusion = cls._UpdateExclusion(
-              compute_client, exclusion, args.request_header_to_exclude,
+              compute_client,
+              exclusion,
+              args.request_header_to_exclude,
               args.request_cookie_to_exclude,
-              args.request_query_param_to_exclude, args.request_uri_to_exclude)
+              args.request_query_param_to_exclude,
+              args.request_uri_to_exclude,
+              getattr(args, 'request_body_to_exclude', []),
+          )
           if new_exclusion:
             new_preconfig_waf_config.exclusions.append(new_exclusion)
       else:
@@ -239,23 +269,34 @@ class RemovePreconfigWafExclusionHelper(object):
   @classmethod
   def Run(cls, release_track, args):
     """Validates arguments and patches a security policy rule."""
+    support_request_body = release_track in [
+        base.ReleaseTrack.ALPHA,
+        base.ReleaseTrack.BETA,
+    ]
     if args.target_rule_set == '*':
       if (args.IsSpecified('target_rule_ids') or
           args.IsSpecified('request_header_to_exclude') or
           args.IsSpecified('request_cookie_to_exclude') or
           args.IsSpecified('request_query_param_to_exclude') or
-          args.IsSpecified('request_uri_to_exclude')):
-        raise exceptions.InvalidArgumentException(
-            'target-rule-set',
+          args.IsSpecified('request_uri_to_exclude') or
+          (support_request_body and
+           args.IsSpecified('request_body_to_exclude'))):
+        msg = (
             'Arguments in [--target-rule-ids, --request-header-to-exclude, '
             '--request-cookie-to-exclude, --request-query-param-to-exclude, '
-            '--request-uri-to-exclude] cannot be specified when '
-            '--target-rule-set is set to *.')
+            '--request-uri-to-exclude'
+        )
+        if support_request_body:
+          msg += ', --request-body-to-exclude'
+        msg += '] cannot be specified when --target-rule-set is set to *.'
+        raise exceptions.InvalidArgumentException('target-rule-set', msg)
 
     for request_fields in [
-        args.request_header_to_exclude or [], args.request_cookie_to_exclude or
-        [], args.request_query_param_to_exclude or [],
-        args.request_uri_to_exclude or []
+        args.request_header_to_exclude or [],
+        args.request_cookie_to_exclude or [],
+        args.request_query_param_to_exclude or [],
+        args.request_uri_to_exclude or [],
+        getattr(args, 'request_body_to_exclude', []) or [],
     ]:
       for request_field in request_fields:
         op = request_field.get('op') or ''
@@ -294,11 +335,13 @@ class RemovePreconfigWafExclusionHelper(object):
     existing_rule = security_policy_rule.Describe()[0]
 
     new_preconfig_waf_config = cls._UpdatePreconfigWafConfig(
-        compute_client, existing_rule, args)
+        compute_client, existing_rule, args
+    )
     return security_policy_rule.Patch(
         preconfig_waf_config=new_preconfig_waf_config)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class RemovePreconfigWafExclusionGA(base.UpdateCommand):
   r"""Remove an exclusion configuration for preconfigured WAF evaluation from a security policy rule.
@@ -403,7 +446,8 @@ class RemovePreconfigWafExclusionBeta(RemovePreconfigWafExclusionGA):
        \
        --request-header-to-exclude=op=EQUALS,val=abc \
        --request-header-to-exclude=op=STARTS_WITH,val=xyz \
-       --request-uri-to-exclude=op=EQUALS_ANY
+       --request-uri-to-exclude=op=EQUALS_ANY \
+       --request-body-to-exclude=op=CONTAINS,val=bad_data
 
   To remove all the request field exclusions that are associated with the target
   of 'sqli-stable': ['owasp-crs-v030001-id942110-sqli',
@@ -428,6 +472,13 @@ class RemovePreconfigWafExclusionBeta(RemovePreconfigWafExclusionGA):
        --security-policy=my-policy \
        --target-rule-set=*
   """
+
+  @classmethod
+  def Args(cls, parser):
+    RemovePreconfigWafExclusionHelper.Args(
+        parser,
+        support_request_body_to_exclude=True,
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -461,7 +512,8 @@ class RemovePreconfigWafExclusionAlpha(RemovePreconfigWafExclusionBeta):
        \
        --request-header-to-exclude=op=EQUALS,val=abc \
        --request-header-to-exclude=op=STARTS_WITH,val=xyz \
-       --request-uri-to-exclude=op=EQUALS_ANY
+       --request-uri-to-exclude=op=EQUALS_ANY \
+       --request-body-to-exclude=op=CONTAINS,val=bad_data
 
   To remove all the request field exclusions that are associated with the target
   of 'sqli-stable': ['owasp-crs-v030001-id942110-sqli',

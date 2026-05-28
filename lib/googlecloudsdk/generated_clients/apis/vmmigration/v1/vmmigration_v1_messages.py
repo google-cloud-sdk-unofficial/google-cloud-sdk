@@ -1083,6 +1083,7 @@ class ComputeEngineTargetDefaults(_messages.Message):
       regional vs zonal disks. If not specified, a zonal disk will be created
       in the same zone the VM is created.
     diskType: The disk type to use in the VM.
+    disks: Optional. The details of each disk to create.
     enableIntegrityMonitoring: Optional. Defines whether the instance has
       integrity monitoring enabled. This can be set to true only if the VM
       boot option is EFI, and vTPM is enabled.
@@ -1237,25 +1238,26 @@ class ComputeEngineTargetDefaults(_messages.Message):
   computeScheduling = _messages.MessageField('ComputeScheduling', 6)
   diskReplicaZones = _messages.StringField(7, repeated=True)
   diskType = _messages.EnumField('DiskTypeValueValuesEnum', 8)
-  enableIntegrityMonitoring = _messages.BooleanField(9)
-  enableVtpm = _messages.BooleanField(10)
-  encryption = _messages.MessageField('Encryption', 11)
-  hostname = _messages.StringField(12)
-  labels = _messages.MessageField('LabelsValue', 13)
-  licenseType = _messages.EnumField('LicenseTypeValueValuesEnum', 14)
-  machineType = _messages.StringField(15)
-  machineTypeSeries = _messages.StringField(16)
-  metadata = _messages.MessageField('MetadataValue', 17)
-  networkInterfaces = _messages.MessageField('NetworkInterface', 18, repeated=True)
-  networkTags = _messages.StringField(19, repeated=True)
-  provisionedIops = _messages.IntegerField(20)
-  provisionedThroughput = _messages.IntegerField(21)
-  secureBoot = _messages.BooleanField(22)
-  serviceAccount = _messages.StringField(23)
-  storagePool = _messages.StringField(24)
-  targetProject = _messages.StringField(25)
-  vmName = _messages.StringField(26)
-  zone = _messages.StringField(27)
+  disks = _messages.MessageField('PersistentDiskDefaults', 9, repeated=True)
+  enableIntegrityMonitoring = _messages.BooleanField(10)
+  enableVtpm = _messages.BooleanField(11)
+  encryption = _messages.MessageField('Encryption', 12)
+  hostname = _messages.StringField(13)
+  labels = _messages.MessageField('LabelsValue', 14)
+  licenseType = _messages.EnumField('LicenseTypeValueValuesEnum', 15)
+  machineType = _messages.StringField(16)
+  machineTypeSeries = _messages.StringField(17)
+  metadata = _messages.MessageField('MetadataValue', 18)
+  networkInterfaces = _messages.MessageField('NetworkInterface', 19, repeated=True)
+  networkTags = _messages.StringField(20, repeated=True)
+  provisionedIops = _messages.IntegerField(21)
+  provisionedThroughput = _messages.IntegerField(22)
+  secureBoot = _messages.BooleanField(23)
+  serviceAccount = _messages.StringField(24)
+  storagePool = _messages.StringField(25)
+  targetProject = _messages.StringField(26)
+  vmName = _messages.StringField(27)
+  zone = _messages.StringField(28)
 
 
 class ComputeEngineTargetDetails(_messages.Message):
@@ -1296,6 +1298,8 @@ class ComputeEngineTargetDetails(_messages.Message):
       regional vs zonal disks. If not specified, a zonal disk will be created
       in the same zone the VM is created.
     diskType: The disk type to use in the VM.
+    disks: Optional. The details of each created disk. If set, it must be set
+      for all the disks.
     enableIntegrityMonitoring: Optional. Defines whether the instance has
       integrity monitoring enabled.
     enableVtpm: Optional. Defines whether the instance has vTPM enabled.
@@ -1447,25 +1451,26 @@ class ComputeEngineTargetDetails(_messages.Message):
   computeScheduling = _messages.MessageField('ComputeScheduling', 6)
   diskReplicaZones = _messages.StringField(7, repeated=True)
   diskType = _messages.EnumField('DiskTypeValueValuesEnum', 8)
-  enableIntegrityMonitoring = _messages.BooleanField(9)
-  enableVtpm = _messages.BooleanField(10)
-  encryption = _messages.MessageField('Encryption', 11)
-  hostname = _messages.StringField(12)
-  labels = _messages.MessageField('LabelsValue', 13)
-  licenseType = _messages.EnumField('LicenseTypeValueValuesEnum', 14)
-  machineType = _messages.StringField(15)
-  machineTypeSeries = _messages.StringField(16)
-  metadata = _messages.MessageField('MetadataValue', 17)
-  networkInterfaces = _messages.MessageField('NetworkInterface', 18, repeated=True)
-  networkTags = _messages.StringField(19, repeated=True)
-  project = _messages.StringField(20)
-  provisionedIops = _messages.IntegerField(21)
-  provisionedThroughput = _messages.IntegerField(22)
-  secureBoot = _messages.BooleanField(23)
-  serviceAccount = _messages.StringField(24)
-  storagePool = _messages.StringField(25)
-  vmName = _messages.StringField(26)
-  zone = _messages.StringField(27)
+  disks = _messages.MessageField('PersistentDisk', 9, repeated=True)
+  enableIntegrityMonitoring = _messages.BooleanField(10)
+  enableVtpm = _messages.BooleanField(11)
+  encryption = _messages.MessageField('Encryption', 12)
+  hostname = _messages.StringField(13)
+  labels = _messages.MessageField('LabelsValue', 14)
+  licenseType = _messages.EnumField('LicenseTypeValueValuesEnum', 15)
+  machineType = _messages.StringField(16)
+  machineTypeSeries = _messages.StringField(17)
+  metadata = _messages.MessageField('MetadataValue', 18)
+  networkInterfaces = _messages.MessageField('NetworkInterface', 19, repeated=True)
+  networkTags = _messages.StringField(20, repeated=True)
+  project = _messages.StringField(21)
+  provisionedIops = _messages.IntegerField(22)
+  provisionedThroughput = _messages.IntegerField(23)
+  secureBoot = _messages.BooleanField(24)
+  serviceAccount = _messages.StringField(25)
+  storagePool = _messages.StringField(26)
+  vmName = _messages.StringField(27)
+  zone = _messages.StringField(28)
 
 
 class ComputeScheduling(_messages.Message):
@@ -4463,9 +4468,8 @@ class VmmigrationProjectsLocationsListRequest(_messages.Message):
   r"""A VmmigrationProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).

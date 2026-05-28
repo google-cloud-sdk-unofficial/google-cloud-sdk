@@ -21,7 +21,7 @@ from googlecloudsdk.api_lib.bms.bms_client import BmsClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bms import flags
 from googlecloudsdk.core import log
-import six
+
 
 DETAILED_HELP = {
     'DESCRIPTION':
@@ -39,7 +39,7 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
-class List(six.with_metaclass(abc.ABCMeta, base.CacheCommand)):
+class List(base.CacheCommand, metaclass=abc.ABCMeta):
   """List Bare Metal Solution LUNs in a project."""
 
   @staticmethod
@@ -73,5 +73,6 @@ class List(six.with_metaclass(abc.ABCMeta, base.CacheCommand)):
     """
     if not resources_were_displayed:
       log.status.Print('Listed 0 items.')
+
 
 List.detailed_help = DETAILED_HELP

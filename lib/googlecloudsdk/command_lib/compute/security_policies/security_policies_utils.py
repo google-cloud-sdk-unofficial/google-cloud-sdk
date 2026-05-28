@@ -437,6 +437,13 @@ def SecurityPolicyFromFile(input_file, messages, file_format):
             exclusion_to_add.requestUrisToExclude.append(
                 ConvertPreconfigWafExclusionRequestField(request_uri, messages)
             )
+          if hasattr(exclusion_to_add, 'requestBodiesToExclude'):
+            for request_body in exclusion.get('requestBodiesToExclude', []):
+              exclusion_to_add.requestBodiesToExclude.append(
+                  ConvertPreconfigWafExclusionRequestField(
+                      request_body, messages
+                  )
+              )
           preconfig_waf_config.exclusions.append(exclusion_to_add)
         security_policy_rule.preconfiguredWafConfig = preconfig_waf_config
 

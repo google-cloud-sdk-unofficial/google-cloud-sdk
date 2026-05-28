@@ -32,7 +32,6 @@ from googlecloudsdk.command_lib.compute.backend_services import (
 from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.command_lib.compute.url_maps import url_maps_utils
 from googlecloudsdk.core import properties
-import six
 
 
 def _DetailedHelp():
@@ -290,14 +289,14 @@ def _Modify(
   # and --backend-bucket-path-rules.
   service_map = collections.defaultdict(set)
   bucket_map = collections.defaultdict(set)
-  for path, service in six.iteritems(args.path_rules):
+  for path, service in args.path_rules.items():
     service_map[service].add(path)
-  for path, service in six.iteritems(args.backend_service_path_rules):
+  for path, service in args.backend_service_path_rules.items():
     service_map[service].add(path)
-  for path, bucket in six.iteritems(args.backend_bucket_path_rules):
+  for path, bucket in args.backend_bucket_path_rules.items():
     bucket_map[bucket].add(path)
   path_rules = []
-  for service, paths in sorted(six.iteritems(service_map)):
+  for service, paths in sorted(service_map.items()):
     path_rules.append(
         client.messages.PathRule(
             paths=sorted(paths),
@@ -308,7 +307,7 @@ def _Modify(
             ).SelfLink(),
         )
     )
-  for bucket, paths in sorted(six.iteritems(bucket_map)):
+  for bucket, paths in sorted(bucket_map.items()):
     path_rules.append(
         client.messages.PathRule(
             paths=sorted(paths),

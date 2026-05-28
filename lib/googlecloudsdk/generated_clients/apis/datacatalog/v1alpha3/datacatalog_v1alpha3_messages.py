@@ -1276,6 +1276,8 @@ class GoogleCloudDatacatalogV1Entry(_messages.Message):
       FEATURE_VIEW: Feature View resource in Vertex AI Feature Store.
       FEATURE_GROUP: Feature Group resource in Vertex AI Feature Store.
       GRAPH: An entry type for a graph.
+      NODE: An entry type for a graph node.
+      EDGE: An entry type for a graph edge.
     """
     ENTRY_TYPE_UNSPECIFIED = 0
     TABLE = 1
@@ -1297,6 +1299,8 @@ class GoogleCloudDatacatalogV1Entry(_messages.Message):
     FEATURE_VIEW = 17
     FEATURE_GROUP = 18
     GRAPH = 19
+    NODE = 20
+    EDGE = 21
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):

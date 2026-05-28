@@ -20,7 +20,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.command_lib.container.vmware import flags
 from googlecloudsdk.core import log
-import six
 
 _EXAMPLES = """
 To query all available versions in location `us-west1`, run:
@@ -77,5 +76,5 @@ class QueryVersionConfig(base.Command):
         self.ReleaseTrack() is base.ReleaseTrack.BETA
         or self.ReleaseTrack() is base.ReleaseTrack.ALPHA
     ):
-      command_base += ' ' + six.text_type(self.ReleaseTrack()).lower()
+      command_base += ' ' + str(self.ReleaseTrack()).lower()
     log.status.Print(_EPILOG.format(command_base))

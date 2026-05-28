@@ -144,6 +144,25 @@ Refer to the syntax under `--request-cookie-to-exclude`.
 This flag can be repeated to specify multiple request URIs.
 """
 
+_WAF_EXCLUSION_REQUEST_BODY_HELP_TEXT_FOR_ADD = """
+Adds a request body to the request field exclusions associated with the rule set
+and rule IDs (if provided). This flag specifies a request body to exclude from
+inspection during preconfigured WAF evaluation.
+
+For syntax, see `--request-cookie-to-exclude`.
+
+You can repeat this flag to specify multiple request bodies.
+"""
+
+_WAF_EXCLUSION_REQUEST_BODY_HELP_TEXT_FOR_REMOVE = """
+Removes a request body from the existing request field exclusions associated with
+the rule set and rule IDs (if provided).
+
+For syntax, see `--request-cookie-to-exclude`.
+
+You can repeat this flag to specify multiple request bodies.
+"""
+
 _RATE_LIMIT_ENFORCE_ON_KEY_TYPES_DESCRIPTION = """
       - ``ip'': each client IP address has this limit enforced separately
       - ``all'': a single limit is applied to all requests matching this rule
@@ -644,6 +663,20 @@ def AddRequestUri(parser, is_add):
       action='append',
       help=_WAF_EXCLUSION_REQUEST_URI_HELP_TEXT_FOR_ADD
       if is_add else _WAF_EXCLUSION_REQUEST_URI_HELP_TEXT_FOR_REMOVE)
+
+
+def AddRequestBody(parser, is_add):
+  """Adds request-body-to-exclude argument to the argparse."""
+  parser.add_argument(
+      '--request-body-to-exclude',
+      type=arg_parsers.ArgDict(
+          spec={
+              'op': str,
+              'val': str,
+          }, required_keys=['op']),
+      action='append',
+      help=_WAF_EXCLUSION_REQUEST_BODY_HELP_TEXT_FOR_ADD
+      if is_add else _WAF_EXCLUSION_REQUEST_BODY_HELP_TEXT_FOR_REMOVE)
 
 
 def AddRecaptchaOptions(parser):

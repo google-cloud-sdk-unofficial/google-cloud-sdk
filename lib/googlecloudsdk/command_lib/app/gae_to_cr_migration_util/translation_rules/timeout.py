@@ -15,7 +15,7 @@
 
 """Translation rule for timeout feature."""
 
-from typing import Mapping, Sequence
+from typing import Any, Mapping, Sequence
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.common import util
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.translation_rules import scaling
 
@@ -27,19 +27,50 @@ _SCALING_METHOD_W_60_MIN_TIMEOUT = frozenset({
     scaling.ScalingTypeAppYaml.BASIC_SCALING,
 })
 
+_AUTOMATIC_SCALING_TIMEOUT_SEC = 600
+_MANUAL_SCALING_TIMEOUT_SEC = 3600
+_FLEX_TIMEOUT_SEC = 3600
+_FLEX_TIMEOUT_STR = '60m'
 
-def translate_timeout_features(input_data: Mapping[str, any]) -> Sequence[str]:
+
+def translate_timeout_features(input_data: Mapping[str, Any]) -> Sequence[str]:
   """Translate timeout features based on scaling method."""
   is_flex = util.is_flex_env(input_data)
   # Flex environment has a default timeout of 60 minutes.
   if is_flex:
-    return ['--timeout=60m']
+    return [f'--timeout={_FLEX_TIMEOUT_STR}']
 
   scaling_features_used = scaling.get_scaling_features_used(input_data)
   if len(scaling_features_used) == 1:
     scaling_feature = scaling_features_used[0]
     if scaling_feature in _SCALING_METHOD_W_10_MIN_TIMEOUT:
-      return ['--timeout=600']
+      return [f'--timeout={_AUTOMATIC_SCALING_TIMEOUT_SEC}']
     if scaling_feature in _SCALING_METHOD_W_60_MIN_TIMEOUT:
-      return ['--timeout=3600']
+      return [f'--timeout={_MANUAL_SCALING_TIMEOUT_SEC}']
   return []
+
+
+def update_service_yaml_with_timeout(
+    service_yaml: dict[str, Any],
+    input_data: Mapping[str, Any],
+) -> None:
+  """Updates the service_yaml dict with timeout settings."""
+  is_flex = util.is_flex_env(input_data)
+  timeout_val = None
+  if is_flex:
+    timeout_val = _FLEX_TIMEOUT_SEC
+  else:
+    scaling_features_used = scaling.get_scaling_features_used(input_data)
+    if len(scaling_features_used) == 1:
+      scaling_feature = scaling_features_used[0]
+      if scaling_feature in _SCALING_METHOD_W_10_MIN_TIMEOUT:
+        timeout_val = _AUTOMATIC_SCALING_TIMEOUT_SEC
+      elif scaling_feature in _SCALING_METHOD_W_60_MIN_TIMEOUT:
+        timeout_val = _MANUAL_SCALING_TIMEOUT_SEC
+
+  if timeout_val:
+    spec = service_yaml.setdefault('spec', {})
+    template = spec.setdefault('template', {})
+    template_spec = template.setdefault('spec', {})
+    template_spec['timeoutSeconds'] = timeout_val
+    service_yaml['spec']['template']['spec']['timeoutSeconds'] = timeout_val

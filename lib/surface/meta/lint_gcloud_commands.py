@@ -87,7 +87,6 @@ from googlecloudsdk.command_lib.meta import generate_argument_spec
 from googlecloudsdk.core import log
 from googlecloudsdk.core import yaml
 from googlecloudsdk.core.util import files
-import six
 
 
 _PARSING_OUTPUT_TEMPLATE = {
@@ -114,15 +113,15 @@ def _read_commands_from_file(commands_file):
   ref_id = 0
   command_strings = {}
   needs_id = any(command_data.get('id') for command_data in command_file_data)
-  for command_data in command_file_data:
+  for idx, command_data in enumerate(command_file_data):
     command_id = command_data.get('id')
     if needs_id and command_id is None:
       raise ValueError(
           'Not all commands have an ID. Id for command'
           f' {command_data["command_string"]} is None.'
       )
-    command_strings[command_data['command_string']] = command_id or ref_id
-    ref_id += 1
+    command_strings[command_data['command_string']] = (
+        command_id or (ref_id + idx))
   return command_strings
 
 
@@ -138,7 +137,7 @@ def _separate_command_arguments(command_string: str):
   except Exception:  # pylint: disable=broad-except
     raise CommandValidationError(
         'Command could not be validated due to unforeseen edge case.'
-    )
+    ) from None
   # Move any flag arguments to end of command.
   flag_args = [arg for arg in command_arguments if arg.startswith('--')]
   command_args = [arg for arg in command_arguments if not arg.startswith('--')]
@@ -236,9 +235,8 @@ def _get_positional_metavars(args_tree):
   positional_args = []
 
   def _process_arg(node):
-    if 'name' in node and node.get('positional', False):
-      if node['name']:
-        positional_args.append(node['name'])
+    if 'name' in node and node.get('positional', False) and node['name']:
+      positional_args.append(node['name'])
 
   def _traverse_arg_group(node):
     for arg in node:
@@ -290,8 +288,7 @@ def _normalize_command_args(command_args, args_tree):
         return command_arg_name, command_value
     return None, None
 
-  arg_index = 0
-  for command_arg in command_args:
+  for arg_index, command_arg in enumerate(command_args):
     command_arg_name = command_arg
     if command_arg.startswith('--'):
       equals_index = command_arg.find('=')
@@ -311,7 +308,6 @@ def _normalize_command_args(command_args, args_tree):
         'value': command_value,
         'index': arg_index,
     }
-    arg_index += 1
   return collections.OrderedDict(
       sorted(arg_name_value.items(), key=lambda item: item[1]['index'])
   )
@@ -367,10 +363,8 @@ class GenerateCommand(base.Command):
     with files.FileReader(commands_text_file) as f:
       text = f.read()
     commands = _extract_gcloud_commands(text)
-    ref_id = 0
-    for command in commands:
+    for ref_id, command in enumerate(commands):
       self._validate_command(command, ref_id)
-      ref_id += 1
 
   def _validate_command_prefix(self, command_arguments, command_string, ref_id):
     """Validate that the argument string contains a valid command or group."""
@@ -397,7 +391,7 @@ class GenerateCommand(base.Command):
             command_string,
             ref_id,
             command_arguments[index:],
-            "Invalid choice: '{}'".format(argument),
+            f"Invalid choice: '{argument}'",
             'UnrecognizedCommandError',
         )
         return False, None, None
@@ -464,7 +458,7 @@ class GenerateCommand(base.Command):
           command_string,
           ref_id,
           command_arguments,
-          six.text_type(e),
+          str(e),
           type(e).__name__,
       )
       return False

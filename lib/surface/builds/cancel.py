@@ -21,7 +21,6 @@ from googlecloudsdk.command_lib.builds import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
-import six
 
 
 @base.UniverseCompatible
@@ -87,6 +86,6 @@ class Cancel(base.Command):
               projectId=build_ref.projectsId,
               id=build_ref.buildsId,
           ))
-      log.status.write('Cancelled [{r}].\n'.format(r=six.text_type(build_ref)))
+      log.status.write('Cancelled [{r}].\n'.format(r=str(build_ref)))
       cancelled.append(cancelled_build)
     return cancelled

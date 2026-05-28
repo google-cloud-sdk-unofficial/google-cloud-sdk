@@ -15,18 +15,18 @@
 """Retrieves information about a Cloud SQL instance."""
 
 
-from apitools.base.py import exceptions as apitools_exceptions
+import http.client
 
+from apitools.base.py import exceptions as apitools_exceptions
+from googlecloudsdk import core
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import exceptions
 from googlecloudsdk.api_lib.sql import instances as instance_api_util
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
-from googlecloudsdk import core
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
-import six.moves.http_client
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
@@ -105,7 +105,7 @@ class Get(base.DescribeCommand):
         )
       return serialized_instance_presentation
     except apitools_exceptions.HttpError as error:
-      if error.status_code == six.moves.http_client.FORBIDDEN:
+      if error.status_code == http.client.FORBIDDEN:
         raise exceptions.ResourceNotFoundError(
             'There was no instance found at {} or you are not authorized to '
             'access it.'.format(instance_ref.RelativeName()))

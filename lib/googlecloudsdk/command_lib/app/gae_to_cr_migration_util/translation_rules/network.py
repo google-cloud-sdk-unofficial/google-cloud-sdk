@@ -16,6 +16,7 @@
 """Translation rule for networking features."""
 
 from collections.abc import Mapping, Sequence
+import json
 from typing import Any
 
 
@@ -56,3 +57,80 @@ def translate_network_features(
       output_flags.append('--ingress=internal')
 
   return output_flags
+
+
+def update_service_yaml_with_network(
+    service_yaml: dict[str, Any],
+    input_data: Mapping[str, Any],
+) -> None:
+  """Update the service_yaml dict with networking settings.
+
+  Args:
+    service_yaml: The dictionary representation of the Cloud Run service YAML to
+      be updated.
+    input_data: Flattened dictionary of the parsed app.yaml file, containing
+      networking configurations.
+  """
+
+  # 1. Service level annotations
+  service_metadata = service_yaml.setdefault('metadata', {})
+  service_annotations = service_metadata.setdefault('annotations', {})
+
+  instance_ip_mode = input_data.get(
+      'network.instance_ip_mode'
+  ) or input_data.get('network.instanceIpMode')
+  if instance_ip_mode == 'external':
+    service_annotations['run.googleapis.com/ingress'] = 'all'
+  elif instance_ip_mode == 'internal':
+    service_annotations['run.googleapis.com/ingress'] = 'internal'
+
+  # 2. Revision level metadata & annotations
+  spec = service_yaml.setdefault('spec', {})
+  template = spec.setdefault('template', {})
+  template_metadata = template.setdefault('metadata', {})
+  template_annotations = template_metadata.setdefault('annotations', {})
+
+  if input_data.get('network.session_affinity'):
+    template_annotations['run.googleapis.com/sessionAffinity'] = 'true'
+
+  # 3. Direct VPC (Network, Subnet, and Tags)
+  network_interface = {}
+  if network_name := input_data.get('network.name'):
+    network_interface['network'] = network_name
+  if subnetwork_name := input_data.get('network.subnetwork_name'):
+    network_interface['subnetwork'] = subnetwork_name
+  if tag_data := input_data.get('network.instance_tag'):
+    network_interface['tags'] = (
+        tag_data if isinstance(tag_data, list) else [tag_data]
+    )
+
+  if network_interface:
+    template_annotations['run.googleapis.com/network-interfaces'] = json.dumps(
+        [network_interface]
+    )
+
+  vpc_connector = input_data.get('vpc_access_connector.name') or input_data.get(
+      'vpcAccessConnector.name'
+  )
+  if vpc_connector:
+    template_annotations['run.googleapis.com/vpc-access-connector'] = (
+        vpc_connector
+    )
+
+  vpc_egress = input_data.get(
+      'vpc_access_connector.egress_setting'
+  ) or input_data.get('vpcAccessConnector.egressSetting')
+  if vpc_egress:
+    template_annotations['run.googleapis.com/vpc-access-egress'] = vpc_egress
+
+  # 4. Container level settings
+  template_spec = template.setdefault('spec', {})
+  containers = template_spec.setdefault('containers', [{}])
+  container = containers[0]
+
+  forwarded_ports = input_data.get('network.forwarded_ports') or input_data.get(
+      'network.forwardedPorts'
+  )
+  if forwarded_ports:
+    container_ports = container.setdefault('ports', [])
+    container_ports.append({'containerPort': int(forwarded_ports[0])})

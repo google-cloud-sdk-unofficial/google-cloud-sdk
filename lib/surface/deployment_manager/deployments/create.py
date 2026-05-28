@@ -33,7 +33,6 @@ from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-import six
 
 # Number of seconds (approximately) to wait for create operation to complete.
 OPERATION_TIMEOUT = 20 * 60  # 20 mins
@@ -237,8 +236,9 @@ More information is available at https://cloud.google.com/deployment-manager/doc
   def _HandleOperationError(
       self, error, args, operation, project, deployment_ref):
     if args.automatic_rollback:
-      delete_operation = self._PerformRollback(deployment_ref.deployment,
-                                               six.text_type(error))
+      delete_operation = self._PerformRollback(
+          deployment_ref.deployment, str(error)
+      )
       create_operation = dm_api_util.GetOperation(self.client, self.messages,
                                                   operation, project)
 
@@ -253,7 +253,7 @@ More information is available at https://cloud.google.com/deployment-manager/doc
     if label_dict:
       deployment.labels = [
           self.messages.DeploymentLabelEntry(key=k, value=v)
-          for k, v in sorted(six.iteritems(label_dict))
+          for k, v in sorted(label_dict.items())
       ]
 
   def _PerformRollback(self, deployment_name, error_message):

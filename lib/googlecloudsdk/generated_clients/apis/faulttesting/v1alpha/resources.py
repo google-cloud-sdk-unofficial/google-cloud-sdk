@@ -18,7 +18,7 @@ import enum
 
 
 BASE_URL = 'https://faulttesting.googleapis.com/v1alpha/'
-DOCS_URL = ''
+DOCS_URL = 'https://clouddocs.devsite.corp.google.com/fault-injection-testing'
 
 
 class Collections(enum.Enum):

@@ -29,7 +29,6 @@ from googlecloudsdk.command_lib.functions import service_account_util
 from googlecloudsdk.command_lib.functions.v2 import deploy_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
-import six
 
 SUPPORTED_EVENT_TYPES = (
     'google.pubsub.topic.publish',
@@ -198,7 +197,7 @@ _VALID_TRANSITION_ACTIONS = {
 def _ValidateStateTransition(upgrade_state, action):
   # type: (_,UpgradeAction) -> None
   """Validates whether the action is a valid action for the given upgrade state."""
-  upgrade_state_str = six.text_type(upgrade_state)
+  upgrade_state_str = str(upgrade_state)
   if upgrade_state_str == 'UPGRADE_OPERATION_IN_PROGRESS':
     raise exceptions.FunctionsError(
         'An upgrade operation is already in progress for this function.'
@@ -222,7 +221,7 @@ def _ValidateStateTransition(upgrade_state, action):
 # Source: http://cs/f:Gen1UpgradeEligibilityValidator.java
 def _RaiseNotEligibleForUpgradeError(function):
   """Raises an error when the function is not eligible for upgrade."""
-  if six.text_type(function.environment) == 'GEN_2':
+  if str(function.environment) == 'GEN_2':
     raise exceptions.FunctionsError(
         f'Function [{function.name}] is not eligible for Upgrade. To migrate to'
         ' Cloud Run function, please detach the function using `gcloud'
@@ -234,7 +233,7 @@ def _RaiseNotEligibleForUpgradeError(function):
         ' upgrade. It is in domain-scoped project that Cloud Run does not'
         ' support.'
     )
-  if six.text_type(function.state) != 'ACTIVE':
+  if str(function.state) != 'ACTIVE':
     raise exceptions.FunctionsError(
         f'Function [{function.name}] is not eligible for Cloud Run function'
         f' upgrade. It is in state [{function.state}].'
@@ -306,10 +305,7 @@ class UpgradeBeta(base.Command):
 
     upgrade_state = function.upgradeInfo.upgradeState
 
-    if (
-        six.text_type(upgrade_state)
-        == 'INELIGIBLE_FOR_UPGRADE_UNTIL_REDEPLOYMENT'
-    ):
+    if str(upgrade_state) == 'INELIGIBLE_FOR_UPGRADE_UNTIL_REDEPLOYMENT':
       raise exceptions.FunctionsError(
           f'Function [{function.name}] is not eligible for Cloud Run function'
           f' upgrade. The runtime [{function.buildConfig.runtime}] is not'

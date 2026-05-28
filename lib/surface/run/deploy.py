@@ -45,17 +45,18 @@ from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import resource_change_validators
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run import stages
+from googlecloudsdk.command_lib.run import validators
 from googlecloudsdk.command_lib.util.args import map_util
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import properties
-from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.resource import resource_printer
 
-
 _PROJECT_TOML_FILE_NAME = 'project.toml'
 _GPU_BUILD_MACHINE_TYPE = 'E2_HIGHCPU_8'
+_AR_IMAGE_URI_REGEX = r'([\w-]+)-docker\.pkg\.dev/([\w-]+)/([\w-]+)'
+_AR_LENIENT_IMAGE_URI_REGEX = r'^[^/]+/([\w-]+)/([\w-]+)/([\w-]+)'
 
 
 class BuildType(enum.Enum):
@@ -259,10 +260,6 @@ class Deploy(base.Command):
         allow_unauth = None
     return allow_unauth
 
-  def _IsIngressContainer(self, container):
-    """Returns True if the container is an ingress container."""
-    return container.IsSpecified('port') or container.IsSpecified('use_http2')
-
   def _ValidateAndGetContainers(self, args):
     if flags.FlagIsExplicitlySet(args, 'containers'):
       containers = args.containers
@@ -283,37 +280,9 @@ class Deploy(base.Command):
         setattr(containers[args.preset['name']], 'automatic_updates', None)
     else:
       containers = {'': args}
-
-    if len(containers) > 1:
-      ingress_containers = [
-          c
-          for c in containers.values()
-          if self._IsIngressContainer(c)
-      ]
-      if len(ingress_containers) != 1:
-        raise c_exceptions.InvalidArgumentException(
-            '--container',
-            'Exactly one container must specify --port or --use-http2',
-        )
-
-    if len(containers) > 10:
-      raise c_exceptions.InvalidArgumentException(
-          '--container', 'Services may include at most 10 containers'
-      )
+    validators.ValidateIngressContainer(containers)
+    validators.ValidateContainerLimit(containers)
     return containers
-
-  def _ValidateNoAutomaticUpdatesForContainers(
-      self, deploy_from_source, containers
-  ):
-    for name, container in containers.items():
-      if name not in deploy_from_source and container.IsSpecified(
-          'automatic_updates'
-      ):
-        raise c_exceptions.InvalidArgumentException(
-            '--automatic-updates',
-            '--automatic-updates can only be specified in the container that'
-            ' builds from source.',
-        )
 
   def _ValidateAndGetDeployFromSource(self, containers):
     deploy_from_source = {
@@ -324,108 +293,21 @@ class Deploy(base.Command):
             or flags.FlagIsExplicitlySet(container, 'source')
         )
     }
-    if len(deploy_from_source) > 1:
-      needs_image = [
-          name
-          for name, container in deploy_from_source.items()
-          if not flags.FlagIsExplicitlySet(container, 'source')
-      ]
-      if needs_image:
-        raise exceptions.RequiredImageArgumentException(needs_image)
-      raise c_exceptions.InvalidArgumentException(
-          '--container', 'At most one container can be deployed from source.'
-      )
-    self._ValidateUnifiedBuildProperty(deploy_from_source, containers)
-    self._ValidateNoAutomaticUpdatesForContainers(
-        deploy_from_source, containers
+    validators.ValidateSourceDeployContainer(deploy_from_source)
+    validators.ValidateUnifiedBuildProperty(
+        deploy_from_source, containers, self.ReleaseTrack()
     )
-    for name, container in deploy_from_source.items():
-      if not flags.FlagIsExplicitlySet(container, 'source'):
-        if console_io.CanPrompt():
-          container.source = flags.PromptForDefaultSource(name)
-        else:
-          if name:
-            message = (
-                'Container {} requires a container image to deploy (e.g.'
-                ' `gcr.io/cloudrun/hello:latest`) if no build source is'
-                ' provided.'.format(name)
-            )
-          else:
-            message = (
-                'Requires a container image to deploy (e.g.'
-                ' `gcr.io/cloudrun/hello:latest`) if no build source is'
-                ' provided.'
-            )
-          raise c_exceptions.RequiredArgumentException(
-              '--image',
-              message,
-          )
-    self._ValidateUploadThroughRunApi(deploy_from_source)
-    self._ValidateNoBuildFromSource(deploy_from_source)
+    validators.ValidateNoAutomaticUpdatesForContainers(
+        deploy_from_source, containers, self.ReleaseTrack()
+    )
+    validators.ValidateContainerImageOrPromptForSource(deploy_from_source)
+    validators.ValidateUploadThroughRunApi(
+        deploy_from_source, self.ReleaseTrack()
+    )
+    validators.ValidateNoBuildFromSource(
+        deploy_from_source, self.ReleaseTrack()
+    )
     return deploy_from_source
-
-  def _ValidateUnifiedBuildProperty(self, deploy_from_source, containers):
-    if (
-        properties.VALUES.run.enable_unified_build.GetBool()
-    ):
-      if self.ReleaseTrack() != base.ReleaseTrack.ALPHA:
-        raise exceptions.ConfigurationError(
-            'The `enable_unified_build` property is only supported in the Alpha'
-            ' release track.'
-        )
-      if len(containers) > 1:
-        for _, container in deploy_from_source.items():
-          if not self._IsIngressContainer(container):
-            raise c_exceptions.InvalidArgumentException(
-                '--container',
-                'Building sidecars from source is currently not supported when'
-                ' using unified build.',
-            )
-
-  def _ValidateUploadThroughRunApi(self, deploy_from_source):
-    if not deploy_from_source or len(deploy_from_source) != 1:
-      return False
-    container = next(iter(deploy_from_source.items()))[1]
-    if not flags.IsUploadLaunchStage(
-        self.ReleaseTrack()
-    ) or not container.IsSpecified('upload'):
-      return
-    if not _IsNoBuildFromSource(self.ReleaseTrack(), deploy_from_source):
-      raise c_exceptions.InvalidArgumentException(
-          '--upload',
-          'Upload through Run API is only supported when --no-build is set.',
-      )
-
-  def _ValidateNoBuildFromSource(self, deploy_from_source):
-    """Extra validation for Zip deployments.
-
-    This is a no-op for if the --no-build flag is not set.
-
-    Args:
-      deploy_from_source: The build from source map of container name to
-        container object.
-    """
-    if not _IsNoBuildFromSource(self.ReleaseTrack(), deploy_from_source):
-      return
-
-    # TODO(b/424567464): Remove this check once we support multiple containers
-    # with --no-build.
-    container = next(iter(deploy_from_source.items()))[1]
-    if not container.IsSpecified('base_image'):
-      raise c_exceptions.InvalidArgumentException(
-          '--no-build',
-          'Source deployment must specify --base-image when skipping'
-          'Cloud Build.',
-      )
-    if (
-        container.IsSpecified('image')
-        and getattr(container, 'image') != 'scratch'
-    ):
-      raise c_exceptions.InvalidArgumentException(
-          '--image',
-          'Source deployment --image must be set to "scratch" when skipping'
-          'Cloud Build.',
-      )
 
   def _GetBaseImageForSourceContainer(self, container_args, service):
     """Returns the base image for the container.
@@ -685,7 +567,7 @@ class Deploy(base.Command):
       docker_string = _ValidateArRepository(
           container_args.image, already_activated_services
       )
-      _ValidateServiceNameFromImage(
+      validators.ValidateServiceNameFromImage(
           container_args.image, service_ref.servicesId
       )
       return docker_string, repo_to_create
@@ -899,24 +781,17 @@ class Deploy(base.Command):
       )
     else:
       requires_authentication = False
-      if (
-          platforms.GetPlatform() == platforms.PLATFORM_MANAGED
-          and not (
-              getattr(args, 'dry_run', False)
-              or service.annotations.get(
-                  container_resource.DISABLE_IAM_ANNOTATION
-              )
-              == 'true'
-              or service.annotations.get(service_lib.INGRESS_ANNOTATION)
-              in [
-                  service_lib.INGRESS_INTERNAL,
-                  service_lib.INGRESS_INTERNAL_AND_CLOUD_LOAD_BALANCING,
-              ]
-              or service.annotations.get(
-                  container_resource.DISABLE_URL_ANNOTATION
-              )
-              == 'true'
-          )
+      if platforms.GetPlatform() == platforms.PLATFORM_MANAGED and not (
+          getattr(args, 'dry_run', False)
+          or service.annotations.get(container_resource.DISABLE_IAM_ANNOTATION)
+          == 'true'
+          or service.annotations.get(service_lib.INGRESS_ANNOTATION)
+          in [
+              service_lib.INGRESS_INTERNAL,
+              service_lib.INGRESS_INTERNAL_AND_CLOUD_LOAD_BALANCING,
+          ]
+          or service.annotations.get(container_resource.DISABLE_URL_ANNOTATION)
+          == 'true'
       ):
         if (
             allow_unauth is not None
@@ -984,7 +859,7 @@ class Deploy(base.Command):
 
     containers = self._ValidateAndGetContainers(args)
     deploy_from_source = self._ValidateAndGetDeployFromSource(containers)
-    is_no_build_from_source = _IsNoBuildFromSource(
+    is_no_build_from_source = validators.IsNoBuildFromSource(
         self.ReleaseTrack(), deploy_from_source
     )
 
@@ -1129,7 +1004,7 @@ class Deploy(base.Command):
       if iap:
         if iap_util.IsOrglessProject(
             project_id
-        ) and not iap_util.IsIapAlreadyEnabled(self):
+        ) and not iap_util.IsIapAlreadyEnabled(self.ReleaseTrack()):
           pretty_print.Info(
               '\n {bold}**[Warning]**{reset} Deploying services with IAP'
               ' enabled in a project outside of an Organization and may require'
@@ -1225,74 +1100,57 @@ class Deploy(base.Command):
       return service
 
 
-def _IsNoBuildFromSource(release_track, build_from_source):
-  """Checks if this is a source deployment that should skip the Cloud Build step."""
-  if release_track == base.ReleaseTrack.GA:
-    return False
-
-  if not build_from_source or len(build_from_source) != 1:
-    return False
-  container = next(iter(build_from_source.items()))[1]
-  return container.IsSpecified('no_build')
-
-
 def _ValidateArRepository(
     annotated_build_image_uri, already_activated_services
 ):
   """Checks the format and existence of the repository in Artifact Registry."""
-  image_uri_regex = r'([\w-]+)-docker\.pkg\.dev/([\w-]+)/([\w-]+)'
-  match = re.match(image_uri_regex, annotated_build_image_uri)
+  is_default_universe = properties.IsDefaultUniverse()
 
-  if not match:
-    raise c_exceptions.InvalidArgumentException(
-        '--image',
-        'The artifact repository found for the function '
-        'was not in the expected format '
-        '[REGION]-docker.pkg.dev/[PROJECT-ID]/[REPO-NAME] or\n'
-        '[REGION]-docker.pkg.dev/[PROJECT-ID]/[REPO-NAME]/[SERVICE-NAME],'
-        ' please try again. \n'
-        f'Retrieved value was: {annotated_build_image_uri}',
+  # 1. Primary Check: Standard GDU format with regional existence validation
+  match = re.match(_AR_IMAGE_URI_REGEX, annotated_build_image_uri)
+
+  if match:
+    region = match.group(1)
+    project_id = match.group(2)
+    repo_id = match.group(3)
+    ar_repo = docker_util.DockerRepo(
+        project_id=project_id,
+        location_id=region,
+        repo_id=repo_id,
     )
-  region = match.group(1)
-  project_id = match.group(2)
-  repo_id = match.group(3)
-  ar_repo = docker_util.DockerRepo(
-      project_id=project_id,
-      location_id=region,
-      repo_id=repo_id,
+    # Raise an error if the repo doesn't exist, will not attempt to create it.
+    if artifact_registry.ShouldCreateRepository(
+        ar_repo,
+        skip_activation_prompt=already_activated_services,
+        skip_console_prompt=True,
+    ):
+      raise c_exceptions.InvalidArgumentException(
+          '--image',
+          'The artifact repository provided does not exist: '
+          f'{annotated_build_image_uri}.'
+          ' Please create the repository and try again.',
+      )
+    return ar_repo.GetDockerString()
+
+  # 2. Fallback Check: Lenient structural validation for custom/future domains
+  # Matches a hostname followed by exactly three path segments (e.g.
+  # prefix/project/repo)
+  # Only apply this fallback in non-default universes.
+  if not is_default_universe:
+    match = re.match(_AR_LENIENT_IMAGE_URI_REGEX, annotated_build_image_uri)
+    if match:
+      return match.group(0)
+
+  # 3. Neither matched, raise standard format error
+  raise c_exceptions.InvalidArgumentException(
+      '--image',
+      'The artifact repository found for the function '
+      'was not in the expected format '
+      '[REGION]-docker.pkg.dev/[PROJECT-ID]/[REPO-NAME] or\n'
+      '[REGION]-docker.pkg.dev/[PROJECT-ID]/[REPO-NAME]/[SERVICE-NAME],'
+      ' please try again. \n'
+      f'Retrieved value was: {annotated_build_image_uri}',
   )
-  # Raise an error if the repo doesn't exist, will not attempt to create it.
-  if artifact_registry.ShouldCreateRepository(
-      ar_repo,
-      skip_activation_prompt=already_activated_services,
-      skip_console_prompt=True,
-  ):
-    raise c_exceptions.InvalidArgumentException(
-        '--image',
-        'The artifact repository provided does not exist: '
-        f'{annotated_build_image_uri}.'
-        ' Please create the repository and try again.',
-    )
-  return ar_repo.GetDockerString()
-
-
-def _ValidateServiceNameFromImage(image_uri, service_id):
-  """Checks the service extracted from the image uri matches the service id."""
-  image_uri_regex = (
-      r'(?P<region>[\w-]+)-docker\.pkg\.dev/(?P<project_id>[\w-]+)/'
-      r'(?P<repo_name>[\w-]+)/(?P<service_name>[\w-]+)(?:/(.+))?$'
-  )
-  match = re.match(image_uri_regex, image_uri)
-  if (
-      match
-      and match.group('service_name')
-      and match.group('service_name') != service_id
-  ):
-    raise c_exceptions.InvalidArgumentException(
-        '--image',
-        'The service name found in the Artifact Registry repository path, '
-        f'{image_uri}, does not match the service name, {service_id}.',
-    )
 
 
 def _CreateBuildPack(container):
@@ -1398,19 +1256,6 @@ class BetaDeploy(Deploy):
   """Create or update a Cloud Run service."""
 
   detailed_help = copy.deepcopy(Deploy.detailed_help)
-
-  def _ValidateNoAutomaticUpdatesForContainers(
-      self, deploy_from_source, containers
-  ):
-    for name, container in containers.items():
-      if container.IsSpecified('automatic_updates') and (
-          name not in deploy_from_source or container.IsSpecified('no_build')
-      ):
-        raise c_exceptions.InvalidArgumentException(
-            '--automatic-updates',
-            '--automatic-updates can only be specified in the container that'
-            ' builds from source.',
-        )
 
   @classmethod
   def Args(cls, parser):

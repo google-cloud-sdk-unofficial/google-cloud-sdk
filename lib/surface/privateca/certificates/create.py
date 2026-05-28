@@ -31,7 +31,6 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
-import six
 
 _KEY_OUTPUT_HELP = """The path where the generated private key file should be written (in PEM format).
 
@@ -111,6 +110,7 @@ class Create(base.CreateCommand):
     ).AddToParser(persistence_group)
 
     flags.AddValidityFlag(parser, 'certificate', 'P30D', '30 days')
+    flags.AddRequestedNotBeforeTimeFlag(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
     cert_generation_group = parser.add_group(
@@ -285,11 +285,7 @@ class Create(base.CreateCommand):
     elif kms_key_version:
       public_key_response = cryptokeyversions.GetPublicKey(kms_key_version)
       # bytes(..) requires an explicit encoding in PY3.
-      return (
-          bytes(public_key_response.pem)
-          if six.PY2
-          else bytes(public_key_response.pem, 'utf-8')
-      )
+      return bytes(public_key_response.pem, 'utf-8')
     else:
       # This should not happen because of the required arg group, but protects
       # in case of future additions.
@@ -331,6 +327,10 @@ class Create(base.CreateCommand):
     request.certificate = self.messages.Certificate()
     request.certificateId = cert_ref.Name()
     request.certificate.lifetime = flags.ParseValidityFlag(args)
+    if args.IsSpecified('requested_not_before_time'):
+      request.certificate.requestedNotBeforeTime = (
+          args.requested_not_before_time
+      )
     request.certificate.labels = labels
     request.parent = cert_ref.Parent().RelativeName()
     request.requestId = request_utils.GenerateRequestId()

@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
-import six
 
 
 @base.DefaultUniverseOnly
@@ -90,7 +89,7 @@ class Delete(base.Command):
       # permissions. GET requires READ, and DELETE requires WRITE.
       log.debug(
           'Ignoring the error to get instance resource : %s',
-          six.text_type(error),
+          str(error),
       )
 
     if (
@@ -153,5 +152,5 @@ class Delete(base.Command):
       log.DeletedResource(instance_ref)
 
     except exceptions.HttpError:
-      log.debug('operation : %s', six.text_type(operation_ref))
+      log.debug('operation : %s', str(operation_ref))
       raise

@@ -19,8 +19,6 @@
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import resources
-import six
-from six.moves import range
 
 
 class Parse(base.Command):
@@ -63,7 +61,7 @@ class Parse(base.Command):
     uris = []
     for i in range(1, args.count + 1):
       params = {}
-      for param, template in six.iteritems(templates):
+      for param, template in templates.items():
         params[param] = template.format(i)
       uri = resources.Resource(
           None, collection_info, '', params, None).SelfLink()

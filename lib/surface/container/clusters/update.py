@@ -29,7 +29,6 @@ from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_attr
 from googlecloudsdk.core.console import console_io
-from six.moves import input  # pylint: disable=redefined-builtin
 
 
 class InvalidAddonValueError(util.Error):
@@ -441,9 +440,10 @@ class Update(base.UpdateCommand):
     flags.AddEnableKubeletReadonlyPortFlag(group)
     flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag(group)
     flags.AddEnableRayClusterLogging(group, is_update=True)
+    flags.AddEnableKueueLogging(group)
     flags.AddEnableRayClusterMonitoring(group, is_update=True)
     flags.AddSecretManagerEnableFlagGroup(group, is_update=True)
-    flags.AddSecretSyncFlagGroup(group, is_update=True, hidden=True)
+    flags.AddSecretSyncFlagGroup(group, is_update=True)
     flags.AddInsecureRBACBindingFlags(group, hidden=False)
     group_add_additional_ip_ranges = group.add_group()
     flags.AddAdditionalIpRangesFlag(group_add_additional_ip_ranges)
@@ -608,6 +608,7 @@ class Update(base.UpdateCommand):
     )
     opts.enable_ray_cluster_logging = args.enable_ray_cluster_logging
     opts.enable_ray_cluster_monitoring = args.enable_ray_cluster_monitoring
+    opts.enable_kueue_logging = getattr(args, 'enable_kueue_logging', None)
     opts.enable_secret_manager = args.enable_secret_manager
     opts.enable_secret_manager_rotation = args.enable_secret_manager_rotation
     opts.secret_manager_rotation_interval = (
@@ -1041,6 +1042,14 @@ to completion."""
         )
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif getattr(args, 'enable_kueue_logging', None) is not None:
+      try:
+        op_ref = adapter.ModifyKueueLoggingConfig(
+            cluster_ref,
+            enable_kueue_logging=args.enable_kueue_logging,
+        )
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT) from error
     elif getattr(args, 'enable_ray_cluster_monitoring', None) is not None:
       try:
         op_ref = adapter.ModifyRayClusterMonitoringConfig(
@@ -1337,6 +1346,7 @@ class UpdateBeta(Update):
     flags.AddEnableKubeletReadonlyPortFlag(group)
     flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag(group)
     flags.AddEnableRayClusterLogging(group, is_update=True)
+    flags.AddEnableKueueLogging(group)
     flags.AddEnableRayClusterMonitoring(group, is_update=True)
     flags.AddInsecureRBACBindingFlags(group, hidden=False)
     group_add_additional_ip_ranges = group.add_group()
@@ -1569,6 +1579,7 @@ class UpdateBeta(Update):
     )
     opts.enable_ray_cluster_logging = args.enable_ray_cluster_logging
     opts.enable_ray_cluster_monitoring = args.enable_ray_cluster_monitoring
+    opts.enable_kueue_logging = getattr(args, 'enable_kueue_logging', None)
     opts.enable_insecure_binding_system_authenticated = (
         args.enable_insecure_binding_system_authenticated
     )
@@ -1749,6 +1760,7 @@ class UpdateAlpha(Update):
     flags.AddEnableKubeletReadonlyPortFlag(group)
     flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag(group)
     flags.AddEnableRayClusterLogging(group, is_update=True)
+    flags.AddEnableKueueLogging(group)
     flags.AddEnableRayClusterMonitoring(group, is_update=True)
     flags.AddInsecureRBACBindingFlags(group, hidden=False)
     group_add_additional_ip_ranges = group.add_group()
@@ -1977,6 +1989,7 @@ class UpdateAlpha(Update):
     )
     opts.enable_ray_cluster_logging = args.enable_ray_cluster_logging
     opts.enable_ray_cluster_monitoring = args.enable_ray_cluster_monitoring
+    opts.enable_kueue_logging = getattr(args, 'enable_kueue_logging', None)
     opts.enable_insecure_binding_system_authenticated = (
         args.enable_insecure_binding_system_authenticated
     )

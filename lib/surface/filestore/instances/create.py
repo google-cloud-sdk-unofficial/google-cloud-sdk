@@ -23,8 +23,6 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
-import six
-
 
 def _CommonArgs(parser, api_version=filestore_client.V1_API_VERSION):
   instances_flags.AddInstanceCreateArgs(parser, api_version)
@@ -106,8 +104,7 @@ class Create(base.CreateCommand):
           messages=client.messages,
           nfs_export_options=args.file_share.get('nfs-export-options', []))
     except KeyError as err:
-      raise exceptions.InvalidArgumentException('--file-share',
-                                                six.text_type(err))
+      raise exceptions.InvalidArgumentException('--file-share', str(err))
 
     instance = client.ParseFilestoreConfig(
         tier=tier,
@@ -227,8 +224,7 @@ class CreateBeta(Create):
           messages=client.messages,
           nfs_export_options=args.file_share.get('nfs-export-options', []))
     except KeyError as err:
-      raise exceptions.InvalidArgumentException('--file-share',
-                                                six.text_type(err))
+      raise exceptions.InvalidArgumentException('--file-share', str(err))
 
     instance = client.ParseFilestoreConfig(
         tier=tier,
@@ -329,8 +325,7 @@ class CreateAlpha(Create):
           messages=client.messages,
           nfs_export_options=args.file_share.get('nfs-export-options', []))
     except KeyError as err:
-      raise exceptions.InvalidArgumentException('--file-share',
-                                                six.text_type(err))
+      raise exceptions.InvalidArgumentException('--file-share', str(err))
     instance = client.ParseFilestoreConfig(
         tier=tier,
         description=args.description,

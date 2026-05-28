@@ -254,6 +254,8 @@
     api_version: v1
     collection:
     - beyondcorp.projects.locations.securityGateways
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.beyondcorp.security_gateways.hooks:UpdateRequestWithMask
   async:
     collection:
     - beyondcorp.projects.locations.operations

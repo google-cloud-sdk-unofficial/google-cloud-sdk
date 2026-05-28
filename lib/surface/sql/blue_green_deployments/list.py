@@ -23,6 +23,7 @@ from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.command_lib.sql import flags as sql_flags
 from googlecloudsdk.core import properties
 
 
@@ -40,10 +41,7 @@ class List(base.ListCommand):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
-    parser.add_argument(
-        '--region',
-        help='The region of the blue-green deployments.',
-    )
+    sql_flags.AddRegion(parser, required=False, specify_default_region=False)
     parser.display_info.AddFormat(textwrap.dedent("""
         table(
             name.basename(),

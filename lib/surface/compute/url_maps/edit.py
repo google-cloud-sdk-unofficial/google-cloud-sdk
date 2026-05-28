@@ -31,7 +31,6 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core import yaml
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import edit
-import six
 
 
 def _DetailedHelp():
@@ -163,7 +162,7 @@ def _EditResource(
         messages.ValidationError,
         exceptions.ToolException,
     ) as e:
-      message = getattr(e, 'message', six.text_type(e))
+      message = getattr(e, 'message', str(e))
 
       if isinstance(e, exceptions.ToolException):
         problem_type = 'applying'

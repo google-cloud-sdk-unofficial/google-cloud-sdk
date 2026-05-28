@@ -24,7 +24,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.privateca import operations
 from googlecloudsdk.command_lib.privateca import resource_args
 from googlecloudsdk.core import log
-import six
 
 
 class ReplicationError(Exception):
@@ -87,9 +86,9 @@ class Replicate(base.SilentCommand):
     base.Argument(
         '--target-locations',
         help='Replicate this template to the given locations.',
-        type=arg_parsers.ArgList(
-            element_type=lambda x: six.text_type(x).strip()),
-        metavar='LOCATION').AddToParser(target_locations_group)
+        type=arg_parsers.ArgList(element_type=lambda x: str(x).strip()),
+        metavar='LOCATION',
+    ).AddToParser(target_locations_group)
 
     base.Argument(
         '--overwrite',
@@ -150,7 +149,7 @@ class Replicate(base.SilentCommand):
               updateMask='predefined_values,identity_constraints,passthrough_extensions,description,labels',
               requestId=request_utils.GenerateRequestId()))
     except api_exceptions.HttpError as e:
-      raise ReplicationError(location, six.text_type(e))
+      raise ReplicationError(location, str(e)) from e
 
   def Run(self, args):
     """Runs the command."""
@@ -191,7 +190,7 @@ class Replicate(base.SilentCommand):
         success_count += 1
       except ReplicationError as e:
         if args.continue_on_error:
-          log.warning(six.text_type(e))
+          log.warning(str(e))
           continue
         raise e
 

@@ -74,6 +74,7 @@ class Create(base.CreateCommand):
   detailed_help = DETAILED_HELP
   support_neg_type = False
   support_serverless_deployment = False
+  support_dedicated_backend = False
 
   @classmethod
   def Args(cls, parser):
@@ -82,6 +83,7 @@ class Create(base.CreateCommand):
         parser,
         support_neg_type=cls.support_neg_type,
         support_serverless_deployment=cls.support_serverless_deployment,
+        support_dedicated_backend=cls.support_dedicated_backend,
     )
 
   def Run(self, args):
@@ -179,6 +181,11 @@ class Create(base.CreateCommand):
 
     valid_scopes['gce-vm-ip'] = ['zonal']
 
+    # Only consider it when explicitly requested, keeping it hidden from help
+    # text.
+    if network_endpoint_type == 'gce-vm-ip-dedicated-backend':
+      valid_scopes['gce-vm-ip-dedicated-backend'] = ['zonal']
+
     valid_scopes_inverted = _Invert(valid_scopes)
 
     if is_zonal:
@@ -246,6 +253,7 @@ class CreateBeta(Create):
         parser,
         support_neg_type=cls.support_neg_type,
         support_serverless_deployment=cls.support_serverless_deployment,
+        support_dedicated_backend=cls.support_dedicated_backend,
     )
 
 
@@ -254,6 +262,7 @@ class CreateAlpha(CreateBeta):
   """Create a Google Compute Engine network endpoint group."""
 
   support_neg_type = True
+  support_dedicated_backend = True
 
   @classmethod
   def Args(cls, parser):
@@ -262,4 +271,5 @@ class CreateAlpha(CreateBeta):
         parser,
         support_neg_type=cls.support_neg_type,
         support_serverless_deployment=cls.support_serverless_deployment,
+        support_dedicated_backend=cls.support_dedicated_backend,
     )

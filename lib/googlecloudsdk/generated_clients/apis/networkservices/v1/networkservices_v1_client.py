@@ -1454,7 +1454,7 @@ class NetworkservicesV1(base_api.BaseApiClient):
         method_id='networkservices.projects.locations.httpRoutes.create',
         ordered_params=['parent'],
         path_params=['parent'],
-        query_params=['httpRouteId'],
+        query_params=['httpRouteId', 'requestId'],
         relative_path='v1/{+parent}/httpRoutes',
         request_field='httpRoute',
         request_type_name='NetworkservicesProjectsLocationsHttpRoutesCreateRequest',
@@ -1535,7 +1535,7 @@ class NetworkservicesV1(base_api.BaseApiClient):
         method_id='networkservices.projects.locations.httpRoutes.list',
         ordered_params=['parent'],
         path_params=['parent'],
-        query_params=['pageSize', 'pageToken', 'returnPartialSuccess'],
+        query_params=['filter', 'pageSize', 'pageToken', 'returnPartialSuccess'],
         relative_path='v1/{+parent}/httpRoutes',
         request_field='',
         request_type_name='NetworkservicesProjectsLocationsHttpRoutesListRequest',
@@ -5388,7 +5388,7 @@ class NetworkservicesV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the ListLocationsRequest.name field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
       Args:
         request: (NetworkservicesProjectsLocationsListRequest) input message

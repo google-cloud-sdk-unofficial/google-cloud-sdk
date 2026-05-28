@@ -318,6 +318,13 @@ def delete_download_tracker_files(destination_url):
       get_tracker_file_path(destination_url, TrackerFileType.DOWNLOAD))
 
 
+def delete_download_tracker_file_by_path(tracker_file_path):
+  """Deletes a single download tracker file if it exists."""
+  log.debug('Deleting download tracker file: %s.', tracker_file_path)
+  if tracker_file_path and os.path.exists(tracker_file_path):
+    os.remove(tracker_file_path)
+
+
 def hash_gcs_rewrite_parameters_for_tracker_file(source_object_resource,
                                                  destination_object_resource,
                                                  destination_metadata=None,
@@ -501,9 +508,17 @@ def _read_namedtuple_from_json_file(named_tuple_class, tracker_file_path):
   """Returns an instance of named_tuple_class with data at tracker_file_path."""
   if not os.path.exists(tracker_file_path):
     return None
-  with files.FileReader(tracker_file_path) as tracker_file:
-    tracker_dict = json.load(tracker_file)
-    return named_tuple_class(**tracker_dict)
+  try:
+    with files.FileReader(tracker_file_path) as tracker_file:
+      tracker_dict = json.load(tracker_file)
+      return named_tuple_class(**tracker_dict)
+  except json.decoder.JSONDecodeError:
+    log.debug(
+        'Invalid JSON in tracker file %s for %s.',
+        tracker_file_path,
+        named_tuple_class.__name__,
+    )
+    return None
 
 
 def read_composite_upload_tracker_file(tracker_file_path):
@@ -596,13 +611,19 @@ def read_or_create_download_tracker_file(source_object_resource,
         does_tracker_file_match = True
     else:
       component_data = json.loads(tracker_file.read())
-      if (component_data['etag'] == source_object_resource.etag and
-          component_data['generation'] == source_object_resource.generation):
-        if (tracker_file_type is TrackerFileType.SLICED_DOWNLOAD and
-            component_data['total_components'] == total_components):
+      if (
+          component_data['etag'] == source_object_resource.etag
+          and component_data['generation'] == source_object_resource.generation
+      ):
+        if (
+            tracker_file_type is TrackerFileType.SLICED_DOWNLOAD
+            and component_data['total_components'] == total_components
+        ):
           does_tracker_file_match = True
-        elif tracker_file_type is TrackerFileType.DOWNLOAD_COMPONENT and component_data[
-            'slice_start_byte'] == slice_start_byte:
+        elif (
+            tracker_file_type is TrackerFileType.DOWNLOAD_COMPONENT
+            and component_data['slice_start_byte'] == slice_start_byte
+        ):
           does_tracker_file_match = True
 
     if does_tracker_file_match:
@@ -612,14 +633,26 @@ def read_or_create_download_tracker_file(source_object_resource,
   except files.MissingFileError:
     # Cannot read from file.
     pass
+  except json.decoder.JSONDecodeError:
+    log.debug(
+        'Invalid JSON in tracker file %s for %s.',
+        tracker_file_path,
+        download_name_for_logger
+    )
 
   finally:
     if tracker_file:
       tracker_file.close()
 
-  if tracker_file:
-    # The tracker file exists, but it's not valid.
+  if tracker_file and tracker_file_type is TrackerFileType.SLICED_DOWNLOAD:
+    # The tracker file exists, but it's not valid. The component count may have
+    # changed, we need to delete all tracker files to ensure we do not miss any
+    # components.
     delete_download_tracker_files(destination_url)
+  elif tracker_file:
+    # The tracker file exists, but it's not valid. Delete only the affected
+    # tracker file and create a new one.
+    delete_download_tracker_file_by_path(tracker_file_path)
 
   log.debug('No matching tracker file for {}.'.format(download_name_for_logger))
   if tracker_file_type is TrackerFileType.DOWNLOAD:

@@ -415,7 +415,8 @@ class CompilationError(_messages.Message):
 
   Fields:
     actionTarget: Output only. The identifier of the action where this error
-      occurred, if available.
+      occurred, if available. LINT.ThenChange(//depot/google3/google/cloud/dat
+      aform/v2main/data_pipelines.proto:CompilationError)
     message: Output only. The error's top level message.
     path: Output only. The path of the file where this error occurred, if
       available, relative to the project root.
@@ -804,9 +805,8 @@ class DataformProjectsLocationsListRequest(_messages.Message):
   r"""A DataformProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -945,7 +945,9 @@ class DataformProjectsLocationsRepositoriesCompilationResultsGetRequest(_message
   object.
 
   Fields:
-    name: Required. The compilation result's name.
+    name: Required. The compilation result's name. LINT.ThenChange(//depot/goo
+      gle3/google/cloud/dataform/v2main/data_pipelines.proto:GetCompilationRes
+      ultRequest)
   """
 
   name = _messages.StringField(1, required=True)
@@ -956,7 +958,9 @@ class DataformProjectsLocationsRepositoriesCompilationResultsListRequest(_messag
   object.
 
   Fields:
-    filter: Optional. Filter for the returned list.
+    filter: Optional. Filter for the returned list. LINT.ThenChange(//depot/go
+      ogle3/google/cloud/dataform/v2main/data_pipelines.proto:ListCompilationR
+      esultsRequest)
     orderBy: Optional. This field only supports ordering by `name` and
       `create_time`. If unspecified, the server will choose the ordering. If
       specified, the default order is ascending for the `name` field.
@@ -1028,6 +1032,19 @@ class DataformProjectsLocationsRepositoriesCreateRequest(_messages.Message):
   parent = _messages.StringField(1, required=True)
   repository = _messages.MessageField('Repository', 2)
   repositoryId = _messages.StringField(3)
+
+
+class DataformProjectsLocationsRepositoriesDeleteLongRunningRequest(_messages.Message):
+  r"""A DataformProjectsLocationsRepositoriesDeleteLongRunningRequest object.
+
+  Fields:
+    deleteRepositoryLongRunningRequest: A DeleteRepositoryLongRunningRequest
+      resource to be passed as the request body.
+    name: Required. The repository's name.
+  """
+
+  deleteRepositoryLongRunningRequest = _messages.MessageField('DeleteRepositoryLongRunningRequest', 1)
+  name = _messages.StringField(2, required=True)
 
 
 class DataformProjectsLocationsRepositoriesDeleteRequest(_messages.Message):
@@ -1221,7 +1238,9 @@ class DataformProjectsLocationsRepositoriesReleaseConfigsCreateRequest(_messages
       Must be in the format `projects/*/locations/*/repositories/*`.
     releaseConfig: A ReleaseConfig resource to be passed as the request body.
     releaseConfigId: Required. The ID to use for the release config, which
-      will become the final component of the release config's resource name.
+      will become the final component of the release config's resource name. L
+      INT.ThenChange(//depot/google3/google/cloud/dataform/v2main/data_pipelin
+      es.proto:CreateReleaseConfigRequest)
   """
 
   parent = _messages.StringField(1, required=True)
@@ -1234,7 +1253,9 @@ class DataformProjectsLocationsRepositoriesReleaseConfigsDeleteRequest(_messages
   object.
 
   Fields:
-    name: Required. The release config's name.
+    name: Required. The release config's name. LINT.ThenChange(//depot/google3
+      /google/cloud/dataform/v2main/data_pipelines.proto:DeleteReleaseConfigRe
+      quest)
   """
 
   name = _messages.StringField(1, required=True)
@@ -1244,7 +1265,9 @@ class DataformProjectsLocationsRepositoriesReleaseConfigsGetRequest(_messages.Me
   r"""A DataformProjectsLocationsRepositoriesReleaseConfigsGetRequest object.
 
   Fields:
-    name: Required. The release config's name.
+    name: Required. The release config's name. LINT.ThenChange(//depot/google3
+      /google/cloud/dataform/v2main/data_pipelines.proto:GetReleaseConfigReque
+      st)
   """
 
   name = _messages.StringField(1, required=True)
@@ -1261,7 +1284,8 @@ class DataformProjectsLocationsRepositoriesReleaseConfigsListRequest(_messages.M
       `ListReleaseConfigs` call. Provide this to retrieve the subsequent page.
       When paginating, all other parameters provided to `ListReleaseConfigs`,
       with the exception of `page_size`, must match the call that provided the
-      page token.
+      page token. LINT.ThenChange(//depot/google3/google/cloud/dataform/v2main
+      /data_pipelines.proto:ListReleaseConfigsRequest)
     parent: Required. The repository in which to list release configs. Must be
       in the format `projects/*/locations/*/repositories/*`.
   """
@@ -2048,7 +2072,7 @@ class DataformProjectsLocationsTeamFoldersSearchRequest(_messages.Message):
       Examples: * `orderBy="display_name"` * `orderBy="display_name desc"`
     pageSize: Optional. Maximum number of TeamFolders to return. The server
       may return fewer items than requested. If unspecified, the server will
-      pick an appropriate default.
+      pick a default of page_size = 50.
     pageToken: Optional. Page token received from a previous
       `SearchTeamFolders` call. Provide this to retrieve the subsequent page.
       When paginating, all other parameters provided to `SearchTeamFolders`,
@@ -2141,6 +2165,21 @@ class DeleteFolderTreeRequest(_messages.Message):
   force = _messages.BooleanField(1)
 
 
+class DeleteRepositoryLongRunningRequest(_messages.Message):
+  r"""`DeleteRepositoryLongRunning` request message.
+
+  Fields:
+    force: Optional. If set to true, child resources of this repository
+      (compilation results and workflow invocations) will also be deleted.
+      Otherwise, the request will only succeed if the repository has no child
+      resources. **Note:** *This flag doesn't support deletion of workspaces,
+      release configs or workflow configs. If any of such resources exists in
+      the repository, the request will fail.*
+  """
+
+  force = _messages.BooleanField(1)
+
+
 class DeleteTeamFolderTreeRequest(_messages.Message):
   r"""`DeleteTeamFolderTree` request message.
 
@@ -2160,8 +2199,10 @@ class DirectoryEntry(_messages.Message):
   r"""Represents a single entry in a directory.
 
   Fields:
-    directory: A child directory in the directory.
-    file: A file in the directory.
+    directory: A child directory in the directory. The path is returned
+      including the full folder structure from the root.
+    file: A file in the directory. The path is returned including the full
+      folder structure from the root.
     metadata: Entry with metadata.
   """
 
@@ -2395,8 +2436,11 @@ class GitRemoteSettings(_messages.Message):
     authenticationTokenSecretVersion: Optional. The name of the Secret Manager
       secret version to use as an authentication token for Git operations.
       Must be in the format `projects/*/secrets/*/versions/*`.
-    defaultBranch: Required. The Git remote's default branch name. If not set,
-      `main` will be used and stored for the repository.
+    defaultBranch: Optional. The Git remote's default branch name. If not set
+      `main` will be used.
+    effectiveDefaultBranch: Output only. The Git remote's effective default
+      branch name. This is the default branch name of the Git remote if it is
+      set, otherwise it is `main`.
     sshAuthenticationConfig: Optional. Authentication fields for remote uris
       using SSH protocol.
     tokenStatus: Output only. Deprecated: The field does not contain any token
@@ -2427,9 +2471,10 @@ class GitRemoteSettings(_messages.Message):
 
   authenticationTokenSecretVersion = _messages.StringField(1)
   defaultBranch = _messages.StringField(2)
-  sshAuthenticationConfig = _messages.MessageField('SshAuthenticationConfig', 3)
-  tokenStatus = _messages.EnumField('TokenStatusValueValuesEnum', 4)
-  url = _messages.StringField(5)
+  effectiveDefaultBranch = _messages.StringField(3)
+  sshAuthenticationConfig = _messages.MessageField('SshAuthenticationConfig', 4)
+  tokenStatus = _messages.EnumField('TokenStatusValueValuesEnum', 5)
+  url = _messages.StringField(6)
 
 
 class IamPolicyOverrideView(_messages.Message):
@@ -2573,7 +2618,9 @@ class ListCompilationResultsResponse(_messages.Message):
     compilationResults: List of compilation results.
     nextPageToken: A token, which can be sent as `page_token` to retrieve the
       next page. If this field is omitted, there are no subsequent pages.
-    unreachable: Locations which could not be reached.
+    unreachable: Locations which could not be reached. LINT.ThenChange(//depot
+      /google3/google/cloud/dataform/v2main/data_pipelines.proto:ListCompilati
+      onResultsResponse)
   """
 
   compilationResults = _messages.MessageField('CompilationResult', 1, repeated=True)
@@ -2619,7 +2666,9 @@ class ListReleaseConfigsResponse(_messages.Message):
     nextPageToken: A token, which can be sent as `page_token` to retrieve the
       next page. If this field is omitted, there are no subsequent pages.
     releaseConfigs: List of release configs.
-    unreachable: Locations which could not be reached.
+    unreachable: Locations which could not be reached. LINT.ThenChange(//depot
+      /google3/google/cloud/dataform/v2main/data_pipelines.proto:ListReleaseCo
+      nfigsResponse)
   """
 
   nextPageToken = _messages.StringField(1)
@@ -2883,9 +2932,10 @@ class NotebookAction(_messages.Message):
 
   Fields:
     contents: Output only. The code contents of a Notebook to be run.
-    jobId: Output only. The ID of the Vertex job that executed the notebook in
-      contents and also the ID used for the outputs created in Google Cloud
-      Storage buckets. Only set once the job has started to run.
+    jobId: Output only. The ID of the Gemini Enterprise Agent Platform job
+      that executed the notebook in contents and also the ID used for the
+      outputs created in Google Cloud Storage buckets. Only set once the job
+      has started to run.
   """
 
   contents = _messages.StringField(1)
@@ -3517,7 +3567,9 @@ class ReleaseConfig(_messages.Message):
       commit SHA: `12ade345` - a tag: `tag1` - a branch name: `branch1`
     internalMetadata: Output only. All the metadata information that is used
       internally to serve the resource. For example: timestamps, flags, status
-      fields, etc. The format of this field is a JSON string.
+      fields, etc. The format of this field is a JSON string. LINT.ThenChange(
+      //depot/google3/google/cloud/dataform/v2main/data_pipelines.proto:Releas
+      eConfig)
     name: Identifier. The release config's name.
     recentScheduledReleaseRecords: Output only. Records of the 10 most recent
       scheduled release attempts, ordered in descending order of

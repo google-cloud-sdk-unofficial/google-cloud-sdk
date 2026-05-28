@@ -27,7 +27,6 @@ from googlecloudsdk.command_lib.privateca import resource_args
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import times
-import six
 
 
 @base.UniverseCompatible
@@ -131,8 +130,11 @@ class Delete(base.DeleteCommand):
       # API error message refers to the proto field name which is slightly
       # different from the gcloud flag name.
       raise operations.OperationError(
-          six.text_type(e).replace('`ignore_active_certificates` parameter',
-                                   '`--ignore-active-certificates` flag'))
+          str(e).replace(
+              '`ignore_active_certificates` parameter',
+              '`--ignore-active-certificates` flag',
+          )
+      )
     ca = operations.GetMessageFromResponse(ca_response,
                                            messages.CertificateAuthority)
 

@@ -17,7 +17,7 @@
 
 import enum
 import logging
-from typing import Mapping, Sequence
+from typing import Any, Mapping, Sequence
 
 import frozendict
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.common import util
@@ -165,3 +165,51 @@ def get_scaling_features_used(
       scaling_types_detected.add(scaling_type)
   return list(scaling_types_detected)
 
+
+def update_service_yaml_with_scaling(
+    service_yaml: dict[str, Any],
+    input_data: Mapping[str, Any],
+    range_limited_features: Mapping[str, Any],
+) -> None:
+  """Updates the service_yaml dict with scaling settings."""
+  scaling_types_used = get_scaling_features_used(input_data)
+  if not scaling_types_used or len(scaling_types_used) > 1:
+    return
+
+  scaling_type = scaling_types_used[0]
+  input_key_value_pairs = util.flatten_keys(input_data, '')
+  input_feature_keys = util.get_features_by_prefix(
+      input_key_value_pairs, scaling_type.value
+  )
+  allowed_keys = _SCALING_FEATURE_KEYS_ALLOWED_LIST[scaling_type]
+  allowed_input_feature_keys = [
+      key for key in input_feature_keys if key in allowed_keys
+  ]
+
+  spec = service_yaml.setdefault('spec', {})
+  template = spec.setdefault('template', {})
+  metadata = template.setdefault('metadata', {})
+  annotations = metadata.setdefault('annotations', {})
+
+  for key in allowed_input_feature_keys:
+    input_value = input_key_value_pairs[key]
+    range_limited_feature = range_limited_features[key]
+
+    if input_value < range_limited_feature.range['min']:
+      continue
+
+    target_value = (
+        input_value
+        if range_limited_feature.validate(input_value)
+        else range_limited_feature.range['max']
+    )
+
+    if scaling_type is ScalingTypeAppYaml.MANUAL_SCALING:
+      annotations['autoscaling.knative.dev/minScale'] = str(target_value)
+      annotations['autoscaling.knative.dev/maxScale'] = str(target_value)
+    elif key == 'automatic_scaling.min_instances':
+      annotations['autoscaling.knative.dev/minScale'] = str(target_value)
+    elif key == 'automatic_scaling.max_instances':
+      annotations['autoscaling.knative.dev/maxScale'] = str(target_value)
+    elif key == 'basic_scaling.max_instances':
+      annotations['autoscaling.knative.dev/maxScale'] = str(target_value)

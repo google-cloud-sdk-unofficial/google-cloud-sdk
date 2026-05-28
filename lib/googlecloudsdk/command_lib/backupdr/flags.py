@@ -1134,3 +1134,18 @@ def AddComputeInstanceBackupPlanProperties(parser):
       help=help_text,
   )
 
+
+def AddUseProjectServiceAccountFlag(parser):
+  """Adds the --use-project-service-account flag to the given parser."""
+  parser.add_argument(
+      '--use-project-service-account',
+      action='store_true',
+      hidden=True,
+      required=False,
+      default=False,
+      help=(
+          'If set, the BackupDR Project Service Agent (P4SA) credentials '
+          'will be used for the restore operation instead of the Backup Vault '
+          'Service Account. This is only supported for same-project restores.'
+      ),
+  )

@@ -12,6 +12,23 @@
       To create a percentage rollout (10% Enabled) using a `userID` attribute, run:
 
           $ {command} beta-feature --key=beta_rollout --flag-value-type=bool --unit-kind=my-service-unit --variants='[{"id": "Enabled", "booleanValue": true}, {"id": "Disabled", "booleanValue": false}]' --evaluation-spec='{"allocations": [{"id": "p10", "randomizedOn": "userID", "slots": [{"variant": "Disabled", "weight": 90}, {"variant": "Enabled", "weight": 10}]}], "defaultTarget": "p10", "attributes": ["projects/my-project/locations/global/flagAttributes/id-attr"]}' --location=global
+
+      To create an integer flag for a retry limit, run:
+
+          $ {command} retry-limit --key=max_retries --flag-value-type=int --unit-kind=my-service-unit --variants='[{"id": "Low", "integerValue": 3}, {"id": "High", "integerValue": 10}]' --evaluation-spec='{"defaultTarget": "Low"}' --location=global
+
+      To create a double flag for a discount percentage, run:
+
+          $ {command} discount-percentage --key=discount_percentage --flag-value-type=double --unit-kind=my-service-unit --variants='[{"id": "Zero", "doubleValue": 0.0}, {"id": "TenPercent", "doubleValue": 0.1}, {"id": "TwentyPercent", "doubleValue": 0.2}]' --evaluation-spec='{"defaultTarget": "Zero"}' --location=global
+
+      To create a string flag for a theme color, run:
+
+          $ {command} header-color --key=header_color --flag-value-type=string --unit-kind=my-service-unit --variants='[{"id": "Blue", "stringValue": "blue"}, {"id": "Red", "stringValue": "red"}]' --evaluation-spec='{"defaultTarget": "Blue"}' --location=global
+
+      To create a flag with complex targeting rules using a CEL expression and attributes, run:
+
+          $ {command} beta-feature --key=beta_enabled --flag-value-type=bool --unit-kind=my-service-unit --variants='[{"id": "Enabled", "booleanValue": true}, {"id": "Disabled", "booleanValue": false}]' --evaluation-spec='{"rules": [{"id": "internal-testers", "condition": "email.endsWith(\"@google.com\")", "target": "Enabled"}], "defaultTarget": "Disabled", "attributes": ["projects/my-project/locations/global/flagAttributes/email-attr"]}' --location=global
+
   arguments:
     params:
     - help_text: |-

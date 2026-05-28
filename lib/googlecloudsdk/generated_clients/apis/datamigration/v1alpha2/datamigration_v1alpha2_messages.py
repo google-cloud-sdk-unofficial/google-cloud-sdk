@@ -705,9 +705,8 @@ class DatamigrationProjectsLocationsListRequest(_messages.Message):
   r"""A DatamigrationProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -1979,7 +1978,7 @@ class QuotaFailureViolation(_messages.Message):
 
   Fields:
     apiService: The API Service from which the `QuotaFailure.Violation`
-      orginates. In some cases, Quota issues originate from an API Service
+      originates. In some cases, Quota issues originate from an API Service
       other than the one that was called. In other words, a dependency of the
       called API Service could be the cause of the `QuotaFailure`, and this
       field would have the dependency API service name. For example, if the

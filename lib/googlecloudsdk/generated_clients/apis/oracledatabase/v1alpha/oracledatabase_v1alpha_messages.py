@@ -6135,10 +6135,13 @@ class ListAutonomousDatabasesResponse(_messages.Message):
     autonomousDatabases: The list of Autonomous Databases.
     nextPageToken: A token identifying a page of results the server should
       return.
+    unreachable: Unreachable locations when listing resources across all
+      locations using wildcard location '-'.
   """
 
   autonomousDatabases = _messages.MessageField('AutonomousDatabase', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
 
 
 class ListAutonomousDbVersionsResponse(_messages.Message):
@@ -6160,10 +6163,13 @@ class ListCloudExadataInfrastructuresResponse(_messages.Message):
   Fields:
     cloudExadataInfrastructures: The list of Exadata Infrastructures.
     nextPageToken: A token for fetching next page of response.
+    unreachable: Unreachable locations when listing resources across all
+      locations using wildcard location '-'.
   """
 
   cloudExadataInfrastructures = _messages.MessageField('CloudExadataInfrastructure', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
 
 
 class ListCloudVmClustersResponse(_messages.Message):
@@ -6172,10 +6178,13 @@ class ListCloudVmClustersResponse(_messages.Message):
   Fields:
     cloudVmClusters: The list of VM Clusters.
     nextPageToken: A token to fetch the next page of results.
+    unreachable: Unreachable locations when listing resources across all
+      locations using wildcard location '-'.
   """
 
   cloudVmClusters = _messages.MessageField('CloudVmCluster', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
 
 
 class ListDatabaseCharacterSetsResponse(_messages.Message):
@@ -6263,10 +6272,13 @@ class ListDbSystemsResponse(_messages.Message):
     dbSystems: The list of DbSystems.
     nextPageToken: A token identifying a page of results the server should
       return.
+    unreachable: Unreachable locations when listing resources across all
+      locations using wildcard location '-'.
   """
 
   dbSystems = _messages.MessageField('DbSystem', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
 
 
 class ListDbVersionsResponse(_messages.Message):
@@ -6302,10 +6314,13 @@ class ListExadbVmClustersResponse(_messages.Message):
     exadbVmClusters: The list of ExadbVmClusters.
     nextPageToken: A token identifying a page of results the server should
       return.
+    unreachable: Unreachable locations when listing resources across all
+      locations using wildcard location '-'.
   """
 
   exadbVmClusters = _messages.MessageField('ExadbVmCluster', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
 
 
 class ListExascaleDbStorageVaultsResponse(_messages.Message):
@@ -6317,10 +6332,13 @@ class ListExascaleDbStorageVaultsResponse(_messages.Message):
       return. If present, the next page token can be provided to a subsequent
       ListExascaleDbStorageVaults call to list the next page. If empty, there
       are no more pages.
+    unreachable: Unreachable locations when listing resources across all
+      locations using wildcard location '-'.
   """
 
   exascaleDbStorageVaults = _messages.MessageField('ExascaleDbStorageVault', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
 
 
 class ListGiVersionsResponse(_messages.Message):
@@ -6344,10 +6362,13 @@ class ListGoldengateConnectionAssignmentsResponse(_messages.Message):
       GoldengateConnectionAssignments.
     nextPageToken: A token, which can be sent as `page_token` to retrieve the
       next page. If this field is omitted, there are no subsequent pages.
+    unreachable: Unreachable locations when listing resources across all
+      locations using wildcard location '-'.
   """
 
   goldengateConnectionAssignments = _messages.MessageField('GoldengateConnectionAssignment', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
 
 
 class ListGoldengateConnectionTypesResponse(_messages.Message):
@@ -8882,9 +8903,8 @@ class OracledatabaseProjectsLocationsListRequest(_messages.Message):
   r"""A OracledatabaseProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).

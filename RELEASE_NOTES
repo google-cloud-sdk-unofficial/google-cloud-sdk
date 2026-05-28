@@ -5,6 +5,119 @@ Copyright 2014-2026 Google Inc. All rights reserved.
 Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
 
 
+## 569.0.0 (2026-05-19)
+
+### Breaking Changes
+
+*   **(Google Cloud CLI)** The `anthoscli` component is no longer included by default in Debian and
+  RPM package installations to significantly reduce the default install size.
+  Users who require `anthoscli` can install it manually by running
+  `gcloud components install anthoscli` or
+  `sudo apt-get install google-cloud-cli-anthoscli`.
+
+
+### Google Cloud CLI
+
+* Updated Windows PuTTY executables to version 0.83.
+* Updated Windows bundled Python for the `gcloud` CLI to 3.14.4.
+
+### AI
+
+* Fixed --format field selection in `gcloud ai model-garden models list`.
+
+### Anthos
+
+* Updated anthos-cli with newer go version and library dependencies.
+
+### App Engine
+
+* Updated the Java SDK to version 5.0.2 build from the open source project
+  <https://github.com/GoogleCloudPlatform/appengine-java-standard/releases/tag/v5.0.2>.
+* Upgraded Java Eclipse Jetty Web Server version to 12.1.9.
+
+### Certificate Authority Service
+
+* Added support for allowing requesters to specify the certificate validity start time, configurable via the CA pool's issuance policy.
+* Added `--requested-not-before-time` flag to `gcloud privateca certificates create`.
+
+### Cloud Dataproc
+
+* Added `--resource-manager-tag` flag to `gcloud dataproc batches submit` and `gcloud dataproc sessions create` commands to allow associating Resource Manager Tags with compute resources.
+
+### Cloud Key Management Service
+
+*   Added `--fallback-scope` flag to
+    `gcloud kms inventory get-protected-resources-summary`.
+*   Updated `gcloud kms inventory search-protected-resources` to allow
+    projects in scope flag while still supporting organization scopes.
+* Added `--project` flag to `gcloud beta kms autokey-config describe` and `gcloud beta kms autokey-config update` to support project-level Autokey configurations.
+* Updated `gcloud beta kms autokey-config update` to support the `key-resolution-mode` field.
+
+### Cloud SQL
+
+* Added MySQL 9.7 to supported database versions.
+
+### Cloud Storage
+
+* Promoted `gcloud storage intelligence-findings` commands to GA.
+
+### Compute Engine
+
+*   Added `--request-body-to-exclude` flag to the alpha and beta levels of:
+    *   `gcloud compute security-policies rules add-preconfig-waf-exclusion`
+    *   `gcloud compute security-policies rules remove-preconfig-waf-exclusion`
+    *   `gcloud compute org-security-policies rules add-preconfig-waf-exclusion`
+    *   `gcloud compute org-security-policies rules remove-preconfig-waf-exclusion`
+* Promoted `service-class-id` sub-argument of `--network-interface` flag on `gcloud compute instances create` to GA.
+* Promoted `service-class-id` sub-argument of `--network-interface` flag on `gcloud compute instance-templates create` to GA.
+* Promoted `--service-class-id` flag on `gcloud compute instances network-interfaces add` to GA.
+*   Promoted `gcloud compute health-sources get-health` and `gcloud compute composite-health-checks get-health` to beta and GA.
+*   Removed client-side validation for `--disk's size` field in `gcloud compute sole-tenancy node-templates create`. The API will now perform server-side validation for disk size.
+* Promoted flags related to in-flight balancing to v1:
+   - `--max-in-flight-requests` of `gcloud compute backend-service create`.
+   - `--max-in-flight-requests-per-instance` of `gcloud compute backend-service create`.
+   - `--max-in-flight-requests-per-endpoint` of `gcloud compute backend-service create`.
+   - `--traffic-duration` of `gcloud compute backend-service create`.
+   - `--max-in-flight-requests` of `gcloud compute backend-service update`.
+   - `--max-in-flight-requests-per-instance` of `gcloud compute backend-service update`.
+   - `--max-in-flight-requests-per-endpoint` of `gcloud compute backend-service update`.
+   - `--traffic-duration` of `gcloud compute backend-service update`.
+
+### Compute Firewall Policies
+
+* Promoted `--target-type` and `--target-forwarding-rules` flags of
+ `gcloud compute network-firewall-policies rules create` and
+ `gcloud compute network-firewall-policies rules update` to GA.
+
+### Database Migration
+
+*   Allowed `--ssl-type=REQUIRED` without specifying certificates.
+
+### Kubernetes Engine
+
+* Added `--add-maintenance-exclusion-until-end-of-support` and
+ `--remove-maintenance-exclusion-until-end-of-support` flag in
+ `gcloud container node-pools create/update`.
+*  Added `--node-creation-mode` flag to `gcloud container clusters create`,
+`create-auto`, and `update` to allow control plane node
+creation mode.
+* Added `--enable-secret-sync`, `--enable-secret-sync-rotation` and
+  `secret-sync-rotation-interval` flags to `gcloud container clusters create`,
+  `gcloud container clusters create-auto` and `gcloud container clusters update`
+  for GA.
+* Additional kubectl versions:
+  * kubectl.1.30 (1.30.14)
+  * kubectl.1.31 (1.31.14)
+  * kubectl.1.32 (1.32.13)
+  * kubectl.1.33 (1.33.12)
+  * kubectl.1.34 (1.34.8)
+  * kubectl.1.35 (1.35.5)
+  * kubectl.1.36 (1.36.1)
+
+
+Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
+
+
 ## 568.0.0 (2026-05-12)
 
 ### Google Cloud CLI

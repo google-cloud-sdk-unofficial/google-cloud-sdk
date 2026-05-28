@@ -15,7 +15,10 @@
 """Command for getting SBOM versions of a host."""
 
 import argparse
+import json
+from typing import Any
 
+from apitools.base.py import encoding
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
@@ -28,7 +31,7 @@ from googlecloudsdk.core import log
 class GetVersionPoller(poller.Poller):
   """Custom poller for GetVersion that extracts metadata."""
 
-  def GetResult(self, operation: 'messages.Operation') -> 'messages.Operation':
+  def GetResult(self, operation: 'messages.Operation') -> Any:
     """Returns the metadata correctly extracted from an operation."""
     return operation.getVersionOperationMetadata or {}
 
@@ -91,7 +94,7 @@ class GetVersion(base.Command):
       association.append(f'reservations/{args.reservation}')
     if args.reservation_block:
       association.append(f'reservationBlocks/{args.reservation_block}')
-    association_str = '/'.join(association) if association else None
+    association_str = '/'.join(association) if association else ''
     args.association = association_str
 
     # Construct SBOM selections
@@ -108,7 +111,7 @@ class GetVersion(base.Command):
         args,
         holder.resources,
         scope_lister=flags.GetDefaultScopeLister(client),
-        additional_params={'association': association_str or ''},
+        additional_params={'association': association_str or '""'},
     )
 
     request = messages.ComputeHostsGetVersionRequest(
@@ -122,7 +125,33 @@ class GetVersion(base.Command):
     )
 
     # Call the method
-    operation = client.apitools_client.hosts.GetVersion(request)
+    if not association_str:
+      # Construct URL manually with a single slash
+      base_url = client.apitools_client.url
+      url = f'{base_url}projects/{host_ref.project}/zones/{host_ref.zone}/hosts/{host_ref.Name()}/getVersion?alt=json'
+
+      # Convert enums to strings for JSON serialization
+      selections = [str(selection) for selection in sbom_selections]
+      body = {'sbomSelections': selections}
+
+      response, content = client.apitools_client.http.request(
+          url,
+          method='POST',
+          body=json.dumps(body),
+          headers={'content-type': 'application/json'},
+      )
+
+      if response.status != 200:
+        error_msg = (
+            content.decode('utf-8') if isinstance(content, bytes) else content
+        )
+        raise exceptions.HttpException(
+            f'HTTP Error {response.status}: {error_msg}'
+        )
+
+      operation = encoding.JsonToMessage(messages.Operation, content)
+    else:
+      operation = client.apitools_client.hosts.GetVersion(request)
 
     # Wait for Operation
     operation_ref = holder.resources.Parse(

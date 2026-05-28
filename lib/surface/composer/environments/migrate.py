@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.composer import image_versions_util as image_ver
 from googlecloudsdk.command_lib.composer import resource_args
 from googlecloudsdk.command_lib.composer import util as command_util
 from googlecloudsdk.core import log
-import six
 
 
 @base.DefaultUniverseOnly
@@ -344,5 +343,6 @@ class Migrate(base.Command):
               env_ref.RelativeName(), operation.name),
           release_track=self.ReleaseTrack())
     except command_util.Error as e:
-      raise command_util.Error('Error updating [{}]: {}'.format(
-          env_ref.RelativeName(), six.text_type(e)))
+      raise command_util.Error(
+          'Error updating [{}]: {}'.format(env_ref.RelativeName(), str(e))
+      )

@@ -17,6 +17,7 @@
 
 import json
 import re
+from typing import NoReturn
 
 from googlecloudsdk.api_lib.util import exceptions as exceptions_util
 from googlecloudsdk.calliope import exceptions as c_exceptions
@@ -199,7 +200,7 @@ VALIDATION_ERROR_MSG_REGEX = re.compile(
 )
 
 
-def MaybeRaiseCustomFieldMismatch(error, help_text=''):
+def MaybeRaiseCustomFieldMismatch(error, help_text='') -> NoReturn:
   """Special handling for port field type mismatch.
 
   Due to differences in golang structs used by clusters and proto messages used

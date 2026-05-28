@@ -169,7 +169,7 @@ class AuditmanagerV1alpha(base_api.BaseApiClient):
           }
 
     def Generate(self, request, global_params=None):
-      r"""Generates the following: * A responsibility matrix that describes Google's responsibilities, your responsibilities, and shared responsibilities. These responsibilities must be fulfilled before your workload can be compliant with a given standard. * The technical attributes and constraints that Audit Manager uses to verify your compliance with a framework. * A list of Google Cloud services and resources that are within the scope of the framework.
+      r"""Generates an audit scope report for the given standard. The report includes the following: * The technical attributes and constraints that Audit Manager uses to verify your compliance with a framework. * A list of Google Cloud services and resources that are within the scope of the framework.
 
       Args:
         request: (AuditmanagerFoldersLocationsAuditScopeReportsGenerateRequest) input message
@@ -529,7 +529,7 @@ class AuditmanagerV1alpha(base_api.BaseApiClient):
           }
 
     def Generate(self, request, global_params=None):
-      r"""Generates the following: * A responsibility matrix that describes Google's responsibilities, your responsibilities, and shared responsibilities. These responsibilities must be fulfilled before your workload can be compliant with a given standard. * The technical attributes and constraints that Audit Manager uses to verify your compliance with a framework. * A list of Google Cloud services and resources that are within the scope of the framework.
+      r"""Generates an audit scope report for the given standard. The report includes the following: * The technical attributes and constraints that Audit Manager uses to verify your compliance with a framework. * A list of Google Cloud services and resources that are within the scope of the framework.
 
       Args:
         request: (AuditmanagerOrganizationsLocationsAuditScopeReportsGenerateRequest) input message
@@ -1007,7 +1007,7 @@ class AuditmanagerV1alpha(base_api.BaseApiClient):
           }
 
     def Generate(self, request, global_params=None):
-      r"""Generates the following: * A responsibility matrix that describes Google's responsibilities, your responsibilities, and shared responsibilities. These responsibilities must be fulfilled before your workload can be compliant with a given standard. * The technical attributes and constraints that Audit Manager uses to verify your compliance with a framework. * A list of Google Cloud services and resources that are within the scope of the framework.
+      r"""Generates an audit scope report for the given standard. The report includes the following: * The technical attributes and constraints that Audit Manager uses to verify your compliance with a framework. * A list of Google Cloud services and resources that are within the scope of the framework.
 
       Args:
         request: (AuditmanagerProjectsLocationsAuditScopeReportsGenerateRequest) input message
@@ -1374,7 +1374,7 @@ class AuditmanagerV1alpha(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the ListLocationsRequest.name field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
       Args:
         request: (AuditmanagerProjectsLocationsListRequest) input message

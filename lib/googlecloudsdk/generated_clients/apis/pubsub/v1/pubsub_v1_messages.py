@@ -137,12 +137,9 @@ class AwsKinesis(_messages.Message):
       STREAM_NOT_FOUND: The Kinesis stream does not exist.
       CONSUMER_NOT_FOUND: The Kinesis consumer does not exist.
       CONFLICTING_REGION_CONSTRAINTS: Indicates an error state where the
-        ingestion source cannot be processed. This occurs because there is no
-        overlap between the regions allowed by the topic's
-        `MessageStoragePolicy` and the regions permitted by the Regional
-        Access Boundary (RAB) restrictions on the project's Pub/Sub service
-        account. A common, allowed region is required to determine a valid
-        ingestion region.
+        ingestion source cannot be processed because the selected ingestion
+        region is not permitted by the Regional Access Boundary (RAB)
+        restrictions on the project's service account.
     """
     STATE_UNSPECIFIED = 0
     ACTIVE = 1
@@ -197,12 +194,9 @@ class AwsMsk(_messages.Message):
       CLUSTER_NOT_FOUND: The provided MSK cluster wasn't found.
       TOPIC_NOT_FOUND: The provided topic wasn't found.
       CONFLICTING_REGION_CONSTRAINTS: Indicates an error state where the
-        ingestion source cannot be processed. This occurs because there is no
-        overlap between the regions allowed by the topic's
-        `MessageStoragePolicy` and the regions permitted by the Regional
-        Access Boundary (RAB) restrictions on the project's Pub/Sub service
-        account. A common, allowed region is required to determine a valid
-        ingestion region.
+        ingestion source cannot be processed because the selected ingestion
+        region is not permitted by the Regional Access Boundary (RAB)
+        restrictions on the project's service account.
     """
     STATE_UNSPECIFIED = 0
     ACTIVE = 1
@@ -263,12 +257,9 @@ class AzureEventHubs(_messages.Message):
       RESOURCE_GROUP_NOT_FOUND: The provided Event Hubs resource group
         couldn't be found.
       CONFLICTING_REGION_CONSTRAINTS: Indicates an error state where the
-        ingestion source cannot be processed. This occurs because there is no
-        overlap between the regions allowed by the topic's
-        `MessageStoragePolicy` and the regions permitted by the Regional
-        Access Boundary (RAB) restrictions on the project's Pub/Sub service
-        account. A common, allowed region is required to determine a valid
-        ingestion region.
+        ingestion source cannot be processed because the selected ingestion
+        region is not permitted by the Regional Access Boundary (RAB)
+        restrictions on the project's service account.
     """
     STATE_UNSPECIFIED = 0
     ACTIVE = 1
@@ -585,12 +576,9 @@ class CloudStorage(_messages.Message):
       TOO_MANY_OBJECTS: The Cloud Storage bucket has too many objects,
         ingestion will be paused.
       CONFLICTING_REGION_CONSTRAINTS: Indicates an error state where the
-        ingestion source cannot be processed. This occurs because there is no
-        overlap between the regions allowed by the topic's
-        `MessageStoragePolicy` and the regions permitted by the Regional
-        Access Boundary (RAB) restrictions on the project's Pub/Sub service
-        account. A common, allowed region is required to determine a valid
-        ingestion region.
+        ingestion source cannot be processed because the selected ingestion
+        region is not permitted by the Regional Access Boundary (RAB)
+        restrictions on the project's service account.
     """
     STATE_UNSPECIFIED = 0
     ACTIVE = 1
@@ -706,6 +694,55 @@ class CommitSchemaRequest(_messages.Message):
   schema = _messages.MessageField('Schema', 1)
 
 
+class Compression(_messages.Message):
+  r"""Configuration for compressing/decompressing message data using a user-
+  specified compression algorithm.
+
+  Enums:
+    CompressionAlgorithmValueValuesEnum: Required. Specifies the compression
+      algorithm to use.
+    CompressionModeValueValuesEnum: Required. Specifies whether to compress or
+      decompress the message.
+
+  Fields:
+    compressionAlgorithm: Required. Specifies the compression algorithm to
+      use.
+    compressionMode: Required. Specifies whether to compress or decompress the
+      message.
+  """
+
+  class CompressionAlgorithmValueValuesEnum(_messages.Enum):
+    r"""Required. Specifies the compression algorithm to use.
+
+    Values:
+      COMPRESSION_ALGORITHM_UNSPECIFIED: Unspecified algorithm.
+      ZLIB: ZLIB compression.
+      SNAPPY: Snappy compression.
+      ZSTD: Zstd compression.
+      LZ4: LZ4 compression.
+    """
+    COMPRESSION_ALGORITHM_UNSPECIFIED = 0
+    ZLIB = 1
+    SNAPPY = 2
+    ZSTD = 3
+    LZ4 = 4
+
+  class CompressionModeValueValuesEnum(_messages.Enum):
+    r"""Required. Specifies whether to compress or decompress the message.
+
+    Values:
+      COMPRESSION_MODE_UNSPECIFIED: Unspecified mode.
+      COMPRESS: Compress.
+      DECOMPRESS: Decompress.
+    """
+    COMPRESSION_MODE_UNSPECIFIED = 0
+    COMPRESS = 1
+    DECOMPRESS = 2
+
+  compressionAlgorithm = _messages.EnumField('CompressionAlgorithmValueValuesEnum', 1)
+  compressionMode = _messages.EnumField('CompressionModeValueValuesEnum', 2)
+
+
 class ConfluentCloud(_messages.Message):
   r"""Ingestion settings for Confluent Cloud.
 
@@ -746,12 +783,9 @@ class ConfluentCloud(_messages.Message):
       CLUSTER_NOT_FOUND: The provided cluster wasn't found.
       TOPIC_NOT_FOUND: The provided topic wasn't found.
       CONFLICTING_REGION_CONSTRAINTS: Indicates an error state where the
-        ingestion source cannot be processed. This occurs because there is no
-        overlap between the regions allowed by the topic's
-        `MessageStoragePolicy` and the regions permitted by the Regional
-        Access Boundary (RAB) restrictions on the project's Pub/Sub service
-        account. A common, allowed region is required to determine a valid
-        ingestion region.
+        ingestion source cannot be processed because the selected ingestion
+        region is not permitted by the Regional Access Boundary (RAB)
+        restrictions on the project's service account.
     """
     STATE_UNSPECIFIED = 0
     ACTIVE = 1
@@ -1139,6 +1173,7 @@ class MessageTransform(_messages.Message):
     aiInference: Optional. AI Inference. Specifies the Vertex AI endpoint that
       inference requests built from the Pub/Sub message data and provided
       parameters will be sent to.
+    compression: Optional. Compression/Decompression.
     disabled: Optional. If true, the transform is disabled and will not be
       applied to messages. Defaults to `false`.
     enabled: Optional. This field is deprecated, use the `disabled` field to
@@ -1151,10 +1186,11 @@ class MessageTransform(_messages.Message):
   """
 
   aiInference = _messages.MessageField('AIInference', 1)
-  disabled = _messages.BooleanField(2)
-  enabled = _messages.BooleanField(3)
-  javascriptUdf = _messages.MessageField('JavaScriptUDF', 4)
-  schemaEncoding = _messages.MessageField('SchemaEncoding', 5)
+  compression = _messages.MessageField('Compression', 2)
+  disabled = _messages.BooleanField(3)
+  enabled = _messages.BooleanField(4)
+  javascriptUdf = _messages.MessageField('JavaScriptUDF', 5)
+  schemaEncoding = _messages.MessageField('SchemaEncoding', 6)
 
 
 class MessageTransforms(_messages.Message):

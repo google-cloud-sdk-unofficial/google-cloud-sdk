@@ -19,22 +19,8 @@ from googlecloudsdk.api_lib.kmsinventory import inventory
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kms import resource_args
-from googlecloudsdk.command_lib.resource_manager import completers
 
 DETAILED_HELP = {
-    'DESCRIPTION': """
-         *{command}* returns a list of the resources a key is protecting
-         within the specified organization.
-       """,
-    'EXAMPLES': """
-         To view the protected resources for the key `puppy` and organization
-         number `1234` run:
-
-           $ {command} --keyname=puppy --scope=organizations/1234
-       """,
-}
-
-DETAILED_HELP_ALPHA = {
     'DESCRIPTION': (
         """
          *{command}* returns a list of the resources a key is protecting
@@ -78,48 +64,14 @@ supported resource type, an ``INVALID_ARGUMENT'' error will be returned.
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.DefaultUniverseOnly
 class SearchProtectedResources(base.ListCommand):
   """Searches the resources protected by a key."""
+
   detailed_help = DETAILED_HELP
-
-  @staticmethod
-  def Args(parser):
-    resource_args.AddKmsKeyResourceArgForKMS(parser, True, '--keyname')
-    parser.add_argument(
-        '--scope',
-        metavar='ORGANIZATION_ID',
-        completer=completers.OrganizationCompleter,
-        required=True,
-        help='Organization ID.')
-    parser.add_argument(
-        '--resource-types',
-        metavar='RESOURCE_TYPES',
-        type=arg_parsers.ArgList(),
-        help=RESOURCE_TYPE_HELP,
-    )
-
-  def Run(self, args):
-    key_name = args.keyname
-    org = args.scope
-    resource_types = args.resource_types
-    if not resource_types:
-      resource_types = []
-    return inventory.SearchProtectedResources(
-        scope=org, key_name=key_name, resource_types=resource_types, args=args
-    )
-
-
-# This new version allows the user to use project ID or project number as the
-# scope and is only available in alpha.
-# This function would be gradually propagated to beta and will be used in place
-# of the old version in ga.
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-@base.DefaultUniverseOnly
-class SearchProtectedResourcesNew(base.ListCommand):
-  """Searches the resources protected by a key."""
-  detailed_help = DETAILED_HELP_ALPHA
 
   @staticmethod
   def Args(parser):
@@ -146,6 +98,6 @@ class SearchProtectedResourcesNew(base.ListCommand):
     resource_types = args.resource_types
     if not resource_types:
       resource_types = []
-    return inventory.SearchProtectedResourcesNew(
+    return inventory.SearchProtectedResources(
         scope=scope, key_name=key_name, resource_types=resource_types, args=args
     )

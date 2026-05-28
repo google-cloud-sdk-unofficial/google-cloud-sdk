@@ -221,6 +221,19 @@ class CloudresourcemanagerEffectiveTagsListRequest(_messages.Message):
   parent = _messages.StringField(3)
 
 
+class CloudresourcemanagerFetchResourceSemanticsRequest(_messages.Message):
+  r"""A CloudresourcemanagerFetchResourceSemanticsRequest object.
+
+  Fields:
+    fullResourceName: Required. The full resource name of the GCP resource to
+      retrieve semantics for. Examples:
+      "//compute.googleapis.com/projects/123/zones/us-central1-a/instances/my-
+      instance" "//storage.googleapis.com/projects/_/buckets/my_bucket"
+  """
+
+  fullResourceName = _messages.StringField(1)
+
+
 class CloudresourcemanagerFoldersCapabilitiesGetRequest(_messages.Message):
   r"""A CloudresourcemanagerFoldersCapabilitiesGetRequest object.
 
@@ -1690,6 +1703,50 @@ class Expr(_messages.Message):
   expression = _messages.StringField(2)
   location = _messages.StringField(3)
   title = _messages.StringField(4)
+
+
+class FetchResourceSemanticsResponse(_messages.Message):
+  r"""Response message for FetchResourceSemantics.
+
+  Messages:
+    SemanticsValue: Map of resource semantics (e.g., `"ENVIRONMENT":
+      "PRODUCTION"`).
+
+  Fields:
+    fullResourceName: The full resource name for which semantics are returned.
+      Examples: "//compute.googleapis.com/projects/123/zones/us-
+      central1-a/instances/my-instance"
+      "//storage.googleapis.com/projects/_/buckets/my_bucket"
+    semantics: Map of resource semantics (e.g., `"ENVIRONMENT":
+      "PRODUCTION"`).
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class SemanticsValue(_messages.Message):
+    r"""Map of resource semantics (e.g., `"ENVIRONMENT": "PRODUCTION"`).
+
+    Messages:
+      AdditionalProperty: An additional property for a SemanticsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type SemanticsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a SemanticsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  fullResourceName = _messages.StringField(1)
+  semantics = _messages.MessageField('SemanticsValue', 2)
 
 
 class Folder(_messages.Message):

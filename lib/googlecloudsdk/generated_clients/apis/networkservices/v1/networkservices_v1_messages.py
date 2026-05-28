@@ -6122,11 +6122,13 @@ class NetworkservicesProjectsLocationsHttpRoutesCreateRequest(_messages.Message)
     httpRouteId: Required. Short name of the HttpRoute resource to be created.
     parent: Required. The parent resource of the HttpRoute. Must be in the
       format `projects/*/locations/*`.
+    requestId: Optional. Idempotent request UUID.
   """
 
   httpRoute = _messages.MessageField('HttpRoute', 1)
   httpRouteId = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
 
 
 class NetworkservicesProjectsLocationsHttpRoutesDeleteRequest(_messages.Message):
@@ -6155,6 +6157,7 @@ class NetworkservicesProjectsLocationsHttpRoutesListRequest(_messages.Message):
   r"""A NetworkservicesProjectsLocationsHttpRoutesListRequest object.
 
   Fields:
+    filter: Optional. Filter expression to restrict the list.
     pageSize: Maximum number of HttpRoutes to return per call.
     pageToken: The value returned by the last `ListHttpRoutesResponse`
       Indicates that this is a continuation of a prior `ListHttpRoutes` call,
@@ -6166,10 +6169,11 @@ class NetworkservicesProjectsLocationsHttpRoutesListRequest(_messages.Message):
       locations is down or unreachable, the Aggregated List request will fail.
   """
 
-  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
-  returnPartialSuccess = _messages.BooleanField(4)
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+  returnPartialSuccess = _messages.BooleanField(5)
 
 
 class NetworkservicesProjectsLocationsHttpRoutesPatchRequest(_messages.Message):
@@ -6553,9 +6557,8 @@ class NetworkservicesProjectsLocationsListRequest(_messages.Message):
   r"""A NetworkservicesProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).

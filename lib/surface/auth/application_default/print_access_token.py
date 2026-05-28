@@ -32,7 +32,6 @@ from googlecloudsdk.core.credentials import creds as c_creds
 from googlecloudsdk.core.credentials import exceptions as creds_exceptions
 from googlecloudsdk.core.credentials import google_auth_credentials as c_google_auth
 from googlecloudsdk.core.credentials import store as c_store
-import six
 
 _DEFAULT_TOKEN_LIFETIME_SECS = 3600  # 1 hour in seconds
 
@@ -116,7 +115,7 @@ class PrintAccessToken(base.Command):
           scopes=args.scopes or [auth_util.CLOUD_PLATFORM_SCOPE])
     except google_auth_exceptions.DefaultCredentialsError as e:
       log.debug(e, exc_info=True)
-      raise c_exc.ToolException(six.text_type(e))
+      raise c_exc.ToolException(str(e))
 
     # Check if impersonation is used. There are two scenarios:
     # (1) the ADC file is not an impersonated credential json file, and either

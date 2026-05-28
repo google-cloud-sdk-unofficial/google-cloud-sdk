@@ -24,7 +24,6 @@ from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.resource import resource_printer
-import six
 
 
 class TrafficSplitError(exceptions.Error):
@@ -99,7 +98,7 @@ for more information.""")
 
     display_allocations = []
     for service in services:
-      for version, split in six.iteritems(allocations):
+      for version, split in allocations.items():
         display_allocations.append('{0}/{1}/{2}: {3}'.format(
             api_client.project,
             service.id,
@@ -121,7 +120,7 @@ for more information.""")
             api_client.SetTrafficSplit, service.id, allocations,
             args.split_by.upper(), args.migrate)
       except operations_util.MiscOperationError as err:
-        errors[service.id] = six.text_type(err)
+        errors[service.id] = str(err)
     if errors:
       printable_errors = {}
       for service, error_msg in errors.items():

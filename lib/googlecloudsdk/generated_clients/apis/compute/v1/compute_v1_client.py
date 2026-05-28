@@ -23097,6 +23097,32 @@ Replaces any existing policy.
       self._upload_configs = {
           }
 
+    def Advance(self, request, global_params=None):
+      r"""Advances a Rollout to the next wave, or completes it if no waves remain.
+
+      Args:
+        request: (ComputeRolloutsAdvanceRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Advance')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Advance.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.rollouts.advance',
+        ordered_params=['project', 'rollout'],
+        path_params=['project', 'rollout'],
+        query_params=['currentWaveNumber', 'requestId'],
+        relative_path='projects/{project}/global/rollouts/{rollout}/advance',
+        request_field='',
+        request_type_name='ComputeRolloutsAdvanceRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Cancel(self, request, global_params=None):
       r"""Cancels a Rollout.
 
@@ -23198,6 +23224,58 @@ Replaces any existing policy.
         request_field='',
         request_type_name='ComputeRolloutsListRequest',
         response_type_name='RolloutsListResponse',
+        supports_download=False,
+    )
+
+    def Pause(self, request, global_params=None):
+      r"""Pauses a Rollout.
+
+      Args:
+        request: (ComputeRolloutsPauseRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Pause')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Pause.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.rollouts.pause',
+        ordered_params=['project', 'rollout'],
+        path_params=['project', 'rollout'],
+        query_params=['etag', 'requestId'],
+        relative_path='projects/{project}/global/rollouts/{rollout}/pause',
+        request_field='',
+        request_type_name='ComputeRolloutsPauseRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Resume(self, request, global_params=None):
+      r"""Resumes a Rollout.
+
+      Args:
+        request: (ComputeRolloutsResumeRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Resume')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Resume.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.rollouts.resume',
+        ordered_params=['project', 'rollout'],
+        path_params=['project', 'rollout'],
+        query_params=['etag', 'requestId'],
+        relative_path='projects/{project}/global/rollouts/{rollout}/resume',
+        request_field='',
+        request_type_name='ComputeRolloutsResumeRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

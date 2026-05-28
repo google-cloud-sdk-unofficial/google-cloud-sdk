@@ -1002,10 +1002,11 @@ class EventarcProjectsLocationsGoogleApiSourcesDeleteRequest(_messages.Message):
   r"""A EventarcProjectsLocationsGoogleApiSourcesDeleteRequest object.
 
   Fields:
-    allowMissing: Optional. If set to true, and the MessageBus is not found,
-      the request will succeed but no action will be taken on the server.
-    etag: Optional. If provided, the MessageBus will only be deleted if the
-      etag matches the current etag on the resource.
+    allowMissing: Optional. If set to true, and the GoogleApiSource is not
+      found, the request will succeed but no action will be taken on the
+      server.
+    etag: Optional. If provided, the GoogleApiSource will only be deleted if
+      the etag matches the current etag on the resource.
     name: Required. The name of the GoogleApiSource to be deleted.
     validateOnly: Optional. If set, validate the request and preview the
       review, but do not post it.

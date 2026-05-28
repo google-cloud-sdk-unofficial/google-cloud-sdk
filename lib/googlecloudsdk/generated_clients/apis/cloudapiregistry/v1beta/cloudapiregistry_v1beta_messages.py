@@ -25,9 +25,8 @@ class CloudapiregistryProjectsLocationsListRequest(_messages.Message):
   r"""A CloudapiregistryProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -129,33 +128,48 @@ class ListLocationsResponse(_messages.Message):
 
 
 class ListMcpServersResponse(_messages.Message):
-  r"""Message for response to listing McpServers
+  r"""Deprecated: This resource is no longer supported as ListMcpServers
+  method is deprecated and will be removed in a future release. Use
+  AgentRegistry. ListMcpServers instead. Note: AgentRegistry only lists MCP
+  servers for service APIs that are enabled in a project. For more
+  information, see: https://docs.cloud.google.com/agent-registry/reference/rpc
+  Message for response to listing McpServers
 
   Fields:
+    deprecationWarning: Deprecation warning message.
     mcpServers: The list of McpServer
     nextPageToken: A token identifying a page of results the server should
       return.
     unreachable: Unordered list. Locations that could not be reached.
   """
 
-  mcpServers = _messages.MessageField('McpServer', 1, repeated=True)
-  nextPageToken = _messages.StringField(2)
-  unreachable = _messages.StringField(3, repeated=True)
+  deprecationWarning = _messages.StringField(1)
+  mcpServers = _messages.MessageField('McpServer', 2, repeated=True)
+  nextPageToken = _messages.StringField(3)
+  unreachable = _messages.StringField(4, repeated=True)
 
 
 class ListMcpToolsResponse(_messages.Message):
-  r"""Message for response to listing McpTools
+  r"""Deprecated: This resource is no longer supported as ListMcpTools method
+  is deprecated and will be removed in a future release. For similar
+  functionality, you can use Agent Registry. Note: Agent Registry does not
+  treat tools as a separate collection. To view the tools exposed by an MCP
+  server, use the ListMcpServers or GetMcpServer methods in the Agent Registry
+  API. For more information, see: https://docs.cloud.google.com/agent-
+  registry/reference/rpc Message for response to listing McpTools
 
   Fields:
+    deprecationWarning: Deprecation warning message.
     mcpTools: The list of McpTool
     nextPageToken: A token identifying a page of results the server should
       return.
     unreachable: Unordered list. Locations that could not be reached.
   """
 
-  mcpTools = _messages.MessageField('McpTool', 1, repeated=True)
-  nextPageToken = _messages.StringField(2)
-  unreachable = _messages.StringField(3, repeated=True)
+  deprecationWarning = _messages.StringField(1)
+  mcpTools = _messages.MessageField('McpTool', 2, repeated=True)
+  nextPageToken = _messages.StringField(3)
+  unreachable = _messages.StringField(4, repeated=True)
 
 
 class Location(_messages.Message):
@@ -239,8 +253,12 @@ class Location(_messages.Message):
 
 
 class McpServer(_messages.Message):
-  r"""Represents an MCP Server. MCP Servers act as endpoints that expose a
-  collection of tools that can be invoked by agents.
+  r"""Deprecated: This resource is no longer supported as GetMcpServer method
+  is deprecated and will be removed in a future release. Use
+  AgentRegistry.GetMcpServer instead. For more information, see:
+  https://docs.cloud.google.com/agent-registry/reference/rpc. Represents an
+  MCP Server. MCP Servers act as endpoints that expose a collection of tools
+  that can be invoked by agents.
 
   Enums:
     StateValueValuesEnum: Output only. The state of the MCP Server.
@@ -256,6 +274,7 @@ class McpServer(_messages.Message):
       capabilities defined in https://modelcontextprotocol.io/specification/20
       25-06-18/schema#servercapabilities and additional capabilities defined
       by the servers.
+    deprecationWarning: Output only. Deprecation warning message.
     description: Optional. A human-readable description of the MCP Server's
       functionality.
     displayName: Optional. A human readable name for the MCP server.
@@ -310,15 +329,22 @@ class McpServer(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   capabilities = _messages.MessageField('CapabilitiesValue', 1)
-  description = _messages.StringField(2)
-  displayName = _messages.StringField(3)
-  name = _messages.StringField(4)
-  state = _messages.EnumField('StateValueValuesEnum', 5)
-  urls = _messages.StringField(6, repeated=True)
+  deprecationWarning = _messages.StringField(2)
+  description = _messages.StringField(3)
+  displayName = _messages.StringField(4)
+  name = _messages.StringField(5)
+  state = _messages.EnumField('StateValueValuesEnum', 6)
+  urls = _messages.StringField(7, repeated=True)
 
 
 class McpTool(_messages.Message):
-  r"""Message describing McpTool object
+  r"""Deprecated: This resource is no longer supported as GetMcpTool method is
+  deprecated and will be removed in a future release. For similar
+  functionality, you can use Agent Registry. Note: Agent Registry does not
+  treat tools as a separate collection. To view the tools exposed by an MCP
+  server, use the ListMcpServers or GetMcpServer methods in the Agent Registry
+  API. For more information, see: https://docs.cloud.google.com/agent-
+  registry/reference/rpc. Message describing McpTool object
 
   Messages:
     AnnotationsValue: Optional key-value object that allows developers to
@@ -355,6 +381,7 @@ class McpTool(_messages.Message):
       arguments has no additional effect (only meaningful when readOnlyHint is
       false). - openWorldHint: If true, the tool may interact with an "open
       world" of external entities.
+    deprecationWarning: Output only. Deprecation warning message.
     description: A human-readable description of the tool's functionality.
     displayName: Optional. A human-readable name for the tool, suitable for
       display.
@@ -462,12 +489,13 @@ class McpTool(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   annotations = _messages.MessageField('AnnotationsValue', 1)
-  description = _messages.StringField(2)
-  displayName = _messages.StringField(3)
-  inputSchema = _messages.MessageField('InputSchemaValue', 4)
-  mcpServerUrls = _messages.StringField(5, repeated=True)
-  name = _messages.StringField(6)
-  outputSchema = _messages.MessageField('OutputSchemaValue', 7)
+  deprecationWarning = _messages.StringField(2)
+  description = _messages.StringField(3)
+  displayName = _messages.StringField(4)
+  inputSchema = _messages.MessageField('InputSchemaValue', 5)
+  mcpServerUrls = _messages.StringField(6, repeated=True)
+  name = _messages.StringField(7)
+  outputSchema = _messages.MessageField('OutputSchemaValue', 8)
 
 
 class StandardQueryParameters(_messages.Message):

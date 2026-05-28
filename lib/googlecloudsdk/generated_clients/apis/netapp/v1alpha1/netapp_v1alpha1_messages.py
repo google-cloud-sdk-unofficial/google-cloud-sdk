@@ -167,9 +167,9 @@ class Backup(_messages.Message):
       snapshot. If not specified, there will be a new snapshot taken to
       initiate the backup creation. Format: `projects/{project_id}/locations/{
       location}/volumes/{volume_id}/snapshots/{snapshot_id}`
-    sourceVolume: Volume full name of this backup belongs to. Either
-      source_volume or ontap_source should be provided. Format:
-      `projects/{projects_id}/locations/{location}/volumes/{volume_id}`
+    sourceVolume: The resource name of the volume that this backup belongs to.
+      You must provide either `source_volume` or `ontap_source`. Format:
+      `projects/{project_id}/locations/{location}/volumes/{volume_id}`
     state: Output only. The backup state.
     volumeRegion: Output only. Region of the volume from which the backup was
       created. Format: `projects/{project_id}/locations/{location}`
@@ -767,6 +767,10 @@ class CancelOperationRequest(_messages.Message):
 class CloneDetails(_messages.Message):
   r"""Details about a clone volume.
 
+  Enums:
+    SplitStateValueValuesEnum: Output only. The current state of the clone
+      split operation.
+
   Fields:
     sharedSpaceGib: Output only. Shared space in GiB. Determined at volume
       creation time based on size of source snapshot.
@@ -775,11 +779,29 @@ class CloneDetails(_messages.Message):
       ject}/locations/{location}/volumes/{volume}/snapshots/{snapshot}
     sourceVolume: Output only. Full name of the source volume resource.
       Format: projects/{project}/locations/{location}/volumes/{volume}
+    splitState: Output only. The current state of the clone split operation.
   """
+
+  class SplitStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current state of the clone split operation.
+
+    Values:
+      SPLIT_STATE_UNSPECIFIED: State is not specified.
+      SPLIT_STATE_NOT_SPLITTING: The volume is a thin clone, sharing blocks
+        with its source.
+      SPLIT_STATE_IN_PROGRESS: A split operation is currently active and in
+        progress.
+      SPLIT_STATE_FAILED: The attempt to split the volume failed.
+    """
+    SPLIT_STATE_UNSPECIFIED = 0
+    SPLIT_STATE_NOT_SPLITTING = 1
+    SPLIT_STATE_IN_PROGRESS = 2
+    SPLIT_STATE_FAILED = 3
 
   sharedSpaceGib = _messages.IntegerField(1)
   sourceSnapshot = _messages.StringField(2)
   sourceVolume = _messages.StringField(3)
+  splitState = _messages.EnumField('SplitStateValueValuesEnum', 4)
 
 
 class DailySchedule(_messages.Message):
@@ -856,7 +878,7 @@ class EstablishVolumePeeringRequest(_messages.Message):
   Fields:
     peerClusterName: Required. Name of the user's local source cluster to be
       peered with the destination cluster.
-    peerIpAddresses: Optional. List of IPv4 ip addresses to be used for
+    peerIpAddresses: Optional. List of IPv4 IP addresses to be used for
       peering.
     peerSvmName: Required. Name of the user's local source vserver svm to be
       peered with the destination vserver svm.
@@ -1400,7 +1422,7 @@ class KmsConfig(_messages.Message):
     instructions: Output only. Instructions to provide the access to the
       customer provided encryption key.
     labels: Labels as key value pairs
-    name: Identifier. Name of the KmsConfig. Format:
+    name: Identifier. Name of the `KmsConfig`. Format:
       `projects/{project}/locations/{location}/kmsConfigs/{kms_config}`
     primaryCryptoKeyVersion: Output only. Active key version corresponding to
       the crypto key name. Format: projects/{project}/locations/{location}/key
@@ -1483,7 +1505,7 @@ class KmsConfig(_messages.Message):
 
 class LargeCapacityConfig(_messages.Message):
   r"""Configuration for a Large Capacity Volume. A Large Capacity Volume
-  supports sizes ranging from 4.8 TiB to 20 PiB, it is composed of multiple
+  supports sizes ranging from 4.8 TiB to 20 PiB; it is composed of multiple
   internal constituents, and must be created in a large capacity pool.
 
   Fields:
@@ -2387,7 +2409,7 @@ class NetappProjectsLocationsKmsConfigsPatchRequest(_messages.Message):
 
   Fields:
     kmsConfig: A KmsConfig resource to be passed as the request body.
-    name: Identifier. Name of the KmsConfig. Format:
+    name: Identifier. Name of the `KmsConfig`. Format:
       `projects/{project}/locations/{location}/kmsConfigs/{kms_config}`
     updateMask: Required. Field mask is used to specify the fields to be
       overwritten in the KmsConfig resource by the update. The fields
@@ -2629,9 +2651,9 @@ class NetappProjectsLocationsStoragePoolsOntapExecuteOntapPostRequest(_messages.
   Fields:
     executeOntapPostRequest: A ExecuteOntapPostRequest resource to be passed
       as the request body.
-    ontapPath: Required. The resource path of the ONTAP resource. Format: `pro
-      jects/{project_number}/locations/{location_id}/storagePools/{storage_poo
-      l_id}/ontap/{ontap_resource_path}`. For example:
+    ontapPath: Required. The path of the ONTAP resource. Format: `projects/{pr
+      oject_number}/locations/{location_id}/storagePools/{storage_pool_id}/ont
+      ap/{ontap_resource_path}`. For example:
       `projects/123456789/locations/us-central1/storagePools/my-storage-
       pool/ontap/api/storage/volumes`.
   """
@@ -2764,6 +2786,17 @@ class NetappProjectsLocationsVolumesGetRequest(_messages.Message):
 
   Fields:
     name: Required. Name of the volume
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetappProjectsLocationsVolumesGetSplitStatusRequest(_messages.Message):
+  r"""A NetappProjectsLocationsVolumesGetSplitStatusRequest object.
+
+  Fields:
+    name: Required. The full name of the volume. Format:
+      projects/{project_number}/locations/{location}/volumes/{volume_id}
   """
 
   name = _messages.StringField(1, required=True)
@@ -3146,6 +3179,21 @@ class NetappProjectsLocationsVolumesSnapshotsPatchRequest(_messages.Message):
   name = _messages.StringField(1, required=True)
   snapshot = _messages.MessageField('Snapshot', 2)
   updateMask = _messages.StringField(3)
+
+
+class NetappProjectsLocationsVolumesStartSplitRequest(_messages.Message):
+  r"""A NetappProjectsLocationsVolumesStartSplitRequest object.
+
+  Fields:
+    name: Required. The full name of the clone volume to be split from its
+      source. Format:
+      projects/{project_number}/locations/{location}/volumes/{volume_id}
+    startSplitRequest: A StartSplitRequest resource to be passed as the
+      request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  startSplitRequest = _messages.MessageField('StartSplitRequest', 2)
 
 
 class OntapSource(_messages.Message):
@@ -3626,9 +3674,9 @@ class RestoreParameters(_messages.Message):
   Fields:
     sourceBackup: Full name of the backup resource. Format for standard
       backup: projects/{project}/locations/{location}/backupVaults/{backup_vau
-      lt_id}/backups/{backup_id} Format for BackupDR backup: projects/{project
-      }/locations/{location}/backupVaults/{backup_vault}/dataSources/{data_sou
-      rce}/backups/{backup}
+      lt_id}/backups/{backup_id}. Format for BackupDR backup: projects/{projec
+      t}/locations/{location}/backupVaults/{backup_vault}/dataSources/{data_so
+      urce}/backups/{backup}
     sourceBackupdrBackup: Deprecated: Please use the `source_backup` field
       instead.
     sourceSnapshot: Full name of the snapshot resource. Format: projects/{proj
@@ -3863,6 +3911,44 @@ class SnapshotPolicy(_messages.Message):
   weeklySchedule = _messages.MessageField('WeeklySchedule', 5)
 
 
+class SplitStatus(_messages.Message):
+  r"""Message for SplitStatus.
+
+  Enums:
+    SplitStateValueValuesEnum: Output only. The current state of the clone
+      split operation.
+
+  Fields:
+    progressPercent: Output only. The estimated progress percentage of the
+      split operation (0-100). This is meaningful primarily when split_state
+      is IN_PROGRESS.
+    splitState: Output only. The current state of the clone split operation.
+    stateDetails: Output only. Human-readable details about the current state.
+      Mostly used for displaying error messages during split failure Examples:
+      "Split in progress", "Error: insufficient capacity".
+  """
+
+  class SplitStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current state of the clone split operation.
+
+    Values:
+      SPLIT_STATE_UNSPECIFIED: State is not specified.
+      SPLIT_STATE_NOT_SPLITTING: The volume is a thin clone, sharing blocks
+        with its source.
+      SPLIT_STATE_IN_PROGRESS: A split operation is currently active and in
+        progress.
+      SPLIT_STATE_FAILED: The attempt to split the volume failed.
+    """
+    SPLIT_STATE_UNSPECIFIED = 0
+    SPLIT_STATE_NOT_SPLITTING = 1
+    SPLIT_STATE_IN_PROGRESS = 2
+    SPLIT_STATE_FAILED = 3
+
+  progressPercent = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  splitState = _messages.EnumField('SplitStateValueValuesEnum', 2)
+  stateDetails = _messages.StringField(3)
+
+
 class StandardQueryParameters(_messages.Message):
   r"""Query parameters accepted by all methods.
 
@@ -3924,6 +4010,10 @@ class StandardQueryParameters(_messages.Message):
   trace = _messages.StringField(10)
   uploadType = _messages.StringField(11)
   upload_protocol = _messages.StringField(12)
+
+
+class StartSplitRequest(_messages.Message):
+  r"""Request message for splitting a volume."""
 
 
 class Status(_messages.Message):
@@ -4000,7 +4090,7 @@ class StoragePool(_messages.Message):
     EncryptionTypeValueValuesEnum: Output only. Specifies the current pool
       encryption key source.
     ModeValueValuesEnum: Optional. Mode of the storage pool. This field is
-      used to control whether the user can perform the ONTAP operations on the
+      used to control whether the user can perform ONTAP operations on the
       storage pool using the GCNV ONTAP Mode APIs. If not specified during
       creation, it defaults to `DEFAULT`.
     QosTypeValueValuesEnum: Optional. QoS (Quality of Service) Type of the
@@ -4055,9 +4145,9 @@ class StoragePool(_messages.Message):
     ldapEnabled: Optional. Flag indicating if the pool is NFS LDAP enabled or
       not.
     mode: Optional. Mode of the storage pool. This field is used to control
-      whether the user can perform the ONTAP operations on the storage pool
-      using the GCNV ONTAP Mode APIs. If not specified during creation, it
-      defaults to `DEFAULT`.
+      whether the user can perform ONTAP operations on the storage pool using
+      the GCNV ONTAP Mode APIs. If not specified during creation, it defaults
+      to `DEFAULT`.
     name: Identifier. Name of the storage pool
     network: Required. VPC Network name. Format:
       projects/{project}/global/networks/{network}
@@ -4106,9 +4196,9 @@ class StoragePool(_messages.Message):
 
   class ModeValueValuesEnum(_messages.Enum):
     r"""Optional. Mode of the storage pool. This field is used to control
-    whether the user can perform the ONTAP operations on the storage pool
-    using the GCNV ONTAP Mode APIs. If not specified during creation, it
-    defaults to `DEFAULT`.
+    whether the user can perform ONTAP operations on the storage pool using
+    the GCNV ONTAP Mode APIs. If not specified during creation, it defaults to
+    `DEFAULT`.
 
     Values:
       MODE_UNSPECIFIED: The `Mode` is not specified.

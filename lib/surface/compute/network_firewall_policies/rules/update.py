@@ -35,7 +35,7 @@ class Update(base.UpdateCommand):
 
   NETWORK_FIREWALL_POLICY_ARG = None
   support_network_scopes = False
-  support_target_type = False
+  support_target_type = True
   support_network_context = True
 
   @classmethod

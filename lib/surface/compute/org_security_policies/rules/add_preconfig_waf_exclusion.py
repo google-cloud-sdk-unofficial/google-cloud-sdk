@@ -61,7 +61,7 @@ class AddPreconfigWafExclusionHelper(object):
   """
 
   @classmethod
-  def Args(cls, parser):
+  def Args(cls, parser, support_request_body_to_exclude=False):
     """Generates the flagset for an AddPreconfigWafExclusion command."""
     flags.AddOrganization(parser, required=False)
     cls.ORG_SECURITY_POLICY_ARG = flags.OrgSecurityPolicyRuleArgument(
@@ -75,6 +75,8 @@ class AddPreconfigWafExclusionHelper(object):
     rule_flags.AddRequestCookie(parser=parser, is_add=True)
     rule_flags.AddRequestQueryParam(parser=parser, is_add=True)
     rule_flags.AddRequestUri(parser=parser, is_add=True)
+    if support_request_body_to_exclude:
+      rule_flags.AddRequestBody(parser=parser, is_add=True)
 
   @classmethod
   def _IsIdenticalTarget(cls,
@@ -122,7 +124,8 @@ class AddPreconfigWafExclusionHelper(object):
                        request_headers=None,
                        request_cookies=None,
                        request_query_params=None,
-                       request_uris=None):
+                       request_uris=None,
+                       request_bodies=None):
     """Updates Exclusion."""
     for request_header in request_headers or []:
       cls._AddRequestField(compute_client,
@@ -139,6 +142,11 @@ class AddPreconfigWafExclusionHelper(object):
     for request_uri in request_uris or []:
       cls._AddRequestField(compute_client,
                            existing_exclusion.requestUrisToExclude, request_uri)
+    if request_bodies:
+      for request_body in request_bodies:
+        cls._AddRequestField(compute_client,
+                             existing_exclusion.requestBodiesToExclude,
+                             request_body)
 
   @classmethod
   def _CreateExclusion(cls,
@@ -148,7 +156,8 @@ class AddPreconfigWafExclusionHelper(object):
                        request_headers=None,
                        request_cookies=None,
                        request_query_params=None,
-                       request_uris=None):
+                       request_uris=None,
+                       request_bodies=None):
     """Creates Exclusion."""
     new_exclusion = (
         compute_client.messages
@@ -157,7 +166,8 @@ class AddPreconfigWafExclusionHelper(object):
     for target_rule_id in target_rule_ids or []:
       new_exclusion.targetRuleIds.append(target_rule_id)
     cls._UpdateExclusion(compute_client, new_exclusion, request_headers,
-                         request_cookies, request_query_params, request_uris)
+                         request_cookies, request_query_params, request_uris,
+                         request_bodies)
     return new_exclusion
 
   @classmethod
@@ -170,43 +180,67 @@ class AddPreconfigWafExclusionHelper(object):
       new_preconfig_waf_config = (
           compute_client.messages.SecurityPolicyRulePreconfiguredWafConfig())
 
+    request_bodies = getattr(args, 'request_body_to_exclude', [])
     for exclusion in new_preconfig_waf_config.exclusions:
       if cls._IsIdenticalTarget(exclusion, args.target_rule_set,
                                 args.target_rule_ids or []):
-        cls._UpdateExclusion(compute_client, exclusion,
-                             args.request_header_to_exclude,
-                             args.request_cookie_to_exclude,
-                             args.request_query_param_to_exclude,
-                             args.request_uri_to_exclude)
+        cls._UpdateExclusion(
+            compute_client,
+            exclusion,
+            args.request_header_to_exclude,
+            args.request_cookie_to_exclude,
+            args.request_query_param_to_exclude,
+            args.request_uri_to_exclude,
+            request_bodies,
+        )
         return new_preconfig_waf_config
 
-    new_exclusion = cls._CreateExclusion(compute_client, args.target_rule_set,
-                                         args.target_rule_ids,
-                                         args.request_header_to_exclude,
-                                         args.request_cookie_to_exclude,
-                                         args.request_query_param_to_exclude,
-                                         args.request_uri_to_exclude)
+    new_exclusion = cls._CreateExclusion(
+        compute_client,
+        args.target_rule_set,
+        args.target_rule_ids,
+        args.request_header_to_exclude,
+        args.request_cookie_to_exclude,
+        args.request_query_param_to_exclude,
+        args.request_uri_to_exclude,
+        request_bodies,
+    )
     new_preconfig_waf_config.exclusions.append(new_exclusion)
     return new_preconfig_waf_config
 
   @classmethod
   def Run(cls, release_track, args):
     """Validates arguments and patches a security policy rule."""
-    if not (args.IsSpecified('request_header_to_exclude') or
-            args.IsSpecified('request_cookie_to_exclude') or
-            args.IsSpecified('request_query_param_to_exclude') or
-            args.IsSpecified('request_uri_to_exclude')):
+    support_request_body = release_track in [
+        base.ReleaseTrack.ALPHA,
+        base.ReleaseTrack.BETA,
+    ]
+    if not (
+        args.IsSpecified('request_header_to_exclude')
+        or args.IsSpecified('request_cookie_to_exclude')
+        or args.IsSpecified('request_query_param_to_exclude')
+        or args.IsSpecified('request_uri_to_exclude')
+        or (
+            support_request_body and args.IsSpecified('request_body_to_exclude')
+        )
+    ):
       request_field_names = [
-          '--request-header-to-exclude', '--request-cookie-to-exclude',
-          '--request-query-param-to-exclude', '--request-uri-to-exclude'
+          '--request-header-to-exclude',
+          '--request-cookie-to-exclude',
+          '--request-query-param-to-exclude',
+          '--request-uri-to-exclude',
       ]
+      if support_request_body:
+        request_field_names.append('--request-body-to-exclude')
       raise exceptions.MinimumArgumentException(
           request_field_names, 'At least one request field must be specified.')
 
     for request_fields in [
-        args.request_header_to_exclude or [], args.request_cookie_to_exclude or
-        [], args.request_query_param_to_exclude or [],
-        args.request_uri_to_exclude or []
+        args.request_header_to_exclude or [],
+        args.request_cookie_to_exclude or [],
+        args.request_query_param_to_exclude or [],
+        args.request_uri_to_exclude or [],
+        getattr(args, 'request_body_to_exclude', []) or [],
     ]:
       for request_field in request_fields:
         op = request_field.get('op') or ''
@@ -257,10 +291,8 @@ class AddPreconfigWafExclusionHelper(object):
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(
-    base.ReleaseTrack.BETA, base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW
-)
-class AddPreconfigWafExclusionBeta(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
+class AddPreconfigWafExclusion(base.UpdateCommand):
   r"""Add an exclusion configuration for preconfigured WAF evaluation into a security policy rule.
 
   *{command}* is used to add an exclusion configuration for preconfigured WAF
@@ -310,6 +342,50 @@ class AddPreconfigWafExclusionBeta(base.UpdateCommand):
 
 
 @base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class AddPreconfigWafExclusionBeta(AddPreconfigWafExclusion):
+  r"""Add an exclusion configuration for preconfigured WAF evaluation into a security policy rule.
+
+  *{command}* is used to add an exclusion configuration for preconfigured WAF
+  evaluation into a security policy rule.
+
+  Note that request field exclusions are associated with a target, which can be
+  a single rule set, or a rule set plus a list of rule IDs under the rule set.
+
+  ## EXAMPLES
+
+  To add specific request field exclusions that are associated with the target
+  of 'sqli-stable': ['owasp-crs-v030001-id942110-sqli',
+  'owasp-crs-v030001-id942120-sqli'], run:
+
+    $ {command} 1000 \
+       --security-policy=1234567890 \
+       --target-rule-set=sqli-stable \
+       --target-rule-ids='owasp-crs-v030001-id942110-sqli','owasp-crs-v030001-id942120-sqli'
+       \
+       --request-header-to-exclude='op=EQUALS,val=abc' \
+       --request-header-to-exclude='op=STARTS_WITH,val=xyz' \
+       --request-uri-to-exclude='op=EQUALS_ANY' \
+       --request-body-to-exclude='op=CONTAINS,val=bad_data'
+
+  To add specific request field exclusions that are associated with the target
+  of 'sqli-stable': [], run:
+
+    $ {command} 1000 \
+       --security-policy=1234567890 \
+       --target-rule-set=sqli-stable \
+       --request-cookie-to-exclude='op=EQUALS_ANY'
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    AddPreconfigWafExclusionHelper.Args(
+        parser,
+        support_request_body_to_exclude=True,
+    )
+
+
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AddPreconfigWafExclusionAlpha(AddPreconfigWafExclusionBeta):
   r"""Add an exclusion configuration for preconfigured WAF evaluation into a security policy rule.
@@ -333,7 +409,8 @@ class AddPreconfigWafExclusionAlpha(AddPreconfigWafExclusionBeta):
        \
        --request-header-to-exclude='op=EQUALS,val=abc' \
        --request-header-to-exclude='op=STARTS_WITH,val=xyz' \
-       --request-uri-to-exclude='op=EQUALS_ANY'
+       --request-uri-to-exclude='op=EQUALS_ANY' \
+       --request-body-to-exclude='op=CONTAINS,val=bad_data'
 
   To add specific request field exclusions that are associated with the target
   of 'sqli-stable': [], run:

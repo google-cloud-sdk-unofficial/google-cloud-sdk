@@ -28,7 +28,6 @@ from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import yaml
 from googlecloudsdk.core.console import console_io
-import six
 
 
 # TODO(b/468375060) : Add beta track to alpha class and delete this beta class.
@@ -97,7 +96,7 @@ class Enable(features_base.EnableCommand,
       try:
         return self.Update(['fleet_default_member_config'], feature)
       except exceptions.Error as e:
-        if six.text_type(e) != six.text_type(self.FeatureNotEnabledError()):
+        if str(e) != str(self.FeatureNotEnabledError()):
           raise
     return self.Enable(feature)
 
@@ -201,7 +200,7 @@ class EnableAlpha(features_base.EnableCommand,
           self.Update(['fleet_default_member_config'], feature)
           return
         except exceptions.Error as e:
-          if six.text_type(e) != six.text_type(self.FeatureNotEnabledError()):
+          if str(e) != str(self.FeatureNotEnabledError()):
             raise
     self.Enable(
         feature,

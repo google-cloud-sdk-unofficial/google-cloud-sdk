@@ -29,7 +29,6 @@ from googlecloudsdk.command_lib.functions import util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
-import six
 
 _DEFAULT_TABLE_FORMAT = 'table(level,name,execution_id,time_utc,log)'
 
@@ -150,7 +149,7 @@ def _YieldLogEntries(entries):
         message = props[0].string_value
     row = {'log': message}
     if entry.severity:
-      severity = six.text_type(entry.severity)
+      severity = str(entry.severity)
       if severity in flags.SEVERITIES:
         # Use short form (first letter) for expected severities.
         row['level'] = severity[0]

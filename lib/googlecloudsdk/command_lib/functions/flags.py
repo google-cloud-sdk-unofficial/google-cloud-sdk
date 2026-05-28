@@ -1193,12 +1193,8 @@ def AddConcurrencyFlag(parser):
 
 def AddUpgradeFlags(parser, release_track=base.ReleaseTrack.GA):
   """Adds upgrade related function flags."""
-  if release_track == base.ReleaseTrack.ALPHA:
-    description = 'Upgrade a 1st gen Cloud Function to a Cloud Run Function.'
-    commit_flag_help = '- `--commit` and optionally `--skip-detach`'
-  else:
-    description = 'Upgrade a 1st gen Cloud Function to the 2nd gen environment.'
-    commit_flag_help = '- `--commit`'
+  description = 'Upgrade a 1st gen Cloud Function to a Cloud Run Function.'
+  commit_flag_help = '- `--commit` and optionally `--skip-detach`'
 
   upgrade_group = parser.add_group(
       mutex=True,
@@ -1224,8 +1220,7 @@ def AddUpgradeFlags(parser, release_track=base.ReleaseTrack.GA):
   )
   AddTriggerServiceAccountFlag(setup_config_group)
   if release_track in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
-    hidden = release_track == base.ReleaseTrack.BETA
-    AddRuntimeFlag(setup_config_group, hidden=hidden)
+    AddRuntimeFlag(setup_config_group)
     setup_config_group.add_argument(
         '--max-instances',
         type=arg_parsers.BoundedInt(lower_bound=1),
@@ -1233,7 +1228,6 @@ def AddUpgradeFlags(parser, release_track=base.ReleaseTrack.GA):
           Sets the maximum number of instances for the function. A function
           execution that would exceed max-instances times out.
         """,
-        hidden=hidden,
     )
 
   upgrade_group.add_argument(
@@ -1259,17 +1253,17 @@ def AddUpgradeFlags(parser, release_track=base.ReleaseTrack.GA):
           ' 1st gen copy of the function.'
       ),
   )
-  if release_track == base.ReleaseTrack.ALPHA:
+  if release_track in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
     commit_group.add_argument(
         '--skip-detach',
         action='store_true',
-        hidden=True,
+        hidden=False,
         help=(
             'The function will not be detached when committing the upgrade to'
-            ' allow continued use of the Cloud Functions v2 API. You can'
-            ' detach the function to Cloud Run afterward'
+            ' allow continued use of the Cloud Functions v2 API. You can detach'
+            ' the function to Cloud Run afterward'
             ' https://docs.cloud.google.com/run/docs/functions/comparison#detach_your_function.'
-            ' This flag is only valid when used with --commit flag.'
+            ' This flag is only valid when used with the --commit flag.'
         ),
     )
 

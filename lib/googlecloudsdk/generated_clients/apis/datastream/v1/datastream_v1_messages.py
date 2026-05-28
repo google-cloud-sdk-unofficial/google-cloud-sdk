@@ -57,6 +57,7 @@ class BackfillJob(_messages.Message):
 
   Fields:
     errors: Output only. Errors which caused the backfill job to fail.
+    eventFilter: Output only. The filter for performing a partial backfill.
     lastEndTime: Output only. Backfill job's end time.
     lastStartTime: Output only. Backfill job's start time.
     state: Output only. Backfill job state.
@@ -103,10 +104,11 @@ class BackfillJob(_messages.Message):
     MANUAL = 2
 
   errors = _messages.MessageField('Error', 1, repeated=True)
-  lastEndTime = _messages.StringField(2)
-  lastStartTime = _messages.StringField(3)
-  state = _messages.EnumField('StateValueValuesEnum', 4)
-  trigger = _messages.EnumField('TriggerValueValuesEnum', 5)
+  eventFilter = _messages.MessageField('EventFilter', 2)
+  lastEndTime = _messages.StringField(3)
+  lastStartTime = _messages.StringField(4)
+  state = _messages.EnumField('StateValueValuesEnum', 5)
+  trigger = _messages.EnumField('TriggerValueValuesEnum', 6)
 
 
 class BackfillNoneStrategy(_messages.Message):
@@ -550,9 +552,8 @@ class DatastreamProjectsLocationsListRequest(_messages.Message):
   r"""A DatastreamProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -2884,7 +2885,7 @@ class QuotaFailureViolation(_messages.Message):
 
   Fields:
     apiService: The API Service from which the `QuotaFailure.Violation`
-      orginates. In some cases, Quota issues originate from an API Service
+      originates. In some cases, Quota issues originate from an API Service
       other than the one that was called. In other words, a dependency of the
       called API Service could be the cause of the `QuotaFailure`, and this
       field would have the dependency API service name. For example, if the
@@ -3309,6 +3310,18 @@ class SourceObjectIdentifier(_messages.Message):
   sqlServerIdentifier = _messages.MessageField('SqlServerObjectIdentifier', 7)
 
 
+class SpannerChangeStreamPosition(_messages.Message):
+  r"""Represents a position in a Spanner change stream from which to start
+  replicating.
+
+  Fields:
+    startTime: Required. The timestamp to start change stream queries from.
+      The timestamp must be a positive value.
+  """
+
+  startTime = _messages.StringField(1)
+
+
 class SpannerColumn(_messages.Message):
   r"""Spanner column.
 
@@ -3446,6 +3459,8 @@ class SpecificStartPosition(_messages.Message):
     mysqlGtidPosition: MySQL GTID set to start replicating from.
     mysqlLogPosition: MySQL specific log position to start replicating from.
     oracleScnPosition: Oracle SCN to start replicating from.
+    spannerChangeStreamPosition: Optional. Spanner change stream position to
+      start replicating from.
     sqlServerLsnPosition: SqlServer LSN to start replicating from.
   """
 
@@ -3453,7 +3468,8 @@ class SpecificStartPosition(_messages.Message):
   mysqlGtidPosition = _messages.MessageField('MysqlGtidPosition', 2)
   mysqlLogPosition = _messages.MessageField('MysqlLogPosition', 3)
   oracleScnPosition = _messages.MessageField('OracleScnPosition', 4)
-  sqlServerLsnPosition = _messages.MessageField('SqlServerLsnPosition', 5)
+  spannerChangeStreamPosition = _messages.MessageField('SpannerChangeStreamPosition', 5)
+  sqlServerLsnPosition = _messages.MessageField('SqlServerLsnPosition', 6)
 
 
 class SqlServerChangeTables(_messages.Message):
@@ -3696,7 +3712,7 @@ class StartBackfillJobRequest(_messages.Message):
   Fields:
     eventFilter: Optional. Optional event filter. If not set, or empty, the
       backfill will be performed on the entire object. This is currently used
-      for partial backfill and only supported for SQL Server sources.
+      for partial backfill and only supported for SQL sources.
   """
 
   eventFilter = _messages.MessageField('EventFilter', 1)

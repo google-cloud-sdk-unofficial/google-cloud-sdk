@@ -65,3 +65,23 @@ class LocationsClient(object):
     describe_req = self.messages.DesigncenterProjectsLocationsGetRequest(
         name=location)
     return self._lo_client.Get(describe_req)
+
+  def FetchFrameworks(self, parent, projects=None):
+    """Fetch frameworks available for assessment.
+
+    Args:
+      parent: str, the location in which frameworks are being fetched.
+        projects/{projectId}/locations/{location}
+      projects: list[str], the projects to fetch frameworks for.
+
+    Returns:
+      FetchFrameworksResponse message.
+    """
+    request = self.messages.DesigncenterProjectsLocationsFetchFrameworksRequest(
+        parent=parent)
+    if projects:
+      request.projects = [
+          p if p.startswith('projects/') else f'projects/{p}'
+          for p in projects
+      ]
+    return self._lo_client.FetchFrameworks(request)

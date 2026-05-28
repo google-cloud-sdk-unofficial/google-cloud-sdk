@@ -37,7 +37,6 @@ from googlecloudsdk.core import yaml
 from googlecloudsdk.core.updater import update_manager
 from googlecloudsdk.core.util import files as file_utils
 import portpicker
-import six
 
 
 class RuntimeMissingDependencyError(exceptions.Error):
@@ -176,13 +175,14 @@ class Dev(base.Command):
     settings = local.AssembleSettings(args, self.ReleaseTrack())
     local_file_generator = local_files.LocalRuntimeFiles(settings)
 
-    kubernetes_config = six.ensure_text(local_file_generator.KubernetesConfig())
+    kubernetes_config = local_file_generator.KubernetesConfig()
     namespace = getattr(args, 'namespace', None)
 
     _EnsureDockerRunning()
     with _DeployTempFile(kubernetes_config) as kubernetes_file:
-      skaffold_config = six.ensure_text(
-          local_file_generator.SkaffoldConfig(kubernetes_file.name))
+      skaffold_config = local_file_generator.SkaffoldConfig(
+          kubernetes_file.name
+      )
       skaffold_event_port = (
           args.skaffold_events_port or portpicker.pick_unused_port())
       with _SkaffoldTempFile(skaffold_config) as skaffold_file, \
@@ -201,12 +201,13 @@ class Dev(base.Command):
     cloud.ValidateSettings(settings)
     cloudrun.PromptToOverwriteCloud(args, settings, self.ReleaseTrack())
     cloud_file_generator = cloud_files.CloudRuntimeFiles(settings)
-    kubernetes_config = six.ensure_text(cloud_file_generator.KubernetesConfig())
+    kubernetes_config = cloud_file_generator.KubernetesConfig()
     if settings.ar_repo:
       artifact_registry.CreateIfNeeded(settings.ar_repo)
     with _DeployTempFile(kubernetes_config) as kubernetes_file:
-      skaffold_config = six.ensure_text(
-          cloud_file_generator.SkaffoldConfig(kubernetes_file.name))
+      skaffold_config = cloud_file_generator.SkaffoldConfig(
+          kubernetes_file.name
+      )
       skaffold_event_port = (
           args.skaffold_events_port or portpicker.pick_unused_port())
       with _SkaffoldTempFile(skaffold_config) as skaffold_file, \

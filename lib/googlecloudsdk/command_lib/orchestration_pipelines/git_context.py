@@ -14,6 +14,9 @@
 # limitations under the License.
 """Git context management for orchestration pipelines."""
 
+from __future__ import annotations
+
+from collections.abc import Callable
 import hashlib
 import pathlib
 import subprocess
@@ -32,18 +35,25 @@ class GitError(exceptions.Error):
 class SafeCommitSha:
   """A helper class to represent a commit SHA that might be dirty."""
 
-  def __init__(self, git_context_provider):
+  def __init__(
+      self,
+      git_context_provider: Callable[[], GitContext],
+      enforce_clean: bool,
+  ):
     self._git_context_provider = git_context_provider
     self._git_context = None
+    self._enforce_clean = enforce_clean
 
   @staticmethod
-  def CreateLazy(bundle_path=None, is_local=False):
+  def CreateLazy(
+      enforce_clean: bool,
+      bundle_path: pathlib.Path | None = None,
+      is_local: bool = False,
+  ) -> SafeCommitSha:
     """Creates a SafeCommitSha that lazily instantiates GitContext."""
     return SafeCommitSha(
-        lambda: GitContext(
-            bundle_path=bundle_path,
-            is_local=is_local,
-        )
+        lambda: GitContext(bundle_path=bundle_path, is_local=is_local),
+        enforce_clean=enforce_clean,
     )
 
   def _GetGitContext(self):
@@ -54,13 +64,15 @@ class SafeCommitSha:
   def __str__(self):
     """Returns the SHA string, checking for dirty state if necessary."""
     ctx = self._GetGitContext()
-    ctx.EnforceClean()
-    if not ctx.commit_sha:
-      raise GitError(
-          "--local mode generates a version hash that cannot be used "
-          "for COMMIT_SHA. Please provide COMMIT_SHA explicitly."
-      )
-    return ctx.commit_sha
+    if self._enforce_clean:
+      ctx.EnforceClean()
+      if not ctx.commit_sha:
+        raise GitError(
+            "--local mode generates a version hash that cannot be used "
+            "for COMMIT_SHA. Please provide COMMIT_SHA explicitly."
+        )
+    result = ctx.commit_sha or ctx.version or "UNKNOWN"
+    return str(result)
 
   def __repr__(self):
     return self.__str__()
@@ -145,8 +157,11 @@ class GitContext:
     except subprocess.CalledProcessError:
       return []
 
-  def GetSafeCommitSha(self):
-    return SafeCommitSha(lambda: self)
+  def GetSafeCommitSha(self, enforce_clean: bool) -> SafeCommitSha:
+    return SafeCommitSha(
+        lambda: self,
+        enforce_clean=enforce_clean,
+    )
 
   def EnforceClean(self):
     """Enforces that the working copy is clean."""

@@ -60,6 +60,7 @@ class Disk(base.Command):
     )
 
     disk_flags.AddNameArg(parser)
+    disk_flags.AddSourceInstanceDiskArgs(parser)
     disk_flags.AddTargetZoneArg(parser, False)
     disk_flags.AddTargetRegionArg(parser, False)
     disk_flags.AddTargetProjectArg(parser)
@@ -79,6 +80,7 @@ class Disk(base.Command):
     disk_flags.AddResourcePoliciesArg(parser, False)
     disk_flags.AddKmsKeyArg(parser, False)
     disk_flags.AddClearEncryptionKeyArg(parser)
+    flags.AddUseProjectServiceAccountFlag(parser)
 
   def _ParseResourcePolicies(self, resource_policies, project, zone):
     """Parses the resource policies flag."""
@@ -150,6 +152,16 @@ class Disk(base.Command):
     if args.resource_policies:
       restore_config['ResourcePolicies'] = self._ParseResourcePolicies(
           args.resource_policies, args.target_project, args.target_zone
+      )
+    if args.source_instance_boot_disk:
+      restore_config['SourceInstanceBootDisk'] = args.source_instance_boot_disk
+    if args.source_instance_disk_device_name:
+      restore_config['SourceInstanceDiskDeviceName'] = (
+          args.source_instance_disk_device_name
+      )
+    if args.use_project_service_account:
+      restore_config['UseProjectServiceAccount'] = (
+          args.use_project_service_account
       )
     if (
         hasattr(args, 'clear_encryption_key')

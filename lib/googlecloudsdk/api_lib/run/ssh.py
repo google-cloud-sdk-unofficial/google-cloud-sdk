@@ -80,6 +80,24 @@ def _ValidateGen2(workload_json: dict[str, Any]) -> None:
     )
 
 
+def _ValidateSSHEnabled(workload_json: dict[str, Any]) -> None:
+  """Validates that the workload has SSH enabled.
+
+  Args:
+    workload_json: dict, The JSON representation of the Cloud Run workload.
+
+  Raises:
+    ValueError: If the workload has SSH disabled.
+  """
+  ssh_enabled = (
+      workload_json.get(constants.METADATA, {})
+      .get(constants.ANNOTATIONS, {})
+      .get(k8s_object.SSH_ENABLED_ANNOTATION)
+  )
+  if ssh_enabled != "true":
+    raise ValueError("SSH is not enabled for this deployment.")
+
+
 def CreateSshTunnelArgs(
     track,
     project_number,
@@ -176,17 +194,12 @@ class Ssh:
         and self.release_track != base.ReleaseTrack.ALPHA
     ):
       self.revision = self._GetOrValidateRevision(workload_json)
+      _ValidateSSHEnabled(workload_json)
 
     self.service_account = self._GetServiceAccountFromWorkloadJson(
         workload_json
     )
     self.project_number = _GetProjectNumberFromWorkloadJson(workload_json)
-
-    self.workload_type = (
-        self.WorkloadType.SERVICE
-        if self.workload_type == self.WorkloadType.INSTANCE
-        else self.workload_type
-    )
 
     if self._UseCloudRunDomainOverride():
       self.iap_tunnel_url_override = constants.SSH_URL_TEMPLATE.format(
@@ -252,9 +265,9 @@ class Ssh:
     """Returns whether to use the Cloud Run domain override."""
     if self.iap_tunnel_url_override:
       return False
-    if (
-        self.release_track == base.ReleaseTrack.ALPHA
-        and self.workload_type == self.WorkloadType.SERVICE
+    if self.release_track == base.ReleaseTrack.ALPHA and (
+        self.workload_type == self.WorkloadType.SERVICE
+        or self.workload_type == self.WorkloadType.INSTANCE
     ):
       return False
     return True

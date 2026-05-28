@@ -15,18 +15,20 @@
 
 """Command to list Cloud Storage objects."""
 
-
 import itertools
+import queue
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import expansion
 
-from six.moves import queue
-
 
 @base.Hidden
-@base.Deprecate(is_removed=False, warning='This command is deprecated. '
-                'Use `gcloud alpha storage ls` instead.')
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command is deprecated. Use `gcloud alpha storage ls` instead.'
+    ),
+)
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
@@ -35,13 +37,16 @@ class List(base.ListCommand):
   hints = base.CommandHint(read_only=True)
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION': (
+          """\
       *{command}* lets you list the objects in your Cloud Storage buckets.
       Forward slashes in object names are logically treated as directories for
       the purposes of listing contents. See below for example of how to use
       wildcards to get the listing behavior you want.
-      """,
-      'EXAMPLES': """\
+      """
+      ),
+      'EXAMPLES': (
+          """\
       To list the contents of a bucket:
 
           $ {command} gs://my-bucket
@@ -82,7 +87,8 @@ class List(base.ListCommand):
           gs://my-bucket/dir*/log.txt       and instead should be written as:
 
           gs://my-bucket/dir*/**/log.txt    to get the recursive behavior.
-      """,
+      """
+      ),
   }
 
   OBJECT_FORMAT_STRING = """\
@@ -98,18 +104,27 @@ class List(base.ListCommand):
     parser.add_argument(
         'path',
         nargs='*',
-        help='The path of objects and directories to list. The path must begin '
-             'with gs:// and may or may not contain wildcard characters.')
+        help=(
+            'The path of objects and directories to list. The path must begin '
+            'with gs:// and may or may not contain wildcard characters.'
+        ),
+    )
     parser.add_argument(
         '--recursive',
         action='store_true',
-        help='Recursively list the contents of any directories that match the '
-             'path expression.')
+        help=(
+            'Recursively list the contents of any directories that match the '
+            'path expression.'
+        ),
+    )
     parser.add_argument(
         '--flatten-results',
         action='store_true',
-        help='Show all matching objects in one list as opposed to grouping by '
-             'directory.')
+        help=(
+            'Show all matching objects in one list as opposed to grouping by '
+            'directory.'
+        ),
+    )
     parser.display_info.AddFormat("""\
         table[no-heading](
             format('{0}:', dir),
@@ -129,16 +144,16 @@ class List(base.ListCommand):
       # Get a default for this mode if not specifically provided.
       # Simplest case where we are listing only files or a single directory,
       # don't nest output in tables by directory.
-      flatten = bool(not args.recursive and
-                     not (objects and dirs) and
-                     len(dirs) < 2)
+      flatten = bool(
+          not args.recursive and not (objects and dirs) and len(dirs) < 2
+      )
 
     # First collect all the directly matching objects.
     results = []
     if objects:
       results.append(
-          {'dir': '',
-           'objects': expander.GetSortedObjectDetails(objects)})
+          {'dir': '', 'objects': expander.GetSortedObjectDetails(objects)}
+      )
 
     # For each matching directory, get the objects directly under it.
     dirs_to_process = queue.Queue()

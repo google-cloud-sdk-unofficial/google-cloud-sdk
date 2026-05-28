@@ -29,6 +29,7 @@ def translate_volumes(input_data: Mapping[str, Any]) -> Sequence[str]:
   Returns:
     List of output flags.
   """
+  # Only Flex supports volume mounts.
   if not util.is_flex_env(input_data):
     return []
 
@@ -54,3 +55,44 @@ def translate_volumes(input_data: Mapping[str, Any]) -> Sequence[str]:
       flags.append(f'--add-volume-mount=volume={name},mount-path=/mnt/{name}')
 
   return flags
+
+
+def update_service_yaml_with_volumes(
+    service_yaml: dict[str, Any],
+    input_data: Mapping[str, Any],
+) -> None:
+  """Updates the service_yaml dict with volumes from app.yaml."""
+  # Only Flex supports volume mounts.
+  if not util.is_flex_env(input_data):
+    return
+
+  volumes = input_data.get('resources.volumes')
+  if not volumes:
+    return
+
+  spec = service_yaml['spec']['template']['spec']
+  if 'volumes' not in spec:
+    spec['volumes'] = []
+
+  container = spec['containers'][0]
+  if 'volumeMounts' not in container:
+    container['volumeMounts'] = []
+
+  for volume in volumes:
+    name = volume.get('name')
+    if not name:
+      continue
+    volume_type = volume.get('volume_type')
+    size_gb = volume.get('size_gb')
+
+    if volume_type == 'tmpfs':
+      size_mi = int(float(size_gb) * 1024) if size_gb else 512
+
+      spec['volumes'].append({
+          'name': name,
+          'emptyDir': {'medium': 'Memory', 'sizeLimit': f'{size_mi}Mi'},
+      })
+
+      container['volumeMounts'].append(
+          {'name': name, 'mountPath': f'/mnt/{name}'}
+      )

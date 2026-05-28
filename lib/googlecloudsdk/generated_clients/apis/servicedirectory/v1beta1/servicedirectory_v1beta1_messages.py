@@ -39,6 +39,36 @@ class Asset(_messages.Message):
   resource = _messages.StringField(1)
 
 
+class AttachmentFolder(_messages.Message):
+  r"""Represents a GCP Folder.
+
+  Fields:
+    folder: Output only. GCP Folder number.
+  """
+
+  folder = _messages.IntegerField(1)
+
+
+class AttachmentOrganization(_messages.Message):
+  r"""Represents a GCP Organization.
+
+  Fields:
+    organization: Output only. GCP Organization number.
+  """
+
+  organization = _messages.IntegerField(1)
+
+
+class AttachmentProject(_messages.Message):
+  r"""Represents a GCP Project.
+
+  Fields:
+    project: Output only. GCP Project number.
+  """
+
+  project = _messages.IntegerField(1)
+
+
 class Attributes(_messages.Message):
   r"""Attributes are structured data attached to a given resource.
 
@@ -239,6 +269,7 @@ class Binding(_messages.Message):
       ibute_value}`: Deleted single identity in a workforce identity pool. For
       example, `deleted:principal://iam.googleapis.com/locations/global/workfo
       rcePools/my-pool-id/subject/my-subject-attribute-value`.
+    pamBindingId: A PamBindingId attribute.
     role: Role that is assigned to the list of `members`, or principals. For
       example, `roles/viewer`, `roles/editor`, or `roles/owner`. For an
       overview of the IAM roles and permissions, see the [IAM
@@ -250,7 +281,8 @@ class Binding(_messages.Message):
   bindingId = _messages.StringField(1)
   condition = _messages.MessageField('Expr', 2)
   members = _messages.StringField(3, repeated=True)
-  role = _messages.StringField(4)
+  pamBindingId = _messages.MessageField('PamBindingId', 4)
+  role = _messages.StringField(5)
 
 
 class CloudAuditOptions(_messages.Message):
@@ -1037,6 +1069,33 @@ class NamespaceAttributes(_messages.Message):
   managedRegistration = _messages.BooleanField(2)
 
 
+class PamBindingId(_messages.Message):
+  r"""Represents a composite unique identifier for a PAM Grant which is
+  {Org/Folder/Project identifier, grant Unique Identifier} tuple. If PAM is
+  managing the elevated access, PamBindingId is written to an Identity and
+  Access Management (IAM) policy, which specifies access controls for
+  resources. PamBindingId is intended to be used for Audit Logging purposes.
+  If access is granted via PAM backed elevated access, corresponding Cloud
+  Audit Log will have PamBindingId as a metadata. -- For details, refer:
+  go/pal-v1-solution-hld. --
+
+  Fields:
+    folder: GCP Folder at which the PAM Grant is created.
+    grantUuid: Output only. - Represents the unique identifier for the PAM
+      grant. - Full_resource_name_pattern for PAM Grant is:
+      //privilegedaccessmanager.googleapis.com/
+      (projects|folders|organizations)/$0/locations/$1/entitlements/$2/
+      grants/$3 where $3 is the grant_uuid.
+    organization: GCP Organization at which the PAM Grant is created.
+    project: GCP Project at which the PAM Grant is created.
+  """
+
+  folder = _messages.MessageField('AttachmentFolder', 1)
+  grantUuid = _messages.StringField(2)
+  organization = _messages.MessageField('AttachmentOrganization', 3)
+  project = _messages.MessageField('AttachmentProject', 4)
+
+
 class Policy(_messages.Message):
   r"""An Identity and Access Management (IAM) policy, which specifies access
   controls for Google Cloud resources. A `Policy` is a collection of
@@ -1452,9 +1511,8 @@ class ServicedirectoryProjectsLocationsListRequest(_messages.Message):
   r"""A ServicedirectoryProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).

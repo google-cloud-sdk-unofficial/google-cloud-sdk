@@ -25,13 +25,13 @@ transform functions in this module are not publicly documented under
 """
 
 
-def construct_origin_transform(client, fleet_default_exists):
+def construct_origin_transform(fleet_default_exists: bool, origin_type):
   """Returns projection for MembershipFeatureSpec's origin.type value.
 
   Args:
-    client: Fleet API client.
-    fleet_default_exists (bool): Whether the fleetDefaultMemberConfig exists on
-      the Feature in question.
+    fleet_default_exists: Whether the fleetDefaultMemberConfig exists on the
+      Feature in question.
+    origin_type: Origin.type enum on v1 Feature resource.
   Returns:
     A projection transform function that accepts the origin.type value and
     returns a string representation of whether the Membership's spec is synced
@@ -47,17 +47,17 @@ def construct_origin_transform(client, fleet_default_exists):
       return 'FLEET_DEFAULT_NOT_CONFIGURED'
     if not r:
       return 'UNKNOWN'
-    if r == str(client.messages.Origin.TypeValueValuesEnum.FLEET):
+    if r == str(origin_type.FLEET):
       return 'YES'
-    if (r == str(client.messages.Origin.TypeValueValuesEnum.USER) or
-        r == str(client.messages.Origin.TypeValueValuesEnum.FLEET_OUT_OF_SYNC)):
+    if (r == str(origin_type.USER) or
+        r == str(origin_type.FLEET_OUT_OF_SYNC)):
       return 'NO'
     # Showing unknown underlying value fails fast.
     return r
   return transform_feature_membership_spec_origin
 
 
-def get_transforms(client, fleet_default_exists):
+def get_transforms(fleet_default_exists: bool, origin_type):
   """Returns the Fleet-specific resource transform symbol table.
 
   Format strings, either set by the user or the default set in the command, may
@@ -66,13 +66,13 @@ def get_transforms(client, fleet_default_exists):
   the displayed value of that field.
 
   Args:
-    client: Fleet API client.
-    fleet_default_exists (bool): Whether the fleetDefaultMemberConfig exists on
+    fleet_default_exists: Whether the fleetDefaultMemberConfig exists on
       the Feature in question.
+    origin_type: Origin.type enum on v1 Feature resource.
   Returns:
     A dictionary of transform names to functions.
   """
   return {
       'synced_to_fleet_default':
-          construct_origin_transform(client, fleet_default_exists),
+          construct_origin_transform(fleet_default_exists, origin_type),
   }

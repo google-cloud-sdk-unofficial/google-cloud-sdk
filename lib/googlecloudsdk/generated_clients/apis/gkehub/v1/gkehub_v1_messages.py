@@ -189,6 +189,23 @@ class AuthorizationLoggingOptions(_messages.Message):
   permissionType = _messages.EnumField('PermissionTypeValueValuesEnum', 1)
 
 
+class AutoUpgradeConfig(_messages.Message):
+  r"""Configuration for automatic upgrades.
+
+  Fields:
+    rolloutCreationScope: Optional. Specifies the scope of automation for the
+      creation of rollouts. Represents the types of rollouts (version
+      upgrades) the sequence should initiate automatically. If this field is
+      `unset`, it defaults to all types. If this field is `set` but the
+      internal `upgrade_types` list is `empty`, most automatic rollouts are
+      disabled for this sequence. Exceptions are rollouts enforcing our
+      security policies (e.g. such as end-of-support and outdated control
+      plane patch enforcements). These policy enforcements cannot be disabled.
+  """
+
+  rolloutCreationScope = _messages.MessageField('RolloutCreationScope', 1)
+
+
 class BinaryAuthorizationConfig(_messages.Message):
   r"""BinaryAuthorizationConfig defines the fleet level configuration of
   binary authorization feature.
@@ -366,6 +383,73 @@ class CloudAuditOptions(_messages.Message):
   authorizationLoggingOptions = _messages.MessageField('AuthorizationLoggingOptions', 2)
   logName = _messages.EnumField('LogNameValueValuesEnum', 3)
   permissionType = _messages.EnumField('PermissionTypeValueValuesEnum', 4)
+
+
+class ClusterSelector(_messages.Message):
+  r"""Selector for clusters.
+
+  Fields:
+    labelSelector: Required. A valid CEL (Common Expression Language)
+      expression which evaluates `resource.labels`.
+  """
+
+  labelSelector = _messages.StringField(1)
+
+
+class ClusterStatus(_messages.Message):
+  r"""Metadata about the status of a clusters involved in the Rollout.
+
+  Enums:
+    StateValueValuesEnum: Optional. Output only. The high-level, machine-
+      readable status of this Rollout for the cluster.
+
+  Fields:
+    lastUpdateTime: Optional. Output only. The time this status and any
+      related Rollout-specific details for the cluster were updated.
+    membership: Output only. The name of the fleet Membership resource
+      associated to the updated cluster. Membership names are formatted as
+      projects/{project_number}/locations/{location}/memberships/{cluster_id}.
+    operation: Optional. Output only. The operation resource name performing
+      the mutation.
+    reason: Optional. Output only. A human-readable description of the current
+      status.
+    state: Optional. Output only. The high-level, machine-readable status of
+      this Rollout for the cluster.
+    waveAssignment: Output only. The wave assignment of this cluster in this
+      rollout (between 1 and 5).
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Optional. Output only. The high-level, machine-readable status of this
+    Rollout for the cluster.
+
+    Values:
+      STATE_UNSPECIFIED: Unspecified state.
+      PENDING: The Rollout is pending for the cluster.
+      RUNNING: The Rollout is running for the cluster.
+      FAILED: The Rollout failed for the cluster.
+      SUCCEEDED: The Rollout succeeded for the cluster.
+      PAUSED: The Rollout is paused for the cluster.
+      REMOVED: The cluster was removed from the Rollout.
+      INELIGIBLE: The cluster is ineligible for the Rollout.
+      SKIPPED: The cluster is skipped for the Rollout.
+    """
+    STATE_UNSPECIFIED = 0
+    PENDING = 1
+    RUNNING = 2
+    FAILED = 3
+    SUCCEEDED = 4
+    PAUSED = 5
+    REMOVED = 6
+    INELIGIBLE = 7
+    SKIPPED = 8
+
+  lastUpdateTime = _messages.StringField(1)
+  membership = _messages.StringField(2)
+  operation = _messages.StringField(3)
+  reason = _messages.StringField(4)
+  state = _messages.EnumField('StateValueValuesEnum', 5)
+  waveAssignment = _messages.IntegerField(6, variant=_messages.Variant.INT32)
 
 
 class ClusterUpgradeFleetSpec(_messages.Message):
@@ -2103,6 +2187,38 @@ class Empty(_messages.Message):
 
 
 
+class ExcludedCluster(_messages.Message):
+  r"""An excluded cluster from the rollout.
+
+  Enums:
+    ReasonValueValuesEnum: Output only. The reason for excluding the cluster
+      from the rollout.
+
+  Fields:
+    membership: Output only. The name of the fleet Membership resource
+      associated to the excluded cluster.
+    reason: Output only. The reason for excluding the cluster from the
+      rollout.
+  """
+
+  class ReasonValueValuesEnum(_messages.Enum):
+    r"""Output only. The reason for excluding the cluster from the rollout.
+
+    Values:
+      REASON_UNSPECIFIED: Default value.
+      EXCLUDED_BY_FILTER: The cluster was excluded by the rollout filter.
+      ALREADY_UPGRADED: The cluster was already upgraded.
+      VERSION_TOO_OLD: The cluster version is too old.
+    """
+    REASON_UNSPECIFIED = 0
+    EXCLUDED_BY_FILTER = 1
+    ALREADY_UPGRADED = 2
+    VERSION_TOO_OLD = 3
+
+  membership = _messages.StringField(1)
+  reason = _messages.EnumField('ReasonValueValuesEnum', 2)
+
+
 class Expr(_messages.Message):
   r"""Represents a textual expression in the Common Expression Language (CEL)
   syntax. CEL is a C-like expression language. The syntax and semantics of CEL
@@ -2485,6 +2601,19 @@ class FeatureState(_messages.Message):
   code = _messages.EnumField('CodeValueValuesEnum', 1)
   description = _messages.StringField(2)
   updateTime = _messages.StringField(3)
+
+
+class FeatureUpdate(_messages.Message):
+  r"""Feature config to use for Rollout.
+
+  Fields:
+    binaryAuthorizationConfig: Optional. Configuration for Binary
+      Authorization.
+    securityPostureConfig: Optional. Configuration for Security Posture.
+  """
+
+  binaryAuthorizationConfig = _messages.MessageField('BinaryAuthorizationConfig', 1)
+  securityPostureConfig = _messages.MessageField('SecurityPostureConfig', 2)
 
 
 class Fleet(_messages.Message):
@@ -3072,9 +3201,8 @@ class GkehubProjectsLocationsListRequest(_messages.Message):
   r"""A GkehubProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -3567,6 +3695,28 @@ class GkehubProjectsLocationsOperationsListRequest(_messages.Message):
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   returnPartialSuccess = _messages.BooleanField(5)
+
+
+class GkehubProjectsLocationsRolloutSequencesGetRequest(_messages.Message):
+  r"""A GkehubProjectsLocationsRolloutSequencesGetRequest object.
+
+  Fields:
+    name: Required. The name of the rollout sequence to retrieve. projects/{pr
+      oject}/locations/{location}/rolloutSequences/{rollout_sequence}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class GkehubProjectsLocationsRolloutsGetRequest(_messages.Message):
+  r"""A GkehubProjectsLocationsRolloutsGetRequest object.
+
+  Fields:
+    name: Required. The name of the rollout to retrieve.
+      projects/{project}/locations/{location}/rollouts/{rollout}
+  """
+
+  name = _messages.StringField(1, required=True)
 
 
 class GkehubProjectsLocationsScopesCreateRequest(_messages.Message):
@@ -4873,6 +5023,22 @@ class LogConfig(_messages.Message):
   dataAccess = _messages.MessageField('DataAccessOptions', 3)
 
 
+class ManagedRolloutConfig(_messages.Message):
+  r"""The configuration used for the Rollout. Waves are assigned
+  automatically.
+
+  Fields:
+    soakDuration: Optional. Default soak time before starting the next wave.
+      The soak_duration in the stages overrides this value on a per-wave
+      basis.
+    uiprRolloutConfig: Optional. The UIPR specific configuration used for the
+      Rollout.
+  """
+
+  soakDuration = _messages.StringField(1)
+  uiprRolloutConfig = _messages.MessageField('UIPRRolloutConfig', 2)
+
+
 class Membership(_messages.Message):
   r"""Membership contains information about a member cluster.
 
@@ -5629,6 +5795,65 @@ class OperationMetadata(_messages.Message):
   verb = _messages.StringField(7)
 
 
+class OperationalState(_messages.Message):
+  r"""Operational state of the Rollout Sequence.
+
+  Enums:
+    ReasonsValueListEntryValuesEnum:
+    StateValueValuesEnum: Output only. State of the Rollout Sequence.
+
+  Fields:
+    reasons: Output only. Reasons for the Rollout Sequence state.
+    state: Output only. State of the Rollout Sequence.
+    stateChangeTime: Output only. The timestamp at which the operational state
+      was last changed. Used to track how long it has been in the current
+      state.
+  """
+
+  class ReasonsValueListEntryValuesEnum(_messages.Enum):
+    r"""ReasonsValueListEntryValuesEnum enum type.
+
+    Values:
+      REASON_UNSPECIFIED: Default unspecified value.
+      FLEET_FEATURE_DELETED_ERROR: A fleet feature is deleted.
+      FLEET_DELETED_ERROR: A fleet is deleted.
+      EMPTY_STAGE_WARNING: A stage is empty.
+      MIXED_RELEASE_CHANNELS_WARNING: Mixed release channels in the sequence.
+      INTERNAL_ERROR: Internal error, for example when host project is soft-
+        deleted.
+    """
+    REASON_UNSPECIFIED = 0
+    FLEET_FEATURE_DELETED_ERROR = 1
+    FLEET_DELETED_ERROR = 2
+    EMPTY_STAGE_WARNING = 3
+    MIXED_RELEASE_CHANNELS_WARNING = 4
+    INTERNAL_ERROR = 5
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. State of the Rollout Sequence.
+
+    Values:
+      STATE_CODE_UNSPECIFIED: The default value. This value is used if the
+        state is omitted.
+      ACTIVE: The Rollout Sequence is active.
+      INACTIVE: The Rollout Sequence is inactive.
+      WARNING: The Rollout Sequence has warnings. It is still functioning but
+        performance may be degraded.
+      ERROR: The Rollout Sequence has errors and is not functioning.
+      INITIALIZING: The Rollout Sequence is being initialized.
+    """
+    STATE_CODE_UNSPECIFIED = 0
+    ACTIVE = 1
+    INACTIVE = 2
+    WARNING = 3
+    ERROR = 4
+    INITIALIZING = 5
+
+  reasons = _messages.EnumField('ReasonsValueListEntryValuesEnum', 1, repeated=True)
+  state = _messages.EnumField('StateValueValuesEnum', 2)
+  stateChangeTime = _messages.StringField(3)
+
+
 class Origin(_messages.Message):
   r"""Origin defines where this MembershipFeatureSpec originated from.
 
@@ -6286,6 +6511,22 @@ class PolicyControllerToleration(_messages.Message):
   value = _messages.StringField(4)
 
 
+class QualifiedVersion(_messages.Message):
+  r"""Represents a qualified version with information about it.
+
+  Fields:
+    partial: Output only. Whether the version is partially qualified (the
+      rollout targeted only a subset of clusters e.g. for a higher minor).
+    upgradeCompleteTime: Output only. The timestamp when the rollout to this
+      version finished.
+    version: Output only. The actual patch version that was applied.
+  """
+
+  partial = _messages.BooleanField(1)
+  upgradeCompleteTime = _messages.StringField(2)
+  version = _messages.StringField(3)
+
+
 class RBACRoleBinding(_messages.Message):
   r"""RBACRoleBinding represents a rbacrolebinding across the Fleet
 
@@ -6537,6 +6778,555 @@ class Role(_messages.Message):
   predefinedRole = _messages.EnumField('PredefinedRoleValueValuesEnum', 2)
 
 
+class Rollout(_messages.Message):
+  r"""Rollout contains the Rollout metadata and configuration. Next ID: 28
+
+  Enums:
+    IntentValueValuesEnum: Output only. The intent of the rollout.
+    StateValueValuesEnum: Output only. State specifies various states of the
+      Rollout.
+    StateReasonTypeValueValuesEnum: Output only. StateReasonType specifies the
+      reason type of the Rollout state.
+    TriggerValueValuesEnum: Output only. The trigger of the rollout.
+
+  Messages:
+    AnnotationsValue: Optional. Annotations for this Rollout.
+    LabelsValue: Optional. Labels for this Rollout.
+    MembershipStatesValue: Output only. States of upgrading control plane or
+      node pool targets of a single cluster (GKE Hub membership) that's part
+      of this Rollout. The key is the membership name of the cluster. The
+      value is the state of the cluster.
+
+  Fields:
+    annotations: Optional. Annotations for this Rollout.
+    clusterStatus: Output only. Metadata about the cluster status which are
+      part of the Rollout. Provided by the server.
+    completeTime: Output only. The timestamp at which the Rollout was
+      completed.
+    createTime: Output only. The timestamp at which the Rollout was created.
+    deleteTime: Output only. The timestamp at the Rollout was deleted.
+    displayName: Optional. Human readable display name of the Rollout.
+    etag: Output only. etag of the Rollout Ex. abc1234
+    excludedClusters: Optional. Output only. The excluded clusters from the
+      rollout.
+    feature: Optional. Feature config to use for Rollout.
+    intent: Output only. The intent of the rollout.
+    labels: Optional. Labels for this Rollout.
+    lastPauseTime: Output only. The timestamp at which the Rollout was last
+      paused.
+    managedRolloutConfig: Optional. The configuration used for the Rollout.
+    membershipStates: Output only. States of upgrading control plane or node
+      pool targets of a single cluster (GKE Hub membership) that's part of
+      this Rollout. The key is the membership name of the cluster. The value
+      is the state of the cluster.
+    name: Identifier. The full, unique resource name of this Rollout in the
+      format of `projects/{project}/locations/global/rollouts/{rollout}`.
+    rolloutSequence: Optional. Immutable. The full, unique resource name of
+      the rollout sequence that initiatied this Rollout. In the format of `pro
+      jects/{project}/locations/global/rolloutSequences/{rollout_sequence}`.
+    schedule: Output only. The schedule of the Rollout.
+    scheduledStartTime: Optional. The timestamp at which the Rollout is
+      scheduled to start. If not specified, the Rollout will start
+      immediately.
+    stages: Output only. The stages of the Rollout.
+    state: Output only. State specifies various states of the Rollout.
+    stateReason: Output only. A human-readable description explaining the
+      reason for the current state.
+    stateReasonType: Output only. StateReasonType specifies the reason type of
+      the Rollout state.
+    systemConfigIgnored: Output only. If set, the Rollout should progress
+      despite a GKE freeze, rollout being halted or other external reasons.
+    trigger: Output only. The trigger of the rollout.
+    uid: Output only. Google-generated UUID for this resource. This is unique
+      across all Rollout resources. If a Rollout resource is deleted and
+      another resource with the same name is created, it gets a different uid.
+    updateTime: Output only. The timestamp at which the Rollout was last
+      updated.
+    versionUpgrade: Optional. Config for version upgrade of clusters.
+  """
+
+  class IntentValueValuesEnum(_messages.Enum):
+    r"""Output only. The intent of the rollout.
+
+    Values:
+      ROLLOUT_INTENT_UNSPECIFIED: The default value.
+      REGULAR_UPGRADE: A standard rollout.
+      FORCE_PATCH: A mandatory upgrade for clusters that haven't been patched
+        within the allowed window.
+      END_OF_LIFE_ENFORCEMENT: A mandatory upgrade for clusters that have
+        reached its end of support.
+    """
+    ROLLOUT_INTENT_UNSPECIFIED = 0
+    REGULAR_UPGRADE = 1
+    FORCE_PATCH = 2
+    END_OF_LIFE_ENFORCEMENT = 3
+
+  class StateReasonTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. StateReasonType specifies the reason type of the Rollout
+    state.
+
+    Values:
+      STATE_REASON_TYPE_UNSPECIFIED: Unspecified state reason.
+      PAUSED_BY_USER: Paused by the user.
+      PAUSED_BY_SYSTEM_CONFIG: Paused by the RSv2 Orchestrator due to system
+        config(ex. GKE freeze).
+      PAUSED_WAITING_FOR_NEXT_STAGE: Paused waiting for the next stage to
+        start.
+    """
+    STATE_REASON_TYPE_UNSPECIFIED = 0
+    PAUSED_BY_USER = 1
+    PAUSED_BY_SYSTEM_CONFIG = 2
+    PAUSED_WAITING_FOR_NEXT_STAGE = 3
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. State specifies various states of the Rollout.
+
+    Values:
+      STATE_UNSPECIFIED: Unspecified state.
+      RUNNING: The Rollout is running.
+      PAUSED: The Rollout is paused.
+      CANCELLED: The Rollout is in a failure terminal state.
+      COMPLETED: The Rollout is in a terminal state.
+      SCHEDULED: The Rollout is scheduled to start.
+      INITIALIZING: The Rollout is initializing.
+    """
+    STATE_UNSPECIFIED = 0
+    RUNNING = 1
+    PAUSED = 2
+    CANCELLED = 3
+    COMPLETED = 4
+    SCHEDULED = 5
+    INITIALIZING = 6
+
+  class TriggerValueValuesEnum(_messages.Enum):
+    r"""Output only. The trigger of the rollout.
+
+    Values:
+      ROLLOUT_TRIGGER_UNSPECIFIED: The default value.
+      USER: A user-initiated rollout.
+      GKE: A Google-triggered rollout.
+    """
+    ROLLOUT_TRIGGER_UNSPECIFIED = 0
+    USER = 1
+    GKE = 2
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AnnotationsValue(_messages.Message):
+    r"""Optional. Annotations for this Rollout.
+
+    Messages:
+      AdditionalProperty: An additional property for a AnnotationsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type AnnotationsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AnnotationsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels for this Rollout.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class MembershipStatesValue(_messages.Message):
+    r"""Output only. States of upgrading control plane or node pool targets of
+    a single cluster (GKE Hub membership) that's part of this Rollout. The key
+    is the membership name of the cluster. The value is the state of the
+    cluster.
+
+    Messages:
+      AdditionalProperty: An additional property for a MembershipStatesValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        MembershipStatesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a MembershipStatesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A RolloutMembershipState attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('RolloutMembershipState', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  annotations = _messages.MessageField('AnnotationsValue', 1)
+  clusterStatus = _messages.MessageField('ClusterStatus', 2, repeated=True)
+  completeTime = _messages.StringField(3)
+  createTime = _messages.StringField(4)
+  deleteTime = _messages.StringField(5)
+  displayName = _messages.StringField(6)
+  etag = _messages.StringField(7)
+  excludedClusters = _messages.MessageField('ExcludedCluster', 8, repeated=True)
+  feature = _messages.MessageField('FeatureUpdate', 9)
+  intent = _messages.EnumField('IntentValueValuesEnum', 10)
+  labels = _messages.MessageField('LabelsValue', 11)
+  lastPauseTime = _messages.StringField(12)
+  managedRolloutConfig = _messages.MessageField('ManagedRolloutConfig', 13)
+  membershipStates = _messages.MessageField('MembershipStatesValue', 14)
+  name = _messages.StringField(15)
+  rolloutSequence = _messages.StringField(16)
+  schedule = _messages.MessageField('Schedule', 17)
+  scheduledStartTime = _messages.StringField(18)
+  stages = _messages.MessageField('RolloutStage', 19, repeated=True)
+  state = _messages.EnumField('StateValueValuesEnum', 20)
+  stateReason = _messages.StringField(21)
+  stateReasonType = _messages.EnumField('StateReasonTypeValueValuesEnum', 22)
+  systemConfigIgnored = _messages.BooleanField(23)
+  trigger = _messages.EnumField('TriggerValueValuesEnum', 24)
+  uid = _messages.StringField(25)
+  updateTime = _messages.StringField(26)
+  versionUpgrade = _messages.MessageField('VersionUpgrade', 27)
+
+
+class RolloutCreationScope(_messages.Message):
+  r"""The scope for automatic rollout creation.
+
+  Enums:
+    UpgradeTypesValueListEntryValuesEnum:
+
+  Fields:
+    upgradeTypes: Optional. The list of enabled upgrade types.
+  """
+
+  class UpgradeTypesValueListEntryValuesEnum(_messages.Enum):
+    r"""UpgradeTypesValueListEntryValuesEnum enum type.
+
+    Values:
+      UPGRADE_TYPE_UNSPECIFIED: Default value. Should not be used.
+      CONTROL_PLANE_MINOR: Control plane minor version upgrades (e.g. 1.33 to
+        1.34).
+      CONTROL_PLANE_PATCH: Control plane patch version upgrades (e.g. 1.33.1
+        to 1.33.2).
+      NODE_MINOR: Node minor version upgrades (e.g. 1.33 to 1.34 or 1.33 to
+        1.35).
+      NODE_PATCH: Node patch version upgrades (e.g. 1.33.1 to 1.33.2).
+    """
+    UPGRADE_TYPE_UNSPECIFIED = 0
+    CONTROL_PLANE_MINOR = 1
+    CONTROL_PLANE_PATCH = 2
+    NODE_MINOR = 3
+    NODE_PATCH = 4
+
+  upgradeTypes = _messages.EnumField('UpgradeTypesValueListEntryValuesEnum', 1, repeated=True)
+
+
+class RolloutMembershipState(_messages.Message):
+  r"""Metadata about single cluster (GKE Hub membership) that's part of this
+  Rollout.
+
+  Fields:
+    lastUpdateTime: Optional. Output only. The time this status and any
+      related Rollout-specific details for the membership were updated.
+    stageAssignment: Output only. The stage assignment of this cluster in this
+      rollout.
+    targets: Output only. The targets of the rollout - clusters or node pools
+      that are being upgraded. All targets belongs to the same cluster,
+      identified by the membership name (key of membership_states map).
+    waveAssignment: Output only. The wave assignment of this cluster in this
+      rollout.
+  """
+
+  lastUpdateTime = _messages.StringField(1)
+  stageAssignment = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  targets = _messages.MessageField('RolloutTarget', 3, repeated=True)
+  waveAssignment = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+
+
+class RolloutSequence(_messages.Message):
+  r"""RolloutSequence defines the desired order of upgrades. Next ID: 20
+
+  Enums:
+    ComputedReleaseChannelValueValuesEnum: Output only. The computed release
+      channel used for the Rollout Sequence.
+
+  Messages:
+    AnnotationsValue: Optional. Internal-only annotations for development and
+      testing purposes. This field is not intended for public use and will not
+      be exposed in any public API version.
+    LabelsValue: Optional. Labels for this Rollout Sequence.
+
+  Fields:
+    annotations: Optional. Internal-only annotations for development and
+      testing purposes. This field is not intended for public use and will not
+      be exposed in any public API version.
+    autoUpgradeConfig: Optional. Configuration for automatic upgrades. If this
+      message is `unset`, the system applies default behavior.
+    computedReleaseChannel: Output only. The computed release channel used for
+      the Rollout Sequence.
+    createTime: Output only. The timestamp at which the Rollout Sequence was
+      created.
+    deleteTime: Output only. The timestamp at the Rollout Sequence was
+      deleted.
+    displayName: Optional. Human readable display name of the Rollout
+      Sequence.
+    effectiveAutoUpgradeConfig: Output only. The resolved auto-upgrade options
+      which are in effect.
+    etag: Output only. etag of the Rollout Sequence Ex. abc1234
+    ignoredClustersSelector: Optional. Selector for clusters to exclude from
+      the Rollout Sequence.
+    labels: Optional. Labels for this Rollout Sequence.
+    lastQualifiedControlPlaneVersion: Output only. The last qualified control
+      plane version.
+    lastQualifiedNodeVersion: Output only. The last qualified node version.
+    name: Identifier. Name of the rollout sequence in the format of:
+      projects/{PROJECT_ID}/locations/global/rolloutSequences/{NAME}
+    operationalState: Output only. Operational state of the Rollout Sequence.
+    stages: Required. Ordered list of stages that constitutes this Rollout.
+    targetControlPlaneVersion: Output only. The target control plane version
+      of the Rollout Sequence.
+    targetNodeVersion: Output only. The target node version of the Rollout
+      Sequence.
+    uid: Output only. Google-generated UUID for this resource. This is unique
+      across all Rollout Sequence resources. If a Rollout Sequence resource is
+      deleted and another resource with the same name is created, it gets a
+      different uid.
+    updateTime: Output only. The timestamp at which the Rollout Sequence was
+      last updated.
+  """
+
+  class ComputedReleaseChannelValueValuesEnum(_messages.Enum):
+    r"""Output only. The computed release channel used for the Rollout
+    Sequence.
+
+    Values:
+      GKE_RELEASE_CHANNEL_UNSPECIFIED: Default if no value is specified.
+        Should not be used.
+      RAPID: Release channel `RAPID` of GKE.
+      REGULAR: Release channel `REGULAR` of GKE.
+      STABLE: Release channel `STABLE` of GKE.
+      EXTENDED: Release channel `EXTENDED` of GKE.
+      NO_CHANNEL: Release channel `NO_CHANNEL` of GKE. Formerly known as
+        `STATIC`.
+    """
+    GKE_RELEASE_CHANNEL_UNSPECIFIED = 0
+    RAPID = 1
+    REGULAR = 2
+    STABLE = 3
+    EXTENDED = 4
+    NO_CHANNEL = 5
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AnnotationsValue(_messages.Message):
+    r"""Optional. Internal-only annotations for development and testing
+    purposes. This field is not intended for public use and will not be
+    exposed in any public API version.
+
+    Messages:
+      AdditionalProperty: An additional property for a AnnotationsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type AnnotationsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AnnotationsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels for this Rollout Sequence.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  annotations = _messages.MessageField('AnnotationsValue', 1)
+  autoUpgradeConfig = _messages.MessageField('AutoUpgradeConfig', 2)
+  computedReleaseChannel = _messages.EnumField('ComputedReleaseChannelValueValuesEnum', 3)
+  createTime = _messages.StringField(4)
+  deleteTime = _messages.StringField(5)
+  displayName = _messages.StringField(6)
+  effectiveAutoUpgradeConfig = _messages.MessageField('AutoUpgradeConfig', 7)
+  etag = _messages.StringField(8)
+  ignoredClustersSelector = _messages.MessageField('ClusterSelector', 9)
+  labels = _messages.MessageField('LabelsValue', 10)
+  lastQualifiedControlPlaneVersion = _messages.StringField(11)
+  lastQualifiedNodeVersion = _messages.StringField(12)
+  name = _messages.StringField(13)
+  operationalState = _messages.MessageField('OperationalState', 14)
+  stages = _messages.MessageField('Stage', 15, repeated=True)
+  targetControlPlaneVersion = _messages.StringField(16)
+  targetNodeVersion = _messages.StringField(17)
+  uid = _messages.StringField(18)
+  updateTime = _messages.StringField(19)
+
+
+class RolloutStage(_messages.Message):
+  r"""Stage represents a single stage in the Rollout.
+
+  Enums:
+    StateValueValuesEnum: Output only. The state of the stage.
+
+  Fields:
+    clusterSelector: Output only. The selector from the sequence that was used
+      to create this stage. Example CEL expression: resource.labels.canary ==
+      'true'
+    endTime: Optional. Output only. The time at which the stage ended.
+    fleetProjects: Output only. The fleet projects from the sequence that was
+      used to create this stage. Expected format: projects/{project_number}
+    runningPauseDuration: Output only. The duration for which the current
+      stage of the Rollout was paused while the stage was in `RUNNING` state.
+    soakDuration: Optional. Duration to soak after this stage before starting
+      the next stage.
+    soakingPauseDuration: Output only. The duration for which the current
+      stage of the Rollout was paused while the stage was in `SOAKING` state.
+    stageNumber: Output only. The stage number to which this status applies.
+    startTime: Optional. Output only. The time at which the stage started.
+    state: Output only. The state of the stage.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the stage.
+
+    Values:
+      STATE_UNSPECIFIED: Default value.
+      PENDING: The stage is pending.
+      RUNNING: The stage is running.
+      SOAKING: The stage is soaking.
+      COMPLETED: The stage is completed.
+      FORCED_SOAKING: The stage is force soaking.
+      PAUSED: The stage is paused.
+    """
+    STATE_UNSPECIFIED = 0
+    PENDING = 1
+    RUNNING = 2
+    SOAKING = 3
+    COMPLETED = 4
+    FORCED_SOAKING = 5
+    PAUSED = 6
+
+  clusterSelector = _messages.MessageField('ClusterSelector', 1)
+  endTime = _messages.StringField(2)
+  fleetProjects = _messages.StringField(3, repeated=True)
+  runningPauseDuration = _messages.StringField(4)
+  soakDuration = _messages.StringField(5)
+  soakingPauseDuration = _messages.StringField(6)
+  stageNumber = _messages.IntegerField(7, variant=_messages.Variant.INT32)
+  startTime = _messages.StringField(8)
+  state = _messages.EnumField('StateValueValuesEnum', 9)
+
+
+class RolloutTarget(_messages.Message):
+  r"""Metadata about the status of targets (clusters or node pools) involved
+  in the Rollout.
+
+  Enums:
+    StateValueValuesEnum: Output only. The high-level, machine-readable status
+      of this Rollout for the target.
+
+  Fields:
+    cluster: Optional. Output only. The resource link of the Cluster resource
+      upgraded in this Rollout. It is formatted as: `//{api_service}/projects/
+      {project_number}/locations/{location}/clusters/{cluster_name}`. .
+    nodePool: Optional. Output only. The resource link of the NodePool
+      resource upgraded in this Rollout. It is formatted as: `//{api_service}/
+      projects/{project_number}/locations/{location}/clusters/{cluster_name}/n
+      odePools/{node_pool_name}`.
+    operation: Optional. Output only. The operation resource name performing
+      the mutation.
+    reason: Optional. Output only. A human-readable description of the current
+      status.
+    state: Output only. The high-level, machine-readable status of this
+      Rollout for the target.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The high-level, machine-readable status of this Rollout
+    for the target.
+
+    Values:
+      STATE_UNSPECIFIED: Unspecified state.
+      PENDING: The Rollout is pending for the target.
+      RUNNING: The Rollout is running for the target.
+      FAILED: The Rollout failed for the target.
+      SUCCEEDED: The Rollout succeeded for the target.
+      PAUSED: The Rollout is paused for the target.
+      REMOVED: The target was removed from the Rollout.
+      INELIGIBLE: The target is ineligible for the Rollout.
+      SKIPPED: The target is skipped for the Rollout.
+    """
+    STATE_UNSPECIFIED = 0
+    PENDING = 1
+    RUNNING = 2
+    FAILED = 3
+    SUCCEEDED = 4
+    PAUSED = 5
+    REMOVED = 6
+    INELIGIBLE = 7
+    SKIPPED = 8
+
+  cluster = _messages.StringField(1)
+  nodePool = _messages.StringField(2)
+  operation = _messages.StringField(3)
+  reason = _messages.StringField(4)
+  state = _messages.EnumField('StateValueValuesEnum', 5)
+
+
 class Rule(_messages.Message):
   r"""A rule to be applied in a Policy.
 
@@ -6588,6 +7378,16 @@ class Rule(_messages.Message):
   logConfig = _messages.MessageField('LogConfig', 5, repeated=True)
   notIn = _messages.StringField(6, repeated=True)
   permissions = _messages.StringField(7, repeated=True)
+
+
+class Schedule(_messages.Message):
+  r"""Schedule represents the schedule of the Rollout.
+
+  Fields:
+    waves: Output only. The schedule of each wave in the Rollout.
+  """
+
+  waves = _messages.MessageField('WaveSchedule', 1, repeated=True)
 
 
 class Scope(_messages.Message):
@@ -6867,6 +7667,12 @@ class ServiceMeshCondition(_messages.Message):
       NON_STANDARD_BINARY_USAGE: Non-standard binary usage error code
       UNSUPPORTED_GATEWAY_CLASS: Unsupported gateway class error code
       MANAGED_CNI_NOT_ENABLED: Managed CNI not enabled error code
+      MODERNIZATION_INCOMPATIBLE_POD_ANNOTATION: One or more Pods have
+        unsupported annotations.
+      MODERNIZATION_INCOMPATIBLE_POD_IP_SCALE: Cluster exceeds service mesh
+        pod IP scalability limits.
+      MODERNIZATION_INCOMPATIBLE_CONFIG: Incompatible config found in the
+        cluster.
       MODERNIZATION_SCHEDULED: Modernization is scheduled for a cluster.
       MODERNIZATION_IN_PROGRESS: Modernization is in progress for a cluster.
       MODERNIZATION_COMPLETED: Modernization is completed for a cluster.
@@ -6892,6 +7698,13 @@ class ServiceMeshCondition(_messages.Message):
         a fleet. Rollback is no longer allowed.
       MODERNIZATION_ROLLING_BACK_FLEET: Rollback is in progress for
         modernization of all clusters in a fleet.
+      MODERNIZATION_MODERNIZED: Modernization of all the fleet's clusters is
+        complete. Soaking before finalizing the modernization.
+      MODERNIZATION_INCOMPATIBLE_SERVICES_SCALE: Fleet exceeds service mesh
+        services scalability limits.
+      MODERNIZATION_COMPATIBLE: Fleet is compatible for modernization.
+      MODERNIZATION_INCOMPATIBLE: Fleet is not yet compatible for
+        modernization.
     """
     CODE_UNSPECIFIED = 0
     MESH_IAM_PERMISSION_DENIED = 1
@@ -6931,22 +7744,29 @@ class ServiceMeshCondition(_messages.Message):
     NON_STANDARD_BINARY_USAGE = 35
     UNSUPPORTED_GATEWAY_CLASS = 36
     MANAGED_CNI_NOT_ENABLED = 37
-    MODERNIZATION_SCHEDULED = 38
-    MODERNIZATION_IN_PROGRESS = 39
-    MODERNIZATION_COMPLETED = 40
-    MODERNIZATION_ABORTED = 41
-    MODERNIZATION_PREPARING = 42
-    MODERNIZATION_STALLED = 43
-    MODERNIZATION_PREPARED = 44
-    MODERNIZATION_MIGRATING_WORKLOADS = 45
-    MODERNIZATION_ROLLING_BACK_CLUSTER = 46
-    MODERNIZATION_WILL_BE_SCHEDULED = 47
-    MODERNIZATION_MANUAL = 48
-    MODERNIZATION_ELIGIBLE = 49
-    MODERNIZATION_MODERNIZING = 50
-    MODERNIZATION_MODERNIZED_SOAKING = 51
-    MODERNIZATION_FINALIZED = 52
-    MODERNIZATION_ROLLING_BACK_FLEET = 53
+    MODERNIZATION_INCOMPATIBLE_POD_ANNOTATION = 38
+    MODERNIZATION_INCOMPATIBLE_POD_IP_SCALE = 39
+    MODERNIZATION_INCOMPATIBLE_CONFIG = 40
+    MODERNIZATION_SCHEDULED = 41
+    MODERNIZATION_IN_PROGRESS = 42
+    MODERNIZATION_COMPLETED = 43
+    MODERNIZATION_ABORTED = 44
+    MODERNIZATION_PREPARING = 45
+    MODERNIZATION_STALLED = 46
+    MODERNIZATION_PREPARED = 47
+    MODERNIZATION_MIGRATING_WORKLOADS = 48
+    MODERNIZATION_ROLLING_BACK_CLUSTER = 49
+    MODERNIZATION_WILL_BE_SCHEDULED = 50
+    MODERNIZATION_MANUAL = 51
+    MODERNIZATION_ELIGIBLE = 52
+    MODERNIZATION_MODERNIZING = 53
+    MODERNIZATION_MODERNIZED_SOAKING = 54
+    MODERNIZATION_FINALIZED = 55
+    MODERNIZATION_ROLLING_BACK_FLEET = 56
+    MODERNIZATION_MODERNIZED = 57
+    MODERNIZATION_INCOMPATIBLE_SERVICES_SCALE = 58
+    MODERNIZATION_COMPATIBLE = 59
+    MODERNIZATION_INCOMPATIBLE = 60
 
   class SeverityValueValuesEnum(_messages.Enum):
     r"""Severity level of the condition.
@@ -7081,10 +7901,27 @@ class ServiceMeshFeatureSpec(_messages.Message):
   Enums:
     ModernizationValueValuesEnum: Optional. Specifies modernization for the
       fleet.
+    ModernizationCompatibilityValueValuesEnum: Optional. Specifies
+      modernization compatibility for the fleet.
 
   Fields:
     modernization: Optional. Specifies modernization for the fleet.
+    modernizationCompatibility: Optional. Specifies modernization
+      compatibility for the fleet.
   """
+
+  class ModernizationCompatibilityValueValuesEnum(_messages.Enum):
+    r"""Optional. Specifies modernization compatibility for the fleet.
+
+    Values:
+      MODERNIZATION_COMPATIBILITY_UNSPECIFIED: Unspecified.
+      VALIDATION_ENABLED: Google should report modernization eligibility gaps.
+      VALIDATION_DISABLED: Google should not report modernization eligibility
+        gaps.
+    """
+    MODERNIZATION_COMPATIBILITY_UNSPECIFIED = 0
+    VALIDATION_ENABLED = 1
+    VALIDATION_DISABLED = 2
 
   class ModernizationValueValuesEnum(_messages.Enum):
     r"""Optional. Specifies modernization for the fleet.
@@ -7101,6 +7938,7 @@ class ServiceMeshFeatureSpec(_messages.Message):
     COMPATIBILITY_VALIDATION_ENABLED = 3
 
   modernization = _messages.EnumField('ModernizationValueValuesEnum', 1)
+  modernizationCompatibility = _messages.EnumField('ModernizationCompatibilityValueValuesEnum', 2)
 
 
 class ServiceMeshMembershipSpec(_messages.Message):
@@ -7217,6 +8055,102 @@ class SetIamPolicyRequest(_messages.Message):
 
   policy = _messages.MessageField('Policy', 1)
   updateMask = _messages.StringField(2)
+
+
+class Stage(_messages.Message):
+  r"""Rollout stage.
+
+  Messages:
+    LastQualifiedControlPlaneVersionsValue: Output only. Map of minor version
+      to its last qualified version. The key is a minor version (e.g. `1.28`)
+      and the value contains details of the last qualified patch version for
+      that minor version (e.g. `1.28.1-gke.100`).
+    LastQualifiedNodeVersionsValue: Output only. Map of minor version to its
+      last qualified version. The key is a minor version (e.g. `1.28`) and the
+      value contains details of the last qualified patch version for that
+      minor version (e.g. `1.28.1-gke.100`).
+
+  Fields:
+    clusterSelector: Optional. Filter members of fleets (above) to a subset of
+      clusters. If not specified, all clusters in the fleets are selected.
+    fleetProjects: Required. List of Fleet projects to select the clusters
+      from. Expected format: projects/{project}
+    lastQualifiedControlPlaneVersions: Output only. Map of minor version to
+      its last qualified version. The key is a minor version (e.g. `1.28`) and
+      the value contains details of the last qualified patch version for that
+      minor version (e.g. `1.28.1-gke.100`).
+    lastQualifiedNodeVersions: Output only. Map of minor version to its last
+      qualified version. The key is a minor version (e.g. `1.28`) and the
+      value contains details of the last qualified patch version for that
+      minor version (e.g. `1.28.1-gke.100`).
+    soakDuration: Optional. Soak time after upgrading all the clusters in the
+      stage.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LastQualifiedControlPlaneVersionsValue(_messages.Message):
+    r"""Output only. Map of minor version to its last qualified version. The
+    key is a minor version (e.g. `1.28`) and the value contains details of the
+    last qualified patch version for that minor version (e.g.
+    `1.28.1-gke.100`).
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        LastQualifiedControlPlaneVersionsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        LastQualifiedControlPlaneVersionsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LastQualifiedControlPlaneVersionsValue
+      object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A QualifiedVersion attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('QualifiedVersion', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LastQualifiedNodeVersionsValue(_messages.Message):
+    r"""Output only. Map of minor version to its last qualified version. The
+    key is a minor version (e.g. `1.28`) and the value contains details of the
+    last qualified patch version for that minor version (e.g.
+    `1.28.1-gke.100`).
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        LastQualifiedNodeVersionsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        LastQualifiedNodeVersionsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LastQualifiedNodeVersionsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A QualifiedVersion attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('QualifiedVersion', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  clusterSelector = _messages.MessageField('ClusterSelector', 1)
+  fleetProjects = _messages.StringField(2, repeated=True)
+  lastQualifiedControlPlaneVersions = _messages.MessageField('LastQualifiedControlPlaneVersionsValue', 3)
+  lastQualifiedNodeVersions = _messages.MessageField('LastQualifiedNodeVersionsValue', 4)
+  soakDuration = _messages.StringField(5)
 
 
 class StandardQueryParameters(_messages.Message):
@@ -7352,6 +8286,136 @@ class TypeMeta(_messages.Message):
 
   apiVersion = _messages.StringField(1)
   kind = _messages.StringField(2)
+
+
+class UIPRRolloutConfig(_messages.Message):
+  r"""The configuration used for the Rollout if triggered for UIPR. These
+  settings are used to adjust the wave distribution of the rollout and other
+  UIPR specific settings.
+
+  Fields:
+    customWaves: Optional. The template for waves in the Rollout. If not set,
+      the default is 5 waves progressing as 1: .55%, 2: 4%, 3: .29.2%, 4:
+      57.4%, 5: 100%, with a minimum completion percentage of 100% for all
+      waves. The last wave must have a upper bound of 100%.
+    excludedMembershipNames: Optional. The excluded memberships from the
+      rollout. If not set, all memberships will be considered for inclusion in
+      the rollout (exclude tags on memberships will still be respected)
+      Membership names are expected in the format of `projects/{project_number
+      }/locations/{location}/memberships/{cluster_id}`.
+    includeMembershipNames: Optional. The included memberships from the
+      rollout. If not set, all memberships will be considered for inclusion in
+      the rollout. If included in excluded_membership_names or tagged with
+      excluded_clusters and included in included_membership_names, the rollout
+      creation will error. Membership names are expected in the format of `pro
+      jects/{project_number}/locations/{location}/memberships/{cluster_id}`
+  """
+
+  customWaves = _messages.MessageField('WaveTemplate', 1, repeated=True)
+  excludedMembershipNames = _messages.StringField(2, repeated=True)
+  includeMembershipNames = _messages.StringField(3, repeated=True)
+
+
+class VersionUpgrade(_messages.Message):
+  r"""Config for version upgrade of clusters.
+
+  Enums:
+    TypeValueValuesEnum: Optional. Type of version upgrade specifies which
+      component should be upgraded.
+
+  Fields:
+    desiredVersion: Optional. Desired version of the component.
+    type: Optional. Type of version upgrade specifies which component should
+      be upgraded.
+  """
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""Optional. Type of version upgrade specifies which component should be
+    upgraded.
+
+    Values:
+      TYPE_UNSPECIFIED: Default value.
+      TYPE_CONTROL_PLANE: Control plane upgrade.
+      TYPE_NODE_POOL: Node pool upgrade.
+      TYPE_CONFIG_SYNC: Config Sync upgrade.
+    """
+    TYPE_UNSPECIFIED = 0
+    TYPE_CONTROL_PLANE = 1
+    TYPE_NODE_POOL = 2
+    TYPE_CONFIG_SYNC = 3
+
+  desiredVersion = _messages.StringField(1)
+  type = _messages.EnumField('TypeValueValuesEnum', 2)
+
+
+class WaveSchedule(_messages.Message):
+  r"""WaveSchedule represents the schedule of a single rollout wave.
+
+  Fields:
+    waveEndTime: Output only. The time at which the wave ends.
+    waveNumber: Output only. The wave number to which this schedule applies.
+    waveStartTime: Output only. The time at which the wave starts.
+  """
+
+  waveEndTime = _messages.StringField(1)
+  waveNumber = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  waveStartTime = _messages.StringField(3)
+
+
+class WaveTemplate(_messages.Message):
+  r"""Template for a wave in the Rollout for custom wave configuration.
+
+  Enums:
+    StragglerMigrationStrategyValueValuesEnum: Optional. The strategy for
+      migrating stragglers after the wave is completed. If not set, the
+      default is STRAGGLER_MIGRATION_STRATEGY_NO_MIGRATION.
+
+  Fields:
+    errorBudgetCount: Optional. The error budget as a number of errored
+      clusters. This value must be non-negative.
+    errorBudgetPercentage: Optional. The error budget as a percentage of the
+      wave size. This value must be between 0.0 and 100.0.
+    minimumCompletionNumber: Optional. The minimum number of upgrades to be
+      completed in the wave, before automatically proceeding to the next wave.
+      If not set, the default is the size of the wave.
+    minimumCompletionPercentage: Optional. The minimum number of upgrades as a
+      percentage of the wave size to be completed in the wave, before
+      automatically proceeding to the next wave. If not set, the default is
+      100%.
+    stragglerMigrationStrategy: Optional. The strategy for migrating
+      stragglers after the wave is completed. If not set, the default is
+      STRAGGLER_MIGRATION_STRATEGY_NO_MIGRATION.
+    upperBoundPercentage: Required. The total percentage of clusters that
+      should be finished by the end of the wave (inclusive of all previous
+      waves). upper_bound_percentage must be monotonically increasing wave to
+      wave and the final wave must be 100.
+  """
+
+  class StragglerMigrationStrategyValueValuesEnum(_messages.Enum):
+    r"""Optional. The strategy for migrating stragglers after the wave is
+    completed. If not set, the default is
+    STRAGGLER_MIGRATION_STRATEGY_NO_MIGRATION.
+
+    Values:
+      STRAGGLER_MIGRATION_STRATEGY_UNSPECIFIED: Unspecified straggler
+        migration strategy.
+      STRAGGLER_MIGRATION_STRATEGY_NO_MIGRATION: No migration of stragglers.
+      STRAGGLER_MIGRATION_STRATEGY_LAST_WAVE: Migrate stragglers to the last
+        wave of the rollout.
+      STRAGGLER_MIGRATION_STRATEGY_NEXT_WAVE: Migrate stragglers to the next
+        wave of the rollout.
+    """
+    STRAGGLER_MIGRATION_STRATEGY_UNSPECIFIED = 0
+    STRAGGLER_MIGRATION_STRATEGY_NO_MIGRATION = 1
+    STRAGGLER_MIGRATION_STRATEGY_LAST_WAVE = 2
+    STRAGGLER_MIGRATION_STRATEGY_NEXT_WAVE = 3
+
+  errorBudgetCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  errorBudgetPercentage = _messages.FloatField(2, variant=_messages.Variant.FLOAT)
+  minimumCompletionNumber = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  minimumCompletionPercentage = _messages.FloatField(4, variant=_messages.Variant.FLOAT)
+  stragglerMigrationStrategy = _messages.EnumField('StragglerMigrationStrategyValueValuesEnum', 5)
+  upperBoundPercentage = _messages.FloatField(6, variant=_messages.Variant.FLOAT)
 
 
 class WorkloadIdentityFeatureSpec(_messages.Message):

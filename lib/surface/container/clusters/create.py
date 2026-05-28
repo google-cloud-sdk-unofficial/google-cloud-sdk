@@ -272,6 +272,7 @@ def ParseCreateOptionsBase(
       create_subnetwork=get_default('create_subnetwork'),
       disable_default_snat=get_default('disable_default_snat'),
       dataplane_v2=get_default('enable_dataplane_v2'),
+      dataplane_v2_optimization_mode=get_default('dataplane_optimization_mode'),
       enable_dataplane_v2_metrics=get_default('enable_dataplane_v2_metrics'),
       disable_dataplane_v2_metrics=get_default('disable_dataplane_v2_metrics'),
       enable_dataplane_v2_flow_observability=get_default(
@@ -546,6 +547,7 @@ def ParseCreateOptionsBase(
       enable_fqdn_network_policy=get_default('enable_fqdn_network_policy'),
       enable_nested_virtualization=get_default('enable_nested_virtualization'),
       enable_ray_cluster_logging=get_default('enable_ray_cluster_logging'),
+      enable_kueue_logging=get_default('enable_kueue_logging'),
       enable_ray_cluster_monitoring=get_default(
           'enable_ray_cluster_monitoring'
       ),
@@ -723,6 +725,9 @@ flags_to_add = {
         'disabledefaultsnat': AddDisableDefaultSnatFlagForClusterCreate,
         'databaseencryption': flags.AddDatabaseEncryptionFlag,
         'dataplanev2': flags.AddDataplaneV2Flag,
+        'dataplanev2optimizationmode': (
+            lambda p: flags.AddDataplaneV2OptimizationModeFlag(p, hidden=True)
+        ),
         'dataplanev2metrics': flags.AddDataplaneV2MetricsFlag,
         'dataplanev2obs': flags.AddDataplaneV2ObservabilityFlags,
         'disksize': flags.AddDiskSizeFlag,
@@ -837,9 +842,7 @@ flags_to_add = {
         ),
         'containerdConfig': flags.AddContainerdConfigFlag,
         'secretManagerConfig': flags.AddSecretManagerEnableFlagGroup,
-        'secretSyncConfig': lambda p: flags.AddSecretSyncFlagGroup(
-            p, hidden=True
-        ),
+        'secretSyncConfig': flags.AddSecretSyncFlagGroup,
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
         'enableCiliumClusterwideNetworkPolicy': (
             flags.AddEnableCiliumClusterwideNetworkPolicyFlag
@@ -849,6 +852,7 @@ flags_to_add = {
             lambda p: flags.AddEnableNestedVirtualizationFlag(p, hidden=False)
         ),
         'enableRayClusterLogging': flags.AddEnableRayClusterLogging,
+        'enableKueueLogging': flags.AddEnableKueueLogging,
         'enableRayClusterMonitoring': flags.AddEnableRayClusterMonitoring,
         'userManagedKeysConfig': flags.AddControlPlaneKeysFlags,
         'insecureRBACBinding': lambda p: flags.AddInsecureRBACBindingFlags(
@@ -931,6 +935,9 @@ flags_to_add = {
         'databaseencryption': flags.AddDatabaseEncryptionFlag,
         'datapath': lambda p: flags.AddDatapathProviderFlag(p, hidden=True),
         'dataplanev2': flags.AddDataplaneV2Flag,
+        'dataplanev2optimizationmode': (
+            lambda p: flags.AddDataplaneV2OptimizationModeFlag(p, hidden=True)
+        ),
         'dataplanev2metrics': flags.AddDataplaneV2MetricsFlag,
         'dataplanev2obs': flags.AddDataplaneV2ObservabilityFlags,
         'enableAmbientNetworking': flags.AddEnableAmbientNetworkingFlag,
@@ -1084,6 +1091,7 @@ flags_to_add = {
             flags.AddEnableCiliumClusterwideNetworkPolicyFlag
         ),
         'enableRayClusterLogging': flags.AddEnableRayClusterLogging,
+        'enableKueueLogging': flags.AddEnableKueueLogging,
         'enableRayClusterMonitoring': flags.AddEnableRayClusterMonitoring,
         'userManagedKeysConfig': flags.AddControlPlaneKeysFlags,
         'insecureRBACBinding': lambda p: flags.AddInsecureRBACBindingFlags(
@@ -1178,6 +1186,9 @@ flags_to_add = {
         'databaseencryption': flags.AddDatabaseEncryptionFlag,
         'datapath': lambda p: flags.AddDatapathProviderFlag(p, hidden=True),
         'dataplanev2': flags.AddDataplaneV2Flag,
+        'dataplanev2optimizationmode': (
+            lambda p: flags.AddDataplaneV2OptimizationModeFlag(p, hidden=True)
+        ),
         'dataplanev2metrics': flags.AddDataplaneV2MetricsFlag,
         'dataplanev2obs': flags.AddDataplaneV2ObservabilityFlags,
         'enableAmbientNetworking': flags.AddEnableAmbientNetworkingFlag,
@@ -1336,6 +1347,7 @@ flags_to_add = {
             flags.AddEnableCiliumClusterwideNetworkPolicyFlag
         ),
         'enableRayClusterLogging': flags.AddEnableRayClusterLogging,
+        'enableKueueLogging': flags.AddEnableKueueLogging,
         'enableRayClusterMonitoring': flags.AddEnableRayClusterMonitoring,
         'userManagedKeysConfig': flags.AddControlPlaneKeysFlags,
         'insecureRBACBinding': lambda p: flags.AddInsecureRBACBindingFlags(
@@ -1745,6 +1757,7 @@ class CreateBeta(Create):
         'enable_cilium_clusterwide_networkpolicy'
     )
     ops.enable_ray_cluster_logging = get_default('enable_ray_cluster_logging')
+    ops.enable_kueue_logging = get_default('enable_kueue_logging')
     ops.enable_ray_cluster_monitoring = get_default(
         'enable_ray_cluster_monitoring'
     )
@@ -1927,6 +1940,7 @@ class CreateAlpha(Create):
         'enable_cilium_clusterwide_networkpolicy'
     )
     ops.enable_ray_cluster_logging = get_default('enable_ray_cluster_logging')
+    ops.enable_kueue_logging = get_default('enable_kueue_logging')
     ops.enable_ray_cluster_monitoring = get_default(
         'enable_ray_cluster_monitoring'
     )

@@ -18,6 +18,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils as mig_utils
 from googlecloudsdk.api_lib.compute.instance_groups.managed import autoscalers as autoscalers_api
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 from googlecloudsdk.command_lib.util.apis import arg_utils
@@ -25,11 +26,23 @@ from googlecloudsdk.core import exceptions
 
 
 def _CommonArgs(parser):
+  """Helper function for defining common arguments."""
+
   instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
       parser)
   mig_utils.GetModeFlag().AddToParser(parser)
   mig_utils.AddScaleInControlFlag(parser, include_clear=True)
   mig_utils.AddMinMaxControl(parser, max_required=False)
+  parser.add_argument(
+      '--stabilization-period',
+      type=arg_parsers.Duration(),
+      help=(
+          'The number of seconds that the autoscaler waits for load'
+          ' stabilization before making scale-in decisions. For more'
+          ' information, see [stabilization'
+          ' period](https://cloud.google.com/compute/docs/autoscaler#stabilization_period).'
+      ),
+  )
   mig_utils.AddScheduledAutoscaling(parser, patch_args=True)
 
 
@@ -38,6 +51,7 @@ class NoMatchingAutoscalerFoundError(exceptions.Error):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
+@base.UniverseCompatible
 class UpdateAutoscaling(base.Command):
   """Update autoscaling parameters of a managed instance group."""
 
@@ -96,6 +110,10 @@ class UpdateAutoscaling(base.Command):
       new_autoscaler.autoscalingPolicy.minNumReplicas = args.min_num_replicas
     if args.IsSpecified('max_num_replicas'):
       new_autoscaler.autoscalingPolicy.maxNumReplicas = args.max_num_replicas
+    if args.IsSpecified('stabilization_period'):
+      new_autoscaler.autoscalingPolicy.stabilizationPeriodSec = (
+          args.stabilization_period
+      )
 
     return self._SendPatchRequest(args, client, autoscalers_client, igm_ref,
                                   new_autoscaler)

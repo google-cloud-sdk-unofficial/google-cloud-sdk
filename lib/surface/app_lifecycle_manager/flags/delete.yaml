@@ -11,9 +11,10 @@
 
         1. Ensure all application code using the flag has been removed and the updated binary is deployed to production.
         2. Confirm that no active Units are still requesting evaluations for that specific flag key.
-        3. Detach from Units: create a new FlagRelease that includes Flag to remove and initiate a Rollout.
-        4. Once the cleanup rollout is complete, you can safely delete the FlagRelease and FlagRevision.
-        5. Run this delete command to permanently remove the Flag.
+        3. Mark Flag for removal: Update the state of the Flag to CLEANUP.
+        4. Detach from Units: Create a new FlagRelease that includes Flag to remove and initiate a Rollout.
+        5. Once the cleanup rollout is complete, you can safely delete the FlagRelease and FlagRevision.
+        6. Run this delete command to permanently remove the Flag.
     examples: |-
       To delete a flag named `my-feature-flag` in the `global` location, run:
 

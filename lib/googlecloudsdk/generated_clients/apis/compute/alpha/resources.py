@@ -455,6 +455,27 @@ class Collections(enum.Enum):
       ['project', 'zone', 'nodeType'],
       True
   )
+  ORGANIZATIONROLLOUTPLANS = (
+      'organizationRolloutPlans',
+      '{+organization}/global/rolloutPlans/{rolloutPlan}',
+      {
+          '':
+              'organizations/{organizationsId}/global/rolloutPlans/'
+              '{rolloutPlan}',
+      },
+      ['organization', 'rolloutPlan'],
+      True
+  )
+  ORGANIZATIONROLLOUTS = (
+      'organizationRollouts',
+      '{+organization}/global/rollouts/{rollout}',
+      {
+          '':
+              'organizations/{organizationsId}/global/rollouts/{rollout}',
+      },
+      ['organization', 'rollout'],
+      True
+  )
   ORGANIZATIONSECURITYPOLICIES = (
       'organizationSecurityPolicies',
       'locations/global/securityPolicies/{securityPolicy}',
@@ -471,6 +492,13 @@ class Collections(enum.Enum):
               'snapshotRecycleBinPolicy',
       },
       ['organization'],
+      True
+  )
+  ORGANIZATIONS = (
+      'organizations',
+      'organizations/{organizationsId}',
+      {},
+      ['organizationsId'],
       True
   )
   PACKETMIRRORINGS = (

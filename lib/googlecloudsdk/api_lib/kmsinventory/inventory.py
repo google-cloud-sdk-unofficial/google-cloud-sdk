@@ -76,29 +76,6 @@ def GetProtectedResourcesSummary(name, fallback_scope=None):
 
 
 def SearchProtectedResources(scope, key_name, resource_types, args):
-  client = GetClientInstance()
-  request = GetMessagesModule().KmsinventoryOrganizationsProtectedResourcesSearchRequest(
-      scope=scope, cryptoKey=key_name, resourceTypes=resource_types
-  )
-
-  return list_pager.YieldFromList(
-      client.organizations_protectedResources,
-      request,
-      method='Search',
-      limit=args.limit,
-      batch_size_attribute='pageSize',
-      batch_size=args.page_size,
-      field='protectedResources',
-  )
-
-
-# TODO: b/465667614 - Remove old function and rephrase function name and
-# comments while doing GA.
-# This new version allows the user to use project ID or project number as the
-# scope and is only available in alpha.
-# This function would be gradually propagated to beta and will be used in place
-# of the old version in ga.
-def SearchProtectedResourcesNew(scope, key_name, resource_types, args):
   """Searches for protected resources within a given scope.
 
   Args:

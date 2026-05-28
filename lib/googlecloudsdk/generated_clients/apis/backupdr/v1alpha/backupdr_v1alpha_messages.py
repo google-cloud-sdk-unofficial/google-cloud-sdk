@@ -3123,7 +3123,7 @@ class CloudSqlInstanceInitializationConfig(_messages.Message):
 
 
 class ComputeInstanceBackupPlanProperties(_messages.Message):
-  r"""--- ComputeInstanceBackupPlanProperties Message ---
+  r"""Properties for a compute instance backup plan.
 
   Fields:
     guestFlush: Optional. Indicates whether to perform a guest flush operation
@@ -3772,7 +3772,7 @@ class DataSourceReference(_messages.Message):
 
 
 class DiskBackupPlanProperties(_messages.Message):
-  r"""--- DiskBackupPlanProperties Message ---
+  r"""Properties for a disk backup plan.
 
   Fields:
     guestFlush: Optional. Indicates whether to perform a guest flush operation

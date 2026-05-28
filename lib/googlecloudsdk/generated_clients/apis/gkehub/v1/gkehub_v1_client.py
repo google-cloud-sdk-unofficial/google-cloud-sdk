@@ -46,6 +46,8 @@ class GkehubV1(base_api.BaseApiClient):
     self.projects_locations_memberships_rbacrolebindings = self.ProjectsLocationsMembershipsRbacrolebindingsService(self)
     self.projects_locations_memberships = self.ProjectsLocationsMembershipsService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
+    self.projects_locations_rolloutSequences = self.ProjectsLocationsRolloutSequencesService(self)
+    self.projects_locations_rollouts = self.ProjectsLocationsRolloutsService(self)
     self.projects_locations_scopes_namespaces = self.ProjectsLocationsScopesNamespacesService(self)
     self.projects_locations_scopes_rbacrolebindings = self.ProjectsLocationsScopesRbacrolebindingsService(self)
     self.projects_locations_scopes = self.ProjectsLocationsScopesService(self)
@@ -1168,6 +1170,80 @@ class GkehubV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsRolloutSequencesService(base_api.BaseApiService):
+    """Service class for the projects_locations_rolloutSequences resource."""
+
+    _NAME = 'projects_locations_rolloutSequences'
+
+    def __init__(self, client):
+      super(GkehubV1.ProjectsLocationsRolloutSequencesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Retrieve a single rollout sequence.
+
+      Args:
+        request: (GkehubProjectsLocationsRolloutSequencesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (RolloutSequence) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/rolloutSequences/{rolloutSequencesId}',
+        http_method='GET',
+        method_id='gkehub.projects.locations.rolloutSequences.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='GkehubProjectsLocationsRolloutSequencesGetRequest',
+        response_type_name='RolloutSequence',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsRolloutsService(base_api.BaseApiService):
+    """Service class for the projects_locations_rollouts resource."""
+
+    _NAME = 'projects_locations_rollouts'
+
+    def __init__(self, client):
+      super(GkehubV1.ProjectsLocationsRolloutsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Retrieves a single rollout.
+
+      Args:
+        request: (GkehubProjectsLocationsRolloutsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Rollout) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/rollouts/{rolloutsId}',
+        http_method='GET',
+        method_id='gkehub.projects.locations.rollouts.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='GkehubProjectsLocationsRolloutsGetRequest',
+        response_type_name='Rollout',
+        supports_download=False,
+    )
+
   class ProjectsLocationsScopesNamespacesService(base_api.BaseApiService):
     """Service class for the projects_locations_scopes_namespaces resource."""
 
@@ -1776,7 +1852,7 @@ class GkehubV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the ListLocationsRequest.name field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
       Args:
         request: (GkehubProjectsLocationsListRequest) input message

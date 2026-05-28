@@ -20,6 +20,7 @@ from __future__ import annotations
 from collections.abc import Mapping, MutableMapping, MutableSet, Sequence
 from typing import Any
 
+from googlecloudsdk.command_lib.cluster_director.clusters import _validator
 from googlecloudsdk.command_lib.cluster_director.clusters import errors
 
 ClusterDirectorError = errors.ClusterDirectorError
@@ -236,6 +237,7 @@ def MakeClusterCompute(args: Any, message_module: Any, cluster_ref: Any) -> Any:
   if args.IsSpecified("on_demand_instances"):
     for instance in args.on_demand_instances:
       compute_id = instance.get("id")
+      _validator.ValidateResourceID(compute_id)
       compute_ids.add(compute_id)
       compute.additionalProperties.append(
           message_module.Cluster.ComputeResourcesValue.AdditionalProperty(
@@ -246,6 +248,7 @@ def MakeClusterCompute(args: Any, message_module: Any, cluster_ref: Any) -> Any:
   if args.IsSpecified("spot_instances"):
     for instance in args.spot_instances:
       compute_id = instance.get("id")
+      _validator.ValidateResourceID(compute_id)
       compute_ids.add(compute_id)
       compute.additionalProperties.append(
           message_module.Cluster.ComputeResourcesValue.AdditionalProperty(
@@ -256,6 +259,7 @@ def MakeClusterCompute(args: Any, message_module: Any, cluster_ref: Any) -> Any:
   if args.IsSpecified("reserved_instances"):
     for instance in args.reserved_instances:
       compute_id = instance.get("id")
+      _validator.ValidateResourceID(compute_id)
       compute_ids.add(compute_id)
       compute.additionalProperties.append(
           message_module.Cluster.ComputeResourcesValue.AdditionalProperty(
@@ -268,6 +272,7 @@ def MakeClusterCompute(args: Any, message_module: Any, cluster_ref: Any) -> Any:
   if args.IsSpecified("flex_start_instances"):
     for instance in args.flex_start_instances:
       compute_id = instance.get("id")
+      _validator.ValidateResourceID(compute_id)
       compute_ids.add(compute_id)
       compute.additionalProperties.append(
           message_module.Cluster.ComputeResourcesValue.AdditionalProperty(
@@ -431,8 +436,10 @@ def MakeClusterComputePatch(
       is_compute_updated = True
   if args.IsSpecified("add_on_demand_instances"):
     for instance in args.add_on_demand_instances:
+      compute_id = instance.get("id")
+      _validator.ValidateResourceID(compute_id)
       _AddKeyToDictSpec(
-          key=instance.get("id"),
+          key=compute_id,
           dict_spec=compute_by_id,
           value=_MakeOnDemandComputeResource(message_module, instance),
           exception_message=_COMPUTE_INSTANCE_ALREADY_EXISTS_ERROR,
@@ -440,8 +447,10 @@ def MakeClusterComputePatch(
       is_compute_updated = True
   if args.IsSpecified("add_spot_instances"):
     for instance in args.add_spot_instances:
+      compute_id = instance.get("id")
+      _validator.ValidateResourceID(compute_id)
       _AddKeyToDictSpec(
-          key=instance.get("id"),
+          key=compute_id,
           dict_spec=compute_by_id,
           value=_MakeSpotComputeResource(message_module, instance),
           exception_message=_COMPUTE_INSTANCE_ALREADY_EXISTS_ERROR,
@@ -449,8 +458,10 @@ def MakeClusterComputePatch(
       is_compute_updated = True
   if args.IsSpecified("add_reserved_instances"):
     for instance in args.add_reserved_instances:
+      compute_id = instance.get("id")
+      _validator.ValidateResourceID(compute_id)
       _AddKeyToDictSpec(
-          key=instance.get("id"),
+          key=compute_id,
           dict_spec=compute_by_id,
           value=_MakeReservedComputeResource(
               message_module, cluster_ref, instance
@@ -460,8 +471,10 @@ def MakeClusterComputePatch(
       is_compute_updated = True
   if args.IsSpecified("add_flex_start_instances"):
     for instance in args.add_flex_start_instances:
+      compute_id = instance.get("id")
+      _validator.ValidateResourceID(compute_id)
       _AddKeyToDictSpec(
-          key=instance.get("id"),
+          key=compute_id,
           dict_spec=compute_by_id,
           value=_MakeFlexStartComputeResource(message_module, instance),
           exception_message=_COMPUTE_INSTANCE_ALREADY_EXISTS_ERROR,

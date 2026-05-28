@@ -95,3 +95,15 @@ def ListAddressGroupReferences(service, request_type, args):
       next_token_attribute='nextPageToken',
       batch_size_attribute='pageSize',
   )
+
+
+def ForceStartOrganizationAddressGroupProgressiveRollout(release_track, args):
+  client = GetClientInstance(release_track)
+  service = client.organizations_locations_global_addressGroups
+  messages = GetMessagesModule(release_track)
+  address_group = args.CONCEPTS.address_group.Parse()
+  request = messages.NetworksecurityOrganizationsLocationsGlobalAddressGroupsForceStartProgressiveRolloutRequest(
+      addressGroup=address_group.RelativeName(),
+      forceStartProgressiveRolloutRequest=messages.ForceStartProgressiveRolloutRequest(),
+  )
+  return service.ForceStartProgressiveRollout(request)

@@ -36,7 +36,6 @@ from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import retry
-import six
 
 # Command needs to be in one line for the docgen tool to format properly.
 _EXAMPLES = """
@@ -189,8 +188,11 @@ AFTER the attach operation completes.
       kube_client.Delete(manifest)
 
   def _get_authority(self, kube_client):
-    openid_config_json = six.ensure_str(
-        kube_client.GetOpenIDConfiguration(), encoding='utf-8'
+    openid_config_raw = kube_client.GetOpenIDConfiguration()
+    openid_config_json = (
+        openid_config_raw.decode('utf-8')
+        if isinstance(openid_config_raw, bytes)
+        else openid_config_raw
     )
     issuer_url = json.loads(openid_config_json).get('issuer')
     if not issuer_url:

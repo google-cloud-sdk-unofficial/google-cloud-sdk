@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -58,3 +58,20 @@ class ApplicationTemplatesClient(object):
         importApplicationTemplateIaCRequest=import_iac_request)
 
     return self._service.ImportIaC(request)
+
+  def GenerateAssessmentReport(self, name, *,
+                               service_account=None):
+    """Calls the GenerateApplicationTemplateAssessmentReport RPC.
+
+    Args:
+      name: The full resource name of the Application Template.
+      service_account: The service account to use for the preview.
+
+    Returns:
+      The response from the API call.
+    """
+    return self._service.GenerateAssessmentReport(
+        self.messages.DesigncenterProjectsLocationsSpacesApplicationTemplatesGenerateAssessmentReportRequest(
+            name=name,
+            generateApplicationTemplateAssessmentReportRequest=self.messages.GenerateApplicationTemplateAssessmentReportRequest(
+                serviceAccount=service_account)))

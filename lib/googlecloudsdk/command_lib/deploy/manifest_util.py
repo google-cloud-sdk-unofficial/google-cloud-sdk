@@ -1335,8 +1335,9 @@ def _ParseStorageURI(value: Any, transform_context: _TransformContext) -> None:
   res = {
       BUCKET_FIELD: storage_object.bucket_name,
       OBJECT_FIELD: storage_object.resource_name,
-      GENERATION_FIELD: storage_object.generation,
   }
+  if storage_object.generation:
+    res[GENERATION_FIELD] = storage_object.generation
   source = transform_context.manifest.setdefault(SOURCE_FIELD, {})
   if STORAGE_URI_FIELD in source:
     source.pop(STORAGE_URI_FIELD)
@@ -1356,7 +1357,7 @@ def _StorageSourceFromStorage(
   source = transform_context.manifest.setdefault(SOURCE_FIELD, {})
   if STORAGE_FIELD in source:
     if GENERATION_FIELD in source[STORAGE_FIELD]:
-      source[STORAGE_FIELD][GENERATION_FIELD] = str(
+      source[STORAGE_FIELD][GENERATION_FIELD] = int(
           source[STORAGE_FIELD][GENERATION_FIELD]
       )
     source[STORAGE_SOURCE_FIELD] = source.pop(STORAGE_FIELD)

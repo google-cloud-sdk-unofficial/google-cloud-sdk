@@ -33,6 +33,7 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.util import times
 from googlecloudsdk.generated_clients.apis.cloudkms.v1 import cloudkms_v1_client
 
+ArgumentParser = argparse.ArgumentParser
 EKM_CONNECTION_COLLECTION = 'cloudkms.projects.locations.ekmConnections'
 KEY_RING_COLLECTION = 'cloudkms.projects.locations.keyRings'
 KEY_HANDLE_COLLECTION = 'cloudkms.projects.locations.keyHandles'
@@ -776,6 +777,19 @@ def AddFolderIdFlag(parser, required=False):
       '--folder',
       help='The folder id in which the AutokeyConfig resource exists.',
       required=required,
+  )
+
+
+def AddAutokeyConfigResourceFlags(parser: ArgumentParser) -> None:
+  """Adds resource flags for AutokeyConfig."""
+  group = parser.add_group(mutex=True, required=True)
+  group.add_argument(
+      '--folder',
+      help='The folder id in which the AutokeyConfig resource exists.',
+  )
+  group.add_argument(
+      '--project',
+      help='The project id in which the AutokeyConfig resource exists.',
   )
 
 

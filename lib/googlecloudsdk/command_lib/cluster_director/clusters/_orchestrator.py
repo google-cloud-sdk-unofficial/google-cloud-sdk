@@ -25,6 +25,7 @@ from typing import Any
 
 from googlecloudsdk.api_lib.util import messages as messages_util
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.cluster_director.clusters import _validator
 from googlecloudsdk.command_lib.cluster_director.clusters import errors
 from googlecloudsdk.core.util import files
 
@@ -356,6 +357,8 @@ def MakeClusterSlurmOrchestrator(args, message_module, cluster):
   default_storage_configs = _GetStorageConfigs(message_module, cluster)
   if args.IsSpecified("slurm_node_sets"):
     for node_set in args.slurm_node_sets:
+      node_set_id = node_set.get("id")
+      _validator.ValidateResourceID(node_set_id)
       node_set_keys = set(node_set.keys())
       node_set_type = node_set.get("type")
       has_gke_fields = node_set_keys.intersection(_GKE_NODE_POOL_FIELDS)
@@ -373,6 +376,8 @@ def MakeClusterSlurmOrchestrator(args, message_module, cluster):
 
   if args.IsSpecified("slurm_partitions"):
     for partition in args.slurm_partitions:
+      partition_id = partition.get("id")
+      _validator.ValidateResourceID(partition_id)
       slurm.partitions.append(_MakeSlurmPartition(message_module, partition))
 
   if args.IsSpecified("slurm_default_partition"):
@@ -544,6 +549,8 @@ def MakeClusterSlurmOrchestratorPatch(
       storage_configs = _GetStorageConfigs(
           message_module, storage_configs_source
       )
+      node_set_id = node_set.get("id")
+      _validator.ValidateResourceID(node_set_id)
       node_set_keys = set(node_set.keys())
       node_set_type_str = node_set.get("type")
       has_gke_fields = node_set_keys.intersection(_GKE_NODE_POOL_FIELDS)
@@ -560,7 +567,7 @@ def MakeClusterSlurmOrchestratorPatch(
             use_existing_cluster=True,
         )
       _AddKeyToDictSpec(
-          key=node_set.get("id"),
+          key=node_set_id,
           dict_spec=slurm_node_sets,
           value=_MakeSlurmNodeSet(
               message_module, node_set, storage_configs
@@ -604,8 +611,10 @@ def MakeClusterSlurmOrchestratorPatch(
       is_partitions_updated = True
   if args.IsSpecified("add_slurm_partitions"):
     for partition in args.add_slurm_partitions:
+      partition_id = partition.get("id")
+      _validator.ValidateResourceID(partition_id)
       _AddKeyToDictSpec(
-          key=partition.get("id"),
+          key=partition_id,
           dict_spec=slurm_partitions,
           value=_MakeSlurmPartition(message_module, partition),
           exception_message=_SLURM_PARTITION_ALREADY_EXISTS_ERROR,

@@ -1996,6 +1996,8 @@ class NetworkConfig(_messages.Message):
       consumer VPC network this private cloud is attached to. Specify the name
       in the following form: `projects/{project}/global/networks/{network_id}`
       where `{project}` can either be a project number or a project ID.
+    nsxEdgeConfig: Optional. Specifies the NSX Edge configuration for the
+      network.
     serviceNetwork: Output only. Deprecated: Output only. The relative
       resource name of the service VPC network this private cloud is attached
       to. The name is specified in the following form:
@@ -2016,10 +2018,11 @@ class NetworkConfig(_messages.Message):
   managementCidr = _messages.StringField(2)
   managementIpAddressLayoutVersion = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   network = _messages.StringField(4)
-  serviceNetwork = _messages.StringField(5)
-  serviceSubnets = _messages.MessageField('Subnet', 6, repeated=True)
-  vmwareEngineNetwork = _messages.StringField(7)
-  vmwareEngineNetworkCanonical = _messages.StringField(8)
+  nsxEdgeConfig = _messages.MessageField('NsxEdgeConfig', 5)
+  serviceNetwork = _messages.StringField(6)
+  serviceSubnets = _messages.MessageField('Subnet', 7, repeated=True)
+  vmwareEngineNetwork = _messages.StringField(8)
+  vmwareEngineNetworkCanonical = _messages.StringField(9)
 
 
 class NetworkPeering(_messages.Message):
@@ -2437,6 +2440,50 @@ class Nsx(_messages.Message):
   internalIp = _messages.StringField(2)
   state = _messages.EnumField('StateValueValuesEnum', 3)
   version = _messages.StringField(4)
+
+
+class NsxEdgeConfig(_messages.Message):
+  r"""Edge configuration options for a Private Cloud.
+
+  Enums:
+    HaModeValueValuesEnum: Optional. HaMode of the NSX Edge cluster.
+    SizeValueValuesEnum: Optional. Specifies the sizing of the Edge nodes.
+
+  Fields:
+    count: Optional. Number of edge VMs
+    haMode: Optional. HaMode of the NSX Edge cluster.
+    size: Optional. Specifies the sizing of the Edge nodes.
+  """
+
+  class HaModeValueValuesEnum(_messages.Enum):
+    r"""Optional. HaMode of the NSX Edge cluster.
+
+    Values:
+      HA_MODE_UNSPECIFIED: Unspecified ha mode.
+      ACTIVE_ACTIVE: Active-active ha mode.
+      ACTIVE_STANDBY: Active-standby ha mode.
+    """
+    HA_MODE_UNSPECIFIED = 0
+    ACTIVE_ACTIVE = 1
+    ACTIVE_STANDBY = 2
+
+  class SizeValueValuesEnum(_messages.Enum):
+    r"""Optional. Specifies the sizing of the Edge nodes.
+
+    Values:
+      SIZE_UNSPECIFIED: Unspecified or default sizing.
+      SMALL: Small edge VM size.
+      LARGE: Large edge VM size.
+      XLARGE: Extra large edge VM size.
+    """
+    SIZE_UNSPECIFIED = 0
+    SMALL = 1
+    LARGE = 2
+    XLARGE = 3
+
+  count = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  haMode = _messages.EnumField('HaModeValueValuesEnum', 2)
+  size = _messages.EnumField('SizeValueValuesEnum', 3)
 
 
 class Operation(_messages.Message):
@@ -4279,9 +4326,8 @@ class VmwareengineProjectsLocationsListRequest(_messages.Message):
   r"""A VmwareengineProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).

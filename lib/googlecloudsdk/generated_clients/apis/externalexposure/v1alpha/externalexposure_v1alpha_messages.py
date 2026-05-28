@@ -52,9 +52,8 @@ class ExternalexposureFoldersLocationsListRequest(_messages.Message):
   r"""A ExternalexposureFoldersLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -157,9 +156,8 @@ class ExternalexposureOrganizationsLocationsListRequest(_messages.Message):
   r"""A ExternalexposureOrganizationsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -262,9 +260,8 @@ class ExternalexposureProjectsLocationsListRequest(_messages.Message):
   r"""A ExternalexposureProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -595,6 +592,8 @@ class ScanMetrics(_messages.Message):
       exposed.
     exposedUiTargetsCount: Output only. Number of exposed targets with exposed
       UI detected.
+    failedProjectsCount: Output only. Number of projects with failed scans in
+      the last completed scan.
     latestScanTime: Output only. Timestamp of the last completed batch scan
       from which these metrics were derived. If metrics are aggregated over a
       scope (e.g. folder or organization), this field is skipped.
@@ -605,12 +604,12 @@ class ScanMetrics(_messages.Message):
     nextScanTime: Output only. Timestamp of the next scheduled batch scan. If
       metrics are aggregated over a scope (e.g. folder or organization), this
       field is skipped.
-    scannedProjectsCount: Output only. Number of projects scanned in the last
-      completed scan.
     scannedResourcesCount: Output only. Number of resources scanned in the
       last completed scan.
     scannedTargetsCount: Output only. Number of target (IP:Port combinations)
       scanned.
+    successfulProjectsCount: Output only. Number of projects scanned
+      successfully in the last completed scan.
     weakCredentialsTargetsCount: Output only. Number of exposed targets with
       weak credentials detected.
   """
@@ -618,13 +617,14 @@ class ScanMetrics(_messages.Message):
   detectedPorts = _messages.IntegerField(1, repeated=True, variant=_messages.Variant.INT32)
   exposedTargetsCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
   exposedUiTargetsCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  latestScanTime = _messages.StringField(4)
-  name = _messages.StringField(5)
-  nextScanTime = _messages.StringField(6)
-  scannedProjectsCount = _messages.IntegerField(7, variant=_messages.Variant.INT32)
+  failedProjectsCount = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  latestScanTime = _messages.StringField(5)
+  name = _messages.StringField(6)
+  nextScanTime = _messages.StringField(7)
   scannedResourcesCount = _messages.IntegerField(8, variant=_messages.Variant.INT32)
   scannedTargetsCount = _messages.IntegerField(9, variant=_messages.Variant.INT32)
-  weakCredentialsTargetsCount = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  successfulProjectsCount = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  weakCredentialsTargetsCount = _messages.IntegerField(11, variant=_messages.Variant.INT32)
 
 
 class StandardQueryParameters(_messages.Message):

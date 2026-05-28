@@ -3483,6 +3483,13 @@ class GooglePrivacyDlpV2AllInfoTypes(_messages.Message):
   r"""Apply transformation to all findings."""
 
 
+class GooglePrivacyDlpV2AllMessages(_messages.Message):
+  r"""If set, indicates that the finding applies to all messages in the
+  conversation.
+  """
+
+
+
 class GooglePrivacyDlpV2AllOtherBigQueryTables(_messages.Message):
   r"""Catch-all for all other tables not specified by other filters. Should
   always be last, except for single-table configurations, which will only have
@@ -4735,6 +4742,9 @@ class GooglePrivacyDlpV2ContentItem(_messages.Message):
   Fields:
     byteItem: Content data to inspect or redact. Replaces `type` and `data`.
     contentMetadata: User provided metadata for the content.
+    conversation: Represents a conversation (either complete or a slice). It
+      is assumed that all included messages are contiguous and ordered in
+      chronological order.
     table: Structured content for inspection. See
       https://cloud.google.com/sensitive-data-protection/docs/inspecting-
       text#inspecting_a_table to learn more.
@@ -4743,8 +4753,9 @@ class GooglePrivacyDlpV2ContentItem(_messages.Message):
 
   byteItem = _messages.MessageField('GooglePrivacyDlpV2ByteContentItem', 1)
   contentMetadata = _messages.MessageField('GooglePrivacyDlpV2ContentMetadata', 2)
-  table = _messages.MessageField('GooglePrivacyDlpV2Table', 3)
-  value = _messages.StringField(4)
+  conversation = _messages.MessageField('GooglePrivacyDlpV2Conversation', 3)
+  table = _messages.MessageField('GooglePrivacyDlpV2Table', 4)
+  value = _messages.StringField(5)
 
 
 class GooglePrivacyDlpV2ContentLocation(_messages.Message):
@@ -4765,6 +4776,7 @@ class GooglePrivacyDlpV2ContentLocation(_messages.Message):
       last_modified_time property. For Datastore, this field isn't populated.
     containerVersion: Finding container version, if available ("generation"
       for Cloud Storage).
+    conversationLocation: Location within a conversation.
     documentLocation: Location data for document files.
     imageLocation: Location within an image's pixels.
     metadataLocation: Location within the metadata for inspected content.
@@ -4774,10 +4786,11 @@ class GooglePrivacyDlpV2ContentLocation(_messages.Message):
   containerName = _messages.StringField(1)
   containerTimestamp = _messages.StringField(2)
   containerVersion = _messages.StringField(3)
-  documentLocation = _messages.MessageField('GooglePrivacyDlpV2DocumentLocation', 4)
-  imageLocation = _messages.MessageField('GooglePrivacyDlpV2ImageLocation', 5)
-  metadataLocation = _messages.MessageField('GooglePrivacyDlpV2MetadataLocation', 6)
-  recordLocation = _messages.MessageField('GooglePrivacyDlpV2RecordLocation', 7)
+  conversationLocation = _messages.MessageField('GooglePrivacyDlpV2ConversationLocation', 4)
+  documentLocation = _messages.MessageField('GooglePrivacyDlpV2DocumentLocation', 5)
+  imageLocation = _messages.MessageField('GooglePrivacyDlpV2ImageLocation', 6)
+  metadataLocation = _messages.MessageField('GooglePrivacyDlpV2MetadataLocation', 7)
+  recordLocation = _messages.MessageField('GooglePrivacyDlpV2RecordLocation', 8)
 
 
 class GooglePrivacyDlpV2ContentMetadata(_messages.Message):
@@ -4788,6 +4801,68 @@ class GooglePrivacyDlpV2ContentMetadata(_messages.Message):
   """
 
   properties = _messages.MessageField('GooglePrivacyDlpV2KeyValueMetadataProperty', 1, repeated=True)
+
+
+class GooglePrivacyDlpV2Conversation(_messages.Message):
+  r"""Complete conversation or slice of a conversation. It is assumed that all
+  included messages are contiguous and ordered in chronological order.
+
+  Fields:
+    messages: Messages exchanged within this conversation. The maximum number
+      of messages allowed is 50k. The order of the messages is assumed to be
+      chronological and will be used to index findings in the response.
+  """
+
+  messages = _messages.MessageField('GooglePrivacyDlpV2ConversationMessage', 1, repeated=True)
+
+
+class GooglePrivacyDlpV2ConversationLocation(_messages.Message):
+  r"""Location within a conversation.
+
+  Fields:
+    allMessages: If set, indicates that the finding applies to all messages in
+      the conversation.
+    messageIndex: Matches an index of a message in the conversation provided
+      in the request.
+  """
+
+  allMessages = _messages.MessageField('GooglePrivacyDlpV2AllMessages', 1)
+  messageIndex = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+
+
+class GooglePrivacyDlpV2ConversationMessage(_messages.Message):
+  r"""Single message in a conversation.
+
+  Enums:
+    MessageTypeValueValuesEnum: The type of message.
+
+  Fields:
+    content: The contents of this message.
+    messageType: The type of message.
+    participantId: Optional. The identifier of the participant. For example
+      'test-user' or 'gemini'. The participant ID can contain lowercase
+      letters, numbers, and hyphens; that is, it must match the regular
+      expression: `^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$`. The maximum length is
+      63 characters.
+  """
+
+  class MessageTypeValueValuesEnum(_messages.Enum):
+    r"""The type of message.
+
+    Values:
+      MESSAGE_TYPE_UNSPECIFIED: Unused.
+      CONTENT: Message contains content to be inspected.
+      CONTEXT: Message contains context only and will not have findings
+        reported from it during inspection or redacted from it during de-
+        identification.
+    """
+    MESSAGE_TYPE_UNSPECIFIED = 0
+    CONTENT = 1
+    CONTEXT = 2
+
+  content = _messages.StringField(1)
+  messageType = _messages.EnumField('MessageTypeValueValuesEnum', 2)
+  participantId = _messages.StringField(3)
 
 
 class GooglePrivacyDlpV2CreateConnectionRequest(_messages.Message):
@@ -7161,7 +7236,7 @@ class GooglePrivacyDlpV2Export(_messages.Message):
       may not be instantly visible to queries by the time your topic receives
       the Pub/Sub notification. * The best practice is to use the same table
       for an entire organization so that you can take advantage of the
-      [provided Looker reports](https://cloud.google.com/sensitive-data-
+      [provided Data Studio reports](https://cloud.google.com/sensitive-data-
       protection/docs/analyze-data-profiles#use_a_premade_report). If you use
       VPC Service Controls to define security perimeters, then you must use a
       separate table for each boundary.
@@ -8672,6 +8747,12 @@ class GooglePrivacyDlpV2InspectTemplate(_messages.Message):
   protection/docs/concepts-templates to learn more.
 
   Fields:
+    allowLimitedAvailabilityInfoTypes: Optional. Enables the use of [limited-
+      availability built-in
+      infoTypes](https://docs.cloud.google.com/sensitive-data-
+      protection/docs/infotypes-reference#limited-availability-infotypes) in
+      inspect_config. These infoTypes are supported only in specific regions
+      and can cause scanning errors if used elsewhere.
     createTime: Output only. The creation timestamp of an inspectTemplate.
     description: Short description (max 256 chars).
     displayName: Display name (max 256 chars).
@@ -8683,12 +8764,13 @@ class GooglePrivacyDlpV2InspectTemplate(_messages.Message):
     updateTime: Output only. The last update timestamp of an inspectTemplate.
   """
 
-  createTime = _messages.StringField(1)
-  description = _messages.StringField(2)
-  displayName = _messages.StringField(3)
-  inspectConfig = _messages.MessageField('GooglePrivacyDlpV2InspectConfig', 4)
-  name = _messages.StringField(5)
-  updateTime = _messages.StringField(6)
+  allowLimitedAvailabilityInfoTypes = _messages.BooleanField(1)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  displayName = _messages.StringField(4)
+  inspectConfig = _messages.MessageField('GooglePrivacyDlpV2InspectConfig', 5)
+  name = _messages.StringField(6)
+  updateTime = _messages.StringField(7)
 
 
 class GooglePrivacyDlpV2InspectionRule(_messages.Message):
@@ -11593,15 +11675,15 @@ class GooglePrivacyDlpV2TransformationResultStatus(_messages.Message):
 
     Values:
       STATE_TYPE_UNSPECIFIED: Unused.
-      INVALID_TRANSFORM: This will be set when a finding could not be
-        transformed (i.e. outside user set bucket range).
-      BIGQUERY_MAX_ROW_SIZE_EXCEEDED: This will be set when a BigQuery
-        transformation was successful but could not be stored back in BigQuery
-        because the transformed row exceeds BigQuery's max row size.
-      METADATA_UNRETRIEVABLE: This will be set when there is a finding in the
+      INVALID_TRANSFORM: This is set when a finding cannot be transformed
+        (i.e. outside user set bucket range).
+      BIGQUERY_MAX_ROW_SIZE_EXCEEDED: This is set when a transformation is
+        successful but cannot be stored in BigQuery because the transformed
+        row exceeds BigQuery's max row size.
+      METADATA_UNRETRIEVABLE: This is set when there is a finding in the
         custom metadata of a file, but at the write time of the transformed
         file, this key / value pair is unretrievable.
-      SUCCESS: This will be set when the transformation and storing of it is
+      SUCCESS: This is set when the transformation and its storage are
         successful.
     """
     STATE_TYPE_UNSPECIFIED = 0

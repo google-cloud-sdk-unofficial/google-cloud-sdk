@@ -69,6 +69,7 @@ ARGS_CONFLICTING_WITH_AUTOSCALING_FILE_BETA = [
     'scale_based_on_load_balancing',
     'target_cpu_utilization',
     'target_load_balancing_utilization',
+    'stabilization_period',
 ]
 
 ARGS_CONFLICTING_WITH_AUTOSCALING_FILE_ALPHA = (
@@ -122,6 +123,17 @@ def AddAutoscalerArgs(parser, autoscaling_file_enabled=False, patch_args=False):
           ' vary because of numerous factors. We recommend that you test how'
           ' long your application may take to initialize. To do this, create a'
           " VM and time your application's startup process."
+      ),
+  )
+  parser.add_argument(
+      '--stabilization-period',
+      type=arg_parsers.Duration(),
+      help=(
+          'The number of seconds that the autoscaler waits for load'
+          ' stabilization before making scale-in decisions. For more'
+          ' information,'
+          ' see [stabilization'
+          ' period](https://cloud.google.com/compute/docs/autoscaler#stabilization_period).'
       ),
   )
   parser.add_argument('--description', help='Notes about Autoscaler.')
@@ -1301,6 +1313,7 @@ def _BuildAutoscalerPolicy(args, messages, original):
   """
   policy_dict = {
       'coolDownPeriodSec': args.cool_down_period,
+      'stabilizationPeriodSec': args.stabilization_period,
       'cpuUtilization': _BuildCpuUtilization(args, messages),
       'customMetricUtilizations': _BuildCustomMetricUtilizations(
           args, messages, original

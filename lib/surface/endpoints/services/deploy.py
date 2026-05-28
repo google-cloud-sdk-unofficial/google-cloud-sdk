@@ -18,6 +18,7 @@
 
 import os
 from typing import Final
+import urllib.parse
 
 from googlecloudsdk.api_lib.endpoints import config_reporter
 from googlecloudsdk.api_lib.endpoints import exceptions
@@ -30,7 +31,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import http_encoding
-import six.moves.urllib.parse
 
 
 ADVICE_STRING = (
@@ -99,8 +99,8 @@ def GenerateManagementUrl(service):
   return (
       'https://console.cloud.google.com/endpoints/api/'
       '{service}/overview?project={project}'.format(
-          service=six.moves.urllib.parse.quote(service),
-          project=six.moves.urllib.parse.quote(project),
+          service=urllib.parse.quote(service),
+          project=urllib.parse.quote(project),
       )
   )
 
@@ -371,7 +371,7 @@ class _BaseDeploy(object):
                         ' "x-google-endpoint" extension.'
                     ).format(service_config_file)
                 )
-              x_google_endpoint_service_name = six.moves.urllib.parse.urlparse(
+              x_google_endpoint_service_name = urllib.parse.urlparse(
                   s.get('url')
               ).hostname
               found_x_google_endpoint = True

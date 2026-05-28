@@ -23,8 +23,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.configurations import named_configs
 
-import six
-
 
 class Get(base.Command):
   """Print the value of a Google Cloud CLI property.
@@ -87,7 +85,7 @@ class Get(base.Command):
           log.status.Print('Defaults to ', default_endpoint)
     except properties.InvalidValueError as e:
       # Writing warning to stderr but returning invalid value as is
-      log.warning(six.text_type(e))
+      log.warning(str(e))
       value = properties.VALUES.Section(section).Property(prop).Get(
           validate=False)
     return value

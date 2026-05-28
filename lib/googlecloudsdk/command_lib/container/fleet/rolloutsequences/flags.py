@@ -145,6 +145,7 @@ class RolloutSequenceFlags:
     )
 
   def AddUpgradeFlags(self):
+    """Add flags for upgrade command."""
     group = self.parser.add_mutually_exclusive_group(required=True)
     group.add_argument(
         '--control-plane-version',
@@ -159,6 +160,14 @@ class RolloutSequenceFlags:
         help=textwrap.dedent("""\
             The GKE version to upgrade the nodes to.
         """),
+    )
+    self.parser.add_argument(
+        '--force',
+        action='store_true',
+        help=(
+            'Force rollout creation even if an active rollout exists on the'
+            ' first stage of the sequence.'
+        ),
     )
 
   def AddRolloutSequenceResourceArg(self):
@@ -396,3 +405,7 @@ class RolloutSequenceFlagParser:
   def Version(self) -> str | None:
     """Parses version based on flags."""
     return self.args.control_plane_version or self.args.node_version
+
+  def Force(self) -> bool:
+    """Parses force flag."""
+    return getattr(self.args, 'force', False)

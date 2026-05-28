@@ -590,7 +590,8 @@ class Instance(_messages.Message):
   Enums:
     AuthorizationModeValueValuesEnum: Optional. Immutable. Authorization mode
       of the instance.
-    ModeValueValuesEnum: Optional. The mode config for the instance.
+    ModeValueValuesEnum: Optional. Immutable. The mode config for the
+      instance.
     NodeTypeValueValuesEnum: Optional. Machine type for individual nodes of
       the instance.
     ServerCaModeValueValuesEnum: Optional. Immutable. The Server CA mode for
@@ -661,7 +662,7 @@ class Instance(_messages.Message):
     managedBackupSource: Optional. Immutable. Backups that generated and
       managed by memorystore service.
     migrationConfig: Output only. Migration config for the instance.
-    mode: Optional. The mode config for the instance.
+    mode: Optional. Immutable. The mode config for the instance.
     name: Identifier. Unique name of the instance. Format:
       projects/{project}/locations/{location}/instances/{instance}
     nodeConfig: Output only. Configuration of individual nodes of the
@@ -714,7 +715,7 @@ class Instance(_messages.Message):
     TOKEN_AUTH = 3
 
   class ModeValueValuesEnum(_messages.Enum):
-    r"""Optional. The mode config for the instance.
+    r"""Optional. Immutable. The mode config for the instance.
 
     Values:
       MODE_UNSPECIFIED: Mode is not specified.
@@ -1763,9 +1764,8 @@ class MemorystoreProjectsLocationsListRequest(_messages.Message):
   r"""A MemorystoreProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).

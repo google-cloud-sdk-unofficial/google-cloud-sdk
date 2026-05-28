@@ -166,6 +166,10 @@ class Counters(_messages.Message):
     totalBytesFound: Output only. Number of bytes found from source. This
       field is only populated for jobs with a prefix list object
       configuration.
+    totalBytesTransformed: Output only. The total number of bytes affected by
+      the transformation. For example, this counts bytes deleted for
+      `DeleteObject` operations and bytes rewritten for `RewriteObject`
+      operations.
     totalObjectCount: Output only. Number of objects listed.
   """
 
@@ -175,7 +179,8 @@ class Counters(_messages.Message):
   objectCustomContextsUpdated = _messages.IntegerField(4)
   succeededObjectCount = _messages.IntegerField(5)
   totalBytesFound = _messages.IntegerField(6)
-  totalObjectCount = _messages.IntegerField(7)
+  totalBytesTransformed = _messages.IntegerField(7)
+  totalObjectCount = _messages.IntegerField(8)
 
 
 class CustomContextUpdates(_messages.Message):
@@ -927,9 +932,16 @@ class ProjectSource(_messages.Message):
       (CEL) to apply to objects to identify objects to be transformed.
     project: Required. Project name of the objects to be transformed. e.g.
       projects/my-project or projects/123456.
-    snapshotTime: Output only. The snapshot time used to read the Storage
-      Insights dataset. This is only populated if `insights_dataset_config` is
-      specified.
+    snapshotTime: Output only. The snapshot time used by the job to read the
+      Storage Insights dataset for bucket and object discovery. This field is
+      populated by the service and reflects the exact timestamp of the dataset
+      snapshot used.
+    targetLocations: Optional. Specifies the Cloud Storage locations to
+      include in the job. If provided, only buckets and objects within these
+      locations will be discovered from the Storage Insights dataset as
+      configured in the `insights_dataset_config`. If omitted, the job will
+      discover buckets and objects from all locations configured in the
+      `insights_dataset_config`.
   """
 
   bucketFilters = _messages.MessageField('Expr', 1)
@@ -938,6 +950,7 @@ class ProjectSource(_messages.Message):
   objectFilters = _messages.MessageField('Expr', 4)
   project = _messages.StringField(5)
   snapshotTime = _messages.StringField(6)
+  targetLocations = _messages.MessageField('TargetLocations', 7)
 
 
 class PutMetadata(_messages.Message):
@@ -1401,9 +1414,8 @@ class StoragebatchoperationsProjectsLocationsListRequest(_messages.Message):
   r"""A StoragebatchoperationsProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -1476,6 +1488,30 @@ class StoragebatchoperationsProjectsLocationsOperationsListRequest(_messages.Mes
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   returnPartialSuccess = _messages.BooleanField(5)
+
+
+class TargetLocations(_messages.Message):
+  r"""Describes the Cloud Storage locations to include in a ProjectSource job.
+
+  Fields:
+    locations: Required. REQUIRED. A list of Cloud Storage locations (e.g.,
+      `us-central1`) to include in the job. If `snapshot_time` is omitted, the
+      job automatically defaults to the most recent snapshot timestamp that is
+      successfully populated in BOTH the `object_attributes_view` and
+      `bucket_attributes_view` across ALL specified locations. For details on
+      Storage Insights dataset snapshots and views, see:
+      https://docs.cloud.google.com/storage/docs/insights/dataset-tables-and-
+      schemas#schema
+    snapshotTime: Optional. OPTIONAL. The exact Storage Insights snapshot
+      timestamp to use for the job compatible with the RFC 3339 format (e.g.,
+      `2024-01-02T03:04:05Z`). If specified, this exact snapshot must exist in
+      BOTH the `object_attributes_view` and `bucket_attributes_view` for every
+      location listed in `locations`. If the snapshot is missing from either
+      view in any of the locations, the job fails.
+  """
+
+  locations = _messages.StringField(1, repeated=True)
+  snapshotTime = _messages.StringField(2)
 
 
 class UpdateObjectCustomContext(_messages.Message):

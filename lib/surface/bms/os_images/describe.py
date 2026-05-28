@@ -20,7 +20,7 @@ import abc
 from googlecloudsdk.api_lib.bms.bms_client import BmsClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bms import flags
-import six
+
 
 DETAILED_HELP = {
     'DESCRIPTION':
@@ -37,7 +37,7 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
-class Describe(six.with_metaclass(abc.ABCMeta, base.CacheCommand)):
+class Describe(base.CacheCommand, metaclass=abc.ABCMeta):
   """Describe Bare Metal Solution OS images in a project."""
 
   @staticmethod

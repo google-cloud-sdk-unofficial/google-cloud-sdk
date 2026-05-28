@@ -902,9 +902,8 @@ class NetworkmanagementProjectsLocationsListRequest(_messages.Message):
   r"""A NetworkmanagementProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -1072,6 +1071,7 @@ class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPoin
       HELM: Monitoring Point that runs on a K8S Helm.
       GCE_VM: Monitoring Point that runs as a startup script in a Compute
         Engine VM.
+      AZURE_VM: Monitoring Point that runs as a startup script in an Azure VM.
     """
     MONITORING_POINT_TYPE_UNSPECIFIED = 0
     CONTAINER = 1
@@ -1079,6 +1079,7 @@ class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPoin
     VMWARE = 3
     HELM = 4
     GCE_VM = 5
+    AZURE_VM = 6
 
   _password = _messages.StringField(1)
   hostname = _messages.StringField(2)

@@ -24,7 +24,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.composer import resource_args
 from googlecloudsdk.command_lib.composer import util as command_util
 from googlecloudsdk.core import log
-import six
 
 DETAILED_HELP = {
     'EXAMPLES':
@@ -103,4 +102,6 @@ class SaveSnapshot(base.Command):
     except command_util.Error as e:
       raise command_util.Error(
           'Failed to save the snapshot of the environment [{}]: {}'.format(
-              env_resource.RelativeName(), six.text_type(e)))
+              env_resource.RelativeName(), str(e)
+          )
+      )

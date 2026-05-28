@@ -14,7 +14,6 @@
 # limitations under the License.
 """Utilities for defining CRM Tag arguments on a parser."""
 
-
 import argparse
 
 from googlecloudsdk.calliope import arg_parsers
@@ -30,10 +29,13 @@ def AddShortNameArgToParser(parser):
   parser.add_argument(
       "short_name",
       metavar="SHORT_NAME",
-      help=("User specified, friendly name of the TagKey or TagValue. The field"
-            " must be 1-63 characters, beginning and ending with an "
-            "alphanumeric character ([a-z0-9A-Z]) with dashes (-), "
-            "underscores ( _ ), dots (.), and alphanumerics between. "))
+      help=(
+          "User specified, friendly name of the TagKey or TagValue. The field"
+          " must be 1-63 characters, beginning and ending with an "
+          "alphanumeric character ([a-z0-9A-Z]) with dashes (-), "
+          "underscores ( _ ), dots (.), and alphanumerics between. "
+      ),
+  )
 
 
 def AddParentArgToParser(parser, required=True, message=""):
@@ -48,7 +50,8 @@ def AddParentArgToParser(parser, required=True, message=""):
       "--parent",
       metavar="PARENT",
       required=required,
-      help=message if message else ("Parent of the resource."))
+      help=message if message else ("Parent of the resource."),
+  )
 
 
 def AddDescriptionArgToParser(parser):
@@ -60,8 +63,11 @@ def AddDescriptionArgToParser(parser):
   parser.add_argument(
       "--description",
       metavar="DESCRIPTION",
-      help=("User-assigned description of the TagKey or TagValue. "
-            "Must not exceed 256 characters."))
+      help=(
+          "User-assigned description of the TagKey or TagValue. "
+          "Must not exceed 256 characters."
+      ),
+  )
 
 
 def AddAllowedValuesRegexArgToParser(parser: argparse.ArgumentParser) -> None:
@@ -137,12 +143,15 @@ def AddResourceNameArgToParser(parser):
   parser.add_argument(
       "RESOURCE_NAME",
       metavar="RESOURCE_NAME",
-      help=("Resource name or namespaced name. The resource name should "
-            "be in the form {resource_type}/{numeric_id}. The namespaced name "
-            "should be in the form {org_id}/{short_name} where short_name "
-            "must be 1-63 characters, beginning and ending with an "
-            "alphanumeric character ([a-z0-9A-Z]) with dashes (-), underscores "
-            "( _ ), dots (.), and alphanumerics between."))
+      help=(
+          "Resource name or namespaced name. The resource name should "
+          "be in the form {resource_type}/{numeric_id}. The namespaced name "
+          "should be in the form {org_id}/{short_name} where short_name "
+          "must be 1-63 characters, beginning and ending with an "
+          "alphanumeric character ([a-z0-9A-Z]) with dashes (-), underscores "
+          "( _ ), dots (.), and alphanumerics between."
+      ),
+  )
 
 
 def AddForceArgToParser(parser):
@@ -152,7 +161,8 @@ def AddForceArgToParser(parser):
     parser: ArgumentInterceptor, An argparse parser.
   """
   parser.add_argument(
-      "--force", action="store_true", help=("Force argument to bypass checks."))
+      "--force", action="store_true", help="Force argument to bypass checks."
+  )
 
 
 def AddPolicyFileArgToParser(parser):
@@ -168,7 +178,9 @@ def AddPolicyFileArgToParser(parser):
           "Path to a local JSON or YAML formatted file containing a valid "
           "policy. The output of the `get-iam-policy` command is a valid "
           "file, as is any JSON or YAML file conforming to the structure of "
-          "a [Policy](https://cloud.google.com/iam/reference/rest/v1/Policy)."))
+          "a [Policy](https://cloud.google.com/iam/reference/rest/v1/Policy)."
+      ),
+  )
 
 
 def AddTagValueArgToParser(parser):
@@ -181,12 +193,15 @@ def AddTagValueArgToParser(parser):
       "--tag-value",
       metavar="TAG_VALUE",
       required=True,
-      help=("Tag value name or namespaced name. The name should "
-            "be in the form tagValues/{numeric_id}. The namespaced name "
-            "should be in the form {org_id}/{tag_key_short_name}/{short_name} "
-            "where short_name must be 1-63 characters, beginning and ending "
-            "with an alphanumeric character ([a-z0-9A-Z]) with dashes (-), "
-            "underscores (_), dots (.), and alphanumerics between."))
+      help=(
+          "Tag value name or namespaced name. The name should "
+          "be in the form tagValues/{numeric_id}. The namespaced name "
+          "should be in the form {org_id}/{tag_key_short_name}/{short_name} "
+          "where short_name must be 1-63 characters, beginning and ending "
+          "with an alphanumeric character ([a-z0-9A-Z]) with dashes (-), "
+          "underscores (_), dots (.), and alphanumerics between."
+      ),
+  )
 
 
 def AddLocationArgToParser(parser, message):
@@ -197,7 +212,8 @@ def AddLocationArgToParser(parser, message):
     message: String, help text for flag.
   """
   parser.add_argument(
-      "--location", metavar="LOCATION", required=False, help=message)
+      "--location", metavar="LOCATION", required=False, help=message
+  )
 
 
 def AddEffectiveArgToParser(parser, message):
@@ -266,4 +282,42 @@ def AddUpdateResourceNameArgToParser(parser, required=True, message=""):
       "--resource-name",
       metavar="RESOURCE_NAME",
       required=required,
-      help=message if message else ("Name of the resource."))
+      help=message if message else ("Name of the resource."),
+  )
+
+
+def AddSemanticsArgToParser(parser: argparse.ArgumentParser) -> None:
+  """Adds argument for TagKey's or TagValue's semantics to the parser.
+
+  Args:
+    parser: ArgumentInterceptor, An argparse parser.
+  """
+  parser.add_argument(
+      "--semantics",
+      metavar="SEMANTICS",
+      hidden=True,
+      help=(
+          "Semantics identifier for the TagKey or TagValue. Must be from the"
+          " list of predefined semantics."
+      ),
+  )
+
+
+def AddSemanticsMutexGroupArgs(parser: argparse.ArgumentParser) -> None:
+  """Adds mutually exclusive args for adding/removing semantics.
+
+  Args:
+    parser: ArgumentInterceptor, an argparse parser.
+  """
+  mutex_group = parser.add_group(mutex=True, hidden=True)
+  mutex_group.add_argument(
+      "--add-semantics",
+      metavar="SEMANTICS",
+      help="Semantics identifier to add to the TagKey or TagValue.",
+  )
+  mutex_group.add_argument(
+      "--remove-semantics",
+      action="store_true",
+      help="Remove the semantics identifier from the TagKey or TagValue.",
+  )
+

@@ -771,6 +771,7 @@ class CreateClusterOptions(object):
       linux_sysctls=None,
       disable_default_snat=None,
       dataplane_v2=None,
+      dataplane_v2_optimization_mode=None,
       enable_dataplane_v2_metrics=None,
       disable_dataplane_v2_metrics=None,
       enable_dataplane_v2_flow_observability=None,
@@ -885,6 +886,7 @@ class CreateClusterOptions(object):
       local_ssd_encryption_mode=None,
       enable_ray_cluster_logging=None,
       enable_ray_cluster_monitoring=None,
+      enable_kueue_logging=None,
       enable_insecure_binding_system_authenticated=None,
       enable_insecure_binding_system_unauthenticated=None,
       enable_dns_access=None,
@@ -1054,6 +1056,7 @@ class CreateClusterOptions(object):
     )
     self.disable_default_snat = disable_default_snat
     self.dataplane_v2 = dataplane_v2
+    self.dataplane_v2_optimization_mode = dataplane_v2_optimization_mode
     self.enable_dataplane_v2_metrics = enable_dataplane_v2_metrics
     self.disable_dataplane_v2_metrics = disable_dataplane_v2_metrics
     self.enable_dataplane_v2_flow_observability = (
@@ -1199,6 +1202,7 @@ class CreateClusterOptions(object):
     )
     self.enable_ray_cluster_logging = enable_ray_cluster_logging
     self.enable_ray_cluster_monitoring = enable_ray_cluster_monitoring
+    self.enable_kueue_logging = enable_kueue_logging
     self.enable_insecure_binding_system_authenticated = (
         enable_insecure_binding_system_authenticated
     )
@@ -1416,6 +1420,7 @@ class UpdateClusterOptions(object):
       autoprovisioning_enable_insecure_kubelet_readonly_port=None,
       enable_ray_cluster_logging=None,
       enable_ray_cluster_monitoring=None,
+      enable_kueue_logging=None,
       enable_insecure_binding_system_authenticated=None,
       enable_insecure_binding_system_unauthenticated=None,
       additional_ip_ranges=None,
@@ -1651,6 +1656,7 @@ class UpdateClusterOptions(object):
     )
     self.enable_ray_cluster_logging = enable_ray_cluster_logging
     self.enable_ray_cluster_monitoring = enable_ray_cluster_monitoring
+    self.enable_kueue_logging = enable_kueue_logging
     self.enable_insecure_binding_system_authenticated = (
         enable_insecure_binding_system_authenticated
     )
@@ -2752,6 +2758,12 @@ class APIAdapter(object):
                 enabled=options.enable_ray_cluster_monitoring
             )
         )
+      if options.enable_kueue_logging is not None:
+        if not addons.kueueConfig:
+          addons.kueueConfig = self.messages.KueueConfig()
+        addons.kueueConfig.loggingConfig = self.messages.KueueLoggingConfig(
+            enabled=options.enable_kueue_logging
+        )
       if options.enable_legacy_lustre_port is not None:
         addons.lustreCsiDriverConfig.enableLegacyLustrePort = (
             options.enable_legacy_lustre_port
@@ -2826,6 +2838,22 @@ class APIAdapter(object):
         cluster.networkConfig = self.messages.NetworkConfig()
       cluster.networkConfig.datapathProvider = (
           self.messages.NetworkConfig.DatapathProviderValueValuesEnum.ADVANCED_DATAPATH
+      )
+
+    if (
+        options.dataplane_v2_optimization_mode is not None
+        and options.dataplane_v2_optimization_mode != 'UNSPECIFIED'
+    ):
+      if cluster.networkConfig is None:
+        cluster.networkConfig = self.messages.NetworkConfig()
+      if cluster.networkConfig.dataplaneV2Config is None:
+        cluster.networkConfig.dataplaneV2Config = (
+            self.messages.DataplaneV2Config()
+        )
+      cluster.networkConfig.dataplaneV2Config.scalabilityMode = (
+          self.messages.DataplaneV2Config.ScalabilityModeValueValuesEnum(
+              options.dataplane_v2_optimization_mode
+          )
       )
 
     if options.enable_l4_ilb_subsetting:
@@ -5042,6 +5070,7 @@ class APIAdapter(object):
     elif (
         options.enable_ray_cluster_logging is not None
         or options.enable_ray_cluster_monitoring is not None
+        or options.enable_kueue_logging is not None
         or options.enable_legacy_lustre_port is not None
         or options.disable_multi_nic_lustre is not None
     ):
@@ -5059,6 +5088,13 @@ class APIAdapter(object):
             self.messages.RayClusterMonitoringConfig(
                 enabled=options.enable_ray_cluster_monitoring
             )
+        )
+
+      if options.enable_kueue_logging is not None:
+        if not addons.kueueConfig:
+          addons.kueueConfig = self.messages.KueueConfig()
+        addons.kueueConfig.loggingConfig = self.messages.KueueLoggingConfig(
+            enabled=options.enable_kueue_logging
         )
 
       if options.enable_legacy_lustre_port is not None:
@@ -8490,6 +8526,36 @@ class APIAdapter(object):
     )
     return self.ParseOperation(op.name, cluster_ref.zone)
 
+  def ModifyKueueLoggingConfig(self, cluster_ref, *, enable_kueue_logging):
+    """Enables/Disables Kueue component logging."""
+    cluster = self.GetCluster(cluster_ref)
+
+    # Check if the Kueue addon is currently enabled
+    kueue_enabled = (
+        cluster.addonsConfig.kueueConfig.enabled
+        if cluster.addonsConfig and cluster.addonsConfig.kueueConfig
+        else False
+    )
+
+    kueue_config = self.messages.KueueConfig(
+        enabled=kueue_enabled,
+        loggingConfig=self.messages.KueueLoggingConfig(
+            enabled=enable_kueue_logging
+        ),
+    )
+    addons_config = self.messages.AddonsConfig(kueueConfig=kueue_config)
+    update = self.messages.ClusterUpdate(desiredAddonsConfig=addons_config)
+
+    op = self.client.projects_locations_clusters.Update(
+        self.messages.UpdateClusterRequest(
+            name=ProjectLocationCluster(
+                cluster_ref.projectId, cluster_ref.zone, cluster_ref.clusterId
+            ),
+            update=update,
+        )
+    )
+    return self.ParseOperation(op.name, cluster_ref.zone)
+
   def ModifyRBACBindingConfig(
       self,
       cluster_ref,
@@ -9258,6 +9324,7 @@ class V1Beta1Adapter(V1Adapter):
     elif (
         options.enable_ray_cluster_logging is not None
         or options.enable_ray_cluster_monitoring is not None
+        or options.enable_kueue_logging is not None
         or options.enable_legacy_lustre_port is not None
         or options.disable_multi_nic_lustre is not None
     ):
@@ -9275,6 +9342,13 @@ class V1Beta1Adapter(V1Adapter):
             self.messages.RayClusterMonitoringConfig(
                 enabled=options.enable_ray_cluster_monitoring
             )
+        )
+
+      if options.enable_kueue_logging is not None:
+        if not addons.kueueConfig:
+          addons.kueueConfig = self.messages.KueueConfig()
+        addons.kueueConfig.loggingConfig = self.messages.KueueLoggingConfig(
+            enabled=options.enable_kueue_logging
         )
 
       if options.enable_legacy_lustre_port is not None:

@@ -26,12 +26,10 @@ class AcceleratorConfig(_messages.Message):
       eleratorTypes).Examples: https://www.googleapis.com/compute/v1/projects/
       [project_id]/zones/[zone]/acceleratorTypes/nvidia-tesla-t4
       projects/[project_id]/zones/[zone]/acceleratorTypes/nvidia-tesla-t4
-      nvidia-tesla-t4Auto Zone Exception: If you are using the Dataproc Auto
-      Zone Placement
+      nvidia-tesla-t4Auto Zone Exception: If you are using Auto Zone Placement
       (https://cloud.google.com/dataproc/docs/concepts/configuring-
-      clusters/auto-zone#using_auto_zone_placement) feature, you must use the
-      short name of the accelerator type resource, for example, nvidia-
-      tesla-t4.
+      clusters/auto-zone#using_auto_zone_placement), you must use the short
+      name of the accelerator type resource, for example, nvidia-tesla-t4.
   """
 
   acceleratorCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -683,7 +681,7 @@ class AutoscalingConfig(_messages.Message):
       Examples: https://www.googleapis.com/compute/v1/projects/[project_id]/lo
       cations/[dataproc_region]/autoscalingPolicies/[policy_id] projects/[proj
       ect_id]/locations/[dataproc_region]/autoscalingPolicies/[policy_id]Note
-      that the policy must be in the same project and Dataproc region.
+      that the policy must be in the same project and region.
   """
 
   policyUri = _messages.StringField(1)
@@ -1201,8 +1199,7 @@ class CancelJobRequest(_messages.Message):
 
 
 class Cluster(_messages.Message):
-  r"""Describes the identifying information, config, and status of a Dataproc
-  cluster
+  r"""Describes the identifying information, config, and status of a cluster
 
   Messages:
     LabelsValue: Optional. The labels to associate with this cluster. Label
@@ -1218,9 +1215,9 @@ class Cluster(_messages.Message):
       to 51 lowercase letters, numbers, and hyphens. It cannot end with a
       hyphen. The name of a deleted cluster can be reused.
     clusterUuid: Output only. A cluster UUID (Unique Universal Identifier).
-      Dataproc generates this value when it creates the cluster.
+      The service generates this value when it creates the cluster.
     config: Optional. The cluster config for a cluster of Compute Engine
-      Instances. Note that Dataproc may set default values, and values may
+      Instances. Note that the service may set default values, and values may
       change when clusters are updated.Exactly one of ClusterConfig or
       VirtualClusterConfig must be specified.
     creator: Output only. The email address of the user who created the
@@ -1239,13 +1236,12 @@ class Cluster(_messages.Message):
     status: Output only. Cluster status.
     statusHistory: Output only. The previous cluster status.
     virtualClusterConfig: Optional. The virtual cluster config is used when
-      creating a Dataproc cluster that does not directly control the
-      underlying compute resources, for example, when creating a Dataproc-on-
-      GKE cluster
+      creating a cluster that does not directly control the underlying compute
+      resources, for example, when creating a GKE cluster
       (https://cloud.google.com/dataproc/docs/guides/dpgke/dataproc-gke-
-      overview). Dataproc may set default values, and values may change when
-      clusters are updated. Exactly one of config or virtual_cluster_config
-      must be specified.
+      overview). the service may set default values, and values may change
+      when clusters are updated. Exactly one of config or
+      virtual_cluster_config must be specified.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -1337,29 +1333,28 @@ class ClusterConfig(_messages.Message):
     clusterType: Optional. The type of the cluster.
     configBucket: Optional. A Cloud Storage bucket used to stage job
       dependencies, config files, and job driver console output. If you do not
-      specify a staging bucket, Cloud Dataproc will determine a Cloud Storage
+      specify a staging bucket, the service will determine a Cloud Storage
       location (US, ASIA, or EU) for your cluster's staging bucket according
       to the Compute Engine zone where your cluster is deployed, and then
-      create and manage this project-level, per-location bucket (see Dataproc
-      staging and temp buckets
+      create and manage this project-level, per-location bucket (see staging
+      and temp buckets
       (https://cloud.google.com/dataproc/docs/concepts/configuring-
       clusters/staging-bucket)). This field requires a Cloud Storage bucket
       name, not a gs://... URI to a Cloud Storage bucket.
-    dataprocMetricConfig: Optional. The config for Dataproc metrics.
+    dataprocMetricConfig: Optional. The config for metrics.
     diagnosticBucket: Optional. A Cloud Storage bucket used to collect
       checkpoint diagnostic data
       (https://cloud.google.com/dataproc/docs/support/diagnose-
       clusters#checkpoint_diagnostic_data). If you do not specify a diagnostic
-      bucket, Cloud Dataproc will use the Dataproc temp bucket to collect the
-      checkpoint diagnostic data. This field requires a Cloud Storage bucket
-      name, not a gs://... URI to a Cloud Storage bucket.
+      bucket, The service will use the temp bucket to collect the checkpoint
+      diagnostic data. This field requires a Cloud Storage bucket name, not a
+      gs://... URI to a Cloud Storage bucket.
     encryptionConfig: Optional. Encryption settings for the cluster.
     endpointConfig: Optional. Port/endpoint configuration for this cluster
     engine: Optional. The cluster engine.
     gceClusterConfig: Optional. The shared Compute Engine config settings for
       all instances in a cluster.
     gkeClusterConfig: Optional. BETA. The Kubernetes Engine config for
-      Dataproc clusters deployed to The Kubernetes Engine config for Dataproc
       clusters deployed to Kubernetes. These config settings are mutually
       exclusive with Compute Engine-based options, such as gce_cluster_config,
       master_config, worker_config, secondary_worker_config, and
@@ -1384,12 +1379,12 @@ class ClusterConfig(_messages.Message):
     softwareConfig: Optional. The config settings for cluster software.
     tempBucket: Optional. A Cloud Storage bucket used to store ephemeral
       cluster and jobs data, such as Spark and MapReduce history files. If you
-      do not specify a temp bucket, Dataproc will determine a Cloud Storage
+      do not specify a temp bucket, the service will determine a Cloud Storage
       location (US, ASIA, or EU) for your cluster's temp bucket according to
       the Compute Engine zone where your cluster is deployed, and then create
       and manage this project-level, per-location bucket. The default bucket
       has a TTL of 90 days, but you can use any TTL (or none) if you specify a
-      bucket (see Dataproc staging and temp buckets
+      bucket (see staging and temp buckets
       (https://cloud.google.com/dataproc/docs/concepts/configuring-
       clusters/staging-bucket)). This field requires a Cloud Storage bucket
       name, not a gs://... URI to a Cloud Storage bucket.
@@ -1401,10 +1396,9 @@ class ClusterConfig(_messages.Message):
     r"""Optional. The cluster tier.
 
     Values:
-      CLUSTER_TIER_UNSPECIFIED: Not set. Works the same as
-        CLUSTER_TIER_STANDARD.
-      CLUSTER_TIER_STANDARD: Standard Dataproc cluster.
-      CLUSTER_TIER_PREMIUM: Premium Dataproc cluster.
+      CLUSTER_TIER_UNSPECIFIED: Uses standard tier if unspecified.
+      CLUSTER_TIER_STANDARD: Standard cluster tier.
+      CLUSTER_TIER_PREMIUM: Premium cluster tier.
     """
     CLUSTER_TIER_UNSPECIFIED = 0
     CLUSTER_TIER_STANDARD = 1
@@ -1435,7 +1429,9 @@ class ClusterConfig(_messages.Message):
       ENGINE_UNSPECIFIED: The engine is not specified. Works the same as
         ENGINE_DEFAULT.
       DEFAULT: The cluster is a default engine cluster.
-      LIGHTNING: The cluster is a lightning engine cluster.
+      LIGHTNING: The cluster is a Lightning Engine
+        (https://cloud.google.com/dataproc/docs/guides/lightning-engine)
+        cluster.
     """
     ENGINE_UNSPECIFIED = 0
     DEFAULT = 1
@@ -1773,8 +1769,8 @@ class ClusterStatus(_messages.Message):
       UNHEALTHY: The cluster is known to be in an unhealthy state (for
         example, critical daemons are not running or HDFS capacity is
         exhausted).Applies to RUNNING state.
-      STALE_STATUS: The agent-reported status is out of date (may occur if
-        Dataproc loses communication with Agent).Applies to RUNNING state.
+      STALE_STATUS: The agent-reported status is out of date (may occur if the
+        service loses communication with the Agent).Applies to RUNNING state.
     """
     UNSPECIFIED = 0
     UNHEALTHY = 1
@@ -1843,12 +1839,41 @@ class ConfidentialInstanceConfig(_messages.Message):
   r"""Confidential Instance Config for clusters using Confidential VMs
   (https://cloud.google.com/compute/confidential-vm/docs)
 
+  Enums:
+    ConfidentialInstanceTypeValueValuesEnum: Optional. Defines the type of
+      Confidential Compute technology to use.
+
   Fields:
-    enableConfidentialCompute: Optional. Defines whether the instance should
-      have confidential compute enabled.
+    confidentialInstanceType: Optional. Defines the type of Confidential
+      Compute technology to use.
+    enableConfidentialCompute: Optional. Deprecated: Use
+      'confidential_instance_type' instead. Defines whether the instance
+      should have confidential compute enabled.
   """
 
-  enableConfidentialCompute = _messages.BooleanField(1)
+  class ConfidentialInstanceTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. Defines the type of Confidential Compute technology to use.
+
+    Values:
+      CONFIDENTIAL_INSTANCE_TYPE_UNSPECIFIED: Confidential Instance Type is
+        not specified.
+      SEV: AMD Secure Encrypted Virtualization
+        (https://cloud.google.com/confidential-computing/confidential-
+        vm/docs/confidential-vm-overview#amd_sev)
+      SEV_SNP: AMD Secure Encrypted Virtualization-Secure Nested Paging
+        (https://cloud.google.com/confidential-computing/confidential-
+        vm/docs/confidential-vm-overview#amd_sev-snp)
+      TDX: Intel Trust Domain Extensions
+        (https://cloud.google.com/confidential-computing/confidential-
+        vm/docs/confidential-vm-overview#intel_tdx)
+    """
+    CONFIDENTIAL_INSTANCE_TYPE_UNSPECIFIED = 0
+    SEV = 1
+    SEV_SNP = 2
+    TDX = 3
+
+  confidentialInstanceType = _messages.EnumField('ConfidentialInstanceTypeValueValuesEnum', 1)
+  enableConfidentialCompute = _messages.BooleanField(2)
 
 
 class ConsolidatedExecutorSummary(_messages.Message):
@@ -1906,7 +1931,7 @@ class DataprocMetastoreConfig(_messages.Message):
 
 
 class DataprocMetricConfig(_messages.Message):
-  r"""Dataproc metric config.
+  r"""Metric config.
 
   Fields:
     metrics: Required. Metrics sources to enable.
@@ -4002,7 +4027,7 @@ class DataprocProjectsRegionsClustersCreateRequest(_messages.Message):
     cluster: A Cluster resource to be passed as the request body.
     projectId: Required. The ID of the Google Cloud Platform project that the
       cluster belongs to.
-    region: Required. The Dataproc region in which to handle the request.
+    region: Required. The region in which to handle the request.
     requestId: Optional. A unique ID used to identify the request. If the
       server receives two CreateClusterRequest (https://cloud.google.com/datap
       roc/docs/reference/rpc/google.cloud.dataproc.v1#google.cloud.dataproc.v1
@@ -4053,7 +4078,7 @@ class DataprocProjectsRegionsClustersDeleteRequest(_messages.Message):
       values in the field).
     projectId: Required. The ID of the Google Cloud Platform project that the
       cluster belongs to.
-    region: Required. The Dataproc region in which to handle the request.
+    region: Required. The region in which to handle the request.
     requestId: Optional. A unique ID used to identify the request. If the
       server receives two DeleteClusterRequest (https://cloud.google.com/datap
       roc/docs/reference/rpc/google.cloud.dataproc.v1#google.cloud.dataproc.v1
@@ -4082,7 +4107,7 @@ class DataprocProjectsRegionsClustersDiagnoseRequest(_messages.Message):
       the request body.
     projectId: Required. The ID of the Google Cloud Platform project that the
       cluster belongs to.
-    region: Required. The Dataproc region in which to handle the request.
+    region: Required. The region in which to handle the request.
   """
 
   clusterName = _messages.StringField(1, required=True)
@@ -4098,7 +4123,7 @@ class DataprocProjectsRegionsClustersGetClusterAsTemplateRequest(_messages.Messa
     clusterName: Required. The cluster name.
     projectId: Required. The ID of the Google Cloud Platform project that the
       cluster belongs to.
-    region: Required. The Dataproc region in which to handle the request.
+    region: Required. The region in which to handle the request.
   """
 
   clusterName = _messages.StringField(1, required=True)
@@ -4128,7 +4153,7 @@ class DataprocProjectsRegionsClustersGetRequest(_messages.Message):
     clusterName: Required. The cluster name.
     projectId: Required. The ID of the Google Cloud Platform project that the
       cluster belongs to.
-    region: Required. The Dataproc region in which to handle the request.
+    region: Required. The region in which to handle the request.
   """
 
   clusterName = _messages.StringField(1, required=True)
@@ -4161,7 +4186,7 @@ class DataprocProjectsRegionsClustersListRequest(_messages.Message):
     filter: Optional. A filter constraining the clusters to list. Filters are
       case-sensitive and have the following syntax:field = value AND field =
       value ...where field is one of status.state, clusterName, or
-      labels.[KEY], and [KEY] is a label key. value can be * to match all
+      labels.[KEY], and [KEY] is a label key. value can be "*" to match all
       values. status.state can be one of the following: ACTIVE, INACTIVE,
       CREATING, RUNNING, ERROR, DELETING, UPDATING, STOPPING, or STOPPED.
       ACTIVE contains the CREATING, UPDATING, and RUNNING states. INACTIVE
@@ -4177,7 +4202,7 @@ class DataprocProjectsRegionsClustersListRequest(_messages.Message):
       call. Provide this token to retrieve the subsequent page.
     projectId: Required. The ID of the Google Cloud Platform project that the
       cluster belongs to.
-    region: Required. The Dataproc region in which to handle the request.
+    region: Required. The region in which to handle the request.
   """
 
   filter = _messages.StringField(1)
@@ -4372,11 +4397,10 @@ class DataprocProjectsRegionsClustersPatchRequest(_messages.Message):
       nodes (and potentially interrupting jobs). Default timeout is 0 (for
       forceful decommission), and the maximum allowed timeout is 1 day. (see
       JSON representation of Duration (https://developers.google.com/protocol-
-      buffers/docs/proto3#json)).Only supported on Dataproc image versions 1.2
-      and higher.
+      buffers/docs/proto3#json)).Supported in image versions 1.2 and higher.
     projectId: Required. The ID of the Google Cloud Platform project the
       cluster belongs to.
-    region: Required. The Dataproc region in which to handle the request.
+    region: Required. The region in which to handle the request.
     requestId: Optional. A unique ID used to identify the request. If the
       server receives two UpdateClusterRequest (https://cloud.google.com/datap
       roc/docs/reference/rpc/google.cloud.dataproc.v1#google.cloud.dataproc.v1
@@ -4419,7 +4443,7 @@ class DataprocProjectsRegionsClustersRepairRequest(_messages.Message):
     clusterName: Required. The cluster name.
     projectId: Required. The ID of the Google Cloud Platform project the
       cluster belongs to.
-    region: Required. The Dataproc region in which to handle the request.
+    region: Required. The region in which to handle the request.
     repairClusterRequest: A RepairClusterRequest resource to be passed as the
       request body.
   """
@@ -4452,7 +4476,7 @@ class DataprocProjectsRegionsClustersStartRequest(_messages.Message):
     clusterName: Required. The cluster name.
     projectId: Required. The ID of the Google Cloud Platform project the
       cluster belongs to.
-    region: Required. The Dataproc region in which to handle the request.
+    region: Required. The region in which to handle the request.
     startClusterRequest: A StartClusterRequest resource to be passed as the
       request body.
   """
@@ -4470,7 +4494,7 @@ class DataprocProjectsRegionsClustersStopRequest(_messages.Message):
     clusterName: Required. The cluster name.
     projectId: Required. The ID of the Google Cloud Platform project the
       cluster belongs to.
-    region: Required. The Dataproc region in which to handle the request.
+    region: Required. The region in which to handle the request.
     stopClusterRequest: A StopClusterRequest resource to be passed as the
       request body.
   """
@@ -5033,8 +5057,8 @@ class DiagnoseClusterRequest(_messages.Message):
         default access of the bucket
       GOOGLE_CLOUD_SUPPORT: Google Cloud Support group has read access to the
         diagnostic tarball
-      GOOGLE_DATAPROC_DIAGNOSE: Google Cloud Dataproc Diagnose service account
-        has read access to the diagnostic tarball
+      GOOGLE_DATAPROC_DIAGNOSE: The diagnose service account has read access
+        to the diagnostic tarball
     """
     TARBALL_ACCESS_UNSPECIFIED = 0
     GOOGLE_CLOUD_SUPPORT = 1
@@ -5078,14 +5102,14 @@ class DiskConfig(_messages.Message):
       that the disk can handle. Values must be greater than or equal to 1.
       This field is supported only if boot_disk_type is hyperdisk-balanced.
     bootDiskSizeGb: Optional. Size in GB of the boot disk (default is 500GB).
-    bootDiskType: Optional. Type of the boot disk (default is "pd-standard").
-      Valid values: "pd-balanced" (Persistent Disk Balanced Solid State
-      Drive), "pd-ssd" (Persistent Disk Solid State Drive), or "pd-standard"
-      (Persistent Disk Hard Disk Drive). See Disk types
+    bootDiskType: Optional. Type of the boot disk (default is pd-standard).
+      Valid values: pd-balanced (Persistent Disk Balanced Solid State Drive),
+      pd-ssd (Persistent Disk Solid State Drive), or pd-standard (Persistent
+      Disk Hard Disk Drive). See Disk types
       (https://cloud.google.com/compute/docs/disks#disk-types).
     localSsdInterface: Optional. Interface type of local SSDs (default is
-      "scsi"). Valid values: "scsi" (Small Computer System Interface), "nvme"
-      (Non-Volatile Memory Express). See local SSD performance
+      scsi). Valid values: scsi (Small Computer System Interface), nvme (Non-
+      Volatile Memory Express). See local SSD performance
       (https://cloud.google.com/compute/docs/disks/local-ssd#performance).
     numLocalSsds: Optional. Number of attached SSDs, from 0 to 8 (default is
       0). If SSDs are not attached, the boot disk is used to store runtime
@@ -5762,19 +5786,18 @@ class GceClusterConfig(_messages.Message):
       metadata#project_and_instance_metadata)).
     ResourceManagerTagsValue: Optional. Resource manager tags
       (https://cloud.google.com/resource-manager/docs/tags/tags-creating-and-
-      managing) to add to all instances (see Use secure tags in Dataproc
+      managing) to add to all instances (see Use secure tags
       (https://cloud.google.com/dataproc/docs/guides/use-secure-tags)).
 
   Fields:
     autoZoneExcludeZoneUris: Optional. An optional list of Compute Engine
-      zones where the Dataproc cluster will not be located when Auto Zone is
-      enabled. Only one of zone_uri or auto_zone_exclude_zone_uris can be set.
-      If both are omitted, the service will pick a zone in the cluster Compute
-      Engine region. If auto_zone_exclude_zone_uris is set and there is more
-      than one non-excluded zone, the service will pick one of the non-
-      excluded zones. Otherwise, cluster creation will fail with
-      INVALID_ARGUMENT error.A full URL, partial URI, or short name are valid.
-      Examples:
+      zones where the cluster will not be located when Auto Zone is enabled.
+      Only one of zone_uri or auto_zone_exclude_zone_uris can be set. If both
+      are omitted, the service will pick a zone in the cluster Compute Engine
+      region. If auto_zone_exclude_zone_uris is set and there is more than one
+      non-excluded zone, the service will pick one of the non-excluded zones.
+      Otherwise, cluster creation will fail with INVALID_ARGUMENT error.A full
+      URL, partial URI, or short name are valid. Examples:
       https://www.googleapis.com/compute/v1/projects/[project_id]/zones/[zone]
       projects/[project_id]/zones/[zone] [zone]
     confidentialInstanceConfig: Optional. Confidential Instance Config for
@@ -5785,11 +5808,11 @@ class GceClusterConfig(_messages.Message):
       versions 2.2.x.When set to true: All cluster VMs have internal IP
       addresses. Google Private Access
       (https://cloud.google.com/vpc/docs/private-google-access) must be
-      enabled to access Dataproc and other Google Cloud APIs. Off-cluster
-      dependencies must be configured to be accessible without external IP
-      addresses.When set to false: Cluster VMs are not restricted to internal
-      IP addresses. Ephemeral external IP addresses are assigned to each
-      cluster VM.
+      enabled to access the Dataproc API and other Google Cloud APIs. Off-
+      cluster dependencies must be configured to be accessible without
+      external IP addresses.When set to false: Cluster VMs are not restricted
+      to internal IP addresses. Ephemeral external IP addresses are assigned
+      to each cluster VM.
     metadata: Optional. The Compute Engine metadata entries to add to all
       instances (see Project and instance metadata
       (https://cloud.google.com/compute/docs/storing-retrieving-
@@ -5797,7 +5820,7 @@ class GceClusterConfig(_messages.Message):
     networkUri: Optional. The Compute Engine network to be used for machine
       communications. Cannot be specified with subnetwork_uri. If neither
       network_uri nor subnetwork_uri is specified, the "default" network of
-      the project is used, if it exists. Cannot be a "Custom Subnet Network"
+      the project is used, if it exists. Cannot be a Custom Subnet Network
       (see Using Subnetworks
       (https://cloud.google.com/compute/docs/subnetworks) for more
       information).A full URL, partial URI, or short name are valid. Examples:
@@ -5809,16 +5832,16 @@ class GceClusterConfig(_messages.Message):
       reservation.
     resourceManagerTags: Optional. Resource manager tags
       (https://cloud.google.com/resource-manager/docs/tags/tags-creating-and-
-      managing) to add to all instances (see Use secure tags in Dataproc
+      managing) to add to all instances (see Use secure tags
       (https://cloud.google.com/dataproc/docs/guides/use-secure-tags)).
-    serviceAccount: Optional. The Dataproc service account
+    serviceAccount: Optional. The VM service account
       (https://cloud.google.com/dataproc/docs/concepts/configuring-
       clusters/service-accounts#service_accounts_in_dataproc) (also see VM
       Data Plane identity
       (https://cloud.google.com/dataproc/docs/concepts/iam/dataproc-
-      principals#vm_service_account_data_plane_identity)) used by Dataproc
-      cluster VM instances to access Google Cloud Platform services.If not
-      specified, the Compute Engine default service account
+      principals#vm_service_account_data_plane_identity)) used by cluster VM
+      instances to access Google Cloud Platform services.If not specified, the
+      Compute Engine default service account
       (https://cloud.google.com/compute/docs/access/service-
       accounts#default_service_account) is used.
     serviceAccountScopes: Optional. The URIs of service account scopes to be
@@ -5842,8 +5865,8 @@ class GceClusterConfig(_messages.Message):
       projects/[project_id]/regions/[region]/subnetworks/sub0 sub0
     tags: The Compute Engine network tags to add to all instances (see Tagging
       instances (https://cloud.google.com/vpc/docs/add-remove-network-tags)).
-    zoneUri: Optional. The Compute Engine zone where the Dataproc cluster will
-      be located. If omitted, the service will pick a zone in the cluster's
+    zoneUri: Optional. The Compute Engine zone where the cluster will be
+      located. If omitted, the service will pick a zone in the cluster's
       Compute Engine region. On a get request, zone will always be present.A
       full URL, partial URI, or short name are valid. Examples:
       https://www.googleapis.com/compute/v1/projects/[project_id]/zones/[zone]
@@ -5861,9 +5884,9 @@ class GceClusterConfig(_messages.Message):
         configuration inherited from the subnetwork configuration. This is the
         default Compute Engine behavior.
       OUTBOUND: Enables outbound private IPv6 access to Google Services from
-        the Dataproc cluster.
+        the cluster.
       BIDIRECTIONAL: Enables bidirectional private IPv6 access between Google
-        Services and the Dataproc cluster.
+        Services and the cluster.
     """
     PRIVATE_IPV6_GOOGLE_ACCESS_UNSPECIFIED = 0
     INHERIT_FROM_SUBNETWORK = 1
@@ -5901,8 +5924,8 @@ class GceClusterConfig(_messages.Message):
   class ResourceManagerTagsValue(_messages.Message):
     r"""Optional. Resource manager tags (https://cloud.google.com/resource-
     manager/docs/tags/tags-creating-and-managing) to add to all instances (see
-    Use secure tags in Dataproc
-    (https://cloud.google.com/dataproc/docs/guides/use-secure-tags)).
+    Use secure tags (https://cloud.google.com/dataproc/docs/guides/use-secure-
+    tags)).
 
     Messages:
       AdditionalProperty: An additional property for a
@@ -6400,6 +6423,8 @@ class IdentityConfig(_messages.Message):
     UserServiceAccountMappingValue: Required. Map of user to service account.
 
   Fields:
+    enableSsh: Optional. Whether to enable SSH access for the cluster. Default
+      false as of image 3.1.
     userServiceAccountMapping: Required. Map of user to service account.
   """
 
@@ -6429,7 +6454,8 @@ class IdentityConfig(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  userServiceAccountMapping = _messages.MessageField('UserServiceAccountMappingValue', 1)
+  enableSsh = _messages.BooleanField(1)
+  userServiceAccountMapping = _messages.MessageField('UserServiceAccountMappingValue', 2)
 
 
 class InjectCredentialsRequest(_messages.Message):
@@ -6583,7 +6609,7 @@ class InstanceGroupConfig(_messages.Message):
       instances.The URI can represent an image or image family.Image examples:
       https://www.googleapis.com/compute/v1/projects/[project_id]/global/image
       s/[image-id] projects/[project_id]/global/images/[image-id] image-
-      idImage family examples. Dataproc will use the most recent image from
+      idImage family examples. The service will use the most recent image from
       the family: https://www.googleapis.com/compute/v1/projects/[project_id]/
       global/images/family/[custom-image-family-name]
       projects/[project_id]/global/images/family/[custom-image-family-name]If
@@ -6591,8 +6617,8 @@ class InstanceGroupConfig(_messages.Message):
       SoftwareConfig.image_version or the system default.
     instanceFlexibilityPolicy: Optional. Instance flexibility Policy allowing
       a mixture of VM shapes and provisioning models.
-    instanceNames: Output only. The list of instance names. Dataproc derives
-      the names from cluster_name, num_instances, and the instance group.
+    instanceNames: Output only. The list of instance names, derived from
+      cluster_name, num_instances, and the instance group.
     instanceReferences: Output only. List of references to Compute Engine
       instances.
     isPreemptible: Output only. Specifies that this instance group contains
@@ -6602,16 +6628,15 @@ class InstanceGroupConfig(_messages.Message):
       tps://www.googleapis.com/compute/v1/projects/[project_id]/zones/[zone]/m
       achineTypes/n1-standard-2
       projects/[project_id]/zones/[zone]/machineTypes/n1-standard-2
-      n1-standard-2Auto Zone Exception: If you are using the Dataproc Auto
-      Zone Placement
+      n1-standard-2Auto Zone Exception: If you are using Auto Zone Placement
       (https://cloud.google.com/dataproc/docs/concepts/configuring-
-      clusters/auto-zone#using_auto_zone_placement) feature, you must use the
-      short name of the machine type resource, for example, n1-standard-2.
+      clusters/auto-zone#using_auto_zone_placement), you must use the short
+      name of the machine type resource, for example, n1-standard-2.
     managedGroupConfig: Output only. The config for Compute Engine Instance
       Group Manager that manages this group. This is only used for preemptible
       instance groups.
     minCpuPlatform: Optional. Specifies the minimum cpu platform for the
-      Instance Group. See Dataproc -> Minimum CPU Platform
+      Instance Group. See Minimum CPU Platform
       (https://cloud.google.com/dataproc/docs/concepts/compute/dataproc-min-
       cpu).
     minNumInstances: Optional. The minimum number of primary worker instances
@@ -6703,8 +6728,8 @@ class InstanceSelection(_messages.Message):
   Fields:
     machineTypes: Optional. Full machine-type names, e.g. "n1-standard-16".
     rank: Optional. Preference of this instance selection. Lower number means
-      higher preference. Dataproc will first try to create a VM based on the
-      machine-type with priority rank and fallback to next rank based on
+      higher preference. The service will first try to create a VM based on
+      the machine-type with priority rank and fallback to next rank based on
       availability. Machine types and instance selections with the same
       priority have the same preference.
   """
@@ -7251,8 +7276,8 @@ class KerberosConfig(_messages.Message):
       for the remote trusted realm in a cross realm trust relationship.
     crossRealmTrustKdc: Optional. The KDC (IP or hostname) for the remote
       trusted realm in a cross realm trust relationship.
-    crossRealmTrustRealm: Optional. The remote realm the Dataproc on-cluster
-      KDC will trust, should the user enable cross realm trust.
+    crossRealmTrustRealm: Optional. The remote realm the on-cluster KDC will
+      trust, should the user enable cross realm trust.
     crossRealmTrustSharedPasswordUri: Optional. The Cloud Storage URI of a KMS
       encrypted file containing the shared password between the on-cluster
       Kerberos realm and the remote trusted realm, in a cross realm trust
@@ -7264,12 +7289,12 @@ class KerberosConfig(_messages.Message):
       containing the master key of the KDC database.
     keyPasswordUri: Optional. The Cloud Storage URI of a KMS encrypted file
       containing the password to the user provided key. For the self-signed
-      certificate, this password is generated by Dataproc.
+      certificate, this password is generated by the service.
     keystorePasswordUri: Optional. The Cloud Storage URI of a KMS encrypted
       file containing the password to the user provided keystore. For the
-      self-signed certificate, this password is generated by Dataproc.
+      self-signed certificate, this password is generated by the service.
     keystoreUri: Optional. The Cloud Storage URI of the keystore file used for
-      SSL encryption. If not provided, Dataproc will provide a self-signed
+      SSL encryption. If not provided, the service will provide a self-signed
       certificate.
     kmsKeyUri: Optional. The URI of the KMS key used to encrypt sensitive
       files.
@@ -7282,10 +7307,10 @@ class KerberosConfig(_messages.Message):
       be used.
     truststorePasswordUri: Optional. The Cloud Storage URI of a KMS encrypted
       file containing the password to the user provided truststore. For the
-      self-signed certificate, this password is generated by Dataproc.
+      self-signed certificate, this password is generated by the service.
     truststoreUri: Optional. The Cloud Storage URI of the truststore file used
-      for SSL encryption. If not provided, Dataproc will provide a self-signed
-      certificate.
+      for SSL encryption. If not provided, the service will provide a self-
+      signed certificate.
   """
 
   crossRealmTrustAdminServer = _messages.StringField(1)
@@ -7782,8 +7807,8 @@ class MetastoreConfig(_messages.Message):
   Fields:
     bigqueryMetastoreConfig: Optional. The BigQuery Metastore configuration
       for the workload.
-    dataprocMetastoreService: Required. Resource name of an existing Dataproc
-      Metastore service.Example:
+    dataprocMetastoreService: Required. Resource name of an existing Metastore
+      service.Example:
       projects/[project_id]/locations/[dataproc_region]/services/[service-
       name]
   """
@@ -7793,7 +7818,7 @@ class MetastoreConfig(_messages.Message):
 
 
 class Metric(_messages.Message):
-  r"""A Dataproc custom metric.
+  r"""A custom metric.
 
   Enums:
     MetricSourceValueValuesEnum: Required. A standard set of metrics is
@@ -7835,8 +7860,8 @@ class Metric(_messages.Message):
     Values:
       METRIC_SOURCE_UNSPECIFIED: Required unspecified metric source.
       MONITORING_AGENT_DEFAULTS: Monitoring agent metrics. If this source is
-        enabled, Dataproc enables the monitoring agent in Compute Engine, and
-        collects monitoring agent metrics, which are published with an
+        enabled, the service enables the monitoring agent in Compute Engine,
+        and collects monitoring agent metrics, which are published with an
         agent.googleapis.com prefix.
       HDFS: HDFS metric source.
       SPARK: Spark metric source.
@@ -7908,8 +7933,8 @@ class NativeSqlExecutionUiData(_messages.Message):
 
 
 class NodeGroup(_messages.Message):
-  r"""Dataproc Node Group. The Dataproc NodeGroup resource is not related to
-  the Dataproc NodeGroupAffinity resource.
+  r"""Node Group. The NodeGroup resource is not related to the
+  NodeGroupAffinity resource.
 
   Enums:
     RolesValueListEntryValuesEnum:
@@ -7986,8 +8011,7 @@ class NodeGroup(_messages.Message):
 
 class NodeGroupAffinity(_messages.Message):
   r"""Node Group Affinity for clusters using sole-tenant node groups. The
-  Dataproc NodeGroupAffinity resource is not related to the Dataproc NodeGroup
-  resource.
+  NodeGroupAffinity resource is not related to the NodeGroup resource.
 
   Fields:
     nodeGroupUri: Required. The URI of a sole-tenant node group resource
@@ -8723,26 +8747,25 @@ class PropertiesInfo(_messages.Message):
 
 
 class ProvisioningModelMix(_messages.Message):
-  r"""Defines how Dataproc should create VMs with a mixture of provisioning
-  models.
+  r"""Defines how to create VMs with a mixture of provisioning models.
 
   Fields:
     standardCapacityBase: Optional. The base capacity that will always use
       Standard VMs to avoid risk of more preemption than the minimum capacity
-      you need. Dataproc will create only standard VMs until it reaches
+      you need. The service will create only standard VMs until it reaches
       standard_capacity_base, then it will start using
       standard_capacity_percent_above_base to mix Spot with Standard VMs. eg.
-      If 15 instances are requested and standard_capacity_base is 5, Dataproc
-      will create 5 standard VMs and then start mixing spot and standard VMs
-      for remaining 10 instances.
+      If 15 instances are requested and standard_capacity_base is 5, the
+      service will create 5 standard VMs and thenstart mixing spot and
+      standard VMs for remaining 10 instances.
     standardCapacityPercentAboveBase: Optional. The percentage of target
       capacity that should use Standard VM. The remaining percentage will use
       Spot VMs. The percentage applies only to the capacity above
       standard_capacity_base. eg. If 15 instances are requested and
       standard_capacity_base is 5 and standard_capacity_percent_above_base is
-      30, Dataproc will create 5 standard VMs and then start mixing spot and
-      standard VMs for remaining 10 instances. The mix will be 30% standard
-      and 70% spot.
+      30, the service will create 5 standard VMs and then start mixing spot
+      and standard VMs for remaining 10 instances. The mix will be 30%
+      standard and 70% spot.
   """
 
   standardCapacityBase = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -9237,11 +9260,11 @@ class RepairClusterRequest(_messages.Message):
     clusterUuid: Optional. Specifying the cluster_uuid means the RPC will fail
       (with error NOT_FOUND) if a cluster with the specified UUID does not
       exist.
-    dataprocSuperUser: Optional. Whether the request is submitted by Dataproc
-      super user. If true, IAM will check 'dataproc.clusters.repair'
-      permission instead of 'dataproc.clusters.update' permission. This is to
-      give Dataproc superuser the ability to repair clusters without granting
-      the overly broad update permission.
+    dataprocSuperUser: Optional. Whether the request is submitted by a super
+      user. If true, IAM will check 'dataproc.clusters.repair' permission
+      instead of 'dataproc.clusters.update' permission. This is to give
+      Dataproc superuser the ability to repair clusters without granting the
+      overly broad update permission.
     gracefulDecommissionTimeout: Optional. Timeout for graceful YARN
       decommissioning. Graceful decommissioning facilitates the removal of
       cluster nodes without interrupting jobs in progress. The timeout
@@ -9250,7 +9273,7 @@ class RepairClusterRequest(_messages.Message):
       and the maximum timeout period is 1 day. (see JSON Mapping-Duration
       (https://developers.google.com/protocol-
       buffers/docs/proto3#json)).graceful_decommission_timeout is supported in
-      Dataproc image versions 1.2+.
+      image versions 1.2+.
     nodePools: Optional. Node pools and corresponding repair action to be
       taken. All node pools should be unique in this request. i.e. Multiple
       entries for the same node pool id are not allowed.
@@ -10479,7 +10502,7 @@ class SoftwareConfig(_messages.Message):
 
   Fields:
     imageVersion: Optional. The version of software inside the cluster. It
-      must be one of the supported Dataproc Versions
+      must be one of the supported Image Versions
       (https://cloud.google.com/dataproc/docs/concepts/versioning/dataproc-
       versions#supported-dataproc-image-versions), such as "1.2" (including a
       subminor version, such as "1.2.29"), or the "preview" version
@@ -12976,8 +12999,19 @@ class UsageMetrics(_messages.Message):
   workload.
 
   Fields:
-    acceleratorType: Optional. DEPRECATED Accelerator type being used, if any
-    milliAcceleratorSeconds: Optional. DEPRECATED Accelerator usage in
+    acceleratorType: Optional. Accelerator type being used, if any Deprecated:
+      This field is only used in runtime versions below 3.0.
+    milliAcceleratorSeconds: Optional. Accelerator usage in (milliAccelerator
+      x seconds) (see Dataproc Serverless pricing
+      (https://cloud.google.com/dataproc-serverless/pricing)). Deprecated:
+      This field is only used in runtime versions below 3.0.
+    milliAcceleratorSecondsA10040: Optional. A100-40 accelerator usage in
+      (milliAccelerator x seconds) (see Dataproc Serverless pricing
+      (https://cloud.google.com/dataproc-serverless/pricing)).
+    milliAcceleratorSecondsA10080: Optional. A100-80 accelerator usage in
+      (milliAccelerator x seconds) (see Dataproc Serverless pricing
+      (https://cloud.google.com/dataproc-serverless/pricing)).
+    milliAcceleratorSecondsL4: Optional. L4 accelerator usage in
       (milliAccelerator x seconds) (see Dataproc Serverless pricing
       (https://cloud.google.com/dataproc-serverless/pricing)).
     milliDcuSeconds: Optional. DCU (Dataproc Compute Units) usage in (milliDCU
@@ -12991,9 +13025,12 @@ class UsageMetrics(_messages.Message):
 
   acceleratorType = _messages.StringField(1)
   milliAcceleratorSeconds = _messages.IntegerField(2)
-  milliDcuSeconds = _messages.IntegerField(3)
-  shuffleStorageGbSeconds = _messages.IntegerField(4)
-  updateTime = _messages.StringField(5)
+  milliAcceleratorSecondsA10040 = _messages.IntegerField(3)
+  milliAcceleratorSecondsA10080 = _messages.IntegerField(4)
+  milliAcceleratorSecondsL4 = _messages.IntegerField(5)
+  milliDcuSeconds = _messages.IntegerField(6)
+  shuffleStorageGbSeconds = _messages.IntegerField(7)
+  updateTime = _messages.StringField(8)
 
 
 class UsageSnapshot(_messages.Message):
@@ -13001,10 +13038,21 @@ class UsageSnapshot(_messages.Message):
   specified time.
 
   Fields:
-    acceleratorType: Optional. Accelerator type being used, if any
+    acceleratorType: Optional. Accelerator type being used, if any Deprecated:
+      This field is only used in runtime versions below 3.0.
     milliAccelerator: Optional. Milli (one-thousandth) accelerator. (see
       Dataproc Serverless pricing (https://cloud.google.com/dataproc-
-      serverless/pricing))
+      serverless/pricing)) Deprecated: This field is only used in runtime
+      versions below 3.0.
+    milliAcceleratorA10040: Optional. Milli (one-thousandth) accelerator for
+      A100-40 accelerators. (see Dataproc Serverless pricing
+      (https://cloud.google.com/dataproc-serverless/pricing))
+    milliAcceleratorA10080: Optional. Milli (one-thousandth) accelerator for
+      A100-80 accelerators. (see Dataproc Serverless pricing
+      (https://cloud.google.com/dataproc-serverless/pricing))
+    milliAcceleratorL4: Optional. Milli (one-thousandth) accelerator for L4
+      accelerators. (see Dataproc Serverless pricing
+      (https://cloud.google.com/dataproc-serverless/pricing))
     milliDcu: Optional. Milli (one-thousandth) Dataproc Compute Units (DCUs)
       (see Dataproc Serverless pricing (https://cloud.google.com/dataproc-
       serverless/pricing)).
@@ -13022,11 +13070,14 @@ class UsageSnapshot(_messages.Message):
 
   acceleratorType = _messages.StringField(1)
   milliAccelerator = _messages.IntegerField(2)
-  milliDcu = _messages.IntegerField(3)
-  milliDcuPremium = _messages.IntegerField(4)
-  shuffleStorageGb = _messages.IntegerField(5)
-  shuffleStorageGbPremium = _messages.IntegerField(6)
-  snapshotTime = _messages.StringField(7)
+  milliAcceleratorA10040 = _messages.IntegerField(3)
+  milliAcceleratorA10080 = _messages.IntegerField(4)
+  milliAcceleratorL4 = _messages.IntegerField(5)
+  milliDcu = _messages.IntegerField(6)
+  milliDcuPremium = _messages.IntegerField(7)
+  shuffleStorageGb = _messages.IntegerField(8)
+  shuffleStorageGbPremium = _messages.IntegerField(9)
+  snapshotTime = _messages.StringField(10)
 
 
 class ValueInfo(_messages.Message):
@@ -13055,22 +13106,22 @@ class ValueValidation(_messages.Message):
 
 
 class VirtualClusterConfig(_messages.Message):
-  r"""The Dataproc cluster config for a cluster that does not directly control
-  the underlying compute resources, such as a Dataproc-on-GKE cluster
+  r"""The cluster config for a cluster that does not directly control the
+  underlying compute resources, such as a GKE cluster
   (https://cloud.google.com/dataproc/docs/guides/dpgke/dataproc-gke-overview).
 
   Fields:
     auxiliaryServicesConfig: Optional. Configuration of auxiliary services
       used by this cluster.
     kubernetesClusterConfig: Required. The configuration for running the
-      Dataproc cluster on Kubernetes.
+      cluster on Kubernetes.
     stagingBucket: Optional. A Cloud Storage bucket used to stage job
       dependencies, config files, and job driver console output. If you do not
-      specify a staging bucket, Cloud Dataproc will determine a Cloud Storage
+      specify a staging bucket, the service will determine a Cloud Storage
       location (US, ASIA, or EU) for your cluster's staging bucket according
       to the Compute Engine zone where your cluster is deployed, and then
-      create and manage this project-level, per-location bucket (see Dataproc
-      staging and temp buckets
+      create and manage this project-level, per-location bucket (see staging
+      and temp buckets
       (https://cloud.google.com/dataproc/docs/concepts/configuring-
       clusters/staging-bucket)). This field requires a Cloud Storage bucket
       name, not a gs://... URI to a Cloud Storage bucket.

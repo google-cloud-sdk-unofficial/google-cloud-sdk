@@ -37,12 +37,75 @@ class AssuredworkloadsV1(base_api.BaseApiClient):
         default_global_params=default_global_params,
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
+    self.assuredworkloads = self.AssuredworkloadsService(self)
     self.organizations_locations_operations = self.OrganizationsLocationsOperationsService(self)
     self.organizations_locations_workloads_updates = self.OrganizationsLocationsWorkloadsUpdatesService(self)
     self.organizations_locations_workloads_violations = self.OrganizationsLocationsWorkloadsViolationsService(self)
     self.organizations_locations_workloads = self.OrganizationsLocationsWorkloadsService(self)
     self.organizations_locations = self.OrganizationsLocationsService(self)
     self.organizations = self.OrganizationsService(self)
+
+  class AssuredworkloadsService(base_api.BaseApiService):
+    """Service class for the assuredworkloads resource."""
+
+    _NAME = 'assuredworkloads'
+
+    def __init__(self, client):
+      super(AssuredworkloadsV1.AssuredworkloadsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def ArchiveResourceEvents(self, request, global_params=None):
+      r"""Finds orphan ResourceEvents matching the criteria and moves them to the ArchivedResourceEvents table.
+
+      Args:
+        request: (GoogleCloudAssuredworkloadsV1ArchiveResourceEventsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAssuredworkloadsV1ArchiveResourceEventsResponse) The response message.
+      """
+      config = self.GetMethodConfig('ArchiveResourceEvents')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ArchiveResourceEvents.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='assuredworkloads.assuredworkloads.archiveResourceEvents',
+        ordered_params=[],
+        path_params=[],
+        query_params=[],
+        relative_path='v1/assuredworkloads:archiveResourceEvents',
+        request_field='<request>',
+        request_type_name='GoogleCloudAssuredworkloadsV1ArchiveResourceEventsRequest',
+        response_type_name='GoogleCloudAssuredworkloadsV1ArchiveResourceEventsResponse',
+        supports_download=False,
+    )
+
+    def RevertArchivedResourceEvents(self, request, global_params=None):
+      r"""Finds matching ArchivedResourceEvents and moves them back to the ResourceEvents table.
+
+      Args:
+        request: (GoogleCloudAssuredworkloadsV1RevertArchivedResourceEventsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAssuredworkloadsV1RevertArchivedResourceEventsResponse) The response message.
+      """
+      config = self.GetMethodConfig('RevertArchivedResourceEvents')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    RevertArchivedResourceEvents.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='assuredworkloads.assuredworkloads.revertArchivedResourceEvents',
+        ordered_params=[],
+        path_params=[],
+        query_params=[],
+        relative_path='v1/assuredworkloads:revertArchivedResourceEvents',
+        request_field='<request>',
+        request_type_name='GoogleCloudAssuredworkloadsV1RevertArchivedResourceEventsRequest',
+        response_type_name='GoogleCloudAssuredworkloadsV1RevertArchivedResourceEventsResponse',
+        supports_download=False,
+    )
 
   class OrganizationsLocationsOperationsService(base_api.BaseApiService):
     """Service class for the organizations_locations_operations resource."""

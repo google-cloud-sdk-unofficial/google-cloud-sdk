@@ -57,6 +57,7 @@ def _AddArgs(
     include_peer_migration_purpose,
     include_ipv6_secondary_ranges,
     include_ipv6_network_tier=False,
+    include_arp_broadcasting=False,
 ):
   """Add subnetwork create arguments to parser."""
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT_WITH_IPV6_FIELD)
@@ -360,9 +361,31 @@ def _AddArgs(
       ),
   }
 
+  hidden_choices = []
+  if include_arp_broadcasting:
+    resolve_subnet_mask_choices.update({
+        'ARP_BROADCAST_PRIMARY_RANGE': (
+            'VMs will receive an ARP response from a VM instance owning the'
+            " target IP address within the subnetwork's primary CIDR range, if"
+            ' such a VM instance exists and is running.'
+        ),
+        'ARP_BROADCAST_PRIMARY_RANGE_WITH_LEARNING': (
+            'Combines ARP_BROADCAST_PRIMARY_RANGE with MAC learning. Enables'
+            ' cache mapping between IP addresses and custom MAC addresses of'
+            ' instances and use of it to set the correct destination MAC'
+            ' address. If this option is chosen, the subnetwork must have /24'
+            ' or a smaller CIDR range.'
+        ),
+    })
+    hidden_choices.extend([
+        'ARP_BROADCAST_PRIMARY_RANGE',
+        'ARP_BROADCAST_PRIMARY_RANGE_WITH_LEARNING',
+    ])
+
   parser.add_argument(
       '--resolve-subnet-mask',
       choices=resolve_subnet_mask_choices,
+      hidden_choices=hidden_choices,
       type=arg_utils.ChoiceToEnumName,
       help=(
           'Resolve subnet mask can only be set when subnet is created. If set,'
@@ -660,6 +683,7 @@ class Create(base.CreateCommand):
   _include_peer_migration_purpose = True
   _include_ipv6_secondary_ranges = False
   _include_ipv6_network_tier = False
+  _include_arp_broadcasting = False
 
   detailed_help = _DetailedHelp()
 
@@ -675,6 +699,7 @@ class Create(base.CreateCommand):
         cls._include_peer_migration_purpose,
         cls._include_ipv6_secondary_ranges,
         cls._include_ipv6_network_tier,
+        cls._include_arp_broadcasting,
     )
 
   def Run(self, args):
@@ -712,3 +737,4 @@ class CreateAlpha(CreateBeta):
   _include_peer_migration_purpose = True
   _include_ipv6_secondary_ranges = True
   _include_ipv6_network_tier = True
+  _include_arp_broadcasting = True

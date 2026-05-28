@@ -32,3 +32,43 @@ def ReadAutokeyConfigFromConfigFile(file_path):
   if 'keyProject' not in parsed_yaml:
     raise exceptions.Error('AutokeyConfig file must contain a keyProject.')
   return parsed_yaml['name'], parsed_yaml['keyProject'], etag
+
+
+def ReadAutokeyConfigFromConfigFileWithKeyProjectResolutionMode(file_path: str):
+  """Fetches the AutokeyConfig from the config file.
+
+  Args:
+    file_path: (str) The path to the YAML config file.
+
+  Returns:
+    A tuple (name, key_project_resolution_mode, key_project, etag), where name
+    is the resource name of the AutokeyConfig, key_project_resolution_mode is
+    the keyProjectResolutionMode field if present, key_project is the keyProject
+    field if present, and etag is the etag field if present, otherwise an empty
+    string.
+
+  Raises:
+    googlecloudsdk.core.exceptions.Error: If the file cannot be loaded,
+      is missing required fields ('name'), or has conflicting fields.
+  """
+  try:
+    parsed_yaml = yaml.load_path(file_path)
+  except yaml.Error as error:
+    raise exceptions.Error(
+        f'unable to load AutokeyConfig for {file_path}: {error}'
+    ) from error
+
+  name = parsed_yaml.get('name')
+  if not name:
+    raise exceptions.Error('AutokeyConfig file must contain a name.')
+  if not name.startswith(('folders/', 'projects/')):
+    raise exceptions.Error(
+        'AutokeyConfig name must start with folders/ or projects/.'
+    )
+
+  return (
+      name,
+      parsed_yaml.get('keyProjectResolutionMode', ''),
+      parsed_yaml.get('keyProject', ''),
+      parsed_yaml.get('etag', ''),
+  )

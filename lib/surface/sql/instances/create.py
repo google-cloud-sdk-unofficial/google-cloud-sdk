@@ -31,7 +31,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.resource import resource_lex
 from googlecloudsdk.core.resource import resource_property
-import six
 
 # 1h, based off of the max time it usually takes to create a SQL instance.
 _INSTANCE_CREATION_TIMEOUT_SECONDS = 3600
@@ -249,7 +248,7 @@ def RunBaseCreateCommand(args, release_track):
       )
     except apitools_exceptions.HttpError as error:
       # TODO(b/64292220): Remove once API gives helpful error message.
-      log.debug('operation : %s', six.text_type(master_instance_ref))
+      log.debug('operation : %s', str(master_instance_ref))
       exc = exceptions.HttpException(error)
       if (
           resource_property.Get(
@@ -491,7 +490,7 @@ def RunBaseCreateCommand(args, release_track):
     )
     return new_resource
   except apitools_exceptions.HttpError as error:
-    log.debug('operation : %s', six.text_type(operation_ref))
+    log.debug('operation : %s', str(operation_ref))
     exc = exceptions.HttpException(error)
     if (
         resource_property.Get(

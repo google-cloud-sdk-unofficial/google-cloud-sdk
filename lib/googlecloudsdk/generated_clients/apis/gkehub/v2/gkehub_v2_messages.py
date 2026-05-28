@@ -1717,9 +1717,8 @@ class GkehubProjectsLocationsListRequest(_messages.Message):
   r"""A GkehubProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -3738,6 +3737,12 @@ class ServiceMeshCondition(_messages.Message):
       NON_STANDARD_BINARY_USAGE: Non-standard binary usage error code
       UNSUPPORTED_GATEWAY_CLASS: Unsupported gateway class error code
       MANAGED_CNI_NOT_ENABLED: Managed CNI not enabled error code
+      MODERNIZATION_INCOMPATIBLE_POD_ANNOTATION: One or more Pods have
+        unsupported annotations.
+      MODERNIZATION_INCOMPATIBLE_POD_IP_SCALE: Cluster exceeds service mesh
+        pod IP scalability limits.
+      MODERNIZATION_INCOMPATIBLE_CONFIG: Incompatible config found in the
+        cluster.
       MODERNIZATION_SCHEDULED: Modernization is scheduled for a cluster.
       MODERNIZATION_IN_PROGRESS: Modernization is in progress for a cluster.
       MODERNIZATION_COMPLETED: Modernization is completed for a cluster.
@@ -3763,6 +3768,13 @@ class ServiceMeshCondition(_messages.Message):
         a fleet. Rollback is no longer allowed.
       MODERNIZATION_ROLLING_BACK_FLEET: Rollback is in progress for
         modernization of all clusters in a fleet.
+      MODERNIZATION_MODERNIZED: Modernization of all the fleet's clusters is
+        complete. Soaking before finalizing the modernization.
+      MODERNIZATION_INCOMPATIBLE_SERVICES_SCALE: Fleet exceeds service mesh
+        services scalability limits.
+      MODERNIZATION_COMPATIBLE: Fleet is compatible for modernization.
+      MODERNIZATION_INCOMPATIBLE: Fleet is not yet compatible for
+        modernization.
     """
     CODE_UNSPECIFIED = 0
     MESH_IAM_PERMISSION_DENIED = 1
@@ -3802,22 +3814,29 @@ class ServiceMeshCondition(_messages.Message):
     NON_STANDARD_BINARY_USAGE = 35
     UNSUPPORTED_GATEWAY_CLASS = 36
     MANAGED_CNI_NOT_ENABLED = 37
-    MODERNIZATION_SCHEDULED = 38
-    MODERNIZATION_IN_PROGRESS = 39
-    MODERNIZATION_COMPLETED = 40
-    MODERNIZATION_ABORTED = 41
-    MODERNIZATION_PREPARING = 42
-    MODERNIZATION_STALLED = 43
-    MODERNIZATION_PREPARED = 44
-    MODERNIZATION_MIGRATING_WORKLOADS = 45
-    MODERNIZATION_ROLLING_BACK_CLUSTER = 46
-    MODERNIZATION_WILL_BE_SCHEDULED = 47
-    MODERNIZATION_MANUAL = 48
-    MODERNIZATION_ELIGIBLE = 49
-    MODERNIZATION_MODERNIZING = 50
-    MODERNIZATION_MODERNIZED_SOAKING = 51
-    MODERNIZATION_FINALIZED = 52
-    MODERNIZATION_ROLLING_BACK_FLEET = 53
+    MODERNIZATION_INCOMPATIBLE_POD_ANNOTATION = 38
+    MODERNIZATION_INCOMPATIBLE_POD_IP_SCALE = 39
+    MODERNIZATION_INCOMPATIBLE_CONFIG = 40
+    MODERNIZATION_SCHEDULED = 41
+    MODERNIZATION_IN_PROGRESS = 42
+    MODERNIZATION_COMPLETED = 43
+    MODERNIZATION_ABORTED = 44
+    MODERNIZATION_PREPARING = 45
+    MODERNIZATION_STALLED = 46
+    MODERNIZATION_PREPARED = 47
+    MODERNIZATION_MIGRATING_WORKLOADS = 48
+    MODERNIZATION_ROLLING_BACK_CLUSTER = 49
+    MODERNIZATION_WILL_BE_SCHEDULED = 50
+    MODERNIZATION_MANUAL = 51
+    MODERNIZATION_ELIGIBLE = 52
+    MODERNIZATION_MODERNIZING = 53
+    MODERNIZATION_MODERNIZED_SOAKING = 54
+    MODERNIZATION_FINALIZED = 55
+    MODERNIZATION_ROLLING_BACK_FLEET = 56
+    MODERNIZATION_MODERNIZED = 57
+    MODERNIZATION_INCOMPATIBLE_SERVICES_SCALE = 58
+    MODERNIZATION_COMPATIBLE = 59
+    MODERNIZATION_INCOMPATIBLE = 60
 
   class SeverityValueValuesEnum(_messages.Enum):
     r"""Severity level of the condition.

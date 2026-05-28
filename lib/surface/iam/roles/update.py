@@ -15,6 +15,7 @@
 
 """Command for updating a custom role."""
 
+import http.client
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.iam import util
@@ -24,8 +25,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.iam import flags
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core.console import console_io
-
-import six.moves.http_client
 
 
 DETAILED_HELP = {
@@ -126,7 +125,7 @@ class Update(base.Command):
     iam_util.SetRoleStageIfAlpha(res)
     return res
 
-  @http_retry.RetryOnHttpStatus(six.moves.http_client.CONFLICT)
+  @http_retry.RetryOnHttpStatus(http.client.CONFLICT)
   def UpdateWithFlags(self, args, role_name, role, iam_client, messages):
     role, changed_fields = self.GetUpdatedRole(args, role_name, role,
                                                iam_client, messages)

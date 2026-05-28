@@ -30,7 +30,6 @@ from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import retry
-import six
 
 _EXAMPLES = """
 To import the fleet membership of an attached cluster in fleet ``FLEET_MEMBERSHIP'' managed in location ``us-west1'', run:
@@ -113,7 +112,7 @@ $ gcloud {} container attached clusters generate-install-manifest --location={} 
 
 AFTER the attach operation completes.
 """.format(
-              six.text_type(self.ReleaseTrack()).lower(),
+              str(self.ReleaseTrack()).lower(),
               location_ref.locationsId,
               attached_flags.GetPlatformVersion(args),
               fleet_membership_ref.membershipsId,

@@ -282,12 +282,13 @@ class FaulttestingProjectsLocationsExclusionWindowsCreateRequest(_messages.Messa
   Fields:
     exclusionWindow: A ExclusionWindow resource to be passed as the request
       body.
-    exclusionWindowId: Required. The ID to use for the exclusion_window, which
-      will become the final component of the exclusion_window's resource name.
-      Required. This value should be 4-63 characters, and valid characters are
-      /a-z-/. Must start with a letter and cannot end with a hyphen.
-    parent: Required. The project and location where this ExclusionWindow will
-      be created. Format: projects/{project}/locations/{location}
+    exclusionWindowId: Required. The ID to use for the `exclusion_window`,
+      which will become the final component of the `exclusion_window`'s
+      resource name. Required. This value should be 4-63 characters, and valid
+      characters are /a-z-/. Must start with a letter and cannot end with a
+      hyphen.
+    parent: Required. The project and location where the exclusion window will
+      be created. Format: `projects/{project}/locations/{location}`.
   """
 
   exclusionWindow = _messages.MessageField('ExclusionWindow', 1)
@@ -299,8 +300,8 @@ class FaulttestingProjectsLocationsExclusionWindowsDeleteRequest(_messages.Messa
   r"""A FaulttestingProjectsLocationsExclusionWindowsDeleteRequest object.
 
   Fields:
-    name: Required. The name of the ExclusionWindow to delete. Format: project
-      s/{project}/locations/{location}/exclusionWindows/{exclusion_window}
+    name: Required. The name of the exclusion window to delete. Format: `proje
+      cts/{project}/locations/{location}/exclusionWindows/{exclusion_window}`.
   """
 
   name = _messages.StringField(1, required=True)
@@ -310,8 +311,9 @@ class FaulttestingProjectsLocationsExclusionWindowsGetRequest(_messages.Message)
   r"""A FaulttestingProjectsLocationsExclusionWindowsGetRequest object.
 
   Fields:
-    name: Required. The name of the ExclusionWindow. Format: projects/{project
-      }/locations/{location}/exclusionWindows/{exclusion_window}
+    name: Required. The name of the exclusion window to retrieve. Format: `pro
+      jects/{project}/locations/{location}/exclusionWindows/{exclusion_window}
+      `.
   """
 
   name = _messages.StringField(1, required=True)
@@ -321,7 +323,7 @@ class FaulttestingProjectsLocationsExclusionWindowsListRequest(_messages.Message
   r"""A FaulttestingProjectsLocationsExclusionWindowsListRequest object.
 
   Fields:
-    pageSize: Optional. The maximum number of ExclusionWindows to return from
+    pageSize: Optional. The maximum number of exclusion windows to return from
       this call. The service may return fewer than this value. If unspecified,
       at most 1000 will be returned. The maximum value is 1000; values above
       1000 will be coerced to 1000.
@@ -329,8 +331,8 @@ class FaulttestingProjectsLocationsExclusionWindowsListRequest(_messages.Message
       `ListExclusionWindows` call. Provide this to retrieve the subsequent
       page. When paginating, all other parameters provided to
       `ListExclusionWindows` must match the call that provided the page token.
-    parent: Required. The project and location from which to list
-      ExclusionWindows. Format: projects/{project}/locations/{location}
+    parent: Required. The project and location from which to list exclusion
+      windows. Format: `projects/{project}/locations/{location}`.
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -359,9 +361,9 @@ class FaulttestingProjectsLocationsExclusionWindowsStartRequest(_messages.Messag
   r"""A FaulttestingProjectsLocationsExclusionWindowsStartRequest object.
 
   Fields:
-    name: Required. The resource name of the ExclusionWindow to start. Format:
-      projects/{project}/locations/{location}/exclusionWindows/{exclusion_wind
-      ow}
+    name: Required. The resource name of the exclusion window to start.
+      Format: `projects/{project}/locations/{location}/exclusionWindows/{exclu
+      sion_window}`.
     startExclusionWindowRequest: A StartExclusionWindowRequest resource to be
       passed as the request body.
   """
@@ -374,9 +376,9 @@ class FaulttestingProjectsLocationsExclusionWindowsStopRequest(_messages.Message
   r"""A FaulttestingProjectsLocationsExclusionWindowsStopRequest object.
 
   Fields:
-    name: Required. The resource name of the ExclusionWindow to stop. Format:
-      projects/{project}/locations/{location}/exclusionWindows/{exclusion_wind
-      ow}
+    name: Required. The resource name of the exclusion window to stop. Format:
+      `projects/{project}/locations/{location}/exclusionWindows/{exclusion_win
+      dow}`.
     stopExclusionWindowRequest: A StopExclusionWindowRequest resource to be
       passed as the request body.
   """
@@ -432,9 +434,10 @@ class FaulttestingProjectsLocationsExperimentTemplatesListRequest(_messages.Mess
   r"""A FaulttestingProjectsLocationsExperimentTemplatesListRequest object.
 
   Fields:
-    pageSize: Optional. The maximum number of templates to return. FIT may
-      return fewer. If unspecified, at most 1000 will be returned. The maximum
-      value is 1000; values above 1000 will be coerced to 1000.
+    pageSize: Optional. The maximum number of templates to return. Fault
+      Injection Testing may return fewer. If unspecified, at most 1000 will be
+      returned. The maximum value is 1000; values above 1000 will be coerced
+      to 1000.
     pageToken: Optional. A page token received from a previous list call, used
       to retrieve the subsequent page. When paginating, all other parameters
       provided to `ListExperimentTemplates` must match the call that provided
@@ -495,7 +498,7 @@ class FaulttestingProjectsLocationsExperimentsAffectedResourcesListRequest(_mess
       to retrieve the subsequent page. When paginating, all other parameters
       provided to `ListAffectedResources` must match the call that provided
       the page token.
-    parent: Required. The `Experiment` from which to list affected resources.
+    parent: Required. The experiment from which to list affected resources.
       Format:
       `projects/{projectId}/locations/{location}/experiments/{experimentId}`.
   """
@@ -516,7 +519,7 @@ class FaulttestingProjectsLocationsExperimentsCreateRequest(_messages.Message):
       will be generated. This value should be 4-63 characters, start with a
       letter or number, end with a letter or number, and contain only
       lowercase letters, numbers, and hyphens.
-    parent: Required. The project and location where this `Experiment` will be
+    parent: Required. The project and location where the experiment will be
       created. Format: `projects/{projectId}/locations/{location}`.
   """
 
@@ -529,7 +532,7 @@ class FaulttestingProjectsLocationsExperimentsDeleteRequest(_messages.Message):
   r"""A FaulttestingProjectsLocationsExperimentsDeleteRequest object.
 
   Fields:
-    force: Optional. Should always be set to true. If set to true, any
+    force: Optional. Should always be set to true. If set to `true`, any
       affected resources under this experiment will also be deleted.
       Otherwise, the request will only work if the experiment has no affected
       resources.
@@ -634,9 +637,8 @@ class FaulttestingProjectsLocationsListRequest(_messages.Message):
   r"""A FaulttestingProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -940,7 +942,7 @@ class ListExclusionWindowsResponse(_messages.Message):
   r"""Response message for FaultTesting.ListExclusionWindows.
 
   Fields:
-    exclusionWindows: The ExclusionWindows from the specified project.
+    exclusionWindows: The exclusion windows from the specified project.
     nextPageToken: A token, which can be sent as `page_token` to retrieve the
       next page. If this field is omitted, there are no subsequent pages.
     unreachable: Unordered list. Locations that could not be reached, each
@@ -1410,12 +1412,12 @@ class StopAllExperimentsResponse(_messages.Message):
   complete success only if `errors` is empty.
 
   Fields:
-    errors: Errors that occurred while listing or stopping experiments. For
-      every Experiment which fails the internal `StopExperiment` call there
-      will be one entry in this list.
-    stoppedExperimentsCount: The number of experiments in being stopped. These
-      are all experiments found in reachable locations with status appropriate
-      to be stopped which did not get an error from `StopExperiment`.
+    errors: Errors that occurred while listing or stopping experiments. Each
+      experiment that fails the internal `StopExperiment` call will have an
+      entry in this list.
+    stoppedExperimentsCount: The number of experiments that were stopped.
+      These experiments are in reachable locations with statuses that allows
+      them to be stopped, and did not get an error from `StopExperiment`.
   """
 
   errors = _messages.MessageField('Status', 1, repeated=True)

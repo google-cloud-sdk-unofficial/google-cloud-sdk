@@ -23,8 +23,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
-import six
-import six.moves
 
 
 class VersionsMigrateError(exceptions.Error):
@@ -83,7 +81,7 @@ class Migrate(base.Command):
               v.traffic_split > 0 and v.id != args.version)
 
     # All versions that will stop receiving traffic.
-    versions_to_migrate = list(six.moves.filter(WillBeMigrated, all_versions))
+    versions_to_migrate = list(filter(WillBeMigrated, all_versions))
 
     for version in versions_to_migrate:
       short_name = '{0}/{1}'.format(version.service, version.id)
@@ -102,7 +100,7 @@ class Migrate(base.Command):
             client.SetTrafficSplit, service, allocations, shard_by='ip',
             migrate=True)
       except (operations_util.MiscOperationError) as err:
-        errors[service] = six.text_type(err)
+        errors[service] = str(err)
 
     if errors:
       error_string = ('Issues migrating all traffic of '

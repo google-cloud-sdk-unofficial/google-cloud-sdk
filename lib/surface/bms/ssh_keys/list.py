@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bms import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-import six
+
 
 DETAILED_HELP = {
     'DESCRIPTION':
@@ -39,7 +39,7 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
-class List(six.with_metaclass(abc.ABCMeta, base.CacheCommand)):
+class List(base.CacheCommand, metaclass=abc.ABCMeta):
   """List the SSH keys added to the project in Bare Metal Solution."""
 
   @staticmethod

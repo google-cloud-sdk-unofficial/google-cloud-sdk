@@ -21,7 +21,6 @@ from googlecloudsdk.api_lib.app import version_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import text
-from six import moves
 
 
 class Delete(base.DeleteCommand):
@@ -58,9 +57,12 @@ class Delete(base.DeleteCommand):
     if args.version:
       console_io.PromptContinue(
           'Deleting version [{0}] of {1} [{2}].'.format(
-              args.version, text.Pluralize(len(services), 'service'),
-              ', '.join(moves.map(str, services))),
-          cancel_on_no=True)
+              args.version,
+              text.Pluralize(len(services), 'service'),
+              ', '.join(map(str, services)),
+          ),
+          cancel_on_no=True,
+      )
       versions = [version_util.Version(api_client.project, s.id, args.version)
                   for s in services]
       version_util.DeleteVersions(api_client, versions)
@@ -68,6 +70,8 @@ class Delete(base.DeleteCommand):
       console_io.PromptContinue(
           'Deleting {0} [{1}].'.format(
               text.Pluralize(len(services), 'service'),
-              ', '.join(moves.map(str, services))),
-          cancel_on_no=True)
+              ', '.join(map(str, services)),
+          ),
+          cancel_on_no=True,
+      )
       service_util.DeleteServices(api_client, services)

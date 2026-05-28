@@ -29,6 +29,7 @@ from googlecloudsdk.core import metrics
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_attr
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.util import encoding
 from googlecloudsdk.core.util import platforms
 import six
 from six.moves import urllib
@@ -623,6 +624,31 @@ def GetAndCacheArchitecture(user_platform):
   return arch
 
 
+_AI_AGENTS = [
+    ('ANTIGRAVITY_AGENT', 'antigravity'),
+    ('CLAUDECODE', 'claude_code'),
+    ('CLINE_ACTIVE', 'cline'),
+    ('CODEX_SANDBOX', 'codex_cli'),
+    ('CURSOR_AGENT', 'cursor'),
+    ('GEMINI_CLI', 'gemini_cli'),
+    ('OPENCODE', 'open_code'),
+    ('ANDROID_STUDIO_AGENT', 'android_studio_agent'),
+    ('KIRO_AGENT_PATH', 'kiro'),
+]
+
+
+def _DetectAIAgent():
+  """Detects the AI agent based on environment variables.
+
+  Returns:
+    str, The name of the AI agent or 'unknown'.
+  """
+  for env_var, agent_name in _AI_AGENTS:
+    if encoding.GetEncodedValue(os.environ, env_var):
+      return agent_name
+  return None
+
+
 def MakeUserAgentString(cmd_path=None):
   """Return a user-agent string for this request.
 
@@ -637,9 +663,12 @@ def MakeUserAgentString(cmd_path=None):
   """
   user_platform = platforms.Platform.Current()
   architecture = GetAndCacheArchitecture(user_platform)
+  agent_name = _DetectAIAgent()
+  agent_fragment = ' agent-name/{}'.format(agent_name) if agent_name else ''
 
   return (
       'gcloud/{version}'
+      '{agent_fragment}'
       ' command/{cmd}'
       ' invocation-id/{inv_id}'
       ' environment/{environment}'
@@ -655,6 +684,7 @@ def MakeUserAgentString(cmd_path=None):
       ' {ua_fragment}'
   ).format(
       version=config.CLOUD_SDK_VERSION.replace(' ', '_'),
+      agent_fragment=agent_fragment,
       cmd=(cmd_path or properties.VALUES.metrics.command_name.Get()),
       inv_id=INVOCATION_ID,
       environment=properties.GetMetricsEnvironment(),

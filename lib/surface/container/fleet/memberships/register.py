@@ -35,7 +35,6 @@ from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
-import six
 
 SERVICE_ACCOUNT_KEY_FILE_FLAG = '--service-account-key-file'
 DOCKER_CREDENTIAL_FILE_FLAG = '--docker-credential-file'
@@ -418,8 +417,7 @@ class Register(base.CreateCommand):
         try:
           file_content = files.ReadBinaryFileContents(
               files.ExpandHomeDir(args.docker_credential_file))
-          docker_credential_data = six.ensure_str(
-              file_content, encoding='utf-8')
+          docker_credential_data = file_content.decode('utf-8')
         except files.Error as e:
           raise exceptions.Error('Could not process {}: {}'.format(
               DOCKER_CREDENTIAL_FILE_FLAG, e))
@@ -438,9 +436,14 @@ class Register(base.CreateCommand):
         )
 
         try:
-          openid_config_json = six.ensure_str(
-              kube_client.GetOpenIDConfiguration(issuer_url=public_issuer_url),
-              encoding='utf-8')
+          openid_config_raw = kube_client.GetOpenIDConfiguration(
+              issuer_url=public_issuer_url
+          )
+          openid_config_json = (
+              openid_config_raw.decode('utf-8')
+              if isinstance(openid_config_raw, bytes)
+              else openid_config_raw
+          )
         except Exception as e:  # pylint: disable=broad-except
           raise exceptions.Error(
               'Error getting the OpenID Provider Configuration: '

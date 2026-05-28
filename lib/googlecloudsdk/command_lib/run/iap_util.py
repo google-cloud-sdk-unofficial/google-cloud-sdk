@@ -69,11 +69,11 @@ def IsOrglessProject(project_id: str) -> bool:
     return True
 
 
-def IsIapAlreadyEnabled(self) -> bool:
+def IsIapAlreadyEnabled(release_track) -> bool:
   """Checks if IAP is already enabled for the current project.
 
   Args:
-    self: The command object.
+    release_track: The release track to use.
 
   Returns:
     True if IAP is enabled (client ID and secret are present), False otherwise.
@@ -89,7 +89,7 @@ def IsIapAlreadyEnabled(self) -> bool:
     iap_args.version = None
     # TODO: b/419573373 - Update IAP check when visibility label is removed.
     iap_setting_ref = iap_command_util.ParseIapSettingsResource(
-        self.ReleaseTrack(),
+        release_track,
         iap_args,
     )
     try:

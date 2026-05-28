@@ -322,6 +322,11 @@ class AuthzPolicy(_messages.Message):
     name: Required. Identifier. Name of the `AuthzPolicy` resource in the
       following format:
       `projects/{project}/locations/{location}/authzPolicies/{authz_policy}`.
+    networkRules: Optional. A list of authorization network rules to match
+      against the incoming request. A policy match occurs when at least one
+      network rule matches the request. At least one network rule is required
+      for Allow or Deny Action if no HTTP rules are provided. Network rules
+      are mutually exclusive with HTTP rules. Limited to 5 rules.
     policyProfile: Optional. Immutable. Defines the type of authorization
       being performed. If not specified, `REQUEST_AUTHZ` is applied. This
       field cannot be changed once AuthzPolicy is created.
@@ -412,9 +417,10 @@ class AuthzPolicy(_messages.Message):
   httpRules = _messages.MessageField('AuthzPolicyAuthzRule', 5, repeated=True)
   labels = _messages.MessageField('LabelsValue', 6)
   name = _messages.StringField(7)
-  policyProfile = _messages.EnumField('PolicyProfileValueValuesEnum', 8)
-  target = _messages.MessageField('AuthzPolicyTarget', 9)
-  updateTime = _messages.StringField(10)
+  networkRules = _messages.MessageField('AuthzPolicyAuthzRule', 8, repeated=True)
+  policyProfile = _messages.EnumField('PolicyProfileValueValuesEnum', 9)
+  target = _messages.MessageField('AuthzPolicyTarget', 10)
+  updateTime = _messages.StringField(11)
 
 
 class AuthzPolicyAuthzRule(_messages.Message):
@@ -662,6 +668,11 @@ class AuthzPolicyAuthzRuleToRequestOperation(_messages.Message):
       Authorization Policy. Note that this path match includes the query
       parameters. For gRPC services, this should be a fully-qualified name of
       the form /package.service/method.
+    snis: Optional. A list of SNIs to match against. The match can be one of
+      exact, prefix, suffix, or contains (substring match). If there is no SNI
+      (i.e. plaintext HTTP traffic), the request will be denied. Matches are
+      always case sensitive unless the ignoreCase is set. Limited to 10 SNIs
+      per Authorization Policy.
   """
 
   headerSet = _messages.MessageField('AuthzPolicyAuthzRuleToRequestOperationHeaderSet', 1)
@@ -669,6 +680,7 @@ class AuthzPolicyAuthzRuleToRequestOperation(_messages.Message):
   mcp = _messages.MessageField('AuthzPolicyAuthzRuleToRequestOperationMCP', 3)
   methods = _messages.StringField(4, repeated=True)
   paths = _messages.MessageField('AuthzPolicyAuthzRuleStringMatch', 5, repeated=True)
+  snis = _messages.MessageField('AuthzPolicyAuthzRuleStringMatch', 6, repeated=True)
 
 
 class AuthzPolicyAuthzRuleToRequestOperationHeaderSet(_messages.Message):
@@ -3835,6 +3847,25 @@ class NetworksecurityOrganizationsLocationsAddressGroupsRemoveItemsRequest(_mess
   removeAddressGroupItemsRequest = _messages.MessageField('RemoveAddressGroupItemsRequest', 2)
 
 
+class NetworksecurityOrganizationsLocationsAddressGroupsTestIamPermissionsRequest(_messages.Message):
+  r"""A
+  NetworksecurityOrganizationsLocationsAddressGroupsTestIamPermissionsRequest
+  object.
+
+  Fields:
+    googleIamV1TestIamPermissionsRequest: A
+      GoogleIamV1TestIamPermissionsRequest resource to be passed as the
+      request body.
+    resource: REQUIRED: The resource for which the policy detail is being
+      requested. See [Resource
+      names](https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+  """
+
+  googleIamV1TestIamPermissionsRequest = _messages.MessageField('GoogleIamV1TestIamPermissionsRequest', 1)
+  resource = _messages.StringField(2, required=True)
+
+
 class NetworksecurityOrganizationsLocationsFirewallEndpointsCreateRequest(_messages.Message):
   r"""A NetworksecurityOrganizationsLocationsFirewallEndpointsCreateRequest
   object.
@@ -3949,6 +3980,39 @@ class NetworksecurityOrganizationsLocationsFirewallEndpointsPatchRequest(_messag
   name = _messages.StringField(2, required=True)
   requestId = _messages.StringField(3)
   updateMask = _messages.StringField(4)
+
+
+class NetworksecurityOrganizationsLocationsGetRequest(_messages.Message):
+  r"""A NetworksecurityOrganizationsLocationsGetRequest object.
+
+  Fields:
+    name: Resource name for the location.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityOrganizationsLocationsListRequest(_messages.Message):
+  r"""A NetworksecurityOrganizationsLocationsListRequest object.
+
+  Fields:
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
+    filter: A filter to narrow down results to a preferred subset. The
+      filtering language accepts strings like `"displayName=tokyo"`, and is
+      documented in more detail in [AIP-160](https://google.aip.dev/160).
+    name: The resource that owns the locations collection, if applicable.
+    pageSize: The maximum number of results to return. If not set, the service
+      selects a default.
+    pageToken: A page token received from the `next_page_token` field in the
+      response. Send that page token to receive the subsequent page.
+  """
+
+  extraLocationTypes = _messages.StringField(1, repeated=True)
+  filter = _messages.StringField(2)
+  name = _messages.StringField(3, required=True)
+  pageSize = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(5)
 
 
 class NetworksecurityOrganizationsLocationsOperationsCancelRequest(_messages.Message):

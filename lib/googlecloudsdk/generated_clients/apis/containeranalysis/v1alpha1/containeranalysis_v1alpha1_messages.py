@@ -27,11 +27,13 @@ class AISkillAnalysisOccurrence(_messages.Message):
 
   Fields:
     findings: Optional. Findings produced by the analysis.
+    maxSeverity: Optional. Maximum severity found among findings.
     skillName: Optional. Name of the skill that produced this analysis.
   """
 
   findings = _messages.MessageField('Finding', 1, repeated=True)
-  skillName = _messages.StringField(2)
+  maxSeverity = _messages.StringField(2)
+  skillName = _messages.StringField(3)
 
 
 class AnalysisCompleted(_messages.Message):
@@ -712,63 +714,121 @@ class CVSS(_messages.Message):
   CVSS v2 and v3. For CVSS v2 details, see https://www.first.org/cvss/v2/guide
   CVSS v2 calculator: https://nvd.nist.gov/vuln-metrics/cvss/v2-calculator For
   CVSS v3 details, see https://www.first.org/cvss/specification-document CVSS
-  v3 calculator: https://nvd.nist.gov/vuln-metrics/cvss/v3-calculator
+  v3 calculator: https://nvd.nist.gov/vuln-metrics/cvss/v3-calculator For CVSS
+  v4 details, see https://www.first.org/cvss/v4.0/user-guide CVSS v4
+  calculator: https://nvd.nist.gov/vuln-metrics/cvss/v4-calculator
 
   Enums:
-    AttackComplexityValueValuesEnum: Defined in CVSS v3, CVSS v2
-    AttackVectorValueValuesEnum: Base Metrics Represents the intrinsic
-      characteristics of a vulnerability that are constant over time and
-      across user environments. Defined in CVSS v3, CVSS v2
-    AuthenticationValueValuesEnum: Defined in CVSS v2
-    AvailabilityImpactValueValuesEnum: Defined in CVSS v3, CVSS v2
-    ConfidentialityImpactValueValuesEnum: Defined in CVSS v3, CVSS v2
-    IntegrityImpactValueValuesEnum: Defined in CVSS v3, CVSS v2
-    PrivilegesRequiredValueValuesEnum: Defined in CVSS v3
-    ScopeValueValuesEnum: Defined in CVSS v3
-    UserInteractionValueValuesEnum: Defined in CVSS v3
+    AttackComplexityValueValuesEnum: Optional. Attack Complexity (AC). Defined
+      in CVSS v2, v3, v4.
+    AttackRequirementsValueValuesEnum: Optional. Attack Requirements (AT).
+      Defined in CVSS v4.
+    AttackVectorValueValuesEnum: Optional. Attack Vector (AV). Defined in CVSS
+      v2, v3, v4.
+    AuthenticationValueValuesEnum: Optional. Authentication (Au). Defined in
+      CVSS v2.
+    AvailabilityImpactValueValuesEnum: Optional. Availability Impact (A).
+      Defined in CVSS v2, v3.
+    ConfidentialityImpactValueValuesEnum: Optional. Confidentiality Impact
+      (C). Defined in CVSS v2, v3.
+    IntegrityImpactValueValuesEnum: Optional. Integrity Impact (I). Defined in
+      CVSS v2, v3.
+    PrivilegesRequiredValueValuesEnum: Optional. Privileges Required (PR).
+      Defined in CVSS v3, v4.
+    ScopeValueValuesEnum: Optional. Scope (S). Defined in CVSS v3.
+    SubsequentSystemAvailabilityImpactValueValuesEnum: Optional. Subsequent
+      System Availability Impact (SA). Defined in CVSS v4.
+    SubsequentSystemConfidentialityImpactValueValuesEnum: Optional. Subsequent
+      System Confidentiality Impact (SC). Defined in CVSS v4.
+    SubsequentSystemIntegrityImpactValueValuesEnum: Optional. Subsequent
+      System Integrity Impact (SI). Defined in CVSS v4.
+    UserInteractionValueValuesEnum: Optional. User Interaction (UI). Defined
+      in CVSS v3, v4.
+    VulnerableSystemAvailabilityImpactValueValuesEnum: Optional. Vulnerable
+      System Availability Impact (VA). Defined in CVSS v4.
+    VulnerableSystemConfidentialityImpactValueValuesEnum: Optional. Vulnerable
+      System Confidentiality Impact (VC). Defined in CVSS v4.
+    VulnerableSystemIntegrityImpactValueValuesEnum: Optional. Vulnerable
+      System Integrity Impact (VI). Defined in CVSS v4.
 
   Fields:
-    attackComplexity: Defined in CVSS v3, CVSS v2
-    attackVector: Base Metrics Represents the intrinsic characteristics of a
-      vulnerability that are constant over time and across user environments.
-      Defined in CVSS v3, CVSS v2
-    authentication: Defined in CVSS v2
-    availabilityImpact: Defined in CVSS v3, CVSS v2
-    baseScore: The base score is a function of the base metric scores.
-    confidentialityImpact: Defined in CVSS v3, CVSS v2
+    attackComplexity: Optional. Attack Complexity (AC). Defined in CVSS v2,
+      v3, v4.
+    attackRequirements: Optional. Attack Requirements (AT). Defined in CVSS
+      v4.
+    attackVector: Optional. Attack Vector (AV). Defined in CVSS v2, v3, v4.
+    authentication: Optional. Authentication (Au). Defined in CVSS v2.
+    availabilityImpact: Optional. Availability Impact (A). Defined in CVSS v2,
+      v3.
+    baseScore: Optional. The base score is a function of the base metric
+      scores.
+    confidentialityImpact: Optional. Confidentiality Impact (C). Defined in
+      CVSS v2, v3.
     exploitabilityScore: A number attribute.
     impactScore: A number attribute.
-    integrityImpact: Defined in CVSS v3, CVSS v2
-    privilegesRequired: Defined in CVSS v3
-    scope: Defined in CVSS v3
-    userInteraction: Defined in CVSS v3
+    integrityImpact: Optional. Integrity Impact (I). Defined in CVSS v2, v3.
+    privilegesRequired: Optional. Privileges Required (PR). Defined in CVSS
+      v3, v4.
+    scope: Optional. Scope (S). Defined in CVSS v3.
+    subsequentSystemAvailabilityImpact: Optional. Subsequent System
+      Availability Impact (SA). Defined in CVSS v4.
+    subsequentSystemConfidentialityImpact: Optional. Subsequent System
+      Confidentiality Impact (SC). Defined in CVSS v4.
+    subsequentSystemIntegrityImpact: Optional. Subsequent System Integrity
+      Impact (SI). Defined in CVSS v4.
+    userInteraction: Optional. User Interaction (UI). Defined in CVSS v3, v4.
+    vulnerableSystemAvailabilityImpact: Optional. Vulnerable System
+      Availability Impact (VA). Defined in CVSS v4.
+    vulnerableSystemConfidentialityImpact: Optional. Vulnerable System
+      Confidentiality Impact (VC). Defined in CVSS v4.
+    vulnerableSystemIntegrityImpact: Optional. Vulnerable System Integrity
+      Impact (VI). Defined in CVSS v4.
   """
 
   class AttackComplexityValueValuesEnum(_messages.Enum):
-    r"""Defined in CVSS v3, CVSS v2
+    r"""Optional. Attack Complexity (AC). Defined in CVSS v2, v3, v4.
 
     Values:
-      ATTACK_COMPLEXITY_UNSPECIFIED: Defined in CVSS v3, CVSS v2
-      ATTACK_COMPLEXITY_LOW: Defined in CVSS v3, CVSS v2
-      ATTACK_COMPLEXITY_HIGH: Defined in CVSS v3, CVSS v2
-      ATTACK_COMPLEXITY_MEDIUM: Defined in CVSS v2
+      ATTACK_COMPLEXITY_UNSPECIFIED: Unspecified.
+      ATTACK_COMPLEXITY_LOW: Low attack complexity (AC:L). Defined in CVSS v2,
+        v3, v4.
+      ATTACK_COMPLEXITY_HIGH: High attack complexity (AC:H). Defined in CVSS
+        v2, v3, v4.
+      ATTACK_COMPLEXITY_MEDIUM: Medium attack complexity (AC:M). Defined in
+        CVSS v2.
     """
     ATTACK_COMPLEXITY_UNSPECIFIED = 0
     ATTACK_COMPLEXITY_LOW = 1
     ATTACK_COMPLEXITY_HIGH = 2
     ATTACK_COMPLEXITY_MEDIUM = 3
 
-  class AttackVectorValueValuesEnum(_messages.Enum):
-    r"""Base Metrics Represents the intrinsic characteristics of a
-    vulnerability that are constant over time and across user environments.
-    Defined in CVSS v3, CVSS v2
+  class AttackRequirementsValueValuesEnum(_messages.Enum):
+    r"""Optional. Attack Requirements (AT). Defined in CVSS v4.
 
     Values:
-      ATTACK_VECTOR_UNSPECIFIED: Defined in CVSS v3, CVSS v2
-      ATTACK_VECTOR_NETWORK: Defined in CVSS v3, CVSS v2
-      ATTACK_VECTOR_ADJACENT: Defined in CVSS v3, CVSS v2
-      ATTACK_VECTOR_LOCAL: Defined in CVSS v3, CVSS v2
-      ATTACK_VECTOR_PHYSICAL: Defined in CVSS v3
+      ATTACK_REQUIREMENTS_UNSPECIFIED: Unspecified.
+      ATTACK_REQUIREMENTS_NONE: No attack requirements (AT:N). Defined in CVSS
+        v4.
+      ATTACK_REQUIREMENTS_PRESENT: Attack requirements: Present (AT:P).
+        Defined in CVSS v4.
+    """
+    ATTACK_REQUIREMENTS_UNSPECIFIED = 0
+    ATTACK_REQUIREMENTS_NONE = 1
+    ATTACK_REQUIREMENTS_PRESENT = 2
+
+  class AttackVectorValueValuesEnum(_messages.Enum):
+    r"""Optional. Attack Vector (AV). Defined in CVSS v2, v3, v4.
+
+    Values:
+      ATTACK_VECTOR_UNSPECIFIED: Unspecified.
+      ATTACK_VECTOR_NETWORK: Attack Vector: Network (AV:N). Defined in CVSS
+        v2, v3, v4.
+      ATTACK_VECTOR_ADJACENT: Attack Vector: Adjacent (AV:A). Defined in CVSS
+        v2, v3, v4.
+      ATTACK_VECTOR_LOCAL: Attack Vector: Local (AV:L). Defined in CVSS v2,
+        v3, v4.
+      ATTACK_VECTOR_PHYSICAL: Attack Vector: Physical (AV:P). Defined in CVSS
+        v3, v4.
     """
     ATTACK_VECTOR_UNSPECIFIED = 0
     ATTACK_VECTOR_NETWORK = 1
@@ -777,13 +837,16 @@ class CVSS(_messages.Message):
     ATTACK_VECTOR_PHYSICAL = 4
 
   class AuthenticationValueValuesEnum(_messages.Enum):
-    r"""Defined in CVSS v2
+    r"""Optional. Authentication (Au). Defined in CVSS v2.
 
     Values:
-      AUTHENTICATION_UNSPECIFIED: Defined in CVSS v2
-      AUTHENTICATION_MULTIPLE: Defined in CVSS v2
-      AUTHENTICATION_SINGLE: Defined in CVSS v2
-      AUTHENTICATION_NONE: Defined in CVSS v2
+      AUTHENTICATION_UNSPECIFIED: Unspecified.
+      AUTHENTICATION_MULTIPLE: Multiple authentication required (Au:M).
+        Defined in CVSS v2.
+      AUTHENTICATION_SINGLE: Single authentication required (Au:S). Defined in
+        CVSS v2.
+      AUTHENTICATION_NONE: No authentication required (Au:N). Defined in CVSS
+        v2.
     """
     AUTHENTICATION_UNSPECIFIED = 0
     AUTHENTICATION_MULTIPLE = 1
@@ -791,15 +854,15 @@ class CVSS(_messages.Message):
     AUTHENTICATION_NONE = 3
 
   class AvailabilityImpactValueValuesEnum(_messages.Enum):
-    r"""Defined in CVSS v3, CVSS v2
+    r"""Optional. Availability Impact (A). Defined in CVSS v2, v3.
 
     Values:
-      IMPACT_UNSPECIFIED: Defined in CVSS v3, CVSS v2
-      IMPACT_HIGH: Defined in CVSS v3
-      IMPACT_LOW: Defined in CVSS v3
-      IMPACT_NONE: Defined in CVSS v3, CVSS v2
-      IMPACT_PARTIAL: Defined in CVSS v2
-      IMPACT_COMPLETE: Defined in CVSS v2
+      IMPACT_UNSPECIFIED: Unspecified.
+      IMPACT_HIGH: High impact (H). Defined in CVSS v3, v4.
+      IMPACT_LOW: Low impact (L). Defined in CVSS v3, v4.
+      IMPACT_NONE: No impact (N). Defined in CVSS v2, v3, v4.
+      IMPACT_PARTIAL: Partial impact (P). Defined in CVSS v2.
+      IMPACT_COMPLETE: Complete impact (C). Defined in CVSS v2.
     """
     IMPACT_UNSPECIFIED = 0
     IMPACT_HIGH = 1
@@ -809,15 +872,15 @@ class CVSS(_messages.Message):
     IMPACT_COMPLETE = 5
 
   class ConfidentialityImpactValueValuesEnum(_messages.Enum):
-    r"""Defined in CVSS v3, CVSS v2
+    r"""Optional. Confidentiality Impact (C). Defined in CVSS v2, v3.
 
     Values:
-      IMPACT_UNSPECIFIED: Defined in CVSS v3, CVSS v2
-      IMPACT_HIGH: Defined in CVSS v3
-      IMPACT_LOW: Defined in CVSS v3
-      IMPACT_NONE: Defined in CVSS v3, CVSS v2
-      IMPACT_PARTIAL: Defined in CVSS v2
-      IMPACT_COMPLETE: Defined in CVSS v2
+      IMPACT_UNSPECIFIED: Unspecified.
+      IMPACT_HIGH: High impact (H). Defined in CVSS v3, v4.
+      IMPACT_LOW: Low impact (L). Defined in CVSS v3, v4.
+      IMPACT_NONE: No impact (N). Defined in CVSS v2, v3, v4.
+      IMPACT_PARTIAL: Partial impact (P). Defined in CVSS v2.
+      IMPACT_COMPLETE: Complete impact (C). Defined in CVSS v2.
     """
     IMPACT_UNSPECIFIED = 0
     IMPACT_HIGH = 1
@@ -827,15 +890,15 @@ class CVSS(_messages.Message):
     IMPACT_COMPLETE = 5
 
   class IntegrityImpactValueValuesEnum(_messages.Enum):
-    r"""Defined in CVSS v3, CVSS v2
+    r"""Optional. Integrity Impact (I). Defined in CVSS v2, v3.
 
     Values:
-      IMPACT_UNSPECIFIED: Defined in CVSS v3, CVSS v2
-      IMPACT_HIGH: Defined in CVSS v3
-      IMPACT_LOW: Defined in CVSS v3
-      IMPACT_NONE: Defined in CVSS v3, CVSS v2
-      IMPACT_PARTIAL: Defined in CVSS v2
-      IMPACT_COMPLETE: Defined in CVSS v2
+      IMPACT_UNSPECIFIED: Unspecified.
+      IMPACT_HIGH: High impact (H). Defined in CVSS v3, v4.
+      IMPACT_LOW: Low impact (L). Defined in CVSS v3, v4.
+      IMPACT_NONE: No impact (N). Defined in CVSS v2, v3, v4.
+      IMPACT_PARTIAL: Partial impact (P). Defined in CVSS v2.
+      IMPACT_COMPLETE: Complete impact (C). Defined in CVSS v2.
     """
     IMPACT_UNSPECIFIED = 0
     IMPACT_HIGH = 1
@@ -845,13 +908,16 @@ class CVSS(_messages.Message):
     IMPACT_COMPLETE = 5
 
   class PrivilegesRequiredValueValuesEnum(_messages.Enum):
-    r"""Defined in CVSS v3
+    r"""Optional. Privileges Required (PR). Defined in CVSS v3, v4.
 
     Values:
-      PRIVILEGES_REQUIRED_UNSPECIFIED: Defined in CVSS v3
-      PRIVILEGES_REQUIRED_NONE: Defined in CVSS v3
-      PRIVILEGES_REQUIRED_LOW: Defined in CVSS v3
-      PRIVILEGES_REQUIRED_HIGH: Defined in CVSS v3
+      PRIVILEGES_REQUIRED_UNSPECIFIED: Unspecified.
+      PRIVILEGES_REQUIRED_NONE: No privileges required (PR:N). Defined in CVSS
+        v3, v4.
+      PRIVILEGES_REQUIRED_LOW: Low privileges required (PR:L). Defined in CVSS
+        v3, v4.
+      PRIVILEGES_REQUIRED_HIGH: High privileges required (PR:H). Defined in
+        CVSS v3, v4.
     """
     PRIVILEGES_REQUIRED_UNSPECIFIED = 0
     PRIVILEGES_REQUIRED_NONE = 1
@@ -859,41 +925,168 @@ class CVSS(_messages.Message):
     PRIVILEGES_REQUIRED_HIGH = 3
 
   class ScopeValueValuesEnum(_messages.Enum):
-    r"""Defined in CVSS v3
+    r"""Optional. Scope (S). Defined in CVSS v3.
 
     Values:
-      SCOPE_UNSPECIFIED: Defined in CVSS v3
-      SCOPE_UNCHANGED: Defined in CVSS v3
-      SCOPE_CHANGED: Defined in CVSS v3
+      SCOPE_UNSPECIFIED: Unspecified.
+      SCOPE_UNCHANGED: Scope: Unchanged (S:U). Defined in CVSS v3.
+      SCOPE_CHANGED: Scope: Changed (S:C). Defined in CVSS v3.
     """
     SCOPE_UNSPECIFIED = 0
     SCOPE_UNCHANGED = 1
     SCOPE_CHANGED = 2
 
-  class UserInteractionValueValuesEnum(_messages.Enum):
-    r"""Defined in CVSS v3
+  class SubsequentSystemAvailabilityImpactValueValuesEnum(_messages.Enum):
+    r"""Optional. Subsequent System Availability Impact (SA). Defined in CVSS
+    v4.
 
     Values:
-      USER_INTERACTION_UNSPECIFIED: Defined in CVSS v3
-      USER_INTERACTION_NONE: Defined in CVSS v3
-      USER_INTERACTION_REQUIRED: Defined in CVSS v3
+      IMPACT_UNSPECIFIED: Unspecified.
+      IMPACT_HIGH: High impact (H). Defined in CVSS v3, v4.
+      IMPACT_LOW: Low impact (L). Defined in CVSS v3, v4.
+      IMPACT_NONE: No impact (N). Defined in CVSS v2, v3, v4.
+      IMPACT_PARTIAL: Partial impact (P). Defined in CVSS v2.
+      IMPACT_COMPLETE: Complete impact (C). Defined in CVSS v2.
+    """
+    IMPACT_UNSPECIFIED = 0
+    IMPACT_HIGH = 1
+    IMPACT_LOW = 2
+    IMPACT_NONE = 3
+    IMPACT_PARTIAL = 4
+    IMPACT_COMPLETE = 5
+
+  class SubsequentSystemConfidentialityImpactValueValuesEnum(_messages.Enum):
+    r"""Optional. Subsequent System Confidentiality Impact (SC). Defined in
+    CVSS v4.
+
+    Values:
+      IMPACT_UNSPECIFIED: Unspecified.
+      IMPACT_HIGH: High impact (H). Defined in CVSS v3, v4.
+      IMPACT_LOW: Low impact (L). Defined in CVSS v3, v4.
+      IMPACT_NONE: No impact (N). Defined in CVSS v2, v3, v4.
+      IMPACT_PARTIAL: Partial impact (P). Defined in CVSS v2.
+      IMPACT_COMPLETE: Complete impact (C). Defined in CVSS v2.
+    """
+    IMPACT_UNSPECIFIED = 0
+    IMPACT_HIGH = 1
+    IMPACT_LOW = 2
+    IMPACT_NONE = 3
+    IMPACT_PARTIAL = 4
+    IMPACT_COMPLETE = 5
+
+  class SubsequentSystemIntegrityImpactValueValuesEnum(_messages.Enum):
+    r"""Optional. Subsequent System Integrity Impact (SI). Defined in CVSS v4.
+
+    Values:
+      IMPACT_UNSPECIFIED: Unspecified.
+      IMPACT_HIGH: High impact (H). Defined in CVSS v3, v4.
+      IMPACT_LOW: Low impact (L). Defined in CVSS v3, v4.
+      IMPACT_NONE: No impact (N). Defined in CVSS v2, v3, v4.
+      IMPACT_PARTIAL: Partial impact (P). Defined in CVSS v2.
+      IMPACT_COMPLETE: Complete impact (C). Defined in CVSS v2.
+    """
+    IMPACT_UNSPECIFIED = 0
+    IMPACT_HIGH = 1
+    IMPACT_LOW = 2
+    IMPACT_NONE = 3
+    IMPACT_PARTIAL = 4
+    IMPACT_COMPLETE = 5
+
+  class UserInteractionValueValuesEnum(_messages.Enum):
+    r"""Optional. User Interaction (UI). Defined in CVSS v3, v4.
+
+    Values:
+      USER_INTERACTION_UNSPECIFIED: Unspecified.
+      USER_INTERACTION_NONE: No user interaction required (UI:N). Defined in
+        CVSS v3, v4.
+      USER_INTERACTION_REQUIRED: User interaction required (UI:R). Defined in
+        CVSS v3.
+      USER_INTERACTION_PASSIVE: Passive user interaction (UI:P). Defined in
+        CVSS v4.
+      USER_INTERACTION_ACTIVE: Active user interaction (UI:A). Defined in CVSS
+        v4.
     """
     USER_INTERACTION_UNSPECIFIED = 0
     USER_INTERACTION_NONE = 1
     USER_INTERACTION_REQUIRED = 2
+    USER_INTERACTION_PASSIVE = 3
+    USER_INTERACTION_ACTIVE = 4
+
+  class VulnerableSystemAvailabilityImpactValueValuesEnum(_messages.Enum):
+    r"""Optional. Vulnerable System Availability Impact (VA). Defined in CVSS
+    v4.
+
+    Values:
+      IMPACT_UNSPECIFIED: Unspecified.
+      IMPACT_HIGH: High impact (H). Defined in CVSS v3, v4.
+      IMPACT_LOW: Low impact (L). Defined in CVSS v3, v4.
+      IMPACT_NONE: No impact (N). Defined in CVSS v2, v3, v4.
+      IMPACT_PARTIAL: Partial impact (P). Defined in CVSS v2.
+      IMPACT_COMPLETE: Complete impact (C). Defined in CVSS v2.
+    """
+    IMPACT_UNSPECIFIED = 0
+    IMPACT_HIGH = 1
+    IMPACT_LOW = 2
+    IMPACT_NONE = 3
+    IMPACT_PARTIAL = 4
+    IMPACT_COMPLETE = 5
+
+  class VulnerableSystemConfidentialityImpactValueValuesEnum(_messages.Enum):
+    r"""Optional. Vulnerable System Confidentiality Impact (VC). Defined in
+    CVSS v4.
+
+    Values:
+      IMPACT_UNSPECIFIED: Unspecified.
+      IMPACT_HIGH: High impact (H). Defined in CVSS v3, v4.
+      IMPACT_LOW: Low impact (L). Defined in CVSS v3, v4.
+      IMPACT_NONE: No impact (N). Defined in CVSS v2, v3, v4.
+      IMPACT_PARTIAL: Partial impact (P). Defined in CVSS v2.
+      IMPACT_COMPLETE: Complete impact (C). Defined in CVSS v2.
+    """
+    IMPACT_UNSPECIFIED = 0
+    IMPACT_HIGH = 1
+    IMPACT_LOW = 2
+    IMPACT_NONE = 3
+    IMPACT_PARTIAL = 4
+    IMPACT_COMPLETE = 5
+
+  class VulnerableSystemIntegrityImpactValueValuesEnum(_messages.Enum):
+    r"""Optional. Vulnerable System Integrity Impact (VI). Defined in CVSS v4.
+
+    Values:
+      IMPACT_UNSPECIFIED: Unspecified.
+      IMPACT_HIGH: High impact (H). Defined in CVSS v3, v4.
+      IMPACT_LOW: Low impact (L). Defined in CVSS v3, v4.
+      IMPACT_NONE: No impact (N). Defined in CVSS v2, v3, v4.
+      IMPACT_PARTIAL: Partial impact (P). Defined in CVSS v2.
+      IMPACT_COMPLETE: Complete impact (C). Defined in CVSS v2.
+    """
+    IMPACT_UNSPECIFIED = 0
+    IMPACT_HIGH = 1
+    IMPACT_LOW = 2
+    IMPACT_NONE = 3
+    IMPACT_PARTIAL = 4
+    IMPACT_COMPLETE = 5
 
   attackComplexity = _messages.EnumField('AttackComplexityValueValuesEnum', 1)
-  attackVector = _messages.EnumField('AttackVectorValueValuesEnum', 2)
-  authentication = _messages.EnumField('AuthenticationValueValuesEnum', 3)
-  availabilityImpact = _messages.EnumField('AvailabilityImpactValueValuesEnum', 4)
-  baseScore = _messages.FloatField(5, variant=_messages.Variant.FLOAT)
-  confidentialityImpact = _messages.EnumField('ConfidentialityImpactValueValuesEnum', 6)
-  exploitabilityScore = _messages.FloatField(7, variant=_messages.Variant.FLOAT)
-  impactScore = _messages.FloatField(8, variant=_messages.Variant.FLOAT)
-  integrityImpact = _messages.EnumField('IntegrityImpactValueValuesEnum', 9)
-  privilegesRequired = _messages.EnumField('PrivilegesRequiredValueValuesEnum', 10)
-  scope = _messages.EnumField('ScopeValueValuesEnum', 11)
-  userInteraction = _messages.EnumField('UserInteractionValueValuesEnum', 12)
+  attackRequirements = _messages.EnumField('AttackRequirementsValueValuesEnum', 2)
+  attackVector = _messages.EnumField('AttackVectorValueValuesEnum', 3)
+  authentication = _messages.EnumField('AuthenticationValueValuesEnum', 4)
+  availabilityImpact = _messages.EnumField('AvailabilityImpactValueValuesEnum', 5)
+  baseScore = _messages.FloatField(6, variant=_messages.Variant.FLOAT)
+  confidentialityImpact = _messages.EnumField('ConfidentialityImpactValueValuesEnum', 7)
+  exploitabilityScore = _messages.FloatField(8, variant=_messages.Variant.FLOAT)
+  impactScore = _messages.FloatField(9, variant=_messages.Variant.FLOAT)
+  integrityImpact = _messages.EnumField('IntegrityImpactValueValuesEnum', 10)
+  privilegesRequired = _messages.EnumField('PrivilegesRequiredValueValuesEnum', 11)
+  scope = _messages.EnumField('ScopeValueValuesEnum', 12)
+  subsequentSystemAvailabilityImpact = _messages.EnumField('SubsequentSystemAvailabilityImpactValueValuesEnum', 13)
+  subsequentSystemConfidentialityImpact = _messages.EnumField('SubsequentSystemConfidentialityImpactValueValuesEnum', 14)
+  subsequentSystemIntegrityImpact = _messages.EnumField('SubsequentSystemIntegrityImpactValueValuesEnum', 15)
+  userInteraction = _messages.EnumField('UserInteractionValueValuesEnum', 16)
+  vulnerableSystemAvailabilityImpact = _messages.EnumField('VulnerableSystemAvailabilityImpactValueValuesEnum', 17)
+  vulnerableSystemConfidentialityImpact = _messages.EnumField('VulnerableSystemConfidentialityImpactValueValuesEnum', 18)
+  vulnerableSystemIntegrityImpact = _messages.EnumField('VulnerableSystemIntegrityImpactValueValuesEnum', 19)
 
 
 class CisBenchmark(_messages.Message):
@@ -1852,6 +2045,7 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1BuildStep(_messages.Message):
       to use as the name for a later build step.
     pullTiming: Output only. Stores timing information for pulling this build
       step's builder image only.
+    results: Declaration of results for this build step.
     script: A shell script to be executed in the step. When script is
       provided, the user cannot specify the entrypoint or args.
     secretEnv: A list of environment variables which are encrypted using a
@@ -1917,13 +2111,51 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1BuildStep(_messages.Message):
   id = _messages.StringField(9)
   name = _messages.StringField(10)
   pullTiming = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1TimeSpan', 11)
-  script = _messages.StringField(12)
-  secretEnv = _messages.StringField(13, repeated=True)
-  status = _messages.EnumField('StatusValueValuesEnum', 14)
-  timeout = _messages.StringField(15)
-  timing = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1TimeSpan', 16)
-  volumes = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1Volume', 17, repeated=True)
-  waitFor = _messages.StringField(18, repeated=True)
+  results = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1StepResult', 12, repeated=True)
+  script = _messages.StringField(13)
+  secretEnv = _messages.StringField(14, repeated=True)
+  status = _messages.EnumField('StatusValueValuesEnum', 15)
+  timeout = _messages.StringField(16)
+  timing = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1TimeSpan', 17)
+  volumes = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1Volume', 18, repeated=True)
+  waitFor = _messages.StringField(19, repeated=True)
+
+
+class ContaineranalysisGoogleDevtoolsCloudbuildV1BuildStepResults(_messages.Message):
+  r"""Results for a build step.
+
+  Messages:
+    ResultsValue: Results for a build step.
+
+  Fields:
+    results: Results for a build step.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ResultsValue(_messages.Message):
+    r"""Results for a build step.
+
+    Messages:
+      AdditionalProperty: An additional property for a ResultsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type ResultsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ResultsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  results = _messages.MessageField('ResultsValue', 1)
 
 
 class ContaineranalysisGoogleDevtoolsCloudbuildV1BuildWarning(_messages.Message):
@@ -2306,6 +2538,9 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1RepoSource(_messages.Message):
 class ContaineranalysisGoogleDevtoolsCloudbuildV1Results(_messages.Message):
   r"""Artifacts created by the build pipeline.
 
+  Messages:
+    BuildStepResultsValue: Results for build steps. step_id ->
+
   Fields:
     artifactManifest: Path to the artifact manifest for non-container
       artifacts uploaded to Cloud Storage. Only populated when artifacts are
@@ -2319,6 +2554,7 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1Results(_messages.Message):
       produce this output by writing to `$BUILDER_OUTPUT/output`. Only the
       first 50KB of data is stored. Note that the `$BUILDER_OUTPUT` variable
       is read-only and can't be substituted.
+    buildStepResults: Results for build steps. step_id ->
     genericArtifacts: Output only. Generic artifacts uploaded to Artifact
       Registry at the end of the build.
     goModules: Optional. Go module artifacts uploaded to Artifact Registry at
@@ -2334,17 +2570,45 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1Results(_messages.Message):
       of the build.
   """
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class BuildStepResultsValue(_messages.Message):
+    r"""Results for build steps. step_id ->
+
+    Messages:
+      AdditionalProperty: An additional property for a BuildStepResultsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        BuildStepResultsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a BuildStepResultsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A ContaineranalysisGoogleDevtoolsCloudbuildV1BuildStepResults
+          attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1BuildStepResults', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   artifactManifest = _messages.StringField(1)
   artifactTiming = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1TimeSpan', 2)
   buildStepImages = _messages.StringField(3, repeated=True)
   buildStepOutputs = _messages.BytesField(4, repeated=True)
-  genericArtifacts = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1UploadedGenericArtifact', 5, repeated=True)
-  goModules = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1UploadedGoModule', 6, repeated=True)
-  images = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1BuiltImage', 7, repeated=True)
-  mavenArtifacts = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1UploadedMavenArtifact', 8, repeated=True)
-  npmPackages = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1UploadedNpmPackage', 9, repeated=True)
-  numArtifacts = _messages.IntegerField(10)
-  pythonPackages = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1UploadedPythonPackage', 11, repeated=True)
+  buildStepResults = _messages.MessageField('BuildStepResultsValue', 5)
+  genericArtifacts = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1UploadedGenericArtifact', 6, repeated=True)
+  goModules = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1UploadedGoModule', 7, repeated=True)
+  images = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1BuiltImage', 8, repeated=True)
+  mavenArtifacts = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1UploadedMavenArtifact', 9, repeated=True)
+  npmPackages = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1UploadedNpmPackage', 10, repeated=True)
+  numArtifacts = _messages.IntegerField(11)
+  pythonPackages = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1UploadedPythonPackage', 12, repeated=True)
 
 
 class ContaineranalysisGoogleDevtoolsCloudbuildV1Secret(_messages.Message):
@@ -2532,6 +2796,21 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1SourceProvenance(_messages.Mess
   resolvedRepoSource = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1RepoSource', 4)
   resolvedStorageSource = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1StorageSource', 5)
   resolvedStorageSourceManifest = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1StorageSourceManifest', 6)
+
+
+class ContaineranalysisGoogleDevtoolsCloudbuildV1StepResult(_messages.Message):
+  r"""StepResult is the declaration of a result for a build step.
+
+  Fields:
+    attestationContent: Optional. The content of the attestation to be
+      generated.
+    attestationType: Optional. The type of attestation to be generated.
+    name: Required. The name of the result.
+  """
+
+  attestationContent = _messages.StringField(1)
+  attestationType = _messages.StringField(2)
+  name = _messages.StringField(3)
 
 
 class ContaineranalysisGoogleDevtoolsCloudbuildV1StorageSource(_messages.Message):
@@ -4021,22 +4300,29 @@ class Finding(_messages.Message):
 
   Fields:
     category: Optional. Category of the finding.
-    description: Optional. Detailed description of the finding.
-    filePath: Optional. Path to the file where the finding was detected.
-    ruleId: Optional. Unique identifier of the rule that produced this
-      finding.
+    location: Optional. Location (path and line) where the finding was
+      detected.
+    scanner: Optional. Scanner determines which engine (e.g. static, llm)
+      emitted the finding.
     severity: Optional. Severity of the finding.
-    snippet: Optional. Code snippet relevant to the finding.
-    title: Optional. Title of the finding.
   """
 
   category = _messages.StringField(1)
-  description = _messages.StringField(2)
-  filePath = _messages.StringField(3)
-  ruleId = _messages.StringField(4)
-  severity = _messages.StringField(5)
-  snippet = _messages.StringField(6)
-  title = _messages.StringField(7)
+  location = _messages.MessageField('FindingLocation', 2)
+  scanner = _messages.StringField(3)
+  severity = _messages.StringField(4)
+
+
+class FindingLocation(_messages.Message):
+  r"""Location details with file path and line number.
+
+  Fields:
+    filePath: Optional. Relative path of the file containing the finding.
+    lineNumber: Optional. Line number (1-based), or 0 if whole File / unknown.
+  """
+
+  filePath = _messages.StringField(1)
+  lineNumber = _messages.IntegerField(2)
 
 
 class Fingerprint(_messages.Message):
@@ -7455,10 +7741,12 @@ class VulnerabilityDetails(_messages.Message):
       CVSS_VERSION_UNSPECIFIED: CVSS Version unspecified.
       CVSS_VERSION_2: CVSS v2.
       CVSS_VERSION_3: CVSS v3.
+      CVSS_VERSION_4: CVSS v4.
     """
     CVSS_VERSION_UNSPECIFIED = 0
     CVSS_VERSION_2 = 1
     CVSS_VERSION_3 = 2
+    CVSS_VERSION_4 = 3
 
   class EffectiveSeverityValueValuesEnum(_messages.Enum):
     r"""The distro assigned severity for this vulnerability when that is
@@ -7566,10 +7854,12 @@ class VulnerabilityType(_messages.Message):
       CVSS_VERSION_UNSPECIFIED: CVSS Version unspecified.
       CVSS_VERSION_2: CVSS v2.
       CVSS_VERSION_3: CVSS v3.
+      CVSS_VERSION_4: CVSS v4.
     """
     CVSS_VERSION_UNSPECIFIED = 0
     CVSS_VERSION_2 = 1
     CVSS_VERSION_3 = 2
+    CVSS_VERSION_4 = 3
 
   class SeverityValueValuesEnum(_messages.Enum):
     r"""Note provider assigned impact of the vulnerability

@@ -1251,29 +1251,6 @@ class ConversionWorkspaceInfo(_messages.Message):
   name = _messages.StringField(2)
 
 
-class ConvertApplicationCodeRequest(_messages.Message):
-  r"""Request for ConvertApplicationCode.
-
-  Fields:
-    sourceCode: Required. The source code to convert.
-  """
-
-  sourceCode = _messages.StringField(1)
-
-
-class ConvertApplicationCodeResponse(_messages.Message):
-  r"""Response for ConvertApplicationCode.
-
-  Fields:
-    resultMessage: A message to display to the user.
-    sourceCode: The converted source code. Will be empty if the conversion
-      failed or did not yield any change.
-  """
-
-  resultMessage = _messages.StringField(1)
-  sourceCode = _messages.StringField(2)
-
-
 class ConvertConversionWorkspaceRequest(_messages.Message):
   r"""Request message for 'ConvertConversionWorkspace' request.
 
@@ -2216,20 +2193,6 @@ class DatamigrationProjectsLocationsConversionWorkspacesTestIamPermissionsReques
   testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
 
 
-class DatamigrationProjectsLocationsConvertApplicationCodeRequest(_messages.Message):
-  r"""A DatamigrationProjectsLocationsConvertApplicationCodeRequest object.
-
-  Fields:
-    convertApplicationCodeRequest: A ConvertApplicationCodeRequest resource to
-      be passed as the request body.
-    name: Required. The resource name for the location. Must be in the format
-      `projects/*/locations/*`.
-  """
-
-  convertApplicationCodeRequest = _messages.MessageField('ConvertApplicationCodeRequest', 1)
-  name = _messages.StringField(2, required=True)
-
-
 class DatamigrationProjectsLocationsFetchStaticIpsRequest(_messages.Message):
   r"""A DatamigrationProjectsLocationsFetchStaticIpsRequest object.
 
@@ -2260,9 +2223,8 @@ class DatamigrationProjectsLocationsListRequest(_messages.Message):
   r"""A DatamigrationProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -3199,11 +3161,13 @@ class EntityIssue(_messages.Message):
       ISSUE_TYPE_DDL: Issue originated from the DDL
       ISSUE_TYPE_APPLY: Issue originated during the apply process
       ISSUE_TYPE_CONVERT: Issue originated during the convert process
+      ISSUE_TYPE_PULL_SCHEMA: Issue originated during the pull schema process
     """
     ISSUE_TYPE_UNSPECIFIED = 0
     ISSUE_TYPE_DDL = 1
     ISSUE_TYPE_APPLY = 2
     ISSUE_TYPE_CONVERT = 3
+    ISSUE_TYPE_PULL_SCHEMA = 4
 
   code = _messages.StringField(1)
   ddl = _messages.StringField(2)
@@ -5749,7 +5713,7 @@ class QuotaFailureViolation(_messages.Message):
 
   Fields:
     apiService: The API Service from which the `QuotaFailure.Violation`
-      orginates. In some cases, Quota issues originate from an API Service
+      originates. In some cases, Quota issues originate from an API Service
       other than the one that was called. In other words, a dependency of the
       called API Service could be the cause of the `QuotaFailure`, and this
       field would have the dependency API service name. For example, if the

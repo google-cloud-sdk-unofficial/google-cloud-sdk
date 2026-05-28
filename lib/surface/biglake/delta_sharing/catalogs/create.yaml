@@ -4,8 +4,8 @@
     description: |
       Create a BigLake Delta Sharing catalog.
   request:
-    collection: biglake.deltasharing.v1.projects.catalogs
-    api_version: delta_v1
+    collection: biglake.deltasharing.v1alpha.projects.catalogs
+    api_version: delta_v1alpha
     method: create
     modify_request_hooks:
     - googlecloudsdk.command_lib.biglake.delta_sharing:SetParentAndCatalogId
@@ -14,7 +14,7 @@
       help_text: The Delta Sharing catalog to create.
       spec:
         name: catalog
-        collection: biglake.deltasharing.v1.projects.catalogs
+        collection: biglake.deltasharing.v1alpha.projects.catalogs
         attributes:
         - attribute_name: project
           parameter_name: projectsId
@@ -28,3 +28,8 @@
       api_field: deltaSharingCatalog.location
       help_text: The location of the catalog.
       required: true
+    - arg_name: refresh-interval
+      api_field: deltaSharingCatalog.refreshOptions.refreshSchedule.refreshInterval
+      help_text: The interval for refreshing metadata from the remote catalog (e.g. 300s or 5m).
+      type: "googlecloudsdk.calliope.arg_parsers:Duration:"
+      processor: googlecloudsdk.command_lib.biglake.delta_sharing:GetDurationString

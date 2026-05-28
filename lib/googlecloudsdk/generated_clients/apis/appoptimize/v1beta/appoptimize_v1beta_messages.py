@@ -220,6 +220,7 @@ class Empty(_messages.Message):
   """
 
 
+
 class ListLocationsResponse(_messages.Message):
   r"""The response message for Locations.ListLocations.
 
@@ -456,6 +457,7 @@ class OperationMetadata(_messages.Message):
   r"""Represents metadata related to the creation of a Report. This value is
   embedded in the Operation object returned by `CreateReport`.
   """
+
 
 
 class ReadReportRequest(_messages.Message):

@@ -121,6 +121,7 @@ def AddAutoFlags(parser, release_track):
   flags.AddEnableSlurmOperatorFlag(parser)
   flags.AddEnableRayClusterMonitoring(parser, hidden=False)
   flags.AddEnableRayClusterLogging(parser, hidden=False)
+  flags.AddEnableKueueLogging(parser)
   flags.AddInsecureRBACBindingFlags(parser, hidden=False)
   flags.AddEnableMultiNetworkingFlag(parser, hidden=False)
   flags.AddControlPlaneKeysFlags(parser)

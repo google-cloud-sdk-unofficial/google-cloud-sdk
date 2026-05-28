@@ -123,6 +123,9 @@ LIST_INSTANCES = _SERVERLESS_PREFIX + 'list_instances'
 # Time to create an instance
 CREATE_INSTANCE = _SERVERLESS_PREFIX + 'create_instance'
 
+# Time to update an instance
+UPDATE_INSTANCE = _SERVERLESS_PREFIX + 'update_instance'
+
 # Time to delete an instance
 DELETE_INSTANCE = _SERVERLESS_PREFIX + 'delete_instance'
 

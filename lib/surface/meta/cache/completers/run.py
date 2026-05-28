@@ -30,10 +30,8 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import module_util
 from googlecloudsdk.core.console import console_io
 
-import six
 
-
-class _FunctionCompleter(object):
+class _FunctionCompleter:
   """Convert an argparse function completer to a resource_cache completer."""
 
   def __init__(self, completer):
@@ -97,7 +95,7 @@ class AddCompleterResourceFlags(parser_extensions.DynamicPositionalAction):
   """Adds resource argument flags based on the completer."""
 
   def __init__(self, *args, **kwargs):
-    super(AddCompleterResourceFlags, self).__init__(*args, **kwargs)
+    super().__init__(*args, **kwargs)
     self.__argument = None
     self.__completer = None
 
@@ -134,8 +132,9 @@ class AddCompleterResourceFlags(parser_extensions.DynamicPositionalAction):
             flag,
             dest=dest,
             category='RESOURCE COMPLETER',
-            help='{} `{}` parameter value.'.format(
-                self.__completer.__class__.__name__, parameter.name))
+            help=(
+                f'{self.__completer.__class__.__name__} `{parameter.name}` '
+                'parameter value.'))
         args.append(arg)
     self.__argument = base.Argument(
         'resource_to_complete',
@@ -235,7 +234,7 @@ class Run(base.Command):
     """Returns the results for one completion."""
     presentation_kwargs = args.resource_presentation_kwargs or {}
     with cache_util.GetCache(args.cache, create=True) as cache:
-      log.info('cache name {}'.format(cache.name))
+      log.info(f'cache name {cache.name}')
       if not args.kwargs:
         args.kwargs = {}
       # Create the ResourceInfo object that is used to hook up the parameter
@@ -275,7 +274,7 @@ class Run(base.Command):
           if args.stack_trace:
             exceptions.reraise(Exception(e))
           else:
-            log.error(six.text_type(e))
+            log.error(str(e))
           continue
         if completions:
           print('\n'.join(completions))

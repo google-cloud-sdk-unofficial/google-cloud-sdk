@@ -244,21 +244,21 @@ class GoogleCloudOsconfigV2betaOrchestrationScopeSelector(_messages.Message):
 
 
 class GoogleCloudOsconfigV2betaPolicyOrchestrator(_messages.Message):
-  r"""PolicyOrchestrator helps managing project+zone level policy resources
-  (e.g. OS Policy Assignments), by providing tools to create, update and
-  delete them across projects and locations, at scale. Policy orchestrator
-  functions as an endless loop. Each iteration orchestrator computes a set of
-  resources that should be affected, then progressively applies changes to
-  them. If for some reason this set of resources changes over time (e.g. new
-  projects are added), the future loop iterations will address that.
-  Orchestrator can either upsert or delete policy resources. For more details,
-  see the description of the `action`, and `orchestrated_resource` fields.
-  Note that policy orchestrator do not "manage" the resources it creates.
-  Every iteration is independent and only minimal history of past actions is
-  retained (apart from Cloud Logging). If orchestrator gets deleted, it does
-  not affect the resources it created in the past. Those will remain where
-  they were. Same applies if projects are removed from the orchestrator's
-  scope.
+  r"""A policy orchestrator manages project-level and zone-level policy
+  resources, such as OS policy assignments. It provides methods to create,
+  update, and delete these resources across projects and locations at scale.
+  The policy orchestrator operates as a continuous loop. In each iteration,
+  the orchestrator identifies the set of resources to be modified and
+  progressively applies changes. If the set of resources changes over time
+  (for example, if you add new projects), subsequent iterations address those
+  changes. The orchestrator can either upsert or delete policy resources. For
+  more details, see the `action` and `orchestrated_resource` fields. The
+  policy orchestrator does not manage the lifecycle of the resources it
+  creates. Each iteration is independent and, besides Cloud Logging, the
+  orchestrator retains only a minimal history of past actions. Deleting the
+  orchestrator does not affect previously created resources; these resources
+  remain in their current state. Similarly, removing projects from the
+  orchestrator's scope does not affect existing resources.
 
   Messages:
     LabelsValue: Optional. Labels as key value pairs
@@ -277,11 +277,11 @@ class GoogleCloudOsconfigV2betaPolicyOrchestrator(_messages.Message):
       value of other fields, and may be sent on update and delete requests to
       ensure the client has an up-to-date value before proceeding.
     labels: Optional. Labels as key value pairs
-    name: Immutable. Identifier. In form of * `organizations/{organization_id}
-      /locations/global/policyOrchestrators/{orchestrator_id}` * `folders/{fol
-      der_id}/locations/global/policyOrchestrators/{orchestrator_id}` * `proje
-      cts/{project_id_or_number}/locations/global/policyOrchestrators/{orchest
-      rator_id}`
+    name: Immutable. Identifier. In the following format: * `organizations/{or
+      ganization_id}/locations/global/policyOrchestrators/{orchestrator_id}` *
+      `folders/{folder_id}/locations/global/policyOrchestrators/{orchestrator_
+      id}` * `projects/{project_id_or_number}/locations/global/policyOrchestra
+      tors/{orchestrator_id}`
     orchestratedResource: Required. Resource to be orchestrated by the policy
       orchestrator.
     orchestrationScope: Optional. Defines scope for the orchestration, in
@@ -1394,11 +1394,11 @@ class OsconfigFoldersLocationsGlobalPolicyOrchestratorsPatchRequest(_messages.Me
     googleCloudOsconfigV2betaPolicyOrchestrator: A
       GoogleCloudOsconfigV2betaPolicyOrchestrator resource to be passed as the
       request body.
-    name: Immutable. Identifier. In form of * `organizations/{organization_id}
-      /locations/global/policyOrchestrators/{orchestrator_id}` * `folders/{fol
-      der_id}/locations/global/policyOrchestrators/{orchestrator_id}` * `proje
-      cts/{project_id_or_number}/locations/global/policyOrchestrators/{orchest
-      rator_id}`
+    name: Immutable. Identifier. In the following format: * `organizations/{or
+      ganization_id}/locations/global/policyOrchestrators/{orchestrator_id}` *
+      `folders/{folder_id}/locations/global/policyOrchestrators/{orchestrator_
+      id}` * `projects/{project_id_or_number}/locations/global/policyOrchestra
+      tors/{orchestrator_id}`
     updateMask: Optional. The list of fields to merge into the existing policy
       orchestrator. A special ["*"] field mask can be used to simply replace
       the entire resource. Otherwise, for all paths referenced in the mask,
@@ -1581,11 +1581,11 @@ class OsconfigOrganizationsLocationsGlobalPolicyOrchestratorsPatchRequest(_messa
     googleCloudOsconfigV2betaPolicyOrchestrator: A
       GoogleCloudOsconfigV2betaPolicyOrchestrator resource to be passed as the
       request body.
-    name: Immutable. Identifier. In form of * `organizations/{organization_id}
-      /locations/global/policyOrchestrators/{orchestrator_id}` * `folders/{fol
-      der_id}/locations/global/policyOrchestrators/{orchestrator_id}` * `proje
-      cts/{project_id_or_number}/locations/global/policyOrchestrators/{orchest
-      rator_id}`
+    name: Immutable. Identifier. In the following format: * `organizations/{or
+      ganization_id}/locations/global/policyOrchestrators/{orchestrator_id}` *
+      `folders/{folder_id}/locations/global/policyOrchestrators/{orchestrator_
+      id}` * `projects/{project_id_or_number}/locations/global/policyOrchestra
+      tors/{orchestrator_id}`
     updateMask: Optional. The list of fields to merge into the existing policy
       orchestrator. A special ["*"] field mask can be used to simply replace
       the entire resource. Otherwise, for all paths referenced in the mask,
@@ -1765,11 +1765,11 @@ class OsconfigProjectsLocationsGlobalPolicyOrchestratorsPatchRequest(_messages.M
     googleCloudOsconfigV2betaPolicyOrchestrator: A
       GoogleCloudOsconfigV2betaPolicyOrchestrator resource to be passed as the
       request body.
-    name: Immutable. Identifier. In form of * `organizations/{organization_id}
-      /locations/global/policyOrchestrators/{orchestrator_id}` * `folders/{fol
-      der_id}/locations/global/policyOrchestrators/{orchestrator_id}` * `proje
-      cts/{project_id_or_number}/locations/global/policyOrchestrators/{orchest
-      rator_id}`
+    name: Immutable. Identifier. In the following format: * `organizations/{or
+      ganization_id}/locations/global/policyOrchestrators/{orchestrator_id}` *
+      `folders/{folder_id}/locations/global/policyOrchestrators/{orchestrator_
+      id}` * `projects/{project_id_or_number}/locations/global/policyOrchestra
+      tors/{orchestrator_id}`
     updateMask: Optional. The list of fields to merge into the existing policy
       orchestrator. A special ["*"] field mask can be used to simply replace
       the entire resource. Otherwise, for all paths referenced in the mask,

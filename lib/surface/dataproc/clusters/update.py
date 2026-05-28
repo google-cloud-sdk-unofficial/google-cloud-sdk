@@ -28,7 +28,6 @@ from googlecloudsdk.command_lib.dataproc.utils import user_sa_mapping_util
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import times
-import six
 
 
 @base.UniverseCompatible
@@ -356,7 +355,7 @@ class Update(base.UpdateCommand):
     # delete_max_age, delete_expiration_time, delete_max_idle,
     # no_delete_max_age and no_delete_max_idle.
     if args.max_age is not None:
-      lifecycle_config.autoDeleteTtl = six.text_type(args.max_age) + 's'
+      lifecycle_config.autoDeleteTtl = str(args.max_age) + 's'
       changed_fields.append('config.lifecycle_config.auto_delete_ttl')
       changed_config = True
     if args.expiration_time is not None:
@@ -365,7 +364,7 @@ class Update(base.UpdateCommand):
       changed_fields.append('config.lifecycle_config.auto_delete_time')
       changed_config = True
     if args.max_idle is not None:
-      lifecycle_config.idleDeleteTtl = six.text_type(args.max_idle) + 's'
+      lifecycle_config.idleDeleteTtl = str(args.max_idle) + 's'
       changed_fields.append('config.lifecycle_config.idle_delete_ttl')
       changed_config = True
     if args.no_max_age:
@@ -378,9 +377,7 @@ class Update(base.UpdateCommand):
       changed_config = True
 
     if args.delete_max_age is not None:
-      lifecycle_config.autoDeleteTtl = (
-          six.text_type(args.delete_max_age) + 's'
-      )
+      lifecycle_config.autoDeleteTtl = str(args.delete_max_age) + 's'
       changed_fields.append('config.lifecycle_config.auto_delete_ttl')
       changed_config = True
     if args.delete_expiration_time is not None:
@@ -390,9 +387,7 @@ class Update(base.UpdateCommand):
       changed_fields.append('config.lifecycle_config.auto_delete_time')
       changed_config = True
     if args.delete_max_idle is not None:
-      lifecycle_config.idleDeleteTtl = (
-          six.text_type(args.delete_max_idle) + 's'
-      )
+      lifecycle_config.idleDeleteTtl = str(args.delete_max_idle) + 's'
       changed_fields.append('config.lifecycle_config.idle_delete_ttl')
       changed_config = True
     if args.no_delete_max_age:
@@ -405,7 +400,7 @@ class Update(base.UpdateCommand):
       changed_config = True
 
     if args.stop_max_age is not None:
-      lifecycle_config.autoStopTtl = six.text_type(args.stop_max_age) + 's'
+      lifecycle_config.autoStopTtl = str(args.stop_max_age) + 's'
       changed_fields.append('config.lifecycle_config.auto_stop_ttl')
       changed_config = True
     if args.stop_expiration_time is not None:
@@ -414,7 +409,7 @@ class Update(base.UpdateCommand):
       changed_fields.append('config.lifecycle_config.auto_stop_time')
       changed_config = True
     if args.stop_max_idle is not None:
-      lifecycle_config.idleStopTtl = six.text_type(args.stop_max_idle) + 's'
+      lifecycle_config.idleStopTtl = str(args.stop_max_idle) + 's'
       changed_fields.append('config.lifecycle_config.idle_stop_ttl')
       changed_config = True
     if args.no_stop_max_age:
@@ -531,7 +526,8 @@ class Update(base.UpdateCommand):
 
     if args.graceful_decommission_timeout is not None:
       request.gracefulDecommissionTimeout = (
-          six.text_type(args.graceful_decommission_timeout) + 's')
+          str(args.graceful_decommission_timeout) + 's'
+      )
 
     operation = dataproc.client.projects_regions_clusters.Patch(request)
 

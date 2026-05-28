@@ -184,18 +184,22 @@ class EvaluationRule(_messages.Message):
   allocation to the user.
 
   Fields:
+    allocationId: Optional. The ID of an allocation to target.
     condition: Required. A Common Expression Language (CEL) expression that
       evaluates to a boolean. The expression is evaluated against the provided
       context. If it returns true, the rule's target is applied.
     id: Required. Evaluation rule ID. Max length: 128 bytes.
-    target: Required. The target variant or allocation to apply if the
-      condition is met. This should match the name of a defined variant or
-      allocation's ID.
+    target: Optional. Deprecated: Use `rule_target` instead. The target
+      variant or allocation to apply if the condition is met. This should
+      match the name of a defined variant or allocation's ID.
+    variantId: Optional. The name of a variant to target.
   """
 
-  condition = _messages.StringField(1)
-  id = _messages.StringField(2)
-  target = _messages.StringField(3)
+  allocationId = _messages.StringField(1)
+  condition = _messages.StringField(2)
+  id = _messages.StringField(3)
+  target = _messages.StringField(4)
+  variantId = _messages.StringField(5)
 
 
 class EvaluationSpec(_messages.Message):
@@ -205,7 +209,11 @@ class EvaluationSpec(_messages.Message):
     allocations: Optional. A list of allocations.
     attributes: Optional. Names of the context attributes that are used in the
       evaluation rules and allocations.
-    defaultTarget: Required. Default variant or allocation of the flag.
+    defaultAllocation: Optional. The ID of an allocation to use as the
+      default.
+    defaultTarget: Optional. Deprecated: Use `base_target` instead. Default
+      variant or allocation of the flag.
+    defaultVariant: Optional. The name of a variant to use as the default.
     rules: Optional. Evaluation rules define the logic for evaluating the flag
       against a given context. The rules are evaluated sequentially in their
       specified order.
@@ -214,9 +222,11 @@ class EvaluationSpec(_messages.Message):
 
   allocations = _messages.MessageField('Allocation', 1, repeated=True)
   attributes = _messages.StringField(2, repeated=True)
-  defaultTarget = _messages.StringField(3)
-  rules = _messages.MessageField('EvaluationRule', 4, repeated=True)
-  variants = _messages.MessageField('Variant', 5, repeated=True)
+  defaultAllocation = _messages.StringField(3)
+  defaultTarget = _messages.StringField(4)
+  defaultVariant = _messages.StringField(5)
+  rules = _messages.MessageField('EvaluationRule', 6, repeated=True)
+  variants = _messages.MessageField('Variant', 7, repeated=True)
 
 
 class Flag(_messages.Message):
@@ -2465,9 +2475,8 @@ class SaasservicemgmtProjectsLocationsListRequest(_messages.Message):
   r"""A SaasservicemgmtProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -4079,12 +4088,16 @@ class UnitCondition(_messages.Message):
       TYPE_PROVISIONED: Condition type is provisioned.
       TYPE_OPERATION_ERROR: Condition type is operationError. True when the
         last unit operation fails with a non-ignorable error.
+      TYPE_FLAGS_CONFIG_INITIALIZED: Condition type is flagsConfigInitialized.
+        True when the flags configuration is synchronized and ready to be
+        served.
     """
     TYPE_UNSPECIFIED = 0
     TYPE_READY = 1
     TYPE_UPDATING = 2
     TYPE_PROVISIONED = 3
     TYPE_OPERATION_ERROR = 4
+    TYPE_FLAGS_CONFIG_INITIALIZED = 5
 
   lastTransitionTime = _messages.StringField(1)
   message = _messages.StringField(2)
@@ -4479,6 +4492,10 @@ class UnitOperationCondition(_messages.Message):
       TYPE_APP_CREATED: Indicates if AppHub app has been created.
       TYPE_APP_COMPONENTS_REGISTERED: Indicates if services and workloads have
         been registered with AppHub.
+      TYPE_WORKLOAD_SUCCEEDED: Indicates if the UnitOperation's core workload
+        execution completed successfully. The workload is the core execution
+        operation performed for a UnitOperation (e.g., provisioning, updating,
+        or deprovisioning resources) excluding post-operation checks.
     """
     TYPE_UNSPECIFIED = 0
     TYPE_SCHEDULED = 1
@@ -4487,6 +4504,7 @@ class UnitOperationCondition(_messages.Message):
     TYPE_CANCELLED = 4
     TYPE_APP_CREATED = 5
     TYPE_APP_COMPONENTS_REGISTERED = 6
+    TYPE_WORKLOAD_SUCCEEDED = 7
 
   lastTransitionTime = _messages.StringField(1)
   message = _messages.StringField(2)

@@ -473,9 +473,8 @@ class CloudnumberregistryProjectsLocationsListRequest(_messages.Message):
   r"""A CloudnumberregistryProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -591,15 +590,38 @@ class CloudnumberregistryProjectsLocationsRealmsDeleteRequest(_messages.Message)
 class CloudnumberregistryProjectsLocationsRealmsGetRequest(_messages.Message):
   r"""A CloudnumberregistryProjectsLocationsRealmsGetRequest object.
 
+  Enums:
+    ViewValueValuesEnum: Optional. The view of the Realm.
+
   Fields:
     name: Required. Name of the resource
+    view: Optional. The view of the Realm.
   """
 
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. The view of the Realm.
+
+    Values:
+      REALM_VIEW_UNSPECIFIED: Unspecified view. Defaults to BASIC.
+      BASIC: Basic view.
+      FULL: Full view. Includes the same data as the BASIC view.
+      AGGREGATE: Aggregate includes data about the child resources of the
+        Realm.
+    """
+    REALM_VIEW_UNSPECIFIED = 0
+    BASIC = 1
+    FULL = 2
+    AGGREGATE = 3
+
   name = _messages.StringField(1, required=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 2)
 
 
 class CloudnumberregistryProjectsLocationsRealmsListRequest(_messages.Message):
   r"""A CloudnumberregistryProjectsLocationsRealmsListRequest object.
+
+  Enums:
+    ViewValueValuesEnum: Optional. The view of the Realm.
 
   Fields:
     filter: Optional. Filtering results
@@ -609,13 +631,30 @@ class CloudnumberregistryProjectsLocationsRealmsListRequest(_messages.Message):
     pageToken: Optional. A token identifying a page of results the server
       should return.
     parent: Required. Parent value for ListRealmsRequest
+    view: Optional. The view of the Realm.
   """
+
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. The view of the Realm.
+
+    Values:
+      REALM_VIEW_UNSPECIFIED: Unspecified view. Defaults to BASIC.
+      BASIC: Basic view.
+      FULL: Full view. Includes the same data as the BASIC view.
+      AGGREGATE: Aggregate includes data about the child resources of the
+        Realm.
+    """
+    REALM_VIEW_UNSPECIFIED = 0
+    BASIC = 1
+    FULL = 2
+    AGGREGATE = 3
 
   filter = _messages.StringField(1)
   orderBy = _messages.StringField(2)
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   parent = _messages.StringField(5, required=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 6)
 
 
 class CloudnumberregistryProjectsLocationsRealmsPatchRequest(_messages.Message):
@@ -1532,6 +1571,8 @@ class Realm(_messages.Message):
     LabelsValue: Optional. Labels as key value pairs
 
   Fields:
+    aggregatedData: Output only. Aggregated data for the Realm. Populated only
+      when the view is AGGREGATE.
     createTime: Output only. [Output only] Create time stamp
     discoveryMetadata: Output only. Discovery metadata of the realm.
     ipVersion: Optional. IP version of the realm.
@@ -1607,15 +1648,29 @@ class Realm(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  createTime = _messages.StringField(1)
-  discoveryMetadata = _messages.MessageField('DiscoveryMetadata', 2)
-  ipVersion = _messages.EnumField('IpVersionValueValuesEnum', 3)
-  labels = _messages.MessageField('LabelsValue', 4)
-  managementType = _messages.EnumField('ManagementTypeValueValuesEnum', 5)
-  name = _messages.StringField(6)
-  registryBook = _messages.StringField(7)
-  trafficType = _messages.EnumField('TrafficTypeValueValuesEnum', 8)
-  updateTime = _messages.StringField(9)
+  aggregatedData = _messages.MessageField('RealmAggregatedData', 1)
+  createTime = _messages.StringField(2)
+  discoveryMetadata = _messages.MessageField('DiscoveryMetadata', 3)
+  ipVersion = _messages.EnumField('IpVersionValueValuesEnum', 4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  managementType = _messages.EnumField('ManagementTypeValueValuesEnum', 6)
+  name = _messages.StringField(7)
+  registryBook = _messages.StringField(8)
+  trafficType = _messages.EnumField('TrafficTypeValueValuesEnum', 9)
+  updateTime = _messages.StringField(10)
+
+
+class RealmAggregatedData(_messages.Message):
+  r"""Aggregated data for the Realm.
+
+  Fields:
+    customRangesCount: Output only. Number of custom ranges in the Realm.
+    discoveredRangesCount: Output only. Number of discovered ranges in the
+      Realm.
+  """
+
+  customRangesCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  discoveredRangesCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
 
 
 class RegistryBook(_messages.Message):
@@ -1673,6 +1728,9 @@ class RegistryBook(_messages.Message):
 class SearchIpResourcesRequest(_messages.Message):
   r"""Message for searching IP resources
 
+  Enums:
+    SearchResourceTypesValueListEntryValuesEnum:
+
   Fields:
     orderBy: Optional. Hint for how to order the results
     pageSize: Optional. Requested page size. Server may return fewer items
@@ -1683,27 +1741,45 @@ class SearchIpResourcesRequest(_messages.Message):
       AIP-160-like format. It has some limitations. You can only specify top
       level conjunctions or attribute level negations. Each restriction can
       only be used once except the attribute restriction. The available
-      restrictions are: - `realm`: The realm name to search in. -
+      restrictions for ranges are: - `realm`: The realm name to search in. -
       `ip_address`: The IP address to search for within ranges. -
       `ip_version`: The IP version to filter by (e.g., "IPV4", "IPV6"). -
+      `parent_range`: The parent range of the range to search for. -
       `attribute_text`: The attribute text to search for within ranges. -
-      `attribute`: The attribute key and value to filter by. Only one of
-      attribute_text or multiple attribute filters can be specified. Examples:
-      - realm=test-realm - realm=test-realm AND ip_address=10.0.0.0 -
-      realm=test-realm AND ip_version=IPV6 - realm=test-realm AND
-      attribute_text=test - ip_address=10.0.0.0 AND attribute:(key1=value1)
-      AND attribute:(key2=value2) - attribute_text=test AND
+      `attribute`: The attribute key and value to filter by. The available
+      restrictions for realms are: - `ip_version`: The IP version to search
+      for. Only one of attribute_text or multiple attribute filters can be
+      specified. Examples: - `realm=test-realm` - `realm=test-realm AND
+      ip_address=10.0.0.0` - `realm=test-realm AND ip_version=IPV6` -
+      `realm=test-realm AND attribute_text=test` - `ip_address=10.0.0.0 AND
+      attribute:(key1=value1) AND attribute:(key2=value2)` -
+      `attribute_text=test AND
       parent_range=projects/123/locations/global/discoveredRanges/test-parent-
-      range
+      range`
+    searchResourceTypes: Optional. The type of resources to search for. If not
+      specified, the server will return ranges.
     showUtilization: Optional. Whether to show the utilization of the ranges
       in the response.
   """
+
+  class SearchResourceTypesValueListEntryValuesEnum(_messages.Enum):
+    r"""SearchResourceTypesValueListEntryValuesEnum enum type.
+
+    Values:
+      SEARCH_RESOURCE_TYPE_UNSPECIFIED: Unspecified search type.
+      RANGES: Search for ranges.
+      REALMS: Search for realms.
+    """
+    SEARCH_RESOURCE_TYPE_UNSPECIFIED = 0
+    RANGES = 1
+    REALMS = 2
 
   orderBy = _messages.StringField(1)
   pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(3)
   query = _messages.StringField(4)
-  showUtilization = _messages.BooleanField(5)
+  searchResourceTypes = _messages.EnumField('SearchResourceTypesValueListEntryValuesEnum', 5, repeated=True)
+  showUtilization = _messages.BooleanField(6)
 
 
 class SearchIpResourcesResponse(_messages.Message):
@@ -1712,13 +1788,29 @@ class SearchIpResourcesResponse(_messages.Message):
   Fields:
     nextPageToken: A token identifying a page of results the server should
       return.
-    ranges: The list of ranges matching the search query.
+    ranges: Deprecated: Use results field instead. The list of ranges matching
+      the search query.
+    results: The list of results matching the search query.
     unreachable: Locations that could not be reached.
   """
 
   nextPageToken = _messages.StringField(1)
   ranges = _messages.MessageField('Range', 2, repeated=True)
-  unreachable = _messages.StringField(3, repeated=True)
+  results = _messages.MessageField('SearchIpResourcesResult', 3, repeated=True)
+  unreachable = _messages.StringField(4, repeated=True)
+
+
+class SearchIpResourcesResult(_messages.Message):
+  r"""A result matching the search query, which can be either a range or a
+  realm.
+
+  Fields:
+    range: A range matching the search query.
+    realm: A realm matching the search query.
+  """
+
+  range = _messages.MessageField('Range', 1)
+  realm = _messages.MessageField('Realm', 2)
 
 
 class ShowCustomRangeUtilizationResponse(_messages.Message):

@@ -6,6 +6,10 @@
       schema for targeting rules and percentage-based rollouts. These attributes
       correspond to the keys in the OpenFeature EvaluationContext used by the
       application SDK to provide contextual data for flag evaluation.
+
+      Attributes must exist before they can be referenced in a flag's evaluation
+      criteria. Note that core fields like the attribute key and value type are
+      immutable after creation to maintain evaluation consistency.
     examples: |-
       To create a string attribute for user IDs in the global location, run:
 

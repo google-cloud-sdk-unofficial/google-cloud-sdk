@@ -2881,12 +2881,16 @@ class GeminiDataAnalyticsConversationalAnalyticsSetting(_messages.Message):
   r"""Message describing Setting for Conversational Analytics.
 
   Fields:
+    feedbackEnabled: Optional. Whether to enable feedback.
+    loggingEnabled: Optional. Whether to enable logging.
     metricsEnabled: Optional. Whether to enable metrics.
     tracesEnabled: Optional. Whether to enable traces.
   """
 
-  metricsEnabled = _messages.BooleanField(1)
-  tracesEnabled = _messages.BooleanField(2)
+  feedbackEnabled = _messages.BooleanField(1)
+  loggingEnabled = _messages.BooleanField(2)
+  metricsEnabled = _messages.BooleanField(3)
+  tracesEnabled = _messages.BooleanField(4)
 
 
 class GeminiGcpEnablementSetting(_messages.Message):
@@ -2994,12 +2998,16 @@ class GeminiInBigQueryConversationalAnalyticsSetting(_messages.Message):
   r"""Message describing Setting for Conversational Analytics.
 
   Fields:
+    feedbackEnabled: Optional. Whether to enable feedback.
+    loggingEnabled: Optional. Whether to enable logging.
     metricsEnabled: Optional. Whether to enable metrics.
     tracesEnabled: Optional. Whether to enable traces.
   """
 
-  metricsEnabled = _messages.BooleanField(1)
-  tracesEnabled = _messages.BooleanField(2)
+  feedbackEnabled = _messages.BooleanField(1)
+  loggingEnabled = _messages.BooleanField(2)
+  metricsEnabled = _messages.BooleanField(3)
+  tracesEnabled = _messages.BooleanField(4)
 
 
 class GibqObservabilitySetting(_messages.Message):

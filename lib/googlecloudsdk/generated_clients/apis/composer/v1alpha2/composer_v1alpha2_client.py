@@ -940,6 +940,33 @@ class ComposerV1alpha2(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Hibernate(self, request, global_params=None):
+      r"""Hibernates (pauses) a running environment. It requests the environment to switch to the HIBERNATED state, keeping its data and minimizing cost, but not running any DAGs. This method is supported for Cloud Composer environments in development mode in versions composer-3-airflow-*.*.*-build.* and newer.
+
+      Args:
+        request: (ComposerProjectsLocationsEnvironmentsHibernateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Hibernate')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Hibernate.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha2/projects/{projectsId}/locations/{locationsId}/environments/{environmentsId}:hibernate',
+        http_method='POST',
+        method_id='composer.projects.locations.environments.hibernate',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha2/{+name}:hibernate',
+        request_field='hibernateEnvironmentRequest',
+        request_type_name='ComposerProjectsLocationsEnvironmentsHibernateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def List(self, request, global_params=None):
       r"""List environments.
 
@@ -1125,6 +1152,33 @@ class ComposerV1alpha2(base_api.BaseApiClient):
         relative_path='v1alpha2/{+name}:restartWebServer',
         request_field='restartWebServerRequest',
         request_type_name='ComposerProjectsLocationsEnvironmentsRestartWebServerRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Resume(self, request, global_params=None):
+      r"""Resumes (unpauses) a hibernated environment. It requests the environment to switch to the RUNNING state, so that it is ready to use and run DAGs. This method is supported for Cloud Composer environments in development mode in versions composer-3-airflow-*.*.*-build.* and newer.
+
+      Args:
+        request: (ComposerProjectsLocationsEnvironmentsResumeRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Resume')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Resume.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha2/projects/{projectsId}/locations/{locationsId}/environments/{environmentsId}:resume',
+        http_method='POST',
+        method_id='composer.projects.locations.environments.resume',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha2/{+name}:resume',
+        request_field='resumeEnvironmentRequest',
+        request_type_name='ComposerProjectsLocationsEnvironmentsResumeRequest',
         response_type_name='Operation',
         supports_download=False,
     )

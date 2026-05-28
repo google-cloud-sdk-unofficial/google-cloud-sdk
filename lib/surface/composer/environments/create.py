@@ -27,7 +27,6 @@ from googlecloudsdk.command_lib.composer import util as command_util
 from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
-import six
 
 _INVALID_OPTION_FOR_V2_ERROR_MSG = """\
 Cannot specify --{opt} with Composer 2.X or greater.
@@ -364,8 +363,10 @@ class Create(base.Command):
             release_track=self.ReleaseTrack())
       except command_util.OperationError as e:
         raise command_util.EnvironmentCreateError(
-            'Error creating [{}]: {}'.format(self.env_ref.RelativeName(),
-                                             six.text_type(e)))
+            'Error creating [{}]: {}'.format(
+                self.env_ref.RelativeName(), str(e)
+            )
+        )
 
   def ParseIpAliasConfigOptions(self, args, image_version):
     """Parses the options for VPC-native configuration."""

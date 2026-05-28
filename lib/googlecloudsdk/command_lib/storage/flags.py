@@ -1482,6 +1482,34 @@ def add_batch_jobs_flags(parser, track=calliope_base.ReleaseTrack.GA):
         ),
         type=str,
     )
+    target_locations_group = project_source_details.add_group()
+    target_locations_group.add_argument(
+        '--target-locations',
+        help=(
+            'A comma-separated list of Cloud Storage locations (e.g.,'
+            ' us-central1) to include in the job. Only buckets and objects'
+            ' within these locations will be discovered from the configured'
+            ' Storage Insights dataset.'
+        ),
+        type=arg_parsers.ArgList(),
+        metavar='LOCATIONS',
+        required=True,
+    )
+    target_locations_group.add_argument(
+        '--target-snapshot-time',
+        help=(
+            'The exact Storage Insights snapshot timestamp to use for the job'
+            ' compatible with the RFC 3339 format (e.g.,'
+            ' 2024-01-02T03:04:00.123456Z).'
+            ' Can only be specified if --target-locations is specified. If'
+            ' omitted, the job automatically defaults to the most recent'
+            ' snapshot timestamp that is successfully populated in both object'
+            ' and bucket attributes views across all specified locations. This'
+            ' snapshot time is precise to the microsecond. Any finer precision'
+            ' is truncated.'
+        ),
+        type=arg_parsers.Datetime.Parse,
+    )
     project_source.add_argument(
         '--dry-run-job-id',
         help=(

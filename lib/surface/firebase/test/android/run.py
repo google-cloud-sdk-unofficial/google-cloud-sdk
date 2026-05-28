@@ -28,7 +28,6 @@ from googlecloudsdk.api_lib.firebase.test.android import arg_manager
 from googlecloudsdk.api_lib.firebase.test.android import matrix_creator
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
-import six
 
 _APK_MIME_TYPE = 'application/vnd.android.package-archive'
 
@@ -208,7 +207,7 @@ class _BaseRun(object):
     for additional_apk in additional_apks:
       bucket_ops.UploadFileToGcs(additional_apk, _APK_MIME_TYPE)
     other_files = getattr(args, 'other_files', None) or {}
-    for device_path, file_to_upload in six.iteritems(other_files):
+    for device_path, file_to_upload in other_files.items():
       bucket_ops.UploadFileToGcs(
           file_to_upload,
           None,
@@ -220,9 +219,13 @@ class _BaseRun(object):
     history_name = PickHistoryName(args)
     history_id = tr_history_picker.GetToolResultsHistoryId(history_name)
 
-    matrix = matrix_creator.CreateMatrix(args, self.context, history_id,
-                                         bucket_ops.gcs_results_root,
-                                         six.text_type(self.ReleaseTrack()))
+    matrix = matrix_creator.CreateMatrix(
+        args,
+        self.context,
+        history_id,
+        bucket_ops.gcs_results_root,
+        str(self.ReleaseTrack()),
+    )
     monitor = matrix_ops.MatrixMonitor(matrix.testMatrixId, args.type,
                                        self.context)
 

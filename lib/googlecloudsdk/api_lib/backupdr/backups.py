@@ -70,6 +70,7 @@ class ComputeRestoreConfig(util.RestrictedDict):
         "KeyRevocationActionType",
         "InstanceKmsKey",
         "ClearOverridesFieldMask",
+        "UseProjectServiceAccount",
     ]
     super(ComputeRestoreConfig, self).__init__(supported_flags, *args, **kwargs)
 
@@ -99,9 +100,11 @@ class DiskRestoreConfig(util.RestrictedDict):
         "ProvisionedThroughput",
         "StoragePool",
         "ClearOverridesFieldMask",
+        "SourceInstanceBootDisk",
+        "SourceInstanceDiskDeviceName",
+        "UseProjectServiceAccount",
     ]
     super(DiskRestoreConfig, self).__init__(supported_flags, *args, **kwargs)
-
 
 class BackupsClient(util.BackupDrClientBase):
   """Cloud Backup and DR Backups client."""
@@ -151,6 +154,9 @@ class BackupsClient(util.BackupDrClientBase):
         self.messages.ComputeInstanceTargetEnvironment(
             zone=restore_config["TargetZone"],
             project=restore_config["TargetProject"],
+            useProjectServiceAccount=restore_config.get(
+                "UseProjectServiceAccount"
+            ),
         )
     )
 
@@ -465,6 +471,9 @@ class BackupsClient(util.BackupDrClientBase):
           self.messages.DiskTargetEnvironment(
               zone=restore_config["TargetZone"],
               project=restore_config["TargetProject"],
+              useProjectServiceAccount=restore_config.get(
+                  "UseProjectServiceAccount"
+              ),
           )
       )
     elif target_region is not None:
@@ -473,6 +482,9 @@ class BackupsClient(util.BackupDrClientBase):
               region=restore_config["TargetRegion"],
               project=restore_config["TargetProject"],
               replicaZones=restore_config.get("ReplicaZones", []),
+              useProjectServiceAccount=restore_config.get(
+                  "UseProjectServiceAccount"
+              ),
           )
       )
 
@@ -574,6 +586,18 @@ class BackupsClient(util.BackupDrClientBase):
             )
         )
       restore_request.diskRestoreProperties.guestOsFeature = guest_os_features
+
+    # Source Instance Options
+    if (
+        "SourceInstanceBootDisk" in restore_config
+        or "SourceInstanceDiskDeviceName" in restore_config
+    ):
+      instance_backup_source = self.messages.RestoreDiskFromInstanceOptions()
+      if "SourceInstanceBootDisk" in restore_config and restore_config["SourceInstanceBootDisk"]:
+        instance_backup_source.bootDisk = True
+      if "SourceInstanceDiskDeviceName" in restore_config:
+        instance_backup_source.sourceDeviceName = restore_config["SourceInstanceDiskDeviceName"]
+      restore_request.diskRestoreProperties.instanceBackupSource = instance_backup_source
 
     request = self.messages.BackupdrProjectsLocationsBackupVaultsDataSourcesBackupsRestoreRequest(
         name=resource.RelativeName(), restoreBackupRequest=restore_request

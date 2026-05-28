@@ -45,6 +45,7 @@ class NetworkservicesV1alpha1(base_api.BaseApiClient):
     self.projects_locations_endpointPolicies = self.ProjectsLocationsEndpointPoliciesService(self)
     self.projects_locations_gateways_routeViews = self.ProjectsLocationsGatewaysRouteViewsService(self)
     self.projects_locations_gateways = self.ProjectsLocationsGatewaysService(self)
+    self.projects_locations_global_googleTagGatewayPolicies = self.ProjectsLocationsGlobalGoogleTagGatewayPoliciesService(self)
     self.projects_locations_global = self.ProjectsLocationsGlobalService(self)
     self.projects_locations_grpcRoutes = self.ProjectsLocationsGrpcRoutesService(self)
     self.projects_locations_httpFilters = self.ProjectsLocationsHttpFiltersService(self)
@@ -1435,6 +1436,151 @@ class NetworkservicesV1alpha1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsGlobalGoogleTagGatewayPoliciesService(base_api.BaseApiService):
+    """Service class for the projects_locations_global_googleTagGatewayPolicies resource."""
+
+    _NAME = 'projects_locations_global_googleTagGatewayPolicies'
+
+    def __init__(self, client):
+      super(NetworkservicesV1alpha1.ProjectsLocationsGlobalGoogleTagGatewayPoliciesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new `GoogleTagGatewayPolicy` resource in a given project and location.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsGlobalGoogleTagGatewayPoliciesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/global/googleTagGatewayPolicies',
+        http_method='POST',
+        method_id='networkservices.projects.locations.global.googleTagGatewayPolicies.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['googleTagGatewayPolicyId', 'requestId'],
+        relative_path='v1alpha1/{+parent}/googleTagGatewayPolicies',
+        request_field='googleTagGatewayPolicy',
+        request_type_name='NetworkservicesProjectsLocationsGlobalGoogleTagGatewayPoliciesCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes the specified `GoogleTagGatewayPolicy` resource. There should be at most one such resource per project.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsGlobalGoogleTagGatewayPoliciesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/global/googleTagGatewayPolicies/{googleTagGatewayPoliciesId}',
+        http_method='DELETE',
+        method_id='networkservices.projects.locations.global.googleTagGatewayPolicies.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsGlobalGoogleTagGatewayPoliciesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of the specified project's `GoogleTagGatewayPolicy` resource.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsGlobalGoogleTagGatewayPoliciesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleTagGatewayPolicy) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/global/googleTagGatewayPolicies/{googleTagGatewayPoliciesId}',
+        http_method='GET',
+        method_id='networkservices.projects.locations.global.googleTagGatewayPolicies.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsGlobalGoogleTagGatewayPoliciesGetRequest',
+        response_type_name='GoogleTagGatewayPolicy',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists `GoogleTagGatewayPolicy` resources in a given project.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsGlobalGoogleTagGatewayPoliciesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListGoogleTagGatewayPoliciesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/global/googleTagGatewayPolicies',
+        http_method='GET',
+        method_id='networkservices.projects.locations.global.googleTagGatewayPolicies.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1alpha1/{+parent}/googleTagGatewayPolicies',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsGlobalGoogleTagGatewayPoliciesListRequest',
+        response_type_name='ListGoogleTagGatewayPoliciesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Creates or updates a `GoogleTagGatewayPolicy` resource in a given project. This is an optional resource, one per project.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsGlobalGoogleTagGatewayPoliciesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/global/googleTagGatewayPolicies/{googleTagGatewayPoliciesId}',
+        http_method='PATCH',
+        method_id='networkservices.projects.locations.global.googleTagGatewayPolicies.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['allowMissing', 'updateMask'],
+        relative_path='v1alpha1/{+name}',
+        request_field='googleTagGatewayPolicy',
+        request_type_name='NetworkservicesProjectsLocationsGlobalGoogleTagGatewayPoliciesPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class ProjectsLocationsGlobalService(base_api.BaseApiService):
     """Service class for the projects_locations_global resource."""
 
@@ -1673,7 +1819,7 @@ class NetworkservicesV1alpha1(base_api.BaseApiClient):
         method_id='networkservices.projects.locations.httpFilters.create',
         ordered_params=['parent'],
         path_params=['parent'],
-        query_params=['httpFilterId'],
+        query_params=['httpFilterId', 'requestId'],
         relative_path='v1alpha1/{+parent}/httpFilters',
         request_field='httpFilter',
         request_type_name='NetworkservicesProjectsLocationsHttpFiltersCreateRequest',
@@ -1754,7 +1900,7 @@ class NetworkservicesV1alpha1(base_api.BaseApiClient):
         method_id='networkservices.projects.locations.httpFilters.list',
         ordered_params=['parent'],
         path_params=['parent'],
-        query_params=['pageSize', 'pageToken'],
+        query_params=['filter', 'pageSize', 'pageToken'],
         relative_path='v1alpha1/{+parent}/httpFilters',
         request_field='',
         request_type_name='NetworkservicesProjectsLocationsHttpFiltersListRequest',
@@ -1818,7 +1964,7 @@ class NetworkservicesV1alpha1(base_api.BaseApiClient):
         method_id='networkservices.projects.locations.httpRoutes.create',
         ordered_params=['parent'],
         path_params=['parent'],
-        query_params=['httpRouteId'],
+        query_params=['httpRouteId', 'requestId'],
         relative_path='v1alpha1/{+parent}/httpRoutes',
         request_field='httpRoute',
         request_type_name='NetworkservicesProjectsLocationsHttpRoutesCreateRequest',
@@ -1899,7 +2045,7 @@ class NetworkservicesV1alpha1(base_api.BaseApiClient):
         method_id='networkservices.projects.locations.httpRoutes.list',
         ordered_params=['parent'],
         path_params=['parent'],
-        query_params=['pageSize', 'pageToken', 'returnPartialSuccess'],
+        query_params=['filter', 'pageSize', 'pageToken', 'returnPartialSuccess'],
         relative_path='v1alpha1/{+parent}/httpRoutes',
         request_field='',
         request_type_name='NetworkservicesProjectsLocationsHttpRoutesListRequest',
@@ -6740,7 +6886,7 @@ class NetworkservicesV1alpha1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the ListLocationsRequest.name field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
       Args:
         request: (NetworkservicesProjectsLocationsListRequest) input message

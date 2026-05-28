@@ -432,9 +432,8 @@ class CloudtasksProjectsLocationsListRequest(_messages.Message):
   r"""A CloudtasksProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -1727,9 +1726,9 @@ class RateLimits(_messages.Message):
       eueref#max_concurrent_requests).
     maxDispatchesPerSecond: The maximum rate at which tasks are dispatched
       from this queue. If unspecified when the queue is created, Cloud Tasks
-      will pick the default. * The maximum allowed value is 500. This field
-      has the same meaning as [rate in queue.yaml/xml](https://cloud.google.co
-      m/appengine/docs/standard/python/config/queueref#rate).
+      will pick the default. The maximum allowed value is 500. This field has
+      the same meaning as [rate in queue.yaml/xml](https://cloud.google.com/ap
+      pengine/docs/standard/python/config/queueref#rate).
   """
 
   maxBurstSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -1746,30 +1745,32 @@ class RetryConfig(_messages.Message):
   retried.
 
   Fields:
-    maxAttempts: Number of attempts per task. Cloud Tasks will attempt the
-      task `max_attempts` times (that is, if the first attempt fails, then
-      there will be `max_attempts - 1` retries). Must be >= -1. If unspecified
-      when the queue is created, Cloud Tasks will pick the default. -1
-      indicates unlimited attempts. This field has the same meaning as
-      [task_retry_limit in queue.yaml/xml](https://cloud.google.com/appengine/
-      docs/standard/python/config/queueref#retry_parameters). Note: Cloud
-      Tasks stops retrying only when `max_attempts` and `max_retry_duration`
-      are both satisfied. When the task has been attempted `max_attempts`
+    maxAttempts: Number of attempts per task, including the first attempt. (If
+      the first attempt fails, there will be `max_attempts - 1` retries.) Must
+      be greater than or equal to -1, which indicates unlimited attempts.
+      Cloud Tasks stops retrying only when `max_attempts` and
+      `max_retry_duration` are both satisfied, or when the task is
+      successfully executed. When the task has been attempted `max_attempts`
       times and when the `max_retry_duration` time has passed, no further
-      attempts are made, and the task is deleted. If you want your task to
-      retry infinitely, you must set `max_attempts` to -1 and
-      `max_retry_duration` to 0.
+      attempts are made, and the task is deleted. If `max_attempts` is set to
+      -1 and `max_retry_duration` is set to 0, the task is retried until the
+      [maximum task
+      retention](https://docs.cloud.google.com/tasks/docs/quotas#limits) limit
+      is reached. If unspecified when the queue is created, Cloud Tasks will
+      pick the default. This field has the same meaning as [task_retry_limit
+      in queue.yaml/xml](https://cloud.google.com/appengine/docs/standard/pyth
+      on/config/queueref#retry_parameters).
     maxBackoff: A task will be scheduled for retry between min_backoff and
       max_backoff duration after it fails, if the queue's RetryConfig
-      specifies that the task should be retried. If unspecified when the queue
-      is created, Cloud Tasks will pick the default. The value must be given
-      as a string that indicates the length of time (in seconds) followed by
-      `s` (for "seconds"). For more information on the format, see the
+      specifies that the task should be retried. The value must be given as a
+      string that indicates the length of time (in seconds) followed by `s`
+      (for "seconds"). For more information on the format, see the
       documentation for [Duration](https://protobuf.dev/reference/protobuf/goo
       gle.protobuf/#duration). `max_backoff` will be truncated to the nearest
-      second. This field has the same meaning as [max_backoff_seconds in queue
-      .yaml/xml](https://cloud.google.com/appengine/docs/standard/python/confi
-      g/queueref#retry_parameters).
+      second. If unspecified when the queue is created, Cloud Tasks will pick
+      the default. This field has the same meaning as [max_backoff_seconds in
+      queue.yaml/xml](https://cloud.google.com/appengine/docs/standard/python/
+      config/queueref#retry_parameters).
     maxDoublings: The time between retries will double `max_doublings` times.
       A task's retry interval starts at min_backoff, then doubles
       `max_doublings` times, then increases linearly, and finally retries at
@@ -1786,28 +1787,30 @@ class RetryConfig(_messages.Message):
     maxRetryDuration: If positive, `max_retry_duration` specifies the time
       limit for retrying a failed task, measured from when the task was first
       attempted. Once `max_retry_duration` time has passed *and* the task has
-      been attempted max_attempts times, no further attempts will be made and
-      the task will be deleted. If zero, then the task age is unlimited. If
-      unspecified when the queue is created, Cloud Tasks will pick the
-      default. The value must be given as a string that indicates the length
-      of time (in seconds) followed by `s` (for "seconds"). For the maximum
+      been attempted max_attempts times, no further attempts are made and the
+      task is deleted. A zero (0) indicates an unlimited duration, up to the
+      [maximum task
+      retention](https://docs.cloud.google.com/tasks/docs/quotas#limits)
+      limit. The value must be given as a string that indicates the length of
+      time (in seconds) followed by `s` (for "seconds"). For the maximum
       possible value or the format, see the documentation for [Duration](https
       ://protobuf.dev/reference/protobuf/google.protobuf/#duration).
-      `max_retry_duration` will be truncated to the nearest second. This field
-      has the same meaning as [task_age_limit in queue.yaml/xml](https://cloud
-      .google.com/appengine/docs/standard/python/config/queueref#retry_paramet
-      ers).
+      `max_retry_duration` will be truncated to the nearest second. If
+      unspecified when the queue is created, Cloud Tasks will pick the
+      default. This field has the same meaning as [task_age_limit in queue.yam
+      l/xml](https://cloud.google.com/appengine/docs/standard/python/config/qu
+      eueref#retry_parameters).
     minBackoff: A task will be scheduled for retry between min_backoff and
       max_backoff duration after it fails, if the queue's RetryConfig
-      specifies that the task should be retried. If unspecified when the queue
-      is created, Cloud Tasks will pick the default. The value must be given
-      as a string that indicates the length of time (in seconds) followed by
-      `s` (for "seconds"). For more information on the format, see the
+      specifies that the task should be retried. The value must be given as a
+      string that indicates the length of time (in seconds) followed by `s`
+      (for "seconds"). For more information on the format, see the
       documentation for [Duration](https://protobuf.dev/reference/protobuf/goo
       gle.protobuf/#duration). `min_backoff` will be truncated to the nearest
-      second. This field has the same meaning as [min_backoff_seconds in queue
-      .yaml/xml](https://cloud.google.com/appengine/docs/standard/python/confi
-      g/queueref#retry_parameters).
+      second. If unspecified when the queue is created, Cloud Tasks will pick
+      the default. This field has the same meaning as [min_backoff_seconds in
+      queue.yaml/xml](https://cloud.google.com/appengine/docs/standard/python/
+      config/queueref#retry_parameters).
   """
 
   maxAttempts = _messages.IntegerField(1, variant=_messages.Variant.INT32)

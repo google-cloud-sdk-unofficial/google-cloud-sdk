@@ -16,6 +16,7 @@
 
 
 import os
+from urllib import parse
 
 from googlecloudsdk.api_lib.artifacts import exceptions as ar_exceptions
 from googlecloudsdk.calliope import base
@@ -24,7 +25,6 @@ from googlecloudsdk.command_lib.artifacts import download_util
 from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.command_lib.artifacts import requests
 from googlecloudsdk.core import log
-from six.moves.urllib.parse import unquote
 
 
 @base.DefaultUniverseOnly
@@ -120,7 +120,7 @@ class Download(base.Command):
       # ...files/sha256:pkg%2Fv1.0 -> pkg/v1.0
       file_id = os.path.basename(file)
       try:
-        default_file_name = unquote(file_id.rsplit(':', 1)[1])
+        default_file_name = parse.unquote(file_id.rsplit(':', 1)[1])
       except IndexError:
         default_file_name = file_id
       file_name = self.get_file_name(file, default_file_name)

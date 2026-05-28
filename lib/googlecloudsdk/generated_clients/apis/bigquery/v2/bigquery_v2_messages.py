@@ -2373,6 +2373,20 @@ class DataMaskingStatistics(_messages.Message):
   dataMaskingApplied = _messages.BooleanField(1)
 
 
+class DataPolicyList(_messages.Message):
+  r"""A list of data policy options. For more information, see [Mask data by
+  applying data policies to a
+  column](https://docs.cloud.google.com/bigquery/docs/column-data-
+  masking#data-policies-on-column).
+
+  Fields:
+    dataPolicies: Contains a list of data policy options. At most 9 data
+      policies are allowed per field.
+  """
+
+  dataPolicies = _messages.MessageField('DataPolicyOption', 1, repeated=True)
+
+
 class DataPolicyOption(_messages.Message):
   r"""Data policy option. For more information, see [Mask data by applying
   data policies to a
@@ -3620,14 +3634,15 @@ class ExternalDataConfiguration(_messages.Message):
     timestampTargetPrecision: Precisions (maximum number of total digits in
       base 10) for seconds of TIMESTAMP types that are allowed to the
       destination table for autodetection mode. Available for the formats:
-      CSV, PARQUET, and AVRO. Possible values include: Not Specified, [], or
-      [6]: timestamp(6) for all auto detected TIMESTAMP columns [6, 12]:
-      timestamp(6) for all auto detected TIMESTAMP columns that have less than
-      6 digits of subseconds. timestamp(12) for all auto detected TIMESTAMP
-      columns that have more than 6 digits of subseconds. [12]: timestamp(12)
-      for all auto detected TIMESTAMP columns. The order of the elements in
-      this array is ignored. Inputs that have higher precision than the
-      highest target precision in this array will be truncated.
+      CSV, PARQUET, AVRO, and Iceberg External Table. Possible values include:
+      Not Specified, [], or [6]: timestamp(6) for all auto detected TIMESTAMP
+      columns [6, 12]: timestamp(6) for all auto detected TIMESTAMP columns
+      that have less than 6 digits of subseconds. timestamp(12) for all auto
+      detected TIMESTAMP columns that have more than 6 digits of subseconds.
+      [12]: timestamp(12) for all auto detected TIMESTAMP columns. The order
+      of the elements in this array is ignored. Inputs that have higher
+      precision than the highest target precision in this array will be
+      truncated.
   """
 
   class DecimalTargetTypesValueListEntryValuesEnum(_messages.Enum):
@@ -3768,8 +3783,8 @@ class ExternalRuntimeOptions(_messages.Message):
       Python UDFs](https://cloud.google.com/bigquery/docs/user-defined-
       functions-python#configure-container-limits)
     containerRequestConcurrency: Optional. Maximum number of requests that a
-      Cloud Run instance can handle concurrently. If absent or if `0`, a
-      default concurrency is used.
+      Python UDF container instance can handle concurrently. If absent or if
+      `0`, a default concurrency is used.
     maxBatchingRows: Optional. Maximum number of rows in each batch sent to
       the external runtime. If absent or if 0, BigQuery dynamically decides
       the number of rows in a batch.
@@ -5025,14 +5040,15 @@ class JobConfigurationLoad(_messages.Message):
     timestampTargetPrecision: Precisions (maximum number of total digits in
       base 10) for seconds of TIMESTAMP types that are allowed to the
       destination table for autodetection mode. Available for the formats:
-      CSV, PARQUET, and AVRO. Possible values include: Not Specified, [], or
-      [6]: timestamp(6) for all auto detected TIMESTAMP columns [6, 12]:
-      timestamp(6) for all auto detected TIMESTAMP columns that have less than
-      6 digits of subseconds. timestamp(12) for all auto detected TIMESTAMP
-      columns that have more than 6 digits of subseconds. [12]: timestamp(12)
-      for all auto detected TIMESTAMP columns. The order of the elements in
-      this array is ignored. Inputs that have higher precision than the
-      highest target precision in this array will be truncated.
+      CSV, PARQUET, AVRO, and Iceberg External Table. Possible values include:
+      Not Specified, [], or [6]: timestamp(6) for all auto detected TIMESTAMP
+      columns [6, 12]: timestamp(6) for all auto detected TIMESTAMP columns
+      that have less than 6 digits of subseconds. timestamp(12) for all auto
+      detected TIMESTAMP columns that have more than 6 digits of subseconds.
+      [12]: timestamp(12) for all auto detected TIMESTAMP columns. The order
+      of the elements in this array is ignored. Inputs that have higher
+      precision than the highest target precision in this array will be
+      truncated.
     useAvroLogicalTypes: Optional. If sourceFormat is set to "AVRO", indicates
       whether to interpret logical types as the corresponding BigQuery data
       type (for example, TIMESTAMP), instead of using the raw type (for
@@ -9446,6 +9462,18 @@ class TableFieldSchema(_messages.Message):
 
   Messages:
     CategoriesValue: Deprecated.
+    DataGovernanceTagsInfoValue: Optional. Specifies the data governance tags
+      on this field. This field works with other column-level security fields
+      as follows: - Precedence: If a data governance tag is attached to a
+      column, it takes precedence over the policy tag attached to the column.
+      However, if a data policy is attached to a column, it takes precedence
+      over the data governance tag. - Patching behavior (how this field
+      behaves during a `Table.patch` schema update): - Unset: If the
+      `data_governance_tags_info` field is omitted from the update request,
+      the existing tags on the column are preserved. - Empty Field: To clear
+      data governance tags from a column, send the `data_governance_tags_info`
+      field as an empty object. This will remove all tags from the column. -
+      Updating tags: To replace existing tag, send the field with the new tag.
     PolicyTagsValue: Optional. The policy tags attached to this field, used
       for field-level access control. If not set, defaults to empty
       policy_tags.
@@ -9457,8 +9485,23 @@ class TableFieldSchema(_messages.Message):
       field is STRING. The following values are supported: * 'und:ci':
       undetermined locale, case insensitive. * '': empty string. Default to
       case-sensitive behavior.
+    dataGovernanceTagsInfo: Optional. Specifies the data governance tags on
+      this field. This field works with other column-level security fields as
+      follows: - Precedence: If a data governance tag is attached to a column,
+      it takes precedence over the policy tag attached to the column. However,
+      if a data policy is attached to a column, it takes precedence over the
+      data governance tag. - Patching behavior (how this field behaves during
+      a `Table.patch` schema update): - Unset: If the
+      `data_governance_tags_info` field is omitted from the update request,
+      the existing tags on the column are preserved. - Empty Field: To clear
+      data governance tags from a column, send the `data_governance_tags_info`
+      field as an empty object. This will remove all tags from the column. -
+      Updating tags: To replace existing tag, send the field with the new tag.
     dataPolicies: Optional. Data policies attached to this field, used for
       field-level access control.
+    dataPolicyList: Optional. Specifies data policies attached to this field,
+      used for field-level access control. When set, this will be the source
+      of truth for data policy information.
     defaultValueExpression: Optional. A SQL expression to specify the [default
       value] (https://cloud.google.com/bigquery/docs/default-values) for this
       field.
@@ -9546,6 +9589,82 @@ class TableFieldSchema(_messages.Message):
 
     names = _messages.StringField(1, repeated=True)
 
+  class DataGovernanceTagsInfoValue(_messages.Message):
+    r"""Optional. Specifies the data governance tags on this field. This field
+    works with other column-level security fields as follows: - Precedence: If
+    a data governance tag is attached to a column, it takes precedence over
+    the policy tag attached to the column. However, if a data policy is
+    attached to a column, it takes precedence over the data governance tag. -
+    Patching behavior (how this field behaves during a `Table.patch` schema
+    update): - Unset: If the `data_governance_tags_info` field is omitted from
+    the update request, the existing tags on the column are preserved. - Empty
+    Field: To clear data governance tags from a column, send the
+    `data_governance_tags_info` field as an empty object. This will remove all
+    tags from the column. - Updating tags: To replace existing tag, send the
+    field with the new tag.
+
+    Messages:
+      DataGovernanceTagsValue: Optional. The data governance tags added to
+        this field are used for field-level access control. Only one data
+        governance tag is currently supported on a field. Tag keys are
+        globally unique. Tag key is expected to be in the namespaced format,
+        for example "123456789012/pii" where 123456789012 is the ID of the
+        parent organization or project resource for this tag key. Tag value is
+        expected to be the short name, for example "sensitive". See [Tag
+        definitions](https://cloud.google.com/iam/docs/tags-access-
+        control#definitions) for more details. For example:
+        "123456789012/pii": "sensitive", "myProject/cost_center": "sales"
+
+    Fields:
+      dataGovernanceTags: Optional. The data governance tags added to this
+        field are used for field-level access control. Only one data
+        governance tag is currently supported on a field. Tag keys are
+        globally unique. Tag key is expected to be in the namespaced format,
+        for example "123456789012/pii" where 123456789012 is the ID of the
+        parent organization or project resource for this tag key. Tag value is
+        expected to be the short name, for example "sensitive". See [Tag
+        definitions](https://cloud.google.com/iam/docs/tags-access-
+        control#definitions) for more details. For example:
+        "123456789012/pii": "sensitive", "myProject/cost_center": "sales"
+    """
+
+    @encoding.MapUnrecognizedFields('additionalProperties')
+    class DataGovernanceTagsValue(_messages.Message):
+      r"""Optional. The data governance tags added to this field are used for
+      field-level access control. Only one data governance tag is currently
+      supported on a field. Tag keys are globally unique. Tag key is expected
+      to be in the namespaced format, for example "123456789012/pii" where
+      123456789012 is the ID of the parent organization or project resource
+      for this tag key. Tag value is expected to be the short name, for
+      example "sensitive". See [Tag
+      definitions](https://cloud.google.com/iam/docs/tags-access-
+      control#definitions) for more details. For example: "123456789012/pii":
+      "sensitive", "myProject/cost_center": "sales"
+
+      Messages:
+        AdditionalProperty: An additional property for a
+          DataGovernanceTagsValue object.
+
+      Fields:
+        additionalProperties: Additional properties of type
+          DataGovernanceTagsValue
+      """
+
+      class AdditionalProperty(_messages.Message):
+        r"""An additional property for a DataGovernanceTagsValue object.
+
+        Fields:
+          key: Name of the additional property.
+          value: A string attribute.
+        """
+
+        key = _messages.StringField(1)
+        value = _messages.StringField(2)
+
+      additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+    dataGovernanceTags = _messages.MessageField('DataGovernanceTagsValue', 1)
+
   class PolicyTagsValue(_messages.Message):
     r"""Optional. The policy tags attached to this field, used for field-level
     access control. If not set, defaults to empty policy_tags.
@@ -9570,22 +9689,24 @@ class TableFieldSchema(_messages.Message):
 
   categories = _messages.MessageField('CategoriesValue', 1)
   collation = _messages.StringField(2)
-  dataPolicies = _messages.MessageField('DataPolicyOption', 3, repeated=True)
-  defaultValueExpression = _messages.StringField(4)
-  description = _messages.StringField(5)
-  fields = _messages.MessageField('TableFieldSchema', 6, repeated=True)
-  foreignTypeDefinition = _messages.StringField(7)
-  generatedColumn = _messages.MessageField('GeneratedColumn', 8)
-  maxLength = _messages.IntegerField(9)
-  mode = _messages.StringField(10)
-  name = _messages.StringField(11)
-  policyTags = _messages.MessageField('PolicyTagsValue', 12)
-  precision = _messages.IntegerField(13)
-  rangeElementType = _messages.MessageField('RangeElementTypeValue', 14)
-  roundingMode = _messages.EnumField('RoundingModeValueValuesEnum', 15)
-  scale = _messages.IntegerField(16)
-  timestampPrecision = _messages.IntegerField(17, default=6)
-  type = _messages.StringField(18)
+  dataGovernanceTagsInfo = _messages.MessageField('DataGovernanceTagsInfoValue', 3)
+  dataPolicies = _messages.MessageField('DataPolicyOption', 4, repeated=True)
+  dataPolicyList = _messages.MessageField('DataPolicyList', 5)
+  defaultValueExpression = _messages.StringField(6)
+  description = _messages.StringField(7)
+  fields = _messages.MessageField('TableFieldSchema', 8, repeated=True)
+  foreignTypeDefinition = _messages.StringField(9)
+  generatedColumn = _messages.MessageField('GeneratedColumn', 10)
+  maxLength = _messages.IntegerField(11)
+  mode = _messages.StringField(12)
+  name = _messages.StringField(13)
+  policyTags = _messages.MessageField('PolicyTagsValue', 14)
+  precision = _messages.IntegerField(15)
+  rangeElementType = _messages.MessageField('RangeElementTypeValue', 16)
+  roundingMode = _messages.EnumField('RoundingModeValueValuesEnum', 17)
+  scale = _messages.IntegerField(18)
+  timestampPrecision = _messages.IntegerField(19, default=6)
+  type = _messages.StringField(20)
 
 
 class TableList(_messages.Message):

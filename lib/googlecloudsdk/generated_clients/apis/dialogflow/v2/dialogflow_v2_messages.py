@@ -4430,9 +4430,8 @@ class DialogflowProjectsLocationsListRequest(_messages.Message):
   r"""A DialogflowProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -11797,6 +11796,14 @@ class GoogleCloudDialogflowV2CesAppSpec(_messages.Message):
     cesApp: Optional. Format: `projects//locations//apps/`.
     confirmationRequirement: Optional. Indicates whether the app requires
       human confirmation.
+    proactiveEnabled: Optional. Only applicable for CompanionAgent. Indicates
+      whether the ces app is enabled in proactive mode. At least one of
+      `proactive_enabled` or `reactive_enabled` should be true; otherwise, the
+      ces app will be ignored.
+    reactiveEnabled: Optional. Only applicable for CompanionAgent. Indicates
+      whether the ces app is enabled in reactive mode. At least one of
+      `proactive_enabled` or `reactive_enabled` should be true; otherwise, the
+      ces app will be ignored.
   """
 
   class ConfirmationRequirementValueValuesEnum(_messages.Enum):
@@ -11814,6 +11821,8 @@ class GoogleCloudDialogflowV2CesAppSpec(_messages.Message):
 
   cesApp = _messages.StringField(1)
   confirmationRequirement = _messages.EnumField('ConfirmationRequirementValueValuesEnum', 2)
+  proactiveEnabled = _messages.BooleanField(3)
+  reactiveEnabled = _messages.BooleanField(4)
 
 
 class GoogleCloudDialogflowV2CesToolSpec(_messages.Message):
@@ -16368,13 +16377,18 @@ class GoogleCloudDialogflowV2KnowledgeAssistDebugInfo(_messages.Message):
       categorization.
     QueryGenerationFailureReasonValueValuesEnum: Reason for query generation.
 
+  Messages:
+    CesDebugInfoValue: Debug information from CES runtime API.
+
   Fields:
+    cesDebugInfo: Debug information from CES runtime API.
     datastoreResponseReason: Response reason from datastore which indicates
       data serving status or answer quality degradation.
     ingestedContextReferenceDebugInfo: Information about parameters ingested
       for search knowledge.
     knowledgeAssistBehavior: Configured behaviors for Knowedge Assist.
     queryCategorizationFailureReason: Reason for query categorization.
+    queryGenerationDebugInfo: Token usage metadata for query generation.
     queryGenerationFailureReason: Reason for query generation.
     serviceLatency: The latency of the service.
   """
@@ -16467,12 +16481,39 @@ class GoogleCloudDialogflowV2KnowledgeAssistDebugInfo(_messages.Message):
     QUERY_GENERATION_EMPTY_LAST_MESSAGE = 9
     QUERY_GENERATION_TRIGGERING_EVENT_CONDITION_NOT_MET = 10
 
-  datastoreResponseReason = _messages.EnumField('DatastoreResponseReasonValueValuesEnum', 1)
-  ingestedContextReferenceDebugInfo = _messages.MessageField('GoogleCloudDialogflowV2IngestedContextReferenceDebugInfo', 2)
-  knowledgeAssistBehavior = _messages.MessageField('GoogleCloudDialogflowV2KnowledgeAssistDebugInfoKnowledgeAssistBehavior', 3)
-  queryCategorizationFailureReason = _messages.EnumField('QueryCategorizationFailureReasonValueValuesEnum', 4)
-  queryGenerationFailureReason = _messages.EnumField('QueryGenerationFailureReasonValueValuesEnum', 5)
-  serviceLatency = _messages.MessageField('GoogleCloudDialogflowV2ServiceLatency', 6)
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class CesDebugInfoValue(_messages.Message):
+    r"""Debug information from CES runtime API.
+
+    Messages:
+      AdditionalProperty: An additional property for a CesDebugInfoValue
+        object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a CesDebugInfoValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  cesDebugInfo = _messages.MessageField('CesDebugInfoValue', 1)
+  datastoreResponseReason = _messages.EnumField('DatastoreResponseReasonValueValuesEnum', 2)
+  ingestedContextReferenceDebugInfo = _messages.MessageField('GoogleCloudDialogflowV2IngestedContextReferenceDebugInfo', 3)
+  knowledgeAssistBehavior = _messages.MessageField('GoogleCloudDialogflowV2KnowledgeAssistDebugInfoKnowledgeAssistBehavior', 4)
+  queryCategorizationFailureReason = _messages.EnumField('QueryCategorizationFailureReasonValueValuesEnum', 5)
+  queryGenerationDebugInfo = _messages.MessageField('GoogleCloudDialogflowV2KnowledgeAssistDebugInfoQueryGenerationDebugInfo', 6)
+  queryGenerationFailureReason = _messages.EnumField('QueryGenerationFailureReasonValueValuesEnum', 7)
+  serviceLatency = _messages.MessageField('GoogleCloudDialogflowV2ServiceLatency', 8)
 
 
 class GoogleCloudDialogflowV2KnowledgeAssistDebugInfoKnowledgeAssistBehavior(_messages.Message):
@@ -16530,6 +16571,21 @@ class GoogleCloudDialogflowV2KnowledgeAssistDebugInfoKnowledgeAssistBehavior(_me
   useCustomSafetyFilterLevel = _messages.BooleanField(15)
   usePubsubDelivery = _messages.BooleanField(16)
   useTranslatedMessage = _messages.BooleanField(17)
+
+
+class GoogleCloudDialogflowV2KnowledgeAssistDebugInfoQueryGenerationDebugInfo(_messages.Message):
+  r"""Token usage metadata for query generation.
+
+  Fields:
+    candidatesTokenCount: The total number of tokens in the generated
+      candidates.
+    promptTokenCount: The total number of tokens in the prompt.
+    totalTokenCount: The total number of tokens for the entire request.
+  """
+
+  candidatesTokenCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  promptTokenCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  totalTokenCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
 
 
 class GoogleCloudDialogflowV2KnowledgeBase(_messages.Message):
@@ -22998,13 +23054,18 @@ class GoogleCloudDialogflowV2beta1KnowledgeAssistDebugInfo(_messages.Message):
       categorization.
     QueryGenerationFailureReasonValueValuesEnum: Reason for query generation.
 
+  Messages:
+    CesDebugInfoValue: Debug information from CES runtime API.
+
   Fields:
+    cesDebugInfo: Debug information from CES runtime API.
     datastoreResponseReason: Response reason from datastore which indicates
       data serving status or answer quality degradation.
     ingestedContextReferenceDebugInfo: Information about parameters ingested
       for search knowledge.
     knowledgeAssistBehavior: Configured behaviors for Knowedge Assist.
     queryCategorizationFailureReason: Reason for query categorization.
+    queryGenerationDebugInfo: Token usage metadata for query generation.
     queryGenerationFailureReason: Reason for query generation.
     serviceLatency: The latency of the service.
   """
@@ -23097,12 +23158,39 @@ class GoogleCloudDialogflowV2beta1KnowledgeAssistDebugInfo(_messages.Message):
     QUERY_GENERATION_EMPTY_LAST_MESSAGE = 9
     QUERY_GENERATION_TRIGGERING_EVENT_CONDITION_NOT_MET = 10
 
-  datastoreResponseReason = _messages.EnumField('DatastoreResponseReasonValueValuesEnum', 1)
-  ingestedContextReferenceDebugInfo = _messages.MessageField('GoogleCloudDialogflowV2beta1IngestedContextReferenceDebugInfo', 2)
-  knowledgeAssistBehavior = _messages.MessageField('GoogleCloudDialogflowV2beta1KnowledgeAssistDebugInfoKnowledgeAssistBehavior', 3)
-  queryCategorizationFailureReason = _messages.EnumField('QueryCategorizationFailureReasonValueValuesEnum', 4)
-  queryGenerationFailureReason = _messages.EnumField('QueryGenerationFailureReasonValueValuesEnum', 5)
-  serviceLatency = _messages.MessageField('GoogleCloudDialogflowV2beta1ServiceLatency', 6)
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class CesDebugInfoValue(_messages.Message):
+    r"""Debug information from CES runtime API.
+
+    Messages:
+      AdditionalProperty: An additional property for a CesDebugInfoValue
+        object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a CesDebugInfoValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  cesDebugInfo = _messages.MessageField('CesDebugInfoValue', 1)
+  datastoreResponseReason = _messages.EnumField('DatastoreResponseReasonValueValuesEnum', 2)
+  ingestedContextReferenceDebugInfo = _messages.MessageField('GoogleCloudDialogflowV2beta1IngestedContextReferenceDebugInfo', 3)
+  knowledgeAssistBehavior = _messages.MessageField('GoogleCloudDialogflowV2beta1KnowledgeAssistDebugInfoKnowledgeAssistBehavior', 4)
+  queryCategorizationFailureReason = _messages.EnumField('QueryCategorizationFailureReasonValueValuesEnum', 5)
+  queryGenerationDebugInfo = _messages.MessageField('GoogleCloudDialogflowV2beta1KnowledgeAssistDebugInfoQueryGenerationDebugInfo', 6)
+  queryGenerationFailureReason = _messages.EnumField('QueryGenerationFailureReasonValueValuesEnum', 7)
+  serviceLatency = _messages.MessageField('GoogleCloudDialogflowV2beta1ServiceLatency', 8)
 
 
 class GoogleCloudDialogflowV2beta1KnowledgeAssistDebugInfoKnowledgeAssistBehavior(_messages.Message):
@@ -23160,6 +23248,21 @@ class GoogleCloudDialogflowV2beta1KnowledgeAssistDebugInfoKnowledgeAssistBehavio
   useCustomSafetyFilterLevel = _messages.BooleanField(15)
   usePubsubDelivery = _messages.BooleanField(16)
   useTranslatedMessage = _messages.BooleanField(17)
+
+
+class GoogleCloudDialogflowV2beta1KnowledgeAssistDebugInfoQueryGenerationDebugInfo(_messages.Message):
+  r"""Token usage metadata for query generation.
+
+  Fields:
+    candidatesTokenCount: The total number of tokens in the generated
+      candidates.
+    promptTokenCount: The total number of tokens in the prompt.
+    totalTokenCount: The total number of tokens for the entire request.
+  """
+
+  candidatesTokenCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  promptTokenCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  totalTokenCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
 
 
 class GoogleCloudDialogflowV2beta1KnowledgeOperationMetadata(_messages.Message):

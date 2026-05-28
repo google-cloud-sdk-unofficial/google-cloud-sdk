@@ -28,21 +28,6 @@ DETAILED_HELP = {
          resources, and the count for each type of protected resource.
        """,
     'EXAMPLES': """
-         To view the summary of protected resources for the key `puppy`, run:
-
-           $ {command} --keyname=puppy
-       """,
-}
-
-DETAILED_HELP_ALPHA = {
-    'DESCRIPTION': """
-         *{command}* returns a summary of the resources a key is protecting.
-
-         The summary includes how many projects contain protected resources,
-         how many protected resources there are, what are the types of protected
-         resources, and the count for each type of protected resource.
-       """,
-    'EXAMPLES': """
          To view the summary of protected resources for the key
          `projects/test-prj/locations/us/keyRings/us-keyring/cryptoKeys/us-key`,
          run:
@@ -52,27 +37,14 @@ DETAILED_HELP_ALPHA = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.DefaultUniverseOnly
 class GetProtectedResourcesSummary(base.Command):
   """Gets the protected resources summary."""
+
   detailed_help = DETAILED_HELP
-
-  @staticmethod
-  def Args(parser):
-    resource_args.AddKmsKeyResourceArgForKMS(parser, True, '--keyname')
-
-  def Run(self, args):
-    keyname = args.keyname
-    return inventory.GetProtectedResourcesSummary(keyname)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-@base.DefaultUniverseOnly
-class GetProtectedResourcesSummaryWithFallback(base.Command):
-  """Gets the protected resources summary."""
-
-  detailed_help = DETAILED_HELP_ALPHA
 
   @staticmethod
   def Args(parser):

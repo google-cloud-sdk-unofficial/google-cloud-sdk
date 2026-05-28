@@ -149,9 +149,9 @@ class CloudControl(_messages.Message):
       findings. The maximum length is 255 characters.
     majorRevisionId: Output only. The major version of the cloud control,
       which is incremented in ascending order.
-    name: Required. Identifier. ## The name of the cloud control, in either of
-      the formats: ## `organizations/{organization}/locations/{location}/cloud
-      Controls/{cloud_control}`
+    name: Required. Identifier. The name of the cloud control, in either of
+      the formats: * `organizations/{organization}/locations/{location}/cloudC
+      ontrols/{cloud_control}` *
       `projects/{project}/locations/{location}/cloudControls/{cloud_control}`.
       The only supported location is `global`.
     parameterSpec: Optional. The parameter specifications for the cloud
@@ -515,8 +515,9 @@ class CloudControlDetails(_messages.Message):
 
   Fields:
     majorRevisionId: Required. The major version of the cloud control.
-    name: Required. The name of the cloud control, in the format `organization
-      s/{organization}/locations/{location}/cloudControls/{cloud_control}` or
+    name: Required. The name of the cloud control, in one of the following
+      formats: `organizations/{organization}/locations/{location}/cloudControl
+      s/{cloud_control}` or
       `projects/{project}/locations/{location}/cloudControls/{cloud_control}`.
       The only supported location is `global`.
     parameters: Optional. Parameters are key-value pairs that let you provide
@@ -1047,8 +1048,8 @@ class CloudsecuritycomplianceOrganizationsLocationsCloudControlsCreateRequest(_m
     cloudControlId: Required. The identifier for the cloud control, which is
       the last segment of the cloud control name. The format is
       `^a-zA-Z{0,61}[a-zA-Z0-9]$`.
-    parent: Required. The parent resource name, in either of the formats: -
-      `organizations/{organization}/locations/{location}`. -
+    parent: Required. The parent resource name, in either of the formats: *
+      `organizations/{organization}/locations/{location}`. *
       `projects/{project}/locations/{location}`. The only supported location
       is `global`.
   """
@@ -1064,9 +1065,9 @@ class CloudsecuritycomplianceOrganizationsLocationsCloudControlsDeleteRequest(_m
   object.
 
   Fields:
-    name: Required. ## The name of the cloud control to delete, in either of
-      the formats: `organizations/{organization}/locations/{location}/CloudCon
-      trols/{CloudControl}`. -
+    name: Required. The name of the cloud control to delete, in one of the
+      following formats: `organizations/{organization}/locations/{location}/Cl
+      oudControls/{CloudControl}` or
       `projects/{project}/locations/{location}/CloudControls/{CloudControl}`.
       The only supported location is `global`.
   """
@@ -1082,9 +1083,9 @@ class CloudsecuritycomplianceOrganizationsLocationsCloudControlsGetRequest(_mess
     majorRevisionId: Optional. The major version of the cloud control to
       retrieve. If not specified, the most recently updated `revision_id` is
       retrieved.
-    name: Required. ## The name of the cloud control to retrieve, in either of
-      the formats: `organizations/{organization}/locations/{location}/cloudCon
-      trols/{cloud_control}` -
+    name: Required. The name of the cloud control to retrieve, in one of the
+      following formats: `organizations/{organization}/locations/{location}/cl
+      oudControls/{cloud_control}` or
       `projects/{project}/locations/{location}/cloudControls/{cloud_control}`.
       The only supported location is `global`.
   """
@@ -1106,8 +1107,8 @@ class CloudsecuritycomplianceOrganizationsLocationsCloudControlsListRequest(_mes
       page of results. When paginating, the parent that you provide to the
       ListCloudControls request must match the call that provided the page
       token.
-    parent: Required. The parent resource name, in either of the formats: -
-      `organizations/{organization}/locations/{location}` -
+    parent: Required. The parent resource name, in one of the following
+      formats: - `organizations/{organization}/locations/{location}` -
       `projects/{project}/locations/{location}`. The only supported location
       is `global`.
   """
@@ -1123,9 +1124,9 @@ class CloudsecuritycomplianceOrganizationsLocationsCloudControlsPatchRequest(_me
 
   Fields:
     cloudControl: A CloudControl resource to be passed as the request body.
-    name: Required. Identifier. ## The name of the cloud control, in either of
-      the formats: ## `organizations/{organization}/locations/{location}/cloud
-      Controls/{cloud_control}`
+    name: Required. Identifier. The name of the cloud control, in either of
+      the formats: * `organizations/{organization}/locations/{location}/cloudC
+      ontrols/{cloud_control}` *
       `projects/{project}/locations/{location}/cloudControls/{cloud_control}`.
       The only supported location is `global`.
     updateMask: Optional. Use a field mask to specify the fields to be
@@ -1466,8 +1467,8 @@ class CloudsecuritycomplianceOrganizationsLocationsFrameworksCreateRequest(_mess
     frameworkId: Required. The identifier (ID) of the framework. The ID is not
       the full name of the framework; it's the last part of the full name of
       the framework.
-    parent: Required. The parent resource name, in either of the formats: -
-      `organizations/{organization}/locations/{location}` -
+    parent: Required. The parent resource name, in one of the following
+      formats: - `organizations/{organization}/locations/{location}` -
       `projects/{project}/locations/{location}`. The only supported location
       is `global`.
   """
@@ -1482,9 +1483,9 @@ class CloudsecuritycomplianceOrganizationsLocationsFrameworksDeleteRequest(_mess
   object.
 
   Fields:
-    name: Required. ## The name of the resource, in either of the formats:
+    name: Required. The name of the resource, in one of the following formats:
       `organizations/{organization}/locations/{location}/frameworks/{framework
-      }` - `projects/{project}/locations/{location}/frameworks/{framework}`
+      }` or `projects/{project}/locations/{location}/frameworks/{framework}`.
       The only supported location is `global`.
   """
 
@@ -1498,9 +1499,9 @@ class CloudsecuritycomplianceOrganizationsLocationsFrameworksGetRequest(_message
   Fields:
     majorRevisionId: Optional. The framework major version to retrieve. If not
       specified, the most recently updated `revision_id` is retrieved.
-    name: Required. ## The name of the framework to retrieve, in one of the
+    name: Required. The name of the framework to retrieve, in one of the
       following formats: `organizations/{organization}/locations/{location}/fr
-      ameworks/{framework}` -
+      ameworks/{framework}` or
       `projects/{project}/locations/{location}/frameworks/{framework}`. The
       only supported location is `global`.
   """
@@ -1539,9 +1540,9 @@ class CloudsecuritycomplianceOrganizationsLocationsFrameworksPatchRequest(_messa
     framework: A Framework resource to be passed as the request body.
     majorRevisionId: Optional. The major version ID of the framework to
       update.
-    name: Required. Identifier. ## The name of the framework, in one of the
+    name: Required. Identifier. The name of the framework, in one of the
       following formats: `organizations/{organization}/locations/{location}/fr
-      ameworks/{framework}` -
+      ameworks/{framework}` or
       `projects/{project}/locations/{location}/frameworks/{framework}`. The
       only supported location is `global`.
     updateMask: Optional. A field mask is used to specify the fields to be
@@ -1572,9 +1573,8 @@ class CloudsecuritycomplianceOrganizationsLocationsListRequest(_messages.Message
   r"""A CloudsecuritycomplianceOrganizationsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -1738,8 +1738,8 @@ class CloudsecuritycomplianceProjectsLocationsCloudControlsCreateRequest(_messag
     cloudControlId: Required. The identifier for the cloud control, which is
       the last segment of the cloud control name. The format is
       `^a-zA-Z{0,61}[a-zA-Z0-9]$`.
-    parent: Required. The parent resource name, in either of the formats: -
-      `organizations/{organization}/locations/{location}`. -
+    parent: Required. The parent resource name, in either of the formats: *
+      `organizations/{organization}/locations/{location}`. *
       `projects/{project}/locations/{location}`. The only supported location
       is `global`.
   """
@@ -1754,9 +1754,9 @@ class CloudsecuritycomplianceProjectsLocationsCloudControlsDeleteRequest(_messag
   object.
 
   Fields:
-    name: Required. ## The name of the cloud control to delete, in either of
-      the formats: `organizations/{organization}/locations/{location}/CloudCon
-      trols/{CloudControl}`. -
+    name: Required. The name of the cloud control to delete, in one of the
+      following formats: `organizations/{organization}/locations/{location}/Cl
+      oudControls/{CloudControl}` or
       `projects/{project}/locations/{location}/CloudControls/{CloudControl}`.
       The only supported location is `global`.
   """
@@ -1772,9 +1772,9 @@ class CloudsecuritycomplianceProjectsLocationsCloudControlsGetRequest(_messages.
     majorRevisionId: Optional. The major version of the cloud control to
       retrieve. If not specified, the most recently updated `revision_id` is
       retrieved.
-    name: Required. ## The name of the cloud control to retrieve, in either of
-      the formats: `organizations/{organization}/locations/{location}/cloudCon
-      trols/{cloud_control}` -
+    name: Required. The name of the cloud control to retrieve, in one of the
+      following formats: `organizations/{organization}/locations/{location}/cl
+      oudControls/{cloud_control}` or
       `projects/{project}/locations/{location}/cloudControls/{cloud_control}`.
       The only supported location is `global`.
   """
@@ -1796,8 +1796,8 @@ class CloudsecuritycomplianceProjectsLocationsCloudControlsListRequest(_messages
       page of results. When paginating, the parent that you provide to the
       ListCloudControls request must match the call that provided the page
       token.
-    parent: Required. The parent resource name, in either of the formats: -
-      `organizations/{organization}/locations/{location}` -
+    parent: Required. The parent resource name, in one of the following
+      formats: - `organizations/{organization}/locations/{location}` -
       `projects/{project}/locations/{location}`. The only supported location
       is `global`.
   """
@@ -1813,9 +1813,9 @@ class CloudsecuritycomplianceProjectsLocationsCloudControlsPatchRequest(_message
 
   Fields:
     cloudControl: A CloudControl resource to be passed as the request body.
-    name: Required. Identifier. ## The name of the cloud control, in either of
-      the formats: ## `organizations/{organization}/locations/{location}/cloud
-      Controls/{cloud_control}`
+    name: Required. Identifier. The name of the cloud control, in either of
+      the formats: * `organizations/{organization}/locations/{location}/cloudC
+      ontrols/{cloud_control}` *
       `projects/{project}/locations/{location}/cloudControls/{cloud_control}`.
       The only supported location is `global`.
     updateMask: Optional. Use a field mask to specify the fields to be
@@ -2153,8 +2153,8 @@ class CloudsecuritycomplianceProjectsLocationsFrameworksCreateRequest(_messages.
     frameworkId: Required. The identifier (ID) of the framework. The ID is not
       the full name of the framework; it's the last part of the full name of
       the framework.
-    parent: Required. The parent resource name, in either of the formats: -
-      `organizations/{organization}/locations/{location}` -
+    parent: Required. The parent resource name, in one of the following
+      formats: - `organizations/{organization}/locations/{location}` -
       `projects/{project}/locations/{location}`. The only supported location
       is `global`.
   """
@@ -2169,9 +2169,9 @@ class CloudsecuritycomplianceProjectsLocationsFrameworksDeleteRequest(_messages.
   object.
 
   Fields:
-    name: Required. ## The name of the resource, in either of the formats:
+    name: Required. The name of the resource, in one of the following formats:
       `organizations/{organization}/locations/{location}/frameworks/{framework
-      }` - `projects/{project}/locations/{location}/frameworks/{framework}`
+      }` or `projects/{project}/locations/{location}/frameworks/{framework}`.
       The only supported location is `global`.
   """
 
@@ -2184,9 +2184,9 @@ class CloudsecuritycomplianceProjectsLocationsFrameworksGetRequest(_messages.Mes
   Fields:
     majorRevisionId: Optional. The framework major version to retrieve. If not
       specified, the most recently updated `revision_id` is retrieved.
-    name: Required. ## The name of the framework to retrieve, in one of the
+    name: Required. The name of the framework to retrieve, in one of the
       following formats: `organizations/{organization}/locations/{location}/fr
-      ameworks/{framework}` -
+      ameworks/{framework}` or
       `projects/{project}/locations/{location}/frameworks/{framework}`. The
       only supported location is `global`.
   """
@@ -2223,9 +2223,9 @@ class CloudsecuritycomplianceProjectsLocationsFrameworksPatchRequest(_messages.M
     framework: A Framework resource to be passed as the request body.
     majorRevisionId: Optional. The major version ID of the framework to
       update.
-    name: Required. Identifier. ## The name of the framework, in one of the
+    name: Required. Identifier. The name of the framework, in one of the
       following formats: `organizations/{organization}/locations/{location}/fr
-      ameworks/{framework}` -
+      ameworks/{framework}` or
       `projects/{project}/locations/{location}/frameworks/{framework}`. The
       only supported location is `global`.
     updateMask: Optional. A field mask is used to specify the fields to be
@@ -2256,9 +2256,8 @@ class CloudsecuritycomplianceProjectsLocationsListRequest(_messages.Message):
   r"""A CloudsecuritycomplianceProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -2699,9 +2698,9 @@ class Framework(_messages.Message):
       length is 200 characters.
     majorRevisionId: Output only. The major version of the framework, which is
       incremented in ascending order.
-    name: Required. Identifier. ## The name of the framework, in one of the
+    name: Required. Identifier. The name of the framework, in one of the
       following formats: `organizations/{organization}/locations/{location}/fr
-      ameworks/{framework}` -
+      ameworks/{framework}` or
       `projects/{project}/locations/{location}/frameworks/{framework}`. The
       only supported location is `global`.
     supportedCloudProviders: Output only. The cloud providers that are
@@ -3175,10 +3174,10 @@ class FrameworkDeploymentReference(_messages.Message):
 
 
 class FrameworkReference(_messages.Message):
-  r"""The reference of a framework, in the format
-  `organizations/{organization}/locations/{location}/frameworks/{framework}`
-  or `projects/{project}/locations/{location}/frameworks/{framework}`. The
-  only supported location is `global`.
+  r"""The reference of a framework, in one of the following formats: -
+  `organizations/{organization}/locations/{location}/frameworks/{framework}` -
+  `projects/{project}/locations/{location}/frameworks/{framework}`. The only
+  supported location is `global`.
 
   Fields:
     framework: Required. The major version of the framework. If not specified,

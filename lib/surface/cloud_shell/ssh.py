@@ -16,13 +16,13 @@
 
 
 import datetime
+import shlex
 import threading
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloud_shell import util
 from googlecloudsdk.command_lib.util.ssh import ssh
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-import six
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
@@ -91,7 +91,7 @@ class Ssh(base.Command):
       util.AuthorizeEnvironment()
     command = ssh.SSHCommand(
         remote=ssh.Remote(host=connection_info.host, user=connection_info.user),
-        port=six.text_type(connection_info.port),
+        port=str(connection_info.port),
         identity_file=connection_info.key,
         remote_command=(['DEVSHELL_PROJECT_ID=' + project] if project else []) +
         command_list,
@@ -102,7 +102,7 @@ class Ssh(base.Command):
 
     if args.dry_run:
       elems = command.Build(connection_info.ssh_env)
-      log.Print(' '.join([six.moves.shlex_quote(elem) for elem in elems]))
+      log.Print(' '.join([shlex.quote(elem) for elem in elems]))
     elif args.authorize_session:
       self.done = threading.Event()
       thread = threading.Thread(target=self.Reauthorize, args=())
@@ -189,7 +189,7 @@ class SshAlpha(base.Command):
       util.AuthorizeEnvironment()
     command = ssh.SSHCommand(
         remote=ssh.Remote(host=connection_info.host, user=connection_info.user),
-        port=six.text_type(connection_info.port),
+        port=str(connection_info.port),
         identity_file=connection_info.key,
         remote_command=(['DEVSHELL_PROJECT_ID=' + project]
                         if project else []) + command_list,
@@ -201,7 +201,7 @@ class SshAlpha(base.Command):
 
     if args.dry_run:
       elems = command.Build(connection_info.ssh_env)
-      log.Print(' '.join([six.moves.shlex_quote(elem) for elem in elems]))
+      log.Print(' '.join([shlex.quote(elem) for elem in elems]))
     elif args.authorize_session:
       self.done = threading.Event()
       thread = threading.Thread(target=self.Reauthorize, args=())

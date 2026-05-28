@@ -89,7 +89,11 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat(_DEFAULT_TABLE_FORMAT)
+    # The default display format is set in Run() rather than here so that an
+    # explicit --format flag (e.g., --format="json(field)") is used as-is
+    # without being composed with the default table projection. Format
+    # composition causes default table columns to leak into json(...) output via
+    # shared parent paths in the projection tree.
     parser.add_argument(
         '--can-deploy-hugging-face-models',
         action='store_true',
@@ -120,18 +124,28 @@ class List(base.ListCommand):
   def Run(self, args):
     version = constants.BETA_VERSION
 
-    if args.full_resource_name:
-      args.GetDisplayInfo().AddFormat(_FULL_RESOURCE_NAME_TABLE_FORMAT)
+    # Set the default display format only when the user hasn't provided an
+    # explicit --format.  Without this guard, the default table(...) projection
+    # is composed with the explicit format, and the projection tree's INNER
+    # flag on shared parent paths (e.g. supportedActions) causes sibling
+    # branches from the table projection (e.g. multiDeployVertex) to leak
+    # into json(...) output.
+    if not args.IsSpecified('format'):
+      if args.can_deploy_hugging_face_models:
+        args.GetDisplayInfo().AddFormat(
+            _FULL_RESOURCE_NAME_ONLY_TABLE_FORMAT
+            if args.full_resource_name
+            else _SHORT_MODEL_NAME_ONLY_TABLE_FORMAT
+        )
+      elif args.full_resource_name:
+        args.GetDisplayInfo().AddFormat(_FULL_RESOURCE_NAME_TABLE_FORMAT)
+      else:
+        args.GetDisplayInfo().AddFormat(_DEFAULT_TABLE_FORMAT)
 
     # Set the default page size to 100 if the user requests to list supported
     # Hugging Face models, since there are tens of thousands of Hugging Face
     # models and the call will take a long time.
     if args.can_deploy_hugging_face_models:
-      args.GetDisplayInfo().AddFormat(
-          _FULL_RESOURCE_NAME_ONLY_TABLE_FORMAT
-          if args.full_resource_name
-          else _SHORT_MODEL_NAME_ONLY_TABLE_FORMAT
-      )
       if args.page_size is None:
         args.page_size = 100
 

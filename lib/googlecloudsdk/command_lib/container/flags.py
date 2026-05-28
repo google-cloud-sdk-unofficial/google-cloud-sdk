@@ -70,6 +70,11 @@ _PMU_LEVEL = {
     'enhanced': 'Enables most documented core/L2 and LLC PMU events.',
 }
 
+_DPV2_SCALABILITY_MODES = {
+    'DISABLED': 'Selects standard mode for the dataplane v2.',
+    'SCALE_OPTIMIZED': 'Selects scaled optimized mode for the dataplane v2.',
+}
+
 
 class InvalidAddonValueError(util.Error):
   """A class for invalid --addons input."""
@@ -167,7 +172,6 @@ def MungeBasicAuthFlags(args):
     raise util.Error(constants.USERNAME_PASSWORD_ERROR_MSG)
 
 
-# TODO(b/28318474): move flags common across commands here.
 def AddImageTypeFlag(parser, target):
   """Adds a --image-type flag to the given parser."""
   help_text = """\
@@ -1167,8 +1171,6 @@ def AddBinauthzFlags(
 
 def AddLocationFlags(parser):
   """Adds the --location, --zone, and --region flags to the parser."""
-  # TODO(b/33343238): Remove the short form of the zone flag.
-  # TODO(b/18105938): Add zone prompting
   group = parser.add_mutually_exclusive_group()
   group.add_argument(
       '--location',
@@ -5087,7 +5089,6 @@ Configures node creation mode for the cluster, either via kubelet or via control
       choices=choices,
       default=None,
       help=help_text,
-      hidden=True,
   )
 
 
@@ -7727,6 +7728,21 @@ def AddEnableRayClusterLogging(parser, hidden=False, is_update=False):
     )
 
 
+# TODO(b/509445140): Change default hidden=True to hidden=False when Kueue
+# is launched.
+def AddEnableKueueLogging(parser, hidden=True):
+  """Adds --enable-kueue-logging flag to the given parser."""
+  help_text = """\
+    Enable Kueue component logging.
+    """
+  parser.add_argument(
+      '--enable-kueue-logging',
+      action=arg_parsers.StoreTrueFalseAction,
+      help=help_text,
+      hidden=hidden,
+  )
+
+
 def AddEnableRayClusterMonitoring(parser, hidden=False, is_update=False):
   """Adds --enable-ray-cluster-monitoring flag to the given parser.
 
@@ -7887,8 +7903,7 @@ def AddSecretSyncFlagGroup(
       hidden=hidden,
   )
   help_text = """\
-        Enables the Secret Sync component. See
-        https://cloud.google.com/secret-manager/docs/sync-k8-secrets
+        Enables the Secret Sync component. For details, see [Synchronize secrets to Kubernetes Secrets](https://docs.cloud.google.com/secret-manager/docs/sync-k8-secrets).
     """
   if is_update:
     secret_sync_group.add_argument(
@@ -7908,7 +7923,6 @@ def AddSecretSyncFlagGroup(
 
   help_text = textwrap.dedent("""\
       Enables the rotation of secrets in the Secret Sync component.
-      provider component.
   """)
   if is_update:
     secret_sync_group.add_argument(
@@ -9110,4 +9124,18 @@ def AddTimeoutFlag(parser, default=1800):
       type=int,
       default=default,
       help='Timeout (in seconds) for waiting on the operation to complete.',
+  )
+
+
+def AddDataplaneV2OptimizationModeFlag(parser, hidden=True):
+  """Adds --dataplane-optimization-mode={DISABLED|SCALE_OPTIMIZED} flag."""
+  help_text = """
+Select scalability mode for dataplane v2.
+"""
+  parser.add_argument(
+      '--dataplane-optimization-mode',
+      default=None,
+      choices=_DPV2_SCALABILITY_MODES,
+      help=help_text,
+      hidden=hidden,
   )

@@ -37,6 +37,12 @@ class BackupdrV1(base_api.BaseApiClient):
         default_global_params=default_global_params,
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
+    self.folders_locations_resourceBackupConfigs = self.FoldersLocationsResourceBackupConfigsService(self)
+    self.folders_locations = self.FoldersLocationsService(self)
+    self.folders = self.FoldersService(self)
+    self.organizations_locations_resourceBackupConfigs = self.OrganizationsLocationsResourceBackupConfigsService(self)
+    self.organizations_locations = self.OrganizationsLocationsService(self)
+    self.organizations = self.OrganizationsService(self)
     self.projects_locations_backupPlanAssociations = self.ProjectsLocationsBackupPlanAssociationsService(self)
     self.projects_locations_backupPlans_revisions = self.ProjectsLocationsBackupPlansRevisionsService(self)
     self.projects_locations_backupPlans = self.ProjectsLocationsBackupPlansService(self)
@@ -51,6 +57,120 @@ class BackupdrV1(base_api.BaseApiClient):
     self.projects_locations_trial = self.ProjectsLocationsTrialService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects = self.ProjectsService(self)
+
+  class FoldersLocationsResourceBackupConfigsService(base_api.BaseApiService):
+    """Service class for the folders_locations_resourceBackupConfigs resource."""
+
+    _NAME = 'folders_locations_resourceBackupConfigs'
+
+    def __init__(self, client):
+      super(BackupdrV1.FoldersLocationsResourceBackupConfigsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Fetch(self, request, global_params=None):
+      r"""Fetches ResourceBackupConfigs.
+
+      Args:
+        request: (BackupdrFoldersLocationsResourceBackupConfigsFetchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (FetchResourceBackupConfigsResponse) The response message.
+      """
+      config = self.GetMethodConfig('Fetch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Fetch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/folders/{foldersId}/locations/{locationsId}/resourceBackupConfigs:fetch',
+        http_method='GET',
+        method_id='backupdr.folders.locations.resourceBackupConfigs.fetch',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/resourceBackupConfigs:fetch',
+        request_field='',
+        request_type_name='BackupdrFoldersLocationsResourceBackupConfigsFetchRequest',
+        response_type_name='FetchResourceBackupConfigsResponse',
+        supports_download=False,
+    )
+
+  class FoldersLocationsService(base_api.BaseApiService):
+    """Service class for the folders_locations resource."""
+
+    _NAME = 'folders_locations'
+
+    def __init__(self, client):
+      super(BackupdrV1.FoldersLocationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class FoldersService(base_api.BaseApiService):
+    """Service class for the folders resource."""
+
+    _NAME = 'folders'
+
+    def __init__(self, client):
+      super(BackupdrV1.FoldersService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class OrganizationsLocationsResourceBackupConfigsService(base_api.BaseApiService):
+    """Service class for the organizations_locations_resourceBackupConfigs resource."""
+
+    _NAME = 'organizations_locations_resourceBackupConfigs'
+
+    def __init__(self, client):
+      super(BackupdrV1.OrganizationsLocationsResourceBackupConfigsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Fetch(self, request, global_params=None):
+      r"""Fetches ResourceBackupConfigs.
+
+      Args:
+        request: (BackupdrOrganizationsLocationsResourceBackupConfigsFetchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (FetchResourceBackupConfigsResponse) The response message.
+      """
+      config = self.GetMethodConfig('Fetch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Fetch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/organizations/{organizationsId}/locations/{locationsId}/resourceBackupConfigs:fetch',
+        http_method='GET',
+        method_id='backupdr.organizations.locations.resourceBackupConfigs.fetch',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/resourceBackupConfigs:fetch',
+        request_field='',
+        request_type_name='BackupdrOrganizationsLocationsResourceBackupConfigsFetchRequest',
+        response_type_name='FetchResourceBackupConfigsResponse',
+        supports_download=False,
+    )
+
+  class OrganizationsLocationsService(base_api.BaseApiService):
+    """Service class for the organizations_locations resource."""
+
+    _NAME = 'organizations_locations'
+
+    def __init__(self, client):
+      super(BackupdrV1.OrganizationsLocationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class OrganizationsService(base_api.BaseApiService):
+    """Service class for the organizations resource."""
+
+    _NAME = 'organizations'
+
+    def __init__(self, client):
+      super(BackupdrV1.OrganizationsService, self).__init__(client)
+      self._upload_configs = {
+          }
 
   class ProjectsLocationsBackupPlanAssociationsService(base_api.BaseApiService):
     """Service class for the projects_locations_backupPlanAssociations resource."""
@@ -1529,6 +1649,33 @@ class BackupdrV1(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+    def Fetch(self, request, global_params=None):
+      r"""Fetches ResourceBackupConfigs.
+
+      Args:
+        request: (BackupdrProjectsLocationsResourceBackupConfigsFetchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (FetchResourceBackupConfigsResponse) The response message.
+      """
+      config = self.GetMethodConfig('Fetch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Fetch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/resourceBackupConfigs:fetch',
+        http_method='GET',
+        method_id='backupdr.projects.locations.resourceBackupConfigs.fetch',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/resourceBackupConfigs:fetch',
+        request_field='',
+        request_type_name='BackupdrProjectsLocationsResourceBackupConfigsFetchRequest',
+        response_type_name='FetchResourceBackupConfigsResponse',
+        supports_download=False,
+    )
+
     def List(self, request, global_params=None):
       r"""Lists ResourceBackupConfigs.
 
@@ -1722,7 +1869,7 @@ class BackupdrV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the ListLocationsRequest.name field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
       Args:
         request: (BackupdrProjectsLocationsListRequest) input message

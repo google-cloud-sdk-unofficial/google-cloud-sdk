@@ -330,6 +330,8 @@ class Instance(_messages.Message):
   Enums:
     ClassTypeValueValuesEnum: Optional. Storage class of the instance.
     PlatformEditionValueValuesEnum: Platform edition.
+    ReleaseChannelValueValuesEnum: Optional. The selected release channel for
+      the instance.
     StateValueValuesEnum: Output only. The state of the instance.
     TierValueValuesEnum: Optional. Tier
 
@@ -382,6 +384,7 @@ class Instance(_messages.Message):
       private IP connectivity. If true, neither `public_ip_enabled` nor
       `private_ip_enabled` can be true.
     publicIpEnabled: Whether public IP is enabled on the Looker instance.
+    releaseChannel: Optional. The selected release channel for the instance.
     reservedRange: Name of a reserved IP address range within the
       Instance.consumer_network, to be used for private services access
       connection. May or may not be specified in a create request.
@@ -435,6 +438,20 @@ class Instance(_messages.Message):
     LOOKER_CORE_TRIAL_STANDARD = 9
     LOOKER_CORE_TRIAL_ENTERPRISE = 10
     LOOKER_CORE_TRIAL_EMBED = 11
+
+  class ReleaseChannelValueValuesEnum(_messages.Enum):
+    r"""Optional. The selected release channel for the instance.
+
+    Values:
+      RELEASE_CHANNEL_UNSPECIFIED: Unspecified release channel.
+      RAPID: Rapid: Most frequent updates.
+      REGULAR: Regular: Balanced, default for production.
+      STABLE: Stable: Least frequent, for maximum stability.
+    """
+    RELEASE_CHANNEL_UNSPECIFIED = 0
+    RAPID = 1
+    REGULAR = 2
+    STABLE = 3
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. The state of the instance.
@@ -510,13 +527,14 @@ class Instance(_messages.Message):
   pscConfig = _messages.MessageField('PscConfig', 30)
   pscEnabled = _messages.BooleanField(31)
   publicIpEnabled = _messages.BooleanField(32)
-  reservedRange = _messages.StringField(33)
-  satisfiesPzi = _messages.BooleanField(34)
-  satisfiesPzs = _messages.BooleanField(35)
-  state = _messages.EnumField('StateValueValuesEnum', 36)
-  tier = _messages.EnumField('TierValueValuesEnum', 37)
-  updateTime = _messages.StringField(38)
-  userMetadata = _messages.MessageField('UserMetadata', 39)
+  releaseChannel = _messages.EnumField('ReleaseChannelValueValuesEnum', 33)
+  reservedRange = _messages.StringField(34)
+  satisfiesPzi = _messages.BooleanField(35)
+  satisfiesPzs = _messages.BooleanField(36)
+  state = _messages.EnumField('StateValueValuesEnum', 37)
+  tier = _messages.EnumField('TierValueValuesEnum', 38)
+  updateTime = _messages.StringField(39)
+  userMetadata = _messages.MessageField('UserMetadata', 40)
 
 
 class InstanceBackup(_messages.Message):
@@ -914,9 +932,8 @@ class LookerProjectsLocationsListRequest(_messages.Message):
   r"""A LookerProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).

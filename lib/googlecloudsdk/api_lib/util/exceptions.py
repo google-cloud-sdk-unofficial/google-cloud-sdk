@@ -364,6 +364,43 @@ class HttpErrorPayload(FormattableErrorPayload):
     domain = domain_parts.split('.')
     return 'mtls' in domain
 
+  def _ErrorUrlMatchesEndpointOverride(self, error_url, endpoint_override):
+    """Returns whether the error URL matches the endpoint override.
+
+    Args:
+      error_url: The error URL to check for a match with the endpoint override.
+      endpoint_override: The endpoint override to check for a match.
+
+    Returns:
+      True if the error URL matches the endpoint override, False otherwise.
+
+    Examples:
+      The error URL 'https://compute.googleapis.com/compute/v1/...'
+      matches the endpoint override 'https://compute.googleapis.com/' because it
+      starts with the endpoint override and the domain matches.
+
+      The error URL
+      'https://us-central1-staging-run.sandbox.googleapis.com/apis/...'
+      matches the endpoint override
+      'https://staging-run.sandbox.googleapis.com/'
+      because the domain suffix matches.
+    """
+
+    if not error_url or not endpoint_override:
+      return False
+
+    if error_url.startswith(endpoint_override):
+      return True
+
+    # Check if the domain suffix matches the endpoint override. This handles
+    # locational URLs, e.g.
+    # 'https://us-central1-staging-run.sandbox.googleapis.com/'.
+    error_netloc = urllib.parse.urlparse(error_url).netloc
+    override_netloc = urllib.parse.urlparse(endpoint_override).netloc
+    if not error_netloc or not override_netloc:
+      return False
+    return error_netloc.endswith(override_netloc)
+
   def _AppendCredentialInfoToErrorMessage(self):
     """Appends the credential info to the error message."""
     from googlecloudsdk.core.credentials import store as c_store  # pylint: disable=g-import-not-at-top
@@ -422,26 +459,41 @@ class HttpErrorPayload(FormattableErrorPayload):
         endpoint_overrides = (
             properties.VALUES.api_endpoint_overrides.AllValues()
         )
-        for api_name, endpoint_override in endpoint_overrides.items():
-          mtls_endpoint = self._GetMTLSEndpointOverride(endpoint_override)
+        for api_name, current_endpoint_override in endpoint_overrides.items():
+          desired_mtls_endpoint_override = self._GetMTLSEndpointOverride(
+              current_endpoint_override
+          )
+
+          error_url_matches_endpoint_override = (
+              self._ErrorUrlMatchesEndpointOverride(
+                  getattr(http_error, 'url', None), current_endpoint_override
+              )
+          )
+          # Update the error message if the following conditions are met:
+          # 1. The existing endpoint override is not using mTLS.
+          # 2. The error URL matches the endpoint override.
+          # 3. An mTLS endpoint override is available for the error message.
           if (
-              not self._IsExistingOverrideMTLS(endpoint_override)
-              and http_error.url.startswith(endpoint_override)
-              and mtls_endpoint
+              not self._IsExistingOverrideMTLS(current_endpoint_override)
+              and error_url_matches_endpoint_override
+              and desired_mtls_endpoint_override
           ):
-            self.error_info['message'] = (
+            self.error_info[
+                'message'
+            ] = (
                 'Certificate-based access is enabled, but the endpoint override'
                 ' for the following API is not using mTLS: {}. Please update'
                 ' the endpoint override to use mTLS endpoint: {} '.format(
-                    [api_name, endpoint_override], mtls_endpoint
+                    [api_name, current_endpoint_override],
+                    desired_mtls_endpoint_override,
                 )
             )
             self.error_info['details'] = [{
                 '@type': 'type.googleapis.com/google.rpc.ErrorInfo',
                 'reason': 'ACCESS_DENIED',
                 'metadata': {
-                    'endpoint_override': endpoint_override,
-                    'mtls_endpoint_override': mtls_endpoint,
+                    'endpoint_override': current_endpoint_override,
+                    'mtls_endpoint_override': desired_mtls_endpoint_override,
                 },
             }]
             break

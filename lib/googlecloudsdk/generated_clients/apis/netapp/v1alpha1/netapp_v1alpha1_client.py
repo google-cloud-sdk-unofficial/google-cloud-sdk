@@ -1144,7 +1144,7 @@ class NetappV1alpha1(base_api.BaseApiClient):
           }
 
     def ExecuteOntapDelete(self, request, global_params=None):
-      r"""`ExecuteOntapDelete` dispatches the ONTAP `DELETE` request to the `StoragePool` cluster.
+      r"""`ExecuteOntapDelete` sends the ONTAP `DELETE` request to the `StoragePool` cluster.
 
       Args:
         request: (NetappProjectsLocationsStoragePoolsOntapExecuteOntapDeleteRequest) input message
@@ -1171,7 +1171,7 @@ class NetappV1alpha1(base_api.BaseApiClient):
     )
 
     def ExecuteOntapGet(self, request, global_params=None):
-      r"""`ExecuteOntapGet` dispatches the ONTAP `GET` request to the `StoragePool` cluster.
+      r"""`ExecuteOntapGet` sends the ONTAP `GET` request to the `StoragePool` cluster.
 
       Args:
         request: (NetappProjectsLocationsStoragePoolsOntapExecuteOntapGetRequest) input message
@@ -1198,7 +1198,7 @@ class NetappV1alpha1(base_api.BaseApiClient):
     )
 
     def ExecuteOntapPatch(self, request, global_params=None):
-      r"""`ExecuteOntapPatch` dispatches the ONTAP `PATCH` request to the `StoragePool` cluster.
+      r"""`ExecuteOntapPatch` sends the ONTAP `PATCH` request to the `StoragePool` cluster.
 
       Args:
         request: (NetappProjectsLocationsStoragePoolsOntapExecuteOntapPatchRequest) input message
@@ -1225,7 +1225,7 @@ class NetappV1alpha1(base_api.BaseApiClient):
     )
 
     def ExecuteOntapPost(self, request, global_params=None):
-      r"""`ExecuteOntapPost` dispatches the ONTAP `POST` request to the `StoragePool` cluster.
+      r"""`ExecuteOntapPost` sends the ONTAP `POST` request to the `StoragePool` cluster.
 
       Args:
         request: (NetappProjectsLocationsStoragePoolsOntapExecuteOntapPostRequest) input message
@@ -2192,6 +2192,33 @@ class NetappV1alpha1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def GetSplitStatus(self, request, global_params=None):
+      r"""Retrieves the current state, progress, and details of a split operation for a volume. This method is relevant when the volume is a clone. For volumes that are not clones, this method will return an error.
+
+      Args:
+        request: (NetappProjectsLocationsVolumesGetSplitStatusRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SplitStatus) The response message.
+      """
+      config = self.GetMethodConfig('GetSplitStatus')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetSplitStatus.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/volumes/{volumesId}:getSplitStatus',
+        http_method='GET',
+        method_id='netapp.projects.locations.volumes.getSplitStatus',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}:getSplitStatus',
+        request_field='',
+        request_type_name='NetappProjectsLocationsVolumesGetSplitStatusRequest',
+        response_type_name='SplitStatus',
+        supports_download=False,
+    )
+
     def List(self, request, global_params=None):
       r"""Lists Volumes in a given project.
 
@@ -2296,6 +2323,33 @@ class NetappV1alpha1(base_api.BaseApiClient):
         relative_path='v1alpha1/{+name}:revert',
         request_field='revertVolumeRequest',
         request_type_name='NetappProjectsLocationsVolumesRevertRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def StartSplit(self, request, global_params=None):
+      r"""Splits a clone volume from its source volume. This operation will only work for volumes which have clone_details set(clones). For volumes that are not clones, this operation will return an error.
+
+      Args:
+        request: (NetappProjectsLocationsVolumesStartSplitRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('StartSplit')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    StartSplit.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/volumes/{volumesId}:startSplit',
+        http_method='POST',
+        method_id='netapp.projects.locations.volumes.startSplit',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}:startSplit',
+        request_field='startSplitRequest',
+        request_type_name='NetappProjectsLocationsVolumesStartSplitRequest',
         response_type_name='Operation',
         supports_download=False,
     )

@@ -4,8 +4,8 @@
     description: |
       List BigLake Delta Sharing catalogs.
   request:
-    collection: biglake.deltasharing.v1.projects.catalogs
-    api_version: delta_v1
+    collection: biglake.deltasharing.v1alpha.projects.catalogs
+    api_version: delta_v1alpha
     method: list
     modify_request_hooks:
     - googlecloudsdk.command_lib.biglake.delta_sharing:SetParentForList
@@ -14,7 +14,7 @@
       help_text: The project to list catalogs from.
       spec:
         name: project
-        collection: biglake.deltasharing.v1.projects
+        collection: biglake.deltasharing.v1alpha.projects
         attributes:
         - attribute_name: project
           parameter_name: projectsId

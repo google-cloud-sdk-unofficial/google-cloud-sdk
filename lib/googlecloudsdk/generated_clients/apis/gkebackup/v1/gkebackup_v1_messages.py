@@ -127,7 +127,7 @@ class BDRBackupPlanJobLog(_messages.Message):
 
 class BDRBackupRestoreJobLog(_messages.Message):
   r"""Log entry for Backup and Restore Job for resources using BackupPlan
-  based protection. Next Id: 24
+  based protection. Next Id: 25
 
   Fields:
     backupConsistencyTime: Backup consistency time.
@@ -160,6 +160,7 @@ class BDRBackupRestoreJobLog(_messages.Message):
     sourceResourceLocation: Source resource location.
     sourceResourceName: Full resource name of the protected resource.
     startTime: Start time of the job.
+    targetResourceType: The target resource type for restore jobs.
   """
 
   backupConsistencyTime = _messages.StringField(1)
@@ -185,6 +186,7 @@ class BDRBackupRestoreJobLog(_messages.Message):
   sourceResourceLocation = _messages.StringField(21)
   sourceResourceName = _messages.StringField(22)
   startTime = _messages.StringField(23)
+  targetResourceType = _messages.StringField(24)
 
 
 class Backup(_messages.Message):
@@ -1910,9 +1912,8 @@ class GkebackupProjectsLocationsListRequest(_messages.Message):
   r"""A GkebackupProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).

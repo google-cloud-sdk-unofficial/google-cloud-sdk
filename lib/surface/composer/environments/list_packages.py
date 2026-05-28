@@ -25,8 +25,6 @@ from googlecloudsdk.command_lib.composer import resource_args
 from googlecloudsdk.command_lib.composer import util as command_util
 from googlecloudsdk.core import log
 
-import six
-
 DETAILED_HELP = {
     'EXAMPLES':
         """\
@@ -216,8 +214,10 @@ class RunBeta(Run):
     if command_util.IsPrivateIpEnvironment(
         env_obj, release_track=self.ReleaseTrack()):
       return command_util.Error(
-          six.text_type(error) +
-          ' Make sure you have followed https://cloud.google.com/composer/docs/how-to/accessing/airflow-cli#running_commands_on_a_private_ip_environment '
-          'to enable access to your private Cloud Composer environment from '
-          'your machine.')
+          str(error)
+          + ' Make sure you have followed'
+          ' https://cloud.google.com/composer/docs/how-to/accessing/airflow-cli#running_commands_on_a_private_ip_environment'
+          ' to enable access to your private Cloud Composer environment from'
+          ' your machine.'
+      )
     return error

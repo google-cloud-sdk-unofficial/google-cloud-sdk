@@ -15,8 +15,9 @@
 """Resets a Cloud SQL read replica size to its primary storage size."""
 
 
-from apitools.base.py import exceptions as apitools_exceptions
+import http.client
 
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import exceptions
 from googlecloudsdk.api_lib.sql import operations
@@ -25,7 +26,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
-import six.moves.http_client
 
 
 # TODO(b/265881192): remove Hidden label once we are ready to launch.
@@ -114,7 +114,7 @@ class ResetReplicaSize(base.Command):
           'StorageSizeGb': changed_instance_resource.settings.dataDiskSizeGb,
       }
     except apitools_exceptions.HttpError as error:
-      if error.status_code == six.moves.http_client.FORBIDDEN:
+      if error.status_code == http.client.FORBIDDEN:
         raise exceptions.ResourceNotFoundError(
             "There's no instance found at {} or you're not authorized to "
             'access it.'.format(instance_ref.RelativeName()))

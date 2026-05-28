@@ -588,6 +588,7 @@ def AddDatabaseVersion(
       'MYSQL_5_7',
       'MYSQL_8_0',
       'MYSQL_8_4',
+      'MYSQL_9_7',
       'POSTGRES_9_6',
       'POSTGRES_10',
       'POSTGRES_11',
@@ -1434,11 +1435,13 @@ def AddZonesPrimarySecondary(parser, help_text, hidden=False):
   )
 
 
-def AddRegion(parser, hidden=False, specify_default_region=True):
+def AddRegion(
+    parser, hidden=False, specify_default_region=True, required=False
+):
   parser.add_argument(
       '--region',
-      required=False,
-      default='us-central' if specify_default_region else None,
+      required=required,
+      default='us-central' if specify_default_region and not required else None,
       help=(
           'Regional location (e.g. asia-east1, us-east1). See the full '
           'list of regions at '
@@ -1503,6 +1506,72 @@ def AddOperationArgument(parser):
   )
 
 
+# Blue-green deployment flags
+
+
+def AddDeploymentId(parser):
+  """Add the deployment ID argument to the parser."""
+  parser.add_argument(
+      'deployment',
+      help='The ID of the blue-green deployment.',
+  )
+
+
+def AddSourceInstance(parser):
+  """Add the --source-instance flag to the parser."""
+  parser.add_argument(
+      '--source-instance',
+      required=True,
+      completer=InstanceCompleter,
+      help='Cloud SQL instance to be used as source for the blue-green deployment.',
+  )
+
+
+def AddDeploymentDescription(parser):
+  """Add the --description flag to the parser."""
+  parser.add_argument(
+      '--description',
+      required=False,
+      help='User-provided description for the blue-green deployment.',
+  )
+
+
+def AddTargetDatabaseVersion(parser):
+  """Add the --target-database-version flag to the parser."""
+  parser.add_argument(
+      '--target-database-version',
+      required=False,
+      help='Database version for the target instance, for major version upgrade.',
+  )
+
+
+def AddDeleteOldSource(parser):
+  """Add the --delete-old-source flag to the parser."""
+  parser.add_argument(
+      '--delete-old-source',
+      action='store_true',
+      help=(
+          'Delete the old source instance. This flag is only applicable when'
+          ' deleting a deployment after a switchover has been successfully'
+          ' completed.\n\nIf deleting a deployment before switchover or after a'
+          ' failed switchover, the target instance will be deleted by default,'
+          ' and this flag will be ignored.'
+      ),
+  )
+
+
+def AddShowConfigDiff(parser):
+  """Add the --show-config-diff flag to the parser."""
+  parser.add_argument(
+      '--show-config-diff',
+      action='store_true',
+      help=(
+          'Show the configuration difference between source and target '
+          'instances.'
+      ),
+  )
+
+
 # Instance export / import flags.
 
 
@@ -1531,13 +1600,26 @@ def AddOffloadArgument(parser):
 
 def AddParallelArgument(parser, operation):
   """Add the 'parallel' argument to the parser."""
+  help_text = (
+      'Perform a parallel {operation}. This flag is only applicable to'
+      ' MySQL and Postgres.'
+  ).format(operation=operation)
+  if operation == 'export':
+    help_text += (
+        ' When this flag is used, the URI specifies a folder in the'
+        ' Cloud Storage bucket. After the parallel export completes, you will'
+        ' have multiple files in that folder.'
+    )
+  elif operation == 'import':
+    help_text += (
+        ' When this flag is used, the URI specifies a folder in the'
+        ' Cloud Storage bucket where the multiple files to be imported are'
+        ' located.'
+    )
   parser.add_argument(
       '--parallel',
       action='store_true',
-      help=(
-          'Perform a parallel {operation}. This flag is only applicable to'
-          ' MySQL and Postgres.'
-      ).format(operation=operation),
+      help=help_text,
   )
 
 

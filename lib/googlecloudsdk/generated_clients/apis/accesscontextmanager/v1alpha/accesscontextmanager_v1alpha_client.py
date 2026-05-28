@@ -564,7 +564,7 @@ class AccesscontextmanagerV1alpha(base_api.BaseApiClient):
     )
 
     def ReplaceAll(self, request, global_params=None):
-      r"""Replace all existing service perimeters in an access policy with the service perimeters provided. This is done atomically. The long-running operation from this RPC has a successful status after all replacements propagate to long-lasting storage. Replacements containing errors result in an error response for the first error encountered. Upon an error, replacement are cancelled and existing service perimeters are not affected. The Operation.response field contains ReplaceServicePerimetersResponse.
+      r"""Replace all existing service perimeters in an access policy with the service perimeters provided. This is done atomically. The long-running operation from this RPC has a successful status after all replacements propagate to long-lasting storage. Replacements containing errors result in an error response for the first error encountered. Upon an error, replacements are cancelled and existing service perimeters are not affected. The Operation.response field contains ReplaceServicePerimetersResponse.
 
       Args:
         request: (AccesscontextmanagerAccessPoliciesServicePerimetersReplaceAllRequest) input message
@@ -1044,7 +1044,7 @@ class AccesscontextmanagerV1alpha(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists all supported permissions in VPCSC Granular Controls.
+      r"""Lists all supported permissions in VPC Service Controls ingress and egress rules for Granular Controls.
 
       Args:
         request: (AccesscontextmanagerPermissionsListRequest) input message

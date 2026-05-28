@@ -485,6 +485,21 @@ class ComposerProjectsLocationsEnvironmentsGetRequest(_messages.Message):
   name = _messages.StringField(1, required=True)
 
 
+class ComposerProjectsLocationsEnvironmentsHibernateRequest(_messages.Message):
+  r"""A ComposerProjectsLocationsEnvironmentsHibernateRequest object.
+
+  Fields:
+    hibernateEnvironmentRequest: A HibernateEnvironmentRequest resource to be
+      passed as the request body.
+    name: Required. The resource name of the environment to hibernate, in the
+      form:
+      "projects/{project}/locations/{location}/environments/{environment}"
+  """
+
+  hibernateEnvironmentRequest = _messages.MessageField('HibernateEnvironmentRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class ComposerProjectsLocationsEnvironmentsListImportErrorsRequest(_messages.Message):
   r"""A ComposerProjectsLocationsEnvironmentsListImportErrorsRequest object.
 
@@ -689,6 +704,21 @@ class ComposerProjectsLocationsEnvironmentsRestartWebServerRequest(_messages.Mes
 
   name = _messages.StringField(1, required=True)
   restartWebServerRequest = _messages.MessageField('RestartWebServerRequest', 2)
+
+
+class ComposerProjectsLocationsEnvironmentsResumeRequest(_messages.Message):
+  r"""A ComposerProjectsLocationsEnvironmentsResumeRequest object.
+
+  Fields:
+    name: Required. The resource name of the environment to resume, in the
+      form:
+      "projects/{project}/locations/{location}/environments/{environment}"
+    resumeEnvironmentRequest: A ResumeEnvironmentRequest resource to be passed
+      as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  resumeEnvironmentRequest = _messages.MessageField('ResumeEnvironmentRequest', 2)
 
 
 class ComposerProjectsLocationsEnvironmentsSaveSnapshotRequest(_messages.Message):
@@ -1437,6 +1467,8 @@ class Environment(_messages.Message):
         for use.
       UPDATING: The environment is being updated. It remains usable but cannot
         receive additional update requests or be deleted at this time.
+      HIBERNATED: The environment is currently hibernated. It does not run any
+        DAGs.
       DELETING: The environment is undergoing deletion. It cannot be used.
       ERROR: The environment has encountered an error and cannot be used.
     """
@@ -1444,8 +1476,9 @@ class Environment(_messages.Message):
     CREATING = 1
     RUNNING = 2
     UPDATING = 3
-    DELETING = 4
-    ERROR = 5
+    HIBERNATED = 4
+    DELETING = 5
+    ERROR = 6
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
@@ -1554,6 +1587,9 @@ class EnvironmentConfig(_messages.Message):
     resilienceMode: Optional. Resilience mode of the Cloud Composer
       Environment. This field is supported for Cloud Composer environments in
       versions composer-2.2.0-airflow-*.*.* and newer.
+    scheduledHibernationConfig: Optional. The configuration for hibernating
+      and resuming the environment on a schedule. Supported for environments
+      in the development mode.
     softwareConfig: Optional. The configuration settings for software inside
       the environment.
     webServerConfig: Optional. The configuration settings for the Airflow web
@@ -1616,10 +1652,11 @@ class EnvironmentConfig(_messages.Message):
   privateEnvironmentConfig = _messages.MessageField('PrivateEnvironmentConfig', 13)
   recoveryConfig = _messages.MessageField('RecoveryConfig', 14)
   resilienceMode = _messages.EnumField('ResilienceModeValueValuesEnum', 15)
-  softwareConfig = _messages.MessageField('SoftwareConfig', 16)
-  webServerConfig = _messages.MessageField('WebServerConfig', 17)
-  webServerNetworkAccessControl = _messages.MessageField('WebServerNetworkAccessControl', 18)
-  workloadsConfig = _messages.MessageField('WorkloadsConfig', 19)
+  scheduledHibernationConfig = _messages.MessageField('ScheduledHibernationConfig', 16)
+  softwareConfig = _messages.MessageField('SoftwareConfig', 17)
+  webServerConfig = _messages.MessageField('WebServerConfig', 18)
+  webServerNetworkAccessControl = _messages.MessageField('WebServerNetworkAccessControl', 19)
+  workloadsConfig = _messages.MessageField('WorkloadsConfig', 20)
 
 
 class ExecuteAirflowCommandRequest(_messages.Message):
@@ -1700,6 +1737,10 @@ class FilestoreConfig(_messages.Message):
 
   instance = _messages.StringField(1)
   path = _messages.StringField(2)
+
+
+class HibernateEnvironmentRequest(_messages.Message):
+  r"""Request to hibernate a Composer environment."""
 
 
 class IPAllocationPolicy(_messages.Message):
@@ -2389,6 +2430,8 @@ class OperationMetadata(_messages.Message):
       DATABASE_FAILOVER: Triggers failover of environment's Cloud SQL instance
         (only for highly resilient environments).
       MIGRATE: Migrates resource to a new major version.
+      HIBERNATE: Hibernates a resource.
+      RESUME: Resumes a resource.
     """
     TYPE_UNSPECIFIED = 0
     CREATE = 1
@@ -2399,6 +2442,8 @@ class OperationMetadata(_messages.Message):
     LOAD_SNAPSHOT = 6
     DATABASE_FAILOVER = 7
     MIGRATE = 8
+    HIBERNATE = 9
+    RESUME = 10
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. The current operation state.
@@ -2586,6 +2631,10 @@ class RestartWebServerRequest(_messages.Message):
   r"""Restart Airflow web server."""
 
 
+class ResumeEnvironmentRequest(_messages.Message):
+  r"""Request to resume a Composer environment."""
+
+
 class SaveSnapshotRequest(_messages.Message):
   r"""Request to create a snapshot of a Cloud Composer environment.
 
@@ -2608,6 +2657,18 @@ class SaveSnapshotResponse(_messages.Message):
   """
 
   snapshotPath = _messages.StringField(1)
+
+
+class ScheduledHibernationConfig(_messages.Message):
+  r"""The configuration for hibernating and resuming the environment on a
+  schedule. Supported for environments in the development mode.
+
+  Fields:
+    enabled: Optional. Whether hibernating and resuming the environment on a
+      schedule is enabled.
+  """
+
+  enabled = _messages.BooleanField(1)
 
 
 class ScheduledSnapshotsConfig(_messages.Message):
@@ -3493,6 +3554,8 @@ class UserWorkloadsSecret(_messages.Message):
     name: Identifier. The resource name of the Secret, in the form: "projects/
       {projectId}/locations/{locationId}/environments/{environmentId}/userWork
       loadsSecrets/{userWorkloadsSecretId}"
+    type: Optional. The "type" field of Kubernetes Secret. For details see:
+      https://kubernetes.io/docs/concepts/configuration/secret/#secret-types
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -3527,6 +3590,7 @@ class UserWorkloadsSecret(_messages.Message):
 
   data = _messages.MessageField('DataValue', 1)
   name = _messages.StringField(2)
+  type = _messages.StringField(3)
 
 
 class WebServerConfig(_messages.Message):
