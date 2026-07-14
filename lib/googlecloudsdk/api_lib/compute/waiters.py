@@ -279,26 +279,28 @@ class OperationData(object):
     resource_params = self.resource_service.GetMethodConfig(
         'Get'
     ).ordered_params
-    # b/394563040 - Temporary fix for issue where InvalidUserInputError is
-    # printed after update operation completes for wireGroups
-    if (
-        'crossSiteNetwork' in resource_params
-        and 'global' not in resource_params
-    ):
-      resource_params.insert(1, 'global')
-    name_field = resource_params[-1]
-    if len(resource_params) == 4:
-      # This is a nested resource, which means it has four params
-      # used to locate it: project, scope (zone/region/global),
-      # parent_resource_name, and resource_name. Top level resources only have
-      # three such params: project, scope (zone/region/global), resource_name.
 
+    if len(resource_params) >= 2:
+      _, *middle_fields, name_field = resource_params
+    else:
+      project_field, = resource_params
+      name_field = project_field
+      middle_fields = []
+
+    parent_resource_field = None
+    if len(middle_fields) == 2:
+      _, parent_resource_field = middle_fields
+    elif len(middle_fields) == 1:
+      only_field, = middle_fields
+      if only_field not in ('zone', 'region', 'global'):
+        parent_resource_field = only_field
+
+    if parent_resource_field:
       # TODO: b/313849714 - Remove the if block once the bug is fixed.
       if self.resize_request_name:
         target_link = (
             target_link + '/resizeRequests/' + self.resize_request_name
         )
-      parent_resource_field = resource_params[2]
       parent_resource_name = target_link.split('/')[-3]
 
       # Create the parent resource name for multi-nested resources.

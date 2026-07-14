@@ -20,12 +20,12 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Describe goldengateConnections
-    description: Describe a goldengateConnection
+    brief: Get details of a GoldengateConnection.
+    description: Get details of a GoldengateConnection.
     examples: |-
-      To describe the goldengateConnection, run:
+      To get a GoldengateConnection with id `my-connection` in the location `us-east4`, run:
 
-          $ {command}
+        $ {command} my-connection --location=us-east4
   arguments:
     params:
     - help_text: |-

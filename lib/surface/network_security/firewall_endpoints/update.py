@@ -77,6 +77,16 @@ class Update(base.UpdateCommand):
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
     labels_util.AddUpdateLabelsFlags(parser)
+    if cls.ReleaseTrack() in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
+      activation_flags.AddEnableWildfireArg(parser)
+      activation_flags.AddWildfireRegionArg(parser)
+      activation_flags.AddContentCloudRegionArg(parser)
+      activation_flags.AddWildfireLookupTimeoutArg(parser)
+      activation_flags.AddWildfireLookupActionArg(parser)
+      activation_flags.AddWildfireAnalysisTimeoutArg(parser)
+      activation_flags.AddWildfireAnalysisActionArg(parser)
+      activation_flags.AddEnableWildfireAnalysisLoggingArg(parser)
+      activation_flags.AddBlockPartialHttpArg(parser)
 
   def Run(self, args):
     result = args.CONCEPTS.firewall_endpoint.Parse()
@@ -225,19 +235,6 @@ class Update(base.UpdateCommand):
 @base.DefaultUniverseOnly
 class UpdateAlpha(Update):
   """Update a Firewall Plus endpoint."""
-
-  @classmethod
-  def Args(cls, parser):
-    super(UpdateAlpha, cls).Args(parser)
-    activation_flags.AddEnableWildfireArg(parser)
-    activation_flags.AddWildfireRegionArg(parser)
-    activation_flags.AddContentCloudRegionArg(parser)
-    activation_flags.AddWildfireLookupTimeoutArg(parser)
-    activation_flags.AddWildfireLookupActionArg(parser)
-    activation_flags.AddWildfireAnalysisTimeoutArg(parser)
-    activation_flags.AddWildfireAnalysisActionArg(parser)
-    activation_flags.AddEnableWildfireAnalysisLoggingArg(parser)
-    activation_flags.AddBlockPartialHttpArg(parser)
 
 
 Update.detailed_help = DETAILED_HELP

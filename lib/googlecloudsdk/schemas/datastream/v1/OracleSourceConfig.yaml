@@ -31,15 +31,17 @@ properties:
   dropLargeObjects:
     description: Drop large object values.
     type: droplargeobjects
+    $ref: DropLargeObjects.yaml
   excludeObjects:
-    description: Oracle objects to exclude from the stream.
+    description: The Oracle objects to exclude from the stream.
     $ref: OracleRdbms.yaml
   includeObjects:
-    description: Oracle objects to include in the stream.
+    description: The Oracle objects to include in the stream.
     $ref: OracleRdbms.yaml
   logMiner:
     description: Use LogMiner.
     type: logminer
+    $ref: LogMiner.yaml
   maxConcurrentBackfillTasks:
     description: |-
       Maximum number of concurrent backfill tasks. The number should be non-

@@ -850,6 +850,36 @@ class EncryptVolumesRequest(_messages.Message):
 
 
 
+class EndTrialRequest(_messages.Message):
+  r"""EndTrialRequest ends a Trial.
+
+  Enums:
+    ExitReasonValueValuesEnum: Required. The reason for exiting the trial.
+
+  Fields:
+    exitReason: Required. The reason for exiting the trial.
+    optOutReasons: Optional. Contains the reasons for opting out of the free
+      trial if exit reason is OPT_OUT.
+  """
+
+  class ExitReasonValueValuesEnum(_messages.Enum):
+    r"""Required. The reason for exiting the trial.
+
+    Values:
+      EXIT_REASON_UNSPECIFIED: Exit reason is unspecified.
+      EXPIRED: Trial expired after 30 days.
+      UPGRADED: Trial was upgraded to a paid account.
+      OPT_OUT: User opted out of the trial.
+    """
+    EXIT_REASON_UNSPECIFIED = 0
+    EXPIRED = 1
+    UPGRADED = 2
+    OPT_OUT = 3
+
+  exitReason = _messages.EnumField('ExitReasonValueValuesEnum', 1)
+  optOutReasons = _messages.StringField(2, repeated=True)
+
+
 class EstablishPeeringRequest(_messages.Message):
   r"""EstablishPeeringRequest establishes cluster and svm peerings between the
   source and the destination replications.
@@ -2259,6 +2289,19 @@ class NetappProjectsLocationsGetRequest(_messages.Message):
   name = _messages.StringField(1, required=True)
 
 
+class NetappProjectsLocationsGetTrialRequest(_messages.Message):
+  r"""A NetappProjectsLocationsGetTrialRequest object.
+
+  Fields:
+    name: Required. Name of the trial. Format:
+      projects/{project}/locations/{location}/trial location can be any valid
+      cloud region in which Google Cloud NetApp Volumes is available. It will
+      get the same global trial resource irrespective of the location.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
 class NetappProjectsLocationsHostGroupsCreateRequest(_messages.Message):
   r"""A NetappProjectsLocationsHostGroupsCreateRequest object.
 
@@ -2734,6 +2777,35 @@ class NetappProjectsLocationsStoragePoolsValidateDirectoryServiceRequest(_messag
 
   name = _messages.StringField(1, required=True)
   validateDirectoryServiceRequest = _messages.MessageField('ValidateDirectoryServiceRequest', 2)
+
+
+class NetappProjectsLocationsTrialEndRequest(_messages.Message):
+  r"""A NetappProjectsLocationsTrialEndRequest object.
+
+  Fields:
+    endTrialRequest: A EndTrialRequest resource to be passed as the request
+      body.
+    name: Required. Name of the trial. Format:
+      projects/{project}/locations/{location}/trial location can be any valid
+      cloud region in which Google Cloud NetApp Volumes is available. It will
+      get the same global trial resource irrespective of the location.
+  """
+
+  endTrialRequest = _messages.MessageField('EndTrialRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetappProjectsLocationsTrialSubscribeRequest(_messages.Message):
+  r"""A NetappProjectsLocationsTrialSubscribeRequest object.
+
+  Fields:
+    parent: Required. Parent value.
+    subscribeTrialRequest: A SubscribeTrialRequest resource to be passed as
+      the request body.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  subscribeTrialRequest = _messages.MessageField('SubscribeTrialRequest', 2)
 
 
 class NetappProjectsLocationsVolumesCreateRequest(_messages.Message):
@@ -4371,6 +4443,10 @@ class StoragePool(_messages.Message):
   zone = _messages.StringField(36)
 
 
+class SubscribeTrialRequest(_messages.Message):
+  r"""SubscribeTrialRequest subscribes a Trial."""
+
+
 class SwitchActiveReplicaZoneRequest(_messages.Message):
   r"""SwitchActiveReplicaZoneRequest switch the active/replica zone for a
   regional storagePool.
@@ -4447,6 +4523,70 @@ class TransferStats(_messages.Message):
   totalTransferDuration = _messages.StringField(6)
   transferBytes = _messages.IntegerField(7)
   updateTime = _messages.StringField(8)
+
+
+class Trial(_messages.Message):
+  r"""Trial represents a 30-day free trial for Google Cloud NetApp Volumes. It
+  is global in scope for a project. It is not bound to a location, but a valid
+  cloud region in which Google Cloud NetApp Volumes is available is required
+  to subscribe to the trial.
+
+  Enums:
+    ExitReasonValueValuesEnum: Output only. The reason for exiting the trial.
+    StateValueValuesEnum: Output only. The State of the trial.
+
+  Fields:
+    endTime: Output only. The time when the trial ends.
+    exitReason: Output only. The reason for exiting the trial.
+    name: Identifier. The resource name of the trial. Format:
+      projects/{project}/locations/{location}/trial Irrespective of the
+      location, the trial is global in scope for a project. location can be
+      any valid cloud region in which Google Cloud NetApp Volumes is
+      available.
+    optOutReasons: Output only. Contains the reasons for opting out of the
+      free trial if exit reason is OPT_OUT.
+    startTime: Output only. The time when the trial started.
+    state: Output only. The State of the trial.
+  """
+
+  class ExitReasonValueValuesEnum(_messages.Enum):
+    r"""Output only. The reason for exiting the trial.
+
+    Values:
+      EXIT_REASON_UNSPECIFIED: Exit reason is unspecified.
+      EXPIRED: Trial expired after 30 days.
+      UPGRADED: Trial was upgraded to a paid account.
+      OPT_OUT: User opted out of the trial.
+    """
+    EXIT_REASON_UNSPECIFIED = 0
+    EXPIRED = 1
+    UPGRADED = 2
+    OPT_OUT = 3
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The State of the trial.
+
+    Values:
+      STATE_UNSPECIFIED: Default value. Unspecified state.
+      ACTIVE: Trial is active. Computed as start_time <= current_time <=
+        end_time.
+      INACTIVE: Trial is inactive. Computed as current_time < start_time or
+        current_time > end_time.
+      ELIGIBLE: Project is eligible for a new free trial.
+      INELIGIBLE: Project is ineligible for a new free trial.
+    """
+    STATE_UNSPECIFIED = 0
+    ACTIVE = 1
+    INACTIVE = 2
+    ELIGIBLE = 3
+    INELIGIBLE = 4
+
+  endTime = _messages.StringField(1)
+  exitReason = _messages.EnumField('ExitReasonValueValuesEnum', 2)
+  name = _messages.StringField(3)
+  optOutReasons = _messages.StringField(4, repeated=True)
+  startTime = _messages.StringField(5)
+  state = _messages.EnumField('StateValueValuesEnum', 6)
 
 
 class UpdateBackupConfigRequest(_messages.Message):

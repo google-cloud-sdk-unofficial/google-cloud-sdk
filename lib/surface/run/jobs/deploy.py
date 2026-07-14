@@ -210,7 +210,7 @@ class Deploy(base.Command):
     if build_from_source:
       required_apis.append('artifactregistry.googleapis.com')
       required_apis.append('cloudbuild.googleapis.com')
-    already_activated_services = api_enabler.check_and_enable_apis(
+    skip_activation_prompt = api_enabler.check_and_enable_apis(
         properties.VALUES.core.project.Get(), required_apis
     )
     job_ref = args.CONCEPTS.job.Parse()
@@ -237,7 +237,7 @@ class Deploy(base.Command):
           repo_id='cloud-run-source-deploy',
       )
       if artifact_registry.ShouldCreateRepository(
-          ar_repo, skip_activation_prompt=already_activated_services
+          ar_repo, skip_activation_prompt=skip_activation_prompt
       ):
         repo_to_create = ar_repo
       # The image is built with latest tag. After build, the image digest
@@ -319,7 +319,7 @@ class Deploy(base.Command):
               build_source=source,
               repo_to_create=repo_to_create,
               prefetch=job_obj,
-              already_activated_services=already_activated_services,
+              skip_activation_prompt=skip_activation_prompt,
           )
           execution_ = None
           if execute_now:

@@ -237,13 +237,10 @@ class Collections(enum.Enum):
   )
   PROJECTS_LOCATIONS_GOLDENGATECONNECTIONTYPES = (
       'projects.locations.goldengateConnectionTypes',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'goldengateConnectionTypes/{goldengateConnectionTypesId}',
-      },
-      ['name'],
+      'projects/{projectsId}/locations/{locationsId}/'
+      'goldengateConnectionTypes/{goldengateConnectionTypesId}',
+      {},
+      ['projectsId', 'locationsId', 'goldengateConnectionTypesId'],
       True
   )
   PROJECTS_LOCATIONS_GOLDENGATECONNECTIONS = (
@@ -259,36 +256,26 @@ class Collections(enum.Enum):
   )
   PROJECTS_LOCATIONS_GOLDENGATEDEPLOYMENTENVIRONMENTS = (
       'projects.locations.goldengateDeploymentEnvironments',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'goldengateDeploymentEnvironments/'
-              '{goldengateDeploymentEnvironmentsId}',
-      },
-      ['name'],
+      'projects/{projectsId}/locations/{locationsId}/'
+      'goldengateDeploymentEnvironments/{goldengateDeploymentEnvironmentsId}',
+      {},
+      ['projectsId', 'locationsId', 'goldengateDeploymentEnvironmentsId'],
       True
   )
   PROJECTS_LOCATIONS_GOLDENGATEDEPLOYMENTTYPES = (
       'projects.locations.goldengateDeploymentTypes',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'goldengateDeploymentTypes/{goldengateDeploymentTypesId}',
-      },
-      ['name'],
+      'projects/{projectsId}/locations/{locationsId}/'
+      'goldengateDeploymentTypes/{goldengateDeploymentTypesId}',
+      {},
+      ['projectsId', 'locationsId', 'goldengateDeploymentTypesId'],
       True
   )
   PROJECTS_LOCATIONS_GOLDENGATEDEPLOYMENTVERSIONS = (
       'projects.locations.goldengateDeploymentVersions',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'goldengateDeploymentVersions/{goldengateDeploymentVersionsId}',
-      },
-      ['name'],
+      'projects/{projectsId}/locations/{locationsId}/'
+      'goldengateDeploymentVersions/{goldengateDeploymentVersionsId}',
+      {},
+      ['projectsId', 'locationsId', 'goldengateDeploymentVersionsId'],
       True
   )
   PROJECTS_LOCATIONS_GOLDENGATEDEPLOYMENTS = (

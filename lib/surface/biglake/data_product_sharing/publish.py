@@ -81,16 +81,19 @@ class PublishDataProduct(base.Command):
       iceberg_catalog_ref = messages.IcebergCatalogReference(
           catalog=args.CONCEPTS.iceberg_catalog.Parse().RelativeName()
       )
+    data_product_ref = None
+    if args.data_product:
+      data_product_ref = messages.DataProductReference(
+          dataProduct=args.data_product
+      )
     return client.dataproductsharing_v1alpha_projects_catalogs.PublishDataProduct(
         messages.BiglakeDataproductsharingV1alphaProjectsCatalogsPublishDataProductRequest(
             connectionCatalog=args.CONCEPTS.connection_catalog.Parse().RelativeName(),
             publishDataProductRequest=messages.PublishDataProductRequest(
                 share=args.share,
-                dataProduct=messages.DataProductReference(
-                    dataProduct=args.data_product
-                ),
+                dataProduct=data_product_ref,
                 icebergCatalog=iceberg_catalog_ref,
+                sapFederatedIdentity=args.sap_federated_identity,
             ),
         )
     )
-

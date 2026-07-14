@@ -19,12 +19,12 @@
   - ALPHA
   auto_generated: true
   help_text:
-    brief: Update authProviders
-    description: Update an authProvider
+    brief: Update an auth provider.
+    description: Update the parameters of a single auth provider.
     examples: |-
-      To update an auth provider named 'my-auth-provider' in location 'global' and project 'my-project', run:
+      To update the description of auth provider 'my-auth-provider' in location 'us-central1' and project 'my-project', run:
 
-          $ {command} my-auth-provider --location=global --project=my-project
+        $ {command} my-auth-provider --location=us-central1 --project=my-project --description="New description"
   arguments:
     params:
     - help_text: |-

@@ -372,6 +372,24 @@ class ServiceScaling(proto.Message):
     )
 
 
+class CpuScaling(proto.Message):
+    r"""The CPU scaling settings for the worker pool.
+
+    Attributes:
+        utilization (float):
+            Optional. Determines a threshold for CPU utilization
+            before scaling begins. Accepted values are between ``0.1`` and ``0.95``
+            (inclusive) or ``0.0`` to disable CPU utilization as threshold for
+            scaling.
+    """
+
+    utilization: float = proto.Field(
+        proto.FLOAT,
+        number=1,
+        optional=True,
+    )
+
+
 class WorkerPoolScaling(proto.Message):
     r"""Worker pool scaling settings.
 
@@ -453,6 +471,11 @@ class WorkerPoolScaling(proto.Message):
         proto.INT32,
         number=6,
         optional=True,
+    )
+    cpu_scaling: CpuScaling = proto.Field(
+        proto.MESSAGE,
+        number=8,
+        message=CpuScaling,
     )
 
 

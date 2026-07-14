@@ -45,6 +45,23 @@ class AssuredworkloadsOrganizationsLocationsOperationsListRequest(_messages.Mess
   returnPartialSuccess = _messages.BooleanField(5)
 
 
+class AssuredworkloadsOrganizationsLocationsViolationsBatchAcknowledgeViolationsRequest(_messages.Message):
+  r"""A AssuredworkloadsOrganizationsLocationsViolationsBatchAcknowledgeViolat
+  ionsRequest object.
+
+  Fields:
+    googleCloudAssuredworkloadsV1beta1BatchAcknowledgeViolationsRequest: A
+      GoogleCloudAssuredworkloadsV1beta1BatchAcknowledgeViolationsRequest
+      resource to be passed as the request body.
+    parent: Optional. The parent resource shared by all violations being
+      acknowledged. Format:
+      organizations/{organization}/locations/{location}/workloads/{workload}
+  """
+
+  googleCloudAssuredworkloadsV1beta1BatchAcknowledgeViolationsRequest = _messages.MessageField('GoogleCloudAssuredworkloadsV1beta1BatchAcknowledgeViolationsRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
 class AssuredworkloadsOrganizationsLocationsWorkloadsAnalyzeWorkloadMoveRequest(_messages.Message):
   r"""A
   AssuredworkloadsOrganizationsLocationsWorkloadsAnalyzeWorkloadMoveRequest
@@ -299,6 +316,7 @@ class AssuredworkloadsOrganizationsLocationsWorkloadsViolationsListRequest(_mess
       properties.
     interval_endTime: The end of the time window.
     interval_startTime: The start of the time window.
+    orderBy: Optional. Actionable sorting delegation.
     pageSize: Optional. Page size.
     pageToken: Optional. Page token returned from previous request.
     parent: Required. The Workload name. Format
@@ -308,9 +326,28 @@ class AssuredworkloadsOrganizationsLocationsWorkloadsViolationsListRequest(_mess
   filter = _messages.StringField(1)
   interval_endTime = _messages.StringField(2)
   interval_startTime = _messages.StringField(3)
-  pageSize = _messages.IntegerField(4, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(5)
-  parent = _messages.StringField(6, required=True)
+  orderBy = _messages.StringField(4)
+  pageSize = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(6)
+  parent = _messages.StringField(7, required=True)
+
+
+class AssuredworkloadsOrganizationsViolationsBatchAcknowledgeViolationsRequest(_messages.Message):
+  r"""A
+  AssuredworkloadsOrganizationsViolationsBatchAcknowledgeViolationsRequest
+  object.
+
+  Fields:
+    googleCloudAssuredworkloadsV1beta1BatchAcknowledgeViolationsRequest: A
+      GoogleCloudAssuredworkloadsV1beta1BatchAcknowledgeViolationsRequest
+      resource to be passed as the request body.
+    parent: Optional. The parent resource shared by all violations being
+      acknowledged. Format:
+      organizations/{organization}/locations/{location}/workloads/{workload}
+  """
+
+  googleCloudAssuredworkloadsV1beta1BatchAcknowledgeViolationsRequest = _messages.MessageField('GoogleCloudAssuredworkloadsV1beta1BatchAcknowledgeViolationsRequest', 1)
+  parent = _messages.StringField(2, required=True)
 
 
 class GoogleCloudAssuredworkloadsV1beta1AcknowledgeViolationRequest(_messages.Message):
@@ -721,11 +758,13 @@ class GoogleCloudAssuredworkloadsV1beta1ListViolationsResponse(_messages.Message
   Fields:
     nextPageToken: The next page token. Returns empty if reached the last
       page.
+    totalSize: The total number of violations.
     violations: List of Violations under a Workload.
   """
 
   nextPageToken = _messages.StringField(1)
-  violations = _messages.MessageField('GoogleCloudAssuredworkloadsV1beta1Violation', 2, repeated=True)
+  totalSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  violations = _messages.MessageField('GoogleCloudAssuredworkloadsV1beta1Violation', 3, repeated=True)
 
 
 class GoogleCloudAssuredworkloadsV1beta1ListWorkloadUpdatesResponse(_messages.Message):

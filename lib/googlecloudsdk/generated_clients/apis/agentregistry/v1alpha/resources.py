@@ -107,6 +107,21 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_SKILLS = (
+      'projects.locations.skills',
+      'projects/{projectsId}/locations/{locationsId}/skills/{skillsId}',
+      {},
+      ['projectsId', 'locationsId', 'skillsId'],
+      True
+  )
+  PROJECTS_LOCATIONS_SKILLS_REVISIONS = (
+      'projects.locations.skills.revisions',
+      'projects/{projectsId}/locations/{locationsId}/skills/{skillsId}/'
+      'revisions/{revisionsId}',
+      {},
+      ['projectsId', 'locationsId', 'skillsId', 'revisionsId'],
+      True
+  )
 
   def __init__(self, collection_name, path, flat_paths, params,
                enable_uri_parsing):

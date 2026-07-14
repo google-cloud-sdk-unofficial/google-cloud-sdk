@@ -2031,6 +2031,7 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1BuildOptions(_messages.Message)
       E2_HIGHCPU_8: Highcpu e2 machine with 8 CPUs.
       E2_HIGHCPU_32: Highcpu e2 machine with 32 CPUs.
       E2_MEDIUM: E2 machine with 1 CPU.
+      E2_STANDARD_2: E2 machine with 2 CPUs.
     """
     UNSPECIFIED = 0
     N1_HIGHCPU_8 = 1
@@ -2038,6 +2039,7 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1BuildOptions(_messages.Message)
     E2_HIGHCPU_8 = 3
     E2_HIGHCPU_32 = 4
     E2_MEDIUM = 5
+    E2_STANDARD_2 = 6
 
   class RequestedVerifyOptionValueValuesEnum(_messages.Enum):
     r"""Requested verifiability options.

@@ -265,13 +265,15 @@ def CheckGatewayApiEnablement(project_id, service_name):
     api_exceptions.HttpException: API not enabled error if the user chooses to
       not enable the API.
   """
-  if not enable_api.IsServiceEnabled(project_id, service_name):
+  # Ensure we use canonical service name (non-mTLS) for enablement check.
+  canonical_service_name = service_name.replace('.mtls.', '.')
+  if not enable_api.IsServiceEnabled(project_id, canonical_service_name):
     try:
       apis.PromptToEnableApi(
           project_id,
-          service_name,
+          canonical_service_name,
           memberships_errors.ServiceNotEnabledError(
-              'Connect Gateway API', service_name, project_id
+              'Connect Gateway API', canonical_service_name, project_id
           ),
       )
     except apis.apitools_exceptions.RequestError:

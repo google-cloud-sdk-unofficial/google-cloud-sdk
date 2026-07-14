@@ -25,6 +25,7 @@ from googlecloudsdk.core import resources
 
 _API_VERSION_FOR_TRACK = {
     base.ReleaseTrack.ALPHA: 'v1alpha1',
+    base.ReleaseTrack.BETA: 'v1beta1',
 }
 ORG_OPERATIONS_COLLECTION = 'networksecurity.organizations.locations.operations'
 

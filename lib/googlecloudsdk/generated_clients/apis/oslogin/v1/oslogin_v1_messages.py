@@ -269,6 +269,12 @@ class SignSshPublicKeyRequest(_messages.Message):
     appEngineInstance: The App Engine instance to sign the SSH public key for.
       Expected format:
       apps/{app}/services/{service}/versions/{version}/instances/{instance}
+    cloudRunResource: Optional. The Cloud Run resource to sign the SSH public
+      key for. Expected formats: -
+      `projects/{project}/locations/{location}/services/{service}` -
+      `projects/{project}/locations/{location}/workerPools/{worker_pool}` -
+      `projects/{project}/locations/{location}/jobs/{job}` -
+      `projects/{project}/locations/{location}/instances/{instance}`
     computeInstance: The Compute instance to sign the SSH public key for.
       Expected format:
       projects/{project}/zones/{zone}/instances/{numeric_instance_id}
@@ -280,9 +286,10 @@ class SignSshPublicKeyRequest(_messages.Message):
   """
 
   appEngineInstance = _messages.StringField(1)
-  computeInstance = _messages.StringField(2)
-  serviceAccount = _messages.StringField(3)
-  sshPublicKey = _messages.StringField(4)
+  cloudRunResource = _messages.StringField(2)
+  computeInstance = _messages.StringField(3)
+  serviceAccount = _messages.StringField(4)
+  sshPublicKey = _messages.StringField(5)
 
 
 class SignSshPublicKeyResponse(_messages.Message):

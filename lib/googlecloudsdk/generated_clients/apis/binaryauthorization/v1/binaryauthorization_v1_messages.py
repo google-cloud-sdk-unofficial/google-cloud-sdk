@@ -1311,6 +1311,7 @@ class PkixPublicKey(_messages.Message):
       EC_SIGN_P384_SHA384: ECDSA on the NIST P-384 curve with a SHA384 digest.
       ECDSA_P521_SHA512: ECDSA on the NIST P-521 curve with a SHA512 digest.
       EC_SIGN_P521_SHA512: ECDSA on the NIST P-521 curve with a SHA512 digest.
+      ML_DSA_65: ML-DSA-65 Post-Quantum Cryptography signature algorithm.
     """
     SIGNATURE_ALGORITHM_UNSPECIFIED = 0
     RSA_PSS_2048_SHA256 = 1
@@ -1331,6 +1332,7 @@ class PkixPublicKey(_messages.Message):
     EC_SIGN_P384_SHA384 = 16
     ECDSA_P521_SHA512 = 17
     EC_SIGN_P521_SHA512 = 18
+    ML_DSA_65 = 19
 
   keyId = _messages.StringField(1)
   publicKeyPem = _messages.StringField(2)

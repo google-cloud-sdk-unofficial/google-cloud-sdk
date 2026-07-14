@@ -21,7 +21,7 @@ from googlecloudsdk.calliope import base
 
 def AddTypeFlag(parser):
   """Adds a --type flag to the given parser."""
-  help_text = """Type can be MYSQL, ORACLE, POSTGRESQL, SQLSERVER, SALESFORCE, GOOGLE-CLOUD-STORAGE or BIGQUERY"""
+  help_text = """Type can be MYSQL, ORACLE, POSTGRESQL, SQLSERVER, SALESFORCE, GOOGLE-CLOUD-STORAGE, BIGQUERY, DATAVERSE, SALESFORCE-MARKETING-CLOUD or SERVICENOW"""
 
   parser.add_argument('--type', help=help_text, required=True)
 
@@ -626,4 +626,151 @@ def AddValidationGroup(parser, verb):
       help="""%s the connection profile without validating it.""" % verb,
       action='store_true',
       default=False,
+  )
+
+
+def AddDataverseProfileGroup(parser, required=True):
+  """Adds necessary dataverse profile flags to the given parser."""
+  dataverse_profile = parser.add_group()
+  dataverse_profile.add_argument(
+      '--dataverse-environment-url',
+      help="""Environment URL of the Microsoft Dataverse instance. Example: 'myenv.crm.dynamics.com'""",
+      required=required,
+  )
+  dataverse_profile.add_argument(
+      '--dataverse-tenant-id',
+      help="""Tenant ID of the Microsoft Dataverse instance.""",
+      required=required,
+  )
+  dataverse_profile.add_argument(
+      '--dataverse-oauth-client-id',
+      help="""OAuth 2.0 Client ID used to connect to Dataverse.""",
+      required=required,
+  )
+  client_secret_group = dataverse_profile.add_group(
+      required=required, mutex=True
+  )
+  client_secret_group.add_argument(
+      '--dataverse-oauth-client-secret',
+      help="""OAuth 2.0 Client secret used to connect to Dataverse.""",
+      default='',
+  )
+  client_secret_group.add_argument(
+      '--dataverse-prompt-for-oauth-client-secret',
+      action='store_true',
+      help=(
+          'Prompt for the OAuth 2.0 Client secret used to connect to Dataverse.'
+      ),
+  )
+  client_secret_group.add_argument(
+      '--dataverse-secret-manager-stored-oauth-client-secret',
+      help=(
+          'Path to secret manager, storing the OAuth 2.0 Client secret used to'
+          ' connect to Dataverse.'
+      ),
+      default='',
+  )
+
+
+def AddSalesforceMarketingCloudProfileGroup(parser, required=True):
+  """Adds necessary salesforce marketing cloud profile flags to the given parser."""
+  sfmc_profile = parser.add_group()
+  sfmc_profile.add_argument(
+      '--salesforce-marketing-cloud-subdomain',
+      help="""Subdomain for the Salesforce Marketing Cloud connection.""",
+      required=required,
+  )
+  sfmc_profile.add_argument(
+      '--salesforce-marketing-cloud-oauth-client-id',
+      help="""OAuth 2.0 Client ID used to connect to Salesforce Marketing Cloud.""",
+      required=required,
+  )
+  client_secret_group = sfmc_profile.add_group(required=required, mutex=True)
+  client_secret_group.add_argument(
+      '--salesforce-marketing-cloud-oauth-client-secret',
+      help="""OAuth 2.0 Client secret used to connect to Salesforce Marketing Cloud.""",
+      default='',
+  )
+  client_secret_group.add_argument(
+      '--salesforce-marketing-cloud-prompt-for-oauth-client-secret',
+      action='store_true',
+      help=(
+          'Prompt for the OAuth 2.0 Client secret used to connect to Salesforce'
+          ' Marketing Cloud.'
+      ),
+  )
+  client_secret_group.add_argument(
+      '--salesforce-marketing-cloud-secret-manager-stored-oauth-client-secret',
+      help=(
+          'Path to secret manager, storing the OAuth 2.0 Client secret used to'
+          ' connect to Salesforce Marketing Cloud.'
+      ),
+      default='',
+  )
+
+
+def AddServiceNowProfileGroup(parser, required=True):
+  """Adds necessary servicenow profile flags to the given parser."""
+  servicenow_profile = parser.add_group()
+  servicenow_profile.add_argument(
+      '--servicenow-instance',
+      help="""The instance of the ServiceNow account.""",
+      required=required,
+  )
+
+  auth_group = servicenow_profile.add_group(required=required, mutex=True)
+
+  oauth_group = auth_group.add_group()
+  oauth_group.add_argument(
+      '--servicenow-oauth-client-id',
+      help="""OAuth 2.0 Client ID used to connect to ServiceNow.""",
+      required=required,
+  )
+  client_secret_group = oauth_group.add_group(required=required, mutex=True)
+  client_secret_group.add_argument(
+      '--servicenow-oauth-client-secret',
+      help="""OAuth 2.0 Client secret used to connect to ServiceNow.""",
+      default='',
+  )
+  client_secret_group.add_argument(
+      '--servicenow-prompt-for-oauth-client-secret',
+      action='store_true',
+      help=(
+          'Prompt for the OAuth 2.0 Client secret used to connect to'
+          ' ServiceNow.'
+      ),
+  )
+  client_secret_group.add_argument(
+      '--servicenow-secret-manager-stored-oauth-client-secret',
+      help=(
+          'Path to secret manager, storing the OAuth 2.0 Client secret used to'
+          ' connect to ServiceNow.'
+      ),
+      default='',
+  )
+
+  user_passwd_group = auth_group.add_group()
+  user_passwd_group.add_argument(
+      '--servicenow-username',
+      help="""Username used to connect to ServiceNow.""",
+      required=required,
+  )
+  password_group = user_passwd_group.add_group(required=required, mutex=True)
+  password_group.add_argument(
+      '--servicenow-password',
+      help="""Password used to connect to ServiceNow.""",
+      default='',
+  )
+  password_group.add_argument(
+      '--servicenow-prompt-for-password',
+      action='store_true',
+      help='Prompt for the password used to connect to ServiceNow.',
+  )
+  password_group.add_argument(
+      '--servicenow-secret-manager-stored-password',
+      help=(
+          'Path to secret manager, storing the password used to connect'
+          ' to ServiceNow.'
+      ),
+      default='',
   )

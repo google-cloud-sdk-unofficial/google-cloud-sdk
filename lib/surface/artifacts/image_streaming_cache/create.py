@@ -24,7 +24,6 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 @base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Initiates the prewarming of a specified artifact version or tag."""

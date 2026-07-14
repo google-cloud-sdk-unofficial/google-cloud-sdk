@@ -17,25 +17,21 @@
 
 
 import abc
-import atexit
 import collections
 import inspect
 import io
 import json
 import os
-import secrets
-import socket
-import subprocess
-import time
 from typing import Optional
 
 from google.auth.transport import requests as google_auth_requests
 from google.auth.transport.requests import _MutualTlsOffloadAdapter
 from googlecloudsdk.core import context_aware
-from googlecloudsdk.core import execution_utils
+from googlecloudsdk.core import ecp_proxy_manager
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import transport
+from googlecloudsdk.core.ecp_proxy_manager import ECPProxyError
 from googlecloudsdk.core.util import encoding
 from googlecloudsdk.core.util import http_proxy_types
 from googlecloudsdk.core.util import platforms
@@ -210,40 +206,23 @@ def GetProxyInfo():
                                proxy_port)
 
 
-class ECPProxyError(Exception):
-  """Custom exception for errors related to the ECP proxy communication.
-
-  For example, startup failures or receiving a specific proxy error header.
-  """
-
-  def __init__(self, message, original_exception=None):
-    self.original_exception = original_exception
-    super().__init__(
-        f'{message}: {original_exception}' if original_exception else message
-    )
-
-
 class _LocalECPProxyAdapter(requests.adapters.HTTPAdapter):
   """A requests adapter that routes HTTPS requests through a local ECP proxy.
 
-  This adapter starts the ECP proxy as a background process upon instantiation
-  and manages its lifecycle, terminating it when the adapter is closed.
-  This avoids the overhead of starting a new process for every request.
+  This adapter uses a local ECP proxy managed by the ecp_proxy_manager.
   """
 
   def __init__(
       self,
       certificate_config_file_path: str,
       gcloud_proxy_url: str = None,
-      startup_timeout: int = 5,
       **kwargs,
   ):
-    """Initializes the adapter and starts the local ECP proxy process.
+    """Initializes the adapter.
 
     Args:
         certificate_config_file_path: Path to the JSON certificate config file.
         gcloud_proxy_url: Optional URL for proxy chaining.
-        startup_timeout: Seconds to wait for the proxy to become available.
         **kwargs: Additional arguments for the HTTPAdapter.
     """
     self.certificate_config_file_path = certificate_config_file_path
@@ -251,190 +230,10 @@ class _LocalECPProxyAdapter(requests.adapters.HTTPAdapter):
 
     super().__init__(**kwargs)
 
-    # Register a cleanup function to terminate the proxy process on exit.
-    # This is necessary to ensure the proxy process is terminated in case of
-    # unexpected termination, such as a crash or keyboard interrupt.
-    atexit.register(self.close)
-
-    self.proxy_process = None
     self.proxy_host = 'localhost'
-    self.nonce_token = secrets.token_hex(16)
-    self.proxy_port = self._start_ecp_proxy_with_retries(
-        startup_timeout, max_retries=1
-    )
-
-  def _find_free_port(self) -> int:
-    """Dynamically finds and returns an available TCP port."""
-    with socket.socket() as s:
-      s.bind(('', 0))
-      return s.getsockname()[1]
-
-  def _start_ecp_proxy_with_retries(
-      self, timeout: int, max_retries: int = 1
-  ) -> int:
-    """Attempts to start the ECP Proxy, retrying on failure.
-
-    This method orchestrates the proxy startup by finding an available port,
-    launching the proxy process, and waiting for it to become responsive.
-    If the proxy fails to start, it retries the process until either succeeds
-    or the maximum number of retries is reached.
-
-    Args:
-      timeout: The maximum time in seconds to wait for the proxy to start
-      max_retries: The maximum number of times to retry starting the proxy.
-
-    Returns:
-      The port number on which the proxy successfully started.
-
-    Raises:
-      ECPProxyError: If the proxy fails to start after all retry attempts.
-    """
-
-    cert_config = context_aware.GetCertificateConfig(
-        self.certificate_config_file_path
-    )
-    ecp_http_proxy = cert_config.get('libs', {}).get('ecp_http_proxy')
-    if not ecp_http_proxy:
-      raise ECPProxyError(
-          'ECP HTTP proxy binary path is not specified in enterprise'
-          ' certificate config file. Cannot use mTLS with ECP if the ECP HTTP'
-          ' proxy binary does not exist. Please check the ECP configuration.'
-          ' See `gcloud topic client-certificate` to learn more about ECP. \nIf'
-          ' this error is unexpected either delete {} or generate a new'
-          ' configuration with `$ gcloud auth enterprise-certificate-config'
-          ' create --help` '.format(self.certificate_config_file_path)
-      )
-
-    for attempt in range(max_retries + 1):
-      proxy_port = self._find_free_port()
-      self._start_ecp_proxy(
-          ecp_http_proxy=ecp_http_proxy, proxy_port=proxy_port
-      )
-
-      try:
-        self._wait_for_proxy(proxy_port=proxy_port, timeout=timeout)
-        return proxy_port
-      except ECPProxyError as e:
-        if self.proxy_process and self.proxy_process.poll() is None:
-          self.proxy_process.terminate()
-        if attempt < max_retries:
-          log.warning(f'ECP proxy failed to start on port {proxy_port}: {e}')
-          continue
-        log.error(f'ECP proxy failed to start after {max_retries} retries: {e}')
-        raise
-
-  def _start_ecp_proxy(self, *, ecp_http_proxy: str, proxy_port: int) -> None:
-    """Launches the local ECP proxy executable as a subprocess.
-
-    Constructs the necessary command-line arguments, including the ECP config
-    path, port, nonce token, and an optional upstream proxy URL. It then uses
-    subprocess.Popen to start the proxy process in the background.
-
-    Args:
-      ecp_http_proxy: The path to the ECP HTTP proxy binary.
-      proxy_port: The TCP port for the proxy to listen on.
-
-    Raises:
-      ECPProxyError: If the subprocess fails to start due to OSError or
-        ValueError.
-    """
-    log.debug(f'Starting local ECP proxy server on port {proxy_port}')
-
-    args = [
-        '-enterprise_certificate_file_path',
-        self.certificate_config_file_path,
-        '-port',
-        str(proxy_port),
-        '-nonce_token',
-        self.nonce_token,
-    ]
-
-    if self.gcloud_proxy_url:
-      args.extend(
-          ['-gcloud_configured_upstream_proxy_url', self.gcloud_proxy_url]
-      )
-
-    proxy_args = execution_utils.ArgsForExecutableTool(ecp_http_proxy, *args)
-    try:
-      self.proxy_process = subprocess.Popen(
-          proxy_args,
-          stdout=None,
-          stderr=None,
-      )
-    except (OSError, ValueError) as e:
-      log.error(f'Failed to start ECP proxy executable: {e}')
-      raise ECPProxyError(
-          'Failed to start ECP proxy process', original_exception=e
-      ) from e
-
-  def _wait_for_proxy(self, *, proxy_port: int, timeout: int) -> None:
-    """Waits for the proxy to become available and verifies its identity.
-
-    This method first waits for the proxy's TCP port to accept connections.
-    Once the port is open, it sends a request to the `/readyz` endpoint to
-    confirm that the proxy is fully operational and to verify a security nonce,
-    ensuring that gcloud is communicating with the correct proxy instance.
-
-    Args:
-      proxy_port: The port where the proxy is expected to be listening.
-      timeout: The maximum time in seconds to wait for the proxy.
-
-    Raises:
-      ECPProxyError: If the proxy process terminates unexpectedly, fails to
-        respond within the timeout, or returns an invalid nonce.
-    """
-
-    log.debug(f'Waiting for the proxy to be ready on port {proxy_port}...')
-    start_time = time.monotonic()
-
-    # Check to see if the port is open.
-    while time.monotonic() - start_time < timeout:
-      # This is a fast-fail. If the process is dead, stop trying.
-      if self.proxy_process.poll() is not None:
-        raise ECPProxyError(
-            'Proxy process terminated unexpectedly with code '
-            f'{self.proxy_process.returncode} while waiting for it to start.'
-        )
-
-      try:
-        with socket.create_connection(
-            (self.proxy_host, proxy_port), timeout=0.1
-        ):
-          # Proxy is ready, break.
-          break
-      except OSError:
-        time.sleep(0.1)
-        continue
-    else:
-      # The 'while' loop finished without a 'break'.
-      # This means we timed out while trying to connect to the socket.
-      self.close()  # Clean up the zombie process.
-      raise ECPProxyError(
-          f'ECP Proxy on {self.proxy_host}:{proxy_port} did not become ready in'
-          f' {timeout} seconds.'
-      )
-
-    # If we're here, the socket is open.
-    # Now we do a one-time verification using the /readyz endpoint.
-    try:
-      readyz_url = f'http://{self.proxy_host}:{proxy_port}/readyz'
-      response = requests.get(readyz_url, timeout=1)
-      if response.status_code != 200:
-        raise ECPProxyError(
-            f'Proxy /readyz endpoint returned status {response.status_code}.'
-        )
-
-      server_nonce = response.text
-      if server_nonce != self.nonce_token:
-        raise ECPProxyError('Nonce mismatch from proxy /readyz endpoint.')
-
-      log.debug('Proxy is ready and nonce verified.')
-    except requests.exceptions.RequestException as e:
-      # Failed during the HTTP call itself (e.g., connection reset)
-      raise ECPProxyError(
-          'Failed to verify proxy readiness via /readyz endpoint.',
-          original_exception=e,
-      ) from e
+    self.proxy_port = ecp_proxy_manager.get_proxy_port()
+    if not self.proxy_port:
+      raise ECPProxyError('ECP HTTP Proxy is not running.')
 
   def send(self, request, **kwargs):
     """Intercepts an outgoing request and reroutes it through the local ECP proxy.
@@ -516,26 +315,6 @@ class _LocalECPProxyAdapter(requests.adapters.HTTPAdapter):
       raise ECPProxyError(message)
 
     return response
-
-  def close(self):
-    """Terminates the background ECP proxy process to clean up resources.
-
-    This method ensures that the local proxy subprocess is properly shut down
-    when the session is closed. It first attempts a graceful termination and
-    waits briefly, then forcefully kills the process if it does not exit in
-    time. Finally, it calls the parent class's `close` method to complete
-    the cleanup.
-    """
-    log.debug('Closing ECP Proxy Adapter and terminating proxy process...')
-    if self.proxy_process and self.proxy_process.poll() is None:
-      self.proxy_process.terminate()
-      try:
-        # Wait a moment for graceful shutdown before killing.
-        self.proxy_process.wait(timeout=0.5)
-      except subprocess.TimeoutExpired:
-        log.warning('Proxy process did not terminate gracefully, killing it.')
-        self.proxy_process.kill()
-    super().close()
 
 
 def _CreateMutualTlsOffloadAdapter(

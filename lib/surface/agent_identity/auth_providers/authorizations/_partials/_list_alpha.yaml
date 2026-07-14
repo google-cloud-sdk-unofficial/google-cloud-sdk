@@ -18,14 +18,13 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
-    brief: List authorizations
-    description: List authorizations
+    brief: List authorizations.
+    description: List authorizations for a given auth provider in a project and location.
     examples: |-
-      To list all authorizations, run:
+      To list authorizations for auth provider 'my-auth-provider' in location 'us-central1' and project 'my-project', run:
 
-          $ {command}
+        $ {command} --auth-provider=my-auth-provider --location=us-central1 --project=my-project
   arguments:
     params:
     - help_text: |-

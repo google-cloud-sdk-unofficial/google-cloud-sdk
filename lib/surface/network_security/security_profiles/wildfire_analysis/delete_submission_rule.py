@@ -52,7 +52,7 @@ FILE_TYPE_CHOICES = (
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class DeleteSubmissionRule(base.UpdateCommand):
   """Delete a WildFire submission rule from a WildFire Analysis Profile."""
 

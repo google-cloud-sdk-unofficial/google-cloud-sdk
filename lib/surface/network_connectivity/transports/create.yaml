@@ -42,7 +42,16 @@
     resource:
       spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:transport
       help_text: Name of the Transport to be created.
+      removed_flags: ['region']
+      command_level_fallthroughs:
+        region:
+        - arg_name: 'region'
     params:
+    - arg_name: region
+      help_text: |
+         Google Cloud region for the transport. Applicable regions are those
+         where Partner Interconnect is available. For a list of supported regions, see
+         https://docs.cloud.google.com/network-connectivity/docs/interconnect/how-to/partner-cci-for-aws/paired-locations.
     - group:
         mutex: true
         required: true
@@ -113,6 +122,10 @@
                   transport.remoteProfile: "{__relative_name__}"
               help_text: Remote transport profile representing the provider and their location.
               required: true
+              removed_flags: ['region']
+              command_level_fallthroughs:
+                region:
+                - arg_name: 'region'
             - arg_name: bandwidth
               BETA:
                 api_field: googleCloudNetworkconnectivityV1betaTransport.bandwidth

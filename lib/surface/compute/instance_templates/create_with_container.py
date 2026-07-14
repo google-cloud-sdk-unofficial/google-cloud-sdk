@@ -484,7 +484,7 @@ class CreateWithContainerBeta(CreateWithContainer):
   """Command for creating VM instance templates hosting Docker images."""
 
   _support_specific_then_x_affinity = True
-  _support_any_reservation_then_fail_affinity = False
+  _support_any_reservation_then_fail_affinity = True
   _support_disk_labels = True
   _support_skip_guest_os_shutdown = True
   _support_workload_identity_config = False
@@ -498,7 +498,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         enable_guest_accelerators=True,
         support_region_instance_template=False,
         support_specific_then_x_affinity=True,
-        support_any_reservation_then_fail_affinity=False,
+        support_any_reservation_then_fail_affinity=True,
         support_disk_labels=True,
         support_ipv6_only=True,
         support_flex_start=True,

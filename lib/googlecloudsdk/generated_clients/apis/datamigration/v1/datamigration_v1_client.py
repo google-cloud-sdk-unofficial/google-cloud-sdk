@@ -663,7 +663,7 @@ class DatamigrationV1(base_api.BaseApiClient):
         method_id='datamigration.projects.locations.conversionWorkspaces.fetchIssues',
         ordered_params=['conversionWorkspace'],
         path_params=['conversionWorkspace'],
-        query_params=['allIssues', 'commitId', 'filter', 'issueType', 'pageSize', 'pageToken'],
+        query_params=['allIssues', 'commitId', 'filter', 'issueType', 'pageSize', 'pageToken', 'tree'],
         relative_path='v1/{+conversionWorkspace}:fetchIssues',
         request_field='',
         request_type_name='DatamigrationProjectsLocationsConversionWorkspacesFetchIssuesRequest',

@@ -52,6 +52,10 @@ def AddArtifactDetailsToResponse(response, args):
   # Convert the proto message to a mutable dictionary.
   event_dict = encoding.MessageToPyValue(event)
 
+  # Check the new flag. If not true, skip the network calls and return.
+  if not getattr(args, "show_details", False):
+    return event_dict
+
   # Check for and iterate through artifact deployments.
   if hasattr(event, "artifactDeployments") and event.artifactDeployments:
     if "artifactDeployments" in event_dict:

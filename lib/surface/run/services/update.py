@@ -68,6 +68,7 @@ Container Flags
   group.AddArgument(flags.ClearVolumeMountsFlag())
   group.AddArgument(flags.StartupProbeFlag())
   group.AddArgument(flags.LivenessProbeFlag())
+  group.AddArgument(flags.ReadinessProbeFlag())
   group.AddArgument(flags.GpuFlag())
 
   return group
@@ -377,7 +378,6 @@ class BetaUpdate(Update):
     # Flags specific to managed CR
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
-    container_args.AddArgument(flags.ReadinessProbeFlag())
     container_parser.AddContainerFlags(
         parser, container_args, cls.ReleaseTrack()
     )
@@ -412,7 +412,6 @@ class AlphaUpdate(BetaUpdate):
     flags.AddClearPresetFlag(parser)
     flags.AddSshFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
-    container_args.AddArgument(flags.ReadinessProbeFlag())
     container_parser.AddContainerFlags(
         parser, container_args, cls.ReleaseTrack()
     )

@@ -282,11 +282,15 @@ class Instance(_messages.Message):
   Enums:
     ClassTypeValueValuesEnum: Optional. Storage class of the instance.
     PlatformEditionValueValuesEnum: Platform edition.
+    ReleaseChannelValueValuesEnum: Optional. The selected release channel for
+      the instance.
     SoftDeleteReasonValueValuesEnum: Output only. The reason for the instance
       being in a soft-deleted state.
     StateValueValuesEnum: Output only. The state of the instance.
 
   Fields:
+    acceleratedSecurityPatchEnabled: Optional. Accelerated security patch
+      enabled for the instance.
     adminSettings: Looker Instance Admin settings.
     catalogIntegrationOptOut: Optional. Indicates whether catalog integration
       is disabled for the Looker instance.
@@ -332,6 +336,7 @@ class Instance(_messages.Message):
       private IP connectivity. If true, neither `public_ip_enabled` nor
       `private_ip_enabled` can be true.
     publicIpEnabled: Whether public IP is enabled on the Looker instance.
+    releaseChannel: Optional. The selected release channel for the instance.
     reservedRange: Name of a reserved IP address range within the
       Instance.consumer_network, to be used for private services access
       connection. May or may not be specified in a create request.
@@ -363,18 +368,27 @@ class Instance(_messages.Message):
     r"""Platform edition.
 
     Values:
-      PLATFORM_EDITION_UNSPECIFIED: Platform edition is unspecified.
-      LOOKER_CORE_TRIAL: Trial.
-      LOOKER_CORE_STANDARD: Standard.
-      LOOKER_CORE_STANDARD_ANNUAL: Subscription Standard.
-      LOOKER_CORE_ENTERPRISE_ANNUAL: Subscription Enterprise.
-      LOOKER_CORE_EMBED_ANNUAL: Subscription Embed.
-      LOOKER_CORE_NONPROD_STANDARD_ANNUAL: Nonprod Subscription Standard.
-      LOOKER_CORE_NONPROD_ENTERPRISE_ANNUAL: Nonprod Subscription Enterprise.
-      LOOKER_CORE_NONPROD_EMBED_ANNUAL: Nonprod Subscription Embed.
-      LOOKER_CORE_TRIAL_STANDARD: Trial Standard.
-      LOOKER_CORE_TRIAL_ENTERPRISE: Trial Enterprise.
-      LOOKER_CORE_TRIAL_EMBED: Trial Embed.
+      PLATFORM_EDITION_UNSPECIFIED: Represents an unspecified platform
+        edition.
+      LOOKER_CORE_TRIAL: Represents the Looker Core Trial edition.
+      LOOKER_CORE_STANDARD: Represents the Looker Core Standard edition.
+      LOOKER_CORE_STANDARD_ANNUAL: Represents the Looker Core Standard Annual
+        edition.
+      LOOKER_CORE_ENTERPRISE_ANNUAL: Represents the Looker Core Enterprise
+        Annual edition.
+      LOOKER_CORE_EMBED_ANNUAL: Represents the Looker Core Embed Annual
+        edition.
+      LOOKER_CORE_NONPROD_STANDARD_ANNUAL: Represents the Looker Core Nonprod
+        Standard Annual edition.
+      LOOKER_CORE_NONPROD_ENTERPRISE_ANNUAL: Represents the Looker Core
+        Nonprod Enterprise Annual edition.
+      LOOKER_CORE_NONPROD_EMBED_ANNUAL: Represents the Looker Core Nonprod
+        Embed Annual edition.
+      LOOKER_CORE_TRIAL_STANDARD: Represents the Looker Core Trial Standard
+        edition.
+      LOOKER_CORE_TRIAL_ENTERPRISE: Represents the Looker Core Trial
+        Enterprise edition.
+      LOOKER_CORE_TRIAL_EMBED: Represents the Looker Core Trial Embed edition.
     """
     PLATFORM_EDITION_UNSPECIFIED = 0
     LOOKER_CORE_TRIAL = 1
@@ -388,6 +402,20 @@ class Instance(_messages.Message):
     LOOKER_CORE_TRIAL_STANDARD = 9
     LOOKER_CORE_TRIAL_ENTERPRISE = 10
     LOOKER_CORE_TRIAL_EMBED = 11
+
+  class ReleaseChannelValueValuesEnum(_messages.Enum):
+    r"""Optional. The selected release channel for the instance.
+
+    Values:
+      RELEASE_CHANNEL_UNSPECIFIED: Unspecified release channel.
+      RAPID: Rapid: Most frequent updates.
+      REGULAR: Regular: Balanced, default for production.
+      STABLE: Stable: Least frequent, for maximum stability.
+    """
+    RELEASE_CHANNEL_UNSPECIFIED = 0
+    RAPID = 1
+    REGULAR = 2
+    STABLE = 3
 
   class SoftDeleteReasonValueValuesEnum(_messages.Enum):
     r"""Output only. The reason for the instance being in a soft-deleted
@@ -430,44 +458,46 @@ class Instance(_messages.Message):
     EXPORTING = 7
     IMPORTING = 8
 
-  adminSettings = _messages.MessageField('AdminSettings', 1)
-  catalogIntegrationOptOut = _messages.BooleanField(2)
-  classType = _messages.EnumField('ClassTypeValueValuesEnum', 3)
-  consumerNetwork = _messages.StringField(4)
-  controlledEgressConfig = _messages.MessageField('ControlledEgressConfig', 5)
-  controlledEgressEnabled = _messages.BooleanField(6)
-  createTime = _messages.StringField(7)
-  customDomain = _messages.MessageField('CustomDomain', 8)
-  denyMaintenancePeriod = _messages.MessageField('DenyMaintenancePeriod', 9)
-  egressPublicIp = _messages.StringField(10)
-  encryptionConfig = _messages.MessageField('EncryptionConfig', 11)
-  fipsEnabled = _messages.BooleanField(12)
-  geminiEnabled = _messages.BooleanField(13)
-  ingressIpAllowlistConfig = _messages.MessageField('IngressIpAllowlistConfig', 14)
-  ingressPrivateIp = _messages.StringField(15)
-  ingressPublicIp = _messages.StringField(16)
-  lastDenyMaintenancePeriod = _messages.MessageField('DenyMaintenancePeriod', 17)
-  linkedLspProjectNumber = _messages.IntegerField(18)
-  lookerUri = _messages.StringField(19)
-  lookerVersion = _messages.StringField(20)
-  maintenanceSchedule = _messages.MessageField('MaintenanceSchedule', 21)
-  maintenanceWindow = _messages.MessageField('MaintenanceWindow', 22)
-  name = _messages.StringField(23)
-  oauthConfig = _messages.MessageField('OAuthConfig', 24)
-  periodicExportConfig = _messages.MessageField('PeriodicExportConfig', 25)
-  platformEdition = _messages.EnumField('PlatformEditionValueValuesEnum', 26)
-  privateIpEnabled = _messages.BooleanField(27)
-  pscConfig = _messages.MessageField('PscConfig', 28)
-  pscEnabled = _messages.BooleanField(29)
-  publicIpEnabled = _messages.BooleanField(30)
-  reservedRange = _messages.StringField(31)
-  satisfiesPzi = _messages.BooleanField(32)
-  satisfiesPzs = _messages.BooleanField(33)
-  softDeleteReason = _messages.EnumField('SoftDeleteReasonValueValuesEnum', 34)
-  state = _messages.EnumField('StateValueValuesEnum', 35)
-  suspendedTime = _messages.StringField(36)
-  updateTime = _messages.StringField(37)
-  userMetadata = _messages.MessageField('UserMetadata', 38)
+  acceleratedSecurityPatchEnabled = _messages.BooleanField(1)
+  adminSettings = _messages.MessageField('AdminSettings', 2)
+  catalogIntegrationOptOut = _messages.BooleanField(3)
+  classType = _messages.EnumField('ClassTypeValueValuesEnum', 4)
+  consumerNetwork = _messages.StringField(5)
+  controlledEgressConfig = _messages.MessageField('ControlledEgressConfig', 6)
+  controlledEgressEnabled = _messages.BooleanField(7)
+  createTime = _messages.StringField(8)
+  customDomain = _messages.MessageField('CustomDomain', 9)
+  denyMaintenancePeriod = _messages.MessageField('DenyMaintenancePeriod', 10)
+  egressPublicIp = _messages.StringField(11)
+  encryptionConfig = _messages.MessageField('EncryptionConfig', 12)
+  fipsEnabled = _messages.BooleanField(13)
+  geminiEnabled = _messages.BooleanField(14)
+  ingressIpAllowlistConfig = _messages.MessageField('IngressIpAllowlistConfig', 15)
+  ingressPrivateIp = _messages.StringField(16)
+  ingressPublicIp = _messages.StringField(17)
+  lastDenyMaintenancePeriod = _messages.MessageField('DenyMaintenancePeriod', 18)
+  linkedLspProjectNumber = _messages.IntegerField(19)
+  lookerUri = _messages.StringField(20)
+  lookerVersion = _messages.StringField(21)
+  maintenanceSchedule = _messages.MessageField('MaintenanceSchedule', 22)
+  maintenanceWindow = _messages.MessageField('MaintenanceWindow', 23)
+  name = _messages.StringField(24)
+  oauthConfig = _messages.MessageField('OAuthConfig', 25)
+  periodicExportConfig = _messages.MessageField('PeriodicExportConfig', 26)
+  platformEdition = _messages.EnumField('PlatformEditionValueValuesEnum', 27)
+  privateIpEnabled = _messages.BooleanField(28)
+  pscConfig = _messages.MessageField('PscConfig', 29)
+  pscEnabled = _messages.BooleanField(30)
+  publicIpEnabled = _messages.BooleanField(31)
+  releaseChannel = _messages.EnumField('ReleaseChannelValueValuesEnum', 32)
+  reservedRange = _messages.StringField(33)
+  satisfiesPzi = _messages.BooleanField(34)
+  satisfiesPzs = _messages.BooleanField(35)
+  softDeleteReason = _messages.EnumField('SoftDeleteReasonValueValuesEnum', 36)
+  state = _messages.EnumField('StateValueValuesEnum', 37)
+  suspendedTime = _messages.StringField(38)
+  updateTime = _messages.StringField(39)
+  userMetadata = _messages.MessageField('UserMetadata', 40)
 
 
 class InstanceBackup(_messages.Message):

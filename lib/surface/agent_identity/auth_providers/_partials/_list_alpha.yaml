@@ -19,12 +19,12 @@
   - ALPHA
   auto_generated: true
   help_text:
-    brief: List authProviders
-    description: List authProviders
+    brief: List auth providers.
+    description: List auth providers in a given project and location.
     examples: |-
-      To list all authProviders, run:
+      To list all auth providers in location 'us-central1' and project 'my-project', run:
 
-          $ {command}
+        $ {command} --location=us-central1 --project=my-project
   arguments:
     params:
     - help_text: |-

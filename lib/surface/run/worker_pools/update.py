@@ -126,7 +126,7 @@ class Update(base.Command):
     parser.display_info.AddFormat('none')
 
   @classmethod
-  def Args(cls, parser):
+  def Args(cls, parser) -> None:
     cls.CommonArgs(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(
@@ -242,12 +242,12 @@ class Update(base.Command):
 
 
 @base.RegionalEndpointsSupported
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class BetaUpdate(Update):
   """Update a Cloud Run worker-pool."""
 
   @classmethod
-  def Args(cls, parser):
+  def Args(cls, parser) -> None:
     cls.CommonArgs(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(
@@ -256,3 +256,20 @@ class BetaUpdate(Update):
 
 
 BetaUpdate.__doc__ = Update.__doc__
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaUpdate(BetaUpdate):
+  """Update Cloud Run environment variables and other configuration settings."""
+
+  @classmethod
+  def Args(cls, parser) -> None:
+    cls.CommonArgs(parser)
+    flags.AddCpuUtilizationFlag(parser, hidden=True, resource_kind='workerPool')
+    container_args = ContainerArgGroup(cls.ReleaseTrack())
+    container_parser.AddContainerFlags(
+        parser, container_args, cls.ReleaseTrack()
+    )
+
+
+AlphaUpdate.__doc__ = Update.__doc__

@@ -50,5 +50,15 @@ class GapicWrapperClient(object):
     self._exit_stack.enter_context(self.semantic)
     return self
 
+  def close(self):
+    if hasattr(self, '_exit_stack'):
+      self._exit_stack.close()
+
   def __exit__(self, exc_type, exc_value, traceback):
-    self._exit_stack.close()
+    self.close()
+
+  def __del__(self):
+    try:
+      self.close()
+    except Exception:
+      pass

@@ -426,6 +426,8 @@ class ServiceRegistry(object):
     def __BodyFieldName(self, body_type):
         if body_type is None:
             return ''
+        if '$ref' not in body_type:
+            raise ValueError('Expected "$ref" in request body, found: %s' % body_type)
         return self.__names.FieldName(body_type['$ref'])
 
     def __GetRequestType(self, body_type):
@@ -470,6 +472,8 @@ class ServiceRegistry(object):
                 request_field = base_api.REQUEST_IS_BODY
 
             if 'response' in method_description:
+                if '$ref' not in method_description['response']:
+                    raise ValueError('Expected "$ref" in response, found: %s' % method_description['response'])
                 response = method_description['response']['$ref']
             else:
                 response = self.__CreateVoidResponseType(method_description)

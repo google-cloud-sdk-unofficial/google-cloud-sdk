@@ -14,6 +14,9 @@
 # limitations under the License.
 """Create a Cloud Run instance."""
 
+import argparse
+from collections.abc import Sequence
+from googlecloudsdk.api_lib.util import exceptions as api_util_exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.calliope import parser_errors as c_parser_errors
@@ -32,7 +35,9 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
+from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
+from googlecloudsdk.generated_clients.apis.run.v1 import run_v1_messages as messages
 
 
 EXAMPLE_INSTANCE_IMAGE = 'us-docker.pkg.dev/cloudrun/container/hello:latest'
@@ -66,6 +71,34 @@ Container Flags
   group.AddArgument(flags.StartupProbeFlag())
 
   return group
+
+
+def _GetAvailableRegions(
+    e: exceptions.HttpError | api_util_exceptions.HttpException,
+) -> list[str]:
+  """Extracts available regions from a REGION_CAPACITY_EXHAUSTED error.
+
+  Args:
+    e: The exception to check.
+
+  Returns:
+    A list of available region names, or empty list if not applicable.
+  """
+  if not isinstance(
+      e, (exceptions.HttpError, api_util_exceptions.HttpException)
+  ):
+    return []
+
+  # gcloud-disable-gdu-domain
+  domain_details = e.payload.domain_details.get('run.googleapis.com', [])
+  for detail in domain_details:
+    if detail.get('reason') == 'REGION_CAPACITY_EXHAUSTED':
+      metadata = detail.get('metadata', {})
+      regions_str = metadata.get('available_regions', '')
+      if regions_str:
+        return regions_str.split(',')
+      break
+  return []
 
 
 @base.UniverseCompatible
@@ -156,11 +189,11 @@ class Create(base.Command):
 
     instance_ref = args.CONCEPTS.instance.Parse()
 
-    instance_name = None
+    requested_instance_name = None
     if instance_ref:
       flags.ValidateResource(instance_ref)
       parent_ref = instance_ref.Parent()
-      instance_name = instance_ref.Name()
+      requested_instance_name = instance_ref.Name()
     else:
       # instance_ref is None, name not provided. Build parent_ref manually.
       project = properties.VALUES.core.project.Get(required=True)
@@ -181,10 +214,60 @@ class Create(base.Command):
     )
 
     messages_util.MaybeLogDefaultGpuTypeMessage(args, resource=None)
+
+    try:
+      return self._DoCreate(
+          conn_context,
+          changes,
+          parent_ref,
+          requested_instance_name,
+          args.async_,
+      )
+    except (exceptions.HttpError, api_util_exceptions.HttpException) as e:
+      available_regions = _GetAvailableRegions(e)
+      if not available_regions or args.quiet:
+        raise e
+
+      current_region = (
+          getattr(conn_context, 'region', None)
+          or properties.VALUES.run.region.Get()
+      )
+      return self._PromptAndRetry(
+          e,
+          available_regions,
+          args,
+          current_region,
+          parent_ref,
+          requested_instance_name,
+      )
+
+  def _DoCreate(
+      self,
+      conn_context: connection_context.ConnectionInfo,
+      changes: Sequence[config_changes.ConfigChanger],
+      parent_ref: resources.Resource,
+      requested_instance_name: str | None,
+      async_: bool,
+  ) -> messages.Instance:
+    """Execute the call to create a Cloud Run instance.
+
+    Args:
+      conn_context: The connection context for the API call.
+      changes: A list of configuration changes to apply to the instance.
+      parent_ref: The parent reference (namespace).
+      requested_instance_name: The name of the instance.
+      async_: whether to run asynchronously.
+
+    Returns:
+      The created instance object.
+
+    Raises:
+      exceptions.HttpError: If an HTTP error occurs during the API call.
+    """
     with serverless_operations.Connect(conn_context) as operations:
       pretty_print.Info(
           messages_util.GetStartCreateInstanceMessage(
-              conn_context, parent_ref, instance_name
+              conn_context, parent_ref, requested_instance_name
           )
       )
       header_msg = 'Creating instance...'
@@ -193,56 +276,97 @@ class Create(base.Command):
           header_msg,
           stages.InstanceStages(),
           failure_message='Instance failed to deploy',
-          suppress_output=args.async_,
+          suppress_output=async_,
       ) as tracker:
         instance = operations.CreateInstance(
             parent_ref,
-            instance_name,
+            requested_instance_name,
             changes,
             tracker,
-            asyn=args.async_,
+            asyn=async_,
         )
-
-      if args.async_:
+      if async_:
         pretty_print.Success(
-            'Instance [{{bold}}{instance}{{reset}}] is being created '
-            'asynchronously.'.format(instance=instance.name)
+            f'Instance [{{bold}}{instance.name}{{reset}}] is being created '
+            'asynchronously.'
         )
       else:
         pretty_print.Success(
-            'Instance [{{bold}}{instance}{{reset}}] has successfully been'
-            ' created.'.format(instance=instance.name)
+            f'Instance [{{bold}}{instance.name}{{reset}}] has successfully been'
+            ' created.'
         )
         region = (
             getattr(conn_context, 'region', None)
             or properties.VALUES.run.region.Get()
         )
         release_track = self.ReleaseTrack()
-        log.status.Print(
-            '\nSee logs with: \ngcloud{release_track} run instances logs tail'
-            ' {instance} --region {region}'.format(
-                release_track=(
-                    ' {}'.format(release_track.prefix)
-                    if release_track.prefix is not None
-                    else ''
-                ),
-                instance=instance.name,
-                region=region,
-            )
+        release_track_prefix = (
+            f' {release_track.prefix}'
+            if release_track.prefix is not None
+            else ''
         )
         log.status.Print(
-            '\nSSH with:\ngcloud{release_track} run instances ssh {instance}'
-            ' --region {region}'.format(
-                release_track=(
-                    ' {}'.format(release_track.prefix)
-                    if release_track.prefix is not None
-                    else ''
-                ),
-                instance=instance.name,
-                region=region,
-            )
+            f'\nSee logs with:\ngcloud{release_track_prefix} run instances'
+            f' logs tail {instance.name} --region {region}'
+        )
+        log.status.Print(
+            f'\nSSH with:\ngcloud{release_track_prefix} run instances ssh'
+            f' {instance.name} --region {region}'
         )
         if instance.urls:
-          log.status.Print('\nURL: {}'.format(instance.urls[0]))
-
+          log.status.Print(f'\nURL: {instance.urls[0]}')
       return instance
+
+  def _PromptAndRetry(
+      self,
+      e: exceptions.HttpError | api_util_exceptions.HttpException,
+      available_regions: list[str],
+      args: argparse.Namespace,
+      current_region: str | None,
+      parent_ref: resources.Resource,
+      requested_instance_name: str | None,
+  ) -> messages.Instance:
+    """Prompts the user to select a region and retries creation.
+
+    Args:
+      e: The original exception to raise if user cancels.
+      available_regions: List of available regions to choose from.
+      args: The command arguments.
+      current_region: The region that was exhausted.
+      parent_ref: The parent reference (namespace).
+      requested_instance_name: The name of the instance.
+
+    Returns:
+      The created instance.
+
+    Raises:
+      OperationCancelledError: If the user cancels.
+      HttpError: If the retry fails.
+    """
+    idx = console_io.PromptChoice(
+        available_regions,
+        message=(
+            f'Capacity exhausted in {current_region}. '
+            'Would you like to select a different region?\n'
+        ),
+        cancel_option=True,
+    )
+    if idx is not None:
+      args.region = available_regions[idx]
+      conn_context = connection_context.GetConnectionContext(
+          args, flags.Product.RUN, self.ReleaseTrack()
+      )
+      changes = flags.GetInstanceConfigurationChanges(
+          args, release_track=self.ReleaseTrack()
+      )
+      changes.append(
+          config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack())
+      )
+      return self._DoCreate(
+          conn_context,
+          changes,
+          parent_ref,
+          requested_instance_name,
+          args.async_,
+      )
+    raise e

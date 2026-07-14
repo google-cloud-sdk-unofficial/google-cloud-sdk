@@ -140,7 +140,7 @@ class Deploy(base.Command):
     parser.display_info.AddFormat('none')
 
   @classmethod
-  def Args(cls, parser):
+  def Args(cls, parser) -> None:
     cls.CommonArgs(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(
@@ -223,7 +223,7 @@ class Deploy(base.Command):
       self,
       args,
       build_from_source,
-      already_activated_services,
+      skip_activation_prompt,
       worker_pool_ref,
   ):
     # Only one container can deployed from source
@@ -239,7 +239,7 @@ class Deploy(base.Command):
         repo_id='cloud-run-source-deploy',
     )
     if artifact_registry.ShouldCreateRepository(
-        ar_repo, skip_activation_prompt=already_activated_services
+        ar_repo, skip_activation_prompt=skip_activation_prompt
     ):
       repo_to_create = ar_repo
     # The image is built with latest tag. After build, the image digest
@@ -281,7 +281,7 @@ class Deploy(base.Command):
     if build_from_source:
       required_apis.append('artifactregistry.googleapis.com')
       required_apis.append('cloudbuild.googleapis.com')
-    already_activated_services = api_enabler.check_and_enable_apis(
+    skip_activation_prompt = api_enabler.check_and_enable_apis(
         properties.VALUES.core.project.Get(), required_apis
     )
     # Obtaining the connection context prompts the user to select a region if
@@ -319,7 +319,7 @@ class Deploy(base.Command):
           repo_to_create,
           container_name,
       ) = self._BuildFromSource(
-          args, build_from_source, already_activated_services, worker_pool_ref
+          args, build_from_source, skip_activation_prompt, worker_pool_ref
       )
     pretty_print.Info(
         messages_util.GetStartDeployMessage(
@@ -355,7 +355,7 @@ class Deploy(base.Command):
           build_source=build_source,
           build_from_source_container_name=container_name,
           repo_to_create=repo_to_create,
-          already_activated_services=already_activated_services,
+          skip_activation_prompt=skip_activation_prompt,
           force_new_revision=True,
       )
       if not response:
@@ -404,13 +404,13 @@ def _CreateBuildPack(container, release_track=base.ReleaseTrack.GA):
   return pack
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.RegionalEndpointsSupported
 class BetaDeploy(Deploy):
   """Create or update a Cloud Run worker-pool."""
 
   @classmethod
-  def Args(cls, parser):
+  def Args(cls, parser) -> None:
     cls.CommonArgs(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(
@@ -419,3 +419,17 @@ class BetaDeploy(Deploy):
 
 
 BetaDeploy.__doc__ = Deploy.__doc__
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaDeploy(BetaDeploy):
+  """Create or update a Cloud Run worker-pool."""
+
+  @classmethod
+  def Args(cls, parser) -> None:
+    super(AlphaDeploy, cls).Args(parser)
+    # Worker Pool flag
+    flags.AddCpuUtilizationFlag(parser, hidden=True, resource_kind='workerPool')
+
+
+AlphaDeploy.__doc__ = Deploy.__doc__

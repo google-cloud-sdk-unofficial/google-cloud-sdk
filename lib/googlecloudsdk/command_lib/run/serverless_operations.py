@@ -88,7 +88,7 @@ class UnknownAPIError(exceptions.Error):
 
 
 @contextlib.contextmanager
-def Connect(conn_context, already_activated_service=False):
+def Connect(conn_context, skip_activation_prompt=False):
   """Provide a ServerlessOperations instance to use.
 
   If we're using the GKE Serverless Add-on, connect to the relevant cluster.
@@ -97,7 +97,7 @@ def Connect(conn_context, already_activated_service=False):
   Arguments:
     conn_context: a context manager that yields a ConnectionInfo and manages a
       dynamic context that makes connecting to serverless possible.
-    already_activated_service: bool that should be true if we already checked if
+    skip_activation_prompt: bool that should be true if we already checked if
       the run.googleapis.com service was enabled. If this is true, we skip
       prompting the user to enable the service because they should have already
       been prompted if the API wasn't activated.
@@ -115,14 +115,14 @@ def Connect(conn_context, already_activated_service=False):
   op_client = apis.GetClientInstance(
       conn_context.api_name,
       conn_context.api_version,
-      skip_activation_prompt=already_activated_service,
+      skip_activation_prompt=skip_activation_prompt,
       location=conn_context.region,
   )
   # pylint: enable=protected-access
 
   with conn_context as conn_info:
     response_func = (
-        apis.CheckResponse(already_activated_service)
+        apis.CheckResponse(skip_activation_prompt)
         if conn_context.supports_one_platform
         else None
     )
@@ -863,7 +863,7 @@ class ServerlessOperations(object):
       build_region=None,
       build_source=None,
       repo_to_create=None,
-      already_activated_services=False,
+      skip_activation_prompt=False,
       dry_run=False,
       generate_name=False,
       delegate_builds=False,
@@ -909,7 +909,7 @@ class ServerlessOperations(object):
       repo_to_create: Optional
         googlecloudsdk.command_lib.artifacts.docker_util.DockerRepo defining a
         repository to be created.
-      already_activated_services: bool. If true, skip activation prompts for
+      skip_activation_prompt: bool. If true, skip activation prompts for
         services
       dry_run: bool. If true, only validate the configuration.
       generate_name: bool. If true, create a revision name, otherwise add nonce.
@@ -1031,7 +1031,7 @@ class ServerlessOperations(object):
             build_pack,
             repo_to_create,
             release_track,
-            already_activated_services,
+            skip_activation_prompt,
             region,
             service_ref,
             delegate_builds,
@@ -1811,7 +1811,7 @@ class ServerlessOperations(object):
       build_source=None,
       repo_to_create=None,
       prefetch=None,
-      already_activated_services=False,
+      skip_activation_prompt=False,
   ):
     """Deploy to create a new Cloud Run Job or to update an existing one.
 
@@ -1830,7 +1830,7 @@ class ServerlessOperations(object):
       prefetch: the job, pre-fetched for DeployJob. `None` indicates a
         nonexistent job so the job has to be created, else this is for an
         update.
-      already_activated_services: bool. If true, skip activation prompts for
+      skip_activation_prompt: bool. If true, skip activation prompts for
         services
 
     Returns:
@@ -1854,7 +1854,7 @@ class ServerlessOperations(object):
           build_pack,
           repo_to_create,
           release_track,
-          already_activated_services,
+          skip_activation_prompt,
           self._region,
           job_ref,
       )
@@ -2179,10 +2179,10 @@ class ServerlessOperations(object):
         created_instance = instance.Instance(
             self._client.namespaces_instances.Create(create_request), messages
         )
-      except api_exceptions.HttpConflictError:
+      except api_exceptions.HttpConflictError as e:
         raise serverless_exceptions.DeploymentFailedError(
-            f'Instance [{instance_name}] already exists.'
-        )
+            six.text_type(serverless_exceptions.HttpError(e))
+        ) from e
       except api_exceptions.HttpBadRequestError as e:
         exceptions.reraise(serverless_exceptions.HttpError(e))
 

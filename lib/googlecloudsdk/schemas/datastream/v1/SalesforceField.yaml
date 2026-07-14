@@ -29,7 +29,7 @@ properties:
     description: The data type.
     type: string
   name:
-    description: Field name.
+    description: The field name.
     type: string
   nillable:
     description: Indicates whether the field can accept nil values.

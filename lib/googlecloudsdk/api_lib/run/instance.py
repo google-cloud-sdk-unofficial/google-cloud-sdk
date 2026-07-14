@@ -14,7 +14,6 @@
 # limitations under the License.
 """Wraps a Cloud Run Instance message with convenience methods."""
 
-
 import enum
 
 from googlecloudsdk.api_lib.run import container_resource
@@ -81,6 +80,14 @@ class Instance(container_resource.ContainerResource):
   @property
   def template(self):
     return self
+
+  @property
+  def service_account(self):
+    return self.spec.serviceAccountName
+
+  @service_account.setter
+  def service_account(self, value):
+    self.spec.serviceAccountName = value
 
   @property
   def node_selector(self):

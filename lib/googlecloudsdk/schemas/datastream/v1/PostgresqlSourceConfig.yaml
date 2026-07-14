@@ -29,10 +29,10 @@ properties:
     items:
       type: string
   excludeObjects:
-    description: PostgreSQL objects to exclude from the stream.
+    description: The PostgreSQL objects to exclude from the stream.
     $ref: PostgresqlRdbms.yaml
   includeObjects:
-    description: PostgreSQL objects to include in the stream.
+    description: The PostgreSQL objects to include in the stream.
     $ref: PostgresqlRdbms.yaml
   maxConcurrentBackfillTasks:
     description: |-

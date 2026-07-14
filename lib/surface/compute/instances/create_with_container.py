@@ -562,7 +562,7 @@ class CreateWithContainerBeta(CreateWithContainer):
   _support_numa_node_count = False
   _support_local_ssd_recovery_timeout = True
   _support_specific_then_x_affinity = True
-  _support_any_reservation_then_fail_affinity = False
+  _support_any_reservation_then_fail_affinity = True
   _support_disk_labels = True
   _support_skip_guest_os_shutdown = True
   _support_workload_identity_config = False
@@ -577,7 +577,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         support_confidential_compute_type_tdx=True,
         support_snp_svsm=False,
         support_specific_then_x_affinity=True,
-        support_any_reservation_then_fail_affinity=False,
+        support_any_reservation_then_fail_affinity=True,
         support_disk_labels=True,
         support_graceful_shutdown=True,
         support_ipv6_only=True,

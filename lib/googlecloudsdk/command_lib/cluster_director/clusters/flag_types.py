@@ -381,6 +381,7 @@ class FlagTypes:
           },
           required_keys=["machineType", "zone"],
           enable_shorthand=True,
+          disable_key_description=True,
       )
     else:
       return arg_parsers.ArgObject(
@@ -397,6 +398,7 @@ class FlagTypes:
           },
           required_keys=["machineType", "zone"],
           enable_shorthand=True,
+          disable_key_description=True,
       )
 
   def GetSlurmLoginNodeUpdateObject(self) -> arg_parsers.ArgObject:
@@ -410,6 +412,7 @@ class FlagTypes:
           },
           required_keys=[],
           enable_shorthand=True,
+          disable_key_description=True,
       )
     else:
       return arg_parsers.ArgObject(
@@ -420,6 +423,7 @@ class FlagTypes:
           },
           required_keys=[],
           enable_shorthand=True,
+          disable_key_description=True,
       )
 
   def GetClusterFlagType(self) -> dict[str, Any]:

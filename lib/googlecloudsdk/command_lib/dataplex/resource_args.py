@@ -672,18 +672,6 @@ def AddDataplexEntryLinkResourceArg(parser, verb, positional=True):
   ).AddToParser(parser)
 
 
-def AddGovernanceRuleResourceArg(parser, verb, positional=True):
-  """Adds a resource argument for a Dataplex GovernanceRule."""
-  name = 'governance_rule' if positional else '--governance_rule'
-  return concept_parsers.ConceptParser.ForResource(
-      name,
-      GetGovernanceRuleResourceSpec(),
-      'Arguments and flags that define the Dataplex governance rule you want {}'
-      .format(verb),
-      required=True,
-  ).AddToParser(parser)
-
-
 def AddGlossaryResourceArg(parser, verb, positional=True):
   """Adds a resource argument for a Dataplex Glossary."""
   name = 'glossary' if positional else '--glossary'

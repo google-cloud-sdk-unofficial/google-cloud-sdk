@@ -18,6 +18,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import iap_tunnel
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import iap_tunnel as run_iap_tunnel
+from googlecloudsdk.core import exceptions as core_exceptions
 
 
 @base.Hidden
@@ -75,4 +76,12 @@ class StartIapTunnel(base.Command):
     iap_tunnel_helper = iap_tunnel.IapTunnelStdinHelper(
         tunneler, with_graceful_shutdown=True, ignore_windows_broken_pipe=True
     )
-    iap_tunnel_helper.Run()
+    try:
+      iap_tunnel_helper.Run()
+    except Exception as e:
+      if "4033" in str(e) and "not authorized" in str(e):
+        raise core_exceptions.Error(
+            "4033: not authorized. Missing iap.tunnelServices.accessViaIAP"
+            " permission."
+        ) from e
+      raise

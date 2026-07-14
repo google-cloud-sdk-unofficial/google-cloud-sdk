@@ -127,7 +127,7 @@
             *disable-flush-all*::: If enabled, flush_all command will be disabled. Applicable to
             1.4.24 and higher.
 
-            *max-item-size*::: Max bytes of the instnace. Must at least be equal to slab_chunk_max
+            *max-item-size*::: Max bytes of the instance. Must at least be equal to slab_chunk_max
             (which defaults to 524288 bytes) and less than 134217728 bytes. Additionally it must
             be a multiple of slab_chunk_max.
 

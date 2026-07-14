@@ -253,12 +253,6 @@ class ListSemanticGovernancePoliciesResponse(proto.Message):
             A token to retrieve the next page of results. Pass to
             [ListSemanticGovernancePoliciesRequest.page_token][google.cloud.aiplatform.v1beta1.ListSemanticGovernancePoliciesRequest.page_token]
             to obtain that page.
-        etag (str):
-            The etag of the semantic governance policies
-            representing the current state of all semantic
-            governance policies under the given parent. This
-            is updated on every create, update, or delete
-            operation.
     """
 
     @property
@@ -273,10 +267,6 @@ class ListSemanticGovernancePoliciesResponse(proto.Message):
     next_page_token: str = proto.Field(
         proto.STRING,
         number=2,
-    )
-    etag: str = proto.Field(
-        proto.STRING,
-        number=3,
     )
 
 

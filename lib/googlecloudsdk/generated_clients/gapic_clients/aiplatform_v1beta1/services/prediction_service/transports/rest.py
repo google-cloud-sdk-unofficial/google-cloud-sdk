@@ -95,6 +95,14 @@ class PredictionServiceRestInterceptor:
                 logging.log(f"Received response: {response}")
                 return response
 
+            def pre_delete_response(self, request, metadata):
+                logging.log(f"Received request: {request}")
+                return request, metadata
+
+            def post_delete_response(self, response):
+                logging.log(f"Received response: {response}")
+                return response
+
             def pre_direct_predict(self, request, metadata):
                 logging.log(f"Received request: {request}")
                 return request, metadata
@@ -140,6 +148,14 @@ class PredictionServiceRestInterceptor:
                 return request, metadata
 
             def post_generate_content(self, response):
+                logging.log(f"Received response: {response}")
+                return response
+
+            def pre_get_response(self, request, metadata):
+                logging.log(f"Received request: {request}")
+                return request, metadata
+
+            def post_get_response(self, response):
                 logging.log(f"Received response: {response}")
                 return response
 
@@ -273,6 +289,42 @@ class PredictionServiceRestInterceptor:
         `post_count_tokens` interceptor. The (possibly modified) response returned by
         `post_count_tokens` will be passed to
         `post_count_tokens_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_delete_response(self, request: prediction_service.DeleteResponseRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[prediction_service.DeleteResponseRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Pre-rpc interceptor for delete_response
+
+        Override in a subclass to manipulate the request or metadata
+        before they are sent to the PredictionService server.
+        """
+        return request, metadata
+
+    def post_delete_response(self, response: httpbody_pb2.HttpBody) -> httpbody_pb2.HttpBody:
+        """Post-rpc interceptor for delete_response
+
+        DEPRECATED. Please use the `post_delete_response_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
+        after it is returned by the PredictionService server but before
+        it is returned to user code. This `post_delete_response` interceptor runs
+        before the `post_delete_response_with_metadata` interceptor.
+        """
+        return response
+
+    def post_delete_response_with_metadata(self, response: httpbody_pb2.HttpBody, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[httpbody_pb2.HttpBody, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for delete_response
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the PredictionService server but before it is returned to user code.
+
+        We recommend only using this `post_delete_response_with_metadata`
+        interceptor in new development instead of the `post_delete_response` interceptor.
+        When both interceptors are used, this `post_delete_response_with_metadata` interceptor runs after the
+        `post_delete_response` interceptor. The (possibly modified) response returned by
+        `post_delete_response` will be passed to
+        `post_delete_response_with_metadata`.
         """
         return response, metadata
 
@@ -489,6 +541,42 @@ class PredictionServiceRestInterceptor:
         `post_generate_content` interceptor. The (possibly modified) response returned by
         `post_generate_content` will be passed to
         `post_generate_content_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_get_response(self, request: prediction_service.GetResponseRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[prediction_service.GetResponseRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Pre-rpc interceptor for get_response
+
+        Override in a subclass to manipulate the request or metadata
+        before they are sent to the PredictionService server.
+        """
+        return request, metadata
+
+    def post_get_response(self, response: httpbody_pb2.HttpBody) -> httpbody_pb2.HttpBody:
+        """Post-rpc interceptor for get_response
+
+        DEPRECATED. Please use the `post_get_response_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
+        after it is returned by the PredictionService server but before
+        it is returned to user code. This `post_get_response` interceptor runs
+        before the `post_get_response_with_metadata` interceptor.
+        """
+        return response
+
+    def post_get_response_with_metadata(self, response: httpbody_pb2.HttpBody, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[httpbody_pb2.HttpBody, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for get_response
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the PredictionService server but before it is returned to user code.
+
+        We recommend only using this `post_get_response_with_metadata`
+        interceptor in new development instead of the `post_get_response` interceptor.
+        When both interceptors are used, this `post_get_response_with_metadata` interceptor runs after the
+        `post_get_response` interceptor. The (possibly modified) response returned by
+        `post_get_response` will be passed to
+        `post_get_response_with_metadata`.
         """
         return response, metadata
 
@@ -1117,6 +1205,175 @@ class PredictionServiceRestTransport(_BasePredictionServiceRestTransport):
                     extra = {
                         "serviceName": "google.cloud.aiplatform.v1beta1.PredictionService",
                         "rpcName": "CountTokens",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
+            return resp
+
+    class _DeleteResponse(_BasePredictionServiceRestTransport._BaseDeleteResponse, PredictionServiceRestStub):
+        def __hash__(self):
+            return hash("PredictionServiceRestTransport.DeleteResponse")
+
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
+
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                )
+            return response
+
+        def __call__(self,
+                request: prediction_service.DeleteResponseRequest, *,
+                retry: OptionalRetry=gapic_v1.method.DEFAULT,
+                timeout: Optional[float]=None,
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
+                ) -> httpbody_pb2.HttpBody:
+            r"""Call the delete response method over HTTP.
+
+            Args:
+                request (~.prediction_service.DeleteResponseRequest):
+                    The request object. Request message for
+                [PredictionService.DeleteResponse][google.cloud.aiplatform.v1beta1.PredictionService.DeleteResponse].
+                retry (google.api_core.retry.Retry): Designation of what errors, if any,
+                    should be retried.
+                timeout (float): The timeout for this request.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
+
+            Returns:
+                ~.httpbody_pb2.HttpBody:
+                    Message that represents an arbitrary HTTP body. It
+                should only be used for payload formats that can't be
+                represented as JSON, such as raw binary or an HTML page.
+
+                This message can be used both in streaming and
+                non-streaming API methods in the request as well as the
+                response.
+
+                It can be used as a top-level request field, which is
+                convenient if one wants to extract parameters from
+                either the URL or HTTP template into the request fields
+                and also want access to the raw HTTP body.
+
+                Example:
+
+                ::
+
+                    message GetResourceRequest {
+                      // A unique request id.
+                      string request_id = 1;
+
+                      // The raw HTTP body is bound to this field.
+                      google.api.HttpBody http_body = 2;
+
+                    }
+
+                    service ResourceService {
+                      rpc GetResource(GetResourceRequest)
+                        returns (google.api.HttpBody);
+                      rpc UpdateResource(google.api.HttpBody)
+                        returns (google.protobuf.Empty);
+
+                    }
+
+                Example with streaming methods:
+
+                ::
+
+                    service CaldavService {
+                      rpc GetCalendar(stream google.api.HttpBody)
+                        returns (stream google.api.HttpBody);
+                      rpc UpdateCalendar(stream google.api.HttpBody)
+                        returns (stream google.api.HttpBody);
+
+                    }
+
+                Use of this type only changes how the request and
+                response bodies are handled, all other features will
+                continue to work unchanged.
+
+            """
+
+            http_options = _BasePredictionServiceRestTransport._BaseDeleteResponse._get_http_options()
+
+            request, metadata = self._interceptor.pre_delete_response(request, metadata)
+            transcoded_request = _BasePredictionServiceRestTransport._BaseDeleteResponse._get_transcoded_request(http_options, request)
+
+            # Jsonify the query params
+            query_params = _BasePredictionServiceRestTransport._BaseDeleteResponse._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = json_format.MessageToJson(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.cloud.aiplatform_v1beta1.PredictionServiceClient.DeleteResponse",
+                    extra = {
+                        "serviceName": "google.cloud.aiplatform.v1beta1.PredictionService",
+                        "rpcName": "DeleteResponse",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
+
+            # Send the request
+            response = PredictionServiceRestTransport._DeleteResponse._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request)
+
+            # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
+            # subclass.
+            if response.status_code >= 400:
+                raise core_exceptions.from_http_response(response)
+
+            # Return the response
+            resp = httpbody_pb2.HttpBody()
+            pb_resp = resp
+
+            json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
+            resp = self._interceptor.post_delete_response(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_delete_response_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = json_format.MessageToJson(resp)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.cloud.aiplatform_v1beta1.PredictionServiceClient.delete_response",
+                    extra = {
+                        "serviceName": "google.cloud.aiplatform.v1beta1.PredictionService",
+                        "rpcName": "DeleteResponse",
                         "metadata": http_response["headers"],
                         "httpResponse": http_response,
                     },
@@ -1867,6 +2124,175 @@ class PredictionServiceRestTransport(_BasePredictionServiceRestTransport):
                     extra = {
                         "serviceName": "google.cloud.aiplatform.v1beta1.PredictionService",
                         "rpcName": "GenerateContent",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
+            return resp
+
+    class _GetResponse(_BasePredictionServiceRestTransport._BaseGetResponse, PredictionServiceRestStub):
+        def __hash__(self):
+            return hash("PredictionServiceRestTransport.GetResponse")
+
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
+
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                )
+            return response
+
+        def __call__(self,
+                request: prediction_service.GetResponseRequest, *,
+                retry: OptionalRetry=gapic_v1.method.DEFAULT,
+                timeout: Optional[float]=None,
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
+                ) -> httpbody_pb2.HttpBody:
+            r"""Call the get response method over HTTP.
+
+            Args:
+                request (~.prediction_service.GetResponseRequest):
+                    The request object. Request message for
+                [PredictionService.GetResponse][google.cloud.aiplatform.v1beta1.PredictionService.GetResponse].
+                retry (google.api_core.retry.Retry): Designation of what errors, if any,
+                    should be retried.
+                timeout (float): The timeout for this request.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
+
+            Returns:
+                ~.httpbody_pb2.HttpBody:
+                    Message that represents an arbitrary HTTP body. It
+                should only be used for payload formats that can't be
+                represented as JSON, such as raw binary or an HTML page.
+
+                This message can be used both in streaming and
+                non-streaming API methods in the request as well as the
+                response.
+
+                It can be used as a top-level request field, which is
+                convenient if one wants to extract parameters from
+                either the URL or HTTP template into the request fields
+                and also want access to the raw HTTP body.
+
+                Example:
+
+                ::
+
+                    message GetResourceRequest {
+                      // A unique request id.
+                      string request_id = 1;
+
+                      // The raw HTTP body is bound to this field.
+                      google.api.HttpBody http_body = 2;
+
+                    }
+
+                    service ResourceService {
+                      rpc GetResource(GetResourceRequest)
+                        returns (google.api.HttpBody);
+                      rpc UpdateResource(google.api.HttpBody)
+                        returns (google.protobuf.Empty);
+
+                    }
+
+                Example with streaming methods:
+
+                ::
+
+                    service CaldavService {
+                      rpc GetCalendar(stream google.api.HttpBody)
+                        returns (stream google.api.HttpBody);
+                      rpc UpdateCalendar(stream google.api.HttpBody)
+                        returns (stream google.api.HttpBody);
+
+                    }
+
+                Use of this type only changes how the request and
+                response bodies are handled, all other features will
+                continue to work unchanged.
+
+            """
+
+            http_options = _BasePredictionServiceRestTransport._BaseGetResponse._get_http_options()
+
+            request, metadata = self._interceptor.pre_get_response(request, metadata)
+            transcoded_request = _BasePredictionServiceRestTransport._BaseGetResponse._get_transcoded_request(http_options, request)
+
+            # Jsonify the query params
+            query_params = _BasePredictionServiceRestTransport._BaseGetResponse._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = json_format.MessageToJson(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.cloud.aiplatform_v1beta1.PredictionServiceClient.GetResponse",
+                    extra = {
+                        "serviceName": "google.cloud.aiplatform.v1beta1.PredictionService",
+                        "rpcName": "GetResponse",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
+
+            # Send the request
+            response = PredictionServiceRestTransport._GetResponse._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request)
+
+            # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
+            # subclass.
+            if response.status_code >= 400:
+                raise core_exceptions.from_http_response(response)
+
+            # Return the response
+            resp = httpbody_pb2.HttpBody()
+            pb_resp = resp
+
+            json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
+            resp = self._interceptor.post_get_response(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_get_response_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = json_format.MessageToJson(resp)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.cloud.aiplatform_v1beta1.PredictionServiceClient.get_response",
+                    extra = {
+                        "serviceName": "google.cloud.aiplatform.v1beta1.PredictionService",
+                        "rpcName": "GetResponse",
                         "metadata": http_response["headers"],
                         "httpResponse": http_response,
                     },
@@ -2935,6 +3361,14 @@ class PredictionServiceRestTransport(_BasePredictionServiceRestTransport):
         return self._CountTokens(self._session, self._host, self._interceptor) # type: ignore
 
     @property
+    def delete_response(self) -> Callable[
+            [prediction_service.DeleteResponseRequest],
+            httpbody_pb2.HttpBody]:
+        # The return type is fine, but mypy isn't sophisticated enough to determine what's going on here.
+        # In C++ this would require a dynamic_cast
+        return self._DeleteResponse(self._session, self._host, self._interceptor) # type: ignore
+
+    @property
     def direct_predict(self) -> Callable[
             [prediction_service.DirectPredictRequest],
             prediction_service.DirectPredictResponse]:
@@ -2981,6 +3415,14 @@ class PredictionServiceRestTransport(_BasePredictionServiceRestTransport):
         # The return type is fine, but mypy isn't sophisticated enough to determine what's going on here.
         # In C++ this would require a dynamic_cast
         return self._GenerateContent(self._session, self._host, self._interceptor) # type: ignore
+
+    @property
+    def get_response(self) -> Callable[
+            [prediction_service.GetResponseRequest],
+            httpbody_pb2.HttpBody]:
+        # The return type is fine, but mypy isn't sophisticated enough to determine what's going on here.
+        # In C++ this would require a dynamic_cast
+        return self._GetResponse(self._session, self._host, self._interceptor) # type: ignore
 
     @property
     def invoke(self) -> Callable[

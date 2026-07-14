@@ -39,10 +39,12 @@ class AssuredworkloadsV1beta1(base_api.BaseApiClient):
         response_encoding=response_encoding)
     self.assuredworkloads = self.AssuredworkloadsService(self)
     self.organizations_locations_operations = self.OrganizationsLocationsOperationsService(self)
+    self.organizations_locations_violations = self.OrganizationsLocationsViolationsService(self)
     self.organizations_locations_workloads_updates = self.OrganizationsLocationsWorkloadsUpdatesService(self)
     self.organizations_locations_workloads_violations = self.OrganizationsLocationsWorkloadsViolationsService(self)
     self.organizations_locations_workloads = self.OrganizationsLocationsWorkloadsService(self)
     self.organizations_locations = self.OrganizationsLocationsService(self)
+    self.organizations_violations = self.OrganizationsViolationsService(self)
     self.organizations = self.OrganizationsService(self)
 
   class AssuredworkloadsService(base_api.BaseApiService):
@@ -168,6 +170,43 @@ class AssuredworkloadsV1beta1(base_api.BaseApiClient):
         request_field='',
         request_type_name='AssuredworkloadsOrganizationsLocationsOperationsListRequest',
         response_type_name='GoogleLongrunningListOperationsResponse',
+        supports_download=False,
+    )
+
+  class OrganizationsLocationsViolationsService(base_api.BaseApiService):
+    """Service class for the organizations_locations_violations resource."""
+
+    _NAME = 'organizations_locations_violations'
+
+    def __init__(self, client):
+      super(AssuredworkloadsV1beta1.OrganizationsLocationsViolationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def BatchAcknowledgeViolations(self, request, global_params=None):
+      r"""Acknowledges multiple existing violations. By acknowledging violations, users acknowledge the existence of compliance violations in their workload and decide to ignore them due to a valid business justification. Acknowledgement is a permanent operation and it cannot be reverted. This is a batch version of AcknowledgeViolation.
+
+      Args:
+        request: (AssuredworkloadsOrganizationsLocationsViolationsBatchAcknowledgeViolationsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAssuredworkloadsV1beta1BatchAcknowledgeViolationsResponse) The response message.
+      """
+      config = self.GetMethodConfig('BatchAcknowledgeViolations')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    BatchAcknowledgeViolations.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/organizations/{organizationsId}/locations/{locationsId}/violations:batchAcknowledgeViolations',
+        http_method='POST',
+        method_id='assuredworkloads.organizations.locations.violations.batchAcknowledgeViolations',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1beta1/{+parent}/violations:batchAcknowledgeViolations',
+        request_field='googleCloudAssuredworkloadsV1beta1BatchAcknowledgeViolationsRequest',
+        request_type_name='AssuredworkloadsOrganizationsLocationsViolationsBatchAcknowledgeViolationsRequest',
+        response_type_name='GoogleCloudAssuredworkloadsV1beta1BatchAcknowledgeViolationsResponse',
         supports_download=False,
     )
 
@@ -345,7 +384,7 @@ class AssuredworkloadsV1beta1(base_api.BaseApiClient):
         method_id='assuredworkloads.organizations.locations.workloads.violations.list',
         ordered_params=['parent'],
         path_params=['parent'],
-        query_params=['filter', 'interval_endTime', 'interval_startTime', 'pageSize', 'pageToken'],
+        query_params=['filter', 'interval_endTime', 'interval_startTime', 'orderBy', 'pageSize', 'pageToken'],
         relative_path='v1beta1/{+parent}/violations',
         request_field='',
         request_type_name='AssuredworkloadsOrganizationsLocationsWorkloadsViolationsListRequest',
@@ -615,6 +654,43 @@ class AssuredworkloadsV1beta1(base_api.BaseApiClient):
       super(AssuredworkloadsV1beta1.OrganizationsLocationsService, self).__init__(client)
       self._upload_configs = {
           }
+
+  class OrganizationsViolationsService(base_api.BaseApiService):
+    """Service class for the organizations_violations resource."""
+
+    _NAME = 'organizations_violations'
+
+    def __init__(self, client):
+      super(AssuredworkloadsV1beta1.OrganizationsViolationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def BatchAcknowledgeViolations(self, request, global_params=None):
+      r"""Acknowledges multiple existing violations. By acknowledging violations, users acknowledge the existence of compliance violations in their workload and decide to ignore them due to a valid business justification. Acknowledgement is a permanent operation and it cannot be reverted. This is a batch version of AcknowledgeViolation.
+
+      Args:
+        request: (AssuredworkloadsOrganizationsViolationsBatchAcknowledgeViolationsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAssuredworkloadsV1beta1BatchAcknowledgeViolationsResponse) The response message.
+      """
+      config = self.GetMethodConfig('BatchAcknowledgeViolations')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    BatchAcknowledgeViolations.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/organizations/{organizationsId}/violations:batchAcknowledgeViolations',
+        http_method='POST',
+        method_id='assuredworkloads.organizations.violations.batchAcknowledgeViolations',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1beta1/{+parent}/violations:batchAcknowledgeViolations',
+        request_field='googleCloudAssuredworkloadsV1beta1BatchAcknowledgeViolationsRequest',
+        request_type_name='AssuredworkloadsOrganizationsViolationsBatchAcknowledgeViolationsRequest',
+        response_type_name='GoogleCloudAssuredworkloadsV1beta1BatchAcknowledgeViolationsResponse',
+        supports_download=False,
+    )
 
   class OrganizationsService(base_api.BaseApiService):
     """Service class for the organizations resource."""

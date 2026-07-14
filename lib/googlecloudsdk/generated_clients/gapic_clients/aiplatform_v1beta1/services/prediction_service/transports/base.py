@@ -193,6 +193,16 @@ class PredictionServiceTransport(abc.ABC):
                 default_timeout=None,
                 client_info=client_info,
             ),
+            self.get_response: gapic_v1.method.wrap_method(
+                self.get_response,
+                default_timeout=None,
+                client_info=client_info,
+            ),
+            self.delete_response: gapic_v1.method.wrap_method(
+                self.delete_response,
+                default_timeout=None,
+                client_info=client_info,
+            ),
             self.explain: gapic_v1.method.wrap_method(
                 self.explain,
                 default_timeout=None,
@@ -345,6 +355,24 @@ class PredictionServiceTransport(abc.ABC):
     @property
     def invoke(self) -> Callable[
             [prediction_service.InvokeRequest],
+            Union[
+                httpbody_pb2.HttpBody,
+                Awaitable[httpbody_pb2.HttpBody]
+            ]]:
+        raise NotImplementedError()
+
+    @property
+    def get_response(self) -> Callable[
+            [prediction_service.GetResponseRequest],
+            Union[
+                httpbody_pb2.HttpBody,
+                Awaitable[httpbody_pb2.HttpBody]
+            ]]:
+        raise NotImplementedError()
+
+    @property
+    def delete_response(self) -> Callable[
+            [prediction_service.DeleteResponseRequest],
             Union[
                 httpbody_pb2.HttpBody,
                 Awaitable[httpbody_pb2.HttpBody]

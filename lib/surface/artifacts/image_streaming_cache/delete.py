@@ -24,7 +24,6 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 @base.DefaultUniverseOnly
 class Delete(base.DeleteCommand):
   """Removes the prewarmed state of a specific artifact from a specific stream location."""

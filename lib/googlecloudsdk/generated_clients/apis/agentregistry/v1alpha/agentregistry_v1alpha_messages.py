@@ -14,6 +14,24 @@ from apitools.base.py import extra_types
 package = 'agentregistry'
 
 
+class A2ASkill(_messages.Message):
+  r"""Represents the skills of an Agent.
+
+  Fields:
+    description: Output only. A more detailed description of the skill.
+    examples: Output only. Example prompts or scenarios this skill can handle.
+    id: Output only. A unique identifier for the agent's skill.
+    name: Output only. A human-readable name for the agent's skill.
+    tags: Output only. Keywords describing the skill.
+  """
+
+  description = _messages.StringField(1)
+  examples = _messages.StringField(2, repeated=True)
+  id = _messages.StringField(3)
+  name = _messages.StringField(4)
+  tags = _messages.StringField(5, repeated=True)
+
+
 class Agent(_messages.Message):
   r"""Represents an Agent. "A2A" below refers to the Agent-to-Agent protocol.
 
@@ -127,7 +145,7 @@ class Agent(_messages.Message):
   location = _messages.StringField(7)
   name = _messages.StringField(8)
   protocols = _messages.MessageField('Protocol', 9, repeated=True)
-  skills = _messages.MessageField('Skill', 10, repeated=True)
+  skills = _messages.MessageField('A2ASkill', 10, repeated=True)
   uid = _messages.StringField(11)
   updateTime = _messages.StringField(12)
   version = _messages.StringField(13)
@@ -1659,24 +1677,6 @@ class Service(_messages.Message):
   name = _messages.StringField(8)
   registryResource = _messages.StringField(9)
   updateTime = _messages.StringField(10)
-
-
-class Skill(_messages.Message):
-  r"""Represents the skills of an Agent.
-
-  Fields:
-    description: Output only. A more detailed description of the skill.
-    examples: Output only. Example prompts or scenarios this skill can handle.
-    id: Output only. A unique identifier for the agent's skill.
-    name: Output only. A human-readable name for the agent's skill.
-    tags: Output only. Keywords describing the skill.
-  """
-
-  description = _messages.StringField(1)
-  examples = _messages.StringField(2, repeated=True)
-  id = _messages.StringField(3)
-  name = _messages.StringField(4)
-  tags = _messages.StringField(5, repeated=True)
 
 
 class Source(_messages.Message):

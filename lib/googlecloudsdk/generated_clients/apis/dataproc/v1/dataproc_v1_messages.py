@@ -603,6 +603,9 @@ class AttachedDiskConfig(_messages.Message):
   Fields:
     diskSizeGb: Optional. Disk size in GB.
     diskType: Optional. Disk type.
+    name: Optional. Uniquely identifying name for the disk. This name can
+      later be used to override the disk config in FLEX MIG instance
+      selection.
     provisionedIops: Optional. Indicates how many IOPS to provision for the
       attached disk. This sets the number of I/O operations per second that
       the disk can handle. See
@@ -633,8 +636,9 @@ class AttachedDiskConfig(_messages.Message):
 
   diskSizeGb = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   diskType = _messages.EnumField('DiskTypeValueValuesEnum', 2)
-  provisionedIops = _messages.IntegerField(3)
-  provisionedThroughput = _messages.IntegerField(4)
+  name = _messages.StringField(3)
+  provisionedIops = _messages.IntegerField(4)
+  provisionedThroughput = _messages.IntegerField(5)
 
 
 class AuthenticationConfig(_messages.Message):
@@ -1837,7 +1841,7 @@ class CohortInfo(_messages.Message):
 
 class ConfidentialInstanceConfig(_messages.Message):
   r"""Confidential Instance Config for clusters using Confidential VMs
-  (https://cloud.google.com/compute/confidential-vm/docs)
+  (https://cloud.google.com/confidential-computing/confidential-vm/docs)
 
   Enums:
     ConfidentialInstanceTypeValueValuesEnum: Optional. Defines the type of
@@ -5802,8 +5806,8 @@ class GceClusterConfig(_messages.Message):
       https://www.googleapis.com/compute/v1/projects/[project_id]/zones/[zone]
       projects/[project_id]/zones/[zone] [zone]
     confidentialInstanceConfig: Optional. Confidential Instance Config for
-      clusters using Confidential VMs
-      (https://cloud.google.com/compute/confidential-vm/docs).
+      clusters using Confidential VMs (https://cloud.google.com/confidential-
+      computing/confidential-vm/docs).
     internalIpOnly: Optional. This setting applies to subnetwork-enabled
       networks. It is set to true by default in clusters created with image
       versions 2.2.x.When set to true: All cluster VMs have internal IP
@@ -6734,6 +6738,8 @@ class InstanceSelection(_messages.Message):
   r"""Defines machines types and a rank to which the machines types belong.
 
   Fields:
+    diskConfig: Optional. Disk configuration to apply to the instance
+      selection.
     machineTypes: Optional. Full machine-type names, e.g. "n1-standard-16".
     rank: Optional. Preference of this instance selection. Lower number means
       higher preference. The service will first try to create a VM based on
@@ -6742,8 +6748,9 @@ class InstanceSelection(_messages.Message):
       priority have the same preference.
   """
 
-  machineTypes = _messages.StringField(1, repeated=True)
-  rank = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  diskConfig = _messages.MessageField('DiskConfig', 1)
+  machineTypes = _messages.StringField(2, repeated=True)
+  rank = _messages.IntegerField(3, variant=_messages.Variant.INT32)
 
 
 class InstanceSelectionResult(_messages.Message):

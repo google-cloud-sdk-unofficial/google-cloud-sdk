@@ -2829,20 +2829,6 @@ class GoogleCloudPolicysimulatorV1betaListAccessPolicySimulationsResponse(_messa
   nextPageToken = _messages.StringField(2)
 
 
-class GoogleCloudPolicysimulatorV1betaListActivityBacktestResultsResponse(_messages.Message):
-  r"""Response message for ListActivityBacktestResults.
-
-  Fields:
-    activityBacktestResults: The results of the simulation.
-    nextPageToken: Optional. A token that you can use to retrieve the next
-      page of ActivityBacktestResult objects. If this field is omitted, there
-      are no subsequent pages.
-  """
-
-  activityBacktestResults = _messages.MessageField('GoogleCloudPolicysimulatorV1betaActivityBacktestResult', 1, repeated=True)
-  nextPageToken = _messages.StringField(2)
-
-
 class GoogleCloudPolicysimulatorV1betaListActivityBacktestsResponse(_messages.Message):
   r"""Response message for ListActivityBacktestResults.
 
@@ -4991,38 +4977,6 @@ class PolicysimulatorFoldersLocationsActivityBacktestResultsGetRequest(_messages
   name = _messages.StringField(1, required=True)
 
 
-class PolicysimulatorFoldersLocationsActivityBacktestResultsListRequest(_messages.Message):
-  r"""A PolicysimulatorFoldersLocationsActivityBacktestResultsListRequest
-  object.
-
-  Fields:
-    filter: Optional. A filter expression that filters the
-      ActivityBacktestResults to return. The only supported filter is
-      `activity_backtest='{backtest_name}'`, which returns only
-      ActivityBacktestResults for the specified ActivityBacktest. Operators,
-      fields and other expressions are not supported.
-    pageSize: Optional. The maximum number of ActivityBacktestResult objects
-      to return. Defaults to 1000. Maximum value is 1000. Values above the
-      maximum are reduced to the maximum value.
-    pageToken: Optional. A page token, received from a previous
-      ListActivityBacktestResults call. Provide this token to retrieve the
-      next page of results. When paginating, all other parameters provided to
-      ListActivityBacktestResults must match the call that provided the page
-      token.
-    parent: Required. The parent node of the activity backtest results, which
-      is the nearest Cloud Resource Manager (CRM) node of the access activity
-      contained in the result. In the format:
-      `projects/{project}/locations/global`
-      `folders/{folder}/locations/global`
-      `organizations/{organization}/locations/global`
-  """
-
-  filter = _messages.StringField(1)
-  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(3)
-  parent = _messages.StringField(4, required=True)
-
-
 class PolicysimulatorFoldersLocationsActivityBacktestsCreateRequest(_messages.Message):
   r"""A PolicysimulatorFoldersLocationsActivityBacktestsCreateRequest object.
 
@@ -5444,39 +5398,6 @@ class PolicysimulatorOrganizationsLocationsActivityBacktestResultsGetRequest(_me
   """
 
   name = _messages.StringField(1, required=True)
-
-
-class PolicysimulatorOrganizationsLocationsActivityBacktestResultsListRequest(_messages.Message):
-  r"""A
-  PolicysimulatorOrganizationsLocationsActivityBacktestResultsListRequest
-  object.
-
-  Fields:
-    filter: Optional. A filter expression that filters the
-      ActivityBacktestResults to return. The only supported filter is
-      `activity_backtest='{backtest_name}'`, which returns only
-      ActivityBacktestResults for the specified ActivityBacktest. Operators,
-      fields and other expressions are not supported.
-    pageSize: Optional. The maximum number of ActivityBacktestResult objects
-      to return. Defaults to 1000. Maximum value is 1000. Values above the
-      maximum are reduced to the maximum value.
-    pageToken: Optional. A page token, received from a previous
-      ListActivityBacktestResults call. Provide this token to retrieve the
-      next page of results. When paginating, all other parameters provided to
-      ListActivityBacktestResults must match the call that provided the page
-      token.
-    parent: Required. The parent node of the activity backtest results, which
-      is the nearest Cloud Resource Manager (CRM) node of the access activity
-      contained in the result. In the format:
-      `projects/{project}/locations/global`
-      `folders/{folder}/locations/global`
-      `organizations/{organization}/locations/global`
-  """
-
-  filter = _messages.StringField(1)
-  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(3)
-  parent = _messages.StringField(4, required=True)
 
 
 class PolicysimulatorOrganizationsLocationsActivityBacktestsCreateRequest(_messages.Message):
@@ -6022,38 +5943,6 @@ class PolicysimulatorProjectsLocationsActivityBacktestResultsGetRequest(_message
   """
 
   name = _messages.StringField(1, required=True)
-
-
-class PolicysimulatorProjectsLocationsActivityBacktestResultsListRequest(_messages.Message):
-  r"""A PolicysimulatorProjectsLocationsActivityBacktestResultsListRequest
-  object.
-
-  Fields:
-    filter: Optional. A filter expression that filters the
-      ActivityBacktestResults to return. The only supported filter is
-      `activity_backtest='{backtest_name}'`, which returns only
-      ActivityBacktestResults for the specified ActivityBacktest. Operators,
-      fields and other expressions are not supported.
-    pageSize: Optional. The maximum number of ActivityBacktestResult objects
-      to return. Defaults to 1000. Maximum value is 1000. Values above the
-      maximum are reduced to the maximum value.
-    pageToken: Optional. A page token, received from a previous
-      ListActivityBacktestResults call. Provide this token to retrieve the
-      next page of results. When paginating, all other parameters provided to
-      ListActivityBacktestResults must match the call that provided the page
-      token.
-    parent: Required. The parent node of the activity backtest results, which
-      is the nearest Cloud Resource Manager (CRM) node of the access activity
-      contained in the result. In the format:
-      `projects/{project}/locations/global`
-      `folders/{folder}/locations/global`
-      `organizations/{organization}/locations/global`
-  """
-
-  filter = _messages.StringField(1)
-  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(3)
-  parent = _messages.StringField(4, required=True)
 
 
 class PolicysimulatorProjectsLocationsActivityBacktestsCreateRequest(_messages.Message):

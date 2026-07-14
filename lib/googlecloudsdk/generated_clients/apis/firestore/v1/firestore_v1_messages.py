@@ -591,6 +591,9 @@ class ExecutePipelineRequest(_messages.Message):
   r"""The request for Firestore.ExecutePipeline.
 
   Fields:
+    autoCommitTransaction: Optional. Automatically commits the transaction
+      after the pipeline has been executed. Only permitted in combination with
+      `transaction` or `new_transaction`.
     newTransaction: Execute the pipeline in a new transaction. The identifier
       of the newly created transaction will be returned in the first response
       on the stream. This defaults to a read-only transaction.
@@ -603,10 +606,11 @@ class ExecutePipelineRequest(_messages.Message):
       here is the opaque transaction ID to execute the query in.
   """
 
-  newTransaction = _messages.MessageField('TransactionOptions', 1)
-  readTime = _messages.StringField(2)
-  structuredPipeline = _messages.MessageField('StructuredPipeline', 3)
-  transaction = _messages.BytesField(4)
+  autoCommitTransaction = _messages.BooleanField(1)
+  newTransaction = _messages.MessageField('TransactionOptions', 2)
+  readTime = _messages.StringField(3)
+  structuredPipeline = _messages.MessageField('StructuredPipeline', 4)
+  transaction = _messages.BytesField(5)
 
 
 class ExecutePipelineResponse(_messages.Message):

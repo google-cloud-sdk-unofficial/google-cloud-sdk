@@ -19,7 +19,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 @base.DefaultUniverseOnly
 class ImageStreamingCache(base.Group):
   """Manage Artifact Registry image streaming caches."""

@@ -2574,10 +2574,11 @@ class Instance(_messages.Message):
       response, if the value of `default_backup_schedule_type` isn't set, or
       set to `NONE`, Spanner doesn't create a default backup schedule for new
       databases in the instance.
-    DefaultStorageTypeValueValuesEnum: The `StorageType` of the current
-      instance. If unspecified, it will default to the first StorageType in
-      the list of allowed_storage_types in the `InstanceConfig` for this
-      instance.
+    DefaultStorageTypeValueValuesEnum: Deprecated: Field is not used and
+      storage type support is determined by instance config
+      allowed_storage_types. The `StorageType` of the current instance. If
+      unspecified, it will default to the first StorageType in the list of
+      allowed_storage_types in the `InstanceConfig` for this instance.
     EditionValueValuesEnum: Optional. The `Edition` of the current instance.
     InstanceTypeValueValuesEnum: The `InstanceType` of the current instance.
     StateValueValuesEnum: Output only. The current instance state. For
@@ -2624,9 +2625,11 @@ class Instance(_messages.Message):
       value of `default_backup_schedule_type` isn't set, or set to `NONE`,
       Spanner doesn't create a default backup schedule for new databases in
       the instance.
-    defaultStorageType: The `StorageType` of the current instance. If
-      unspecified, it will default to the first StorageType in the list of
-      allowed_storage_types in the `InstanceConfig` for this instance.
+    defaultStorageType: Deprecated: Field is not used and storage type support
+      is determined by instance config allowed_storage_types. The
+      `StorageType` of the current instance. If unspecified, it will default
+      to the first StorageType in the list of allowed_storage_types in the
+      `InstanceConfig` for this instance.
     displayName: Required. The descriptive name for this instance as it
       appears in UIs. Must be unique per project and between 4 and 30
       characters in length.
@@ -2728,9 +2731,10 @@ class Instance(_messages.Message):
     AUTOMATIC = 2
 
   class DefaultStorageTypeValueValuesEnum(_messages.Enum):
-    r"""The `StorageType` of the current instance. If unspecified, it will
-    default to the first StorageType in the list of allowed_storage_types in
-    the `InstanceConfig` for this instance.
+    r"""Deprecated: Field is not used and storage type support is determined
+    by instance config allowed_storage_types. The `StorageType` of the current
+    instance. If unspecified, it will default to the first StorageType in the
+    list of allowed_storage_types in the `InstanceConfig` for this instance.
 
     Values:
       STORAGE_TYPE_UNSPECIFIED: Storage type not specified.

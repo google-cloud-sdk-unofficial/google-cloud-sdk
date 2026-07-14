@@ -250,7 +250,6 @@ def AddEnableWildfireArg(
       "--enable-wildfire",
       action="store_true",
       required=False,
-      hidden=True,
       help=(
           "Enable WildFire functionality on the endpoint. Use"
           " --enable-wildfire to enable. To disable, use --no-enable-wildfire."
@@ -265,7 +264,6 @@ def AddWildfireRegionArg(
   parser.add_argument(
       "--wildfire-region",
       required=False,
-      hidden=True,
       help=(
           "The region WildFire submissions from this endpoint will be sent to"
           " for analysis by WildFire. Defaults to the nearest available region."
@@ -280,7 +278,6 @@ def AddContentCloudRegionArg(
   parser.add_argument(
       "--content-cloud-region",
       required=False,
-      hidden=True,
       help=(
           "The content cloud region the endpoint will use. Defaults to the"
           " nearest available region."
@@ -304,7 +301,6 @@ def AddWildfireLookupTimeoutArg(
       "--wildfire-lookup-timeout",
       type=int,
       required=False,
-      hidden=True,
       help=(
           "The timeout (in milliseconds) to hold a file while the WildFire real"
           " time signature cloud performs a signature lookup."
@@ -328,7 +324,6 @@ def AddWildfireLookupActionArg(
       "--wildfire-lookup-action",
       choices=["ALLOW", "DENY"],
       required=False,
-      hidden=True,
       help=(
           "The action to take on WildFire real time signature lookup timeout."
       ),
@@ -351,7 +346,6 @@ def AddWildfireAnalysisTimeoutArg(
       "--wildfire-analysis-timeout",
       type=int,
       required=False,
-      hidden=True,
       help=(
           "The timeout (in milliseconds) on a file being held while WildFire"
           " inline cloud analysis is performed."
@@ -374,7 +368,6 @@ def AddWildfireAnalysisActionArg(
       "--wildfire-analysis-action",
       choices=["ALLOW", "DENY"],
       required=False,
-      hidden=True,
       help="The action to take on WildFire inline cloud analysis timeout.",
   )
 
@@ -395,7 +388,6 @@ def AddEnableWildfireAnalysisLoggingArg(
       "--enable-wildfire-analysis-logging",
       action="store_true",
       required=False,
-      hidden=True,
       help=(
           "Enable WildFire inline cloud analysis submission timeout logging."
           " This is enabled by default. Use"
@@ -420,7 +412,6 @@ def AddBlockPartialHttpArg(
       "--block-partial-http",
       action="store_true",
       required=False,
-      hidden=True,
       help=(
           "Block HTTP partial responses. Defaults to false. Use"
           " `--block-partial-http` to enable. To disable, use"

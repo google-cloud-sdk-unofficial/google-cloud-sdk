@@ -647,34 +647,12 @@ def AddMigForceUpdateOnRepairFlags(parser):
 def AddMigDefaultActionOnVmFailure(parser, release_track):
   if release_track == base.ReleaseTrack.ALPHA:
     AddMigDefaultActionOnVmFailureAlpha(parser)
-  elif release_track == base.ReleaseTrack.BETA:
-    AddMigDefaultActionOnVmFailureBeta(parser)
   else:
+    # For GA and BETA tracks, the default action on VM failure is the same.
     AddMigDefaultActionOnVmFailureGA(parser)
 
 
 def AddMigDefaultActionOnVmFailureGA(parser):
-  """Add default action on VM failure to the parser."""
-  help_text = """\
-      Specifies the action that a MIG performs on a failed or an unhealthy VM.
-      A VM is marked as unhealthy when the application running on that VM
-      fails a health check.
-      By default, the value of the flag is set to ``repair''."""
-  choices = {
-      'repair': 'MIG automatically repairs a failed or an unhealthy VM.',
-      'do-nothing': 'MIG does not repair a failed or an unhealthy VM.',
-  }
-
-  parser.add_argument(
-      '--default-action-on-vm-failure',
-      metavar='ACTION_ON_VM_FAILURE',
-      type=arg_utils.EnumNameToChoice,
-      choices=choices,
-      help=help_text,
-  )
-
-
-def AddMigDefaultActionOnVmFailureBeta(parser):
   """Add default action on VM failure to the parser."""
   help_text = """\
       Specifies the action that a MIG performs on a failed VM. If the value of

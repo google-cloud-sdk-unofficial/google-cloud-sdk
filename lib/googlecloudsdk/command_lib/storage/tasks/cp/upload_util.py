@@ -135,7 +135,11 @@ def get_digesters(source_resource, destination_resource):
         check_hashes == properties.CheckHashes.ALWAYS
         or fast_crc32c_util.check_if_will_use_fast_crc32c()
     ):
-      return {hash_util.HashAlgorithm.CRC32C: fast_crc32c_util.get_crc32c()}
+      return {
+          hash_util.HashAlgorithm.CRC32C: fast_crc32c_util.get_crc32c(
+              is_streaming=source_resource.storage_url.is_stream
+          )
+      }
     return {}
 
   if (source_resource.md5_hash or

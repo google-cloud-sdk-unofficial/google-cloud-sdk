@@ -4064,7 +4064,7 @@ class StorageDatabasecenterPartnerapiV1mainAvailabilityConfiguration(_messages.M
     region (it is highly available).
 
     Values:
-      AVAILABILITY_TYPE_UNSPECIFIED: <no description>
+      AVAILABILITY_TYPE_UNSPECIFIED: Unspecified availability type.
       ZONAL: Zonal available instance.
       REGIONAL: Regional available instance.
       MULTI_REGIONAL: Multi regional instance
@@ -4151,7 +4151,7 @@ class StorageDatabasecenterPartnerapiV1mainBackupRun(_messages.Message):
     r"""The status of this run. REQUIRED
 
     Values:
-      STATUS_UNSPECIFIED: <no description>
+      STATUS_UNSPECIFIED: Unspecified status.
       SUCCESSFUL: The backup was successful.
       FAILED: The backup was unsuccessful.
     """
@@ -4270,17 +4270,12 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceFeed(_messages.Messag
       ingest signals from database resource signal feeds.
     feedTimestamp: Required. Timestamp when feed is generated.
     feedType: Required. Type feed to be ingested into condor
-    observabilityMetricData: A
-      StorageDatabasecenterPartnerapiV1mainObservabilityMetricData attribute.
-    recommendationSignalData: A StorageDatabasecenterPartnerapiV1mainDatabaseR
-      esourceRecommendationSignalData attribute.
-    resourceHealthSignalData: A
-      StorageDatabasecenterPartnerapiV1mainDatabaseResourceHealthSignalData
-      attribute.
+    observabilityMetricData: Observability metric data.
+    recommendationSignalData: Database resource recommendation signal data.
+    resourceHealthSignalData: Database resource health signal data.
     resourceId: Primary key associated with the Resource. resource_id is
       available in individual feed level as well.
-    resourceMetadata: A
-      StorageDatabasecenterPartnerapiV1mainDatabaseResourceMetadata attribute.
+    resourceMetadata: Database resource metadata.
     skipIngestion: Optional. If true, the feed won't be ingested by DB Center.
       This indicates that the feed is intentionally skipped. For example,
       BackupDR feeds are only needed for resources integrated with DB Center
@@ -4292,7 +4287,7 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceFeed(_messages.Messag
     r"""Required. Type feed to be ingested into condor
 
     Values:
-      FEEDTYPE_UNSPECIFIED: <no description>
+      FEEDTYPE_UNSPECIFIED: Unspecified feed type. Not expected to be used.
       RESOURCE_METADATA: Database resource metadata feed from control plane
       OBSERVABILITY_DATA: Database resource monitoring data
       SECURITY_FINDING_DATA: Database resource security health signal data
@@ -4335,7 +4330,8 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceHealthSignalData(_mes
       a HIGH or LOW severity.
     SignalTypeValueValuesEnum: Required. Type of signal, for example,
       `AVAILABLE_IN_MULTIPLE_ZONES`, `LOGGING_MOST_ERRORS`, etc.
-    StateValueValuesEnum:
+    StateValueValuesEnum: Required. The state of the signal, such as if it's
+      ACTIVE or RESOLVED.
 
   Messages:
     AdditionalMetadataValue: Any other additional metadata
@@ -4375,14 +4371,15 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceHealthSignalData(_mes
       severity.
     signalType: Required. Type of signal, for example,
       `AVAILABLE_IN_MULTIPLE_ZONES`, `LOGGING_MOST_ERRORS`, etc.
-    state: A StateValueValuesEnum attribute.
+    state: Required. The state of the signal, such as if it's ACTIVE or
+      RESOLVED.
   """
 
   class ProviderValueValuesEnum(_messages.Enum):
     r"""Cloud provider name. Ex: GCP/AWS/Azure/OnPrem/SelfManaged
 
     Values:
-      PROVIDER_UNSPECIFIED: <no description>
+      PROVIDER_UNSPECIFIED: Unspecified provider.
       GCP: Google cloud platform provider
       AWS: Amazon web service
       AZURE: Azure web service
@@ -4791,7 +4788,7 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceHealthSignalData(_mes
     SIGNAL_TYPE_VERSION_NEARING_END_OF_LIFE = 106
 
   class StateValueValuesEnum(_messages.Enum):
-    r"""StateValueValuesEnum enum type.
+    r"""Required. The state of the signal, such as if it's ACTIVE or RESOLVED.
 
     Values:
       STATE_UNSPECIFIED: Unspecified state.
@@ -4880,7 +4877,7 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceId(_messages.Message)
     r"""Required. Cloud provider name. Ex: GCP/AWS/Azure/OnPrem/SelfManaged
 
     Values:
-      PROVIDER_UNSPECIFIED: <no description>
+      PROVIDER_UNSPECIFIED: Unspecified provider.
       GCP: Google cloud platform provider
       AWS: Amazon web service
       AZURE: Azure web service
@@ -5091,11 +5088,15 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceMetadata(_messages.Me
       MODE_NATIVE: Native mode.
       MODE_MONGODB_COMPATIBLE: MongoDB compatible mode.
       MODE_DATASTORE: Datastore mode.
+      MODE_CLUSTER_ENABLED: Memorystore/ValKey: Cluster enabled mode.
+      MODE_CLUSTER_DISABLED: Memorystore/ValKey: Cluster disabled mode.
     """
     MODE_UNSPECIFIED = 0
     MODE_NATIVE = 1
     MODE_MONGODB_COMPATIBLE = 2
     MODE_DATASTORE = 3
+    MODE_CLUSTER_ENABLED = 4
+    MODE_CLUSTER_DISABLED = 5
 
   class SuspensionReasonValueValuesEnum(_messages.Enum):
     r"""Optional. Suspension reason for the resource.
@@ -5803,7 +5804,7 @@ class StorageDatabasecenterPartnerapiV1mainInternalResourceMetadata(_messages.Me
     backupRun: Information about the last backup attempt for this database
     isDeletionProtectionEnabled: Whether deletion protection is enabled for
       this internal resource.
-    product: A StorageDatabasecenterProtoCommonProduct attribute.
+    product: The product this resource represents.
     resourceId: A StorageDatabasecenterPartnerapiV1mainDatabaseResourceId
       attribute.
     resourceName: Required. internal resource name for spanner this will be
@@ -6147,9 +6148,10 @@ class StorageDatabasecenterPartnerapiV1mainRetentionSettings(_messages.Message):
   Fields:
     durationBasedRetention: Duration based retention period i.e. 172800
       seconds (2 days)
-    quantityBasedRetention: A integer attribute.
+    quantityBasedRetention: Quantity based retention period i.e. 7 backups
     retentionUnit: The unit that 'retained_backups' represents.
-    timeBasedRetention: A string attribute.
+    timeBasedRetention: Duration based retention period i.e. 172800 seconds (2
+      days)
     timestampBasedRetentionTime: Timestamp based retention period i.e.
       2024-05-01T00:00:00Z
   """
@@ -6330,7 +6332,7 @@ class StorageDatabasecenterProtoCommonProduct(_messages.Message):
       ENGINE_MEMORYSTORE_FOR_REDIS: Memorystore with Redis dialect.
       ENGINE_MEMORYSTORE_FOR_REDIS_CLUSTER: Memorystore with Redis cluster
         dialect.
-      ENGINE_MEMORSTORE_FOR_VALKEY: Memorystore with Valkey dialect.
+      ENGINE_MEMORYSTORE_FOR_VALKEY: Memorystore with Valkey.
       ENGINE_OTHER: Other refers to rest of other database engine. This is to
         be when engine is known, but it is not present in this enum.
       ENGINE_FIRESTORE_WITH_NATIVE_MODE: Firestore with native mode.
@@ -6353,7 +6355,7 @@ class StorageDatabasecenterProtoCommonProduct(_messages.Message):
     ENGINE_CLOUD_SPANNER_WITH_GOOGLESQL_DIALECT = 10
     ENGINE_MEMORYSTORE_FOR_REDIS = 11
     ENGINE_MEMORYSTORE_FOR_REDIS_CLUSTER = 12
-    ENGINE_MEMORSTORE_FOR_VALKEY = 13
+    ENGINE_MEMORYSTORE_FOR_VALKEY = 13
     ENGINE_OTHER = 14
     ENGINE_FIRESTORE_WITH_NATIVE_MODE = 15
     ENGINE_FIRESTORE_WITH_DATASTORE_MODE = 16

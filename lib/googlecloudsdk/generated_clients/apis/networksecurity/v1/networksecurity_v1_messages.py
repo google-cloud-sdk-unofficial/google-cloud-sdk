@@ -1139,6 +1139,16 @@ class Destination(_messages.Message):
   ports = _messages.IntegerField(4, repeated=True, variant=_messages.Variant.UINT32)
 
 
+class DisableUllMirroringCollectorRequest(_messages.Message):
+  r"""Message for disabling a UllMirroringCollector
+
+  Fields:
+    requestId: Optional. An optional request ID to identify requests.
+  """
+
+  requestId = _messages.StringField(1)
+
+
 class DnsThreatDetector(_messages.Message):
   r"""A DNS threat detector sends DNS query logs to a _provider_ that then
   analyzes the logs to identify threat events in the DNS queries. By default,
@@ -1215,6 +1225,16 @@ class Empty(_messages.Message):
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
 
+
+
+class EnableUllMirroringCollectorRequest(_messages.Message):
+  r"""Message for enabling a UllMirroringCollector
+
+  Fields:
+    requestId: Optional. An optional request ID to identify requests.
+  """
+
+  requestId = _messages.StringField(1)
 
 
 class Expr(_messages.Message):
@@ -2801,6 +2821,66 @@ class ListMirroringEndpointsResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListNetworksForEngineRequest(_messages.Message):
+  r"""Message for requesting list of UllMirroringNetworks
+
+  Fields:
+    filter: Optional. Filtering results
+    orderBy: Optional. Hint for how to order the results
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+
+
+class ListNetworksForEngineResponse(_messages.Message):
+  r"""Message for response to listing UllMirroringNetworks
+
+  Fields:
+    networks: The list of Networks
+    nextPageToken: A token identifying a page of results the server should
+      return.
+  """
+
+  networks = _messages.MessageField('ListNetworksForEngineResponseNetwork', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
+class ListNetworksForEngineResponseNetwork(_messages.Message):
+  r"""Message describing a mirrored network.
+
+  Enums:
+    StateValueValuesEnum: Output only. State of mirroring for the VPC.
+
+  Fields:
+    name: The name of the VPC network being mirrored.
+    state: Output only. State of mirroring for the VPC.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. State of mirroring for the VPC.
+
+    Values:
+      STATE_UNSPECIFIED: Not set.
+      ACTIVE: Ready.
+      CREATING: Being created.
+      DELETING: Being deleted.
+    """
+    STATE_UNSPECIFIED = 0
+    ACTIVE = 1
+    CREATING = 2
+    DELETING = 3
+
+  name = _messages.StringField(1)
+  state = _messages.EnumField('StateValueValuesEnum', 2)
+
+
 class ListOperationsResponse(_messages.Message):
   r"""The response message for Operations.ListOperations.
 
@@ -2912,6 +2992,51 @@ class ListTlsInspectionPoliciesResponse(_messages.Message):
 
   nextPageToken = _messages.StringField(1)
   tlsInspectionPolicies = _messages.MessageField('TlsInspectionPolicy', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListUllMirroringCollectorRulesResponse(_messages.Message):
+  r"""Message for response to listing UllMirroringCollectorRules.
+
+  Fields:
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    ullMirroringCollectorRules: The list of UllMirroringCollectorRule.
+    unreachable: Locations that could not be reached.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  ullMirroringCollectorRules = _messages.MessageField('UllMirroringCollectorRule', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListUllMirroringCollectorsResponse(_messages.Message):
+  r"""Message for response to listing UllMirroringCollectors
+
+  Fields:
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    ullMirroringCollectors: The list of UllMirroringCollector
+    unreachable: Locations that could not be reached.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  ullMirroringCollectors = _messages.MessageField('UllMirroringCollector', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListUllMirroringEnginesResponse(_messages.Message):
+  r"""Message for response to listing UllMirroringEngines
+
+  Fields:
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    ullMirroringEngines: The list of UllMirroringEngine
+    unreachable: Locations that could not be reached.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  ullMirroringEngines = _messages.MessageField('UllMirroringEngine', 2, repeated=True)
   unreachable = _messages.StringField(3, repeated=True)
 
 
@@ -7407,6 +7532,366 @@ class NetworksecurityProjectsLocationsTlsInspectionPoliciesPatchRequest(_message
   updateMask = _messages.StringField(3)
 
 
+class NetworksecurityProjectsLocationsUllMirroringCollectorsCreateRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsUllMirroringCollectorsCreateRequest
+  object.
+
+  Fields:
+    parent: Required. Value for parent.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    ullMirroringCollector: A UllMirroringCollector resource to be passed as
+      the request body.
+    ullMirroringCollectorId: Required. Id of the requesting object If auto-
+      generating Id server-side, remove this field and
+      ull_mirroring_collector_id from the method_signature of Create RPC
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  ullMirroringCollector = _messages.MessageField('UllMirroringCollector', 3)
+  ullMirroringCollectorId = _messages.StringField(4)
+
+
+class NetworksecurityProjectsLocationsUllMirroringCollectorsDeleteRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsUllMirroringCollectorsDeleteRequest
+  object.
+
+  Fields:
+    name: Required. Name of the resource
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class NetworksecurityProjectsLocationsUllMirroringCollectorsDisableRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsUllMirroringCollectorsDisableRequest
+  object.
+
+  Fields:
+    disableUllMirroringCollectorRequest: A DisableUllMirroringCollectorRequest
+      resource to be passed as the request body.
+    name: Required. Name of the resource
+  """
+
+  disableUllMirroringCollectorRequest = _messages.MessageField('DisableUllMirroringCollectorRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetworksecurityProjectsLocationsUllMirroringCollectorsEnableRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsUllMirroringCollectorsEnableRequest
+  object.
+
+  Fields:
+    enableUllMirroringCollectorRequest: A EnableUllMirroringCollectorRequest
+      resource to be passed as the request body.
+    name: Required. Name of the resource
+  """
+
+  enableUllMirroringCollectorRequest = _messages.MessageField('EnableUllMirroringCollectorRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetworksecurityProjectsLocationsUllMirroringCollectorsGetRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsUllMirroringCollectorsGetRequest
+  object.
+
+  Fields:
+    name: Required. Name of the resource
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityProjectsLocationsUllMirroringCollectorsListRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsUllMirroringCollectorsListRequest
+  object.
+
+  Fields:
+    filter: Optional. Filtering results
+    orderBy: Optional. Hint for how to order the results
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Parent value for ListUllMirroringCollectorsRequest
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class NetworksecurityProjectsLocationsUllMirroringCollectorsPatchRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsUllMirroringCollectorsPatchRequest
+  object.
+
+  Fields:
+    name: Immutable. Identifier. The name of the UllMirroringCollector.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    ullMirroringCollector: A UllMirroringCollector resource to be passed as
+      the request body.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the UllMirroringCollector resource by the update. The
+      fields specified in the update_mask are relative to the resource, not
+      the full request. A field will be overwritten if it is in the mask. If
+      the user does not provide a mask then all fields will be overwritten.
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  ullMirroringCollector = _messages.MessageField('UllMirroringCollector', 3)
+  updateMask = _messages.StringField(4)
+
+
+class NetworksecurityProjectsLocationsUllMirroringCollectorsRulesCreateRequest(_messages.Message):
+  r"""A
+  NetworksecurityProjectsLocationsUllMirroringCollectorsRulesCreateRequest
+  object.
+
+  Fields:
+    parent: Required. Value for the parent UllMirroringCollector.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    ullMirroringCollectorRule: A UllMirroringCollectorRule resource to be
+      passed as the request body.
+    ullMirroringCollectorRuleId: Required. ID for the new
+      UllMirroringCollectorRule.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  ullMirroringCollectorRule = _messages.MessageField('UllMirroringCollectorRule', 3)
+  ullMirroringCollectorRuleId = _messages.StringField(4)
+
+
+class NetworksecurityProjectsLocationsUllMirroringCollectorsRulesDeleteRequest(_messages.Message):
+  r"""A
+  NetworksecurityProjectsLocationsUllMirroringCollectorsRulesDeleteRequest
+  object.
+
+  Fields:
+    name: Required. Name of the resource
+    requestId: Optional. An optional request ID to identify requests.
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class NetworksecurityProjectsLocationsUllMirroringCollectorsRulesGetRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsUllMirroringCollectorsRulesGetRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the UllMirroringCollectorRule.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityProjectsLocationsUllMirroringCollectorsRulesListRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsUllMirroringCollectorsRulesListRequest
+  object.
+
+  Fields:
+    filter: Optional. Filter expression. See
+      https://google.aip.dev/160#filtering for more details.
+    orderBy: Optional. Sort expression. See
+      https://google.aip.dev/132#ordering for more details.
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+      See https://google.aip.dev/158 for more details.
+    pageToken: Optional. A page token, received from a previous
+      `ListUllMirroringCollectorRules` call. Provide this to retrieve the
+      subsequent page. When paginating, all other parameters provided to
+      `ListUllMirroringCollectorRules` must match the call that provided the
+      page token. See https://google.aip.dev/158 for more details.
+    parent: Required. The parent, which owns this collection of
+      UllMirroringCollectorRules. Example:
+      `projects/123456789/locations/global`. See https://google.aip.dev/132
+      for more details.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class NetworksecurityProjectsLocationsUllMirroringCollectorsRulesPatchRequest(_messages.Message):
+  r"""A
+  NetworksecurityProjectsLocationsUllMirroringCollectorsRulesPatchRequest
+  object.
+
+  Fields:
+    name: Identifier. The name of the UllMirroringCollectorRule.
+    ullMirroringCollectorRule: A UllMirroringCollectorRule resource to be
+      passed as the request body.
+    updateMask: Optional. The list of fields to update.
+  """
+
+  name = _messages.StringField(1, required=True)
+  ullMirroringCollectorRule = _messages.MessageField('UllMirroringCollectorRule', 2)
+  updateMask = _messages.StringField(3)
+
+
+class NetworksecurityProjectsLocationsUllMirroringEnginesCreateRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsUllMirroringEnginesCreateRequest
+  object.
+
+  Fields:
+    parent: Required. Value for parent.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    ullMirroringEngine: A UllMirroringEngine resource to be passed as the
+      request body.
+    ullMirroringEngineId: Required. Id of the requesting object If auto-
+      generating Id server-side, remove this field and ull_mirroring_engine_id
+      from the method_signature of Create RPC
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  ullMirroringEngine = _messages.MessageField('UllMirroringEngine', 3)
+  ullMirroringEngineId = _messages.StringField(4)
+
+
+class NetworksecurityProjectsLocationsUllMirroringEnginesDeleteRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsUllMirroringEnginesDeleteRequest
+  object.
+
+  Fields:
+    name: Required. Name of the resource
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class NetworksecurityProjectsLocationsUllMirroringEnginesGetRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsUllMirroringEnginesGetRequest object.
+
+  Fields:
+    name: Required. The resource name of the UllMirroringEngine.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityProjectsLocationsUllMirroringEnginesListNetworksRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsUllMirroringEnginesListNetworksRequest
+  object.
+
+  Fields:
+    listNetworksForEngineRequest: A ListNetworksForEngineRequest resource to
+      be passed as the request body.
+    name: Required. The ULL Mirroring Engine to list networks from.
+  """
+
+  listNetworksForEngineRequest = _messages.MessageField('ListNetworksForEngineRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetworksecurityProjectsLocationsUllMirroringEnginesListRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsUllMirroringEnginesListRequest object.
+
+  Fields:
+    filter: Optional. Filtering results
+    orderBy: Optional. Hint for how to order the results
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Parent value for ListUllMirroringEnginesRequest
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class NetworksecurityProjectsLocationsUllMirroringEnginesPatchRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsUllMirroringEnginesPatchRequest
+  object.
+
+  Fields:
+    name: Identifier. The name of the resource.
+    ullMirroringEngine: A UllMirroringEngine resource to be passed as the
+      request body.
+    updateMask: Optional. The list of fields to update.
+  """
+
+  name = _messages.StringField(1, required=True)
+  ullMirroringEngine = _messages.MessageField('UllMirroringEngine', 2)
+  updateMask = _messages.StringField(3)
+
+
 class NetworksecurityProjectsLocationsUrlListsCreateRequest(_messages.Message):
   r"""A NetworksecurityProjectsLocationsUrlListsCreateRequest object.
 
@@ -8491,6 +8976,252 @@ class TlsInspectionPolicy(_messages.Message):
   tlsFeatureProfile = _messages.EnumField('TlsFeatureProfileValueValuesEnum', 8)
   trustConfig = _messages.StringField(9)
   updateTime = _messages.StringField(10)
+
+
+class UllMirroringCollector(_messages.Message):
+  r"""Message describing UllMirroringCollector object
+
+  Enums:
+    StateValueValuesEnum: Output only. Current state of the collector.
+
+  Messages:
+    LabelsValue: Optional. Labels as key value pairs
+
+  Fields:
+    createTime: Output only. [Output only] Create time stamp
+    engine: Required. Immutable. The engine resource to which the collector
+      points to. Format is: projects/{project}/locations/{location}/ullMirrori
+      ngEngines/{ull_mirroring_engine}
+    forwardingRule: Required. Immutable. The regional load balancer which the
+      mirrored traffic should be forwarded to. Format is:
+      projects/{project}/regions/{region}/forwardingRules/{forwardingRule}
+    labels: Optional. Labels as key value pairs
+    name: Immutable. Identifier. The name of the UllMirroringCollector.
+    reconciling: Output only. Whether reconciling is in progress, recommended
+      per https://google.aip.dev/128.
+    state: Output only. Current state of the collector.
+    updateTime: Output only. [Output only] Update time stamp
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. Current state of the collector.
+
+    Values:
+      STATE_UNSPECIFIED: Not set.
+      ACTIVE: Ready.
+      CREATING: Being created.
+      DELETING: Being deleted.
+      CLOSED: Indicates the collector is disabled due to a breaking change in
+        another resource.
+      INACTIVE: Inactive. Collector is not processing traffic.
+    """
+    STATE_UNSPECIFIED = 0
+    ACTIVE = 1
+    CREATING = 2
+    DELETING = 3
+    CLOSED = 4
+    INACTIVE = 5
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels as key value pairs
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  engine = _messages.StringField(2)
+  forwardingRule = _messages.StringField(3)
+  labels = _messages.MessageField('LabelsValue', 4)
+  name = _messages.StringField(5)
+  reconciling = _messages.BooleanField(6)
+  state = _messages.EnumField('StateValueValuesEnum', 7)
+  updateTime = _messages.StringField(8)
+
+
+class UllMirroringCollectorRule(_messages.Message):
+  r"""UllMirroringCollectorRule is a resource that defines what traffic should
+  be mirrored.
+
+  Messages:
+    LabelsValue: Optional. Labels as key value pairs
+
+  Fields:
+    createTime: Output only. [Output only] Create time stamp
+    labels: Optional. Labels as key value pairs
+    match: Required. Match defines what traffic to mirror.
+    name: Identifier. The name of the UllMirroringCollectorRule.
+    reconciling: Output only. Whether reconciling is in progress, recommended
+      per https://google.aip.dev/128.
+    updateTime: Output only. [Output only] Update time stamp
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels as key value pairs
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  labels = _messages.MessageField('LabelsValue', 2)
+  match = _messages.MessageField('UllMirroringCollectorRuleMatch', 3)
+  name = _messages.StringField(4)
+  reconciling = _messages.BooleanField(5)
+  updateTime = _messages.StringField(6)
+
+
+class UllMirroringCollectorRuleMatch(_messages.Message):
+  r"""Match defines the traffic filtering criteria.
+
+  Enums:
+    DirectionValueValuesEnum: Optional. Direction of traffic to match. When
+      unset, matches any direction.
+
+  Fields:
+    direction: Optional. Direction of traffic to match. When unset, matches
+      any direction.
+    dstIpRanges: Optional. Destination IP ranges to match. When unset, matches
+      any destination IP range.
+    ipProtocols: Optional. IP protocols to match. When unset, matches any IP
+      protocol. Examples: "tcp", "udp", "icmp". If unset, matches any IP
+      protocol.
+    srcIpRanges: Optional. Source IP ranges to match. When unset, matches any
+      source IP range.
+  """
+
+  class DirectionValueValuesEnum(_messages.Enum):
+    r"""Optional. Direction of traffic to match. When unset, matches any
+    direction.
+
+    Values:
+      DIRECTION_UNSPECIFIED: Not set. Matches any direction.
+      INGRESS: Traffic inbound to the capture point.
+      EGRESS: Traffic outbound from the capture point.
+    """
+    DIRECTION_UNSPECIFIED = 0
+    INGRESS = 1
+    EGRESS = 2
+
+  direction = _messages.EnumField('DirectionValueValuesEnum', 1)
+  dstIpRanges = _messages.StringField(2, repeated=True)
+  ipProtocols = _messages.StringField(3, repeated=True)
+  srcIpRanges = _messages.StringField(4, repeated=True)
+
+
+class UllMirroringEngine(_messages.Message):
+  r"""UllMirroringEngine is a resource that represents the Market Capture
+  engine in a given location.
+
+  Enums:
+    StateValueValuesEnum: Output only. The state of the engine.
+
+  Messages:
+    LabelsValue: Optional. Labels as key value pairs
+
+  Fields:
+    collectors: Output only. The list of collectors associated with this
+      engine.
+    createTime: Output only. [Output only] Create time stamp
+    labels: Optional. Labels as key value pairs
+    name: Identifier. The name of the resource.
+    reconciling: Output only. Whether reconciling is in progress, recommended
+      per https://google.aip.dev/128.
+    state: Output only. The state of the engine.
+    updateTime: Output only. [Output only] Update time stamp
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the engine.
+
+    Values:
+      STATE_UNSPECIFIED: Not set.
+      ACTIVE: Ready.
+      CREATING: Being created.
+      DELETING: Being deleted.
+      DELETE_FAILED: Failed to delete.
+    """
+    STATE_UNSPECIFIED = 0
+    ACTIVE = 1
+    CREATING = 2
+    DELETING = 3
+    DELETE_FAILED = 4
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels as key value pairs
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  collectors = _messages.MessageField('UllMirroringEngineCollector', 1, repeated=True)
+  createTime = _messages.StringField(2)
+  labels = _messages.MessageField('LabelsValue', 3)
+  name = _messages.StringField(4)
+  reconciling = _messages.BooleanField(5)
+  state = _messages.EnumField('StateValueValuesEnum', 6)
+  updateTime = _messages.StringField(7)
+
+
+class UllMirroringEngineCollector(_messages.Message):
+  r"""A reference to a UllMirroringCollector resource.
+
+  Fields:
+    name: Output only. The resource name of the UllMirroringCollector.
+  """
+
+  name = _messages.StringField(1)
 
 
 class UrlFilter(_messages.Message):

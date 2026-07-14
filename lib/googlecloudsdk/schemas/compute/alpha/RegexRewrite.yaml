@@ -1,0 +1,13 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: compute alpha RegexRewrite export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  pathPattern:
+    description: The regular expression used to match against the URL path.
+    type: string
+  pathSubstitution:
+    description: Used to rewrite matching parts of the path.
+    type: string

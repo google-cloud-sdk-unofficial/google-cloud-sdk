@@ -24,13 +24,24 @@
     description: Create a new GoldengateDeployment.
     examples: |-
       To create a GoldengateDeployment with id `my-deployment` in the location `us-east4`
-      with display-name `my deployment`, cpu count `2`, deployment type `OGG`,
-      and odb-subnet `projects/my-project/locations/us-east4/odbNetworks/my-network/odbSubnets/my-subnet`, run:
+      with display-name `my deployment`, gcp oracle zone `us-east4-b-r1`,
+      odb-network `projects/my-project/locations/us-east4/odbNetworks/my-network`,
+      odb-subnet `projects/my-project/locations/us-east4/odbNetworks/my-network/odbSubnets/my-subnet`,
+      license model `LICENSE_INCLUDED`, environment type `PRODUCTION`, deployment type `DATABASE_ORACLE`,
+      cpu count `1`, ogg-data deployment name `my-ogg-deployment`, admin username `admin`,
+      password `password`, maintenance window on `MONDAY` at `23` hours, and maintenance configuration periods, run:
 
         $ {command} my-deployment --location=us-east4 --display-name="my deployment" \
-       --properties-cpu-core-count=2 --properties-deployment-type=OGG \
-       --properties-ogg-data-deployment=my-ogg-deployment \
-       --odb-subnet=projects/my-project/locations/us-east4/odbNetworks/my-network/odbSubnets/my-subnet
+        --gcp-oracle-zone="us-east4-b-r1" \
+        --odb-network=projects/my-project/locations/us-east4/odbNetworks/my-network \
+        --odb-subnet=projects/my-project/locations/us-east4/odbNetworks/my-network/odbSubnets/my-subnet \
+        --properties-license-model="LICENSE_INCLUDED" --properties-environment-type="PRODUCTION" \
+        --properties-deployment-type="DATABASE_ORACLE" --properties-cpu-core-count=1 \
+        --ogg-data-deployment="my-ogg-deployment" --ogg-data-admin-username="admin" \
+        --ogg-data-admin-password="password" --maintenance-window-day="MONDAY" \
+        --maintenance-window-start-hour=23 --maintenance-config-interim-release-upgrade-period-days=0 \
+        --maintenance-config-bundle-release-upgrade-period-days=1 --maintenance-config-major-release-upgrade-period-days=2 \
+        --maintenance-config-security-patch-upgrade-period-days=1
   arguments:
     params:
     - help_text: |-
@@ -115,11 +126,14 @@
                   help_text: |-
                     The Goldengate deployment console password in plain text.
                 - arg_name: ogg-data-admin-password-secret-version
-                  api_field: goldengateDeployment.properties.oggData.adminPasswordSecretVersion
-                  required: false
-                  repeated: false
                   help_text: |-
                     The Goldengate deployment console password secret version.
+                  is_positional: false
+                  is_primary_resource: false
+                  resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_secrets_versions
+                  resource_method_params:
+                    goldengateDeployment.properties.oggData.adminPasswordSecretVersion: '{__relative_name__}'
+                  required: false
             - arg_name: ogg-data-deployment
               api_field: goldengateDeployment.properties.oggData.deployment
               required: true

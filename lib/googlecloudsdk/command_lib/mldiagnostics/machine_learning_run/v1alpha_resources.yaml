@@ -75,3 +75,17 @@ projects_locations_machine_learning_runs_profiler_sessions:
     attribute_name: profiler-session
     help: The profilerSession id of the {resource} resource.
   disable_auto_completers: false
+projects_locations_machine_learning_runs_monitored_events:
+  name: monitoredEvent
+  plural_name: monitoredEvents
+  collection:
+    hypercomputecluster.projects.locations.machineLearningRuns.monitoredEvents
+  attributes:
+  - *project
+  - *location
+  - *machine_learning_run
+  - &monitoredEvent
+    parameter_name: monitoredEventsId
+    attribute_name: monitored-event
+    help: The monitoredEvent id of the {resource} resource.
+  disable_auto_completers: false

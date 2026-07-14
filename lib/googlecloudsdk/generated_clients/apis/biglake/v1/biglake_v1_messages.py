@@ -804,6 +804,7 @@ class FederatedCatalogOptions(_messages.Message):
       routing traffic over a private network connection through Cross-Cloud
       Interconnect, in the format `projects/{project_id}/locations/{location_i
       d}/namespaces/{namespace_id}/services/{service_id}`.
+    snowflake_catalog_info: Optional. Info specific to a Snowflake Catalog.
     unity_catalog_info: Optional. Info specific to a Unity Catalog by
       Databricks.
     workday_catalog_info: Optional. Info specific to a Workday Catalog.
@@ -814,8 +815,9 @@ class FederatedCatalogOptions(_messages.Message):
   refresh_status = _messages.MessageField('RefreshStatus', 3)
   secret_name = _messages.StringField(4)
   service_directory_name = _messages.StringField(5)
-  unity_catalog_info = _messages.MessageField('UnityCatalogInfo', 6)
-  workday_catalog_info = _messages.MessageField('WorkdayCatalogInfo', 7)
+  snowflake_catalog_info = _messages.MessageField('SnowflakeCatalogInfo', 6)
+  unity_catalog_info = _messages.MessageField('UnityCatalogInfo', 7)
+  workday_catalog_info = _messages.MessageField('WorkdayCatalogInfo', 8)
 
 
 class GlueCatalogInfo(_messages.Message):
@@ -1421,9 +1423,10 @@ class RestrictedLocationsConfig(_messages.Message):
     restricted_locations: Optional. Additional Google Cloud Storage buckets
       and locations (e.g., `gs://my-other-bucket/...`) that are permitted for
       use by resources within a catalog. This field is currently only used for
-      BigLake catalogs. If `restricted_locations` is empty, all accessible
-      locations are allowed. If `restricted_locations` is not empty, only
-      `default_location` and locations in this list are allowed.
+      BigLake catalogs. If `restricted_locations` is empty and unrestricted
+      catalog creation is enabled, all accessible locations are allowed.
+      Otherwise, only `default_location` and locations in this list are
+      allowed.
   """
 
   restricted_locations = _messages.StringField(1, repeated=True)
@@ -1444,6 +1447,23 @@ class SetIamPolicyRequest(_messages.Message):
 
   policy = _messages.MessageField('Policy', 1)
   updateMask = _messages.StringField(2)
+
+
+class SnowflakeCatalogInfo(_messages.Message):
+  r"""Snowflake Catalog info.
+
+  Fields:
+    account_identifier: Required. The account identifier in Snowflake (See:
+      https://docs.snowflake.com/en/user-guide/admin-account-identifier). It
+      is the prefix to log into your Snowflake deployment URL. For example:
+      https://.snowflakecomputing.com.
+    warehouse: Required. The warehouse to connect to in Snowflake REST
+      Catalog. https://.snowflakecomputing.com/polaris/api/catalog/v1/config?w
+      arehouse=. Must be non-empty.
+  """
+
+  account_identifier = _messages.StringField(1)
+  warehouse = _messages.StringField(2)
 
 
 class StandardQueryParameters(_messages.Message):
@@ -1647,7 +1667,7 @@ class UnityCatalogInfo(_messages.Message):
   r"""Unity Catalog info.
 
   Fields:
-    catalog_name: Required. Name of the catalog in Unity Catalog.
+    catalog_name: Required. The catalog name in Unity Catalog.
     instance_name: Required. The instance name is the first part of the URL
       when logging into the Databricks deployment. For example, for a
       Databricks on GCP workspace URL https://1.1.gcp.databricks.com, the
@@ -1692,18 +1712,13 @@ class WorkdayCatalogInfo(_messages.Message):
   r"""Workday Catalog info.
 
   Fields:
-    base_url: Required. Specifies the base URL of the Workday Iceberg REST
-      Catalog endpoint. The format for connecting to Workday Data Lake is: -
-      For IMPL (Nonprod): `https://impl-services1.{dc}.myworkday.com/datalake`
-      - For PROD: `https://services1.{dc}.myworkday.com/datalake` For example,
-      for a tenant in nonprod data center `wd12`, the base URL is:
-      `https://impl-services1.wd12.myworkday.com/datalake`.
-    realm: Required. Specifies the Apache Polaris realm used when connecting
-      to the endpoint. This is equal to the Workday tenant (1:1 mapping).
+    base_url: Required. The base url of the Workday instance. For example,
+      `impl-services1.wd12.myworkday.com` or `wd501.myworkday.com`.
+    tenant: Required. The Workday tenant name.
   """
 
   base_url = _messages.StringField(1)
-  realm = _messages.StringField(2)
+  tenant = _messages.StringField(2)
 
 
 encoding.AddCustomJsonFieldMapping(
@@ -1716,6 +1731,8 @@ encoding.AddCustomJsonFieldMapping(
     FederatedCatalogOptions, 'secret_name', 'secret-name')
 encoding.AddCustomJsonFieldMapping(
     FederatedCatalogOptions, 'service_directory_name', 'service-directory-name')
+encoding.AddCustomJsonFieldMapping(
+    FederatedCatalogOptions, 'snowflake_catalog_info', 'snowflake-catalog-info')
 encoding.AddCustomJsonFieldMapping(
     FederatedCatalogOptions, 'unity_catalog_info', 'unity-catalog-info')
 encoding.AddCustomJsonFieldMapping(
@@ -1772,6 +1789,8 @@ encoding.AddCustomJsonFieldMapping(
     RegisterIcebergTableRequest, 'metadata_location', 'metadata-location')
 encoding.AddCustomJsonFieldMapping(
     RestrictedLocationsConfig, 'restricted_locations', 'restricted-locations')
+encoding.AddCustomJsonFieldMapping(
+    SnowflakeCatalogInfo, 'account_identifier', 'account-identifier')
 encoding.AddCustomJsonFieldMapping(
     UnityCatalogInfo, 'catalog_name', 'catalog-name')
 encoding.AddCustomJsonFieldMapping(

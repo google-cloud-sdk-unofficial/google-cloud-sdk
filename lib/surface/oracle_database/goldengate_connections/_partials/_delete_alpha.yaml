@@ -20,12 +20,12 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Delete goldengateConnections
-    description: Delete a goldengateConnection
+    brief: Delete a GoldengateConnection.
+    description: Delete a GoldengateConnection.
     examples: |-
-      To delete the goldengateConnection, run:
+      To delete a GoldengateConnection with id `my-connection` in the location `us-east4`, run:
 
-          $ {command}
+        $ {command} my-connection --location=us-east4
   arguments:
     params:
     - help_text: |-

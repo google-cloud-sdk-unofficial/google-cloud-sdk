@@ -269,7 +269,10 @@ class PointInTimeRestore(base.Command):
       )
 
     operations.OperationsV1Beta4.WaitForOperation(
-        sql_client, operation_ref, 'Performing point-in-time restore'
+        sql_client,
+        operation_ref,
+        'Performing point-in-time restore',
+        max_wait_seconds=args.timeout,
     )
     log.CreatedResource(destination_instance_ref)
     resource = sql_client.instances.Get(

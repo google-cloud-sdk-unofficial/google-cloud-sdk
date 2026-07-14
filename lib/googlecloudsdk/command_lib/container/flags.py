@@ -6220,8 +6220,8 @@ def AddRunnerPoolControlModeFlag(parser, hidden=False):
   """Adds a --runner-pool-control-mode flag to the given parser."""
   parser.add_argument(
       '--runner-pool-control-mode',
-      choices=['confidential'],
-      help='Specifies that the new node pool is a control node pool.',
+      choices=['confidential', 'standard'],
+      help='Specifies the control mode for the runner pool control node pool.',
       hidden=hidden,
       default=None,
   )
@@ -9143,7 +9143,7 @@ def AddTimeoutFlag(parser, default=1800):
   )
 
 
-def AddDataplaneV2OptimizationModeFlag(parser, hidden=True):
+def AddDataplaneV2OptimizationModeFlag(parser, hidden=False):
   """Adds --dataplane-optimization-mode={DISABLED|SCALE_OPTIMIZED} flag."""
   help_text = """
 Select scalability mode for dataplane v2.

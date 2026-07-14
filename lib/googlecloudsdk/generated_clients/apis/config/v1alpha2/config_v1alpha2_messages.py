@@ -1263,9 +1263,9 @@ class Deployment(_messages.Message):
       client tools identify deployments during automation. See
       https://google.aip.dev/148#annotations for details on format and size
       limitations.
-    artifactsGcsBucket: Optional. User-defined location of Cloud Build logs
-      and artifacts in Google Cloud Storage. Format: `gs://{bucket}/{folder}`
-      A default bucket will be bootstrapped if the field is not set or empty.
+    artifactsGcsBucket: User-defined location of Cloud Build logs and
+      artifacts in Google Cloud Storage. Format: `gs://{bucket}/{folder}` A
+      default bucket will be bootstrapped if the field is not set or empty.
       Default bucket format: `gs://--blueprint-config` Constraints: - The
       bucket needs to be in the same project as the deployment - The path
       cannot be within the path of `gcs_source` - The field cannot be updated,
@@ -1315,11 +1315,11 @@ class Deployment(_messages.Message):
     tfVersion: Output only. The current Terraform version set on the
       deployment. It is in the format of "Major.Minor.Patch", for example,
       "1.3.10".
-    tfVersionConstraint: Optional. The user-specified Terraform version
-      constraint. Example: "=1.3.10".
+    tfVersionConstraint: The user-specified Terraform version constraint.
+      Example: "=1.3.10".
     updateTime: Output only. Time when the deployment was last modified.
-    workerPool: Optional. The user-specified Cloud Build worker pool resource
-      in which the Cloud Build job will execute. Format:
+    workerPool: The user-specified Cloud Build worker pool resource in which
+      the Cloud Build job will execute. Format:
       `projects/{project}/locations/{location}/workerPools/{workerPoolId}`. If
       this field is unspecified, the default Cloud Build worker pool will be
       used.
@@ -2059,10 +2059,10 @@ class GitSource(_messages.Message):
   r"""A set of files in a Git repository.
 
   Fields:
-    directory: Optional. Subdirectory inside the repository. Example:
-      'staging/my-package'
-    ref: Optional. Git reference (e.g. branch or tag).
-    repo: Optional. Repository URL. Example:
+    directory: Subdirectory inside the repository. Example: 'staging/my-
+      package'
+    ref: Git reference (e.g. branch or tag).
+    repo: Repository URL. Example:
       'https://github.com/kubernetes/examples.git'
   """
 
@@ -2606,14 +2606,13 @@ class Preview(_messages.Message):
       client tools identify preview during automation. See
       https://google.aip.dev/148#annotations for details on format and size
       limitations.
-    artifactsGcsBucket: Optional. User-defined location of Cloud Build logs,
-      artifacts, and in Google Cloud Storage. Format: `gs://{bucket}/{folder}`
-      A default bucket will be bootstrapped if the field is not set or empty
-      Default Bucket Format: `gs://--blueprint-config` Constraints: - The
-      bucket needs to be in the same project as the deployment - The path
-      cannot be within the path of `gcs_source` If omitted and deployment
-      resource ref provided has artifacts_gcs_bucket defined, that artifact
-      bucket is used.
+    artifactsGcsBucket: User-defined location of Cloud Build logs, artifacts,
+      and in Google Cloud Storage. Format: `gs://{bucket}/{folder}` A default
+      bucket will be bootstrapped if the field is not set or empty Default
+      Bucket Format: `gs://--blueprint-config` Constraints: - The bucket needs
+      to be in the same project as the deployment - The path cannot be within
+      the path of `gcs_source` If omitted and deployment resource ref provided
+      has artifacts_gcs_bucket defined, that artifact bucket is used.
     build: Output only. Cloud Build instance UUID associated with this
       preview.
     createTime: Output only. Time the preview was created.
@@ -2647,10 +2646,10 @@ class Preview(_messages.Message):
       summarized here.
     tfVersion: Output only. The current Terraform version set on the preview.
       It is in the format of "Major.Minor.Patch", for example, "1.3.10".
-    tfVersionConstraint: Optional. The user-specified Terraform version
-      constraint. Example: "=1.3.10".
-    workerPool: Optional. The user-specified Worker Pool resource in which the
-      Cloud Build job will execute. Format
+    tfVersionConstraint: The user-specified Terraform version constraint.
+      Example: "=1.3.10".
+    workerPool: The user-specified Worker Pool resource in which the Cloud
+      Build job will execute. Format
       projects/{project}/locations/{location}/workerPools/{workerPoolId} If
       this field is unspecified, the default Cloud Build worker pool will be
       used. If omitted and deployment resource ref provided has worker_pool

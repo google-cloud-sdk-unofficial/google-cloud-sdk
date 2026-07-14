@@ -19,12 +19,12 @@
   - ALPHA
   auto_generated: true
   help_text:
-    brief: Delete authProviders
-    description: Delete an authProvider
+    brief: Delete an auth provider.
+    description: Delete a single auth provider.
     examples: |-
-      To delete an auth provider named 'my-auth-provider' in location 'global' and project 'my-project', run:
+      To delete auth provider 'my-auth-provider' in location 'us-central1' and project 'my-project', run:
 
-          $ {command} my-auth-provider --location=global --project=my-project
+        $ {command} my-auth-provider --location=us-central1 --project=my-project
   arguments:
     params:
     - help_text: |-

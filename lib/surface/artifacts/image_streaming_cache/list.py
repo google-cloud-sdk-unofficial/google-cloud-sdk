@@ -21,7 +21,6 @@ from googlecloudsdk.command_lib.artifacts import requests as ar_requests
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 @base.DefaultUniverseOnly
 class List(base.ListCommand):
   """Lists artifacts that are prewarmed within a given repository."""
@@ -40,6 +39,8 @@ class List(base.ListCommand):
   def Args(parser):
     flags.GetRepoFlag().AddToParser(parser)
     parser.display_info.AddFormat("table(uri, location, expirationTime)")
+    base.SORT_BY_FLAG.RemoveFromParser(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

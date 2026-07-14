@@ -19,12 +19,12 @@
   - ALPHA
   auto_generated: true
   help_text:
-    brief: Describe authorizations
-    description: Describe an authorization
+    brief: Describe an authorization.
+    description: Get details of a single authorization.
     examples: |-
-      To describe authorization 'my-auth' for auth provider 'my-auth-provider' in location 'global' and project 'my-project', run:
+      To describe authorization 'my-auth' for auth provider 'my-auth-provider' in location 'us-central1' and project 'my-project', run:
 
-          $ {command} my-auth --auth-provider=my-auth-provider --location=global --project=my-project
+        $ {command} my-auth --auth-provider=my-auth-provider --location=us-central1 --project=my-project
   arguments:
     params:
     - help_text: |-

@@ -154,7 +154,7 @@ def CreateRepository(repo, skip_activation_prompt=False):
 
 
 def ValidateAndGetArRepository(
-    annotated_build_image_uri, already_activated_services
+    annotated_build_image_uri, skip_activation_prompt
 ):
   """Checks the format and existence of the repository in Artifact Registry."""
   is_default_universe = properties.IsDefaultUniverse()
@@ -174,7 +174,7 @@ def ValidateAndGetArRepository(
     # Raise an error if the repo doesn't exist, will not attempt to create it.
     if ShouldCreateRepository(
         ar_repo,
-        skip_activation_prompt=already_activated_services,
+        skip_activation_prompt=skip_activation_prompt,
         skip_console_prompt=True,
     ):
       raise c_exceptions.InvalidArgumentException(

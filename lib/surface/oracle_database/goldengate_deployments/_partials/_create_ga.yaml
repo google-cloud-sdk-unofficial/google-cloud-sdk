@@ -123,11 +123,14 @@
                   help_text: |-
                     The Goldengate deployment console password in plain text.
                 - arg_name: ogg-data-admin-password-secret-version
-                  api_field: goldengateDeployment.properties.oggData.adminPasswordSecretVersion
-                  required: false
-                  repeated: false
                   help_text: |-
                     The Goldengate deployment console password secret version.
+                  is_positional: false
+                  is_primary_resource: false
+                  resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                  resource_method_params:
+                    goldengateDeployment.properties.oggData.adminPasswordSecretVersion: '{__relative_name__}'
+                  required: false
             - arg_name: ogg-data-deployment
               api_field: goldengateDeployment.properties.oggData.deployment
               required: true

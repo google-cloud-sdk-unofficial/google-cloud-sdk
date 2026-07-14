@@ -52,8 +52,7 @@ class AclPolicy(_messages.Message):
     name: Identifier. Full resource path of the ACL policy.
     rules: Required. The ACL rules within the ACL policy.
     state: Output only. The state of the ACL policy.
-    version: Output only. The version of the ACL policy. Used in drift
-      resolution.
+    version: Output only. Deprecated: Used in drift resolution.
   """
 
   class StateValueValuesEnum(_messages.Enum):
@@ -82,11 +81,10 @@ class AclRule(_messages.Message):
 
   Fields:
     rule: Required. The rule to be applied to the username. Ex: "on
-      >password123 ~* +@all" The format of the rule is defined by Redis OSS: h
-      ttps://redis.io/docs/latest/operate/oss_and_stack/management/security/ac
-      l/
+      >password123 ~* +@all" The format of the rule is defined by Valkey OSS:
+      https://valkey.io/topics/acl/
     username: Required. Specifies the IAM user or service account to be added
-      to the ACL policy. This username will be directly set on the Redis OSS.
+      to the ACL policy. This username will be directly set on the Valkey OSS.
   """
 
   rule = _messages.StringField(1)
@@ -604,9 +602,8 @@ class Instance(_messages.Message):
   Fields:
     aclPolicy: Optional. The ACL policy for the instance. Format:
       projects/{project}/locations/{location}/aclPolicies/{acl_policy}
-    aclPolicyInSync: Output only. Whether the ACL rules applied to the
-      instance are in sync with the latest ACL policy rules. This field is
-      only applicable if the ACL policy is set for the instance.
+    aclPolicyInSync: Output only. Deprecated: Whether the ACL rules applied to
+      the instance are in sync.
     allowFewerZonesDeployment: Optional. Immutable. Deprecated, do not use.
     asyncInstanceEndpointsDeletionEnabled: Optional. If true, instance
       endpoints that are created and registered by customers can be deleted
@@ -1210,12 +1207,12 @@ class MemorystoreProjectsLocationsAclPoliciesCreateRequest(_messages.Message):
 
   Fields:
     aclPolicy: A AclPolicy resource to be passed as the request body.
-    aclPolicyId: Required. The logical name of the ACL Policy in the customer
+    aclPolicyId: Required. The logical name of the ACL policy in the customer
       project with the following restrictions: * Must contain only lowercase
       letters, numbers, and hyphens. * Must start with a letter. * Must be
       between 1-63 characters. * Must end with a number or a letter. * Must be
       unique within the customer project / location
-    parent: Required. The resource name of the cluster location using the
+    parent: Required. The resource name of the ACL policy location using the
       form: `projects/{project}/locations/{location}` where `location` refers
       to a Google Cloud region.
     requestId: Optional. Idempotent request UUID. .
@@ -1233,7 +1230,7 @@ class MemorystoreProjectsLocationsAclPoliciesDeleteRequest(_messages.Message):
   Fields:
     etag: Optional. Etag of the ACL policy. If this is different from the
       server's etag, the request will fail with an ABORTED error.
-    name: Required. Redis ACL Policy resource name using the form:
+    name: Required. Memorystore ACL policy resource name using the form:
       `projects/{project}/locations/{location}/aclPolicies/{acl_policy_id}`
       where `location` refers to a GCP region.
     requestId: Optional. Idempotent request UUID.
@@ -1248,9 +1245,9 @@ class MemorystoreProjectsLocationsAclPoliciesGetRequest(_messages.Message):
   r"""A MemorystoreProjectsLocationsAclPoliciesGetRequest object.
 
   Fields:
-    name: Required. Redis ACL Policy resource name using the form:
-      `projects/{project}/locations/{location}/aclPolicies/{acl_policy_id}`
-      where `location` refers to a GCP region.
+    name: Required. Memorystore ACL policy resource name using the form:
+      `projects/{project}/locations/{location}/aclPolicies/{acl_policy}` where
+      `location` refers to a GCP region.
   """
 
   name = _messages.StringField(1, required=True)
@@ -1268,7 +1265,7 @@ class MemorystoreProjectsLocationsAclPoliciesListRequest(_messages.Message):
       value is 1000; values above 1000 will be coerced to 1000.
     pageToken: Optional. The `next_page_token` value returned from a previous
       `ListAclPolicies` request, if any.
-    parent: Required. The resource name of the cluster location using the
+    parent: Required. The resource name of the ACL policy location using the
       form: `projects/{project}/locations/{location}` where `location` refers
       to a Google Cloud region.
   """

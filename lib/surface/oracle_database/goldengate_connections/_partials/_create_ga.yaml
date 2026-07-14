@@ -73,13 +73,16 @@
                       help_text: |-
                         The password Oracle Goldengate uses in plain text.
                     - arg_name: oracle-connection-properties-password-secret-version
-                      api_field: goldengateConnection.properties.oracleConnectionProperties.passwordSecretVersion
-                      required: false
-                      repeated: false
                       help_text: |-
                         The resource name of a secret version in Secret Manager which contains
                         the password Oracle Goldengate uses.
                         Format: projects/{project}/secrets/{secret}/versions/{version}.
+                      is_positional: false
+                      is_primary_resource: false
+                      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                      resource_method_params:
+                        goldengateConnection.properties.oracleConnectionProperties.passwordSecretVersion: '{__relative_name__}'
+                      required: false
                 - arg_name: oracle-connection-properties-technology-type
                   api_field: goldengateConnection.properties.oracleConnectionProperties.technologyType
                   required: false
@@ -133,15 +136,17 @@
                   required: false
                   repeated: false
                   help_text: |-
-                    Database instance id of database in Oracle Database @ Google Cloud.
-                    If gcp_oracle_database_id is provided, connection_string must be empty.
+                    Autonomous AI Database instance id of database in Oracle Database @ Google
+                    Cloud. If gcp_oracle_database_id is provided, connection_string must be
+                    empty. Format:
+                    projects/{project}/locations/{location}/autonomousDatabases/{autonomous_database}
                 - arg_name: oracle-connection-properties-wallet-file
                   api_field: goldengateConnection.properties.oracleConnectionProperties.walletFile
                   required: false
                   repeated: false
                   help_text: |-
                     The wallet contents Oracle Goldengate uses to make connections to a
-                    database.
+                    database. This attribute is expected to be base64 encoded.
             - group:
                 api_field: goldengateConnection.properties.goldengateConnectionProperties
                 required: false
@@ -160,13 +165,16 @@
                       help_text: |-
                         The password used to connect to the Oracle Goldengate in plain text.
                     - arg_name: goldengate-connection-properties-password-secret-version
-                      api_field: goldengateConnection.properties.goldengateConnectionProperties.passwordSecretVersion
-                      required: false
-                      repeated: false
                       help_text: |-
                         The resource name of a secret version in Secret Manager which contains
                         the password used to connect to the Oracle Goldengate.
                         Format: projects/{project}/secrets/{secret}/versions/{version}.
+                      is_positional: false
+                      is_primary_resource: false
+                      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                      resource_method_params:
+                        goldengateConnection.properties.goldengateConnectionProperties.passwordSecretVersion: '{__relative_name__}'
+                      required: false
                 - arg_name: goldengate-connection-properties-technology-type
                   api_field: goldengateConnection.properties.goldengateConnectionProperties.technologyType
                   required: false
@@ -239,7 +247,7 @@
                   required: false
                   repeated: false
                   help_text: |-
-                    The service account key Cloud Storage file containing the
+                    The base64 encoded content of the service account key file containing the
                     credentials required to use Google Cloud Storage.
             - group:
                 api_field: goldengateConnection.properties.googleBigQueryConnectionProperties
@@ -258,7 +266,7 @@
                   required: false
                   repeated: false
                   help_text: |-
-                    The service account key file Cloud Storage containing the
+                    The base64 encoded content of the service account key file containing the
                     credentials required to use Google BigQuery.
             - group:
                 api_field: goldengateConnection.properties.mysqlConnectionProperties
@@ -278,13 +286,16 @@
                       help_text: |-
                         The password Oracle Goldengate uses to connect to MySQL in plain text.
                     - arg_name: mysql-connection-properties-password-secret-version
-                      api_field: goldengateConnection.properties.mysqlConnectionProperties.passwordSecretVersion
-                      required: false
-                      repeated: false
                       help_text: |-
                         The resource name of a secret version in Secret Manager which contains
                         the password Oracle Goldengate uses to connect to MySQL.
                         Format: projects/{project}/secrets/{secret}/versions/{version}.
+                      is_positional: false
+                      is_primary_resource: false
+                      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                      resource_method_params:
+                        goldengateConnection.properties.mysqlConnectionProperties.passwordSecretVersion: '{__relative_name__}'
+                      required: false
                 - arg_name: mysql-connection-properties-technology-type
                   api_field: goldengateConnection.properties.mysqlConnectionProperties.technologyType
                   required: false
@@ -366,28 +377,28 @@
                   required: false
                   repeated: false
                   help_text: |-
-                    Database Certificate - The content of a .pem or .crt file
+                    Database Certificate - The base64 encoded content of a .pem or .crt file
                     containing the server public key (for 1 and 2-way SSL).
                 - arg_name: mysql-connection-properties-ssl-crl-file
                   api_field: goldengateConnection.properties.mysqlConnectionProperties.sslCrlFile
                   required: false
                   repeated: false
                   help_text: |-
-                    The list of certificates revoked by the trusted
+                    The base64 encoded list of certificates revoked by the trusted
                     certificate authorities (Trusted CA).
                 - arg_name: mysql-connection-properties-ssl-cert-file
                   api_field: goldengateConnection.properties.mysqlConnectionProperties.sslCertFile
                   required: false
                   repeated: false
                   help_text: |-
-                    Client Certificate - The content of a .pem or .crt file
+                    Client Certificate - The base64 encoded content of a .pem or .crt file
                     containing the client public key (for 2-way SSL).
                 - arg_name: mysql-connection-properties-ssl-key-file
                   api_field: goldengateConnection.properties.mysqlConnectionProperties.sslKeyFile
                   required: false
                   repeated: false
                   help_text: |-
-                    Client Key - The content of a .pem or .crt file containing
+                    Client Key - The base64 encoded content of a .pem or .crt file containing
                     the client private key (for 2-way SSL).
                 - arg_name: mysql-connection-properties-additional-attributes
                   api_field: goldengateConnection.properties.mysqlConnectionProperties.additionalAttributes
@@ -427,13 +438,16 @@
                       help_text: |-
                         The password for Kafka basic/SASL auth in plain text.
                     - arg_name: kafka-connection-properties-password-secret-version
-                      api_field: goldengateConnection.properties.kafkaConnectionProperties.passwordSecretVersion
-                      required: false
-                      repeated: false
                       help_text: |-
                         The resource name of a secret version in Secret Manager which contains
                         the password for Kafka basic/SASL auth.
                         Format: projects/{project}/secrets/{secret}/versions/{version}.
+                      is_positional: false
+                      is_primary_resource: false
+                      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                      resource_method_params:
+                        goldengateConnection.properties.kafkaConnectionProperties.passwordSecretVersion: '{__relative_name__}'
+                      required: false
                 - group:
                     mutex: true
                     help_text: |-
@@ -446,13 +460,16 @@
                       help_text: |-
                         The TrustStore password in plain text.
                     - arg_name: kafka-connection-properties-trust-store-password-secret-version
-                      api_field: goldengateConnection.properties.kafkaConnectionProperties.trustStorePasswordSecretVersion
-                      required: false
-                      repeated: false
                       help_text: |-
                         The resource name of a secret version in Secret Manager which contains
                         the TrustStore password.
                         Format: projects/{project}/secrets/{secret}/versions/{version}.
+                      is_positional: false
+                      is_primary_resource: false
+                      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                      resource_method_params:
+                        goldengateConnection.properties.kafkaConnectionProperties.trustStorePasswordSecretVersion: '{__relative_name__}'
+                      required: false
                 - group:
                     mutex: true
                     help_text: |-
@@ -465,13 +482,16 @@
                       help_text: |-
                         The KeyStore password in plain text.
                     - arg_name: kafka-connection-properties-key-store-password-secret-version
-                      api_field: goldengateConnection.properties.kafkaConnectionProperties.keyStorePasswordSecretVersion
-                      required: false
-                      repeated: false
                       help_text: |-
                         The resource name of a secret version in Secret Manager which contains
                         the KeyStore password.
                         Format: projects/{project}/secrets/{secret}/versions/{version}.
+                      is_positional: false
+                      is_primary_resource: false
+                      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                      resource_method_params:
+                        goldengateConnection.properties.kafkaConnectionProperties.keyStorePasswordSecretVersion: '{__relative_name__}'
+                      required: false
                 - group:
                     mutex: true
                     help_text: |-
@@ -484,13 +504,16 @@
                       help_text: |-
                         The password for the cert inside of the KeyStore in plain text.
                     - arg_name: kafka-connection-properties-ssl-key-password-secret-version
-                      api_field: goldengateConnection.properties.kafkaConnectionProperties.sslKeyPasswordSecretVersion
-                      required: false
-                      repeated: false
                       help_text: |-
                         The resource name of a secret version in Secret Manager which contains
                         the password for the cert inside of the KeyStore.
                         Format: projects/{project}/secrets/{secret}/versions/{version}.
+                      is_positional: false
+                      is_primary_resource: false
+                      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                      resource_method_params:
+                        goldengateConnection.properties.kafkaConnectionProperties.sslKeyPasswordSecretVersion: '{__relative_name__}'
+                      required: false
                 - arg_name: kafka-connection-properties-technology-type
                   api_field: goldengateConnection.properties.kafkaConnectionProperties.technologyType
                   required: false
@@ -569,25 +592,25 @@
                   required: false
                   repeated: false
                   help_text: |-
-                    The content of the TrustStore file.
+                    The base64 encoded content of the TrustStore file.
                 - arg_name: kafka-connection-properties-key-store-file
                   api_field: goldengateConnection.properties.kafkaConnectionProperties.keyStoreFile
                   required: false
                   repeated: false
                   help_text: |-
-                    The content of the KeyStore file.
+                    The base64 encoded content of the KeyStore file.
                 - arg_name: kafka-connection-properties-consumer-file
                   api_field: goldengateConnection.properties.kafkaConnectionProperties.consumerPropertiesFile
                   required: false
                   repeated: false
                   help_text: |-
-                    The content of the consumer.properties file.
+                    The base64 encoded content of the consumer.properties file.
                 - arg_name: kafka-connection-properties-producer-file
                   api_field: goldengateConnection.properties.kafkaConnectionProperties.producerPropertiesFile
                   required: false
                   repeated: false
                   help_text: |-
-                    The content of the producer.properties file.
+                    The base64 encoded content of the producer.properties file.
                 - arg_name: kafka-connection-properties-use-resource-principal
                   api_field: goldengateConnection.properties.kafkaConnectionProperties.useResourcePrincipal
                   action: store_true
@@ -615,13 +638,16 @@
                       help_text: |-
                         The password to access Schema Registry in plain text.
                     - arg_name: kafka-schema-registry-connection-properties-password-secret-version
-                      api_field: goldengateConnection.properties.kafkaSchemaRegistryConnectionProperties.passwordSecretVersion
-                      required: false
-                      repeated: false
                       help_text: |-
                         The resource name of a secret version in Secret Manager which contains
                         the password to access Schema Registry using basic authentication.
                         Format: projects/{project}/secrets/{secret}/versions/{version}.
+                      is_positional: false
+                      is_primary_resource: false
+                      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                      resource_method_params:
+                        goldengateConnection.properties.kafkaSchemaRegistryConnectionProperties.passwordSecretVersion: '{__relative_name__}'
+                      required: false
                 - group:
                     mutex: true
                     help_text: |-
@@ -634,13 +660,16 @@
                       help_text: |-
                         The TrustStore password in plain text.
                     - arg_name: kafka-schema-registry-connection-properties-trust-store-password-secret-version
-                      api_field: goldengateConnection.properties.kafkaSchemaRegistryConnectionProperties.trustStorePasswordSecretVersion
-                      required: false
-                      repeated: false
                       help_text: |-
                         The resource name of a secret version in Secret Manager which contains
                         the TrustStore password.
                         Format: projects/{project}/secrets/{secret}/versions/{version}.
+                      is_positional: false
+                      is_primary_resource: false
+                      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                      resource_method_params:
+                        goldengateConnection.properties.kafkaSchemaRegistryConnectionProperties.trustStorePasswordSecretVersion: '{__relative_name__}'
+                      required: false
                 - group:
                     mutex: true
                     help_text: |-
@@ -653,13 +682,16 @@
                       help_text: |-
                         The KeyStore password in plain text.
                     - arg_name: kafka-schema-registry-connection-properties-key-store-password-secret-version
-                      api_field: goldengateConnection.properties.kafkaSchemaRegistryConnectionProperties.keyStorePasswordSecretVersion
-                      required: false
-                      repeated: false
                       help_text: |-
                         The resource name of a secret version in Secret Manager which contains
                         the KeyStore password.
                         Format: projects/{project}/secrets/{secret}/versions/{version}.
+                      is_positional: false
+                      is_primary_resource: false
+                      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                      resource_method_params:
+                        goldengateConnection.properties.kafkaSchemaRegistryConnectionProperties.keyStorePasswordSecretVersion: '{__relative_name__}'
+                      required: false
                 - group:
                     mutex: true
                     help_text: |-
@@ -672,13 +704,16 @@
                       help_text: |-
                         The password for the cert inside the KeyStore in plain text.
                     - arg_name: kafka-schema-registry-connection-properties-ssl-key-password-secret-version
-                      api_field: goldengateConnection.properties.kafkaSchemaRegistryConnectionProperties.sslKeyPasswordSecretVersion
-                      required: false
-                      repeated: false
                       help_text: |-
                         The resource name of a secret version in Secret Manager which contains
                         the password for the cert inside the KeyStore.
                         Format: projects/{project}/secrets/{secret}/versions/{version}.
+                      is_positional: false
+                      is_primary_resource: false
+                      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                      resource_method_params:
+                        goldengateConnection.properties.kafkaSchemaRegistryConnectionProperties.sslKeyPasswordSecretVersion: '{__relative_name__}'
+                      required: false
                 - arg_name: kafka-schema-registry-connection-properties-technology-type
                   api_field: goldengateConnection.properties.kafkaSchemaRegistryConnectionProperties.technologyType
                   required: false
@@ -724,13 +759,13 @@
                   required: false
                   repeated: false
                   help_text: |-
-                    The content of the TrustStore file.
+                    The base64 encoded content of the TrustStore file.
                 - arg_name: kafka-schema-registry-connection-properties-key-store-file
                   api_field: goldengateConnection.properties.kafkaSchemaRegistryConnectionProperties.keyStoreFile
                   required: false
                   repeated: false
                   help_text: |-
-                    The content of the KeyStore file.
+                    The base64 encoded content of the KeyStore file.
             - group:
                 api_field: goldengateConnection.properties.ociObjectStorageConnectionProperties
                 required: false
@@ -895,14 +930,17 @@
                         The password Oracle Goldengate uses for Azure Synapse Analytics
                         connection in plain text.
                     - arg_name: azure-synapse-analytics-connection-properties-password-secret-version
-                      api_field: goldengateConnection.properties.azureSynapseAnalyticsConnectionProperties.passwordSecretVersion
-                      required: false
-                      repeated: false
                       help_text: |-
                         The resource name of a secret version in Secret Manager which contains
                         the password Oracle Goldengate uses for Azure Synapse Analytics
                         connection.
                         Format: projects/{project}/secrets/{secret}/versions/{version}.
+                      is_positional: false
+                      is_primary_resource: false
+                      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                      resource_method_params:
+                        goldengateConnection.properties.azureSynapseAnalyticsConnectionProperties.passwordSecretVersion: '{__relative_name__}'
+                      required: false
                 - arg_name: azure-synapse-analytics-connection-properties-technology-type
                   api_field: goldengateConnection.properties.azureSynapseAnalyticsConnectionProperties.technologyType
                   required: false
@@ -943,13 +981,16 @@
                         The password Oracle Goldengate uses for PostgreSQL connection in plain
                         text.
                     - arg_name: postgresql-connection-properties-password-secret-version
-                      api_field: goldengateConnection.properties.postgresqlConnectionProperties.passwordSecretVersion
-                      required: false
-                      repeated: false
                       help_text: |-
                         The resource name of a secret version in Secret Manager which contains
                         the password Oracle Goldengate uses for PostgreSQL connection.
                         Format: projects/{project}/secrets/{secret}/versions/{version}.
+                      is_positional: false
+                      is_primary_resource: false
+                      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                      resource_method_params:
+                        goldengateConnection.properties.postgresqlConnectionProperties.passwordSecretVersion: '{__relative_name__}'
+                      required: false
                 - arg_name: postgresql-connection-properties-technology-type
                   api_field: goldengateConnection.properties.postgresqlConnectionProperties.technologyType
                   required: false
@@ -1041,27 +1082,27 @@
                   required: false
                   repeated: false
                   help_text: |-
-                    The certificate of the trusted certificate authorities
+                    The base64 encoded certificate of the trusted certificate authorities
                     (Trusted CA) for PostgreSQL.
                 - arg_name: postgresql-connection-properties-ssl-crl-file
                   api_field: goldengateConnection.properties.postgresqlConnectionProperties.sslCrlFile
                   required: false
                   repeated: false
                   help_text: |-
-                    The list of certificates revoked by the trusted
+                    The base64 encoded list of certificates revoked by the trusted
                     certificate authorities (Trusted CA).
                 - arg_name: postgresql-connection-properties-ssl-cert-file
                   api_field: goldengateConnection.properties.postgresqlConnectionProperties.sslCertFile
                   required: false
                   repeated: false
                   help_text: |-
-                    The certificate of the PostgreSQL server.
+                    The base64 encoded certificate of the PostgreSQL server.
                 - arg_name: postgresql-connection-properties-ssl-key-file
                   api_field: goldengateConnection.properties.postgresqlConnectionProperties.sslKeyFile
                   required: false
                   repeated: false
                   help_text: |-
-                    The private key of the PostgreSQL server.
+                    The base64 encoded private key of the PostgreSQL server.
                 - arg_name: postgresql-connection-properties-db-system-id
                   api_field: goldengateConnection.properties.postgresqlConnectionProperties.dbSystemId
                   required: false
@@ -1087,14 +1128,17 @@
                         The password Oracle Goldengate uses for Microsoft SQL Server connection
                         in plain text.
                     - arg_name: microsoft-sqlserver-connection-properties-password-secret-version
-                      api_field: goldengateConnection.properties.microsoftSqlserverConnectionProperties.passwordSecretVersion
-                      required: false
-                      repeated: false
                       help_text: |-
                         The resource name of a secret version in Secret Manager which contains
                         the password Oracle Goldengate uses for Microsoft SQL Server
                         connection.
                         Format: projects/{project}/secrets/{secret}/versions/{version}.
+                      is_positional: false
+                      is_primary_resource: false
+                      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                      resource_method_params:
+                        goldengateConnection.properties.microsoftSqlserverConnectionProperties.passwordSecretVersion: '{__relative_name__}'
+                      required: false
                 - arg_name: microsoft-sqlserver-connection-properties-technology-type
                   api_field: goldengateConnection.properties.microsoftSqlserverConnectionProperties.technologyType
                   required: false
@@ -1160,7 +1204,7 @@
                   required: false
                   repeated: false
                   help_text: |-
-                    Database Certificate - The content of a .pem or .crt file
+                    Database Certificate - The base64 encoded content of a .pem or .crt file
                     containing the server public key (for 1-way SSL).
                 - arg_name: microsoft-sqlserver-connection-properties-server-certificate-validation-required
                   api_field: goldengateConnection.properties.microsoftSqlserverConnectionProperties.serverCertificateValidationRequired
@@ -1245,14 +1289,17 @@
                         The password Oracle Goldengate uses to connect the Java Message Service
                         in plain text.
                     - arg_name: java-message-service-connection-properties-password-secret-version
-                      api_field: goldengateConnection.properties.javaMessageServiceConnectionProperties.passwordSecretVersion
-                      required: false
-                      repeated: false
                       help_text: |-
                         The resource name of a secret version in Secret Manager which contains
                         the password Oracle Goldengate uses to connect the associated Java
                         Message Service.
                         Format: projects/{project}/secrets/{secret}/versions/{version}.
+                      is_positional: false
+                      is_primary_resource: false
+                      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                      resource_method_params:
+                        goldengateConnection.properties.javaMessageServiceConnectionProperties.passwordSecretVersion: '{__relative_name__}'
+                      required: false
                 - group:
                     mutex: true
                     help_text: |-
@@ -1265,13 +1312,16 @@
                       help_text: |-
                         The TrustStore password in plain text.
                     - arg_name: java-message-service-connection-properties-trust-store-password-secret-version
-                      api_field: goldengateConnection.properties.javaMessageServiceConnectionProperties.trustStorePasswordSecretVersion
-                      required: false
-                      repeated: false
                       help_text: |-
                         The resource name of a secret version in Secret Manager which contains
                         the TrustStore password.
                         Format: projects/{project}/secrets/{secret}/versions/{version}.
+                      is_positional: false
+                      is_primary_resource: false
+                      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                      resource_method_params:
+                        goldengateConnection.properties.javaMessageServiceConnectionProperties.trustStorePasswordSecretVersion: '{__relative_name__}'
+                      required: false
                 - group:
                     mutex: true
                     help_text: |-
@@ -1284,13 +1334,16 @@
                       help_text: |-
                         The KeyStore password in plain text.
                     - arg_name: java-message-service-connection-properties-key-store-password-secret-version
-                      api_field: goldengateConnection.properties.javaMessageServiceConnectionProperties.keyStorePasswordSecretVersion
-                      required: false
-                      repeated: false
                       help_text: |-
                         The resource name of a secret version in Secret Manager which contains
                         the KeyStore password.
                         Format: projects/{project}/secrets/{secret}/versions/{version}.
+                      is_positional: false
+                      is_primary_resource: false
+                      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                      resource_method_params:
+                        goldengateConnection.properties.javaMessageServiceConnectionProperties.keyStorePasswordSecretVersion: '{__relative_name__}'
+                      required: false
                 - group:
                     mutex: true
                     help_text: |-
@@ -1303,13 +1356,16 @@
                       help_text: |-
                         The password for the cert inside of the KeyStore in plain text.
                     - arg_name: java-message-service-connection-properties-ssl-key-password-secret-version
-                      api_field: goldengateConnection.properties.javaMessageServiceConnectionProperties.sslKeyPasswordSecretVersion
-                      required: false
-                      repeated: false
                       help_text: |-
                         The resource name of a secret version in Secret Manager which contains
                         the password for the cert inside of the KeyStore.
                         Format: projects/{project}/secrets/{secret}/versions/{version}.
+                      is_positional: false
+                      is_primary_resource: false
+                      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                      resource_method_params:
+                        goldengateConnection.properties.javaMessageServiceConnectionProperties.sslKeyPasswordSecretVersion: '{__relative_name__}'
+                      required: false
                 - arg_name: java-message-service-connection-properties-technology-type
                   api_field: goldengateConnection.properties.javaMessageServiceConnectionProperties.technologyType
                   required: false
@@ -1416,13 +1472,13 @@
                   required: false
                   repeated: false
                   help_text: |-
-                    The content of the TrustStore file.
+                    The base64 encoded content of the TrustStore file.
                 - arg_name: java-message-service-connection-properties-key-store-file
                   api_field: goldengateConnection.properties.javaMessageServiceConnectionProperties.keyStoreFile
                   required: false
                   repeated: false
                   help_text: |-
-                    The content of the KeyStore file.
+                    The base64 encoded content of the KeyStore file.
             - group:
                 api_field: goldengateConnection.properties.mongodbConnectionProperties
                 required: false
@@ -1442,13 +1498,16 @@
                         The password Oracle Goldengate uses to connect the Mongodb connection in
                         plain text.
                     - arg_name: mongodb-connection-properties-password-secret-version
-                      api_field: goldengateConnection.properties.mongodbConnectionProperties.passwordSecretVersion
-                      required: false
-                      repeated: false
                       help_text: |-
                         The resource name of a secret version in Secret Manager which contains
                         the password Oracle Goldengate uses to connect the Mongodb connection.
                         Format: projects/{project}/secrets/{secret}/versions/{version}.
+                      is_positional: false
+                      is_primary_resource: false
+                      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                      resource_method_params:
+                        goldengateConnection.properties.mongodbConnectionProperties.passwordSecretVersion: '{__relative_name__}'
+                      required: false
                 - group:
                     mutex: true
                     help_text: |-
@@ -1461,13 +1520,16 @@
                       help_text: |-
                         The Client Certificate key file password in plain text.
                     - arg_name: mongodb-connection-properties-tls-certificate-key-file-password-secret-version
-                      api_field: goldengateConnection.properties.mongodbConnectionProperties.tlsCertificateKeyFilePasswordSecretVersion
-                      required: false
-                      repeated: false
                       help_text: |-
                         The resource name of a secret version in Secret Manager which contains
                         the Client Certificate key file password in Secret Manager.
                         Format: projects/{project}/secrets/{secret}/versions/{version}.
+                      is_positional: false
+                      is_primary_resource: false
+                      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                      resource_method_params:
+                        goldengateConnection.properties.mongodbConnectionProperties.tlsCertificateKeyFilePasswordSecretVersion: '{__relative_name__}'
+                      required: false
                 - arg_name: mongodb-connection-properties-technology-type
                   api_field: goldengateConnection.properties.mongodbConnectionProperties.technologyType
                   required: false
@@ -1516,14 +1578,14 @@
                   required: false
                   repeated: false
                   help_text: |-
-                    Database Certificate - The content of a .pem file,
+                    Database Certificate - The base64 encoded content of a .pem file,
                     containing the server public key (for 1 and 2-way SSL).
                 - arg_name: mongodb-connection-properties-tls-certificate-key-file
                   api_field: goldengateConnection.properties.mongodbConnectionProperties.tlsCertificateKeyFile
                   required: false
                   repeated: false
                   help_text: |-
-                    Client Certificate - The content of a .pem file, containing
+                    Client Certificate - The base64 encoded content of a .pem file, containing
                     the client public key (for 2-way SSL).
             - group:
                 api_field: goldengateConnection.properties.oracleNosqlConnectionProperties
@@ -1602,13 +1664,16 @@
                         The password Oracle Goldengate uses to connect to Snowflake platform
                         in plain text.
                     - arg_name: snowflake-connection-properties-password-secret-version
-                      api_field: goldengateConnection.properties.snowflakeConnectionProperties.passwordSecretVersion
-                      required: false
-                      repeated: false
                       help_text: |-
                         The resource name of a secret version in Secret Manager which contains
                         the password Oracle Goldengate uses to connect to Snowflake platform.
                         Format: projects/{project}/secrets/{secret}/versions/{version}.
+                      is_positional: false
+                      is_primary_resource: false
+                      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                      resource_method_params:
+                        goldengateConnection.properties.snowflakeConnectionProperties.passwordSecretVersion: '{__relative_name__}'
+                      required: false
                 - arg_name: snowflake-connection-properties-technology-type
                   api_field: goldengateConnection.properties.snowflakeConnectionProperties.technologyType
                   required: false
@@ -1674,13 +1739,16 @@
                         The password Oracle Goldengate uses for Amazon Redshift connection
                         in plain text.
                     - arg_name: amazon-redshift-connection-properties-password-secret-version
-                      api_field: goldengateConnection.properties.amazonRedshiftConnectionProperties.passwordSecretVersion
-                      required: false
-                      repeated: false
                       help_text: |-
                         The resource name of a secret version in Secret Manager which contains
                         the password Oracle Goldengate uses for Amazon Redshift connection.
                         Format: projects/{project}/secrets/{secret}/versions/{version}.
+                      is_positional: false
+                      is_primary_resource: false
+                      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                      resource_method_params:
+                        goldengateConnection.properties.amazonRedshiftConnectionProperties.passwordSecretVersion: '{__relative_name__}'
+                      required: false
                 - arg_name: amazon-redshift-connection-properties-technology-type
                   api_field: goldengateConnection.properties.amazonRedshiftConnectionProperties.technologyType
                   required: false
@@ -1721,13 +1789,16 @@
                         The password Oracle Goldengate uses for Elastic Search connection
                         in plain text.
                     - arg_name: elasticsearch-connection-properties-password-secret-version
-                      api_field: goldengateConnection.properties.elasticsearchConnectionProperties.passwordSecretVersion
-                      required: false
-                      repeated: false
                       help_text: |-
                         The resource name of a secret version in Secret Manager which contains
                         the password Oracle Goldengate uses for Elastic Search connection.
                         Format: projects/{project}/secrets/{secret}/versions/{version}.
+                      is_positional: false
+                      is_primary_resource: false
+                      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                      resource_method_params:
+                        goldengateConnection.properties.elasticsearchConnectionProperties.passwordSecretVersion: '{__relative_name__}'
+                      required: false
                 - arg_name: elasticsearch-connection-properties-technology-type
                   api_field: goldengateConnection.properties.elasticsearchConnectionProperties.technologyType
                   required: false
@@ -1843,13 +1914,16 @@
                       help_text: |-
                         The password Oracle Goldengate uses for Db2 connection in plain text.
                     - arg_name: db2-connection-properties-password-secret-version
-                      api_field: goldengateConnection.properties.db2ConnectionProperties.passwordSecretVersion
-                      required: false
-                      repeated: false
                       help_text: |-
                         The resource name of a secret version in Secret Manager which contains
                         the password Oracle Goldengate uses for Db2 connection.
                         Format: projects/{project}/secrets/{secret}/versions/{version}.
+                      is_positional: false
+                      is_primary_resource: false
+                      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                      resource_method_params:
+                        goldengateConnection.properties.db2ConnectionProperties.passwordSecretVersion: '{__relative_name__}'
+                      required: false
                 - arg_name: db2-connection-properties-technology-type
                   api_field: goldengateConnection.properties.db2ConnectionProperties.technologyType
                   required: false
@@ -1948,13 +2022,16 @@
                       help_text: |-
                         The password Oracle Goldengate uses for Redis connection in plain text.
                     - arg_name: redis-connection-properties-password-secret-version
-                      api_field: goldengateConnection.properties.redisConnectionProperties.passwordSecretVersion
-                      required: false
-                      repeated: false
                       help_text: |-
                         The resource name of a secret version in Secret Manager which contains
                         the password Oracle Goldengate uses for Redis connection.
                         Format: projects/{project}/secrets/{secret}/versions/{version}.
+                      is_positional: false
+                      is_primary_resource: false
+                      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                      resource_method_params:
+                        goldengateConnection.properties.redisConnectionProperties.passwordSecretVersion: '{__relative_name__}'
+                      required: false
                 - group:
                     mutex: true
                     help_text: |-
@@ -1967,13 +2044,16 @@
                       help_text: |-
                         The TrustStore password in plain text.
                     - arg_name: redis-connection-properties-trust-store-password-secret-version
-                      api_field: goldengateConnection.properties.redisConnectionProperties.trustStorePasswordSecretVersion
-                      required: false
-                      repeated: false
                       help_text: |-
                         The resource name of a secret version in Secret Manager which contains
                         the TrustStore password.
                         Format: projects/{project}/secrets/{secret}/versions/{version}.
+                      is_positional: false
+                      is_primary_resource: false
+                      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                      resource_method_params:
+                        goldengateConnection.properties.redisConnectionProperties.trustStorePasswordSecretVersion: '{__relative_name__}'
+                      required: false
                 - group:
                     mutex: true
                     help_text: |-
@@ -1986,13 +2066,16 @@
                       help_text: |-
                         The KeyStore password in plain text.
                     - arg_name: redis-connection-properties-key-store-password-secret-version
-                      api_field: goldengateConnection.properties.redisConnectionProperties.keyStorePasswordSecretVersion
-                      required: false
-                      repeated: false
                       help_text: |-
                         The resource name of a secret version in Secret Manager which contains
                         the KeyStore password.
                         Format: projects/{project}/secrets/{secret}/versions/{version}.
+                      is_positional: false
+                      is_primary_resource: false
+                      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                      resource_method_params:
+                        goldengateConnection.properties.redisConnectionProperties.keyStorePasswordSecretVersion: '{__relative_name__}'
+                      required: false
                 - arg_name: redis-connection-properties-technology-type
                   api_field: goldengateConnection.properties.redisConnectionProperties.technologyType
                   required: false
@@ -2057,13 +2140,13 @@
                   required: false
                   repeated: false
                   help_text: |-
-                    The content of the TrustStore file.
+                    The base64 encoded content of the TrustStore file.
                 - arg_name: redis-connection-properties-key-store-file
                   api_field: goldengateConnection.properties.redisConnectionProperties.keyStoreFile
                   required: false
                   repeated: false
                   help_text: |-
-                    The content of the KeyStore file.
+                    The base64 encoded content of the KeyStore file.
             - group:
                 api_field: goldengateConnection.properties.databricksConnectionProperties
                 required: false
@@ -2082,13 +2165,16 @@
                       help_text: |-
                         The password used to connect to Databricks in plain text.
                     - arg_name: databricks-connection-properties-password-secret-version
-                      api_field: goldengateConnection.properties.databricksConnectionProperties.passwordSecretVersion
-                      required: false
-                      repeated: false
                       help_text: |-
                         The resource name of a secret version in Secret Manager which contains
                         the password used to connect to Databricks.
                         Format: projects/{project}/secrets/{secret}/versions/{version}.
+                      is_positional: false
+                      is_primary_resource: false
+                      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_secrets_versions
+                      resource_method_params:
+                        goldengateConnection.properties.databricksConnectionProperties.passwordSecretVersion: '{__relative_name__}'
+                      required: false
                 - arg_name: databricks-connection-properties-technology-type
                   api_field: goldengateConnection.properties.databricksConnectionProperties.technologyType
                   required: false
@@ -2153,7 +2239,7 @@
                   required: false
                   repeated: false
                   help_text: |-
-                    The content of the service account key file containing the
+                    The base64 encoded content of the service account key file containing the
                     credentials required to use Google Pub/Sub.
             - group:
                 api_field: goldengateConnection.properties.microsoftFabricConnectionProperties
@@ -2362,8 +2448,8 @@
                               required: false
                               repeated: false
                               help_text: |-
-                                The content of the configuration file containing additional properties for
-                                the REST catalog.
+                                The base64 encoded content of the configuration file containing additional
+                                properties for the REST catalog.
                     - arg_name: iceberg-connection-properties-catalog-type
                       api_field: goldengateConnection.properties.icebergConnectionProperties.catalog.catalogType
                       required: true
@@ -2474,7 +2560,8 @@
                               required: false
                               repeated: false
                               help_text: |-
-                                The service account key file of Google Cloud Storage.
+                                The base64 encoded content of the service account key file of Google Cloud
+                                Storage.
                         - group:
                             api_field: goldengateConnection.properties.icebergConnectionProperties.storage.azureDataLakeStorageIcebergStorage
                             required: false

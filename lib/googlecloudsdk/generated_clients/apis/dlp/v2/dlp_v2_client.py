@@ -66,6 +66,7 @@ class DlpV2(base_api.BaseApiClient):
     self.projects_locations_columnDataProfiles = self.ProjectsLocationsColumnDataProfilesService(self)
     self.projects_locations_connections = self.ProjectsLocationsConnectionsService(self)
     self.projects_locations_content = self.ProjectsLocationsContentService(self)
+    self.projects_locations_contentPolicies = self.ProjectsLocationsContentPoliciesService(self)
     self.projects_locations_deidentifyTemplates = self.ProjectsLocationsDeidentifyTemplatesService(self)
     self.projects_locations_discoveryConfigs = self.ProjectsLocationsDiscoveryConfigsService(self)
     self.projects_locations_dlpJobs = self.ProjectsLocationsDlpJobsService(self)
@@ -2959,6 +2960,151 @@ class DlpV2(base_api.BaseApiClient):
         request_field='googlePrivacyDlpV2ReidentifyContentRequest',
         request_type_name='DlpProjectsLocationsContentReidentifyRequest',
         response_type_name='GooglePrivacyDlpV2ReidentifyContentResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsContentPoliciesService(base_api.BaseApiService):
+    """Service class for the projects_locations_contentPolicies resource."""
+
+    _NAME = 'projects_locations_contentPolicies'
+
+    def __init__(self, client):
+      super(DlpV2.ProjectsLocationsContentPoliciesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Create a ContentPolicy.
+
+      Args:
+        request: (DlpProjectsLocationsContentPoliciesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GooglePrivacyDlpV2ContentPolicy) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/contentPolicies',
+        http_method='POST',
+        method_id='dlp.projects.locations.contentPolicies.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v2/{+parent}/contentPolicies',
+        request_field='googlePrivacyDlpV2CreateContentPolicyRequest',
+        request_type_name='DlpProjectsLocationsContentPoliciesCreateRequest',
+        response_type_name='GooglePrivacyDlpV2ContentPolicy',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Delete a ContentPolicy.
+
+      Args:
+        request: (DlpProjectsLocationsContentPoliciesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleProtobufEmpty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/contentPolicies/{contentPoliciesId}',
+        http_method='DELETE',
+        method_id='dlp.projects.locations.contentPolicies.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v2/{+name}',
+        request_field='',
+        request_type_name='DlpProjectsLocationsContentPoliciesDeleteRequest',
+        response_type_name='GoogleProtobufEmpty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Get a ContentPolicy.
+
+      Args:
+        request: (DlpProjectsLocationsContentPoliciesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GooglePrivacyDlpV2ContentPolicy) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/contentPolicies/{contentPoliciesId}',
+        http_method='GET',
+        method_id='dlp.projects.locations.contentPolicies.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v2/{+name}',
+        request_field='',
+        request_type_name='DlpProjectsLocationsContentPoliciesGetRequest',
+        response_type_name='GooglePrivacyDlpV2ContentPolicy',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists ContentPolicies in a parent.
+
+      Args:
+        request: (DlpProjectsLocationsContentPoliciesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GooglePrivacyDlpV2ListContentPoliciesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/contentPolicies',
+        http_method='GET',
+        method_id='dlp.projects.locations.contentPolicies.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v2/{+parent}/contentPolicies',
+        request_field='',
+        request_type_name='DlpProjectsLocationsContentPoliciesListRequest',
+        response_type_name='GooglePrivacyDlpV2ListContentPoliciesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Update a ContentPolicy.
+
+      Args:
+        request: (DlpProjectsLocationsContentPoliciesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GooglePrivacyDlpV2ContentPolicy) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/contentPolicies/{contentPoliciesId}',
+        http_method='PATCH',
+        method_id='dlp.projects.locations.contentPolicies.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v2/{+name}',
+        request_field='googlePrivacyDlpV2UpdateContentPolicyRequest',
+        request_type_name='DlpProjectsLocationsContentPoliciesPatchRequest',
+        response_type_name='GooglePrivacyDlpV2ContentPolicy',
         supports_download=False,
     )
 

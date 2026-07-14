@@ -249,7 +249,11 @@ class RestoreBackup(base.RestoreCommand):
               operation=operation_ref.operation))
 
     operations.OperationsV1Beta4.WaitForOperation(
-        sql_client, operation_ref, 'Restoring Cloud SQL instance')
+        sql_client,
+        operation_ref,
+        'Restoring Cloud SQL instance',
+        max_wait_seconds=args.timeout,
+    )
 
     log.status.write('Restored [{instance}].\n'.format(instance=instance_ref))
 

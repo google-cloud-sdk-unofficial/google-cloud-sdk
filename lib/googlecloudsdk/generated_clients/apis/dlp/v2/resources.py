@@ -279,6 +279,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_CONTENTPOLICIES = (
+      'projects.locations.contentPolicies',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/contentPolicies/'
+              '{contentPoliciesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_DEIDENTIFYTEMPLATES = (
       'projects.locations.deidentifyTemplates',
       '{+name}',

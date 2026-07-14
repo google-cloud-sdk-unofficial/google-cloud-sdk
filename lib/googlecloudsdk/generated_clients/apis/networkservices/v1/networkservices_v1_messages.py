@@ -55,7 +55,7 @@ class AgentGateway(_messages.Message):
     name: Identifier. Name of the AgentGateway resource. It matches pattern
       `projects/*/locations/*/agentGateways/`.
     networkConfig: Optional. Network configuration for the AgentGateway.
-    protocols: Required. List of protocols supported by an Agent Gateway
+    protocols: Optional. Deprecated.
     registries: Optional. A list of Agent registries containing the agents,
       MCP servers and tools governed by the Agent Gateway. Note: Currently
       limited to project-scoped registries Must be of format
@@ -194,9 +194,24 @@ class AgentGatewayNetworkConfigEgress(_messages.Message):
 
   Fields:
     networkAttachment: Optional. The URI of the Network Attachment resource.
+    trustConfig: Optional. TrustConfig defines the trust configuration for
+      egress.
   """
 
   networkAttachment = _messages.StringField(1)
+  trustConfig = _messages.MessageField('AgentGatewayNetworkConfigEgressTrustConfig', 2)
+
+
+class AgentGatewayNetworkConfigEgressTrustConfig(_messages.Message):
+  r"""TrustConfig defines the trust configuration for egress.
+
+  Fields:
+    pemCertificates: Required. PEM encoded root certificates used to validate
+      the identity of the upstream servers/destinations during egress
+      connections.
+  """
+
+  pemCertificates = _messages.StringField(1, repeated=True)
 
 
 class AgentGatewaySelfManaged(_messages.Message):

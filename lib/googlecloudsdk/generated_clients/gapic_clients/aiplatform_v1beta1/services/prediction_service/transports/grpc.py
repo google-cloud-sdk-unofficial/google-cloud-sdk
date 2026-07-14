@@ -670,6 +670,58 @@ class PredictionServiceGrpcTransport(PredictionServiceTransport):
         return self._stubs['invoke']
 
     @property
+    def get_response(self) -> Callable[
+            [prediction_service.GetResponseRequest],
+            httpbody_pb2.HttpBody]:
+        r"""Return a callable for the get response method over gRPC.
+
+        Gets the response from the endpoint.
+
+        Returns:
+            Callable[[~.GetResponseRequest],
+                    ~.HttpBody]:
+                A function that, when called, will call the underlying RPC
+                on the server.
+        """
+        # Generate a "stub function" on-the-fly which will actually make
+        # the request.
+        # gRPC handles serialization and deserialization, so we just need
+        # to pass in the functions for each.
+        if 'get_response' not in self._stubs:
+            self._stubs['get_response'] = self._logged_channel.unary_unary(
+                '/google.cloud.aiplatform.v1beta1.PredictionService/GetResponse',
+                request_serializer=prediction_service.GetResponseRequest.serialize,
+                response_deserializer=httpbody_pb2.HttpBody.FromString,
+            )
+        return self._stubs['get_response']
+
+    @property
+    def delete_response(self) -> Callable[
+            [prediction_service.DeleteResponseRequest],
+            httpbody_pb2.HttpBody]:
+        r"""Return a callable for the delete response method over gRPC.
+
+        Deletes the response from the endpoint.
+
+        Returns:
+            Callable[[~.DeleteResponseRequest],
+                    ~.HttpBody]:
+                A function that, when called, will call the underlying RPC
+                on the server.
+        """
+        # Generate a "stub function" on-the-fly which will actually make
+        # the request.
+        # gRPC handles serialization and deserialization, so we just need
+        # to pass in the functions for each.
+        if 'delete_response' not in self._stubs:
+            self._stubs['delete_response'] = self._logged_channel.unary_unary(
+                '/google.cloud.aiplatform.v1beta1.PredictionService/DeleteResponse',
+                request_serializer=prediction_service.DeleteResponseRequest.serialize,
+                response_deserializer=httpbody_pb2.HttpBody.FromString,
+            )
+        return self._stubs['delete_response']
+
+    @property
     def explain(self) -> Callable[
             [prediction_service.ExplainRequest],
             prediction_service.ExplainResponse]:

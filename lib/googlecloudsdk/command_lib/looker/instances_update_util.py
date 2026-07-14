@@ -14,13 +14,114 @@
 # limitations under the License.
 """Utility for updating Looker instances.
 
-This utily is primarily used for modifying request hooks for update requests for
-Looker instances. See go/gcloud-creating-commands#request-hooks for more
-details.
+This utility is primarily used for modifying request hooks for update
+requests for Looker instances. See go/gcloud-creating-commands#request-hooks
+for more details.
 """
 
-
+from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core.console import console_io
+
+_MSG_RELEASE_CHANNEL_UPGRADE_WARNING = (
+    'Caution: Your instance will be updated to the latest version available in'
+    ' the {selected_channel} channel. For more details, review'
+    ' https://cloud.google.com/looker/docs/looker-core-release-process#release_channels.'
+)
+
+_MSG_RELEASE_CHANNEL_DOWNGRADE_WARNING = (
+    'Caution: Your instance will remain on version {looker_version} until this'
+    ' version becomes available in the {selected_channel} channel or may update'
+    ' instantly if {selected_channel} channel is on higher version. For more'
+    ' details, review'
+    ' https://cloud.google.com/looker/docs/looker-core-release-process#release_channels.'
+)
+
+_MSG_RELEASE_CHANNEL_RAPID_MAINTENANCE_WARNING = (
+    'Switching to the Rapid channel automatically disables the maintenance'
+    ' window and all deny maintenance periods for this instance.'
+)
+
+
+def _GetReleaseChannelChangeType(*, current, selected, release_channel_enum):
+  """Checks if release channel change is an upgrade or downgrade.
+
+  Args:
+    current: The current release channel of the instance.
+    selected: The new release channel selected by the user.
+    release_channel_enum: The release channel enum from the API messages.
+
+  Returns:
+    'upgrade', 'downgrade', or None if the rank is the same.
+  """
+  current_val = (
+      current
+      if current is not None
+      else release_channel_enum.RELEASE_CHANNEL_UNSPECIFIED
+  )
+
+  rank_by_release_channel = {
+      release_channel_enum.RELEASE_CHANNEL_UNSPECIFIED: 0.5,
+      release_channel_enum.RAPID: 0,
+      release_channel_enum.REGULAR: 1,
+      release_channel_enum.STABLE: 2,
+  }
+
+  current_rank = rank_by_release_channel.get(current_val, 0)
+  selected_rank = rank_by_release_channel.get(selected, 0)
+
+  if current_rank == selected_rank:
+    return None
+  return 'upgrade' if selected_rank < current_rank else 'downgrade'
+
+
+def _GetReleaseChannelWarningMessage(
+    *, current, selected, looker_version, release_channel_enum
+):
+  """Gets warning message for release channel change.
+
+  Args:
+    current: The current release channel of the instance.
+    selected: The new release channel selected by the user.
+    looker_version: The current version of the Looker instance.
+    release_channel_enum: The release channel enum from the API messages.
+
+  Returns:
+    A warning message string or None if no warning is needed.
+  """
+  change_type = _GetReleaseChannelChangeType(
+      current=current,
+      selected=selected,
+      release_channel_enum=release_channel_enum,
+  )
+  if change_type is None:
+    return None
+
+  label_by_release_channel = {
+      release_channel_enum.RELEASE_CHANNEL_UNSPECIFIED: 'No Channel',
+      release_channel_enum.RAPID: 'Rapid',
+      release_channel_enum.REGULAR: 'Regular',
+      release_channel_enum.STABLE: 'Stable',
+  }
+
+  selected_label = label_by_release_channel.get(selected, str(selected))
+
+  if change_type == 'downgrade':
+    warning_msg = _MSG_RELEASE_CHANNEL_DOWNGRADE_WARNING.format(
+        looker_version=looker_version, selected_channel=selected_label
+    )
+  else:
+    warning_msg = _MSG_RELEASE_CHANNEL_UPGRADE_WARNING.format(
+        selected_channel=selected_label
+    )
+
+  if (
+      selected == release_channel_enum.RAPID
+      and current != release_channel_enum.RAPID
+  ):
+    warning_msg += '\n\n' + _MSG_RELEASE_CHANNEL_RAPID_MAINTENANCE_WARNING
+
+  return warning_msg
 
 
 def _WarnForAdminSettingsUpdate():
@@ -95,20 +196,6 @@ def _WarnForPscServiceAttachmentsRemovalUpdate():
   )
 
 
-def _WarnForReleaseChannelUpdate():
-  """Adds prompt that warns about release channel update."""
-  message = (
-      'Changing the release channel may trigger an immediate update or '
-      'cause the instance to remain on its current version until that version '
-      'is available in the new channel.'
-  )
-  console_io.PromptContinue(
-      message=message,
-      prompt_string='Do you want to proceed with update?',
-      cancel_on_no=True,
-  )
-
-
 def AddFieldToUpdateMask(field, patch_request):
   """Adds fields to the update mask of the patch request.
 
@@ -122,8 +209,9 @@ def AddFieldToUpdateMask(field, patch_request):
   """
   update_mask = patch_request.updateMask
   if update_mask:
-    if update_mask.count(field) == 0:
-      patch_request.updateMask = '%s,%s' % (update_mask, field)
+    fields = set(update_mask.split(','))
+    if field not in fields:
+      patch_request.updateMask = f'{update_mask},{field}'
   else:
     patch_request.updateMask = field
   return patch_request
@@ -311,12 +399,84 @@ def UpdateCatalogIntegrationOptOut(unused_instance_ref, args, patch_request):
   return patch_request
 
 
-def UpdateReleaseChannel(unused_instance_ref, args, patch_request):
-  """Hook to update release channel to the update mask of the request."""
-  if args.IsSpecified('release_channel'):
-    _WarnForReleaseChannelUpdate()
-    patch_request = AddFieldToUpdateMask('release_channel', patch_request)
-  return patch_request
+def UpdateReleaseChannel(instance_ref, args, patch_request):
+  """Hook to update release channel to the update mask of the request.
+
+  Args:
+    instance_ref: The reference to the instance being updated.
+    args: The arguments passed to the update command.
+    patch_request: The patch request to be sent to the API.
+
+  Returns:
+    The updated patch request.
+
+  Raises:
+    exceptions.InvalidArgumentException: If maintenance settings are specified
+      when switching to the RAPID release channel.
+  """
+  if not args.IsSpecified('release_channel'):
+    return patch_request
+
+  api_version = instance_ref.GetCollectionInfo().api_version
+  messages = apis.GetMessagesModule('looker', api_version)
+  instance_msg = getattr(messages, 'Instance')
+  release_channel_enum = instance_msg.ReleaseChannelValueValuesEnum
+
+  client = apis.GetClientInstance('looker', api_version)
+  service = client.projects_locations_instances
+
+  get_request_class = getattr(
+      messages, 'LookerProjectsLocationsInstancesGetRequest'
+  )
+  current_instance = service.Get(
+      get_request_class(name=instance_ref.RelativeName())
+  )
+
+  current_channel = current_instance.releaseChannel
+  current_version = current_instance.lookerVersion
+  new_channel = patch_request.instance.releaseChannel
+
+  if new_channel == release_channel_enum.RAPID:
+    maintenance_fields = [
+        'maintenance_window_day',
+        'maintenance_window_time',
+        'deny_maintenance_period_start_date',
+        'deny_maintenance_period_end_date',
+        'deny_maintenance_period_time',
+    ]
+    if any(args.IsSpecified(f) for f in maintenance_fields):
+      raise exceptions.InvalidArgumentException(
+          '--release-channel',
+          'Maintenance window and deny maintenance periods are not supported '
+          'for instances in the RAPID release channel.',
+      )
+
+  warning_msg = _GetReleaseChannelWarningMessage(
+      current=current_channel,
+      selected=new_channel,
+      looker_version=current_version,
+      release_channel_enum=release_channel_enum,
+  )
+
+  if warning_msg:
+    console_io.PromptContinue(
+        message=warning_msg,
+        prompt_string='Do you want to proceed with the release channel switch?',
+        cancel_on_no=True,
+    )
+
+  if (
+      new_channel == release_channel_enum.RAPID
+      and current_channel != release_channel_enum.RAPID
+  ):
+    patch_request.instance.maintenanceWindow = None
+    patch_request.instance.denyMaintenancePeriod = None
+    patch_request = AddFieldToUpdateMask('maintenance_window', patch_request)
+    patch_request = AddFieldToUpdateMask(
+        'deny_maintenance_period', patch_request
+    )
+
+  return AddFieldToUpdateMask('release_channel', patch_request)
 
 
 def UpdateAcceleratedSecurityPatch(unused_instance_ref, args, patch_request):

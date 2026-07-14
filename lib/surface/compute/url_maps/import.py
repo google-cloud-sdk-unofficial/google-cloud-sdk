@@ -149,6 +149,8 @@ def _GetClearedFieldsForUrlRewrite(url_rewrite, field_prefix):
     cleared_fields.append(field_prefix + 'pathPrefixRewrite')
   if not url_rewrite.hostRewrite:
     cleared_fields.append(field_prefix + 'hostRewrite')
+  if hasattr(url_rewrite, 'regexRewrite') and not url_rewrite.regexRewrite:
+    cleared_fields.append(field_prefix + 'regexRewrite')
   return cleared_fields
 
 

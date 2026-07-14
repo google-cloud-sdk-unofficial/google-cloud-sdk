@@ -26,6 +26,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.container.fleet import resources as fleet_resources
+from googlecloudsdk.core import log
 from googlecloudsdk.core import yaml
 from googlecloudsdk.generated_clients.apis.gkehub.v1alpha import gkehub_v1alpha_messages as fleet_messages_alpha
 from googlecloudsdk.generated_clients.apis.gkehub.v1beta import gkehub_v1beta_messages as fleet_messages_beta
@@ -351,6 +352,19 @@ class RolloutSequenceFlagParser:
     }
 
     upper_vals = [val.upper().replace('-', '_') for val in auto_rollout_scope]
+
+    if 'ALL' not in upper_vals:
+      log.warning(
+          'You can restrict GKE from rolling out certain types of cluster '
+          'upgrades to your rollout sequence, however this does not prevent '
+          'GKE from performing mandatory auto-upgrades to ensure that the '
+          'cluster remains performant, available, and secure. GKE will '
+          'auto-upgrade clusters running a minor version at the end of '
+          'support, and cluster control planes that have not been upgraded '
+          'in 90 days, regardless of how you have restricted the scope of '
+          'rollouts. For more information, see '
+          'https://docs.cloud.google.com/kubernetes-engine/versioning'
+      )
 
     if 'ALL' in upper_vals:
       return self.messages.RolloutCreationScope(

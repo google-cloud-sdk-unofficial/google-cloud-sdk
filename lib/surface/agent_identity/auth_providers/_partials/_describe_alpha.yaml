@@ -19,12 +19,12 @@
   - ALPHA
   auto_generated: true
   help_text:
-    brief: Describe authProviders
-    description: Describe an authProvider
+    brief: Describe an auth provider.
+    description: Get details of a single auth provider.
     examples: |-
-      To describe an auth provider named 'my-auth-provider' in location 'global' and project 'my-project', run:
+      To describe auth provider 'my-auth-provider' in location 'us-central1' and project 'my-project', run:
 
-          $ {command} my-auth-provider --location=global --project=my-project
+        $ {command} my-auth-provider --location=us-central1 --project=my-project
   arguments:
     params:
     - help_text: |-

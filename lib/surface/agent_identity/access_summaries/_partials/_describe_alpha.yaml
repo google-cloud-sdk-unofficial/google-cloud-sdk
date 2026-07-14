@@ -19,12 +19,12 @@
   - ALPHA
   auto_generated: true
   help_text:
-    brief: Describe accessSummaries
-    description: Describe an accessSummary
+    brief: Describe an access summary.
+    description: Get details of a single access summary.
     examples: |-
-      To describe the accessSummary, run:
+      To describe access summary 'my-summary' in location 'us-central1' and project 'my-project', run:
 
-          $ {command}
+        $ {command} my-summary --location=us-central1 --project=my-project
   arguments:
     params:
     - help_text: |-

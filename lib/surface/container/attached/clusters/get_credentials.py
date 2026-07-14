@@ -26,6 +26,14 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command is deprecated. Use `gcloud container fleet memberships'
+        ' get-credentials` instead.'
+    ),
+)
 class GetCredentials(base.Command):
   """Get credentials of an Attached cluster."""
 

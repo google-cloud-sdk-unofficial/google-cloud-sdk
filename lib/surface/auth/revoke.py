@@ -128,8 +128,10 @@ class Revoke(base.Command):
               '[{}] appears to be an external account. External account '
               'tokens cannot be revoked, but they will expire automatically.'
               .format(account))
-        elif c_creds.IsExternalAccountUserCredentials(
-            creds) or c_creds.IsExternalAccountAuthorizedUserCredentials(creds):
+        elif c_creds.IsExternalAccountUserCredentials(creds) or (
+            c_creds.IsExternalAccountAuthorizedUserCredentials(creds)
+            and not properties.VALUES.auth.enable_sts_revoke_workforce_token.GetBool()
+        ):
           log.warning(
               '[{}] appears to be an external account user. External account '
               'user tokens cannot be revoked, but they will expire '

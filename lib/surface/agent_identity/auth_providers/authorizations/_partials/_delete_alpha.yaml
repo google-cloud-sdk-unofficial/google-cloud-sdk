@@ -19,12 +19,12 @@
   - ALPHA
   auto_generated: true
   help_text:
-    brief: Delete authorizations
-    description: Delete an authorization
+    brief: Delete an authorization.
+    description: Delete a single authorization.
     examples: |-
-      To delete authorization 'my-auth' for auth provider 'my-auth-provider' in location 'global' and project 'my-project', run:
+      To delete authorization 'my-auth' for auth provider 'my-auth-provider' in location 'us-central1' and project 'my-project', run:
 
-          $ {command} my-auth --auth-provider=my-auth-provider --location=global --project=my-project
+        $ {command} my-auth --auth-provider=my-auth-provider --location=us-central1 --project=my-project
   arguments:
     params:
     - help_text: |-

@@ -53,7 +53,7 @@ projects_locations_auth_providers:
     parameter_name: authProvidersId
     attribute_name: auth_provider
     help: The authProvider id of the {resource} resource.
-  disable_auto_completers: false
+  disable_auto_completers: true
 projects_locations_auth_providers_authorizations:
   name: authorization
   plural_name: authorizations

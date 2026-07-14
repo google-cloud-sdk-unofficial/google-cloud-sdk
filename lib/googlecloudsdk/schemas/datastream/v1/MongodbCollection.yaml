@@ -26,7 +26,7 @@ properties:
     items:
       type: string
   collection:
-    description: Collection name.
+    description: The collection name.
     type: string
   fields:
     description: Fields in the collection.

@@ -432,19 +432,21 @@ def _api_targets_arg(parser):
       type=arg_parsers.ArgDict(
           spec={
               'service': str,
-              'methods': list
+              'methods': arg_parsers.ArgList(custom_delim_char=':'),
           },
           required_keys=['service'],
-          min_length=1),
-      metavar='service=SERVICE',
+          min_length=1,
+      ),
+      metavar='service=SERVICE[,methods=METHOD:...]',
       action='append',
       help="""\
       Repeatable. Specify service and optionally one or multiple specific
       methods. Both fields are case insensitive.
-      If you need to specify methods, it should be specified
-      with the `--flags-file`. See $ gcloud topic flags-file for details.
-      See the examples section for how to use `--api-target` in
-      `--flags-file`.""").AddToParser(parser)
+      Methods can be specified as a colon-separated list (e.g.,
+      `--api-target="service=foo.service.com,methods=method1:method2"`),
+      or using `--flags-file` (see $ gcloud topic flags-file for details).
+      """,
+  ).AddToParser(parser)
 
 
 def _key_string_flag(parser):

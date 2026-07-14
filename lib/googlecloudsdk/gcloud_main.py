@@ -178,8 +178,26 @@ def CreateCLI(surfaces, translator=None):
   exclude_commands = r'gcloud\.components\..*|gcloud\.version'
   loader.RegisterPostRunHook(UpdateCheck, exclude_commands=exclude_commands)
   loader.RegisterPostRunHook(SurveyPromptCheck)
+  # Exclude commands that are purely local utility, component management,
+  # diagnostics, or configuration. These commands do not make authenticated
+  # API requests or should remain functional even if the enterprise ECP config
+  # is invalid/incomplete.
+  loader.RegisterPreRunHook(
+      StartECPProxyManager,
+      exclude_commands=(
+          r'gcloud\.components\..*|gcloud\.version|gcloud\.config(\..*)?|'
+          r'gcloud\.info'
+      ),
+  )
   generated_cli = loader.Generate()
   return generated_cli
+
+
+def StartECPProxyManager(command_path=None, **unused_kwargs):
+  del command_path, unused_kwargs
+  from googlecloudsdk.core import ecp_proxy_manager
+
+  ecp_proxy_manager.get_proxy_port()
 
 
 def _IssueAppLifecycleManagerAliasWarning(command_path=None):

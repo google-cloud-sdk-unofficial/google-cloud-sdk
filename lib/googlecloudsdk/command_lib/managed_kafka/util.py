@@ -105,8 +105,8 @@ def PrepareUpdateWithCaPools(_, args, request):
   return MapCaPoolsToCASConfig(_, args, request)
 
 
-def PrepareUpdateWithPublicEndpoint(_, args, request):
-  """Prepare the update request with the public endpoint flag.
+def PrepareUpdateWithPublicCluster(_, args, request):
+  """Prepare the update request with the public cluster flag.
 
   Args:
     _:  resource parameter required but unused variable.
@@ -114,12 +114,12 @@ def PrepareUpdateWithPublicEndpoint(_, args, request):
     request:  the payload to return.
 
   Returns:
-    The updated request with public endpoint config.
+    The updated request with public cluster config.
   """
-  public_endpoint = getattr(args, "public_endpoint", None)
+  public_cluster = getattr(args, "public_cluster", None)
   allowed_ranges = getattr(args, "allowed_source_ip_ranges", None)
 
-  if public_endpoint is None and not allowed_ranges:
+  if public_cluster is None and not allowed_ranges:
     return request
 
   if not request.cluster:
@@ -128,13 +128,13 @@ def PrepareUpdateWithPublicEndpoint(_, args, request):
   if not request.cluster.gcpConfig:
     request.cluster.gcpConfig = {}
 
-  # --no-public-endpoint
-  if public_endpoint is not None and not public_endpoint:
+  # --no-public-cluster
+  if public_cluster is not None and not public_cluster:
     if allowed_ranges:
       raise exceptions.InvalidArgumentException(
           "--allowed-source-ip-ranges",
           "Cannot specify allowed source IP ranges when disabling public"
-          " endpoint.",
+          " cluster.",
       )
     # Clear publicClusterConfig
     request.updateMask = AppendUpdateMask(
@@ -143,10 +143,10 @@ def PrepareUpdateWithPublicEndpoint(_, args, request):
     # We don't populate it in request.cluster, so it will be cleared
     return request
 
-  if public_endpoint and not allowed_ranges:
+  if public_cluster and not allowed_ranges:
     raise exceptions.InvalidArgumentException(
         "--allowed-source-ip-ranges",
-        "Must specify at least one IPv4 CIDR range when public endpoint is"
+        "Must specify at least one IPv4 CIDR range when public cluster is"
         " enabled.",
     )
 
@@ -202,14 +202,14 @@ def MapSubnetsToNetworkConfig(_, args, request):
     )
 
   # Handle public cluster config mapping
-  public_endpoint = getattr(args, "public_endpoint", None)
+  public_cluster = getattr(args, "public_cluster", None)
   allowed_ranges = getattr(args, "allowed_source_ip_ranges", None)
 
-  if public_endpoint:
+  if public_cluster:
     if not allowed_ranges:
       raise exceptions.InvalidArgumentException(
           "--allowed-source-ip-ranges",
-          "Must specify at least one IPv4 CIDR range when public endpoint is"
+          "Must specify at least one IPv4 CIDR range when public cluster is"
           " enabled.",
       )
     public_config = {"allowedSourceIpRanges": allowed_ranges}
@@ -218,8 +218,8 @@ def MapSubnetsToNetworkConfig(_, args, request):
     )
   elif allowed_ranges:
     raise exceptions.InvalidArgumentException(
-        "--public-endpoint",
-        "Must enable public endpoint to specify allowed source IP ranges.",
+        "--public-cluster",
+        "Must enable public cluster to specify allowed source IP ranges.",
     )
 
   return request

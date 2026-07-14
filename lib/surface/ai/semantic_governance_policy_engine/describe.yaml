@@ -18,4 +18,5 @@ request:
   method: getSemanticGovernancePolicyEngine
   disable_resource_check: true
   modify_request_hooks:
+  - googlecloudsdk.command_lib.ai.semantic_governance_policies.util:set_regional_endpoint
   - googlecloudsdk.command_lib.ai.semantic_governance_policies.util:set_engine_name

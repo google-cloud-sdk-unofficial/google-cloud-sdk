@@ -589,11 +589,10 @@ def AddSourceMachineImageNameArg(parser):
   parser.add_argument(
       '--source-machine-image',
       help="""\
-        Specifies the URI of the source machine image contiaining the disk to
+        Specifies the URI of the source machine image containing the disk to
         restore. Requires *--source-machine-image-disk-device-name* with the
         disk to restores device name.
       """,
-      hidden=True,
   )
 
 
@@ -605,5 +604,4 @@ def AddSourceMachineImageDiskDeviceNameArg(parser):
         image. Requires *--source-machine-image* with the URI of the source
         machine image.
       """,
-      hidden=True,
   )

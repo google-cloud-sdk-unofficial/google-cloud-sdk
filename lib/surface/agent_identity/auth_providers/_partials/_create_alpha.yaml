@@ -19,12 +19,12 @@
   - ALPHA
   auto_generated: true
   help_text:
-    brief: Create authProviders
-    description: Create an authProvider
+    brief: Create an auth provider.
+    description: Create a new auth provider in a given project and location.
     examples: |-
-      To create an auth provider named 'my-auth-provider' in location 'global' and project 'my-project', run:
+      To create an API key auth provider 'my-auth-provider' in location 'us-central1' and project 'my-project', run:
 
-          $ {command} my-auth-provider --location=global --project=my-project
+        $ {command} my-auth-provider --location=us-central1 --project=my-project --api-key=my-api-key
   arguments:
     params:
     - help_text: |-

@@ -58,7 +58,7 @@ class MemorystoreV1alpha(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates an ACL Policy. The creation is executed synchronously and the policy is available for use immediately after the RPC returns.
+      r"""Creates an ACL policy. The creation is executed synchronously and the policy is available for use immediately after the RPC returns.
 
       Args:
         request: (MemorystoreProjectsLocationsAclPoliciesCreateRequest) input message
@@ -85,7 +85,7 @@ class MemorystoreV1alpha(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a specific Acl Policy. This action will delete the Acl Policy and all the rules associated with it. An ACL policy cannot be deleted if it is attached to an instance.
+      r"""Deletes a specific ACL policy. This action will delete the ACL policy and all the rules associated with it. An ACL policy cannot be deleted if it is attached to an instance.
 
       Args:
         request: (MemorystoreProjectsLocationsAclPoliciesDeleteRequest) input message
@@ -112,7 +112,7 @@ class MemorystoreV1alpha(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets the details of a specific Redis Cluster ACL Policy.
+      r"""Gets the details of a specific Memorystore ACL policy.
 
       Args:
         request: (MemorystoreProjectsLocationsAclPoliciesGetRequest) input message
@@ -139,7 +139,7 @@ class MemorystoreV1alpha(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists all ACL Policies owned by a project in either the specified location (region) or all locations. The location should have the following format: * `projects/{project_id}/locations/{location_id}` If `location_id` is specified as `-` (wildcard), then all regions available to the project are queried, and the results are aggregated.
+      r"""Lists all ACL policies owned by a project in either the specified location (region) or all locations. The location should have the following format: * `projects/{project_id}/locations/{location_id}` If `location_id` is specified as `-` (wildcard), then all regions available to the project are queried, and the results are aggregated.
 
       Args:
         request: (MemorystoreProjectsLocationsAclPoliciesListRequest) input message
@@ -166,7 +166,7 @@ class MemorystoreV1alpha(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates the ACL policy. The operation will apply the updated ACL policy to all the linked instances. The operation will return success if it successfully applied the policy to all the instances. If the operation completed with a failure, the service will continue to apply the policy via reconciliation for the failed instances even after operation completion to ensure eventual consistency. Completed longrunning.Operation will contain the new ACL Policy object in the response field.
+      r"""Updates the ACL policy. The operation will apply the updated ACL policy to all the linked instances. The operation will return success if it successfully applied the policy to all the instances. If the operation completed with a failure, the service will continue to apply the policy via reconciliation for the failed instances even after operation completion to ensure eventual consistency. Completed longrunning.Operation will contain the new ACL policy object in the response field.
 
       Args:
         request: (MemorystoreProjectsLocationsAclPoliciesPatchRequest) input message

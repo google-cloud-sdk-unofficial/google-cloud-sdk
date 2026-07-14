@@ -1037,13 +1037,6 @@ cloudcommerceconsumerprocurement:
   projects.freeTrials.operations:
     supported_apis:
     - v1alpha1
-clouddebugger:
-  debugger.debuggees:
-    supported_apis:
-    - v2
-  debugger.debuggees.breakpoints:
-    supported_apis:
-    - v2
 clouddeploy:
   projects:
     supported_apis:

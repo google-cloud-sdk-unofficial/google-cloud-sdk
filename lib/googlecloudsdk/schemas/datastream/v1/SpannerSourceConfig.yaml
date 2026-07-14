@@ -37,16 +37,16 @@ properties:
     type: string
   excludeObjects:
     description: |-
-      Spanner objects to avoid retrieving. If some objects are both included and
-      excluded, an error will be thrown.
+      The Spanner objects to avoid retrieving. If some objects are both included
+      and excluded, an error will be thrown.
     $ref: SpannerDatabase.yaml
   fgacRole:
     description: The FGAC role to use for the stream.
     type: string
   includeObjects:
     description: |-
-      Spanner objects to retrieve from the data source. If some objects are both
-      included and excluded, an error will be thrown.
+      The Spanner objects to retrieve from the data source. If some objects are
+      both included and excluded, an error will be thrown.
     $ref: SpannerDatabase.yaml
   maxConcurrentBackfillTasks:
     description: Maximum number of concurrent backfill tasks.

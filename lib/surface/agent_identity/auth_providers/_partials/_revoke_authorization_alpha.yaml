@@ -19,12 +19,12 @@
   - ALPHA
   auto_generated: true
   help_text:
-    brief: revoke authProviders
-    description: revoke authProviders
+    brief: Revoke authorization for a user on an auth provider.
+    description: Revoke authorization for a user on an auth provider.
     examples: |-
       To revoke authorization for user 'my-user' on auth provider 'my-auth-provider' in location 'global' and project 'my-project', run:
 
-          $ {command} my-auth-provider --user-id=my-user --location=global --project=my-project
+        $ {command} my-auth-provider --user-id=my-user --location=global --project=my-project
   arguments:
     params:
     - help_text: |-

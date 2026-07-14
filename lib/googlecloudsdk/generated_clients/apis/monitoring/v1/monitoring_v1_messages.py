@@ -869,6 +869,8 @@ class Dimension(_messages.Message):
       duration. If column_type is DATE, this must be a whole value multiple of
       1 day. If column_type is TIME, this must be less than or equal to 24
       hours.
+    xMax: The maximum value for the x-axis.
+    xMin: The minimum value for the x-axis.
   """
 
   class SortOrderValueValuesEnum(_messages.Enum):
@@ -894,6 +896,8 @@ class Dimension(_messages.Message):
   sortColumn = _messages.StringField(6)
   sortOrder = _messages.EnumField('SortOrderValueValuesEnum', 7)
   timeBinSize = _messages.StringField(8)
+  xMax = _messages.FloatField(9)
+  xMin = _messages.FloatField(10)
 
 
 class DroppedLabels(_messages.Message):
@@ -2372,6 +2376,19 @@ class SourceContext(_messages.Message):
   fileName = _messages.StringField(1)
 
 
+class SpanAttributeFilter(_messages.Message):
+  r"""Span attribute key and list of values to be used for filtering.
+
+  Fields:
+    key: Key of the attribute
+    value: List of attribute values for given key. Multiple values will be
+      OR'd together.
+  """
+
+  key = _messages.StringField(1)
+  value = _messages.StringField(2, repeated=True)
+
+
 class SpanContext(_messages.Message):
   r"""The context of a span. This is attached to an Exemplar in Distribution
   values during aggregation.It contains the name of a span with format:
@@ -2387,6 +2404,49 @@ class SpanContext(_messages.Message):
   """
 
   spanName = _messages.StringField(1)
+
+
+class SpanFilters(_messages.Message):
+  r"""First version of span filtering that is supported by the Trace
+  component.
+
+  Fields:
+    apphubServices: Optional. Filtering for spans containing one of the Apphub
+      service IDs in the list. Multiple values will be OR'd together. Example:
+      "service-id1", "service-id2"
+    apphubWorkloads: Optional. Filtering for spans containing one of the
+      Apphub workload IDs in the list. Multiple values will be OR'd together.
+      Example: "workload-id1", "workload-id2"
+    applicationIds: Optional. Filtering for spans containing one of the Apphub
+      Application IDs in the list. Multiple values will be OR'd together.
+    attributes: Optional. List of span attribute filters. Each
+      SpanAttributeFilter key must be unique. Multiple attribute filters will
+      be AND'd together.
+    displayNames: Optional. Filtering for spans containing one of the span
+      display names in the list. Multiple values will be OR'd together.
+    isRootSpan: Optional. Filters for root spans only if set to true. A root
+      span is a span without a defined parent span ID.
+    kinds: Optional. Filtering for spans containing one of the kinds in the
+      list. Multiple values will be OR'd together.
+    maxDuration: Optional. Filtering for spans with a maximum duration.
+    minDuration: Optional. Filtering for spans with a minimum duration.
+    services: Optional. Filtering for spans containing one of the services in
+      the list. Multiple values will be OR'd together.
+    status: Optional. Filtering for spans containing one of the statuses in
+      the list. Multiple values will be OR'd together.
+  """
+
+  apphubServices = _messages.StringField(1, repeated=True)
+  apphubWorkloads = _messages.StringField(2, repeated=True)
+  applicationIds = _messages.StringField(3, repeated=True)
+  attributes = _messages.MessageField('SpanAttributeFilter', 4, repeated=True)
+  displayNames = _messages.StringField(5, repeated=True)
+  isRootSpan = _messages.BooleanField(6)
+  kinds = _messages.StringField(7, repeated=True)
+  maxDuration = _messages.StringField(8)
+  minDuration = _messages.StringField(9)
+  services = _messages.StringField(10, repeated=True)
+  status = _messages.StringField(11, repeated=True)
 
 
 class SparkChartView(_messages.Message):
@@ -2998,6 +3058,8 @@ class TimeSeriesQuery(_messages.Message):
     timeSeriesFilterRatio: Parameters to fetch a ratio between two time series
       filters.
     timeSeriesQueryLanguage: A query used to fetch time series with MQL.
+    traceQuery: Optional. Preview: Query for traces. This is a preview feature
+      and may be subject to change before final release.
     unitOverride: The unit of data contained in fetched time series. If non-
       empty, this unit will override any unit that accompanies fetched data.
       The format is the same as the unit (https://cloud.google.com/monitoring/
@@ -3011,7 +3073,8 @@ class TimeSeriesQuery(_messages.Message):
   timeSeriesFilter = _messages.MessageField('TimeSeriesFilter', 4)
   timeSeriesFilterRatio = _messages.MessageField('TimeSeriesFilterRatio', 5)
   timeSeriesQueryLanguage = _messages.StringField(6)
-  unitOverride = _messages.StringField(7)
+  traceQuery = _messages.MessageField('TraceQuery', 7)
+  unitOverride = _messages.StringField(8)
 
 
 class TimeSeriesTable(_messages.Message):
@@ -3042,6 +3105,45 @@ class TimeSeriesTable(_messages.Message):
   columnSettings = _messages.MessageField('ColumnSettings', 1, repeated=True)
   dataSets = _messages.MessageField('TableDataSet', 2, repeated=True)
   metricVisualization = _messages.EnumField('MetricVisualizationValueValuesEnum', 3)
+
+
+class TraceQuery(_messages.Message):
+  r"""LINT.IfChange Preview: Query for traces. This is a preview feature and
+  may be subject to change before final release.
+
+  Enums:
+    SpanDataValueValueValuesEnum: The type of span data value to be displayed
+      on the chart. Required.
+
+  Fields:
+    resourceContainer: Optional. The resource name of the project or Trace
+      scope to fetch data from. If empty, the widget will default to the
+      project's default Trace scope. If scope cannot be determined, then we
+      fallback to the current project. Optional.
+    spanDataValue: The type of span data value to be displayed on the chart.
+      Required.
+    spanFilters: First version of span filtering that we will support.
+      Required.
+  """
+
+  class SpanDataValueValueValuesEnum(_messages.Enum):
+    r"""The type of span data value to be displayed on the chart. Required.
+
+    Values:
+      SPAN_DATA_VALUE_UNSPECIFIED: We are required to have an UNSPECIFIED
+        value for enums. This should not be used in practice.
+      SPAN_COUNT: Span count data value
+      SPAN_DURATION: Span duration data value
+      SPAN_DURATION_PERCENTILES: Span duration percentiles data value
+    """
+    SPAN_DATA_VALUE_UNSPECIFIED = 0
+    SPAN_COUNT = 1
+    SPAN_DURATION = 2
+    SPAN_DURATION_PERCENTILES = 3
+
+  resourceContainer = _messages.StringField(1)
+  spanDataValue = _messages.EnumField('SpanDataValueValueValuesEnum', 2)
+  spanFilters = _messages.MessageField('SpanFilters', 3)
 
 
 class Treemap(_messages.Message):

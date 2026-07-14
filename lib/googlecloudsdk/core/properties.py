@@ -797,7 +797,6 @@ class _SectionApiEndpointOverrides(_Section):
     self.cloudcommerceconsumerprocurement = self._Add(
         'cloudcommerceconsumerprocurement',
         command='gcloud commerce-procurement')
-    self.clouddebugger = self._Add('clouddebugger', command='gcloud debug')
     self.clouddeploy = self._Add('clouddeploy', command='gcloud deploy')
     self.clouderrorreporting = self._Add(
         'clouderrorreporting', command='gcloud error-reporting')
@@ -840,6 +839,7 @@ class _SectionApiEndpointOverrides(_Section):
     self.datacatalog = self._Add('datacatalog', command='gcloud data-catalog')
     self.dataflow = self._Add('dataflow', command='gcloud dataflow')
     self.datafusion = self._Add('datafusion', command='gcloud data-fusion')
+    self.datalineage = self._Add('datalineage', command='gcloud datalineage')
     self.datamigration = self._Add(
         'datamigration', command='gcloud database-migration')
     self.datapol = self._Add('datapol', hidden=True)
@@ -857,6 +857,7 @@ class _SectionApiEndpointOverrides(_Section):
         'designcenter', command='gcloud design-center', hidden=True)
     self.developerconnect = self._Add(
         'developerconnect', command='gcloud developer-connect')
+    self.devicerun = self._Add('devicerun', command='gcloud device-run')
     self.discovery = self._Add('discovery', hidden=True)
     self.dns = self._Add('dns', command='gcloud dns')
     self.domains = self._Add('domains', command='gcloud domains')

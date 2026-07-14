@@ -18,6 +18,7 @@
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
@@ -108,6 +109,21 @@ class ExecuteSql(base.Command):
         parser,
         'Database on which the statement is executed.',
     )
+    parser.add_argument(
+        '--password-secret-version',
+        required=False,
+        hidden=True,
+        help=(
+            'The Secret Manager secret holding the password for the database'
+            ' user.'
+        ),
+    )
+    parser.add_argument(
+        '--user',
+        required=False,
+        hidden=True,
+        help='The database user to authenticate as.',
+    )
 
   def Run(self, args):
     """Executes a statement on a Cloud SQL instance.
@@ -122,6 +138,18 @@ class ExecuteSql(base.Command):
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
     sql_client = client.sql_client
     sql_messages = client.sql_messages
+
+    if args.password_secret_version and not args.user:
+      raise exceptions.RequiredArgumentException(
+          '--user',
+          '`--user` is required when `--password-secret-version` is specified.',
+      )
+
+    if args.user and not args.password_secret_version:
+      raise exceptions.RequiredArgumentException(
+          '--password-secret-version',
+          '`--password-secret-version` is required when `--user` is specified.',
+      )
 
     validate.ValidateInstanceName(args.instance)
     instance_ref = client.resource_parser.Parse(
@@ -139,14 +167,27 @@ class ExecuteSql(base.Command):
       )
     else:
       partial_result_mode = None
-    req_body = sql_messages.ExecuteSqlPayload(
-        sqlStatement=sql,
-        database=args.database,
-        rowLimit=args.row_limit,
-        partialResultMode=partial_result_mode,
-        autoIamAuthn=True,
-        application='gcloud',
-    )
+    if args.password_secret_version:
+      # Password authentication via Secret Manager
+      req_body = sql_messages.ExecuteSqlPayload(
+          sqlStatement=sql,
+          database=args.database,
+          rowLimit=args.row_limit,
+          partialResultMode=partial_result_mode,
+          user=args.user,
+          passwordSecretVersion=args.password_secret_version,
+          application='gcloud',
+      )
+    else:
+      # IAM authentication
+      req_body = sql_messages.ExecuteSqlPayload(
+          sqlStatement=sql,
+          database=args.database,
+          rowLimit=args.row_limit,
+          partialResultMode=partial_result_mode,
+          autoIamAuthn=True,
+          application='gcloud',
+      )
     return sql_client.instances.ExecuteSql(
         sql_messages.SqlInstancesExecuteSqlRequest(
             instance=instance_ref.instance,

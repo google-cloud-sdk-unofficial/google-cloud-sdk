@@ -125,9 +125,9 @@ def GetCatalogTypeEnumMapper(release_track):
   return arg_utils.ChoiceEnumMapper(
       '--catalog-type',
       catalog_type_enum,
-      hidden_choices=['biglake', 'federated']
+      hidden_choices=['federated']
       if release_track == base.ReleaseTrack.GA
-      else ['biglake'],
+      else [],
       required=True,
       help_str='Catalog type to create the catalog with.',
       custom_mappings={
@@ -157,7 +157,6 @@ def GetUpdateCatalogTypeEnumMapper(release_track):
   return arg_utils.ChoiceEnumMapper(
       '--catalog-type',
       catalog_type_enum,
-      hidden=True,
       required=False,
       help_str=(
           'Catalog type to update the catalog with. Currently only updating to '
@@ -205,33 +204,6 @@ def GcsBucketLinkValidator(value):
   return value
 
 
-def AddDefaultLocationArg(parser):
-  parser.add_argument(
-      '--default-location',
-      hidden=True,
-      type=GcsBucketLinkValidator,
-      help=(
-          'Can only be used with BigLake catalogs. The default'
-          ' storage location for the catalog, e.g., `gs://my-bucket/...`.'
-      ),
-  )
-
-
-def AddRestrictedLocationsArg(parser):
-  parser.add_argument(
-      '--restricted-locations',
-      hidden=True,
-      type=arg_parsers.ArgList(element_type=GcsBucketLinkValidator),
-      metavar='LOCATION',
-      help=(
-          'Can only be used with BigLake catalogs. If empty, all accessible'
-          ' storage locations are allowed. If not empty, only locations in'
-          ' `default_location` and `restricted_locations` are allowed.'
-          ' Locations are in the format of `gs://my-bucket/...`.'
-      ),
-  )
-
-
 def CheckValidArgCombinations(args):
   """Checks for valid combinations of arguments.
 
@@ -271,21 +243,19 @@ def CheckValidUnityArgCombinations(args):
   Raises:
     arg_parsers.ArgumentTypeError: If an invalid argument combination is found.
   """
-  oidc_specified = (
-      hasattr(args, 'service_principal_application_id')
-      and args.IsSpecified('service_principal_application_id')
-  )
+  oidc_specified = hasattr(
+      args, 'unity_service_principal_application_id'
+  ) and args.IsSpecified('unity_service_principal_application_id')
 
   if not args.IsSpecified('secret_name') and not oidc_specified:
-    # TODO: b/502209000 - Update this error message once application ID is
-    # visible.
     raise arg_parsers.ArgumentTypeError(
-        '--secret-name must be specified when federated catalog type is unity.'
+        'Either --secret-name or --unity-service-principal-application-id must'
+        ' be specified when federated catalog type is unity.'
     )
   if args.IsSpecified('secret_name') and oidc_specified:
     raise arg_parsers.ArgumentTypeError(
-        'Only one of --secret-name or --service-principal-application-id can be'
-        ' specified when federated catalog type is unity.'
+        'Only one of --secret-name or --unity-service-principal-application-id'
+        ' can be specified when federated catalog type is unity.'
     )
   if not args.IsSpecified('unity_instance_name'):
     raise arg_parsers.ArgumentTypeError(
@@ -308,6 +278,23 @@ def CheckValidUnityArgCombinations(args):
   if args.IsKnownAndSpecified('glue_aws_role_arn'):
     raise arg_parsers.ArgumentTypeError(
         '--glue-aws-role-arn is not supported for Unity federated catalogs.'
+    )
+  if args.IsKnownAndSpecified('snowflake_warehouse'):
+    raise arg_parsers.ArgumentTypeError(
+        '--snowflake-warehouse is not supported for Unity federated catalogs.'
+    )
+  if args.IsKnownAndSpecified('snowflake_account_identifier'):
+    raise arg_parsers.ArgumentTypeError(
+        '--snowflake-account-identifier is not supported for Unity federated'
+        ' catalogs.'
+    )
+  if args.IsKnownAndSpecified('workday_base_url'):
+    raise arg_parsers.ArgumentTypeError(
+        '--workday-base-url is not supported for Unity federated catalogs.'
+    )
+  if args.IsKnownAndSpecified('workday_tenant'):
+    raise arg_parsers.ArgumentTypeError(
+        '--workday-tenant is not supported for Unity federated catalogs.'
     )
 
 
@@ -347,10 +334,148 @@ def CheckValidGlueArgCombinations(args):
     raise arg_parsers.ArgumentTypeError(
         '--unity-catalog-name is not supported for Glue federated catalogs.'
     )
-  if args.IsSpecified('service_principal_application_id'):
+  if args.IsSpecified('unity_service_principal_application_id'):
     raise arg_parsers.ArgumentTypeError(
-        '--service-principal-application-id is not supported for Glue'
+        '--unity-service-principal-application-id is not supported for Glue'
         ' federated catalogs.'
+    )
+  if args.IsKnownAndSpecified('snowflake_warehouse'):
+    raise arg_parsers.ArgumentTypeError(
+        '--snowflake-warehouse is not supported for Glue federated catalogs.'
+    )
+  if args.IsKnownAndSpecified('snowflake_account_identifier'):
+    raise arg_parsers.ArgumentTypeError(
+        '--snowflake-account-identifier is not supported for Glue federated'
+        ' catalogs.'
+    )
+  if args.IsKnownAndSpecified('workday_base_url'):
+    raise arg_parsers.ArgumentTypeError(
+        '--workday-base-url is not supported for Glue federated catalogs.'
+    )
+  if args.IsKnownAndSpecified('workday_tenant'):
+    raise arg_parsers.ArgumentTypeError(
+        '--workday-tenant is not supported for Glue federated catalogs.'
+    )
+
+
+def CheckValidSnowflakeArgCombinations(args):
+  """Checks for valid combinations of Snowflake arguments.
+
+  Args:
+    args: The parsed command-line arguments.
+
+  Raises:
+    arg_parsers.ArgumentTypeError: If an invalid argument combination is found.
+  """
+  if not args.IsSpecified('snowflake_warehouse'):
+    raise arg_parsers.ArgumentTypeError(
+        '--snowflake-warehouse must be specified when federated catalog type is'
+        ' snowflake.'
+    )
+  if not args.IsSpecified('snowflake_account_identifier'):
+    raise arg_parsers.ArgumentTypeError(
+        '--snowflake-account-identifier must be specified when federated'
+        ' catalog type is snowflake.'
+    )
+  if not args.IsSpecified('secret_name'):
+    raise arg_parsers.ArgumentTypeError(
+        '--secret-name must be specified when federated catalog type is'
+        ' snowflake.'
+    )
+  if args.IsSpecified('unity_instance_name'):
+    raise arg_parsers.ArgumentTypeError(
+        '--unity-instance-name is not supported for Snowflake federated'
+        ' catalogs.'
+    )
+  if args.IsSpecified('unity_catalog_name'):
+    raise arg_parsers.ArgumentTypeError(
+        '--unity-catalog-name is not supported for Snowflake federated'
+        ' catalogs.'
+    )
+  if args.IsSpecified('unity_service_principal_application_id'):
+    raise arg_parsers.ArgumentTypeError(
+        '--unity-service-principal-application-id is not supported for'
+        ' Snowflake federated catalogs.'
+    )
+  if args.IsKnownAndSpecified('glue_warehouse'):
+    raise arg_parsers.ArgumentTypeError(
+        '--glue-warehouse is not supported for Snowflake federated catalogs.'
+    )
+  if args.IsKnownAndSpecified('glue_aws_region'):
+    raise arg_parsers.ArgumentTypeError(
+        '--glue-aws-region is not supported for Snowflake federated catalogs.'
+    )
+  if args.IsKnownAndSpecified('glue_aws_role_arn'):
+    raise arg_parsers.ArgumentTypeError(
+        '--glue-aws-role-arn is not supported for Snowflake federated catalogs.'
+    )
+  if args.IsKnownAndSpecified('workday_base_url'):
+    raise arg_parsers.ArgumentTypeError(
+        '--workday-base-url is not supported for Snowflake federated catalogs.'
+    )
+  if args.IsKnownAndSpecified('workday_tenant'):
+    raise arg_parsers.ArgumentTypeError(
+        '--workday-tenant is not supported for Snowflake federated catalogs.'
+    )
+
+
+def CheckValidWorkdayArgCombinations(args):
+  """Checks for valid combinations of Workday arguments.
+
+  Args:
+    args: The parsed command-line arguments.
+
+  Raises:
+    arg_parsers.ArgumentTypeError: If an invalid argument combination is found.
+  """
+  if not args.IsSpecified('workday_base_url'):
+    raise arg_parsers.ArgumentTypeError(
+        '--workday-base-url must be specified when federated catalog type is'
+        ' workday.'
+    )
+  if not args.IsSpecified('workday_tenant'):
+    raise arg_parsers.ArgumentTypeError(
+        '--workday-tenant must be specified when federated catalog type is'
+        ' workday.'
+    )
+  if not args.IsSpecified('secret_name'):
+    raise arg_parsers.ArgumentTypeError(
+        '--secret-name must be specified when federated catalog type is'
+        ' workday.'
+    )
+  if args.IsSpecified('unity_instance_name'):
+    raise arg_parsers.ArgumentTypeError(
+        '--unity-instance-name is not supported for Workday federated catalogs.'
+    )
+  if args.IsSpecified('unity_catalog_name'):
+    raise arg_parsers.ArgumentTypeError(
+        '--unity-catalog-name is not supported for Workday federated catalogs.'
+    )
+  if args.IsSpecified('unity_service_principal_application_id'):
+    raise arg_parsers.ArgumentTypeError(
+        '--unity-service-principal-application-id is not supported for Workday'
+        ' federated catalogs.'
+    )
+  if args.IsKnownAndSpecified('glue_warehouse'):
+    raise arg_parsers.ArgumentTypeError(
+        '--glue-warehouse is not supported for Workday federated catalogs.'
+    )
+  if args.IsKnownAndSpecified('glue_aws_region'):
+    raise arg_parsers.ArgumentTypeError(
+        '--glue-aws-region is not supported for Workday federated catalogs.'
+    )
+  if args.IsKnownAndSpecified('glue_aws_role_arn'):
+    raise arg_parsers.ArgumentTypeError(
+        '--glue-aws-role-arn is not supported for Workday federated catalogs.'
+    )
+  if args.IsKnownAndSpecified('snowflake_warehouse'):
+    raise arg_parsers.ArgumentTypeError(
+        '--snowflake-warehouse is not supported for Workday federated catalogs.'
+    )
+  if args.IsKnownAndSpecified('snowflake_account_identifier'):
+    raise arg_parsers.ArgumentTypeError(
+        '--snowflake-account-identifier is not supported for Workday federated'
+        ' catalogs.'
     )
 
 
@@ -369,14 +494,18 @@ def CheckValidFederatedArgCombinations(args):
   """
   federated_flags = [
       'secret_name',
-      'service_principal_application_id',
-      'unity_instance_name',
       'unity_catalog_name',
+      'unity_instance_name',
+      'unity_service_principal_application_id',
       'refresh_interval',
       'namespace_filters',
       'glue_warehouse',
       'glue_aws_region',
       'glue_aws_role_arn',
+      'snowflake_warehouse',
+      'snowflake_account_identifier',
+      'workday_base_url',
+      'workday_tenant',
   ]
   is_federated = args.catalog_type == 'federated'
   if is_federated:
@@ -394,6 +523,10 @@ def CheckValidFederatedArgCombinations(args):
       CheckValidUnityArgCombinations(args)
     if args.federated_catalog_type == 'glue':
       CheckValidGlueArgCombinations(args)
+    if args.federated_catalog_type == 'snowflake':
+      CheckValidSnowflakeArgCombinations(args)
+    if args.federated_catalog_type == 'workday':
+      CheckValidWorkdayArgCombinations(args)
   else:
     # Check that federated flags are not specified for non-federated catalogs.
     for flag in federated_flags:
@@ -498,17 +631,17 @@ def _BuildUnityCatalogInfo(unity_catalog_info_option):
   """Builds the unity catalog info for the request body."""
   unity_catalog_info = {}
   if (
+      hasattr(unity_catalog_info_option, 'catalog_name')
+      and unity_catalog_info_option.catalog_name
+  ):
+    unity_catalog_info['catalog-name'] = unity_catalog_info_option.catalog_name
+  if (
       hasattr(unity_catalog_info_option, 'instance_name')
       and unity_catalog_info_option.instance_name
   ):
     unity_catalog_info['instance-name'] = (
         unity_catalog_info_option.instance_name
     )
-  if (
-      hasattr(unity_catalog_info_option, 'catalog_name')
-      and unity_catalog_info_option.catalog_name
-  ):
-    unity_catalog_info['catalog-name'] = unity_catalog_info_option.catalog_name
   if (
       hasattr(unity_catalog_info_option, 'service_principal_application_id')
       and unity_catalog_info_option.service_principal_application_id
@@ -527,6 +660,30 @@ def _BuildGlueCatalogInfo(glue_catalog_info_option: Any) -> Dict[str, Any]:
       'aws-role-arn': getattr(glue_catalog_info_option, 'aws_role_arn', None),
   }
   return {k: v for k, v in glue_catalog_info.items() if v}
+
+
+def _BuildSnowflakeCatalogInfo(
+    snowflake_catalog_info_option: Any,
+) -> Dict[str, Any]:
+  """Builds the Snowflake catalog info for the request body."""
+  snowflake_catalog_info = {
+      'warehouse': getattr(snowflake_catalog_info_option, 'warehouse', None),
+      'account-identifier': getattr(
+          snowflake_catalog_info_option, 'account_identifier', None
+      ),
+  }
+  return {k: v for k, v in snowflake_catalog_info.items() if v}
+
+
+def _BuildWorkdayCatalogInfo(
+    workday_catalog_info_option: Any,
+) -> Dict[str, Any]:
+  """Builds the Workday catalog info for the request body."""
+  workday_catalog_info = {
+      'base-url': getattr(workday_catalog_info_option, 'base_url', None),
+      'tenant': getattr(workday_catalog_info_option, 'tenant', None),
+  }
+  return {k: v for k, v in workday_catalog_info.items() if v}
 
 
 def _BuildFederatedCatalogOptions(options):
@@ -549,6 +706,23 @@ def _BuildFederatedCatalogOptions(options):
     glue_catalog_info = _BuildGlueCatalogInfo(options.glue_catalog_info)
     if glue_catalog_info:
       federated_catalog_options['glue-catalog-info'] = glue_catalog_info
+  if (
+      hasattr(options, 'snowflake_catalog_info')
+      and options.snowflake_catalog_info
+  ):
+    snowflake_catalog_info = _BuildSnowflakeCatalogInfo(
+        options.snowflake_catalog_info
+    )
+    if snowflake_catalog_info:
+      federated_catalog_options['snowflake-catalog-info'] = (
+          snowflake_catalog_info
+      )
+  if hasattr(options, 'workday_catalog_info') and options.workday_catalog_info:
+    workday_catalog_info = _BuildWorkdayCatalogInfo(
+        options.workday_catalog_info
+    )
+    if workday_catalog_info:
+      federated_catalog_options['workday-catalog-info'] = workday_catalog_info
   if hasattr(options, 'refresh_options') and options.refresh_options:
     refresh_options = _BuildRefreshOptions(options.refresh_options)
     if refresh_options:

@@ -362,10 +362,10 @@ class BigQueryConfig(_messages.Message):
 
 class BigtableConfig(_messages.Message):
   r"""Configuration for a Bigtable subscription. The Pub/Sub message will be
-  written to a Bigtable row as follows: - row key: subscription name and
-  message ID delimited by #. - columns: message bytes written to a single
-  column family "data" with an empty-string column qualifier. - cell
-  timestamp: the message publish timestamp.
+  written to a Bigtable row as follows: - row key: subscription name, message
+  ID hash, and message ID delimited by `#`. - columns: message bytes written
+  to a single column family `data` with an empty-string column qualifier. -
+  cell timestamp: the message publish timestamp.
 
   Enums:
     StateValueValuesEnum: Output only. An output-only field that indicates
@@ -375,6 +375,9 @@ class BigtableConfig(_messages.Message):
     appProfileId: Optional. The app profile to use for the Bigtable writes. If
       not specified, the "default" application profile will be used. The app
       profile must use single-cluster routing.
+    columnFamilyMapping: Optional. Configuration that allows writing row keys
+      and/or columns based on fields in the input message. The input message
+      format must be JSON if this field is set.
     serviceAccountEmail: Optional. The service account to use to write to
       Bigtable. The subscription creator or updater that specifies this field
       must have `iam.serviceAccounts.actAs` permission on the service account.
@@ -413,7 +416,7 @@ class BigtableConfig(_messages.Message):
         enabled for the project ([instructions]({$universe.dns_names.final_doc
         umentation_domain}/service-usage/docs/enable-disable))
       SCHEMA_MISMATCH: Cannot write to Bigtable because of a missing column
-        family ("data"), or if there is no structured row key for the
+        family (`data`), or if there is no structured row key for the
         subscription name + message ID, if because the app profile is not
         configured for single-cluster routing.
       IN_TRANSIT_LOCATION_RESTRICTION: Cannot write to the destination because
@@ -433,10 +436,11 @@ class BigtableConfig(_messages.Message):
     VERTEX_AI_LOCATION_RESTRICTION = 7
 
   appProfileId = _messages.StringField(1)
-  serviceAccountEmail = _messages.StringField(2)
-  state = _messages.EnumField('StateValueValuesEnum', 3)
-  table = _messages.StringField(4)
-  writeMetadata = _messages.BooleanField(5)
+  columnFamilyMapping = _messages.MessageField('ColumnFamilyMapping', 2)
+  serviceAccountEmail = _messages.StringField(3)
+  state = _messages.EnumField('StateValueValuesEnum', 4)
+  table = _messages.StringField(5)
+  writeMetadata = _messages.BooleanField(6)
 
 
 class Binding(_messages.Message):
@@ -684,6 +688,34 @@ class CloudStorageConfig(_messages.Message):
   textConfig = _messages.MessageField('TextConfig', 11)
 
 
+class ColumnFamilyMapping(_messages.Message):
+  r"""Configuration for writing a Pub/Sub message to a Bigtable row with a
+  user-defined key and writing to column families. If this field is set, the
+  subscription messages must be formatted as JSON. The row key mapping is
+  configured in the `key_definition` section. The top-level fields will be
+  written either: - By default, they will be written to the `data` column
+  family with the field name as the column qualifier. - But if the field name
+  matches an existing column family (except for the default `data` column),
+  then that field will be written to that column family, either as a scalar or
+  its next level nested fields if it's a JSON object. The cell timestamp will
+  be the message publish timestamp.
+
+  Fields:
+    delimitedKey: Optional. If set, the row key is constructed from the given
+      key fields and delimiter. All key fields must be present in the message;
+      otherwise, the message remains in the subscription backlog.
+    rowKeySchema: Optional. If set, the row key is constructed from the field
+      names of the table's structured row key
+      ({$universe.dns_names.final_documentation_domain}/bigtable/docs/manage-
+      row-key-schemas). Note that if the field is nullable in the structured
+      row key, then it need not be present in the message; null will be used
+      instead.
+  """
+
+  delimitedKey = _messages.MessageField('DelimitedKey', 1)
+  rowKeySchema = _messages.MessageField('RowKeySchema', 2)
+
+
 class CommitSchemaRequest(_messages.Message):
   r"""Request for CommitSchema method.
 
@@ -920,6 +952,22 @@ class DeadLetterPolicy(_messages.Message):
 
   deadLetterTopic = _messages.StringField(1)
   maxDeliveryAttempts = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+
+
+class DelimitedKey(_messages.Message):
+  r"""Row key definition based on fields from the message.
+
+  Fields:
+    delimiter: Optional. Byte sequence used to delimit concatenated fields.
+      Must be specified if multiple key fields are used. The delimiter must
+      contain at least 1 character and at most 50 characters.
+    keyFields: Optional. The key fields to construct from the row key. The
+      fields must be present in the message as a top-level field, i.e. JSON
+      path expressions will not traverse into nested objects.
+  """
+
+  delimiter = _messages.BytesField(1)
+  keyFields = _messages.StringField(2, repeated=True)
 
 
 class DetachSubscriptionResponse(_messages.Message):
@@ -2609,6 +2657,16 @@ class RollbackSchemaRequest(_messages.Message):
   """
 
   revisionId = _messages.StringField(1)
+
+
+class RowKeySchema(_messages.Message):
+  r"""Row key definition that reads the input message fields based on the
+  field names of the table's structured row key
+  ({$universe.dns_names.final_documentation_domain}/bigtable/docs/manage-row-
+  key-schemas). Note that if the field is nullable in the structured row key,
+  then it need not be present in the message; null will be used instead.
+  """
+
 
 
 class Schema(_messages.Message):

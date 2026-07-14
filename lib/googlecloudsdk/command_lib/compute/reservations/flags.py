@@ -238,6 +238,20 @@ def GetRemoveShareWithFlag(custom_name=None):
       help=help_text)
 
 
+def GetRemoveShareWithProjectFlag():
+  """Gets the --remove-share-with-project flag."""
+  help_text = """\
+  Specify a comma-separated list of projects to remove from the list of
+  projects that this reservation is shared with. List must contain project
+  IDs or project numbers.
+  """
+  return base.Argument(
+      '--remove-share-with-project',
+      type=arg_parsers.ArgList(min_length=1),
+      metavar='PROJECT',
+      help=help_text)
+
+
 def GetRemoveShareWithFolderFlag():
   """Gets the --remove-share-with-folder flag."""
   help_text = """\

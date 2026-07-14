@@ -489,11 +489,12 @@ class WorkloadidentityFoldersLocationsServiceProducersGenerateServiceAgentsReque
   Fields:
     generateServiceAgentsRequest: A GenerateServiceAgentsRequest resource to
       be passed as the request body.
-    parent: Required. The parent resource.
+    parent: Required. The parent resource. The `location` for the parent
+      resource must be `global`. Examples: -
       projects/1234/locations/global/serviceProducers/bigquery.googleapis.com
-      folders/1234/locations/global/serviceProducers/storageinsights.googleapi
-      s.com organizations/2344/locations/global/serviceProducers/vertexai.goog
-      leapis.com
+      - folders/2344/locations/global/serviceProducers/vertexai.googleapis.com
+      -
+      organizations/3344/locations/global/serviceProducers/iam.googleapis.com
   """
 
   generateServiceAgentsRequest = _messages.MessageField('GenerateServiceAgentsRequest', 1)
@@ -597,11 +598,12 @@ class WorkloadidentityOrganizationsLocationsServiceProducersGenerateServiceAgent
   Fields:
     generateServiceAgentsRequest: A GenerateServiceAgentsRequest resource to
       be passed as the request body.
-    parent: Required. The parent resource.
+    parent: Required. The parent resource. The `location` for the parent
+      resource must be `global`. Examples: -
       projects/1234/locations/global/serviceProducers/bigquery.googleapis.com
-      folders/1234/locations/global/serviceProducers/storageinsights.googleapi
-      s.com organizations/2344/locations/global/serviceProducers/vertexai.goog
-      leapis.com
+      - folders/2344/locations/global/serviceProducers/vertexai.googleapis.com
+      -
+      organizations/3344/locations/global/serviceProducers/iam.googleapis.com
   """
 
   generateServiceAgentsRequest = _messages.MessageField('GenerateServiceAgentsRequest', 1)
@@ -705,11 +707,12 @@ class WorkloadidentityProjectsLocationsServiceProducersGenerateServiceAgentsRequ
   Fields:
     generateServiceAgentsRequest: A GenerateServiceAgentsRequest resource to
       be passed as the request body.
-    parent: Required. The parent resource.
+    parent: Required. The parent resource. The `location` for the parent
+      resource must be `global`. Examples: -
       projects/1234/locations/global/serviceProducers/bigquery.googleapis.com
-      folders/1234/locations/global/serviceProducers/storageinsights.googleapi
-      s.com organizations/2344/locations/global/serviceProducers/vertexai.goog
-      leapis.com
+      - folders/2344/locations/global/serviceProducers/vertexai.googleapis.com
+      -
+      organizations/3344/locations/global/serviceProducers/iam.googleapis.com
   """
 
   generateServiceAgentsRequest = _messages.MessageField('GenerateServiceAgentsRequest', 1)

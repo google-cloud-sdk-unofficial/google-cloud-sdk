@@ -20,12 +20,12 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: List goldengateConnections
-    description: List goldengateConnections
+    brief: List all GoldengateConnections.
+    description: List all GoldengateConnections.
     examples: |-
-      To list all goldengateConnections, run:
+      To list all GoldengateConnections in the location `us-east4`, run:
 
-          $ {command}
+        $ {command} --location=us-east4
   arguments:
     params:
     - help_text: |-

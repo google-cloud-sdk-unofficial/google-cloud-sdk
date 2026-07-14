@@ -1304,12 +1304,15 @@ class SanitizationMetadata(_messages.Message):
     ignorePartialInvocationFailures: Passthrough field defined in
       TemplateMetadata to indicate whether to ignore partial invocation
       failures.
+    streamChunkProcessed: Output only. The stream chunk processed by the
+      Sanitization service.
   """
 
   errorCode = _messages.IntegerField(1)
   errorMessage = _messages.StringField(2)
   filterVersionConfig = _messages.MessageField('FilterVersionConfig', 3)
   ignorePartialInvocationFailures = _messages.BooleanField(4)
+  streamChunkProcessed = _messages.MessageField('DataItem', 5)
 
 
 class SanitizationResult(_messages.Message):

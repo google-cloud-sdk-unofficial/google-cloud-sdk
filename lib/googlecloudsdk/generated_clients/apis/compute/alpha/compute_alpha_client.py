@@ -26777,6 +26777,33 @@ behaviour for this method.
         supports_download=False,
     )
 
+    def Update(self, request, global_params=None):
+      r"""Updates a reservation subBlock.
+
+      Args:
+        request: (ComputeReservationSubBlocksUpdateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Update')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Update.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}/reservationSubBlocks/{reservationSubBlock}',
+        http_method='PATCH',
+        method_id='compute.reservationSubBlocks.update',
+        ordered_params=['project', 'zone', 'parentName', 'reservationSubBlock'],
+        path_params=['parentName', 'project', 'reservationSubBlock', 'zone'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='projects/{project}/zones/{zone}/{+parentName}/reservationSubBlocks/{reservationSubBlock}',
+        request_field='reservationSubBlockResource',
+        request_type_name='ComputeReservationSubBlocksUpdateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class ReservationsService(base_api.BaseApiService):
     """Service class for the reservations resource."""
 

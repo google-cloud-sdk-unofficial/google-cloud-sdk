@@ -51,16 +51,19 @@ class AccessSummary(_messages.Message):
 
     Values:
       AUTH_PROVIDER_TYPE_UNSPECIFIED: Unspecified auth-provider type.
-      THREE_LEGGED_OAUTH: Three Legged OAuth auth-provider type.
-      TWO_LEGGED_OAUTH: Two Legged OAuth auth-provider type.
-      API_KEY: API Key auth-provider type.
-      GEMINI_ENTERPRISE: Gemini Enterprise auth-provider type.
+      AUTH_PROVIDER_TYPE_THREE_LEGGED_OAUTH: Three Legged OAuth auth-provider
+        type.
+      AUTH_PROVIDER_TYPE_TWO_LEGGED_OAUTH: Two Legged OAuth auth-provider
+        type.
+      AUTH_PROVIDER_TYPE_API_KEY: API Key auth-provider type.
+      AUTH_PROVIDER_TYPE_GEMINI_ENTERPRISE: Gemini Enterprise auth-provider
+        type.
     """
     AUTH_PROVIDER_TYPE_UNSPECIFIED = 0
-    THREE_LEGGED_OAUTH = 1
-    TWO_LEGGED_OAUTH = 2
-    API_KEY = 3
-    GEMINI_ENTERPRISE = 4
+    AUTH_PROVIDER_TYPE_THREE_LEGGED_OAUTH = 1
+    AUTH_PROVIDER_TYPE_TWO_LEGGED_OAUTH = 2
+    AUTH_PROVIDER_TYPE_API_KEY = 3
+    AUTH_PROVIDER_TYPE_GEMINI_ENTERPRISE = 4
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
@@ -249,6 +252,34 @@ class AgentidentityProjectsLocationsAuthProvidersDeleteRequest(_messages.Message
 
   name = _messages.StringField(1, required=True)
   requestId = _messages.StringField(2)
+
+
+class AgentidentityProjectsLocationsAuthProvidersDisableRequest(_messages.Message):
+  r"""A AgentidentityProjectsLocationsAuthProvidersDisableRequest object.
+
+  Fields:
+    disableAuthProviderRequest: A DisableAuthProviderRequest resource to be
+      passed as the request body.
+    name: Required. Name of the resource Format:
+      projects/{project}/locations/{location}/authProviders/{auth_provider}
+  """
+
+  disableAuthProviderRequest = _messages.MessageField('DisableAuthProviderRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class AgentidentityProjectsLocationsAuthProvidersEnableRequest(_messages.Message):
+  r"""A AgentidentityProjectsLocationsAuthProvidersEnableRequest object.
+
+  Fields:
+    enableAuthProviderRequest: A EnableAuthProviderRequest resource to be
+      passed as the request body.
+    name: Required. Name of the resource Format:
+      projects/{project}/locations/{location}/authProviders/{auth_provider}
+  """
+
+  enableAuthProviderRequest = _messages.MessageField('EnableAuthProviderRequest', 1)
+  name = _messages.StringField(2, required=True)
 
 
 class AgentidentityProjectsLocationsAuthProvidersGetIamPolicyRequest(_messages.Message):
@@ -788,6 +819,21 @@ class Binding(_messages.Message):
   role = _messages.StringField(3)
 
 
+class DisableAuthProviderRequest(_messages.Message):
+  r"""Message for disabling an AuthProvider
+
+  Fields:
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  requestId = _messages.StringField(1)
+
+
 class Empty(_messages.Message):
   r"""A generic empty message that you can re-use to avoid defining duplicated
   empty messages in your APIs. A typical example is to use it as the request
@@ -795,6 +841,21 @@ class Empty(_messages.Message):
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
 
+
+
+class EnableAuthProviderRequest(_messages.Message):
+  r"""Message for enabling an AuthProvider
+
+  Fields:
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  requestId = _messages.StringField(1)
 
 
 class Expr(_messages.Message):
@@ -973,32 +1034,6 @@ class Location(_messages.Message):
   locationId = _messages.StringField(3)
   metadata = _messages.MessageField('MetadataValue', 4)
   name = _messages.StringField(5)
-
-
-class OperationMetadata(_messages.Message):
-  r"""Represents the metadata of the long-running operation.
-
-  Fields:
-    apiVersion: Output only. API version used to start the operation.
-    cancelRequested: Output only. Identifies whether the user has requested
-      cancellation of the operation. Operations that have been cancelled
-      successfully have google.longrunning.Operation.error value with a
-      google.rpc.Status.code of `1`, corresponding to `Code.CANCELLED`.
-    createTime: Output only. The time the operation was created.
-    endTime: Output only. The time the operation finished running.
-    statusDetail: Output only. Human-readable status of the operation, if any.
-    target: Output only. Server-defined resource path for the target of the
-      operation.
-    verb: Output only. Name of the verb executed by the operation.
-  """
-
-  apiVersion = _messages.StringField(1)
-  cancelRequested = _messages.BooleanField(2)
-  createTime = _messages.StringField(3)
-  endTime = _messages.StringField(4)
-  statusDetail = _messages.StringField(5)
-  target = _messages.StringField(6)
-  verb = _messages.StringField(7)
 
 
 class Policy(_messages.Message):

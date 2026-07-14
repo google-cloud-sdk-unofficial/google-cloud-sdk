@@ -26,8 +26,21 @@ properties:
     items:
       type: string
   excludeObjects:
-    description: MongoDB collections to exclude from the stream.
+    description: The MongoDB collections to exclude from the stream.
     $ref: MongodbCluster.yaml
   includeObjects:
-    description: MongoDB collections to include in the stream.
+    description: The MongoDB collections to include in the stream.
     $ref: MongodbCluster.yaml
+  jsonMode:
+    description: MongoDB JSON mode to use for the stream.
+    type: string
+    enum:
+    - CANONICAL
+    - MONGODB_JSON_MODE_UNSPECIFIED
+    - STRICT
+  maxConcurrentBackfillTasks:
+    description: |-
+      Maximum number of concurrent backfill tasks. The number should be non-
+      negative and less than or equal to 50. If not set (or set to 0), the
+      system's default value is used
+    type: integer

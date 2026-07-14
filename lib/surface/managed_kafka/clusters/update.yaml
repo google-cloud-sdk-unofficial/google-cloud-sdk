@@ -20,7 +20,7 @@ request:
   modify_request_hooks:
   - googlecloudsdk.command_lib.managed_kafka.util:PrepareUpdateWithSubnets
   - googlecloudsdk.command_lib.managed_kafka.util:PrepareUpdateWithCaPools
-  - googlecloudsdk.command_lib.managed_kafka.util:PrepareUpdateWithPublicEndpoint
+  - googlecloudsdk.command_lib.managed_kafka.util:PrepareUpdateWithPublicCluster
 
 arguments:
   resource:
@@ -39,7 +39,7 @@ arguments:
       - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:ssl-principal-mapping-rules
       - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:broker-disk-size-gib
         release_tracks: [ALPHA]
-      - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:public-endpoint
+      - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:public-cluster
         release_tracks: [ALPHA]
       - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:allowed-source-ip-ranges
         release_tracks: [ALPHA]

@@ -61,48 +61,14 @@ def _Run(args, holder, forwarding_rules_arg):
   return client.MakeRequests([(service, 'Get', request)])[0]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.PREVIEW,
+)
 @base.UniverseCompatible
 class Describe(base.DescribeCommand):
-  """Display detailed information about a forwarding rule.
-
-  *{command}* displays all data associated with a forwarding rule
-  in a project.
-
-  ## EXAMPLES
-  To get details about a global forwarding rule, run:
-
-    $ {command} FORWARDING-RULE --global
-
-  To get details about a regional forwarding rule, run:
-
-    $ {command} FORWARDING-RULE --region=us-central1
-  """
-
-  FORWARDING_RULE_ARG = None
-
-  @staticmethod
-  def Args(parser):
-    Describe.FORWARDING_RULE_ARG = _Args(parser)
-    parser.add_argument(
-        '--view',
-        choices=['BASIC', 'FULL'],
-        hidden=True,
-        help=(
-            'The view of the forwarding rule to return. '
-            'BASIC includes the standard fields. '
-            'FULL includes standard fields plus any '
-            'extensions attached to the forwarding rule.'
-        ),
-    )
-
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(args, holder, self.FORWARDING_RULE_ARG)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class DescribeBeta(Describe):
   """Display detailed information about a forwarding rule.
 
   *{command}* displays all data associated with a forwarding rule
@@ -122,9 +88,11 @@ class DescribeBeta(Describe):
     $ {command} FORWARDING-RULE --region=us-central1 --view=FULL
   """
 
+  FORWARDING_RULE_ARG = None
+
   @staticmethod
   def Args(parser):
-    DescribeBeta.FORWARDING_RULE_ARG = _Args(parser)
+    Describe.FORWARDING_RULE_ARG = _Args(parser)
     parser.add_argument(
         '--view',
         choices=['BASIC', 'FULL'],
@@ -135,3 +103,7 @@ class DescribeBeta(Describe):
             'extensions attached to the forwarding rule.'
         ),
     )
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    return _Run(args, holder, self.FORWARDING_RULE_ARG)

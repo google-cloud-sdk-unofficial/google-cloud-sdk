@@ -2454,10 +2454,10 @@ def AddMsdtcRpcAuthMode(
               'Allow only secure RPC calls. Both servers (caller and receiver)'
               " must successfully verify each other's identities."
           ),
-          'allow-fallback-to-unsecure-rpc-if-necessary': (
+          'fallback-to-unsecure-rpc-if-necessary': (
               'The caller authenticates to the receiver, but not vice-versa.'
           ),
-          'none': 'No authentication.',
+          'turn-off-rpc-security': 'No authentication.',
       },
       help_str=help_text,
       hidden=hidden,

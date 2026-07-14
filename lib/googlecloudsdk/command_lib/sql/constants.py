@@ -81,7 +81,6 @@ TARGET_INSTANCE_OVERRIDE_FLAGS = (
     'tags',
     'tier',
     'time_zone',
-    'timeout',
     # go/keep-sorted end
 )
 

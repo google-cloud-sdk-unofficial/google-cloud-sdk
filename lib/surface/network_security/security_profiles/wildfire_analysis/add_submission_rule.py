@@ -52,7 +52,7 @@ FILE_TYPE_CHOICES = (
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class AddSubmissionRule(base.UpdateCommand):
   """Add a WildFire submission rule to a WildFire Analysis Profile."""
 

@@ -58,4 +58,13 @@ def SanitizePlatformSettings(unused_ref, args, request):
     request.googleCloudRecaptchaenterpriseV1Key.expressSettings = None
     request.googleCloudRecaptchaenterpriseV1Key.universalSettings = None
 
+  if hasattr(args, 'testing_score') and args.IsSpecified('testing_score'):
+    if not request.googleCloudRecaptchaenterpriseV1Key.testingOptions:
+      request.googleCloudRecaptchaenterpriseV1Key.testingOptions = (
+          messages.GoogleCloudRecaptchaenterpriseV1TestingOptions()
+      )
+    request.googleCloudRecaptchaenterpriseV1Key.testingOptions.testingScore = (
+        args.testing_score
+    )
+
   return request

@@ -160,7 +160,7 @@ def DeployInstanceFromSource(
     changes = []
 
   is_async = getattr(args, 'async_', False)
-  already_activated_services = api_enabler.check_and_enable_apis(
+  skip_activation_prompt = api_enabler.check_and_enable_apis(
       properties.VALUES.core.project.Get(), _GetRequiredApis()
   )
 
@@ -191,7 +191,7 @@ def DeployInstanceFromSource(
 
   messages_util.MaybeLogDefaultGpuTypeMessage(args, resource=None)
   with serverless_operations.Connect(
-      conn_context, already_activated_services
+      conn_context, skip_activation_prompt
   ) as operations:
     pretty_print.Info(
         messages_util.GetStartCreateInstanceMessage(
@@ -228,7 +228,7 @@ def DeployInstanceFromSource(
               build_pack=build_pack,
               repo_to_create=repo_to_create,
               release_track=release_track,
-              already_activated_services=already_activated_services,
+              skip_activation_prompt=skip_activation_prompt,
               region=region,
               resource_ref=instance_ref,
               build_env_vars=getattr(args, 'build_env_vars', None),
@@ -336,7 +336,7 @@ def DeployServiceFromSource(
     changes = []
 
   is_async = getattr(args, 'async_', False)
-  already_activated_services = api_enabler.check_and_enable_apis(
+  skip_activation_prompt = api_enabler.check_and_enable_apis(
       properties.VALUES.core.project.Get(), _GetRequiredApis()
   )
 
@@ -354,7 +354,7 @@ def DeployServiceFromSource(
 
   messages_util.MaybeLogDefaultGpuTypeMessage(args, resource=None)
   with serverless_operations.Connect(
-      conn_context, already_activated_services
+      conn_context, skip_activation_prompt
   ) as client:
     pretty_print.Info(
         messages_util.GetStartDeployMessage(
@@ -428,7 +428,7 @@ def DeployServiceFromSource(
           build_pack=build_pack,
           repo_to_create=repo_to_create,
           build_region=region,
-          already_activated_services=already_activated_services,
+          skip_activation_prompt=skip_activation_prompt,
           source_bucket=source_bucket,
           iap_enabled=iap,
           build_env_vars=getattr(args, 'build_env_vars', None),

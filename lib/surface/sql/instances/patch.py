@@ -378,6 +378,7 @@ def AddBaseArgs(parser):
   flags.AddSqlServerEntraId(parser)
   flags.AddClearEntraIdConfig(parser)
   flags.AddPerformanceCaptureConfig(parser)
+  flags.AddEnablePscAutoConnectionPolicy(parser)
 
 
 def AddBetaArgs(parser):
@@ -392,7 +393,6 @@ def AddBetaArgs(parser):
   flags.AddClearUncMappings(unc_mappings_group)
   flags.AddEnablePscAutoDns(parser)
   flags.AddEnablePscWriteEndpointDns(parser)
-  flags.AddEnablePscAutoConnectionPolicy(parser, hidden=True)
 
 
 def AddAlphaArgs(parser):

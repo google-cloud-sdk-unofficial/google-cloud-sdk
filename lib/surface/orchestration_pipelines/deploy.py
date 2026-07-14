@@ -32,6 +32,7 @@ from apitools.base.py import transfer
 from googlecloudsdk.api_lib.composer import dags_util as composer_dags_util
 from googlecloudsdk.api_lib.composer import environments_util
 from googlecloudsdk.api_lib.composer import util
+from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.storage import storage_api
 from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.calliope import arg_parsers
@@ -348,7 +349,7 @@ def _ExtractResourceProfilePaths(config_dict: dict[str, Any]) -> set[str]:
 @calliope_base.DefaultUniverseOnly
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.BETA)
 class Deploy(calliope_base.Command):
-  """Deploy a pipeline."""
+  """Deploy a pipelines bundle."""
 
   def __init__(
       self, *args, subprocess_mod=subprocess, getpass_mod=getpass, **kwargs
@@ -868,6 +869,72 @@ class Deploy(calliope_base.Command):
 
     return f"{artifact_base_uri}{clean_path}" if rewrite_to_gcs else clean_path
 
+  def _InjectExistingClusterImageVersion(
+      self,
+      processor: Any,
+      engine_dict: dict[str, Any],
+      parsed_deployment: Mapping[str, Any] | None,
+  ) -> None:
+    """Fetches the image version of an existing Dataproc cluster and injects it.
+
+    Args:
+      processor: The ActionProcessor instance to inject the image version into.
+      engine_dict: The action's engine configuration dictionary.
+      parsed_deployment: The parsed deployment configuration mapping, or None if
+        not available.
+    """
+    if not hasattr(processor, "existing_cluster_image_version"):
+      return
+    if processor.existing_cluster_image_version is not None:
+      return
+
+    dp_gce_config = engine_dict.get("dataprocOnGce")
+    if not isinstance(dp_gce_config, dict):
+      return
+
+    existing_cluster = dp_gce_config.get("existingCluster")
+    cluster_name = None
+    if isinstance(existing_cluster, dict):
+      cluster_name = existing_cluster.get("clusterName")
+
+    if not cluster_name:
+      return
+
+    if not parsed_deployment:
+      return
+
+    project_id = parsed_deployment.get("project")
+    region = parsed_deployment.get("region")
+
+    if not (project_id and region):
+      return
+
+    try:
+      dataproc_client = dp.Dataproc(self.ReleaseTrack())
+      request = (
+          dataproc_client.messages.DataprocProjectsRegionsClustersGetRequest(
+              projectId=project_id,
+              region=region,
+              clusterName=cluster_name,
+          )
+      )
+      cluster = dataproc_client.client.projects_regions_clusters.Get(request)
+      if cluster and cluster.config and cluster.config.softwareConfig:
+        image_version = cluster.config.softwareConfig.imageVersion
+        if image_version:
+          processor.existing_cluster_image_version = image_version
+    except Exception as e:  # pylint: disable=broad-except
+      # This is a best-effort check to optimize dependencies. If it fails, we
+      # log a warning and fall back to standard defaults.
+      log.warning(
+          "Failed to fetch Dataproc image version for existing cluster '%s':"
+          " %s. Requirement dependencies will be resolved using the default"
+          " image version.",
+          cluster_name,
+          e,
+          exc_info=True,
+      )
+
   def _ProcessAndUploadArtifacts(
       self,
       resolved_pipeline: dict[str, Any],
@@ -921,6 +988,14 @@ class Deploy(calliope_base.Command):
             action_type = first_key
 
       engine_dict = action.get("engine", {})
+      # Normalize legacy string format of existingCluster under dataprocOnGce to
+      # dictionary format
+      if isinstance(engine_dict, dict):
+        dp_gce_config = engine_dict.get("dataprocOnGce")
+        if isinstance(dp_gce_config, dict):
+          existing_cluster = dp_gce_config.get("existingCluster")
+          if isinstance(existing_cluster, str):
+            dp_gce_config["existingCluster"] = {"clusterName": existing_cluster}
 
       if "mainFilePath" in action:
         needs_gcs_rewrite = action_type in ["pyspark", "notebook"]
@@ -983,12 +1058,6 @@ class Deploy(calliope_base.Command):
           is_allowed = all(
               engine in allowed_processor_engines for engine in provided_engines
           )
-          dp_gce_config = engine_dict.get("dataprocOnGce")
-          if (
-              isinstance(dp_gce_config, dict)
-              and "existingCluster" in dp_gce_config
-          ):
-            is_allowed = False
         else:
           raise DeployError(
               "The 'engine' block is formatted incorrectly. Expected a"
@@ -1007,11 +1076,17 @@ class Deploy(calliope_base.Command):
             requirements_path=resolved_reqs_path,
         )
         if processor:
+          dp_gce_config = engine_dict.get("dataprocOnGce")
+          if isinstance(dp_gce_config, dict) and resolved_reqs_path:
+            existing_cluster = dp_gce_config.get("existingCluster")
+            if isinstance(existing_cluster, dict):
+              self._InjectExistingClusterImageVersion(
+                  processor, engine_dict, parsed_deployment
+              )
           processor.process_action()
           env_pack_file = processor.env_pack_file
           if env_pack_file:
             env_pack_files_to_upload.add(env_pack_file)
-
       if "requirementsPath" in action:
         del action["requirementsPath"]
 

@@ -14,6 +14,10 @@
 # limitations under the License.
 """Parsers given command arguments for the Cloud Run V2 command surface into configuration changes."""
 
+import argparse
+from collections.abc import Sequence
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import config_changes as run_config_changes
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run.config_changes import GenerateVolumeName
@@ -523,43 +527,108 @@ def _GetEnvChanges(args, **kwargs):
   )
 
 
-def _HasWorkerPoolScalingChanges(args):
+def _HasWorkerPoolScalingChanges(
+    args: argparse.Namespace, release_track: base.ReleaseTrack
+) -> bool:
   """Returns true iff any worker pool scaling changes are specified."""
-  scaling_flags = [
-      'instances',
-      'scaling',
-  ]
+  if release_track == base.ReleaseTrack.ALPHA:
+    scaling_flags = [
+        'instances',
+        'scaling',
+        'scaling_cpu_target',
+    ]
+  else:
+    scaling_flags = [
+        'instances',
+        'scaling',
+    ]
   return flags.HasChanges(args, scaling_flags)
 
 
-def _GetWorkerPoolInstancesChange(args):
-  """Return the changes for instances for Worker Pools for the given args."""
-  # --scaling flag is deprecated for Worker Pools in favor of --instances. We
-  # will allow the --scaling flag to be used for instance counts,
-  # to minimize disruption to existing users. However, if the user specifies
-  # the automatic scaling parameter, we will throw an error.
-  if (
-      'scaling' in args
-      and args.scaling is not None
-      and args.scaling.auto_scaling
-  ):
-    raise exceptions.ConfigurationError(
-        'automtatic scaling is deprecated for Worker Pools. Please use a'
-        ' positive number for --instances flag instead to specify a fixed'
-        ' instance count.'
+def _GetWorkerPoolScalingChanges(
+    args: argparse.Namespace, release_track: base.ReleaseTrack
+) -> Sequence[run_config_changes.ConfigChanger]:
+  """Returns the list of changes for worker pool scaling."""
+  changes = []
+  has_instances = flags.FlagIsExplicitlySet(args, 'instances')
+  has_scaling = flags.FlagIsExplicitlySet(args, 'scaling')
+  has_cpu_scaling = flags.FlagIsExplicitlySet(args, 'scaling_cpu_target')
+
+  if release_track == base.ReleaseTrack.ALPHA:
+    if has_instances and has_scaling:
+      raise exceptions.ConfigurationError(
+          'Cannot specify both --instances and --scaling.'
+      )
+
+    has_scaling_manual = has_scaling and not args.scaling.auto_scaling
+    has_scaling_auto = has_scaling and args.scaling.auto_scaling
+
+    if has_instances and has_cpu_scaling:
+      raise exceptions.ConfigurationError(
+          'Cannot specify both --instances and --scaling-cpu-target.'
+      )
+    if has_scaling_manual and has_cpu_scaling:
+      raise exceptions.ConfigurationError(
+          'Cannot specify both --scaling and --scaling-cpu-target.'
+      )
+
+    if has_instances:
+      changes.append(
+          config_changes.WorkerPoolInstancesChange(instances=args.instances)
+      )
+    elif has_scaling_manual:
+      instances = flags.InstanceValue(value=args.scaling.instance_count)
+      changes.append(
+          config_changes.WorkerPoolInstancesChange(instances=instances)
+      )
+
+    if has_cpu_scaling:
+      changes.append(
+          config_changes.WorkerPoolCpuScalingChange(
+              cpu_utilization=(
+                  None
+                  if args.scaling_cpu_target.restore_default
+                  else args.scaling_cpu_target.utilization
+              ),
+              restore_default=args.scaling_cpu_target.restore_default,
+          )
+      )
+    elif has_scaling_auto:
+      changes.append(
+          config_changes.WorkerPoolCpuScalingChange(cpu_utilization=None)
+      )
+
+  else:
+    # Old behavior for GA/BETA
+    has_scaling_auto = (
+        'scaling' in args
+        and args.scaling is not None
+        and args.scaling.auto_scaling
     )
-  # If the newer --instances flag is specified, use that.
-  # Otherwise, check for --scaling flag for existing users.
-  instances = None
-  if 'instances' in args and args.instances is not None:
-    instances = args.instances
-  elif 'scaling' in args and args.scaling is not None:
-    log.warning(
-        'The --scaling flag is deprecated for Worker Pools. Please use the'
-        ' --instances flag instead to specify a fixed instance count.'
+
+    if has_scaling_auto:
+      raise exceptions.ConfigurationError(
+          'automatic scaling is deprecated for Worker Pools. Please use a'
+          ' positive number for --instances flag instead to specify a fixed'
+          ' instance count.'
+      )
+
+    if has_instances:
+      instances = args.instances
+    elif 'scaling' in args and args.scaling is not None:
+      # We know it's manual because auto raised error above.
+      log.warning(
+          'The --scaling flag is deprecated for Worker Pools. Please use the'
+          ' --instances flag instead to specify a fixed instance count.'
+      )
+      instances = flags.InstanceValue(value=args.scaling.instance_count)
+    else:
+      instances = None
+    changes.append(
+        config_changes.WorkerPoolInstancesChange(instances=instances)
     )
-    instances = flags.InstanceValue(value=args.scaling.instance_count)
-  return config_changes.WorkerPoolInstancesChange(instances=instances)
+
+  return changes
 
 
 def _HasBinaryAuthorizationChanges(args):
@@ -662,7 +731,9 @@ def _MaybeAddVolumeMountChange(args, changes):
     )
 
 
-def GetWorkerPoolConfigurationChanges(args, release_track):
+def GetWorkerPoolConfigurationChanges(
+    args, release_track
+) -> list[run_config_changes.ConfigChanger]:
   """Returns a list of changes to the worker pool config, based on the flags set."""
   changes = []
   # Description
@@ -681,8 +752,8 @@ def GetWorkerPoolConfigurationChanges(args, release_track):
       )
   )
   # Worker pool scaling
-  if _HasWorkerPoolScalingChanges(args):
-    changes.append(_GetWorkerPoolInstancesChange(args))
+  if _HasWorkerPoolScalingChanges(args, release_track):
+    changes.extend(_GetWorkerPoolScalingChanges(args, release_track))
   if flags.HasInstanceSplitChanges(args):
     changes.append(_GetInstanceSplitChanges(args))
   if 'no_promote' in args and args.no_promote:

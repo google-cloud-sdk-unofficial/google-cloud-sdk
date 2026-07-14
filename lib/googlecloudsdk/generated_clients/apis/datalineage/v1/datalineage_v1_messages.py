@@ -466,12 +466,17 @@ class GoogleCloudDatacatalogLineageConfigmanagementV1ConfigIngestionIngestionRul
 
     Values:
       INTEGRATION_UNSPECIFIED: Integration is Unspecified
+      BIGQUERY: BigQuery
       DATAPROC: Dataproc
       LOOKER_CORE: Looker Core
+      MANAGED_AIRFLOW: Managed Service for Apache Airflow (formerly known as
+        Cloud Composer)
     """
     INTEGRATION_UNSPECIFIED = 0
-    DATAPROC = 1
-    LOOKER_CORE = 2
+    BIGQUERY = 1
+    DATAPROC = 2
+    LOOKER_CORE = 3
+    MANAGED_AIRFLOW = 4
 
   integration = _messages.EnumField('IntegrationValueValuesEnum', 1)
 

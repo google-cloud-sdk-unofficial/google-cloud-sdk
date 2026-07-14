@@ -1248,6 +1248,8 @@ class WorkerPoolInstancesChange(config_changes.NonTemplateConfigChanger):
       # Remove min and max instance count if manual instance count is set.
       worker_pool_resource.scaling.min_instance_count = None
       worker_pool_resource.scaling.max_instance_count = None
+      # Clear CPU scaling
+      worker_pool_resource.scaling.cpu_scaling = None
       worker_pool_resource.scaling.scaling_mode = (
           vendor_settings.WorkerPoolScaling.ScalingMode.MANUAL
       )
@@ -1255,6 +1257,37 @@ class WorkerPoolInstancesChange(config_changes.NonTemplateConfigChanger):
           self.instances.instance_count
       )
     return worker_pool_resource
+
+
+@dataclasses.dataclass(frozen=True, kw_only=True)
+class WorkerPoolCpuScalingChange(config_changes.NonTemplateConfigChanger):
+  """Represents the user intent to adjust worker pool CPU scaling."""
+
+  cpu_utilization: float | None = None
+  restore_default: bool = False
+
+  def Adjust(
+      self, resource: worker_pool_objects.WorkerPool
+  ) -> worker_pool_objects.WorkerPool:
+    if self.restore_default:
+      # Revert to system default
+      resource.scaling.cpu_scaling = None
+    elif self.cpu_utilization == 0.0:
+      # Handled as "disabled"
+      if not resource.scaling.cpu_scaling:
+        resource.scaling.cpu_scaling = vendor_settings.CpuScaling()
+      resource.scaling.cpu_scaling.utilization = 0.0
+    else:
+      if not resource.scaling.cpu_scaling:
+        # Ensure the sub-object exists
+        resource.scaling.cpu_scaling = vendor_settings.CpuScaling()
+      resource.scaling.cpu_scaling.utilization = self.cpu_utilization
+      resource.scaling.scaling_mode = (
+          vendor_settings.WorkerPoolScaling.ScalingMode.AUTOMATIC
+      )
+      # Clear manual instance count when autoscaling is enabled
+      resource.scaling.manual_instance_count = None
+    return resource
 
 
 @dataclasses.dataclass(frozen=True)

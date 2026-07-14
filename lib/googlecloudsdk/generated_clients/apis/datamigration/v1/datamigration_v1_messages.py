@@ -2054,6 +2054,8 @@ class DatamigrationProjectsLocationsConversionWorkspacesFetchIssuesRequest(_mess
   Enums:
     IssueTypeValueValuesEnum: The issue type to fetch. Deprecated: Use
       "issue.type" in the filter instead.
+    TreeValueValuesEnum: Optional. The tree to fetch issues from. If not
+      specified, source tree is assumed.
 
   Fields:
     allIssues: Optional. If 'true', gets all issues matching the filter.
@@ -2084,6 +2086,8 @@ class DatamigrationProjectsLocationsConversionWorkspacesFetchIssuesRequest(_mess
       be left blank. When paginating, all other parameters provided to
       FetchIssues must match the call that provided the page token, except for
       the page_size parameter.
+    tree: Optional. The tree to fetch issues from. If not specified, source
+      tree is assumed.
   """
 
   class IssueTypeValueValuesEnum(_messages.Enum):
@@ -2094,10 +2098,25 @@ class DatamigrationProjectsLocationsConversionWorkspacesFetchIssuesRequest(_mess
       ISSUE_TYPE_UNSPECIFIED: Unspecified issue type.
       ISSUE_TYPE_CONVERSION: Issue originated from the conversion process.
       ISSUE_TYPE_PULL_SCHEMA: Issue originated from the pull schema process.
+      ISSUE_TYPE_APPLY: Issue originated from the apply process.
     """
     ISSUE_TYPE_UNSPECIFIED = 0
     ISSUE_TYPE_CONVERSION = 1
     ISSUE_TYPE_PULL_SCHEMA = 2
+    ISSUE_TYPE_APPLY = 3
+
+  class TreeValueValuesEnum(_messages.Enum):
+    r"""Optional. The tree to fetch issues from. If not specified, source tree
+    is assumed.
+
+    Values:
+      DB_TREE_TYPE_UNSPECIFIED: Unspecified tree type.
+      SOURCE: Returns seed and conversion issues
+      DRAFT: Returns apply issues.
+    """
+    DB_TREE_TYPE_UNSPECIFIED = 0
+    SOURCE = 1
+    DRAFT = 2
 
   allIssues = _messages.BooleanField(1)
   commitId = _messages.StringField(2)
@@ -2106,6 +2125,7 @@ class DatamigrationProjectsLocationsConversionWorkspacesFetchIssuesRequest(_mess
   issueType = _messages.EnumField('IssueTypeValueValuesEnum', 5)
   pageSize = _messages.IntegerField(6, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(7)
+  tree = _messages.EnumField('TreeValueValuesEnum', 8)
 
 
 class DatamigrationProjectsLocationsConversionWorkspacesGetIamPolicyRequest(_messages.Message):
@@ -4361,6 +4381,7 @@ class Issue(_messages.Message):
       ISSUE_CATEGORY_ID_CW08: Refactoring required.
       ISSUE_CATEGORY_ID_CW99: Gemini review recommendations.
       ISSUE_CATEGORY_ID_QA00: Quality assessment findings.
+      ISSUE_CATEGORY_ID_AP00: General apply issues.
     """
     ISSUE_CATEGORY_ID_UNSPECIFIED = 0
     ISSUE_CATEGORY_ID_CW00 = 1
@@ -4374,6 +4395,7 @@ class Issue(_messages.Message):
     ISSUE_CATEGORY_ID_CW08 = 9
     ISSUE_CATEGORY_ID_CW99 = 10
     ISSUE_CATEGORY_ID_QA00 = 11
+    ISSUE_CATEGORY_ID_AP00 = 12
 
   class EntityTypeValueValuesEnum(_messages.Enum):
     r"""The entity type (if the DDL is for a sub entity).
@@ -4516,6 +4538,7 @@ class Issue(_messages.Message):
       ISSUE_GROUP_ID_CW_AI9900: Review Gemini suggestions.
       ISSUE_GROUP_ID_CW_AI9901: Review AI-augmented code.
       ISSUE_GROUP_ID_CW_AI9902: Citations for AI-augmented code.
+      ISSUE_GROUP_ID_CW_AP0000: General apply issues.
     """
     ISSUE_GROUP_ID_UNSPECIFIED = 0
     ISSUE_GROUP_ID_CW_OP0000 = 1
@@ -4616,6 +4639,7 @@ class Issue(_messages.Message):
     ISSUE_GROUP_ID_CW_AI9900 = 96
     ISSUE_GROUP_ID_CW_AI9901 = 97
     ISSUE_GROUP_ID_CW_AI9902 = 98
+    ISSUE_GROUP_ID_CW_AP0000 = 99
 
   class IssueOriginValueValuesEnum(_messages.Enum):
     r"""The source of the issue (deterministic, gemini, etc).
@@ -4666,10 +4690,12 @@ class Issue(_messages.Message):
       ISSUE_TYPE_UNSPECIFIED: Unspecified issue type.
       ISSUE_TYPE_CONVERSION: Issue originated from the conversion process.
       ISSUE_TYPE_PULL_SCHEMA: Issue originated from the pull schema process.
+      ISSUE_TYPE_APPLY: Issue originated from the apply process.
     """
     ISSUE_TYPE_UNSPECIFIED = 0
     ISSUE_TYPE_CONVERSION = 1
     ISSUE_TYPE_PULL_SCHEMA = 2
+    ISSUE_TYPE_APPLY = 3
 
   categoryId = _messages.EnumField('CategoryIdValueValuesEnum', 1)
   entityFullName = _messages.StringField(2)

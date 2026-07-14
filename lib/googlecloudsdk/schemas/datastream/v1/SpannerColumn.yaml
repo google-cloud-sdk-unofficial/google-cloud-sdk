@@ -28,7 +28,7 @@ properties:
     items:
       type: string
   column:
-    description: Column name.
+    description: The column name.
     type: string
   dataType:
     description: Spanner data type.

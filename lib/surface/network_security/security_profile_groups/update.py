@@ -40,6 +40,7 @@ _detailed_help = {
 
 _WILDFIRE_ANALYSIS_SUPPORTED = (
     base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
 )
 
 _SUPPORTED_PROFILES = [

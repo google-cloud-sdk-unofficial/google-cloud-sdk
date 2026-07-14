@@ -201,6 +201,13 @@ def ParseMongodbFile(messages, mongodb_file):
   )
 
 
+def ParseSourceCatalogFile(messages, source_catalog_file):
+  """Parses a source_catalog_file into the SourceCatalog message."""
+  return ParseMessageAndValidateSchema(
+      source_catalog_file, 'SourceCatalog', messages.SourceCatalog
+  )
+
+
 def CreateMessageWithCamelCaseConversion(
     message_type, parsed_yaml, schema_path=None
 ):

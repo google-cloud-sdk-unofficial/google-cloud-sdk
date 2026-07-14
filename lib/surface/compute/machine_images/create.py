@@ -200,7 +200,7 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
   """Create a Compute Engine machine image."""
 
-  _SUPPORT_DISK_FILTERING = False
+  _SUPPORT_DISK_FILTERING = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

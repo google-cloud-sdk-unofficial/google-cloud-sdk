@@ -28,9 +28,9 @@
   arguments:
     params:
     - help_text: |-
-        The name of the ExclusionWindow.
+        The name of the exclusion window to retrieve.
         Format:
-        projects/{project}/locations/{location}/exclusionWindows/{exclusion_window}
+        `projects/{project}/locations/{location}/exclusionWindows/{exclusion_window}`.
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.fault_testing.v1alpha_resources:projects_locations_exclusion_windows

@@ -17,8 +17,7 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class BucketOperations(base.Group):
   """Manage Cloud Storage batch operations bucket operations."""

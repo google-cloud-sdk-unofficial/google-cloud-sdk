@@ -20,7 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage.batch_operations.jobs import resource_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List bucket operations for a batch operation job."""

@@ -53,3 +53,9 @@ properties:
       non-empty routeRules[].matchRules[].path_template_match is required. Only
       one of path_prefix_rewrite or path_template_rewrite may be specified.
     type: string
+  regexRewrite:
+    description: |-
+      The regex rewrite to be applied to the URL. Only one of
+      pathPrefixRewrite, pathTemplateRewrite, or regexRewrite may be
+      specified.
+    $ref: RegexRewrite.yaml

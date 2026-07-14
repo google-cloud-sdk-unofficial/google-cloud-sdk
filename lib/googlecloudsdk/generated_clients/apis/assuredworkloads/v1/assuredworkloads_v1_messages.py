@@ -315,6 +315,7 @@ class AssuredworkloadsOrganizationsLocationsWorkloadsViolationsListRequest(_mess
       properties.
     interval_endTime: The end of the time window.
     interval_startTime: The start of the time window.
+    orderBy: Optional. Actionable sorting delegation.
     pageSize: Optional. Page size.
     pageToken: Optional. Page token returned from previous request.
     parent: Required. The Workload name. Format
@@ -324,9 +325,10 @@ class AssuredworkloadsOrganizationsLocationsWorkloadsViolationsListRequest(_mess
   filter = _messages.StringField(1)
   interval_endTime = _messages.StringField(2)
   interval_startTime = _messages.StringField(3)
-  pageSize = _messages.IntegerField(4, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(5)
-  parent = _messages.StringField(6, required=True)
+  orderBy = _messages.StringField(4)
+  pageSize = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(6)
+  parent = _messages.StringField(7, required=True)
 
 
 class GoogleCloudAssuredworkloadsV1AcknowledgeViolationRequest(_messages.Message):
@@ -734,11 +736,13 @@ class GoogleCloudAssuredworkloadsV1ListViolationsResponse(_messages.Message):
   Fields:
     nextPageToken: The next page token. Returns empty if reached the last
       page.
+    totalSize: The total number of violations.
     violations: List of Violations under a Workload.
   """
 
   nextPageToken = _messages.StringField(1)
-  violations = _messages.MessageField('GoogleCloudAssuredworkloadsV1Violation', 2, repeated=True)
+  totalSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  violations = _messages.MessageField('GoogleCloudAssuredworkloadsV1Violation', 3, repeated=True)
 
 
 class GoogleCloudAssuredworkloadsV1ListWorkloadUpdatesResponse(_messages.Message):

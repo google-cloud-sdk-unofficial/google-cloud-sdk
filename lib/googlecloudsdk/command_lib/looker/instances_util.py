@@ -15,6 +15,7 @@
 """Utility for creating Looker instances."""
 
 
+from typing import Any
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core.util import times
@@ -117,7 +118,7 @@ def ParseTimeOfDayPeriodicExportStartTimeV1(time_of_day):
 
 
 def CheckTimeOfDayField(time_of_day, error_message, arg):
-  """Check if input is a valid TimeOfDay format."""
+  """Checks if input is a valid TimeOfDay format."""
   hour_and_min = time_of_day.split(':')
   if (
       len(hour_and_min) != 2
@@ -142,14 +143,48 @@ def ParseTimeOfDay(time_of_day, messages):
 
 
 def SetDefaultReleaseChannel(unused_instance_ref, args, create_request):
-  """Set default release channel if not specified by user."""
+  """Sets default release channel if not specified by user."""
   if not args.IsSpecified('release_channel'):
-    if 'trial' in args.edition or 'nonprod' in args.edition:
-      create_request.instance.releaseChannel = (
-          create_request.instance.ReleaseChannelValueValuesEnum.RAPID
-      )
-    else:
-      create_request.instance.releaseChannel = (
-          create_request.instance.ReleaseChannelValueValuesEnum.REGULAR
-      )
+    create_request.instance.releaseChannel = (
+        create_request.instance.ReleaseChannelValueValuesEnum.RELEASE_CHANNEL_UNSPECIFIED
+    )
   return create_request
+
+
+def ValidateReleaseChannelConfig(
+    unused_instance_ref: Any, args: Any, request: Any
+) -> Any:
+  """Validates release channel configuration.
+
+  Args:
+    unused_instance_ref: googlecloudsdk.core.resources.Resource, The reference
+      to the instance.
+    args: argparse.Namespace, The arguments passed to the command.
+    request: messages.LookerProjectsLocationsInstancesCreateRequest, The request
+      to be sent to the API.
+
+  Returns:
+    messages.LookerProjectsLocationsInstancesCreateRequest, The request.
+
+  Raises:
+    exceptions.InvalidArgumentException: If release channel is RAPID and
+      maintenance window or deny maintenance period is specified.
+  """
+  instance = request.instance
+  release_channel_enum = instance.ReleaseChannelValueValuesEnum
+  if instance.releaseChannel != release_channel_enum.RAPID:
+    return request
+
+  if (
+      args.IsSpecified('maintenance_window_day')
+      or args.IsSpecified('maintenance_window_time')
+      or args.IsSpecified('deny_maintenance_period_start_date')
+      or args.IsSpecified('deny_maintenance_period_end_date')
+      or args.IsSpecified('deny_maintenance_period_time')
+  ):
+    raise exceptions.InvalidArgumentException(
+        '--release-channel',
+        'Maintenance window and deny maintenance periods are not supported '
+        'for instances in the RAPID release channel.',
+    )
+  return request

@@ -162,14 +162,6 @@ class Collections(enum.Enum):
       ['projectsId', 'locationsId'],
       True
   )
-  PROJECTS_LOCATIONS_SEMANTICGOVERNANCEPOLICYENGINE_OPERATIONS = (
-      'projects.locations.semanticGovernancePolicyEngine.operations',
-      'projects/{projectsId}/locations/{locationsId}/'
-      'semanticGovernancePolicyEngine/operations/{operationsId}',
-      {},
-      ['projectsId', 'locationsId', 'operationsId'],
-      True
-  )
 
   def __init__(self, collection_name, path, flat_paths, params,
                enable_uri_parsing):

@@ -171,13 +171,11 @@ def GetBootDisk(args, messages):
   Returns:
     Boot disk config for the instance.
   """
-  is_gen4_machine = flags.IsGen4MachineType(args.machine_type)
   if not (
       args.IsSpecified('boot_disk_size')
       or args.IsSpecified('boot_disk_type')
       or args.IsSpecified('boot_disk_encryption')
       or args.IsSpecified('boot_disk_kms_key')
-      or is_gen4_machine
   ):
     return None
 
@@ -185,17 +183,12 @@ def GetBootDisk(args, messages):
   boot_disk_encryption_enum = None
   boot_disk_type_enum = None
   kms_key = None
-  # Gen-4 machine series do not support Persistent Disk; default the boot
-  # disk type to HYPERDISK_BALANCED when the user did not specify one.
-  boot_disk_type_choice = args.boot_disk_type
-  if not args.IsSpecified('boot_disk_type') and is_gen4_machine:
-    boot_disk_type_choice = flags.GEN4_DEFAULT_DISK_TYPE
-  if boot_disk_type_choice is not None:
+  if args.boot_disk_type is not None:
     boot_disk_type_enum = arg_utils.ChoiceEnumMapper(
         arg_name='boot-disk-type',
         message_enum=boot_disk_message.DiskTypeValueValuesEnum,
         include_filter=lambda x: 'UNSPECIFIED' not in x,
-    ).GetEnumForChoice(arg_utils.EnumNameToChoice(boot_disk_type_choice))
+    ).GetEnumForChoice(arg_utils.EnumNameToChoice(args.boot_disk_type))
   if args.IsSpecified('boot_disk_encryption'):
     boot_disk_encryption_enum = arg_utils.ChoiceEnumMapper(
         arg_name='boot-disk-encryption',
@@ -222,14 +215,12 @@ def GetDataDisk(args, messages):
   Returns:
     Data disk config for the instance.
   """
-  is_gen4_machine = flags.IsGen4MachineType(args.machine_type)
   if not (
       args.IsSpecified('data_disk_size')
       or args.IsSpecified('data_disk_type')
       or args.IsSpecified('data_disk_encryption')
       or args.IsSpecified('data_disk_kms_key')
       or args.IsSpecified('data_disk_resource_policies')
-      or is_gen4_machine
   ):
     return []
 
@@ -238,17 +229,12 @@ def GetDataDisk(args, messages):
   data_disk_type_enum = None
   kms_key = None
   resource_policies = []
-  # Gen-4 machine series do not support Persistent Disk; default the data
-  # disk type to HYPERDISK_BALANCED when the user did not specify one.
-  data_disk_type_choice = args.data_disk_type
-  if not args.IsSpecified('data_disk_type') and is_gen4_machine:
-    data_disk_type_choice = flags.GEN4_DEFAULT_DISK_TYPE
-  if data_disk_type_choice is not None:
+  if args.data_disk_type is not None:
     data_disk_type_enum = arg_utils.ChoiceEnumMapper(
         arg_name='data-disk-type',
         message_enum=data_disk_message.DiskTypeValueValuesEnum,
         include_filter=lambda x: 'UNSPECIFIED' not in x,
-    ).GetEnumForChoice(arg_utils.EnumNameToChoice(data_disk_type_choice))
+    ).GetEnumForChoice(arg_utils.EnumNameToChoice(args.data_disk_type))
   if args.IsSpecified('data_disk_encryption'):
     data_disk_encryption_enum = arg_utils.ChoiceEnumMapper(
         arg_name='data-disk-encryption',

@@ -43,7 +43,7 @@ FILE_TYPE_CHOICES = [
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class DeleteInlineCloudAnalysisRule(base.UpdateCommand):
   """Delete a WildFire inline cloud analysis rule from a WildFire Analysis Profile."""
 

@@ -15,10 +15,8 @@
 
 """Defines arguments for BigLake commands."""
 
+from googlecloudsdk.api_lib.biglake import util
 from googlecloudsdk.calliope import arg_parsers
-
-# TODO(b/461544141): Move methods that define commands arguments from util.py
-# to this file.
 
 
 def AddDescriptionArg(parser):
@@ -103,6 +101,9 @@ def AddCatalogsCreateArgs(parser):
           ' cost.'
       ),
   )
+  AddDescriptionArg(parser)
+  AddRestrictedLocationsArg(parser)
+  AddDefaultLocationArg(parser)
 
 
 def AddServiceDirectoryNameArg(parser):
@@ -118,11 +119,10 @@ def AddServiceDirectoryNameArg(parser):
   )
 
 
-def AddServicePrincipalApplicationIdArg(parser):
+def AddUnityServicePrincipalApplicationIdArg(parser):
   """Adds argument for service principal application ID."""
   parser.add_argument(
-      '--service-principal-application-id',
-      hidden=True,
+      '--unity-service-principal-application-id',
       help=(
           'Optional. The application ID of the Databricks service principal'
           ' that will be used to access the Unity Catalog in the OIDC'
@@ -146,12 +146,23 @@ def AddTableCreateArgs(parser):
   )
 
 
-def AddFederatedCatalogArgs(parser, support_glue=False):
+def AddFederatedCatalogArgs(
+    parser, support_snowflake=False, support_workday=False
+):
   """Adds arguments for federated catalogs."""
-  choices = ['unity', 'glue'] if support_glue else ['unity']
+  choices = ['unity', 'glue']
+  hidden_choices = []
+  if support_snowflake:
+    choices.append('snowflake')
+    hidden_choices.append('snowflake')
+  if support_workday:
+    choices.append('workday')
+    hidden_choices.append('workday')
+
   parser.add_argument(
       '--federated-catalog-type',
       choices=choices,
+      hidden_choices=hidden_choices,
       help='Type of the federated catalog.',
   )
   parser.add_argument(
@@ -165,6 +176,10 @@ def AddFederatedCatalogArgs(parser, support_glue=False):
   )
 
   parser.add_argument(
+      '--unity-catalog-name',
+      help='Name of the catalog in Unity Catalog.',
+  )
+  parser.add_argument(
       '--unity-instance-name',
       help=(
           'The instance name is the first part of the URL when you log into'
@@ -172,10 +187,6 @@ def AddFederatedCatalogArgs(parser, support_glue=False):
           ' Google Cloud workspace URL https://1.1.gcp.databricks.com, the'
           ' instance name is 1.1.gcp.databricks.com.'
       ),
-  )
-  parser.add_argument(
-      '--unity-catalog-name',
-      help='Name of the catalog in Unity Catalog.',
   )
   parser.add_argument(
       '--refresh-interval',
@@ -244,6 +255,37 @@ def AddUpdateFederatedCatalogArgs(parser):
   )
 
 
+def AddDefaultLocationArg(parser):
+  """Adds argument for default location. Used for BigLake catalogs."""
+  parser.add_argument(
+      '--default-location',
+      type=util.GcsBucketLinkValidator,
+      help=(
+          'Can only be used with BigLake catalogs. The default'
+          ' storage location for the catalog, e.g., `gs://my-bucket/...`.'
+      ),
+  )
+
+
+def AddRestrictedLocationsArg(parser):
+  """Adds argument for restricted locations. Used for BigLake catalogs."""
+  parser.add_argument(
+      '--restricted-locations',
+      type=arg_parsers.ArgList(element_type=util.GcsBucketLinkValidator),
+      metavar='LOCATION',
+      help=(
+          'Additional Google Cloud Storage buckets and locations (e.g.,'
+          ' `gs://my-other-bucket/...`) that are permitted for use by'
+          ' resources within a catalog. This field is currently only used'
+          ' for BigLake catalogs.'
+          'If `restricted_locations` is empty and unrestricted catalog'
+          ' creation is enabled, all accessible locations are allowed.'
+          ' Otherwise, only `default_location` and locations in this'
+          ' list are allowed.'
+      ),
+  )
+
+
 def AddGlueAwsRoleArnArg(parser):
   """Adds Glue AWS role ARN argument."""
   parser.add_argument(
@@ -252,4 +294,32 @@ def AddGlueAwsRoleArnArg(parser):
           'The AWS role ARN of the Glue catalog that the BigLake federated'
           ' catalog will assume to access the catalog.'
       ),
+  )
+
+
+def AddSnowflakeCatalogArgs(parser):
+  """Adds arguments for Snowflake catalogs."""
+  parser.add_argument(
+      '--snowflake-warehouse',
+      hidden=True,
+      help='The warehouse to connect to in Snowflake.',
+  )
+  parser.add_argument(
+      '--snowflake-account-identifier',
+      hidden=True,
+      help='The account identifier of the Snowflake catalog to connect to.',
+  )
+
+
+def AddWorkdayCatalogArgs(parser):
+  """Adds arguments for Workday catalogs."""
+  parser.add_argument(
+      '--workday-base-url',
+      hidden=True,
+      help='The base URL of the Workday instance.',
+  )
+  parser.add_argument(
+      '--workday-tenant',
+      hidden=True,
+      help='The Workday tenant name.',
   )

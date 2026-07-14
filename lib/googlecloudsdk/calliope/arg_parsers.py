@@ -260,13 +260,17 @@ def GetBinarySizePerUnit(suffix, type_abbr='B'):
   return _BINARY_SIZE_SCALES.get(unit)
 
 
-def _ValueParser(scales,
-                 default_unit,
-                 lower_bound=None,
-                 upper_bound=None,
-                 strict_case=True,
-                 type_abbr='B',
-                 suggested_binary_size_scales=None):
+def _ValueParser(
+    scales,
+    default_unit,
+    lower_bound=None,
+    upper_bound=None,
+    strict_case=True,
+    type_abbr='B',
+    suggested_binary_size_scales=None,
+    target_unit=None,
+    allow_float=False,
+):
   """A helper that returns a function that can parse values with units.
 
   Casing for all units matters.
@@ -283,10 +287,24 @@ def _ValueParser(scales,
       bits/sec.
     suggested_binary_size_scales: list, A list of strings with units that will
       be recommended to user.
+    target_unit: str, optional target unit to convert the parsed value into.
+    allow_float: bool, whether to allow returning float values when target_unit
+      is specified.
 
   Returns:
     A function that can parse values.
   """
+  if target_unit:
+    target_unit_check = _DeleteTypeAbbr(target_unit, type_abbr)
+    if not strict_case:
+      target_unit_check = target_unit_check.upper()
+    scales_check = (
+        scales
+        if strict_case
+        else dict([(k.upper(), v) for k, v in scales.items()])
+    )
+    if target_unit_check not in scales_check:
+      raise ValueError('Unknown target_unit: {0}'.format(target_unit))
 
   def UnitsByMagnitude(suggested_binary_size_scales=None):
     """Returns a list of the units in scales sorted by magnitude."""
@@ -323,20 +341,38 @@ def _ValueParser(scales,
       unit_case = unit
       default_unit_case = _DeleteTypeAbbr(default_unit, type_abbr)
       scales_case = scales
+      if target_unit:
+        target_unit_case = _DeleteTypeAbbr(target_unit, type_abbr)
     else:
       unit_case = unit.upper()
       default_unit_case = _DeleteTypeAbbr(default_unit.upper(), type_abbr)
       scales_case = dict([(k.upper(), v) for k, v in scales.items()])
+      if target_unit:
+        target_unit_case = _DeleteTypeAbbr(target_unit.upper(), type_abbr)
 
     if not unit and unit == suffix:
-      return amount * scales_case[default_unit_case]
+      return_value = amount * scales_case[default_unit_case]
     elif unit_case in scales_case:
-      return amount * scales_case[unit_case]
+      return_value = amount * scales_case[unit_case]
     else:
       raise ArgumentTypeError(
           _GenerateErrorMessage(
               'unit must be one of {0}'.format(', '.join(UnitsByMagnitude())),
               user_input=unit))
+
+    if target_unit:
+      converted = return_value / scales_case[target_unit_case]
+      if allow_float:
+        return converted
+      if converted.is_integer():
+        return int(converted)
+      raise ArgumentTypeError(
+          _GenerateErrorMessage(
+              'value must be a whole number of {0}'.format(target_unit),
+              user_input=value,
+          )
+      )
+    return return_value
 
   if lower_bound is None:
     parsed_lower_bound = None
@@ -530,11 +566,15 @@ def Duration(default_unit='s',
   return ParseWithBoundsChecking
 
 
-def BinarySize(lower_bound=None,
-               upper_bound=None,
-               suggested_binary_size_scales=None,
-               default_unit='G',
-               type_abbr='B'):
+def BinarySize(
+    lower_bound=None,
+    upper_bound=None,
+    suggested_binary_size_scales=None,
+    default_unit='G',
+    type_abbr='B',
+    target_unit=None,
+    allow_float=False,
+):
   """Returns a function that can parse binary sizes.
 
   Binary sizes are defined as base-2 values representing number of
@@ -566,6 +606,9 @@ def BinarySize(lower_bound=None,
     default_unit: str, unit used when user did not specify unit.
     type_abbr: str, the type suffix abbreviation, e.g., B for bytes, b/s for
       bits/sec.
+    target_unit: str, optional target unit to convert the parsed value into.
+    allow_float: bool, whether to allow returning float values when target_unit
+      is specified.
 
   Raises:
     ArgumentTypeError: If either the lower_bound or upper_bound
@@ -585,7 +628,10 @@ def BinarySize(lower_bound=None,
       upper_bound=upper_bound,
       strict_case=False,
       type_abbr=type_abbr,
-      suggested_binary_size_scales=suggested_binary_size_scales)
+      suggested_binary_size_scales=suggested_binary_size_scales,
+      target_unit=target_unit,
+      allow_float=allow_float,
+  )
 
 
 _KV_PAIR_DELIMITER = '='

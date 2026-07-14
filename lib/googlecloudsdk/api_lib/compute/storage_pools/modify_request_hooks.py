@@ -14,10 +14,8 @@
 # limitations under the License.
 """Modify request hooks, specifically for storage-pool related ones."""
 
-import json
 from typing import Any, List, Optional
 
-from apitools.base.py import encoding
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -66,33 +64,25 @@ def _create_project_map(
     messages: Any,
     *,
     projects_to_add: Optional[List[str]] = None,
-    projects_to_remove: Optional[List[str]] = None
 ) -> Any:
   """Creates a ProjectMapValue object for ShareSettings.
 
   This can be used for create (POST) or update (PATCH) operations, building
-  the projectMap based on projects to add and projects to remove.
+  the projectMap based on projects to add.
 
   Args:
     messages: The API messages module.
     projects_to_add: A list of project IDs to add to the share settings.
-    projects_to_remove: A list of project IDs to remove from the share
-      settings (by setting their value to null in PATCH).
 
   Returns:
     A messages.StoragePoolShareSettings.ProjectMapValue object.
   """
   projects_to_add = set(projects_to_add or [])
-  projects_to_remove = set(projects_to_remove or [])
   project_map_entry_type = (
       messages.StoragePoolShareSettings.ProjectMapValue.AdditionalProperty
   )
   project_info_type = messages.StoragePoolShareSettingsProjectConfig
 
-  removed_properties = [
-      project_map_entry_type(key=project, value=None)
-      for project in projects_to_remove
-  ]
   added_properties = [
       project_map_entry_type(
           key=project, value=project_info_type(projectId=project)
@@ -101,7 +91,7 @@ def _create_project_map(
   ]
 
   properties = sorted(
-      removed_properties + added_properties, key=lambda p: p.key
+      added_properties, key=lambda p: p.key
   )
 
   return messages.StoragePoolShareSettings.ProjectMapValue(
@@ -135,48 +125,6 @@ def add_shared_with_to_payload(_, args: Any, request_msg: Any) -> Any:
   )
   request_msg.storagePool.shareSettings = share_settings
   return request_msg
-
-
-def _remove_share_with_encoder(
-    message: Any, unused_encoder: Optional[Any] = None
-) -> str:
-  """Encoder for use when removing a share with.
-
-  It ensures that properties with null values are correctly encoded in the
-  JSON payload for PATCH requests.
-
-  Args:
-    message: The message to encode.
-    unused_encoder: The base encoder, unused.
-
-  Returns:
-    JSON string representation of the message.
-  """
-  res = {
-      prop.key: None if prop.value is None else encoding.MessageToDict(prop.value)
-      for prop in message.additionalProperties
-  }
-  return json.dumps(res)
-
-
-def _remove_share_with_decoder(s: Any, messages: Any) -> Any:
-  """Decoder for use when removing a share with.
-
-  It works around issues with proto encoding of AdditionalProperties with null
-  values by directly decoding a dict of keys with None values into json,
-  skipping proto-based decoding.
-
-  Args:
-    s: a string representing a JSON dictionary of keys with None values.
-    messages: The API messages module.
-
-  Returns:
-    A messages.StoragePoolShareSettings.ProjectMapValue object.
-  """
-  if not isinstance(s, (str, bytes)):
-    return s
-  py_object = json.loads(s)
-  return _create_project_map(messages, projects_to_add=py_object.keys())
 
 
 def modify_share_settings(_, args: Any, request_msg: Any) -> Any:
@@ -215,11 +163,6 @@ def modify_share_settings(_, args: Any, request_msg: Any) -> Any:
 
   if args.IsSpecified('remove_share_with'):
     _validate_project_list_flag(args, 'remove_share_with')
-    def decoder(s: Any) -> Any:
-      return _remove_share_with_decoder(s, messages)
-    encoding.RegisterCustomMessageCodec(
-        encoder=_remove_share_with_encoder, decoder=decoder
-    )(messages.StoragePoolShareSettings.ProjectMapValue)
 
   if args.IsSpecified('add_share_with'):
     _validate_project_list_flag(args, 'add_share_with')
@@ -235,12 +178,15 @@ def modify_share_settings(_, args: Any, request_msg: Any) -> Any:
         ' in both flag lists',
     )
 
+  project_map = None
+  if args.add_share_with:
+    project_map = _create_project_map(
+        messages,
+        projects_to_add=args.add_share_with,
+    )
+
   share_settings = messages.StoragePoolShareSettings(
-      projectMap=_create_project_map(
-          messages,
-          projects_to_add=args.add_share_with,
-          projects_to_remove=args.remove_share_with,
-      ),
+      projectMap=project_map,
   )
   if request_msg.storagePoolResource is None:
     request_msg.storagePoolResource = messages.StoragePool()
@@ -251,6 +197,7 @@ def modify_share_settings(_, args: Any, request_msg: Any) -> Any:
       if request_msg.updateMask
       else set()
   )
-  current_masks.add('shareSettings')
+  for project in added | removed:
+    current_masks.add(f'shareSettings.projectMap.{project}')
   request_msg.updateMask = ','.join(sorted(filter(None, current_masks)))
   return request_msg

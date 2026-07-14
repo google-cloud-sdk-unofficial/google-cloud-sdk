@@ -437,17 +437,17 @@ consumer_group_view:
     enum_value: CONSUMER_GROUP_VIEW_FULL
     help_text: Include all available fields (topics, partitions).
 
-public-endpoint:
-  arg_name: public-endpoint
+public-cluster:
+  arg_name: public-cluster
   action: store_true_false
   help_text: |
-    Enable public endpoint for the cluster. If disabled, public endpoint is cleared.
-    Use --public-endpoint to enable it, and --no-public-endpoint to disable it.
+    Enable a public cluster. If disabled, public cluster config is cleared.
+    Use --public-cluster to enable it, and --no-public-cluster to disable it.
 
 allowed-source-ip-ranges:
   arg_name: allowed-source-ip-ranges
   type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
   help_text: |
     A comma-separated list of IPv4 ranges in CIDR notation that are allowed to connect
-    to the public endpoints. Use this flag only if --public-endpoint is enabled.
-    Example: --allowed-source-ip-ranges=192.168.1.0/24,10.0.0.0/8
+    to the public cluster. Use this flag only if --public-cluster is enabled.
+    Example: --allowed-source-ip-ranges=203.0.113.0/24,198.51.100.0/24

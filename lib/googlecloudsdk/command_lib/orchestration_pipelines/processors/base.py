@@ -25,7 +25,16 @@ from googlecloudsdk.core import log
 
 
 class ActionProcessor:
-  """Base class for engine-specific action processors."""
+  """Base class for engine-specific action processors.
+
+  Attributes:
+    action: The action dictionary being processed.
+    LIBS_EXTRACT_DIR: The directory name where libraries are extracted.
+    full_python_path: The full path to the Python site-packages.
+    requirements_path: The path to the requirements file.
+    existing_cluster_image_version: The version of the existing cluster image,
+      if applicable.
+  """
 
   LIBS_EXTRACT_DIR = "libs"
 
@@ -46,6 +55,7 @@ class ActionProcessor:
     self._defaults = defaults
     self.full_python_path = None
     self.requirements_path = requirements_path
+    self.existing_cluster_image_version = None
 
   def process_action(self):
     """Processes a single action in the pipeline, resolving local paths to GCS URIs."""

@@ -218,7 +218,11 @@
       arg_name: group-key
       type: str
       help_text: Google Group ID whose members are subject to the restrictions of this binding.
-      required: false
+      GA:
+        help_text: |
+          Google Group ID whose members are subject to the restrictions of this
+          binding. At most one of `--group-key` or `--federated-principal` may be
+          specified.
       ALPHA:
         help_text: |
           Google Group ID whose members are subject to the restrictions of this
@@ -368,14 +372,21 @@
     - api_field: gcpUserAccessBinding.principal.federatedPrincipal
       arg_name: federated-principal
       required: false
-      release_tracks: [ALPHA]
+      release_tracks: [GA, ALPHA]
       type: str
-      help_text: |
-        IAM federated principal that this binding applies to. Can be a single
-        principal or a principal set. Used to assign policies to third-party
-        workforce or workload identities. At most one of `--group-key`,
-        `--federated-principal`, `--service-account`, or
-        `--service-account-project-number` may be specified.
+      GA:
+        help_text: |
+          IAM federated principal that this binding applies to. Can be a single
+          principal or a principal set. Used to assign policies to third-party
+          workforce or workload identities. At most one of `--group-key` or
+          `--federated-principal` may be specified.
+      ALPHA:
+        help_text: |
+          IAM federated principal that this binding applies to. Can be a single
+          principal or a principal set. Used to assign policies to third-party
+          workforce or workload identities. At most one of `--group-key`,
+          `--federated-principal`, `--service-account`, or
+          `--service-account-project-number` may be specified.
 
   output:
     format: yaml

@@ -18,6 +18,8 @@
 - release_tracks:
   - BETA
   auto_generated: true
+  hints:
+    read_only: true
   help_text:
     brief: Describe migration workflows
     description: Describe a migration workflow

@@ -60,9 +60,11 @@ class ComputeBeta(base_api.BaseApiClient):
     self.globalPublicDelegatedPrefixes = self.GlobalPublicDelegatedPrefixesService(self)
     self.globalVmExtensionPolicies = self.GlobalVmExtensionPoliciesService(self)
     self.healthChecks = self.HealthChecksService(self)
+    self.hosts = self.HostsService(self)
     self.httpHealthChecks = self.HttpHealthChecksService(self)
     self.httpsHealthChecks = self.HttpsHealthChecksService(self)
     self.imageFamilyViews = self.ImageFamilyViewsService(self)
+    self.imageViews = self.ImageViewsService(self)
     self.images = self.ImagesService(self)
     self.instanceGroupManagerResizeRequests = self.InstanceGroupManagerResizeRequestsService(self)
     self.instanceGroupManagers = self.InstanceGroupManagersService(self)
@@ -5366,6 +5368,94 @@ included in the request.
         supports_download=False,
     )
 
+  class HostsService(base_api.BaseApiService):
+    """Service class for the hosts resource."""
+
+    _NAME = 'hosts'
+
+    def __init__(self, client):
+      super(ComputeBeta.HostsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Retrieves information about the specified host.
+
+      Args:
+        request: (ComputeHostsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Host) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.hosts.get',
+        ordered_params=['project', 'zone', 'association', 'host'],
+        path_params=['association', 'host', 'project', 'zone'],
+        query_params=[],
+        relative_path='projects/{project}/zones/{zone}/{association}/hosts/{host}',
+        request_field='',
+        request_type_name='ComputeHostsGetRequest',
+        response_type_name='Host',
+        supports_download=False,
+    )
+
+    def GetVersion(self, request, global_params=None):
+      r"""Allows customers to get SBOM versions of a host.
+
+      Args:
+        request: (ComputeHostsGetVersionRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('GetVersion')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetVersion.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.hosts.getVersion',
+        ordered_params=['project', 'zone', 'association', 'host'],
+        path_params=['association', 'host', 'project', 'zone'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/zones/{zone}/{association}/hosts/{host}/getVersion',
+        request_field='hostsGetVersionRequest',
+        request_type_name='ComputeHostsGetVersionRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Retrieves a list of hosts.
+
+      Args:
+        request: (ComputeHostsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (HostsListResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.hosts.list',
+        ordered_params=['project', 'zone', 'association'],
+        path_params=['association', 'project', 'zone'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
+        relative_path='projects/{project}/zones/{zone}/{association}/hosts',
+        request_field='',
+        request_type_name='ComputeHostsListRequest',
+        response_type_name='HostsListResponse',
+        supports_download=False,
+    )
+
   class HttpHealthChecksService(base_api.BaseApiService):
     """Service class for the httpHealthChecks resource."""
 
@@ -5796,6 +5886,43 @@ deprecated and is rolled out in the specified zone.
         request_field='',
         request_type_name='ComputeImageFamilyViewsGetRequest',
         response_type_name='ImageFamilyView',
+        supports_download=False,
+    )
+
+  class ImageViewsService(base_api.BaseApiService):
+    """Service class for the imageViews resource."""
+
+    _NAME = 'imageViews'
+
+    def __init__(self, client):
+      super(ComputeBeta.ImageViewsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Returns the specified global ImageView resource, with a regional.
+context.
+
+      Args:
+        request: (ComputeImageViewsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ImageView) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.imageViews.get',
+        ordered_params=['project', 'region', 'resourceId'],
+        path_params=['project', 'region', 'resourceId'],
+        query_params=[],
+        relative_path='projects/{project}/regions/{region}/imageViews/{resourceId}',
+        request_field='',
+        request_type_name='ComputeImageViewsGetRequest',
+        response_type_name='ImageView',
         supports_download=False,
     )
 

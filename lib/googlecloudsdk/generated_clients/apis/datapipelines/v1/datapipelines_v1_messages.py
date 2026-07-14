@@ -678,8 +678,8 @@ class GoogleCloudDatapipelinesV1Pipeline(_messages.Message):
 
   Messages:
     PipelineSourcesValue: Immutable. The sources of the pipeline (for example,
-      Dataplex). The keys and values are set by the corresponding sources
-      during pipeline creation.
+      Knowledge Catalog). The keys and values are set by the corresponding
+      sources during pipeline creation.
 
   Fields:
     createTime: Output only. Immutable. The timestamp when the pipeline was
@@ -705,8 +705,8 @@ class GoogleCloudDatapipelinesV1Pipeline(_messages.Message):
       `PIPELINE_ID` is the ID of the pipeline. Must be unique for the selected
       project and location.
     pipelineSources: Immutable. The sources of the pipeline (for example,
-      Dataplex). The keys and values are set by the corresponding sources
-      during pipeline creation.
+      Knowledge Catalog). The keys and values are set by the corresponding
+      sources during pipeline creation.
     scheduleInfo: Internal scheduling information for a pipeline. If this
       information is provided, periodic jobs will be created per the schedule.
       If not, users are responsible for creating jobs externally.
@@ -771,9 +771,9 @@ class GoogleCloudDatapipelinesV1Pipeline(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class PipelineSourcesValue(_messages.Message):
-    r"""Immutable. The sources of the pipeline (for example, Dataplex). The
-    keys and values are set by the corresponding sources during pipeline
-    creation.
+    r"""Immutable. The sources of the pipeline (for example, Knowledge
+    Catalog). The keys and values are set by the corresponding sources during
+    pipeline creation.
 
     Messages:
       AdditionalProperty: An additional property for a PipelineSourcesValue

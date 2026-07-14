@@ -37,11 +37,12 @@ table(
 
 _PROJECT_SCOPE_SUPPORTED_TRACKS = (
     base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
 )
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List WildFire Analysis Security Profiles."""
 

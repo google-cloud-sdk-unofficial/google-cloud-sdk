@@ -6873,9 +6873,14 @@ class APIAdapter(object):
     _AddSandboxConfigToNodeConfig(node_config, options, self.messages)
     _AddWindowsNodeConfigToNodeConfig(node_config, options, self.messages)
 
-    if options.runner_pool_control_mode == 'confidential':
+    if options.runner_pool_control_mode in ('confidential', 'standard'):
+      mode_enum = (
+          self.messages.RunnerPoolControl.ModeValueValuesEnum.CONFIDENTIAL
+          if options.runner_pool_control_mode == 'confidential'
+          else self.messages.RunnerPoolControl.ModeValueValuesEnum.STANDARD
+      )
       node_config.runnerPoolControl = self.messages.RunnerPoolControl(
-          mode=self.messages.RunnerPoolControl.ModeValueValuesEnum.CONFIDENTIAL
+          mode=mode_enum
       )
       if options.linked_runner_subnet:
         node_config.runnerPoolControl.networkConfig = (

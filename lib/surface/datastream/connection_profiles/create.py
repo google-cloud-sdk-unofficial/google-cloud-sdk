@@ -114,6 +114,9 @@ class Create(base.Command):
     cp_flags.AddSpannerProfileCreateGroup(profile_flags)
     cp_flags.AddGcsProfileGroup(profile_flags, release_track)
     cp_flags.AddMongodbProfileGroup(profile_flags)
+    cp_flags.AddDataverseProfileGroup(profile_flags)
+    cp_flags.AddSalesforceMarketingCloudProfileGroup(profile_flags)
+    cp_flags.AddServiceNowProfileGroup(profile_flags)
     flags.AddLabelsCreateFlags(parser)
 
   @staticmethod
@@ -167,6 +170,22 @@ class Create(base.Command):
       )
     if args.mongodb_prompt_for_password:
       args.mongodb_password = console_io.PromptPassword(
+          'Please Enter Password: '
+      )
+    if args.dataverse_prompt_for_oauth_client_secret:
+      args.dataverse_oauth_client_secret = console_io.PromptPassword(
+          'Please Enter OAuth 2.0 Client Secret: '
+      )
+    if args.salesforce_marketing_cloud_prompt_for_oauth_client_secret:
+      args.salesforce_marketing_cloud_oauth_client_secret = (
+          console_io.PromptPassword('Please Enter OAuth 2.0 Client Secret: ')
+      )
+    if args.servicenow_prompt_for_oauth_client_secret:
+      args.servicenow_oauth_client_secret = console_io.PromptPassword(
+          'Please Enter OAuth 2.0 Client Secret: '
+      )
+    if args.servicenow_prompt_for_password:
+      args.servicenow_password = console_io.PromptPassword(
           'Please Enter Password: '
       )
 

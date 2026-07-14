@@ -33,5 +33,5 @@ properties:
     items:
       $ref: SalesforceField.yaml
   objectName:
-    description: Object name.
+    description: The object name.
     type: string

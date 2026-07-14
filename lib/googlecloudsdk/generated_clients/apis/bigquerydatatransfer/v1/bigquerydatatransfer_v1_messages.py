@@ -1214,6 +1214,18 @@ class DataSourceParameter(_messages.Message):
   validationRegex = _messages.StringField(17)
 
 
+class DataplexConfiguration(_messages.Message):
+  r"""Configuration for Dataplex destination.
+
+  Fields:
+    entryGroup: Required. The Dataplex Universal Catalog entry group for
+      importing the metadata. entry_group has the format of
+      `projects/{project_id}/locations/{region}/entryGroups/{entry_group_id}`.
+  """
+
+  entryGroup = _messages.StringField(1)
+
+
 class EmailPreferences(_messages.Message):
   r"""Represents preferences for sending email notifications for transfer run
   events.
@@ -1450,6 +1462,16 @@ class Location(_messages.Message):
 
 class ManualSchedule(_messages.Message):
   r"""Options customizing manual transfers schedule."""
+
+
+class MetadataDestination(_messages.Message):
+  r"""The metadata destination of the transfer config.
+
+  Fields:
+    dataplexConfiguration: The Dataplex Universal Catalog configuration.
+  """
+
+  dataplexConfiguration = _messages.MessageField('DataplexConfiguration', 1)
 
 
 class PartitionDetail(_messages.Message):
@@ -1781,6 +1803,7 @@ class TransferConfig(_messages.Message):
     error: Output only. Error code with detailed information about reason of
       the latest config failure.
     managedTableType: The classification of the destination table.
+    metadataDestination: The metadata destination of the transfer config.
     name: Identifier. The resource name of the transfer config. Transfer
       config names have the form either
       `projects/{project_id}/locations/{region}/transferConfigs/{config_id}`
@@ -1893,17 +1916,18 @@ class TransferConfig(_messages.Message):
   encryptionConfiguration = _messages.MessageField('EncryptionConfiguration', 8)
   error = _messages.MessageField('Status', 9)
   managedTableType = _messages.EnumField('ManagedTableTypeValueValuesEnum', 10)
-  name = _messages.StringField(11)
-  nextRunTime = _messages.StringField(12)
-  notificationPubsubTopic = _messages.StringField(13)
-  ownerInfo = _messages.MessageField('UserInfo', 14)
-  params = _messages.MessageField('ParamsValue', 15)
-  schedule = _messages.StringField(16)
-  scheduleOptions = _messages.MessageField('ScheduleOptions', 17)
-  scheduleOptionsV2 = _messages.MessageField('ScheduleOptionsV2', 18)
-  state = _messages.EnumField('StateValueValuesEnum', 19)
-  updateTime = _messages.StringField(20)
-  userId = _messages.IntegerField(21)
+  metadataDestination = _messages.MessageField('MetadataDestination', 11)
+  name = _messages.StringField(12)
+  nextRunTime = _messages.StringField(13)
+  notificationPubsubTopic = _messages.StringField(14)
+  ownerInfo = _messages.MessageField('UserInfo', 15)
+  params = _messages.MessageField('ParamsValue', 16)
+  schedule = _messages.StringField(17)
+  scheduleOptions = _messages.MessageField('ScheduleOptions', 18)
+  scheduleOptionsV2 = _messages.MessageField('ScheduleOptionsV2', 19)
+  state = _messages.EnumField('StateValueValuesEnum', 20)
+  updateTime = _messages.StringField(21)
+  userId = _messages.IntegerField(22)
 
 
 class TransferMessage(_messages.Message):
@@ -2055,6 +2079,8 @@ class TransferRun(_messages.Message):
     endTime: Output only. Time when transfer run ended. Parameter ignored by
       server for input requests.
     errorStatus: Status of the transfer run.
+    metadataDestination: Output only. The metadata destination of the transfer
+      run.
     name: Identifier. The resource name of the transfer run. Transfer run
       names have the form `projects/{project_id}/locations/{location}/transfer
       Configs/{config_id}/runs/{run_id}`. The name is ignored when creating a
@@ -2136,16 +2162,17 @@ class TransferRun(_messages.Message):
   emailPreferences = _messages.MessageField('EmailPreferences', 3)
   endTime = _messages.StringField(4)
   errorStatus = _messages.MessageField('Status', 5)
-  name = _messages.StringField(6)
-  notificationPubsubTopic = _messages.StringField(7)
-  params = _messages.MessageField('ParamsValue', 8)
-  runTime = _messages.StringField(9)
-  schedule = _messages.StringField(10)
-  scheduleTime = _messages.StringField(11)
-  startTime = _messages.StringField(12)
-  state = _messages.EnumField('StateValueValuesEnum', 13)
-  updateTime = _messages.StringField(14)
-  userId = _messages.IntegerField(15)
+  metadataDestination = _messages.MessageField('MetadataDestination', 6)
+  name = _messages.StringField(7)
+  notificationPubsubTopic = _messages.StringField(8)
+  params = _messages.MessageField('ParamsValue', 9)
+  runTime = _messages.StringField(10)
+  schedule = _messages.StringField(11)
+  scheduleTime = _messages.StringField(12)
+  startTime = _messages.StringField(13)
+  state = _messages.EnumField('StateValueValuesEnum', 14)
+  updateTime = _messages.StringField(15)
+  userId = _messages.IntegerField(16)
 
 
 class TransferRunBrief(_messages.Message):

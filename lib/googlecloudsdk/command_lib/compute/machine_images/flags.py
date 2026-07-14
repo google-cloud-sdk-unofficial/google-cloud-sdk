@@ -150,7 +150,7 @@ def AddPrivateNetworkIpArgs(parser):
 
 def AddDiskFilterArgs(parser):
   """Adds exclusion and inclusion filters for machine image disks."""
-  group = parser.add_mutually_exclusive_group(hidden=True)
+  group = parser.add_mutually_exclusive_group()
   group.add_argument(
       '--exclude-disks',
       metavar=DISK_FILTER_FORMAT,
@@ -161,17 +161,15 @@ def AddDiskFilterArgs(parser):
         Cannot be used in conjunction with --include-disks.
       """,
       type=arg_parsers.ArgList(min_length=1),
-      hidden=True,
   )
   group.add_argument(
       '--include-disks',
       metavar=DISK_FILTER_FORMAT,
       help="""\
         Specifies a filter for disks to be included in the machine image.
-        The filter is a comma-separated list of disk device names. Always
-        include the boot disk device name.
+        The filter is a comma-separated list of disk device names and must
+        always include the boot disk's device name.
         Cannot be used in conjunction with --exclude-disks.
       """,
       type=arg_parsers.ArgList(min_length=1),
-      hidden=True,
   )

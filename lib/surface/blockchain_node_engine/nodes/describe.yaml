@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA]
+  hints:
+    read_only: true
   help_text:
     brief: Describe a Blockchain Node Engine node.
     description: Describe a Blockchain Node Engine node configuration and state.

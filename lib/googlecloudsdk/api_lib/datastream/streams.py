@@ -81,6 +81,12 @@ class StreamsClient:
               self._messages, args.mongodb_excluded_objects
           )
       )
+    elif args.IsSpecified('saas_excluded_objects'):
+      return self._messages.BackfillAllStrategy(
+          saasExcludedObjects=util.ParseSourceCatalogFile(
+              self._messages, args.saas_excluded_objects
+          )
+      )
     return self._messages.BackfillAllStrategy()
 
   def _ParseOracleSourceConfig(self, oracle_source_config_file, release_track):
@@ -240,6 +246,32 @@ class StreamsClient:
         self._messages.MongodbSourceConfig,
     )
 
+  def _ParseDataverseSourceConfig(self, dataverse_source_config_file):
+    """Parses a dataverse_source_config into the DataverseSourceConfig message."""
+    return util.ParseMessageAndValidateSchema(
+        dataverse_source_config_file,
+        'DataverseSourceConfig',
+        self._messages.DataverseSourceConfig,
+    )
+
+  def _ParseSalesforceMarketingCloudSourceConfig(
+      self, salesforce_marketing_cloud_source_config_file
+  ):
+    """Parses a salesforce_marketing_cloud_source_config into the SalesforceMarketingCloudSourceConfig message."""
+    return util.ParseMessageAndValidateSchema(
+        salesforce_marketing_cloud_source_config_file,
+        'SalesforceMarketingCloudSourceConfig',
+        self._messages.SalesforceMarketingCloudSourceConfig,
+    )
+
+  def _ParseServiceNowSourceConfig(self, servicenow_source_config_file):
+    """Parses a servicenow_source_config into the ServiceNowSourceConfig message."""
+    return util.ParseMessageAndValidateSchema(
+        servicenow_source_config_file,
+        'ServiceNowSourceConfig',
+        self._messages.ServiceNowSourceConfig,
+    )
+
   def _ParseGcsDestinationConfig(
       self, gcs_destination_config_file, release_track
   ):
@@ -358,6 +390,20 @@ class StreamsClient:
     elif args.mongodb_source_config:
       stream_source_config.mongodbSourceConfig = self._ParseMongodbSourceConfig(
           args.mongodb_source_config
+      )
+    elif args.dataverse_source_config:
+      stream_source_config.dataverseSourceConfig = (
+          self._ParseDataverseSourceConfig(args.dataverse_source_config)
+      )
+    elif args.salesforce_marketing_cloud_source_config:
+      stream_source_config.salesforceMarketingCloudSourceConfig = (
+          self._ParseSalesforceMarketingCloudSourceConfig(
+              args.salesforce_marketing_cloud_source_config
+          )
+      )
+    elif args.servicenow_source_config:
+      stream_source_config.serviceNowSourceConfig = (
+          self._ParseServiceNowSourceConfig(args.servicenow_source_config)
       )
     stream_obj.sourceConfig = stream_source_config
 
@@ -497,6 +543,31 @@ class StreamsClient:
       )
       update_fields = self._UpdateListWithFieldNamePrefixes(
           update_fields, 'spanner_source_config', 'source_config.'
+      )
+    elif args.IsSpecified('dataverse_source_config'):
+      stream.sourceConfig.dataverseSourceConfig = (
+          self._ParseDataverseSourceConfig(args.dataverse_source_config)
+      )
+      update_fields = self._UpdateListWithFieldNamePrefixes(
+          update_fields, 'dataverse_source_config', 'source_config.'
+      )
+    elif args.IsSpecified('salesforce_marketing_cloud_source_config'):
+      stream.sourceConfig.salesforceMarketingCloudSourceConfig = (
+          self._ParseSalesforceMarketingCloudSourceConfig(
+              args.salesforce_marketing_cloud_source_config
+          )
+      )
+      update_fields = self._UpdateListWithFieldNamePrefixes(
+          update_fields,
+          'salesforce_marketing_cloud_source_config',
+          'source_config.',
+      )
+    elif args.IsSpecified('servicenow_source_config'):
+      stream.sourceConfig.serviceNowSourceConfig = (
+          self._ParseServiceNowSourceConfig(args.servicenow_source_config)
+      )
+      update_fields = self._UpdateListWithFieldNamePrefixes(
+          update_fields, 'servicenow_source_config', 'source_config.'
       )
 
     # TODO(b/207467120): use source field only.

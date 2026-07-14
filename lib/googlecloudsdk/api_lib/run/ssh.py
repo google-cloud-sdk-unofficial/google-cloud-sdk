@@ -95,7 +95,10 @@ def _ValidateSSHEnabled(workload_json: dict[str, Any]) -> None:
       .get(k8s_object.SSH_ENABLED_ANNOTATION)
   )
   if ssh_enabled != "true":
-    raise ValueError("SSH is not enabled for this deployment.")
+    raise ValueError(
+        "SSH is not enabled for this deployment. Use the --ssh flag to enable"
+        " SSH for this deployment."
+    )
 
 
 def CreateSshTunnelArgs(

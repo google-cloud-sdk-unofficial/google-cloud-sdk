@@ -3463,6 +3463,8 @@ class Instance(_messages.Message):
       appears in UIs. Can be changed at any time, but should be kept globally
       unique to avoid confusion.
     edition: Optional. The edition of the instance. See Edition for details.
+    knowledgeCatalogRegion: Output only. The region where Knowledge Catalog
+      data is synced to and stored, including user-created aspects.
     labels: Labels are a flexible and lightweight mechanism for organizing
       cloud resources into groups that reflect a customer's organizational
       needs and deployment strategies. They can be used to filter resources
@@ -3599,13 +3601,14 @@ class Instance(_messages.Message):
   createTime = _messages.StringField(1)
   displayName = _messages.StringField(2)
   edition = _messages.EnumField('EditionValueValuesEnum', 3)
-  labels = _messages.MessageField('LabelsValue', 4)
-  name = _messages.StringField(5)
-  satisfiesPzi = _messages.BooleanField(6)
-  satisfiesPzs = _messages.BooleanField(7)
-  state = _messages.EnumField('StateValueValuesEnum', 8)
-  tags = _messages.MessageField('TagsValue', 9)
-  type = _messages.EnumField('TypeValueValuesEnum', 10)
+  knowledgeCatalogRegion = _messages.StringField(4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  name = _messages.StringField(6)
+  satisfiesPzi = _messages.BooleanField(7)
+  satisfiesPzs = _messages.BooleanField(8)
+  state = _messages.EnumField('StateValueValuesEnum', 9)
+  tags = _messages.MessageField('TagsValue', 10)
+  type = _messages.EnumField('TypeValueValuesEnum', 11)
 
 
 class Intersection(_messages.Message):

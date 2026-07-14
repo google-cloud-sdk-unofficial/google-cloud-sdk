@@ -5558,9 +5558,10 @@ class GoldengateOracleConnectionProperties(_messages.Message):
     authenticationMode: Optional. Authentication mode.
     connectionString: Optional. Connect descriptor or Easy Connect Naming
       method used to connect to a database.
-    gcpOracleDatabaseId: Optional. Database instance id of database in Oracle
-      Database @ Google Cloud. If gcp_oracle_database_id is provided,
-      connection_string must be empty.
+    gcpOracleDatabaseId: Optional. Autonomous AI Database instance id of
+      database in Oracle Database @ Google Cloud. If gcp_oracle_database_id is
+      provided, connection_string must be empty. Format: projects/{project}/lo
+      cations/{location}/autonomousDatabases/{autonomous_database}
     password: Optional. Input only. The password Oracle Goldengate uses in
       plain text.
     passwordSecretVersion: Optional. Input only. The resource name of a secret
@@ -8203,18 +8204,6 @@ class OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsTestRequest(
   testGoldengateConnectionAssignmentRequest = _messages.MessageField('TestGoldengateConnectionAssignmentRequest', 2)
 
 
-class OracledatabaseProjectsLocationsGoldengateConnectionTypesGetRequest(_messages.Message):
-  r"""A OracledatabaseProjectsLocationsGoldengateConnectionTypesGetRequest
-  object.
-
-  Fields:
-    name: Required. Name of the resource in the format: projects/{project}/loc
-      ations/{location}/goldengateConnectionTypes/{goldengate_connection_type}
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
 class OracledatabaseProjectsLocationsGoldengateConnectionTypesListRequest(_messages.Message):
   r"""A OracledatabaseProjectsLocationsGoldengateConnectionTypesListRequest
   object.
@@ -8326,20 +8315,6 @@ class OracledatabaseProjectsLocationsGoldengateConnectionsListRequest(_messages.
   parent = _messages.StringField(5, required=True)
 
 
-class OracledatabaseProjectsLocationsGoldengateDeploymentEnvironmentsGetRequest(_messages.Message):
-  r"""A
-  OracledatabaseProjectsLocationsGoldengateDeploymentEnvironmentsGetRequest
-  object.
-
-  Fields:
-    name: Required. Name of the resource with the format: projects/{project}/l
-      ocations/{location}/goldengateDeploymentEnvironments/{goldengate_deploym
-      ent_environment}
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
 class OracledatabaseProjectsLocationsGoldengateDeploymentEnvironmentsListRequest(_messages.Message):
   r"""A
   OracledatabaseProjectsLocationsGoldengateDeploymentEnvironmentsListRequest
@@ -8359,19 +8334,6 @@ class OracledatabaseProjectsLocationsGoldengateDeploymentEnvironmentsListRequest
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
-
-
-class OracledatabaseProjectsLocationsGoldengateDeploymentTypesGetRequest(_messages.Message):
-  r"""A OracledatabaseProjectsLocationsGoldengateDeploymentTypesGetRequest
-  object.
-
-  Fields:
-    name: Required. The name of the GoldengateDeploymentType to retrieve.
-      Format: projects/{project}/locations/{location}/goldengateDeploymentType
-      s/{goldengate_deployment_type}
-  """
-
-  name = _messages.StringField(1, required=True)
 
 
 class OracledatabaseProjectsLocationsGoldengateDeploymentTypesListRequest(_messages.Message):
@@ -8400,19 +8362,6 @@ class OracledatabaseProjectsLocationsGoldengateDeploymentTypesListRequest(_messa
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   parent = _messages.StringField(5, required=True)
-
-
-class OracledatabaseProjectsLocationsGoldengateDeploymentVersionsGetRequest(_messages.Message):
-  r"""A OracledatabaseProjectsLocationsGoldengateDeploymentVersionsGetRequest
-  object.
-
-  Fields:
-    name: Required. The name of the GoldengateDeploymentVersion to retrieve.
-      Format: projects/{project}/locations/{location}/goldengateDeploymentVers
-      ions/{goldengate_deployment_version}
-  """
-
-  name = _messages.StringField(1, required=True)
 
 
 class OracledatabaseProjectsLocationsGoldengateDeploymentVersionsListRequest(_messages.Message):

@@ -1135,10 +1135,11 @@ class SecurityCenterService(_messages.Message):
       ce}` The following values are valid for `{service}`: * `container-
       threat-detection` * `event-threat-detection` * `security-health-
       analytics` * `vm-threat-detection` * `web-security-scanner` * `vm-
-      threat-detection-aws` * `cloud-run-threat-detection` * `vm-manager` *
-      `ec2-vulnerability-assessment` * `gce-vulnerability-assessment` *
-      `azure-vulnerability-assessment` * `notebook-security-scanner` *
-      `artifact-analysis` * `agent-engine-threat-detection`
+      threat-detection-aws` * `cloud-run-threat-detection` * `external-
+      exposure` * `vm-manager` * `ec2-vulnerability-assessment` * `gce-
+      vulnerability-assessment` * `azure-vulnerability-assessment` *
+      `notebook-security-scanner` * `artifact-analysis` * `agent-engine-
+      threat-detection`
     serviceConfig: Optional. Additional service-specific configuration. Not
       all services will utilize this field.
     updateTime: Output only. The time the service was last updated. This could
@@ -1571,10 +1572,10 @@ class SecuritycentermanagementFoldersLocationsSecurityCenterServicesGetRequest(_
       The following values are valid for `{service}`: * `container-threat-
       detection` * `event-threat-detection` * `security-health-analytics` *
       `vm-threat-detection` * `web-security-scanner` * `vm-threat-detection-
-      aws` * `cloud-run-threat-detection` * `vm-manager` * `ec2-vulnerability-
-      assessment` * `gce-vulnerability-assessment` * `azure-vulnerability-
-      assessment` * `notebook-security-scanner` * `artifact-analysis` *
-      `agent-engine-threat-detection`
+      aws` * `cloud-run-threat-detection` * `external-exposure` * `vm-manager`
+      * `ec2-vulnerability-assessment` * `gce-vulnerability-assessment` *
+      `azure-vulnerability-assessment` * `notebook-security-scanner` *
+      `artifact-analysis` * `agent-engine-threat-detection`
     showEligibleModulesOnly: Optional. Indicates whether to show only modules
       that are available in your Security Command Center service tier. By
       default, all modules are shown.
@@ -1626,10 +1627,11 @@ class SecuritycentermanagementFoldersLocationsSecurityCenterServicesPatchRequest
       ce}` The following values are valid for `{service}`: * `container-
       threat-detection` * `event-threat-detection` * `security-health-
       analytics` * `vm-threat-detection` * `web-security-scanner` * `vm-
-      threat-detection-aws` * `cloud-run-threat-detection` * `vm-manager` *
-      `ec2-vulnerability-assessment` * `gce-vulnerability-assessment` *
-      `azure-vulnerability-assessment` * `notebook-security-scanner` *
-      `artifact-analysis` * `agent-engine-threat-detection`
+      threat-detection-aws` * `cloud-run-threat-detection` * `external-
+      exposure` * `vm-manager` * `ec2-vulnerability-assessment` * `gce-
+      vulnerability-assessment` * `azure-vulnerability-assessment` *
+      `notebook-security-scanner` * `artifact-analysis` * `agent-engine-
+      threat-detection`
     securityCenterService: A SecurityCenterService resource to be passed as
       the request body.
     updateMask: Optional. Required. The fields to update. Accepts the
@@ -2143,10 +2145,10 @@ class SecuritycentermanagementOrganizationsLocationsSecurityCenterServicesGetReq
       The following values are valid for `{service}`: * `container-threat-
       detection` * `event-threat-detection` * `security-health-analytics` *
       `vm-threat-detection` * `web-security-scanner` * `vm-threat-detection-
-      aws` * `cloud-run-threat-detection` * `vm-manager` * `ec2-vulnerability-
-      assessment` * `gce-vulnerability-assessment` * `azure-vulnerability-
-      assessment` * `notebook-security-scanner` * `artifact-analysis` *
-      `agent-engine-threat-detection`
+      aws` * `cloud-run-threat-detection` * `external-exposure` * `vm-manager`
+      * `ec2-vulnerability-assessment` * `gce-vulnerability-assessment` *
+      `azure-vulnerability-assessment` * `notebook-security-scanner` *
+      `artifact-analysis` * `agent-engine-threat-detection`
     showEligibleModulesOnly: Optional. Indicates whether to show only modules
       that are available in your Security Command Center service tier. By
       default, all modules are shown.
@@ -2196,10 +2198,11 @@ class SecuritycentermanagementOrganizationsLocationsSecurityCenterServicesPatchR
       ce}` The following values are valid for `{service}`: * `container-
       threat-detection` * `event-threat-detection` * `security-health-
       analytics` * `vm-threat-detection` * `web-security-scanner` * `vm-
-      threat-detection-aws` * `cloud-run-threat-detection` * `vm-manager` *
-      `ec2-vulnerability-assessment` * `gce-vulnerability-assessment` *
-      `azure-vulnerability-assessment` * `notebook-security-scanner` *
-      `artifact-analysis` * `agent-engine-threat-detection`
+      threat-detection-aws` * `cloud-run-threat-detection` * `external-
+      exposure` * `vm-manager` * `ec2-vulnerability-assessment` * `gce-
+      vulnerability-assessment` * `azure-vulnerability-assessment` *
+      `notebook-security-scanner` * `artifact-analysis` * `agent-engine-
+      threat-detection`
     securityCenterService: A SecurityCenterService resource to be passed as
       the request body.
     updateMask: Optional. Required. The fields to update. Accepts the
@@ -2744,10 +2747,10 @@ class SecuritycentermanagementProjectsLocationsSecurityCenterServicesGetRequest(
       The following values are valid for `{service}`: * `container-threat-
       detection` * `event-threat-detection` * `security-health-analytics` *
       `vm-threat-detection` * `web-security-scanner` * `vm-threat-detection-
-      aws` * `cloud-run-threat-detection` * `vm-manager` * `ec2-vulnerability-
-      assessment` * `gce-vulnerability-assessment` * `azure-vulnerability-
-      assessment` * `notebook-security-scanner` * `artifact-analysis` *
-      `agent-engine-threat-detection`
+      aws` * `cloud-run-threat-detection` * `external-exposure` * `vm-manager`
+      * `ec2-vulnerability-assessment` * `gce-vulnerability-assessment` *
+      `azure-vulnerability-assessment` * `notebook-security-scanner` *
+      `artifact-analysis` * `agent-engine-threat-detection`
     showEligibleModulesOnly: Optional. Indicates whether to show only modules
       that are available in your Security Command Center service tier. By
       default, all modules are shown.
@@ -2799,10 +2802,11 @@ class SecuritycentermanagementProjectsLocationsSecurityCenterServicesPatchReques
       ce}` The following values are valid for `{service}`: * `container-
       threat-detection` * `event-threat-detection` * `security-health-
       analytics` * `vm-threat-detection` * `web-security-scanner` * `vm-
-      threat-detection-aws` * `cloud-run-threat-detection` * `vm-manager` *
-      `ec2-vulnerability-assessment` * `gce-vulnerability-assessment` *
-      `azure-vulnerability-assessment` * `notebook-security-scanner` *
-      `artifact-analysis` * `agent-engine-threat-detection`
+      threat-detection-aws` * `cloud-run-threat-detection` * `external-
+      exposure` * `vm-manager` * `ec2-vulnerability-assessment` * `gce-
+      vulnerability-assessment` * `azure-vulnerability-assessment` *
+      `notebook-security-scanner` * `artifact-analysis` * `agent-engine-
+      threat-detection`
     securityCenterService: A SecurityCenterService resource to be passed as
       the request body.
     updateMask: Optional. Required. The fields to update. Accepts the

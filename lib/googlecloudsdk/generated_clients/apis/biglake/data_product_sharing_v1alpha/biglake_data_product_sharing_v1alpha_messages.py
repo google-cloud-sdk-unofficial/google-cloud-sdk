@@ -58,14 +58,18 @@ class PublishDataProductRequest(_messages.Message):
     dataProduct: Knowledge Catalog Data Product to publish.
     icebergCatalog: The BigLake Iceberg REST Catalog whose tables will be
       published.
-    sapFederatedIdentity: Required. The Workload Identity Federation (WIF)
-      provider resource name representing the SAP federated identity. SAP BDC
-      will use this identity to call access the BigLake Iceberg REST Catalog
-      underlying the shared tables. Note that a user must manually grant this
-      federated identity the necessary IAM permissions (e.g.,
-      `roles/biglake.viewer`) on the underlying catalog. Example:
+    sapFederatedIdentity: Optional. Deprecated. Use
+      sap_federated_identity_provider instead.
+    sapFederatedIdentityProvider: Optional. Required. The Workload Identity
+      Federation (WIF) provider resource name representing SAP's federated
+      identity provider. Example:
       projects/123456789012/locations/global/workloadIdentityPools/sap-bdc-
-      pool/providers/sap-bdc-provider
+      pool/providers/sap-bdc-provider When querying LakeHouse tables, SAP BDC
+      will use an identity within this federated identity pool. SAP will
+      construct the subject principal as follows: principal://iam.googleapis.c
+      om/projects//locations//workloadIdentityPools//subject/. Where is the
+      UUID of the SAP BDC tenant, extracted from the connector endpoint, for
+      example: https://123e4567-e89b-12d3-a456-426614174000.sharing.hdl...
     share: Required. The desired name of the Share as it will be published to
       SAP BDC.
   """
@@ -73,7 +77,8 @@ class PublishDataProductRequest(_messages.Message):
   dataProduct = _messages.MessageField('DataProductReference', 1)
   icebergCatalog = _messages.MessageField('IcebergCatalogReference', 2)
   sapFederatedIdentity = _messages.StringField(3)
-  share = _messages.StringField(4)
+  sapFederatedIdentityProvider = _messages.StringField(4)
+  share = _messages.StringField(5)
 
 
 class PublishDataProductResponse(_messages.Message):

@@ -103,6 +103,7 @@ from .types.traffic_target import TrafficTargetStatus
 from .types.traffic_target import TrafficTargetAllocationType
 from .types.vendor_settings import BinaryAuthorization
 from .types.vendor_settings import BuildConfig
+from .types.vendor_settings import CpuScaling
 from .types.vendor_settings import NodeSelector
 from .types.vendor_settings import RevisionScaling
 from .types.vendor_settings import ServiceMesh
@@ -139,6 +140,7 @@ __all__ = (
 'Condition',
 'Container',
 'ContainerPort',
+'CpuScaling',
 'CreateJobRequest',
 'CreateServiceRequest',
 'CreateWorkerPoolRequest',

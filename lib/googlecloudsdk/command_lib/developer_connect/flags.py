@@ -184,3 +184,17 @@ def AddSourceConfigArgument(parser):
       hidden=True,
       help='The source config of the git repository link.',
   )
+
+
+def AddCollectMetricsArgument(parser):
+  """Creates collect metrics argument."""
+  parser.add_argument(
+      '--collect-metrics',
+      action='store_true',
+      hidden=True,
+      help=(
+          'Collect metrics for the git repository link.'
+      ),
+  )
+
+

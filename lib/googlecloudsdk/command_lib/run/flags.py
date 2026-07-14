@@ -2386,19 +2386,28 @@ def AddOverflowScalingFlag(parser):
   )
 
 
-def AddCpuUtilizationFlag(parser):
+def AddCpuUtilizationFlag(
+    parser, *, hidden=False, resource_kind='service'
+) -> None:
   """Add flag to modify cpu utilization scaling target."""
+  help_text = (
+      'This represents the CPU utilization target threshold for scaling up'
+      ' new instances. Set any value between 0.1 and 0.95 inclusive. To'
+      ' unset this field, pass the special value "default". To disable this'
+      ' scaling factor, pass the value "disabled". Please note that values'
+      ' are rounded at the second decimal place.'
+  )
+  help_text += (
+      ' CPU and concurrency scaling cannot both be disabled.'
+      if resource_kind == 'service'
+      else ''
+  )
+
   parser.add_argument(
       '--scaling-cpu-target',
+      hidden=hidden,
       type=UtilizationValue,
-      help=(
-          'This represents the CPU utilization target threshold for scaling up'
-          ' new instances. Set any value between 0.1 and 0.95 inclusive. To'
-          ' unset this field, pass the special value "default". To disable this'
-          ' scaling factor, pass the value "disabled". Please note that values'
-          ' are rounded at the second decimal place, and that CPU and'
-          ' concurrency scaling cannot both be disabled.'
-      ),
+      help=help_text,
   )
 
 
@@ -3750,9 +3759,7 @@ def GetInstanceConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
     )
   if FlagIsExplicitlySet(args, 'restart_policy'):
     changes.append(
-        config_changes.RestartPolicyChange(
-            restart_policy=args.restart_policy
-        )
+        config_changes.RestartPolicyChange(restart_policy=args.restart_policy)
     )
 
   _PrependClientNameAndVersionChange(args, changes)
@@ -3957,7 +3964,8 @@ def PromptForRegion(parsed_args=None, release_track=None):
             prompt_string='Do you want to deploy to region {}'.format(
                 inferred_region
             ),
-            default=True):
+            default=True,
+        ):
           return inferred_region
 
     idx = console_io.PromptChoice(

@@ -262,6 +262,60 @@ class AgentidentityV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Disable(self, request, global_params=None):
+      r"""Disables a single AuthProvider.
+
+      Args:
+        request: (AgentidentityProjectsLocationsAuthProvidersDisableRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AuthProvider) The response message.
+      """
+      config = self.GetMethodConfig('Disable')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Disable.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/authProviders/{authProvidersId}:disable',
+        http_method='POST',
+        method_id='agentidentity.projects.locations.authProviders.disable',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:disable',
+        request_field='disableAuthProviderRequest',
+        request_type_name='AgentidentityProjectsLocationsAuthProvidersDisableRequest',
+        response_type_name='AuthProvider',
+        supports_download=False,
+    )
+
+    def Enable(self, request, global_params=None):
+      r"""Enables a single AuthProvider.
+
+      Args:
+        request: (AgentidentityProjectsLocationsAuthProvidersEnableRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AuthProvider) The response message.
+      """
+      config = self.GetMethodConfig('Enable')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Enable.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/authProviders/{authProvidersId}:enable',
+        http_method='POST',
+        method_id='agentidentity.projects.locations.authProviders.enable',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:enable',
+        request_field='enableAuthProviderRequest',
+        request_type_name='AgentidentityProjectsLocationsAuthProvidersEnableRequest',
+        response_type_name='AuthProvider',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Gets details of a single AuthProvider.
 

@@ -2035,6 +2035,8 @@ class ExternalExposure(_messages.Message):
       ingress firewall policy, for example,
       "//compute.googleapis.com/projects/{project-
       id}/global/firewallPolicies/{name}".
+    networkPathInsightsGenerationTime: The timestamp when the network
+      reachability trace was generated or verified.
     privateIpAddress: Private IP address of the exposed endpoint.
     privatePort: Port number associated with private IP address.
     pscNetworkAttachment: The full resource name of the PSC (Private Service
@@ -2066,13 +2068,14 @@ class ExternalExposure(_messages.Message):
   loadBalancerFirewallPolicy = _messages.StringField(11)
   networkEndpointGroup = _messages.StringField(12)
   networkIngressFirewallPolicy = _messages.StringField(13)
-  privateIpAddress = _messages.StringField(14)
-  privatePort = _messages.StringField(15)
-  pscNetworkAttachment = _messages.StringField(16)
-  pscServiceAttachment = _messages.StringField(17)
-  publicIpAddress = _messages.StringField(18)
-  publicPort = _messages.StringField(19)
-  serviceFirewallPolicy = _messages.StringField(20)
+  networkPathInsightsGenerationTime = _messages.StringField(14)
+  privateIpAddress = _messages.StringField(15)
+  privatePort = _messages.StringField(16)
+  pscNetworkAttachment = _messages.StringField(17)
+  pscServiceAttachment = _messages.StringField(18)
+  publicIpAddress = _messages.StringField(19)
+  publicPort = _messages.StringField(20)
+  serviceFirewallPolicy = _messages.StringField(21)
 
 
 class File(_messages.Message):
@@ -5564,6 +5567,8 @@ class GoogleCloudSecuritycenterV2ExternalExposure(_messages.Message):
       ingress firewall policy, for example,
       "//compute.googleapis.com/projects/{project-
       id}/global/firewallPolicies/{name}".
+    networkPathInsightsGenerationTime: The timestamp when the network
+      reachability trace was generated or verified.
     privateIpAddress: Private IP address of the exposed endpoint.
     privatePort: Port number associated with private IP address.
     pscNetworkAttachment: The full resource name of the PSC (Private Service
@@ -5595,13 +5600,14 @@ class GoogleCloudSecuritycenterV2ExternalExposure(_messages.Message):
   loadBalancerFirewallPolicy = _messages.StringField(11)
   networkEndpointGroup = _messages.StringField(12)
   networkIngressFirewallPolicy = _messages.StringField(13)
-  privateIpAddress = _messages.StringField(14)
-  privatePort = _messages.StringField(15)
-  pscNetworkAttachment = _messages.StringField(16)
-  pscServiceAttachment = _messages.StringField(17)
-  publicIpAddress = _messages.StringField(18)
-  publicPort = _messages.StringField(19)
-  serviceFirewallPolicy = _messages.StringField(20)
+  networkPathInsightsGenerationTime = _messages.StringField(14)
+  privateIpAddress = _messages.StringField(15)
+  privatePort = _messages.StringField(16)
+  pscNetworkAttachment = _messages.StringField(17)
+  pscServiceAttachment = _messages.StringField(18)
+  publicIpAddress = _messages.StringField(19)
+  publicPort = _messages.StringField(20)
+  serviceFirewallPolicy = _messages.StringField(21)
 
 
 class GoogleCloudSecuritycenterV2ExternalSystem(_messages.Message):

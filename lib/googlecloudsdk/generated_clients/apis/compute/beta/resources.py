@@ -184,6 +184,13 @@ class Collections(enum.Enum):
       ['project', 'healthCheck'],
       True
   )
+  HOSTS = (
+      'hosts',
+      'projects/{project}/zones/{zone}/{association}/hosts/{host}',
+      {},
+      ['project', 'zone', 'association', 'host'],
+      True
+  )
   HTTPHEALTHCHECKS = (
       'httpHealthChecks',
       'projects/{project}/global/httpHealthChecks/{httpHealthCheck}',
@@ -203,6 +210,13 @@ class Collections(enum.Enum):
       'projects/{project}/zones/{zone}/imageFamilyViews/{family}',
       {},
       ['project', 'zone', 'family'],
+      True
+  )
+  IMAGEVIEWS = (
+      'imageViews',
+      'projects/{project}/regions/{region}/imageViews/{resourceId}',
+      {},
+      ['project', 'region', 'resourceId'],
       True
   )
   IMAGES = (

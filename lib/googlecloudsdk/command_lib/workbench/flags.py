@@ -28,36 +28,6 @@ from googlecloudsdk.command_lib.workbench import completers
 from googlecloudsdk.core import properties
 
 
-# Gen-4 (and newer) Compute Engine machine series only support Hyperdisk and
-# do not support Persistent Disk types. When the user picks one of these
-# machine types without specifying a disk type, gcloud defaults boot and data
-# disk types to `GEN4_DEFAULT_DISK_TYPE`.
-GEN4_MACHINE_SERIES_PREFIXES = (
-    'c4-',
-    'c4a-',
-    'c4d-',
-    'e4-',
-    'g4-',
-    'h4-',
-    'm4-',
-    'n4-',
-    'x4-',
-    'z4-',
-)
-GEN4_DEFAULT_DISK_TYPE = 'HYPERDISK_BALANCED'
-
-
-def IsGen4MachineType(machine_type):
-  """Returns True if `machine_type` belongs to a gen-4 machine series.
-
-  Args:
-    machine_type: The machine type string (e.g. `n4-standard-4`), or None.
-  """
-  if not machine_type:
-    return False
-  return machine_type.lower().startswith(GEN4_MACHINE_SERIES_PREFIXES)
-
-
 def GetLocationResourceArg(help_text):
   """Constructs and returns the Location Resource Argument."""
 
@@ -293,8 +263,7 @@ def AddCreateInstanceFlags(parser):
       help=(
           'The '
           '[Compute Engine machine type](https://cloud.google.com/sdk/gcloud/reference/compute/machine-types) '  # pylint: disable=line-too-long
-          'of this instance.'),
-      default='n1-standard-4')
+          'of this instance.'))
   gce_setup_group.add_argument(
       '--min-cpu-platform',
       help=(

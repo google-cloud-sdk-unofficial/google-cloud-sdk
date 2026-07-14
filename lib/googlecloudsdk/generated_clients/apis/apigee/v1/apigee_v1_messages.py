@@ -6886,7 +6886,14 @@ class GoogleCloudApigeeV1ApiProduct(_messages.Message):
       setting cannot be specified for both the API product and operation
       group; otherwise the call will fail.
     payloadOperationGroup: Optional. Configuration used to group Apigee
-      proxies with payload-based operations.
+      proxies with payload-based operations and quotas. Unlike
+      `operation_group`, which matches on the URL path, this grouping matches
+      on operation identifiers extracted from the request payload (for
+      example, JSON-RPC method and tool names). This enables fine-grained
+      authorization and quota enforcement for protocols such as MCP where
+      multiple operations share a single endpoint. **Note:** The `proxies` and
+      `api_resources` settings cannot be specified for both the API product
+      and payload operation group; otherwise the call will fail.
     proxies: Comma-separated list of API proxy names to which this API product
       is bound. By specifying API proxies, you can associate resources in the
       API product with specific API proxies, preventing developers from
@@ -11922,30 +11929,32 @@ class GoogleCloudApigeeV1OrganizationProjectMapping(_messages.Message):
 
 
 class GoogleCloudApigeeV1PayloadOperation(_messages.Message):
-  r"""Represents a single operation identifier extracted from payload.
+  r"""Represents a single operation identifier extracted from the request
+  payload.
 
   Fields:
-    operation: Required. The extracted operation name. e.g. "tools/list",
-      "tools/call/get_weather". Wildcards (*) are not supported in operation
-      name.
+    operation: Required. The operation name extracted from the request payload
+      at runtime by the ParsePayload policy. For example, for MCP protocol
+      requests, this could be `"tools/list"` or `"tools/call/get_weather"`.
+      Wildcards are not supported.
   """
 
   operation = _messages.StringField(1)
 
 
 class GoogleCloudApigeeV1PayloadOperationConfig(_messages.Message):
-  r"""Binds operations within a payload to a proxy and its associated quota
+  r"""Binds the payload operations in an API proxy with the associated quota
   enforcement.
 
   Fields:
     apiSource: Required. Name of the API proxy with which the payload
       operations and quota are associated.
     attributes: Optional. Custom attributes associated with the operation.
-    operations: Required. List of payload operations to which quota will be
-      applied.
+    operations: Required. List of payload operations for the API proxy to
+      which quota will be applied.
     quota: Optional. Quota parameters to be enforced for the operations and
       API source combination. If none are specified, quota enforcement will
-      not be done unless defined at the API Product level.
+      not be done unless a quota is defined at the API product level.
   """
 
   apiSource = _messages.StringField(1)
@@ -11955,12 +11964,14 @@ class GoogleCloudApigeeV1PayloadOperationConfig(_messages.Message):
 
 
 class GoogleCloudApigeeV1PayloadOperationGroup(_messages.Message):
-  r"""A list of payload operation configuration details associated with Apigee
-  API proxies.
+  r"""List of payload operation configuration details associated with Apigee
+  API proxies. Payload operations enable governance of protocols where
+  operations are embedded in the request body (such as JSON-RPC) rather than
+  defined by the URL path.
 
   Fields:
-    operationConfigs: Required. List of operation configurations for Apigee
-      API proxies that are associated with this API product.
+    operationConfigs: Required. List of payload operation configurations for
+      Apigee API proxies that are associated with this API product.
   """
 
   operationConfigs = _messages.MessageField('GoogleCloudApigeeV1PayloadOperationConfig', 1, repeated=True)

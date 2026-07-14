@@ -19,7 +19,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage.batch_operations.jobs import resource_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Describe a bucket operation for a batch operation job."""

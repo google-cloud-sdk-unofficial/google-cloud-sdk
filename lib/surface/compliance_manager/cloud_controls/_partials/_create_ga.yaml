@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,16 +29,26 @@
           --display-name="My cloud control display name" \
           --description="My cloud control description" \
           --rules='[{"description":"VM IP forwarding check","ruleActionTypes":["rule-action-type-detective"],"celExpression":{"expression":"resource.canIpForward == false","resourceTypesValues":{"values":["compute.googleapis.com/Instance"]}}}]' \
+
+      To create a cloud control `my-cloud-control-id` in project `my-project-number` and location `global` with a specific rule, run:
+
+      $ {command} my-cloud-control-id --project=my-project-number --location=global \
+          --display-name="My cloud control display name" \
+          --description="My cloud control description" \
+          --rules='[{"description":"VM IP forwarding check","ruleActionTypes":["rule-action-type-detective"],"celExpression":{"expression":"resource.canIpForward == false","resourceTypesValues":{"values":["compute.googleapis.com/Instance"]}}}]' \
   arguments:
     params:
     - help_text: |-
-        Identifier. The name of the cloud control, in the format
-        `organizations/{organization}/locations/{location}/cloudControls/{cloud_control_id}`.
+        Identifier. The name of the cloud control, in either of the formats:
+
+        * `organizations/{organization}/locations/{location}/cloudControls/{cloud_control}`
+        * `projects/{project}/locations/{location}/cloudControls/{cloud_control}`.
+
         The only supported location is `global`.
       is_positional: true
       is_primary_resource: true
       request_id_field: cloudControlId
-      resource_spec: !REF googlecloudsdk.command_lib.compliance_manager.v1_resources:organizations_locations_cloud_controls
+      resource_spec: !REF googlecloudsdk.command_lib.compliance_manager.v1_resources:organizations_or_projects_locations_cloud_controls
       required: true
     - arg_name: description
       api_field: cloudControl.description
@@ -361,6 +371,22 @@
         enum_value: CC_CATEGORY_BCDR
         help_text: |-
           The business continuity and disaster recovery (BCDR) category.
+      - arg_value: cc-category-admin-access
+        enum_value: CC_CATEGORY_ADMIN_ACCESS
+        help_text: |-
+          The admin access category.
+      - arg_value: cc-category-data-residency
+        enum_value: CC_CATEGORY_DATA_RESIDENCY
+        help_text: |-
+          DRZ (Data Residency).
+      - arg_value: cc-category-resource-usage-restriction
+        enum_value: CC_CATEGORY_RESOURCE_USAGE_RESTRICTION
+        help_text: |-
+          RUR (Resource Usage Restriction).
+      - arg_value: cc-category-service-specific
+        enum_value: CC_CATEGORY_SERVICE_SPECIFIC
+        help_text: |-
+          SERVICE SPECIFIC
     - arg_name: supported-target-resource-types
       api_field: cloudControl.supportedTargetResourceTypes
       required: false
@@ -388,3 +414,4 @@
     api_version: v1
     collection:
     - cloudsecuritycompliance.organizations.locations.cloudControls
+    - cloudsecuritycompliance.projects.locations.cloudControls

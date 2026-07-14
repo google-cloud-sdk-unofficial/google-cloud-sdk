@@ -51,12 +51,12 @@ def get_base64_hash_digest_string(hash_object):
   return get_base64_string(hash_object.digest())
 
 
-def get_hash_object(hash_algorithm: HashAlgorithm):
+def get_hash_object(hash_algorithm: HashAlgorithm, is_streaming: bool = False):
   """Returns a hash object for the given hash algorithm."""
   if hash_algorithm == HashAlgorithm.MD5:
     return hashing.get_md5()
   if hash_algorithm == HashAlgorithm.CRC32C:
-    return fast_crc32c_util.get_crc32c()
+    return fast_crc32c_util.get_crc32c(is_streaming=is_streaming)
   return None
 
 
@@ -75,7 +75,12 @@ def _get_hash_for_deferred_crc32c(
 
 
 def get_hash_from_data_chunk_or_file(
-    path: str, data: bytes, hash_algorithm: HashAlgorithm, start=None, stop=None
+    path: str,
+    data: bytes,
+    hash_algorithm: HashAlgorithm,
+    start=None,
+    stop=None,
+    is_streaming: bool = False,
 ):
   """Returns the hash object for the given data chunk or file.
 
@@ -89,11 +94,12 @@ def get_hash_from_data_chunk_or_file(
     hash_algorithm (HashAlgorithm): The algorithm to use for hashing.
     start (int|None): Optional byte index to start hashing from.
     stop (int|None): Optional byte index to stop hashing at.
+    is_streaming (bool): Whether to use streaming mode for hashing.
 
   Returns:
     A hash object or None if the algorithm is not supported.
   """
-  hash_object = get_hash_object(hash_algorithm)
+  hash_object = get_hash_object(hash_algorithm, is_streaming=is_streaming)
   if hash_object is None:
     return None
   if isinstance(hash_object, fast_crc32c_util.DeferredCrc32c):

@@ -726,9 +726,7 @@ flags_to_add = {
         'disabledefaultsnat': AddDisableDefaultSnatFlagForClusterCreate,
         'databaseencryption': flags.AddDatabaseEncryptionFlag,
         'dataplanev2': flags.AddDataplaneV2Flag,
-        'dataplanev2optimizationmode': (
-            lambda p: flags.AddDataplaneV2OptimizationModeFlag(p, hidden=True)
-        ),
+        'dataplanev2optimizationmode': flags.AddDataplaneV2OptimizationModeFlag,
         'dataplanev2metrics': flags.AddDataplaneV2MetricsFlag,
         'dataplanev2obs': flags.AddDataplaneV2ObservabilityFlags,
         'disksize': flags.AddDiskSizeFlag,
@@ -937,9 +935,7 @@ flags_to_add = {
         'databaseencryption': flags.AddDatabaseEncryptionFlag,
         'datapath': lambda p: flags.AddDatapathProviderFlag(p, hidden=True),
         'dataplanev2': flags.AddDataplaneV2Flag,
-        'dataplanev2optimizationmode': (
-            lambda p: flags.AddDataplaneV2OptimizationModeFlag(p, hidden=True)
-        ),
+        'dataplanev2optimizationmode': flags.AddDataplaneV2OptimizationModeFlag,
         'dataplanev2metrics': flags.AddDataplaneV2MetricsFlag,
         'dataplanev2obs': flags.AddDataplaneV2ObservabilityFlags,
         'enableAmbientNetworking': flags.AddEnableAmbientNetworkingFlag,
@@ -1188,9 +1184,7 @@ flags_to_add = {
         'databaseencryption': flags.AddDatabaseEncryptionFlag,
         'datapath': lambda p: flags.AddDatapathProviderFlag(p, hidden=True),
         'dataplanev2': flags.AddDataplaneV2Flag,
-        'dataplanev2optimizationmode': (
-            lambda p: flags.AddDataplaneV2OptimizationModeFlag(p, hidden=True)
-        ),
+        'dataplanev2optimizationmode': flags.AddDataplaneV2OptimizationModeFlag,
         'dataplanev2metrics': flags.AddDataplaneV2MetricsFlag,
         'dataplanev2obs': flags.AddDataplaneV2ObservabilityFlags,
         'enableAmbientNetworking': flags.AddEnableAmbientNetworkingFlag,

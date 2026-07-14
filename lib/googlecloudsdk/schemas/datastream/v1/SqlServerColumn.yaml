@@ -26,7 +26,7 @@ properties:
     items:
       type: string
   column:
-    description: Column name.
+    description: The column name.
     type: string
   dataType:
     description: The SQLServer data type.

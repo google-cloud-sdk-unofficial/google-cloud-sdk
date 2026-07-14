@@ -43,7 +43,7 @@ FILE_TYPE_CHOICES = (
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class AddInlineCloudAnalysisRule(base.UpdateCommand):
   """Add a WildFire inline cloud analysis rule to a WildFire Analysis Profile."""
 

@@ -885,11 +885,26 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_AGENTANOMALYDETECTIONSCOPES = (
+      'projects.locations.agentAnomalyDetectionScopes',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'agentAnomalyDetectionScopes/{agentAnomalyDetectionScopesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_AGENTS = (
       'projects.locations.agents',
-      'projects/{projectsId}/locations/{locationsId}/agents/{agentsId}',
-      {},
-      ['projectsId', 'locationsId', 'agentsId'],
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/agents/'
+              '{agentsId}',
+      },
+      ['name'],
       True
   )
   PROJECTS_LOCATIONS_AGENTS_OPERATIONS = (
@@ -1163,6 +1178,17 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/endpoints/'
               '{endpointsId}/operations/{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_ENDPOINTS_RESPONSES = (
+      'projects.locations.endpoints.responses',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/endpoints/'
+              '{endpointsId}/responses/{responsesId}',
       },
       ['name'],
       True
@@ -1849,6 +1875,40 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_MONITOREDAGENTS = (
+      'projects.locations.monitoredAgents',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/monitoredAgents/'
+              '{monitoredAgentsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_MONITOREDAGENTS_ANALYZEDSESSIONS = (
+      'projects.locations.monitoredAgents.analyzedSessions',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/monitoredAgents/'
+              '{monitoredAgentsId}/analyzedSessions/{analyzedSessionsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_MONITOREDAGENTS_ANALYZEDSESSIONS_ANALYZEDINVOCATIONS = (
+      'projects.locations.monitoredAgents.analyzedSessions.analyzedInvocations',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/monitoredAgents/'
+              '{monitoredAgentsId}/analyzedSessions/{analyzedSessionsId}/'
+              'analyzedInvocations/{analyzedInvocationsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_NASJOBS = (
       'projects.locations.nasJobs',
       '{+name}',
@@ -2391,6 +2451,58 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_SERVINGPROFILES = (
+      'projects.locations.servingProfiles',
+      'projects/{projectsId}/locations/{locationsId}/servingProfiles/'
+      '{servingProfilesId}',
+      {},
+      ['projectsId', 'locationsId', 'servingProfilesId'],
+      True
+  )
+  PROJECTS_LOCATIONS_SERVINGPROFILES_OPERATIONS = (
+      'projects.locations.servingProfiles.operations',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/servingProfiles/'
+              '{servingProfilesId}/operations/{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_SKILLS = (
+      'projects.locations.skills',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/skills/'
+              '{skillsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_SKILLS_OPERATIONS = (
+      'projects.locations.skills.operations',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/skills/'
+              '{skillsId}/operations/{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_SKILLS_REVISIONS = (
+      'projects.locations.skills.revisions',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/skills/'
+              '{skillsId}/revisions/{revisionsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_SOLVERS = (
       'projects.locations.solvers',
       'projects/{projectsId}/locations/{locationsId}/solvers/{solversId}',
@@ -2892,6 +3004,40 @@ class Collections(enum.Enum):
           '':
               'semanticGovernancePolicies/{semanticGovernancePoliciesId}/'
               'operations/{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  SERVINGPROFILES = (
+      'servingProfiles',
+      'servingProfiles/{servingProfilesId}',
+      {},
+      ['servingProfilesId'],
+      True
+  )
+  SERVINGPROFILES_OPERATIONS = (
+      'servingProfiles.operations',
+      '{+name}',
+      {
+          '':
+              'servingProfiles/{servingProfilesId}/operations/{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  SKILLS = (
+      'skills',
+      'skills/{skillsId}',
+      {},
+      ['skillsId'],
+      True
+  )
+  SKILLS_OPERATIONS = (
+      'skills.operations',
+      '{+name}',
+      {
+          '':
+              'skills/{skillsId}/operations/{operationsId}',
       },
       ['name'],
       True

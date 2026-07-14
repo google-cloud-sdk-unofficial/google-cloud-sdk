@@ -372,7 +372,7 @@ class CreateBeta(Create):
   _support_max_count_per_zone = True
   _support_custom_hostnames = True
   _support_specific_then_x_affinity = True
-  _support_any_reservation_then_fail_affinity = False
+  _support_any_reservation_then_fail_affinity = True
   _support_watchdog_timer = False
   _support_graceful_shutdown = True
   _support_flex_start = False

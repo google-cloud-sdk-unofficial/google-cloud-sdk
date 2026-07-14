@@ -31,5 +31,5 @@ properties:
     items:
       $ref: PostgresqlTable.yaml
   schema:
-    description: Schema name.
+    description: The schema name.
     type: string

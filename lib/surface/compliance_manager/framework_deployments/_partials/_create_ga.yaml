@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
   help_text:
     brief: Create a framework deployment.
     description: |
-      Create a framework deployment for a given organization and location.
+      Create a framework deployment for a given project or organization and location.
     examples: |-
       To create a framework deployment `my-framework-deployment-id` in organization `my-organization-id` and location `global`, targeting `folders/my-folder-id` and using framework `my-framework-name`, run:
 
@@ -30,16 +30,26 @@
           --framework='organizations/my-organization-id/locations/global/frameworks/my-framework-name' \
           --framework-major-revision-id='1' \
           --cloud-control-metadata='[{"cloudControlDetails": {"name": "organizations/my-organization-id/locations/global/cloudControls/my-control-1", "majorRevisionId": "1", "parameters": []}, "enforcementMode": "DETECTIVE"}]'
+
+      To create a framework deployment `my-framework-deployment-id` in project `my-project-number` and location `global`, targeting `projects/my-project-number` and using framework `my-framework-name`, run:
+
+      $ {command} my-framework-deployment-id --project=my-project-number --location=global \
+          --target-resource-config-existing=projects/my-project-number \
+          --framework='projects/my-project-number/locations/global/frameworks/my-framework-name' \
+          --framework-major-revision-id='1' \
+          --cloud-control-metadata='[{"cloudControlDetails": {"name": "projects/my-project-number/locations/global/cloudControls/my-control-1", "majorRevisionId": "1", "parameters": []}, "enforcementMode": "DETECTIVE"}]'
   arguments:
     params:
     - help_text: |-
         Identifier. The name of the framework deployment, in the format
-        `organizations/{organization}/locations/{location}/frameworkDeployments/{framework_deployment_id}`.
+        `organizations/{organization}/locations/{location}/frameworkDeployments/{framework_deployment}`
+        or
+        `projects/{project}/locations/{location}/frameworkDeployments/{framework_deployment}`.
         The only supported location is `global`.
       is_positional: true
       is_primary_resource: true
       request_id_field: frameworkDeploymentId
-      resource_spec: !REF googlecloudsdk.command_lib.compliance_manager.v1_resources:organizations_locations_framework_deployments
+      resource_spec: !REF googlecloudsdk.command_lib.compliance_manager.v1_resources:organizations_or_projects_locations_framework_deployments
       required: true
     - group:
         api_field: frameworkDeployment.targetResourceConfig
@@ -124,8 +134,10 @@
         api_field: frameworkDeployment.framework
         required: true
         help_text: |-
-          The reference of a framework, in the format
-          `organizations/{organization}/locations/{location}/frameworks/{framework}`.
+          The reference of a framework, in one of the following formats:
+          - `organizations/{organization}/locations/{location}/frameworks/{framework}`
+          - `projects/{project}/locations/{location}/frameworks/{framework}`.
+
           The only supported location is `global`.
         params:
         - group:
@@ -142,12 +154,15 @@
                 The major version of the framework. If not specified, the version
                 corresponds to the latest version of the framework.
         - arg_name: framework
-          api_field: frameworkDeployment.framework.framework
-          required: true
-          repeated: false
           help_text: |-
             The major version of the framework. If not specified, the version
             corresponds to the latest version of the framework.
+          is_positional: false
+          is_primary_resource: false
+          resource_spec: !REF googlecloudsdk.command_lib.compliance_manager.v1_resources:organizations_or_projects_locations_frameworks
+          resource_method_params:
+            frameworkDeployment.framework.framework: '{__relative_name__}'
+          required: true
     - arg_name: description
       api_field: frameworkDeployment.description
       required: false
@@ -169,8 +184,11 @@
         spec:
         - api_field: name
           help_text: |-
-            The name of the cloud control, in the format
-            `organizations/{organization}/locations/{location}/cloudControls/{cloud-control}`.
+            The name of the cloud control, in one of the following formats:
+            `organizations/{organization}/locations/{location}/cloudControls/{cloud_control}`
+            or
+            `projects/{project}/locations/{location}/cloudControls/{cloud_control}`.
+
             The only supported location is `global`.
         - api_field: majorRevisionId
           help_text: |-
@@ -202,6 +220,8 @@
     api_version: v1
     collection:
     - cloudsecuritycompliance.organizations.locations.frameworkDeployments
+    - cloudsecuritycompliance.projects.locations.frameworkDeployments
   async:
     collection:
     - cloudsecuritycompliance.organizations.locations.operations
+    - cloudsecuritycompliance.projects.locations.operations

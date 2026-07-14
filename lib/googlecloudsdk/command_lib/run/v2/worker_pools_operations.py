@@ -136,7 +136,7 @@ class WorkerPoolsOperations(object):
       build_source=None,
       build_from_source_container_name=None,
       repo_to_create=None,
-      already_activated_services=False,
+      skip_activation_prompt=False,
       force_new_revision=False,
   ):
     """Stubbed method for worker pool deploy surface.
@@ -160,7 +160,7 @@ class WorkerPoolsOperations(object):
       repo_to_create: Optional
         googlecloudsdk.command_lib.artifacts.docker_util.DockerRepo defining a
         repository to be created.
-      already_activated_services: bool. If true, skip activation prompts for
+      skip_activation_prompt: bool. If true, skip activation prompts for
         services
       force_new_revision: bool to force a new revision to be created.
 
@@ -192,7 +192,7 @@ class WorkerPoolsOperations(object):
           build_pack,
           repo_to_create,
           release_track,
-          already_activated_services,
+          skip_activation_prompt,
           worker_pool_ref.locationsId,  # region
           worker_pool_ref,
       )

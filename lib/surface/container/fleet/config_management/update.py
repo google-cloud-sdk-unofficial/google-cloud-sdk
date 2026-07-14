@@ -246,9 +246,9 @@ class Update(mf_base.UpdateCommand, features_base.UpdateCommand):
       new_cm_spec.version = args.version
       if not self._is_config_sync_enabled(new_cm_spec):
         log.warning(
-            "'configSync' field is not enabled. Configuration fields are not"
-            ' managing Config Sync on membership [%s]. See --help for details.',
-            m,
+            "'configSync' field is not enabled for membership [%s]."
+            " Configuration fields will not install and manage Config Sync on"
+            " this cluster. See --help for details.", m
         )
       # Move under "if args.version" when other per-field flags are introduced.
       self._prompt_for_version_confirmation(
@@ -325,20 +325,20 @@ class Update(mf_base.UpdateCommand, features_base.UpdateCommand):
       )
     elif not self._is_config_sync_enabled(new_spec):
       skip_prompt_msg = (
-          "The 'version' field is not managing Config Sync because the"
+          "The 'version' field will not manage Config Sync because the"
           f" 'configSync' field is not enabled for membership [{membership}]."
           ' See --help for details.'
       )
     if skip_prompt_msg:
       if not properties.VALUES.core.disable_prompts.GetBool():
         log.status.Print(
-            f'Skipping --version confirmation prompt. {skip_prompt_msg}'
+            f'Note: Skipping --version confirmation prompt. {skip_prompt_msg}'
         )
       return
     if installed_version:
       # Note that installed version could be same as intended version.
       installed_version_msg = (
-          f"The feature state detects version '{installed_version}' on this"
+          f'The feature state detects version [{installed_version}] on this'
           ' cluster.'
       )
     else:
@@ -353,13 +353,13 @@ class Update(mf_base.UpdateCommand, features_base.UpdateCommand):
     version_msg = (
         'the latest version'
         if not new_spec.version
-        else f"'{new_spec.version}'"
+        else f'[{new_spec.version}]'
     )
     console_io.PromptContinue(
         message=(
-            f'About to upgrade Config Sync to {version_msg} for membership'
-            f' [{membership}]. {installed_version_msg}'
-            ' This command will not block on upgrade completion.'
+            f'About to upgrade Config Sync on membership [{membership}] to'
+            f' {version_msg}. {installed_version_msg} This command will not'
+            ' block on upgrade completion.'
         ),
         # Declarative. Entire operation either succeeds or fails.
         cancel_on_no=True,

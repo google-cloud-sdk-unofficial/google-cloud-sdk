@@ -14,7 +14,6 @@
 # limitations under the License.
 """Command for compute reservations update."""
 
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
@@ -82,10 +81,9 @@ def _ValidateArgs(
         ' reservation-sharing-policy flag.'
     )
   if support_emergent_maintenance:
-    parameter_names.extend([
-        '--enable-emergent-maintenance',
-        '--no-enable-emergent-maintenance'
-    ])
+    parameter_names.extend(
+        ['--enable-emergent-maintenance', '--no-enable-emergent-maintenance']
+    )
     one_option_exception_message += (
         '5- Modify emergent maintenance with specifying'
         ' enable-emergent-maintenance flag.'
@@ -117,26 +115,58 @@ def _ValidateArgs(
   if support_share_with_flag:
     has_share_with = args.IsSpecified('share_with')
   has_add_share_with = (
-      args.IsKnownAndSpecified('add_share_with') or
-      args.IsKnownAndSpecified('add_share_with_folder') or
-      args.IsKnownAndSpecified('add_share_with_project')
+      args.IsKnownAndSpecified('add_share_with')
+      or args.IsKnownAndSpecified('add_share_with_folder')
+      or args.IsKnownAndSpecified('add_share_with_project')
   )
-  has_remove_share_with = args.IsSpecified('remove_share_with')
+  has_remove_share_with = (
+      args.IsSpecified('remove_share_with')
+      or args.IsKnownAndSpecified('remove_share_with_folder')
+      or args.IsKnownAndSpecified('remove_share_with_project')
+  )
   if has_share_with or has_add_share_with or has_remove_share_with:
     share_with = True
-  if (
-      (has_share_with and has_add_share_with)
-      or (has_share_with and has_remove_share_with)
-      or (has_add_share_with and has_remove_share_with)
+  if (has_share_with and has_add_share_with) or (
+      has_share_with and has_remove_share_with
   ):
     raise exceptions.ConflictingArgumentsException(
         '--share-with', '--add-share-with', '--remove-share-with'
     )
-  if has_remove_share_with:
+  specified_adds = []
+  for flag in [
+      'add_share_with',
+      'add_share_with_folder',
+      'add_share_with_project',
+  ]:
+    if args.IsKnownAndSpecified(flag):
+      specified_adds.append('--' + flag.replace('_', '-'))
+  if len(specified_adds) > 1:
+    raise exceptions.ConflictingArgumentsException(*specified_adds)
+
+  specified_removes = []
+  for flag in [
+      'remove_share_with',
+      'remove_share_with_folder',
+      'remove_share_with_project',
+  ]:
+    if args.IsKnownAndSpecified(flag) or (
+        flag == 'remove_share_with' and args.IsSpecified(flag)
+    ):
+      specified_removes.append('--' + flag.replace('_', '-'))
+  if len(specified_removes) > 1:
+    raise exceptions.ConflictingArgumentsException(*specified_removes)
+  if args.IsSpecified('remove_share_with'):
     for project in getattr(args, 'remove_share_with', []):
       if not project.isnumeric():
         raise exceptions.InvalidArgumentException(
             '--remove-share-with',
+            'Please specify project number (not project id/name).',
+        )
+  if args.IsKnownAndSpecified('remove_share_with_project'):
+    for project in getattr(args, 'remove_share_with_project', []):
+      if not project.isnumeric():
+        raise exceptions.InvalidArgumentException(
+            '--remove-share-with-project',
             'Please specify project number (not project id/name).',
         )
 
@@ -174,13 +204,19 @@ def _ValidateArgs(
 
   # Check parameters (add_share_with and remove_share_with are on GA).
   if minimum_argument_specified:
-    raise exceptions.MinimumArgumentException(parameter_names,
-                                              one_option_exception_message)
+    raise exceptions.MinimumArgumentException(
+        parameter_names, one_option_exception_message
+    )
 
 
 def _GetShareSettingUpdateRequest(
-    args, reservation_ref, holder, support_share_with_flag,
-    support_share_type, support_folder_share_setting=False):
+    args,
+    reservation_ref,
+    holder,
+    support_share_with_flag,
+    support_share_type,
+    support_folder_share_setting=False,
+):
   """Create Update Request for share-with.
 
   Returns:
@@ -208,28 +244,38 @@ def _GetShareSettingUpdateRequest(
     elif args.IsKnownAndSpecified('add_share_with_project'):
       setting_configs = 'projects'
 
-    if not setting_configs and (args.IsSpecified('share_with') or
-                                args.IsSpecified('add_share_with') or
-                                args.IsSpecified('remove_share_with')):
+    if not setting_configs and (
+        args.IsSpecified('share_with')
+        or args.IsSpecified('add_share_with')
+        or args.IsSpecified('remove_share_with')
+    ):
       if support_folder_share_setting:
         service = holder.client.apitools_client.reservations
         get_request = messages.ComputeReservationsGetRequest(
             reservation=reservation_ref.Name(),
             project=reservation_ref.project,
-            zone=reservation_ref.zone)
+            zone=reservation_ref.zone,
+        )
         errors = []
-        res = list(request_helper.MakeRequests(
-            requests=[(service, 'Get', get_request)],
-            http=holder.client.apitools_client.http,
-            batch_url=holder.client.batch_url,
-            errors=errors))
+        res = list(
+            request_helper.MakeRequests(
+                requests=[(service, 'Get', get_request)],
+                http=holder.client.apitools_client.http,
+                batch_url=holder.client.batch_url,
+                errors=errors,
+            )
+        )
         if errors:
           utils.RaiseToolException(errors)
         existing_reservation = res[0] if res else None
-        if (existing_reservation and existing_reservation.shareSettings and
-            (existing_reservation.shareSettings.shareType ==
-             messages.ShareSettings.ShareTypeValueValuesEnum
-             .DIRECT_PROJECTS_UNDER_SPECIFIC_FOLDERS)):
+        if (
+            existing_reservation
+            and existing_reservation.shareSettings
+            and (
+                existing_reservation.shareSettings.shareType
+                == messages.ShareSettings.ShareTypeValueValuesEnum.DIRECT_PROJECTS_UNDER_SPECIFIC_FOLDERS
+            )
+        ):
           setting_configs = 'folders'
         else:
           setting_configs = 'projects'
@@ -251,21 +297,24 @@ def _GetShareSettingUpdateRequest(
     setting_configs = 'projects'
   if args.IsKnownAndSpecified('add_share_with_folder'):
     share_settings = util.MakeShareSettingsWithArgs(
-        messages, args, 'folders', share_with='add_share_with_folder')
+        messages, args, 'folders', share_with='add_share_with_folder'
+    )
     update_mask.extend([
         'shareSettings.folderMap.' + folder
         for folder in getattr(args, 'add_share_with_folder', [])
     ])
   elif args.IsKnownAndSpecified('add_share_with_project'):
     share_settings = util.MakeShareSettingsWithArgs(
-        messages, args, 'projects', share_with='add_share_with_project')
+        messages, args, 'projects', share_with='add_share_with_project'
+    )
     update_mask.extend([
         'shareSettings.projectMap.' + project
         for project in getattr(args, 'add_share_with_project', [])
     ])
   elif args.IsSpecified('add_share_with'):
     share_settings = util.MakeShareSettingsWithArgs(
-        messages, args, setting_configs, share_with='add_share_with')
+        messages, args, setting_configs, share_with='add_share_with'
+    )
     map_field = 'folderMap.' if setting_configs == 'folders' else 'projectMap.'
     update_mask.extend([
         'shareSettings.' + map_field + project
@@ -273,24 +322,43 @@ def _GetShareSettingUpdateRequest(
     ])
   elif args.IsSpecified('remove_share_with'):
     share_settings = util.MakeShareSettingsWithArgs(
-        messages, args, setting_configs, share_with='remove_share_with')
+        messages, args, setting_configs, share_with='remove_share_with'
+    )
     map_field = 'folderMap.' if setting_configs == 'folders' else 'projectMap.'
     update_mask.extend([
         'shareSettings.' + map_field + project
         for project in getattr(args, 'remove_share_with', [])
     ])
 
+  if args.IsKnownAndSpecified('remove_share_with_folder'):
+    update_mask.extend([
+        'shareSettings.folderMap.' + folder
+        for folder in getattr(args, 'remove_share_with_folder', [])
+    ])
+  elif args.IsKnownAndSpecified('remove_share_with_project'):
+    update_mask.extend([
+        'shareSettings.projectMap.' + project
+        for project in getattr(args, 'remove_share_with_project', [])
+    ])
+
   # Build reservation object using new share-settings.
-  r_resource = util.MakeReservationMessage(messages, reservation_ref.Name(),
-                                           share_settings, None, None, None,
-                                           reservation_ref.zone)
+  r_resource = util.MakeReservationMessage(
+      messages,
+      reservation_ref.Name(),
+      share_settings,
+      None,
+      None,
+      None,
+      reservation_ref.zone,
+  )
   # Build update request.
   r_update_request = messages.ComputeReservationsUpdateRequest(
       reservation=reservation_ref.Name(),
       reservationResource=r_resource,
       paths=update_mask,
       project=reservation_ref.project,
-      zone=reservation_ref.zone)
+      zone=reservation_ref.zone,
+  )
 
   return r_update_request
 
@@ -348,9 +416,11 @@ def _GetResizeRequest(args, reservation_ref, holder):
   r_resize_request = messages.ComputeReservationsResizeRequest(
       reservation=reservation_ref.Name(),
       reservationsResizeRequest=messages.ReservationsResizeRequest(
-          specificSkuCount=vm_count),
+          specificSkuCount=vm_count
+      ),
       project=reservation_ref.project,
-      zone=reservation_ref.zone)
+      zone=reservation_ref.zone,
+  )
 
   return r_resize_request
 
@@ -494,6 +564,7 @@ def _EarlyAccessMaintenanceUpdateRequest(args, reservation_ref, holder):
 @base.UniverseCompatible
 class Update(base.UpdateCommand):
   """Update Compute Engine reservations."""
+
   _support_share_with_flag = False
   _support_auto_delete = False
   _support_reservation_sharing_policy = True
@@ -506,7 +577,8 @@ class Update(base.UpdateCommand):
   @classmethod
   def Args(cls, parser):
     resource_args.GetReservationResourceArg().AddArgument(
-        parser, operation_type='update')
+        parser, operation_type='update'
+    )
     r_flags.GetAddShareWithFlag().AddToParser(parser)
     r_flags.GetRemoveShareWithFlag().AddToParser(parser)
     r_flags.GetAddShareWithProjectFlag().AddToParser(parser)
@@ -533,19 +605,25 @@ class Update(base.UpdateCommand):
         self._support_scheduling_type,
         self._support_early_access_maintenance,
     )
-    reservation_ref = resource_args.GetReservationResourceArg(
-    ).ResolveAsResource(
-        args,
-        resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
+    reservation_ref = (
+        resource_args.GetReservationResourceArg().ResolveAsResource(
+            args,
+            resources,
+            scope_lister=compute_flags.GetDefaultScopeLister(holder.client),
+        )
+    )
 
     result = list()
     errors = []
     share_with = False
-    if (args.IsKnownAndSpecified('add_share_with') or
-        args.IsKnownAndSpecified('add_share_with_folder') or
-        args.IsKnownAndSpecified('add_share_with_project') or
-        args.IsKnownAndSpecified('remove_share_with')):
+    if (
+        args.IsKnownAndSpecified('add_share_with')
+        or args.IsKnownAndSpecified('add_share_with_folder')
+        or args.IsKnownAndSpecified('add_share_with_project')
+        or args.IsKnownAndSpecified('remove_share_with')
+        or args.IsKnownAndSpecified('remove_share_with_folder')
+        or args.IsKnownAndSpecified('remove_share_with_project')
+    ):
       share_with = True
     if self._support_share_with_flag:
       if args.IsSpecified('share_with'):
@@ -553,9 +631,13 @@ class Update(base.UpdateCommand):
 
     if share_with:
       r_update_request = _GetShareSettingUpdateRequest(
-          args, reservation_ref, holder, self._support_share_with_flag,
+          args,
+          reservation_ref,
+          holder,
+          self._support_share_with_flag,
           self._support_share_type,
-          self._support_folder_share_setting)
+          self._support_folder_share_setting,
+      )
       # Invoke Reservation.update API.
       result.append(
           list(
@@ -563,7 +645,10 @@ class Update(base.UpdateCommand):
                   requests=[(service, 'Update', r_update_request)],
                   http=holder.client.apitools_client.http,
                   batch_url=holder.client.batch_url,
-                  errors=errors)))
+                  errors=errors,
+              )
+          )
+      )
       if errors:
         utils.RaiseToolException(errors)
 
@@ -589,7 +674,8 @@ class Update(base.UpdateCommand):
       r_resize_request = _GetResizeRequest(args, reservation_ref, holder)
       # Invoke Reservation.resize API.
       result.append(
-          holder.client.MakeRequests(([(service, 'Resize', r_resize_request)])))
+          holder.client.MakeRequests(([(service, 'Resize', r_resize_request)]))
+      )
 
     if self._support_auto_delete:
       if args.IsSpecified('delete_at_time') or (
@@ -625,7 +711,9 @@ class Update(base.UpdateCommand):
                     http=holder.client.apitools_client.http,
                     batch_url=holder.client.batch_url,
                     errors=errors,
-                )))
+                )
+            )
+        )
         if errors:
           utils.RaiseToolException(errors)
 
@@ -671,6 +759,7 @@ class Update(base.UpdateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
   """Update Compute Engine reservations."""
+
   _support_share_with_flag = True
   _support_auto_delete = True
   _support_reservation_sharing_policy = True
@@ -682,7 +771,8 @@ class UpdateBeta(Update):
   @classmethod
   def Args(cls, parser):
     resource_args.GetReservationResourceArg().AddArgument(
-        parser, operation_type='update')
+        parser, operation_type='update'
+    )
     r_flags.GetShareWithFlag().AddToParser(parser)
     r_flags.GetAddShareWithFlag().AddToParser(parser)
     r_flags.GetRemoveShareWithFlag().AddToParser(parser)
@@ -691,7 +781,8 @@ class UpdateBeta(Update):
     r_flags.GetReservationSharingPolicyFlag().AddToParser(parser)
     r_flags.GetEnableEmergentMaintenanceFlag().AddToParser(parser)
     r_flags.GetSharedSettingFlag(
-        support_folder_share_setting=False).AddToParser(parser)
+        support_folder_share_setting=False
+    ).AddToParser(parser)
     r_flags.GetSchedulingTypeFlag().AddToParser(parser)
     r_flags.GetEarlyAccessMaintenanceFlag().AddToParser(parser)
 
@@ -724,18 +815,21 @@ class UpdateAlpha(Update):
     resource_args.GetReservationResourceArg().AddArgument(
         parser, operation_type='update'
     )
-    r_flags.GetShareWithFlag(
-        support_folder_share_setting=True).AddToParser(parser)
+    r_flags.GetShareWithFlag(support_folder_share_setting=True).AddToParser(
+        parser
+    )
     r_flags.GetAddShareWithFlag().AddToParser(parser)
     r_flags.GetRemoveShareWithFlag().AddToParser(parser)
     r_flags.GetAddShareWithFolderFlag().AddToParser(parser)
     r_flags.GetRemoveShareWithFolderFlag().AddToParser(parser)
+    r_flags.GetRemoveShareWithProjectFlag().AddToParser(parser)
     r_flags.GetAddShareWithProjectFlag().AddToParser(parser)
     r_flags.GetVmCountFlag(False).AddToParser(parser)
     r_flags.GetReservationSharingPolicyFlag().AddToParser(parser)
     r_flags.GetEnableEmergentMaintenanceFlag().AddToParser(parser)
-    r_flags.GetSharedSettingFlag(
-        support_folder_share_setting=True).AddToParser(parser)
+    r_flags.GetSharedSettingFlag(support_folder_share_setting=True).AddToParser(
+        parser
+    )
     r_flags.GetSchedulingTypeFlag().AddToParser(parser)
     r_flags.GetEarlyAccessMaintenanceFlag().AddToParser(parser)
 
@@ -751,7 +845,7 @@ class UpdateAlpha(Update):
 
 
 Update.detailed_help = {
-    'EXAMPLES':
+    'EXAMPLES': (
         """
         To add `project-1,project-2,project-3` to the list of projects that are shared with a Compute Engine reservation, `my-reservation` in zone: `us-central1-a`, run:
 
@@ -765,10 +859,11 @@ Update.detailed_help = {
 
             $ {command} my-reservation --zone=us-central1-a --vm-count=500
         """
+    )
 }
 
 UpdateBeta.detailed_help = {
-    'EXAMPLES':
+    'EXAMPLES': (
         """
         To add `project-1,project-2,project-3` to the list of projects that are shared with a Compute Engine reservation, `my-reservation` in zone: `us-central1-a`, run:
 
@@ -786,10 +881,11 @@ UpdateBeta.detailed_help = {
 
             $ {command} my-reservation --zone=us-central1-a --vm-count=500
         """
+    )
 }
 
 UpdateAlpha.detailed_help = {
-    'EXAMPLES':
+    'EXAMPLES': (
         """
         To add `project-1,project-2,project-3` to the list of projects that are shared with a Compute Engine reservation, `my-reservation` in zone: `us-central1-a`, run:
 
@@ -807,4 +903,5 @@ UpdateAlpha.detailed_help = {
 
             $ {command} my-reservation --zone=us-central1-a --vm-count=500
         """
+    )
 }

@@ -26,7 +26,7 @@ properties:
     items:
       type: string
   schema:
-    description: Schema name.
+    description: The schema name.
     type: string
   tables:
     description: Tables in the schema.

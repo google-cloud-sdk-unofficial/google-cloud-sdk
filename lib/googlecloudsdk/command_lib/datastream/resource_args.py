@@ -407,6 +407,97 @@ _MONGODB_SOURCE_CONFIG_HELP_TEXT = """\
 """
 
 
+_DATAVERSE_CREATE_SOURCE_CONFIG_HELP_TEXT = """\
+  Path to a YAML (or JSON) file containing the configuration for Dataverse Source Config.
+
+  The JSON file is formatted as follows, with camelCase field naming:
+
+  ```
+    {
+      "pollingInterval": "300s",
+      "includeObjects": {},
+      "excludeObjects": {
+        "objects": [
+          {
+            "objectName": "Account",
+            "properties": [
+              {
+                "propertyName": "name",
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ```
+"""
+
+_DATAVERSE_UPDATE_SOURCE_CONFIG_HELP_TEXT = (
+    _DATAVERSE_CREATE_SOURCE_CONFIG_HELP_TEXT
+)
+
+
+_SALESFORCE_MARKETING_CLOUD_CREATE_SOURCE_CONFIG_HELP_TEXT = """\
+  Path to a YAML (or JSON) file containing the configuration for Salesforce Marketing Cloud Source Config.
+
+  The JSON file is formatted as follows, with camelCase field naming:
+
+  ```
+    {
+      "pollingInterval": "300s",
+      "fullRefreshPollingInterval": "86400s",
+      "includeObjects": {},
+      "excludeObjects": {
+        "objects": [
+          {
+            "objectName": "Subscriber",
+            "properties": [
+              {
+                "propertyName": "EmailAddress",
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ```
+"""
+
+_SALESFORCE_MARKETING_CLOUD_UPDATE_SOURCE_CONFIG_HELP_TEXT = (
+    _SALESFORCE_MARKETING_CLOUD_CREATE_SOURCE_CONFIG_HELP_TEXT
+)
+
+
+_SERVICENOW_CREATE_SOURCE_CONFIG_HELP_TEXT = """\
+  Path to a YAML (or JSON) file containing the configuration for ServiceNow Source Config.
+
+  The JSON file is formatted as follows, with camelCase field naming:
+
+  ```
+    {
+      "pollingInterval": "300s",
+      "includeObjects": {},
+      "excludeObjects": {
+        "objects": [
+          {
+            "objectName": "incident",
+            "properties": [
+              {
+                "propertyName": "short_description",
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ```
+"""
+
+_SERVICENOW_UPDATE_SOURCE_CONFIG_HELP_TEXT = (
+    _SERVICENOW_CREATE_SOURCE_CONFIG_HELP_TEXT
+)
+
+
 def ConnectionProfileAttributeConfig(name='connection_profile'):
   return concepts.ResourceParameterAttributeConfig(
       name=name,
@@ -693,6 +784,24 @@ def AddStreamResourceArg(parser, verb, release_track, required=True):
   source_config_parser_group.add_argument(
       '--mongodb-source-config',
       help=_MONGODB_SOURCE_CONFIG_HELP_TEXT,
+  )
+  source_config_parser_group.add_argument(
+      '--dataverse-source-config',
+      help=_DATAVERSE_UPDATE_SOURCE_CONFIG_HELP_TEXT
+      if verb == 'update'
+      else _DATAVERSE_CREATE_SOURCE_CONFIG_HELP_TEXT,
+  )
+  source_config_parser_group.add_argument(
+      '--salesforce-marketing-cloud-source-config',
+      help=_SALESFORCE_MARKETING_CLOUD_UPDATE_SOURCE_CONFIG_HELP_TEXT
+      if verb == 'update'
+      else _SALESFORCE_MARKETING_CLOUD_CREATE_SOURCE_CONFIG_HELP_TEXT,
+  )
+  source_config_parser_group.add_argument(
+      '--servicenow-source-config',
+      help=_SERVICENOW_UPDATE_SOURCE_CONFIG_HELP_TEXT
+      if verb == 'update'
+      else _SERVICENOW_CREATE_SOURCE_CONFIG_HELP_TEXT,
   )
 
   destination_parser = parser.add_group(required=required)

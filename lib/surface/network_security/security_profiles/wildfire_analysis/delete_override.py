@@ -40,7 +40,7 @@ DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class DeleteOverride(base.UpdateCommand):
   """Delete an override from a WildFire Analysis Profile."""
 

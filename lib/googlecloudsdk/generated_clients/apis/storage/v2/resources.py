@@ -74,6 +74,17 @@ class Collections(enum.Enum):
       ['project', 'location'],
       True
   )
+  PROJECTS_LOCATIONS_FEATURECONFIGS = (
+      'projects.locations.featureConfigs',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/featureConfigs/'
+              '{featureConfigsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_INTELLIGENCEFINDINGS = (
       'projects.locations.intelligenceFindings',
       '{+name}',
@@ -119,6 +130,17 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/objectIndexes/'
               '{objectIndexesId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_OPERATIONS = (
+      'projects.locations.operations',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/operations/'
+              '{operationsId}',
       },
       ['name'],
       True

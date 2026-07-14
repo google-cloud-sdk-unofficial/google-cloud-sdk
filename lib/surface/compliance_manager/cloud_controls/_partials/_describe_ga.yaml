@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,15 +26,22 @@
       To get cloud control `my-cloud-control-id` in organization `my-organization-id` and location `global`, run:
 
       $ {command} my-cloud-control-id --organization=my-organization-id --location=global
+
+      To get cloud control `my-cloud-control-id` in project `my-project-number` and location `global`, run:
+
+      $ {command} my-cloud-control-id --project=my-project-number --location=global
   arguments:
     params:
     - help_text: |-
-        The name of the cloud control to retrieve, in the format
-        `organizations/{organization}/locations/{location}/cloudControls/{cloud_control}`.
+        The name of the cloud control to retrieve, in one of the following formats:
+        `organizations/{organization}/locations/{location}/cloudControls/{cloud_control}`
+        or
+        `projects/{project}/locations/{location}/cloudControls/{cloud_control}`.
+
         The only supported location is `global`.
       is_positional: true
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.compliance_manager.v1_resources:organizations_locations_cloud_controls
+      resource_spec: !REF googlecloudsdk.command_lib.compliance_manager.v1_resources:organizations_or_projects_locations_cloud_controls
       required: true
     - arg_name: major-revision-id
       api_field: majorRevisionId
@@ -48,3 +55,4 @@
     api_version: v1
     collection:
     - cloudsecuritycompliance.organizations.locations.cloudControls
+    - cloudsecuritycompliance.projects.locations.cloudControls

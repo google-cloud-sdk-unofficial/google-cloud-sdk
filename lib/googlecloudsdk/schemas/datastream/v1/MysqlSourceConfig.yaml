@@ -29,13 +29,13 @@ properties:
     description: Use Binary log position based replication.
     $ref: BinaryLogPosition.yaml
   excludeObjects:
-    description: MySQL objects to exclude from the stream.
+    description: The MySQL objects to exclude from the stream.
     $ref: MysqlRdbms.yaml
   gtid:
     description: Use GTID based replication.
     $ref: Gtid.yaml
   includeObjects:
-    description: MySQL objects to retrieve from the source.
+    description: The MySQL objects to retrieve from the source.
     $ref: MysqlRdbms.yaml
   maxConcurrentBackfillTasks:
     description: |-

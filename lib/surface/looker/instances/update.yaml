@@ -247,6 +247,12 @@
           help_text: |
             The selected release channel for the instance.
           choices:
+          - arg_value: no-channel
+            enum_value: RELEASE_CHANNEL_UNSPECIFIED
+            help_text: |
+              Maintains existing monthly update cadence and features. This channel will remain
+              available for a limited period to prevent immediate deployment disruptions. Follow the
+              default rollout schedule.
           - arg_value: rapid
             enum_value: RAPID
             help_text: |

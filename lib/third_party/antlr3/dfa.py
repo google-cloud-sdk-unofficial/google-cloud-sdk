@@ -173,6 +173,7 @@ class DFA(object):
 ##         return 0
 
 
+  @classmethod
   def unpack(cls, string):
     """@brief Unpack the runlength encoded table data.
 
@@ -201,5 +202,3 @@ class DFA(object):
       ret += [v] * n
 
     return ret
-
-  unpack = classmethod(unpack)

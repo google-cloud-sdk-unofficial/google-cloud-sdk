@@ -8,6 +8,7 @@ for querying Delta Sharing catalogs in BigQuery.
 
 from apitools.base.protorpclite import messages as _messages
 from apitools.base.py import encoding
+from apitools.base.py import extra_types
 
 
 package = 'biglake'
@@ -163,6 +164,7 @@ class DeltaSharingCatalog(_messages.Message):
       projects/{project}/catalogs/{catalog}
     refreshOptions: Optional. Configures options for refreshing a Delta
       Sharing catalog.
+    refreshStatus: Output only. The status of the background catalog refresh.
     sapConfig: Optional. Config for a catalog that connects to SAP Business
       Data Cloud (BDC).
     serviceAccount: Output only. The service account used for SAP enrollment
@@ -176,9 +178,10 @@ class DeltaSharingCatalog(_messages.Message):
   location = _messages.StringField(3)
   name = _messages.StringField(4)
   refreshOptions = _messages.MessageField('RefreshOptions', 5)
-  sapConfig = _messages.MessageField('SapConfig', 6)
-  serviceAccount = _messages.StringField(7)
-  updateTime = _messages.StringField(8)
+  refreshStatus = _messages.MessageField('RefreshStatus', 6)
+  sapConfig = _messages.MessageField('SapConfig', 7)
+  serviceAccount = _messages.StringField(8)
+  updateTime = _messages.StringField(9)
 
 
 class DeltaSharingSchema(_messages.Message):
@@ -327,19 +330,52 @@ class RefreshSchedule(_messages.Message):
   refreshInterval = _messages.StringField(1)
 
 
+class RefreshStatus(_messages.Message):
+  r"""Remote catalog background refresh status.
+
+  Fields:
+    endTime: Output only. When the catalog refresh has ended, unset for in-
+      progress refreshes.
+    startTime: Output only. When the catalog refresh has started, including
+      in-progress refreshes.
+    status: Output only. The status of the last background refresh operation,
+      unset for in-progress refreshes.
+  """
+
+  endTime = _messages.StringField(1)
+  startTime = _messages.StringField(2)
+  status = _messages.MessageField('Status', 3)
+
+
 class SapBdcEnrollmentConfig(_messages.Message):
   r"""Contains the enrollment configuration received from SAP.
 
   Fields:
     connectorEndpoint: Optional. The unique SAP BDC Connector Endpoint.
+    federatedIdentityIssuer: Output only. Lakehouse supports sharing Data
+      Products with SAP BDC. When sharing is enabled, SAP BDC will access the
+      underlying resources through a federated identity. This field indicates
+      the issuer of the federated identity. More concretely, the identity pool
+      and provider should be created as follows: $ gcloud iam workload-
+      identity-pools create sap-bdc-pool \ --location="global" \ --display-
+      name="SAP BDC Pool" $ gcloud iam workload-identity-pools providers
+      create-oidc sap-bdc-provider \ --location="global" \ --workload-
+      identity-pool="sap-bdc-pool" \ --issuer-uri="" And then, the pool should
+      can be added to the IAM policy of the shared resources so that SAP BDC
+      can access them: $ gcloud projects add-iam-policy-binding PROJECT_ID \
+      --role="roles/biglake.viewer" \ --member="principal://iam.googleapis.com
+      /projects/{PROJECT_NUMBER}/locations/global/workloadIdentityPools/sap-
+      bdc-pool/subject/{TENANT_UUID}" ... where the TENANT_UUID can be found
+      in the SAP BDC instance.
     invitationCode: Optional. An invitation code from SAP.
     invitationUrl: Optional. The combined invitation URL containing both
       endpoint and code.
   """
 
   connectorEndpoint = _messages.StringField(1)
-  invitationCode = _messages.StringField(2)
-  invitationUrl = _messages.StringField(3)
+  federatedIdentityIssuer = _messages.StringField(2)
+  invitationCode = _messages.StringField(3)
+  invitationUrl = _messages.StringField(4)
 
 
 class SapConfig(_messages.Message):
@@ -429,6 +465,57 @@ class StandardQueryParameters(_messages.Message):
   trace = _messages.StringField(10)
   uploadType = _messages.StringField(11)
   upload_protocol = _messages.StringField(12)
+
+
+class Status(_messages.Message):
+  r"""The `Status` type defines a logical error model that is suitable for
+  different programming environments, including REST APIs and RPC APIs. It is
+  used by [gRPC](https://github.com/grpc). Each `Status` message contains
+  three pieces of data: error code, error message, and error details. You can
+  find out more about this error model and how to work with it in the [API
+  Design Guide](https://cloud.google.com/apis/design/errors).
+
+  Messages:
+    DetailsValueListEntry: A DetailsValueListEntry object.
+
+  Fields:
+    code: The status code, which should be an enum value of google.rpc.Code.
+    details: A list of messages that carry the error details. There is a
+      common set of message types for APIs to use.
+    message: A developer-facing error message, which should be in English. Any
+      user-facing error message should be localized and sent in the
+      google.rpc.Status.details field, or localized by the client.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class DetailsValueListEntry(_messages.Message):
+    r"""A DetailsValueListEntry object.
+
+    Messages:
+      AdditionalProperty: An additional property for a DetailsValueListEntry
+        object.
+
+    Fields:
+      additionalProperties: Properties of the object. Contains field @type
+        with type URL.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a DetailsValueListEntry object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  code = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  details = _messages.MessageField('DetailsValueListEntry', 2, repeated=True)
+  message = _messages.StringField(3)
 
 
 encoding.AddCustomJsonFieldMapping(

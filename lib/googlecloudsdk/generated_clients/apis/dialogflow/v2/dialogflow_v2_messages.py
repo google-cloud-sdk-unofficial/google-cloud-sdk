@@ -16306,10 +16306,13 @@ class GoogleCloudDialogflowV2KnowledgeAssistAnswerAdditionalSuggestedQueryResult
   r"""Represents a single suggested query result.
 
   Fields:
-    suggestedQuery: The suggested query based on the context.
+    answerRecord: Output only. The name of the answer record. Format:
+      `projects//locations//answerRecords/`
+    suggestedQuery: Output only. The suggested query based on the context.
   """
 
-  suggestedQuery = _messages.MessageField('GoogleCloudDialogflowV2KnowledgeAssistAnswerSuggestedQuery', 1)
+  answerRecord = _messages.StringField(1)
+  suggestedQuery = _messages.MessageField('GoogleCloudDialogflowV2KnowledgeAssistAnswerSuggestedQuery', 2)
 
 
 class GoogleCloudDialogflowV2KnowledgeAssistAnswerKnowledgeAnswer(_messages.Message):
@@ -17250,7 +17253,7 @@ class GoogleCloudDialogflowV2OutputAudioConfig(_messages.Message):
       OUTPUT_AUDIO_ENCODING_LINEAR_16: Uncompressed 16-bit signed little-
         endian samples (Linear PCM). Audio content returned as LINEAR16 also
         contains a WAV header.
-      OUTPUT_AUDIO_ENCODING_MP3: MP3 audio at 32kbps.
+      OUTPUT_AUDIO_ENCODING_MP3: MP3 audio at 64kbps.
       OUTPUT_AUDIO_ENCODING_MP3_64_KBPS: MP3 audio at 64kbps.
       OUTPUT_AUDIO_ENCODING_OGG_OPUS: Opus encoded audio wrapped in an ogg
         container. The result will be a file which can be played natively on
@@ -19806,7 +19809,7 @@ class GoogleCloudDialogflowV2TextToSpeechSettings(_messages.Message):
       OUTPUT_AUDIO_ENCODING_LINEAR_16: Uncompressed 16-bit signed little-
         endian samples (Linear PCM). Audio content returned as LINEAR16 also
         contains a WAV header.
-      OUTPUT_AUDIO_ENCODING_MP3: MP3 audio at 32kbps.
+      OUTPUT_AUDIO_ENCODING_MP3: MP3 audio at 64kbps.
       OUTPUT_AUDIO_ENCODING_MP3_64_KBPS: MP3 audio at 64kbps.
       OUTPUT_AUDIO_ENCODING_OGG_OPUS: Opus encoded audio wrapped in an ogg
         container. The result will be a file which can be played natively on
@@ -23042,10 +23045,13 @@ class GoogleCloudDialogflowV2beta1KnowledgeAssistAnswerAdditionalSuggestedQueryR
   r"""Represents a single suggested query result.
 
   Fields:
-    suggestedQuery: Optional. The suggested query based on the context.
+    answerRecord: Output only. The name of the answer record. Format:
+      `projects//locations//answerRecords/`
+    suggestedQuery: Output only. The suggested query based on the context.
   """
 
-  suggestedQuery = _messages.MessageField('GoogleCloudDialogflowV2beta1KnowledgeAssistAnswerSuggestedQuery', 1)
+  answerRecord = _messages.StringField(1)
+  suggestedQuery = _messages.MessageField('GoogleCloudDialogflowV2beta1KnowledgeAssistAnswerSuggestedQuery', 2)
 
 
 class GoogleCloudDialogflowV2beta1KnowledgeAssistAnswerKnowledgeAnswer(_messages.Message):

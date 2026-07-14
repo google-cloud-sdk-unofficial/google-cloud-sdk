@@ -47,6 +47,7 @@ class NetappV1alpha1(base_api.BaseApiClient):
     self.projects_locations_storagePools_backupConfigs = self.ProjectsLocationsStoragePoolsBackupConfigsService(self)
     self.projects_locations_storagePools_ontap = self.ProjectsLocationsStoragePoolsOntapService(self)
     self.projects_locations_storagePools = self.ProjectsLocationsStoragePoolsService(self)
+    self.projects_locations_trial = self.ProjectsLocationsTrialService(self)
     self.projects_locations_volumes_quotaRules = self.ProjectsLocationsVolumesQuotaRulesService(self)
     self.projects_locations_volumes_replications = self.ProjectsLocationsVolumesReplicationsService(self)
     self.projects_locations_volumes_snapshots = self.ProjectsLocationsVolumesSnapshotsService(self)
@@ -1504,6 +1505,70 @@ class NetappV1alpha1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsTrialService(base_api.BaseApiService):
+    """Service class for the projects_locations_trial resource."""
+
+    _NAME = 'projects_locations_trial'
+
+    def __init__(self, client):
+      super(NetappV1alpha1.ProjectsLocationsTrialService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def End(self, request, global_params=None):
+      r"""EndTrial ends a Trial.
+
+      Args:
+        request: (NetappProjectsLocationsTrialEndRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('End')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    End.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/trial:end',
+        http_method='POST',
+        method_id='netapp.projects.locations.trial.end',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}:end',
+        request_field='endTrialRequest',
+        request_type_name='NetappProjectsLocationsTrialEndRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Subscribe(self, request, global_params=None):
+      r"""SubscribeTrial subscribes a Trial.
+
+      Args:
+        request: (NetappProjectsLocationsTrialSubscribeRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Subscribe')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Subscribe.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/trial:subscribe',
+        http_method='POST',
+        method_id='netapp.projects.locations.trial.subscribe',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1alpha1/{+parent}/trial:subscribe',
+        request_field='subscribeTrialRequest',
+        request_type_name='NetappProjectsLocationsTrialSubscribeRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class ProjectsLocationsVolumesQuotaRulesService(base_api.BaseApiService):
     """Service class for the projects_locations_volumes_quotaRules resource."""
 
@@ -2388,6 +2453,33 @@ class NetappV1alpha1(base_api.BaseApiClient):
         request_field='',
         request_type_name='NetappProjectsLocationsGetRequest',
         response_type_name='Location',
+        supports_download=False,
+    )
+
+    def GetTrial(self, request, global_params=None):
+      r"""GetTrial gets a Trial.
+
+      Args:
+        request: (NetappProjectsLocationsGetTrialRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Trial) The response message.
+      """
+      config = self.GetMethodConfig('GetTrial')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetTrial.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/trial',
+        http_method='GET',
+        method_id='netapp.projects.locations.getTrial',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetappProjectsLocationsGetTrialRequest',
+        response_type_name='Trial',
         supports_download=False,
     )
 

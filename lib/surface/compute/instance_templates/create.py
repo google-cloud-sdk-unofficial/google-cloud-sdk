@@ -1376,7 +1376,7 @@ class CreateBeta(Create):
   _support_partner_metadata = True
   _support_maintenance_interval = True
   _support_specific_then_x_affinity = True
-  _support_any_reservation_then_fail_affinity = False
+  _support_any_reservation_then_fail_affinity = True
   _support_graceful_shutdown = True
   _support_vlan_nic = True
   _support_watchdog_timer = False

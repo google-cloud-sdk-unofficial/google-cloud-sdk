@@ -13,7 +13,7 @@ class PolicytroubleshooterV3beta(base_api.BaseApiClient):
   MTLS_BASE_URL = 'https://policytroubleshooter.mtls.googleapis.com/'
 
   _PACKAGE = 'policytroubleshooter'
-  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform']
+  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/cloud-policytroubleshooter.readonly']
   _VERSION = 'v3beta'
   _CLIENT_ID = 'CLIENT_ID'
   _CLIENT_SECRET = 'CLIENT_SECRET'

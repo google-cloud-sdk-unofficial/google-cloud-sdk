@@ -19,12 +19,12 @@
   - ALPHA
   auto_generated: true
   help_text:
-    brief: query authProviders
-    description: query authProviders
+    brief: Query auth providers used by a workload.
+    description: Query what auth providers are used by a given workload identifier.
     examples: |-
-      To query auth providers for workload 'my-workload' in location 'global' and project 'my-project', run:
+      To query auth providers used by workload 'my-workload' in location 'us-central1' and project 'my-project', run:
 
-          $ {command} --workload-id=my-workload --location=global --project=my-project
+        $ {command} --location=us-central1 --project=my-project --workload-id=my-workload
   arguments:
     params:
     - help_text: |-

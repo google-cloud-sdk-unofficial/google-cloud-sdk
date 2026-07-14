@@ -179,7 +179,7 @@ class WorkloadidentityV1alpha(base_api.BaseApiClient):
           }
 
     def GenerateServiceAgents(self, request, global_params=None):
-      r"""Creates all ServiceAgents in a given project, location and serviceProducer.
+      r"""Creates all service agents for a given resource, location and service producer.
 
       Args:
         request: (WorkloadidentityFoldersLocationsServiceProducersGenerateServiceAgentsRequest) input message
@@ -408,7 +408,7 @@ class WorkloadidentityV1alpha(base_api.BaseApiClient):
           }
 
     def GenerateServiceAgents(self, request, global_params=None):
-      r"""Creates all ServiceAgents in a given project, location and serviceProducer.
+      r"""Creates all service agents for a given resource, location and service producer.
 
       Args:
         request: (WorkloadidentityOrganizationsLocationsServiceProducersGenerateServiceAgentsRequest) input message
@@ -637,7 +637,7 @@ class WorkloadidentityV1alpha(base_api.BaseApiClient):
           }
 
     def GenerateServiceAgents(self, request, global_params=None):
-      r"""Creates all ServiceAgents in a given project, location and serviceProducer.
+      r"""Creates all service agents for a given resource, location and service producer.
 
       Args:
         request: (WorkloadidentityProjectsLocationsServiceProducersGenerateServiceAgentsRequest) input message

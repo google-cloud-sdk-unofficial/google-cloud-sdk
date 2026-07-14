@@ -1441,6 +1441,57 @@ class GoogleCloudPolicytroubleshooterIamV3alphaExplainedDenyResource(_messages.M
   relevance = _messages.EnumField('RelevanceValueValuesEnum', 4)
 
 
+class GoogleCloudPolicytroubleshooterIamV3alphaExplainedOperation(_messages.Message):
+  r"""Details about how an operation contributes to the explanation.
+
+  Enums:
+    OperationRelevanceValueValuesEnum: The relevance of this operation to the
+      overall access state.
+    OperationStateValueValuesEnum: Output only. Indicates whether the
+      operation matches the request.
+
+  Fields:
+    operationRelevance: The relevance of this operation to the overall access
+      state.
+    operationState: Output only. Indicates whether the operation matches the
+      request.
+  """
+
+  class OperationRelevanceValueValuesEnum(_messages.Enum):
+    r"""The relevance of this operation to the overall access state.
+
+    Values:
+      HEURISTIC_RELEVANCE_UNSPECIFIED: Not specified.
+      HEURISTIC_RELEVANCE_NORMAL: The data point has a limited effect on the
+        result. Changing the data point is unlikely to affect the overall
+        determination.
+      HEURISTIC_RELEVANCE_HIGH: The data point has a strong effect on the
+        result. Changing the data point is likely to affect the overall
+        determination.
+    """
+    HEURISTIC_RELEVANCE_UNSPECIFIED = 0
+    HEURISTIC_RELEVANCE_NORMAL = 1
+    HEURISTIC_RELEVANCE_HIGH = 2
+
+  class OperationStateValueValuesEnum(_messages.Enum):
+    r"""Output only. Indicates whether the operation matches the request.
+
+    Values:
+      OPERATION_STATE_UNSPECIFIED: Not specified.
+      OPERATION_STATE_MATCHED: The operation in the request matches the
+        operation in the policy. This is the default when no operation is
+        specified in the PAB rule.
+      OPERATION_STATE_UNSUPPORTED: The operation in the PAB rule is not
+        supported by Troubleshooter yet.
+    """
+    OPERATION_STATE_UNSPECIFIED = 0
+    OPERATION_STATE_MATCHED = 1
+    OPERATION_STATE_UNSUPPORTED = 2
+
+  operationRelevance = _messages.EnumField('OperationRelevanceValueValuesEnum', 1)
+  operationState = _messages.EnumField('OperationStateValueValuesEnum', 2)
+
+
 class GoogleCloudPolicytroubleshooterIamV3alphaExplainedPABBindingAndPolicy(_messages.Message):
   r"""Details about how a principal access boundary binding and policy
   contributes to the principal access boundary explanation, with annotations
@@ -1642,6 +1693,8 @@ class GoogleCloudPolicytroubleshooterIamV3alphaExplainedPABRule(_messages.Messag
     CombinedResourceInclusionStateValueValuesEnum: Output only. Indicates
       whether any resource of the rule is the specified resource or includes
       the specified resource.
+    CombinedResourceRelevanceValueValuesEnum: The relevance of the combined
+      resource inclusion state to the overall access state.
     EffectValueValuesEnum: Required. The effect of the rule which describes
       the access relationship.
     RelevanceValueValuesEnum: The relevance of this rule to the overall access
@@ -1653,8 +1706,12 @@ class GoogleCloudPolicytroubleshooterIamV3alphaExplainedPABRule(_messages.Messag
     combinedResourceInclusionState: Output only. Indicates whether any
       resource of the rule is the specified resource or includes the specified
       resource.
+    combinedResourceRelevance: The relevance of the combined resource
+      inclusion state to the overall access state.
     effect: Required. The effect of the rule which describes the access
       relationship.
+    explainedOperation: Details about how the operation restriction in the PAB
+      rule contributes to the explanation.
     explainedResources: List of resources that were explained to check the
       principal's access to specified resource, with annotations to indicate
       how each resource contributes to the overall access state.
@@ -1685,6 +1742,23 @@ class GoogleCloudPolicytroubleshooterIamV3alphaExplainedPABRule(_messages.Messag
     RESOURCE_INCLUSION_STATE_NOT_INCLUDED = 2
     RESOURCE_INCLUSION_STATE_UNKNOWN_INFO = 3
     RESOURCE_INCLUSION_STATE_UNKNOWN_UNSUPPORTED = 4
+
+  class CombinedResourceRelevanceValueValuesEnum(_messages.Enum):
+    r"""The relevance of the combined resource inclusion state to the overall
+    access state.
+
+    Values:
+      HEURISTIC_RELEVANCE_UNSPECIFIED: Not specified.
+      HEURISTIC_RELEVANCE_NORMAL: The data point has a limited effect on the
+        result. Changing the data point is unlikely to affect the overall
+        determination.
+      HEURISTIC_RELEVANCE_HIGH: The data point has a strong effect on the
+        result. Changing the data point is likely to affect the overall
+        determination.
+    """
+    HEURISTIC_RELEVANCE_UNSPECIFIED = 0
+    HEURISTIC_RELEVANCE_NORMAL = 1
+    HEURISTIC_RELEVANCE_HIGH = 2
 
   class EffectValueValuesEnum(_messages.Enum):
     r"""Required. The effect of the rule which describes the access
@@ -1742,10 +1816,12 @@ class GoogleCloudPolicytroubleshooterIamV3alphaExplainedPABRule(_messages.Messag
     PAB_ACCESS_STATE_UNKNOWN_INFO = 4
 
   combinedResourceInclusionState = _messages.EnumField('CombinedResourceInclusionStateValueValuesEnum', 1)
-  effect = _messages.EnumField('EffectValueValuesEnum', 2)
-  explainedResources = _messages.MessageField('GoogleCloudPolicytroubleshooterIamV3alphaExplainedPABRuleExplainedResource', 3, repeated=True)
-  relevance = _messages.EnumField('RelevanceValueValuesEnum', 4)
-  ruleAccessState = _messages.EnumField('RuleAccessStateValueValuesEnum', 5)
+  combinedResourceRelevance = _messages.EnumField('CombinedResourceRelevanceValueValuesEnum', 2)
+  effect = _messages.EnumField('EffectValueValuesEnum', 3)
+  explainedOperation = _messages.MessageField('GoogleCloudPolicytroubleshooterIamV3alphaExplainedOperation', 4)
+  explainedResources = _messages.MessageField('GoogleCloudPolicytroubleshooterIamV3alphaExplainedPABRuleExplainedResource', 5, repeated=True)
+  relevance = _messages.EnumField('RelevanceValueValuesEnum', 6)
+  ruleAccessState = _messages.EnumField('RuleAccessStateValueValuesEnum', 7)
 
 
 class GoogleCloudPolicytroubleshooterIamV3alphaExplainedPABRuleExplainedResource(_messages.Message):
@@ -3545,19 +3621,20 @@ class GoogleIamV3PrincipalAccessBoundaryPolicyRuleOperation(_messages.Message):
   Fields:
     excludedPermissions: Optional. Specifies the permissions that this rule
       excludes from the set of affected permissions given by `permissions`.
-      The number of excluded permission strings in this field is limited to
-      50. If a permission appears in both `permissions` and
-      `excluded_permissions` then it will _not_ be subject to the policy
-      effect. The excluded permissions can be specified using the same syntax
-      as `permissions`.
+      The number of excluded permission strings in this field is limited to 50
+      across all rules in the policy. If a permission appears in both
+      `permissions` and `excluded_permissions` then it will _not_ be subject
+      to the policy effect. The excluded permissions can be specified using
+      the same syntax as `permissions`.
     permissions: Optional. The permissions that are explicitly affected by
       this rule. The number of permission strings in this field is limited to
-      50. Each permission uses the format `{service_fqdn}/{resource}.{verb}`,
-      where `{service_fqdn}` is the fully qualified domain name for the
-      service. `*` can be used as a wildcard to match all permissions for a
-      specific service, resource type, or verb. The following formats are
-      supported: * `{service_fqdn}/{resource}.{verb}`: A specific permission.
-      * `{service_fqdn}/{resource}.*`: All permissions for a specific resource
+      50 across all rules in the policy. Each permission uses the format
+      `{service_fqdn}/{resource}.{verb}`, where `{service_fqdn}` is the fully
+      qualified domain name for the service. `*` can be used as a wildcard to
+      match all permissions for a specific service, resource type, or verb.
+      The following formats are supported: *
+      `{service_fqdn}/{resource}.{verb}`: A specific permission. *
+      `{service_fqdn}/{resource}.*`: All permissions for a specific resource
       type. * `{service_fqdn}/*.*`: All permissions for all resource types
       under a specific service. * `{service_fqdn}/*.{verb}`: All permissions
       with a specific verb under a specific service. * `*`: All permissions

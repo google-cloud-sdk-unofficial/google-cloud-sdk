@@ -27,6 +27,9 @@ properties:
     description: Unknown API fields that cannot be imported.
     items:
       type: string
+  dataverseSourceConfig:
+    description: Dataverse data source configuration.
+    $ref: DataverseSourceConfig.yaml
   mongodbSourceConfig:
     description: MongoDB data source configuration.
     $ref: MongodbSourceConfig.yaml
@@ -39,9 +42,15 @@ properties:
   postgresqlSourceConfig:
     description: PostgreSQL data source configuration.
     $ref: PostgresqlSourceConfig.yaml
+  salesforceMarketingCloudSourceConfig:
+    description: Salesforce Marketing Cloud data source configuration.
+    $ref: SalesforceMarketingCloudSourceConfig.yaml
   salesforceSourceConfig:
     description: Salesforce data source configuration.
     $ref: SalesforceSourceConfig.yaml
+  serviceNowSourceConfig:
+    description: ServiceNow data source configuration.
+    $ref: ServiceNowSourceConfig.yaml
   sourceConnectionProfile:
     description: |-
       Source connection profile resource. Format:

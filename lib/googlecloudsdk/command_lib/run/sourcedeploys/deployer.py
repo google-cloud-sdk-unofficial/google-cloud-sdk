@@ -53,7 +53,7 @@ def CreateImage(
     build_pack,
     repo_to_create,
     release_track,
-    already_activated_services,
+    skip_activation_prompt,
     region: str,
     resource_ref,
     delegate_builds=False,
@@ -72,7 +72,7 @@ def CreateImage(
       tracker.StartStage(stages.CREATE_REPO)
       tracker.UpdateHeaderMessage('Creating Container Repository.')
       artifact_registry.CreateRepository(
-          repo_to_create, already_activated_services
+          repo_to_create, skip_activation_prompt
       )
       tracker.CompleteStage(stages.CREATE_REPO)
 
@@ -124,7 +124,7 @@ def CreateImage(
           build_image,
           build_source,
           build_pack,
-          already_activated_services,
+          skip_activation_prompt,
           remote_source=source,
       )
 
@@ -156,7 +156,7 @@ def _CreateImageWithoutSubmitBuild(
     build_image,
     build_source,
     build_pack,
-    already_activated_services,
+    skip_activation_prompt,
     remote_source,
 ):
   """Creates an image from source by calling GCB direcly, bypassing the SubmitBuild API."""
@@ -171,7 +171,7 @@ def _CreateImageWithoutSubmitBuild(
       tracker,
       build_messages,
       build_config,
-      skip_activation_prompt=already_activated_services,
+      skip_activation_prompt=skip_activation_prompt,
   )
   return response_dict, build_log_url
 

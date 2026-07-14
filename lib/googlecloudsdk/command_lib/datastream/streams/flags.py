@@ -15,7 +15,6 @@
 """Flags and helpers for the Datastream related commands."""
 
 
-
 _MYSQL_EXCLUDED_OBJECTS_HELP_TEXT = """\
   Path to a YAML (or JSON) file containing the MySQL data sources to avoid backfilling.
 
@@ -192,6 +191,23 @@ _MONGODB_EXCLUDED_OBJECTS_HELP_TEXT = """\
 """
 
 
+_SAAS_EXCLUDED_OBJECTS_HELP_TEXT = """\
+  Path to a YAML (or JSON) file containing the SaaS data sources to avoid backfilling.
+
+  The JSON file is formatted as follows, with camelCase field naming:
+
+  ```
+    {
+      "objects": [
+        {
+          "objectName": "Account",
+        }
+      ]
+    }
+  ```
+"""
+
+
 def AddRuleSetsFlag(parser):
   """Adds a --rule-sets flag to the given parser."""
   help_text = """Path to a JSON file containing a list of rule sets
@@ -321,4 +337,8 @@ def AddBackfillStrategyGroup(parser, required=True):
   backfill_all_excluded_objects.add_argument(
       '--mongodb-excluded-objects',
       help=_MONGODB_EXCLUDED_OBJECTS_HELP_TEXT,
+  )
+  backfill_all_excluded_objects.add_argument(
+      '--saas-excluded-objects',
+      help=_SAAS_EXCLUDED_OBJECTS_HELP_TEXT,
   )

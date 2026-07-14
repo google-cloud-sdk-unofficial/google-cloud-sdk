@@ -31,3 +31,4 @@ properties:
   oracleAsmLogFileAccess:
     description: Use Oracle ASM.
     type: oracleasmlogfileaccess
+    $ref: OracleAsmLogFileAccess.yaml

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,16 +26,22 @@
       To delete the framework deployment `my-framework-deployment-id` in organization `my-organization-id` and location `global`, run:
 
       $ {command} my-framework-deployment-id --organization=my-organization-id --location=global
+
+      To delete the framework deployment `my-framework-deployment-id` in project `my-project-number` and location `global`, run:
+
+      $ {command} my-framework-deployment-id --project=my-project-number --location=global
   arguments:
     params:
     - help_text: |-
         The name of the framework deployment that you want to delete,
         in the format
-        `organizations/{organization}/locations/{location}/frameworkDeployments/{framework_deployment_id}`.
+        `organizations/{organization}/locations/{location}/frameworkDeployments/{framework_deployment}`
+        or
+        `projects/{project}/locations/{location}/frameworkDeployments/{framework_deployment}`.
         The only supported location is `global`.
       is_positional: true
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.compliance_manager.v1_resources:organizations_locations_framework_deployments
+      resource_spec: !REF googlecloudsdk.command_lib.compliance_manager.v1_resources:organizations_or_projects_locations_framework_deployments
       required: true
     - arg_name: etag
       api_field: etag
@@ -54,6 +60,8 @@
     api_version: v1
     collection:
     - cloudsecuritycompliance.organizations.locations.frameworkDeployments
+    - cloudsecuritycompliance.projects.locations.frameworkDeployments
   async:
     collection:
     - cloudsecuritycompliance.organizations.locations.operations
+    - cloudsecuritycompliance.projects.locations.operations

@@ -116,8 +116,7 @@ class IamcredentialsLocationsWorkforcePoolsGetAllowedLocationsRequest(_messages.
   object.
 
   Fields:
-    name: Required. Resource name of workforce pool. Format:
-      `locations/global/workforcePools/{pool_id}`
+    name: Required. Resource name of workforce pool.
   """
 
   name = _messages.StringField(1, required=True)
@@ -128,8 +127,7 @@ class IamcredentialsProjectsLocationsWorkloadIdentityPoolsGetAllowedLocationsReq
   sRequest object.
 
   Fields:
-    name: Required. Resource name of workload identity pool. Format: `projects
-      /{project_number}/locations/global/workloadIdentityPools/{pool_id}`
+    name: Required. Resource name of workload identity pool.
   """
 
   name = _messages.StringField(1, required=True)

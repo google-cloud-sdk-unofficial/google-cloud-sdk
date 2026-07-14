@@ -36,6 +36,7 @@ properties:
     - NO_RESERVATION
     - SPECIFIC_RESERVATION
     - SPECIFIC_THEN_ANY_RESERVATION
+    - ANY_RESERVATION_THEN_FAIL
     - UNSPECIFIED
   key:
     description: |-

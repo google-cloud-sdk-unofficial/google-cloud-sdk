@@ -1997,7 +1997,7 @@ class TransferOptions(_messages.Message):
       from the source after they are transferred to the sink. **Note:** This
       option and delete_objects_unique_in_sink are mutually exclusive.
     deleteObjectsUniqueInSink: Whether objects that exist only in the sink
-      should be deleted. **Note:** This option and
+      should be deleted from the sink. **Note:** This option and
       delete_objects_from_source_after_transfer are mutually exclusive.
     metadataOptions: Represents the selected metadata options for a transfer
       job.

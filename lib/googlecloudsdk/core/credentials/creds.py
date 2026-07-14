@@ -976,6 +976,9 @@ def MaybeAttachAccessTokenCacheStoreGoogleAuth(
           credentials, 'regional_access_boundary_expiry', None
       )
 
+      if hasattr(credentials, '_set_blocking_regional_access_boundary_lookup'):
+        credentials._set_blocking_regional_access_boundary_lookup()  # pylint: disable=protected-access
+
       orig_before_request(request, method, url, headers)
 
       new_rab = getattr(credentials, 'regional_access_boundary', None)
@@ -1042,6 +1045,11 @@ class CredentialStoreWithCache(CredentialStore):
         old_rab_expiry = getattr(
             credentials, 'regional_access_boundary_expiry', None
         )
+
+        if hasattr(
+            credentials, '_set_blocking_regional_access_boundary_lookup'
+        ):
+          credentials._set_blocking_regional_access_boundary_lookup()  # pylint: disable=protected-access
 
         orig_before_request(request, method, url, headers)
 
@@ -1515,9 +1523,6 @@ def FromJsonGoogleAuth(json_value):
         'Google auth does not support deserialization of {} credentials.'
         .format(json_key['type'])
     )
-
-  if hasattr(cred, '_set_blocking_regional_access_boundary_lookup'):
-    cred._set_blocking_regional_access_boundary_lookup()  # pylint: disable=protected-access
 
   if cred_type in (
       CredentialTypeGoogleAuth.EXTERNAL_ACCOUNT,

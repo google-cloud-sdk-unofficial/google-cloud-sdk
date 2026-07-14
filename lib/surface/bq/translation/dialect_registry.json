@@ -178,7 +178,7 @@
     "source_name": "Impala",
     "target_name": "BigQuery",
     "status": "PUBLIC_PREVIEW",
-    "legacy_batch_name": ["Impala2BigQuery_Translation", "Translation_Impala2BigQuery"]
+    "legacy_batch_name": ["Impala2BigQuery_Translation", "Translation_Impala2BigQuery", "Translation_Impala2BQ"]
   }, {
     "source_name": "SparkSQL",
     "target_name": "BigQuery",

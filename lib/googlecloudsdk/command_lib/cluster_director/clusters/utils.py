@@ -17,15 +17,16 @@
 
 from __future__ import annotations
 
-
 from typing import Any, Optional, Set, Tuple
 
 from googlecloudsdk.api_lib.util import messages as messages_util
 from googlecloudsdk.calliope.concepts import concepts
+from googlecloudsdk.command_lib.cluster_director.clusters import _blueprints
 from googlecloudsdk.command_lib.cluster_director.clusters import _compute
 from googlecloudsdk.command_lib.cluster_director.clusters import _networks
 from googlecloudsdk.command_lib.cluster_director.clusters import _orchestrator
 from googlecloudsdk.command_lib.cluster_director.clusters import _storage
+from googlecloudsdk.command_lib.cluster_director.clusters import errors
 
 from googlecloudsdk.command_lib.cluster_director.clusters import flag_types
 from googlecloudsdk.command_lib.util.apis import yaml_data
@@ -84,6 +85,26 @@ class ClusterUtil:
 
   def MakeCluster(self) -> Any:
     """Returns a cluster message."""
+    blueprint = getattr(self.args, "blueprint", None)
+    if blueprint:
+      _blueprints.ApplyBlueprint(
+          self.args, self.message_module, self.cluster_ref
+      )
+
+    if not blueprint and not self.args.IsSpecified("config"):
+      if not self.args.IsSpecified("network") and not self.args.IsSpecified(
+          "create_network"
+      ):
+        raise errors.ClusterDirectorError(
+            "Must specify network configuration (e.g. --create-network or "
+            "--network and --subnet) when not using a blueprint."
+        )
+      if not self.args.IsSpecified("slurm_login_node"):
+        raise errors.ClusterDirectorError(
+            "Must specify slurm login node configuration (--slurm-login-node) "
+            "when not using a blueprint."
+        )
+
     cluster = self.MakeClusterBasic()
     cluster.networkResources = _networks.MakeClusterNetworks(
         self.args, self.message_module, self.cluster_ref

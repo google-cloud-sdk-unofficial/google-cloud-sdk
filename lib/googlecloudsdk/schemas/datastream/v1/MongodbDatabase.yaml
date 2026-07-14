@@ -31,5 +31,5 @@ properties:
     items:
       $ref: MongodbCollection.yaml
   database:
-    description: Database name.
+    description: The database name.
     type: string

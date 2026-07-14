@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,16 +29,26 @@
           --description="My framework description" \
           --display-name="My framework display name" \
           --controls='[{"name": "organizations/my-organization-id/locations/global/cloudControls/my-control-1", "majorRevisionId": "1", "parameters": []}]' \
+
+      To create a framework `my-framework-id` in project `my-project-number` and location `global`, run:
+
+      $ {command} my-framework-id --project=my-project-number --location=global \
+          --description="My framework description" \
+          --display-name="My framework display name" \
+          --controls='[{"name": "projects/my-project-number/locations/global/cloudControls/my-control-1", "majorRevisionId": "1", "parameters": []}]' \
   arguments:
     params:
     - help_text: |-
-        Identifier. The name of the framework, in the format
-        `organizations/{organization}/locations/{location}/frameworks/{framework_id}`.
+        Identifier. The name of the framework, in one of the following formats:
+        `organizations/{organization}/locations/{location}/frameworks/{framework}`
+        or
+        `projects/{project}/locations/{location}/frameworks/{framework}`.
+
         The only supported location is `global`.
       is_positional: true
       is_primary_resource: true
       request_id_field: frameworkId
-      resource_spec: !REF googlecloudsdk.command_lib.compliance_manager.v1_resources:organizations_locations_frameworks
+      resource_spec: !REF googlecloudsdk.command_lib.compliance_manager.v1_resources:organizations_or_projects_locations_frameworks
       required: true
     - arg_name: display-name
       api_field: framework.displayName
@@ -62,8 +72,11 @@
       spec:
       - api_field: name
         help_text: |-
-          The name of the cloud control, in the format
-          `organizations/{organization}/locations/{location}/cloudControls/{cloud-control}`.
+          The name of the cloud control, in one of the following formats:
+          `organizations/{organization}/locations/{location}/cloudControls/{cloud_control}`
+          or
+          `projects/{project}/locations/{location}/cloudControls/{cloud_control}`.
+
           The only supported location is `global`.
       - api_field: majorRevisionId
         help_text: |-
@@ -109,3 +122,4 @@
     api_version: v1
     collection:
     - cloudsecuritycompliance.organizations.locations.frameworks
+    - cloudsecuritycompliance.projects.locations.frameworks

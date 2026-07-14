@@ -399,8 +399,7 @@ class DataDisk(_messages.Message):
   Enums:
     DiskEncryptionValueValuesEnum: Optional. Input only. Disk encryption
       method used on the boot and data disks, defaults to GMEK.
-    DiskTypeValueValuesEnum: Optional. Input only. Indicates the type of the
-      disk.
+    DiskTypeValueValuesEnum: Optional. Indicates the type of the disk.
 
   Fields:
     diskEncryption: Optional. Input only. Disk encryption method used on the
@@ -408,7 +407,7 @@ class DataDisk(_messages.Message):
     diskSizeGb: Optional. The size of the disk in GB attached to this VM
       instance, up to a maximum of 64000 GB (64 TB). If not specified, this
       defaults to 100.
-    diskType: Optional. Input only. Indicates the type of the disk.
+    diskType: Optional. Indicates the type of the disk.
     kmsKey: Optional. Input only. The KMS key used to encrypt the disks, only
       applicable if disk_encryption is CMEK. Format: `projects/{project_id}/lo
       cations/{location}/keyRings/{key_ring_id}/cryptoKeys/{key_id}` Learn
@@ -431,7 +430,7 @@ class DataDisk(_messages.Message):
     CMEK = 2
 
   class DiskTypeValueValuesEnum(_messages.Enum):
-    r"""Optional. Input only. Indicates the type of the disk.
+    r"""Optional. Indicates the type of the disk.
 
     Values:
       DISK_TYPE_UNSPECIFIED: Disk type not set.

@@ -15,6 +15,7 @@
 
 """Connects to a serial port gateway using SSH."""
 
+import logging
 import shlex
 import sys
 
@@ -47,6 +48,10 @@ REGIONAL_HOST_KEY_URL_TEMPLATE = (
 )
 REGIONAL_HOST_KEY_URL_TEMPLATE_V2 = (
     'https://www.gstatic.com/vm_serial_port_public_keys/{0}/{0}.pub'
+)
+
+NON_DEFAULT_UNIVERSE_STAGING_HOST_KEY_URL_TEMPLATE = (
+    'https://www.static-{0}/vm_serial_port_public_keys/{1}/{1}.pub'
 )
 
 
@@ -188,6 +193,14 @@ class ConnectToSerialPort(base.Command):
     )
     hostkey_url = REGIONAL_HOST_KEY_URL_TEMPLATE.format(location)
     hostkey_url_v2 = REGIONAL_HOST_KEY_URL_TEMPLATE_V2.format(location)
+    non_default_universe_staging_hostkey_url = ''
+    if not properties.IsDefaultUniverse():
+      non_default_universe_staging_hostkey_url = (
+          NON_DEFAULT_UNIVERSE_STAGING_HOST_KEY_URL_TEMPLATE.format(
+              properties.GetUniverseDomain().split('-')[1], location
+          )
+      )
+
     log.info('Connecting to serialport via server in {0}'.format(location))
 
     hostname = '[{0}]:{1}'.format(gateway, CONNECTION_PORT)
@@ -222,8 +235,17 @@ class ConnectToSerialPort(base.Command):
 
     host_keys = []
     if self.use_v2_host_key_endpoint:
-      host_keys.extend(_GetHostKey(hostkey_url_v2))
-    host_keys.extend(_GetHostKey(hostkey_url))
+      if properties.IsDefaultUniverse():
+        host_keys.extend(_GetHostKey(hostkey_url_v2))
+      else:
+        logging.info(
+            'Using non-default universe staging hostkey url: %s',
+            non_default_universe_staging_hostkey_url,
+        )
+        host_keys.extend(_GetHostKey(non_default_universe_staging_hostkey_url))
+
+    if properties.IsDefaultUniverse():
+      host_keys.extend(_GetHostKey(hostkey_url))
 
     if host_keys:
       if self.use_v2_host_key_endpoint:

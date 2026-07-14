@@ -1007,7 +1007,7 @@ class DeveloperconnectV1(base_api.BaseApiClient):
         method_id='developerconnect.projects.locations.insightsConfigs.deploymentEvents.list',
         ordered_params=['parent'],
         path_params=['parent'],
-        query_params=['filter', 'pageSize', 'pageToken'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
         relative_path='v1/{+parent}/deploymentEvents',
         request_field='',
         request_type_name='DeveloperconnectProjectsLocationsInsightsConfigsDeploymentEventsListRequest',

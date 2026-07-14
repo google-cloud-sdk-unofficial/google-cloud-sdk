@@ -396,7 +396,7 @@ class AppEngineToCloudRun(replace.Replace):
           build_pack=build_pack,
           repo_to_create=repo_to_create,
           release_track=self.ReleaseTrack(),
-          already_activated_services=True,
+          skip_activation_prompt=True,
           region=region,
           resource_ref=service_ref,
           base_image=base_image,

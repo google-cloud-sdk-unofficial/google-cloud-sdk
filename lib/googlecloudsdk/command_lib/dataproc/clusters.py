@@ -854,11 +854,11 @@ If you want to enable all scopes use the 'cloud-platform' scope.
 
   parser.add_argument(
       '--enable-node-groups',
+      action=arg_parsers.StoreTrueFalseAction,
       hidden=True,
       help="""\
       Create cluster nodes using Dataproc NodeGroups. All the required VMs will be created using GCE MIG.
       """,
-      type=bool,
   )
 
   parser.add_argument(

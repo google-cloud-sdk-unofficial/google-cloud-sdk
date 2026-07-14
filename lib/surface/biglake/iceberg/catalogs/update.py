@@ -46,11 +46,10 @@ class UpdateCatalog(base.UpdateCommand):
   detailed_help = {
       'EXAMPLES': help_text,
   }
-  # Not supported in beta yet.
-  _support_catalog_type_biglake = False
+  # Not supported in GA yet.
   _support_service_directory_name = False
   _support_federated_catalog = False
-  _support_service_principal_application_id = False
+  _support_unity_service_principal_application_id = False
   _support_glue_catalog = False
 
   @classmethod
@@ -60,15 +59,14 @@ class UpdateCatalog(base.UpdateCommand):
     util.GetCredentialModeEnumMapper(
         cls.ReleaseTrack()
     ).choice_arg.AddToParser(parser)
-    if cls._support_catalog_type_biglake:
-      util.GetUpdateCatalogTypeEnumMapper(
-          cls.ReleaseTrack()
-      ).choice_arg.AddToParser(parser)
-      util.AddRestrictedLocationsArg(parser)
+    util.GetUpdateCatalogTypeEnumMapper(
+        cls.ReleaseTrack()
+    ).choice_arg.AddToParser(parser)
+    arguments.AddRestrictedLocationsArg(parser)
     if cls._support_service_directory_name:
       arguments.AddServiceDirectoryNameArg(parser)
-    if cls._support_service_principal_application_id:
-      arguments.AddServicePrincipalApplicationIdArg(parser)
+    if cls._support_unity_service_principal_application_id:
+      arguments.AddUnityServicePrincipalApplicationIdArg(parser)
     if cls._support_glue_catalog:
       arguments.AddGlueAwsRoleArnArg(parser)
     if cls._support_federated_catalog:
@@ -87,12 +85,12 @@ class UpdateCatalog(base.UpdateCommand):
     if args.IsKnownAndSpecified('secret_name'):
       update_mask.append('federated_catalog_options.secret_name')
       catalog.federated_catalog_options.secret_name = args.secret_name
-    if args.IsKnownAndSpecified('service_principal_application_id'):
+    if args.IsKnownAndSpecified('unity_service_principal_application_id'):
       update_mask.append(
           'federated_catalog_options.unity_catalog_info.service_principal_application_id'
       )
       catalog.federated_catalog_options.unity_catalog_info = messages.UnityCatalogInfo(
-          service_principal_application_id=args.service_principal_application_id
+          service_principal_application_id=args.unity_service_principal_application_id
       )
     if args.IsKnownAndSpecified('glue_aws_role_arn'):
       update_mask.append(
@@ -162,7 +160,7 @@ class UpdateCatalog(base.UpdateCommand):
 
     if (
         args.IsKnownAndSpecified('secret_name')
-        or args.IsKnownAndSpecified('service_principal_application_id')
+        or args.IsKnownAndSpecified('unity_service_principal_application_id')
         or args.IsKnownAndSpecified('glue_aws_role_arn')
         or args.IsKnownAndSpecified('refresh_interval')
         or args.IsKnownAndSpecified('namespace_filters')
@@ -185,11 +183,11 @@ class UpdateCatalog(base.UpdateCommand):
       )
 
       if is_glue and args.IsKnownAndSpecified(
-          'service_principal_application_id'
+          'unity_service_principal_application_id'
       ):
         raise exceptions.InvalidArgumentException(
-            '--service-principal-application-id',
-            '--service-principal-application-id is not supported for Glue'
+            '--unity-service-principal-application-id',
+            '--unity-service-principal-application-id is not supported for Glue'
             ' federated catalogs.',
         )
 
@@ -206,8 +204,7 @@ class UpdateCatalog(base.UpdateCommand):
             ' federated catalog.',
         )
     if (
-        self._support_catalog_type_biglake
-        and args.IsSpecified('catalog_type')
+        args.IsSpecified('catalog_type')
         and args.catalog_type == 'biglake'
     ):
       update_mask.append('catalog_type')
@@ -215,7 +212,7 @@ class UpdateCatalog(base.UpdateCommand):
           self.ReleaseTrack()
       ).GetEnumForChoice(args.catalog_type)
     restricted_locations = []
-    if self._support_catalog_type_biglake and args.IsSpecified(
+    if args.IsSpecified(
         'restricted_locations'
     ):
       update_mask.append('restricted_locations_config.restricted_locations')
@@ -232,7 +229,7 @@ class UpdateCatalog(base.UpdateCommand):
       if (
           args.IsKnownAndSpecified('service_directory_name')
           or args.IsKnownAndSpecified('secret_name')
-          or args.IsKnownAndSpecified('service_principal_application_id')
+          or args.IsKnownAndSpecified('unity_service_principal_application_id')
           or args.IsKnownAndSpecified('glue_aws_role_arn')
           or args.IsKnownAndSpecified('refresh_interval')
           or args.IsKnownAndSpecified('namespace_filters')
@@ -241,7 +238,7 @@ class UpdateCatalog(base.UpdateCommand):
             args, catalog, messages, update_mask
         )
 
-    if self._support_catalog_type_biglake and args.IsSpecified(
+    if args.IsSpecified(
         'restricted_locations'
     ):
       catalog.restricted_locations_config = messages.RestrictedLocationsConfig(
@@ -279,13 +276,14 @@ class UpdateBeta(UpdateCatalog):
       'EXAMPLES': help_text + '\n\n' + help_text_alpha,
   }
   _support_federated_catalog = True
+  _support_unity_service_principal_application_id = True
+  _support_glue_catalog = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
   """Update a BigLake Iceberg REST catalog."""
 
-  _support_catalog_type_biglake = True
   _support_service_directory_name = True
-  _support_service_principal_application_id = True
+  _support_unity_service_principal_application_id = True
   _support_glue_catalog = True

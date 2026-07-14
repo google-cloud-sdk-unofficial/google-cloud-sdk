@@ -29,7 +29,7 @@ properties:
     description: Column collation.
     type: string
   column:
-    description: Column name.
+    description: The column name.
     type: string
   dataType:
     description: |-

@@ -2462,10 +2462,16 @@ class GroundingMetadata(proto.Message):
 
             This field is a member of `oneof`_ ``_retrieval_metadata``.
         google_maps_widget_context_token (str):
-            Optional. Output only. A token that can be
-            used to render a Google Maps widget with the
-            contextual data. This field is populated only
-            when the grounding source is Google Maps.
+            Optional. Output only. Deprecated: The Google
+            Maps contextual widget behavior in Grounding
+            with Google Maps is being deprecated; this field
+            is planned for removal and will no longer be
+            populated once removed.
+
+            A token that can be used to render a Google Maps
+            widget with the contextual data. This field is
+            populated only when the grounding source is
+            Google Maps.
 
             This field is a member of `oneof`_ ``_google_maps_widget_context_token``.
         source_flagging_uris (MutableSequence[googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.GroundingMetadata.SourceFlaggingUri]):

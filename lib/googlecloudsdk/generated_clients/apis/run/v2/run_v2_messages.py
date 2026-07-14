@@ -561,6 +561,8 @@ class GoogleCloudRunV2Container(_messages.Message):
       environment variable for the container to listen on.
     readinessProbe: Readiness probe to be used for health checks.
     resources: Compute Resource requirements by this container.
+    sandboxLauncher: Optional. Indicates that this container can act as a
+      sandbox supervisor and launch sandboxes.
     sourceCode: Optional. Location of the source.
     startupProbe: Startup probe of application within the container. All other
       probes are disabled if a startup probe is provided, until it succeeds.
@@ -584,10 +586,11 @@ class GoogleCloudRunV2Container(_messages.Message):
   ports = _messages.MessageField('GoogleCloudRunV2ContainerPort', 11, repeated=True)
   readinessProbe = _messages.MessageField('GoogleCloudRunV2Probe', 12)
   resources = _messages.MessageField('GoogleCloudRunV2ResourceRequirements', 13)
-  sourceCode = _messages.MessageField('GoogleCloudRunV2SourceCode', 14)
-  startupProbe = _messages.MessageField('GoogleCloudRunV2Probe', 15)
-  volumeMounts = _messages.MessageField('GoogleCloudRunV2VolumeMount', 16, repeated=True)
-  workingDir = _messages.StringField(17)
+  sandboxLauncher = _messages.BooleanField(14)
+  sourceCode = _messages.MessageField('GoogleCloudRunV2SourceCode', 15)
+  startupProbe = _messages.MessageField('GoogleCloudRunV2Probe', 16)
+  volumeMounts = _messages.MessageField('GoogleCloudRunV2VolumeMount', 17, repeated=True)
+  workingDir = _messages.StringField(18)
 
 
 class GoogleCloudRunV2ContainerOverride(_messages.Message):
@@ -2364,6 +2367,7 @@ class GoogleCloudRunV2Revision(_messages.Message):
     reconciling: Output only. Indicates whether the resource's reconciliation
       is still in progress. See comments in `Service.reconciling` for
       additional information on reconciliation process in Cloud Run.
+    sandboxes: Output only. Configuration for sandboxes.
     satisfiesPzs: Output only. Reserved for future use.
     scaling: Scaling settings for this revision.
     scalingStatus: Output only. The current effective scaling settings for the
@@ -2541,18 +2545,19 @@ class GoogleCloudRunV2Revision(_messages.Message):
   nodeSelector = _messages.MessageField('GoogleCloudRunV2NodeSelector', 22)
   observedGeneration = _messages.IntegerField(23)
   reconciling = _messages.BooleanField(24)
-  satisfiesPzs = _messages.BooleanField(25)
-  scaling = _messages.MessageField('GoogleCloudRunV2RevisionScaling', 26)
-  scalingStatus = _messages.MessageField('GoogleCloudRunV2RevisionScalingStatus', 27)
-  service = _messages.StringField(28)
-  serviceAccount = _messages.StringField(29)
-  serviceMesh = _messages.MessageField('GoogleCloudRunV2ServiceMesh', 30)
-  sessionAffinity = _messages.BooleanField(31)
-  timeout = _messages.StringField(32)
-  uid = _messages.StringField(33)
-  updateTime = _messages.StringField(34)
-  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 35, repeated=True)
-  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 36)
+  sandboxes = _messages.MessageField('GoogleCloudRunV2SandboxConfiguration', 25)
+  satisfiesPzs = _messages.BooleanField(26)
+  scaling = _messages.MessageField('GoogleCloudRunV2RevisionScaling', 27)
+  scalingStatus = _messages.MessageField('GoogleCloudRunV2RevisionScalingStatus', 28)
+  service = _messages.StringField(29)
+  serviceAccount = _messages.StringField(30)
+  serviceMesh = _messages.MessageField('GoogleCloudRunV2ServiceMesh', 31)
+  sessionAffinity = _messages.BooleanField(32)
+  timeout = _messages.StringField(33)
+  uid = _messages.StringField(34)
+  updateTime = _messages.StringField(35)
+  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 36, repeated=True)
+  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 37)
 
 
 class GoogleCloudRunV2RevisionScaling(_messages.Message):
@@ -2673,6 +2678,7 @@ class GoogleCloudRunV2RevisionTemplate(_messages.Message):
     nodeSelector: Optional. The node selector for the revision template.
     revision: Optional. The unique name for the revision. If this field is
       omitted, it will be automatically generated based on the Service name.
+    sandboxes: Optional. Configuration for sandboxes.
     scaling: Optional. Scaling settings for this Revision.
     serviceAccount: Optional. Email address of the IAM service account
       associated with the revision of the service. The service account
@@ -2793,13 +2799,14 @@ class GoogleCloudRunV2RevisionTemplate(_messages.Message):
   maxInstanceRequestConcurrency = _messages.IntegerField(12, variant=_messages.Variant.INT32)
   nodeSelector = _messages.MessageField('GoogleCloudRunV2NodeSelector', 13)
   revision = _messages.StringField(14)
-  scaling = _messages.MessageField('GoogleCloudRunV2RevisionScaling', 15)
-  serviceAccount = _messages.StringField(16)
-  serviceMesh = _messages.MessageField('GoogleCloudRunV2ServiceMesh', 17)
-  sessionAffinity = _messages.BooleanField(18)
-  timeout = _messages.StringField(19)
-  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 20, repeated=True)
-  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 21)
+  sandboxes = _messages.MessageField('GoogleCloudRunV2SandboxConfiguration', 15)
+  scaling = _messages.MessageField('GoogleCloudRunV2RevisionScaling', 16)
+  serviceAccount = _messages.StringField(17)
+  serviceMesh = _messages.MessageField('GoogleCloudRunV2ServiceMesh', 18)
+  sessionAffinity = _messages.BooleanField(19)
+  timeout = _messages.StringField(20)
+  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 21, repeated=True)
+  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 22)
 
 
 class GoogleCloudRunV2RunJobRequest(_messages.Message):
@@ -2818,6 +2825,17 @@ class GoogleCloudRunV2RunJobRequest(_messages.Message):
   etag = _messages.StringField(1)
   overrides = _messages.MessageField('GoogleCloudRunV2Overrides', 2)
   validateOnly = _messages.BooleanField(3)
+
+
+class GoogleCloudRunV2SandboxConfiguration(_messages.Message):
+  r"""Configuration for sandboxes.
+
+  Fields:
+    templates: Required. Container templates that can be launched through the
+      `sandbox` CLI.
+  """
+
+  templates = _messages.MessageField('GoogleCloudRunV2Container', 1, repeated=True)
 
 
 class GoogleCloudRunV2SecretKeySelector(_messages.Message):
@@ -5013,6 +5031,7 @@ class GoogleDevtoolsCloudbuildV1BuildOptions(_messages.Message):
       E2_HIGHCPU_8: Highcpu e2 machine with 8 CPUs.
       E2_HIGHCPU_32: Highcpu e2 machine with 32 CPUs.
       E2_MEDIUM: E2 machine with 1 CPU.
+      E2_STANDARD_2: E2 machine with 2 CPUs.
     """
     UNSPECIFIED = 0
     N1_HIGHCPU_8 = 1
@@ -5020,6 +5039,7 @@ class GoogleDevtoolsCloudbuildV1BuildOptions(_messages.Message):
     E2_HIGHCPU_8 = 3
     E2_HIGHCPU_32 = 4
     E2_MEDIUM = 5
+    E2_STANDARD_2 = 6
 
   class RequestedVerifyOptionValueValuesEnum(_messages.Enum):
     r"""Requested verifiability options.

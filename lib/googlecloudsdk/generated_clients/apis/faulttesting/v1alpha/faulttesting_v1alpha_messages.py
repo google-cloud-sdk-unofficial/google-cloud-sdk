@@ -178,8 +178,8 @@ class Experiment(_messages.Message):
       `PREPARING`, `INJECTED`, `COMPLETED`.
     stateUpdateTime: Output only. The date and time when the experiment's
       state was last updated.
-    stopTime: Output only. The date and time when the experiment finished and
-      the faults were removed.
+    stopTime: Output only. The date and time when the experiment entered the
+      REVERTING state.
     templateDescription: Output only. The description from the experiment
       template used for the experiment. Minimum length is 0, maximum length is
       2000.

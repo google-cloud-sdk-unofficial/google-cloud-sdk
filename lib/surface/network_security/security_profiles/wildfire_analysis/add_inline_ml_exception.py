@@ -40,7 +40,7 @@ DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class AddInlineMlException(base.UpdateCommand):
   """Add a WildFire inline machine learning exception to a WildFire Analysis Profile."""
 

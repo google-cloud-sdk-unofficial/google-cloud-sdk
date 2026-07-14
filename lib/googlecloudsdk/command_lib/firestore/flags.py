@@ -16,10 +16,12 @@
 
 
 import argparse
+import json
 import string
 import textwrap
 
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import arg_parsers_usage_text
 from googlecloudsdk.calliope import base as calliope_base
 
 # Keys used in index field configuration.
@@ -466,44 +468,28 @@ def AddUserCredsIdArg(parser):
   )
 
 
-def _IndexOrderType(val):
-  allowed = ['ascending', 'descending', 'order-unspecified']
-  val_lower = val.lower()
-  if val_lower not in allowed:
-    raise arg_parsers.ArgumentTypeError(
-        f'Invalid choice: {val}. Valid choices are: [{", ".join(allowed)}].'
-    )
-  return val_lower
+def _ChoiceType(choices):
+  """Adapts calliope_base.ChoiceArgument behavior for use with nested arg_parse.ArgObject.
 
+  Args:
+    choices: [str], A list of valid flag values.
 
-def _IndexArrayConfigType(val):
-  allowed = ['contains']
-  val_lower = val.lower()
-  if val_lower not in allowed:
-    raise arg_parsers.ArgumentTypeError(
-        f'Invalid choice: {val}. Valid choices are: [{", ".join(allowed)}].'
-    )
-  return val_lower
+  Returns:
+    A callable that sanitizes and validates a user provided flag value against
+    those choices. This callable matches ChoiceArgument behavior.
+  """
+  # Validate the choice list with calliope_base.
+  _ = calliope_base.ChoiceArgument('unused', choices=choices)
 
+  def Parse(val):
+    val_sanitized = calliope_base.SanitizeChoices([val])[0]
+    if val_sanitized not in choices:
+      raise arg_parsers.ArgumentTypeError(
+          f'Invalid choice: {val}. Valid choices are: [{", ".join(choices)}].'
+      )
+    return val_sanitized
 
-def _SearchTextIndexType(val):
-  allowed = ['tokenized']
-  val_lower = val.lower()
-  if val_lower not in allowed:
-    raise arg_parsers.ArgumentTypeError(
-        f'Invalid choice: {val}. Valid choices are: [{", ".join(allowed)}].'
-    )
-  return val_lower
-
-
-def _SearchTextMatchType(val):
-  allowed = ['match-globally', 'match_globally']
-  val_lower = val.lower()
-  if val_lower not in allowed:
-    raise arg_parsers.ArgumentTypeError(
-        f'Invalid choice: {val}. Valid choices are: [match-globally].'
-    )
-  return val_lower
+  return Parse
 
 
 _FIELD_PATH_SPEC = arg_parsers.ArgObject(
@@ -512,7 +498,7 @@ _FIELD_PATH_SPEC = arg_parsers.ArgObject(
 )
 
 _ARRAY_CONFIG_SPEC = arg_parsers.ArgObject(
-    value_type=_IndexArrayConfigType,
+    value_type=_ChoiceType(['contains']),
     help_text=(
         'Specifies the configuration for an array field. The only '
         "valid option is 'contains'. Exactly one of 'order', "
@@ -521,7 +507,7 @@ _ARRAY_CONFIG_SPEC = arg_parsers.ArgObject(
 )
 
 _ORDER_SPEC = arg_parsers.ArgObject(
-    value_type=_IndexOrderType,
+    value_type=_ChoiceType(['ascending', 'descending', 'order-unspecified']),
     help_text=(
         "Specifies the order. Valid options are 'ascending', "
         "'descending'. Exactly one of 'order', 'array-config', or "
@@ -551,11 +537,19 @@ _SEARCH_CONFIG_SPEC = arg_parsers.ArgObject(
         must contain either only 'search-config' fields or only non
         'search-config' fields.
 
+        The following shorthand aliases are supported instead of a full 'search-config':
+          * `TEXT_TOKENIZED_MATCH_GLOBALLY`: Tokenized text search with global matching.
+          * `GEO_POINT`: Geo search.
+
         Examples:
+
+        With alias:
+
+            --field-config=field-path=title,search-config=TEXT_TOKENIZED_MATCH_GLOBALLY
 
         Text search:
 
-            --field-config=field-path=title,search-config='{"text-spec": {"index-specs": [{"index-type": "TOKENIZED", "match-type": "MATCH_GLOBALLY"}]}}'
+            --field-config=field-path=title,search-config='{"text-spec": {"index-specs": [{"index-type": "tokenized", "match-type": "match-globally"}]}}'
 
         Geo search:
 
@@ -582,17 +576,17 @@ _SEARCH_CONFIG_SPEC = arg_parsers.ArgObject(
                     repeated=True,
                     spec={
                         FIELD_CONFIG_INDEX_TYPE: arg_parsers.ArgObject(
-                            value_type=_SearchTextIndexType,
+                            value_type=_ChoiceType(['tokenized']),
                             help_text=textwrap.dedent("""\
                                 Required. How to index the text field value. Valid options are:
-                                  * `TOKENIZED`: Field values are tokenized.
+                                  * `tokenized`: Field values are tokenized.
                                 """),
                         ),
                         FIELD_CONFIG_MATCH_TYPE: arg_parsers.ArgObject(
-                            value_type=_SearchTextMatchType,
+                            value_type=_ChoiceType(['match-globally']),
                             help_text=textwrap.dedent("""\
                                 Required. How to match the text field value. Valid options are:
-                                  * `MATCH_GLOBALLY`: Match on any indexed field.
+                                  * `match-globally`: Match on any indexed field.
                                 """),
                         ),
                     },
@@ -618,6 +612,38 @@ _SEARCH_CONFIG_SPEC = arg_parsers.ArgObject(
 )
 
 
+_SEARCH_CONFIG_ALIASES = {
+    'TEXT_TOKENIZED_MATCH_GLOBALLY': json.dumps({
+        'text-spec': {
+            'index-specs': [{
+                'index-type': 'tokenized',
+                'match-type': 'match-globally',
+            }]
+        }
+    }),
+    'GEO_POINT': json.dumps({'geo-spec': {}}),
+}
+
+
+# Inheriting from DefaultArgTypeWrapper allows us to support aliases without
+# sacrificing the generated help text.
+class _SearchConfigTypeWrapper(arg_parsers_usage_text.DefaultArgTypeWrapper):
+  """Parses search config, expanding aliases if present."""
+
+  def __init__(self):
+    # Pass the search config spec to the parent class so it gets saved to
+    # self.arg_type. This allows Calliope to extract the usage help text.
+    super().__init__(_SEARCH_CONFIG_SPEC)
+
+  def __call__(self, val):
+    if isinstance(val, str):
+      val_upper = val.upper()
+      if val_upper in _SEARCH_CONFIG_ALIASES:
+        val = _SEARCH_CONFIG_ALIASES[val_upper]
+
+    return self.arg_type(val)
+
+
 def AddFieldConfigFlag(parser, is_search_released):
   """Adds the repeated --field-config flag to the given parser.
 
@@ -631,7 +657,7 @@ def AddFieldConfigFlag(parser, is_search_released):
       FIELD_CONFIG_ORDER: _ORDER_SPEC,
       FIELD_CONFIG_VECTOR_CONFIG: _VECTOR_CONFIG_SPEC,
   } | (
-      {FIELD_CONFIG_SEARCH_CONFIG: _SEARCH_CONFIG_SPEC}
+      {FIELD_CONFIG_SEARCH_CONFIG: _SearchConfigTypeWrapper()}
       if is_search_released
       else {}
   )
@@ -712,7 +738,7 @@ def AddMultikeyFlag(parser):
           array index. For multikey indexes, at most one of the paths in the index
           definition reach or traverse an array, except via an explicit array
           index. Violations will result in errors. Note this field only applies to
-          index with 'MONGODB_COMPATIBLE_API' ApiScope.
+          index with 'mongodb-compatible-api' ApiScope.
       """),
   )
 
@@ -744,9 +770,9 @@ _SEARCH_INDEX_OPTIONS_SPEC = arg_parsers.ArgObject(
                 'overridden at the document level by specifying the '
                 "'text-language-override-field-path'. The language is "
                 'specified as a BCP 47 language code. For indexes '
-                "with 'MONGODB_COMPATIBLE_API' ApiScope: If "
+                "with 'mongodb-compatible-api' ApiScope: If "
                 'unspecified, the default language is English. For '
-                "indexes with 'ANY_API' ApiScope: If unspecified, "
+                "indexes with 'any-api' ApiScope: If unspecified, "
                 'the default behavior is autodetect.'
             ),
         ),

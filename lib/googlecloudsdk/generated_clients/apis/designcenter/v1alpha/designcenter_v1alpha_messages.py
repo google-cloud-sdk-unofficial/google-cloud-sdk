@@ -82,6 +82,20 @@ class AlternateDefaultInput(_messages.Message):
   value = _messages.MessageField('extra_types.JsonValue', 2)
 
 
+class ApiInfo(_messages.Message):
+  r"""ApiInfo represents an API along with its origin.
+
+  Fields:
+    api: Required. API name, such as `compute.googleapis.com`.
+    systemProvided: Output only. When true, indicates that this API was
+      automatically added by Application Design Center. APIs provided by users
+      will have this field set to false.
+  """
+
+  api = _messages.StringField(1)
+  systemProvided = _messages.BooleanField(2)
+
+
 class AppHubApplicationParameters(_messages.Message):
   r"""App Hub application parameters.
 
@@ -149,8 +163,12 @@ class Application(_messages.Message):
       updating the application parameters while updating the application
       template revision.
     previewReference: Output only. Preview reference for the application.
-    projectParameters: Output only. List of project parameters for the
+    projectParameters: Output only. Deprecated: This field is deprecated, use
+      roles_apis_config instead. List of project parameters for the
       application.
+    rolesApisConfig: Optional. Project-specific configurations required for
+      application deployment, including IAM roles and APIs. The list can
+      contain up to 100 items.
     scope: Required. Scope of the application.
     serializedApplicationTemplate: Output only. [Output only] Serialized
       application template.
@@ -252,14 +270,15 @@ class Application(_messages.Message):
   paramsUpdateStrategy = _messages.EnumField('ParamsUpdateStrategyValueValuesEnum', 20)
   previewReference = _messages.StringField(21)
   projectParameters = _messages.MessageField('ProjectParameters', 22, repeated=True)
-  scope = _messages.MessageField('Scope', 23)
-  serializedApplicationTemplate = _messages.MessageField('SerializedApplicationTemplate', 24)
-  serviceAccount = _messages.StringField(25)
-  source = _messages.MessageField('DeploymentSource', 26)
-  state = _messages.EnumField('StateValueValuesEnum', 27)
-  type = _messages.EnumField('TypeValueValuesEnum', 28)
-  updateTime = _messages.StringField(29)
-  updatedTemplateRevision = _messages.MessageField('UpdatedTemplateRevision', 30)
+  rolesApisConfig = _messages.MessageField('RolesAndApisConfig', 23, repeated=True)
+  scope = _messages.MessageField('Scope', 24)
+  serializedApplicationTemplate = _messages.MessageField('SerializedApplicationTemplate', 25)
+  serviceAccount = _messages.StringField(26)
+  source = _messages.MessageField('DeploymentSource', 27)
+  state = _messages.EnumField('StateValueValuesEnum', 28)
+  type = _messages.EnumField('TypeValueValuesEnum', 29)
+  updateTime = _messages.StringField(30)
+  updatedTemplateRevision = _messages.MessageField('UpdatedTemplateRevision', 31)
 
 
 class ApplicationOperationMetadata(_messages.Message):
@@ -786,7 +805,7 @@ class CancelOperationRequest(_messages.Message):
 
 
 class Catalog(_messages.Message):
-  r"""A collection of templates.
+  r"""A catalog is a collection of templates.
 
   Fields:
     createTime: Output only. The catalog creation timestamp.
@@ -5335,6 +5354,44 @@ class ResourceType(_messages.Message):
 
   caisResource = _messages.StringField(1)
   tfResource = _messages.StringField(2)
+
+
+class RoleInfo(_messages.Message):
+  r"""RoleInfo represents an IAM role along with its origin.
+
+  Fields:
+    permissions: Output only. The list of permissions that this role is
+      recommended for. This includes only the permissions of this role that
+      are part of the recommendation.
+    role: Required. IAM role name, such as `roles/editor`.
+    systemProvided: Output only. When true, indicates that this role was
+      automatically added by Application Design Center. Roles provided by
+      users will have this field set to false.
+  """
+
+  permissions = _messages.StringField(1, repeated=True)
+  role = _messages.StringField(2)
+  systemProvided = _messages.BooleanField(3)
+
+
+class RolesAndApisConfig(_messages.Message):
+  r"""Represents configurations required within a specific project to deploy
+  the application.
+
+  Fields:
+    apis: Optional. APIs required to be enabled in this project for deploying
+      the application, in the form of "*.googleapis.com". The maximum number
+      of APIs allowed is 500.
+    projectId: Required. The project ID to which these configurations apply.
+      Format: {project_id}
+    roles: Optional. IAM roles required to deploy the application within this
+      project. Each role must be a valid IAM role name, such as
+      `roles/editor`. The maximum number of roles allowed is 500.
+  """
+
+  apis = _messages.MessageField('ApiInfo', 1, repeated=True)
+  projectId = _messages.StringField(2)
+  roles = _messages.MessageField('RoleInfo', 3, repeated=True)
 
 
 class RootInputVariable(_messages.Message):

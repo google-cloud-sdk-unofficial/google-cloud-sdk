@@ -20,6 +20,19 @@ location:
     help: |
       The location Id.
 
+operation:
+  name: operation
+  collection: networksecurity.projects.locations.operations
+  attributes:
+  - *project
+  - *location
+  - &operation
+    parameter_name: operationsId
+    attribute_name: operation
+    help: |
+      Id of the operation.
+  disable_auto_completers: true
+
 globalDefaultLocation:
   name: location
   collection: networksecurity.projects.locations

@@ -32,7 +32,7 @@ DETAILED_HELP = {
     'EXAMPLES': """
           To update a git repository link to enable metrics collection, run:
 
-            $ {command} developer-connect connections git-repository-links update <LINK> --source-config=<SOURCE_CONFIG>
+            $ {command} developer-connect connections git-repository-links update <LINK> --collect-metrics
           """,
 }
 
@@ -46,9 +46,12 @@ class Update(base.UpdateCommand):
   def Args(parser):
     # Relevant argument.
     resource_args.AddGitRepositoryLinkResourceArg(parser, verb='update')
-    flags.AddSourceConfigArgument(parser)
+    flags.AddCollectMetricsArgument(parser)
 
   def Run(self, args):
+    if not args.collect_metrics:
+      log.status.Print('No updates specified.')
+      return
     max_wait = datetime.timedelta(seconds=30)
     client = insights_config.InsightsConfigClient(base.ReleaseTrack.BETA)
     git_repository_link_ref = args.CONCEPTS.git_repository_link.Parse()
@@ -65,19 +68,20 @@ class Update(base.UpdateCommand):
         collection='developerconnect.projects.locations.insightsConfigs',
     )
     log.CreatedResource(
-        'create git repository link [{0}].'.format(insights_config_ref)
+        'create Insights Config [{0}].'.format(insights_config_ref)
     )
 
     # Construct the request message
-    if not args.IsSpecified('source_config'):
-      raise ValueError('source_config is required.')
+    source_config = {
+        'git-repository-link': git_repository_link_ref.RelativeName()
+    }
     try:
       operation = client.create(
           insight_config_ref=insights_config_ref,
           app_hub=None,
-          target_projects=[project_id],
+          target_projects=None,
           user_artifact_configs=None,
-          source_config=args.source_config,
+          source_config=source_config,
       )
 
     except exceptions.HttpException as e:

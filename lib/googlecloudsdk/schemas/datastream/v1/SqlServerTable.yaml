@@ -33,5 +33,5 @@ properties:
     items:
       $ref: SqlServerColumn.yaml
   table:
-    description: Table name.
+    description: The table name.
     type: string

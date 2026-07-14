@@ -132,6 +132,7 @@ class CreateGA(base.CreateCommand):
     if cls.support_resource_manager_tags:
       managed_flags.AddMigResourceManagerTagsFlags(parser)
     managed_flags.AddMigDefaultActionOnVmFailure(parser, cls.ReleaseTrack())
+    managed_flags.AddMigActionOnVmFailedHealthCheck(parser)
     flags.AddInstanceFlexibilityPolicyArgs(
         parser,
         support_instance_selection_min_cpu_platform=cls.support_instance_selection_min_cpu_platform,
@@ -481,7 +482,6 @@ class CreateBeta(CreateGA):
 
   @classmethod
   def Args(cls, parser):
-    managed_flags.AddMigActionOnVmFailedHealthCheck(parser)
     managed_flags.AddOnRepairFlags(parser)
     super(CreateBeta, cls).Args(parser)
 

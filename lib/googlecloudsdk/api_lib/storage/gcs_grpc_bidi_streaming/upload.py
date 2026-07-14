@@ -119,11 +119,13 @@ class _Upload(six.with_metaclass(abc.ABCMeta, object)):
       source_resource: (
           resource_reference.FileObjectResource
           | resource_reference.ObjectResource
+          | None
       ),
       start_offset: int = 0,
       delegator: cloud_api.CloudApi | None = None,
       posix_to_set: posix_util.PosixAttributes | None = None,
       encryption_key: encryption_util.EncryptionKey | None = None,
+      is_streaming_upload: bool = False,
   ):
     """Initializes _Upload.
 
@@ -141,6 +143,7 @@ class _Upload(six.with_metaclass(abc.ABCMeta, object)):
         calls.
       posix_to_set: POSIX attributes to set on the destination object.
       encryption_key: The encryption key to use for the upload.
+      is_streaming_upload: Whether the upload is streaming.
     """
     self._client = client
     self._source_stream = source_stream
@@ -170,6 +173,7 @@ class _Upload(six.with_metaclass(abc.ABCMeta, object)):
     self._encryption_params = grpc_util.get_encryption_request_params(
         self._client, encryption_key
     )
+    self._is_streaming_upload = is_streaming_upload
 
   def _get_max_buffer_size(self):
     """Returns the maximum buffer size."""
@@ -196,11 +200,13 @@ class _Upload(six.with_metaclass(abc.ABCMeta, object)):
     if not self._should_use_crc32c:
       return None
     crc32c_hash = hash_util.get_hash_from_data_chunk_or_file(
-        self._source_resource.storage_url.resource_name,
+        self._source_resource.storage_url.resource_name if self._source_resource
+        else None,
         data,
         hash_util.HashAlgorithm.CRC32C,
         self._uploaded_so_far,
         self._uploaded_so_far + length,
+        is_streaming=self._is_streaming_upload,
     )
     return int.from_bytes(crc32c_hash.digest(), byteorder='big')
 

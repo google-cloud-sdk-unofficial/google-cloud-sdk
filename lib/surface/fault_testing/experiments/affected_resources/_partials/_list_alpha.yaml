@@ -29,7 +29,7 @@
   arguments:
     params:
     - help_text: |-
-        The `Experiment` from which to list affected resources.
+        The experiment from which to list affected resources.
         Format:
         `projects/{projectId}/locations/{location}/experiments/{experimentId}`.
       is_positional: false

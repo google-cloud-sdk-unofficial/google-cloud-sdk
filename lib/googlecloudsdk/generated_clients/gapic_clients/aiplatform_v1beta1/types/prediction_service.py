@@ -63,6 +63,8 @@ __protobuf__ = proto.module(
         'GenerateVideoResponse',
         'EmbedContentRequest',
         'EmbedContentResponse',
+        'GetResponseRequest',
+        'DeleteResponseRequest',
     },
 )
 
@@ -1723,6 +1725,39 @@ class EmbedContentResponse(proto.Message):
     truncated: bool = proto.Field(
         proto.BOOL,
         number=4,
+    )
+
+
+class GetResponseRequest(proto.Message):
+    r"""Request message for
+    [PredictionService.GetResponse][google.cloud.aiplatform.v1beta1.PredictionService.GetResponse].
+
+    Attributes:
+        name (str):
+            Required. The name of the Response resource. Format:
+            ``projects/{project}/locations/{location}/endpoints/{endpoint}/responses/{response}``
+    """
+
+    name: str = proto.Field(
+        proto.STRING,
+        number=1,
+    )
+
+
+class DeleteResponseRequest(proto.Message):
+    r"""Request message for
+    [PredictionService.DeleteResponse][google.cloud.aiplatform.v1beta1.PredictionService.DeleteResponse].
+
+    Attributes:
+        name (str):
+            Required. The name of the Response resource to be deleted.
+            Format:
+            ``projects/{project}/locations/{location}/endpoints/{endpoint}/responses/{response}``
+    """
+
+    name: str = proto.Field(
+        proto.STRING,
+        number=1,
     )
 
 

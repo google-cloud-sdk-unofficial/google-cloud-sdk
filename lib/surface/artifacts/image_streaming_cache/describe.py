@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 @base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Checks and describes the prewarmed status of an artifact."""

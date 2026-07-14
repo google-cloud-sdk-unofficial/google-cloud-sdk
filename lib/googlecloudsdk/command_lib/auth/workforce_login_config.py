@@ -109,10 +109,13 @@ def DoWorkforceHeadfulLogin(login_config_file, is_adc=False, **kwargs):
         universe_domain_from_config
         or properties.VALUES.core.universe_domain.Get()
     )
+    if 'revoke_url' in login_config_data:
+      creds._revoke_url = login_config_data['revoke_url']  # pylint: disable=protected-access
 
-  # TODO(b/260741921): Once google-oauthlib sets the audience, remove this.
-  if not creds.audience:
-    creds._audience = audience  # pylint: disable=protected-access
+    # TODO(b/260741921): Once google-oauthlib sets the audience, remove this.
+    if not creds.audience:
+      creds._audience = audience  # pylint: disable=protected-access
+
   return creds
 
 

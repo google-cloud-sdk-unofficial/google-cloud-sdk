@@ -2160,6 +2160,79 @@ class DlpProjectsLocationsContentInspectRequest(_messages.Message):
   parent = _messages.StringField(2, required=True)
 
 
+class DlpProjectsLocationsContentPoliciesCreateRequest(_messages.Message):
+  r"""A DlpProjectsLocationsContentPoliciesCreateRequest object.
+
+  Fields:
+    googlePrivacyDlpV2CreateContentPolicyRequest: A
+      GooglePrivacyDlpV2CreateContentPolicyRequest resource to be passed as
+      the request body.
+    parent: Required. Parent resource name. The format of this value varies
+      depending on the scope of the request (project or organization): +
+      Projects scope: `projects/{project_id}/locations/{location_id}` +
+      Organizations scope: `organizations/{org_id}/locations/{location_id}`
+  """
+
+  googlePrivacyDlpV2CreateContentPolicyRequest = _messages.MessageField('GooglePrivacyDlpV2CreateContentPolicyRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
+class DlpProjectsLocationsContentPoliciesDeleteRequest(_messages.Message):
+  r"""A DlpProjectsLocationsContentPoliciesDeleteRequest object.
+
+  Fields:
+    name: Required. Resource name of the ContentPolicy to be deleted, in the
+      format: `projects/{project}/locations/{location}/contentPolicies/{conten
+      t_policy}`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class DlpProjectsLocationsContentPoliciesGetRequest(_messages.Message):
+  r"""A DlpProjectsLocationsContentPoliciesGetRequest object.
+
+  Fields:
+    name: Required. Resource name in the format: `projects/{project}/locations
+      /{location}/contentPolicies/{content_policy}`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class DlpProjectsLocationsContentPoliciesListRequest(_messages.Message):
+  r"""A DlpProjectsLocationsContentPoliciesListRequest object.
+
+  Fields:
+    pageSize: Optional. Number of results per page, max 1000.
+    pageToken: Optional. Page token from a previous page to return the next
+      set of results. If set, all other request fields must match the original
+      request.
+    parent: Required. Resource name of the organization or project, for
+      example, `organizations/433245324/locations/europe` or
+      `projects/project-id/locations/asia`.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class DlpProjectsLocationsContentPoliciesPatchRequest(_messages.Message):
+  r"""A DlpProjectsLocationsContentPoliciesPatchRequest object.
+
+  Fields:
+    googlePrivacyDlpV2UpdateContentPolicyRequest: A
+      GooglePrivacyDlpV2UpdateContentPolicyRequest resource to be passed as
+      the request body.
+    name: Required. Resource name in the format: `projects/{project}/locations
+      /{location}/contentPolicies/{content_policy}`.
+  """
+
+  googlePrivacyDlpV2UpdateContentPolicyRequest = _messages.MessageField('GooglePrivacyDlpV2UpdateContentPolicyRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class DlpProjectsLocationsContentReidentifyRequest(_messages.Message):
   r"""A DlpProjectsLocationsContentReidentifyRequest object.
 
@@ -4829,6 +4902,52 @@ class GooglePrivacyDlpV2ContentMetadata(_messages.Message):
   properties = _messages.MessageField('GooglePrivacyDlpV2KeyValueMetadataProperty', 1, repeated=True)
 
 
+class GooglePrivacyDlpV2ContentPolicy(_messages.Message):
+  r"""A policy to apply to content based on its inspection findings.
+
+  Fields:
+    createTime: Output only. The creation timestamp of a contentPolicy;
+      output-only field.
+    defaultAction: Action to take if the content is scanned and no rules
+      match. Defaults to returning an ALLOW verdict if not set.
+    displayName: Optional. Display name (max 63 chars)
+    errors: Output only. A stream of errors encountered when the policy was
+      applied. Output only field. Will return the last 100 errors. Whenever
+      the policy is modified this list will be cleared.
+    failedToScanSupportedFileType: Optional. Action to take if the content is
+      a supported file type and size but fails to be scanned, for example
+      because the file is encrypted or corrupted.
+    inputTooLarge: Optional. Action to take if the content is a supported file
+      type but is too large to be scanned.
+    inspectConfig: Optional. InspectConfig to use to produce findings.
+    inspectTemplate: Optional. InspectTemplate to use to produce findings.
+      Deprecated: use inspect_config instead.
+    loggingConfigs: Optional. Log the actions taken by the content policy to
+      external systems.
+    name: Output only. Resource name of the policy.
+    rules: Required. Policies to apply, based on the findings returned by
+      inspection. The first rule to match applies.
+    unsupportedFileType: Optional. Action to take if the content is an
+      unsupported file type.
+    updateTime: Output only. The last update timestamp of a contentPolicy;
+      output-only field.
+  """
+
+  createTime = _messages.StringField(1)
+  defaultAction = _messages.MessageField('GooglePrivacyDlpV2PolicyAction', 2)
+  displayName = _messages.StringField(3)
+  errors = _messages.MessageField('GooglePrivacyDlpV2Error', 4, repeated=True)
+  failedToScanSupportedFileType = _messages.MessageField('GooglePrivacyDlpV2PolicyAction', 5)
+  inputTooLarge = _messages.MessageField('GooglePrivacyDlpV2PolicyAction', 6)
+  inspectConfig = _messages.MessageField('GooglePrivacyDlpV2InspectConfig', 7)
+  inspectTemplate = _messages.MessageField('GooglePrivacyDlpV2InspectTemplate', 8)
+  loggingConfigs = _messages.MessageField('GooglePrivacyDlpV2LoggingConfig', 9, repeated=True)
+  name = _messages.StringField(10)
+  rules = _messages.MessageField('GooglePrivacyDlpV2PolicyRule', 11, repeated=True)
+  unsupportedFileType = _messages.MessageField('GooglePrivacyDlpV2PolicyAction', 12)
+  updateTime = _messages.StringField(13)
+
+
 class GooglePrivacyDlpV2Conversation(_messages.Message):
   r"""Complete conversation or slice of a conversation. It is assumed that all
   included messages are contiguous and ordered in chronological order.
@@ -4899,6 +5018,21 @@ class GooglePrivacyDlpV2CreateConnectionRequest(_messages.Message):
   """
 
   connection = _messages.MessageField('GooglePrivacyDlpV2Connection', 1)
+
+
+class GooglePrivacyDlpV2CreateContentPolicyRequest(_messages.Message):
+  r"""Request message for CreateContentPolicy.
+
+  Fields:
+    contentPolicy: Required. The content_policy resource.
+    contentPolicyId: Optional. The content policy ID can contain uppercase and
+      lowercase letters, numbers, and hyphens; that is, it must match the
+      regular expression: `[a-zA-Z\d-_]+`. The maximum length is 100
+      characters. If empty, the system will generate a random id.
+  """
+
+  contentPolicy = _messages.MessageField('GooglePrivacyDlpV2ContentPolicy', 1)
+  contentPolicyId = _messages.StringField(2)
 
 
 class GooglePrivacyDlpV2CreateDeidentifyTemplateRequest(_messages.Message):
@@ -8406,6 +8540,18 @@ class GooglePrivacyDlpV2InfoTypeCategory(_messages.Message):
   typeCategory = _messages.EnumField('TypeCategoryValueValuesEnum', 3)
 
 
+class GooglePrivacyDlpV2InfoTypeCondition(_messages.Message):
+  r"""A info type based condition.
+
+  Fields:
+    anyInfoType: match any info types.
+    infoTypes: match any of these info types.
+  """
+
+  anyInfoType = _messages.MessageField('GoogleProtobufEmpty', 1)
+  infoTypes = _messages.MessageField('GooglePrivacyDlpV2InfoTypes', 2)
+
+
 class GooglePrivacyDlpV2InfoTypeDescription(_messages.Message):
   r"""InfoType description.
 
@@ -8582,6 +8728,16 @@ class GooglePrivacyDlpV2InfoTypeTransformations(_messages.Message):
   """
 
   transformations = _messages.MessageField('GooglePrivacyDlpV2InfoTypeTransformation', 1, repeated=True)
+
+
+class GooglePrivacyDlpV2InfoTypes(_messages.Message):
+  r"""Info types to match.
+
+  Fields:
+    infoTypeNames: Required. A list of info types to match.
+  """
+
+  infoTypeNames = _messages.StringField(1, repeated=True)
 
 
 class GooglePrivacyDlpV2InspectConfig(_messages.Message):
@@ -9297,6 +9453,19 @@ class GooglePrivacyDlpV2ListConnectionsResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
+class GooglePrivacyDlpV2ListContentPoliciesResponse(_messages.Message):
+  r"""Response message for ListContentPolicies.
+
+  Fields:
+    contentPolicies: List of content policies.
+    nextPageToken: Token to retrieve the next page of results. An empty value
+      means there are no more results.
+  """
+
+  contentPolicies = _messages.MessageField('GooglePrivacyDlpV2ContentPolicy', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
 class GooglePrivacyDlpV2ListDeidentifyTemplatesResponse(_messages.Message):
   r"""Response message for ListDeidentifyTemplates.
 
@@ -9480,6 +9649,32 @@ class GooglePrivacyDlpV2LocationSupport(_messages.Message):
 
   locations = _messages.StringField(1, repeated=True)
   regionalizationScope = _messages.EnumField('RegionalizationScopeValueValuesEnum', 2)
+
+
+class GooglePrivacyDlpV2LogToBigQuery(_messages.Message):
+  r"""Configuration for logging content policy actions to BigQuery.
+
+  Fields:
+    datasetId: Required. The ID of the dataset containing the BigQuery table
+      to write to.
+    projectId: Required. The ID of the project containing the BigQuery table
+      to write to.
+    tableId: Required. The ID of the BigQuery table to write to.
+  """
+
+  datasetId = _messages.StringField(1)
+  projectId = _messages.StringField(2)
+  tableId = _messages.StringField(3)
+
+
+class GooglePrivacyDlpV2LoggingConfig(_messages.Message):
+  r"""A single logging configuration.
+
+  Fields:
+    logToBigQuery: Optional. Log the actions taken to a BigQuery table.
+  """
+
+  logToBigQuery = _messages.MessageField('GooglePrivacyDlpV2LogToBigQuery', 1)
 
 
 class GooglePrivacyDlpV2Manual(_messages.Message):
@@ -9815,6 +10010,83 @@ class GooglePrivacyDlpV2PathElement(_messages.Message):
   id = _messages.IntegerField(1)
   kind = _messages.StringField(2)
   name = _messages.StringField(3)
+
+
+class GooglePrivacyDlpV2PolicyAction(_messages.Message):
+  r"""A possible action to take when applying a content policy.
+
+  Enums:
+    ReturnVerdictValueValuesEnum: Optional. If set, the verdict will be
+      returned to the user.
+
+  Fields:
+    returnVerdict: Optional. If set, the verdict will be returned to the user.
+  """
+
+  class ReturnVerdictValueValuesEnum(_messages.Enum):
+    r"""Optional. If set, the verdict will be returned to the user.
+
+    Values:
+      CONTENT_POLICY_VERDICT_UNSPECIFIED: Not used.
+      ALLOW: The policy allows the provided content to be used.
+      BLOCK: The policy prevents the provided content from being used. This
+        should result in a blocked file upload, exclusion from training
+        dataset, or other similar block action. (specific action will depend
+        on the caller).
+    """
+    CONTENT_POLICY_VERDICT_UNSPECIFIED = 0
+    ALLOW = 1
+    BLOCK = 2
+
+  returnVerdict = _messages.EnumField('ReturnVerdictValueValuesEnum', 1)
+
+
+class GooglePrivacyDlpV2PolicyCondition(_messages.Message):
+  r"""A condition that must match for this rule to apply.
+
+  Fields:
+    infoTypeCondition: A condition based on info types.
+  """
+
+  infoTypeCondition = _messages.MessageField('GooglePrivacyDlpV2InfoTypeCondition', 1)
+
+
+class GooglePrivacyDlpV2PolicyRule(_messages.Message):
+  r"""A single policy rule. The first rule to match from the list above
+  controls the result.
+
+  Enums:
+    ReturnVerdictValueValuesEnum: If set, the verdict will be returned to the
+      user. Deprecated: Use `action` instead.
+
+  Fields:
+    action: Required. Action to take if this rule applies.
+    conditions: Optional. Conditions that must match for this rule to apply.
+      All conditions must match (`AND`). For `OR` conditions, use multiple
+      rules.
+    returnVerdict: If set, the verdict will be returned to the user.
+      Deprecated: Use `action` instead.
+  """
+
+  class ReturnVerdictValueValuesEnum(_messages.Enum):
+    r"""If set, the verdict will be returned to the user. Deprecated: Use
+    `action` instead.
+
+    Values:
+      CONTENT_POLICY_VERDICT_UNSPECIFIED: Not used.
+      ALLOW: The policy allows the provided content to be used.
+      BLOCK: The policy prevents the provided content from being used. This
+        should result in a blocked file upload, exclusion from training
+        dataset, or other similar block action. (specific action will depend
+        on the caller).
+    """
+    CONTENT_POLICY_VERDICT_UNSPECIFIED = 0
+    ALLOW = 1
+    BLOCK = 2
+
+  action = _messages.MessageField('GooglePrivacyDlpV2PolicyAction', 1)
+  conditions = _messages.MessageField('GooglePrivacyDlpV2PolicyCondition', 2, repeated=True)
+  returnVerdict = _messages.EnumField('ReturnVerdictValueValuesEnum', 3)
 
 
 class GooglePrivacyDlpV2PrimitiveTransformation(_messages.Message):
@@ -11808,6 +12080,19 @@ class GooglePrivacyDlpV2UpdateConnectionRequest(_messages.Message):
   """
 
   connection = _messages.MessageField('GooglePrivacyDlpV2Connection', 1)
+  updateMask = _messages.StringField(2)
+
+
+class GooglePrivacyDlpV2UpdateContentPolicyRequest(_messages.Message):
+  r"""Request message for UpdateContentPolicy.
+
+  Fields:
+    contentPolicy: Required. The content_policy with new values for the
+      relevant fields.
+    updateMask: Optional. Mask to control which fields get updated.
+  """
+
+  contentPolicy = _messages.MessageField('GooglePrivacyDlpV2ContentPolicy', 1)
   updateMask = _messages.StringField(2)
 
 

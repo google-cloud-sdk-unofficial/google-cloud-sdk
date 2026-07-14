@@ -1058,6 +1058,10 @@ class Device(_messages.Message):
       EndpointVerificationSpecificAttributes. We are replicating it here since
       EndpointVerification isn't the only source of browser profiles.
     buildNumber: Output only. Build number of the device.
+    certificateAttributes: Optional. Details of certificates reported on the
+      device. This is a copy of the CertificateAttributes message defined in
+      EndpointVerificationSpecificAttributes. We are replicating it here since
+      EndpointVerification isn't the only source of certificates.
     clientTypes: List of the clients the device is reporting to.
     compromisedState: Output only. Represents whether the Device is
       compromised.
@@ -1230,35 +1234,36 @@ class Device(_messages.Message):
   brand = _messages.StringField(6)
   browserProfiles = _messages.MessageField('BrowserAttributes', 7, repeated=True)
   buildNumber = _messages.StringField(8)
-  clientTypes = _messages.EnumField('ClientTypesValueListEntryValuesEnum', 9, repeated=True)
-  compromisedState = _messages.EnumField('CompromisedStateValueValuesEnum', 10)
-  createTime = _messages.StringField(11)
-  deviceId = _messages.StringField(12)
-  deviceType = _messages.EnumField('DeviceTypeValueValuesEnum', 13)
-  enabledDeveloperOptions = _messages.BooleanField(14)
-  enabledUsbDebugging = _messages.BooleanField(15)
-  encryptionState = _messages.EnumField('EncryptionStateValueValuesEnum', 16)
-  endpointVerificationSpecificAttributes = _messages.MessageField('EndpointVerificationSpecificAttributes', 17)
-  hostname = _messages.StringField(18)
-  imei = _messages.StringField(19)
-  kernelVersion = _messages.StringField(20)
-  lastSyncTime = _messages.StringField(21)
-  managementState = _messages.EnumField('ManagementStateValueValuesEnum', 22)
-  manufacturer = _messages.StringField(23)
-  meid = _messages.StringField(24)
-  model = _messages.StringField(25)
-  name = _messages.StringField(26)
-  networkOperator = _messages.StringField(27)
-  osFirewallStatus = _messages.EnumField('OsFirewallStatusValueValuesEnum', 28)
-  osVersion = _messages.StringField(29)
-  otherAccounts = _messages.StringField(30, repeated=True)
-  ownerType = _messages.EnumField('OwnerTypeValueValuesEnum', 31)
-  releaseVersion = _messages.StringField(32)
-  securityPatchTime = _messages.StringField(33)
-  serialNumber = _messages.StringField(34)
-  unifiedDeviceId = _messages.StringField(35)
-  wifiMacAddresses = _messages.StringField(36, repeated=True)
-  windowsSpecificDeviceAttributes = _messages.MessageField('WindowsSpecificDeviceAttributes', 37)
+  certificateAttributes = _messages.MessageField('CertificateAttributes', 9, repeated=True)
+  clientTypes = _messages.EnumField('ClientTypesValueListEntryValuesEnum', 10, repeated=True)
+  compromisedState = _messages.EnumField('CompromisedStateValueValuesEnum', 11)
+  createTime = _messages.StringField(12)
+  deviceId = _messages.StringField(13)
+  deviceType = _messages.EnumField('DeviceTypeValueValuesEnum', 14)
+  enabledDeveloperOptions = _messages.BooleanField(15)
+  enabledUsbDebugging = _messages.BooleanField(16)
+  encryptionState = _messages.EnumField('EncryptionStateValueValuesEnum', 17)
+  endpointVerificationSpecificAttributes = _messages.MessageField('EndpointVerificationSpecificAttributes', 18)
+  hostname = _messages.StringField(19)
+  imei = _messages.StringField(20)
+  kernelVersion = _messages.StringField(21)
+  lastSyncTime = _messages.StringField(22)
+  managementState = _messages.EnumField('ManagementStateValueValuesEnum', 23)
+  manufacturer = _messages.StringField(24)
+  meid = _messages.StringField(25)
+  model = _messages.StringField(26)
+  name = _messages.StringField(27)
+  networkOperator = _messages.StringField(28)
+  osFirewallStatus = _messages.EnumField('OsFirewallStatusValueValuesEnum', 29)
+  osVersion = _messages.StringField(30)
+  otherAccounts = _messages.StringField(31, repeated=True)
+  ownerType = _messages.EnumField('OwnerTypeValueValuesEnum', 32)
+  releaseVersion = _messages.StringField(33)
+  securityPatchTime = _messages.StringField(34)
+  serialNumber = _messages.StringField(35)
+  unifiedDeviceId = _messages.StringField(36)
+  wifiMacAddresses = _messages.StringField(37, repeated=True)
+  windowsSpecificDeviceAttributes = _messages.MessageField('WindowsSpecificDeviceAttributes', 38)
 
 
 class DeviceUser(_messages.Message):

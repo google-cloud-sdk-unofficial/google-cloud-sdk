@@ -94,13 +94,6 @@ class RmBatchPoller(waiter.OperationPoller):
         err_message = '{} Detail: {}'.format(err_message, batch.stateMessage)
         if err_message[-1] != '.':
           err_message += '.'
-      err_message += '\n'
-      err_message += (
-          'Running auto diagnostics on the batch. It may take few '
-          'minutes before diagnostics output is available. Please '
-          "check diagnostics output by running 'gcloud dataproc "
-          "batches describe' command."
-      )
       raise exceptions.JobError(err_message)
 
     # Nothing to return, since the result is directly output to users.

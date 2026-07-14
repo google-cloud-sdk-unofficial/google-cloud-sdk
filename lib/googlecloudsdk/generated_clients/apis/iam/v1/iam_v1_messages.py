@@ -5965,7 +5965,7 @@ class WorkforcePoolProvider(_messages.Message):
       ENTRA_ID: Microsoft Entra ID
       OKTA: Okta
       PING_FEDERATE: Ping Federate
-      ADFS: Microsoft AD Federated Service
+      ADFS: Microsoft Active Directory Federation Services
       KEYCLOAK: Keycloak
       FORGE_ROCK: ForgeRock
       JUMP_CLOUD: JumpCloud

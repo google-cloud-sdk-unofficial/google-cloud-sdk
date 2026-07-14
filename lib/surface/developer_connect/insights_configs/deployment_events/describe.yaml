@@ -22,6 +22,11 @@
         If true, shows the diff between this deployment and the previous one.
       action: store_true
       hidden: true
+    - arg_name: show-details
+      help_text: |-
+        If true, enriches the deployment event with vulnerability and package dependency details from Container Analysis.
+      action: store_true
+      default: false
   request:
     api_version: v1
     collection: developerconnect.projects.locations.insightsConfigs.deploymentEvents

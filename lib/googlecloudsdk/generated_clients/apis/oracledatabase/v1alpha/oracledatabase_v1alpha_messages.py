@@ -5646,9 +5646,10 @@ class GoldengateOracleConnectionProperties(_messages.Message):
     authenticationMode: Optional. Authentication mode.
     connectionString: Optional. Connect descriptor or Easy Connect Naming
       method used to connect to a database.
-    gcpOracleDatabaseId: Optional. Database instance id of database in Oracle
-      Database @ Google Cloud. If gcp_oracle_database_id is provided,
-      connection_string must be empty.
+    gcpOracleDatabaseId: Optional. Autonomous AI Database instance id of
+      database in Oracle Database @ Google Cloud. If gcp_oracle_database_id is
+      provided, connection_string must be empty. Format: projects/{project}/lo
+      cations/{location}/autonomousDatabases/{autonomous_database}
     password: Optional. Input only. The password Oracle Goldengate uses in
       plain text.
     passwordSecretVersion: Optional. Input only. The resource name of a secret

@@ -23,7 +23,6 @@ from googlecloudsdk.command_lib.run import ssh_command
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.Hidden
 @base.DefaultUniverseOnly
-@base.RegionalEndpointsSupported
 class Ssh(ssh_command.BaseSshCommand):
   """SSH into a service instance."""
 

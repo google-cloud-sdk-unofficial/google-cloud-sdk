@@ -137,7 +137,7 @@ class Client:
       block_partial_http=None,
   ):
     """Returns FirewallEndpointEndpointSettings message."""
-    if self.release_track == base.ReleaseTrack.ALPHA:
+    if self.release_track in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
       if all(
           arg is None
           for arg in [
@@ -175,7 +175,7 @@ class Client:
       enable_wildfire_analysis_logging=None,
   ):
     """Returns a WildfireSettings message."""
-    if self.release_track == base.ReleaseTrack.ALPHA:
+    if self.release_track in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
       rt_action_enum = (
           self.messages.FirewallEndpointWildfireSettings.WildfireRealtimeLookupTimeoutActionValueValuesEnum
       )
@@ -288,7 +288,7 @@ class Client:
     if endpoint_settings:
       endpoint.endpointSettings = endpoint_settings
     if (
-        self.release_track == base.ReleaseTrack.ALPHA
+        self.release_track in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
         and enable_wildfire is not None
     ):
       endpoint.wildfireSettings = self._ParseWildfireSettings(
@@ -357,7 +357,11 @@ class Client:
       if endpoint_settings:
         endpoint.endpointSettings = endpoint_settings
 
-    if self.release_track == base.ReleaseTrack.ALPHA and (
+    is_preview = self.release_track in (
+        base.ReleaseTrack.ALPHA,
+        base.ReleaseTrack.BETA,
+    )
+    if is_preview and (
         enable_wildfire is not None
         or wildfire_region is not None
         or wildfire_lookup_timeout is not None

@@ -30,10 +30,10 @@ properties:
     type: sqlserverchangetables
     $ref: SqlServerChangeTables.yaml
   excludeObjects:
-    description: SQLServer objects to exclude from the stream.
+    description: The SQLServer objects to exclude from the stream.
     $ref: SqlServerRdbms.yaml
   includeObjects:
-    description: SQLServer objects to include in the stream.
+    description: The SQLServer objects to include in the stream.
     $ref: SqlServerRdbms.yaml
   maxConcurrentBackfillTasks:
     description: Max concurrent backfill tasks.

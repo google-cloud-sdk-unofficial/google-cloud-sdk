@@ -3783,8 +3783,11 @@ class ExternalRuntimeOptions(_messages.Message):
       Python UDFs](https://cloud.google.com/bigquery/docs/user-defined-
       functions-python#configure-container-limits)
     containerRequestConcurrency: Optional. Maximum number of requests that a
-      Python UDF container instance can handle concurrently. If absent or if
-      `0`, a default concurrency is used.
+      Python UDF instance can handle concurrently. If absent or if `0`, the
+      default concurrency value is used. For more information, see [Configure
+      container limits for Python
+      UDFs](https://cloud.google.com/bigquery/docs/user-defined-functions-
+      python#configure-container-limits).
     maxBatchingRows: Optional. Maximum number of rows in each batch sent to
       the external runtime. If absent or if 0, BigQuery dynamically decides
       the number of rows in a batch.
@@ -5902,8 +5905,11 @@ class JobStatistics2(_messages.Message):
       is only populated for jobs that have external service costs, and is the
       total of the usage for costs whose billing method is `"SERVICES_SKU"`.
     totalSlotMs: Output only. Slot-milliseconds for the job.
-    transferredBytes: Output only. Total bytes transferred for cross-cloud
-      queries such as Cross Cloud Transfer and CREATE TABLE AS SELECT (CTAS).
+    transferredBytes: Output only. Total bytes transferred for BigQuery Omni
+      queries from the remote cloud back to Google Cloud. This tracks data
+      movement over Google-managed connections (like query results). It
+      doesn't include input data read from the external data lake (for
+      example, S3) because that data stays within the remote cloud.
     undeclaredQueryParameters: Output only. GoogleSQL only: list of undeclared
       query parameters detected during a dry run validation.
     vectorSearchStatistics: Output only. Vector Search query specific

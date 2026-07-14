@@ -484,9 +484,6 @@ apis:
   cloudcommerceconsumerprocurement:
     v1alpha1:
       discovery_doc: cloudcommerceconsumerprocurement_v1alpha1.json
-  clouddebugger:
-    v2:
-      discovery_doc: clouddebugger_v2.json
   clouddeploy:
     v1:
       default: true
@@ -961,6 +958,13 @@ apis:
           path: projects/{projectsId}/secrets/{secretsId}
         projects.secrets.versions:
           path: projects/{projectsId}/secrets/{secretsId}/versions/{versionsId}
+  devicerun:
+    v1alpha:
+      discovery_doc: devicerun_v1alpha.json
+      default: true
+      resources:
+        projects.locations.instances:
+          path: projects/{projectsId}/locations/{locationsId}/instances/{instancesId}
   dialogflow:
     v2:
       discovery_doc: dialogflow_v2.json
@@ -2246,6 +2250,13 @@ apis:
   agentregistry:
     v1alpha:
       discovery_doc: agentregistry_v1alpha.json
+      resources:
+        projects.locations.skills:
+          path: projects/{projectsId}/locations/{locationsId}/skills/{skillsId}
+        projects.locations.skills.revisions:
+          path: projects/{projectsId}/locations/{locationsId}/skills/{skillsId}/revisions/{revisionsId}
+    v1:
+      discovery_doc: agentregistry_v1.json
       default: true
   apphub:
     v1alpha:
@@ -2322,6 +2333,18 @@ apis:
         projects.locations.giVersions.minorVersions:
           path:
             projects/{projectsId}/locations/{locationsId}/giVersions/{giVersionsId}/minorVersions/{minorVersionsId}
+        projects.locations.goldengateConnectionTypes:
+          path:
+            projects/{projectsId}/locations/{locationsId}/goldengateConnectionTypes/{goldengateConnectionTypesId}
+        projects.locations.goldengateDeploymentVersions:
+          path:
+            projects/{projectsId}/locations/{locationsId}/goldengateDeploymentVersions/{goldengateDeploymentVersionsId}
+        projects.locations.goldengateDeploymentEnvironments:
+          path:
+            projects/{projectsId}/locations/{locationsId}/goldengateDeploymentEnvironments/{goldengateDeploymentEnvironmentsId}
+        projects.locations.goldengateDeploymentTypes:
+          path:
+            projects/{projectsId}/locations/{locationsId}/goldengateDeploymentTypes/{goldengateDeploymentTypesId}
         projects.locations.keyRings.cryptoKeys:
           path:
             projects/{projectsId}/locations/{locationsId}/keyRings/{keyRingsId}/cryptoKeys/{cryptoKeysId}
@@ -2499,9 +2522,6 @@ canonical_surfaces:
   cloudcommerceconsumerprocurement:
     name: cloudcommerceconsumerprocurement
     command: commerce-procurement
-  clouddebugger:
-    name: clouddebugger
-    command: debug
   clouddeploy:
     name: clouddeploy
     command: deploy
@@ -2580,6 +2600,9 @@ canonical_surfaces:
   datafusion:
     name: datafusion
     command: data-fusion
+  datalineage:
+    name: datalineage
+    command: datalineage
   datamigration:
     name: datamigration
     command: database-migration
@@ -2612,6 +2635,9 @@ canonical_surfaces:
     name: developerconnect
     command: developerconnect
     hidden: true
+  devicerun:
+    name: devicerun
+    command: device-run
   designcenter:
     name: designcenter
     command: design-center

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,24 +21,31 @@
   help_text:
     brief: List framework deployments.
     description: |
-      List all framework deployments for a given organization and location.
+      List all framework deployments for a given project or organization and location.
     examples: |-
       To list all framework deployments in organization `my-organization-id` and location `global`, run:
 
       $ {command} --organization=my-organization-id --location=global
+
+      To list all framework deployments in project `my-project-number` and location `global`, run:
+
+      $ {command} --project=my-project-number --location=global
   arguments:
     params:
     - help_text: |-
         The parent resource of the framework deployment, in the format
-        `organizations/{organization}/locations/{location}`.
+        `organizations/{organization}/locations/{location}`
+        or
+        `projects/{project}/locations/{location}`.
         The only supported location is `global`.
       is_positional: false
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.compliance_manager.v1_resources:organizations_locations
+      resource_spec: !REF googlecloudsdk.command_lib.compliance_manager.v1_resources:organizations_or_projects_locations
       required: true
   request:
     api_version: v1
     collection:
     - cloudsecuritycompliance.organizations.locations.frameworkDeployments
+    - cloudsecuritycompliance.projects.locations.frameworkDeployments
   response:
     id_field: name

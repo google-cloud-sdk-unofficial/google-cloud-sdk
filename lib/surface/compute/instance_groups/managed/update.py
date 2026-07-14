@@ -88,6 +88,7 @@ class UpdateGA(base.UpdateCommand):
     )
     managed_flags.AddMigForceUpdateOnRepairFlags(parser)
     managed_flags.AddMigDefaultActionOnVmFailure(parser, cls.ReleaseTrack())
+    managed_flags.AddMigActionOnVmFailedHealthCheck(parser)
     managed_flags.AddMigSizeFlag(parser)
     flags.AddInstanceFlexibilityPolicyArgs(
         parser,
@@ -538,7 +539,6 @@ class UpdateBeta(UpdateGA):
 
   @classmethod
   def Args(cls, parser):
-    managed_flags.AddMigActionOnVmFailedHealthCheck(parser)
     managed_flags.AddOnRepairFlags(parser)
     super(UpdateBeta, cls).Args(parser)
 

@@ -100,6 +100,7 @@ they will apply to the primary ingress container.
   )
   group.AddArgument(flags.StartupProbeFlag())
   group.AddArgument(flags.LivenessProbeFlag())
+  group.AddArgument(flags.ReadinessProbeFlag())
   group.AddArgument(flags.GpuFlag())
 
   return group
@@ -411,7 +412,7 @@ class Deploy(base.Command):
       service_ref,
       conn_context,
       platform,
-      already_activated_services,
+      skip_activation_prompt,
       service,
   ):
     # Get run functions annotations to make values sticky
@@ -450,7 +451,7 @@ class Deploy(base.Command):
         args,
         conn_context,
         platform,
-        already_activated_services,
+        skip_activation_prompt,
         container_args,
         annotated_build_image_uri,
         service_ref,
@@ -537,7 +538,7 @@ class Deploy(base.Command):
       args,
       conn_context,
       platform,
-      already_activated_services,
+      skip_activation_prompt,
       container_args,
       annotated_build_image_uri,
       service_ref,
@@ -549,7 +550,7 @@ class Deploy(base.Command):
       conn_context: ConnectionInfo object, context to get project location.
       platform: properties.VALUES.run.platform, platform to run on and to check
         if it is GKE.
-      already_activated_services: bool, True if the user has already activated
+      skip_activation_prompt: bool, True if the user has already activated
         the required APIs.
       container_args: base.ArgumentGroup, Container arguments using source
         build.
@@ -563,7 +564,7 @@ class Deploy(base.Command):
     repo_to_create = None
     if container_args.image:
       docker_string = artifact_registry.ValidateAndGetArRepository(
-          container_args.image, already_activated_services
+          container_args.image, skip_activation_prompt
       )
       validators.ValidateServiceNameFromImage(
           container_args.image, service_ref.servicesId
@@ -571,7 +572,7 @@ class Deploy(base.Command):
       return docker_string, repo_to_create
     elif annotated_build_image_uri:
       docker_string = artifact_registry.ValidateAndGetArRepository(
-          annotated_build_image_uri, already_activated_services
+          annotated_build_image_uri, skip_activation_prompt
       )
       return docker_string, repo_to_create
     else:
@@ -588,7 +589,7 @@ class Deploy(base.Command):
           repo_id='cloud-run-source-deploy',
       )
       if artifact_registry.ShouldCreateRepository(
-          ar_repo, skip_activation_prompt=already_activated_services
+          ar_repo, skip_activation_prompt=skip_activation_prompt
       ):
         repo_to_create = ar_repo
       docker_string = ar_repo.GetDockerString()
@@ -887,9 +888,9 @@ class Deploy(base.Command):
         deploy_from_source, is_no_build_from_source
     )
 
-    already_activated_services = False
+    skip_activation_prompt = False
     if platform == platforms.PLATFORM_MANAGED:
-      already_activated_services = api_enabler.check_and_enable_apis(
+      skip_activation_prompt = api_enabler.check_and_enable_apis(
           properties.VALUES.core.project.Get(), required_apis
       )
 
@@ -916,7 +917,7 @@ class Deploy(base.Command):
     skip_build = False
     upload_through_run_api = False
     with serverless_operations.Connect(
-        conn_context, already_activated_services
+        conn_context, skip_activation_prompt
     ) as operations:
       service = operations.GetService(service_ref)
       # Build an image from source if source specified
@@ -963,7 +964,7 @@ class Deploy(base.Command):
             service_ref,
             conn_context,
             platform,
-            already_activated_services,
+            skip_activation_prompt,
             service,
         )
         build_util.ValidateBuildServiceAccountAndPromptWarning(
@@ -1037,7 +1038,7 @@ class Deploy(base.Command):
               build_region=flags.GetFirstRegion(args),
               build_source=source,
               repo_to_create=repo_to_create,
-              already_activated_services=already_activated_services,
+              skip_activation_prompt=skip_activation_prompt,
               generate_name=(
                   flags.FlagIsExplicitlySet(args, 'revision_suffix')
                   or flags.FlagIsExplicitlySet(args, 'tag')
@@ -1115,7 +1116,6 @@ class BetaDeploy(Deploy):
     # Flags specific to managed CR
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
-    container_args.AddArgument(flags.ReadinessProbeFlag())
     container_parser.AddContainerFlags(
         parser, container_args, cls.ReleaseTrack()
     )
@@ -1150,7 +1150,6 @@ class AlphaDeploy(BetaDeploy):
     flags.MESH_DATAPLANE_FLAG.AddToParser(parser)
     flags.AMBIENT_NETWORKING_FLAG.AddToParser(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
-    container_args.AddArgument(flags.ReadinessProbeFlag())
     container_parser.AddContainerFlags(
         parser, container_args, cls.ReleaseTrack()
     )

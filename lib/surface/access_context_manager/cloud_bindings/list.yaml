@@ -67,6 +67,19 @@
             sessionLength: 57600s
             sessionLengthEnabled: true
             sessionReauthMethod: LOGIN
+
+        If filter is specified as
+        `principal:federatedPrincipal`,
+        the output is printed in the following format:
+
+          ---
+          accessLevels:
+          - accessPolicies/9522/accessLevels/device_trusted
+          dryRunAccessLevels:
+          - accessPolicies/9522/accessLevels/specific_location
+          principal:
+            federatedPrincipal: principal://iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool-id/subject/subject-id
+          name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
     ALPHA:
       examples: |
         To list cloud access bindings, run:
@@ -169,6 +182,8 @@
     collection: accesscontextmanager.organizations.gcpUserAccessBindings
     GA:
       api_version: v1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessFilter
     ALPHA:
       api_version: v1alpha
       modify_request_hooks:
@@ -181,6 +196,6 @@
 
   output:
     GA:
-      format: yaml(name, groupKey, accessLevels, dryRunAccessLevels, sessionSettings, restrictedClientApplications, scopedAccessSettings)
+      format: yaml(name, groupKey, principal, accessLevels, dryRunAccessLevels, sessionSettings, restrictedClientApplications, scopedAccessSettings)
     ALPHA:
       format: yaml(name, groupKey, principal, accessLevels, dryRunAccessLevels, sessionSettings, restrictedClientApplications, scopedAccessSettings)

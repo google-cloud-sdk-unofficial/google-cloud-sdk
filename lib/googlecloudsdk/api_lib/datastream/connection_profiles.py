@@ -255,6 +255,76 @@ class ConnectionProfilesClient:
       )
     return profile
 
+  def _GetDataverseProfile(self, args):
+    """Returns the Dataverse profile message based on the given args."""
+    client_secret = self._messages.Secret()
+    if args.dataverse_oauth_client_secret:
+      client_secret.rawValue = args.dataverse_oauth_client_secret
+    elif args.dataverse_secret_manager_stored_oauth_client_secret:
+      client_secret.secretVersion = (
+          args.dataverse_secret_manager_stored_oauth_client_secret
+      )
+
+    return self._messages.DataverseProfile(
+        environmentUrl=args.dataverse_environment_url,
+        tenantId=args.dataverse_tenant_id,
+        oauthClientCredentials=self._messages.OauthClientCredentials(
+            clientId=args.dataverse_oauth_client_id,
+            clientSecret=client_secret,
+        ),
+    )
+
+  def _GetSalesforceMarketingCloudProfile(self, args):
+    """Returns the Salesforce Marketing Cloud profile message based on the given args."""
+    client_secret = self._messages.Secret()
+    if args.salesforce_marketing_cloud_oauth_client_secret:
+      client_secret.rawValue = (
+          args.salesforce_marketing_cloud_oauth_client_secret
+      )
+    elif (
+        args.salesforce_marketing_cloud_secret_manager_stored_oauth_client_secret
+    ):
+      client_secret.secretVersion = (
+          args.salesforce_marketing_cloud_secret_manager_stored_oauth_client_secret
+      )
+
+    return self._messages.SalesforceMarketingCloudProfile(
+        subdomain=args.salesforce_marketing_cloud_subdomain,
+        oauthClientCredentials=self._messages.OauthClientCredentials(
+            clientId=args.salesforce_marketing_cloud_oauth_client_id,
+            clientSecret=client_secret,
+        ),
+    )
+
+  def _GetServiceNowProfile(self, args):
+    """Returns the ServiceNow profile message based on the given args."""
+    profile = self._messages.ServiceNowProfile(
+        instance=args.servicenow_instance
+    )
+    if args.servicenow_oauth_client_id:
+      client_secret = self._messages.Secret()
+      if args.servicenow_oauth_client_secret:
+        client_secret.rawValue = args.servicenow_oauth_client_secret
+      elif args.servicenow_secret_manager_stored_oauth_client_secret:
+        client_secret.secretVersion = (
+            args.servicenow_secret_manager_stored_oauth_client_secret
+        )
+      profile.oauthClientCredentials = self._messages.OauthClientCredentials(
+          clientId=args.servicenow_oauth_client_id,
+          clientSecret=client_secret,
+      )
+    elif args.servicenow_username:
+      password = self._messages.Secret()
+      if args.servicenow_password:
+        password.rawValue = args.servicenow_password
+      elif args.servicenow_secret_manager_stored_password:
+        password.secretVersion = args.servicenow_secret_manager_stored_password
+      profile.userPasswordCredentials = self._messages.UserPasswordCredentials(
+          username=args.servicenow_username,
+          password=password,
+      )
+    return profile
+
   def _ParseSslConfig(self, data):
     return self._messages.MysqlSslConfig(
         clientKey=data.get('client_key'),
@@ -350,6 +420,16 @@ class ConnectionProfilesClient:
       connection_profile_obj.bigqueryProfile = self._messages.BigQueryProfile()
     elif cp_type == 'SALESFORCE':
       connection_profile_obj.salesforceProfile = self._GetSalesforceProfile(
+          args
+      )
+    elif cp_type == 'DATAVERSE':
+      connection_profile_obj.dataverseProfile = self._GetDataverseProfile(args)
+    elif cp_type == 'SALESFORCE-MARKETING-CLOUD':
+      connection_profile_obj.salesforceMarketingCloudProfile = (
+          self._GetSalesforceMarketingCloudProfile(args)
+      )
+    elif cp_type == 'SERVICENOW':
+      connection_profile_obj.serviceNowProfile = self._GetServiceNowProfile(
           args
       )
     elif cp_type == 'SPANNER':
@@ -776,6 +856,234 @@ class ConnectionProfilesClient:
       update_fields.append('mongodbProfile.password')
       update_fields.append('mongodbProfile.secretManagerStoredPassword')
 
+  def _UpdateDataverseProfile(self, connection_profile, args, update_fields):
+    """Updates Dataverse connection profile."""
+    if not connection_profile.dataverseProfile:
+      connection_profile.dataverseProfile = self._messages.DataverseProfile()
+
+    if args.IsSpecified('dataverse_environment_url'):
+      connection_profile.dataverseProfile.environmentUrl = (
+          args.dataverse_environment_url
+      )
+      update_fields.append('dataverseProfile.environmentUrl')
+    if args.IsSpecified('dataverse_tenant_id'):
+      connection_profile.dataverseProfile.tenantId = args.dataverse_tenant_id
+      update_fields.append('dataverseProfile.tenantId')
+
+    # OAuth credentials
+    if (
+        args.IsSpecified('dataverse_oauth_client_id')
+        or args.IsSpecified('dataverse_oauth_client_secret')
+        or args.IsSpecified(
+            'dataverse_secret_manager_stored_oauth_client_secret'
+        )
+    ):
+      if not connection_profile.dataverseProfile.oauthClientCredentials:
+        connection_profile.dataverseProfile.oauthClientCredentials = (
+            self._messages.OauthClientCredentials()
+        )
+
+      if args.IsSpecified('dataverse_oauth_client_id'):
+        connection_profile.dataverseProfile.oauthClientCredentials.clientId = (
+            args.dataverse_oauth_client_id
+        )
+        update_fields.append('dataverseProfile.oauthClientCredentials.clientId')
+
+      if args.IsSpecified('dataverse_oauth_client_secret') or args.IsSpecified(
+          'dataverse_secret_manager_stored_oauth_client_secret'
+      ):
+        if (
+            not connection_profile.dataverseProfile.oauthClientCredentials.clientSecret
+        ):
+          connection_profile.dataverseProfile.oauthClientCredentials.clientSecret = (
+              self._messages.Secret()
+          )
+
+        if args.IsSpecified('dataverse_oauth_client_secret'):
+          connection_profile.dataverseProfile.oauthClientCredentials.clientSecret.rawValue = (
+              args.dataverse_oauth_client_secret
+          )
+          update_fields.append(
+              'dataverseProfile.oauthClientCredentials.clientSecret.rawValue'
+          )
+        if args.IsSpecified(
+            'dataverse_secret_manager_stored_oauth_client_secret'
+        ):
+          connection_profile.dataverseProfile.oauthClientCredentials.clientSecret.secretVersion = (
+              args.dataverse_secret_manager_stored_oauth_client_secret
+          )
+          update_fields.append(
+              'dataverseProfile.oauthClientCredentials.clientSecret.secretVersion'
+          )
+
+  def _UpdateSalesforceMarketingCloudProfile(
+      self, connection_profile, args, update_fields
+  ):
+    """Updates Salesforce Marketing Cloud connection profile."""
+    if not connection_profile.salesforceMarketingCloudProfile:
+      connection_profile.salesforceMarketingCloudProfile = (
+          self._messages.SalesforceMarketingCloudProfile()
+      )
+
+    if args.IsSpecified('salesforce_marketing_cloud_subdomain'):
+      connection_profile.salesforceMarketingCloudProfile.subdomain = (
+          args.salesforce_marketing_cloud_subdomain
+      )
+      update_fields.append('salesforceMarketingCloudProfile.subdomain')
+
+    # OAuth credentials
+    if (
+        args.IsSpecified('salesforce_marketing_cloud_oauth_client_id')
+        or args.IsSpecified('salesforce_marketing_cloud_oauth_client_secret')
+        or args.IsSpecified(
+            'salesforce_marketing_cloud_secret_manager_stored_oauth_client_secret'
+        )
+    ):
+      if (
+          not connection_profile.salesforceMarketingCloudProfile.oauthClientCredentials
+      ):
+        connection_profile.salesforceMarketingCloudProfile.oauthClientCredentials = (
+            self._messages.OauthClientCredentials()
+        )
+
+      if args.IsSpecified('salesforce_marketing_cloud_oauth_client_id'):
+        connection_profile.salesforceMarketingCloudProfile.oauthClientCredentials.clientId = (
+            args.salesforce_marketing_cloud_oauth_client_id
+        )
+        update_fields.append(
+            'salesforceMarketingCloudProfile.oauthClientCredentials.clientId'
+        )
+
+      if args.IsSpecified(
+          'salesforce_marketing_cloud_oauth_client_secret'
+      ) or args.IsSpecified(
+          'salesforce_marketing_cloud_secret_manager_stored_oauth_client_secret'
+      ):
+        if (
+            not connection_profile.salesforceMarketingCloudProfile.oauthClientCredentials.clientSecret
+        ):
+          connection_profile.salesforceMarketingCloudProfile.oauthClientCredentials.clientSecret = (
+              self._messages.Secret()
+          )
+
+        if args.IsSpecified('salesforce_marketing_cloud_oauth_client_secret'):
+          connection_profile.salesforceMarketingCloudProfile.oauthClientCredentials.clientSecret.rawValue = (
+              args.salesforce_marketing_cloud_oauth_client_secret
+          )
+          update_fields.append(
+              'salesforceMarketingCloudProfile.oauthClientCredentials.clientSecret.rawValue'
+          )
+        if args.IsSpecified(
+            'salesforce_marketing_cloud_secret_manager_stored_oauth_client_secret'
+        ):
+          connection_profile.salesforceMarketingCloudProfile.oauthClientCredentials.clientSecret.secretVersion = (
+              args.salesforce_marketing_cloud_secret_manager_stored_oauth_client_secret
+          )
+          update_fields.append(
+              'salesforceMarketingCloudProfile.oauthClientCredentials.clientSecret.secretVersion'
+          )
+
+  def _UpdateServiceNowProfile(self, connection_profile, args, update_fields):
+    """Updates ServiceNow connection profile."""
+    if not connection_profile.serviceNowProfile:
+      connection_profile.serviceNowProfile = self._messages.ServiceNowProfile()
+
+    if args.IsSpecified('servicenow_instance'):
+      connection_profile.serviceNowProfile.instance = args.servicenow_instance
+      update_fields.append('serviceNowProfile.instance')
+
+    # OAuth credentials
+    if (
+        args.IsSpecified('servicenow_oauth_client_id')
+        or args.IsSpecified('servicenow_oauth_client_secret')
+        or args.IsSpecified(
+            'servicenow_secret_manager_stored_oauth_client_secret'
+        )
+    ):
+      if not connection_profile.serviceNowProfile.oauthClientCredentials:
+        connection_profile.serviceNowProfile.oauthClientCredentials = (
+            self._messages.OauthClientCredentials()
+        )
+
+      if args.IsSpecified('servicenow_oauth_client_id'):
+        connection_profile.serviceNowProfile.oauthClientCredentials.clientId = (
+            args.servicenow_oauth_client_id
+        )
+        update_fields.append(
+            'serviceNowProfile.oauthClientCredentials.clientId'
+        )
+
+      if args.IsSpecified('servicenow_oauth_client_secret') or args.IsSpecified(
+          'servicenow_secret_manager_stored_oauth_client_secret'
+      ):
+        if (
+            not connection_profile.serviceNowProfile.oauthClientCredentials.clientSecret
+        ):
+          connection_profile.serviceNowProfile.oauthClientCredentials.clientSecret = (
+              self._messages.Secret()
+          )
+
+        if args.IsSpecified('servicenow_oauth_client_secret'):
+          connection_profile.serviceNowProfile.oauthClientCredentials.clientSecret.rawValue = (
+              args.servicenow_oauth_client_secret
+          )
+          update_fields.append(
+              'serviceNowProfile.oauthClientCredentials.clientSecret.rawValue'
+          )
+        if args.IsSpecified(
+            'servicenow_secret_manager_stored_oauth_client_secret'
+        ):
+          connection_profile.serviceNowProfile.oauthClientCredentials.clientSecret.secretVersion = (
+              args.servicenow_secret_manager_stored_oauth_client_secret
+          )
+          update_fields.append(
+              'serviceNowProfile.oauthClientCredentials.clientSecret.secretVersion'
+          )
+
+    # User-Password credentials
+    if (
+        args.IsSpecified('servicenow_username')
+        or args.IsSpecified('servicenow_password')
+        or args.IsSpecified('servicenow_secret_manager_stored_password')
+    ):
+      if not connection_profile.serviceNowProfile.userPasswordCredentials:
+        connection_profile.serviceNowProfile.userPasswordCredentials = (
+            self._messages.UserPasswordCredentials()
+        )
+
+      if args.IsSpecified('servicenow_username'):
+        connection_profile.serviceNowProfile.userPasswordCredentials.username = (
+            args.servicenow_username
+        )
+        update_fields.append(
+            'serviceNowProfile.userPasswordCredentials.username'
+        )
+
+      if args.IsSpecified('servicenow_password') or args.IsSpecified(
+          'servicenow_secret_manager_stored_password'
+      ):
+        if (
+            not connection_profile.serviceNowProfile.userPasswordCredentials.password
+        ):
+          connection_profile.serviceNowProfile.userPasswordCredentials.password = (
+              self._messages.Secret()
+          )
+
+        if args.IsSpecified('servicenow_password'):
+          connection_profile.serviceNowProfile.userPasswordCredentials.password.rawValue = (
+              args.servicenow_password
+          )
+          update_fields.append(
+              'serviceNowProfile.userPasswordCredentials.password.rawValue'
+          )
+        if args.IsSpecified('servicenow_secret_manager_stored_password'):
+          connection_profile.serviceNowProfile.userPasswordCredentials.password.secretVersion = (
+              args.servicenow_secret_manager_stored_password
+          )
+          update_fields.append(
+              'serviceNowProfile.userPasswordCredentials.password.secretVersion'
+          )
+
   def _GetExistingConnectionProfile(self, name):
     get_req = (
         self._messages.DatastreamProjectsLocationsConnectionProfilesGetRequest(
@@ -816,6 +1124,14 @@ class ConnectionProfilesClient:
       self._UpdateSqlServerProfile(connection_profile, args, update_fields)
     elif cp_type == 'SALESFORCE':
       self._UpdateSalesforceProfile(connection_profile, args, update_fields)
+    elif cp_type == 'DATAVERSE':
+      self._UpdateDataverseProfile(connection_profile, args, update_fields)
+    elif cp_type == 'SALESFORCE-MARKETING-CLOUD':
+      self._UpdateSalesforceMarketingCloudProfile(
+          connection_profile, args, update_fields
+      )
+    elif cp_type == 'SERVICENOW':
+      self._UpdateServiceNowProfile(connection_profile, args, update_fields)
     elif cp_type == 'SPANNER':
       self._UpdateSpannerProfile(connection_profile, args, update_fields)
     elif cp_type == 'GOOGLE-CLOUD-STORAGE':

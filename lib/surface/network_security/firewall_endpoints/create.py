@@ -70,6 +70,16 @@ class Create(base.CreateCommand):
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
     labels_util.AddCreateLabelsFlags(parser)
+    if cls.ReleaseTrack() in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
+      activation_flags.AddEnableWildfireArg(parser)
+      activation_flags.AddWildfireRegionArg(parser)
+      activation_flags.AddContentCloudRegionArg(parser)
+      activation_flags.AddWildfireLookupTimeoutArg(parser)
+      activation_flags.AddWildfireLookupActionArg(parser)
+      activation_flags.AddWildfireAnalysisTimeoutArg(parser)
+      activation_flags.AddWildfireAnalysisActionArg(parser)
+      activation_flags.AddEnableWildfireAnalysisLoggingArg(parser)
+      activation_flags.AddBlockPartialHttpArg(parser)
 
   def Run(self, args):
     return self._Run(args)
@@ -150,15 +160,6 @@ class CreateAlpha(Create):
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
     activation_flags.AddTargetFirewallAttachmentArg(parser)
-    activation_flags.AddEnableWildfireArg(parser)
-    activation_flags.AddWildfireRegionArg(parser)
-    activation_flags.AddContentCloudRegionArg(parser)
-    activation_flags.AddWildfireLookupTimeoutArg(parser)
-    activation_flags.AddWildfireLookupActionArg(parser)
-    activation_flags.AddWildfireAnalysisTimeoutArg(parser)
-    activation_flags.AddWildfireAnalysisActionArg(parser)
-    activation_flags.AddEnableWildfireAnalysisLoggingArg(parser)
-    activation_flags.AddBlockPartialHttpArg(parser)
 
   def Run(self, args):
     target_firewall_attachment = getattr(

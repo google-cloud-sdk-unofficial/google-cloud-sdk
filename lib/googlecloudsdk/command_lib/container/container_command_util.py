@@ -352,6 +352,13 @@ def CheckReleaseChannel(args):
 
   release_channel = getattr(args, 'release_channel', None)
 
+  if release_channel == 'None':
+    log.status.Print(
+        'Note: No release channel is specified. This configuration option is '
+        'deprecated and will be removed in the future. Please specify a '
+        'release channel instead.'
+        )
+
   if release_channel is None:
     return
 

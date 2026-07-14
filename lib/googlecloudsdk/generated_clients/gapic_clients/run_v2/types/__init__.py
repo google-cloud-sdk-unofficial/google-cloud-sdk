@@ -112,6 +112,7 @@ from .traffic_target import (
 from .vendor_settings import (
     BinaryAuthorization,
     BuildConfig,
+    CpuScaling,
     NodeSelector,
     RevisionScaling,
     ServiceMesh,
@@ -206,6 +207,7 @@ __all__ = (
     'TrafficTargetAllocationType',
     'BinaryAuthorization',
     'BuildConfig',
+    'CpuScaling',
     'NodeSelector',
     'RevisionScaling',
     'ServiceMesh',

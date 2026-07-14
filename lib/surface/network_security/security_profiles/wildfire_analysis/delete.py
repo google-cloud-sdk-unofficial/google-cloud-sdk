@@ -37,13 +37,12 @@ DETAILED_HELP = {
 
 _PROJECT_SCOPE_SUPPORTED_TRACKS = (
     base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
 )
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete a WildFire Analysis Profile."""
 

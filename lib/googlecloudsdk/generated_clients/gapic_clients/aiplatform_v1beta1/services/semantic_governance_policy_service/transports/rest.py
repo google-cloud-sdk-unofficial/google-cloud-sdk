@@ -317,8 +317,8 @@ class SemanticGovernancePolicyServiceRestTransport(_BaseSemanticGovernancePolicy
 
     Manages SemanticGovernancePolicies.
     A SemanticGovernancePolicy is a resource that represents a
-    collection of Agents and Models that are sold together as part
-    of a single product.
+    user-specified policy applied to an Agent and optionally a
+    specific Tool within that Agent.
 
     This class defines the same methods as the primary client, so the
     primary client can load the underlying transport implementation

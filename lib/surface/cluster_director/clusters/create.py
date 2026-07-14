@@ -93,7 +93,7 @@ class Create(base.CreateCommand):
     flags.AddLabels(parser=flag_group, api_version=api_version)
     network_group = flag_group.add_group(
         mutex=True,
-        required=True,
+        required=False,
         help="Network configuration for the cluster.",
     )
     flags.AddCreateNetwork(parser=network_group, api_version=api_version)
@@ -109,6 +109,7 @@ class Create(base.CreateCommand):
     flags.AddNetworkProject(
         parser=network_source_group, api_version=api_version
     )
+    flags.AddBlueprint(parser=flag_group, api_version=api_version)
     flags.AddCreateFilestores(parser=flag_group, api_version=api_version)
     flags.AddFilestores(parser=flag_group, api_version=api_version)
     flags.AddCreateGcsBuckets(parser=flag_group, api_version=api_version)
@@ -120,7 +121,7 @@ class Create(base.CreateCommand):
     flags.AddReservedInstances(parser=flag_group, api_version=api_version)
     flags.AddFlexStartInstances(parser=flag_group, api_version=api_version)
     flags.AddSlurmLoginNode(
-        parser=flag_group, api_version=api_version, required=True
+        parser=flag_group, api_version=api_version, required=False
     )
     flags.AddSlurmNodeSets(parser=flag_group, api_version=api_version)
     flags.AddSlurmPartitions(parser=flag_group, api_version=api_version)

@@ -918,7 +918,7 @@ class GoogleCloudDocumentaiUiv1beta3AutoLabelDocumentsMetadataIndividualAutoLabe
   r"""The status of individual documents in the auto-labeling process.
 
   Fields:
-    documentId: The document id of the auto-labeled document. This will
+    documentId: The document ID of the auto-labeled document. This will
       replace the gcs_uri.
     status: The status of the document auto-labeling.
   """
@@ -953,7 +953,7 @@ class GoogleCloudDocumentaiUiv1beta3BatchDeleteDocumentsMetadataIndividualBatchD
   r"""The status of each individual document in the batch delete process.
 
   Fields:
-    documentId: The document id of the document.
+    documentId: The document ID of the document.
     status: The status of deleting the document in storage.
   """
 
@@ -1018,7 +1018,7 @@ class GoogleCloudDocumentaiUiv1beta3BatchMoveDocumentsMetadataIndividualBatchMov
   r"""The status of each individual document in the batch move process.
 
   Fields:
-    documentId: The document id of the document.
+    documentId: The document ID of the document.
     status: The status of moving the document.
   """
 
@@ -1047,7 +1047,7 @@ class GoogleCloudDocumentaiUiv1beta3BatchUpdateDocumentsMetadataIndividualBatchU
   r"""The status of each individual document in the batch update process.
 
   Fields:
-    documentId: The document id of the document.
+    documentId: The document ID of the document.
     status: The status of updating the document in storage.
   """
 
@@ -1176,9 +1176,9 @@ class GoogleCloudDocumentaiUiv1beta3DocumentId(_messages.Message):
   r"""Document Identifier.
 
   Fields:
-    gcsManagedDocId: A document id within user-managed Cloud Storage.
+    gcsManagedDocId: A document ID within user-managed Cloud Storage.
     revisionRef: Points to a specific revision of the document if set.
-    unmanagedDocId: A document id within unmanaged dataset.
+    unmanagedDocId: A document ID within unmanaged dataset.
   """
 
   gcsManagedDocId = _messages.MessageField('GoogleCloudDocumentaiUiv1beta3DocumentIdGCSManagedDocumentId', 1)
@@ -1191,7 +1191,7 @@ class GoogleCloudDocumentaiUiv1beta3DocumentIdGCSManagedDocumentId(_messages.Mes
   user-managed Cloud Storage option.
 
   Fields:
-    cwDocId: Id of the document (indexed) managed by Content Warehouse.
+    cwDocId: ID of the document (indexed) managed by Content Warehouse.
     gcsUri: Required. The Cloud Storage URI where the actual document is
       stored.
   """
@@ -1205,7 +1205,7 @@ class GoogleCloudDocumentaiUiv1beta3DocumentIdUnmanagedDocumentId(_messages.Mess
   unmanaged option.
 
   Fields:
-    docId: Required. The id of the document.
+    docId: Required. The ID of the document.
   """
 
   docId = _messages.StringField(1)
@@ -1217,7 +1217,7 @@ class GoogleCloudDocumentaiUiv1beta3DocumentSchema(_messages.Message):
   Fields:
     description: Description of the schema.
     displayName: Display name to show users.
-    documentPrompt: Optional. Document level prompt provided by the user. This
+    documentPrompt: Optional. Document-level prompt provided by the user. This
       custom text is injected into the AI model's prompt to provide extra,
       document-wide guidance for processing.
     entityTypes: Entity types of the schema.
@@ -1254,7 +1254,7 @@ class GoogleCloudDocumentaiUiv1beta3DocumentSchemaEntityType(_messages.Message):
       characters. - Must start with a letter. - Allowed characters: ASCII
       letters `[a-z0-9_-]`. (For backward compatibility, internal
       infrastructure and tooling can handle any ASCII character.) - The `/` is
-      sometimes used to denote a property of a type. For example
+      sometimes used to denote a property of a type. For example,
       `line_item/amount`. This convention is deprecated, but will still be
       honored for backward compatibility.
     properties: Description the nested structure, or composition of an entity.
@@ -1664,7 +1664,7 @@ class GoogleCloudDocumentaiUiv1beta3ImportDocumentsMetadataIndividualImportStatu
 
   Fields:
     inputGcsSource: The source Cloud Storage URI of the document.
-    outputDocumentId: The document id of imported document if it was
+    outputDocumentId: The document ID of imported document if it was
       successful, otherwise empty.
     outputGcsDestination: The output_gcs_destination of the processed document
       if it was successful, otherwise empty.
@@ -1713,7 +1713,7 @@ class GoogleCloudDocumentaiUiv1beta3Processor(_messages.Message):
     activeSchemaVersion: Optional. SchemaVersion used by the Processor. It is
       the same as Processor's DatasetSchema.schema_version Format is `projects
       /{project}/locations/{location}/schemas/{schema}/schemaVersions/{schema_
-      version}
+      version}.
     createTime: Output only. The time the processor was created.
     defaultProcessorVersion: The default processor version.
     displayName: The display name of the processor.
@@ -2730,7 +2730,7 @@ class GoogleCloudDocumentaiV1Document(_messages.Message):
     blobAssets: Optional. The blob assets in this document. This is used to
       store the content of the inline blobs in this document, for example,
       image bytes, such that it can be referenced by other fields in the
-      document via asset id.
+      document via asset ID.
     chunkedDocument: Document chunked based on chunking config.
     content: Optional. Inline document content, represented as a stream of
       bytes. Note: As with all `bytes` fields, protobuffers use a pure binary
@@ -2741,10 +2741,10 @@ class GoogleCloudDocumentaiV1Document(_messages.Message):
     entities: A list of entities detected on Document.text. For document
       shards, entities in this list may cross shard boundaries.
     entitiesRevisionId: The entity revision ID that `document.entities` field
-      is based on. If this field is set and `entities_revisions` is not empty,
-      the entities in `document.entities` field are the entities in the entity
-      revision with this id and `document.entity_validation_output` field is
-      the `entity_validation_output` field in this entity revision.
+      is based on. If this field and `entities_revisions` are set, the
+      entities in `document.entities` are the entities in the entity revision
+      with this ID. The `document.entity_validation_output` field is the
+      `entity_validation_output` field in this entity revision.
     entitiesRevisions: A list of entity revisions. The entity revisions are
       appended to the document in the processing order. This field can be used
       for comparing the entity extraction results at different stages of the
@@ -2809,7 +2809,7 @@ class GoogleCloudDocumentaiV1DocumentBlobAsset(_messages.Message):
   referenced by other fields in the document via asset ID.
 
   Fields:
-    assetId: Optional. The id of the blob asset.
+    assetId: Optional. The ID of the blob asset.
     content: Optional. The content of the blob asset, for example, image
       bytes.
     mimeType: The mime type of the blob asset. An IANA published [media type
@@ -2908,12 +2908,12 @@ class GoogleCloudDocumentaiV1DocumentChunkedDocumentChunkImageChunkField(_messag
 
   Fields:
     annotations: Annotation of the image chunk field.
-    blobAssetId: Optional. Asset id of the inline image. If set, find the
+    blobAssetId: Optional. Asset ID of the inline image. If set, find the
       image content in the blob_assets field.
-    dataUri: Optional. Data uri of the image. It is composed of four parts: a
+    dataUri: Optional. Data URI of the image. It is composed of four parts: a
       prefix (data:), a MIME type indicating the type of data, an optional
       base64 token if non-textual, and the data itself: data:,
-    gcsUri: Optional. Google Cloud Storage uri of the image.
+    gcsUri: Optional. Google Cloud Storage URI of the image.
   """
 
   annotations = _messages.MessageField('GoogleCloudDocumentaiV1DocumentAnnotations', 1)
@@ -2971,12 +2971,12 @@ class GoogleCloudDocumentaiV1DocumentDocumentLayoutDocumentLayoutBlockLayoutImag
 
   Fields:
     annotations: Annotation of the image block.
-    blobAssetId: Optional. Asset id of the inline image. If set, find the
+    blobAssetId: Optional. Asset ID of the inline image. If set, find the
       image content in the blob_assets field.
-    dataUri: Optional. Data uri of the image. It is composed of four parts: a
+    dataUri: Optional. Data URI of the image. It is composed of four parts: a
       prefix (data:), a MIME type indicating the type of data, an optional
       base64 token if non-textual, and the data itself: data:,
-    gcsUri: Optional. Google Cloud Storage uri of the image.
+    gcsUri: Optional. Google Cloud Storage URI of the image.
     imageText: Text extracted from the image using OCR or alt text describing
       the image.
     mimeType: Mime type of the image. An IANA published [media type (MIME
@@ -3183,8 +3183,8 @@ class GoogleCloudDocumentaiV1DocumentEntityNormalizedValue(_messages.Message):
     integerValue: Integer value.
     moneyValue: Money value. See also: https://github.com/googleapis/googleapi
       s/blob/master/google/type/money.proto
-    signatureValue: A signature - a graphical representation of a person's
-      name, often used to sign a document.
+    signatureValue: A signature, which is a graphical representation of a
+      person's name, often used to sign a document.
     text: Optional. An optional field to store a normalized string. For some
       entity types, one of respective `structured_value` fields may also be
       populated. Also not all the types of `structured_value` will be
@@ -3825,7 +3825,7 @@ class GoogleCloudDocumentaiV1DocumentProvenance(_messages.Message):
     TypeValueValuesEnum: The type of provenance operation.
 
   Fields:
-    id: The Id of this operation. Needs to be unique within the scope of the
+    id: The ID of this operation. Needs to be unique within the scope of the
       revision.
     parents: References to the original elements that are replaced.
     revision: The index of the revision that produced this element.
@@ -3872,7 +3872,7 @@ class GoogleCloudDocumentaiV1DocumentProvenanceParent(_messages.Message):
   referencing/aligning, removal and replacement operations.
 
   Fields:
-    id: The id of the parent provenance.
+    id: The ID of the parent provenance.
     index: The index of the parent item in the corresponding item list (eg.
       list of entities, properties within entities, etc.) in the parent
       revision.
@@ -3888,12 +3888,12 @@ class GoogleCloudDocumentaiV1DocumentRevision(_messages.Message):
   r"""Contains past or forward revisions of this document.
 
   Fields:
-    agent: If the change was made by a person specify the name or id of that
+    agent: If the change was made by a person specify the name or ID of that
       person.
     createTime: The time that the revision was created, internally generated
       by doc proto storage at the time of create.
     humanReview: Human Review information of this revision.
-    id: Id of the revision, internally generated by doc proto storage. Unique
+    id: ID of the revision, internally generated by doc proto storage. Unique
       within the context of the document.
     parent: The revisions that this revision is based on. This can include one
       or more parent (when documents are merged.) This field represents the
@@ -3935,7 +3935,7 @@ class GoogleCloudDocumentaiV1DocumentSchema(_messages.Message):
   Fields:
     description: Description of the schema.
     displayName: Display name to show users.
-    documentPrompt: Optional. Document level prompt provided by the user. This
+    documentPrompt: Optional. Document-level prompt provided by the user. This
       custom text is injected into the AI model's prompt to provide extra,
       document-wide guidance for processing.
     entityTypes: Entity types of the schema.
@@ -3969,7 +3969,7 @@ class GoogleCloudDocumentaiV1DocumentSchemaEntityType(_messages.Message):
       characters. - Must start with a letter. - Allowed characters: ASCII
       letters `[a-z0-9_-]`. (For backward compatibility, internal
       infrastructure and tooling can handle any ASCII character.) - The `/` is
-      sometimes used to denote a property of a type. For example
+      sometimes used to denote a property of a type. For example,
       `line_item/amount`. This convention is deprecated, but will still be
       honored for backward compatibility.
     properties: Description the nested structure, or composition of an entity.
@@ -4983,7 +4983,7 @@ class GoogleCloudDocumentaiV1Processor(_messages.Message):
     activeSchemaVersion: Optional. SchemaVersion used by the Processor. It is
       the same as Processor's DatasetSchema.schema_version Format is `projects
       /{project}/locations/{location}/schemas/{schema}/schemaVersions/{schema_
-      version}
+      version}.
     createTime: Output only. The time the processor was created.
     defaultProcessorVersion: The default processor version.
     displayName: The display name of the processor.
@@ -5608,7 +5608,7 @@ class GoogleCloudDocumentaiV1TrainProcessorVersionRequestFoundationModelTuningOp
       recommended learning rate. Valid values are between 0.1 and 10. If not
       provided, recommended learning rate will be used.
     previousFineTunedProcessorVersionName: Optional. Resource name of a
-      previously fine tuned version id to copy the overwritten configs from.
+      previously fine tuned version ID to copy the overwritten configs from.
       The base_processor_version should be newer than the base processor
       version used to fine tune this provided processor version. Format: `proj
       ects/{project}/locations/{location}/processors/{processor}/processorVers
@@ -5700,7 +5700,7 @@ class GoogleCloudDocumentaiV1beta3BatchDeleteDocumentsMetadataIndividualBatchDel
   r"""The status of each individual document in the batch delete process.
 
   Fields:
-    documentId: The document id of the document.
+    documentId: The document ID of the document.
     status: The status of deleting the document in storage.
   """
 
@@ -5957,9 +5957,9 @@ class GoogleCloudDocumentaiV1beta3DocumentId(_messages.Message):
   r"""Document Identifier.
 
   Fields:
-    gcsManagedDocId: A document id within user-managed Cloud Storage.
+    gcsManagedDocId: A document ID within user-managed Cloud Storage.
     revisionRef: Points to a specific revision of the document if set.
-    unmanagedDocId: A document id within unmanaged dataset.
+    unmanagedDocId: A document ID within unmanaged dataset.
   """
 
   gcsManagedDocId = _messages.MessageField('GoogleCloudDocumentaiV1beta3DocumentIdGCSManagedDocumentId', 1)
@@ -5972,7 +5972,7 @@ class GoogleCloudDocumentaiV1beta3DocumentIdGCSManagedDocumentId(_messages.Messa
   user-managed Cloud Storage option.
 
   Fields:
-    cwDocId: Id of the document (indexed) managed by Content Warehouse.
+    cwDocId: ID of the document (indexed) managed by Content Warehouse.
     gcsUri: Required. The Cloud Storage URI where the actual document is
       stored.
   """
@@ -5986,7 +5986,7 @@ class GoogleCloudDocumentaiV1beta3DocumentIdUnmanagedDocumentId(_messages.Messag
   unmanaged option.
 
   Fields:
-    docId: Required. The id of the document.
+    docId: Required. The ID of the document.
   """
 
   docId = _messages.StringField(1)
@@ -5998,7 +5998,7 @@ class GoogleCloudDocumentaiV1beta3DocumentSchema(_messages.Message):
   Fields:
     description: Description of the schema.
     displayName: Display name to show users.
-    documentPrompt: Optional. Document level prompt provided by the user. This
+    documentPrompt: Optional. Document-level prompt provided by the user. This
       custom text is injected into the AI model's prompt to provide extra,
       document-wide guidance for processing.
     entityTypes: Entity types of the schema.
@@ -6035,7 +6035,7 @@ class GoogleCloudDocumentaiV1beta3DocumentSchemaEntityType(_messages.Message):
       characters. - Must start with a letter. - Allowed characters: ASCII
       letters `[a-z0-9_-]`. (For backward compatibility, internal
       infrastructure and tooling can handle any ASCII character.) - The `/` is
-      sometimes used to denote a property of a type. For example
+      sometimes used to denote a property of a type. For example,
       `line_item/amount`. This convention is deprecated, but will still be
       honored for backward compatibility.
     properties: Description the nested structure, or composition of an entity.
@@ -6356,7 +6356,7 @@ class GoogleCloudDocumentaiV1beta3ImportDocumentsMetadataIndividualImportStatus(
 
   Fields:
     inputGcsSource: The source Cloud Storage URI of the document.
-    outputDocumentId: The document id of imported document if it was
+    outputDocumentId: The document ID of imported document if it was
       successful, otherwise empty.
     status: The status of the importing of the document.
   """
@@ -6402,7 +6402,7 @@ class GoogleCloudDocumentaiV1beta3Processor(_messages.Message):
     activeSchemaVersion: Optional. SchemaVersion used by the Processor. It is
       the same as Processor's DatasetSchema.schema_version Format is `projects
       /{project}/locations/{location}/schemas/{schema}/schemaVersions/{schema_
-      version}
+      version}.
     createTime: Output only. The time the processor was created.
     defaultProcessorVersion: The default processor version.
     displayName: The display name of the processor.

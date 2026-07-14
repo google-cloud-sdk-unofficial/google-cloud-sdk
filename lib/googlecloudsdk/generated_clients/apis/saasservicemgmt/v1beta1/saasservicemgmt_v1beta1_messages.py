@@ -97,10 +97,10 @@ class Blueprint(_messages.Message):
 
 
 class ComponentRef(_messages.Message):
-  r"""ComponentRef represents a reference to a component resource. Next ID: 4
+  r"""ComponentRef represents a reference to a component resource.
 
   Fields:
-    component: Name of the component in composite.Components
+    component: Optional. Name of the component in composite.Components
     compositeRef: Reference to the Composite ApplicationTemplate.
     revision: Revision of the component. If the component does not have a
       revision, this field will be explicitly set to the revision of the
@@ -113,7 +113,7 @@ class ComponentRef(_messages.Message):
 
 
 class CompositeRef(_messages.Message):
-  r"""CompositeRef represents a reference to a composite resource. Next ID: 4
+  r"""CompositeRef represents a reference to a composite resource.
 
   Fields:
     applicationTemplate: Required. Reference to the ApplicationTemplate
@@ -129,6 +129,57 @@ class CompositeRef(_messages.Message):
   applicationTemplate = _messages.StringField(1)
   revision = _messages.StringField(2)
   syncOperation = _messages.StringField(3)
+
+
+class Decimal(_messages.Message):
+  r"""A representation of a decimal value, such as 2.5. Clients may convert
+  values into language-native decimal formats, such as Java's [BigDecimal](htt
+  ps://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/math/BigDecim
+  al.html) or Python's
+  [decimal.Decimal](https://docs.python.org/3/library/decimal.html).
+
+  Fields:
+    value: The decimal value, as a string. The string representation consists
+      of an optional sign, `+` (`U+002B`) or `-` (`U+002D`), followed by a
+      sequence of zero or more decimal digits ("the integer"), optionally
+      followed by a fraction, optionally followed by an exponent. An empty
+      string **should** be interpreted as `0`. The fraction consists of a
+      decimal point followed by zero or more decimal digits. The string must
+      contain at least one digit in either the integer or the fraction. The
+      number formed by the sign, the integer and the fraction is referred to
+      as the significand. The exponent consists of the character `e`
+      (`U+0065`) or `E` (`U+0045`) followed by one or more decimal digits.
+      Services **should** normalize decimal values before storing them by: -
+      Removing an explicitly-provided `+` sign (`+2.5` -> `2.5`). - Replacing
+      a zero-length integer value with `0` (`.5` -> `0.5`). - Coercing the
+      exponent character to upper-case, with explicit sign (`2.5e8` ->
+      `2.5E+8`). - Removing an explicitly-provided zero exponent (`2.5E0` ->
+      `2.5`). Services **may** perform additional normalization based on its
+      own needs and the internal decimal implementation selected, such as
+      shifting the decimal point and exponent value together (example:
+      `2.5E-1` <-> `0.25`). Additionally, services **may** preserve trailing
+      zeroes in the fraction to indicate increased precision, but are not
+      required to do so. Note that only the `.` character is supported to
+      divide the integer and the fraction; `,` **should not** be supported
+      regardless of locale. Additionally, thousand separators **should not**
+      be supported. If a service does support them, values **must** be
+      normalized. The ENBF grammar is: DecimalString = '' | [Sign] Significand
+      [Exponent]; Sign = '+' | '-'; Significand = Digits '.' | [Digits] '.'
+      Digits; Exponent = ('e' | 'E') [Sign] Digits; Digits = { '0' | '1' | '2'
+      | '3' | '4' | '5' | '6' | '7' | '8' | '9' }; Services **should** clearly
+      document the range of supported values, the maximum supported precision
+      (total number of digits), and, if applicable, the scale (number of
+      digits after the decimal point), as well as how it behaves when
+      receiving out-of-bounds values. Services **may** choose to accept values
+      passed as input even when the value has a higher precision or scale than
+      the service supports, and **should** round the value to fit the
+      supported scale. Alternatively, the service **may** error with `400 Bad
+      Request` (`INVALID_ARGUMENT` in gRPC) if precision would be lost.
+      Services **should** error with `400 Bad Request` (`INVALID_ARGUMENT` in
+      gRPC) if the service receives a value outside of the supported range.
+  """
+
+  value = _messages.StringField(1)
 
 
 class Dependency(_messages.Message):
@@ -149,20 +200,6 @@ class Deprovision(_messages.Message):
   r"""Deprovision is the unit operation that deprovision the underlying
   resources represented by a Unit. Can only execute if the Unit is currently
   provisioned.
-  """
-
-
-
-class DeprovisionUnitGroup(_messages.Message):
-  r"""DeprovisionUnitGroup is the unit group operation that deprovisions the
-  underlying resources represented by a UnitGroup.
-  """
-
-
-
-class DetachUnitGroup(_messages.Message):
-  r"""DetachUnitGroup is the unit group operation that detaches a provisioned
-  UnitGroup.
   """
 
 
@@ -636,13 +673,13 @@ class FlagRelease(_messages.Message):
       instead. FlagRevisions to be rolled out. Only one of flag_revisions,
       all_flags, or flag_sets can be set. It used to be the ultimate source to
       truth and has been moved to effective_flag_revisions.
-    flagRevisionsRelease: Optional. Immutable. Specifies the release consists
-      of a list of flag revisions.
+    flagRevisionsRelease: Optional. Immutable. Specifies the release
+      consisting of a list of flag revisions.
     flagSets: Optional. Immutable. DEPRECATED: Use flag_sets_release instead.
       Flag sets to be rolled out. Only one of flag_revisions, all_flags, or
       flag_sets can be set.
-    flagSetsRelease: Optional. Immutable. Specifies the release consists of a
-      list of flag sets.
+    flagSetsRelease: Optional. Immutable. Specifies the release consisting of
+      a list of flag sets.
     labels: Optional. The labels on the resource, which can be used for
       categorization. similar to Kubernetes resource labels.
     name: Identifier. The resource name (full URI of the resource) following
@@ -1284,13 +1321,6 @@ class Provision(_messages.Message):
   release = _messages.StringField(2)
 
 
-class ProvisionUnitGroup(_messages.Message):
-  r"""ProvisionUnitGroup is the unit group operation that provisions the
-  underlying resources represented by a UnitGroup.
-  """
-
-
-
 class Release(_messages.Message):
   r"""A new version to be propagated and deployed to units. This includes
   pointers to packaged blueprints for actuation (e.g Helm or Terraform
@@ -1673,7 +1703,7 @@ class RolloutControl(_messages.Message):
 
 class RolloutKind(_messages.Message):
   r"""An object that describes various settings of Rollout execution. Includes
-  built-in policies across GCP and GDC, and customizable policies.
+  built-in and customizable policies.
 
   Enums:
     UpdateUnitKindStrategyValueValuesEnum: Optional. The config for updating
@@ -1727,6 +1757,9 @@ class RolloutKind(_messages.Message):
       to. Rollouts stemming from this rollout kind will target the units of
       this unit kind. In other words, this defines the population of target
       units to be upgraded by rollouts.
+    unitUpdatePacing: Optional. Settings for controlling the pacing of
+      rollouts i.e. the number of units to be rolled out in parallel in a
+      region.
     updateTime: Output only. The timestamp when the resource was last updated.
       Any change to the resource made by users must refresh this value.
       Changes to a resource made by the service should refresh this value.
@@ -1811,8 +1844,9 @@ class RolloutKind(_messages.Message):
   uid = _messages.StringField(8)
   unitFilter = _messages.StringField(9)
   unitKind = _messages.StringField(10)
-  updateTime = _messages.StringField(11)
-  updateUnitKindStrategy = _messages.EnumField('UpdateUnitKindStrategyValueValuesEnum', 12)
+  unitUpdatePacing = _messages.MessageField('UnitUpdatePacing', 11)
+  updateTime = _messages.StringField(12)
+  updateUnitKindStrategy = _messages.EnumField('UpdateUnitKindStrategyValueValuesEnum', 13)
 
 
 class RolloutStats(_messages.Message):
@@ -2068,11 +2102,6 @@ class SaasRelease(_messages.Message):
     name: Identifier. The resource name (full URI of the resource) following
       the standard naming scheme:
       "projects/{project}/locations/{location}/saasReleases/{saasRelease}"
-    releases: Required. The Releases that are assigned to this SaasRelease.
-    tierMappings: Required. A mapping between Tiers and UnitKinds that are
-      part of this SaasRelease. While Tiers are defined as top-level
-      resources, the mapping between Tiers and Unit Kinds is defined per
-      SaasRelease.
     uid: Output only. The unique identifier of the resource. UID is unique in
       the time and space for this resource within the scope of the service. It
       is typically generated by the server on successful creation of a
@@ -2141,10 +2170,8 @@ class SaasRelease(_messages.Message):
   etag = _messages.StringField(3)
   labels = _messages.MessageField('LabelsValue', 4)
   name = _messages.StringField(5)
-  releases = _messages.StringField(6, repeated=True)
-  tierMappings = _messages.MessageField('TierMapping', 7, repeated=True)
-  uid = _messages.StringField(8)
-  updateTime = _messages.StringField(9)
+  uid = _messages.StringField(6)
+  updateTime = _messages.StringField(7)
 
 
 class SaasservicemgmtProjectsLocationsFlagAttributesCreateRequest(_messages.Message):
@@ -4308,31 +4335,6 @@ class Tenant(_messages.Message):
   updateTime = _messages.StringField(9)
 
 
-class TierMapping(_messages.Message):
-  r"""TierMapping describes the mapping between a Tier and its associated
-  UnitKinds.
-
-  Fields:
-    tier: Required. The tier.
-    unitKinds: A TierUnitKind attribute.
-  """
-
-  tier = _messages.StringField(1)
-  unitKinds = _messages.MessageField('TierUnitKind', 2, repeated=True)
-
-
-class TierUnitKind(_messages.Message):
-  r"""A description of a single Unit Kind that is part of a Tier.
-
-  Fields:
-    inputVariables: Optional. Output only. Input variables for the UnitKind.
-    unitKind: Required. Immutable. The unique identifier of the UnitKind.
-  """
-
-  inputVariables = _messages.MessageField('UnitVariable', 1, repeated=True)
-  unitKind = _messages.StringField(2)
-
-
 class ToMapping(_messages.Message):
   r"""Input variables whose values will be passed on to dependencies
 
@@ -4453,7 +4455,7 @@ class Unit(_messages.Message):
     controlled by the user or by the system. Immutable once created.
 
     Values:
-      MANAGEMENT_MODE_UNSPECIFIED: <no description>
+      MANAGEMENT_MODE_UNSPECIFIED: Unspecified management mode.
       MANAGEMENT_MODE_USER: Unit's lifecycle is managed by the user.
       MANAGEMENT_MODE_SYSTEM: The system will decide when to deprovision and
         delete the unit. User still can deprovision or delete the unit
@@ -4492,7 +4494,7 @@ class Unit(_messages.Message):
     r"""Optional. Output only. Indicates the system managed state of the unit.
 
     Values:
-      SYSTEM_MANAGED_STATE_UNSPECIFIED: <no description>
+      SYSTEM_MANAGED_STATE_UNSPECIFIED: Unspecified system managed state.
       SYSTEM_MANAGED_STATE_ACTIVE: Unit has dependents attached.
       SYSTEM_MANAGED_STATE_INACTIVE: Unit has no dependencies attached, but
         attachment is allowed.
@@ -4633,6 +4635,10 @@ class UnitCondition(_messages.Message):
       TYPE_FLAGS_CONFIG_INITIALIZED: Condition type is flagsConfigInitialized.
         True when the flags configuration is synchronized and ready to be
         served.
+      TYPE_APP_CREATED_OR_ALREADY_EXISTS: Indicates if AppHub app has been
+        created or if Apphub app has already existed.
+      TYPE_APP_COMPONENTS_REGISTERED: Indicates if services and workloads have
+        been registered with AppHub.
     """
     TYPE_UNSPECIFIED = 0
     TYPE_READY = 1
@@ -4640,6 +4646,8 @@ class UnitCondition(_messages.Message):
     TYPE_PROVISIONED = 3
     TYPE_OPERATION_ERROR = 4
     TYPE_FLAGS_CONFIG_INITIALIZED = 5
+    TYPE_APP_CREATED_OR_ALREADY_EXISTS = 6
+    TYPE_APP_COMPONENTS_REGISTERED = 7
 
   lastTransitionTime = _messages.StringField(1)
   message = _messages.StringField(2)
@@ -4665,9 +4673,6 @@ class UnitGroup(_messages.Message):
   scenarios, the UnitGroup may be created and provisioned before the Tenant is
   created.
 
-  Enums:
-    StateValueValuesEnum: Optional. Output only. State of the UnitGroup.
-
   Messages:
     AnnotationsValue: Optional. Annotations is an unstructured key-value map
       stored with a resource that may be set by external tools to store and
@@ -4692,10 +4697,6 @@ class UnitGroup(_messages.Message):
     name: Identifier. The resource name (full URI of the resource) following
       the standard naming scheme:
       "projects/{project}/locations/{location}/unitGroups/{unitGroup}"
-    saas: Required. Immutable. The SaaS that this UnitGroup is created for.
-    saasRelease: Required. Immutable. Current SaasRelease that the UnitGroup
-      is provisioned with.
-    state: Optional. Output only. State of the UnitGroup.
     uid: Output only. The unique identifier of the resource. UID is unique in
       the time and space for this resource within the scope of the service. It
       is typically generated by the server on successful creation of a
@@ -4705,27 +4706,6 @@ class UnitGroup(_messages.Message):
       Any change to the resource made by users must refresh this value.
       Changes to a resource made by the service should refresh this value.
   """
-
-  class StateValueValuesEnum(_messages.Enum):
-    r"""Optional. Output only. State of the UnitGroup.
-
-    Values:
-      UNIT_GROUP_STATE_UNSPECIFIED: Unspecified state.
-      UNIT_GROUP_STATE_NOT_PROVISIONED: UnitGroup is not provisioned.
-      UNIT_GROUP_STATE_PROVISIONING: UnitGroup is being provisioned.
-      UNIT_GROUP_STATE_UPDATING: UnitGroup is being updated.
-      UNIT_GROUP_STATE_DEPROVISIONING: UnitGroup is being deprovisioned.
-      UNIT_GROUP_STATE_READY: UnitGroup has been provisioned and is ready for
-        use.
-      UNIT_GROUP_STATE_ERROR: UnitGroup has an error.
-    """
-    UNIT_GROUP_STATE_UNSPECIFIED = 0
-    UNIT_GROUP_STATE_NOT_PROVISIONED = 1
-    UNIT_GROUP_STATE_PROVISIONING = 2
-    UNIT_GROUP_STATE_UPDATING = 3
-    UNIT_GROUP_STATE_DEPROVISIONING = 4
-    UNIT_GROUP_STATE_READY = 5
-    UNIT_GROUP_STATE_ERROR = 6
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AnnotationsValue(_messages.Message):
@@ -4785,11 +4765,8 @@ class UnitGroup(_messages.Message):
   etag = _messages.StringField(3)
   labels = _messages.MessageField('LabelsValue', 4)
   name = _messages.StringField(5)
-  saas = _messages.StringField(6)
-  saasRelease = _messages.StringField(7)
-  state = _messages.EnumField('StateValueValuesEnum', 8)
-  uid = _messages.StringField(9)
-  updateTime = _messages.StringField(10)
+  uid = _messages.StringField(6)
+  updateTime = _messages.StringField(7)
 
 
 class UnitGroupOperation(_messages.Message):
@@ -4811,9 +4788,6 @@ class UnitGroupOperation(_messages.Message):
       modifying objects. More info: https://kubernetes.io/docs/user-
       guide/annotations
     createTime: Output only. The timestamp when the resource was created.
-    deprovisionUnitGroup: Optional. Represents a deprovision operation on a
-      UnitGroup.
-    detachUnitGroup: Optional. Represents a detach operation on a UnitGroup.
     etag: Output only. An opaque value that uniquely identifies a version or
       generation of a resource. It can be used to confirm that the client and
       server agree on the ordering of a resource being written.
@@ -4822,9 +4796,6 @@ class UnitGroupOperation(_messages.Message):
     name: Identifier. The resource name (full URI of the resource) following
       the standard naming scheme: "projects/{project}/locations/{location}/uni
       tGroupOperations/{unitGroupOperation}"
-    provisionUnitGroup: Optional. Represents a provision operation on a
-      UnitGroup.
-    tier: Optional. Tier represents the tier level of the UnitGroupOperation.
     uid: Output only. The unique identifier of the resource. UID is unique in
       the time and space for this resource within the scope of the service. It
       is typically generated by the server on successful creation of a
@@ -4890,15 +4861,11 @@ class UnitGroupOperation(_messages.Message):
 
   annotations = _messages.MessageField('AnnotationsValue', 1)
   createTime = _messages.StringField(2)
-  deprovisionUnitGroup = _messages.MessageField('DeprovisionUnitGroup', 3)
-  detachUnitGroup = _messages.MessageField('DetachUnitGroup', 4)
-  etag = _messages.StringField(5)
-  labels = _messages.MessageField('LabelsValue', 6)
-  name = _messages.StringField(7)
-  provisionUnitGroup = _messages.MessageField('ProvisionUnitGroup', 8)
-  tier = _messages.StringField(9)
-  uid = _messages.StringField(10)
-  updateTime = _messages.StringField(11)
+  etag = _messages.StringField(3)
+  labels = _messages.MessageField('LabelsValue', 4)
+  name = _messages.StringField(5)
+  uid = _messages.StringField(6)
+  updateTime = _messages.StringField(7)
 
 
 class UnitKind(_messages.Message):
@@ -4927,7 +4894,7 @@ class UnitKind(_messages.Message):
       guide/annotations
     appParams: AppParams contains the parameters for creating an AppHub
       Application.
-    applicationTemplateComponent: Output only. Reference to component and
+    applicationTemplateComponent: Optional. Reference to component and
       revision in a composite ApplicationTemplate.
     boundaryType: Optional. Output only. BoundaryType describes the type of
       boundary the Unit Kind represents.
@@ -4974,9 +4941,9 @@ class UnitKind(_messages.Message):
     Unit Kind represents.
 
     Values:
-      BOUNDARY_TYPE_UNSPECIFIED: <no description>
+      BOUNDARY_TYPE_UNSPECIFIED: Unspecified boundary type.
       BOUNDARY_TYPE_TENANT_PROJECT: Tenant project boundary.
-      BOUNDARY_TYPE_MANAGED_PROJECT: <no description>
+      BOUNDARY_TYPE_MANAGED_PROJECT: Managed project boundary.
     """
     BOUNDARY_TYPE_UNSPECIFIED = 0
     BOUNDARY_TYPE_TENANT_PROJECT = 1
@@ -5090,7 +5057,7 @@ class UnitOperation(_messages.Message):
     createTime: Output only. The timestamp when the resource was created.
     deleteTime: Output only. The timestamp when the resource was marked for
       deletion (deletion is an asynchronous operation).
-    deprovision: A Deprovision attribute.
+    deprovision: Optional. Deprovision operation.
     engineState: Optional. Output only. The engine state for on-going
       deployment engine operation(s). This field is opaque for external usage.
     errorCategory: Optional. Output only. UnitOperationErrorCategory describe
@@ -5098,7 +5065,7 @@ class UnitOperation(_messages.Message):
     etag: Output only. An opaque value that uniquely identifies a version or
       generation of a resource. It can be used to confirm that the client and
       server agree on the ordering of a resource being written.
-    flagUpdate: A FlagUpdate attribute.
+    flagUpdate: Optional. Flag update operation.
     labels: Optional. The labels on the resource, which can be used for
       categorization. similar to Kubernetes resource labels.
     name: Identifier. The resource name (full URI of the resource) following
@@ -5125,7 +5092,7 @@ class UnitOperation(_messages.Message):
     updateTime: Output only. The timestamp when the resource was last updated.
       Any change to the resource made by users must refresh this value.
       Changes to a resource made by the service should refresh this value.
-    upgrade: A Upgrade attribute.
+    upgrade: Optional. Upgrade operation.
   """
 
   class ErrorCategoryValueValuesEnum(_messages.Enum):
@@ -5314,6 +5281,24 @@ class UnitOperationCondition(_messages.Message):
   reason = _messages.StringField(3)
   status = _messages.EnumField('StatusValueValuesEnum', 4)
   type = _messages.EnumField('TypeValueValuesEnum', 5)
+
+
+class UnitUpdatePacing(_messages.Message):
+  r"""UnitUpdatePacing defines the policy for the maximum number of unit
+  operations that can run for a rollout in parallel in a single region.
+
+  Fields:
+    maxConcurrentOperationsCount: Optional. An absolute cap on concurrent
+      units operations. If both percent and count are provided, the system
+      uses the MINIMUM (most restrictive).
+    maxConcurrentOperationsPercent: Optional. The maximum percentage of total
+      units in the scope that can be in-flight. Example: 10.5 for 10.5%. If
+      both percent and count are provided, the system uses the MINIMUM (most
+      restrictive).
+  """
+
+  maxConcurrentOperationsCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  maxConcurrentOperationsPercent = _messages.MessageField('Decimal', 2)
 
 
 class UnitVariable(_messages.Message):

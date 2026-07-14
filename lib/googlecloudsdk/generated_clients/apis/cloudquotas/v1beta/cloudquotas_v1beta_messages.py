@@ -18,8 +18,8 @@ class CloudquotasFoldersLocationsQuotaAdjusterSettingsGetQuotaAdjusterSettingsRe
   gsRequest object.
 
   Fields:
-    name: Required. Name of the `quotaAdjusterSettings` configuration. Only a
-      single setting per project is supported.
+    name: Required. Identifier. Name of the `quotaAdjusterSettings`
+      configuration. Only a single setting per project is supported.
   """
 
   name = _messages.StringField(1, required=True)
@@ -60,7 +60,7 @@ class CloudquotasFoldersLocationsQuotaPreferencesCreateRequest(_messages.Message
 
   Fields:
     ignoreSafetyChecks: The list of quota safety checks to be ignored.
-    parent: Required. Value for parent. Example:
+    parent: Required. Identifier. Value for parent. Example:
       `projects/123/locations/global`
     quotaPreference: A QuotaPreference resource to be passed as the request
       body.
@@ -95,7 +95,7 @@ class CloudquotasFoldersLocationsQuotaPreferencesGetRequest(_messages.Message):
   r"""A CloudquotasFoldersLocationsQuotaPreferencesGetRequest object.
 
   Fields:
-    name: Required. Name of the resource Example name:
+    name: Required. Identifier. Name of the resource Example name:
       `projects/123/locations/global/quota_preferences/my-config-for-us-east1`
   """
 
@@ -117,9 +117,9 @@ class CloudquotasFoldersLocationsQuotaPreferencesListRequest(_messages.Message):
       than requested. If unspecified, server will pick an appropriate default.
     pageToken: Optional. A token identifying a page of results the server
       should return.
-    parent: Required. Parent value of QuotaPreference resources. Listing
-      across different resource containers (such as 'projects/-') is not
-      allowed. When the value starts with 'folders' or 'organizations', it
+    parent: Required. Identifier. Parent value of QuotaPreference resources.
+      Listing across different resource containers (such as 'projects/-') is
+      not allowed. When the value starts with 'folders' or 'organizations', it
       lists the QuotaPreferences for org quotas in the container. It does not
       list the QuotaPreferences in the descendant projects of the container.
       Example parents: `projects/123/locations/global`
@@ -188,9 +188,9 @@ class CloudquotasFoldersLocationsServicesQuotaInfosGetRequest(_messages.Message)
   r"""A CloudquotasFoldersLocationsServicesQuotaInfosGetRequest object.
 
   Fields:
-    name: Required. The resource name of the quota info. An example name: `pro
-      jects/123/locations/global/services/compute.googleapis.com/quotaInfos/Cp
-      usPerProjectPerRegion`
+    name: Required. Identifier. The resource name of the quota info. An
+      example name: `projects/123/locations/global/services/compute.googleapis
+      .com/quotaInfos/CpusPerProjectPerRegion`
   """
 
   name = _messages.StringField(1, required=True)
@@ -204,9 +204,9 @@ class CloudquotasFoldersLocationsServicesQuotaInfosListRequest(_messages.Message
       than requested. If unspecified, server will pick an appropriate default.
     pageToken: Optional. A token identifying a page of results the server
       should return.
-    parent: Required. Parent value of QuotaInfo resources. Listing across
-      different resource containers (such as 'projects/-') is not allowed.
-      Example names:
+    parent: Required. Identifier. Parent value of QuotaInfo resources. Listing
+      across different resource containers (such as 'projects/-') is not
+      allowed. Example names:
       `projects/123/locations/global/services/compute.googleapis.com`
       `folders/234/locations/global/services/compute.googleapis.com`
       `organizations/345/locations/global/services/compute.googleapis.com`
@@ -262,8 +262,8 @@ class CloudquotasOrganizationsLocationsQuotaAdjusterSettingsGetQuotaAdjusterSett
   SettingsRequest object.
 
   Fields:
-    name: Required. Name of the `quotaAdjusterSettings` configuration. Only a
-      single setting per project is supported.
+    name: Required. Identifier. Name of the `quotaAdjusterSettings`
+      configuration. Only a single setting per project is supported.
   """
 
   name = _messages.StringField(1, required=True)
@@ -304,7 +304,7 @@ class CloudquotasOrganizationsLocationsQuotaPreferencesCreateRequest(_messages.M
 
   Fields:
     ignoreSafetyChecks: The list of quota safety checks to be ignored.
-    parent: Required. Value for parent. Example:
+    parent: Required. Identifier. Value for parent. Example:
       `projects/123/locations/global`
     quotaPreference: A QuotaPreference resource to be passed as the request
       body.
@@ -339,7 +339,7 @@ class CloudquotasOrganizationsLocationsQuotaPreferencesGetRequest(_messages.Mess
   r"""A CloudquotasOrganizationsLocationsQuotaPreferencesGetRequest object.
 
   Fields:
-    name: Required. Name of the resource Example name:
+    name: Required. Identifier. Name of the resource Example name:
       `projects/123/locations/global/quota_preferences/my-config-for-us-east1`
   """
 
@@ -361,9 +361,9 @@ class CloudquotasOrganizationsLocationsQuotaPreferencesListRequest(_messages.Mes
       than requested. If unspecified, server will pick an appropriate default.
     pageToken: Optional. A token identifying a page of results the server
       should return.
-    parent: Required. Parent value of QuotaPreference resources. Listing
-      across different resource containers (such as 'projects/-') is not
-      allowed. When the value starts with 'folders' or 'organizations', it
+    parent: Required. Identifier. Parent value of QuotaPreference resources.
+      Listing across different resource containers (such as 'projects/-') is
+      not allowed. When the value starts with 'folders' or 'organizations', it
       lists the QuotaPreferences for org quotas in the container. It does not
       list the QuotaPreferences in the descendant projects of the container.
       Example parents: `projects/123/locations/global`
@@ -432,9 +432,9 @@ class CloudquotasOrganizationsLocationsServicesQuotaInfosGetRequest(_messages.Me
   r"""A CloudquotasOrganizationsLocationsServicesQuotaInfosGetRequest object.
 
   Fields:
-    name: Required. The resource name of the quota info. An example name: `pro
-      jects/123/locations/global/services/compute.googleapis.com/quotaInfos/Cp
-      usPerProjectPerRegion`
+    name: Required. Identifier. The resource name of the quota info. An
+      example name: `projects/123/locations/global/services/compute.googleapis
+      .com/quotaInfos/CpusPerProjectPerRegion`
   """
 
   name = _messages.StringField(1, required=True)
@@ -448,9 +448,9 @@ class CloudquotasOrganizationsLocationsServicesQuotaInfosListRequest(_messages.M
       than requested. If unspecified, server will pick an appropriate default.
     pageToken: Optional. A token identifying a page of results the server
       should return.
-    parent: Required. Parent value of QuotaInfo resources. Listing across
-      different resource containers (such as 'projects/-') is not allowed.
-      Example names:
+    parent: Required. Identifier. Parent value of QuotaInfo resources. Listing
+      across different resource containers (such as 'projects/-') is not
+      allowed. Example names:
       `projects/123/locations/global/services/compute.googleapis.com`
       `folders/234/locations/global/services/compute.googleapis.com`
       `organizations/345/locations/global/services/compute.googleapis.com`
@@ -505,8 +505,8 @@ class CloudquotasProjectsLocationsQuotaAdjusterSettingsGetQuotaAdjusterSettingsR
   ngsRequest object.
 
   Fields:
-    name: Required. Name of the `quotaAdjusterSettings` configuration. Only a
-      single setting per project is supported.
+    name: Required. Identifier. Name of the `quotaAdjusterSettings`
+      configuration. Only a single setting per project is supported.
   """
 
   name = _messages.StringField(1, required=True)
@@ -547,7 +547,7 @@ class CloudquotasProjectsLocationsQuotaPreferencesCreateRequest(_messages.Messag
 
   Fields:
     ignoreSafetyChecks: The list of quota safety checks to be ignored.
-    parent: Required. Value for parent. Example:
+    parent: Required. Identifier. Value for parent. Example:
       `projects/123/locations/global`
     quotaPreference: A QuotaPreference resource to be passed as the request
       body.
@@ -582,7 +582,7 @@ class CloudquotasProjectsLocationsQuotaPreferencesGetRequest(_messages.Message):
   r"""A CloudquotasProjectsLocationsQuotaPreferencesGetRequest object.
 
   Fields:
-    name: Required. Name of the resource Example name:
+    name: Required. Identifier. Name of the resource Example name:
       `projects/123/locations/global/quota_preferences/my-config-for-us-east1`
   """
 
@@ -604,9 +604,9 @@ class CloudquotasProjectsLocationsQuotaPreferencesListRequest(_messages.Message)
       than requested. If unspecified, server will pick an appropriate default.
     pageToken: Optional. A token identifying a page of results the server
       should return.
-    parent: Required. Parent value of QuotaPreference resources. Listing
-      across different resource containers (such as 'projects/-') is not
-      allowed. When the value starts with 'folders' or 'organizations', it
+    parent: Required. Identifier. Parent value of QuotaPreference resources.
+      Listing across different resource containers (such as 'projects/-') is
+      not allowed. When the value starts with 'folders' or 'organizations', it
       lists the QuotaPreferences for org quotas in the container. It does not
       list the QuotaPreferences in the descendant projects of the container.
       Example parents: `projects/123/locations/global`
@@ -675,9 +675,9 @@ class CloudquotasProjectsLocationsServicesQuotaInfosGetRequest(_messages.Message
   r"""A CloudquotasProjectsLocationsServicesQuotaInfosGetRequest object.
 
   Fields:
-    name: Required. The resource name of the quota info. An example name: `pro
-      jects/123/locations/global/services/compute.googleapis.com/quotaInfos/Cp
-      usPerProjectPerRegion`
+    name: Required. Identifier. The resource name of the quota info. An
+      example name: `projects/123/locations/global/services/compute.googleapis
+      .com/quotaInfos/CpusPerProjectPerRegion`
   """
 
   name = _messages.StringField(1, required=True)
@@ -691,9 +691,9 @@ class CloudquotasProjectsLocationsServicesQuotaInfosListRequest(_messages.Messag
       than requested. If unspecified, server will pick an appropriate default.
     pageToken: Optional. A token identifying a page of results the server
       should return.
-    parent: Required. Parent value of QuotaInfo resources. Listing across
-      different resource containers (such as 'projects/-') is not allowed.
-      Example names:
+    parent: Required. Identifier. Parent value of QuotaInfo resources. Listing
+      across different resource containers (such as 'projects/-') is not
+      allowed. Example names:
       `projects/123/locations/global/services/compute.googleapis.com`
       `folders/234/locations/global/services/compute.googleapis.com`
       `organizations/345/locations/global/services/compute.googleapis.com`

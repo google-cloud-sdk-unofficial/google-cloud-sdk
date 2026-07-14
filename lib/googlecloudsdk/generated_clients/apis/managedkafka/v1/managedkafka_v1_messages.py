@@ -257,6 +257,8 @@ class Cluster(_messages.Message):
     labels: Optional. Labels as key value pairs.
     name: Identifier. The name of the cluster. Structured like:
       projects/{project_number}/locations/{location}/clusters/{cluster_id}
+    publicClusterDetails: Output only. Details of the public cluster feature
+      for the Kafka cluster.
     rebalanceConfig: Optional. Rebalance configuration for the Kafka cluster.
     satisfiesPzi: Output only. Reserved for future use.
     satisfiesPzs: Output only. Reserved for future use.
@@ -372,13 +374,14 @@ class Cluster(_messages.Message):
   kafkaVersion = _messages.StringField(9)
   labels = _messages.MessageField('LabelsValue', 10)
   name = _messages.StringField(11)
-  rebalanceConfig = _messages.MessageField('RebalanceConfig', 12)
-  satisfiesPzi = _messages.BooleanField(13)
-  satisfiesPzs = _messages.BooleanField(14)
-  state = _messages.EnumField('StateValueValuesEnum', 15)
-  tlsConfig = _messages.MessageField('TlsConfig', 16)
-  updateOptions = _messages.MessageField('UpdateOptions', 17)
-  updateTime = _messages.StringField(18)
+  publicClusterDetails = _messages.MessageField('PublicClusterDetails', 12)
+  rebalanceConfig = _messages.MessageField('RebalanceConfig', 13)
+  satisfiesPzi = _messages.BooleanField(14)
+  satisfiesPzs = _messages.BooleanField(15)
+  state = _messages.EnumField('StateValueValuesEnum', 16)
+  tlsConfig = _messages.MessageField('TlsConfig', 17)
+  updateOptions = _messages.MessageField('UpdateOptions', 18)
+  updateTime = _messages.StringField(19)
 
 
 class ConnectAccessConfig(_messages.Message):
@@ -3032,6 +3035,27 @@ class PublicClusterConfig(_messages.Message):
   """
 
   allowedSourceIpRanges = _messages.StringField(1, repeated=True)
+
+
+class PublicClusterDetails(_messages.Message):
+  r"""Details of the public cluster feature for the Kafka cluster.
+
+  Fields:
+    discoveryDnsRecords: Output only. DNS discovery records that resolve to
+      all of the external IP addresses associated with the public cluster.
+      Used for configuring DNS-based egress firewall rules to a public
+      cluster. discovery_dns_record can be added to this list if the cluster
+      is scaled up. Must configure DNS based firewalls to resolve ALL DNS
+      records in this list as large clusters have IP addresses sharded across
+      records. Each record contains a maximum of 30 IP addresses.
+    externalIpAddresses: Output only. All of the external IP addresses
+      associated with the public cluster used for configuring egress firewall
+      rules to a public cluster. external_ip_address can be added to this list
+      if the cluster is scaled up.
+  """
+
+  discoveryDnsRecords = _messages.StringField(1, repeated=True)
+  externalIpAddresses = _messages.StringField(2, repeated=True)
 
 
 class RebalanceConfig(_messages.Message):

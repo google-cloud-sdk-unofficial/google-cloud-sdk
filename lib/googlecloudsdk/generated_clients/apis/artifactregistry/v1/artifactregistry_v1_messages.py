@@ -3308,6 +3308,8 @@ class PrewarmArtifactRequest(_messages.Message):
   Fields:
     force: Optional. If true, old artifact will be evicted to make room for
       the new artifact.
+    platform: Optional. The platform (architecture and OS) of the image or
+      tag.
     retentionDays: Optional. The retention days of the prewarmed artifact. If
       not specified, the artifact will be cached for 3 days.
     streamLocation: Optional. The location to cache the artifact in. If not
@@ -3321,10 +3323,11 @@ class PrewarmArtifactRequest(_messages.Message):
   """
 
   force = _messages.BooleanField(1)
-  retentionDays = _messages.IntegerField(2)
-  streamLocation = _messages.StringField(3)
-  tag = _messages.StringField(4)
-  version = _messages.StringField(5)
+  platform = _messages.MessageField('PrewarmPlatform', 2)
+  retentionDays = _messages.IntegerField(3)
+  streamLocation = _messages.StringField(4)
+  tag = _messages.StringField(5)
+  version = _messages.StringField(6)
 
 
 class PrewarmArtifactResponse(_messages.Message):
@@ -3337,8 +3340,23 @@ class PrewarmArtifactResponse(_messages.Message):
   prewarmedArtifact = _messages.MessageField('PrewarmedArtifact', 1)
 
 
+class PrewarmPlatform(_messages.Message):
+  r"""The platform (architecture and OS) of the image. This is a sub-message.
+
+  Fields:
+    architecture: Optional. The architecture of the image or tag. For example,
+      "arm64" or "amd64".
+    os: Optional. The OS of the image or tag. For example, "linux" or
+      "windows".
+  """
+
+  architecture = _messages.StringField(1)
+  os = _messages.StringField(2)
+
+
 class PrewarmedArtifact(_messages.Message):
-  r"""PrewarmedArtifact represents a streamed artifact.
+  r"""PrewarmedArtifact represents a streamed artifact. This is not a request
+  message, so field_behavior annotations are not required.
 
   Fields:
     expirationTime: The expiration time of the prewarmed artifact.

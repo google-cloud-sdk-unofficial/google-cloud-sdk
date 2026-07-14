@@ -421,18 +421,27 @@ class Instance(_messages.Message):
     r"""Platform edition.
 
     Values:
-      PLATFORM_EDITION_UNSPECIFIED: Platform edition is unspecified.
-      LOOKER_CORE_TRIAL: Trial.
-      LOOKER_CORE_STANDARD: Standard.
-      LOOKER_CORE_STANDARD_ANNUAL: Subscription Standard.
-      LOOKER_CORE_ENTERPRISE_ANNUAL: Subscription Enterprise.
-      LOOKER_CORE_EMBED_ANNUAL: Subscription Embed.
-      LOOKER_CORE_NONPROD_STANDARD_ANNUAL: Nonprod Subscription Standard.
-      LOOKER_CORE_NONPROD_ENTERPRISE_ANNUAL: Nonprod Subscription Enterprise.
-      LOOKER_CORE_NONPROD_EMBED_ANNUAL: Nonprod Subscription Embed.
-      LOOKER_CORE_TRIAL_STANDARD: Trial Standard.
-      LOOKER_CORE_TRIAL_ENTERPRISE: Trial Enterprise.
-      LOOKER_CORE_TRIAL_EMBED: Trial Embed.
+      PLATFORM_EDITION_UNSPECIFIED: Represents an unspecified platform
+        edition.
+      LOOKER_CORE_TRIAL: Represents the Looker Core Trial edition.
+      LOOKER_CORE_STANDARD: Represents the Looker Core Standard edition.
+      LOOKER_CORE_STANDARD_ANNUAL: Represents the Looker Core Standard Annual
+        edition.
+      LOOKER_CORE_ENTERPRISE_ANNUAL: Represents the Looker Core Enterprise
+        Annual edition.
+      LOOKER_CORE_EMBED_ANNUAL: Represents the Looker Core Embed Annual
+        edition.
+      LOOKER_CORE_NONPROD_STANDARD_ANNUAL: Represents the Looker Core Nonprod
+        Standard Annual edition.
+      LOOKER_CORE_NONPROD_ENTERPRISE_ANNUAL: Represents the Looker Core
+        Nonprod Enterprise Annual edition.
+      LOOKER_CORE_NONPROD_EMBED_ANNUAL: Represents the Looker Core Nonprod
+        Embed Annual edition.
+      LOOKER_CORE_TRIAL_STANDARD: Represents the Looker Core Trial Standard
+        edition.
+      LOOKER_CORE_TRIAL_ENTERPRISE: Represents the Looker Core Trial
+        Enterprise edition.
+      LOOKER_CORE_TRIAL_EMBED: Represents the Looker Core Trial Embed edition.
     """
     PLATFORM_EDITION_UNSPECIFIED = 0
     LOOKER_CORE_TRIAL = 1

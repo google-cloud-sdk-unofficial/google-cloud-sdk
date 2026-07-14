@@ -102,6 +102,7 @@ from .types.operation import GenericOperationMetadata
 from .types.prediction_service import ChatCompletionsRequest
 from .types.prediction_service import CountTokensRequest
 from .types.prediction_service import CountTokensResponse
+from .types.prediction_service import DeleteResponseRequest
 from .types.prediction_service import DirectPredictRequest
 from .types.prediction_service import DirectPredictResponse
 from .types.prediction_service import DirectRawPredictRequest
@@ -114,6 +115,7 @@ from .types.prediction_service import FetchPredictOperationRequest
 from .types.prediction_service import GenerateContentRequest
 from .types.prediction_service import GenerateContentResponse
 from .types.prediction_service import GenerateVideoResponse
+from .types.prediction_service import GetResponseRequest
 from .types.prediction_service import InvokeRequest
 from .types.prediction_service import PredictLongRunningMetadata
 from .types.prediction_service import PredictLongRunningRequest
@@ -221,6 +223,7 @@ __all__ = (
 'CsvDestination',
 'CsvSource',
 'DeleteOperationMetadata',
+'DeleteResponseRequest',
 'DeleteSemanticGovernancePolicyOperationMetadata',
 'DeleteSemanticGovernancePolicyRequest',
 'DirectPredictRequest',
@@ -265,6 +268,7 @@ __all__ = (
 'GenerateVideoResponse',
 'GenerationConfig',
 'GenericOperationMetadata',
+'GetResponseRequest',
 'GetSemanticGovernancePolicyRequest',
 'GoogleDriveSource',
 'GoogleMaps',

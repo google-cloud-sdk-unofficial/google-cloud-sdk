@@ -32,7 +32,7 @@ class Startup(base.TopicCommand):
 
   The `gcloud` CLI requires a compatible Python version (3.10-3.14) to run. In
   most gcloud CLI installations, the gcloud installer manages the Python
-  installation (version 3.13) for the user. Configuring the Python
+  installation (version 3.14) for the user. Configuring the Python
   interpreter is only supported in specific scenarios described below.
 
   ### When to Use `CLOUDSDK_PYTHON` environment variable
@@ -63,7 +63,7 @@ class Startup(base.TopicCommand):
 
   ### Other Components
 
-  `gsutil` versions 5.0 and later support Python 3.10-3.13. To use a different
+  `gsutil` versions 5.0 and later support Python 3.10-3.14. To use a different
   interpreter for `gsutil` than for the other Python tools, set the
   `CLOUDSDK_GSUTIL_PYTHON` environment variable to the interpreter that you
   want.

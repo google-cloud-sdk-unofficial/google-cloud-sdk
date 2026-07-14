@@ -345,7 +345,7 @@ class AssuredworkloadsV1(base_api.BaseApiClient):
         method_id='assuredworkloads.organizations.locations.workloads.violations.list',
         ordered_params=['parent'],
         path_params=['parent'],
-        query_params=['filter', 'interval_endTime', 'interval_startTime', 'pageSize', 'pageToken'],
+        query_params=['filter', 'interval_endTime', 'interval_startTime', 'orderBy', 'pageSize', 'pageToken'],
         relative_path='v1/{+parent}/violations',
         request_field='',
         request_type_name='AssuredworkloadsOrganizationsLocationsWorkloadsViolationsListRequest',

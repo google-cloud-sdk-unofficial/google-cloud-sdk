@@ -42,6 +42,7 @@ class FileV1beta1(base_api.BaseApiClient):
     self.projects_locations_instances_snapshots = self.ProjectsLocationsInstancesSnapshotsService(self)
     self.projects_locations_instances = self.ProjectsLocationsInstancesService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
+    self.projects_locations_sharePools = self.ProjectsLocationsSharePoolsService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects = self.ProjectsService(self)
 
@@ -875,6 +876,70 @@ class FileV1beta1(base_api.BaseApiClient):
         request_field='',
         request_type_name='FileProjectsLocationsOperationsListRequest',
         response_type_name='ListOperationsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsSharePoolsService(base_api.BaseApiService):
+    """Service class for the projects_locations_sharePools resource."""
+
+    _NAME = 'projects_locations_sharePools'
+
+    def __init__(self, client):
+      super(FileV1beta1.ProjectsLocationsSharePoolsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def AcquireShare(self, request, global_params=None):
+      r"""Acquires a share synchronously from the pre-provisioned share pool.
+
+      Args:
+        request: (FileProjectsLocationsSharePoolsAcquireShareRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AcquireShareResponse) The response message.
+      """
+      config = self.GetMethodConfig('AcquireShare')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    AcquireShare.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/sharePools/{sharePoolsId}:acquireShare',
+        http_method='POST',
+        method_id='file.projects.locations.sharePools.acquireShare',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1beta1/{+parent}:acquireShare',
+        request_field='acquireShareRequest',
+        request_type_name='FileProjectsLocationsSharePoolsAcquireShareRequest',
+        response_type_name='AcquireShareResponse',
+        supports_download=False,
+    )
+
+    def ReleaseShare(self, request, global_params=None):
+      r"""Releases a share synchronously, marking it for background scrubbing.
+
+      Args:
+        request: (FileProjectsLocationsSharePoolsReleaseShareRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ReleaseShareResponse) The response message.
+      """
+      config = self.GetMethodConfig('ReleaseShare')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ReleaseShare.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/sharePools/{sharePoolsId}:releaseShare',
+        http_method='POST',
+        method_id='file.projects.locations.sharePools.releaseShare',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1beta1/{+parent}:releaseShare',
+        request_field='releaseShareRequest',
+        request_type_name='FileProjectsLocationsSharePoolsReleaseShareRequest',
+        response_type_name='ReleaseShareResponse',
         supports_download=False,
     )
 
