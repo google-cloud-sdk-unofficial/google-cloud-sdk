@@ -44,6 +44,7 @@ class StorageV2(base_api.BaseApiClient):
     self.organizations_locations = self.OrganizationsLocationsService(self)
     self.organizations = self.OrganizationsService(self)
     self.projects_buckets_folders = self.ProjectsBucketsFoldersService(self)
+    self.projects_buckets_objects = self.ProjectsBucketsObjectsService(self)
     self.projects_buckets_snapshots = self.ProjectsBucketsSnapshotsService(self)
     self.projects_buckets = self.ProjectsBucketsService(self)
     self.projects_locations_intelligenceFindings_revisions = self.ProjectsLocationsIntelligenceFindingsRevisionsService(self)
@@ -581,6 +582,70 @@ class StorageV2(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsBucketsObjectsService(base_api.BaseApiService):
+    """Service class for the projects_buckets_objects resource."""
+
+    _NAME = 'projects_buckets_objects'
+
+    def __init__(self, client):
+      super(StorageV2.ProjectsBucketsObjectsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def DropGoogleContexts(self, request, global_params=None):
+      r"""Drops a specific group of Google-generated object contexts for a given object.
+
+      Args:
+        request: (StorageProjectsBucketsObjectsDropGoogleContextsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (DropObjectGoogleContextsResponse) The response message.
+      """
+      config = self.GetMethodConfig('DropGoogleContexts')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    DropGoogleContexts.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/buckets/{bucketsId}/objects/{objectsId}:dropGoogleContexts',
+        http_method='POST',
+        method_id='storage.projects.buckets.objects.dropGoogleContexts',
+        ordered_params=['bucket', 'object'],
+        path_params=['bucket', 'object'],
+        query_params=['dropContextGroup', 'generation', 'ifGenerationMatch', 'ifMetagenerationMatch'],
+        relative_path='v2/{+bucket}/objects/{+object}:dropGoogleContexts',
+        request_field='',
+        request_type_name='StorageProjectsBucketsObjectsDropGoogleContextsRequest',
+        response_type_name='DropObjectGoogleContextsResponse',
+        supports_download=False,
+    )
+
+    def ViewFullContext(self, request, global_params=None):
+      r"""Retrieves a specific object context with its extended data for a given object.
+
+      Args:
+        request: (StorageProjectsBucketsObjectsViewFullContextRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ObjectFullContext) The response message.
+      """
+      config = self.GetMethodConfig('ViewFullContext')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ViewFullContext.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/buckets/{bucketsId}/objects/{objectsId}:viewFullContext',
+        http_method='GET',
+        method_id='storage.projects.buckets.objects.viewFullContext',
+        ordered_params=['bucket', 'object'],
+        path_params=['bucket', 'object'],
+        query_params=['_key', 'generation'],
+        relative_path='v2/{+bucket}/objects/{+object}:viewFullContext',
+        request_field='',
+        request_type_name='StorageProjectsBucketsObjectsViewFullContextRequest',
+        response_type_name='ObjectFullContext',
+        supports_download=False,
+    )
+
   class ProjectsBucketsSnapshotsService(base_api.BaseApiService):
     """Service class for the projects_buckets_snapshots resource."""
 
@@ -756,7 +821,7 @@ class StorageV2(base_api.BaseApiClient):
         ordered_params=['name'],
         path_params=['name'],
         query_params=['requestId'],
-        relative_path='v2/{+name}/replicationStatus',
+        relative_path='v2/{+name}',
         request_field='',
         request_type_name='StorageProjectsBucketsGetReplicationStatusRequest',
         response_type_name='ReplicationStatus',

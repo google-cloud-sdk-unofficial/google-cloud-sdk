@@ -757,6 +757,8 @@ class BaseCommandGenerator(six.with_metaclass(abc.ABCMeta, object)):
       command.detailed_help['API REFERENCE'] = api_info
     if self.spec.hints:
       command.hints = base.CommandHint(**self.spec.hints)
+    if self.spec.guidance:
+      command.guidance = self.spec.guidance
     return command
 
   @abc.abstractmethod

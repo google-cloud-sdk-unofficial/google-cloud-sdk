@@ -441,6 +441,30 @@ class Ssh:
         identity_file=cmd_components.identity_file,
     ).Run(cmd_components.env)
 
+  def RunScp(
+      self,
+      sources,
+      destination,
+      recursive=False,
+      compress=False,
+      extra_flags=None,
+  ):
+    """Run the SCP command."""
+
+    cmd_components = self.GetSshCommandComponents()
+
+    return ssh.SCPCommand(
+        sources=sources,
+        destination=destination,
+        recursive=recursive,
+        compress=compress,
+        cert_file=cmd_components.cert_file,
+        iap_tunnel_args=cmd_components.iap_tunnel_args,
+        options=cmd_components.options,
+        identity_file=cmd_components.identity_file,
+        extra_flags=extra_flags,
+    ).Run(cmd_components.env)
+
   def _FetchSshCaPublicKeys(self) -> Sequence[str] | None:
     """Retrieves the CA public keys for the current region from a gstatic URL.
 

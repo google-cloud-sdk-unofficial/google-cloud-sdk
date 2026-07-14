@@ -617,6 +617,60 @@ class DatamigrationV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def FetchEntitiesStatusView(self, request, global_params=None):
+      r"""An internal, RPC only method that returns a list of the (filtered) entities with minimal information required for the entities tree view.
+
+      Args:
+        request: (DatamigrationProjectsLocationsConversionWorkspacesFetchEntitiesStatusViewRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (FetchEntitiesStatusViewResponse) The response message.
+      """
+      config = self.GetMethodConfig('FetchEntitiesStatusView')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    FetchEntitiesStatusView.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/conversionWorkspaces/{conversionWorkspacesId}:fetchEntitiesStatusView',
+        http_method='GET',
+        method_id='datamigration.projects.locations.conversionWorkspaces.fetchEntitiesStatusView',
+        ordered_params=['conversionWorkspace'],
+        path_params=['conversionWorkspace'],
+        query_params=['commitId', 'fetchView', 'filter', 'pageSize', 'pageToken', 'tree'],
+        relative_path='v1/{+conversionWorkspace}:fetchEntitiesStatusView',
+        request_field='',
+        request_type_name='DatamigrationProjectsLocationsConversionWorkspacesFetchEntitiesStatusViewRequest',
+        response_type_name='FetchEntitiesStatusViewResponse',
+        supports_download=False,
+    )
+
+    def FetchIssues(self, request, global_params=None):
+      r"""List issues of conversion workspace operations e.g. conversion.
+
+      Args:
+        request: (DatamigrationProjectsLocationsConversionWorkspacesFetchIssuesRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (FetchIssuesResponse) The response message.
+      """
+      config = self.GetMethodConfig('FetchIssues')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    FetchIssues.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/conversionWorkspaces/{conversionWorkspacesId}:fetchIssues',
+        http_method='GET',
+        method_id='datamigration.projects.locations.conversionWorkspaces.fetchIssues',
+        ordered_params=['conversionWorkspace'],
+        path_params=['conversionWorkspace'],
+        query_params=['allIssues', 'commitId', 'filter', 'issueType', 'pageSize', 'pageToken'],
+        relative_path='v1/{+conversionWorkspace}:fetchIssues',
+        request_field='',
+        request_type_name='DatamigrationProjectsLocationsConversionWorkspacesFetchIssuesRequest',
+        response_type_name='FetchIssuesResponse',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Gets details of a single conversion workspace.
 

@@ -326,6 +326,10 @@ class KrmApiHost(_messages.Message):
     managementConfig: Configuration of the cluster management
     name: Output only. The name of this KrmApiHost resource in the format: 'pr
       ojects/{project_id}/locations/{location}/krmApiHosts/{krm_api_host_id}'.
+    satisfiesPzi: Output only. Whether the KrmApiHost satisfies the Platform
+      Zero Trust Infrastructure (PZI) compliance requirements.
+    satisfiesPzs: Output only. Whether the KrmApiHost satisfies the Platform
+      Zero Trust Service (PZS) compliance requirements.
     state: Output only. The current state of the internal state machine for
       the KrmApiHost.
     usePrivateEndpoint: Only allow access to the master's private endpoint IP.
@@ -382,8 +386,10 @@ class KrmApiHost(_messages.Message):
   labels = _messages.MessageField('LabelsValue', 3)
   managementConfig = _messages.MessageField('ManagementConfig', 4)
   name = _messages.StringField(5)
-  state = _messages.EnumField('StateValueValuesEnum', 6)
-  usePrivateEndpoint = _messages.BooleanField(7)
+  satisfiesPzi = _messages.BooleanField(6)
+  satisfiesPzs = _messages.BooleanField(7)
+  state = _messages.EnumField('StateValueValuesEnum', 8)
+  usePrivateEndpoint = _messages.BooleanField(9)
 
 
 class KrmapihostingProjectsLocationsGetRequest(_messages.Message):

@@ -57,6 +57,7 @@ Container Flags
   group.AddArgument(flags.CpuFlag())
   if release_track != base.ReleaseTrack.GA:
     group.AddArgument(flags.WorkdirFlag())
+    group.AddArgument(flags.SandboxLauncherFlag())
   group.AddArgument(flags.CommandFlag())
   group.AddArgument(flags.ArgsFlag())
   group.AddArgument(flags.SecretsFlags())

@@ -18,7 +18,7 @@ class AccessControlsUpdates(_messages.Message):
     grants: Optional. Grants to add or update. If a grant for same entity
       exists, its role is updated.
     removeEntities: Optional. Entities for which all grants should be removed.
-      An entity cannot be in both `grants` and `remove_entities`.
+      An entity can't be in both `grants` and `remove_entities`.
   """
 
   grants = _messages.MessageField('ObjectAccessControl', 1, repeated=True)
@@ -45,8 +45,8 @@ class BucketList(_messages.Message):
 
   Fields:
     buckets: Required. List of buckets and their objects to be transformed.
-      Currently, only one bucket configuration is supported. If multiple
-      buckets are specified, an error will be returned.
+      You can specify only one bucket per job. If multiple buckets are
+      specified, an error occurs.
   """
 
   buckets = _messages.MessageField('Bucket', 1, repeated=True)
@@ -71,8 +71,8 @@ class BucketOperation(_messages.Message):
       error log entries.
     manifest: Specifies objects in a manifest file.
     name: Identifier. The resource name of the BucketOperation. This is
-      defined by the service. Format: projects/{project}/locations/global/jobs
-      /{job_id}/bucketOperations/{bucket_operation}.
+      defined by the service. Format: `projects/{project_id}/locations/global/
+      jobs/{job_id}/bucketOperations/{bucket_operation}`.
     prefixList: Specifies objects matching a prefix set.
     projectSource: Specifies objects matching the object filters in a project
       source.
@@ -130,9 +130,9 @@ class CancelJobRequest(_messages.Message):
   Fields:
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID in case you need to retry your request. Requests
-      with same `request_id` will be ignored for at least 60 minutes since the
+      with same `request_id` are ignored for at least 60 minutes since the
       first request. The request ID must be a valid UUID with the exception
-      that zero UUID is not supported (00000000-0000-0000-0000-000000000000).
+      that zero UUID isn't supported (00000000-0000-0000-0000-000000000000).
   """
 
   requestId = _messages.StringField(1)
@@ -191,7 +191,7 @@ class CustomContextUpdates(_messages.Message):
     UpdatesValue: Optional. Insert or update the existing custom contexts.
 
   Fields:
-    keysToClear: Optional. Custom contexts to clear by key. A key cannot be
+    keysToClear: Optional. Custom contexts to clear by key. A key can't be
       present in both `updates` and `keys_to_clear`.
     updates: Optional. Insert or update the existing custom contexts.
   """
@@ -229,15 +229,15 @@ class DeleteObject(_messages.Message):
 
   Fields:
     permanentObjectDeletionEnabled: Required. Controls deletion behavior when
-      versioning is enabled for the object's bucket. If true both live and
+      versioning is enabled for the object's bucket. If true, both live and
       noncurrent objects will be permanently deleted. Otherwise live objects
       in versioned buckets will become noncurrent and objects that were
       already noncurrent will be skipped. This setting doesn't have any impact
       on the Soft Delete feature. All objects deleted by this service can be
       be restored for the duration of the Soft Delete retention duration if
       enabled. If enabled and the manifest doesn't specify an object's
-      generation, a GetObjectMetadata call (a Class B operation) will be made
-      to determine the live object generation.
+      generation, a `GetObjectMetadata` call is made to determine the live
+      object generation.
   """
 
   permanentObjectDeletionEnabled = _messages.BooleanField(1)
@@ -427,7 +427,7 @@ class Expr(_messages.Message):
 
 
 class Job(_messages.Message):
-  r"""The Storage Batch Operations Job description.
+  r"""The storage batch operations job description.
 
   Enums:
     StateValueValuesEnum: Output only. State of the job.
@@ -439,26 +439,27 @@ class Job(_messages.Message):
     counters: Output only. Information about the progress of the job.
     createTime: Output only. The time that the job was created.
     deleteObject: Delete objects.
-    description: Optional. A description provided by the user for the job. Its
-      max length is 1024 bytes when Unicode-encoded.
-    dryRun: Optional. If true, the job will run in dry run mode, returning the
+    description: Optional. A user-provided description for the job. Maximum
+      length: 1024 bytes when unicode-encoded.
+    dryRun: Optional. If true, the job runs in dry run mode, returning the
       total object count and, if the object configuration is a prefix list,
-      the bytes found from source. No transformations will be performed.
+      the bytes found from source. No transformations are performed.
     errorSummaries: Output only. Summarizes errors encountered with sample
       error log entries.
-    isMultiBucketJob: Output only. If true, this Job operates on multiple
-      buckets. Multibucket jobs are subject to different quota limits than
+    isMultiBucketJob: Output only. If true, this job operates on multiple
+      buckets. Multi-bucket jobs are subject to different quota limits than
       single-bucket jobs.
     loggingConfig: Optional. Logging configuration.
-    name: Identifier. The resource name of the Job. job_id is unique within
-      the project, that is either set by the customer or defined by the
-      service. Format: projects/{project}/locations/global/jobs/{job_id} . For
-      example: "projects/123456/locations/global/jobs/job01".
+    name: Identifier. The resource name of the job. Format:
+      `projects/{project_id}/locations/global/jobs/{job_id}`. For example:
+      `projects/123456/locations/global/jobs/job01`. `job_id` is unique in a
+      given project.
     projectSource: Specifies a project source and filters to identify objects
       to be transformed.
     putMetadata: Updates object metadata. Allows updating fixed-key and custom
-      metadata and fixed-key metadata i.e. Cache-Control, Content-Disposition,
-      Content-Encoding, Content-Language, Content-Type, Custom-Time.
+      metadata. For example, `Cache-Control`, `Content-Disposition`, `Content-
+      Encoding`, `Content-Language`, `Content-Type`, `Custom-Time`, and
+      `Retention configuration`.
     putObjectHold: Changes object hold status.
     rewriteObject: Rewrite the object and updates metadata like KMS key.
     scheduleTime: Output only. The time that the job was scheduled.
@@ -691,17 +692,24 @@ class Manifest(_messages.Message):
   r"""Describes list of objects to be transformed.
 
   Fields:
-    manifestLocation: Required. `manifest_location` must contain the manifest
-      source file that is a CSV file in a Google Cloud Storage bucket. Each
-      row in the file must include the object details i.e. BucketId and Name.
-      Generation may optionally be specified. When it is not specified the
-      live object is acted upon. `manifest_location` should either be 1) An
-      absolute path to the object in the format of
-      `gs://bucket_name/path/file_name.csv`. 2) An absolute path with a single
-      wildcard character in the file name, for example
-      `gs://bucket_name/path/file_name*.csv`. If manifest location is
-      specified with a wildcard, objects in all manifest files matching the
-      pattern will be acted upon.
+    manifestLocation: Required. Specify the manifest file location. The format
+      of manifest location can be an absolute path to the object in the format
+      of `gs://bucket_name/path/object_name`. For example,
+      `gs://bucket_name/path/object_name.csv`. Alternatively, you can specify
+      an absolute path with a single wildcard character in the file name, for
+      example `gs://bucket_name/path/file_name*.csv`. If the manifest location
+      is specified with a wildcard, objects in all manifest files matching the
+      pattern will be acted upon. The manifest is a CSV file, uploaded to
+      Cloud Storage, that contains one object or a list of objects that you
+      want to process. Each row in the manifest must include the `bucket` and
+      `name` of the object. You can optionally specify the `generation` of the
+      object. If you don't specify the `generation`, the current version of
+      the object is used. You can optionally include a header row with the
+      following format: `bucket,name,generation`. For example,
+      bucket,name,generation bucket_1,object_1,generation_1
+      bucket_1,object_2,generation_2 bucket_1,object_3,generation_3 Note: The
+      manifest file must specify only objects within the bucket provided to
+      the job. Rows referencing objects in other buckets are ignored.
   """
 
   manifestLocation = _messages.StringField(1)
@@ -723,13 +731,13 @@ class ObjectAccessControl(_messages.Message):
 
 
 class ObjectCustomContextPayload(_messages.Message):
-  r"""Describes the payload of a user defined object custom context.
+  r"""Describes the payload of a user-defined object custom context.
 
   Fields:
-    value: The value of the object custom context. If set, `value` must NOT be
-      an empty string since it is a required field in custom context. If
-      unset, `value` will be ignored and no changes will be made to the
-      `value` field of the custom context payload.
+    value: The value of the object custom context. If set, `value` can't be an
+      empty string because it is a required field in custom context. If unset,
+      `value` is ignored and no changes are made to the `value` field of the
+      custom context payload.
   """
 
   value = _messages.StringField(1)
@@ -739,23 +747,29 @@ class ObjectRetention(_messages.Message):
   r"""Describes options for object retention update.
 
   Enums:
-    RetentionModeValueValuesEnum: Required. The retention mode of the object.
+    RetentionModeValueValuesEnum: Required. The retention mode.
 
   Fields:
-    retainUntilTime: Required. The time when the object will be retained
-      until. UNSET will clear the retention. Must be specified in RFC 3339
-      format e.g. YYYY-MM-DD'T'HH:MM:SS.SS'Z' or YYYY-MM-DD'T'HH:MM:SS'Z'.
-    retentionMode: Required. The retention mode of the object.
+    retainUntilTime: Required. The object's retention expiration time, during
+      which, the object is protected from being deleted or overwritten. The
+      time must be specified in RFC 3339 format, for example `YYYY-MM-
+      DD'T'HH:MM:SS'Z'` or `YYYY-MM-DD'T'HH:MM:SS.SS'Z'`. To clear an object's
+      retention, both `retentionMode` and `retainUntilTime` must be left unset
+      (omitted). Setting `retentionMode` to `RETENTION_MODE_UNSPECIFIED` is
+      treated as a no-op. Unlike an unset field, it doesn't modify or clear
+      the retention settings.
+    retentionMode: Required. The retention mode.
   """
 
   class RetentionModeValueValuesEnum(_messages.Enum):
-    r"""Required. The retention mode of the object.
+    r"""Required. The retention mode.
 
     Values:
-      RETENTION_MODE_UNSPECIFIED: If set and retain_until_time is empty,
-        clears the retention.
-      LOCKED: Sets the retention mode to locked.
-      UNLOCKED: Sets the retention mode to unlocked.
+      RETENTION_MODE_UNSPECIFIED: The retention mode isn't specified.
+      LOCKED: When the retention mode is `LOCKED`, the `retainUntilTime` can't
+        be removed or reduced.
+      UNLOCKED: When the retention mode is `UNLOCKED`, the `retainUntilTime`
+        can be removed or modified.
     """
     RETENTION_MODE_UNSPECIFIED = 0
     LOCKED = 1
@@ -882,7 +896,7 @@ class OperationMetadata(_messages.Message):
     endTime: Output only. The time the operation finished running.
     job: Output only. The Job associated with the operation.
     operation: Output only. The unique operation resource name. Format:
-      projects/{project}/locations/global/operations/{operation}.
+      projects/{project_id}/locations/global/operations/{operation}.
     requestedCancellation: Output only. Identifies whether the user has
       requested cancellation of the operation. Operations that have been
       cancelled successfully have google.longrunning.Operation.error value
@@ -901,10 +915,10 @@ class PrefixList(_messages.Message):
   r"""Describes prefixes of objects to be transformed.
 
   Fields:
-    includedObjectPrefixes: Optional. Include prefixes of the objects to be
-      transformed. * Supports full object name * Supports prefix of the object
-      name * Wildcards are not supported * Supports empty string for all
-      objects in a bucket.
+    includedObjectPrefixes: Optional. Specify one or more object prefixes. For
+      example: * To match one object, use a single prefix, `prefix1`. * To
+      match multiple objects, use comma-separated prefixes, `prefix1,
+      prefix2`. * To match all objects, use an empty prefix, `''`
   """
 
   includedObjectPrefixes = _messages.StringField(1, repeated=True)
@@ -922,12 +936,12 @@ class ProjectSource(_messages.Message):
       the baseline for the current job. Specifying this ID ensures the job is
       executed against the same set of objects validated during the dry run.
       The value corresponds to the {job_id} segment of the resource name:
-      `projects/{project}/locations/{location}/jobs/{job_id}`.
+      `projects/{project_id}/locations/{location}/jobs/{job_id}`.
     insightsDatasetConfig: Required. The resource identifier of the Storage
-      Insights dataset configuration. SBO uses the latest snapshot from this
-      dataset as the source to list and filter target objects. This should be
-      of the form: `projects/{project}/locations/{location}/datasetConfigs/{da
-      tasetConfig}`.
+      Insights dataset configuration. Storage batch operations uses the latest
+      snapshot from this dataset as the source to list and filter target
+      objects. Format: `projects/{project_id}/locations/{location}/datasetConf
+      igs/{dataset_config}`.
     objectFilters: Optional. Filters expressed in Common Expression Language
       (CEL) to apply to objects to identify objects to be transformed.
     project: Required. Project name of the objects to be transformed. e.g.
@@ -957,62 +971,72 @@ class PutMetadata(_messages.Message):
   r"""Describes options for object metadata update.
 
   Messages:
-    CustomMetadataValue: Optional. Updates objects custom metadata. Adds or
-      sets individual custom metadata key value pairs on objects. Keys that
-      are set with empty custom metadata values will have its value cleared.
-      Existing custom metadata not specified with this flag is not changed.
-      Refer to documentation in
-      https://cloud.google.com/storage/docs/metadata#custom-metadata
+    CustomMetadataValue: Optional. Updates the object's custom metadata. This
+      operation adds or sets individual custom metadata key-value pairs. Keys
+      specified with empty values have their values cleared. Existing custom
+      metadata keys not included in the request remain unchanged. For details,
+      see [Custom
+      metadata](https://cloud.google.com/storage/docs/metadata#custom-
+      metadata).
 
   Fields:
-    cacheControl: Optional. Updates objects Cache-Control fixed metadata.
-      Unset values will be ignored. Set empty values to clear the metadata.
-      Additionally, the value for Custom-Time cannot decrease. Refer to
-      documentation in
-      https://cloud.google.com/storage/docs/metadata#caching_data.
-    contentDisposition: Optional. Updates objects Content-Disposition fixed
-      metadata. Unset values will be ignored. Set empty values to clear the
-      metadata. Refer https://cloud.google.com/storage/docs/metadata#content-
-      disposition for additional documentation.
-    contentEncoding: Optional. Updates objects Content-Encoding fixed
-      metadata. Unset values will be ignored. Set empty values to clear the
-      metadata. Refer to documentation in
-      https://cloud.google.com/storage/docs/metadata#content-encoding.
-    contentLanguage: Optional. Updates objects Content-Language fixed
-      metadata. Refer to ISO 639-1 language codes for typical values of this
-      metadata. Max length 100 characters. Unset values will be ignored. Set
-      empty values to clear the metadata. Refer to documentation in
-      https://cloud.google.com/storage/docs/metadata#content-language.
-    contentType: Optional. Updates objects Content-Type fixed metadata. Unset
-      values will be ignored. Set empty values to clear the metadata. Refer to
-      documentation in https://cloud.google.com/storage/docs/metadata#content-
-      type
-    customMetadata: Optional. Updates objects custom metadata. Adds or sets
-      individual custom metadata key value pairs on objects. Keys that are set
-      with empty custom metadata values will have its value cleared. Existing
-      custom metadata not specified with this flag is not changed. Refer to
-      documentation in https://cloud.google.com/storage/docs/metadata#custom-
-      metadata
-    customTime: Optional. Updates objects Custom-Time fixed metadata. Unset
-      values will be ignored. Set empty values to clear the metadata. Refer to
-      documentation in https://cloud.google.com/storage/docs/metadata#custom-
-      time.
-    objectRetention: Optional. Updates objects retention lock configuration.
-      Unset values will be ignored. Set empty values to clear the retention
-      for the object with existing `Unlocked` retention mode. Object with
-      existing `Locked` retention mode cannot be cleared or reduce
-      retain_until_time. Refer to documentation in
-      https://cloud.google.com/storage/docs/object-lock
+    cacheControl: Optional. Updates the objects `Cache-Control` fixed
+      metadata. Unset values in the request are ignored. To clear the
+      metadata, set an empty value. Additionally, the value for `Custom-Time`
+      can't decrease. For details, see [Cache-
+      Control](https://cloud.google.com/storage/docs/metadata#caching_data).
+    contentDisposition: Optional. Updates objects `Content-Disposition` fixed
+      metadata. Unset values in the request are ignored. To clear the
+      metadata, set an empty value. For details, see [Content-
+      Disposition](https://cloud.google.com/storage/docs/metadata#content-
+      disposition).
+    contentEncoding: Optional. Updates the objects `Content-Encoding` fixed
+      metadata. Unset values in the request are ignored. To clear the
+      metadata, set an empty value. For details, see [Content-
+      Encoding](https://cloud.google.com/storage/docs/metadata#content-
+      encoding).
+    contentLanguage: Optional. Updates the objects `Content-Language` fixed
+      metadata. Metadata values must use ISO 639-1 language codes. The maximum
+      length for metadata values is 100 characters. Unset values in the
+      request are ignored. To clear the metadata, set an empty value. For
+      details, see [Content-
+      Language](https://cloud.google.com/storage/docs/metadata#content-
+      language).
+    contentType: Optional. Updates objects `Content-Type` fixed metadata.
+      Unset values in the request are ignored. To clear the metadata, set an
+      empty value. For details, see [Content-
+      Type](https://cloud.google.com/storage/docs/metadata#content-type).
+    customMetadata: Optional. Updates the object's custom metadata. This
+      operation adds or sets individual custom metadata key-value pairs. Keys
+      specified with empty values have their values cleared. Existing custom
+      metadata keys not included in the request remain unchanged. For details,
+      see [Custom
+      metadata](https://cloud.google.com/storage/docs/metadata#custom-
+      metadata).
+    customTime: Optional. Updates the objects `Custom-Time` fixed metadata.
+      Unset values in the request are ignored. To clear the metadata, set an
+      empty value. The time must be specified in RFC 3339 format, for example
+      `YYYY-MM-DD'T'HH:MM:SS'Z'` or `YYYY-MM-DD'T'HH:MM:SS.SS'Z'`. For
+      details, see [Custom-
+      Time](https://cloud.google.com/storage/docs/metadata#custom-time).
+    objectRetention: Optional. Updates an object's retention configuration. To
+      clear an object's retention, both `retentionMode` and `retainUntilTime`
+      must be left unset (omitted). Setting `retentionMode` to
+      `RETENTION_MODE_UNSPECIFIED` is treated as a no-op. Unlike an unset
+      field, it doesn't modify or clear the retention settings. An object with
+      `LOCKED` retention mode can't have its retention cleared or its
+      `retainUntilTime` reduced. For more information, see [Object
+      retention](https://cloud.google.com/storage/docs/batch-
+      operations/create-manage-batch-operation-jobs#retain-until-time).
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class CustomMetadataValue(_messages.Message):
-    r"""Optional. Updates objects custom metadata. Adds or sets individual
-    custom metadata key value pairs on objects. Keys that are set with empty
-    custom metadata values will have its value cleared. Existing custom
-    metadata not specified with this flag is not changed. Refer to
-    documentation in https://cloud.google.com/storage/docs/metadata#custom-
-    metadata
+    r"""Optional. Updates the object's custom metadata. This operation adds or
+    sets individual custom metadata key-value pairs. Keys specified with empty
+    values have their values cleared. Existing custom metadata keys not
+    included in the request remain unchanged. For details, see [Custom
+    metadata](https://cloud.google.com/storage/docs/metadata#custom-metadata).
 
     Messages:
       AdditionalProperty: An additional property for a CustomMetadataValue
@@ -1050,29 +1074,29 @@ class PutObjectHold(_messages.Message):
 
   Enums:
     EventBasedHoldValueValuesEnum: Required. Updates object event based holds
-      state. When object event based hold is set, object cannot be deleted or
+      state. When object event based hold is set, object can't be deleted or
       replaced. Resets object's time in the bucket for the purposes of the
       retention period.
     TemporaryHoldValueValuesEnum: Required. Updates object temporary holds
-      state. When object temporary hold is set, object cannot be deleted or
+      state. When object temporary hold is set, object can't be deleted or
       replaced.
 
   Fields:
     eventBasedHold: Required. Updates object event based holds state. When
-      object event based hold is set, object cannot be deleted or replaced.
+      object event based hold is set, object can't be deleted or replaced.
       Resets object's time in the bucket for the purposes of the retention
       period.
     temporaryHold: Required. Updates object temporary holds state. When object
-      temporary hold is set, object cannot be deleted or replaced.
+      temporary hold is set, object can't be deleted or replaced.
   """
 
   class EventBasedHoldValueValuesEnum(_messages.Enum):
     r"""Required. Updates object event based holds state. When object event
-    based hold is set, object cannot be deleted or replaced. Resets object's
+    based hold is set, object can't be deleted or replaced. Resets object's
     time in the bucket for the purposes of the retention period.
 
     Values:
-      HOLD_STATUS_UNSPECIFIED: Default value, Object hold status will not be
+      HOLD_STATUS_UNSPECIFIED: Default value, Object hold status isn't
         changed.
       SET: Places the hold.
       UNSET: Releases the hold.
@@ -1083,10 +1107,10 @@ class PutObjectHold(_messages.Message):
 
   class TemporaryHoldValueValuesEnum(_messages.Enum):
     r"""Required. Updates object temporary holds state. When object temporary
-    hold is set, object cannot be deleted or replaced.
+    hold is set, object can't be deleted or replaced.
 
     Values:
-      HOLD_STATUS_UNSPECIFIED: Default value, Object hold status will not be
+      HOLD_STATUS_UNSPECIFIED: Default value, Object hold status isn't
         changed.
       SET: Places the hold.
       UNSET: Releases the hold.
@@ -1110,14 +1134,14 @@ class RewriteObject(_messages.Message):
       class changes are ignored by Cloud Storage.
 
   Fields:
-    kmsKey: Required. Resource name of the Cloud KMS key that will be used to
+    kmsKey: Optional. Resource name of the Cloud KMS key that is used to
       encrypt the object. The Cloud KMS key must be located in same location
-      as the object. Refer to
+      as the object. For details, see
       https://cloud.google.com/storage/docs/encryption/using-customer-managed-
-      keys#add-object-key for additional documentation. Format: projects/{proj
-      ect}/locations/{location}/keyRings/{keyring}/cryptoKeys/{key} For
-      example: "projects/123456/locations/us-central1/keyRings/my-
-      keyring/cryptoKeys/my-key". The object will be rewritten and set with
+      keys#add-object-key Format: `projects/{project_id}/locations/{location}/
+      keyRings/{keyring}/cryptoKeys/{key}` For example:
+      `projects/123456/locations/us-central1/keyRings/my-
+      keyring/cryptoKeys/my-key`. The object will be rewritten and set with
       the specified KMS key.
     storageClass: Optional. Rewrites the object to the specified storage
       class. Setting this field will perform a full byte copy of the object if
@@ -1290,9 +1314,9 @@ class StoragebatchoperationsProjectsLocationsJobsBucketOperationsGetRequest(_mes
   object.
 
   Fields:
-    name: Required. `name` of the bucket operation to retrieve. Format: projec
-      ts/{project_id}/locations/global/jobs/{job_id}/bucketOperations/{bucket_
-      operation_id}.
+    name: Required. The `name` of the bucket operation to retrieve. Format: `p
+      rojects/{project_id}/locations/global/jobs/{job_id}/bucketOperations/{bu
+      cket_operation_id}`.
   """
 
   name = _messages.StringField(1, required=True)
@@ -1305,12 +1329,12 @@ class StoragebatchoperationsProjectsLocationsJobsBucketOperationsListRequest(_me
   Fields:
     filter: Optional. Filters results as defined by
       https://google.aip.dev/160.
-    orderBy: Optional. Field to sort by. Supported fields are name,
-      create_time.
+    orderBy: Optional. Field to sort by. Supported fields are `name` and
+      `create_time`.
     pageSize: Optional. The list page size. Default page size is 100.
     pageToken: Optional. The list page token.
     parent: Required. Format:
-      projects/{project_id}/locations/global/jobs/{job_id}.
+      `projects/{project_id}/locations/global/jobs/{job_id}`.
   """
 
   filter = _messages.StringField(1)
@@ -1327,7 +1351,7 @@ class StoragebatchoperationsProjectsLocationsJobsCancelRequest(_messages.Message
     cancelJobRequest: A CancelJobRequest resource to be passed as the request
       body.
     name: Required. The `name` of the job to cancel. Format:
-      projects/{project_id}/locations/global/jobs/{job_id}.
+      `projects/{project_id}/locations/global/jobs/{job_id}`.
   """
 
   cancelJobRequest = _messages.MessageField('CancelJobRequest', 1)
@@ -1339,15 +1363,15 @@ class StoragebatchoperationsProjectsLocationsJobsCreateRequest(_messages.Message
 
   Fields:
     job: A Job resource to be passed as the request body.
-    jobId: Required. The optional `job_id` for this Job . If not specified, an
-      id is generated. `job_id` should be no more than 128 characters and must
-      include only characters available in DNS names, as defined by RFC-1123.
-    parent: Required. Value for parent.
+    jobId: Required. A unique identifier for the job. `job_id` must be up to
+      128 characters and must include only characters available in DNS names,
+      as defined by RFC-1123.
+    parent: Required. The value for parent.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID in case you need to retry your request. Requests
-      with same `request_id` will be ignored for at least 60 minutes since the
+      with same `request_id` are ignored for at least 60 minutes since the
       first request. The request ID must be a valid UUID with the exception
-      that zero UUID is not supported (00000000-0000-0000-0000-000000000000).
+      that zero UUID isn't supported (00000000-0000-0000-0000-000000000000).
   """
 
   job = _messages.MessageField('Job', 1)
@@ -1361,17 +1385,16 @@ class StoragebatchoperationsProjectsLocationsJobsDeleteRequest(_messages.Message
 
   Fields:
     force: Optional. If set to true, any child bucket operations of the job
-      will also be deleted. Highly recommended to be set to true by all
-      clients. Users cannot mutate bucket operations directly, so only the
-      jobs.delete permission is required to delete a job (and its child bucket
-      operations).
+      are deleted. We recommend setting this to `true`. You can't mutate
+      bucket operations directly, so only the `jobs.delete` permission is
+      required to delete a job (and its child bucket operations).
     name: Required. The `name` of the job to delete. Format:
-      projects/{project_id}/locations/global/jobs/{job_id} .
+      `projects/{project_id}/locations/global/jobs/{job_id}`.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID in case you need to retry your request. Requests
-      with same `request_id` will be ignored for at least 60 minutes since the
+      with same `request_id` are ignored for at least 60 minutes since the
       first request. The request ID must be a valid UUID with the exception
-      that zero UUID is not supported (00000000-0000-0000-0000-000000000000).
+      that zero UUID isn't supported (00000000-0000-0000-0000-000000000000).
   """
 
   force = _messages.BooleanField(1)
@@ -1383,8 +1406,8 @@ class StoragebatchoperationsProjectsLocationsJobsGetRequest(_messages.Message):
   r"""A StoragebatchoperationsProjectsLocationsJobsGetRequest object.
 
   Fields:
-    name: Required. `name` of the job to retrieve. Format:
-      projects/{project_id}/locations/global/jobs/{job_id} .
+    name: Required. The `name` of the job to retrieve. Format:
+      `projects/{project_id}/locations/global/jobs/{job_id}`.
   """
 
   name = _messages.StringField(1, required=True)
@@ -1396,9 +1419,9 @@ class StoragebatchoperationsProjectsLocationsJobsListRequest(_messages.Message):
   Fields:
     filter: Optional. Filters results as defined by
       https://google.aip.dev/160.
-    orderBy: Optional. Field to sort by. Supported fields are name,
-      create_time.
-    pageSize: Optional. The list page size. default page size is 100.
+    orderBy: Optional. Field to sort by. Supported fields are `name` and
+      `create_time`.
+    pageSize: Optional. The list page size. The default page size is 100.
     pageToken: Optional. The list page token.
     parent: Required. Format: projects/{project_id}/locations/global.
   """
@@ -1519,7 +1542,7 @@ class UpdateObjectCustomContext(_messages.Message):
 
   Fields:
     clearAll: If set, must be set to true and all existing object custom
-      contexts will be deleted.
+      contexts are deleted.
     customContextUpdates: A collection of updates to apply to specific custom
       contexts. Use this to add, update or delete individual contexts by key.
   """

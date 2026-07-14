@@ -275,6 +275,9 @@ def _Run(args, /):
   )
   message_transforms_file = getattr(args, 'message_transforms_file', None)
   clear_message_transforms = getattr(args, 'clear_message_transforms', None)
+  enable_cross_region_replication = getattr(
+      args, 'enable_cross_region_replication', None
+  )
 
   try:
     result = client.Patch(
@@ -320,6 +323,7 @@ def _Run(args, /):
         ingestion_log_severity=ingestion_log_severity,
         message_transforms_file=message_transforms_file,
         clear_message_transforms=clear_message_transforms,
+        enable_cross_region_replication=enable_cross_region_replication,
     )
   except topics.NoFieldsSpecifiedError:
     operations = [
@@ -328,8 +332,9 @@ def _Run(args, /):
         'remove_labels',
         'recompute_message_storage_policy',
         'message_storage_policy_allowed_regions',
+        'enable_cross_region_replication',
     ]
-    if not any(args.IsSpecified(arg) for arg in operations):
+    if not any(args.IsKnownAndSpecified(arg) for arg in operations):
       raise
     log.status.Print('No update to perform.')
   else:
@@ -378,3 +383,4 @@ class UpdateAlpha(UpdateBeta):
     _Args(
         parser,
     )
+    flags.AddTopicReplicationPolicyFlags(parser)

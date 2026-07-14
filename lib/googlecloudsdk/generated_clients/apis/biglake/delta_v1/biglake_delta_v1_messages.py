@@ -153,10 +153,14 @@ class DeltaSharingCatalog(_messages.Message):
 
   Fields:
     createTime: Output only. The creation time of the catalog.
+    federatedCatalogOptions: Optional. Configuration options for federated
+      catalogs.
     location: Required. Immutable. The user-provided GCP location of the
       catalog. This field is immutable.
     name: Identifier. The resource name. Format:
       projects/{project}/catalogs/{catalog}
+    refreshOptions: Optional. Configures options for refreshing a Delta
+      Sharing catalog.
     sapConfig: Config for a catalog that connects to SAP Business Data Cloud
       (BDC).
     serviceAccount: Output only. The service account used for SAP enrollment
@@ -166,11 +170,13 @@ class DeltaSharingCatalog(_messages.Message):
   """
 
   createTime = _messages.StringField(1)
-  location = _messages.StringField(2)
-  name = _messages.StringField(3)
-  sapConfig = _messages.MessageField('SapConfig', 4)
-  serviceAccount = _messages.StringField(5)
-  updateTime = _messages.StringField(6)
+  federatedCatalogOptions = _messages.MessageField('FederatedCatalogOptions', 2)
+  location = _messages.StringField(3)
+  name = _messages.StringField(4)
+  refreshOptions = _messages.MessageField('RefreshOptions', 5)
+  sapConfig = _messages.MessageField('SapConfig', 6)
+  serviceAccount = _messages.StringField(7)
+  updateTime = _messages.StringField(8)
 
 
 class DeltaSharingSchema(_messages.Message):
@@ -221,6 +227,18 @@ class Empty(_messages.Message):
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
 
+
+class FederatedCatalogOptions(_messages.Message):
+  r"""Configuration options for federated catalog.
+
+  Fields:
+    serviceDirectoryName: Optional. The service directory resource name for
+      routing traffic over a private network connection through Cross-Cloud
+      Interconnect, in the format `projects/{project_id}/locations/{location_i
+      d}/namespaces/{namespace_id}/services/{service_id}`.
+  """
+
+  serviceDirectoryName = _messages.StringField(1)
 
 
 class ListDeltaSharingCatalogsResponse(_messages.Message):
@@ -273,6 +291,29 @@ class ListDeltaSharingTablesResponse(_messages.Message):
 
   deltaSharingTables = _messages.MessageField('DeltaSharingTable', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
+
+
+class RefreshOptions(_messages.Message):
+  r"""Configures options for refreshing a Delta Sharing catalog.
+
+  Fields:
+    refreshSchedule: Optional. Defines if and when metadata refresh should be
+      scheduled.
+  """
+
+  refreshSchedule = _messages.MessageField('RefreshSchedule', 1)
+
+
+class RefreshSchedule(_messages.Message):
+  r"""Defines if and when metadata refresh should be scheduled.
+
+  Fields:
+    refreshInterval: Optional. The interval for refreshing metadata from the
+      remote catalog. If not set, but refresh is desired, a system default
+      will be used.
+  """
+
+  refreshInterval = _messages.StringField(1)
 
 
 class SapBdcEnrollmentConfig(_messages.Message):

@@ -5284,24 +5284,25 @@ class LinuxNodeConfig(_messages.Message):
       net.core.busy_poll net.core.busy_read net.core.netdev_max_backlog
       net.core.rmem_max net.core.rmem_default net.core.wmem_default
       net.core.wmem_max net.core.optmem_max net.core.somaxconn
-      net.ipv4.tcp_rmem net.ipv4.tcp_wmem net.ipv4.tcp_tw_reuse
-      net.ipv4.tcp_mtu_probing net.ipv4.tcp_max_orphans
+      net.ipv4.neigh.default.gc_thresh1 net.ipv4.neigh.default.gc_thresh2
+      net.ipv4.neigh.default.gc_thresh3 net.ipv4.tcp_rmem net.ipv4.tcp_wmem
+      net.ipv4.tcp_tw_reuse net.ipv4.tcp_mtu_probing net.ipv4.tcp_max_orphans
       net.ipv4.tcp_max_tw_buckets net.ipv4.tcp_syn_retries net.ipv4.tcp_ecn
       net.ipv4.tcp_congestion_control net.netfilter.nf_conntrack_max
       net.netfilter.nf_conntrack_buckets
       net.netfilter.nf_conntrack_tcp_timeout_close_wait
       net.netfilter.nf_conntrack_tcp_timeout_time_wait
       net.netfilter.nf_conntrack_tcp_timeout_established
-      net.netfilter.nf_conntrack_acct kernel.shmmni kernel.shmmax
-      kernel.shmall kernel.perf_event_paranoid kernel.sched_rt_runtime_us
-      kernel.softlockup_panic kernel.yama.ptrace_scope kernel.kptr_restrict
-      kernel.dmesg_restrict kernel.sysrq fs.aio-max-nr fs.file-max
-      fs.inotify.max_user_instances fs.inotify.max_user_watches fs.nr_open
-      vm.dirty_background_ratio vm.dirty_background_bytes
-      vm.dirty_expire_centisecs vm.dirty_ratio vm.dirty_bytes
-      vm.dirty_writeback_centisecs vm.max_map_count vm.overcommit_memory
-      vm.overcommit_ratio vm.vfs_cache_pressure vm.swappiness
-      vm.watermark_scale_factor vm.min_free_kbytes
+      net.netfilter.nf_conntrack_acct kernel.keys.maxkeys kernel.keys.maxbytes
+      kernel.shmmni kernel.shmmax kernel.shmall kernel.perf_event_paranoid
+      kernel.sched_rt_runtime_us kernel.softlockup_panic
+      kernel.yama.ptrace_scope kernel.kptr_restrict kernel.dmesg_restrict
+      kernel.sysrq fs.aio-max-nr fs.file-max fs.inotify.max_user_instances
+      fs.inotify.max_user_watches fs.nr_open vm.dirty_background_ratio
+      vm.dirty_background_bytes vm.dirty_expire_centisecs vm.dirty_ratio
+      vm.dirty_bytes vm.dirty_writeback_centisecs vm.max_map_count
+      vm.overcommit_memory vm.overcommit_ratio vm.vfs_cache_pressure
+      vm.swappiness vm.watermark_scale_factor vm.min_free_kbytes
 
   Fields:
     accurateTimeConfig: Optional. The accurate time configuration for the node
@@ -5315,6 +5316,8 @@ class LinuxNodeConfig(_messages.Message):
     cgroupMode: cgroup_mode specifies the cgroup mode to be used on the node.
     customNodeInit: Optional. Allow users to run arbitrary bash script or
       container on the node.
+    diskIoScheduler: Optional. Controls the configuration for the disk IO
+      scheduler.
     hugepages: Optional. Amounts for 2M and 1G hugepages
     kernelOverrides: Optional. Defines the kernel overrides to be applied to
       the nodes. Note: sysctl changes are defined separately in the sysctls
@@ -5332,24 +5335,25 @@ class LinuxNodeConfig(_messages.Message):
       net.core.busy_poll net.core.busy_read net.core.netdev_max_backlog
       net.core.rmem_max net.core.rmem_default net.core.wmem_default
       net.core.wmem_max net.core.optmem_max net.core.somaxconn
-      net.ipv4.tcp_rmem net.ipv4.tcp_wmem net.ipv4.tcp_tw_reuse
-      net.ipv4.tcp_mtu_probing net.ipv4.tcp_max_orphans
+      net.ipv4.neigh.default.gc_thresh1 net.ipv4.neigh.default.gc_thresh2
+      net.ipv4.neigh.default.gc_thresh3 net.ipv4.tcp_rmem net.ipv4.tcp_wmem
+      net.ipv4.tcp_tw_reuse net.ipv4.tcp_mtu_probing net.ipv4.tcp_max_orphans
       net.ipv4.tcp_max_tw_buckets net.ipv4.tcp_syn_retries net.ipv4.tcp_ecn
       net.ipv4.tcp_congestion_control net.netfilter.nf_conntrack_max
       net.netfilter.nf_conntrack_buckets
       net.netfilter.nf_conntrack_tcp_timeout_close_wait
       net.netfilter.nf_conntrack_tcp_timeout_time_wait
       net.netfilter.nf_conntrack_tcp_timeout_established
-      net.netfilter.nf_conntrack_acct kernel.shmmni kernel.shmmax
-      kernel.shmall kernel.perf_event_paranoid kernel.sched_rt_runtime_us
-      kernel.softlockup_panic kernel.yama.ptrace_scope kernel.kptr_restrict
-      kernel.dmesg_restrict kernel.sysrq fs.aio-max-nr fs.file-max
-      fs.inotify.max_user_instances fs.inotify.max_user_watches fs.nr_open
-      vm.dirty_background_ratio vm.dirty_background_bytes
-      vm.dirty_expire_centisecs vm.dirty_ratio vm.dirty_bytes
-      vm.dirty_writeback_centisecs vm.max_map_count vm.overcommit_memory
-      vm.overcommit_ratio vm.vfs_cache_pressure vm.swappiness
-      vm.watermark_scale_factor vm.min_free_kbytes
+      net.netfilter.nf_conntrack_acct kernel.keys.maxkeys kernel.keys.maxbytes
+      kernel.shmmni kernel.shmmax kernel.shmall kernel.perf_event_paranoid
+      kernel.sched_rt_runtime_us kernel.softlockup_panic
+      kernel.yama.ptrace_scope kernel.kptr_restrict kernel.dmesg_restrict
+      kernel.sysrq fs.aio-max-nr fs.file-max fs.inotify.max_user_instances
+      fs.inotify.max_user_watches fs.nr_open vm.dirty_background_ratio
+      vm.dirty_background_bytes vm.dirty_expire_centisecs vm.dirty_ratio
+      vm.dirty_bytes vm.dirty_writeback_centisecs vm.max_map_count
+      vm.overcommit_memory vm.overcommit_ratio vm.vfs_cache_pressure
+      vm.swappiness vm.watermark_scale_factor vm.min_free_kbytes
     timeZone: Optional. Configures the timezone of the node.
     transparentHugepageDefrag: Optional. Defines the transparent hugepage
       defrag configuration on the node. VM hugepage allocation can be managed
@@ -5444,24 +5448,26 @@ class LinuxNodeConfig(_messages.Message):
     running on the nodes. The following parameters are supported.
     net.core.busy_poll net.core.busy_read net.core.netdev_max_backlog
     net.core.rmem_max net.core.rmem_default net.core.wmem_default
-    net.core.wmem_max net.core.optmem_max net.core.somaxconn net.ipv4.tcp_rmem
-    net.ipv4.tcp_wmem net.ipv4.tcp_tw_reuse net.ipv4.tcp_mtu_probing
-    net.ipv4.tcp_max_orphans net.ipv4.tcp_max_tw_buckets
-    net.ipv4.tcp_syn_retries net.ipv4.tcp_ecn net.ipv4.tcp_congestion_control
-    net.netfilter.nf_conntrack_max net.netfilter.nf_conntrack_buckets
+    net.core.wmem_max net.core.optmem_max net.core.somaxconn
+    net.ipv4.neigh.default.gc_thresh1 net.ipv4.neigh.default.gc_thresh2
+    net.ipv4.neigh.default.gc_thresh3 net.ipv4.tcp_rmem net.ipv4.tcp_wmem
+    net.ipv4.tcp_tw_reuse net.ipv4.tcp_mtu_probing net.ipv4.tcp_max_orphans
+    net.ipv4.tcp_max_tw_buckets net.ipv4.tcp_syn_retries net.ipv4.tcp_ecn
+    net.ipv4.tcp_congestion_control net.netfilter.nf_conntrack_max
+    net.netfilter.nf_conntrack_buckets
     net.netfilter.nf_conntrack_tcp_timeout_close_wait
     net.netfilter.nf_conntrack_tcp_timeout_time_wait
     net.netfilter.nf_conntrack_tcp_timeout_established
-    net.netfilter.nf_conntrack_acct kernel.shmmni kernel.shmmax kernel.shmall
-    kernel.perf_event_paranoid kernel.sched_rt_runtime_us
-    kernel.softlockup_panic kernel.yama.ptrace_scope kernel.kptr_restrict
-    kernel.dmesg_restrict kernel.sysrq fs.aio-max-nr fs.file-max
-    fs.inotify.max_user_instances fs.inotify.max_user_watches fs.nr_open
-    vm.dirty_background_ratio vm.dirty_background_bytes
-    vm.dirty_expire_centisecs vm.dirty_ratio vm.dirty_bytes
-    vm.dirty_writeback_centisecs vm.max_map_count vm.overcommit_memory
-    vm.overcommit_ratio vm.vfs_cache_pressure vm.swappiness
-    vm.watermark_scale_factor vm.min_free_kbytes
+    net.netfilter.nf_conntrack_acct kernel.keys.maxkeys kernel.keys.maxbytes
+    kernel.shmmni kernel.shmmax kernel.shmall kernel.perf_event_paranoid
+    kernel.sched_rt_runtime_us kernel.softlockup_panic
+    kernel.yama.ptrace_scope kernel.kptr_restrict kernel.dmesg_restrict
+    kernel.sysrq fs.aio-max-nr fs.file-max fs.inotify.max_user_instances
+    fs.inotify.max_user_watches fs.nr_open vm.dirty_background_ratio
+    vm.dirty_background_bytes vm.dirty_expire_centisecs vm.dirty_ratio
+    vm.dirty_bytes vm.dirty_writeback_centisecs vm.max_map_count
+    vm.overcommit_memory vm.overcommit_ratio vm.vfs_cache_pressure
+    vm.swappiness vm.watermark_scale_factor vm.min_free_kbytes
 
     Messages:
       AdditionalProperty: An additional property for a SysctlsValue object.
@@ -5489,15 +5495,16 @@ class LinuxNodeConfig(_messages.Message):
   additionalEtcSystemdResolvedConf = _messages.MessageField('ResolvedConfEntry', 4, repeated=True)
   cgroupMode = _messages.EnumField('CgroupModeValueValuesEnum', 5)
   customNodeInit = _messages.MessageField('CustomNodeInit', 6)
-  hugepages = _messages.MessageField('HugepagesConfig', 7)
-  kernelOverrides = _messages.MessageField('KernelOverrides', 8)
-  nodeKernelModuleLoading = _messages.MessageField('NodeKernelModuleLoading', 9)
-  nodeVfioConfig = _messages.MessageField('NodeVfioConfig', 10)
-  swapConfig = _messages.MessageField('SwapConfig', 11)
-  sysctls = _messages.MessageField('SysctlsValue', 12)
-  timeZone = _messages.StringField(13)
-  transparentHugepageDefrag = _messages.EnumField('TransparentHugepageDefragValueValuesEnum', 14)
-  transparentHugepageEnabled = _messages.EnumField('TransparentHugepageEnabledValueValuesEnum', 15)
+  diskIoScheduler = _messages.MessageField('DiskIoScheduler', 7)
+  hugepages = _messages.MessageField('HugepagesConfig', 8)
+  kernelOverrides = _messages.MessageField('KernelOverrides', 9)
+  nodeKernelModuleLoading = _messages.MessageField('NodeKernelModuleLoading', 10)
+  nodeVfioConfig = _messages.MessageField('NodeVfioConfig', 11)
+  swapConfig = _messages.MessageField('SwapConfig', 12)
+  sysctls = _messages.MessageField('SysctlsValue', 13)
+  timeZone = _messages.StringField(14)
+  transparentHugepageDefrag = _messages.EnumField('TransparentHugepageDefragValueValuesEnum', 15)
+  transparentHugepageEnabled = _messages.EnumField('TransparentHugepageEnabledValueValuesEnum', 16)
 
 
 class ListAcceleratorNetworkProfilesResponse(_messages.Message):
@@ -6664,8 +6671,8 @@ class NodeConfig(_messages.Message):
       are scaled down by default behavior, i.e. according to the chosen
       autoscaling profile.
     containerdConfig: Parameters for containerd customization.
-    diskIoScheduler: Optional. Controls the configuration for the disk IO
-      scheduler.
+    diskIoScheduler: Optional. Deprecated: use
+      `LinuxNodeConfig.disk_io_scheduler` instead.
     diskSizeGb: Size of the disk attached to each node, specified in GB. The
       smallest allowed disk size is 10GB. If unspecified, the default disk
       size is 100GB.
@@ -10529,8 +10536,8 @@ class UpdateNodePoolRequest(_messages.Message):
     containerdConfig: The desired containerd config for nodes in the node
       pool. Initiates an upgrade operation that recreates the nodes with the
       new config.
-    diskIoScheduler: Configures the disk IO scheduler for nodes in the node
-      pool.
+    diskIoScheduler: Deprecated: use `LinuxNodeConfig.disk_io_scheduler`
+      instead.
     diskSizeGb: Optional. The desired disk size for nodes in the node pool.
       Initiates an upgrade operation that migrates the nodes in the node pool
       to the specified disk size.
@@ -10954,6 +10961,11 @@ class UpgradeSettings(_messages.Message):
       if its status is Ready.
     rollingSettings: Settings for rolling update strategy.
     strategy: Update strategy of the node pool.
+    updateInPlace: Optional. Enables node pool upgrades to be performed in-
+      place, ensuring the node VM stays on the same physical Compute Engine
+      host and preserving Local SSD data on compatible VMs. Note: This feature
+      requires a positive, non-zero max_unavailable value and zero max_surge
+      value.
   """
 
   class StrategyValueValuesEnum(_messages.Enum):
@@ -10988,6 +11000,7 @@ class UpgradeSettings(_messages.Message):
   maxUnavailable = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   rollingSettings = _messages.MessageField('RollingSettings', 4)
   strategy = _messages.EnumField('StrategyValueValuesEnum', 5)
+  updateInPlace = _messages.BooleanField(6)
 
 
 class UsableSubnetwork(_messages.Message):

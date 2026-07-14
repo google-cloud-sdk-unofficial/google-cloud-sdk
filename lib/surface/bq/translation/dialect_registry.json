@@ -382,10 +382,5 @@
     "features": {
       "enabled_features": ["CONSOLIDATED_BATCH_PROBER"]
     }
-  }, {
-    "source_name": "BigQuery",
-    "target_name": "BigQuery",
-    "status": "EXPERIMENTAL",
-    "legacy_batch_name": ["Experimental_Lineage"]
   }]
 }

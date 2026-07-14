@@ -23,11 +23,11 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class RestoreVolume(base.Command):
-  """Restores a backup to a volume in a specified ONTAP-mode Storage Pool."""
+  """Restore a backup to a volume in a specified ONTAP-mode Storage Pool."""
 
-  _RELEASE_TRACK = base.ReleaseTrack.BETA
+  _RELEASE_TRACK = base.ReleaseTrack.GA
 
   detailed_help = {
       'DESCRIPTION': textwrap.dedent("""\
@@ -90,8 +90,15 @@ class RestoreVolume(base.Command):
     return result
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class RestoreVolumeBeta(RestoreVolume):
+  """Restore a backup to a volume in a specified ONTAP-mode Storage Pool."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.BETA
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class RestoreVolumeAlpha(RestoreVolume):
-  """Restore a backup to a volume in an ONTAP-mode Storage Pool."""
+class RestoreVolumeAlpha(RestoreVolumeBeta):
+  """Restore a backup to a volume in a specified ONTAP-mode Storage Pool."""
 
   _RELEASE_TRACK = base.ReleaseTrack.ALPHA

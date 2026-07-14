@@ -1424,6 +1424,18 @@ class CancelOperationRequest(_messages.Message):
   r"""The request message for Operations.CancelOperation."""
 
 
+class CitCWorkspace(_messages.Message):
+  r"""Represents a CitC workspace as a build dependency.
+
+  Fields:
+    snapshotVersion: Optional. e.g., 45
+    workspaceId: Required. e.g., "user/123"
+  """
+
+  snapshotVersion = _messages.IntegerField(1)
+  workspaceId = _messages.StringField(2)
+
+
 class CloudbuildGithubDotComWebhookReceiveRequest(_messages.Message):
   r"""A CloudbuildGithubDotComWebhookReceiveRequest object.
 
@@ -3091,11 +3103,27 @@ class Dependency(_messages.Message):
       default source as well).
     genericArtifact: Represents a generic artifact as a build dependency.
     gitSource: Represents a git repository as a build dependency.
+    piperSource: Represents a Piper source as a build dependency. Only
+      available for Trusted Pools users.
   """
 
   empty = _messages.BooleanField(1)
   genericArtifact = _messages.MessageField('GenericArtifactDependency', 2)
   gitSource = _messages.MessageField('GitSourceDependency', 3)
+  piperSource = _messages.MessageField('PiperSourceDependency', 4)
+
+
+class DepotSource(_messages.Message):
+  r"""Represents a Piper depot source as a revision.
+
+  Fields:
+    changelist: Required. The changelist number. If not provided, it will
+      default to piper HEAD.
+    overlayBranch: Optional. Optional branch information.
+  """
+
+  changelist = _messages.IntegerField(1)
+  overlayBranch = _messages.MessageField('OverlayBranchId', 2)
 
 
 class DeveloperConnectConfig(_messages.Message):
@@ -4531,6 +4559,47 @@ class OperationMetadata(_messages.Message):
   statusDetail = _messages.StringField(5)
   target = _messages.StringField(6)
   verb = _messages.StringField(7)
+
+
+class OverlayBranchId(_messages.Message):
+  r"""Represents an overlay branch in Piper.
+
+  Fields:
+    branchPrefix: Optional. The required prefix, also called branch family.
+    branchSuffix: Optional. The optional suffix, also called iteration.
+  """
+
+  branchPrefix = _messages.StringField(1)
+  branchSuffix = _messages.StringField(2)
+
+
+class PiperRevision(_messages.Message):
+  r"""Information about the Piper revision to build.
+
+  Fields:
+    citcWorkspace: Optional. Revision is within a CitC workspace.
+    depotSource: Optional. Revision is a specific submitted changelist
+      (possibly on a branch).
+  """
+
+  citcWorkspace = _messages.MessageField('CitCWorkspace', 1)
+  depotSource = _messages.MessageField('DepotSource', 2)
+
+
+class PiperSourceDependency(_messages.Message):
+  r"""Represents a Piper repository as a build dependency.
+
+  Fields:
+    depotPaths: Required. The depot paths to fetch. (e.g.,
+      "//depot/google3/my/path/..."). Wildcards like ... and * are supported
+      as per go/piper-api#depot_path_expression. Paths must start with
+      "//depot/".
+    piperRevision: Optional. The piper revision to fetch the depot_paths from.
+      If not provided, it will default to DepotSource with Piper HEAD.
+  """
+
+  depotPaths = _messages.StringField(1, repeated=True)
+  piperRevision = _messages.MessageField('PiperRevision', 2)
 
 
 class PoolOption(_messages.Message):

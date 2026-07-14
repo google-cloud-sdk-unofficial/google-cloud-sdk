@@ -14,7 +14,6 @@
 # limitations under the License.
 """Command for updating env vars and other configuration info."""
 
-
 from googlecloudsdk.api_lib.run import global_methods
 from googlecloudsdk.api_lib.run import worker_pool
 from googlecloudsdk.api_lib.util import apis
@@ -37,24 +36,24 @@ from googlecloudsdk.core.console import progress_tracker
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA,
-    base.ReleaseTrack.BETA,
-    base.ReleaseTrack.GA,
-)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Replace(base.Command):
   """Create or replace a worker-pool from a YAML worker-pool specification."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION': (
+          """\
           Creates or replaces a worker-pool from a YAML worker-pool specification.
-          """,
-      'EXAMPLES': """\
+          """
+      ),
+      'EXAMPLES': (
+          """\
           To replace the specification for a worker-pool defined in my-worker-pool.yaml
 
               $ {command} my-worker-pool.yaml
 
-         """,
+         """
+      ),
   }
 
   @classmethod
@@ -175,13 +174,24 @@ class Replace(base.Command):
     namespace = properties.VALUES.core.project.Get()
     if new_worker_pool.metadata.namespace is not None:
       project = namespace
-      project_number = projects_util.GetProjectNumber(namespace)
       namespace = new_worker_pool.metadata.namespace
-      if namespace != project and namespace != str(project_number):
-        raise exceptions.ConfigurationError(
-            'Namespace must be project ID [{}] or quoted number [{}] for '
-            'Cloud Run (fully managed).'.format(project, project_number)
-        )
+      endpoint_mode = properties.VALUES.regional.endpoint_mode.Get()
+      if properties.VALUES.regional.endpoint_compatibility.Get() and (
+          endpoint_mode == properties.VALUES.regional.REGIONAL
+          or endpoint_mode == properties.VALUES.regional.REGIONAL_PREFERRED
+      ):
+        if namespace != project:
+          raise exceptions.ConfigurationError(
+              'Namespace must be project ID [{}] for Cloud Run with regional'
+              ' endpoints.'.format(project)
+          )
+      else:
+        project_number = projects_util.GetProjectNumber(namespace)
+        if namespace != project and namespace != str(project_number):
+          raise exceptions.ConfigurationError(
+              'Namespace must be project ID [{}] or quoted number [{}] for '
+              'Cloud Run (fully managed).'.format(project, project_number)
+          )
     new_worker_pool.metadata.namespace = namespace
 
     changes = self._GetBaseChanges(new_worker_pool, args)
@@ -239,3 +249,12 @@ class Replace(base.Command):
         )
       self._PrintSuccessMessage(worker_pool_obj, dry_run, args)
       return worker_pool_obj
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.RegionalEndpointsSupported
+class BetaReplace(Replace):
+  """Create or replace a worker-pool from a YAML worker-pool specification."""
+
+
+BetaReplace.__doc__ = Replace.__doc__

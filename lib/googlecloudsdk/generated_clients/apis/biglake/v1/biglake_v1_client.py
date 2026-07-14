@@ -64,7 +64,7 @@ class BiglakeV1(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates the Iceberg REST Catalog. Currently only supports Google Cloud Storage Bucket catalogs. Google Cloud Storage Bucket catalog id is the bucket for which the catalog is created (e.g. `my-catalog` for `gs://my-catalog`). If the bucket does not exist, of the caller does not have bucket metadata permissions, the catalog will not be created.
+      r"""Creates the Iceberg REST Catalog. Google Cloud Storage Bucket catalog id is the bucket for which the catalog is created (e.g. `my-catalog` for `gs://my-catalog`). If the bucket does not exist, of the caller does not have bucket metadata permissions, the catalog will not be created.
 
       Args:
         request: (BiglakeIcebergV1RestcatalogExtensionsProjectsCatalogsCreateRequest) input message

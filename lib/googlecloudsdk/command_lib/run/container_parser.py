@@ -21,6 +21,7 @@ from collections.abc import Sequence
 import re
 from typing import Any
 
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.calliope import cli
 from googlecloudsdk.calliope import parser_arguments
@@ -85,6 +86,18 @@ class ContainerParser(object):
         args.extend(arg.arguments)
       else:
         flag_names.append(arg.name)
+        # Add the negative flag name for boolean flags.
+        if (
+            self._release_track
+            in [
+                calliope_base.ReleaseTrack.BETA,
+                calliope_base.ReleaseTrack.ALPHA,
+            ]
+            and arg.kwargs
+            and 'action' in arg.kwargs
+            and arg.kwargs['action'] == arg_parsers.StoreTrueFalseAction
+        ):
+          flag_names.append('--no-' + arg.name[2:])
     return frozenset(flag_names)
 
   def _NewContainerParser(self) -> parser_extensions.ArgumentParser:

@@ -4339,7 +4339,6 @@ class Empty(_messages.Message):
   """
 
 
-
 class EmptyDirVolumeSource(_messages.Message):
   r"""In memory (tmpfs) ephemeral storage.
 
@@ -8354,17 +8353,16 @@ class TargetConfig(_messages.Message):
   r"""TargetConfig contains the configuration for a target.
 
   Fields:
-    runtimeConfig: Optional. The configuration applied to the runtime during a
-      deployment.
     runtimeConfigFiles: Optional. Specify the runtime configuration via files
       provided in the `Release` source.
     runtimeWorkloadDefinition: Optional. Specify the runtime configuration
       inline.
   """
 
-  runtimeConfig = _messages.MessageField('RuntimeConfigFiles', 1)
-  runtimeConfigFiles = _messages.MessageField('RuntimeConfigFiles', 2)
-  runtimeWorkloadDefinition = _messages.MessageField('RuntimeWorkloadDefinition', 3)
+  runtimeConfigFiles = _messages.MessageField('RuntimeConfigFiles', 1)
+  runtimeWorkloadDefinition = _messages.MessageField(
+      'RuntimeWorkloadDefinition', 2
+  )
 
 
 class TargetConfigSelection(_messages.Message):

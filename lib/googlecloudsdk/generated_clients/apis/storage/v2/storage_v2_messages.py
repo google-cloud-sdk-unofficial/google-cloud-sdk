@@ -645,6 +645,17 @@ class DeleteFolderRecursiveRequest(_messages.Message):
   requestId = _messages.StringField(3)
 
 
+class DropObjectGoogleContextsResponse(_messages.Message):
+  r"""Response message for DropObjectGoogleContexts.
+
+  Fields:
+    affectedContextKeys: The list of Google-generated object context keys
+      affected by the operation.
+  """
+
+  affectedContextKeys = _messages.StringField(1, repeated=True)
+
+
 class EffectiveIntelligenceConfig(_messages.Message):
   r"""The effective `IntelligenceConfig` for the resource.
 
@@ -1964,6 +1975,71 @@ class ObjectAccessControl(_messages.Message):
   role = _messages.StringField(9)
 
 
+class ObjectFullContext(_messages.Message):
+  r"""A full representation of an object context.
+
+  Enums:
+    TypeValueValuesEnum: The type of the object context.
+
+  Messages:
+    ExtendedDataValue: The extended data of the object context.
+
+  Fields:
+    createTime: The time at which the object context was created.
+    extendedData: The extended data of the object context.
+    key: The key of the object context, which is unique among contexts of an
+      object.
+    type: The type of the object context.
+    updateTime: The time at which the object context was updated.
+    value: The value of the object context.
+  """
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""The type of the object context.
+
+    Values:
+      TYPE_UNSPECIFIED: The type is not specified.
+      CUSTOM: Custom context.
+      GOOGLE: Google context.
+    """
+    TYPE_UNSPECIFIED = 0
+    CUSTOM = 1
+    GOOGLE = 2
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ExtendedDataValue(_messages.Message):
+    r"""The extended data of the object context.
+
+    Messages:
+      AdditionalProperty: An additional property for a ExtendedDataValue
+        object.
+
+    Fields:
+      additionalProperties: Properties of the object. Contains field @type
+        with type URL.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ExtendedDataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  extendedData = _messages.MessageField('ExtendedDataValue', 2)
+  key = _messages.StringField(3)
+  type = _messages.EnumField('TypeValueValuesEnum', 4)
+  updateTime = _messages.StringField(5)
+  value = _messages.StringField(6)
+
+
 class ObjectIndex(_messages.Message):
   r"""An ObjectIndex resource is used to configure and manage a searchable
   index over Storage objects. The index enables hybrid search capabilities,
@@ -3043,7 +3119,8 @@ class StorageProjectsBucketsGetReplicationStatusRequest(_messages.Message):
   r"""A StorageProjectsBucketsGetReplicationStatusRequest object.
 
   Fields:
-    name: Required. The name of the replicationStatus resource.
+    name: Required. The name of the replicationStatus resource. Format:
+      `projects/{project}/buckets/{bucket}/replicationStatus`
     requestId: Optional. A unique identifier for this request. UUID is the
       recommended format, but other formats are still accepted.
   """
@@ -3067,6 +3144,49 @@ class StorageProjectsBucketsGetStorageLayoutRequest(_messages.Message):
   name = _messages.StringField(1, required=True)
   prefix = _messages.StringField(2)
   requestId = _messages.StringField(3)
+
+
+class StorageProjectsBucketsObjectsDropGoogleContextsRequest(_messages.Message):
+  r"""A StorageProjectsBucketsObjectsDropGoogleContextsRequest object.
+
+  Fields:
+    bucket: Required. The bucket containing the object.
+    dropContextGroup: Required. The group of Google-generated object contexts
+      to drop. Must start with "google". Segments must be separated by colons.
+      For example: "google", "google:annotation" or "google:annotation:face-
+      detector-v1".
+    generation: Optional. The generation of the object to use. If omitted, the
+      request uses the latest generation.
+    ifGenerationMatch: Optional. Only performs the operation if the object's
+      current generation matches this value.
+    ifMetagenerationMatch: Optional. Only performs the operation if the
+      object's current metageneration matches the given value.
+    object: Required. The name of the object.
+  """
+
+  bucket = _messages.StringField(1, required=True)
+  dropContextGroup = _messages.StringField(2)
+  generation = _messages.IntegerField(3)
+  ifGenerationMatch = _messages.IntegerField(4)
+  ifMetagenerationMatch = _messages.IntegerField(5)
+  object = _messages.StringField(6, required=True)
+
+
+class StorageProjectsBucketsObjectsViewFullContextRequest(_messages.Message):
+  r"""A StorageProjectsBucketsObjectsViewFullContextRequest object.
+
+  Fields:
+    _key: Required. The key of the object context to retrieve.
+    bucket: Required. Name of the bucket in which the object resides.
+    generation: Optional. If present, selects a specific revision of this
+      object (as opposed to the latest version, the default).
+    object: Required. Name of the object this context belongs to.
+  """
+
+  _key = _messages.StringField(1)
+  bucket = _messages.StringField(2, required=True)
+  generation = _messages.IntegerField(3)
+  object = _messages.StringField(4, required=True)
 
 
 class StorageProjectsBucketsSnapshotsCreateRequest(_messages.Message):

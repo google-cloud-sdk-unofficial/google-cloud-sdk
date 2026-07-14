@@ -787,14 +787,32 @@ If you want to enable all scopes use the 'cloud-platform' scope.
         """,
   )
   if not beta:
-    parser.add_argument(
+    confidential_group = parser.add_mutually_exclusive_group()
+    confidential_group.add_argument(
         '--confidential-compute',
-        action='store_true',
+        action=actions.DeprecationAction(
+            '--confidential-compute',
+            warn=(
+                'The `--confidential-compute` flag is deprecated. Please use'
+                ' `--confidential-compute-type=SEV` instead.'
+            ),
+            action='store_true',
+        ),
         help="""\
-        Enables Confidential VM. See https://cloud.google.com/compute/confidential-vm/docs for more information.
-        Note that Confidential VM can only be enabled when the machine types
-        are N2D (https://cloud.google.com/compute/docs/machine-types#n2d_machine_types)
-        and the image is SEV Compatible.
+        Enables Confidential VM. See https://cloud.google.com/confidential-computing/confidential-vm/docs/ for more information.
+        This flag uses AMD SEV confidential compute technology, which is only
+        supported on N2D, C2D, C3D, and C4D machine types
+        (https://cloud.google.com/compute/docs/machine-types).
+        """,
+    )
+    confidential_group.add_argument(
+        '--confidential-compute-type',
+        choices=['SEV', 'SEV_SNP', 'TDX'],
+        help="""\
+        Enables Confidential VM. See https://cloud.google.com/confidential-computing/confidential-vm/docs/ for more information.
+        This flag specifies the type of Confidential Compute technology. See
+        https://cloud.google.com/confidential-computing/confidential-vm/docs/supported-configurations#machine-type-cpu-zone
+        for each machine type supported by Confidential Compute technology.
         """,
     )
   metastore_group = parser.add_argument_group(mutex=True)  # Mutually exclusive
@@ -1680,12 +1698,24 @@ def GetClusterConfig(
         )
     )
 
-  if not beta and args.IsSpecified('confidential_compute'):
-    gce_cluster_config.confidentialInstanceConfig = (
-        dataproc.messages.ConfidentialInstanceConfig(
-            enableConfidentialCompute=args.confidential_compute
-        )
-    )
+  if not beta:
+    if args.IsSpecified('confidential_compute_type'):
+      confidential_config_type = (
+          dataproc.messages.ConfidentialInstanceConfig.ConfidentialInstanceTypeValueValuesEnum
+      )
+      gce_cluster_config.confidentialInstanceConfig = (
+          dataproc.messages.ConfidentialInstanceConfig(
+              confidentialInstanceType=(
+                  confidential_config_type(args.confidential_compute_type)
+              )
+          )
+      )
+    elif args.IsSpecified('confidential_compute'):
+      gce_cluster_config.confidentialInstanceConfig = (
+          dataproc.messages.ConfidentialInstanceConfig(
+              enableConfidentialCompute=args.confidential_compute
+          )
+      )
 
   if args.dataproc_metastore:
     cluster_config.metastoreConfig = dataproc.messages.MetastoreConfig(

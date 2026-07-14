@@ -1240,10 +1240,10 @@ class FirewallEndpoint(_messages.Message):
     LabelsValue: Optional. Labels as key value pairs
 
   Fields:
-    associatedNetworks: Output only. List of networks that are associated with
-      this endpoint in the local zone. This is a projection of the
-      FirewallEndpointAssociations pointing at this endpoint. A network will
-      only appear in this list after traffic routing is fully configured.
+    associatedNetworks: Output only. Deprecated: List of networks that are
+      associated with this endpoint in the local zone. This is a projection of
+      the FirewallEndpointAssociations pointing at this endpoint. A network
+      will only appear in this list after traffic routing is fully configured.
       Format: projects/{project}/global/networks/{name}.
     associations: Output only. List of FirewallEndpointAssociations that are
       associated to this endpoint. An association will only appear in this

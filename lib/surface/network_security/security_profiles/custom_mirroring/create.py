@@ -39,6 +39,7 @@ _BROKER_RELEASE_TRACKS = (base.ReleaseTrack.ALPHA,)
 _PROJECT_SCOPE_SUPPORTED_TRACKS = (
     base.ReleaseTrack.ALPHA,
     base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
 )
 
 

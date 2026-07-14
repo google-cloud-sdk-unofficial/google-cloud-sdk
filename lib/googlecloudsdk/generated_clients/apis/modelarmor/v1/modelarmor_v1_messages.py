@@ -132,6 +132,32 @@ class DataItem(_messages.Message):
   text = _messages.StringField(2)
 
 
+class Date(_messages.Message):
+  r"""Represents a whole or partial calendar date, such as a birthday. The
+  time of day and time zone are either specified elsewhere or are
+  insignificant. The date is relative to the Gregorian Calendar. This can
+  represent one of the following: * A full date, with non-zero year, month,
+  and day values. * A month and day, with a zero year (for example, an
+  anniversary). * A year on its own, with a zero month and a zero day. * A
+  year and month, with a zero day (for example, a credit card expiration
+  date). Related types: * google.type.TimeOfDay * google.type.DateTime *
+  google.protobuf.Timestamp
+
+  Fields:
+    day: Day of a month. Must be from 1 to 31 and valid for the year and
+      month, or 0 to specify a year by itself or a year and month where the
+      day isn't significant.
+    month: Month of a year. Must be from 1 to 12, or 0 to specify a year
+      without a month and day.
+    year: Year of the date. Must be from 1 to 9999, or 0 to specify a date
+      without a year.
+  """
+
+  day = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  month = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  year = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+
+
 class Empty(_messages.Message):
   r"""A generic empty message that you can re-use to avoid defining duplicated
   empty messages in your APIs. A typical example is to use it as the request
@@ -176,6 +202,116 @@ class FilterResult(_messages.Message):
   raiFilterResult = _messages.MessageField('RaiFilterResult', 4)
   sdpFilterResult = _messages.MessageField('SdpFilterResult', 5)
   virusScanFilterResult = _messages.MessageField('VirusScanFilterResult', 6)
+
+
+class FilterVersionConfig(_messages.Message):
+  r"""Message describing a Filter Version Configuration.
+
+  Enums:
+    FilterVersionAliasValueValuesEnum: Output only. The alias associated with
+      this version, if any (e.g., "STABLE", "LATEST"). This will be populated
+      if this version is currently mapped to an alias.
+
+  Fields:
+    filterVersion: Output only. The identifier for this specific version.
+    filterVersionAlias: Output only. The alias associated with this version,
+      if any (e.g., "STABLE", "LATEST"). This will be populated if this
+      version is currently mapped to an alias.
+    messageItems: Output only. Extra information regarding this filter version
+    projectedDeprecationDate: Output only. The estimated date when this
+      version is projected to be deprecated.
+    releaseDate: Output only. The date when this version was released.
+  """
+
+  class FilterVersionAliasValueValuesEnum(_messages.Enum):
+    r"""Output only. The alias associated with this version, if any (e.g.,
+    "STABLE", "LATEST"). This will be populated if this version is currently
+    mapped to an alias.
+
+    Values:
+      FILTER_VERSION_ALIAS_UNSPECIFIED: The default value. If used, it will
+        resolve to the `STABLE` alias.
+      FILTER_VERSION_ALIAS_STABLE: The `STABLE` alias points to the most
+        recent stable model version. Using this alias means no code changes
+        are required when a new model becomes the stable version.
+      FILTER_VERSION_ALIAS_LATEST: The `LATEST` alias points to the newest
+        model version available. This version is subject to frequent revisions
+        and offers SLO guarantees but does not assure stability, providing the
+        most current security protections.
+      FILTER_VERSION_ALIAS_LEGACY: The `LEGACY` alias could be used for
+        sanitization operations for a transition period. New templates cannot
+        be created with this version.
+      FILTER_VERSION_ALIAS_RETIRED: The `RETIRED` alias could be used for
+        versions that are no longer available to be used. While new templates
+        cannot be created with this alias, any existing template or request
+        using `RETIRED` version will fall back to the current `STABLE` version
+        for sanitization operations.
+    """
+    FILTER_VERSION_ALIAS_UNSPECIFIED = 0
+    FILTER_VERSION_ALIAS_STABLE = 1
+    FILTER_VERSION_ALIAS_LATEST = 2
+    FILTER_VERSION_ALIAS_LEGACY = 3
+    FILTER_VERSION_ALIAS_RETIRED = 4
+
+  filterVersion = _messages.StringField(1)
+  filterVersionAlias = _messages.EnumField('FilterVersionAliasValueValuesEnum', 2)
+  messageItems = _messages.MessageField('MessageItem', 3, repeated=True)
+  projectedDeprecationDate = _messages.MessageField('Date', 4)
+  releaseDate = _messages.MessageField('Date', 5)
+
+
+class FilterVersionSelector(_messages.Message):
+  r"""Represents the configuration for selecting a Filter Version. Allows
+  customers to choose to use either a specific version or a predefined alias.
+
+  Enums:
+    AliasValueValuesEnum: Allows customers to use a predefined alias that
+      dynamically points to a specific version based on internal upgrades.
+      This offers flexibility and reduces the need for template updates.
+
+  Fields:
+    alias: Allows customers to use a predefined alias that dynamically points
+      to a specific version based on internal upgrades. This offers
+      flexibility and reduces the need for template updates.
+    version: Allows customers to pin to a specific, immutable Filter Version.
+      This provides stability, as this will not change after a version
+      upgrade. Expected format is a case-sensitive string, e.g., "v1", "v2".
+      Requests providing an invalid or non-existent version string will be
+      rejected with an `INVALID_ARGUMENT` error.
+  """
+
+  class AliasValueValuesEnum(_messages.Enum):
+    r"""Allows customers to use a predefined alias that dynamically points to
+    a specific version based on internal upgrades. This offers flexibility and
+    reduces the need for template updates.
+
+    Values:
+      FILTER_VERSION_ALIAS_UNSPECIFIED: The default value. If used, it will
+        resolve to the `STABLE` alias.
+      FILTER_VERSION_ALIAS_STABLE: The `STABLE` alias points to the most
+        recent stable model version. Using this alias means no code changes
+        are required when a new model becomes the stable version.
+      FILTER_VERSION_ALIAS_LATEST: The `LATEST` alias points to the newest
+        model version available. This version is subject to frequent revisions
+        and offers SLO guarantees but does not assure stability, providing the
+        most current security protections.
+      FILTER_VERSION_ALIAS_LEGACY: The `LEGACY` alias could be used for
+        sanitization operations for a transition period. New templates cannot
+        be created with this version.
+      FILTER_VERSION_ALIAS_RETIRED: The `RETIRED` alias could be used for
+        versions that are no longer available to be used. While new templates
+        cannot be created with this alias, any existing template or request
+        using `RETIRED` version will fall back to the current `STABLE` version
+        for sanitization operations.
+    """
+    FILTER_VERSION_ALIAS_UNSPECIFIED = 0
+    FILTER_VERSION_ALIAS_STABLE = 1
+    FILTER_VERSION_ALIAS_LATEST = 2
+    FILTER_VERSION_ALIAS_LEGACY = 3
+    FILTER_VERSION_ALIAS_RETIRED = 4
+
+  alias = _messages.EnumField('AliasValueValuesEnum', 1)
+  version = _messages.StringField(2)
 
 
 class FloorSetting(_messages.Message):
@@ -1163,6 +1299,8 @@ class SanitizationMetadata(_messages.Message):
   Fields:
     errorCode: Error code if any.
     errorMessage: Error message if any.
+    filterVersionConfig: Output only. Provides details about the Filter
+      Version configuration used to sanitize this request.
     ignorePartialInvocationFailures: Passthrough field defined in
       TemplateMetadata to indicate whether to ignore partial invocation
       failures.
@@ -1170,7 +1308,8 @@ class SanitizationMetadata(_messages.Message):
 
   errorCode = _messages.IntegerField(1)
   errorMessage = _messages.StringField(2)
-  ignorePartialInvocationFailures = _messages.BooleanField(3)
+  filterVersionConfig = _messages.MessageField('FilterVersionConfig', 3)
+  ignorePartialInvocationFailures = _messages.BooleanField(4)
 
 
 class SanitizationResult(_messages.Message):
@@ -1752,6 +1891,11 @@ class TemplateMetadata(_messages.Message):
       message set by the user to be returned to the end user if the prompt
       trips Model Armor filters.
     enforcementType: Optional. Enforcement type for Model Armor filters.
+    filterVersionSelector: Optional. Specifies the configuration for the
+      Filter version to be used. If this field is populated, it takes
+      precedence over any values set in the deprecated `filter_version` fields
+      within `RaiFilterSettings`, `PiAndJailbreakFilterSettings`, and
+      `TopicalityFilterSettings`.
     ignorePartialInvocationFailures: Optional. If true, partial detector
       failures should be ignored.
     logSanitizeOperations: Optional. If true, log sanitize operations.
@@ -1778,10 +1922,11 @@ class TemplateMetadata(_messages.Message):
   customPromptSafetyErrorCode = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   customPromptSafetyErrorMessage = _messages.StringField(4)
   enforcementType = _messages.EnumField('EnforcementTypeValueValuesEnum', 5)
-  ignorePartialInvocationFailures = _messages.BooleanField(6)
-  logSanitizeOperations = _messages.BooleanField(7)
-  logTemplateOperations = _messages.BooleanField(8)
-  multiLanguageDetection = _messages.MessageField('MultiLanguageDetection', 9)
+  filterVersionSelector = _messages.MessageField('FilterVersionSelector', 6)
+  ignorePartialInvocationFailures = _messages.BooleanField(7)
+  logSanitizeOperations = _messages.BooleanField(8)
+  logTemplateOperations = _messages.BooleanField(9)
+  multiLanguageDetection = _messages.MessageField('MultiLanguageDetection', 10)
 
 
 class VirusDetail(_messages.Message):

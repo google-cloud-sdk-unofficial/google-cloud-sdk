@@ -14,8 +14,7 @@
 # limitations under the License.
 """Command for deleting a worker pool revision."""
 
-
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.run import run_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
@@ -30,21 +29,23 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.Command):
   """Delete a worker pool revision."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION': (
+          """\
           {description}
-          """,
-      'EXAMPLES': """\
+          """
+      ),
+      'EXAMPLES': (
+          """\
           To delete a revision `rev1` of a worker pool `worker1` in us-central1:
 
               $ {command} rev1 --region=us-central1 --worker-pool=worker1
-          """,
+          """
+      ),
   }
 
   @staticmethod
@@ -67,10 +68,6 @@ class Delete(base.Command):
   def Run(self, args):
     """Delete a worker pool revision."""
 
-    def DeriveRegionalEndpoint(endpoint):
-      region = args.CONCEPTS.worker_pool_revision.Parse().locationsId
-      return region + '-' + endpoint
-
     worker_pool_revision_ref = args.CONCEPTS.worker_pool_revision.Parse()
     flags.ValidateResource(worker_pool_revision_ref)
     console_io.PromptContinue(
@@ -80,8 +77,8 @@ class Delete(base.Command):
         throw_if_unattended=True,
         cancel_on_no=True,
     )
-    run_client = apis.GetGapicClientInstance(
-        'run', 'v2', address_override_func=DeriveRegionalEndpoint
+    run_client = run_util.GetGapicClientInstance(
+        region=worker_pool_revision_ref.locationsId
     )
     worker_pools_client = worker_pools_operations.WorkerPoolsOperations(
         run_client
@@ -115,3 +112,9 @@ class Delete(base.Command):
       )
     else:
       log.DeletedResource(worker_pool_revision_ref.revisionsId, 'revision')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.RegionalEndpointsSupported
+class BetaDelete(Delete):
+  """Delete a worker pool revision."""

@@ -118,8 +118,9 @@ class Update(base.UpdateCommand):
     flags.AddConnectionPoolingServerLifetime(parser)
     flags.AddConnectionPoolingClientConnectionIdleTimeout(parser)
     flags.AddConnectionPoolingMaxPreparedStatements(parser)
+    labels_util.AddUpdateLabelsFlags(parser)
 
-    # TODO(b/185795425): Add --ssl-required and --labels later once we
+    # TODO(b/185795425): Add --ssl-required later once we
     # understand the use cases
 
   def ConstructPatchRequestFromArgs(self, alloydb_messages, instance_ref, args):
@@ -180,7 +181,6 @@ class UpdateBeta(Update):
     )
 
     flags.AddAutoscalerUpdateFlags(parser)
-    labels_util.AddUpdateLabelsFlags(parser)
 
   def ConstructPatchRequestFromArgs(self, alloydb_messages, instance_ref, args):
     return instance_helper.ConstructPatchRequestFromArgsBeta(

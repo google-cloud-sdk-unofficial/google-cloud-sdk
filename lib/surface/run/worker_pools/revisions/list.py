@@ -14,7 +14,6 @@
 # limitations under the License.
 """Command for listing available worker pool revisions."""
 
-
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.command_lib.run import connection_context
@@ -29,21 +28,23 @@ from googlecloudsdk.core import log
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(commands.List):
   """List available worker pool revisions."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION': (
+          """\
           {description}
-          """,
-      'EXAMPLES': """\
+          """
+      ),
+      'EXAMPLES': (
+          """\
           To list all revisions in a worker pool `foo`:
 
               $ {command} --worker-pool=foo
-          """,
+          """
+      ),
   }
 
   @classmethod
@@ -124,3 +125,9 @@ class List(commands.List):
           )
       ):
         yield rev
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.RegionalEndpointsSupported
+class BetaList(List):
+  """List available worker pool revisions."""

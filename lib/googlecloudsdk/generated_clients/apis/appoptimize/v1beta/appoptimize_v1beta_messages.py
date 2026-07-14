@@ -547,7 +547,8 @@ class Report(_messages.Message):
       `memory_allocation_byte_seconds` * `memory_p95_utilization`
     name: Identifier. The name of this report.
     scopes: Optional. The resource containers for which to fetch data. Default
-      is the project specified in the report's parent.
+      is the project specified in the report's parent. No more than one scope
+      is supported.
   """
 
   dimensions = _messages.StringField(1, repeated=True)

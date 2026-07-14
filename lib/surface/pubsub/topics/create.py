@@ -192,6 +192,9 @@ def _Run(args, /, *, legacy_output=False):
   )
   ingestion_log_severity = getattr(args, 'ingestion_log_severity', None)
   message_transforms_file = getattr(args, 'message_transforms_file', None)
+  enable_cross_region_replication = getattr(
+      args, 'enable_cross_region_replication', None
+  )
 
   tags = flags.GetTagsMessage(args, client.messages.Topic.TagsValue)
 
@@ -237,6 +240,7 @@ def _Run(args, /, *, legacy_output=False):
           ingestion_log_severity=ingestion_log_severity,
           message_transforms_file=message_transforms_file,
           tags=tags,
+          enable_cross_region_replication=enable_cross_region_replication,
       )
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
@@ -330,3 +334,4 @@ class CreateAlpha(CreateBeta):
   @staticmethod
   def Args(parser):
     super(CreateAlpha, CreateAlpha).Args(parser)
+    flags.AddTopicReplicationPolicyFlags(parser)

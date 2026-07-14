@@ -969,9 +969,13 @@ class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersGenerateMonito
   Fields:
     name: Required. Name of the resource. Format: projects/{project}/locations
       /{location}/networkMonitoringProviders/{network_monitoring_provider}
+    privateConnectivityEnabled: Optional. For Google Cloud MPs, this field
+      indicates whether the Monitoring Point is deployed in a Private Service
+      Connect deployment. Not used for non-Google Cloud MPs.
   """
 
   name = _messages.StringField(1, required=True)
+  privateConnectivityEnabled = _messages.BooleanField(2)
 
 
 class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersGenerateProviderAccessTokenRequest(_messages.Message):
@@ -1043,6 +1047,9 @@ class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPoin
     parent: Required. Parent value for DownloadInstallScriptRequest. Format: p
       rojects/{project}/locations/{location}/networkMonitoringProviders/{netwo
       rk_monitoring_provider}
+    privateConnectivityEnabled: Optional. For Google Cloud MPs, this field
+      indicates whether the Monitoring Point is deployed in a Private Service
+      Connect deployment. Not used for non-Google Cloud MPs.
     staticIpAddress_dnsServerAddress: Required. DNS server.
     staticIpAddress_dnsServerSecondaryAddress: Optional. Second DNS server.
     staticIpAddress_domain: Optional. Domain name of the MonitoringPoint.
@@ -1087,15 +1094,16 @@ class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPoin
   ntpServerAddress = _messages.StringField(4)
   ntpServerSecondaryAddress = _messages.StringField(5)
   parent = _messages.StringField(6, required=True)
-  staticIpAddress_dnsServerAddress = _messages.StringField(7)
-  staticIpAddress_dnsServerSecondaryAddress = _messages.StringField(8)
-  staticIpAddress_domain = _messages.StringField(9)
-  staticIpAddress_gatewayAddress = _messages.StringField(10)
-  staticIpAddress_ipAddress = _messages.StringField(11)
-  staticIpAddress_netmask = _messages.StringField(12)
-  timeZone_id = _messages.StringField(13)
-  timeZone_version = _messages.StringField(14)
-  useDhcp = _messages.BooleanField(15)
+  privateConnectivityEnabled = _messages.BooleanField(7)
+  staticIpAddress_dnsServerAddress = _messages.StringField(8)
+  staticIpAddress_dnsServerSecondaryAddress = _messages.StringField(9)
+  staticIpAddress_domain = _messages.StringField(10)
+  staticIpAddress_gatewayAddress = _messages.StringField(11)
+  staticIpAddress_ipAddress = _messages.StringField(12)
+  staticIpAddress_netmask = _messages.StringField(13)
+  timeZone_id = _messages.StringField(14)
+  timeZone_version = _messages.StringField(15)
+  useDhcp = _messages.BooleanField(16)
 
 
 class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPointsDownloadRecreateInstallScriptRequest(_messages.Message):

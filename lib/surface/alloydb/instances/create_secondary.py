@@ -79,6 +79,7 @@ class CreateSecondary(base.CreateCommand):
     flags.AddConnectionPoolingServerLifetime(parser)
     flags.AddConnectionPoolingClientConnectionIdleTimeout(parser)
     flags.AddConnectionPoolingMaxPreparedStatements(parser)
+    labels_util.AddCreateLabelsFlags(parser)
 
   def ConstructSecondaryCreateRequestFromArgs(
       self, client, alloydb_messages, cluster_ref, args
@@ -131,7 +132,6 @@ class CreateSecondaryBeta(CreateSecondary):
   @classmethod
   def Args(cls, parser):
     super(CreateSecondaryBeta, CreateSecondaryBeta).Args(parser)
-    labels_util.AddCreateLabelsFlags(parser)
 
   def ConstructSecondaryCreateRequestFromArgs(
       self, client, alloydb_messages, cluster_ref, args

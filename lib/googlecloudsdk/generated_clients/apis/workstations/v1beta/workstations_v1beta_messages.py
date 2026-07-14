@@ -1715,9 +1715,9 @@ class WorkstationBoostConfig(_messages.Message):
 
 
 class WorkstationCluster(_messages.Message):
-  r"""A workstation cluster resource in the Cloud Workstations API.
-  Defines a group of workstations in a particular region and the VPC network
-  they're attached to.
+  r"""A workstation cluster resource in the Cloud Workstations API. Defines a
+  group of workstations in a particular region and the VPC network they're
+  attached to.
 
   Messages:
     AnnotationsValue: Optional. Client-specified annotations.
@@ -1775,19 +1775,19 @@ class WorkstationCluster(_messages.Message):
       recently updated.
     workstationAuthorizationUrl: Optional. Specifies the redirect URL for
       unauthorized requests received by workstation VMs in this cluster.
-      Redirects to this endpoint will send a base64 encoded `state` query param
-      containing the target workstation name and original request hostname. The
-      endpoint is responsible for retrieving a token using
+      Redirects to this endpoint will send a base64 encoded `state` query
+      param containing the target workstation name and original request
+      hostname. The endpoint is responsible for retrieving a token using
       `GenerateAccessToken` and redirecting back to the original hostname with
       the token.
     workstationLaunchUrl: Optional. Specifies the launch URL for workstations
       in this cluster. Requests sent to unstarted workstations will be
       redirected to this URL. Requests redirected to the launch endpoint will
-      be sent with a `workstation` and `project` query parameter containing the
-      full workstation resource name and project ID, respectively. The launch
-      endpoint is responsible for starting the workstation, polling it until it
-      reaches `STATE_RUNNING`, and then issuing a redirect to the workstation's
-      host URL.
+      be sent with a `workstation` and `project` query parameter containing
+      the full workstation resource name and project ID, respectively. The
+      launch endpoint is responsible for starting the workstation, polling it
+      until it reaches `STATE_RUNNING`, and then issuing a redirect to the
+      workstation's host URL.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')

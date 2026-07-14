@@ -33,9 +33,9 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_attr
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.util import agents
 from googlecloudsdk.core.util import encoding
 from googlecloudsdk.core.util import platforms
-
 import six
 import six.moves.urllib.error
 import six.moves.urllib.parse
@@ -92,6 +92,7 @@ class CommonParams(object):
                                         .metrics.environment_version.Get())
     self.is_run_from_shell_script = console_io.IsRunFromShellScript()
     self.term_identifier = console_attr.GetConsoleAttr().GetTermIdentifier()
+    self.agent_name = agents.DetectAIAgent()
 
 
 def GetTimeMillis(time_secs=None):
@@ -199,6 +200,9 @@ class _ClearcutMetricsReporter(object):
         ('from_script', common_params.is_run_from_shell_script),
         ('term', common_params.term_identifier),
     ]
+
+    if common_params.agent_name:
+      event_metadata.append(('agent_name', common_params.agent_name))
 
     self._clearcut_concord_event_metadata = [{
         'key': param[0], 'value': six.text_type(param[1])

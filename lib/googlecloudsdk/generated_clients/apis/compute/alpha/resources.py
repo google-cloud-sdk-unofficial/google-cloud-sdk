@@ -108,6 +108,28 @@ class Collections(enum.Enum):
       ['project', 'firewall'],
       True
   )
+  FOLDERGLOBALVMEXTENSIONPOLICIES = (
+      'folderGlobalVmExtensionPolicies',
+      '{+folder}/global/vmExtensionPolicies/{globalVmExtensionPolicy}',
+      {
+          '':
+              'folders/{foldersId}/global/vmExtensionPolicies/'
+              '{globalVmExtensionPolicy}',
+      },
+      ['folder', 'globalVmExtensionPolicy'],
+      True
+  )
+  FOLDERZONEVMEXTENSIONPOLICIES = (
+      'folderZoneVmExtensionPolicies',
+      '{+folder}/zones/{zone}/vmExtensionPolicies/{vmExtensionPolicy}',
+      {
+          '':
+              'folders/{foldersId}/zones/{zone}/vmExtensionPolicies/'
+              '{vmExtensionPolicy}',
+      },
+      ['folder', 'zone', 'vmExtensionPolicy'],
+      True
+  )
   FOLDERS = (
       'folders',
       'folders/{foldersId}',
@@ -455,6 +477,17 @@ class Collections(enum.Enum):
       ['project', 'zone', 'nodeType'],
       True
   )
+  ORGANIZATIONGLOBALVMEXTENSIONPOLICIES = (
+      'organizationGlobalVmExtensionPolicies',
+      '{+organization}/global/vmExtensionPolicies/{globalVmExtensionPolicy}',
+      {
+          '':
+              'organizations/{organizationsId}/global/vmExtensionPolicies/'
+              '{globalVmExtensionPolicy}',
+      },
+      ['organization', 'globalVmExtensionPolicy'],
+      True
+  )
   ORGANIZATIONROLLOUTPLANS = (
       'organizationRolloutPlans',
       '{+organization}/global/rolloutPlans/{rolloutPlan}',
@@ -492,6 +525,17 @@ class Collections(enum.Enum):
               'snapshotRecycleBinPolicy',
       },
       ['organization'],
+      True
+  )
+  ORGANIZATIONZONEVMEXTENSIONPOLICIES = (
+      'organizationZoneVmExtensionPolicies',
+      '{+organization}/zones/{zone}/vmExtensionPolicies/{vmExtensionPolicy}',
+      {
+          '':
+              'organizations/{organizationsId}/zones/{zone}/'
+              'vmExtensionPolicies/{vmExtensionPolicy}',
+      },
+      ['organization', 'zone', 'vmExtensionPolicy'],
       True
   )
   ORGANIZATIONS = (

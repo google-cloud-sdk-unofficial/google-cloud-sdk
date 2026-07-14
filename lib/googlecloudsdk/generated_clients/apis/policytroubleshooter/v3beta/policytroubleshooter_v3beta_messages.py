@@ -3516,8 +3516,8 @@ class GoogleIamV3RegionalAccessBoundaryPolicyDetails(_messages.Message):
   Fields:
     enforcementVersion: Optional. The version identifier (e.g., 1) specifying
       the enforcement behavior of the Regional Access Boundary policy. This
-      allows the TB Platform to introduce changes to enforcement logic through
-      new versions, mitigating potential breaking changes. If left
+      allows the RAB Platform to introduce changes to enforcement logic
+      through new versions, mitigating potential breaking changes. If left
       unspecified, the version will default to the latest launched version.
     rules: Required. The regional access boundary policy rules. Only one rule
       is supported at this time, requests with more than one will be rejected
@@ -3538,14 +3538,14 @@ class GoogleIamV3RegionalAccessBoundaryPolicyRule(_messages.Message):
     description: Optional. The description of the regional access boundary
       policy rule. Must be less than or equal to 256 characters.
     locations: Describes the list of authorized locations. It is in the format
-      of value groups with the following syntax:
-      "//GoogleValueGroups/Locations/LOCATION" Where LOCATION can either be
-      "Mandatory/version_number_here" (the locations which are required for
+      of cloud location groups with the following syntax:
+      "//cloudLocationGroups/LOCATION" Where LOCATION can either be "rab-
+      mandatory-version_number_here" (the locations which are required for
       inclusion for all customers) or a specific country-based location. Note
       the Mandatory Locations value group will be versioned to allow Google to
       remove locations from this group without causing breaking changes.
-      Examples: "//GoogleValueGroups/Locations/Mandatory/v1".
-      "//GoogleValueGroups/Locations/US". "//GoogleValueGroups/Locations/JP".
+      Examples: "//cloudLocationGroups/rab-mandatory-v1".
+      "//cloudLocationGroups/us". "//cloudLocationGroups/jp".
   """
 
   description = _messages.StringField(1)

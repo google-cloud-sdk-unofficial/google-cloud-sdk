@@ -2445,7 +2445,7 @@ class NetworksecurityV1alpha1(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a new FirewallAttachment in a given project and location.
+      r"""Deprecated: Creates a new FirewallAttachment in a given project and location.
 
       Args:
         request: (NetworksecurityProjectsLocationsFirewallAttachmentsCreateRequest) input message
@@ -2472,7 +2472,7 @@ class NetworksecurityV1alpha1(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a single Attachment.
+      r"""Deprecated: Deletes a single Attachment.
 
       Args:
         request: (NetworksecurityProjectsLocationsFirewallAttachmentsDeleteRequest) input message
@@ -2499,7 +2499,7 @@ class NetworksecurityV1alpha1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets details of a single Attachment.
+      r"""Deprecated: Gets details of a single Attachment.
 
       Args:
         request: (NetworksecurityProjectsLocationsFirewallAttachmentsGetRequest) input message
@@ -2526,7 +2526,7 @@ class NetworksecurityV1alpha1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists FirewallAttachments in a given project and location.
+      r"""Deprecated: Lists FirewallAttachments in a given project and location.
 
       Args:
         request: (NetworksecurityProjectsLocationsFirewallAttachmentsListRequest) input message
@@ -2553,7 +2553,7 @@ class NetworksecurityV1alpha1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Update a single FirewallAttachment.
+      r"""Deprecated: Update a single FirewallAttachment.
 
       Args:
         request: (NetworksecurityProjectsLocationsFirewallAttachmentsPatchRequest) input message

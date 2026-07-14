@@ -19,7 +19,7 @@ import os.path
 
 from google.api_core import exceptions as gapic_exceptions
 from googlecloudsdk.api_lib.run import api_enabler
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.run import run_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.artifacts import docker_util
@@ -82,10 +82,13 @@ class Deploy(base.Command):
   """Create or update a Cloud Run worker-pool."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION': (
+          """\
           Creates or updates a Cloud Run worker-pool.
-          """,
-      'EXAMPLES': """\
+          """
+      ),
+      'EXAMPLES': (
+          """\
           To deploy a container to the worker-pool `my-backend` on Cloud Run:
 
               $ {command} my-backend --image=us-docker.pkg.dev/project/image
@@ -94,7 +97,8 @@ class Deploy(base.Command):
           with a suggested default value:
 
               $ {command} --image=us-docker.pkg.dev/project/image
-          """,
+          """
+      ),
   }
 
   @classmethod
@@ -110,9 +114,7 @@ class Deploy(base.Command):
     flags.AddRevisionSuffixArg(parser)
     flags.AddRuntimeFlag(parser)
     flags.AddVolumesFlags(parser, cls.ReleaseTrack())
-    flags.AddScalingFlag(
-        parser, resource_kind='worker'
-    )
+    flags.AddScalingFlag(parser, resource_kind='worker')
     flags.AddInstancesFlag(parser)
     flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='worker')
     flags.RemoveContainersFlag().AddToParser(parser)
@@ -291,12 +293,8 @@ class Deploy(base.Command):
         self.ReleaseTrack(),
     )
 
-    def DeriveRegionalEndpoint(endpoint):
-      region = args.CONCEPTS.worker_pool.Parse().locationsId
-      return region + '-' + endpoint
-
-    run_client = apis.GetGapicClientInstance(
-        'run', 'v2', address_override_func=DeriveRegionalEndpoint
+    run_client = run_util.GetGapicClientInstance(
+        region=worker_pool_ref.locationsId
     )
     worker_pools_client = worker_pools_operations.WorkerPoolsOperations(
         run_client
@@ -385,7 +383,8 @@ class Deploy(base.Command):
         )
       pretty_print.Success(
           messages_util.GetSuccessMessageForSynchronousWorkerPoolDeploy(
-              worker_pool_name, self.ReleaseTrack(),
+              worker_pool_name,
+              self.ReleaseTrack(),
               args.CONCEPTS.worker_pool.Parse().locationsId,
               revision_name,
           )
@@ -406,7 +405,8 @@ def _CreateBuildPack(container, release_track=base.ReleaseTrack.GA):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class AlphaDeploy(Deploy):
+@base.RegionalEndpointsSupported
+class BetaDeploy(Deploy):
   """Create or update a Cloud Run worker-pool."""
 
   @classmethod
@@ -418,4 +418,4 @@ class AlphaDeploy(Deploy):
     )
 
 
-AlphaDeploy.__doc__ = Deploy.__doc__
+BetaDeploy.__doc__ = Deploy.__doc__

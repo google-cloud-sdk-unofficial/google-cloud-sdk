@@ -1363,6 +1363,8 @@ class GoogleCloudRunV2Instance(_messages.Message):
       execution for this Instance.
     createTime: Output only. The creation time.
     creator: Output only. Email address of the authenticated creator.
+    defaultUriDisabled: Optional. Disables public resolution of the default
+      URI of this Instance.
     deleteTime: Output only. The deletion time.
     description: User-provided description of the Instance. This field
       currently has a 512-character limit.
@@ -1432,8 +1434,6 @@ class GoogleCloudRunV2Instance(_messages.Message):
       its readiness status, and detailed error information in case it did not
       reach a serving state. See comments in `reconciling` for additional
       information on reconciliation process in Cloud Run.
-    timeout: Optional. Duration the instance may be active before the system
-      will shut it down.
     uid: Output only. Server assigned unique identifier for the trigger. The
       value is a UUID4 string and guaranteed to remain unchanged until the
       resource is deleted.
@@ -1586,30 +1586,30 @@ class GoogleCloudRunV2Instance(_messages.Message):
   containers = _messages.MessageField('GoogleCloudRunV2Container', 7, repeated=True)
   createTime = _messages.StringField(8)
   creator = _messages.StringField(9)
-  deleteTime = _messages.StringField(10)
-  description = _messages.StringField(11)
-  encryptionKey = _messages.StringField(12)
-  encryptionKeyRevocationAction = _messages.EnumField('EncryptionKeyRevocationActionValueValuesEnum', 13)
-  encryptionKeyShutdownDuration = _messages.StringField(14)
-  etag = _messages.StringField(15)
-  expireTime = _messages.StringField(16)
-  generation = _messages.IntegerField(17)
-  gpuZonalRedundancyDisabled = _messages.BooleanField(18)
-  iapEnabled = _messages.BooleanField(19)
-  ingress = _messages.EnumField('IngressValueValuesEnum', 20)
-  invokerIamDisabled = _messages.BooleanField(21)
-  labels = _messages.MessageField('LabelsValue', 22)
-  lastModifier = _messages.StringField(23)
-  launchStage = _messages.EnumField('LaunchStageValueValuesEnum', 24)
-  logUri = _messages.StringField(25)
-  name = _messages.StringField(26)
-  nodeSelector = _messages.MessageField('GoogleCloudRunV2NodeSelector', 27)
-  observedGeneration = _messages.IntegerField(28)
-  reconciling = _messages.BooleanField(29)
-  satisfiesPzs = _messages.BooleanField(30)
-  serviceAccount = _messages.StringField(31)
-  terminalCondition = _messages.MessageField('GoogleCloudRunV2Condition', 32)
-  timeout = _messages.StringField(33)
+  defaultUriDisabled = _messages.BooleanField(10)
+  deleteTime = _messages.StringField(11)
+  description = _messages.StringField(12)
+  encryptionKey = _messages.StringField(13)
+  encryptionKeyRevocationAction = _messages.EnumField('EncryptionKeyRevocationActionValueValuesEnum', 14)
+  encryptionKeyShutdownDuration = _messages.StringField(15)
+  etag = _messages.StringField(16)
+  expireTime = _messages.StringField(17)
+  generation = _messages.IntegerField(18)
+  gpuZonalRedundancyDisabled = _messages.BooleanField(19)
+  iapEnabled = _messages.BooleanField(20)
+  ingress = _messages.EnumField('IngressValueValuesEnum', 21)
+  invokerIamDisabled = _messages.BooleanField(22)
+  labels = _messages.MessageField('LabelsValue', 23)
+  lastModifier = _messages.StringField(24)
+  launchStage = _messages.EnumField('LaunchStageValueValuesEnum', 25)
+  logUri = _messages.StringField(26)
+  name = _messages.StringField(27)
+  nodeSelector = _messages.MessageField('GoogleCloudRunV2NodeSelector', 28)
+  observedGeneration = _messages.IntegerField(29)
+  reconciling = _messages.BooleanField(30)
+  satisfiesPzs = _messages.BooleanField(31)
+  serviceAccount = _messages.StringField(32)
+  terminalCondition = _messages.MessageField('GoogleCloudRunV2Condition', 33)
   uid = _messages.StringField(34)
   updateTime = _messages.StringField(35)
   urls = _messages.StringField(36, repeated=True)
@@ -5197,6 +5197,43 @@ class GoogleDevtoolsCloudbuildV1BuildStep(_messages.Message):
   waitFor = _messages.StringField(19, repeated=True)
 
 
+class GoogleDevtoolsCloudbuildV1BuildStepResults(_messages.Message):
+  r"""Results for a build step.
+
+  Messages:
+    ResultsValue: Results for a build step.
+
+  Fields:
+    results: Results for a build step.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ResultsValue(_messages.Message):
+    r"""Results for a build step.
+
+    Messages:
+      AdditionalProperty: An additional property for a ResultsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type ResultsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ResultsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  results = _messages.MessageField('ResultsValue', 1)
+
+
 class GoogleDevtoolsCloudbuildV1BuiltImage(_messages.Message):
   r"""An image built by the pipeline.
 
@@ -5737,6 +5774,9 @@ class GoogleDevtoolsCloudbuildV1RepoSource(_messages.Message):
 class GoogleDevtoolsCloudbuildV1Results(_messages.Message):
   r"""Artifacts created by the build pipeline.
 
+  Messages:
+    BuildStepResultsValue: Results for build steps. step_id ->
+
   Fields:
     artifactManifest: Path to the artifact manifest for non-container
       artifacts uploaded to Cloud Storage. Only populated when artifacts are
@@ -5750,6 +5790,7 @@ class GoogleDevtoolsCloudbuildV1Results(_messages.Message):
       produce this output by writing to `$BUILDER_OUTPUT/output`. Only the
       first 50KB of data is stored. Note that the `$BUILDER_OUTPUT` variable
       is read-only and can't be substituted.
+    buildStepResults: Results for build steps. step_id ->
     genericArtifacts: Output only. Generic artifacts uploaded to Artifact
       Registry at the end of the build.
     goModules: Optional. Go module artifacts uploaded to Artifact Registry at
@@ -5765,17 +5806,44 @@ class GoogleDevtoolsCloudbuildV1Results(_messages.Message):
       of the build.
   """
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class BuildStepResultsValue(_messages.Message):
+    r"""Results for build steps. step_id ->
+
+    Messages:
+      AdditionalProperty: An additional property for a BuildStepResultsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        BuildStepResultsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a BuildStepResultsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A GoogleDevtoolsCloudbuildV1BuildStepResults attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('GoogleDevtoolsCloudbuildV1BuildStepResults', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   artifactManifest = _messages.StringField(1)
   artifactTiming = _messages.MessageField('GoogleDevtoolsCloudbuildV1TimeSpan', 2)
   buildStepImages = _messages.StringField(3, repeated=True)
   buildStepOutputs = _messages.BytesField(4, repeated=True)
-  genericArtifacts = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedGenericArtifact', 5, repeated=True)
-  goModules = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedGoModule', 6, repeated=True)
-  images = _messages.MessageField('GoogleDevtoolsCloudbuildV1BuiltImage', 7, repeated=True)
-  mavenArtifacts = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedMavenArtifact', 8, repeated=True)
-  npmPackages = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedNpmPackage', 9, repeated=True)
-  numArtifacts = _messages.IntegerField(10)
-  pythonPackages = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedPythonPackage', 11, repeated=True)
+  buildStepResults = _messages.MessageField('BuildStepResultsValue', 5)
+  genericArtifacts = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedGenericArtifact', 6, repeated=True)
+  goModules = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedGoModule', 7, repeated=True)
+  images = _messages.MessageField('GoogleDevtoolsCloudbuildV1BuiltImage', 8, repeated=True)
+  mavenArtifacts = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedMavenArtifact', 9, repeated=True)
+  npmPackages = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedNpmPackage', 10, repeated=True)
+  numArtifacts = _messages.IntegerField(11)
+  pythonPackages = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedPythonPackage', 12, repeated=True)
 
 
 class GoogleDevtoolsCloudbuildV1Secret(_messages.Message):
@@ -6857,6 +6925,32 @@ class RunProjectsLocationsInstancesDeleteRequest(_messages.Message):
   validateOnly = _messages.BooleanField(3)
 
 
+class RunProjectsLocationsInstancesGetIamPolicyRequest(_messages.Message):
+  r"""A RunProjectsLocationsInstancesGetIamPolicyRequest object.
+
+  Fields:
+    options_requestedPolicyVersion: Optional. The maximum policy version that
+      will be used to format the policy. Valid values are 0, 1, and 3.
+      Requests specifying an invalid value will be rejected. Requests for
+      policies with any conditional role bindings must specify version 3.
+      Policies with no conditional role bindings may specify any valid value
+      or leave the field unset. The policy in the response might use the
+      policy version that you specified, or it might use a lower policy
+      version. For example, if you specify version 3, but the policy has no
+      conditional role bindings, the response uses version 1. To learn which
+      resources support conditions in their IAM policies, see the [IAM
+      documentation](https://cloud.google.com/iam/help/conditions/resource-
+      policies).
+    resource: REQUIRED: The resource for which the policy is being requested.
+      See [Resource
+      names](https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+  """
+
+  options_requestedPolicyVersion = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  resource = _messages.StringField(2, required=True)
+
+
 class RunProjectsLocationsInstancesGetRequest(_messages.Message):
   r"""A RunProjectsLocationsInstancesGetRequest object.
 
@@ -6914,6 +7008,22 @@ class RunProjectsLocationsInstancesPatchRequest(_messages.Message):
   validateOnly = _messages.BooleanField(5)
 
 
+class RunProjectsLocationsInstancesSetIamPolicyRequest(_messages.Message):
+  r"""A RunProjectsLocationsInstancesSetIamPolicyRequest object.
+
+  Fields:
+    googleIamV1SetIamPolicyRequest: A GoogleIamV1SetIamPolicyRequest resource
+      to be passed as the request body.
+    resource: REQUIRED: The resource for which the policy is being specified.
+      See [Resource
+      names](https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+  """
+
+  googleIamV1SetIamPolicyRequest = _messages.MessageField('GoogleIamV1SetIamPolicyRequest', 1)
+  resource = _messages.StringField(2, required=True)
+
+
 class RunProjectsLocationsInstancesStartRequest(_messages.Message):
   r"""A RunProjectsLocationsInstancesStartRequest object.
 
@@ -6943,6 +7053,23 @@ class RunProjectsLocationsInstancesStopRequest(_messages.Message):
 
   googleCloudRunV2StopInstanceRequest = _messages.MessageField('GoogleCloudRunV2StopInstanceRequest', 1)
   name = _messages.StringField(2, required=True)
+
+
+class RunProjectsLocationsInstancesTestIamPermissionsRequest(_messages.Message):
+  r"""A RunProjectsLocationsInstancesTestIamPermissionsRequest object.
+
+  Fields:
+    googleIamV1TestIamPermissionsRequest: A
+      GoogleIamV1TestIamPermissionsRequest resource to be passed as the
+      request body.
+    resource: REQUIRED: The resource for which the policy detail is being
+      requested. See [Resource
+      names](https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+  """
+
+  googleIamV1TestIamPermissionsRequest = _messages.MessageField('GoogleIamV1TestIamPermissionsRequest', 1)
+  resource = _messages.StringField(2, required=True)
 
 
 class RunProjectsLocationsJobsCreateRequest(_messages.Message):
@@ -7862,6 +7989,8 @@ encoding.AddCustomJsonEnumMapping(
     StandardQueryParameters.FXgafvValueValuesEnum, '_1', '1')
 encoding.AddCustomJsonEnumMapping(
     StandardQueryParameters.FXgafvValueValuesEnum, '_2', '2')
+encoding.AddCustomJsonFieldMapping(
+    RunProjectsLocationsInstancesGetIamPolicyRequest, 'options_requestedPolicyVersion', 'options.requestedPolicyVersion')
 encoding.AddCustomJsonFieldMapping(
     RunProjectsLocationsJobsGetIamPolicyRequest, 'options_requestedPolicyVersion', 'options.requestedPolicyVersion')
 encoding.AddCustomJsonFieldMapping(

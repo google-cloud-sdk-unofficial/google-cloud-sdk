@@ -358,6 +358,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_ODBNETWORKS_ODBDNSZONES = (
+      'projects.locations.odbNetworks.odbDnsZones',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/odbNetworks/'
+              '{odbNetworksId}/odbDnsZones/{odbDnsZonesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_ODBNETWORKS_ODBSUBNETS = (
       'projects.locations.odbNetworks.odbSubnets',
       '{+name}',

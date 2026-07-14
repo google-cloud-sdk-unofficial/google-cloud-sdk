@@ -78,11 +78,14 @@ class GoogleCloudRecaptchaenterpriseV1AccountDefenderAssessmentAccountRiskReason
         traffic patterns and request characteristics.
       CLIENT_ACCESSED_MANY_ACCOUNTS: The client has been observed accessing
         many accounts on this site.
+      DISPOSABLE_EMAIL_DOMAIN: This email domain is a suspected provider of
+        disposable email addresses.
     """
     RISK_REASON_UNSPECIFIED = 0
     CLIENT_HISTORICAL_BOT_ACTIVITY = 1
     ACCOUNT_IN_LARGE_RELATED_GROUP = 2
     CLIENT_ACCESSED_MANY_ACCOUNTS = 3
+    DISPOSABLE_EMAIL_DOMAIN = 4
 
   reason = _messages.EnumField('ReasonValueValuesEnum', 1)
 

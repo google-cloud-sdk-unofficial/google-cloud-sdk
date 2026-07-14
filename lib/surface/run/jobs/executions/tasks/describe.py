@@ -15,19 +15,22 @@
 """Command for obtaining details about tasks."""
 
 
+import copy
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
-from googlecloudsdk.command_lib.run.printers import export_printer
 from googlecloudsdk.command_lib.run.printers import job_printer
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core.resource import resource_printer
 
 
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Obtain details about tasks."""
 
@@ -76,3 +79,11 @@ class Describe(base.DescribeCommand):
       raise exceptions.ArgumentError('Cannot find task [{}].'.format(
           task_ref.Name()))
     return task
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.RegionalEndpointsSupported
+class BetaDescribe(Describe):
+  """Obtain details about tasks."""
+
+  detailed_help = copy.deepcopy(Describe.detailed_help)

@@ -15,7 +15,7 @@
 
 """Connects to a serial port gateway using SSH."""
 
-
+import shlex
 import sys
 
 from googlecloudsdk.api_lib.compute import base_classes
@@ -31,7 +31,6 @@ from googlecloudsdk.command_lib.util.ssh import ssh
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import requests
-
 
 SERIAL_PORT_HELP = (
     'https://cloud.google.com/compute/docs/'
@@ -205,9 +204,7 @@ class ConnectToSerialPort(base.Command):
       if resp.ok:
         # There can be multiple public host keys for the same region,
         # in the response separated by newlines.
-        retrieved_host_keys = (
-            resp.text.strip().split('\n')
-        )
+        retrieved_host_keys = resp.text.strip().split('\n')
         for host_key in retrieved_host_keys:
           host_keys.append(host_key)
         log.info(
@@ -299,7 +296,9 @@ class ConnectToSerialPort(base.Command):
         options=options,
     )
     if args.dry_run:
-      log.out.Print(' '.join(cmd.Build(ssh_helper.env)))
+      log.out.Print(
+          ' '.join(shlex.quote(arg) for arg in cmd.Build(ssh_helper.env))
+      )
       return
     if not oslogin_state.oslogin_enabled:
       ssh_helper.EnsureSSHKeyExists(

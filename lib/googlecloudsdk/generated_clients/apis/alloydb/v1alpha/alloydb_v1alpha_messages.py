@@ -2100,6 +2100,8 @@ class ConnectionInfo(_messages.Message):
     pemCertificateChain: Output only. The pem-encoded chain that may be used
       to verify the X.509 certificate. Expected to be in issuer-to-root order
       according to RFC 5246.
+    pscAutoDnsName: Output only. Specifies the DNS name to use with PSC
+      service automation for the Instance.
     pscDnsName: Output only. The DNS name to use with PSC for the Instance.
     publicIpAddress: Output only. The public IP addresses for the Instance.
       This is available ONLY when enable_public_ip is set. This is the
@@ -2110,8 +2112,9 @@ class ConnectionInfo(_messages.Message):
   ipAddress = _messages.StringField(2)
   name = _messages.StringField(3)
   pemCertificateChain = _messages.StringField(4, repeated=True)
-  pscDnsName = _messages.StringField(5)
-  publicIpAddress = _messages.StringField(6)
+  pscAutoDnsName = _messages.StringField(5)
+  pscDnsName = _messages.StringField(6)
+  publicIpAddress = _messages.StringField(7)
 
 
 class ConnectionPoolConfig(_messages.Message):
@@ -5602,7 +5605,7 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceId(_messages.Message)
 
 
 class StorageDatabasecenterPartnerapiV1mainDatabaseResourceMetadata(_messages.Message):
-  r"""Common model for database resource instance metadata. Next ID: 34
+  r"""Common model for database resource instance metadata. Next ID: 35
 
   Enums:
     CurrentStateValueValuesEnum: Current state of the instance.
@@ -5647,6 +5650,7 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceMetadata(_messages.Me
     instanceType: The type of the instance. Specified at creation time.
     internalAdditionalMetadata: Field to ingest additional metadata which
       support proto format.
+    ipAddress: Optional. Private and public IP address of the resource.
     isDeletionProtectionEnabled: Optional. Whether deletion protection is
       enabled for this resource.
     location: The resource location. REQUIRED
@@ -5878,22 +5882,23 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceMetadata(_messages.Me
   id = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainDatabaseResourceId', 13)
   instanceType = _messages.EnumField('InstanceTypeValueValuesEnum', 14)
   internalAdditionalMetadata = _messages.MessageField('InternalAdditionalMetadataValue', 15)
-  isDeletionProtectionEnabled = _messages.BooleanField(16)
-  location = _messages.StringField(17)
-  machineConfiguration = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainMachineConfiguration', 18)
-  maintenanceInfo = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainResourceMaintenanceInfo', 19)
-  modes = _messages.EnumField('ModesValueListEntryValuesEnum', 20, repeated=True)
-  primaryResourceId = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainDatabaseResourceId', 21)
-  primaryResourceLocation = _messages.StringField(22)
-  product = _messages.MessageField('StorageDatabasecenterProtoCommonProduct', 23)
-  resourceContainer = _messages.StringField(24)
-  resourceFlags = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainResourceFlags', 25, repeated=True)
-  resourceName = _messages.StringField(26)
-  suspensionReason = _messages.EnumField('SuspensionReasonValueValuesEnum', 27)
-  tagsSet = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainTags', 28)
-  updationTime = _messages.StringField(29)
-  userLabelSet = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainUserLabels', 30)
-  zone = _messages.StringField(31)
+  ipAddress = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainIpAddress', 16)
+  isDeletionProtectionEnabled = _messages.BooleanField(17)
+  location = _messages.StringField(18)
+  machineConfiguration = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainMachineConfiguration', 19)
+  maintenanceInfo = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainResourceMaintenanceInfo', 20)
+  modes = _messages.EnumField('ModesValueListEntryValuesEnum', 21, repeated=True)
+  primaryResourceId = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainDatabaseResourceId', 22)
+  primaryResourceLocation = _messages.StringField(23)
+  product = _messages.MessageField('StorageDatabasecenterProtoCommonProduct', 24)
+  resourceContainer = _messages.StringField(25)
+  resourceFlags = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainResourceFlags', 26, repeated=True)
+  resourceName = _messages.StringField(27)
+  suspensionReason = _messages.EnumField('SuspensionReasonValueValuesEnum', 28)
+  tagsSet = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainTags', 29)
+  updationTime = _messages.StringField(30)
+  userLabelSet = _messages.MessageField('StorageDatabasecenterPartnerapiV1mainUserLabels', 31)
+  zone = _messages.StringField(32)
 
 
 class StorageDatabasecenterPartnerapiV1mainDatabaseResourceRecommendationSignalData(_messages.Message):
@@ -6511,6 +6516,22 @@ class StorageDatabasecenterPartnerapiV1mainInternalResourceMetadata(_messages.Me
   resourceName = _messages.StringField(6)
 
 
+class StorageDatabasecenterPartnerapiV1mainIpAddress(_messages.Message):
+  r"""Used to send IP address information for a database resource.
+
+  Fields:
+    privateIp: The private IP address assigned to the resource within a
+      Virtual Private Cloud (VPC). This IP is only reachable from within the
+      same VPC network. Stored in standard string format (e.g., "10.0.0.2").
+    publicIp: The public IP address assigned to the resource. This IP is
+      reachable from the internet. Stored in standard string format (e.g.,
+      "34.72.1.1").
+  """
+
+  privateIp = _messages.StringField(1)
+  publicIp = _messages.StringField(2)
+
+
 class StorageDatabasecenterPartnerapiV1mainMachineConfiguration(_messages.Message):
   r"""MachineConfiguration describes the configuration of a machine specific
   to Database Resource.
@@ -7003,6 +7024,7 @@ class StorageDatabasecenterProtoCommonProduct(_messages.Message):
       ENGINE_MEMORYSTORE_FOR_REDIS: Memorystore with Redis dialect.
       ENGINE_MEMORYSTORE_FOR_REDIS_CLUSTER: Memorystore with Redis cluster
         dialect.
+      ENGINE_MEMORSTORE_FOR_VALKEY: Memorystore with Valkey dialect.
       ENGINE_OTHER: Other refers to rest of other database engine. This is to
         be when engine is known, but it is not present in this enum.
       ENGINE_FIRESTORE_WITH_NATIVE_MODE: Firestore with native mode.
@@ -7025,12 +7047,13 @@ class StorageDatabasecenterProtoCommonProduct(_messages.Message):
     ENGINE_CLOUD_SPANNER_WITH_GOOGLESQL_DIALECT = 10
     ENGINE_MEMORYSTORE_FOR_REDIS = 11
     ENGINE_MEMORYSTORE_FOR_REDIS_CLUSTER = 12
-    ENGINE_OTHER = 13
-    ENGINE_FIRESTORE_WITH_NATIVE_MODE = 14
-    ENGINE_FIRESTORE_WITH_DATASTORE_MODE = 15
-    ENGINE_FIRESTORE_WITH_MONGODB_COMPATIBILITY_MODE = 16
-    ENGINE_EXADATA_ORACLE = 17
-    ENGINE_ADB_SERVERLESS_ORACLE = 18
+    ENGINE_MEMORSTORE_FOR_VALKEY = 13
+    ENGINE_OTHER = 14
+    ENGINE_FIRESTORE_WITH_NATIVE_MODE = 15
+    ENGINE_FIRESTORE_WITH_DATASTORE_MODE = 16
+    ENGINE_FIRESTORE_WITH_MONGODB_COMPATIBILITY_MODE = 17
+    ENGINE_EXADATA_ORACLE = 18
+    ENGINE_ADB_SERVERLESS_ORACLE = 19
 
   class TypeValueValuesEnum(_messages.Enum):
     r"""Type of specific database product. It could be CloudSQL, AlloyDB etc..

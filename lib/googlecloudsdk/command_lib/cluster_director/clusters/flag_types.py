@@ -189,6 +189,9 @@ class FlagTypes:
     }
     if self.is_alpha:
       spec["image"] = str
+      spec["storagePools"] = arg_parsers.ArgObject(
+          value_type=str, repeated=True
+      )
     return arg_parsers.ArgObject(
         spec=spec,
         required_keys=["type", "sizeGb"],

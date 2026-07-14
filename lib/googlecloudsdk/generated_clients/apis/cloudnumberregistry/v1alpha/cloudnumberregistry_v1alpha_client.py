@@ -374,7 +374,7 @@ class CloudnumberregistryV1alpha(base_api.BaseApiClient):
           }
 
     def CheckAvailability(self, request, global_params=None):
-      r"""Checks the availability of IPAM admin scopes in a given project and location.
+      r"""Checks the availability of IpamAdminScopes in a given project and location.
 
       Args:
         request: (CloudnumberregistryProjectsLocationsIpamAdminScopesCheckAvailabilityRequest) input message
@@ -536,7 +536,7 @@ class CloudnumberregistryV1alpha(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""List all IPAM admin scopes in a given project and location.
+      r"""Lists IpamAdminScopes in a given project and location.
 
       Args:
         request: (CloudnumberregistryProjectsLocationsIpamAdminScopesListRequest) input message

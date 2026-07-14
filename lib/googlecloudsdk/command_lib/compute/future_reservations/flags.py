@@ -137,15 +137,18 @@ def GetDurationHelpText():
   return help_text
 
 
-def GetSharedSettingFlag(custom_name=None):
+def GetSharedSettingFlag(custom_name=None, support_folder_share_setting=False):
   """Gets the --share-setting flag."""
   help_text = """\
   Specify if this future reservation is shared, and if so, the type of sharing.
   If you omit this flag, this value is local by default.
   """
+  choices = ['local', 'projects']
+  if support_folder_share_setting:
+    choices.append('folders')
   return base.Argument(
       custom_name if custom_name else '--share-setting',
-      choices=['local', 'projects'],
+      choices=choices,
       help=help_text,
   )
 
@@ -374,6 +377,7 @@ def AddCreateFlags(
     parser,
     support_location_hint=False,
     support_share_setting=False,
+    support_folder_share_setting=False,
     support_fleet=False,
     support_instance_template=False,
     support_planning_status=False,
@@ -456,7 +460,11 @@ def AddCreateFlags(
     share_group = base.ArgumentGroup(
         'Manage the properties of a shared reservation.', required=False
     )
-    share_group.AddArgument(GetSharedSettingFlag())
+    share_group.AddArgument(
+        GetSharedSettingFlag(
+            support_folder_share_setting=support_folder_share_setting
+        )
+    )
     share_group.AddArgument(GetShareWithFlag())
     share_group.AddToParser(parser)
 

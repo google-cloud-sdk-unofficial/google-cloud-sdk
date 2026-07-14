@@ -274,11 +274,13 @@ class Application(_messages.Message):
 
 
 class ArtifactGuardPolicies(_messages.Message):
-  r"""Represents the result of evaluating artifact guard policies.
+  r"""Represents the result of evaluating artifact guard policies on a
+  resource.
 
   Fields:
-    failingPolicies: A list of failing policies.
-    resourceId: The ID of the resource that has policies configured for it.
+    failingPolicies: A list of artifact guard policies that the resource
+      violated.
+    resourceId: The ID of the resource that has policies configured.
   """
 
   failingPolicies = _messages.MessageField('ArtifactGuardPolicy', 1, repeated=True)
@@ -1662,9 +1664,11 @@ class DataRetentionDeletionEvent(_messages.Message):
       100 days old. In this case, a DataRetentionDeletionEvent will be
       generated for that Cloud Storage bucket, and the max_retention_allowed
       is 90 days.
-    minRetentionAllowed: Min duration of retention allowed from the DSPM
-      retention control. This field is only populated when event type is set
-      to EVENT_TYPE_MIN_TTL_FROM_CREATION.
+    minRetentionAllowed: The minimum duration that the resource associated
+      with this finding must be retained, as enforced by the DSPM retention
+      control. The retention period begins from the resource's creation time.
+      This field is populated only when the `event_type` is set to
+      `EVENT_TYPE_MIN_TTL_FROM_CREATION`.
   """
 
   class EventTypeValueValuesEnum(_messages.Enum):
@@ -1773,8 +1777,8 @@ class Detection(_messages.Message):
 
 
 class DiscoveredWorkload(_messages.Message):
-  r"""Represents discovered, customer managed workload that is not registered
-  with the respective GCP service.
+  r"""Represents discovered, customer-managed workload that is not registered
+  with the respective Google Cloud service.
 
   Enums:
     ConfidenceValueValuesEnum: The confidence in detection of this workload.
@@ -2098,11 +2102,12 @@ class File(_messages.Message):
     r"""The load state of the file.
 
     Values:
-      FILE_LOAD_STATE_UNSPECIFIED: The file state is unspecified.
-      LOADED_BY_PROCESS: The file is being used by an active process at the
-        time of scanning.
-      NOT_LOADED_BY_PROCESS: The file is not being used by any active process
-        at the time of scanning.
+      FILE_LOAD_STATE_UNSPECIFIED: Indicates that the file load state was not
+        set or is not known. This is the default value.
+      LOADED_BY_PROCESS: The file was in use by an active process during the
+        scan.
+      NOT_LOADED_BY_PROCESS: The file was not in use by any active process
+        during the scan.
     """
     FILE_LOAD_STATE_UNSPECIFIED = 0
     LOADED_BY_PROCESS = 1
@@ -4182,11 +4187,13 @@ class GoogleCloudSecuritycenterV2Application(_messages.Message):
 
 
 class GoogleCloudSecuritycenterV2ArtifactGuardPolicies(_messages.Message):
-  r"""Represents the result of evaluating artifact guard policies.
+  r"""Represents the result of evaluating artifact guard policies on a
+  resource.
 
   Fields:
-    failingPolicies: A list of failing policies.
-    resourceId: The ID of the resource that has policies configured for it.
+    failingPolicies: A list of artifact guard policies that the resource
+      violated.
+    resourceId: The ID of the resource that has policies configured.
   """
 
   failingPolicies = _messages.MessageField('GoogleCloudSecuritycenterV2ArtifactGuardPolicy', 1, repeated=True)
@@ -5261,9 +5268,11 @@ class GoogleCloudSecuritycenterV2DataRetentionDeletionEvent(_messages.Message):
       100 days old. In this case, a DataRetentionDeletionEvent will be
       generated for that Cloud Storage bucket, and the max_retention_allowed
       is 90 days.
-    minRetentionAllowed: Min duration of retention allowed from the DSPM
-      retention control. This field is only populated when event type is set
-      to EVENT_TYPE_MIN_TTL_FROM_CREATION.
+    minRetentionAllowed: The minimum duration that the resource associated
+      with this finding must be retained, as enforced by the DSPM retention
+      control. The retention period begins from the resource's creation time.
+      This field is populated only when the `event_type` is set to
+      `EVENT_TYPE_MIN_TTL_FROM_CREATION`.
   """
 
   class EventTypeValueValuesEnum(_messages.Enum):
@@ -5372,8 +5381,8 @@ class GoogleCloudSecuritycenterV2Detection(_messages.Message):
 
 
 class GoogleCloudSecuritycenterV2DiscoveredWorkload(_messages.Message):
-  r"""Represents discovered, customer managed workload that is not registered
-  with the respective GCP service.
+  r"""Represents discovered, customer-managed workload that is not registered
+  with the respective Google Cloud service.
 
   Enums:
     ConfidenceValueValuesEnum: The confidence in detection of this workload.
@@ -5671,11 +5680,12 @@ class GoogleCloudSecuritycenterV2File(_messages.Message):
     r"""The load state of the file.
 
     Values:
-      FILE_LOAD_STATE_UNSPECIFIED: The file state is unspecified.
-      LOADED_BY_PROCESS: The file is being used by an active process at the
-        time of scanning.
-      NOT_LOADED_BY_PROCESS: The file is not being used by any active process
-        at the time of scanning.
+      FILE_LOAD_STATE_UNSPECIFIED: Indicates that the file load state was not
+        set or is not known. This is the default value.
+      LOADED_BY_PROCESS: The file was in use by an active process during the
+        scan.
+      NOT_LOADED_BY_PROCESS: The file was not in use by any active process
+        during the scan.
     """
     FILE_LOAD_STATE_UNSPECIFIED = 0
     LOADED_BY_PROCESS = 1
@@ -8041,13 +8051,13 @@ class GoogleCloudSecuritycenterV2PolicyDriftDetails(_messages.Message):
 
 
 class GoogleCloudSecuritycenterV2PolicyViolationSummary(_messages.Message):
-  r"""Metadata summarizing policy violations of child resources of the
-  affected resource. `finding_category` and `resource` determine the exact
-  semantics of the counts. For example, when
-  category=DATA_SECURITY_POSTURE_OBJECT_PUBLIC_ACCESS_VIOLATION and
-  resource='storage.googleapis.com/buckets/my-bucket-name' then this counts
-  the number of Cloud Storage objects in my-bucket-name which violate a Public
-  Access control.
+  r"""Metadata summarizing policy violations for child resources of the
+  resource associated with this finding. The exact meaning of the counts
+  depends on `finding.category` and `finding.resource_name`. For example, if
+  `category` is DATA_SECURITY_POSTURE_OBJECT_PUBLIC_ACCESS_VIOLATION and
+  `resource_name` is 'storage.googleapis.com/buckets/my-bucket-name', this
+  summary counts Cloud Storage objects within `my-bucket-name` that violate a
+  Public Access control policy.
 
   Fields:
     conformantResourcesCount: Total number of child resources that conform to
@@ -8576,9 +8586,9 @@ class GoogleCloudSecuritycenterV2SecretEnvironmentVariable(_messages.Message):
   r"""Environment variable containing the secret.
 
   Fields:
-    key: Environment variable name as a JSON encoded string. Note that value
-      is not included since the value contains the secret data, which is
-      sensitive core content.
+    key: The environment variable name as a JSON encoded string. Note that the
+      value is not included because the value contains the secret data, which
+      is sensitive core content.
   """
 
   key = _messages.StringField(1)
@@ -10702,13 +10712,13 @@ class PolicyDriftDetails(_messages.Message):
 
 
 class PolicyViolationSummary(_messages.Message):
-  r"""Metadata summarizing policy violations of child resources of the
-  affected resource. `finding_category` and `resource` determine the exact
-  semantics of the counts. For example, when
-  category=DATA_SECURITY_POSTURE_OBJECT_PUBLIC_ACCESS_VIOLATION and
-  resource='storage.googleapis.com/buckets/my-bucket-name' then this counts
-  the number of Cloud Storage objects in my-bucket-name which violate a Public
-  Access control.
+  r"""Metadata summarizing policy violations for child resources of the
+  resource associated with this finding. The exact meaning of the counts
+  depends on `finding.category` and `finding.resource_name`. For example, if
+  `category` is DATA_SECURITY_POSTURE_OBJECT_PUBLIC_ACCESS_VIOLATION and
+  `resource_name` is 'storage.googleapis.com/buckets/my-bucket-name', this
+  summary counts Cloud Storage objects within `my-bucket-name` that violate a
+  Public Access control policy.
 
   Fields:
     conformantResourcesCount: Total number of child resources that conform to
@@ -11023,9 +11033,9 @@ class SecretEnvironmentVariable(_messages.Message):
   r"""Environment variable containing the secret.
 
   Fields:
-    key: Environment variable name as a JSON encoded string. Note that value
-      is not included since the value contains the secret data, which is
-      sensitive core content.
+    key: The environment variable name as a JSON encoded string. Note that the
+      value is not included because the value contains the secret data, which
+      is sensitive core content.
   """
 
   key = _messages.StringField(1)

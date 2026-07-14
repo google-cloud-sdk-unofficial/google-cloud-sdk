@@ -1734,9 +1734,6 @@ class GoogleDevtoolsRemotebuildexecutionAdminV1alphaCreateTbiInstanceRequest(_me
       allowed to set through internal APIs through toolproxy.
       AdminOpsRestrictions can be set to ADMIN_OPS_RESTRICTIONS_RESTRICTED
       only if ACTION_ISOLATION is enforced.
-    GithubEnterpriseAccessValueValuesEnum: Optional. GitHub Enterprise access
-      configuration for the instance. This field can only be set via
-      CreateTbiInstance.
     TcaRestrictionsValueValuesEnum: Optional. If tca_restrictions is ENABLED
       then the instance will have restrictions needed for building Trusted
       Core Access (TCA) compliant builds. DO NOT USE: In-Development feature.
@@ -1747,8 +1744,6 @@ class GoogleDevtoolsRemotebuildexecutionAdminV1alphaCreateTbiInstanceRequest(_me
       allowed to set through internal APIs through toolproxy.
       AdminOpsRestrictions can be set to ADMIN_OPS_RESTRICTIONS_RESTRICTED
       only if ACTION_ISOLATION is enforced.
-    githubEnterpriseAccess: Optional. GitHub Enterprise access configuration
-      for the instance. This field can only be set via CreateTbiInstance.
     immutableMetapolicy: Required. Enforces meta policy immutability if set to
       true. This field is required. We use 'optional' here to track field
       presence so that we may catch (and error on) the case where this field
@@ -1781,24 +1776,6 @@ class GoogleDevtoolsRemotebuildexecutionAdminV1alphaCreateTbiInstanceRequest(_me
     RESTRICTIONS_ALLOWED = 1
     RESTRICTIONS_RESTRICTED = 2
 
-  class GithubEnterpriseAccessValueValuesEnum(_messages.Enum):
-    r"""Optional. GitHub Enterprise access configuration for the instance.
-    This field can only be set via CreateTbiInstance.
-
-    Values:
-      GITHUB_ENTERPRISE_ACCESS_UNSPECIFIED: Default value; interpreted as
-        DISABLED.
-      GITHUB_ENTERPRISE_ACCESS_DISABLED: Instance without GitHub Enterprise
-        access.
-      GITHUB_ENTERPRISE_ACCESS_ENABLED: Instance with GitHub Enterprise
-        access. Enabling this allows the RBE worker to connect to Google's
-        GitHub Enterprise Server (GHES) instance via a Private Service Connect
-        (PSC) endpoint. Currently, only GCB is intended to use this mode.
-    """
-    GITHUB_ENTERPRISE_ACCESS_UNSPECIFIED = 0
-    GITHUB_ENTERPRISE_ACCESS_DISABLED = 1
-    GITHUB_ENTERPRISE_ACCESS_ENABLED = 2
-
   class TcaRestrictionsValueValuesEnum(_messages.Enum):
     r"""Optional. If tca_restrictions is ENABLED then the instance will have
     restrictions needed for building Trusted Core Access (TCA) compliant
@@ -1822,11 +1799,10 @@ class GoogleDevtoolsRemotebuildexecutionAdminV1alphaCreateTbiInstanceRequest(_me
     RESTRICTIONS_ENABLED_V1 = 2
 
   adminOpsRestrictions = _messages.EnumField('AdminOpsRestrictionsValueValuesEnum', 1)
-  githubEnterpriseAccess = _messages.EnumField('GithubEnterpriseAccessValueValuesEnum', 2)
-  immutableMetapolicy = _messages.BooleanField(3)
-  instance = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaInstance', 4)
-  instanceId = _messages.StringField(5)
-  tcaRestrictions = _messages.EnumField('TcaRestrictionsValueValuesEnum', 6)
+  immutableMetapolicy = _messages.BooleanField(2)
+  instance = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaInstance', 3)
+  instanceId = _messages.StringField(4)
+  tcaRestrictions = _messages.EnumField('TcaRestrictionsValueValuesEnum', 5)
 
 
 class GoogleDevtoolsRemotebuildexecutionAdminV1alphaCreateWorkerPoolRequest(_messages.Message):
@@ -2239,8 +2215,8 @@ class GoogleDevtoolsRemotebuildexecutionAdminV1alphaInstance(_messages.Message):
   scoped to an instance.
 
   Enums:
-    GithubEnterpriseAccessValueValuesEnum: Output only. GitHub Enterprise
-      access configuration for the instance.
+    GithubEnterpriseAccessValueValuesEnum: Optional. GitHub Enterprise access
+      configuration for the instance.
     StateValueValuesEnum: Output only. State of the instance.
 
   Fields:
@@ -2259,8 +2235,8 @@ class GoogleDevtoolsRemotebuildexecutionAdminV1alphaInstance(_messages.Message):
       more than allowed number of parent or child instances.
     featurePolicy: The policy to define whether or not RBE features can be
       used or how they can be used.
-    githubEnterpriseAccess: Output only. GitHub Enterprise access
-      configuration for the instance.
+    githubEnterpriseAccess: Optional. GitHub Enterprise access configuration
+      for the instance.
     location: The location is a GCP region. Currently only `us-central1` is
       supported.
     loggingEnabled: Output only. Whether stack driver logging is enabled for
@@ -2279,7 +2255,7 @@ class GoogleDevtoolsRemotebuildexecutionAdminV1alphaInstance(_messages.Message):
   """
 
   class GithubEnterpriseAccessValueValuesEnum(_messages.Enum):
-    r"""Output only. GitHub Enterprise access configuration for the instance.
+    r"""Optional. GitHub Enterprise access configuration for the instance.
 
     Values:
       GITHUB_ENTERPRISE_ACCESS_UNSPECIFIED: Default value; interpreted as

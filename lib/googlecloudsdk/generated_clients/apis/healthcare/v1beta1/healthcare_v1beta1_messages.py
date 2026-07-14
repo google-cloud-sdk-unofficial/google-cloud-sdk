@@ -1390,6 +1390,20 @@ class CryptoHashField(_messages.Message):
 
 
 
+class CustomRegex(_messages.Message):
+  r"""Defines a custom regular expression pattern to detect and redact in the
+  image.
+
+  Fields:
+    groupIndexes: Optional. The capturing group indexes to redact.
+      skip_request_analyics: true
+    pattern: Optional. The regular expression pattern to match.
+  """
+
+  groupIndexes = _messages.IntegerField(1, repeated=True, variant=_messages.Variant.INT32)
+  pattern = _messages.StringField(2)
+
+
 class Dataset(_messages.Message):
   r"""A message representing a health dataset. A health dataset represents a
   collection of healthcare data pertaining to one or more patients. This may
@@ -7021,6 +7035,7 @@ class ImageConfig(_messages.Message):
       `text_redaction_mode` is set to `REDACT_SENSITIVE_TEXT`,
       `REDACT_SENSITIVE_TEXT_CLEAN_DESCRIPTORS` or
       `TEXT_REDACTION_MODE_UNSPECIFIED`.
+    customRegexes: Optional. Custom regex patterns to redact from the image.
     excludeInfoTypes: InfoTypes to skip redacting, overriding those used by
       `text_redaction_mode`. Can only be used when `text_redaction_mode` is
       set to `REDACT_SENSITIVE_TEXT` or
@@ -7056,8 +7071,9 @@ class ImageConfig(_messages.Message):
     REDACT_SENSITIVE_TEXT_CLEAN_DESCRIPTORS = 4
 
   additionalInfoTypes = _messages.StringField(1, repeated=True)
-  excludeInfoTypes = _messages.StringField(2, repeated=True)
-  textRedactionMode = _messages.EnumField('TextRedactionModeValueValuesEnum', 3)
+  customRegexes = _messages.MessageField('CustomRegex', 2, repeated=True)
+  excludeInfoTypes = _messages.StringField(3, repeated=True)
+  textRedactionMode = _messages.EnumField('TextRedactionModeValueValuesEnum', 4)
 
 
 class ImportDicomDataRequest(_messages.Message):

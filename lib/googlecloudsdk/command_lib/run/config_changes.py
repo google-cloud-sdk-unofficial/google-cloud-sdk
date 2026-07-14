@@ -1743,6 +1743,24 @@ class ContainerWorkdirChange(ContainerConfigChanger):
     container.workingDir = self.workdir
 
 
+@dataclasses.dataclass(init=False, frozen=True)
+class SandboxLauncherChange(ContainerConfigChanger):
+  """Represents the user intent to change the 'sandboxLauncher' for the container.
+
+  Attributes:
+    sandbox_launcher: The sandbox launcher to set in the adjusted container.
+  """
+
+  sandbox_launcher: bool
+
+  def __init__(self, sandbox_launcher: bool, **kwargs):
+    super().__init__(**kwargs)
+    object.__setattr__(self, 'sandbox_launcher', sandbox_launcher)
+
+  def AdjustContainer(self, container, messages_mod):
+    container.sandboxLauncher = self.sandbox_launcher
+
+
 _HTTP2_NAME = 'h2c'
 _DEFAULT_PORT = 8080
 

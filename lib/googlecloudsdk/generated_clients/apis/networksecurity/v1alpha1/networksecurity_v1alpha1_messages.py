@@ -1471,7 +1471,7 @@ class Expr(_messages.Message):
 
 
 class FirewallAttachment(_messages.Message):
-  r"""Message describing Attachment object
+  r"""Deprecated: Message describing Attachment object
 
   Enums:
     StateValueValuesEnum: Output only. Current state of the attachment.
@@ -1556,10 +1556,10 @@ class FirewallEndpoint(_messages.Message):
     LabelsValue: Optional. Labels as key value pairs
 
   Fields:
-    associatedNetworks: Output only. List of networks that are associated with
-      this endpoint in the local zone. This is a projection of the
-      FirewallEndpointAssociations pointing at this endpoint. A network will
-      only appear in this list after traffic routing is fully configured.
+    associatedNetworks: Output only. Deprecated: List of networks that are
+      associated with this endpoint in the local zone. This is a projection of
+      the FirewallEndpointAssociations pointing at this endpoint. A network
+      will only appear in this list after traffic routing is fully configured.
       Format: projects/{project}/global/networks/{name}.
     associations: Output only. List of FirewallEndpointAssociations that are
       associated to this endpoint. An association will only appear in this
@@ -1573,8 +1573,8 @@ class FirewallEndpoint(_messages.Message):
     endpointSettings: Optional. Settings for the endpoint.
     firstPartyEndpointSettings: Optional. Firewall endpoint settings for first
       party firewall endpoints.
-    jumboFramesEnabled: Optional. Immutable. Indicates whether Jumbo Frames
-      are enabled. Default value is false.
+    jumboFramesEnabled: Optional. Immutable. Deprecated: Indicates whether
+      Jumbo Frames are enabled. Default value is false.
     kmsKey: Optional. Immutable. The resource name of the KMS key used for
       CMEK encryption. If no key is specified, Google-managed encryption keys
       are used. The key must be in the same region as the endpoint. Format: pr
@@ -1786,12 +1786,7 @@ class FirewallEndpointEndpointSettings(_messages.Message):
     Values:
       CONTENT_CLOUD_REGION_UNSPECIFIED: PAN content cloud region not
         specified.
-      DEFAULT: This default automatically resolves to the closest PAN cloud
-        region. Default content cloud portal: hawkeye.services-
-        edge.paloaltonetworks.com
       US_CENTRAL: us.hawkeye.services-edge.paloaltonetworks.com
-      EUROPE: Europe content cloud portal: eu.hawkeye.services-
-        edge.paloaltonetworks.com
       APAC: APAC content cloud portal: apac.hawkeye.services-
         edge.paloaltonetworks.com
       INDIA: India content cloud portal: in.hawkeye.services-
@@ -1826,25 +1821,23 @@ class FirewallEndpointEndpointSettings(_messages.Message):
         edge.paloaltonetworks.com
     """
     CONTENT_CLOUD_REGION_UNSPECIFIED = 0
-    DEFAULT = 1
-    US_CENTRAL = 2
-    EUROPE = 3
-    APAC = 4
-    INDIA = 5
-    UK = 6
-    FRANCE = 7
-    JAPAN = 8
-    AUSTRALIA = 9
-    CANADA = 10
-    SWITZERLAND = 11
-    NETHERLANDS = 12
-    INDONESIA = 13
-    QATAR = 14
-    TAIWAN = 15
-    POLAND = 16
-    SOUTH_KOREA = 17
-    SAUDI_ARABIA = 18
-    ITALY = 19
+    US_CENTRAL = 1
+    APAC = 2
+    INDIA = 3
+    UK = 4
+    FRANCE = 5
+    JAPAN = 6
+    AUSTRALIA = 7
+    CANADA = 8
+    SWITZERLAND = 9
+    NETHERLANDS = 10
+    INDONESIA = 11
+    QATAR = 12
+    TAIWAN = 13
+    POLAND = 14
+    SOUTH_KOREA = 15
+    SAUDI_ARABIA = 16
+    ITALY = 17
 
   contentCloudRegion = _messages.EnumField('ContentCloudRegionValueValuesEnum', 1)
   httpPartialResponseBlocked = _messages.BooleanField(2)
@@ -3162,7 +3155,7 @@ class ListDnsThreatDetectorsResponse(_messages.Message):
 
 
 class ListFirewallAttachmentsResponse(_messages.Message):
-  r"""Message for response to listing Attachments
+  r"""Deprecated: Message for response to listing Attachments
 
   Fields:
     firewallAttachments: The list of Attachments

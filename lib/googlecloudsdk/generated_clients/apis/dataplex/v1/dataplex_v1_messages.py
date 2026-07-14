@@ -377,6 +377,34 @@ class DataplexProjectsLocationsAspectTypesTestIamPermissionsRequest(_messages.Me
   resource = _messages.StringField(2, required=True)
 
 
+class DataplexProjectsLocationsChangeRequestsApproveRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsChangeRequestsApproveRequest object.
+
+  Fields:
+    googleCloudDataplexV1ApproveChangeRequestRequest: A
+      GoogleCloudDataplexV1ApproveChangeRequestRequest resource to be passed
+      as the request body.
+    name: Required. The name of the ChangeRequest to approve.
+  """
+
+  googleCloudDataplexV1ApproveChangeRequestRequest = _messages.MessageField('GoogleCloudDataplexV1ApproveChangeRequestRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class DataplexProjectsLocationsChangeRequestsDeleteRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsChangeRequestsDeleteRequest object.
+
+  Fields:
+    etag: Optional. The etag of the ChangeRequest.
+    name: Required. The name of the ChangeRequest to delete. Format: projects/
+      {project_number}/locations/{location_id}/changeRequests/{change_request_
+      id}
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+
+
 class DataplexProjectsLocationsChangeRequestsGetIamPolicyRequest(_messages.Message):
   r"""A DataplexProjectsLocationsChangeRequestsGetIamPolicyRequest object.
 
@@ -399,6 +427,72 @@ class DataplexProjectsLocationsChangeRequestsGetIamPolicyRequest(_messages.Messa
 
   options_requestedPolicyVersion = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   resource = _messages.StringField(2, required=True)
+
+
+class DataplexProjectsLocationsChangeRequestsGetRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsChangeRequestsGetRequest object.
+
+  Fields:
+    name: Required. The name of the ChangeRequest to retrieve. Format: project
+      s/{project_number}/locations/{location_id}/changeRequests/{change_reques
+      t_id}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class DataplexProjectsLocationsChangeRequestsListRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsChangeRequestsListRequest object.
+
+  Fields:
+    filter: Optional. Filter request. Supports filtering by: state, author,
+      resource, create_time, update_time.
+    orderBy: Optional. Order by fields for the result.
+    pageSize: Optional. Maximum number of ChangeRequests to return. The
+      service may return fewer.
+    pageToken: Optional. Page token received from a previous
+      ListChangeRequests call.
+    parent: Required. The parent, which owns this collection of
+      ChangeRequests. Format:
+      projects/{project_number}/locations/{location_id}
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class DataplexProjectsLocationsChangeRequestsPatchRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsChangeRequestsPatchRequest object.
+
+  Fields:
+    googleCloudDataplexV1ChangeRequest: A GoogleCloudDataplexV1ChangeRequest
+      resource to be passed as the request body.
+    name: Identifier. The relative resource name of the ChangeRequest, of the
+      form: projects/{project_number}/locations/{location_id}/changeRequests/{
+      change_request_id}
+    updateMask: Optional. The list of fields to update.
+  """
+
+  googleCloudDataplexV1ChangeRequest = _messages.MessageField('GoogleCloudDataplexV1ChangeRequest', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
+
+
+class DataplexProjectsLocationsChangeRequestsRejectRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsChangeRequestsRejectRequest object.
+
+  Fields:
+    googleCloudDataplexV1RejectChangeRequestRequest: A
+      GoogleCloudDataplexV1RejectChangeRequestRequest resource to be passed as
+      the request body.
+    name: Required. The name of the ChangeRequest to reject.
+  """
+
+  googleCloudDataplexV1RejectChangeRequestRequest = _messages.MessageField('GoogleCloudDataplexV1RejectChangeRequestRequest', 1)
+  name = _messages.StringField(2, required=True)
 
 
 class DataplexProjectsLocationsChangeRequestsSetIamPolicyRequest(_messages.Message):
@@ -4364,6 +4458,16 @@ class GoogleCloudDataplexV1ActionUnauthorizedResource(_messages.Message):
 
 
 
+class GoogleCloudDataplexV1ApproveChangeRequestRequest(_messages.Message):
+  r"""Request message for ApproveChangeRequest.
+
+  Fields:
+    etag: Optional. The etag of the ChangeRequest.
+  """
+
+  etag = _messages.StringField(1)
+
+
 class GoogleCloudDataplexV1Aspect(_messages.Message):
   r"""Represents a single piece of metadata describing an entry or entry link.
 
@@ -5096,6 +5200,7 @@ class GoogleCloudDataplexV1ChangeRequest(_messages.Message):
     createGlossaryCategory: Payload for creating a GlossaryCategory.
     createGlossaryTerm: Payload for creating a GlossaryTerm.
     createTime: Output only. The time when the ChangeRequest was created.
+    dataProductAccessRequest: Payload for Data Product access request.
     deleteEntry: Payload for deleting an Entry.
     deleteEntryLink: Payload for deleting an EntryLink.
     deleteGlossary: Payload for deleting a Glossary.
@@ -5146,6 +5251,7 @@ class GoogleCloudDataplexV1ChangeRequest(_messages.Message):
       CREATE_GLOSSARY_TERM: Request to create a GlossaryTerm.
       UPDATE_GLOSSARY_TERM: Request to update a GlossaryTerm.
       DELETE_GLOSSARY_TERM: Request to delete a GlossaryTerm.
+      REQUEST_DATA_PRODUCT_ACCESS: Request to request Data Product access.
     """
     CHANGE_TYPE_UNSPECIFIED = 0
     CREATE_ENTRY = 1
@@ -5162,6 +5268,7 @@ class GoogleCloudDataplexV1ChangeRequest(_messages.Message):
     CREATE_GLOSSARY_TERM = 12
     UPDATE_GLOSSARY_TERM = 13
     DELETE_GLOSSARY_TERM = 14
+    REQUEST_DATA_PRODUCT_ACCESS = 15
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. The current state of the ChangeRequest.
@@ -5214,24 +5321,25 @@ class GoogleCloudDataplexV1ChangeRequest(_messages.Message):
   createGlossaryCategory = _messages.MessageField('GoogleCloudDataplexV1CreateGlossaryCategoryRequest', 7)
   createGlossaryTerm = _messages.MessageField('GoogleCloudDataplexV1CreateGlossaryTermRequest', 8)
   createTime = _messages.StringField(9)
-  deleteEntry = _messages.MessageField('GoogleCloudDataplexV1DeleteEntryRequest', 10)
-  deleteEntryLink = _messages.MessageField('GoogleCloudDataplexV1DeleteEntryLinkRequest', 11)
-  deleteGlossary = _messages.MessageField('GoogleCloudDataplexV1DeleteGlossaryRequest', 12)
-  deleteGlossaryCategory = _messages.MessageField('GoogleCloudDataplexV1DeleteGlossaryCategoryRequest', 13)
-  deleteGlossaryTerm = _messages.MessageField('GoogleCloudDataplexV1DeleteGlossaryTermRequest', 14)
-  etag = _messages.StringField(15)
-  justification = _messages.StringField(16)
-  labels = _messages.MessageField('LabelsValue', 17)
-  name = _messages.StringField(18)
-  rejectionComment = _messages.StringField(19)
-  resource = _messages.StringField(20)
-  state = _messages.EnumField('StateValueValuesEnum', 21)
-  uid = _messages.StringField(22)
-  updateEntry = _messages.MessageField('GoogleCloudDataplexV1UpdateEntryRequest', 23)
-  updateGlossary = _messages.MessageField('GoogleCloudDataplexV1UpdateGlossaryRequest', 24)
-  updateGlossaryCategory = _messages.MessageField('GoogleCloudDataplexV1UpdateGlossaryCategoryRequest', 25)
-  updateGlossaryTerm = _messages.MessageField('GoogleCloudDataplexV1UpdateGlossaryTermRequest', 26)
-  updateTime = _messages.StringField(27)
+  dataProductAccessRequest = _messages.MessageField('GoogleCloudDataplexV1DataProductAccessRequest', 10)
+  deleteEntry = _messages.MessageField('GoogleCloudDataplexV1DeleteEntryRequest', 11)
+  deleteEntryLink = _messages.MessageField('GoogleCloudDataplexV1DeleteEntryLinkRequest', 12)
+  deleteGlossary = _messages.MessageField('GoogleCloudDataplexV1DeleteGlossaryRequest', 13)
+  deleteGlossaryCategory = _messages.MessageField('GoogleCloudDataplexV1DeleteGlossaryCategoryRequest', 14)
+  deleteGlossaryTerm = _messages.MessageField('GoogleCloudDataplexV1DeleteGlossaryTermRequest', 15)
+  etag = _messages.StringField(16)
+  justification = _messages.StringField(17)
+  labels = _messages.MessageField('LabelsValue', 18)
+  name = _messages.StringField(19)
+  rejectionComment = _messages.StringField(20)
+  resource = _messages.StringField(21)
+  state = _messages.EnumField('StateValueValuesEnum', 22)
+  uid = _messages.StringField(23)
+  updateEntry = _messages.MessageField('GoogleCloudDataplexV1UpdateEntryRequest', 24)
+  updateGlossary = _messages.MessageField('GoogleCloudDataplexV1UpdateGlossaryRequest', 25)
+  updateGlossaryCategory = _messages.MessageField('GoogleCloudDataplexV1UpdateGlossaryCategoryRequest', 26)
+  updateGlossaryTerm = _messages.MessageField('GoogleCloudDataplexV1UpdateGlossaryTermRequest', 27)
+  updateTime = _messages.StringField(28)
 
 
 class GoogleCloudDataplexV1CreateEntryLinkRequest(_messages.Message):
@@ -5840,15 +5948,11 @@ class GoogleCloudDataplexV1DataDiscoverySpecStorageConfigUnstructuredDataOptions
   r"""Describes options for unstructured data discovery.
 
   Fields:
-    entityInferenceEnabled: Optional. Deprecated: Use
-      semantic_inference_enabled instead. Specifies whether deeper entity
-      inference over the objects' contents using GenAI is enabled.
     semanticInferenceEnabled: Optional. Specifies whether deeper semantic
       inference over the objects' contents using GenAI is enabled.
   """
 
-  entityInferenceEnabled = _messages.BooleanField(1)
-  semanticInferenceEnabled = _messages.BooleanField(2)
+  semanticInferenceEnabled = _messages.BooleanField(1)
 
 
 class GoogleCloudDataplexV1DataDocumentationResult(_messages.Message):
@@ -6193,6 +6297,32 @@ class GoogleCloudDataplexV1DataProductAccessGroup(_messages.Message):
   displayName = _messages.StringField(2)
   id = _messages.StringField(3)
   principal = _messages.MessageField('GoogleCloudDataplexV1DataProductPrincipal', 4)
+
+
+class GoogleCloudDataplexV1DataProductAccessRequest(_messages.Message):
+  r"""Message for requesting access to a Data Product. This will be used to
+  create a ChangeRequest of type REQUEST_DATA_PRODUCT_ACCESS.
+
+  Fields:
+    accessGroupDisplayName: Output only. The display name of the access group
+      defined in the Data Product for which access is being requested.
+    accessGroupId: Required. The ID of the access group for which access is
+      being requested. This corresponds to the unique identifier of the
+      AccessGroup defined in the Data Product.
+    parent: Required. The resource name of the data product. Format: projects/
+      {project_number}/locations/{location_id}/dataProducts/{data_product_id}
+    requestedPrincipal: Optional. The principal for which access is being
+      requested in IAM format. If not specified, the requestor's principal
+      will be used. Example: serviceAccount:my-sa@my-
+      project.iam.gserviceaccount.com. Only service account principals are
+      currently supported. https://cloud.google.com/iam/docs/principal-
+      identifiers
+  """
+
+  accessGroupDisplayName = _messages.StringField(1)
+  accessGroupId = _messages.StringField(2)
+  parent = _messages.StringField(3)
+  requestedPrincipal = _messages.StringField(4)
 
 
 class GoogleCloudDataplexV1DataProductPrincipal(_messages.Message):
@@ -10061,6 +10191,22 @@ class GoogleCloudDataplexV1ListAssetsResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
+class GoogleCloudDataplexV1ListChangeRequestsResponse(_messages.Message):
+  r"""Response message for ListChangeRequests.
+
+  Fields:
+    changeRequests: The ChangeRequests from the specified project and
+      location.
+    nextPageToken: A token, which can be sent as page_token to retrieve the
+      next page.
+    unreachable: Locations that could not be reached.
+  """
+
+  changeRequests = _messages.MessageField('GoogleCloudDataplexV1ChangeRequest', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class GoogleCloudDataplexV1ListDataAssetsResponse(_messages.Message):
   r"""Response message for listing data assets.
 
@@ -10401,7 +10547,9 @@ class GoogleCloudDataplexV1LookupContextRequest(_messages.Message):
       yaml). context_budget - If provided, the output will be intelligently
       truncated on a best-effort basis to contain approximately the desired
       amount of characters. There is no guarantee to achieve the specific
-      amount.
+      amount. all_schema_fields - If set to true, all schema fields will be
+      returned in the context (regardless of context_budget value). Otherwise,
+      the list of schema fields is truncated. Default is false.
 
   Fields:
     context: Optional. The text representing contextual information for which
@@ -10411,7 +10559,9 @@ class GoogleCloudDataplexV1LookupContextRequest(_messages.Message):
       yaml). context_budget - If provided, the output will be intelligently
       truncated on a best-effort basis to contain approximately the desired
       amount of characters. There is no guarantee to achieve the specific
-      amount.
+      amount. all_schema_fields - If set to true, all schema fields will be
+      returned in the context (regardless of context_budget value). Otherwise,
+      the list of schema fields is truncated. Default is false.
     resources: Required. The entry names to look up the context for. The
       maximum number of resources for a request is limited to 10.Examples:proj
       ects/{project}/locations/{location}/entryGroups/{entry_group}/entries/{e
@@ -10425,6 +10575,9 @@ class GoogleCloudDataplexV1LookupContextRequest(_messages.Message):
     context_budget - If provided, the output will be intelligently truncated
     on a best-effort basis to contain approximately the desired amount of
     characters. There is no guarantee to achieve the specific amount.
+    all_schema_fields - If set to true, all schema fields will be returned in
+    the context (regardless of context_budget value). Otherwise, the list of
+    schema fields is truncated. Default is false.
 
     Messages:
       AdditionalProperty: An additional property for a OptionsValue object.
@@ -11175,6 +11328,18 @@ class GoogleCloudDataplexV1QueryCatalogResponseQueryResult(_messages.Message):
   nextPageToken = _messages.StringField(1)
   rows = _messages.MessageField('RowsValueListEntry', 2, repeated=True)
   totalRows = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+
+
+class GoogleCloudDataplexV1RejectChangeRequestRequest(_messages.Message):
+  r"""Request message for RejectChangeRequest.
+
+  Fields:
+    comment: Optional. The reason for rejecting the ChangeRequest.
+    etag: Optional. The etag of the ChangeRequest.
+  """
+
+  comment = _messages.StringField(1)
+  etag = _messages.StringField(2)
 
 
 class GoogleCloudDataplexV1RequestDataProductAccessRequest(_messages.Message):

@@ -169,6 +169,7 @@ class CreateAlpha(CreateBeta):
     flags.AddCreateFlags(
         parser,
         support_share_setting=cls._support_share_setting,
+        support_folder_share_setting=True,
         support_location_hint=cls._support_location_hint,
         support_fleet=cls._support_fleet,
         support_planning_status=cls._support_planning_status,

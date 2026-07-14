@@ -4452,6 +4452,10 @@ class Oidc(_messages.Message):
       with or without the HTTPS prefix. For example: ``` //iam.googleapis.com/
       projects//locations//workloadIdentityPools//providers/ https://iam.googl
       eapis.com/projects//locations//workloadIdentityPools//providers/ ```
+    discoveryUri: Optional. The URL to fetch the discovery document from,
+      overriding the default URL derived from `issuer_uri`. If not set, the
+      URL defaults to `issuer_uri` with `/.well-known/openid-configuration`
+      appended, as per the OpenID Connect Discovery 1.0 specification.
     issuerUri: Required. The OIDC issuer URL. Must be an HTTPS endpoint. Per
       OpenID Connect Discovery 1.0 spec, the OIDC issuer URL is used to locate
       the provider's public keys (via `jwks_uri`) for verifying tokens like
@@ -4467,8 +4471,9 @@ class Oidc(_messages.Message):
   """
 
   allowedAudiences = _messages.StringField(1, repeated=True)
-  issuerUri = _messages.StringField(2)
-  jwksJson = _messages.StringField(3)
+  discoveryUri = _messages.StringField(2)
+  issuerUri = _messages.StringField(3)
+  jwksJson = _messages.StringField(4)
 
 
 class Operation(_messages.Message):
@@ -6589,6 +6594,11 @@ class WorkloadIdentityPoolProvider(_messages.Message):
       token: ``` {"google.subject": "assertion.sub"} ```
 
   Fields:
+    actorProviders: Optional. A list of the resource names of
+      WorkloadIdentityPoolProviders in the same pool that are authorized to
+      issue actor tokens for this provider. An actor token represents the
+      identity of the acting party to whom authority is delegated. At most 3
+      actor providers can be specified.
     attributeCondition: Optional. [A Common Expression
       Language](https://opensource.google/projects/cel) expression, in plain
       text, to restrict what otherwise valid authentication credentials issued
@@ -6744,18 +6754,19 @@ class WorkloadIdentityPoolProvider(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  attributeCondition = _messages.StringField(1)
-  attributeMapping = _messages.MessageField('AttributeMappingValue', 2)
-  aws = _messages.MessageField('Aws', 3)
-  description = _messages.StringField(4)
-  disabled = _messages.BooleanField(5)
-  displayName = _messages.StringField(6)
-  expireTime = _messages.StringField(7)
-  name = _messages.StringField(8)
-  oidc = _messages.MessageField('Oidc', 9)
-  saml = _messages.MessageField('Saml', 10)
-  state = _messages.EnumField('StateValueValuesEnum', 11)
-  x509 = _messages.MessageField('X509', 12)
+  actorProviders = _messages.StringField(1, repeated=True)
+  attributeCondition = _messages.StringField(2)
+  attributeMapping = _messages.MessageField('AttributeMappingValue', 3)
+  aws = _messages.MessageField('Aws', 4)
+  description = _messages.StringField(5)
+  disabled = _messages.BooleanField(6)
+  displayName = _messages.StringField(7)
+  expireTime = _messages.StringField(8)
+  name = _messages.StringField(9)
+  oidc = _messages.MessageField('Oidc', 10)
+  saml = _messages.MessageField('Saml', 11)
+  state = _messages.EnumField('StateValueValuesEnum', 12)
+  x509 = _messages.MessageField('X509', 13)
 
 
 class WorkloadIdentityPoolProviderKey(_messages.Message):

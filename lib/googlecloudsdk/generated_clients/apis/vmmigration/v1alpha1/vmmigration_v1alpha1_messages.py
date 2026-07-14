@@ -1066,6 +1066,13 @@ class ComputeEngineTargetDefaults(_messages.Message):
   Messages:
     LabelsValue: A map of labels to associate with the VM.
     MetadataValue: The metadata key/value pairs to assign to the VM.
+    ResourceManagerTagsValue: Optional. Resource manager tags to be bound to
+      the instance. Keys and values can be either in numeric format, such as
+      tagKeys/{tag_key_id} and tagValues/{tag_value_id} or in namespaced
+      format such as {org_id|project_id}/{tag_key_short_name} and
+      {tag_value_short_name}. For more details, see
+      https://cloud.google.com/resource-manager/docs/tags/tags-reating-and-
+      managing#creating_a_tag_binding
 
   Fields:
     adaptationModifiers: Optional. AdaptationModifiers are the set of
@@ -1110,6 +1117,13 @@ class ComputeEngineTargetDefaults(_messages.Message):
     provisionedThroughput: Optional. The provisioned throughput of the disk in
       Megabytes per second (MiB). If not specified, the default value will be
       used. This flag can only be used for hyperdisk disks.
+    resourceManagerTags: Optional. Resource manager tags to be bound to the
+      instance. Keys and values can be either in numeric format, such as
+      tagKeys/{tag_key_id} and tagValues/{tag_value_id} or in namespaced
+      format such as {org_id|project_id}/{tag_key_short_name} and
+      {tag_value_short_name}. For more details, see
+      https://cloud.google.com/resource-manager/docs/tags/tags-reating-and-
+      managing#creating_a_tag_binding
     secureBoot: Defines whether the instance has Secure Boot enabled. This can
       be set to true only if the VM boot option is EFI.
     serviceAccount: Optional. The service account to associate the VM with.
@@ -1236,6 +1250,37 @@ class ComputeEngineTargetDefaults(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ResourceManagerTagsValue(_messages.Message):
+    r"""Optional. Resource manager tags to be bound to the instance. Keys and
+    values can be either in numeric format, such as tagKeys/{tag_key_id} and
+    tagValues/{tag_value_id} or in namespaced format such as
+    {org_id|project_id}/{tag_key_short_name} and {tag_value_short_name}. For
+    more details, see https://cloud.google.com/resource-
+    manager/docs/tags/tags-reating-and-managing#creating_a_tag_binding
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        ResourceManagerTagsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        ResourceManagerTagsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ResourceManagerTagsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   adaptationModifiers = _messages.MessageField('AdaptationModifier', 1, repeated=True)
   additionalLicenses = _messages.StringField(2, repeated=True)
   appliedLicense = _messages.MessageField('AppliedLicense', 3)
@@ -1258,12 +1303,13 @@ class ComputeEngineTargetDefaults(_messages.Message):
   networkTags = _messages.StringField(20, repeated=True)
   provisionedIops = _messages.IntegerField(21)
   provisionedThroughput = _messages.IntegerField(22)
-  secureBoot = _messages.BooleanField(23)
-  serviceAccount = _messages.StringField(24)
-  storagePool = _messages.StringField(25)
-  targetProject = _messages.StringField(26)
-  vmName = _messages.StringField(27)
-  zone = _messages.StringField(28)
+  resourceManagerTags = _messages.MessageField('ResourceManagerTagsValue', 23)
+  secureBoot = _messages.BooleanField(24)
+  serviceAccount = _messages.StringField(25)
+  storagePool = _messages.StringField(26)
+  targetProject = _messages.StringField(27)
+  vmName = _messages.StringField(28)
+  zone = _messages.StringField(29)
 
 
 class ComputeEngineTargetDetails(_messages.Message):
@@ -1282,6 +1328,13 @@ class ComputeEngineTargetDetails(_messages.Message):
   Messages:
     LabelsValue: A map of labels to associate with the VM.
     MetadataValue: The metadata key/value pairs to assign to the VM.
+    ResourceManagerTagsValue: Optional. Resource manager tags to be bound to
+      the instance. Keys and values can be either in numeric format, such as
+      tagKeys/{tag_key_id} and tagValues/{tag_value_id} or in namespaced
+      format such as {org_id|project_id}/{tag_key_short_name} and
+      {tag_value_short_name}. For more details, see
+      https://cloud.google.com/resource-manager/docs/tags/tags-reating-and-
+      managing#creating_a_tag_binding
 
   Fields:
     adaptationModifiers: Optional. Modifiers to be used as configuration of
@@ -1324,6 +1377,13 @@ class ComputeEngineTargetDetails(_messages.Message):
     provisionedThroughput: Optional. The provisioned throughput of the disks
       in Megabytes per second (MiB). If not specified, the default value was
       used.
+    resourceManagerTags: Optional. Resource manager tags to be bound to the
+      instance. Keys and values can be either in numeric format, such as
+      tagKeys/{tag_key_id} and tagValues/{tag_value_id} or in namespaced
+      format such as {org_id|project_id}/{tag_key_short_name} and
+      {tag_value_short_name}. For more details, see
+      https://cloud.google.com/resource-manager/docs/tags/tags-reating-and-
+      managing#creating_a_tag_binding
     secureBoot: Defines whether the instance has Secure Boot enabled. This can
       be set to true only if the VM boot option is EFI.
     serviceAccount: The service account to associate the VM with.
@@ -1449,6 +1509,37 @@ class ComputeEngineTargetDetails(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ResourceManagerTagsValue(_messages.Message):
+    r"""Optional. Resource manager tags to be bound to the instance. Keys and
+    values can be either in numeric format, such as tagKeys/{tag_key_id} and
+    tagValues/{tag_value_id} or in namespaced format such as
+    {org_id|project_id}/{tag_key_short_name} and {tag_value_short_name}. For
+    more details, see https://cloud.google.com/resource-
+    manager/docs/tags/tags-reating-and-managing#creating_a_tag_binding
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        ResourceManagerTagsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        ResourceManagerTagsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ResourceManagerTagsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   adaptationModifiers = _messages.MessageField('AdaptationModifier', 1, repeated=True)
   additionalLicenses = _messages.StringField(2, repeated=True)
   appliedLicense = _messages.MessageField('AppliedLicense', 3)
@@ -1472,11 +1563,12 @@ class ComputeEngineTargetDetails(_messages.Message):
   project = _messages.StringField(21)
   provisionedIops = _messages.IntegerField(22)
   provisionedThroughput = _messages.IntegerField(23)
-  secureBoot = _messages.BooleanField(24)
-  serviceAccount = _messages.StringField(25)
-  storagePool = _messages.StringField(26)
-  vmName = _messages.StringField(27)
-  zone = _messages.StringField(28)
+  resourceManagerTags = _messages.MessageField('ResourceManagerTagsValue', 24)
+  secureBoot = _messages.BooleanField(25)
+  serviceAccount = _messages.StringField(26)
+  storagePool = _messages.StringField(27)
+  vmName = _messages.StringField(28)
+  zone = _messages.StringField(29)
 
 
 class ComputeScheduling(_messages.Message):
@@ -3443,8 +3535,8 @@ class PersistentDisk(_messages.Message):
   r"""Details of a created Persistent Disk.
 
   Fields:
-    diskUri: The URI of the Persistent Disk.
-    sourceDiskNumber: The ordinal number of the source VM disk.
+    diskUri: Output only. The URI of the Persistent Disk.
+    sourceDiskNumber: Output only. The ordinal number of the source VM disk.
   """
 
   diskUri = _messages.StringField(1)

@@ -396,6 +396,20 @@ class CloudFunctionInfo(_messages.Message):
   versionId = _messages.IntegerField(4)
 
 
+class CloudRunJobInfo(_messages.Message):
+  r"""For display only. Metadata associated with a Cloud Run job.
+
+  Fields:
+    displayName: Name of a Cloud Run job.
+    location: Location in which this job is deployed.
+    uri: URI of a Cloud Run job.
+  """
+
+  displayName = _messages.StringField(1)
+  location = _messages.StringField(2)
+  uri = _messages.StringField(3)
+
+
 class CloudRunRevisionEndpoint(_messages.Message):
   r"""Wrapper for Cloud Run revision attributes.
 
@@ -619,6 +633,7 @@ class DeliverInfo(_messages.Message):
       REDIS_INSTANCE: Target is a Redis Instance.
       REDIS_CLUSTER: Target is a Redis Cluster.
       GKE_POD: Target is a GKE Pod.
+      CLOUD_RUN_JOB: Target is a Cloud Run Job. Used only for return traces.
       DMS_PRIVATE_CONNECTION: Target is a DMS Private Connection. Used only
         for return traces.
       DATASTREAM_PRIVATE_CONNECTION: Target is a Datastream Private
@@ -643,8 +658,9 @@ class DeliverInfo(_messages.Message):
     REDIS_INSTANCE = 16
     REDIS_CLUSTER = 17
     GKE_POD = 18
-    DMS_PRIVATE_CONNECTION = 19
-    DATASTREAM_PRIVATE_CONNECTION = 20
+    CLOUD_RUN_JOB = 19
+    DMS_PRIVATE_CONNECTION = 20
+    DATASTREAM_PRIVATE_CONNECTION = 21
 
   googleServiceType = _messages.EnumField('GoogleServiceTypeValueValuesEnum', 1)
   ipAddress = _messages.StringField(2)
@@ -874,6 +890,8 @@ class DropInfo(_messages.Message):
         different region, but such a configuration is not supported.
       CLOUD_RUN_REVISION_NOT_READY: Packet sent from a Cloud Run revision that
         is not ready.
+      CLOUD_RUN_JOB_NOT_READY: Packet sent from a Cloud Run job that is not
+        ready.
       DROPPED_INSIDE_PSC_SERVICE_PRODUCER: Packet was dropped inside Private
         Service Connect service producer.
       LOAD_BALANCER_HAS_NO_PROXY_SUBNET: Packet sent to a load balancer, which
@@ -1046,46 +1064,47 @@ class DropInfo(_messages.Message):
     HYBRID_NEG_NON_DYNAMIC_ROUTE_MATCHED = 66
     HYBRID_NEG_NON_LOCAL_DYNAMIC_ROUTE_MATCHED = 67
     CLOUD_RUN_REVISION_NOT_READY = 68
-    DROPPED_INSIDE_PSC_SERVICE_PRODUCER = 69
-    LOAD_BALANCER_HAS_NO_PROXY_SUBNET = 70
-    CLOUD_NAT_NO_ADDRESSES = 71
-    ROUTING_LOOP = 72
-    DROPPED_INSIDE_GOOGLE_MANAGED_SERVICE = 73
-    LOAD_BALANCER_BACKEND_INVALID_NETWORK = 74
-    BACKEND_SERVICE_NAMED_PORT_NOT_DEFINED = 75
-    DESTINATION_IS_PRIVATE_NAT_IP_RANGE = 76
-    DROPPED_INSIDE_REDIS_INSTANCE_SERVICE = 77
-    REDIS_INSTANCE_UNSUPPORTED_PORT = 78
-    REDIS_INSTANCE_CONNECTING_FROM_PUPI_ADDRESS = 79
-    REDIS_INSTANCE_NO_ROUTE_TO_DESTINATION_NETWORK = 80
-    REDIS_INSTANCE_NO_EXTERNAL_IP = 81
-    REDIS_INSTANCE_UNSUPPORTED_PROTOCOL = 82
-    DROPPED_INSIDE_REDIS_CLUSTER_SERVICE = 83
-    REDIS_CLUSTER_UNSUPPORTED_PORT = 84
-    REDIS_CLUSTER_NO_EXTERNAL_IP = 85
-    REDIS_CLUSTER_UNSUPPORTED_PROTOCOL = 86
-    NO_ADVERTISED_ROUTE_TO_GCP_DESTINATION = 87
-    NO_TRAFFIC_SELECTOR_TO_GCP_DESTINATION = 88
-    NO_KNOWN_ROUTE_FROM_PEERED_NETWORK_TO_DESTINATION = 89
-    PRIVATE_NAT_TO_PSC_ENDPOINT_UNSUPPORTED = 90
-    PSC_PORT_MAPPING_PORT_MISMATCH = 91
-    PSC_PORT_MAPPING_WITHOUT_PSC_CONNECTION_UNSUPPORTED = 92
-    UNSUPPORTED_ROUTE_MATCHED_FOR_NAT64_DESTINATION = 93
-    TRAFFIC_FROM_HYBRID_ENDPOINT_TO_INTERNET_DISALLOWED = 94
-    NO_MATCHING_NAT64_GATEWAY = 95
-    NO_CONFIGURED_PRIVATE_NAT64_RULE = 96
-    LOAD_BALANCER_BACKEND_IP_VERSION_MISMATCH = 97
-    NO_KNOWN_ROUTE_FROM_NCC_NETWORK_TO_DESTINATION = 98
-    CLOUD_NAT_PROTOCOL_UNSUPPORTED = 99
-    L2_INTERCONNECT_UNSUPPORTED_PROTOCOL = 100
-    L2_INTERCONNECT_UNSUPPORTED_PORT = 101
-    L2_INTERCONNECT_DESTINATION_IP_MISMATCH = 102
-    NCC_ROUTE_WITHIN_HYBRID_SUBNET_UNSUPPORTED = 103
-    HYBRID_SUBNET_REGION_MISMATCH = 104
-    HYBRID_SUBNET_NO_ROUTE = 105
-    GKE_NETWORK_POLICY = 106
-    NO_VALID_ROUTE_FROM_GOOGLE_MANAGED_NETWORK_TO_DESTINATION = 107
-    PRIVATE_CONNECTION_NO_RUNNING_INSTANCE = 108
+    CLOUD_RUN_JOB_NOT_READY = 69
+    DROPPED_INSIDE_PSC_SERVICE_PRODUCER = 70
+    LOAD_BALANCER_HAS_NO_PROXY_SUBNET = 71
+    CLOUD_NAT_NO_ADDRESSES = 72
+    ROUTING_LOOP = 73
+    DROPPED_INSIDE_GOOGLE_MANAGED_SERVICE = 74
+    LOAD_BALANCER_BACKEND_INVALID_NETWORK = 75
+    BACKEND_SERVICE_NAMED_PORT_NOT_DEFINED = 76
+    DESTINATION_IS_PRIVATE_NAT_IP_RANGE = 77
+    DROPPED_INSIDE_REDIS_INSTANCE_SERVICE = 78
+    REDIS_INSTANCE_UNSUPPORTED_PORT = 79
+    REDIS_INSTANCE_CONNECTING_FROM_PUPI_ADDRESS = 80
+    REDIS_INSTANCE_NO_ROUTE_TO_DESTINATION_NETWORK = 81
+    REDIS_INSTANCE_NO_EXTERNAL_IP = 82
+    REDIS_INSTANCE_UNSUPPORTED_PROTOCOL = 83
+    DROPPED_INSIDE_REDIS_CLUSTER_SERVICE = 84
+    REDIS_CLUSTER_UNSUPPORTED_PORT = 85
+    REDIS_CLUSTER_NO_EXTERNAL_IP = 86
+    REDIS_CLUSTER_UNSUPPORTED_PROTOCOL = 87
+    NO_ADVERTISED_ROUTE_TO_GCP_DESTINATION = 88
+    NO_TRAFFIC_SELECTOR_TO_GCP_DESTINATION = 89
+    NO_KNOWN_ROUTE_FROM_PEERED_NETWORK_TO_DESTINATION = 90
+    PRIVATE_NAT_TO_PSC_ENDPOINT_UNSUPPORTED = 91
+    PSC_PORT_MAPPING_PORT_MISMATCH = 92
+    PSC_PORT_MAPPING_WITHOUT_PSC_CONNECTION_UNSUPPORTED = 93
+    UNSUPPORTED_ROUTE_MATCHED_FOR_NAT64_DESTINATION = 94
+    TRAFFIC_FROM_HYBRID_ENDPOINT_TO_INTERNET_DISALLOWED = 95
+    NO_MATCHING_NAT64_GATEWAY = 96
+    NO_CONFIGURED_PRIVATE_NAT64_RULE = 97
+    LOAD_BALANCER_BACKEND_IP_VERSION_MISMATCH = 98
+    NO_KNOWN_ROUTE_FROM_NCC_NETWORK_TO_DESTINATION = 99
+    CLOUD_NAT_PROTOCOL_UNSUPPORTED = 100
+    L2_INTERCONNECT_UNSUPPORTED_PROTOCOL = 101
+    L2_INTERCONNECT_UNSUPPORTED_PORT = 102
+    L2_INTERCONNECT_DESTINATION_IP_MISMATCH = 103
+    NCC_ROUTE_WITHIN_HYBRID_SUBNET_UNSUPPORTED = 104
+    HYBRID_SUBNET_REGION_MISMATCH = 105
+    HYBRID_SUBNET_NO_ROUTE = 106
+    GKE_NETWORK_POLICY = 107
+    NO_VALID_ROUTE_FROM_GOOGLE_MANAGED_NETWORK_TO_DESTINATION = 108
+    PRIVATE_CONNECTION_NO_RUNNING_INSTANCE = 109
 
   cause = _messages.EnumField('CauseValueValuesEnum', 1)
   destinationGeolocationCode = _messages.StringField(2)
@@ -3974,6 +3993,7 @@ class Step(_messages.Message):
     appEngineVersion: Display information of an App Engine service version.
     causesDrop: This is a step that leads to the final state Drop.
     cloudFunction: Display information of a Cloud Function.
+    cloudRunJob: Display information of a Cloud Run job.
     cloudRunRevision: Display information of a Cloud Run revision.
     cloudSqlInstance: Display information of a Cloud SQL instance.
     datastreamPrivateConnection: Display information of a Datastream Private
@@ -4070,6 +4090,8 @@ class Step(_messages.Message):
       START_FROM_CLOUD_RUN_REVISION: Initial state: packet originating from a
         Cloud Run revision. A CloudRunRevisionInfo is populated with starting
         revision information.
+      START_FROM_CLOUD_RUN_JOB: Initial state: packet originating from a Cloud
+        Run Job. A CloudRunJobInfo is populated with starting Job information.
       START_FROM_STORAGE_BUCKET: Initial state: packet originating from a
         Storage Bucket. Used only for return traces. The storage_bucket
         information is populated.
@@ -4155,84 +4177,86 @@ class Step(_messages.Message):
     START_FROM_CLOUD_FUNCTION = 10
     START_FROM_APP_ENGINE_VERSION = 11
     START_FROM_CLOUD_RUN_REVISION = 12
-    START_FROM_STORAGE_BUCKET = 13
-    START_FROM_PSC_PUBLISHED_SERVICE = 14
-    START_FROM_SERVERLESS_NEG = 15
-    START_FROM_DMS_PRIVATE_CONNECTION = 16
-    START_FROM_DATASTREAM_PRIVATE_CONNECTION = 17
-    APPLY_INGRESS_FIREWALL_RULE = 18
-    APPLY_EGRESS_FIREWALL_RULE = 19
-    APPLY_ROUTE = 20
-    APPLY_FORWARDING_RULE = 21
-    ANALYZE_LOAD_BALANCER_BACKEND = 22
-    SPOOFING_APPROVED = 23
-    ARRIVE_AT_INSTANCE = 24
-    ARRIVE_AT_INTERNAL_LOAD_BALANCER = 25
-    ARRIVE_AT_EXTERNAL_LOAD_BALANCER = 26
-    ARRIVE_AT_HYBRID_SUBNET = 27
-    ARRIVE_AT_VPN_GATEWAY = 28
-    ARRIVE_AT_VPN_TUNNEL = 29
-    ARRIVE_AT_INTERCONNECT_ATTACHMENT = 30
-    ARRIVE_AT_VPC_CONNECTOR = 31
-    ARRIVE_AT_GKE_POD = 32
-    DIRECT_VPC_EGRESS_CONNECTION = 33
-    SERVERLESS_EXTERNAL_CONNECTION = 34
-    NGFW_PACKET_INSPECTION = 35
-    NAT = 36
-    SKIP_GKE_POD_IP_MASQUERADING = 37
-    SKIP_GKE_INGRESS_NETWORK_POLICY = 38
-    SKIP_GKE_EGRESS_NETWORK_POLICY = 39
-    APPLY_INGRESS_GKE_NETWORK_POLICY = 40
-    APPLY_EGRESS_GKE_NETWORK_POLICY = 41
-    PROXY_CONNECTION = 42
-    DELIVER = 43
-    DROP = 44
-    FORWARD = 45
-    ABORT = 46
-    VIEWER_PERMISSION_MISSING = 47
+    START_FROM_CLOUD_RUN_JOB = 13
+    START_FROM_STORAGE_BUCKET = 14
+    START_FROM_PSC_PUBLISHED_SERVICE = 15
+    START_FROM_SERVERLESS_NEG = 16
+    START_FROM_DMS_PRIVATE_CONNECTION = 17
+    START_FROM_DATASTREAM_PRIVATE_CONNECTION = 18
+    APPLY_INGRESS_FIREWALL_RULE = 19
+    APPLY_EGRESS_FIREWALL_RULE = 20
+    APPLY_ROUTE = 21
+    APPLY_FORWARDING_RULE = 22
+    ANALYZE_LOAD_BALANCER_BACKEND = 23
+    SPOOFING_APPROVED = 24
+    ARRIVE_AT_INSTANCE = 25
+    ARRIVE_AT_INTERNAL_LOAD_BALANCER = 26
+    ARRIVE_AT_EXTERNAL_LOAD_BALANCER = 27
+    ARRIVE_AT_HYBRID_SUBNET = 28
+    ARRIVE_AT_VPN_GATEWAY = 29
+    ARRIVE_AT_VPN_TUNNEL = 30
+    ARRIVE_AT_INTERCONNECT_ATTACHMENT = 31
+    ARRIVE_AT_VPC_CONNECTOR = 32
+    ARRIVE_AT_GKE_POD = 33
+    DIRECT_VPC_EGRESS_CONNECTION = 34
+    SERVERLESS_EXTERNAL_CONNECTION = 35
+    NGFW_PACKET_INSPECTION = 36
+    NAT = 37
+    SKIP_GKE_POD_IP_MASQUERADING = 38
+    SKIP_GKE_INGRESS_NETWORK_POLICY = 39
+    SKIP_GKE_EGRESS_NETWORK_POLICY = 40
+    APPLY_INGRESS_GKE_NETWORK_POLICY = 41
+    APPLY_EGRESS_GKE_NETWORK_POLICY = 42
+    PROXY_CONNECTION = 43
+    DELIVER = 44
+    DROP = 45
+    FORWARD = 46
+    ABORT = 47
+    VIEWER_PERMISSION_MISSING = 48
 
   abort = _messages.MessageField('AbortInfo', 1)
   appEngineVersion = _messages.MessageField('AppEngineVersionInfo', 2)
   causesDrop = _messages.BooleanField(3)
   cloudFunction = _messages.MessageField('CloudFunctionInfo', 4)
-  cloudRunRevision = _messages.MessageField('CloudRunRevisionInfo', 5)
-  cloudSqlInstance = _messages.MessageField('CloudSQLInstanceInfo', 6)
-  datastreamPrivateConnection = _messages.MessageField('PrivateConnectionInfo', 7)
-  deliver = _messages.MessageField('DeliverInfo', 8)
-  description = _messages.StringField(9)
-  directVpcEgressConnection = _messages.MessageField('DirectVpcEgressConnectionInfo', 10)
-  dmsPrivateConnection = _messages.MessageField('PrivateConnectionInfo', 11)
-  drop = _messages.MessageField('DropInfo', 12)
-  endpoint = _messages.MessageField('EndpointInfo', 13)
-  firewall = _messages.MessageField('FirewallInfo', 14)
-  forward = _messages.MessageField('ForwardInfo', 15)
-  forwardingRule = _messages.MessageField('ForwardingRuleInfo', 16)
-  gkeMaster = _messages.MessageField('GKEMasterInfo', 17)
-  gkeNetworkPolicy = _messages.MessageField('GkeNetworkPolicyInfo', 18)
-  gkeNetworkPolicySkipped = _messages.MessageField('GkeNetworkPolicySkippedInfo', 19)
-  gkePod = _messages.MessageField('GkePodInfo', 20)
-  googleService = _messages.MessageField('GoogleServiceInfo', 21)
-  hybridSubnet = _messages.MessageField('HybridSubnetInfo', 22)
-  instance = _messages.MessageField('InstanceInfo', 23)
-  interconnectAttachment = _messages.MessageField('InterconnectAttachmentInfo', 24)
-  ipMasqueradingSkipped = _messages.MessageField('IpMasqueradingSkippedInfo', 25)
-  loadBalancer = _messages.MessageField('LoadBalancerInfo', 26)
-  loadBalancerBackendInfo = _messages.MessageField('LoadBalancerBackendInfo', 27)
-  nat = _messages.MessageField('NatInfo', 28)
-  network = _messages.MessageField('NetworkInfo', 29)
-  ngfwPacketInspection = _messages.MessageField('NgfwPacketInspectionInfo', 30)
-  projectId = _messages.StringField(31)
-  proxyConnection = _messages.MessageField('ProxyConnectionInfo', 32)
-  redisCluster = _messages.MessageField('RedisClusterInfo', 33)
-  redisInstance = _messages.MessageField('RedisInstanceInfo', 34)
-  route = _messages.MessageField('RouteInfo', 35)
-  serverlessExternalConnection = _messages.MessageField('ServerlessExternalConnectionInfo', 36)
-  serverlessNeg = _messages.MessageField('ServerlessNegInfo', 37)
-  state = _messages.EnumField('StateValueValuesEnum', 38)
-  storageBucket = _messages.MessageField('StorageBucketInfo', 39)
-  vpcConnector = _messages.MessageField('VpcConnectorInfo', 40)
-  vpnGateway = _messages.MessageField('VpnGatewayInfo', 41)
-  vpnTunnel = _messages.MessageField('VpnTunnelInfo', 42)
+  cloudRunJob = _messages.MessageField('CloudRunJobInfo', 5)
+  cloudRunRevision = _messages.MessageField('CloudRunRevisionInfo', 6)
+  cloudSqlInstance = _messages.MessageField('CloudSQLInstanceInfo', 7)
+  datastreamPrivateConnection = _messages.MessageField('PrivateConnectionInfo', 8)
+  deliver = _messages.MessageField('DeliverInfo', 9)
+  description = _messages.StringField(10)
+  directVpcEgressConnection = _messages.MessageField('DirectVpcEgressConnectionInfo', 11)
+  dmsPrivateConnection = _messages.MessageField('PrivateConnectionInfo', 12)
+  drop = _messages.MessageField('DropInfo', 13)
+  endpoint = _messages.MessageField('EndpointInfo', 14)
+  firewall = _messages.MessageField('FirewallInfo', 15)
+  forward = _messages.MessageField('ForwardInfo', 16)
+  forwardingRule = _messages.MessageField('ForwardingRuleInfo', 17)
+  gkeMaster = _messages.MessageField('GKEMasterInfo', 18)
+  gkeNetworkPolicy = _messages.MessageField('GkeNetworkPolicyInfo', 19)
+  gkeNetworkPolicySkipped = _messages.MessageField('GkeNetworkPolicySkippedInfo', 20)
+  gkePod = _messages.MessageField('GkePodInfo', 21)
+  googleService = _messages.MessageField('GoogleServiceInfo', 22)
+  hybridSubnet = _messages.MessageField('HybridSubnetInfo', 23)
+  instance = _messages.MessageField('InstanceInfo', 24)
+  interconnectAttachment = _messages.MessageField('InterconnectAttachmentInfo', 25)
+  ipMasqueradingSkipped = _messages.MessageField('IpMasqueradingSkippedInfo', 26)
+  loadBalancer = _messages.MessageField('LoadBalancerInfo', 27)
+  loadBalancerBackendInfo = _messages.MessageField('LoadBalancerBackendInfo', 28)
+  nat = _messages.MessageField('NatInfo', 29)
+  network = _messages.MessageField('NetworkInfo', 30)
+  ngfwPacketInspection = _messages.MessageField('NgfwPacketInspectionInfo', 31)
+  projectId = _messages.StringField(32)
+  proxyConnection = _messages.MessageField('ProxyConnectionInfo', 33)
+  redisCluster = _messages.MessageField('RedisClusterInfo', 34)
+  redisInstance = _messages.MessageField('RedisInstanceInfo', 35)
+  route = _messages.MessageField('RouteInfo', 36)
+  serverlessExternalConnection = _messages.MessageField('ServerlessExternalConnectionInfo', 37)
+  serverlessNeg = _messages.MessageField('ServerlessNegInfo', 38)
+  state = _messages.EnumField('StateValueValuesEnum', 39)
+  storageBucket = _messages.MessageField('StorageBucketInfo', 40)
+  vpcConnector = _messages.MessageField('VpcConnectorInfo', 41)
+  vpnGateway = _messages.MessageField('VpnGatewayInfo', 42)
+  vpnTunnel = _messages.MessageField('VpnTunnelInfo', 43)
 
 
 class StorageBucketInfo(_messages.Message):

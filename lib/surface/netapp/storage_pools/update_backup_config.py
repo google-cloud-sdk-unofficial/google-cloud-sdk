@@ -21,11 +21,11 @@ from googlecloudsdk.core import log
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateBackupConfig(base.Command):
-  """A command to update backup config of a volume in an ONTAP-mode Storage Pool."""
+  """Update backup config of a volume in an ONTAP-mode Storage Pool."""
 
-  _RELEASE_TRACK = base.ReleaseTrack.BETA
+  _RELEASE_TRACK = base.ReleaseTrack.GA
 
   detailed_help = {
       'DESCRIPTION': (
@@ -81,8 +81,15 @@ class UpdateBackupConfig(base.Command):
     return result
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBackupConfigBeta(UpdateBackupConfig):
+  """Update backup config of a volume in an ONTAP-mode Storage Pool."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.BETA
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateBackupConfigAlpha(UpdateBackupConfig):
+class UpdateBackupConfigAlpha(UpdateBackupConfigBeta):
   """Update backup config of a volume in an ONTAP-mode Storage Pool."""
 
   _RELEASE_TRACK = base.ReleaseTrack.ALPHA

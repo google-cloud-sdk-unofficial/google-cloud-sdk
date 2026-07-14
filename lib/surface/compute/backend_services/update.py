@@ -50,7 +50,19 @@ def AddIapFlag(parser):
       values will not be modified. For instance, if IAP is enabled,
       '--iap=disabled' will disable IAP, and a subsequent '--iap=enabled' will
       then enable it with the same OAuth2 client configuration as the first
-      time it was enabled. See
+      time it was enabled.
+
+      To clear the OAuth2 client ID and secret, set their values to a single
+      space character (e.g., '--iap=enabled,oauth2-client-id=" ",oauth2-client-secret=" "').
+      Setting them to empty strings will result in an error.
+
+      Example output of `gcloud compute backend-services describe` after clearing:
+
+          iap:
+            enabled: true
+            oauth2ClientId: ' '
+
+      See
       https://cloud.google.com/iap/ for more information about this feature.
       """)
 

@@ -30,6 +30,7 @@ items:
           enum: [GA, BETA, ALPHA, PREVIEW]
       is_python_command:
         type: boolean
+
       hints:
         type: object
         description: >
@@ -41,7 +42,21 @@ items:
           idempotent: {type: boolean}
           open_world: {type: boolean}
         additionalProperties: false
-    required: [release_tracks, hints]
+
+      guidance:
+        type: object
+        description: >
+          Agent-focused best practices, prerequisites, and safety guidelines. See
+          go/gcloud-guidance.
+        properties:
+          content:
+            type: string
+            description: >
+              Static help text content.
+        required: [content]
+        additionalProperties: false
+
+    required: [release_tracks]
     additionalProperties: false
   else:
     additionalProperties: true

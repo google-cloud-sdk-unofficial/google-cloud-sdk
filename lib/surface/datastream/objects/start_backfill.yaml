@@ -8,6 +8,10 @@ help_text:
 
       $ {command} my-object --stream=my-stream --location=us-central1
 
+    To start a stream object backfill job with a WHERE clause, run:
+
+      $ {command} my-object --stream=my-stream --location=us-central1 --sql-where-clause="t.key1 = 'value1'"
+
 request:
   collection: datastream.projects.locations.streams.objects
   method: startBackfillJob
@@ -19,3 +23,18 @@ arguments:
     # The following should point to the resource argument definition under your
     # surface's command_lib directory:
     spec: !REF googlecloudsdk.command_lib.datastream.resources:stream_object
+
+  params:
+  - group:
+      help_text: Optional event filter.
+      params:
+      - group:
+          mutex: true
+          params:
+          - arg_name: sql-where-clause
+            api_field: startBackfillJobRequest.eventFilter.sqlWhereClause
+            help_text: |
+              A SQL-query WHERE clause selecting which data should be included,
+              not including the "WHERE" keyword itself.
+              e.g., `t.key1 = 'value1' AND t.key2 = 'value2'`.
+              Only supported for SQL sources.

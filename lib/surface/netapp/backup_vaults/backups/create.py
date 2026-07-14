@@ -29,7 +29,7 @@ class Create(base.CreateCommand):
   """Create a Cloud NetApp Backup."""
 
   _RELEASE_TRACK = base.ReleaseTrack.GA
-  _support_ontap_source = False
+  _support_ontap_source = True
 
   detailed_help = {
       'DESCRIPTION': """\
@@ -80,8 +80,3 @@ class CreateBeta(Create):
   """Create a Cloud NetApp Backup."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
-  _support_ontap_source = True
-
-  @classmethod
-  def Args(cls, parser):
-    backups_flags.AddBackupCreateArgs(parser, cls._support_ontap_source)

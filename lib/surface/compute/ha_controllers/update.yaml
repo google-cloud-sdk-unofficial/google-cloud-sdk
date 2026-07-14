@@ -41,4 +41,4 @@
         - arg_name: failover-initiation
           api_field: haControllerResource.failoverInitiation
           help_text: |
-            Changes the failover trigger between AUTOMATIC and MANUAL_ONLY.
+            Changes the failover trigger between automatic and manual-only.

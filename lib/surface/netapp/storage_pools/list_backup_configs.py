@@ -24,11 +24,11 @@ from googlecloudsdk.core import properties
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class ListBackupConfigs(base.ListCommand):
-  """A command to list backup configurations for all volumes in an ONTAP-mode Storage Pool."""
+  """List backup configurations for all volumes in an ONTAP-mode Storage Pool."""
 
-  _RELEASE_TRACK = base.ReleaseTrack.BETA
+  _RELEASE_TRACK = base.ReleaseTrack.GA
 
   detailed_help = {
       'DESCRIPTION': textwrap.dedent("""\
@@ -57,8 +57,15 @@ class ListBackupConfigs(base.ListCommand):
     return client.ListBackupConfigs(storagepool_ref, limit=args.limit)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBackupConfigsBeta(ListBackupConfigs):
+  """List backup configurations for all volumes in an ONTAP-mode Storage Pool."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.BETA
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListBackupConfigsAlpha(ListBackupConfigs):
-  """A command to list backup configurations for all volumes in an ONTAP-mode Storage Pool."""
+class ListBackupConfigsAlpha(ListBackupConfigsBeta):
+  """List backup configurations for all volumes in an ONTAP-mode Storage Pool."""
 
   _RELEASE_TRACK = base.ReleaseTrack.ALPHA

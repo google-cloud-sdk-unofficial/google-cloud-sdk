@@ -22,7 +22,9 @@ from googlecloudsdk.command_lib.auth import auth_util as auth_command_util
 from googlecloudsdk.command_lib.auth import flags as auth_flags
 from googlecloudsdk.command_lib.config import config_helper
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import requests
 from googlecloudsdk.core.configurations import named_configs
+from googlecloudsdk.core.credentials import store
 
 
 @base.DefaultUniverseOnly
@@ -103,6 +105,15 @@ class ConfigurationHelper(base.Command):
         force_refresh=args.force_auth_refresh,
         min_expiry='{}'.format(args.min_expiry),
     )
+
+    if hasattr(cred, 'regional_access_boundary') and hasattr(
+        cred, '_maybe_start_regional_access_boundary_refresh'
+    ):
+      if hasattr(cred, '_set_blocking_regional_access_boundary_lookup'):
+        cred._set_blocking_regional_access_boundary_lookup()  # pylint: disable=protected-access
+      request_client = requests.GoogleAuthRequest()
+      cred._maybe_start_regional_access_boundary_refresh(request_client, '')  # pylint: disable=protected-access
+      store.Store(cred)
 
     config_name = named_configs.ConfigurationStore.ActiveConfig().name
     props = properties.VALUES.AllValues()

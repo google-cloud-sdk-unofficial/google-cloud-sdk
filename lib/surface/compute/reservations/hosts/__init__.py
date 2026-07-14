@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2016 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,4 +12,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Command group for Compute Engine reservation hosts."""
 
+from googlecloudsdk.calliope import base
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
+class Hosts(base.Group):
+  """Read Compute Engine reservation hosts."""
+
+
+Hosts.detailed_help = {
+    'DESCRIPTION': (
+        """
+        Read Compute Engine reservation hosts.
+    """
+    ),
+}

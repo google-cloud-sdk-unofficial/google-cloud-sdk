@@ -2133,11 +2133,12 @@ class DataprocProjectsLocationsBatchesListRequest(_messages.Message):
       filter is a logical expression constraining the values of various fields
       in each batch resource. Filters are case sensitive, and may contain
       multiple clauses combined with logical operators (AND/OR). Supported
-      fields are batch_id, batch_uuid, state, create_time, and labels.e.g.
-      state = RUNNING and create_time < "2023-01-01T00:00:00Z" filters for
-      batches in state RUNNING that were created before 2023-01-01. state =
-      RUNNING and labels.environment=production filters for batches in state
-      in a RUNNING state that have a production environment label.See
+      fields: * batch_id * batch_uuid * state * create_time * labels *
+      runtime_info.cohort_info.cohort e.g. state = RUNNING and create_time <
+      "2023-01-01T00:00:00Z" filters for batches in state RUNNING that were
+      created before 2023-01-01. state = RUNNING and
+      labels.environment=production filters for batches in state in a RUNNING
+      state that have a production environment label.See
       https://google.aip.dev/assets/misc/ebnf-filtering.txt for a detailed
       description of the filter syntax and a list of supported comparisons.
     orderBy: Optional. Field(s) on which to sort the list of batches.Currently
@@ -6083,6 +6084,12 @@ class GkeNodeConfig(_messages.Message):
       and Spot preemptible nodes cannot be used in a node pool with the
       CONTROLLER role or in the DEFAULT node pool if the CONTROLLER role is
       not assigned (the DEFAULT node pool will assume the CONTROLLER role).
+    serviceAccount: Optional. Specifies the service account
+      (https://cloud.google.com/dataproc/docs/guides/dpgke/dataproc-gke-iam)
+      to be used by the node pools. Specify the email address of the service
+      account or its full resource name.Format:
+      projects/{project}/serviceAccounts/{service_account_email} or
+      {service_account_email}.
     spot: Optional. Whether the nodes are created as Spot VM instances
       (https://cloud.google.com/compute/docs/instances/spot). Spot VMs are the
       latest update to legacy preemptible VMs. Spot VMs do not have a maximum
@@ -6099,7 +6106,8 @@ class GkeNodeConfig(_messages.Message):
   machineType = _messages.StringField(5)
   minCpuPlatform = _messages.StringField(6)
   preemptible = _messages.BooleanField(7)
-  spot = _messages.BooleanField(8)
+  serviceAccount = _messages.StringField(8)
+  spot = _messages.BooleanField(9)
 
 
 class GkeNodePoolAcceleratorConfig(_messages.Message):

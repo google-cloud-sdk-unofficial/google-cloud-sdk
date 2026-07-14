@@ -55,6 +55,12 @@ class CommitResponse(proto.Message):
             ``IsolationLevel.REPEATABLE_READ``, then the snapshot
             timestamp is the timestamp at which all reads in the
             transaction ran. This timestamp is never returned.
+        isolation_level (googlecloudsdk.generated_clients.gapic_clients.spanner_v1.types.TransactionOptions.IsolationLevel):
+            The isolation level used for the read-write
+            transaction.
+        read_lock_mode (googlecloudsdk.generated_clients.gapic_clients.spanner_v1.types.TransactionOptions.ReadWrite.ReadLockMode):
+            The read lock mode used for the read-write
+            transaction.
     """
 
     class CommitStats(proto.Message):
@@ -98,6 +104,16 @@ class CommitResponse(proto.Message):
         proto.MESSAGE,
         number=5,
         message=timestamp_pb2.Timestamp,
+    )
+    isolation_level: transaction.TransactionOptions.IsolationLevel = proto.Field(
+        proto.ENUM,
+        number=7,
+        enum=transaction.TransactionOptions.IsolationLevel,
+    )
+    read_lock_mode: transaction.TransactionOptions.ReadWrite.ReadLockMode = proto.Field(
+        proto.ENUM,
+        number=8,
+        enum=transaction.TransactionOptions.ReadWrite.ReadLockMode,
     )
 
 

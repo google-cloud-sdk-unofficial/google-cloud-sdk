@@ -15,13 +15,13 @@ class AggregatedData(_messages.Message):
   r"""Aggregated data for the RegistryBook.
 
   Fields:
-    customRangesCount: Output only. Number of custom ranges in the
+    customRangesCount: Output only. Number of CustomRanges in the
       RegistryBook.
-    customRealmsCount: Output only. Number of custom realms in the
+    customRealmsCount: Output only. Number of custom Realms in the
       RegistryBook.
-    discoveredRangesCount: Output only. Number of discovered ranges in the
+    discoveredRangesCount: Output only. Number of DiscoveredRanges in the
       RegistryBook.
-    discoveredRealmsCount: Output only. Number of discovered realms in the
+    discoveredRealmsCount: Output only. Number of discovered Realms in the
       RegistryBook.
     uniqueScopesCount: Output only. Number of scopes unique to the
       RegistryBook.
@@ -35,11 +35,12 @@ class AggregatedData(_messages.Message):
 
 
 class Attribute(_messages.Message):
-  r"""Message describing Attribute object
+  r"""A key-value pair representing a custom attribute associated with a
+  resource.
 
   Fields:
-    key: Required. Key of attribute
-    value: Required. Value of attribute
+    key: Required. The key of the attribute.
+    value: Required. The value of the attribute.
   """
 
   key = _messages.StringField(1)
@@ -51,7 +52,8 @@ class CancelOperationRequest(_messages.Message):
 
 
 class CheckAvailabilityIpamAdminScopesResponse(_messages.Message):
-  r"""Message for response to checking the availability of IpamAdminScopes
+  r"""Response message for the
+  CloudNumberRegistry.CheckAvailabilityIpamAdminScopes method.
 
   Fields:
     scopeAvailabilities: The details of the requested scopes.
@@ -61,7 +63,8 @@ class CheckAvailabilityIpamAdminScopesResponse(_messages.Message):
 
 
 class CleanupIpamAdminScopeRequest(_messages.Message):
-  r"""Message for cleaning up a IpamAdminScope
+  r"""Request message for the CloudNumberRegistry.CleanupIpamAdminScope
+  method.
 
   Fields:
     requestId: Optional. An optional request ID to identify requests. Specify
@@ -85,8 +88,10 @@ class CloudnumberregistryProjectsLocationsCustomRangesCreateRequest(_messages.Me
 
   Fields:
     customRange: A CustomRange resource to be passed as the request body.
-    customRangeId: Required. Id of the requesting object.
-    parent: Required. Value for parent.
+    customRangeId: Required. The ID to use for the CustomRange, which will
+      become the final segment of the resource name.
+    parent: Required. The parent resource name where the CustomRange will be
+      created.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
       will know to ignore the request if it has already been completed. The
@@ -111,7 +116,7 @@ class CloudnumberregistryProjectsLocationsCustomRangesDeleteRequest(_messages.Me
 
   Fields:
     force: Optional. If set to true, all associated resources will be deleted.
-    name: Required. Name of the resource
+    name: Required. The resource name of the CustomRange to delete.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
       will know to ignore the request if it has already been completed. The
@@ -138,7 +143,7 @@ class CloudnumberregistryProjectsLocationsCustomRangesFindFreeIpRangesRequest(_m
   Fields:
     cidrPrefixLength: Required. The prefix length of the free IP ranges to
       find.
-    name: Required. Name of the CustomRange.
+    name: Required. The resource name of the CustomRange to search within.
     rangeCount: Optional. The number of free IP ranges to find.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
@@ -163,7 +168,7 @@ class CloudnumberregistryProjectsLocationsCustomRangesGetRequest(_messages.Messa
   r"""A CloudnumberregistryProjectsLocationsCustomRangesGetRequest object.
 
   Fields:
-    name: Required. Name of the resource
+    name: Required. The resource name of the CustomRange to retrieve.
   """
 
   name = _messages.StringField(1, required=True)
@@ -173,13 +178,14 @@ class CloudnumberregistryProjectsLocationsCustomRangesListRequest(_messages.Mess
   r"""A CloudnumberregistryProjectsLocationsCustomRangesListRequest object.
 
   Fields:
-    filter: Optional. Filtering results.
+    filter: Optional. Filter expression to filter the results.
     orderBy: Optional. Hint for how to order the results.
     pageSize: Optional. Requested page size. Server may return fewer items
       than requested. If unspecified, server will pick an appropriate default.
     pageToken: Optional. A token identifying a page of results the server
       should return.
-    parent: Required. Parent value for ListCustomRangesRequest
+    parent: Required. The parent resource name, for example
+      `projects/*/locations/*`.
   """
 
   filter = _messages.StringField(1)
@@ -194,7 +200,9 @@ class CloudnumberregistryProjectsLocationsCustomRangesPatchRequest(_messages.Mes
 
   Fields:
     customRange: A CustomRange resource to be passed as the request body.
-    name: Required. Identifier. name of resource
+    name: Required. Identifier. The resource name of the CustomRange, in the
+      format
+      `projects/{project}/locations/{location}/customRanges/{custom_range}`.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
       will know to ignore the request if it has already been completed. The
@@ -224,7 +232,7 @@ class CloudnumberregistryProjectsLocationsCustomRangesShowUtilizationRequest(_me
   object.
 
   Fields:
-    name: Required. Name of the resource
+    name: Required. The resource name of the CustomRange.
   """
 
   name = _messages.StringField(1, required=True)
@@ -238,7 +246,7 @@ class CloudnumberregistryProjectsLocationsDiscoveredRangesFindFreeIpRangesReques
   Fields:
     cidrPrefixLength: Required. The prefix length of the free IP ranges to
       find.
-    name: Required. Name of the DiscoveredRange.
+    name: Required. The resource name of the DiscoveredRange to search within.
     rangeCount: Optional. The number of free IP ranges to find.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
@@ -263,7 +271,7 @@ class CloudnumberregistryProjectsLocationsDiscoveredRangesGetRequest(_messages.M
   r"""A CloudnumberregistryProjectsLocationsDiscoveredRangesGetRequest object.
 
   Fields:
-    name: Required. Name of the resource
+    name: Required. The resource name of the DiscoveredRange to retrieve.
   """
 
   name = _messages.StringField(1, required=True)
@@ -274,13 +282,14 @@ class CloudnumberregistryProjectsLocationsDiscoveredRangesListRequest(_messages.
   object.
 
   Fields:
-    filter: Optional. Filtering results.
+    filter: Optional. Filter expression to filter the results.
     orderBy: Optional. Hint for how to order the results.
     pageSize: Optional. Requested page size. Server may return fewer items
       than requested. If unspecified, server will pick an appropriate default.
     pageToken: Optional. A token identifying a page of results the server
       should return.
-    parent: Required. Parent value for ListDiscoveredRangesRequest
+    parent: Required. The parent resource name, for example
+      `projects/*/locations/*`.
   """
 
   filter = _messages.StringField(1)
@@ -296,7 +305,7 @@ class CloudnumberregistryProjectsLocationsDiscoveredRangesShowUtilizationRequest
   object.
 
   Fields:
-    name: Required. Name of the resource
+    name: Required. The resource name of the DiscoveredRange.
   """
 
   name = _messages.StringField(1, required=True)
@@ -318,8 +327,9 @@ class CloudnumberregistryProjectsLocationsIpamAdminScopesCheckAvailabilityReques
   object.
 
   Fields:
-    parent: Required. Parent value for the IpamAdminScopes.
-    scopes: Required. The scopes of the IpamAdminScopes to look for.
+    parent: Required. The parent resource name, for example
+      `projects/*/locations/*`.
+    scopes: Required. The administrative scopes to check for availability.
   """
 
   parent = _messages.StringField(1, required=True)
@@ -333,7 +343,7 @@ class CloudnumberregistryProjectsLocationsIpamAdminScopesCleanupRequest(_message
   Fields:
     cleanupIpamAdminScopeRequest: A CleanupIpamAdminScopeRequest resource to
       be passed as the request body.
-    name: Required. Name of the resource
+    name: Required. The resource name of the IpamAdminScope to clean up.
   """
 
   cleanupIpamAdminScopeRequest = _messages.MessageField('CleanupIpamAdminScopeRequest', 1)
@@ -347,8 +357,10 @@ class CloudnumberregistryProjectsLocationsIpamAdminScopesCreateRequest(_messages
   Fields:
     ipamAdminScope: A IpamAdminScope resource to be passed as the request
       body.
-    ipamAdminScopeId: Required. Id of the requesting object.
-    parent: Required. Value for parent.
+    ipamAdminScopeId: Required. The ID to use for the IpamAdminScope, which
+      will become the final segment of the resource name.
+    parent: Required. The parent resource name where the IpamAdminScope will
+      be created.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
       will know to ignore the request if it has already been completed. The
@@ -374,7 +386,7 @@ class CloudnumberregistryProjectsLocationsIpamAdminScopesDeleteRequest(_messages
 
   Fields:
     force: Optional. If set to true, all associated resources will be deleted.
-    name: Required. Name of the resource
+    name: Required. The resource name of the IpamAdminScope to delete.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
       will know to ignore the request if it has already been completed. The
@@ -400,7 +412,7 @@ class CloudnumberregistryProjectsLocationsIpamAdminScopesDisableRequest(_message
   Fields:
     disableIpamAdminScopeRequest: A DisableIpamAdminScopeRequest resource to
       be passed as the request body.
-    name: Required. Name of the resource
+    name: Required. The resource name of the IpamAdminScope to disable.
   """
 
   disableIpamAdminScopeRequest = _messages.MessageField('DisableIpamAdminScopeRequest', 1)
@@ -411,7 +423,7 @@ class CloudnumberregistryProjectsLocationsIpamAdminScopesGetRequest(_messages.Me
   r"""A CloudnumberregistryProjectsLocationsIpamAdminScopesGetRequest object.
 
   Fields:
-    name: Required. Name of the resource
+    name: Required. The resource name of the IpamAdminScope to retrieve.
   """
 
   name = _messages.StringField(1, required=True)
@@ -421,13 +433,14 @@ class CloudnumberregistryProjectsLocationsIpamAdminScopesListRequest(_messages.M
   r"""A CloudnumberregistryProjectsLocationsIpamAdminScopesListRequest object.
 
   Fields:
-    filter: Optional. Filtering results
-    orderBy: Optional. Hint for how to order the results
+    filter: Optional. Filter expression to filter the results.
+    orderBy: Optional. Hint for how to order the results.
     pageSize: Optional. Requested page size. Server may return fewer items
       than requested. If unspecified, server will pick an appropriate default.
     pageToken: Optional. A token identifying a page of results the server
       should return.
-    parent: Required. Parent value for ListIpamAdminScopesRequest
+    parent: Required. The parent resource name, for example
+      `projects/*/locations/*`.
   """
 
   filter = _messages.StringField(1)
@@ -444,7 +457,7 @@ class CloudnumberregistryProjectsLocationsIpamAdminScopesPatchRequest(_messages.
   Fields:
     ipamAdminScope: A IpamAdminScope resource to be passed as the request
       body.
-    name: Required. Identifier. name of resource
+    name: Required. Identifier. The resource name of the IpamAdminScope.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
       will know to ignore the request if it has already been completed. The
@@ -553,9 +566,11 @@ class CloudnumberregistryProjectsLocationsRealmsCreateRequest(_messages.Message)
   r"""A CloudnumberregistryProjectsLocationsRealmsCreateRequest object.
 
   Fields:
-    parent: Required. Value for parent.
+    parent: Required. The parent resource name where the Realm will be
+      created.
     realm: A Realm resource to be passed as the request body.
-    realmId: Required. Id of the requesting object.
+    realmId: Required. The ID to use for the Realm, which will become the
+      final segment of the resource name.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
       will know to ignore the request if it has already been completed. The
@@ -574,7 +589,7 @@ class CloudnumberregistryProjectsLocationsRealmsDeleteRequest(_messages.Message)
 
   Fields:
     force: Optional. If set to true, all associated resources will be deleted.
-    name: Required. Name of the resource
+    name: Required. The resource name of the Realm to delete.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
       will know to ignore the request if it has already been completed. The
@@ -591,15 +606,15 @@ class CloudnumberregistryProjectsLocationsRealmsGetRequest(_messages.Message):
   r"""A CloudnumberregistryProjectsLocationsRealmsGetRequest object.
 
   Enums:
-    ViewValueValuesEnum: Optional. The view of the Realm.
+    ViewValueValuesEnum: Optional. The view of the Realm to retrieve.
 
   Fields:
-    name: Required. Name of the resource
-    view: Optional. The view of the Realm.
+    name: Required. The resource name of the Realm to retrieve.
+    view: Optional. The view of the Realm to retrieve.
   """
 
   class ViewValueValuesEnum(_messages.Enum):
-    r"""Optional. The view of the Realm.
+    r"""Optional. The view of the Realm to retrieve.
 
     Values:
       REALM_VIEW_UNSPECIFIED: Unspecified view. Defaults to BASIC.
@@ -621,21 +636,22 @@ class CloudnumberregistryProjectsLocationsRealmsListRequest(_messages.Message):
   r"""A CloudnumberregistryProjectsLocationsRealmsListRequest object.
 
   Enums:
-    ViewValueValuesEnum: Optional. The view of the Realm.
+    ViewValueValuesEnum: Optional. The view of the Realm to retrieve.
 
   Fields:
-    filter: Optional. Filtering results
-    orderBy: Optional. Hint for how to order the results
+    filter: Optional. Filter expression to filter the results.
+    orderBy: Optional. Hint for how to order the results.
     pageSize: Optional. Requested page size. Server may return fewer items
       than requested. If unspecified, server will pick an appropriate default.
     pageToken: Optional. A token identifying a page of results the server
       should return.
-    parent: Required. Parent value for ListRealmsRequest
-    view: Optional. The view of the Realm.
+    parent: Required. The parent resource name, for example
+      `projects/*/locations/*`.
+    view: Optional. The view of the Realm to retrieve.
   """
 
   class ViewValueValuesEnum(_messages.Enum):
-    r"""Optional. The view of the Realm.
+    r"""Optional. The view of the Realm to retrieve.
 
     Values:
       REALM_VIEW_UNSPECIFIED: Unspecified view. Defaults to BASIC.
@@ -661,7 +677,7 @@ class CloudnumberregistryProjectsLocationsRealmsPatchRequest(_messages.Message):
   r"""A CloudnumberregistryProjectsLocationsRealmsPatchRequest object.
 
   Fields:
-    name: Required. Identifier. Unique name/ID of the realm
+    name: Required. Identifier. The resource name of the Realm.
     realm: A Realm resource to be passed as the request body.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
@@ -682,9 +698,11 @@ class CloudnumberregistryProjectsLocationsRegistryBooksCreateRequest(_messages.M
   r"""A CloudnumberregistryProjectsLocationsRegistryBooksCreateRequest object.
 
   Fields:
-    parent: Required. Value for parent.
+    parent: Required. The parent resource name where the RegistryBook will be
+      created.
     registryBook: A RegistryBook resource to be passed as the request body.
-    registryBookId: Required. Id of the requesting object.
+    registryBookId: Required. The ID to use for the RegistryBook, which will
+      become the final segment of the resource name.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
       will know to ignore the request if it has already been completed. The
@@ -709,7 +727,7 @@ class CloudnumberregistryProjectsLocationsRegistryBooksDeleteRequest(_messages.M
 
   Fields:
     force: Optional. If set to true, all associated resources will be deleted.
-    name: Required. Name of the resource
+    name: Required. The resource name of the RegistryBook to delete.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
       will know to ignore the request if it has already been completed. The
@@ -732,15 +750,15 @@ class CloudnumberregistryProjectsLocationsRegistryBooksGetRequest(_messages.Mess
   r"""A CloudnumberregistryProjectsLocationsRegistryBooksGetRequest object.
 
   Enums:
-    ViewValueValuesEnum: Optional. The view of the RegistryBook.
+    ViewValueValuesEnum: Optional. The view of the RegistryBook to retrieve.
 
   Fields:
-    name: Required. Name of the resource
-    view: Optional. The view of the RegistryBook.
+    name: Required. The resource name of the RegistryBook to retrieve.
+    view: Optional. The view of the RegistryBook to retrieve.
   """
 
   class ViewValueValuesEnum(_messages.Enum):
-    r"""Optional. The view of the RegistryBook.
+    r"""Optional. The view of the RegistryBook to retrieve.
 
     Values:
       REGISTRY_BOOK_VIEW_UNSPECIFIED: Unspecified view. Defaults to BASIC.
@@ -762,21 +780,22 @@ class CloudnumberregistryProjectsLocationsRegistryBooksListRequest(_messages.Mes
   r"""A CloudnumberregistryProjectsLocationsRegistryBooksListRequest object.
 
   Enums:
-    ViewValueValuesEnum: Optional. The view of the RegistryBook.
+    ViewValueValuesEnum: Optional. The view of the RegistryBook to retrieve.
 
   Fields:
-    filter: Optional. Filtering results
-    orderBy: Optional. Hint for how to order the results
+    filter: Optional. Filter expression to filter the results.
+    orderBy: Optional. Hint for how to order the results.
     pageSize: Optional. Requested page size. Server may return fewer items
       than requested. If unspecified, server will pick an appropriate default.
     pageToken: Optional. A token identifying a page of results the server
       should return.
-    parent: Required. Parent value for ListRegistryBooksRequest
-    view: Optional. The view of the RegistryBook.
+    parent: Required. The parent resource name, for example
+      `projects/*/locations/*`.
+    view: Optional. The view of the RegistryBook to retrieve.
   """
 
   class ViewValueValuesEnum(_messages.Enum):
-    r"""Optional. The view of the RegistryBook.
+    r"""Optional. The view of the RegistryBook to retrieve.
 
     Values:
       REGISTRY_BOOK_VIEW_UNSPECIFIED: Unspecified view. Defaults to BASIC.
@@ -802,7 +821,7 @@ class CloudnumberregistryProjectsLocationsRegistryBooksPatchRequest(_messages.Me
   r"""A CloudnumberregistryProjectsLocationsRegistryBooksPatchRequest object.
 
   Fields:
-    name: Required. Identifier. name of resource
+    name: Required. Identifier. The resource name of the RegistryBook.
     registryBook: A RegistryBook resource to be passed as the request body.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
@@ -834,7 +853,7 @@ class CloudnumberregistryProjectsLocationsRegistryBooksSearchIpResourcesRequest(
   object.
 
   Fields:
-    name: Required. The name of the RegistryBook to search in.
+    name: Required. The resource name of the RegistryBook to search in.
     searchIpResourcesRequest: A SearchIpResourcesRequest resource to be passed
       as the request body.
   """
@@ -844,35 +863,40 @@ class CloudnumberregistryProjectsLocationsRegistryBooksSearchIpResourcesRequest(
 
 
 class CustomRange(_messages.Message):
-  r"""Message describing CustomRange object
+  r"""A CustomRange represents a user-defined IP address range.
 
   Messages:
-    LabelsValue: Optional. Labels as key value pairs
+    LabelsValue: Optional. User-defined labels.
 
   Fields:
     attributes: Optional. The attributes of the CustomRange.
-    description: Optional. Description of the CustomRange.
+    description: Optional. The description of the CustomRange.
     ipv4CidrRange: Optional. The IPv4 CIDR range of the CustomRange.
     ipv6CidrRange: Optional. The IPv6 CIDR range of the CustomRange.
-    labels: Optional. Labels as key value pairs
-    name: Required. Identifier. name of resource
-    parentRange: Optional. The parent range of the CustomRange. Do not allow
-      setting parent range if realm is specified. Format must follow this
-      pattern:
-      projects/{project}/locations/{location}/customRanges/{custom_range}
-    realm: Optional. The realm of the CustomRange. The realm must be in the
-      same project as the custom range. Do not allow setting realm if parent
-      range is specified, since the realm should be inherited from the parent
-      range. Format must follow this pattern:
-      projects/{project}/locations/{location}/realms/{realm}
-    registryBook: Output only. The registry book of the CustomRange. This
-      field is inherited from the realm or parent range depending on which one
+    labels: Optional. User-defined labels.
+    name: Required. Identifier. The resource name of the CustomRange, in the
+      format
+      `projects/{project}/locations/{location}/customRanges/{custom_range}`.
+    parentRange: Optional. The resource name of the parent CustomRange, in the
+      format
+      `projects/{project}/locations/{location}/customRanges/{custom_range}`.
+      If specified, the parent CustomRange must be in the same RegistryBook.
+      This field is mutually exclusive with the `realm` field, as the Realm is
+      inherited from the parent CustomRange.
+    realm: Optional. The resource name of the Realm associated with the
+      CustomRange, in the format
+      `projects/{project}/locations/{location}/realms/{realm}`. The Realm must
+      be in the same project as the CustomRange. This field must not be set if
+      the `parent_range` field is set, as the Realm will be inherited from the
+      parent CustomRange.
+    registryBook: Output only. The RegistryBook of the CustomRange. This field
+      is inherited from the Realm or parent CustomRange depending on which one
       is specified.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""Optional. Labels as key value pairs
+    r"""Optional. User-defined labels.
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.
@@ -906,7 +930,8 @@ class CustomRange(_messages.Message):
 
 
 class DisableIpamAdminScopeRequest(_messages.Message):
-  r"""Message for disabling a IpamAdminScope
+  r"""Request message for the CloudNumberRegistry.DisableIpamAdminScope
+  method.
 
   Fields:
     requestId: Optional. An optional request ID to identify requests. Specify
@@ -926,16 +951,18 @@ class DisableIpamAdminScopeRequest(_messages.Message):
 
 
 class DiscoveredRange(_messages.Message):
-  r"""Message describing DiscoveredRange object
+  r"""A DiscoveredRange represents an IP address range automatically detected
+  by the discovery pipeline.
 
   Messages:
-    LabelsValue: Optional. Labels as key value pairs
+    LabelsValue: Optional. User-defined labels.
 
   Fields:
     attributes: Optional. The attributes of the DiscoveredRange.
-    childCidrOverlapAllowed: Output only. If true, allow child ranges of this
-      range to overlap with each other.
-    createTime: Output only. [Output only] Create time stamp
+    childCidrOverlapAllowed: Output only. If true, allows child
+      DiscoveredRanges of this DiscoveredRange to overlap with each other.
+    createTime: Output only. The time at which the DiscoveredRange was
+      created.
     description: Optional. Description of the DiscoveredRange.
     discoveryMetadata: Output only. Owner metadata for this DiscoveredRange. A
       unique set of metadata is associated with each DiscoveredRange. If an IP
@@ -946,17 +973,22 @@ class DiscoveredRange(_messages.Message):
       create time and update time.
     ipv4CidrRange: Optional. The IPv4 CIDR range of the DiscoveredRange.
     ipv6CidrRange: Optional. The IPv6 CIDR range of the DiscoveredRange.
-    labels: Optional. Labels as key value pairs
-    name: Required. Identifier. Name of the DiscoveredRange.
-    parentRange: Optional. The parent range of the DiscoveredRange.
-    realm: Optional. The realm of the DiscoveredRange.
-    registryBook: Output only. The registry book of the DiscoveredRange.
-    updateTime: Output only. [Output only] Update time stamp
+    labels: Optional. User-defined labels.
+    name: Required. Identifier. The resource name of the DiscoveredRange, in
+      the format `projects/{project}/locations/{location}/discoveredRanges/{di
+      scovered_range}`.
+    parentRange: Optional. The resource name of the parent DiscoveredRange, in
+      the format `projects/{project}/locations/{location}/discoveredRanges/{di
+      scovered_range}`.
+    realm: Optional. The Realm of the DiscoveredRange.
+    registryBook: Output only. The RegistryBook of the DiscoveredRange.
+    updateTime: Output only. The time at which the DiscoveredRange was last
+      updated.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""Optional. Labels as key value pairs
+    r"""Optional. User-defined labels.
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.
@@ -994,7 +1026,8 @@ class DiscoveredRange(_messages.Message):
 
 
 class DiscoveryMetadata(_messages.Message):
-  r"""Discovery metadata of the discovered resource.
+  r"""Metadata about a discovered resource, tracking event times, state, and
+  source information.
 
   Enums:
     StateValueValuesEnum: Output only. The state of the resource.
@@ -1011,7 +1044,7 @@ class DiscoveryMetadata(_messages.Message):
     sourceSubId: Output only. A single source resource can be the source of
       multiple CNR resources. This sub_id is used to distinguish between the
       different CNR resources derived from the same upstream resource. For
-      example, a single subnetwork can be the source of multiple ranges, one
+      example, a single subnetwork can be the source of multiple Ranges, one
       for each protocol. In this case, the sub_id could be "private-ipv4" or
       "private-ipv6".
     state: Output only. The state of the resource.
@@ -1057,49 +1090,52 @@ class Empty(_messages.Message):
 
 
 class FindCustomRangeFreeIpRangesResponse(_messages.Message):
-  r"""Message for the response to finding free IP ranges.
+  r"""Response message for the CloudNumberRegistry.FindCustomRangeFreeIpRanges
+  method.
 
   Fields:
-    freeIpCidrRanges: Output only. Free IP CIDR ranges found in the
-      CustomRange.
+    freeIpCidrRanges: Output only. The free IP CIDR ranges found.
   """
 
   freeIpCidrRanges = _messages.StringField(1, repeated=True)
 
 
 class FindDiscoveredRangeFreeIpRangesResponse(_messages.Message):
-  r"""Message for the response to finding free IP ranges.
+  r"""Response message for the
+  CloudNumberRegistry.FindDiscoveredRangeFreeIpRanges method.
 
   Fields:
-    freeIpCidrRanges: Output only. Free IP CIDR ranges found in the
-      DiscoveredRange.
+    freeIpCidrRanges: Output only. The free IP CIDR ranges found.
   """
 
   freeIpCidrRanges = _messages.StringField(1, repeated=True)
 
 
 class IpamAdminScope(_messages.Message):
-  r"""Message describing IpamAdminScope object
+  r"""An IpamAdminScope defines the administrative boundary for IP address
+  discovery and management. It configures which platforms and organizational
+  scopes are enabled for IP tracking.
 
   Enums:
     EnabledAddonPlatformsValueListEntryValuesEnum:
     StateValueValuesEnum: Output only. State of resource discovery pipeline.
 
   Messages:
-    LabelsValue: Optional. Labels as key value pairs
+    LabelsValue: Optional. User-defined labels.
 
   Fields:
-    createTime: Output only. [Output only] Create time stamp
-    enabledAddonPlatforms: Required. Addon platforms that are enabled for this
-      IPAM admin scope. Cloud Number Registry only discovers the IP addresses
-      from the enabled platforms.
-    labels: Optional. Labels as key value pairs
-    name: Required. Identifier. name of resource
+    createTime: Output only. The time at which the IpamAdminScope was created.
+    enabledAddonPlatforms: Required. Add-on platforms that are enabled for
+      this IpamAdminScope. Cloud Number Registry only discovers the IP
+      addresses from the enabled platforms.
+    labels: Optional. User-defined labels.
+    name: Required. Identifier. The resource name of the IpamAdminScope.
     scopes: Required. Administrative scopes enabled for IP address discovery
       and management. For example, "organizations/1234567890". Minimum of 1
       scope is required. In preview, only one organization scope is allowed.
     state: Output only. State of resource discovery pipeline.
-    updateTime: Output only. [Output only] Update time stamp
+    updateTime: Output only. The time at which the IpamAdminScope was last
+      updated.
   """
 
   class EnabledAddonPlatformsValueListEntryValuesEnum(_messages.Enum):
@@ -1146,7 +1182,7 @@ class IpamAdminScope(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""Optional. Labels as key value pairs
+    r"""Optional. User-defined labels.
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.
@@ -1178,7 +1214,7 @@ class IpamAdminScope(_messages.Message):
 
 
 class IpamAdminScopeAvailability(_messages.Message):
-  r"""Message for the availability of an IpamAdminScope
+  r"""Availability details for a specific IpamAdminScope.
 
   Enums:
     AvailabilityValueValuesEnum: The availability of the scope.
@@ -1207,12 +1243,12 @@ class IpamAdminScopeAvailability(_messages.Message):
 
 
 class ListCustomRangesResponse(_messages.Message):
-  r"""Message for response to listing CustomRanges
+  r"""Response message for the CloudNumberRegistry.ListCustomRanges method.
 
   Fields:
-    customRanges: The list of CustomRange
-    nextPageToken: A token identifying a page of results the server should
-      return.
+    customRanges: The list of CustomRanges.
+    nextPageToken: A token to retrieve the next page of results, or empty if
+      there are no more results in the list.
     unreachable: Locations that could not be reached.
   """
 
@@ -1222,12 +1258,13 @@ class ListCustomRangesResponse(_messages.Message):
 
 
 class ListDiscoveredRangesResponse(_messages.Message):
-  r"""Message for response to listing DiscoveredRanges
+  r"""Response message for the CloudNumberRegistry.ListDiscoveredRanges
+  method.
 
   Fields:
-    discoveredRanges: The list of DiscoveredRange
-    nextPageToken: A token identifying a page of results the server should
-      return.
+    discoveredRanges: The list of DiscoveredRanges.
+    nextPageToken: A token to retrieve the next page of results, or empty if
+      there are no more results in the list.
     unreachable: Locations that could not be reached.
   """
 
@@ -1237,12 +1274,12 @@ class ListDiscoveredRangesResponse(_messages.Message):
 
 
 class ListIpamAdminScopesResponse(_messages.Message):
-  r"""Message for response to listing ipamAdminScopes
+  r"""Response message for the CloudNumberRegistry.ListIpamAdminScopes method.
 
   Fields:
-    ipamAdminScopes: The list of IpamAdminScope
-    nextPageToken: A token identifying a page of results the server should
-      return.
+    ipamAdminScopes: The list of IpamAdminScopes.
+    nextPageToken: A token to retrieve the next page of results, or empty if
+      there are no more results in the list.
     unreachable: Locations that could not be reached.
   """
 
@@ -1283,12 +1320,12 @@ class ListOperationsResponse(_messages.Message):
 
 
 class ListRealmsResponse(_messages.Message):
-  r"""Message for response to listing Realms
+  r"""Response message for the CloudNumberRegistry.ListRealms method.
 
   Fields:
     nextPageToken: A token identifying a page of results the server should
       return.
-    realms: The list of Realm
+    realms: The list of Realms.
     unreachable: Locations that could not be reached.
   """
 
@@ -1298,7 +1335,7 @@ class ListRealmsResponse(_messages.Message):
 
 
 class ListRegistryBooksResponse(_messages.Message):
-  r"""Message for response to listing RegistryBooks
+  r"""Response message for the CloudNumberRegistry.ListRegistryBooks method.
 
   Fields:
     nextPageToken: A token identifying a page of results the server should
@@ -1528,12 +1565,12 @@ class OperationMetadata(_messages.Message):
 
 
 class Range(_messages.Message):
-  r"""Message describing either a CustomRange or a DiscoveredRange.
+  r"""Represents either a CustomRange or a DiscoveredRange.
 
   Fields:
-    customRange: A custom range.
-    discoveredRange: A discovered range.
-    utilization: The utilization of the range.
+    customRange: A CustomRange.
+    discoveredRange: A DiscoveredRange.
+    utilization: The utilization of the Range.
   """
 
   customRange = _messages.MessageField('CustomRange', 1)
@@ -1542,14 +1579,15 @@ class Range(_messages.Message):
 
 
 class RangeUtilization(_messages.Message):
-  r"""Message for the utilization of an IP range
+  r"""Utilization metrics for an IP Range, including consumed and produced
+  address counts.
 
   Fields:
     totalConsumed: Output only. The total number of IP addresses consumed in
-      the range.
+      the Range.
     totalProduced: Output only. The total number of IP addresses produced in
-      the range.
-    usage: Output only. The usage of the range as a percentage. This is marked
+      the Range.
+    usage: Output only. The usage of the Range as a percentage. This is marked
       as optional so that we have presence tracking and API responses show 0.0
       instead of NULL.
   """
@@ -1560,32 +1598,35 @@ class RangeUtilization(_messages.Message):
 
 
 class Realm(_messages.Message):
-  r"""Message describing Realm object
+  r"""A Realm represents a distinct network domain or security zone. It groups
+  Ranges that share the same traffic and management characteristics. All the
+  ranges in a Realm are routable to each other, meaning that they cannot
+  overlap.
 
   Enums:
-    IpVersionValueValuesEnum: Optional. IP version of the realm.
-    ManagementTypeValueValuesEnum: Required. Management type of realm.
-    TrafficTypeValueValuesEnum: Required. Traffic type of realm.
+    IpVersionValueValuesEnum: Optional. IP version of the Realm.
+    ManagementTypeValueValuesEnum: Required. Management type of the Realm.
+    TrafficTypeValueValuesEnum: Required. Traffic type of the Realm.
 
   Messages:
-    LabelsValue: Optional. Labels as key value pairs
+    LabelsValue: Optional. User-defined labels.
 
   Fields:
     aggregatedData: Output only. Aggregated data for the Realm. Populated only
       when the view is AGGREGATE.
-    createTime: Output only. [Output only] Create time stamp
-    discoveryMetadata: Output only. Discovery metadata of the realm.
-    ipVersion: Optional. IP version of the realm.
-    labels: Optional. Labels as key value pairs
-    managementType: Required. Management type of realm.
-    name: Required. Identifier. Unique name/ID of the realm
-    registryBook: Required. URI of the registry book that claims the realm.
-    trafficType: Required. Traffic type of realm.
-    updateTime: Output only. [Output only] Update time stamp
+    createTime: Output only. The time at which the Realm was created.
+    discoveryMetadata: Output only. Discovery metadata of the Realm.
+    ipVersion: Optional. IP version of the Realm.
+    labels: Optional. User-defined labels.
+    managementType: Required. Management type of the Realm.
+    name: Required. Identifier. The resource name of the Realm.
+    registryBook: Required. Name of the RegistryBook that claims the Realm.
+    trafficType: Required. Traffic type of the Realm.
+    updateTime: Output only. The time at which the Realm was last updated.
   """
 
   class IpVersionValueValuesEnum(_messages.Enum):
-    r"""Optional. IP version of the realm.
+    r"""Optional. IP version of the Realm.
 
     Values:
       IP_VERSION_UNSPECIFIED: Unspecified IP version.
@@ -1597,7 +1638,7 @@ class Realm(_messages.Message):
     IPV6 = 2
 
   class ManagementTypeValueValuesEnum(_messages.Enum):
-    r"""Required. Management type of realm.
+    r"""Required. Management type of the Realm.
 
     Values:
       MANAGEMENT_TYPE_UNSPECIFIED: Unspecified management type.
@@ -1609,7 +1650,7 @@ class Realm(_messages.Message):
     USER = 2
 
   class TrafficTypeValueValuesEnum(_messages.Enum):
-    r"""Required. Traffic type of realm.
+    r"""Required. Traffic type of the Realm.
 
     Values:
       TRAFFIC_TYPE_UNSPECIFIED: Unspecified traffic type.
@@ -1626,7 +1667,7 @@ class Realm(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""Optional. Labels as key value pairs
+    r"""Optional. User-defined labels.
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.
@@ -1664,8 +1705,8 @@ class RealmAggregatedData(_messages.Message):
   r"""Aggregated data for the Realm.
 
   Fields:
-    customRangesCount: Output only. Number of custom ranges in the Realm.
-    discoveredRangesCount: Output only. Number of discovered ranges in the
+    customRangesCount: Output only. Number of CustomRanges in the Realm.
+    discoveredRangesCount: Output only. Number of DiscoveredRanges in the
       Realm.
   """
 
@@ -1674,10 +1715,11 @@ class RealmAggregatedData(_messages.Message):
 
 
 class RegistryBook(_messages.Message):
-  r"""Message describing RegistryBook object
+  r"""A RegistryBook organizes and manages IP address space. It claims
+  specific scopes (such as projects) and groups related Realms and Ranges.
 
   Messages:
-    LabelsValue: Optional. Labels as key value pairs
+    LabelsValue: Optional. User-defined labels.
 
   Fields:
     aggregatedData: Output only. Aggregated data for the RegistryBook.
@@ -1685,16 +1727,17 @@ class RegistryBook(_messages.Message):
     claimedScopes: Optional. List of scopes claimed by the RegistryBook. In
       Preview, Only project scope is supported. Each scope is in the format of
       projects/{project}. Each scope can only be claimed once.
-    createTime: Output only. [Output only] Create time stamp
+    createTime: Output only. The time at which the RegistryBook was created.
     isDefault: Output only. Whether the RegistryBook is the default one.
-    labels: Optional. Labels as key value pairs
-    name: Required. Identifier. name of resource
-    updateTime: Output only. [Output only] Update time stamp
+    labels: Optional. User-defined labels.
+    name: Required. Identifier. The resource name of the RegistryBook.
+    updateTime: Output only. The time at which the RegistryBook was last
+      updated.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""Optional. Labels as key value pairs
+    r"""Optional. User-defined labels.
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.
@@ -1726,13 +1769,13 @@ class RegistryBook(_messages.Message):
 
 
 class SearchIpResourcesRequest(_messages.Message):
-  r"""Message for searching IP resources
+  r"""Request message for the CloudNumberRegistry.SearchIpResources method.
 
   Enums:
     SearchResourceTypesValueListEntryValuesEnum:
 
   Fields:
-    orderBy: Optional. Hint for how to order the results
+    orderBy: Optional. Hint for how to order the results.
     pageSize: Optional. Requested page size. Server may return fewer items
       than requested. If unspecified, server will pick an appropriate default.
     pageToken: Optional. A token identifying a page of results the server
@@ -1741,24 +1784,25 @@ class SearchIpResourcesRequest(_messages.Message):
       AIP-160-like format. It has some limitations. You can only specify top
       level conjunctions or attribute level negations. Each restriction can
       only be used once except the attribute restriction. The available
-      restrictions for ranges are: - `realm`: The realm name to search in. -
-      `ip_address`: The IP address to search for within ranges. -
+      restrictions for Ranges are: - `realm`: The Realm name to search in. -
+      `ip_address`: The IP address to search for within Ranges. -
       `ip_version`: The IP version to filter by (e.g., "IPV4", "IPV6"). -
-      `parent_range`: The parent range of the range to search for. -
-      `attribute_text`: The attribute text to search for within ranges. -
+      `parent_range`: The parent Range of the Range to search for. -
+      `attribute_text`: The attribute text to search for within Ranges. -
       `attribute`: The attribute key and value to filter by. The available
-      restrictions for realms are: - `ip_version`: The IP version to search
-      for. Only one of attribute_text or multiple attribute filters can be
+      restrictions for Realms are: - `ip_version`: The IP version to search
+      for. - `management_type`: The management type of the Realm (e.g., "CNR",
+      "USER"). Only one of attribute_text or multiple attribute filters can be
       specified. Examples: - `realm=test-realm` - `realm=test-realm AND
       ip_address=10.0.0.0` - `realm=test-realm AND ip_version=IPV6` -
       `realm=test-realm AND attribute_text=test` - `ip_address=10.0.0.0 AND
       attribute:(key1=value1) AND attribute:(key2=value2)` -
       `attribute_text=test AND
       parent_range=projects/123/locations/global/discoveredRanges/test-parent-
-      range`
+      range` - `management_type=CNR`
     searchResourceTypes: Optional. The type of resources to search for. If not
-      specified, the server will return ranges.
-    showUtilization: Optional. Whether to show the utilization of the ranges
+      specified, the server will return Ranges.
+    showUtilization: Optional. Whether to show the utilization of the Ranges
       in the response.
   """
 
@@ -1767,8 +1811,8 @@ class SearchIpResourcesRequest(_messages.Message):
 
     Values:
       SEARCH_RESOURCE_TYPE_UNSPECIFIED: Unspecified search type.
-      RANGES: Search for ranges.
-      REALMS: Search for realms.
+      RANGES: Search for Ranges.
+      REALMS: Search for Realms.
     """
     SEARCH_RESOURCE_TYPE_UNSPECIFIED = 0
     RANGES = 1
@@ -1783,12 +1827,12 @@ class SearchIpResourcesRequest(_messages.Message):
 
 
 class SearchIpResourcesResponse(_messages.Message):
-  r"""Message for response to searching IP resources
+  r"""Response message for the CloudNumberRegistry.SearchIpResources method.
 
   Fields:
     nextPageToken: A token identifying a page of results the server should
       return.
-    ranges: Deprecated: Use results field instead. The list of ranges matching
+    ranges: Deprecated: Use results field instead. The list of Ranges matching
       the search query.
     results: The list of results matching the search query.
     unreachable: Locations that could not be reached.
@@ -1801,12 +1845,12 @@ class SearchIpResourcesResponse(_messages.Message):
 
 
 class SearchIpResourcesResult(_messages.Message):
-  r"""A result matching the search query, which can be either a range or a
-  realm.
+  r"""A result matching the search query, which can be either a Range or a
+  Realm.
 
   Fields:
-    range: A range matching the search query.
-    realm: A realm matching the search query.
+    range: A Range matching the search query.
+    realm: A Realm matching the search query.
   """
 
   range = _messages.MessageField('Range', 1)
@@ -1814,11 +1858,12 @@ class SearchIpResourcesResult(_messages.Message):
 
 
 class ShowCustomRangeUtilizationResponse(_messages.Message):
-  r"""Message for the response to getting the utilization of a CustomRange
+  r"""Response message for the CloudNumberRegistry.ShowCustomRangeUtilization
+  method.
 
   Fields:
     customRange: The CustomRange resource.
-    rangeUtilization: The utilization of the CustomRange.
+    rangeUtilization: The utilization details of the CustomRange.
   """
 
   customRange = _messages.MessageField('CustomRange', 1)
@@ -1826,11 +1871,12 @@ class ShowCustomRangeUtilizationResponse(_messages.Message):
 
 
 class ShowDiscoveredRangeUtilizationResponse(_messages.Message):
-  r"""Message for the response to getting the utilization of a DiscoveredRange
+  r"""Response message for the
+  CloudNumberRegistry.ShowDiscoveredRangeUtilization method.
 
   Fields:
     discoveredRange: The DiscoveredRange resource.
-    rangeUtilization: The utilization of the DiscoveredRange.
+    rangeUtilization: The utilization details of the DiscoveredRange.
   """
 
   discoveredRange = _messages.MessageField('DiscoveredRange', 1)

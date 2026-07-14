@@ -192,7 +192,17 @@ class AuthorizationLoggingOptions(_messages.Message):
 class AutoUpgradeConfig(_messages.Message):
   r"""Configuration for automatic upgrades.
 
+  Messages:
+    EnforcedRolloutsValue: Output only. Mandatory Safety Policies (Always
+      active) which cannot be disabled. The key is the policy ID (e.g.,
+      "ENFORCED_CONTROL_PLANE_PATCH") and the value is a human-readable
+      description.
+
   Fields:
+    enforcedRollouts: Output only. Mandatory Safety Policies (Always active)
+      which cannot be disabled. The key is the policy ID (e.g.,
+      "ENFORCED_CONTROL_PLANE_PATCH") and the value is a human-readable
+      description.
     rolloutCreationScope: Optional. Specifies the scope of automation for the
       creation of rollouts. Represents the types of rollouts (version
       upgrades) the sequence should initiate automatically. If this field is
@@ -203,7 +213,36 @@ class AutoUpgradeConfig(_messages.Message):
       plane patch enforcements). These policy enforcements cannot be disabled.
   """
 
-  rolloutCreationScope = _messages.MessageField('RolloutCreationScope', 1)
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class EnforcedRolloutsValue(_messages.Message):
+    r"""Output only. Mandatory Safety Policies (Always active) which cannot be
+    disabled. The key is the policy ID (e.g., "ENFORCED_CONTROL_PLANE_PATCH")
+    and the value is a human-readable description.
+
+    Messages:
+      AdditionalProperty: An additional property for a EnforcedRolloutsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        EnforcedRolloutsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a EnforcedRolloutsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  enforcedRollouts = _messages.MessageField('EnforcedRolloutsValue', 1)
+  rolloutCreationScope = _messages.MessageField('RolloutCreationScope', 2)
 
 
 class BinaryAuthorizationConfig(_messages.Message):
@@ -8071,15 +8110,29 @@ class Rollout(_messages.Message):
     Values:
       STATE_REASON_TYPE_UNSPECIFIED: Unspecified state reason.
       PAUSED_BY_USER: Paused by the user.
-      PAUSED_BY_SYSTEM_CONFIG: Paused by the RSv2 Orchestrator due to system
-        config(ex. GKE freeze).
+      PAUSED_BY_SYSTEM_CONFIG: Paused by system config (ex. GKE freeze).
       PAUSED_WAITING_FOR_NEXT_STAGE: Paused waiting for the next stage to
         start.
+      CANCELLED_BY_USER: Cancelled by the user.
+      CANCELLED_PAUSED_TOO_LONG: Cancelled by the system because it was paused
+        too long.
+      CANCELLED_SUPERSEDED: Cancelled by the system because the version is too
+        old.
+      CANCELLED_INCOMPATIBLE_ROLLOUT_SEQUENCE: Cancelled by the system because
+        the rollout sequence is incompatible, for example it has different
+        number of stages, fleet projects or label selectors than the rollout.
+      CANCELLED_SUPERSEDED_BY_USER_ROLLOUT: Cancelled because of a new user-
+        triggered rollout.
     """
     STATE_REASON_TYPE_UNSPECIFIED = 0
     PAUSED_BY_USER = 1
     PAUSED_BY_SYSTEM_CONFIG = 2
     PAUSED_WAITING_FOR_NEXT_STAGE = 3
+    CANCELLED_BY_USER = 4
+    CANCELLED_PAUSED_TOO_LONG = 5
+    CANCELLED_SUPERSEDED = 6
+    CANCELLED_INCOMPATIBLE_ROLLOUT_SEQUENCE = 7
+    CANCELLED_SUPERSEDED_BY_USER_ROLLOUT = 8
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. State specifies various states of the Rollout.
@@ -8448,11 +8501,12 @@ class RolloutStage(_messages.Message):
 
     Values:
       STATE_UNSPECIFIED: Default value.
-      PENDING: The stage is pending.
-      RUNNING: The stage is running.
-      SOAKING: The stage is soaking.
+      PENDING: The stage is waiting for previous stages to complete.
+      RUNNING: The stage targets are being upgraded.
+      SOAKING: The stage is waiting for a predetermined time before next
+        stage.
       COMPLETED: The stage is completed.
-      FORCED_SOAKING: The stage is force soaking.
+      FORCED_SOAKING: Deprecated: use SOAKING instead.
       PAUSED: The stage is paused.
     """
     STATE_UNSPECIFIED = 0

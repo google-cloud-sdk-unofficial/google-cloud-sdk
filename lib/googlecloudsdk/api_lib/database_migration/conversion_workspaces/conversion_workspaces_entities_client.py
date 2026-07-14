@@ -15,7 +15,7 @@
 """Database Migration Service conversion workspaces Entities APIs."""
 
 import functools
-from typing import Any, Generator, Mapping, Optional
+from typing import Any, Generator, Iterator, Mapping, Optional
 
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.database_migration.conversion_workspaces import base_conversion_workspaces_client
@@ -288,3 +288,141 @@ class ConversionWorkspacesEntitiesClient(
           entity_obj=entity_obj,
           issue_severities=issue_severities,
       )
+
+  def FetchEntities(
+      self,
+      *,
+      name: str,
+      tree_type: str,
+      fetch_view: str,
+      filter_expr: str,
+      page_size: int,
+  ) -> Iterator[Mapping[str, Any]]:
+    """Fetches entities status view in a conversion workspace.
+
+    Args:
+      name: str, the name for conversion workspace being described.
+      tree_type: str, the tree type to describe issues for.
+      fetch_view: str, the view to fetch.
+      filter_expr: str, the filter expression to use.
+      page_size: int, the page size to use.
+
+    Yields:
+      Entities status view for the conversion workspace.
+    """
+    yield from list_pager.YieldFromList(
+        service=self.cw_service,
+        request=self._BuildFetchEntitiesStatusViewRequest(
+            conversion_workspace_ref=name,
+            tree_type=tree_type,
+            fetch_view=fetch_view,
+            filter_expr=filter_expr,
+        ),
+        method='FetchEntitiesStatusView',
+        batch_size_attribute='pageSize',
+        field='entities',
+        batch_size=page_size,
+    )
+
+  def _BuildFetchEntitiesStatusViewRequest(
+      self,
+      *,
+      conversion_workspace_ref: str,
+      tree_type: str,
+      fetch_view: str,
+      filter_expr: str,
+  ):
+    """Returns request to fetch entities status view in a conversion workspace."""
+
+    tree_type_str_to_enum = {
+        'SOURCE': (
+            self.messages.DatamigrationProjectsLocationsConversionWorkspacesFetchEntitiesStatusViewRequest.TreeValueValuesEnum.SOURCE_TREE
+        ),
+        'DRAFT': (
+            self.messages.DatamigrationProjectsLocationsConversionWorkspacesFetchEntitiesStatusViewRequest.TreeValueValuesEnum.DRAFT_TREE
+        ),
+    }
+    tree = tree_type_str_to_enum.get(
+        tree_type,
+        self.messages.DatamigrationProjectsLocationsConversionWorkspacesFetchEntitiesStatusViewRequest.TreeValueValuesEnum.SOURCE_TREE,
+    )
+
+    fetch_view_str_to_enum = {
+        'FULL': (
+            self.messages.DatamigrationProjectsLocationsConversionWorkspacesFetchEntitiesStatusViewRequest.FetchViewValueValuesEnum.FULL
+        ),
+        'FULL_WITH_DEPENDENCIES': (
+            self.messages.DatamigrationProjectsLocationsConversionWorkspacesFetchEntitiesStatusViewRequest.FetchViewValueValuesEnum.FULL_WITH_DEPENDENCIES
+        ),
+    }
+    view = fetch_view_str_to_enum.get(
+        fetch_view,
+        self.messages.DatamigrationProjectsLocationsConversionWorkspacesFetchEntitiesStatusViewRequest.FetchViewValueValuesEnum.FULL,
+    )
+
+    if (
+        tree
+        == self.messages.DatamigrationProjectsLocationsConversionWorkspacesFetchEntitiesStatusViewRequest.TreeValueValuesEnum.SOURCE_TREE
+    ):
+      combined_filter_expr = self.CombineFilters(
+          filter_expr,
+          self.parent_client.crud.GetGlobalFilter(
+              name=conversion_workspace_ref,
+          ),
+      )
+    else:
+      combined_filter_expr = filter_expr
+
+    return self.messages.DatamigrationProjectsLocationsConversionWorkspacesFetchEntitiesStatusViewRequest(
+        conversionWorkspace=conversion_workspace_ref,
+        tree=tree,
+        fetchView=view,
+        filter=combined_filter_expr,
+    )
+
+  def FetchIssues(
+      self,
+      *,
+      name: str,
+      all_issues: bool | None,
+      filter_expr: str | None,
+      page_size: int,
+  ) -> Iterator[Mapping[str, Any]]:
+    """Fetches issues in a conversion workspace.
+
+    Args:
+      name: str, the name for conversion workspace being described.
+      all_issues: bool | None, whether to get all issues.
+      filter_expr: str | None, the filter expression to use.
+      page_size: int, the page size to use.
+
+    Yields:
+      Issues for the conversion workspace.
+    """
+    yield from list_pager.YieldFromList(
+        service=self.cw_service,
+        request=self._BuildFetchIssuesRequest(
+            conversion_workspace_ref=name,
+            all_issues=all_issues,
+            filter_expr=filter_expr,
+        ),
+        method='FetchIssues',
+        batch_size_attribute='pageSize',
+        field='issues',
+        batch_size=page_size,
+    )
+
+  def _BuildFetchIssuesRequest(
+      self,
+      *,
+      conversion_workspace_ref: str,
+      all_issues: bool | None,
+      filter_expr: str | None,
+  ):
+    """Returns request to fetch issues in a conversion workspace."""
+    return self.messages.DatamigrationProjectsLocationsConversionWorkspacesFetchIssuesRequest(
+        conversionWorkspace=conversion_workspace_ref,
+        commitId=None,
+        allIssues=all_issues,
+        filter=filter_expr,
+    )

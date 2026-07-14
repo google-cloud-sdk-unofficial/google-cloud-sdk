@@ -15,7 +15,7 @@
 """Command for updating env vars and other configuration info."""
 
 from google.api_core import exceptions as gapic_exceptions
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.run import run_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import config_changes as config_changes_mod
 from googlecloudsdk.command_lib.run import container_parser
@@ -68,14 +68,18 @@ class Update(base.Command):
   """Update Cloud Run environment variables and other configuration settings."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION': (
+          """\
           {description}
-          """,
-      'EXAMPLES': """\
+          """
+      ),
+      'EXAMPLES': (
+          """\
           To update one or more env vars:
 
               $ {command} myworkerpool --update-env-vars=KEY1=VALUE1,KEY2=VALUE2
-         """,
+         """
+      ),
   }
 
   input_flags = (
@@ -96,9 +100,7 @@ class Update(base.Command):
     flags.AddRevisionSuffixArg(parser)
     flags.AddRuntimeFlag(parser)
     flags.AddVolumesFlags(parser, cls.ReleaseTrack())
-    flags.AddScalingFlag(
-        parser, resource_kind='worker'
-    )
+    flags.AddScalingFlag(parser, resource_kind='worker')
     flags.AddInstancesFlag(parser)
     flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='worker')
     flags.RemoveContainersFlag().AddToParser(parser)
@@ -168,12 +170,8 @@ class Update(base.Command):
     worker_pool_ref = args.CONCEPTS.worker_pool.Parse()
     flags.ValidateResource(worker_pool_ref)
 
-    def DeriveRegionalEndpoint(endpoint):
-      region = args.CONCEPTS.worker_pool.Parse().locationsId
-      return region + '-' + endpoint
-
-    run_client = apis.GetGapicClientInstance(
-        'run', 'v2', address_override_func=DeriveRegionalEndpoint
+    run_client = run_util.GetGapicClientInstance(
+        region=worker_pool_ref.locationsId
     )
     worker_pools_client = worker_pools_operations.WorkerPoolsOperations(
         run_client
@@ -243,8 +241,9 @@ class Update(base.Command):
         )
 
 
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class AlphaUpdate(Update):
+class BetaUpdate(Update):
   """Update a Cloud Run worker-pool."""
 
   @classmethod
@@ -256,4 +255,4 @@ class AlphaUpdate(Update):
     )
 
 
-AlphaUpdate.__doc__ = Update.__doc__
+BetaUpdate.__doc__ = Update.__doc__

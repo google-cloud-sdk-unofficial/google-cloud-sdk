@@ -24,10 +24,14 @@
     collection: run.projects.locations.workerpools
     modify_request_hooks:
     - googlecloudsdk.command_lib.run.platforms:ValidatePlatformIsManaged
+    ALPHA:
+      regional_endpoint_compatibility: SUPPORTED
+    BETA:
+      regional_endpoint_compatibility: SUPPORTED
 
   arguments:
     resource:
-      help_text: The service for which to set the IAM policy.
+      help_text: The worker pool for which to set the IAM policy.
       spec: !REF googlecloudsdk.command_lib.run.resources:workerpool
 
   ALPHA:

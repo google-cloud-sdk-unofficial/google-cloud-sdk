@@ -614,7 +614,7 @@ class _StdinSocket(object):
       if six.PY2:
         b = sys.stdin.read(bufsize)
       else:
-        b = sys.stdin.buffer.read(bufsize)
+        b = sys.stdin.buffer.raw.read(bufsize)
     except IOError as e:
       if e.errno == errno.EAGAIN or isinstance(e, io.BlockingIOError):
         # In python2, no nonblocking data available is indicated by raising

@@ -62,6 +62,7 @@ _INCOMPATIBLE_PAIRS = (
 _PROJECT_SCOPE_SUPPORTED_TRACKS = (
     base.ReleaseTrack.ALPHA,
     base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
 )
 
 

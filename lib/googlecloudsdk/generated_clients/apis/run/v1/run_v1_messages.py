@@ -421,6 +421,8 @@ class Container(_messages.Message):
       environment variable for the container to listen on.
     readinessProbe: Readiness probe to be used for health checks.
     resources: Compute Resources required by this container.
+    sandboxLauncher: Optional. Indicates that this container can act as a
+      sandbox supervisor and launch sandboxes.
     securityContext: Not supported by Cloud Run.
     startupProbe: Startup probe of application within the container. All other
       probes are disabled if a startup probe is provided, until it succeeds.
@@ -458,12 +460,13 @@ class Container(_messages.Message):
   ports = _messages.MessageField('ContainerPort', 9, repeated=True)
   readinessProbe = _messages.MessageField('Probe', 10)
   resources = _messages.MessageField('ResourceRequirements', 11)
-  securityContext = _messages.MessageField('SecurityContext', 12)
-  startupProbe = _messages.MessageField('Probe', 13)
-  terminationMessagePath = _messages.StringField(14)
-  terminationMessagePolicy = _messages.StringField(15)
-  volumeMounts = _messages.MessageField('VolumeMount', 16, repeated=True)
-  workingDir = _messages.StringField(17)
+  sandboxLauncher = _messages.BooleanField(12)
+  securityContext = _messages.MessageField('SecurityContext', 13)
+  startupProbe = _messages.MessageField('Probe', 14)
+  terminationMessagePath = _messages.StringField(15)
+  terminationMessagePolicy = _messages.StringField(16)
+  volumeMounts = _messages.MessageField('VolumeMount', 17, repeated=True)
+  workingDir = _messages.StringField(18)
 
 
 class ContainerOverride(_messages.Message):
@@ -1562,6 +1565,7 @@ class GoogleDevtoolsCloudbuildV1BuildStep(_messages.Message):
       to use as the name for a later build step.
     pullTiming: Output only. Stores timing information for pulling this build
       step's builder image only.
+    results: Declaration of results for this build step.
     script: A shell script to be executed in the step. When script is
       provided, the user cannot specify the entrypoint or args.
     secretEnv: A list of environment variables which are encrypted using a
@@ -1627,13 +1631,51 @@ class GoogleDevtoolsCloudbuildV1BuildStep(_messages.Message):
   id = _messages.StringField(9)
   name = _messages.StringField(10)
   pullTiming = _messages.MessageField('GoogleDevtoolsCloudbuildV1TimeSpan', 11)
-  script = _messages.StringField(12)
-  secretEnv = _messages.StringField(13, repeated=True)
-  status = _messages.EnumField('StatusValueValuesEnum', 14)
-  timeout = _messages.StringField(15)
-  timing = _messages.MessageField('GoogleDevtoolsCloudbuildV1TimeSpan', 16)
-  volumes = _messages.MessageField('GoogleDevtoolsCloudbuildV1Volume', 17, repeated=True)
-  waitFor = _messages.StringField(18, repeated=True)
+  results = _messages.MessageField('GoogleDevtoolsCloudbuildV1StepResult', 12, repeated=True)
+  script = _messages.StringField(13)
+  secretEnv = _messages.StringField(14, repeated=True)
+  status = _messages.EnumField('StatusValueValuesEnum', 15)
+  timeout = _messages.StringField(16)
+  timing = _messages.MessageField('GoogleDevtoolsCloudbuildV1TimeSpan', 17)
+  volumes = _messages.MessageField('GoogleDevtoolsCloudbuildV1Volume', 18, repeated=True)
+  waitFor = _messages.StringField(19, repeated=True)
+
+
+class GoogleDevtoolsCloudbuildV1BuildStepResults(_messages.Message):
+  r"""Results for a build step.
+
+  Messages:
+    ResultsValue: Results for a build step.
+
+  Fields:
+    results: Results for a build step.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ResultsValue(_messages.Message):
+    r"""Results for a build step.
+
+    Messages:
+      AdditionalProperty: An additional property for a ResultsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type ResultsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ResultsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  results = _messages.MessageField('ResultsValue', 1)
 
 
 class GoogleDevtoolsCloudbuildV1BuiltImage(_messages.Message):
@@ -2173,6 +2215,9 @@ class GoogleDevtoolsCloudbuildV1RepoSource(_messages.Message):
 class GoogleDevtoolsCloudbuildV1Results(_messages.Message):
   r"""Artifacts created by the build pipeline.
 
+  Messages:
+    BuildStepResultsValue: Results for build steps. step_id ->
+
   Fields:
     artifactManifest: Path to the artifact manifest for non-container
       artifacts uploaded to Cloud Storage. Only populated when artifacts are
@@ -2186,6 +2231,7 @@ class GoogleDevtoolsCloudbuildV1Results(_messages.Message):
       produce this output by writing to `$BUILDER_OUTPUT/output`. Only the
       first 50KB of data is stored. Note that the `$BUILDER_OUTPUT` variable
       is read-only and can't be substituted.
+    buildStepResults: Results for build steps. step_id ->
     genericArtifacts: Output only. Generic artifacts uploaded to Artifact
       Registry at the end of the build.
     goModules: Optional. Go module artifacts uploaded to Artifact Registry at
@@ -2201,17 +2247,44 @@ class GoogleDevtoolsCloudbuildV1Results(_messages.Message):
       of the build.
   """
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class BuildStepResultsValue(_messages.Message):
+    r"""Results for build steps. step_id ->
+
+    Messages:
+      AdditionalProperty: An additional property for a BuildStepResultsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        BuildStepResultsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a BuildStepResultsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A GoogleDevtoolsCloudbuildV1BuildStepResults attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('GoogleDevtoolsCloudbuildV1BuildStepResults', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   artifactManifest = _messages.StringField(1)
   artifactTiming = _messages.MessageField('GoogleDevtoolsCloudbuildV1TimeSpan', 2)
   buildStepImages = _messages.StringField(3, repeated=True)
   buildStepOutputs = _messages.BytesField(4, repeated=True)
-  genericArtifacts = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedGenericArtifact', 5, repeated=True)
-  goModules = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedGoModule', 6, repeated=True)
-  images = _messages.MessageField('GoogleDevtoolsCloudbuildV1BuiltImage', 7, repeated=True)
-  mavenArtifacts = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedMavenArtifact', 8, repeated=True)
-  npmPackages = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedNpmPackage', 9, repeated=True)
-  numArtifacts = _messages.IntegerField(10)
-  pythonPackages = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedPythonPackage', 11, repeated=True)
+  buildStepResults = _messages.MessageField('BuildStepResultsValue', 5)
+  genericArtifacts = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedGenericArtifact', 6, repeated=True)
+  goModules = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedGoModule', 7, repeated=True)
+  images = _messages.MessageField('GoogleDevtoolsCloudbuildV1BuiltImage', 8, repeated=True)
+  mavenArtifacts = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedMavenArtifact', 9, repeated=True)
+  npmPackages = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedNpmPackage', 10, repeated=True)
+  numArtifacts = _messages.IntegerField(11)
+  pythonPackages = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedPythonPackage', 12, repeated=True)
 
 
 class GoogleDevtoolsCloudbuildV1Secret(_messages.Message):
@@ -2398,6 +2471,21 @@ class GoogleDevtoolsCloudbuildV1SourceProvenance(_messages.Message):
   resolvedRepoSource = _messages.MessageField('GoogleDevtoolsCloudbuildV1RepoSource', 4)
   resolvedStorageSource = _messages.MessageField('GoogleDevtoolsCloudbuildV1StorageSource', 5)
   resolvedStorageSourceManifest = _messages.MessageField('GoogleDevtoolsCloudbuildV1StorageSourceManifest', 6)
+
+
+class GoogleDevtoolsCloudbuildV1StepResult(_messages.Message):
+  r"""StepResult is the declaration of a result for a build step.
+
+  Fields:
+    attestationContent: Optional. The content of the attestation to be
+      generated.
+    attestationType: Optional. The type of attestation to be generated.
+    name: Required. The name of the result.
+  """
+
+  attestationContent = _messages.StringField(1)
+  attestationType = _messages.StringField(2)
+  name = _messages.StringField(3)
 
 
 class GoogleDevtoolsCloudbuildV1StorageSource(_messages.Message):
@@ -2906,8 +2994,6 @@ class InstanceSpec(_messages.Message):
       identity of the running container, and determines what permissions the
       Instance has. If not provided, the Instance will use the project's
       default service account.
-    timeout: Optional. Duration the instance may be active before the system
-      will shut it down.
     volumes: Optional. List of volumes that can be mounted by containers
       belonging to the Instance.
   """
@@ -2941,8 +3027,7 @@ class InstanceSpec(_messages.Message):
   containers = _messages.MessageField('Container', 1, repeated=True)
   nodeSelector = _messages.MessageField('NodeSelectorValue', 2)
   serviceAccountName = _messages.StringField(3)
-  timeout = _messages.StringField(4)
-  volumes = _messages.MessageField('Volume', 5, repeated=True)
+  volumes = _messages.MessageField('Volume', 4, repeated=True)
 
 
 class InstanceSplit(_messages.Message):
@@ -3447,15 +3532,15 @@ class ObjectMeta(_messages.Message):
       service-account`: Service. * `run.googleapis.com/build-source-location`:
       Service, Revision. * `run.googleapis.com/build-worker-pool`: Service. *
       `run.googleapis.com/client-name`: All resources. *
-      `run.googleapis.com/cloudsql-instances`: Revision, Execution. *
+      `run.googleapis.com/cloudsql-instances`: Revision, Execution . *
       `run.googleapis.com/container-dependencies`: Revision . *
       `run.googleapis.com/cpu-throttling`: Revision. *
       `run.googleapis.com/custom-audiences`: Service. *
       `run.googleapis.com/default-url-disabled`: Service. *
       `run.googleapis.com/description`: Service. *
       `run.googleapis.com/encryption-key-shutdown-hours`: Revision *
-      `run.googleapis.com/encryption-key`: Revision, Execution. *
-      `run.googleapis.com/execution-environment`: Revision, Execution. *
+      `run.googleapis.com/encryption-key`: Revision, Execution . *
+      `run.googleapis.com/execution-environment`: Revision, Execution . *
       `run.googleapis.com/gc-traffic-tags`: Service. *
       `run.googleapis.com/gpu-zonal-redundancy-disabled`: Revision. *
       `run.googleapis.com/health-check-disabled`: Revision. *
@@ -3471,7 +3556,7 @@ class ObjectMeta(_messages.Message):
       `run.googleapis.com/secure-session-agent`: Revision. *
       `run.googleapis.com/sessionAffinity`: Revision. *
       `run.googleapis.com/startup-cpu-boost`: Revision. *
-      `run.googleapis.com/vpc-access-connector`: Revision, Execution. *
+      `run.googleapis.com/vpc-access-connector`: Revision, Execution . *
       `run.googleapis.com/vpc-access-egress`: Revision, Execution.
     LabelsValue: Map of string keys and values that can be used to organize
       and categorize (scope and select) objects. May match selectors of
@@ -3499,15 +3584,15 @@ class ObjectMeta(_messages.Message):
       service-account`: Service. * `run.googleapis.com/build-source-location`:
       Service, Revision. * `run.googleapis.com/build-worker-pool`: Service. *
       `run.googleapis.com/client-name`: All resources. *
-      `run.googleapis.com/cloudsql-instances`: Revision, Execution. *
+      `run.googleapis.com/cloudsql-instances`: Revision, Execution . *
       `run.googleapis.com/container-dependencies`: Revision . *
       `run.googleapis.com/cpu-throttling`: Revision. *
       `run.googleapis.com/custom-audiences`: Service. *
       `run.googleapis.com/default-url-disabled`: Service. *
       `run.googleapis.com/description`: Service. *
       `run.googleapis.com/encryption-key-shutdown-hours`: Revision *
-      `run.googleapis.com/encryption-key`: Revision, Execution. *
-      `run.googleapis.com/execution-environment`: Revision, Execution. *
+      `run.googleapis.com/encryption-key`: Revision, Execution . *
+      `run.googleapis.com/execution-environment`: Revision, Execution . *
       `run.googleapis.com/gc-traffic-tags`: Service. *
       `run.googleapis.com/gpu-zonal-redundancy-disabled`: Revision. *
       `run.googleapis.com/health-check-disabled`: Revision. *
@@ -3523,7 +3608,7 @@ class ObjectMeta(_messages.Message):
       `run.googleapis.com/secure-session-agent`: Revision. *
       `run.googleapis.com/sessionAffinity`: Revision. *
       `run.googleapis.com/startup-cpu-boost`: Revision. *
-      `run.googleapis.com/vpc-access-connector`: Revision, Execution. *
+      `run.googleapis.com/vpc-access-connector`: Revision, Execution . *
       `run.googleapis.com/vpc-access-egress`: Revision, Execution.
     clusterName: Not supported by Cloud Run
     creationTimestamp: UTC timestamp representing the server time when this
@@ -3581,15 +3666,15 @@ class ObjectMeta(_messages.Message):
     service-account`: Service. * `run.googleapis.com/build-source-location`:
     Service, Revision. * `run.googleapis.com/build-worker-pool`: Service. *
     `run.googleapis.com/client-name`: All resources. *
-    `run.googleapis.com/cloudsql-instances`: Revision, Execution. *
+    `run.googleapis.com/cloudsql-instances`: Revision, Execution . *
     `run.googleapis.com/container-dependencies`: Revision . *
     `run.googleapis.com/cpu-throttling`: Revision. *
     `run.googleapis.com/custom-audiences`: Service. *
     `run.googleapis.com/default-url-disabled`: Service. *
     `run.googleapis.com/description`: Service. *
     `run.googleapis.com/encryption-key-shutdown-hours`: Revision *
-    `run.googleapis.com/encryption-key`: Revision, Execution. *
-    `run.googleapis.com/execution-environment`: Revision, Execution. *
+    `run.googleapis.com/encryption-key`: Revision, Execution . *
+    `run.googleapis.com/execution-environment`: Revision, Execution . *
     `run.googleapis.com/gc-traffic-tags`: Service. * `run.googleapis.com/gpu-
     zonal-redundancy-disabled`: Revision. * `run.googleapis.com/health-check-
     disabled`: Revision. * `run.googleapis.com/ingress`: Service, Instance. *
@@ -3603,7 +3688,7 @@ class ObjectMeta(_messages.Message):
     Revision, Execution. * `run.googleapis.com/secure-session-agent`:
     Revision. * `run.googleapis.com/sessionAffinity`: Revision. *
     `run.googleapis.com/startup-cpu-boost`: Revision. *
-    `run.googleapis.com/vpc-access-connector`: Revision, Execution. *
+    `run.googleapis.com/vpc-access-connector`: Revision, Execution . *
     `run.googleapis.com/vpc-access-egress`: Revision, Execution.
 
     Messages:
@@ -4002,6 +4087,8 @@ class RevisionSpec(_messages.Message):
     nodeSelector: Optional. The Node Selector configuration. Map of selector
       key to a value which matches a node.
     runtimeClassName: Optional. Runtime. Leave unset for default.
+    sandboxes: Optional. Container templates that can be launched through the
+      `sandbox` CLI.
     serviceAccountName: Email address of the IAM service account associated
       with the revision of the service. The service account represents the
       identity of the running revision, and determines what permissions the
@@ -4045,9 +4132,10 @@ class RevisionSpec(_messages.Message):
   imagePullSecrets = _messages.MessageField('LocalObjectReference', 4, repeated=True)
   nodeSelector = _messages.MessageField('NodeSelectorValue', 5)
   runtimeClassName = _messages.StringField(6)
-  serviceAccountName = _messages.StringField(7)
-  timeoutSeconds = _messages.IntegerField(8, variant=_messages.Variant.INT32)
-  volumes = _messages.MessageField('Volume', 9, repeated=True)
+  sandboxes = _messages.MessageField('Container', 7, repeated=True)
+  serviceAccountName = _messages.StringField(8)
+  timeoutSeconds = _messages.IntegerField(9, variant=_messages.Variant.INT32)
+  volumes = _messages.MessageField('Volume', 10, repeated=True)
 
 
 class RevisionStatus(_messages.Message):
@@ -5296,9 +5384,8 @@ class RunProjectsLocationsListRequest(_messages.Message):
   r"""A RunProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).

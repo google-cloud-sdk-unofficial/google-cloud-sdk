@@ -246,6 +246,21 @@ def AddTreeTypeFlag(
   )
 
 
+def AddFetchViewFlag(
+    parser: argparse.ArgumentParser,
+    required: bool = False,
+    default_value: str = 'FULL',
+) -> None:
+  """Adds the --view flag to the given parser."""
+  parser.add_argument(
+      '--view',
+      help='The view to fetch.',
+      choices=['FULL', 'FULL_WITH_DEPENDENCIES'],
+      required=required,
+      default=default_value,
+  )
+
+
 def AddUncommittedFlag(parser: argparse.ArgumentParser) -> None:
   """Adds a --uncommitted flag to the given parser."""
   parser.add_argument(
@@ -266,5 +281,18 @@ def AddCommitIdFlag(parser: argparse.ArgumentParser) -> None:
       help="""\
         Request a specific commit id.
         If not specified, the entities from the latest commit are returned.
+       """,
+  )
+
+
+def AddAllIssuesFlag(parser: argparse.ArgumentParser) -> None:
+  """Adds a --all-issues flag to the given parser."""
+  parser.add_argument(
+      '--all-issues',
+      action='store_true',
+      help="""\
+        If set, gets all issues matching the filter.
+        Otherwise, for each entity only the issues matching the DdlKind chosen
+        for application on the destination are returned.
        """,
   )

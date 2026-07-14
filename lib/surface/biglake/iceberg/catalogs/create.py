@@ -108,7 +108,9 @@ class CreateCatalog(base.CreateCommand):
     ).choice_arg.AddToParser(parser)
     arguments.AddCatalogsCreateArgs(parser)
     if cls._support_federated_catalog:
-      arguments.AddFederatedCatalogArgs(parser)
+      arguments.AddFederatedCatalogArgs(
+          parser, support_glue=cls._support_glue_catalog
+      )
     if cls._support_glue_catalog:
       arguments.AddGlueCatalogArgs(parser)
     if cls._support_catalog_type_biglake:

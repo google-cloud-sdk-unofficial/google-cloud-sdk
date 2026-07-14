@@ -14,8 +14,6 @@
 # limitations under the License.
 """Command for obtaining details about a given worker-pool."""
 
-
-
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import exceptions
@@ -30,17 +28,18 @@ from googlecloudsdk.core.resource import resource_printer
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.Command):
   """Obtain details about a given worker-pool."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION': (
+          """\
           {description}
-          """,
-      'EXAMPLES': """\
+          """
+      ),
+      'EXAMPLES': (
+          """\
           To obtain details about a given worker-pool:
 
               $ {command} <worker-pool-name>
@@ -53,7 +52,8 @@ class Describe(base.Command):
           specific to this deployment and status info):
 
               $ {command} <worker-pool-name> --format=export
-          """,
+          """
+      ),
   }
 
   @staticmethod
@@ -99,6 +99,13 @@ class Describe(base.Command):
     with serverless_operations.Connect(conn_context) as client:
       worker_pool = client.GetWorkerPool(worker_pool_ref)
     if not worker_pool:
-      raise exceptions.ArgumentError('Cannot find worker pool [{}]'.format(
-          worker_pool_ref.workerpoolsId))
+      raise exceptions.ArgumentError(
+          'Cannot find worker pool [{}]'.format(worker_pool_ref.workerpoolsId)
+      )
     return worker_pool
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.RegionalEndpointsSupported
+class BetaDescribe(Describe):
+  """Obtain details about a given worker-pool."""

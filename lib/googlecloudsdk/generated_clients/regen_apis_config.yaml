@@ -328,8 +328,6 @@ apis:
           path: projects/{projectsId}/policy
         systempolicy:
           path: locations/{locationsId}/policy
-        projects.continuousValidationConfig:
-          path: projects/{projectsId}/continuousValidationConfig
     v1beta1:
       default: false
       discovery_doc: binaryauthorization_v1beta1.json
@@ -476,8 +474,6 @@ apis:
       discovery_doc: clouddebugger_v2.json
   clouddeploy:
     v1:
-      skip:
-        bug: b/514665430
       default: true
       discovery_doc: clouddeploy_v1.json
   clouderrorreporting:
@@ -596,9 +592,6 @@ apis:
     v1:
       discovery_doc: composer_v1.json
       default: true
-  composerflex:
-    v1alpha1:
-      discovery_doc: composerflex_v1alpha1.json
   compute:
     alpha:
       discovery_doc: compute_alpha.json

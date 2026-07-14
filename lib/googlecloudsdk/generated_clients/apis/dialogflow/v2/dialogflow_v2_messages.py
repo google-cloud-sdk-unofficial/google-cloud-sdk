@@ -12693,6 +12693,7 @@ class GoogleCloudDialogflowV2ConversationProfile(_messages.Message):
       events.
     securitySettings: Name of the CX SecuritySettings reference for the agent.
       Format: `projects//locations//securitySettings/`.
+    sipConfig: Optional. Configuration for SIP connections.
     sttConfig: Settings for speech transcription.
     timeZone: The time zone of this conversational profile from the [time zone
       database](https://www.iana.org/time-zones), e.g., America/New_York,
@@ -12716,10 +12717,11 @@ class GoogleCloudDialogflowV2ConversationProfile(_messages.Message):
   newRecognitionResultNotificationConfig = _messages.MessageField('GoogleCloudDialogflowV2NotificationConfig', 10)
   notificationConfig = _messages.MessageField('GoogleCloudDialogflowV2NotificationConfig', 11)
   securitySettings = _messages.StringField(12)
-  sttConfig = _messages.MessageField('GoogleCloudDialogflowV2SpeechToTextConfig', 13)
-  timeZone = _messages.StringField(14)
-  ttsConfig = _messages.MessageField('GoogleCloudDialogflowV2SynthesizeSpeechConfig', 15)
-  updateTime = _messages.StringField(16)
+  sipConfig = _messages.MessageField('GoogleCloudDialogflowV2SipConfig', 13)
+  sttConfig = _messages.MessageField('GoogleCloudDialogflowV2SpeechToTextConfig', 14)
+  timeZone = _messages.StringField(15)
+  ttsConfig = _messages.MessageField('GoogleCloudDialogflowV2SynthesizeSpeechConfig', 16)
+  updateTime = _messages.StringField(17)
 
 
 class GoogleCloudDialogflowV2ConversationTelephonyConnectionInfo(_messages.Message):
@@ -18502,6 +18504,35 @@ class GoogleCloudDialogflowV2SetSuggestionFeatureConfigRequest(_messages.Message
 
   participantRole = _messages.EnumField('ParticipantRoleValueValuesEnum', 1)
   suggestionFeatureConfig = _messages.MessageField('GoogleCloudDialogflowV2HumanAgentAssistantConfigSuggestionFeatureConfig', 2)
+
+
+class GoogleCloudDialogflowV2SipConfig(_messages.Message):
+  r"""Defines the SIP configuration.
+
+  Fields:
+    allowVirtualAgentInteraction: Allows interactions with a Dialogflow
+      virtual agent even if the call is connected for SIPREC purposes.
+    copyInboundCallLegHeaders: List of inbound call leg headers to be copied
+      to outbound call legs created later.
+    createConversationOnTheFly: Asks Dialogflow Telephony to create the
+      conversation provided in the SIP header on the fly when the call comes
+      in.
+    ignoreReinviteMediaDirection: Ignores any media direction in the reINVITE
+      SDP offer. Reuse the previous media direction.
+    inactiveStart: Starts the conversation with inactive SDP directives
+    keepConversationRunning: Keeps the conversation running even if the call
+      is disconnected.
+    maxAudioRecordingDuration: Max duration for audio recording. Overrides the
+      default value of 15 min. Max value is 8 hours.
+  """
+
+  allowVirtualAgentInteraction = _messages.BooleanField(1)
+  copyInboundCallLegHeaders = _messages.StringField(2, repeated=True)
+  createConversationOnTheFly = _messages.BooleanField(3)
+  ignoreReinviteMediaDirection = _messages.BooleanField(4)
+  inactiveStart = _messages.BooleanField(5)
+  keepConversationRunning = _messages.BooleanField(6)
+  maxAudioRecordingDuration = _messages.StringField(7)
 
 
 class GoogleCloudDialogflowV2SipTrunk(_messages.Message):

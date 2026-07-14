@@ -277,6 +277,12 @@ def MakeShareSettings(messages, args, setting_configs):
           .SPECIFIC_PROJECTS,
           projectMap=MakeProjectMapFromProjectList(
               messages, getattr(args, 'share_with', None)))
+    if setting_configs == 'folders':
+      return messages.ShareSettings(
+          shareType=messages.ShareSettings.ShareTypeValueValuesEnum
+          .DIRECT_PROJECTS_UNDER_SPECIFIC_FOLDERS,
+          folderMap=MakeFolderMapFromFolderList(
+              messages, getattr(args, 'share_with', None)))
   else:
     return None
 
@@ -290,6 +296,21 @@ def MakeProjectMapFromProjectList(messages, projects):
             value=messages.ShareSettingsProjectConfig(projectId=project)))
   return messages.ShareSettings.ProjectMapValue(
       additionalProperties=additional_properties)
+
+
+def MakeFolderMapFromFolderList(messages, folders):
+  additional_properties = []
+  if folders:
+    for folder in folders:
+      additional_properties.append(
+          messages.ShareSettings.FolderMapValue.AdditionalProperty(
+              key=folder,
+              value=messages.ShareSettingsFolderConfig(folderId=folder),
+          )
+      )
+  return messages.ShareSettings.FolderMapValue(
+      additionalProperties=additional_properties
+  )
 
 
 def MakePlanningStatus(messages, planning_status):

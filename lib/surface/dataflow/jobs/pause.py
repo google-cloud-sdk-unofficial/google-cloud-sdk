@@ -22,7 +22,7 @@ from googlecloudsdk.command_lib.dataflow import job_utils
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 @base.Hidden
 class Pause(base.Command):

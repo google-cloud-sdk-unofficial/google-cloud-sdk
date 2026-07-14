@@ -52,16 +52,13 @@ class CloudLocation(_messages.Message):
       CLOUD_LOCATION_TYPE_UNSPECIFIED: Unspecified type.
       CLOUD_LOCATION_TYPE_REGION: CloudLocation type for region.
       CLOUD_LOCATION_TYPE_ZONE: CloudLocation type for zone.
-      CLOUD_LOCATION_TYPE_REGION_EXTENSION: CloudLocation type for region
-        extension.
       CLOUD_LOCATION_TYPE_GDCC_ZONE: CloudLocation type for Google Distributed
         Cloud Connected Zone.
     """
     CLOUD_LOCATION_TYPE_UNSPECIFIED = 0
     CLOUD_LOCATION_TYPE_REGION = 1
     CLOUD_LOCATION_TYPE_ZONE = 2
-    CLOUD_LOCATION_TYPE_REGION_EXTENSION = 3
-    CLOUD_LOCATION_TYPE_GDCC_ZONE = 4
+    CLOUD_LOCATION_TYPE_GDCC_ZONE = 3
 
   class CloudProviderValueValuesEnum(_messages.Enum):
     r"""Optional. The provider of the cloud location. Values can be Google

@@ -2204,7 +2204,7 @@ class DesigncenterV1alpha(base_api.BaseApiClient):
     )
 
     def GenerateAssessmentReport(self, request, global_params=None):
-      r"""Generate a best practice report for a given Terraform plan.
+      r"""Deprecated: Use GenerateTerraformPlanAssessmentReport instead. Generate a best practice report for a given Terraform plan.
 
       Args:
         request: (DesigncenterProjectsLocationsSpacesGenerateAssessmentReportRequest) input message

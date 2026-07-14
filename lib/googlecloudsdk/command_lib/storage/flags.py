@@ -1652,6 +1652,29 @@ def add_batch_jobs_flags(parser, track=calliope_base.ReleaseTrack.GA):
       help='Clears all object custom contexts.',
   )
 
+  transformation.add_argument(
+      '--set-object-acls-from-file',
+      metavar='ACL_UPDATES_FILE',
+      type=arg_parsers.YAMLFileContents(),
+      help="""
+        Path to a local YAML or JSON file containing object ACL updates. The file must use the following format:
+
+        grants:
+        - entity: ENTITY
+            role: ROLE
+        remove_entities:
+        - ENTITY
+
+        For example:
+
+        grants:
+        - entity: allAuthenticatedUsers
+            role: READER
+        remove_entities:
+        - allUsers
+        """,
+  )
+
   parser.add_argument(
       '--description',
       help='Description for the batch job.',

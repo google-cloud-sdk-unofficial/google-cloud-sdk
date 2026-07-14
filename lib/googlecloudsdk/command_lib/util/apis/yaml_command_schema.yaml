@@ -513,6 +513,19 @@ properties:
       open_world:
         type: boolean
 
+  guidance:
+    type: object
+    description: |
+      Agent-focused best practices, prerequisites, and safety guidelines. See
+      go/gcloud-guidance.
+    properties:
+      content:
+        type: string
+        description: |
+          Static help text content.
+    required: [content]
+    additionalProperties: false
+
   release_tracks:
     type: array
     items: {enum: [ALPHA, BETA, GA, PREVIEW]}

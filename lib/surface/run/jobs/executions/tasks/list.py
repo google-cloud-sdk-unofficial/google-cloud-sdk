@@ -15,6 +15,9 @@
 """Command for listing job tasks."""
 
 
+import copy
+
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
@@ -25,6 +28,8 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(commands.List):
   """List tasks."""
 
@@ -80,3 +85,11 @@ class List(commands.List):
       ret = client.ListTasks(execution_ref.Parent(), execution_ref.Name(),
                              args.filter_flags or None)
       return sorted(ret, key=lambda x: x.index)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.RegionalEndpointsSupported
+class BetaList(List):
+  """List tasks."""
+
+  detailed_help = copy.deepcopy(List.detailed_help)

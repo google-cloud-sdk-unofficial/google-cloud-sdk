@@ -147,6 +147,10 @@ def _ConstructInstanceFromArgs(client, alloydb_messages, args):
       alloydb_messages.Instance.DatabaseFlagsValue,
       labels_dest='database_flags',
   )
+  instance_resource.labels = labels_util.ParseCreateArgs(
+      args,
+      alloydb_messages.Instance.LabelsValue,
+  )
   instance_resource.observabilityConfig = _ObservabilityConfig(
       alloydb_messages,
       observability_config_enabled=args.observability_config_enabled,
@@ -236,10 +240,6 @@ def _ConstructInstanceFromArgsBeta(client, alloydb_messages, args):
     An AlloyDB instance to create with the specified command line arguments.
   """
   instance_resource = _ConstructInstanceFromArgs(client, alloydb_messages, args)
-  instance_resource.labels = labels_util.ParseCreateArgs(
-      args,
-      alloydb_messages.Instance.LabelsValue,
-  )
   observability_config_track_active_query_plan = getattr(
       args, 'observability_config_track_active_query_plan', None)
   observability_config_track_client_address = getattr(
@@ -333,6 +333,10 @@ def _ConstructSecondaryInstanceFromArgs(client, alloydb_messages, args):
       alloydb_messages.Instance.DatabaseFlagsValue,
       labels_dest='database_flags',
   )
+  instance_resource.labels = labels_util.ParseCreateArgs(
+      args,
+      alloydb_messages.Instance.LabelsValue,
+  )
   instance_resource.networkConfig = NetworkConfig(
       alloydb_messages=alloydb_messages,
       assign_inbound_public_ip=args.assign_inbound_public_ip,
@@ -388,10 +392,6 @@ def _ConstructSecondaryInstanceFromArgsBeta(client, alloydb_messages, args):
 
   instance_resource = _ConstructSecondaryInstanceFromArgs(
       client, alloydb_messages, args
-  )
-  instance_resource.labels = labels_util.ParseCreateArgs(
-      args,
-      alloydb_messages.Instance.LabelsValue,
   )
   return instance_resource
 
@@ -558,6 +558,23 @@ def ConstructInstanceAndUpdatePathsFromArgs(
   if database_flags:
     instance_resource.databaseFlags = database_flags
     paths.append(database_flags_path)
+
+  def GetLabels():
+    """Gets the existing labels from the instance."""
+    client = api_util.AlloyDBClient(release_track)
+    req = alloydb_messages.AlloydbProjectsLocationsClustersInstancesGetRequest(
+        name=instance_ref.RelativeName()
+    )
+    return client.alloydb_client.projects_locations_clusters_instances.Get(
+        req
+    ).labels
+
+  labels_update = labels_util.ProcessUpdateArgsLazy(
+      args, alloydb_messages.Instance.LabelsValue, GetLabels
+  )
+  if labels_update.needs_update:
+    instance_resource.labels = labels_update.labels
+    paths.append('labels')
 
   if args.cpu_count or args.machine_type:
     instance_resource.machineConfig = alloydb_messages.MachineConfig(
@@ -1471,23 +1488,6 @@ def ConstructInstanceAndUpdatePathsFromArgsBeta(
   instance_resource, paths = ConstructInstanceAndUpdatePathsFromArgs(
       alloydb_messages, instance_ref, args, release_track
   )
-
-  def GetLabels():
-    """Gets the existing labels from the instance."""
-    client = api_util.AlloyDBClient(release_track)
-    req = alloydb_messages.AlloydbProjectsLocationsClustersInstancesGetRequest(
-        name=instance_ref.RelativeName()
-    )
-    return client.alloydb_client.projects_locations_clusters_instances.Get(
-        req
-    ).labels
-
-  labels_update = labels_util.ProcessUpdateArgsLazy(
-      args, alloydb_messages.Instance.LabelsValue, GetLabels
-  )
-  if labels_update.needs_update:
-    instance_resource.labels = labels_update.labels
-    paths.append('labels')
 
   if args.update_mode:
     instance_resource.updatePolicy = alloydb_messages.UpdatePolicy(

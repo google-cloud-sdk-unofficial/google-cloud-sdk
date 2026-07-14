@@ -1240,10 +1240,10 @@ class FirewallEndpoint(_messages.Message):
     LabelsValue: Optional. Labels as key value pairs
 
   Fields:
-    associatedNetworks: Output only. List of networks that are associated with
-      this endpoint in the local zone. This is a projection of the
-      FirewallEndpointAssociations pointing at this endpoint. A network will
-      only appear in this list after traffic routing is fully configured.
+    associatedNetworks: Output only. Deprecated: List of networks that are
+      associated with this endpoint in the local zone. This is a projection of
+      the FirewallEndpointAssociations pointing at this endpoint. A network
+      will only appear in this list after traffic routing is fully configured.
       Format: projects/{project}/global/networks/{name}.
     associations: Output only. List of FirewallEndpointAssociations that are
       associated to this endpoint. An association will only appear in this
@@ -1263,6 +1263,7 @@ class FirewallEndpoint(_messages.Message):
     satisfiesPzs: Output only. [Output Only] Reserved for future use.
     state: Output only. Current state of the endpoint.
     updateTime: Output only. Update time stamp
+    wildfireSettings: Optional. Settings for WildFire analysis.
   """
 
   class StateValueValuesEnum(_messages.Enum):
@@ -1318,6 +1319,7 @@ class FirewallEndpoint(_messages.Message):
   satisfiesPzs = _messages.BooleanField(11)
   state = _messages.EnumField('StateValueValuesEnum', 12)
   updateTime = _messages.StringField(13)
+  wildfireSettings = _messages.MessageField('FirewallEndpointWildfireSettings', 14)
 
 
 class FirewallEndpointAssociation(_messages.Message):
@@ -1419,12 +1421,223 @@ class FirewallEndpointAssociationReference(_messages.Message):
 class FirewallEndpointEndpointSettings(_messages.Message):
   r"""Settings for the endpoint.
 
+  Enums:
+    ContentCloudRegionValueValuesEnum: Optional. The content cloud region of
+      the endpoint.
+
   Fields:
+    contentCloudRegion: Optional. The content cloud region of the endpoint.
+    httpPartialResponseBlocked: Optional. Whether to block HTTP partial
+      responses for the endpoint. When this is true, resumption of blocked
+      malicious HTTP file downloads will be blocked by the firewall. False
+      provides maximum availability, true provides maximum security.
     jumboFramesEnabled: Optional. Immutable. Indicates whether Jumbo Frames
       are enabled. Default value is false.
   """
 
-  jumboFramesEnabled = _messages.BooleanField(1)
+  class ContentCloudRegionValueValuesEnum(_messages.Enum):
+    r"""Optional. The content cloud region of the endpoint.
+
+    Values:
+      CONTENT_CLOUD_REGION_UNSPECIFIED: PAN content cloud region not
+        specified.
+      US_CENTRAL: us.hawkeye.services-edge.paloaltonetworks.com
+      APAC: APAC content cloud portal: apac.hawkeye.services-
+        edge.paloaltonetworks.com
+      INDIA: India content cloud portal: in.hawkeye.services-
+        edge.paloaltonetworks.com
+      UK: UK content cloud portal: uk.hawkeye.services-
+        edge.paloaltonetworks.com
+      FRANCE: France content cloud portal: fr.hawkeye.services-
+        edge.paloaltonetworks.com
+      JAPAN: Japan content cloud portal: jp.hawkeye.services-
+        edge.paloaltonetworks.com
+      AUSTRALIA: Australia content cloud portal: au.hawkeye.services-
+        edge.paloaltonetworks.com
+      CANADA: Canada content cloud portal: ca.hawkeye.services-
+        edge.paloaltonetworks.com
+      SWITZERLAND: Switzerland content cloud portal: ch.hawkeye.services-
+        edge.paloaltonetworks.com
+      NETHERLANDS: Netherlands content cloud portal: nl.hawkeye.services-
+        edge.paloaltonetworks.com
+      INDONESIA: Indonesia content cloud portal: id.hawkeye.services-
+        edge.paloaltonetworks.com
+      QATAR: Qatar content cloud portal: qa.hawkeye.services-
+        edge.paloaltonetworks.com
+      TAIWAN: Taiwan content cloud portal: tw.hawkeye.services-
+        edge.paloaltonetworks.com
+      POLAND: Poland content cloud portal: pl.hawkeye.services-
+        edge.paloaltonetworks.com
+      SOUTH_KOREA: South Korea content cloud portal: kr.hawkeye.services-
+        edge.paloaltonetworks.com
+      SAUDI_ARABIA: Saudi Arabia content cloud portal: sa.hawkeye.services-
+        edge.paloaltonetworks.com
+      ITALY: Italy content cloud portal: it.hawkeye.services-
+        edge.paloaltonetworks.com
+    """
+    CONTENT_CLOUD_REGION_UNSPECIFIED = 0
+    US_CENTRAL = 1
+    APAC = 2
+    INDIA = 3
+    UK = 4
+    FRANCE = 5
+    JAPAN = 6
+    AUSTRALIA = 7
+    CANADA = 8
+    SWITZERLAND = 9
+    NETHERLANDS = 10
+    INDONESIA = 11
+    QATAR = 12
+    TAIWAN = 13
+    POLAND = 14
+    SOUTH_KOREA = 15
+    SAUDI_ARABIA = 16
+    ITALY = 17
+
+  contentCloudRegion = _messages.EnumField('ContentCloudRegionValueValuesEnum', 1)
+  httpPartialResponseBlocked = _messages.BooleanField(2)
+  jumboFramesEnabled = _messages.BooleanField(3)
+
+
+class FirewallEndpointWildfireSettings(_messages.Message):
+  r"""Settings for WildFire analysis.
+
+  Enums:
+    WildfireRealtimeLookupTimeoutActionValueValuesEnum: Optional. Action to
+      take on WildFire real time signature lookup timeout. Default value is
+      ALLOW.
+    WildfireRegionValueValuesEnum: Optional. The region where WildFire
+      analysis will be performed. PAN supports regions:
+      https://docs.paloaltonetworks.com/advanced-
+      wildfire/administration/advanced-wildfire-overview/advanced-wildfire-
+      deployments/advanced-wildfire-global-cloud
+
+  Fields:
+    enabled: Optional. Indicates whether WildFire analysis is enabled. Default
+      value is false.
+    wildfireInlineCloudAnalysisSettings: Optional. Settings for WildFire
+      inline cloud analysis.
+    wildfireRealtimeLookupDuration: Optional. Duration in milliseconds on a
+      file being held while the WildFire real time signature cloud performs a
+      signature lookup. Value between 1 to 5000 is valid. Default value is
+      1000.
+    wildfireRealtimeLookupTimeoutAction: Optional. Action to take on WildFire
+      real time signature lookup timeout. Default value is ALLOW.
+    wildfireRegion: Optional. The region where WildFire analysis will be
+      performed. PAN supports regions:
+      https://docs.paloaltonetworks.com/advanced-
+      wildfire/administration/advanced-wildfire-overview/advanced-wildfire-
+      deployments/advanced-wildfire-global-cloud
+  """
+
+  class WildfireRealtimeLookupTimeoutActionValueValuesEnum(_messages.Enum):
+    r"""Optional. Action to take on WildFire real time signature lookup
+    timeout. Default value is ALLOW.
+
+    Values:
+      WILDFIRE_REALTIME_SIGNATURE_LOOKUP_TIMEOUT_ACTION_UNSPECIFIED: WildFire
+        real time signature lookup timeout action not specified.
+      ALLOW: The files that timed out in the signature lookup will be allowed
+        to transmit.
+      DENY: The files that timed out in the signature lookup will be denied to
+        transmit.
+    """
+    WILDFIRE_REALTIME_SIGNATURE_LOOKUP_TIMEOUT_ACTION_UNSPECIFIED = 0
+    ALLOW = 1
+    DENY = 2
+
+  class WildfireRegionValueValuesEnum(_messages.Enum):
+    r"""Optional. The region where WildFire analysis will be performed. PAN
+    supports regions: https://docs.paloaltonetworks.com/advanced-
+    wildfire/administration/advanced-wildfire-overview/advanced-wildfire-
+    deployments/advanced-wildfire-global-cloud
+
+    Values:
+      WILDFIRE_REGION_UNSPECIFIED: WildFire region not specified.
+      CANADA: Canada cloud portal: ca.wildfire.paloaltonetworks.com
+      UNITED_STATES: United States cloud portal: us-
+        native.wildfire.paloaltonetworks.com
+      JAPAN: Japan cloud portal: jp.wildfire.paloaltonetworks.com
+      SINGAPORE: Singapore cloud portal: sg.wildfire.paloaltonetworks.com
+      UNITED_KINGDOM: United Kingdom cloud portal:
+        uk.wildfire.paloaltonetworks.com
+      AUSTRALIA: Australia cloud portal: au.wildfire.paloaltonetworks.com
+      GERMANY: Germany cloud portal: de.wildfire.paloaltonetworks.com
+      INDIA: India cloud portal: in.wildfire.paloaltonetworks.com
+      SWITZERLAND: Switzerland cloud portal: ch.wildfire.paloaltonetworks.com
+      POLAND: Poland cloud portal: pl.wildfire.paloaltonetworks.com
+      INDONESIA: Indonesia cloud portal: id.wildfire.paloaltonetworks.com
+      TAIWAN: Taiwan cloud portal: tw.wildfire.paloaltonetworks.com
+      FRANCE: France cloud portal: fr.wildfire.paloaltonetworks.com
+      QATAR: Qatar cloud portal: qatar.wildfire.paloaltonetworks.com
+      SOUTH_KOREA: South Korea cloud portal: kr.wildfire.paloaltonetworks.com
+      ISRAEL: Israel cloud portal: il.wildfire.paloaltonetworks.com
+      SAUDI_ARABIA: Saudi Arabia cloud portal:
+        sa.wildfire.paloaltonetworks.com
+      SPAIN: Spain cloud portal: es.wildfire.paloaltonetworks.com
+    """
+    WILDFIRE_REGION_UNSPECIFIED = 0
+    CANADA = 1
+    UNITED_STATES = 2
+    JAPAN = 3
+    SINGAPORE = 4
+    UNITED_KINGDOM = 5
+    AUSTRALIA = 6
+    GERMANY = 7
+    INDIA = 8
+    SWITZERLAND = 9
+    POLAND = 10
+    INDONESIA = 11
+    TAIWAN = 12
+    FRANCE = 13
+    QATAR = 14
+    SOUTH_KOREA = 15
+    ISRAEL = 16
+    SAUDI_ARABIA = 17
+    SPAIN = 18
+
+  enabled = _messages.BooleanField(1)
+  wildfireInlineCloudAnalysisSettings = _messages.MessageField('FirewallEndpointWildfireSettingsWildfireInlineCloudAnalysisSettings', 2)
+  wildfireRealtimeLookupDuration = _messages.StringField(3)
+  wildfireRealtimeLookupTimeoutAction = _messages.EnumField('WildfireRealtimeLookupTimeoutActionValueValuesEnum', 4)
+  wildfireRegion = _messages.EnumField('WildfireRegionValueValuesEnum', 5)
+
+
+class FirewallEndpointWildfireSettingsWildfireInlineCloudAnalysisSettings(_messages.Message):
+  r"""Settings for WildFire inline cloud analysis.
+
+  Enums:
+    TimeoutActionValueValuesEnum: Optional. Action to take when WildFire
+      inline cloud analysis times out. Default value is ALLOW.
+
+  Fields:
+    maxAnalysisDuration: Optional. Timeout in milliseconds on a file being
+      held while WildFire inline cloud analysis is performed. Value between 1
+      to 240000 is valid. Default value is 30000.
+    submissionTimeoutLoggingDisabled: Optional. Whether to disable WildFire
+      submission log generation for files that timeout during WildFire inline
+      cloud analysis.
+    timeoutAction: Optional. Action to take when WildFire inline cloud
+      analysis times out. Default value is ALLOW.
+  """
+
+  class TimeoutActionValueValuesEnum(_messages.Enum):
+    r"""Optional. Action to take when WildFire inline cloud analysis times
+    out. Default value is ALLOW.
+
+    Values:
+      WILDFIRE_INLINE_CLOUD_ANALYSIS_TIMEOUT_ACTION_UNSPECIFIED: WildFire
+        inline cloud analysis timeout action not specified.
+      ALLOW: The files that timed out will be allowed to transmit.
+      DENY: The files that timed out will be denied to transmit.
+    """
+    WILDFIRE_INLINE_CLOUD_ANALYSIS_TIMEOUT_ACTION_UNSPECIFIED = 0
+    ALLOW = 1
+    DENY = 2
+
+  maxAnalysisDuration = _messages.StringField(1)
+  submissionTimeoutLoggingDisabled = _messages.BooleanField(2)
+  timeoutAction = _messages.EnumField('TimeoutActionValueValuesEnum', 3)
 
 
 class GatewaySecurityPolicy(_messages.Message):
@@ -2892,6 +3105,21 @@ class ListUrlListsResponse(_messages.Message):
   urlLists = _messages.MessageField('UrlList', 3, repeated=True)
 
 
+class ListWildfireVerdictChangeRequestsResponse(_messages.Message):
+  r"""Message for response to listing WildfireVerdictChangeRequests.
+
+  Fields:
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    unreachable: Unordered list. Locations that could not be reached.
+    wildfireVerdictChangeRequests: The list of WildfireVerdictChangeRequests
+  """
+
+  nextPageToken = _messages.StringField(1)
+  unreachable = _messages.StringField(2, repeated=True)
+  wildfireVerdictChangeRequests = _messages.MessageField('WildfireVerdictChangeRequest', 3, repeated=True)
+
+
 class Location(_messages.Message):
   r"""A resource that represents a Google Cloud location.
 
@@ -3980,6 +4208,65 @@ class NetworksecurityOrganizationsLocationsFirewallEndpointsPatchRequest(_messag
   name = _messages.StringField(2, required=True)
   requestId = _messages.StringField(3)
   updateMask = _messages.StringField(4)
+
+
+class NetworksecurityOrganizationsLocationsFirewallEndpointsWildfireVerdictChangeRequestsCreateRequest(_messages.Message):
+  r"""A NetworksecurityOrganizationsLocationsFirewallEndpointsWildfireVerdictC
+  hangeRequestsCreateRequest object.
+
+  Fields:
+    parent: Required. Parent value for
+      CreateWildfireVerdictChangeRequestRequest. The parent is a firewall
+      endpoint resource. Format: organizations|projects/{project_or_organizati
+      on}/locations/{location}/firewallEndpoints/{firewall_endpoint}
+    wildfireVerdictChangeRequest: A WildfireVerdictChangeRequest resource to
+      be passed as the request body.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  wildfireVerdictChangeRequest = _messages.MessageField('WildfireVerdictChangeRequest', 2)
+
+
+class NetworksecurityOrganizationsLocationsFirewallEndpointsWildfireVerdictChangeRequestsGetRequest(_messages.Message):
+  r"""A NetworksecurityOrganizationsLocationsFirewallEndpointsWildfireVerdictC
+  hangeRequestsGetRequest object.
+
+  Fields:
+    name: Required. Name of the WildfireVerdictChangeRequest to retrieve.
+      Format: organizations|projects/{project_or_organization}/locations/{loca
+      tion}/firewallEndpoints/{firewall_endpoint}/wildfireVerdictChangeRequest
+      s/{wildfire_verdict_change_request_id} Where
+      {wildfire_verdict_change_request_id} is the ID in the format: ^[0-9a-fA-
+      F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityOrganizationsLocationsFirewallEndpointsWildfireVerdictChangeRequestsListRequest(_messages.Message):
+  r"""A NetworksecurityOrganizationsLocationsFirewallEndpointsWildfireVerdictC
+  hangeRequestsListRequest object.
+
+  Fields:
+    filter: Optional. Filter expression to filter the results. See AIP-160 for
+      filtering syntax. Supported fields are: - `sha256` (string, equality
+      only, e.g. `sha256 = "..."`) - `state` (enum, equality only, e.g. `state
+      = "ACTIVE"`) - `create_time` (timestamp, comparisons, e.g. `create_time
+      > "2026-01-01T00:00:00Z"`)
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Parent value for
+      ListWildfireVerdictChangeRequestsRequest. The parent is a firewall
+      endpoint resource. Format: organizations|projects/{project_or_organizati
+      on}/locations/{location}/firewallEndpoints/{firewall_endpoint}
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
 
 
 class NetworksecurityOrganizationsLocationsGetRequest(_messages.Message):
@@ -5381,6 +5668,65 @@ class NetworksecurityProjectsLocationsFirewallEndpointsPatchRequest(_messages.Me
   name = _messages.StringField(2, required=True)
   requestId = _messages.StringField(3)
   updateMask = _messages.StringField(4)
+
+
+class NetworksecurityProjectsLocationsFirewallEndpointsWildfireVerdictChangeRequestsCreateRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsFirewallEndpointsWildfireVerdictChange
+  RequestsCreateRequest object.
+
+  Fields:
+    parent: Required. Parent value for
+      CreateWildfireVerdictChangeRequestRequest. The parent is a firewall
+      endpoint resource. Format: organizations|projects/{project_or_organizati
+      on}/locations/{location}/firewallEndpoints/{firewall_endpoint}
+    wildfireVerdictChangeRequest: A WildfireVerdictChangeRequest resource to
+      be passed as the request body.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  wildfireVerdictChangeRequest = _messages.MessageField('WildfireVerdictChangeRequest', 2)
+
+
+class NetworksecurityProjectsLocationsFirewallEndpointsWildfireVerdictChangeRequestsGetRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsFirewallEndpointsWildfireVerdictChange
+  RequestsGetRequest object.
+
+  Fields:
+    name: Required. Name of the WildfireVerdictChangeRequest to retrieve.
+      Format: organizations|projects/{project_or_organization}/locations/{loca
+      tion}/firewallEndpoints/{firewall_endpoint}/wildfireVerdictChangeRequest
+      s/{wildfire_verdict_change_request_id} Where
+      {wildfire_verdict_change_request_id} is the ID in the format: ^[0-9a-fA-
+      F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityProjectsLocationsFirewallEndpointsWildfireVerdictChangeRequestsListRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsFirewallEndpointsWildfireVerdictChange
+  RequestsListRequest object.
+
+  Fields:
+    filter: Optional. Filter expression to filter the results. See AIP-160 for
+      filtering syntax. Supported fields are: - `sha256` (string, equality
+      only, e.g. `sha256 = "..."`) - `state` (enum, equality only, e.g. `state
+      = "ACTIVE"`) - `create_time` (timestamp, comparisons, e.g. `create_time
+      > "2026-01-01T00:00:00Z"`)
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Parent value for
+      ListWildfireVerdictChangeRequestsRequest. The parent is a firewall
+      endpoint resource. Format: organizations|projects/{project_or_organizati
+      on}/locations/{location}/firewallEndpoints/{firewall_endpoint}
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
 
 
 class NetworksecurityProjectsLocationsGatewaySecurityPoliciesCreateRequest(_messages.Message):
@@ -7635,6 +7981,8 @@ class SecurityProfile(_messages.Message):
     updateTime: Output only. Last resource update timestamp.
     urlFilteringProfile: The URL filtering configuration for the
       SecurityProfile.
+    wildfireAnalysisProfile: The WildFire Analysis configurations for
+      SecurityProfile.
   """
 
   class TypeValueValuesEnum(_messages.Enum):
@@ -7647,12 +7995,14 @@ class SecurityProfile(_messages.Message):
       CUSTOM_MIRRORING: Profile type for packet mirroring v2
       CUSTOM_INTERCEPT: Profile type for TPPI.
       URL_FILTERING: Profile type for URL filtering.
+      WILDFIRE_ANALYSIS: Profile type for WildFire Analysis.
     """
     PROFILE_TYPE_UNSPECIFIED = 0
     THREAT_PREVENTION = 1
     CUSTOM_MIRRORING = 2
     CUSTOM_INTERCEPT = 3
     URL_FILTERING = 4
+    WILDFIRE_ANALYSIS = 5
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
@@ -7689,6 +8039,7 @@ class SecurityProfile(_messages.Message):
   type = _messages.EnumField('TypeValueValuesEnum', 9)
   updateTime = _messages.StringField(10)
   urlFilteringProfile = _messages.MessageField('UrlFilteringProfile', 11)
+  wildfireAnalysisProfile = _messages.MessageField('WildfireAnalysisProfile', 12)
 
 
 class SecurityProfileGroup(_messages.Message):
@@ -7720,6 +8071,8 @@ class SecurityProfileGroup(_messages.Message):
     updateTime: Output only. Last resource update timestamp.
     urlFilteringProfile: Optional. Reference to a SecurityProfile with the
       UrlFiltering configuration.
+    wildfireAnalysisProfile: Optional. Reference to a SecurityProfile with the
+      WildFire configuration.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -7757,6 +8110,7 @@ class SecurityProfileGroup(_messages.Message):
   threatPreventionProfile = _messages.StringField(9)
   updateTime = _messages.StringField(10)
   urlFilteringProfile = _messages.StringField(11)
+  wildfireAnalysisProfile = _messages.StringField(12)
 
 
 class ServerTlsPolicy(_messages.Message):
@@ -8335,6 +8689,615 @@ class ValidationCA(_messages.Message):
 
   certificateProviderInstance = _messages.MessageField('CertificateProviderInstance', 1)
   grpcEndpoint = _messages.MessageField('GoogleCloudNetworksecurityV1beta1GrpcEndpoint', 2)
+
+
+class WildfireAnalysisProfile(_messages.Message):
+  r"""WildfireAnalysisProfile defines Palo Alto Networks WildFire behavior.
+
+  Fields:
+    wildfireInlineCloudAnalysisRules: Optional. Configuration for WildFire
+      inline cloud analysis.
+    wildfireInlineMlOverrides: Optional. Configuration for overriding inline
+      ML WildFire actions per protocol.
+    wildfireInlineMlSetting: Optional. Settings for WildFire Inline ML
+      analysis.
+    wildfireInlineMlSettings: Optional. Settings for WildFire Inline ML
+      analysis.
+    wildfireOverrides: Optional. Configuration for overriding WildFire actions
+      per protocol.
+    wildfireRealtimeLookup: Optional. Whether to hold the transfer of a file
+      while the WildFire real-time signature cloud performs a signature
+      lookup. Default value is false.
+    wildfireSubmissionRules: Optional. Configurations for WildFire file
+      submissions.
+    wildfireThreatOverrides: Optional. Configuration for overriding WildFire
+      threats action by threat_id match.
+  """
+
+  wildfireInlineCloudAnalysisRules = _messages.MessageField('WildfireInlineCloudAnalysisRule', 1, repeated=True)
+  wildfireInlineMlOverrides = _messages.MessageField('WildfireInlineMlOverride', 2, repeated=True)
+  wildfireInlineMlSetting = _messages.MessageField('WildfireInlineMlSettings', 3)
+  wildfireInlineMlSettings = _messages.MessageField('WildfireInlineMlSettings', 4, repeated=True)
+  wildfireOverrides = _messages.MessageField('WildfireOverride', 5, repeated=True)
+  wildfireRealtimeLookup = _messages.BooleanField(6)
+  wildfireSubmissionRules = _messages.MessageField('WildfireSubmissionRule', 7, repeated=True)
+  wildfireThreatOverrides = _messages.MessageField('WildfireThreatOverride', 8, repeated=True)
+
+
+class WildfireInlineCloudAnalysisRule(_messages.Message):
+  r"""The list of file type configurations to be scanned by WildFire Inline
+  Cloud Analysis.
+
+  Enums:
+    ActionValueValuesEnum: Required. Action to take when a threat is detected
+      using WildFire Inline Cloud Analysis. The default Value is DENY.
+    DirectionValueValuesEnum: Required. Direction for the file to be analyzed
+      by WildFire Inline Cloud Analysis.
+    FileSelectionModeValueValuesEnum: Required. File selection mode for
+      WildFire inline cloud analysis.
+
+  Fields:
+    action: Required. Action to take when a threat is detected using WildFire
+      Inline Cloud Analysis. The default Value is DENY.
+    customFileTypes: Submit a custom list of file types for WildFire analysis.
+    direction: Required. Direction for the file to be analyzed by WildFire
+      Inline Cloud Analysis.
+    fileSelectionMode: Required. File selection mode for WildFire inline cloud
+      analysis.
+  """
+
+  class ActionValueValuesEnum(_messages.Enum):
+    r"""Required. Action to take when a threat is detected using WildFire
+    Inline Cloud Analysis. The default Value is DENY.
+
+    Values:
+      WILDFIRE_INLINE_CLOUD_ANALYSIS_ACTION_UNSPECIFIED: WildFire Inline Cloud
+        Analysis action not specified.
+      ALLOW: The files caught by WildFire Inline Cloud Analysis will be
+        allowed to transmit.
+      DENY: The files caught by WildFire Inline Cloud Analysis will be denied
+        to transmit.
+      ALERT: The files caught by WildFire Inline Cloud Analysis will be
+        allowed to transmit, but a wildfire_submission_log entry will be sent
+        to the consumer project.
+    """
+    WILDFIRE_INLINE_CLOUD_ANALYSIS_ACTION_UNSPECIFIED = 0
+    ALLOW = 1
+    DENY = 2
+    ALERT = 3
+
+  class DirectionValueValuesEnum(_messages.Enum):
+    r"""Required. Direction for the file to be analyzed by WildFire Inline
+    Cloud Analysis.
+
+    Values:
+      DIRECTION_UNSPECIFIED: Direction not specified.
+      UPLOAD: Upload direction.
+      DOWNLOAD: Download direction.
+      BOTH: Both upload and download directions.
+    """
+    DIRECTION_UNSPECIFIED = 0
+    UPLOAD = 1
+    DOWNLOAD = 2
+    BOTH = 3
+
+  class FileSelectionModeValueValuesEnum(_messages.Enum):
+    r"""Required. File selection mode for WildFire inline cloud analysis.
+
+    Values:
+      FILE_SELECTION_MODE_UNSPECIFIED: File selection mode not specified.
+      ALL_FILE_TYPES: Submit all the file types for scan.
+      CUSTOM_FILE_TYPES: Submit a custom list of file types for scan.
+    """
+    FILE_SELECTION_MODE_UNSPECIFIED = 0
+    ALL_FILE_TYPES = 1
+    CUSTOM_FILE_TYPES = 2
+
+  action = _messages.EnumField('ActionValueValuesEnum', 1)
+  customFileTypes = _messages.MessageField('WildfireInlineCloudAnalysisRuleCustomFileTypes', 2)
+  direction = _messages.EnumField('DirectionValueValuesEnum', 3)
+  fileSelectionMode = _messages.EnumField('FileSelectionModeValueValuesEnum', 4)
+
+
+class WildfireInlineCloudAnalysisRuleCustomFileTypes(_messages.Message):
+  r"""The options to submit a custom list of file types for scan.
+
+  Enums:
+    FileTypesValueListEntryValuesEnum:
+
+  Fields:
+    fileTypes: Required. File types to be submitted for WildFire inline cloud
+      analysis.
+  """
+
+  class FileTypesValueListEntryValuesEnum(_messages.Enum):
+    r"""FileTypesValueListEntryValuesEnum enum type.
+
+    Values:
+      FILE_TYPE_UNSPECIFIED: File type not specified.
+      PE: Portable Executable (PE) files.
+    """
+    FILE_TYPE_UNSPECIFIED = 0
+    PE = 1
+
+  fileTypes = _messages.EnumField('FileTypesValueListEntryValuesEnum', 1, repeated=True)
+
+
+class WildfireInlineMlFileException(_messages.Message):
+  r"""Defines the file to exclude from WildFire Inline ML analysis.
+
+  Fields:
+    filename: Optional. Name of the file to exclude from WildFire Inline ML
+      analysis.
+    partialHash: Required. Machine learning partial hash of the file to
+      exclude from WildFire Inline ML analysis.
+  """
+
+  filename = _messages.StringField(1)
+  partialHash = _messages.StringField(2)
+
+
+class WildfireInlineMlOverride(_messages.Message):
+  r"""Defines what action to take for WildFire Inline ML threats per protocol.
+
+  Enums:
+    ActionValueValuesEnum: Required. The action to take for WildFire Inline ML
+      override.
+    ProtocolValueValuesEnum: Required. Protocol to match for WildFire Inline
+      ML override.
+
+  Fields:
+    action: Required. The action to take for WildFire Inline ML override.
+    protocol: Required. Protocol to match for WildFire Inline ML override.
+  """
+
+  class ActionValueValuesEnum(_messages.Enum):
+    r"""Required. The action to take for WildFire Inline ML override.
+
+    Values:
+      WILDFIRE_THREAT_ACTION_UNSPECIFIED: Threat action not specified.
+      WILDFIRE_DEFAULT_ACTION: The default action (as specified by the vendor)
+        is taken.
+      WILDFIRE_ALLOW: The packet matching this rule will be allowed to
+        transmit.
+      WILDFIRE_ALERT: The packet matching this rule will be allowed to
+        transmit, but a threat_log entry will be sent to the consumer project.
+      WILDFIRE_DENY: The packet matching this rule will be dropped, and a
+        threat_log entry will be sent to the consumer project.
+    """
+    WILDFIRE_THREAT_ACTION_UNSPECIFIED = 0
+    WILDFIRE_DEFAULT_ACTION = 1
+    WILDFIRE_ALLOW = 2
+    WILDFIRE_ALERT = 3
+    WILDFIRE_DENY = 4
+
+  class ProtocolValueValuesEnum(_messages.Enum):
+    r"""Required. Protocol to match for WildFire Inline ML override.
+
+    Values:
+      WILDFIRE_PROTOCOL_UNSPECIFIED: Protocol not specified.
+      WILDFIRE_SMTP: SMTP protocol
+      WILDFIRE_SMB: SMB protocol
+      WILDFIRE_POP3: POP3 protocol
+      WILDFIRE_IMAP: IMAP protocol
+      WILDFIRE_HTTP2: HTTP2 protocol
+      WILDFIRE_HTTP: HTTP protocol
+      WILDFIRE_FTP: FTP protocol
+    """
+    WILDFIRE_PROTOCOL_UNSPECIFIED = 0
+    WILDFIRE_SMTP = 1
+    WILDFIRE_SMB = 2
+    WILDFIRE_POP3 = 3
+    WILDFIRE_IMAP = 4
+    WILDFIRE_HTTP2 = 5
+    WILDFIRE_HTTP = 6
+    WILDFIRE_FTP = 7
+
+  action = _messages.EnumField('ActionValueValuesEnum', 1)
+  protocol = _messages.EnumField('ProtocolValueValuesEnum', 2)
+
+
+class WildfireInlineMlSettings(_messages.Message):
+  r"""Defines the settings for WildFire Inline ML analysis.
+
+  Fields:
+    fileExceptions: Optional. List of files to exclude from WildFire Inline ML
+      analysis.
+    inlineMlConfigs: Optional. List of Inline ML configs to enable in WildFire
+      Inline ML analysis.
+  """
+
+  fileExceptions = _messages.MessageField('WildfireInlineMlFileException', 1, repeated=True)
+  inlineMlConfigs = _messages.MessageField('WildfireInlineMlSettingsInlineMlConfig', 2, repeated=True)
+
+
+class WildfireInlineMlSettingsInlineMlConfig(_messages.Message):
+  r"""Configuration for WildFire Inline ML analysis per file type.
+
+  Enums:
+    ActionValueValuesEnum: Required. Action to take when a threat is detected
+      using Inline ML.
+    FileTypeValueValuesEnum: Required. File type to configure Inline ML for.
+
+  Fields:
+    action: Required. Action to take when a threat is detected using Inline
+      ML.
+    fileType: Required. File type to configure Inline ML for.
+  """
+
+  class ActionValueValuesEnum(_messages.Enum):
+    r"""Required. Action to take when a threat is detected using Inline ML.
+
+    Values:
+      INLINE_ML_ACTION_UNSPECIFIED: Inline ML threat action not specified.
+      DISABLE: Disable WildFire Inline ML for the associated file type.
+      ALERT: Enable WildFire Inline ML for the associated file type. Overrides
+        any protocol level settings with action stricter than ALERT to ALERT
+        so that the malicious files detected generate a threat log to the
+        consumer project but are not blocked.
+      ENABLE: Enable WildFire Inline ML for the associated file type,
+        malicious files detected will be blocked.
+    """
+    INLINE_ML_ACTION_UNSPECIFIED = 0
+    DISABLE = 1
+    ALERT = 2
+    ENABLE = 3
+
+  class FileTypeValueValuesEnum(_messages.Enum):
+    r"""Required. File type to configure Inline ML for.
+
+    Values:
+      INLINE_ML_CONFIG_UNSPECIFIED: Inline ML config not specified.
+      WINDOWS_EXECUTABLE: Enable machine learning engine to dynamically detect
+        malicious PE files.
+      POWERSHELL_SCRIPT1: Enable machine learning engine to dynamically
+        identify malicious PowerShell scripts with known length.
+      POWERSHELL_SCRIPT2: Enable machine learning engine to dynamically
+        identify malicious PowerShell script without known length.
+      ELF: Enable machine learning engine to dynamically detect malicious ELF
+        files.
+      MS_OFFICE: Enable machine learning engine to dynamically detect
+        malicious MSOffice (97-03) files.
+      SHELL: Enable machine learning engine to dynamically detect malicious
+        Shell files.
+      OOXML: Enable machine learning engine to dynamically detect malicious
+        Open Office XML files.
+      MACHO: Enable machine learning engine to dynamically detect malicious
+        Mach-O files.
+    """
+    INLINE_ML_CONFIG_UNSPECIFIED = 0
+    WINDOWS_EXECUTABLE = 1
+    POWERSHELL_SCRIPT1 = 2
+    POWERSHELL_SCRIPT2 = 3
+    ELF = 4
+    MS_OFFICE = 5
+    SHELL = 6
+    OOXML = 7
+    MACHO = 8
+
+  action = _messages.EnumField('ActionValueValuesEnum', 1)
+  fileType = _messages.EnumField('FileTypeValueValuesEnum', 2)
+
+
+class WildfireOverride(_messages.Message):
+  r"""Defines what action to take for WildFire threats per protocol.
+
+  Enums:
+    ActionValueValuesEnum: Required. Threat action override. For some threat
+      types, only a subset of actions applies.
+    ProtocolValueValuesEnum: Required. Protocol to match.
+
+  Fields:
+    action: Required. Threat action override. For some threat types, only a
+      subset of actions applies.
+    protocol: Required. Protocol to match.
+  """
+
+  class ActionValueValuesEnum(_messages.Enum):
+    r"""Required. Threat action override. For some threat types, only a subset
+    of actions applies.
+
+    Values:
+      WILDFIRE_THREAT_ACTION_UNSPECIFIED: Threat action not specified.
+      WILDFIRE_DEFAULT_ACTION: The default action (as specified by the vendor)
+        is taken.
+      WILDFIRE_ALLOW: The packet matching this rule will be allowed to
+        transmit.
+      WILDFIRE_ALERT: The packet matching this rule will be allowed to
+        transmit, but a threat_log entry will be sent to the consumer project.
+      WILDFIRE_DENY: The packet matching this rule will be dropped, and a
+        threat_log entry will be sent to the consumer project.
+    """
+    WILDFIRE_THREAT_ACTION_UNSPECIFIED = 0
+    WILDFIRE_DEFAULT_ACTION = 1
+    WILDFIRE_ALLOW = 2
+    WILDFIRE_ALERT = 3
+    WILDFIRE_DENY = 4
+
+  class ProtocolValueValuesEnum(_messages.Enum):
+    r"""Required. Protocol to match.
+
+    Values:
+      WILDFIRE_PROTOCOL_UNSPECIFIED: Protocol not specified.
+      WILDFIRE_SMTP: SMTP protocol
+      WILDFIRE_SMB: SMB protocol
+      WILDFIRE_POP3: POP3 protocol
+      WILDFIRE_IMAP: IMAP protocol
+      WILDFIRE_HTTP2: HTTP2 protocol
+      WILDFIRE_HTTP: HTTP protocol
+      WILDFIRE_FTP: FTP protocol
+    """
+    WILDFIRE_PROTOCOL_UNSPECIFIED = 0
+    WILDFIRE_SMTP = 1
+    WILDFIRE_SMB = 2
+    WILDFIRE_POP3 = 3
+    WILDFIRE_IMAP = 4
+    WILDFIRE_HTTP2 = 5
+    WILDFIRE_HTTP = 6
+    WILDFIRE_FTP = 7
+
+  action = _messages.EnumField('ActionValueValuesEnum', 1)
+  protocol = _messages.EnumField('ProtocolValueValuesEnum', 2)
+
+
+class WildfireSubmissionRule(_messages.Message):
+  r"""Defines the file types to be submitted for WildFire analysis and the
+  direction of the traffic.
+
+  Enums:
+    DirectionValueValuesEnum: Required. Direction for the files to be analyzed
+      by WildFire.
+    FileSelectionModeValueValuesEnum: Required. File selection mode for
+      WildFire analysis.
+
+  Fields:
+    customFileTypes: Submit a custom list of file types for WildFire analysis.
+    direction: Required. Direction for the files to be analyzed by WildFire.
+    fileSelectionMode: Required. File selection mode for WildFire analysis.
+  """
+
+  class DirectionValueValuesEnum(_messages.Enum):
+    r"""Required. Direction for the files to be analyzed by WildFire.
+
+    Values:
+      DIRECTION_UNSPECIFIED: Direction not specified.
+      UPLOAD: Upload direction.
+      DOWNLOAD: Download direction.
+      BOTH: Both upload and download directions.
+    """
+    DIRECTION_UNSPECIFIED = 0
+    UPLOAD = 1
+    DOWNLOAD = 2
+    BOTH = 3
+
+  class FileSelectionModeValueValuesEnum(_messages.Enum):
+    r"""Required. File selection mode for WildFire analysis.
+
+    Values:
+      FILE_SELECTION_MODE_UNSPECIFIED: File selection mode not specified.
+      ALL_FILE_TYPES: Submit all the file types for scan.
+      CUSTOM_FILE_TYPES: Submit a custom list of file types for scan.
+    """
+    FILE_SELECTION_MODE_UNSPECIFIED = 0
+    ALL_FILE_TYPES = 1
+    CUSTOM_FILE_TYPES = 2
+
+  customFileTypes = _messages.MessageField('WildfireSubmissionRuleCustomFileTypes', 1)
+  direction = _messages.EnumField('DirectionValueValuesEnum', 2)
+  fileSelectionMode = _messages.EnumField('FileSelectionModeValueValuesEnum', 3)
+
+
+class WildfireSubmissionRuleCustomFileTypes(_messages.Message):
+  r"""The options to submit a custom list of file types for scan.
+
+  Enums:
+    FileTypesValueListEntryValuesEnum:
+
+  Fields:
+    fileTypes: Required. File types to be submitted for WildFire analysis.
+  """
+
+  class FileTypesValueListEntryValuesEnum(_messages.Enum):
+    r"""FileTypesValueListEntryValuesEnum enum type.
+
+    Values:
+      FILE_TYPE_UNSPECIFIED: File type not specified.
+      APK: Android Application Package (APK) files.
+      ARCHIVE: Roshal Archive (RAR) and 7-Zip (7z) archive files.
+      EMAIL_LINK: HTTP/HTTPS links contained in SMTP and POP3 email messages.
+      FLASH: Adobe Flash applets and Flash content embedded in web pages.
+      JAR: Java applets (JAR/class files types).
+      LINUX: Executable and Linkable Format (ELF) files.
+      MS_OFFICE: Files used by Microsoft Office.
+      PDF: Portable Document Format (PDF) files.
+      PE: Portable Executable (PE) files.
+      SCRIPT: Various script files. Jscript (JS), VBScript (VBS), PowerShell
+        Scripts (PS1), Batch (BAT), HTML Application (HTA).
+    """
+    FILE_TYPE_UNSPECIFIED = 0
+    APK = 1
+    ARCHIVE = 2
+    EMAIL_LINK = 3
+    FLASH = 4
+    JAR = 5
+    LINUX = 6
+    MS_OFFICE = 7
+    PDF = 8
+    PE = 9
+    SCRIPT = 10
+
+  fileTypes = _messages.EnumField('FileTypesValueListEntryValuesEnum', 1, repeated=True)
+
+
+class WildfireThreatOverride(_messages.Message):
+  r"""Defines what action to take for a specific WildFire threat_id match.
+
+  Enums:
+    ActionValueValuesEnum: Required. Threat action override.
+
+  Fields:
+    action: Required. Threat action override.
+    threatId: Required. Threat ID to match.
+  """
+
+  class ActionValueValuesEnum(_messages.Enum):
+    r"""Required. Threat action override.
+
+    Values:
+      WILDFIRE_THREAT_ACTION_UNSPECIFIED: Threat action not specified.
+      WILDFIRE_DEFAULT_ACTION: The default action (as specified by the vendor)
+        is taken.
+      WILDFIRE_ALLOW: The packet matching this rule will be allowed to
+        transmit.
+      WILDFIRE_ALERT: The packet matching this rule will be allowed to
+        transmit, but a threat_log entry will be sent to the consumer project.
+      WILDFIRE_DENY: The packet matching this rule will be dropped, and a
+        threat_log entry will be sent to the consumer project.
+    """
+    WILDFIRE_THREAT_ACTION_UNSPECIFIED = 0
+    WILDFIRE_DEFAULT_ACTION = 1
+    WILDFIRE_ALLOW = 2
+    WILDFIRE_ALERT = 3
+    WILDFIRE_DENY = 4
+
+  action = _messages.EnumField('ActionValueValuesEnum', 1)
+  threatId = _messages.StringField(2)
+
+
+class WildfireVerdictChangeRequest(_messages.Message):
+  r"""Message for a WildfireVerdictChangeRequest.
+
+  Enums:
+    FinalVerdictValueValuesEnum: Output only. The final verdict of the Malware
+      Sample.
+    NewVerdictValueValuesEnum: Required. The suggested verdict to apply to the
+      Malware Sample.
+    OldVerdictValueValuesEnum: Output only. The original verdict of the
+      Malware Sample.
+    StateValueValuesEnum: Output only. The review state of the
+      WildfireVerdictChangeRequest.
+
+  Fields:
+    comment: Required. The justification for the verdict change request. Max
+      length 2048 characters.
+    createTime: Output only. The timestamp when the
+      WildfireVerdictChangeRequest was created.
+    fileName: Output only. The file name of the Malware Sample.
+    fileType: Output only. The file type of the Malware Sample.
+    finalVerdict: Output only. The final verdict of the Malware Sample.
+    name: Output only. Identifier. The relative name of the
+      WildfireVerdictChangeRequest. Output only. This is a unique identifier
+      generated by the third party API. Format: organizations|projects/{projec
+      t_or_organization}/locations/{location}/firewallEndpoints/{firewall_endp
+      oint}/wildfireVerdictChangeRequests/{wildfire_verdict_change_request_id}
+      Where {wildfire_verdict_change_request_id} is the ID in the format: ^[0-
+      9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-
+      F]{12}$
+    newVerdict: Required. The suggested verdict to apply to the Malware
+      Sample.
+    oldVerdict: Output only. The original verdict of the Malware Sample.
+    resolutionTime: Output only. The timestamp when the
+      WildfireVerdictChangeRequest was resolved.
+    sha256: Required. The SHA256 hash of the Malware Sample to change the
+      verdict of.
+    sourceRegion: Output only. The region of the file associated with the
+      Malware Sample.
+    state: Output only. The review state of the WildfireVerdictChangeRequest.
+    updateTime: Output only. The timestamp when the
+      WildfireVerdictChangeRequest was last updated.
+    wildfireVerdictChangeRequestId: Output only. The ID of the
+      WildfireVerdictChangeRequest. This is a unique identifier generated by
+      the third party API. Format: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-
+      F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+  """
+
+  class FinalVerdictValueValuesEnum(_messages.Enum):
+    r"""Output only. The final verdict of the Malware Sample.
+
+    Values:
+      WILDFIRE_SAMPLE_VERDICT_UNKNOWN: Default value. Malware is not yet
+        classified.
+      BENIGN: Sample is safe and does not exhibit malicious behavior.
+      MALWARE: Sample is malware and poses a security threat.
+      GRAYWARE: Sample does not pose a direct security threat, but might
+        display otherwise obtrusive behavior.
+      PHISHING: Link directs users to a phishing site and poses a security
+        threat.
+    """
+    WILDFIRE_SAMPLE_VERDICT_UNKNOWN = 0
+    BENIGN = 1
+    MALWARE = 2
+    GRAYWARE = 3
+    PHISHING = 4
+
+  class NewVerdictValueValuesEnum(_messages.Enum):
+    r"""Required. The suggested verdict to apply to the Malware Sample.
+
+    Values:
+      WILDFIRE_SAMPLE_VERDICT_UNKNOWN: Default value. Malware is not yet
+        classified.
+      BENIGN: Sample is safe and does not exhibit malicious behavior.
+      MALWARE: Sample is malware and poses a security threat.
+      GRAYWARE: Sample does not pose a direct security threat, but might
+        display otherwise obtrusive behavior.
+      PHISHING: Link directs users to a phishing site and poses a security
+        threat.
+    """
+    WILDFIRE_SAMPLE_VERDICT_UNKNOWN = 0
+    BENIGN = 1
+    MALWARE = 2
+    GRAYWARE = 3
+    PHISHING = 4
+
+  class OldVerdictValueValuesEnum(_messages.Enum):
+    r"""Output only. The original verdict of the Malware Sample.
+
+    Values:
+      WILDFIRE_SAMPLE_VERDICT_UNKNOWN: Default value. Malware is not yet
+        classified.
+      BENIGN: Sample is safe and does not exhibit malicious behavior.
+      MALWARE: Sample is malware and poses a security threat.
+      GRAYWARE: Sample does not pose a direct security threat, but might
+        display otherwise obtrusive behavior.
+      PHISHING: Link directs users to a phishing site and poses a security
+        threat.
+    """
+    WILDFIRE_SAMPLE_VERDICT_UNKNOWN = 0
+    BENIGN = 1
+    MALWARE = 2
+    GRAYWARE = 3
+    PHISHING = 4
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The review state of the WildfireVerdictChangeRequest.
+
+    Values:
+      VERDICT_CHANGE_REQUEST_STATE_UNSPECIFIED: Default value. Request does
+        not have a state. This value is unused.
+      OPEN: Request has been created and review has not started.
+      CLOSED: Malware Sample has been reviewed and the final verdict has been
+        updated.
+      PENDING: Malware Sample is currently being reviewed.
+    """
+    VERDICT_CHANGE_REQUEST_STATE_UNSPECIFIED = 0
+    OPEN = 1
+    CLOSED = 2
+    PENDING = 3
+
+  comment = _messages.StringField(1)
+  createTime = _messages.StringField(2)
+  fileName = _messages.StringField(3)
+  fileType = _messages.StringField(4)
+  finalVerdict = _messages.EnumField('FinalVerdictValueValuesEnum', 5)
+  name = _messages.StringField(6)
+  newVerdict = _messages.EnumField('NewVerdictValueValuesEnum', 7)
+  oldVerdict = _messages.EnumField('OldVerdictValueValuesEnum', 8)
+  resolutionTime = _messages.StringField(9)
+  sha256 = _messages.StringField(10)
+  sourceRegion = _messages.StringField(11)
+  state = _messages.EnumField('StateValueValuesEnum', 12)
+  updateTime = _messages.StringField(13)
+  wildfireVerdictChangeRequestId = _messages.StringField(14)
 
 
 encoding.AddCustomJsonFieldMapping(

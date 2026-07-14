@@ -336,8 +336,9 @@ class AutokeyConfig(_messages.Message):
       AutokeyConfig. Valid values are `DEDICATED_KEY_PROJECT`,
       `RESOURCE_PROJECT`, or `DISABLED`.
     name: Identifier. Name of the AutokeyConfig resource, e.g.
-      `folders/{FOLDER_NUMBER}/autokeyConfig` or
-      `projects/{PROJECT_NUMBER}/autokeyConfig`.
+      `folders/{FOLDER_NUMBER}/autokeyConfig`,
+      `projects/{PROJECT_NUMBER}/autokeyConfig`, or
+      `projects/{PROJECT_ID}/autokeyConfig`.
     state: Output only. The state for the AutokeyConfig.
   """
 
@@ -377,11 +378,14 @@ class AutokeyConfig(_messages.Message):
         deleted and the current AutokeyConfig is unusable.
       UNINITIALIZED: The AutokeyConfig is not yet initialized or has been
         reset to its default uninitialized state.
+      KEY_PROJECT_PERMISSION_DENIED: Deprecated: This state is not returned by
+        the backend.
     """
     STATE_UNSPECIFIED = 0
     ACTIVE = 1
     KEY_PROJECT_DELETED = 2
     UNINITIALIZED = 3
+    KEY_PROJECT_PERMISSION_DENIED = 4
 
   etag = _messages.StringField(1)
   keyProject = _messages.StringField(2)
@@ -583,8 +587,9 @@ class CloudkmsFoldersGetAutokeyConfigRequest(_messages.Message):
 
   Fields:
     name: Required. Name of the AutokeyConfig resource, e.g.
-      `folders/{FOLDER_NUMBER}/autokeyConfig` or
-      `projects/{PROJECT_NUMBER}/autokeyConfig`.
+      `folders/{FOLDER_NUMBER}/autokeyConfig`,
+      `projects/{PROJECT_NUMBER}/autokeyConfig`, or
+      `projects/{PROJECT_ID}/autokeyConfig`.
   """
 
   name = _messages.StringField(1, required=True)
@@ -607,8 +612,9 @@ class CloudkmsFoldersUpdateAutokeyConfigRequest(_messages.Message):
   Fields:
     autokeyConfig: A AutokeyConfig resource to be passed as the request body.
     name: Identifier. Name of the AutokeyConfig resource, e.g.
-      `folders/{FOLDER_NUMBER}/autokeyConfig` or
-      `projects/{PROJECT_NUMBER}/autokeyConfig`.
+      `folders/{FOLDER_NUMBER}/autokeyConfig`,
+      `projects/{PROJECT_NUMBER}/autokeyConfig`, or
+      `projects/{PROJECT_ID}/autokeyConfig`.
     updateMask: Required. Masks which fields of the AutokeyConfig to update,
       e.g. `keyProject`.
   """
@@ -668,8 +674,9 @@ class CloudkmsProjectsGetAutokeyConfigRequest(_messages.Message):
 
   Fields:
     name: Required. Name of the AutokeyConfig resource, e.g.
-      `folders/{FOLDER_NUMBER}/autokeyConfig` or
-      `projects/{PROJECT_NUMBER}/autokeyConfig`.
+      `folders/{FOLDER_NUMBER}/autokeyConfig`,
+      `projects/{PROJECT_NUMBER}/autokeyConfig`, or
+      `projects/{PROJECT_ID}/autokeyConfig`.
   """
 
   name = _messages.StringField(1, required=True)
@@ -1585,11 +1592,63 @@ class CloudkmsProjectsLocationsKeyRingsImportJobsGetIamPolicyRequest(_messages.M
 class CloudkmsProjectsLocationsKeyRingsImportJobsGetRequest(_messages.Message):
   r"""A CloudkmsProjectsLocationsKeyRingsImportJobsGetRequest object.
 
+  Enums:
+    PublicKeyFormatValueValuesEnum: Optional. Specifies the WrappingPublicKey
+      format. If not specified: * For RSA-based import methods, the wrapping
+      key will be returned in PEM format * For pure ML-KEM-based import
+      methods, the wrapping key will be returned in the raw bytes format
+      specified in FIPS-203 * For X-Wing-based import methods, the wrapping
+      key will be returned in the raw bytes format specified in
+      https://datatracker.ietf.org/doc/draft-connolly-cfrg-xwing-kem.
+
   Fields:
     name: Required. The name of the ImportJob to get.
+    publicKeyFormat: Optional. Specifies the WrappingPublicKey format. If not
+      specified: * For RSA-based import methods, the wrapping key will be
+      returned in PEM format * For pure ML-KEM-based import methods, the
+      wrapping key will be returned in the raw bytes format specified in
+      FIPS-203 * For X-Wing-based import methods, the wrapping key will be
+      returned in the raw bytes format specified in
+      https://datatracker.ietf.org/doc/draft-connolly-cfrg-xwing-kem.
   """
 
+  class PublicKeyFormatValueValuesEnum(_messages.Enum):
+    r"""Optional. Specifies the WrappingPublicKey format. If not specified: *
+    For RSA-based import methods, the wrapping key will be returned in PEM
+    format * For pure ML-KEM-based import methods, the wrapping key will be
+    returned in the raw bytes format specified in FIPS-203 * For X-Wing-based
+    import methods, the wrapping key will be returned in the raw bytes format
+    specified in https://datatracker.ietf.org/doc/draft-connolly-cfrg-xwing-
+    kem.
+
+    Values:
+      PUBLIC_KEY_FORMAT_UNSPECIFIED: If the public_key_format field is not
+        specified: - For PQC algorithms, an error will be returned. - For non-
+        PQC algorithms, the default format is PEM, and the field pem will be
+        populated. Otherwise, the public key will be exported through the
+        public_key field in the requested format.
+      PEM: The returned public key will be encoded in PEM format. See the
+        [RFC7468](https://tools.ietf.org/html/rfc7468) sections for [General
+        Considerations](https://tools.ietf.org/html/rfc7468#section-2) and
+        [Textual Encoding of Subject Public Key Info]
+        (https://tools.ietf.org/html/rfc7468#section-13) for more information.
+      DER: The returned public key will be encoded in DER format (the
+        PrivateKeyInfo structure from RFC 5208).
+      NIST_PQC: This is supported only for PQC algorithms. The key material is
+        returned in the format defined by NIST PQC standards (FIPS 203, FIPS
+        204, and FIPS 205).
+      XWING_RAW_BYTES: The returned public key is in raw bytes format defined
+        in its standard https://datatracker.ietf.org/doc/draft-connolly-cfrg-
+        xwing-kem.
+    """
+    PUBLIC_KEY_FORMAT_UNSPECIFIED = 0
+    PEM = 1
+    DER = 2
+    NIST_PQC = 3
+    XWING_RAW_BYTES = 4
+
   name = _messages.StringField(1, required=True)
+  publicKeyFormat = _messages.EnumField('PublicKeyFormatValueValuesEnum', 2)
 
 
 class CloudkmsProjectsLocationsKeyRingsImportJobsListRequest(_messages.Message):
@@ -2010,8 +2069,9 @@ class CloudkmsProjectsUpdateAutokeyConfigRequest(_messages.Message):
   Fields:
     autokeyConfig: A AutokeyConfig resource to be passed as the request body.
     name: Identifier. Name of the AutokeyConfig resource, e.g.
-      `folders/{FOLDER_NUMBER}/autokeyConfig` or
-      `projects/{PROJECT_NUMBER}/autokeyConfig`.
+      `folders/{FOLDER_NUMBER}/autokeyConfig`,
+      `projects/{PROJECT_NUMBER}/autokeyConfig`, or
+      `projects/{PROJECT_ID}/autokeyConfig`.
     updateMask: Required. Masks which fields of the AutokeyConfig to update,
       e.g. `keyProject`.
   """
@@ -3420,6 +3480,9 @@ class ImportJob(_messages.Message):
     ProtectionLevelValueValuesEnum: Required. Immutable. The protection level
       of the ImportJob. This must match the protection_level of the
       version_template on the CryptoKey you attempt to import into.
+    PublicKeyFormatValueValuesEnum: Output only. Specifies the
+      WrappingPublicKey format provided by the customer in the
+      KeyManagementService.GetImportJob request.
     StateValueValuesEnum: Output only. The current state of the ImportJob,
       indicating if it can be used.
 
@@ -3452,6 +3515,9 @@ class ImportJob(_messages.Message):
       on the CryptoKey you attempt to import into.
     publicKey: Output only. The public key with which to wrap key material
       prior to import. Only returned if state is ACTIVE.
+    publicKeyFormat: Output only. Specifies the WrappingPublicKey format
+      provided by the customer in the KeyManagementService.GetImportJob
+      request.
     state: Output only. The current state of the ImportJob, indicating if it
       can be used.
   """
@@ -3498,6 +3564,30 @@ class ImportJob(_messages.Message):
         4096 bit RSA key. The key material to be imported is wrapped directly
         with the RSA key. Due to technical limitations of RSA wrapping, this
         method cannot be used to wrap RSA keys for import.
+      HPKE_KEM_ML_KEM_768_HKDF_SHA256_AES_256_GCM: Represents the Hybrid
+        Public Key Encryption (HPKE) Scheme originally defined in [RFC
+        9180](https://www.rfc-editor.org/rfc/rfc9180). It involves wrapping
+        the raw key with an ephemeral AES key, derived with HKDF-SHA256 from
+        an encryption context, that is, in turn obtained from the receiver's
+        public key with the help of the ML-KEM-768 KEM. For more details, see
+        the [ML-KEM HPKE standard](http://datatracker.ietf.org/doc/draft-ietf-
+        hpke-pq/01/).
+      HPKE_KEM_ML_KEM_1024_HKDF_SHA256_AES_256_GCM: Represents the Hybrid
+        Public Key Encryption (HPKE) Scheme originally defined in [RFC
+        9180](https://www.rfc-editor.org/rfc/rfc9180). It involves wrapping
+        the raw key with an ephemeral AES key, derived with HKDF-SHA256 from
+        an encryption context, that is, in turn obtained from the receiver's
+        public key with the help of the ML-KEM-1024 KEM. For more details, see
+        the [ML-KEM HPKE standard](http://datatracker.ietf.org/doc/draft-ietf-
+        hpke-pq/01/).
+      HPKE_KEM_XWING_HKDF_SHA256_AES_256_GCM: Represents the Hybrid Public Key
+        Encryption (HPKE) Scheme originally defined in [RFC
+        9180](https://www.rfc-editor.org/rfc/rfc9180). It involves wrapping
+        the raw key with an ephemeral AES key, derived with HKDF-SHA256 from
+        an encryption context, that is, in turn obtained from the receiver's
+        public key with the help of the X-Wing hybrid KEM. For more details,
+        see the [X-Wing standard](http://datatracker.ietf.org/doc/draft-
+        connolly-cfrg-xwing-kem/09/).
     """
     IMPORT_METHOD_UNSPECIFIED = 0
     RSA_OAEP_3072_SHA1_AES_256 = 1
@@ -3506,6 +3596,9 @@ class ImportJob(_messages.Message):
     RSA_OAEP_4096_SHA256_AES_256 = 4
     RSA_OAEP_3072_SHA256 = 5
     RSA_OAEP_4096_SHA256 = 6
+    HPKE_KEM_ML_KEM_768_HKDF_SHA256_AES_256_GCM = 7
+    HPKE_KEM_ML_KEM_1024_HKDF_SHA256_AES_256_GCM = 8
+    HPKE_KEM_XWING_HKDF_SHA256_AES_256_GCM = 9
 
   class ProtectionLevelValueValuesEnum(_messages.Enum):
     r"""Required. Immutable. The protection level of the ImportJob. This must
@@ -3528,6 +3621,36 @@ class ImportJob(_messages.Message):
     EXTERNAL = 3
     EXTERNAL_VPC = 4
     HSM_SINGLE_TENANT = 5
+
+  class PublicKeyFormatValueValuesEnum(_messages.Enum):
+    r"""Output only. Specifies the WrappingPublicKey format provided by the
+    customer in the KeyManagementService.GetImportJob request.
+
+    Values:
+      PUBLIC_KEY_FORMAT_UNSPECIFIED: If the public_key_format field is not
+        specified: - For PQC algorithms, an error will be returned. - For non-
+        PQC algorithms, the default format is PEM, and the field pem will be
+        populated. Otherwise, the public key will be exported through the
+        public_key field in the requested format.
+      PEM: The returned public key will be encoded in PEM format. See the
+        [RFC7468](https://tools.ietf.org/html/rfc7468) sections for [General
+        Considerations](https://tools.ietf.org/html/rfc7468#section-2) and
+        [Textual Encoding of Subject Public Key Info]
+        (https://tools.ietf.org/html/rfc7468#section-13) for more information.
+      DER: The returned public key will be encoded in DER format (the
+        PrivateKeyInfo structure from RFC 5208).
+      NIST_PQC: This is supported only for PQC algorithms. The key material is
+        returned in the format defined by NIST PQC standards (FIPS 203, FIPS
+        204, and FIPS 205).
+      XWING_RAW_BYTES: The returned public key is in raw bytes format defined
+        in its standard https://datatracker.ietf.org/doc/draft-connolly-cfrg-
+        xwing-kem.
+    """
+    PUBLIC_KEY_FORMAT_UNSPECIFIED = 0
+    PEM = 1
+    DER = 2
+    NIST_PQC = 3
+    XWING_RAW_BYTES = 4
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. The current state of the ImportJob, indicating if it can
@@ -3558,7 +3681,8 @@ class ImportJob(_messages.Message):
   name = _messages.StringField(8)
   protectionLevel = _messages.EnumField('ProtectionLevelValueValuesEnum', 9)
   publicKey = _messages.MessageField('WrappingPublicKey', 10)
-  state = _messages.EnumField('StateValueValuesEnum', 11)
+  publicKeyFormat = _messages.EnumField('PublicKeyFormatValueValuesEnum', 11)
+  state = _messages.EnumField('StateValueValuesEnum', 12)
 
 
 class KeyAccessJustificationsEnrollmentConfig(_messages.Message):
@@ -5530,14 +5654,23 @@ class WrappingPublicKey(_messages.Message):
   key this public key corresponds to, see the ImportMethod.
 
   Fields:
+    data: Output only. Contains the public key, formatted according to the
+      PublicKey.PublicKeyFormat specified in the
+      KeyManagementService.GetImportJob request.
     pem: The public key, encoded in PEM format. For more information, see the
       [RFC 7468](https://tools.ietf.org/html/rfc7468) sections for [General
       Considerations](https://tools.ietf.org/html/rfc7468#section-2) and
       [Textual Encoding of Subject Public Key Info]
-      (https://tools.ietf.org/html/rfc7468#section-13).
+      (https://tools.ietf.org/html/rfc7468#section-13). This field gets
+      populated by default for RSA-based import methods, if no
+      public_key_format is specified in the request. If you want to retrieve
+      the wrapping key of an ImportJob in some other format, use
+      KeyManagementService.GetImportJob and set the public_key_format to the
+      desired public key format.
   """
 
-  pem = _messages.StringField(1)
+  data = _messages.BytesField(1)
+  pem = _messages.StringField(2)
 
 
 encoding.AddCustomJsonFieldMapping(

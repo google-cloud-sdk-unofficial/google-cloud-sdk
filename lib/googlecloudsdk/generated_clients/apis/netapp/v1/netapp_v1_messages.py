@@ -159,15 +159,17 @@ class Backup(_messages.Message):
     name: Identifier. The resource name of the backup. Format: `projects/{proj
       ect_id}/locations/{location}/backupVaults/{backup_vault_id}/backups/{bac
       kup_id}`.
+    ontapSource: Optional. Represents source details for ONTAP backups. Either
+      source_volume or ontap_source should be provided.
     satisfiesPzi: Output only. Reserved for future use
     satisfiesPzs: Output only. Reserved for future use
     sourceSnapshot: If specified, backup will be created from the given
       snapshot. If not specified, there will be a new snapshot taken to
       initiate the backup creation. Format: `projects/{project_id}/locations/{
       location}/volumes/{volume_id}/snapshots/{snapshot_id}`
-    sourceVolume: Volume full name of this backup belongs to. Either
-      source_volume or ontap_source should be provided. Format:
-      `projects/{projects_id}/locations/{location}/volumes/{volume_id}`
+    sourceVolume: The resource name of the volume that this backup belongs to.
+      You must provide either `source_volume` or `ontap_source`. Format:
+      `projects/{project_id}/locations/{location}/volumes/{volume_id}`
     state: Output only. The backup state.
     volumeRegion: Output only. Region of the volume from which the backup was
       created. Format: `projects/{project_id}/locations/{location}`
@@ -245,13 +247,14 @@ class Backup(_messages.Message):
   enforcedRetentionEndTime = _messages.StringField(6)
   labels = _messages.MessageField('LabelsValue', 7)
   name = _messages.StringField(8)
-  satisfiesPzi = _messages.BooleanField(9)
-  satisfiesPzs = _messages.BooleanField(10)
-  sourceSnapshot = _messages.StringField(11)
-  sourceVolume = _messages.StringField(12)
-  state = _messages.EnumField('StateValueValuesEnum', 13)
-  volumeRegion = _messages.StringField(14)
-  volumeUsageBytes = _messages.IntegerField(15)
+  ontapSource = _messages.MessageField('OntapSource', 9)
+  satisfiesPzi = _messages.BooleanField(10)
+  satisfiesPzs = _messages.BooleanField(11)
+  sourceSnapshot = _messages.StringField(12)
+  sourceVolume = _messages.StringField(13)
+  state = _messages.EnumField('StateValueValuesEnum', 14)
+  volumeRegion = _messages.StringField(15)
+  volumeUsageBytes = _messages.IntegerField(16)
 
 
 class BackupConfig(_messages.Message):
@@ -389,6 +392,21 @@ class BackupRetentionPolicy(_messages.Message):
   manualBackupImmutable = _messages.BooleanField(3)
   monthlyBackupImmutable = _messages.BooleanField(4)
   weeklyBackupImmutable = _messages.BooleanField(5)
+
+
+class BackupSource(_messages.Message):
+  r"""Represents the backup source of the restore operation.
+
+  Fields:
+    backup: Required. The backup resource name.
+    fileList: Optional. List of files to be restored in the form of their
+      absolute path as in source volume. If provided, only these files will be
+      restored. If not provided, the entire backup will be restored (Full
+      Backup Restore)
+  """
+
+  backup = _messages.StringField(1)
+  fileList = _messages.StringField(2, repeated=True)
 
 
 class BackupVault(_messages.Message):
@@ -802,7 +820,7 @@ class EstablishVolumePeeringRequest(_messages.Message):
   Fields:
     peerClusterName: Required. Name of the user's local source cluster to be
       peered with the destination cluster.
-    peerIpAddresses: Optional. List of IPv4 ip addresses to be used for
+    peerIpAddresses: Optional. List of IPv4 IP addresses to be used for
       peering.
     peerSvmName: Required. Name of the user's local source vserver svm to be
       peered with the destination vserver svm.
@@ -1346,7 +1364,7 @@ class KmsConfig(_messages.Message):
     instructions: Output only. Instructions to provide the access to the
       customer provided encryption key.
     labels: Labels as key value pairs
-    name: Identifier. Name of the KmsConfig. Format:
+    name: Identifier. Name of the `KmsConfig`. Format:
       `projects/{project}/locations/{location}/kmsConfigs/{kms_config}`
     primaryCryptoKeyVersion: Output only. Active key version corresponding to
       the crypto key name. Format: projects/{project}/locations/{location}/key
@@ -1429,7 +1447,7 @@ class KmsConfig(_messages.Message):
 
 class LargeCapacityConfig(_messages.Message):
   r"""Configuration for a Large Capacity Volume. A Large Capacity Volume
-  supports sizes ranging from 4.8 TiB to 20 PiB, it is composed of multiple
+  supports sizes ranging from 4.8 TiB to 20 PiB; it is composed of multiple
   internal constituents, and must be created in a large capacity pool.
 
   Fields:
@@ -1455,6 +1473,22 @@ class ListActiveDirectoriesResponse(_messages.Message):
   activeDirectories = _messages.MessageField('ActiveDirectory', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
   unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListBackupConfigsResponse(_messages.Message):
+  r"""Message for response to listing BackupConfigs in an ONTAP StoragePool.
+
+  Fields:
+    nextPageToken: The token you can use to retrieve the next page of results.
+      Not returned if there are no more results in the list.
+    unreachable: Unordered list. Locations that could not be reached.
+    volumeBackupConfigs: A list of backup configurations for volumes in the
+      pool.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  unreachable = _messages.StringField(2, repeated=True)
+  volumeBackupConfigs = _messages.MessageField('VolumeBackupConfig', 3, repeated=True)
 
 
 class ListBackupPoliciesResponse(_messages.Message):
@@ -2317,7 +2351,7 @@ class NetappProjectsLocationsKmsConfigsPatchRequest(_messages.Message):
 
   Fields:
     kmsConfig: A KmsConfig resource to be passed as the request body.
-    name: Identifier. Name of the KmsConfig. Format:
+    name: Identifier. Name of the `KmsConfig`. Format:
       `projects/{project}/locations/{location}/kmsConfigs/{kms_config}`
     updateMask: Required. Field mask is used to specify the fields to be
       overwritten in the KmsConfig resource by the update. The fields
@@ -2348,9 +2382,8 @@ class NetappProjectsLocationsListRequest(_messages.Message):
   r"""A NetappProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -2423,6 +2456,30 @@ class NetappProjectsLocationsOperationsListRequest(_messages.Message):
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   returnPartialSuccess = _messages.BooleanField(5)
+
+
+class NetappProjectsLocationsStoragePoolsBackupConfigsListRequest(_messages.Message):
+  r"""A NetappProjectsLocationsStoragePoolsBackupConfigsListRequest object.
+
+  Fields:
+    filter: Optional. The standard list filter.
+    orderBy: Optional. Sort results. Supported values are "volume_id" or ""
+    pageSize: Optional. The maximum number of items to return. The service may
+      return fewer than this value. The maximum value is 1000; values above
+      1000 will be coerced to 1000. If unspecified or set to 0, a default of
+      50 will be used.
+    pageToken: Optional. The next_page_token value to use if there are
+      additional results to retrieve for this list request.
+    parent: Required. The ONTAP StoragePool for which to retrieve backup
+      configuration information, in the format
+      `projects/{project}/locations/{location}/storagePools/{storage_pool}`.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
 
 
 class NetappProjectsLocationsStoragePoolsCreateRequest(_messages.Message):
@@ -2536,9 +2593,9 @@ class NetappProjectsLocationsStoragePoolsOntapExecuteOntapPostRequest(_messages.
   Fields:
     executeOntapPostRequest: A ExecuteOntapPostRequest resource to be passed
       as the request body.
-    ontapPath: Required. The resource path of the ONTAP resource. Format: `pro
-      jects/{project_number}/locations/{location_id}/storagePools/{storage_poo
-      l_id}/ontap/{ontap_resource_path}`. For example:
+    ontapPath: Required. The path of the ONTAP resource. Format: `projects/{pr
+      oject_number}/locations/{location_id}/storagePools/{storage_pool_id}/ont
+      ap/{ontap_resource_path}`. For example:
       `projects/123456789/locations/us-central1/storagePools/my-storage-
       pool/ontap/api/storage/volumes`.
   """
@@ -2565,6 +2622,21 @@ class NetappProjectsLocationsStoragePoolsPatchRequest(_messages.Message):
   updateMask = _messages.StringField(3)
 
 
+class NetappProjectsLocationsStoragePoolsRestoreVolumeRequest(_messages.Message):
+  r"""A NetappProjectsLocationsStoragePoolsRestoreVolumeRequest object.
+
+  Fields:
+    name: Required. The resource name of the ONTAP mode storage pool, in the
+      format of
+      `projects/{project}/locations/{location}/storagePools/{storage_pool}`
+    restoreVolumeRequest: A RestoreVolumeRequest resource to be passed as the
+      request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  restoreVolumeRequest = _messages.MessageField('RestoreVolumeRequest', 2)
+
+
 class NetappProjectsLocationsStoragePoolsSwitchRequest(_messages.Message):
   r"""A NetappProjectsLocationsStoragePoolsSwitchRequest object.
 
@@ -2576,6 +2648,20 @@ class NetappProjectsLocationsStoragePoolsSwitchRequest(_messages.Message):
 
   name = _messages.StringField(1, required=True)
   switchActiveReplicaZoneRequest = _messages.MessageField('SwitchActiveReplicaZoneRequest', 2)
+
+
+class NetappProjectsLocationsStoragePoolsUpdateBackupConfigRequest(_messages.Message):
+  r"""A NetappProjectsLocationsStoragePoolsUpdateBackupConfigRequest object.
+
+  Fields:
+    name: Required. The resource name of the StoragePool, in the format:
+      projects/{projectNumber}/locations/{locationId}/storagePools/{poolId}
+    updateBackupConfigRequest: A UpdateBackupConfigRequest resource to be
+      passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  updateBackupConfigRequest = _messages.MessageField('UpdateBackupConfigRequest', 2)
 
 
 class NetappProjectsLocationsStoragePoolsValidateDirectoryServiceRequest(_messages.Message):
@@ -3024,6 +3110,35 @@ class NetappProjectsLocationsVolumesSnapshotsPatchRequest(_messages.Message):
   name = _messages.StringField(1, required=True)
   snapshot = _messages.MessageField('Snapshot', 2)
   updateMask = _messages.StringField(3)
+
+
+class OntapSource(_messages.Message):
+  r"""Represents ONTAP source details.
+
+  Fields:
+    snapshotUuid: Optional. The UUID of the ONTAP source snapshot.
+    storagePool: Required. Name of the storage pool. This must be specified
+      for creating backups for ONTAP mode volumes. Format: `projects/{projects
+      _id}/locations/{location}/storagePools/{storage_pool_id}`
+    volumeUuid: Required. The UUID of the ONTAP source volume.
+  """
+
+  snapshotUuid = _messages.StringField(1)
+  storagePool = _messages.StringField(2)
+  volumeUuid = _messages.StringField(3)
+
+
+class OntapVolumeTarget(_messages.Message):
+  r"""Represents the ONTAP volume target of the restore operation.
+
+  Fields:
+    restoreDestinationPath: Optional. Absolute directory path in the
+      destination volume.
+    volumeUuid: Required. The UUID of the ONTAP volume to restore to.
+  """
+
+  restoreDestinationPath = _messages.StringField(1)
+  volumeUuid = _messages.StringField(2)
 
 
 class Operation(_messages.Message):
@@ -3475,15 +3590,27 @@ class RestoreParameters(_messages.Message):
   Fields:
     sourceBackup: Full name of the backup resource. Format for standard
       backup: projects/{project}/locations/{location}/backupVaults/{backup_vau
-      lt_id}/backups/{backup_id} Format for BackupDR backup: projects/{project
-      }/locations/{location}/backupVaults/{backup_vault}/dataSources/{data_sou
-      rce}/backups/{backup}
+      lt_id}/backups/{backup_id}. Format for BackupDR backup: projects/{projec
+      t}/locations/{location}/backupVaults/{backup_vault}/dataSources/{data_so
+      urce}/backups/{backup}
     sourceSnapshot: Full name of the snapshot resource. Format: projects/{proj
       ect}/locations/{location}/volumes/{volume}/snapshots/{snapshot}
   """
 
   sourceBackup = _messages.StringField(1)
   sourceSnapshot = _messages.StringField(2)
+
+
+class RestoreVolumeRequest(_messages.Message):
+  r"""Request message for `RestoreVolume` API.
+
+  Fields:
+    backupSource: The backup source of the restore operation.
+    ontapVolumeTarget: The ONTAP volume target of the restore operation.
+  """
+
+  backupSource = _messages.MessageField('BackupSource', 1)
+  ontapVolumeTarget = _messages.MessageField('OntapVolumeTarget', 2)
 
 
 class ResumeReplicationRequest(_messages.Message):
@@ -3834,7 +3961,7 @@ class StoragePool(_messages.Message):
     EncryptionTypeValueValuesEnum: Output only. Specifies the current pool
       encryption key source.
     ModeValueValuesEnum: Optional. Mode of the storage pool. This field is
-      used to control whether the user can perform the ONTAP operations on the
+      used to control whether the user can perform ONTAP operations on the
       storage pool using the GCNV ONTAP Mode APIs. If not specified during
       creation, it defaults to `DEFAULT`.
     QosTypeValueValuesEnum: Optional. QoS (Quality of Service) Type of the
@@ -3886,9 +4013,9 @@ class StoragePool(_messages.Message):
     ldapEnabled: Optional. Flag indicating if the pool is NFS LDAP enabled or
       not.
     mode: Optional. Mode of the storage pool. This field is used to control
-      whether the user can perform the ONTAP operations on the storage pool
-      using the GCNV ONTAP Mode APIs. If not specified during creation, it
-      defaults to `DEFAULT`.
+      whether the user can perform ONTAP operations on the storage pool using
+      the GCNV ONTAP Mode APIs. If not specified during creation, it defaults
+      to `DEFAULT`.
     name: Identifier. Name of the storage pool
     network: Required. VPC Network name. Format:
       projects/{project}/global/networks/{network}
@@ -3933,9 +4060,9 @@ class StoragePool(_messages.Message):
 
   class ModeValueValuesEnum(_messages.Enum):
     r"""Optional. Mode of the storage pool. This field is used to control
-    whether the user can perform the ONTAP operations on the storage pool
-    using the GCNV ONTAP Mode APIs. If not specified during creation, it
-    defaults to `DEFAULT`.
+    whether the user can perform ONTAP operations on the storage pool using
+    the GCNV ONTAP Mode APIs. If not specified during creation, it defaults to
+    `DEFAULT`.
 
     Values:
       MODE_UNSPECIFIED: The `Mode` is not specified.
@@ -4167,6 +4294,23 @@ class TransferStats(_messages.Message):
   updateTime = _messages.StringField(8)
 
 
+class UpdateBackupConfigRequest(_messages.Message):
+  r"""Request message for UpdateBackupConfig
+
+  Fields:
+    backupConfig: Required. Backup configuration to apply.
+    updateMask: Required. Field mask is used to specify the fields to be
+      overwritten in the BackupConfig for the Volume. The fields specified in
+      the update_mask are relative to the resource, not the full request. A
+      field will be overwritten if it is in the mask.
+    volumeUuid: Required. The UUID of the ONTAP-mode volume.
+  """
+
+  backupConfig = _messages.MessageField('BackupConfig', 1)
+  updateMask = _messages.StringField(2)
+  volumeUuid = _messages.StringField(3)
+
+
 class UserCommands(_messages.Message):
   r"""UserCommands contains the commands to be executed by the customer.
 
@@ -4272,8 +4416,14 @@ class Volume(_messages.Message):
       encryption.
     labels: Optional. Labels as key value pairs
     largeCapacity: Optional. Flag indicating if the volume will be a large
-      capacity volume or a regular volume.
+      capacity volume or a regular volume. This field is used for legacy FILE
+      pools. For Unified pools, use the `large_capacity_config` field instead.
+      This field and `large_capacity_config` are mutually exclusive.
     largeCapacityConfig: Optional. Large capacity config for the volume.
+      Enables and configures large capacity for volumes in Unified pools with
+      File protocols. Not applicable for Block protocols in Unified pools.
+      This field and the legacy `large_capacity` boolean field are mutually
+      exclusive.
     ldapEnabled: Output only. Flag indicating if the volume is NFS LDAP
       enabled or not.
     mountOptions: Output only. Mount options of this volume
@@ -4507,6 +4657,18 @@ class Volume(_messages.Message):
   unixPermissions = _messages.StringField(42)
   usedGib = _messages.IntegerField(43)
   zone = _messages.StringField(44)
+
+
+class VolumeBackupConfig(_messages.Message):
+  r"""Backup configuration for a volume in a pool.
+
+  Fields:
+    backupConfig: Backup configuration for the volume.
+    volumeUuid: Provides the Ontap UUID of the volume within the pool.
+  """
+
+  backupConfig = _messages.MessageField('BackupConfig', 1)
+  volumeUuid = _messages.StringField(2)
 
 
 class WeeklySchedule(_messages.Message):

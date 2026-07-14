@@ -3667,6 +3667,28 @@ class GooglePrivacyDlpV2AwsDiscoveryStartingLocation(_messages.Message):
   allAssetInventoryAssets = _messages.BooleanField(2)
 
 
+class GooglePrivacyDlpV2BatchContentItem(_messages.Message):
+  r"""Represents a batch of content to inspect or redact.
+
+  Fields:
+    stringValueBatch: Optional. Represents a batch of string values to inspect
+      or redact.
+  """
+
+  stringValueBatch = _messages.MessageField('GooglePrivacyDlpV2StringValueBatch', 1)
+
+
+class GooglePrivacyDlpV2BatchContentLocation(_messages.Message):
+  r"""Location within a batch of content.
+
+  Fields:
+    itemIndex: Matches an index of a batch item in the batch provided in the
+      request.
+  """
+
+  itemIndex = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+
+
 class GooglePrivacyDlpV2BigQueryDiscoveryTarget(_messages.Message):
   r"""Target used to match against for discovery with BigQuery tables
 
@@ -4740,6 +4762,7 @@ class GooglePrivacyDlpV2ContentItem(_messages.Message):
   r"""Type of content to inspect.
 
   Fields:
+    batchContentItem: Represents a batch of items to inspect.
     byteItem: Content data to inspect or redact. Replaces `type` and `data`.
     contentMetadata: User provided metadata for the content.
     conversation: Represents a conversation (either complete or a slice). It
@@ -4751,11 +4774,12 @@ class GooglePrivacyDlpV2ContentItem(_messages.Message):
     value: String data to inspect or redact.
   """
 
-  byteItem = _messages.MessageField('GooglePrivacyDlpV2ByteContentItem', 1)
-  contentMetadata = _messages.MessageField('GooglePrivacyDlpV2ContentMetadata', 2)
-  conversation = _messages.MessageField('GooglePrivacyDlpV2Conversation', 3)
-  table = _messages.MessageField('GooglePrivacyDlpV2Table', 4)
-  value = _messages.StringField(5)
+  batchContentItem = _messages.MessageField('GooglePrivacyDlpV2BatchContentItem', 1)
+  byteItem = _messages.MessageField('GooglePrivacyDlpV2ByteContentItem', 2)
+  contentMetadata = _messages.MessageField('GooglePrivacyDlpV2ContentMetadata', 3)
+  conversation = _messages.MessageField('GooglePrivacyDlpV2Conversation', 4)
+  table = _messages.MessageField('GooglePrivacyDlpV2Table', 5)
+  value = _messages.StringField(6)
 
 
 class GooglePrivacyDlpV2ContentLocation(_messages.Message):
@@ -4763,6 +4787,7 @@ class GooglePrivacyDlpV2ContentLocation(_messages.Message):
   metadata container.
 
   Fields:
+    batchContentLocation: Location within a batch of content.
     containerName: Name of the container where the finding is located. The top
       level name is the source file name or table name. Names of some common
       storage containers are formatted as follows: * BigQuery tables:
@@ -4783,14 +4808,15 @@ class GooglePrivacyDlpV2ContentLocation(_messages.Message):
     recordLocation: Location within a row or record of a database table.
   """
 
-  containerName = _messages.StringField(1)
-  containerTimestamp = _messages.StringField(2)
-  containerVersion = _messages.StringField(3)
-  conversationLocation = _messages.MessageField('GooglePrivacyDlpV2ConversationLocation', 4)
-  documentLocation = _messages.MessageField('GooglePrivacyDlpV2DocumentLocation', 5)
-  imageLocation = _messages.MessageField('GooglePrivacyDlpV2ImageLocation', 6)
-  metadataLocation = _messages.MessageField('GooglePrivacyDlpV2MetadataLocation', 7)
-  recordLocation = _messages.MessageField('GooglePrivacyDlpV2RecordLocation', 8)
+  batchContentLocation = _messages.MessageField('GooglePrivacyDlpV2BatchContentLocation', 1)
+  containerName = _messages.StringField(2)
+  containerTimestamp = _messages.StringField(3)
+  containerVersion = _messages.StringField(4)
+  conversationLocation = _messages.MessageField('GooglePrivacyDlpV2ConversationLocation', 5)
+  documentLocation = _messages.MessageField('GooglePrivacyDlpV2DocumentLocation', 6)
+  imageLocation = _messages.MessageField('GooglePrivacyDlpV2ImageLocation', 7)
+  metadataLocation = _messages.MessageField('GooglePrivacyDlpV2MetadataLocation', 8)
+  recordLocation = _messages.MessageField('GooglePrivacyDlpV2RecordLocation', 9)
 
 
 class GooglePrivacyDlpV2ContentMetadata(_messages.Message):
@@ -10924,6 +10950,16 @@ class GooglePrivacyDlpV2StoredType(_messages.Message):
 
   createTime = _messages.StringField(1)
   name = _messages.StringField(2)
+
+
+class GooglePrivacyDlpV2StringValueBatch(_messages.Message):
+  r"""Represents a batch of string values to inspect or redact.
+
+  Fields:
+    values: Optional. Represents string data to inspect or redact.
+  """
+
+  values = _messages.StringField(1, repeated=True)
 
 
 class GooglePrivacyDlpV2SummaryResult(_messages.Message):

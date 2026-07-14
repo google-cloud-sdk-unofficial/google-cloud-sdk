@@ -12,6 +12,16 @@ from apitools.base.py import extra_types
 package = 'datamigration'
 
 
+class AdditionalDdlProperties(_messages.Message):
+  r"""Additional properties of a DDL.
+
+  Fields:
+    userVerified: Whether the DDL was verified by the user.
+  """
+
+  userVerified = _messages.BooleanField(1)
+
+
 class AlloyDbConnectionProfile(_messages.Message):
   r"""Specifies required connection parameters, and the parameters required to
   create an AlloyDB destination cluster.
@@ -158,6 +168,36 @@ class ApplyJobDetails(_messages.Message):
 
   connectionProfile = _messages.StringField(1)
   filter = _messages.StringField(2)
+
+
+class AssessmentsInfo(_messages.Message):
+  r"""An assessments info overview.
+
+  Enums:
+    OverallQualityValueValuesEnum: The overall quality.
+
+  Fields:
+    functionalEquivalenceAssessmentInfo: The functional equivalence assessment
+      info.
+    overallQuality: The overall quality.
+  """
+
+  class OverallQualityValueValuesEnum(_messages.Enum):
+    r"""The overall quality.
+
+    Values:
+      ASSESSMENT_QUALITY_UNSPECIFIED: Unspecified quality.
+      ASSESSMENT_QUALITY_LOW: Low quality.
+      ASSESSMENT_QUALITY_MEDIUM: Medium quality.
+      ASSESSMENT_QUALITY_HIGH: High quality.
+    """
+    ASSESSMENT_QUALITY_UNSPECIFIED = 0
+    ASSESSMENT_QUALITY_LOW = 1
+    ASSESSMENT_QUALITY_MEDIUM = 2
+    ASSESSMENT_QUALITY_HIGH = 3
+
+  functionalEquivalenceAssessmentInfo = _messages.MessageField('FunctionalEquivalenceAssessmentInfo', 1)
+  overallQuality = _messages.EnumField('OverallQualityValueValuesEnum', 2)
 
 
 class AssignSpecificValue(_messages.Message):
@@ -1108,6 +1148,27 @@ class ConstraintEntity(_messages.Message):
   type = _messages.StringField(7)
 
 
+class ConversionQualityMetrics(_messages.Message):
+  r"""Metrics related to the quality of the conversion.
+
+  Fields:
+    cleanStatements: The number of statements for which a clean and correct
+      output was generated.
+    errorStatements: The number of statements for which invalid or no output
+      was generated.
+    modifiedStatements: This is the sum of the clean, warning and error
+      statements when an entity was edited by the user.
+    warningStatements: The number of statements for which a good output was
+      generated, but some features were not available or requires some user
+      review.
+  """
+
+  cleanStatements = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  errorStatements = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  modifiedStatements = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  warningStatements = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+
+
 class ConversionWorkspace(_messages.Message):
   r"""The main conversion workspace resource entity.
 
@@ -1917,6 +1978,134 @@ class DatamigrationProjectsLocationsConversionWorkspacesDescribeDatabaseEntities
   tree = _messages.EnumField('TreeValueValuesEnum', 6)
   uncommitted = _messages.BooleanField(7)
   view = _messages.EnumField('ViewValueValuesEnum', 8)
+
+
+class DatamigrationProjectsLocationsConversionWorkspacesFetchEntitiesStatusViewRequest(_messages.Message):
+  r"""A DatamigrationProjectsLocationsConversionWorkspacesFetchEntitiesStatusV
+  iewRequest object.
+
+  Enums:
+    FetchViewValueValuesEnum: Optional. The view to fetch. If not specified,
+      FULL is used.
+    TreeValueValuesEnum: Required. The tree to fetch.
+
+  Fields:
+    commitId: Optional. Request a specific commit ID. If not specified, the
+      entities from the latest commit are returned.
+    conversionWorkspace: Required. Name of the conversion workspace resource
+      whose database entities are described. Must be in the form of: projects/
+      {project}/locations/{location}/conversionWorkspaces/{conversion_workspac
+      e}.
+    fetchView: Optional. The view to fetch. If not specified, FULL is used.
+    filter: Optional. Filter the returned entities based on AIP-160 standard.
+    pageSize: Optional. The maximum number of entities to return. The service
+      may return fewer entities than the value specifies. Default is 100000.
+    pageToken: Optional. The nextPageToken value received in the previous call
+      to conversionWorkspace.FetchEntitiesStatusView, used in the subsequent
+      request to retrieve the next page of results. On first call this should
+      be left blank. When paginating, all other parameters provided to
+      conversionWorkspace.FetchEntitiesStatusView must match the call that
+      provided the page token, except for the page_size parameter.
+    tree: Required. The tree to fetch.
+  """
+
+  class FetchViewValueValuesEnum(_messages.Enum):
+    r"""Optional. The view to fetch. If not specified, FULL is used.
+
+    Values:
+      FETCH_VIEW_UNSPECIFIED: Unspecified view. Defaults to FULL.
+      FULL: Get all entities matching the filter.
+      SUMMARY: Each schema will have one entity per (non sub) type with a
+        dummy name that will contain the aggregated information for all
+        entities of that type. Counters like number of statements and issues
+        will be aggregated accordingly.
+      FULL_WITH_DEPENDENCIES: Same as FULL plus dependency information.
+    """
+    FETCH_VIEW_UNSPECIFIED = 0
+    FULL = 1
+    SUMMARY = 2
+    FULL_WITH_DEPENDENCIES = 3
+
+  class TreeValueValuesEnum(_messages.Enum):
+    r"""Required. The tree to fetch.
+
+    Values:
+      DB_TREE_TYPE_UNSPECIFIED: Unspecified tree type.
+      SOURCE_TREE: The source database tree.
+      DRAFT_TREE: The draft database tree.
+    """
+    DB_TREE_TYPE_UNSPECIFIED = 0
+    SOURCE_TREE = 1
+    DRAFT_TREE = 2
+
+  commitId = _messages.StringField(1)
+  conversionWorkspace = _messages.StringField(2, required=True)
+  fetchView = _messages.EnumField('FetchViewValueValuesEnum', 3)
+  filter = _messages.StringField(4)
+  pageSize = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(6)
+  tree = _messages.EnumField('TreeValueValuesEnum', 7)
+
+
+class DatamigrationProjectsLocationsConversionWorkspacesFetchIssuesRequest(_messages.Message):
+  r"""A DatamigrationProjectsLocationsConversionWorkspacesFetchIssuesRequest
+  object.
+
+  Enums:
+    IssueTypeValueValuesEnum: The issue type to fetch. Deprecated: Use
+      "issue.type" in the filter instead.
+
+  Fields:
+    allIssues: Optional. If 'true', gets all issues matching the filter.
+      Otherwise, for each entity only the issues matching the DdlKind chosen
+      for application on the destination are returned.
+    commitId: Optional. Request a specific commit ID. If not specified, the
+      entities from the latest commit are returned.
+    conversionWorkspace: Required. Conversion workspace with issues to fetch.
+      Must be in the form of: projects/{project}/locations/{location}/conversi
+      onWorkspaces/{conversion_workspace}.
+    filter: Optional. AIP-160 standard filter. Supporting both entity and
+      issue fields. Supported fields: - `name` / `fullname`: The entity full
+      name. - `type`: The entity type (e.g. `TABLE`, `VIEW`, `INDEX`,
+      `TRIGGER`). - `ddlkind`: The kind of DDL (e.g. `DDL_KIND_SOURCE`,
+      `DDL_KIND_AI`, `DDL_KIND_DETERMINISTIC`). - `issue.severity`: The
+      severity of the issue (e.g. `INFO`, `WARNING`, `ERROR`). -
+      `issue.state`: The state of the issue (e.g. `OPEN`, `RESOLVED`). -
+      `issue.origin`: The origin of the issue (e.g. `DETERMINISTIC`, `AI`). -
+      `issue.category_id`: The category ID of the issue. - `issue.group_id`:
+      The group ID of the issue.
+    issueType: The issue type to fetch. Deprecated: Use "issue.type" in the
+      filter instead.
+    pageSize: Optional. The maximum number of issues to return. The service
+      may return fewer issues than the value specifies.
+    pageToken: Optional. The FetchIssuesResponse.next_page_token value
+      received in the previous call to FetchIssues, used in the subsequent
+      request to retrieve the next page of results. On first call this should
+      be left blank. When paginating, all other parameters provided to
+      FetchIssues must match the call that provided the page token, except for
+      the page_size parameter.
+  """
+
+  class IssueTypeValueValuesEnum(_messages.Enum):
+    r"""The issue type to fetch. Deprecated: Use "issue.type" in the filter
+    instead.
+
+    Values:
+      ISSUE_TYPE_UNSPECIFIED: Unspecified issue type.
+      ISSUE_TYPE_CONVERSION: Issue originated from the conversion process.
+      ISSUE_TYPE_PULL_SCHEMA: Issue originated from the pull schema process.
+    """
+    ISSUE_TYPE_UNSPECIFIED = 0
+    ISSUE_TYPE_CONVERSION = 1
+    ISSUE_TYPE_PULL_SCHEMA = 2
+
+  allIssues = _messages.BooleanField(1)
+  commitId = _messages.StringField(2)
+  conversionWorkspace = _messages.StringField(3, required=True)
+  filter = _messages.StringField(4)
+  issueType = _messages.EnumField('IssueTypeValueValuesEnum', 5)
+  pageSize = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(7)
 
 
 class DatamigrationProjectsLocationsConversionWorkspacesGetIamPolicyRequest(_messages.Message):
@@ -3081,6 +3270,104 @@ class EntityDdl(_messages.Message):
   issueId = _messages.StringField(7, repeated=True)
 
 
+class EntityId(_messages.Message):
+  r"""An entity identifier.
+
+  Enums:
+    ParentTypeValueValuesEnum: The type of the database entity (schema, table,
+      view, ...).
+    TypeValueValuesEnum: The type of the database entity (schema, table, view,
+      index, ...).
+
+  Fields:
+    parentName: The parent entity full name.
+    parentType: The type of the database entity (schema, table, view, ...).
+    shortName: The short name (e.g. table name) of the entity.
+    type: The type of the database entity (schema, table, view, index, ...).
+  """
+
+  class ParentTypeValueValuesEnum(_messages.Enum):
+    r"""The type of the database entity (schema, table, view, ...).
+
+    Values:
+      DATABASE_ENTITY_TYPE_UNSPECIFIED: Unspecified database entity type.
+      DATABASE_ENTITY_TYPE_SCHEMA: Schema.
+      DATABASE_ENTITY_TYPE_TABLE: Table.
+      DATABASE_ENTITY_TYPE_COLUMN: Column.
+      DATABASE_ENTITY_TYPE_CONSTRAINT: Constraint.
+      DATABASE_ENTITY_TYPE_INDEX: Index.
+      DATABASE_ENTITY_TYPE_TRIGGER: Trigger.
+      DATABASE_ENTITY_TYPE_VIEW: View.
+      DATABASE_ENTITY_TYPE_SEQUENCE: Sequence.
+      DATABASE_ENTITY_TYPE_STORED_PROCEDURE: Stored Procedure.
+      DATABASE_ENTITY_TYPE_FUNCTION: Function.
+      DATABASE_ENTITY_TYPE_SYNONYM: Synonym.
+      DATABASE_ENTITY_TYPE_DATABASE_PACKAGE: Package.
+      DATABASE_ENTITY_TYPE_UDT: UDT.
+      DATABASE_ENTITY_TYPE_MATERIALIZED_VIEW: Materialized View.
+      DATABASE_ENTITY_TYPE_DATABASE: Database.
+    """
+    DATABASE_ENTITY_TYPE_UNSPECIFIED = 0
+    DATABASE_ENTITY_TYPE_SCHEMA = 1
+    DATABASE_ENTITY_TYPE_TABLE = 2
+    DATABASE_ENTITY_TYPE_COLUMN = 3
+    DATABASE_ENTITY_TYPE_CONSTRAINT = 4
+    DATABASE_ENTITY_TYPE_INDEX = 5
+    DATABASE_ENTITY_TYPE_TRIGGER = 6
+    DATABASE_ENTITY_TYPE_VIEW = 7
+    DATABASE_ENTITY_TYPE_SEQUENCE = 8
+    DATABASE_ENTITY_TYPE_STORED_PROCEDURE = 9
+    DATABASE_ENTITY_TYPE_FUNCTION = 10
+    DATABASE_ENTITY_TYPE_SYNONYM = 11
+    DATABASE_ENTITY_TYPE_DATABASE_PACKAGE = 12
+    DATABASE_ENTITY_TYPE_UDT = 13
+    DATABASE_ENTITY_TYPE_MATERIALIZED_VIEW = 14
+    DATABASE_ENTITY_TYPE_DATABASE = 15
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""The type of the database entity (schema, table, view, index, ...).
+
+    Values:
+      DATABASE_ENTITY_TYPE_UNSPECIFIED: Unspecified database entity type.
+      DATABASE_ENTITY_TYPE_SCHEMA: Schema.
+      DATABASE_ENTITY_TYPE_TABLE: Table.
+      DATABASE_ENTITY_TYPE_COLUMN: Column.
+      DATABASE_ENTITY_TYPE_CONSTRAINT: Constraint.
+      DATABASE_ENTITY_TYPE_INDEX: Index.
+      DATABASE_ENTITY_TYPE_TRIGGER: Trigger.
+      DATABASE_ENTITY_TYPE_VIEW: View.
+      DATABASE_ENTITY_TYPE_SEQUENCE: Sequence.
+      DATABASE_ENTITY_TYPE_STORED_PROCEDURE: Stored Procedure.
+      DATABASE_ENTITY_TYPE_FUNCTION: Function.
+      DATABASE_ENTITY_TYPE_SYNONYM: Synonym.
+      DATABASE_ENTITY_TYPE_DATABASE_PACKAGE: Package.
+      DATABASE_ENTITY_TYPE_UDT: UDT.
+      DATABASE_ENTITY_TYPE_MATERIALIZED_VIEW: Materialized View.
+      DATABASE_ENTITY_TYPE_DATABASE: Database.
+    """
+    DATABASE_ENTITY_TYPE_UNSPECIFIED = 0
+    DATABASE_ENTITY_TYPE_SCHEMA = 1
+    DATABASE_ENTITY_TYPE_TABLE = 2
+    DATABASE_ENTITY_TYPE_COLUMN = 3
+    DATABASE_ENTITY_TYPE_CONSTRAINT = 4
+    DATABASE_ENTITY_TYPE_INDEX = 5
+    DATABASE_ENTITY_TYPE_TRIGGER = 6
+    DATABASE_ENTITY_TYPE_VIEW = 7
+    DATABASE_ENTITY_TYPE_SEQUENCE = 8
+    DATABASE_ENTITY_TYPE_STORED_PROCEDURE = 9
+    DATABASE_ENTITY_TYPE_FUNCTION = 10
+    DATABASE_ENTITY_TYPE_SYNONYM = 11
+    DATABASE_ENTITY_TYPE_DATABASE_PACKAGE = 12
+    DATABASE_ENTITY_TYPE_UDT = 13
+    DATABASE_ENTITY_TYPE_MATERIALIZED_VIEW = 14
+    DATABASE_ENTITY_TYPE_DATABASE = 15
+
+  parentName = _messages.StringField(1)
+  parentType = _messages.EnumField('ParentTypeValueValuesEnum', 2)
+  shortName = _messages.StringField(3)
+  type = _messages.EnumField('TypeValueValuesEnum', 4)
+
+
 class EntityIssue(_messages.Message):
   r"""Issue related to the entity.
 
@@ -3312,6 +3599,102 @@ class EntityMove(_messages.Message):
   newSchema = _messages.StringField(1)
 
 
+class EntityStatusView(_messages.Message):
+  r"""A single entity for the UI view.
+
+  Enums:
+    DraftDdlKindValueValuesEnum: The DDL Kind selected for apply. If
+      UNSPECIFIED, the entity wasn't converted yet. For SUMMARY view, this
+      rolls up from descendants with the logic of UNSPECIFIED < DETERMINISTIC
+      < AI. USER_EDIT is not propagated.
+    EditedDdlKindValueValuesEnum: If ddl_kind is USER_EDIT, this holds the DDL
+      kind of the original content - DETERMINISTIC or AI. Otherwise, this is
+      DDL_KIND_UNSPECIFIED. Relevant only for FULL view.
+
+  Fields:
+    additionalProperties: Optional. The additional properties of the draft
+      DDL.
+    assessmentsInfo: Optional. The assessments info of the current draft DDL.
+    conversionQualityMetrics: Optional. Deprecated: Use summary_view_info
+      instead.
+    dependencies: Optional. The set of entities that this entity directly
+      depends on, i.e., it does not include transitive dependencies. Provided
+      only for FULL_WITH_DEPENDENCIES view. Dependencies are provided
+      according to the request tree type.
+    draftDdlKind: The DDL Kind selected for apply. If UNSPECIFIED, the entity
+      wasn't converted yet. For SUMMARY view, this rolls up from descendants
+      with the logic of UNSPECIFIED < DETERMINISTIC < AI. USER_EDIT is not
+      propagated.
+    draftEntity: The entity short name and type from the DRAFT tree.
+    editedDdlKind: If ddl_kind is USER_EDIT, this holds the DDL kind of the
+      original content - DETERMINISTIC or AI. Otherwise, this is
+      DDL_KIND_UNSPECIFIED. Relevant only for FULL view.
+    entitiesCount: Optional. Deprecated: Use summary_view_info instead.
+    issues: Unresolved issues information according to the current Draft
+      DdlKind.
+    resolvedIssues: Resolved issues information according to the current Draft
+      DdlKind.
+    sourceEntity: The entity short name and type from the SOURCE tree.
+    summaryViewInfo: Optional. Summarized information. Provided only for
+      SUMMARY view.
+    testedEntity: Optional. Whether the entity has successfully generated and
+      executed validation tests.
+    wasApplied: Was the entity applied on the destination. Relevant only for
+      FULL view.
+  """
+
+  class DraftDdlKindValueValuesEnum(_messages.Enum):
+    r"""The DDL Kind selected for apply. If UNSPECIFIED, the entity wasn't
+    converted yet. For SUMMARY view, this rolls up from descendants with the
+    logic of UNSPECIFIED < DETERMINISTIC < AI. USER_EDIT is not propagated.
+
+    Values:
+      DDL_KIND_UNSPECIFIED: The kind of the DDL is unknown.
+      SOURCE: DDL of the source entity
+      DETERMINISTIC: Deterministic converted DDL
+      AI: Gemini AI converted DDL
+      USER_EDIT: User edited DDL
+    """
+    DDL_KIND_UNSPECIFIED = 0
+    SOURCE = 1
+    DETERMINISTIC = 2
+    AI = 3
+    USER_EDIT = 4
+
+  class EditedDdlKindValueValuesEnum(_messages.Enum):
+    r"""If ddl_kind is USER_EDIT, this holds the DDL kind of the original
+    content - DETERMINISTIC or AI. Otherwise, this is DDL_KIND_UNSPECIFIED.
+    Relevant only for FULL view.
+
+    Values:
+      DDL_KIND_UNSPECIFIED: The kind of the DDL is unknown.
+      SOURCE: DDL of the source entity
+      DETERMINISTIC: Deterministic converted DDL
+      AI: Gemini AI converted DDL
+      USER_EDIT: User edited DDL
+    """
+    DDL_KIND_UNSPECIFIED = 0
+    SOURCE = 1
+    DETERMINISTIC = 2
+    AI = 3
+    USER_EDIT = 4
+
+  additionalProperties = _messages.MessageField('AdditionalDdlProperties', 1)
+  assessmentsInfo = _messages.MessageField('AssessmentsInfo', 2)
+  conversionQualityMetrics = _messages.MessageField('ConversionQualityMetrics', 3)
+  dependencies = _messages.MessageField('EntityId', 4, repeated=True)
+  draftDdlKind = _messages.EnumField('DraftDdlKindValueValuesEnum', 5)
+  draftEntity = _messages.MessageField('EntityId', 6)
+  editedDdlKind = _messages.EnumField('EditedDdlKindValueValuesEnum', 7)
+  entitiesCount = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+  issues = _messages.MessageField('IssueAggregateData', 9)
+  resolvedIssues = _messages.MessageField('IssueAggregateData', 10)
+  sourceEntity = _messages.MessageField('EntityId', 11)
+  summaryViewInfo = _messages.MessageField('SummaryViewInfo', 12)
+  testedEntity = _messages.BooleanField(13)
+  wasApplied = _messages.BooleanField(14)
+
+
 class ErrorInfo(_messages.Message):
   r"""Describes the cause of the error with structured details. Example of an
   error when contacting the "pubsub.googleapis.com" API when it is not
@@ -3425,6 +3808,51 @@ class Expr(_messages.Message):
   expression = _messages.StringField(2)
   location = _messages.StringField(3)
   title = _messages.StringField(4)
+
+
+class FetchEntitiesStatusViewResponse(_messages.Message):
+  r"""Response message for DataMigrationService.FetchEntitiesStatusView.
+
+  Fields:
+    entities: A list of the entities matching the request, sorted by their
+      full name (source name if requested the SOURCE tree, draft name if
+      requested the DRAFT tree). Sub-entities (such as indexes) always appear
+      immediately after their parent element.
+    nextPageToken: A token which can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+  """
+
+  entities = _messages.MessageField('EntityStatusView', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
+class FetchIssuesResponse(_messages.Message):
+  r"""Response for fetching issues of a conversion workspace.
+
+  Fields:
+    issues: The list of issues for the conversion workspace.
+    nextPageToken: A token which can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+  """
+
+  issues = _messages.MessageField('Issue', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
+class FetchIssuesResponseIssuePosition(_messages.Message):
+  r"""Issue position.
+
+  Fields:
+    column: Issue column number.
+    length: Issue length.
+    line: Issue line number.
+    offset: Issue offset.
+  """
+
+  column = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  length = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  line = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  offset = _messages.IntegerField(4, variant=_messages.Variant.INT32)
 
 
 class FetchStaticIpsResponse(_messages.Message):
@@ -3550,6 +3978,50 @@ class FunctionEntity(_messages.Message):
 
   customFeatures = _messages.MessageField('CustomFeaturesValue', 1)
   sqlCode = _messages.StringField(2)
+
+
+class FunctionalEquivalenceAssessmentInfo(_messages.Message):
+  r"""A functional equivalence assessment info overview.
+
+  Enums:
+    QualityValueValuesEnum: The quality.
+
+  Fields:
+    findingCount: The number of findings.
+    quality: The quality.
+  """
+
+  class QualityValueValuesEnum(_messages.Enum):
+    r"""The quality.
+
+    Values:
+      ASSESSMENT_QUALITY_UNSPECIFIED: Unspecified quality.
+      ASSESSMENT_QUALITY_LOW: Low quality.
+      ASSESSMENT_QUALITY_MEDIUM: Medium quality.
+      ASSESSMENT_QUALITY_HIGH: High quality.
+    """
+    ASSESSMENT_QUALITY_UNSPECIFIED = 0
+    ASSESSMENT_QUALITY_LOW = 1
+    ASSESSMENT_QUALITY_MEDIUM = 2
+    ASSESSMENT_QUALITY_HIGH = 3
+
+  findingCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  quality = _messages.EnumField('QualityValueValuesEnum', 2)
+
+
+class GcsSource(_messages.Message):
+  r"""Cloud Storage source details for seeding.
+
+  Fields:
+    bucket: Required. The Cloud Storage bucket containing the schema report
+      files.
+    prefix: Required. The prefix for the report paths in the bucket. Different
+      seed versions (report versions) might reside in the same bucket, the
+      prefix allows to identify the correct seed version.
+  """
+
+  bucket = _messages.StringField(1)
+  prefix = _messages.StringField(2)
 
 
 class GenerateSshScriptRequest(_messages.Message):
@@ -3841,6 +4313,389 @@ class IntComparisonFilter(_messages.Message):
 
   value = _messages.IntegerField(1)
   valueComparison = _messages.EnumField('ValueComparisonValueValuesEnum', 2)
+
+
+class Issue(_messages.Message):
+  r"""Issue related to the entity.
+
+  Enums:
+    CategoryIdValueValuesEnum: The category ID.
+    EntityTypeValueValuesEnum: The entity type (if the DDL is for a sub
+      entity).
+    GroupIdValueValuesEnum: The group ID.
+    IssueOriginValueValuesEnum: The source of the issue (deterministic,
+      gemini, etc).
+    IssueStateValueValuesEnum: Output only. The state of the issue (open,
+      resolved, etc).
+    SeverityValueValuesEnum: Severity of the issue.
+    TypeValueValuesEnum: The type of the issue.
+
+  Fields:
+    categoryId: The category ID.
+    entityFullName: Entity full name.
+    entityType: The entity type (if the DDL is for a sub entity).
+    groupId: The group ID.
+    id: Unique Issue ID. Use this ID when referencing a specific issue in
+      other API calls, such as DataMigrationService.SetIssuesState.
+    issueOrigin: The source of the issue (deterministic, gemini, etc).
+    issueState: Output only. The state of the issue (open, resolved, etc).
+    message: Issue detailed message.
+    position: The position of the issue found, if relevant.
+    severity: Severity of the issue.
+    type: The type of the issue.
+  """
+
+  class CategoryIdValueValuesEnum(_messages.Enum):
+    r"""The category ID.
+
+    Values:
+      ISSUE_CATEGORY_ID_UNSPECIFIED: Unspecified issue category ID.
+      ISSUE_CATEGORY_ID_CW00: General conversion issues.
+      ISSUE_CATEGORY_ID_CW01: Input issues.
+      ISSUE_CATEGORY_ID_CW02: Source functionality not supported.
+      ISSUE_CATEGORY_ID_CW03: Source feature not supported.
+      ISSUE_CATEGORY_ID_CW04: Unsupported syntax.
+      ISSUE_CATEGORY_ID_CW05: Data types and conversion.
+      ISSUE_CATEGORY_ID_CW06: Potential functional nuances.
+      ISSUE_CATEGORY_ID_CW07: Functional review recommended.
+      ISSUE_CATEGORY_ID_CW08: Refactoring required.
+      ISSUE_CATEGORY_ID_CW99: Gemini review recommendations.
+      ISSUE_CATEGORY_ID_QA00: Quality assessment findings.
+    """
+    ISSUE_CATEGORY_ID_UNSPECIFIED = 0
+    ISSUE_CATEGORY_ID_CW00 = 1
+    ISSUE_CATEGORY_ID_CW01 = 2
+    ISSUE_CATEGORY_ID_CW02 = 3
+    ISSUE_CATEGORY_ID_CW03 = 4
+    ISSUE_CATEGORY_ID_CW04 = 5
+    ISSUE_CATEGORY_ID_CW05 = 6
+    ISSUE_CATEGORY_ID_CW06 = 7
+    ISSUE_CATEGORY_ID_CW07 = 8
+    ISSUE_CATEGORY_ID_CW08 = 9
+    ISSUE_CATEGORY_ID_CW99 = 10
+    ISSUE_CATEGORY_ID_QA00 = 11
+
+  class EntityTypeValueValuesEnum(_messages.Enum):
+    r"""The entity type (if the DDL is for a sub entity).
+
+    Values:
+      DATABASE_ENTITY_TYPE_UNSPECIFIED: Unspecified database entity type.
+      DATABASE_ENTITY_TYPE_SCHEMA: Schema.
+      DATABASE_ENTITY_TYPE_TABLE: Table.
+      DATABASE_ENTITY_TYPE_COLUMN: Column.
+      DATABASE_ENTITY_TYPE_CONSTRAINT: Constraint.
+      DATABASE_ENTITY_TYPE_INDEX: Index.
+      DATABASE_ENTITY_TYPE_TRIGGER: Trigger.
+      DATABASE_ENTITY_TYPE_VIEW: View.
+      DATABASE_ENTITY_TYPE_SEQUENCE: Sequence.
+      DATABASE_ENTITY_TYPE_STORED_PROCEDURE: Stored Procedure.
+      DATABASE_ENTITY_TYPE_FUNCTION: Function.
+      DATABASE_ENTITY_TYPE_SYNONYM: Synonym.
+      DATABASE_ENTITY_TYPE_DATABASE_PACKAGE: Package.
+      DATABASE_ENTITY_TYPE_UDT: UDT.
+      DATABASE_ENTITY_TYPE_MATERIALIZED_VIEW: Materialized View.
+      DATABASE_ENTITY_TYPE_DATABASE: Database.
+    """
+    DATABASE_ENTITY_TYPE_UNSPECIFIED = 0
+    DATABASE_ENTITY_TYPE_SCHEMA = 1
+    DATABASE_ENTITY_TYPE_TABLE = 2
+    DATABASE_ENTITY_TYPE_COLUMN = 3
+    DATABASE_ENTITY_TYPE_CONSTRAINT = 4
+    DATABASE_ENTITY_TYPE_INDEX = 5
+    DATABASE_ENTITY_TYPE_TRIGGER = 6
+    DATABASE_ENTITY_TYPE_VIEW = 7
+    DATABASE_ENTITY_TYPE_SEQUENCE = 8
+    DATABASE_ENTITY_TYPE_STORED_PROCEDURE = 9
+    DATABASE_ENTITY_TYPE_FUNCTION = 10
+    DATABASE_ENTITY_TYPE_SYNONYM = 11
+    DATABASE_ENTITY_TYPE_DATABASE_PACKAGE = 12
+    DATABASE_ENTITY_TYPE_UDT = 13
+    DATABASE_ENTITY_TYPE_MATERIALIZED_VIEW = 14
+    DATABASE_ENTITY_TYPE_DATABASE = 15
+
+  class GroupIdValueValuesEnum(_messages.Enum):
+    r"""The group ID.
+
+    Values:
+      ISSUE_GROUP_ID_UNSPECIFIED: Unspecified issue group ID.
+      ISSUE_GROUP_ID_CW_OP0000: General conversion issues.
+      ISSUE_GROUP_ID_CW_OP0001: Metadata conversion issues.
+      ISSUE_GROUP_ID_CW_OP0002: Contact your support team.
+      ISSUE_GROUP_ID_CW_OP0101: Invalid source code.
+      ISSUE_GROUP_ID_CW_OP0102: Missing referenced objects.
+      ISSUE_GROUP_ID_CW_OP0103: Missing primary key.
+      ISSUE_GROUP_ID_CW_OP0200: Source functionality not supported.
+      ISSUE_GROUP_ID_CW_OP0201: SQLCODE not supported.
+      ISSUE_GROUP_ID_CW_OP0202: Oracle data dictionary object not supported.
+      ISSUE_GROUP_ID_CW_OP0203: Oracle SQL function not supported.
+      ISSUE_GROUP_ID_CW_OP0204: Oracle PL/SQL package not supported.
+      ISSUE_GROUP_ID_CW_OP0205: Data type not supported.
+      ISSUE_GROUP_ID_CW_OP0206: Naming conflict.
+      ISSUE_GROUP_ID_CW_OP0300: Source feature not supported.
+      ISSUE_GROUP_ID_CW_OP0301: Schema objects or attributes not supported.
+      ISSUE_GROUP_ID_CW_OP0315: Synonyms not supported.
+      ISSUE_GROUP_ID_CW_OP0303: Bulk binding not supported.
+      ISSUE_GROUP_ID_CW_OP0304: Collections not supported.
+      ISSUE_GROUP_ID_CW_OP0305: Pipelined functions not supported.
+      ISSUE_GROUP_ID_CW_OP0306: Dynamic SQL not supported.
+      ISSUE_GROUP_ID_CW_OP0307: CONNECT BY option not supported.
+      ISSUE_GROUP_ID_CW_OP0308: Locking and transactions issues.
+      ISSUE_GROUP_ID_CW_OP0309: JSON not supported.
+      ISSUE_GROUP_ID_CW_OP0310: XML not supported.
+      ISSUE_GROUP_ID_CW_OP0311: MERGE not supported.
+      ISSUE_GROUP_ID_CW_OP0312: PIVOT not supported.
+      ISSUE_GROUP_ID_CW_OP0313: ALTER statement option not supported.
+      ISSUE_GROUP_ID_CW_OP0314: SQL feature not supported.
+      ISSUE_GROUP_ID_CW_OP0302: PL/SQL feature not supported.
+      ISSUE_GROUP_ID_CW_OP0400: Unsupported syntax.
+      ISSUE_GROUP_ID_CW_OP0401: Unsupported SQL syntax.
+      ISSUE_GROUP_ID_CW_OP0402: Unsupported PL/SQL syntax.
+      ISSUE_GROUP_ID_CW_OP0403: Unsupported date and timestamp syntax.
+      ISSUE_GROUP_ID_CW_OP0404: Unsupported exceptions syntax.
+      ISSUE_GROUP_ID_CW_OP0500: Data types and conversion issues.
+      ISSUE_GROUP_ID_CW_OP0501: Date format model issues.
+      ISSUE_GROUP_ID_CW_OP0502: Numeric format model issues.
+      ISSUE_GROUP_ID_CW_OP0503: Casting issues.
+      ISSUE_GROUP_ID_CW_OP0504: Comparison issues.
+      ISSUE_GROUP_ID_CW_OP0601: Review date format model.
+      ISSUE_GROUP_ID_CW_OP0602: Review numeric format model.
+      ISSUE_GROUP_ID_CW_OP0603: Review exception code.
+      ISSUE_GROUP_ID_CW_OP0604: Review exception message.
+      ISSUE_GROUP_ID_CW_OP0605: Review Oracle built-in function emulation.
+      ISSUE_GROUP_ID_CW_OP0606: Review foreign key column data type.
+      ISSUE_GROUP_ID_CW_OP0701: Functional review recommended.
+      ISSUE_GROUP_ID_CW_OP0702: Review Oracle built-in function emulation.
+      ISSUE_GROUP_ID_CW_OP0801: Autonomous transactions refactoring required.
+      ISSUE_GROUP_ID_CW_OP0802: Database links refactoring required.
+      ISSUE_GROUP_ID_CW_OP0803: Advanced queuing refactoring required.
+      ISSUE_GROUP_ID_CW_OP0804: Database email refactoring required.
+      ISSUE_GROUP_ID_CW_OP0805: Jobs and scheduling refactoring required.
+      ISSUE_GROUP_ID_CW_OP0806: File I/O refactoring required.
+      ISSUE_GROUP_ID_CW_OP0807: Synonyms refactoring required.
+      ISSUE_GROUP_ID_CW_OP0808: Global temporary tables refactoring required.
+      ISSUE_GROUP_ID_QA_OP0000: Functional equivalence assessment findings.
+      ISSUE_GROUP_ID_CW_SP0000: General conversion issues.
+      ISSUE_GROUP_ID_CW_SP0001: Metadata conversion issues.
+      ISSUE_GROUP_ID_CW_SP0002: Contact your support team.
+      ISSUE_GROUP_ID_CW_SP0101: Invalid source code.
+      ISSUE_GROUP_ID_CW_SP0102: Missing referenced objects.
+      ISSUE_GROUP_ID_CW_SP0103: Missing primary key.
+      ISSUE_GROUP_ID_CW_SP0200: Source functionality not supported.
+      ISSUE_GROUP_ID_CW_SP0201: SQL Server system view not supported.
+      ISSUE_GROUP_ID_CW_SP0202: SQL Server SQL function not supported.
+      ISSUE_GROUP_ID_CW_SP0203: SQL Server T-SQL object not supported.
+      ISSUE_GROUP_ID_CW_SP0204: Missing SQL Server system View
+      ISSUE_GROUP_ID_CW_SP0205: Naming conflict.
+      ISSUE_GROUP_ID_CW_SP0300: Source feature not supported.
+      ISSUE_GROUP_ID_CW_SP0302: T-SQL feature not supported.
+      ISSUE_GROUP_ID_CW_SP0306: Dynamic SQL not supported.
+      ISSUE_GROUP_ID_CW_SP0308: JSON not supported.
+      ISSUE_GROUP_ID_CW_SP0309: Locking and transactions issues.
+      ISSUE_GROUP_ID_CW_SP0310: XML not supported.
+      ISSUE_GROUP_ID_CW_SP0311: MERGE not supported.
+      ISSUE_GROUP_ID_CW_SP0312: PIVOT not supported.
+      ISSUE_GROUP_ID_CW_SP0313: ALTER statement option not supported.
+      ISSUE_GROUP_ID_CW_SP0314: SQL feature not supported.
+      ISSUE_GROUP_ID_CW_SP0400: Unsupported syntax.
+      ISSUE_GROUP_ID_CW_SP0401: Unsupported SQL syntax.
+      ISSUE_GROUP_ID_CW_SP0402: Unsupported T-SQL syntax.
+      ISSUE_GROUP_ID_CW_SP0403: Unsupported date and timestamp syntax.
+      ISSUE_GROUP_ID_CW_SP0404: Unsupported exceptions syntax.
+      ISSUE_GROUP_ID_CW_SP0500: Data types and conversion issues.
+      ISSUE_GROUP_ID_CW_SP0501: Date format model issues.
+      ISSUE_GROUP_ID_CW_SP0502: Numeric format model issues.
+      ISSUE_GROUP_ID_CW_SP0503: Casting issues.
+      ISSUE_GROUP_ID_CW_SP0504: Comparison issues.
+      ISSUE_GROUP_ID_CW_SP0601: Review date format model.
+      ISSUE_GROUP_ID_CW_SP0602: Review numeric format model.
+      ISSUE_GROUP_ID_CW_SP0604: Review exception message.
+      ISSUE_GROUP_ID_CW_SP0701: Functional review recommended.
+      ISSUE_GROUP_ID_CW_SP0802: Database links refactoring required.
+      ISSUE_GROUP_ID_CW_SP0807: Synonyms refactoring required.
+      ISSUE_GROUP_ID_QA_SP0000: Functional equivalence assessment findings.
+      ISSUE_GROUP_ID_CW_AI9900: Review Gemini suggestions.
+      ISSUE_GROUP_ID_CW_AI9901: Review AI-augmented code.
+      ISSUE_GROUP_ID_CW_AI9902: Citations for AI-augmented code.
+    """
+    ISSUE_GROUP_ID_UNSPECIFIED = 0
+    ISSUE_GROUP_ID_CW_OP0000 = 1
+    ISSUE_GROUP_ID_CW_OP0001 = 2
+    ISSUE_GROUP_ID_CW_OP0002 = 3
+    ISSUE_GROUP_ID_CW_OP0101 = 4
+    ISSUE_GROUP_ID_CW_OP0102 = 5
+    ISSUE_GROUP_ID_CW_OP0103 = 6
+    ISSUE_GROUP_ID_CW_OP0200 = 7
+    ISSUE_GROUP_ID_CW_OP0201 = 8
+    ISSUE_GROUP_ID_CW_OP0202 = 9
+    ISSUE_GROUP_ID_CW_OP0203 = 10
+    ISSUE_GROUP_ID_CW_OP0204 = 11
+    ISSUE_GROUP_ID_CW_OP0205 = 12
+    ISSUE_GROUP_ID_CW_OP0206 = 13
+    ISSUE_GROUP_ID_CW_OP0300 = 14
+    ISSUE_GROUP_ID_CW_OP0301 = 15
+    ISSUE_GROUP_ID_CW_OP0315 = 16
+    ISSUE_GROUP_ID_CW_OP0303 = 17
+    ISSUE_GROUP_ID_CW_OP0304 = 18
+    ISSUE_GROUP_ID_CW_OP0305 = 19
+    ISSUE_GROUP_ID_CW_OP0306 = 20
+    ISSUE_GROUP_ID_CW_OP0307 = 21
+    ISSUE_GROUP_ID_CW_OP0308 = 22
+    ISSUE_GROUP_ID_CW_OP0309 = 23
+    ISSUE_GROUP_ID_CW_OP0310 = 24
+    ISSUE_GROUP_ID_CW_OP0311 = 25
+    ISSUE_GROUP_ID_CW_OP0312 = 26
+    ISSUE_GROUP_ID_CW_OP0313 = 27
+    ISSUE_GROUP_ID_CW_OP0314 = 28
+    ISSUE_GROUP_ID_CW_OP0302 = 29
+    ISSUE_GROUP_ID_CW_OP0400 = 30
+    ISSUE_GROUP_ID_CW_OP0401 = 31
+    ISSUE_GROUP_ID_CW_OP0402 = 32
+    ISSUE_GROUP_ID_CW_OP0403 = 33
+    ISSUE_GROUP_ID_CW_OP0404 = 34
+    ISSUE_GROUP_ID_CW_OP0500 = 35
+    ISSUE_GROUP_ID_CW_OP0501 = 36
+    ISSUE_GROUP_ID_CW_OP0502 = 37
+    ISSUE_GROUP_ID_CW_OP0503 = 38
+    ISSUE_GROUP_ID_CW_OP0504 = 39
+    ISSUE_GROUP_ID_CW_OP0601 = 40
+    ISSUE_GROUP_ID_CW_OP0602 = 41
+    ISSUE_GROUP_ID_CW_OP0603 = 42
+    ISSUE_GROUP_ID_CW_OP0604 = 43
+    ISSUE_GROUP_ID_CW_OP0605 = 44
+    ISSUE_GROUP_ID_CW_OP0606 = 45
+    ISSUE_GROUP_ID_CW_OP0701 = 46
+    ISSUE_GROUP_ID_CW_OP0702 = 47
+    ISSUE_GROUP_ID_CW_OP0801 = 48
+    ISSUE_GROUP_ID_CW_OP0802 = 49
+    ISSUE_GROUP_ID_CW_OP0803 = 50
+    ISSUE_GROUP_ID_CW_OP0804 = 51
+    ISSUE_GROUP_ID_CW_OP0805 = 52
+    ISSUE_GROUP_ID_CW_OP0806 = 53
+    ISSUE_GROUP_ID_CW_OP0807 = 54
+    ISSUE_GROUP_ID_CW_OP0808 = 55
+    ISSUE_GROUP_ID_QA_OP0000 = 56
+    ISSUE_GROUP_ID_CW_SP0000 = 57
+    ISSUE_GROUP_ID_CW_SP0001 = 58
+    ISSUE_GROUP_ID_CW_SP0002 = 59
+    ISSUE_GROUP_ID_CW_SP0101 = 60
+    ISSUE_GROUP_ID_CW_SP0102 = 61
+    ISSUE_GROUP_ID_CW_SP0103 = 62
+    ISSUE_GROUP_ID_CW_SP0200 = 63
+    ISSUE_GROUP_ID_CW_SP0201 = 64
+    ISSUE_GROUP_ID_CW_SP0202 = 65
+    ISSUE_GROUP_ID_CW_SP0203 = 66
+    ISSUE_GROUP_ID_CW_SP0204 = 67
+    ISSUE_GROUP_ID_CW_SP0205 = 68
+    ISSUE_GROUP_ID_CW_SP0300 = 69
+    ISSUE_GROUP_ID_CW_SP0302 = 70
+    ISSUE_GROUP_ID_CW_SP0306 = 71
+    ISSUE_GROUP_ID_CW_SP0308 = 72
+    ISSUE_GROUP_ID_CW_SP0309 = 73
+    ISSUE_GROUP_ID_CW_SP0310 = 74
+    ISSUE_GROUP_ID_CW_SP0311 = 75
+    ISSUE_GROUP_ID_CW_SP0312 = 76
+    ISSUE_GROUP_ID_CW_SP0313 = 77
+    ISSUE_GROUP_ID_CW_SP0314 = 78
+    ISSUE_GROUP_ID_CW_SP0400 = 79
+    ISSUE_GROUP_ID_CW_SP0401 = 80
+    ISSUE_GROUP_ID_CW_SP0402 = 81
+    ISSUE_GROUP_ID_CW_SP0403 = 82
+    ISSUE_GROUP_ID_CW_SP0404 = 83
+    ISSUE_GROUP_ID_CW_SP0500 = 84
+    ISSUE_GROUP_ID_CW_SP0501 = 85
+    ISSUE_GROUP_ID_CW_SP0502 = 86
+    ISSUE_GROUP_ID_CW_SP0503 = 87
+    ISSUE_GROUP_ID_CW_SP0504 = 88
+    ISSUE_GROUP_ID_CW_SP0601 = 89
+    ISSUE_GROUP_ID_CW_SP0602 = 90
+    ISSUE_GROUP_ID_CW_SP0604 = 91
+    ISSUE_GROUP_ID_CW_SP0701 = 92
+    ISSUE_GROUP_ID_CW_SP0802 = 93
+    ISSUE_GROUP_ID_CW_SP0807 = 94
+    ISSUE_GROUP_ID_QA_SP0000 = 95
+    ISSUE_GROUP_ID_CW_AI9900 = 96
+    ISSUE_GROUP_ID_CW_AI9901 = 97
+    ISSUE_GROUP_ID_CW_AI9902 = 98
+
+  class IssueOriginValueValuesEnum(_messages.Enum):
+    r"""The source of the issue (deterministic, gemini, etc).
+
+    Values:
+      ISSUE_ORIGIN_UNSPECIFIED: Unspecified issue origin.
+      ISSUE_ORIGIN_DETERMINISTIC: Issue originated from the deterministic
+        conversion engine.
+      ISSUE_ORIGIN_AI: Issue originated from the AI conversion engine.
+      ISSUE_ORIGIN_AI_FROM_DETERMINISTIC: CODE_CONVERSION/CST issues that were
+        carried over to the Gemini conversion,
+    """
+    ISSUE_ORIGIN_UNSPECIFIED = 0
+    ISSUE_ORIGIN_DETERMINISTIC = 1
+    ISSUE_ORIGIN_AI = 2
+    ISSUE_ORIGIN_AI_FROM_DETERMINISTIC = 3
+
+  class IssueStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the issue (open, resolved, etc).
+
+    Values:
+      ISSUE_STATE_UNSPECIFIED: Unspecified issue state.
+      ISSUE_STATE_OPEN: Issue is open.
+      ISSUE_STATE_RESOLVED: Issue is resolved.
+    """
+    ISSUE_STATE_UNSPECIFIED = 0
+    ISSUE_STATE_OPEN = 1
+    ISSUE_STATE_RESOLVED = 2
+
+  class SeverityValueValuesEnum(_messages.Enum):
+    r"""Severity of the issue.
+
+    Values:
+      ISSUE_SEVERITY_UNSPECIFIED: Unspecified issue severity.
+      ISSUE_SEVERITY_INFO: Info.
+      ISSUE_SEVERITY_WARNING: Warning.
+      ISSUE_SEVERITY_ERROR: Error.
+    """
+    ISSUE_SEVERITY_UNSPECIFIED = 0
+    ISSUE_SEVERITY_INFO = 1
+    ISSUE_SEVERITY_WARNING = 2
+    ISSUE_SEVERITY_ERROR = 3
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""The type of the issue.
+
+    Values:
+      ISSUE_TYPE_UNSPECIFIED: Unspecified issue type.
+      ISSUE_TYPE_CONVERSION: Issue originated from the conversion process.
+      ISSUE_TYPE_PULL_SCHEMA: Issue originated from the pull schema process.
+    """
+    ISSUE_TYPE_UNSPECIFIED = 0
+    ISSUE_TYPE_CONVERSION = 1
+    ISSUE_TYPE_PULL_SCHEMA = 2
+
+  categoryId = _messages.EnumField('CategoryIdValueValuesEnum', 1)
+  entityFullName = _messages.StringField(2)
+  entityType = _messages.EnumField('EntityTypeValueValuesEnum', 3)
+  groupId = _messages.EnumField('GroupIdValueValuesEnum', 4)
+  id = _messages.StringField(5)
+  issueOrigin = _messages.EnumField('IssueOriginValueValuesEnum', 6)
+  issueState = _messages.EnumField('IssueStateValueValuesEnum', 7)
+  message = _messages.StringField(8)
+  position = _messages.MessageField('FetchIssuesResponseIssuePosition', 9)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 10)
+  type = _messages.EnumField('TypeValueValuesEnum', 11)
+
+
+class IssueAggregateData(_messages.Message):
+  r"""Aggregate issue information.
+
+  Fields:
+    errorCount: Number of error issues.
+    infoCount: Number of info issues.
+    warningCount: Number of warning issues.
+  """
+
+  errorCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  infoCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  warningCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
 
 
 class Link(_messages.Message):
@@ -6007,13 +6862,15 @@ class SeedConversionWorkspaceRequest(_messages.Message):
       after the seed operation.
     destinationConnectionProfile: Optional. Fully qualified (Uri) name of the
       destination connection profile.
+    gcsSource: Optional. Cloud Storage source details for seeding.
     sourceConnectionProfile: Optional. Fully qualified (Uri) name of the
       source connection profile.
   """
 
   autoCommit = _messages.BooleanField(1)
   destinationConnectionProfile = _messages.StringField(2)
-  sourceConnectionProfile = _messages.StringField(3)
+  gcsSource = _messages.MessageField('GcsSource', 3)
+  sourceConnectionProfile = _messages.StringField(4)
 
 
 class SeedJobDetails(_messages.Message):
@@ -6946,6 +7803,65 @@ class StoredProcedureEntity(_messages.Message):
 
   customFeatures = _messages.MessageField('CustomFeaturesValue', 1)
   sqlCode = _messages.StringField(2)
+
+
+class SummaryViewInfo(_messages.Message):
+  r"""Summarized information of the entity type matching the
+  google.cloud.clouddms.v1.EntityStatusView.draft_entity.type value. Provided
+  only for SUMMARY view.
+
+  Fields:
+    conversionQualityMetrics: Output only. Metrics related to the quality of
+      the conversion according to the current Draft DdlKind. Provided only for
+      summary view.
+    entityAssessedCount: Output only. The number of entities (including sub-
+      entities) that have an assessment.
+    entityConversionStatusNoIssuesCount: Output only. The number of entities
+      (including sub-entities) that have no unresolved issues.
+    entityConversionStatusReviewRecommendedCount: Output only. The number of
+      entities (including sub-entities) for which a review is recommended,
+      i.e. that have unresolved warnings but no unresolved errors.
+    entityConvertedUsingGeminiCount: Output only. The number of entities
+      (including sub-entities) for which their current DDL was converted with
+      Gemini.
+    entityCount: Output only. The number of
+      google.cloud.clouddms.v1.EntityStatusView.draft_entity.type entities.
+      Note that a TABLE type, for instance, will include the number of TABLE
+      entities in the schema and won't include the number of sub-entities like
+      indexes. That number of all sub-entities of the type is in the
+      sub_entity_count field.
+    entityHasErrorCount: Output only. The number of entities (including sub-
+      entities) with unresolved errors. Those entities may also have issues of
+      other severities.
+    entityHasWarningCount: Output only. The number of entities (including sub-
+      entities) with unresolved warnings. Those entities may also have issues
+      of other severities.
+    entityHighQualityAssessedCount: Output only. The number of entities
+      (including sub-entities) that have a high quality assessment.
+    entityUserModifiedCount: Output only. The number of entities (including
+      sub-entities) that were modified (edited) by the user.
+    entityUserVerifiedCount: Output only. The number of entities (including
+      sub-entities) that were marked as verified by the user.
+    subEntityCount: Output only. The total number of sub-entities (indexes,
+      constraints and triggers) of entities of
+      google.cloud.clouddms.v1.EntityStatusView.draft_entity.type type.
+    testedObjectsCount: Output only. Number of objects that have at least one
+      test generated and executed on the target.
+  """
+
+  conversionQualityMetrics = _messages.MessageField('ConversionQualityMetrics', 1)
+  entityAssessedCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  entityConversionStatusNoIssuesCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  entityConversionStatusReviewRecommendedCount = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  entityConvertedUsingGeminiCount = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  entityCount = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  entityHasErrorCount = _messages.IntegerField(7, variant=_messages.Variant.INT32)
+  entityHasWarningCount = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+  entityHighQualityAssessedCount = _messages.IntegerField(9, variant=_messages.Variant.INT32)
+  entityUserModifiedCount = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  entityUserVerifiedCount = _messages.IntegerField(11, variant=_messages.Variant.INT32)
+  subEntityCount = _messages.IntegerField(12, variant=_messages.Variant.INT32)
+  testedObjectsCount = _messages.IntegerField(13, variant=_messages.Variant.INT32)
 
 
 class SynonymEntity(_messages.Message):

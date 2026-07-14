@@ -118,8 +118,9 @@ class Create(base.CreateCommand):
     flags.AddConnectionPoolingServerLifetime(parser)
     flags.AddConnectionPoolingClientConnectionIdleTimeout(parser)
     flags.AddConnectionPoolingMaxPreparedStatements(parser)
+    labels_util.AddCreateLabelsFlags(parser)
 
-    # TODO(b/185795425): Add --ssl-required and --labels later once we
+    # TODO(b/185795425): Add --ssl-required later once we
     # understand the use cases
 
   def ConstructCreateRequestFromArgs(
@@ -178,7 +179,6 @@ class CreateBeta(Create):
     )
 
     flags.AddAutoscalerCreateFlags(parser)
-    labels_util.AddCreateLabelsFlags(parser)
 
   def ConstructCreateRequestFromArgs(
       self, client, alloydb_messages, cluster_ref, args

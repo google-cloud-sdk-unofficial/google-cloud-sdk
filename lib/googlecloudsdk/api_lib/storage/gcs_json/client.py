@@ -886,9 +886,20 @@ class JsonClient(cloud_api.CloudApi):
 
     encryption_key = getattr(request_config.resource_args, 'encryption_key',
                              None)
-    with self._encryption_headers_context(encryption_key):
+    idempotency_headers = (
+        {'x-goog-gcs-idempotency-token': uuid.uuid4().hex}
+        if delete_source_objects
+        else {}
+    )
+    merged_headers = {
+        **idempotency_headers,
+        **_get_encryption_headers(encryption_key),
+    }
+
+    with self._apitools_request_headers_context(merged_headers):
       return metadata_util.get_object_resource_from_metadata(
-          self.client.objects.Compose(compose_request))
+          self.client.objects.Compose(compose_request)
+      )
 
   @error_util.catch_http_error_raise_gcs_api_error()
   def copy_object(

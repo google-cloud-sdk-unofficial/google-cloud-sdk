@@ -14,13 +14,27 @@
 # limitations under the License.
 """Clients for interacting with Storage Batch Operations."""
 
-from typing import List, Optional
+from typing import Any, List, Optional, TYPE_CHECKING, TypedDict
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.storage import errors
 from googlecloudsdk.api_lib.storage import storage_batch_operations_util
 from googlecloudsdk.api_lib.util import apis as core_apis
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import times
+
+if TYPE_CHECKING:
+  # pylint: disable=g-import-not-at-top
+  from googlecloudsdk.generated_clients.apis.storagebatchoperations.v1 import storagebatchoperations_v1_messages as storage_messages
+
+
+class GrantDict(TypedDict, total=False):
+  entity: str
+  role: str
+
+
+class SetObjectAclsDict(TypedDict, total=False):
+  grants: List[GrantDict]
+  remove_entities: List[str]
 
 
 # Backend has a limit of 500.
@@ -36,7 +50,9 @@ class StorageBatchOperationsApi:
 
   def __init__(self):
     self.client = core_apis.GetClientInstance("storagebatchoperations", "v1")
-    self.messages = core_apis.GetMessagesModule("storagebatchoperations", "v1")
+    self.messages: Any = core_apis.GetMessagesModule(
+        "storagebatchoperations", "v1"
+    )
 
   def _instantiate_job_with_source(
       self,
@@ -279,14 +295,14 @@ class StorageBatchOperationsApi:
                 )
             )
             object_retention.retentionMode = retention_mode_enum
-          except TypeError:
+          except TypeError as exc:
             valid_modes = (
                 self.messages.ObjectRetention.RetentionModeValueValuesEnum.to_dict().keys()
             )
             raise errors.StorageBatchOperationsApiError(
                 f"Invalid value for retention-mode: {value}. Must be one of"
                 f" {valid_modes}."
-            )
+            ) from exc
       else:
         custom_metadata_value.additionalProperties.append(
             self.messages.PutMetadata.CustomMetadataValue.AdditionalProperty(
@@ -339,6 +355,28 @@ class StorageBatchOperationsApi:
 
       update_object_custom_context.customContextUpdates = custom_context_updates
     job.updateObjectCustomContext = update_object_custom_context
+
+  def _modify_job_set_object_acls(
+      self,
+      job: "storage_messages.Job",
+      set_object_acls_dict: SetObjectAclsDict,
+  ) -> None:
+    """Modifies a job to set object ACLs."""
+    grants = None
+    if set_object_acls_dict.get("grants"):
+      grants = [
+          self.messages.ObjectAccessControl(
+              entity=grant.get("entity"), role=grant.get("role")
+          )
+          for grant in set_object_acls_dict["grants"]
+      ]
+
+    job.setObjectAcls = self.messages.SetObjectAcls(
+        accessControlsUpdates=self.messages.AccessControlsUpdates(
+            grants=grants,
+            removeEntities=set_object_acls_dict.get("remove_entities"),
+        )
+    )
 
   def _modify_job_logging_config(self, job, log_actions, log_action_states):
     """Modifies a job to create logging config."""
@@ -431,6 +469,8 @@ class StorageBatchOperationsApi:
               args, "clear_object_custom_contexts", None
           ),
       )
+    elif getattr(args, "set_object_acls_from_file", None):
+      self._modify_job_set_object_acls(job, args.set_object_acls_from_file)
     else:
       raise errors.StorageBatchOperationsApiError(
           "Exactly one transformaiton must be specified."

@@ -3769,8 +3769,8 @@ class GenerateApplicationTemplateAssessmentReportRequest(_messages.Message):
   r"""Message for generate assessment report application template.
 
   Fields:
-    serviceAccount: Optional. The email address of the service account to use
-      for this preview operation. - This service account will be used to
+    serviceAccount: Optional. Deprecated: This field is no longer used since
+      we moved to fast plan assessment. - This service account will be used to
       execute the preview process. - The caller must have the
       'iam.serviceAccounts.actAs' permission on this service account. Format:
       projects/{PROJECT}/serviceAccounts/{EMAIL_ADDRESS}
@@ -3866,8 +3866,41 @@ class GenerateApplicationTemplateRevisionIaCResponse(_messages.Message):
   rootModulesMetadata = _messages.MessageField('RootModulesMetadata', 2)
 
 
+class GenerateAssessmentReportOperationMetadata(_messages.Message):
+  r"""Ephemeral metadata depicting the state of assessment report generation.
+
+  Enums:
+    StepValueValuesEnum: Output only. The current step of the generate
+      assessment report operation.
+
+  Fields:
+    step: Output only. The current step of the generate assessment report
+      operation.
+  """
+
+  class StepValueValuesEnum(_messages.Enum):
+    r"""Output only. The current step of the generate assessment report
+    operation.
+
+    Values:
+      ASSESSMENT_STEP_UNSPECIFIED: Unspecified step.
+      FAST_PLAN: Generating Terraform fast plan.
+      ASSESSMENT_REPORT: Generating BPBD assessment report.
+      SUCCEEDED: Succeeded.
+      FAILED: Failed.
+    """
+    ASSESSMENT_STEP_UNSPECIFIED = 0
+    FAST_PLAN = 1
+    ASSESSMENT_REPORT = 2
+    SUCCEEDED = 3
+    FAILED = 4
+
+  step = _messages.EnumField('StepValueValuesEnum', 1)
+
+
 class GenerateAssessmentReportRequest(_messages.Message):
-  r"""Message for the request to generate a best practice report for a given
+  r"""Deprecated: Use GenerateTerraformPlanAssessmentReportRequest instead.
+  Message for the request to generate a best practice report for a given
   Terraform plan.
 
   Fields:
@@ -4784,6 +4817,8 @@ class OperationMetadata(_messages.Message):
     deploymentMetadata: Output only. The application deployment metadata this
       operation is associated with.
     endTime: Output only. The time the operation finished running.
+    generateAssessmentReportMetadata: Output only. The Generate Assessment
+      Report Metadata this operation is associated with.
     previewMetadata: Output only. The application preview metadata this
       operation is associated with.
     requestedCancellation: Output only. Identifies whether the user has
@@ -4803,11 +4838,12 @@ class OperationMetadata(_messages.Message):
   deploymentGroupMetadata = _messages.MessageField('ProvisionDeploymentGroupOperationMetadata', 4)
   deploymentMetadata = _messages.MessageField('DeploymentOperationMetadata', 5)
   endTime = _messages.StringField(6)
-  previewMetadata = _messages.MessageField('PreviewOperationMetadata', 7)
-  requestedCancellation = _messages.BooleanField(8)
-  statusMessage = _messages.StringField(9)
-  target = _messages.StringField(10)
-  verb = _messages.StringField(11)
+  generateAssessmentReportMetadata = _messages.MessageField('GenerateAssessmentReportOperationMetadata', 7)
+  previewMetadata = _messages.MessageField('PreviewOperationMetadata', 8)
+  requestedCancellation = _messages.BooleanField(9)
+  statusMessage = _messages.StringField(10)
+  target = _messages.StringField(11)
+  verb = _messages.StringField(12)
 
 
 class Parameter(_messages.Message):
@@ -5274,6 +5310,7 @@ class SerializedApplicationTemplate(_messages.Message):
       application template.
     saasRuntimeContext: Optional. SaaS runtime context for the application
       template.
+    serializedPolicies: Output only. Policies of the application template.
     uri: Optional. The application template URI.
   """
 
@@ -5319,7 +5356,8 @@ class SerializedApplicationTemplate(_messages.Message):
   rootInputVariables = _messages.MessageField('ComponentVariable', 9, repeated=True)
   rootOutputVariables = _messages.MessageField('ComponentVariable', 10, repeated=True)
   saasRuntimeContext = _messages.MessageField('SaaSRuntimeContext', 11)
-  uri = _messages.StringField(12)
+  serializedPolicies = _messages.MessageField('SerializedPolicy', 12, repeated=True)
+  uri = _messages.StringField(13)
 
 
 class SerializedComponent(_messages.Message):
@@ -5372,6 +5410,48 @@ class SerializedConnection(_messages.Message):
   destinationComponentUri = _messages.StringField(2)
   sourceComponentParameters = _messages.MessageField('Parameter', 3, repeated=True)
   uri = _messages.StringField(4)
+
+
+class SerializedPolicy(_messages.Message):
+  r"""Serialized policy.
+
+  Enums:
+    PolicyTypeValueValuesEnum: Required. Policy type will be used to determine
+      the domain of the policy.
+
+  Fields:
+    applyConditions: Optional. The serialized policy apply conditions.
+    description: Optional. The serialized policy description. At most 2048
+      characters.
+    displayName: Optional. The serialized policy display name. The number of
+      characters should be less than 128 characters.
+    policyRevisionUri: Optional. URI of the policy revision.
+    policyType: Required. Policy type will be used to determine the domain of
+      the policy.
+    policyUri: Optional. URI of the policy.
+    uri: Required. The uri of the policy in application template. Format: `pro
+      jects/{project}/locations/{location}/spaces/{space}/applicationTemplates
+      /{application_template}/policies/{policy}`
+  """
+
+  class PolicyTypeValueValuesEnum(_messages.Enum):
+    r"""Required. Policy type will be used to determine the domain of the
+    policy.
+
+    Values:
+      POLICY_TYPE_UNSPECIFIED: Default.
+      COMPLIANCE_FRAMEWORK: Compliance framework policy.
+    """
+    POLICY_TYPE_UNSPECIFIED = 0
+    COMPLIANCE_FRAMEWORK = 1
+
+  applyConditions = _messages.MessageField('ApplyCondition', 1, repeated=True)
+  description = _messages.StringField(2)
+  displayName = _messages.StringField(3)
+  policyRevisionUri = _messages.StringField(4)
+  policyType = _messages.EnumField('PolicyTypeValueValuesEnum', 5)
+  policyUri = _messages.StringField(6)
+  uri = _messages.StringField(7)
 
 
 class SetIamPolicyRequest(_messages.Message):

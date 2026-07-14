@@ -3063,9 +3063,9 @@ class IamSearchApplicablePoliciesSearchRequest(_messages.Message):
 
   Fields:
     filter: Optional. Filtering currently only supports the kind of policies
-      to return, and must be in the format "kind:[policyKind1] OR
-      kind:[policyKind2]". New policy kinds may be added in the future without
-      notice. Example value: "kind:principalAccessBoundaryPolicies"
+      to return, and must be in the format "policy_kind=[policyKind]". New
+      policy kinds may be added in the future without notice. Example value:
+      "policy_kind=PRINCIPAL_ACCESS_BOUNDARY"
     pageSize: Optional. The limit of number of items (binding+policy pairs) to
       return. The default and maximum is 100 and values above 100 are
       truncated to 100.

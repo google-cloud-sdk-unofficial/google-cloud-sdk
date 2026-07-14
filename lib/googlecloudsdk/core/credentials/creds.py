@@ -118,6 +118,34 @@ def IsExternalAccountUserCredentials(creds):
   return False
 
 
+def IsRevocable(creds):
+  """Check if the given credential is revocable.
+
+  We can only revoke credentials for user accounts obtained
+  via `gcloud auth login`.
+  Hence, the following credential types that cannot be revoked:
+  - Service account credentials (account name ends with .gserviceaccount.com)
+  - ExternalAccountUserCredentials: Workload Identity federation credentials
+   or Workforce identity credentials (via headless login)
+
+  Args:
+    creds: google.auth.credentials.Credentials, the credentials to be checked.
+
+  Returns:
+    bool, Whether or not the given credential is revocable.
+  """
+  if not IsUserAccountCredentials(creds):
+    return False
+  if IsExternalAccountUserCredentials(creds):
+    return False
+  if (
+      IsExternalAccountAuthorizedUserCredentials(creds)
+      and not properties.VALUES.auth.enable_sts_revoke_workforce_token.GetBool()
+  ):
+    return False
+  return True
+
+
 def IsExternalAccountAuthorizedUserCredentials(creds):
   if IsGoogleAuthCredentials(creds):
     return (CredentialTypeGoogleAuth.FromCredentials(creds) ==
@@ -1231,6 +1259,8 @@ def ToJsonGoogleAuth(credentials):
         'token_url': credentials.token_url,
         'token_info_url': credentials.token_info_url,
     }
+    if getattr(credentials, 'revoke_url', None):
+      creds_dict['revoke_url'] = credentials.revoke_url
   elif creds_type == CredentialTypeGoogleAuth.USER_ACCOUNT:
     creds_dict = {
         'type': creds_type.key,

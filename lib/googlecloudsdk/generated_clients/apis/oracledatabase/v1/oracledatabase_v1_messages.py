@@ -2445,7 +2445,8 @@ class DbSystemOptions(_messages.Message):
 
     Values:
       STORAGE_MANAGEMENT_UNSPECIFIED: The storage management is unspecified.
-      ASM: Automatic storage management.
+      ASM: Automatic storage management. This option is not supported. Only
+        LVM is supported.
       LVM: Logical Volume management.
     """
     STORAGE_MANAGEMENT_UNSPECIFIED = 0

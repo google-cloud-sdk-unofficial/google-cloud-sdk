@@ -31,6 +31,57 @@ from googlecloudsdk.core.util import files
 
 ClusterDirectorError = errors.ClusterDirectorError
 
+
+def _GetStoragePoolZone(storage_pool: str) -> str:
+  """Returns the storage pool zone from a storage pool resource string.
+
+  Args:
+    storage_pool: The storage pool resource string.
+
+  Returns:
+    The zone extracted from the storage pool string.
+
+  Raises:
+    ClusterDirectorError: If the storage pool string does not contain a zone.
+  """
+
+  # projects/{project}/zones/{zone}/storagePools/{storagePool}
+  parts = storage_pool.split("/")
+  for current_part, next_part in zip(parts, parts[1:]):
+    if current_part == "zones" and next_part:
+      return next_part
+  raise ClusterDirectorError(
+      f"Storage pool {storage_pool} does not contain a zone."
+  )
+
+
+def _GetStoragePoolName(cluster_ref: Any, storage_pool: str) -> str:
+  """Returns the full storage pool name including project.
+
+  Args:
+    cluster_ref: The cluster resource reference.
+    storage_pool: The storage pool string, which may or may not include
+      'projects/'.
+
+  Returns:
+    The full storage pool name.
+
+  Raises:
+    ClusterDirectorError: If the storage pool string does not contain a zone.
+  """
+  if not cluster_ref:
+    raise ClusterDirectorError(
+        "Cluster reference is required to resolve storage pool name."
+    )
+  project = cluster_ref.Parent().projectsId
+  if storage_pool.startswith("projects/"):
+    storage_pool_name = storage_pool
+  else:
+    storage_pool_name = f"projects/{project}/{storage_pool}"
+  _GetStoragePoolZone(storage_pool)
+  return storage_pool_name
+
+
 _GCE_INSTANCE_FIELDS = frozenset([
     "startupScript",
     "labels",
@@ -263,7 +314,9 @@ def _MakeSlurmPartition(message_module, partition):
   return slurm_partition
 
 
-def _MakeSlurmNodeSet(message_module, node_set, storage_configs):
+def _MakeSlurmNodeSet(
+    message_module, node_set, storage_configs, cluster_ref=None
+):
   """Makes a cluster slurm node set message from node set args."""
   node_set_keys = set(node_set.keys())
   node_set_type_str = node_set.get("type")
@@ -336,6 +389,14 @@ def _MakeSlurmNodeSet(message_module, node_set, storage_configs):
           compute_instance_boot_disk, "image"
       ):
         compute_instance_boot_disk.image = boot_disk.get("image")
+      if compute_instance_boot_disk and hasattr(
+          compute_instance_boot_disk, "storagePools"
+      ):
+        storage_pools = boot_disk.get("storagePools")
+        if storage_pools is not None:
+          compute_instance_boot_disk.storagePools = [
+              _GetStoragePoolName(cluster_ref, p) for p in storage_pools
+          ]
     compute_instance = message_module.ComputeInstanceSlurmNodeSet(
         bootDisk=compute_instance_boot_disk,
         startupScript=startup_script,
@@ -351,7 +412,9 @@ def _MakeSlurmNodeSet(message_module, node_set, storage_configs):
   return slurm_node_set
 
 
-def MakeClusterSlurmOrchestrator(args, message_module, cluster):
+def MakeClusterSlurmOrchestrator(
+    args, message_module, cluster, cluster_ref=None
+):
   """Makes a cluster message with slurm orchestrator fields."""
   slurm = message_module.SlurmOrchestrator()
   default_storage_configs = _GetStorageConfigs(message_module, cluster)
@@ -371,7 +434,9 @@ def MakeClusterSlurmOrchestrator(args, message_module, cluster):
           _GetComputeMachineTypeFromArgs(args, compute_id)
       storage_configs = default_storage_configs
       slurm.nodeSets.append(
-          _MakeSlurmNodeSet(message_module, node_set, storage_configs)
+          _MakeSlurmNodeSet(
+              message_module, node_set, storage_configs, cluster_ref
+          )
       )
 
   if args.IsSpecified("slurm_partitions"):
@@ -408,6 +473,12 @@ def MakeClusterSlurmOrchestrator(args, message_module, cluster):
       )
       if hasattr(boot_disk, "image"):
         boot_disk.image = boot_disk_args.get("image")
+      if hasattr(boot_disk, "storagePools"):
+        storage_pools = boot_disk_args.get("storagePools")
+        if storage_pools is not None:
+          boot_disk.storagePools = [
+              _GetStoragePoolName(cluster_ref, p) for p in storage_pools
+          ]
       slurm.loginNodes.bootDisk = boot_disk
   if args.IsSpecified("slurm_prolog_scripts"):
     slurm.prologBashScripts = args.slurm_prolog_scripts
@@ -436,7 +507,7 @@ def _GetOrCreateContainerNodePool(message_module, existing_node_set):
 
 
 def _PatchBootDiskForNodeSet(
-    message_module, *, existing_node_set, node_set_patch
+    message_module, *, existing_node_set, node_set_patch, cluster_ref=None
 ):
   """Patches the bootDisk of a SlurmNodeSet."""
   if not existing_node_set.computeInstance:
@@ -452,6 +523,12 @@ def _PatchBootDiskForNodeSet(
   boot_disk.sizeGb = boot_disk_patch.get("sizeGb", boot_disk.sizeGb)
   if hasattr(boot_disk, "image"):
     boot_disk.image = boot_disk_patch.get("image", boot_disk.image)
+  if hasattr(boot_disk, "storagePools"):
+    storage_pools = boot_disk_patch.get("storagePools")
+    if storage_pools is not None:
+      boot_disk.storagePools = [
+          _GetStoragePoolName(cluster_ref, p) for p in storage_pools
+      ]
 
   # Assign the patched bootDisk to computeInstance.
   if not existing_node_set.computeInstance:
@@ -463,7 +540,12 @@ def _PatchBootDiskForNodeSet(
 
 
 def MakeClusterSlurmOrchestratorPatch(
-    args, message_module, existing_cluster, cluster_patch, update_mask
+    args,
+    message_module,
+    existing_cluster,
+    cluster_patch,
+    update_mask,
+    cluster_ref=None,
 ):
   """Makes a cluster slurm orchestrator patch message with slurm fields."""
   slurm = message_module.SlurmOrchestrator()
@@ -520,7 +602,9 @@ def MakeClusterSlurmOrchestratorPatch(
         _PatchBootDiskForNodeSet(
             message_module,
             existing_node_set=existing_node_set,
-            node_set_patch=node_set)
+            node_set_patch=node_set,
+            cluster_ref=cluster_ref,
+        )
       if "container-resource-labels" in node_set:
         _GetOrCreateContainerNodePool(message_module, existing_node_set)
         existing_node_set.containerNodePool.resourceLabels = MakeLabels(
@@ -570,7 +654,7 @@ def MakeClusterSlurmOrchestratorPatch(
           key=node_set_id,
           dict_spec=slurm_node_sets,
           value=_MakeSlurmNodeSet(
-              message_module, node_set, storage_configs
+              message_module, node_set, storage_configs, cluster_ref
           ),
           exception_message=_SLURM_NODESET_ALREADY_EXISTS_ERROR,
       )
@@ -652,6 +736,12 @@ def MakeClusterSlurmOrchestratorPatch(
       boot_disk.sizeGb = boot_disk_patch.get("sizeGb", boot_disk.sizeGb)
       if hasattr(boot_disk, "image"):
         boot_disk.image = boot_disk_patch.get("image", boot_disk.image)
+      if hasattr(boot_disk, "storagePools"):
+        storage_pools = boot_disk_patch.get("storagePools")
+        if storage_pools is not None:
+          boot_disk.storagePools = [
+              _GetStoragePoolName(cluster_ref, p) for p in storage_pools
+          ]
       login_nodes.bootDisk = boot_disk
     slurm.loginNodes = login_nodes
     update_mask.add("orchestrator.slurm.login_nodes")

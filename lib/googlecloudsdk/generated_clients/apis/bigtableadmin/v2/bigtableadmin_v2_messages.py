@@ -979,6 +979,8 @@ class BigtableadminProjectsInstancesMaterializedViewsCreateRequest(_messages.Mes
   r"""A BigtableadminProjectsInstancesMaterializedViewsCreateRequest object.
 
   Fields:
+    ignoreWarnings: Optional. If true, ignore optional safety checks when
+      creating the materialized view.
     materializedView: A MaterializedView resource to be passed as the request
       body.
     materializedViewId: Required. The ID to use for the materialized view,
@@ -988,9 +990,10 @@ class BigtableadminProjectsInstancesMaterializedViewsCreateRequest(_messages.Mes
       created. Format: `projects/{project}/instances/{instance}`.
   """
 
-  materializedView = _messages.MessageField('MaterializedView', 1)
-  materializedViewId = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
+  ignoreWarnings = _messages.BooleanField(1)
+  materializedView = _messages.MessageField('MaterializedView', 2)
+  materializedViewId = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
 
 
 class BigtableadminProjectsInstancesMaterializedViewsDeleteRequest(_messages.Message):
@@ -2565,6 +2568,8 @@ class CreateMaterializedViewRequest(_messages.Message):
   r"""Request message for BigtableInstanceAdmin.CreateMaterializedView.
 
   Fields:
+    ignoreWarnings: Optional. If true, ignore optional safety checks when
+      creating the materialized view.
     materializedView: Required. The materialized view to create.
     materializedViewId: Required. The ID to use for the materialized view,
       which will become the final component of the materialized view's
@@ -2573,9 +2578,10 @@ class CreateMaterializedViewRequest(_messages.Message):
       created. Format: `projects/{project}/instances/{instance}`.
   """
 
-  materializedView = _messages.MessageField('MaterializedView', 1)
-  materializedViewId = _messages.StringField(2)
-  parent = _messages.StringField(3)
+  ignoreWarnings = _messages.BooleanField(1)
+  materializedView = _messages.MessageField('MaterializedView', 2)
+  materializedViewId = _messages.StringField(3)
+  parent = _messages.StringField(4)
 
 
 class CreateSchemaBundleMetadata(_messages.Message):

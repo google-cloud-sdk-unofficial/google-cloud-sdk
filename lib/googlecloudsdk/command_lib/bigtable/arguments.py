@@ -375,6 +375,17 @@ class ArgAdder(object):
     )
     return self
 
+  def AddIgnoreWarnings(self) -> 'ArgAdder':
+    """Add argument for ignore_warnings to the parser."""
+    self.parser.add_argument(
+        '--ignore-warnings',
+        action='store_true',
+        default=False,
+        hidden=True,
+        help='Ignore warnings when creating the materialized view.',
+    )
+    return self
+
   def AddMemoryLayerEnable(self):
     """Add argument for enabling memory layer to the parser."""
     self.parser.add_argument(

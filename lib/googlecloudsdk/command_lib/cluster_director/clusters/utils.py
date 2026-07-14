@@ -96,7 +96,7 @@ class ClusterUtil:
     )
     cluster.orchestrator = self.message_module.Orchestrator(
         slurm=_orchestrator.MakeClusterSlurmOrchestrator(
-            self.args, self.message_module, cluster
+            self.args, self.message_module, cluster, self.cluster_ref
         )
     )
     return cluster
@@ -142,6 +142,7 @@ class ClusterUtil:
             self.existing_cluster,
             cluster,
             self.update_mask,
+            self.cluster_ref,
         )
     )
     return cluster, ",".join(sorted(self.update_mask))
@@ -171,5 +172,3 @@ class ClusterUtil:
       )
       self.update_mask.add("labels")
     return cluster
-
-

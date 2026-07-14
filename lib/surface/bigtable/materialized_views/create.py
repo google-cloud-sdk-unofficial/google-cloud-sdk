@@ -41,16 +41,19 @@ class CreateMaterializedView(base.CreateCommand):
   detailed_help = {
       'EXAMPLES': textwrap.dedent("""\
           To create a materialized view, run:
-            $ {command} my-materialized-view-id --instance=my-instance-id --query="SELECT my-column-family FROM my-table --deletion-protection=false"
+            $ {command} my-materialized-view-id --instance=my-instance-id --query="SELECT my-column-family FROM my-table" --deletion-protection=false
           """),
   }
 
-  @staticmethod
-  def Args(parser: parser_arguments.ArgumentInterceptor) -> None:
+  @classmethod
+  def Args(cls, parser: parser_arguments.ArgumentInterceptor) -> None:
     arguments.AddMaterializedViewResourceArg(parser, 'to create')
-    arguments.ArgAdder(parser).AddViewQuery(
+    adder = arguments.ArgAdder(parser).AddViewQuery(
         required=True
-    ).AddDeletionProtection().AddAsync()
+    ).AddDeletionProtection()
+    if cls.ReleaseTrack() in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
+      adder.AddIgnoreWarnings()
+    adder.AddAsync()
 
   def _CreateMaterializedView(
       self,
@@ -68,7 +71,10 @@ class CreateMaterializedView(base.CreateCommand):
       Created materialized view resource object.
     """
     return materialized_views.Create(
-        materialized_view_ref, args.query, args.deletion_protection
+        materialized_view_ref,
+        args.query,
+        args.deletion_protection,
+        getattr(args, 'ignore_warnings', False),
     )
 
   def Run(

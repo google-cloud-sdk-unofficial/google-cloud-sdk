@@ -146,12 +146,12 @@ def AddTableCreateArgs(parser):
   )
 
 
-def AddFederatedCatalogArgs(parser):
+def AddFederatedCatalogArgs(parser, support_glue=False):
   """Adds arguments for federated catalogs."""
+  choices = ['unity', 'glue'] if support_glue else ['unity']
   parser.add_argument(
       '--federated-catalog-type',
-      choices=['unity', 'glue'],
-      hidden_choices=['glue'],
+      choices=choices,
       help='Type of the federated catalog.',
   )
   parser.add_argument(
@@ -202,17 +202,14 @@ def AddGlueCatalogArgs(parser):
   """Adds arguments for Glue catalogs."""
   parser.add_argument(
       '--glue-warehouse',
-      hidden=True,
       help='The warehouse to connect to in AWS Glue Iceberg REST Catalog.',
   )
   parser.add_argument(
       '--glue-aws-region',
-      hidden=True,
       help='The AWS region of the Glue catalog to connect to.',
   )
   parser.add_argument(
       '--glue-aws-role-arn',
-      hidden=True,
       help=(
           'The AWS role ARN of the Glue catalog that the BigLake federated'
           ' catalog will assume to access the catalog.'

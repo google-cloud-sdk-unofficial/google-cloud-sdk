@@ -2511,7 +2511,8 @@ class DbSystemOptions(_messages.Message):
 
     Values:
       STORAGE_MANAGEMENT_UNSPECIFIED: The storage management is unspecified.
-      ASM: Automatic storage management.
+      ASM: Automatic storage management. This option is not supported. Only
+        LVM is supported.
       LVM: Logical Volume management.
     """
     STORAGE_MANAGEMENT_UNSPECIFIED = 0
@@ -2914,6 +2915,8 @@ class ExadbVmCluster(_messages.Message):
     gcpOracleZone: Output only. Immutable. The GCP Oracle zone where Oracle
       ExadbVmCluster is hosted. Example: us-east4-b-r2. During creation, the
       system will pick the zone assigned to the ExascaleDbStorageVault.
+    identityConnector: Output only. The identity connector details which will
+      allow OCI to securely access the resources in the customer project.
     labels: Optional. The labels or tags associated with the ExadbVmCluster.
     name: Identifier. The name of the ExadbVmCluster resource in the following
       format:
@@ -2958,11 +2961,12 @@ class ExadbVmCluster(_messages.Message):
   displayName = _messages.StringField(3)
   entitlementId = _messages.StringField(4)
   gcpOracleZone = _messages.StringField(5)
-  labels = _messages.MessageField('LabelsValue', 6)
-  name = _messages.StringField(7)
-  odbNetwork = _messages.StringField(8)
-  odbSubnet = _messages.StringField(9)
-  properties = _messages.MessageField('ExadbVmClusterProperties', 10)
+  identityConnector = _messages.MessageField('IdentityConnector', 6)
+  labels = _messages.MessageField('LabelsValue', 7)
+  name = _messages.StringField(8)
+  odbNetwork = _messages.StringField(9)
+  odbSubnet = _messages.StringField(10)
+  properties = _messages.MessageField('ExadbVmClusterProperties', 11)
 
 
 class ExadbVmClusterProperties(_messages.Message):
@@ -6489,6 +6493,19 @@ class ListMinorVersionsResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
+class ListOdbDnsZonesResponse(_messages.Message):
+  r"""The response for `OdbDnsZone.List`.
+
+  Fields:
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    odbDnsZones: The list of OdbDnsZones.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  odbDnsZones = _messages.MessageField('OdbDnsZone', 2, repeated=True)
+
+
 class ListOdbNetworksResponse(_messages.Message):
   r"""The response for `OdbNetwork.List`.
 
@@ -6836,6 +6853,75 @@ class NessieIcebergCatalog(_messages.Message):
 
   branch = _messages.StringField(1)
   uri = _messages.StringField(2)
+
+
+class OdbDnsZone(_messages.Message):
+  r"""Represents OdbDnsZone resource.
+
+  Enums:
+    StateValueValuesEnum: Output only. State of the OdbDnsZone.
+
+  Messages:
+    LabelsValue: Optional. Labels or tags associated with the resource.
+
+  Fields:
+    createTime: Output only. The date and time that the OdbDnsZone was
+      created.
+    domain: Required. The DNS suffix for the zone. Ex: abc.example.com.
+    labels: Optional. Labels or tags associated with the resource.
+    name: Identifier. The name of the OdbDnsZone resource in the following
+      format: projects/{project}/locations/{location}/odbNetworks/{odb_network
+      }/odbDnsZones/{odb_dns_zone}
+    state: Output only. State of the OdbDnsZone.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. State of the OdbDnsZone.
+
+    Values:
+      STATE_UNSPECIFIED: Default unspecified value.
+      PROVISIONING: Indicates that the resource is in a provisioning state.
+      AVAILABLE: Indicates that the resource is in an available state.
+      INACTIVE: Indicates that the resource is available but inactive.
+      TERMINATING: Indicates that the resource is in a terminating state.
+      FAILED: Indicates that the resource is in a failed state.
+    """
+    STATE_UNSPECIFIED = 0
+    PROVISIONING = 1
+    AVAILABLE = 2
+    INACTIVE = 3
+    TERMINATING = 4
+    FAILED = 5
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels or tags associated with the resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  domain = _messages.StringField(2)
+  labels = _messages.MessageField('LabelsValue', 3)
+  name = _messages.StringField(4)
+  state = _messages.EnumField('StateValueValuesEnum', 5)
 
 
 class OdbNetwork(_messages.Message):
@@ -9000,6 +9086,92 @@ class OracledatabaseProjectsLocationsOdbNetworksListRequest(_messages.Message):
   parent = _messages.StringField(5, required=True)
 
 
+class OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesCreateRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesCreateRequest
+  object.
+
+  Fields:
+    odbDnsZone: A OdbDnsZone resource to be passed as the request body.
+    odbDnsZoneId: Required. The ID of the OdbDnsZone to create. This value is
+      restricted to (^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$) and must be a maximum
+      of 63 characters in length. The value must start with a letter and end
+      with a letter or a number.
+    parent: Required. The parent value for the OdbDnsZone in the following
+      format:
+      projects/{project}/locations/{location}/odbNetworks/{odb_network}.
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+  """
+
+  odbDnsZone = _messages.MessageField('OdbDnsZone', 1)
+  odbDnsZoneId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesDeleteRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesDeleteRequest
+  object.
+
+  Fields:
+    name: Required. The name of the resource in the following format: projects
+      /{project}/locations/{location}/odbNetworks/{odb_network}/odbDnsZones/{o
+      db_dns_zone}.
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesGetRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesGetRequest
+  object.
+
+  Fields:
+    name: Required. The name of the OdbDnsZone in the following format: projec
+      ts/{project}/locations/{location}/odbNetworks/{odb_network}/odbDnsZones/
+      {odb_dns_zone}.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesListRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesListRequest
+  object.
+
+  Fields:
+    filter: Optional. An expression for filtering the results of the request.
+    orderBy: Optional. An expression for ordering the results of the request.
+    pageSize: Optional. The maximum number of items to return. If unspecified,
+      at most 50 OdbDnsZones will be returned. The maximum value is 1000;
+      values above 1000 will be coerced to 1000.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. The parent value for the OdbDnsZone in the following
+      format:
+      projects/{project}/locations/{location}/odbNetworks/{odb_network}.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
 class OracledatabaseProjectsLocationsOdbNetworksOdbSubnetsCreateRequest(_messages.Message):
   r"""A OracledatabaseProjectsLocationsOdbNetworksOdbSubnetsCreateRequest
   object.
@@ -9547,12 +9719,14 @@ class ResourceAvailability(_messages.Message):
       RESOURCE_TYPE_AUTONOMOUS_DATABASE: Autonomous Database resource.
       RESOURCE_TYPE_EXADATA: Exadata resource.
       RESOURCE_TYPE_EXASCALE: Exascale resource.
+      RESOURCE_TYPE_GOLDENGATE_DEPLOYMENT: Goldengate resource.
     """
     RESOURCE_TYPE_UNSPECIFIED = 0
     RESOURCE_TYPE_BASE_DB = 1
     RESOURCE_TYPE_AUTONOMOUS_DATABASE = 2
     RESOURCE_TYPE_EXADATA = 3
     RESOURCE_TYPE_EXASCALE = 4
+    RESOURCE_TYPE_GOLDENGATE_DEPLOYMENT = 5
 
   resourceType = _messages.EnumField('ResourceTypeValueValuesEnum', 1)
   supportedZones = _messages.StringField(2, repeated=True)

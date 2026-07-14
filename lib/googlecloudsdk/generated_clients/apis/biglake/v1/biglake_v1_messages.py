@@ -88,16 +88,16 @@ class BiglakeIcebergV1RestcatalogExtensionsProjectsCatalogsCreateRequest(_messag
     parent: Required. The parent resource where this catalog will be created.
       Format: projects/{project_id}
     primary_location: Optional. The primary location where the catalog
-      metadata will be stored. For BigLake catalogs, this specifies the GCP
-      region where the catalog service / metadata lives. If not specified, the
-      region is inferred from the `default_location` bucket's region. If
-      specified, this defines the catalog's primary location. This region must
-      be in jurisdiction or near the `default_location` bucket's region and
-      the `restricted_locations` buckets' regions. For Federated catalogs,
-      this is a required field and is the primary location for mirroring the
-      remote catalog metadata. It must be a BigLake-supported location, and it
-      should be proximate to the remote catalog's location for better
-      performance and lower cost.
+      metadata will be stored. For Google Cloud Storage bucket catalogs and
+      BigLake catalogs, if this is not specified, then the region is inferred
+      from the bucket's region (`default_location` bucket for BigLake
+      catalogs). If specified, the region must be in jurisdiction (near the
+      `default_location` bucket's region and the `restricted_locations`
+      buckets' regions for BigLake catalogs). For federated catalogs, this
+      must be specified and be a Lakehouse-supported location
+      (https://docs.cloud.google.com/lakehouse/docs/locations). It should be
+      close to the remote catalog's location for the best performance and
+      cost.
   """
 
   iceberg_catalog_id = _messages.StringField(1)
@@ -786,7 +786,7 @@ class FailoverIcebergCatalogResponse(_messages.Message):
 
 
 class FederatedCatalogOptions(_messages.Message):
-  r"""Configuration options for Iceberg REST Federated Catalog.
+  r"""Configuration options for a federated catalog.
 
   Fields:
     glue_catalog_info: Optional. Info specific to an AWS Glue Catalog.
@@ -816,18 +816,21 @@ class FederatedCatalogOptions(_messages.Message):
 
 
 class GlueCatalogInfo(_messages.Message):
-  r"""AWS Glue Catalog info.
+  r"""AWS Glue Catalog info. We support regional AWS Glue default account
+  catalog and S3 Table Buckets.
 
   Fields:
     aws_region: Required. The AWS region of the Glue catalog to connect to.
       The region should be in the same geographical region and jurisdiction as
-      the BigLake Federated Catalog. Must be non-empty.
+      the federated catalog. Must be non-empty.
     aws_role_arn: Required. The AWS role ARN of the Glue catalog that the
-      BigLake federated catalog will assume to access the catalog.
-    warehouse: Required. The warehouse to connect to in AWS Glue Iceberg REST
-      Catalog. Must be non-empty. For top level access, use the AWS account ID
-      (e.g. 1112223333444). The URL to access catalog will be https://glue.{aw
-      s_region}.amazonaws.com/iceberg/v1?warehouse={warehouse}.
+      federated catalog will assume to access the catalog.
+    warehouse: Required. The warehouse to connect to a regional AWS Glue
+      Iceberg REST Catalog. Must be non-empty. For top level access, use the
+      AWS account ID (e.g. 111222333444). For an S3 table bucket, the
+      warehouse is of the form: 111222333444:s3tablescatalog/. The URL to
+      access catalog will be https://glue.{aws_region}.amazonaws.com/iceberg/v
+      1?warehouse={warehouse}.
   """
 
   aws_region = _messages.StringField(1)
@@ -908,7 +911,8 @@ class IcebergCatalog(_messages.Message):
   Fields:
     additional_locations: Optional. Additional Google Cloud Storage buckets
       and locations (e.g., `gs://my-other-bucket/...`) that are permitted for
-      use by resources within a catalog.
+      use by resources within a catalog. This field is currently only used for
+      BigLake catalogs.
     biglake_service_account: Output only. The service account used for
       credential vending, output only. Might be empty if Credential vending
       was never enabled for the catalog. For federated catalogs, the service
@@ -922,14 +926,13 @@ class IcebergCatalog(_messages.Message):
     create_time: Output only. When the catalog was created.
     credential_mode: Optional. The credential mode for the catalog.
     default_location: Optional. The default storage location for the catalog,
-      e.g., `gs://my-bucket`. For the Google Cloud Storage Bucket catalog this
-      is output only. For BigLake Iceberg catalogs, this field must be
-      provided and point to a Google Cloud Storage bucket or a path within
-      that bucket. This path serves as the base directory for constructing the
-      full path to a table's data and metadata directories when a location is
-      not specified at the namespace or table level. The full path is formed
-      by appending the namespace and table identifiers to the default
-      location.
+      e.g., `gs://my-bucket`. For Google Cloud Storage bucket catalogs, this
+      is output only. For BigLake catalogs, this field must be provided and
+      point to a Google Cloud Storage bucket or a path within that bucket.
+      This path serves as the base directory for constructing the full path to
+      a table's data and metadata directories when a location is not specified
+      at the namespace or table level. The full path is formed by appending
+      the namespace and table identifiers to the default location.
     description: Optional. A user-provided description of the catalog. The
       description must be a UTF-8 string with a maximum length of 1024
       characters.
@@ -940,9 +943,9 @@ class IcebergCatalog(_messages.Message):
       CreateIcebergCatalog.
     replicas: Output only. The replicas for the catalog metadata.
     restricted_locations_config: Optional. Restricted locations configuration.
-      If this field is unset, or if
-      `restricted_locations_config.restricted_locations` is empty, all
-      accessible locations are allowed. If
+      This field is currently only used for BigLake catalogs. If this field is
+      unset, or if `restricted_locations_config.restricted_locations` is
+      empty, all accessible locations are allowed. If
       `restricted_locations_config.restricted_locations` is not empty, only
       locations in `default_location` and
       `restricted_locations_config.restricted_locations` are allowed.
@@ -960,12 +963,9 @@ class IcebergCatalog(_messages.Message):
 
     Values:
       CATALOG_TYPE_UNSPECIFIED: Default value. This value is unused.
-      CATALOG_TYPE_GCS_BUCKET: Catalog type for Google Cloud Storage Buckets.
-      CATALOG_TYPE_BIGLAKE: BigLake Iceberg catalog. Catalog type which allows
-        namespaces and tables within a catalog to be mapped to locations
-        beyond the catalog's designated default.
-      CATALOG_TYPE_FEDERATED: BigLake federated catalog mirroring a remote
-        Iceberg REST Catalog.
+      CATALOG_TYPE_GCS_BUCKET: Google Cloud Storage bucket catalog type.
+      CATALOG_TYPE_BIGLAKE: BigLake catalog type.
+      CATALOG_TYPE_FEDERATED: Federated catalog type.
     """
     CATALOG_TYPE_UNSPECIFIED = 0
     CATALOG_TYPE_GCS_BUCKET = 1
@@ -1415,11 +1415,10 @@ class RestrictedLocationsConfig(_messages.Message):
   Fields:
     restricted_locations: Optional. Additional Google Cloud Storage buckets
       and locations (e.g., `gs://my-other-bucket/...`) that are permitted for
-      use by resources within a catalog. If `restricted_locations` is empty,
-      all accessible locations are allowed. If `restricted_locations` is not
-      empty, only `default_location` and locations in this list are allowed.
-      This field is currently used only for BigLake Iceberg catalogs. It will
-      be empty for other catalog types.
+      use by resources within a catalog. This field is currently only used for
+      BigLake catalogs. If `restricted_locations` is empty, all accessible
+      locations are allowed. If `restricted_locations` is not empty, only
+      `default_location` and locations in this list are allowed.
   """
 
   restricted_locations = _messages.StringField(1, repeated=True)

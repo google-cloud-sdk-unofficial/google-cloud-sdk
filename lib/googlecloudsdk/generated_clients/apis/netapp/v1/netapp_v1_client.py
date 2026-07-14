@@ -44,6 +44,7 @@ class NetappV1(base_api.BaseApiClient):
     self.projects_locations_hostGroups = self.ProjectsLocationsHostGroupsService(self)
     self.projects_locations_kmsConfigs = self.ProjectsLocationsKmsConfigsService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
+    self.projects_locations_storagePools_backupConfigs = self.ProjectsLocationsStoragePoolsBackupConfigsService(self)
     self.projects_locations_storagePools_ontap = self.ProjectsLocationsStoragePoolsOntapService(self)
     self.projects_locations_storagePools = self.ProjectsLocationsStoragePoolsService(self)
     self.projects_locations_volumes_quotaRules = self.ProjectsLocationsVolumesQuotaRulesService(self)
@@ -1095,6 +1096,43 @@ class NetappV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsStoragePoolsBackupConfigsService(base_api.BaseApiService):
+    """Service class for the projects_locations_storagePools_backupConfigs resource."""
+
+    _NAME = 'projects_locations_storagePools_backupConfigs'
+
+    def __init__(self, client):
+      super(NetappV1.ProjectsLocationsStoragePoolsBackupConfigsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def List(self, request, global_params=None):
+      r"""Lists backup configurations for all volumes in an ONTAP-mode Storage Pool.
+
+      Args:
+        request: (NetappProjectsLocationsStoragePoolsBackupConfigsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListBackupConfigsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/storagePools/{storagePoolsId}/backupConfigs',
+        http_method='GET',
+        method_id='netapp.projects.locations.storagePools.backupConfigs.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/backupConfigs',
+        request_field='',
+        request_type_name='NetappProjectsLocationsStoragePoolsBackupConfigsListRequest',
+        response_type_name='ListBackupConfigsResponse',
+        supports_download=False,
+    )
+
   class ProjectsLocationsStoragePoolsOntapService(base_api.BaseApiService):
     """Service class for the projects_locations_storagePools_ontap resource."""
 
@@ -1106,7 +1144,7 @@ class NetappV1(base_api.BaseApiClient):
           }
 
     def ExecuteOntapDelete(self, request, global_params=None):
-      r"""`ExecuteOntapDelete` dispatches the ONTAP `DELETE` request to the `StoragePool` cluster.
+      r"""`ExecuteOntapDelete` sends the ONTAP `DELETE` request to the `StoragePool` cluster.
 
       Args:
         request: (NetappProjectsLocationsStoragePoolsOntapExecuteOntapDeleteRequest) input message
@@ -1133,7 +1171,7 @@ class NetappV1(base_api.BaseApiClient):
     )
 
     def ExecuteOntapGet(self, request, global_params=None):
-      r"""`ExecuteOntapGet` dispatches the ONTAP `GET` request to the `StoragePool` cluster.
+      r"""`ExecuteOntapGet` sends the ONTAP `GET` request to the `StoragePool` cluster.
 
       Args:
         request: (NetappProjectsLocationsStoragePoolsOntapExecuteOntapGetRequest) input message
@@ -1160,7 +1198,7 @@ class NetappV1(base_api.BaseApiClient):
     )
 
     def ExecuteOntapPatch(self, request, global_params=None):
-      r"""`ExecuteOntapPatch` dispatches the ONTAP `PATCH` request to the `StoragePool` cluster.
+      r"""`ExecuteOntapPatch` sends the ONTAP `PATCH` request to the `StoragePool` cluster.
 
       Args:
         request: (NetappProjectsLocationsStoragePoolsOntapExecuteOntapPatchRequest) input message
@@ -1187,7 +1225,7 @@ class NetappV1(base_api.BaseApiClient):
     )
 
     def ExecuteOntapPost(self, request, global_params=None):
-      r"""`ExecuteOntapPost` dispatches the ONTAP `POST` request to the `StoragePool` cluster.
+      r"""`ExecuteOntapPost` sends the ONTAP `POST` request to the `StoragePool` cluster.
 
       Args:
         request: (NetappProjectsLocationsStoragePoolsOntapExecuteOntapPostRequest) input message
@@ -1358,6 +1396,33 @@ class NetappV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def RestoreVolume(self, request, global_params=None):
+      r"""Restores a backup to an ONTAP-mode volume.
+
+      Args:
+        request: (NetappProjectsLocationsStoragePoolsRestoreVolumeRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('RestoreVolume')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    RestoreVolume.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/storagePools/{storagePoolsId}:restoreVolume',
+        http_method='POST',
+        method_id='netapp.projects.locations.storagePools.restoreVolume',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:restoreVolume',
+        request_field='restoreVolumeRequest',
+        request_type_name='NetappProjectsLocationsStoragePoolsRestoreVolumeRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Switch(self, request, global_params=None):
       r"""This operation will switch the active/replica zone for a regional storagePool.
 
@@ -1381,6 +1446,33 @@ class NetappV1(base_api.BaseApiClient):
         relative_path='v1/{+name}:switch',
         request_field='switchActiveReplicaZoneRequest',
         request_type_name='NetappProjectsLocationsStoragePoolsSwitchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def UpdateBackupConfig(self, request, global_params=None):
+      r"""Updates the backup configuration for an ONTAP-mode volume.
+
+      Args:
+        request: (NetappProjectsLocationsStoragePoolsUpdateBackupConfigRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('UpdateBackupConfig')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    UpdateBackupConfig.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/storagePools/{storagePoolsId}:updateBackupConfig',
+        http_method='POST',
+        method_id='netapp.projects.locations.storagePools.updateBackupConfig',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:updateBackupConfig',
+        request_field='updateBackupConfigRequest',
+        request_type_name='NetappProjectsLocationsStoragePoolsUpdateBackupConfigRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -2246,7 +2338,7 @@ class NetappV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the ListLocationsRequest.name field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
       Args:
         request: (NetappProjectsLocationsListRequest) input message

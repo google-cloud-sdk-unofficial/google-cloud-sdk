@@ -64,6 +64,7 @@ class OracledatabaseV1alpha(base_api.BaseApiClient):
     self.projects_locations_goldengateDeploymentTypes = self.ProjectsLocationsGoldengateDeploymentTypesService(self)
     self.projects_locations_goldengateDeploymentVersions = self.ProjectsLocationsGoldengateDeploymentVersionsService(self)
     self.projects_locations_goldengateDeployments = self.ProjectsLocationsGoldengateDeploymentsService(self)
+    self.projects_locations_odbNetworks_odbDnsZones = self.ProjectsLocationsOdbNetworksOdbDnsZonesService(self)
     self.projects_locations_odbNetworks_odbSubnets = self.ProjectsLocationsOdbNetworksOdbSubnetsService(self)
     self.projects_locations_odbNetworks = self.ProjectsLocationsOdbNetworksService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
@@ -2742,6 +2743,124 @@ class OracledatabaseV1alpha(base_api.BaseApiClient):
         request_field='stopGoldengateDeploymentRequest',
         request_type_name='OracledatabaseProjectsLocationsGoldengateDeploymentsStopRequest',
         response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsOdbNetworksOdbDnsZonesService(base_api.BaseApiService):
+    """Service class for the projects_locations_odbNetworks_odbDnsZones resource."""
+
+    _NAME = 'projects_locations_odbNetworks_odbDnsZones'
+
+    def __init__(self, client):
+      super(OracledatabaseV1alpha.ProjectsLocationsOdbNetworksOdbDnsZonesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new ODB DNS Zone in a given ODB Network.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/odbNetworks/{odbNetworksId}/odbDnsZones',
+        http_method='POST',
+        method_id='oracledatabase.projects.locations.odbNetworks.odbDnsZones.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['odbDnsZoneId', 'requestId'],
+        relative_path='v1alpha/{+parent}/odbDnsZones',
+        request_field='odbDnsZone',
+        request_type_name='OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single ODB DNS Zone.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/odbNetworks/{odbNetworksId}/odbDnsZones/{odbDnsZonesId}',
+        http_method='DELETE',
+        method_id='oracledatabase.projects.locations.odbNetworks.odbDnsZones.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single ODB DNS Zone.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (OdbDnsZone) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/odbNetworks/{odbNetworksId}/odbDnsZones/{odbDnsZonesId}',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.odbNetworks.odbDnsZones.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesGetRequest',
+        response_type_name='OdbDnsZone',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists all the ODB DNS Zones in a given ODB Network.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListOdbDnsZonesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/odbNetworks/{odbNetworksId}/odbDnsZones',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.odbNetworks.odbDnsZones.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/odbDnsZones',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesListRequest',
+        response_type_name='ListOdbDnsZonesResponse',
         supports_download=False,
     )
 

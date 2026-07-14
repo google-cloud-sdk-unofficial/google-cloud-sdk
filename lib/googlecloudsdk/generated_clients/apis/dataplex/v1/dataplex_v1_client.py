@@ -676,6 +676,87 @@ class DataplexV1(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+    def Approve(self, request, global_params=None):
+      r"""Approves a ChangeRequest.
+
+      Args:
+        request: (DataplexProjectsLocationsChangeRequestsApproveRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudDataplexV1ChangeRequest) The response message.
+      """
+      config = self.GetMethodConfig('Approve')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Approve.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/changeRequests/{changeRequestsId}:approve',
+        http_method='POST',
+        method_id='dataplex.projects.locations.changeRequests.approve',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:approve',
+        request_field='googleCloudDataplexV1ApproveChangeRequestRequest',
+        request_type_name='DataplexProjectsLocationsChangeRequestsApproveRequest',
+        response_type_name='GoogleCloudDataplexV1ChangeRequest',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a ChangeRequest.Behavior depends on the caller's permissions and the resource's state: 1. Callers with dataplex.changeRequests.delete can only delete ChangeRequests in the NEW state. 2. Callers with the dataplex.changeRequests.adminDelete permission can delete ChangeRequests regardless of their state.
+
+      Args:
+        request: (DataplexProjectsLocationsChangeRequestsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/changeRequests/{changeRequestsId}',
+        http_method='DELETE',
+        method_id='dataplex.projects.locations.changeRequests.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['etag'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='DataplexProjectsLocationsChangeRequestsDeleteRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets a ChangeRequest.
+
+      Args:
+        request: (DataplexProjectsLocationsChangeRequestsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudDataplexV1ChangeRequest) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/changeRequests/{changeRequestsId}',
+        http_method='GET',
+        method_id='dataplex.projects.locations.changeRequests.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='DataplexProjectsLocationsChangeRequestsGetRequest',
+        response_type_name='GoogleCloudDataplexV1ChangeRequest',
+        supports_download=False,
+    )
+
     def GetIamPolicy(self, request, global_params=None):
       r"""Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.
 
@@ -700,6 +781,87 @@ class DataplexV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='DataplexProjectsLocationsChangeRequestsGetIamPolicyRequest',
         response_type_name='GoogleIamV1Policy',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists ChangeRequests.
+
+      Args:
+        request: (DataplexProjectsLocationsChangeRequestsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudDataplexV1ListChangeRequestsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/changeRequests',
+        http_method='GET',
+        method_id='dataplex.projects.locations.changeRequests.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/changeRequests',
+        request_field='',
+        request_type_name='DataplexProjectsLocationsChangeRequestsListRequest',
+        response_type_name='GoogleCloudDataplexV1ListChangeRequestsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates a ChangeRequest. Only allowed when the state is NEW.
+
+      Args:
+        request: (DataplexProjectsLocationsChangeRequestsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudDataplexV1ChangeRequest) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/changeRequests/{changeRequestsId}',
+        http_method='PATCH',
+        method_id='dataplex.projects.locations.changeRequests.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1/{+name}',
+        request_field='googleCloudDataplexV1ChangeRequest',
+        request_type_name='DataplexProjectsLocationsChangeRequestsPatchRequest',
+        response_type_name='GoogleCloudDataplexV1ChangeRequest',
+        supports_download=False,
+    )
+
+    def Reject(self, request, global_params=None):
+      r"""Rejects a ChangeRequest.
+
+      Args:
+        request: (DataplexProjectsLocationsChangeRequestsRejectRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudDataplexV1ChangeRequest) The response message.
+      """
+      config = self.GetMethodConfig('Reject')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Reject.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/changeRequests/{changeRequestsId}:reject',
+        http_method='POST',
+        method_id='dataplex.projects.locations.changeRequests.reject',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:reject',
+        request_field='googleCloudDataplexV1RejectChangeRequestRequest',
+        request_type_name='DataplexProjectsLocationsChangeRequestsRejectRequest',
+        response_type_name='GoogleCloudDataplexV1ChangeRequest',
         supports_download=False,
     )
 

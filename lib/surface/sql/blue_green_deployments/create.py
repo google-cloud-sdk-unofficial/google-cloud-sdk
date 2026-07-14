@@ -88,14 +88,16 @@ class Create(base.CreateCommand):
     )
 
     try:
+      requested_config = None
+      if args.target_database_version:
+        requested_config = sql_messages.RequestedConfig(
+            databaseVersion=args.target_database_version
+        )
+
       deployment_resource = sql_messages.BlueGreenDeployment(
           sourceInstance=source_instance_name,
           description=args.description,
-          targetConfig=sql_messages.TargetConfig(
-              databaseVersion=args.target_database_version
-          )
-          if args.target_database_version
-          else None,
+          requestedConfig=requested_config,
       )
 
       request = sql_messages.SqlBlueGreenDeploymentsCreateRequest(

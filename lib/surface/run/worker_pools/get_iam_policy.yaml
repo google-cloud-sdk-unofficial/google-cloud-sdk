@@ -1,5 +1,4 @@
 - release_tracks: [ALPHA, BETA, GA]
-
   help_text:
     brief: Get the IAM policy for a Cloud Run worker pool.
     description: |
@@ -18,6 +17,10 @@
     collection: run.projects.locations.workerpools
     modify_request_hooks:
     - googlecloudsdk.command_lib.run.platforms:ValidatePlatformIsManaged
+    ALPHA:
+      regional_endpoint_compatibility: SUPPORTED
+    BETA:
+      regional_endpoint_compatibility: SUPPORTED
 
   arguments:
     resource:

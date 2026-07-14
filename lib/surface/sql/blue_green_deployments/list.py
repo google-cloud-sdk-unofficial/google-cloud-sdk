@@ -44,9 +44,11 @@ class List(base.ListCommand):
     sql_flags.AddRegion(parser, required=False, specify_default_region=False)
     parser.display_info.AddFormat(textwrap.dedent("""
         table(
-            name.basename(),
+            name.basename():label=NAME,
+            name.split('/').slice(1).join():label=PROJECT_ID,
             sourceInstance.basename():label=SOURCE_INSTANCE,
-            switchoverTargetInstance.basename():label=TARGET_INSTANCE
+            switchoverTargetInstance.basename():label=TARGET_INSTANCE,
+            createTime.iso():label=CREATE_TIME
         )
     """).strip())
 

@@ -15,7 +15,7 @@
 """Command for updating instances split for worker-pool resource."""
 
 from google.api_core import exceptions as gapic_exceptions
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.run import run_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import exceptions as serverless_exceptions
 from googlecloudsdk.command_lib.run import flags
@@ -35,17 +35,18 @@ from googlecloudsdk.core.resource import resource_printer
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class AdjustInstanceSplit(base.Command):
   """Adjust the instance assignments for a Cloud Run worker-pool."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION': (
+          """\
           {description}
-          """,
-      'EXAMPLES': """\
+          """
+      ),
+      'EXAMPLES': (
+          """\
           To assign 10% of instances to revision my-worker-pool-s5sxn and
           90% of instances to revision my-worker-pool-cp9kw run:
 
@@ -71,7 +72,8 @@ class AdjustInstanceSplit(base.Command):
 
               $ {command} my-worker-pool --to-revisions=LATEST=10
 
-         """,
+         """
+      ),
   }
 
   @classmethod
@@ -125,12 +127,8 @@ class AdjustInstanceSplit(base.Command):
     worker_pool_ref = args.CONCEPTS.worker_pool.Parse()
     flags.ValidateResource(worker_pool_ref)
 
-    def DeriveRegionalEndpoint(endpoint):
-      region = args.CONCEPTS.worker_pool.Parse().locationsId
-      return region + '-' + endpoint
-
-    run_client = apis.GetGapicClientInstance(
-        'run', 'v2', address_override_func=DeriveRegionalEndpoint
+    run_client = run_util.GetGapicClientInstance(
+        region=worker_pool_ref.locationsId
     )
     worker_pools_client = worker_pools_operations.WorkerPoolsOperations(
         run_client
@@ -155,3 +153,9 @@ class AdjustInstanceSplit(base.Command):
         except gapic_exceptions.GoogleAPICallError as e:
           core_exceptions.reraise(core_exceptions.Error(str(e)))
         return instance_split.GetInstanceSplitPairs(response.metadata)
+
+
+@base.RegionalEndpointsSupported
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class BetaAdjustInstanceSplit(AdjustInstanceSplit):
+  """Adjust the instance assignments for a Cloud Run worker-pool."""

@@ -1407,18 +1407,33 @@ def RevokeCredentials(credentials):
 
   Args:
     credentials: google-auth credentials
-  Raises:
-    RevokeError: If credentials to revoke is not user account credentials.
-  """
-  if (not c_creds.IsUserAccountCredentials(credentials) or
-      # External account user credentials cannot be revoked.
-      c_creds.IsExternalAccountUserCredentials(credentials) or
-      c_creds.IsExternalAccountAuthorizedUserCredentials(credentials)):
-    raise RevokeError('The token cannot be revoked from server because it is '
-                      'not user account credentials.')
 
-  from googlecloudsdk.core import requests  # pylint: disable=g-import-not-at-top
-  credentials.revoke(requests.GoogleAuthRequest())
+  Raises:
+    RevokeError: If credentials to revoke is not user account credentials, or
+       external account authorized user credentials not obtained via gcloud
+      auth login.
+  """
+  if not c_creds.IsRevocable(credentials):
+    raise RevokeError(
+        'The token cannot be revoked from server because it is '
+        'either not user account credentials or is an external '
+        'account authorized user credentials not obtained via gcloud '
+        'auth login.'
+    )
+
+  if c_creds.IsExternalAccountAuthorizedUserCredentials(credentials):
+    from google.auth import exceptions as google_auth_exceptions  # pylint: disable=g-import-not-at-top
+    from googlecloudsdk.core import requests  # pylint: disable=g-import-not-at-top
+    from googlecloudsdk.core.credentials import google_auth_credentials as c_google_auth  # pylint: disable=g-import-not-at-top
+
+    try:
+      credentials.revoke(requests.GoogleAuthRequest())
+    except google_auth_exceptions.OAuthError as e:
+      raise c_google_auth.TokenRevokeError(six.text_type(e))
+  else:
+    from googlecloudsdk.core import requests  # pylint: disable=g-import-not-at-top
+
+    credentials.revoke(requests.GoogleAuthRequest())
 
 
 def Revoke(account=None):
@@ -1441,8 +1456,6 @@ def Revoke(account=None):
   """
   # Import only when necessary to decrease the startup time.
   # pylint: disable=g-import-not-at-top
-  from google.auth import external_account as google_auth_external_account
-  from google.auth import external_account_authorized_user as google_auth_external_account_authorized_user
   from googlecloudsdk.core.credentials import google_auth_credentials as c_google_auth
   # pylint: enable=g-import-not-at-top
   if not account:
@@ -1460,12 +1473,7 @@ def Revoke(account=None):
 
   rv = False
   try:
-    # External account credentials are not revocable.
-    if (not account.endswith('.gserviceaccount.com') and
-        not isinstance(credentials, google_auth_external_account.Credentials)
-        and not isinstance(
-            credentials,
-            google_auth_external_account_authorized_user.Credentials)):
+    if c_creds.IsRevocable(credentials):
       RevokeCredentials(credentials)
       rv = True
   except c_google_auth.TokenRevokeError as e:

@@ -170,6 +170,9 @@ class ArtifactDeployment(_messages.Message):
       restartCount` e.g. "Waiting-ImagePullBackOff : 3"
     deployTime: Output only. The time at which the deployment was deployed.
     id: Output only. Unique identifier of `ArtifactDeployment`.
+    sourceCodeUris: Output only. The URIs of the source code, if available.
+      For Cloud Run source deploy for example: `gs://my-bucket/my-
+      folder/1234567890.abcde-fdbe.zip#1234567890`
     sourceCommitUris: Output only. The source commits at which this artifact
       was built. Extracted from provenance.
     undeployTime: Output only. The time at which the deployment was
@@ -182,8 +185,9 @@ class ArtifactDeployment(_messages.Message):
   containerStatusSummary = _messages.StringField(3)
   deployTime = _messages.StringField(4)
   id = _messages.StringField(5)
-  sourceCommitUris = _messages.StringField(6, repeated=True)
-  undeployTime = _messages.StringField(7)
+  sourceCodeUris = _messages.StringField(6, repeated=True)
+  sourceCommitUris = _messages.StringField(7, repeated=True)
+  undeployTime = _messages.StringField(8)
 
 
 class BasicAuthentication(_messages.Message):

@@ -88,6 +88,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_CHANGEREQUESTS = (
+      'projects.locations.changeRequests',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/changeRequests/'
+              '{changeRequestsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_DATAATTRIBUTEBINDINGS = (
       'projects.locations.dataAttributeBindings',
       '{+name}',

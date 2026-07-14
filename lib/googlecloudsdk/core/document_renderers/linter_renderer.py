@@ -28,8 +28,16 @@ class LinterRenderer(text_renderer.TextRenderer):
   """Renders markdown to a list of lines where there is a linter error."""
 
   _HEADINGS_TO_LINT = (
-      'NAME', 'EXAMPLES', 'DESCRIPTION', 'POSITIONAL ARGUMENTS',
-      'REQUIRED FLAGS', 'OPTIONAL FLAGS', 'FLAGS', 'LIST COMMAND FLAGS')
+      'NAME',
+      'EXAMPLES',
+      'DESCRIPTION',
+      'POSITIONAL ARGUMENTS',
+      'REQUIRED FLAGS',
+      'OPTIONAL FLAGS',
+      'FLAGS',
+      'LIST COMMAND FLAGS',
+      'GUIDANCE',
+  )
   _NAME_WORD_LIMIT = 20
   _PERSONAL_PRONOUNS = ('me', 'we', 'I', 'us', 'he', 'she', 'him', 'her')
   _ARTICLES = ('the', 'a', 'an')
@@ -49,14 +57,17 @@ class LinterRenderer(text_renderer.TextRenderer):
     self._null_out = io.StringIO()
     self._buffer = io.StringIO()
     self._out = self._buffer
-    self._analyze = {'NAME': self._analyze_name,
-                     'EXAMPLES': self._analyze_examples,
-                     'DESCRIPTION': self._analyze_description,
-                     'POSITIONAL ARGUMENTS': self._analyze_argument_sections,
-                     'REQUIRED FLAGS': self._analyze_argument_sections,
-                     'OPTIONAL FLAGS': self._analyze_argument_sections,
-                     'FLAGS': self._analyze_argument_sections,
-                     'LIST COMMAND FLAGS': self._analyze_argument_sections}
+    self._analyze = {
+        'NAME': self._analyze_name,
+        'EXAMPLES': self._analyze_examples,
+        'DESCRIPTION': self._analyze_description,
+        'POSITIONAL ARGUMENTS': self._analyze_argument_sections,
+        'REQUIRED FLAGS': self._analyze_argument_sections,
+        'OPTIONAL FLAGS': self._analyze_argument_sections,
+        'FLAGS': self._analyze_argument_sections,
+        'LIST COMMAND FLAGS': self._analyze_argument_sections,
+        'GUIDANCE': self._analyze_guidance,
+    }
     self._heading = ''
     self._prev_heading = ''
     self._example_errors = False
@@ -398,4 +409,43 @@ class LinterRenderer(text_renderer.TextRenderer):
                   self.check_for_articles(heading, section))
 
     if not any(has_errors):
+      self._add_no_errors_summary(heading)
+
+  def _analyze_guidance(self, heading, section):
+    errors = [
+        bool(self.check_for_personal_pronouns(heading, section)),
+        bool(self.check_for_unmatched_double_backticks(heading, section)),
+        bool(self.check_for_articles(heading, section)),
+    ]
+
+    # Check for Standard Markdown Dialect violations.
+    # 1. Standard Bolding (**text**).
+    check_name = self._check_name(heading, 'STANDARD_BOLDING')
+    if re.search(r'\*\*', section):
+      self._add_failure(
+          check_name,
+          (
+              'Please do not use standard Markdown bolding (**text**). '
+              'Use Cloud SDK Markdown (*text*).'
+          ),
+      )
+      errors.append(True)
+    else:
+      self._add_success(check_name)
+
+    # 2. Ordered lists (1. Item).
+    check_name = self._check_name(heading, 'ORDERED_LIST')
+    if re.search(r'(?:^|\s)\d+\.\s', section):
+      self._add_failure(
+          check_name,
+          (
+              'Please do not use standard ordered lists (e.g., 1. Item). '
+              'Use Cloud SDK bulleted lists (* Item).'
+          ),
+      )
+      errors.append(True)
+    else:
+      self._add_success(check_name)
+
+    if not any(errors):
       self._add_no_errors_summary(heading)

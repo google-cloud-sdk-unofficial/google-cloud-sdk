@@ -138,10 +138,10 @@ class EnableAlpha(features_base.EnableCommand,
             configuration.
 
             To create a Config Management feature with a fleet-default
-            membership configuration from a file and debug logs, populate a
-            `config.yaml` and run:
+            membership configuration and inform the process with logs, populate
+            a `config.yaml` and run:
 
-              $ {{command}} --fleet-default-member-config=config.yaml --verbosity=debug
+              $ {{command}} --fleet-default-member-config=config.yaml --verbosity=info
 
             To create a Config Management feature in the current project with
             the same fleet-default membership configuration as another project
@@ -161,7 +161,9 @@ class EnableAlpha(features_base.EnableCommand,
   def Run(self, args):
     feature = self.messages.Feature()
     # Empty string still counts as setting the flag.
-    if args.fleet_default_member_config is not None:
+    is_fleet_default = args.fleet_default_member_config is not None
+    is_apply_spec = False
+    if is_fleet_default:
       data = console_io.ReadFromFileOrStdin(args.fleet_default_member_config,
                                             binary=False)
       yaml_data = yaml.load(data)
@@ -173,7 +175,7 @@ class EnableAlpha(features_base.EnableCommand,
         )
       is_apply_spec = yaml_data.get('applySpecVersion')
       if is_apply_spec:
-        log.debug(
+        log.info(
             "'applySpecVersion' field is present. Using old apply spec schema."
         )
         log.warning(
@@ -184,7 +186,7 @@ class EnableAlpha(features_base.EnableCommand,
         )
         cm_spec = self.parse_config_management(args.fleet_default_member_config)
       else:
-        log.debug(
+        log.info(
             "'applySpecVersion' field is not present. Using new API schema."
         )
         cm_spec = flags.Parser(self).parse_config_data(
@@ -202,7 +204,22 @@ class EnableAlpha(features_base.EnableCommand,
         except exceptions.Error as e:
           if str(e) != str(self.FeatureNotEnabledError()):
             raise
-    self.Enable(
-        feature,
-        error_if_feature_exists=args.fleet_default_member_config is not None,
-    )
+    try:
+      self.Enable(feature, error_if_feature_exists=is_fleet_default)
+    except apitools.base.py.exceptions.HttpConflictError as e:
+      # --fleet-default-member-config must have been specified.
+      parsed_e = api_lib_exceptions.HttpErrorPayload(e)
+      if parsed_e.status_description == 'ALREADY_EXISTS':
+        if is_apply_spec:
+          e = exceptions.Error(
+              f'another source has created the {self.feature.display_name} '
+              'feature since the start of this command, re-run this command to'
+              ' update the feature'
+          )
+        else:
+          e = exceptions.Error(
+              f'{self.feature.display_name} feature already exists, use the'
+              ' --fleet-default-member-config flag on the update command'
+              ' instead'
+          )
+      raise e

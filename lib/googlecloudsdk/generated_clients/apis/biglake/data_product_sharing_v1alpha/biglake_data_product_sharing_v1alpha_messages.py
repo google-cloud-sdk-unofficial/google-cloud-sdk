@@ -58,13 +58,15 @@ class PublishDataProductRequest(_messages.Message):
     dataProduct: Knowledge Catalog Data Product to publish.
     icebergCatalog: The BigLake Iceberg REST Catalog whose tables will be
       published.
+    sapFederatedIdentity: A string attribute.
     share: Required. The desired name of the Share as it will be published to
       SAP BDC.
   """
 
   dataProduct = _messages.MessageField('DataProductReference', 1)
   icebergCatalog = _messages.MessageField('IcebergCatalogReference', 2)
-  share = _messages.StringField(3)
+  sapFederatedIdentity = _messages.StringField(3)
+  share = _messages.StringField(4)
 
 
 class PublishDataProductResponse(_messages.Message):

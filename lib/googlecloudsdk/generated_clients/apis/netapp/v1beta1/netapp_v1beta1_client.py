@@ -13,7 +13,7 @@ class NetappV1beta1(base_api.BaseApiClient):
   MTLS_BASE_URL = 'https://netapp.mtls.googleapis.com/'
 
   _PACKAGE = 'netapp'
-  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform']
+  _SCOPES = ['https://www.googleapis.com/auth/cloud-netapp', 'https://www.googleapis.com/auth/cloud-platform']
   _VERSION = 'v1beta1'
   _CLIENT_ID = 'CLIENT_ID'
   _CLIENT_SECRET = 'CLIENT_SECRET'

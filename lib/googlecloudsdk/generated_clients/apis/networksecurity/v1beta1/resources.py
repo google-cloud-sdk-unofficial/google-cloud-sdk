@@ -63,6 +63,19 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  ORGANIZATIONS_LOCATIONS_FIREWALLENDPOINTS_WILDFIREVERDICTCHANGEREQUESTS = (
+      'organizations.locations.firewallEndpoints.wildfireVerdictChangeRequests',
+      '{+name}',
+      {
+          '':
+              'organizations/{organizationsId}/locations/{locationsId}/'
+              'firewallEndpoints/{firewallEndpointsId}/'
+              'wildfireVerdictChangeRequests/'
+              '{wildfireVerdictChangeRequestsId}',
+      },
+      ['name'],
+      True
+  )
   ORGANIZATIONS_LOCATIONS_OPERATIONS = (
       'organizations.locations.operations',
       '{+name}',
@@ -197,6 +210,19 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/'
               'firewallEndpoints/{firewallEndpointsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_FIREWALLENDPOINTS_WILDFIREVERDICTCHANGEREQUESTS = (
+      'projects.locations.firewallEndpoints.wildfireVerdictChangeRequests',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'firewallEndpoints/{firewallEndpointsId}/'
+              'wildfireVerdictChangeRequests/'
+              '{wildfireVerdictChangeRequestsId}',
       },
       ['name'],
       True

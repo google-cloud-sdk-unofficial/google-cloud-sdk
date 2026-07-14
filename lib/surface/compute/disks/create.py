@@ -890,6 +890,7 @@ class CreateBeta(Create):
         vss_erase_enabled=True,
         support_pd_interface=True,
         support_source_snapshot_region=True,
+        support_gmi_restore=True,
         source_instant_snapshot_enabled=False,
     )
     image_utils.AddGuestOsFeaturesArg(parser, messages)
@@ -910,6 +911,7 @@ class CreateBeta(Create):
         support_pd_interface=True,
         support_enable_confidential_compute=True,
         support_source_snapshot_region=True,
+        support_gmi_restore=True,
     )
 
 

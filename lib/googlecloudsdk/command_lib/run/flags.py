@@ -1848,6 +1848,16 @@ def AddArgsFlag(parser, for_execution_overrides=False):
   ArgsFlag(for_execution_overrides=for_execution_overrides).AddToParser(parser)
 
 
+def SandboxLauncherFlag():
+  """Add the --sandbox-launcher flag."""
+  return base.Argument(
+      '--sandbox-launcher',
+      action=arg_parsers.StoreTrueFalseAction,
+      help='Set the container as a sandbox supervisor to launch sandboxes.',
+      hidden=True,
+  )
+
+
 def AddDeployHealthCheckFlag(parser):
   """Add flag enable and disable deploy health check."""
   parser.add_argument(
@@ -3009,6 +3019,12 @@ def _GetConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
       changes.append(
           config_changes.GpuZonalRedundancyChange(gpu_zonal_redundancy=None)
       )
+  if FlagIsExplicitlySet(args, 'sandbox_launcher'):
+    changes.append(
+        config_changes.SandboxLauncherChange(
+            sandbox_launcher=args.sandbox_launcher
+        )
+    )
   if FlagIsExplicitlySet(args, 'gpu_zonal_redundancy'):
     changes.append(
         config_changes.GpuZonalRedundancyChange(
@@ -3362,6 +3378,13 @@ def _GetContainerConfigurationChanges(container_args, container_name=None):
     changes.append(
         config_changes.ResourceChanges(
             memory=container_args.memory, container_name=container_name
+        )
+    )
+  if FlagIsExplicitlySet(container_args, 'sandbox_launcher'):
+    changes.append(
+        config_changes.SandboxLauncherChange(
+            sandbox_launcher=container_args.sandbox_launcher,
+            container_name=container_name,
         )
     )
   if FlagIsExplicitlySet(container_args, 'startup_probe'):

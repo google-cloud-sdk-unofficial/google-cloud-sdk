@@ -3069,10 +3069,13 @@ datetimes for information on time formats.
 """,
   )
 
-  set_window_group.add_argument(
+  window_end_group = set_window_group.add_group(
+      hidden=hidden_for_create, mutex=True, required=True
+  )
+
+  window_end_group.add_argument(
       '--maintenance-window-end',
       type=arg_parsers.Datetime.Parse,
-      required=True,
       hidden=hidden_for_create,
       metavar='TIME_STAMP',
       help="""\

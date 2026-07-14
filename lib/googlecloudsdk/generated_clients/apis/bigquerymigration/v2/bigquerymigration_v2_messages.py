@@ -987,35 +987,33 @@ class GoogleCloudBigqueryMigrationV2GcsReportLogMessage(_messages.Message):
   r"""A record in the aggregate CSV report for a migration workflow
 
   Enums:
-    RetentionStatusValueValuesEnum: Output only. Whether the impacted lines of
-      code are DROPPED or RETAINED at this stage.
-    SourceTypeValueValuesEnum: Output only. The type of the source file.
+    RetentionStatusValueValuesEnum: Whether the impacted lines of code are
+      DROPPED or RETAINED at this stage.
+    SourceTypeValueValuesEnum: The type of the source file.
 
   Fields:
-    action: Output only. Category of the error/warning. Example: SyntaxError
-    category: Output only. Category of the error/warning. Example: SyntaxError
-    effect: Output only. Effect of the error/warning. Example: COMPATIBILITY
-    filePath: Output only. The file path in which the error occurred
-    filename: Output only. The file name in which the error occurred
-    message: Output only. Detailed message of the record.
-    objectName: Output only. Name of the affected object in the log message.
-    retentionStatus: Output only. Whether the impacted lines of code are
-      DROPPED or RETAINED at this stage.
-    scriptContext: Output only. The script context (obfuscated) in which the
-      error occurred
-    severity: Output only. Severity of the translation record.
-    sourceScriptColumn: Output only. Specifies the column from the source
-      texts where the error occurred. (0 based, -1 for messages without column
-      location) example: 6
-    sourceScriptLine: Output only. Specifies the row from the source text
-      where the error occurred (0 based, -1 for messages without line
-      location). Example: 2
-    sourceType: Output only. The type of the source file.
+    action: Category of the error/warning. Example: SyntaxError
+    category: Category of the error/warning. Example: SyntaxError
+    effect: Effect of the error/warning. Example: COMPATIBILITY
+    filePath: The file path in which the error occurred
+    filename: The file name in which the error occurred
+    message: Detailed message of the record.
+    objectName: Name of the affected object in the log message.
+    retentionStatus: Whether the impacted lines of code are DROPPED or
+      RETAINED at this stage.
+    scriptContext: The script context (obfuscated) in which the error occurred
+    severity: Severity of the translation record.
+    sourceScriptColumn: Specifies the column from the source texts where the
+      error occurred. (0 based, -1 for messages without column location)
+      example: 6
+    sourceScriptLine: Specifies the row from the source text where the error
+      occurred (0 based, -1 for messages without line location). Example: 2
+    sourceType: The type of the source file.
   """
 
   class RetentionStatusValueValuesEnum(_messages.Enum):
-    r"""Output only. Whether the impacted lines of code are DROPPED or
-    RETAINED at this stage.
+    r"""Whether the impacted lines of code are DROPPED or RETAINED at this
+    stage.
 
     Values:
       RETENTION_STATUS_UNSPECIFIED: Undefined status.
@@ -1027,7 +1025,7 @@ class GoogleCloudBigqueryMigrationV2GcsReportLogMessage(_messages.Message):
     DROPPED = 2
 
   class SourceTypeValueValuesEnum(_messages.Enum):
-    r"""Output only. The type of the source file.
+    r"""The type of the source file.
 
     Values:
       SOURCE_TYPE_UNSPECIFIED: Undefined source type.

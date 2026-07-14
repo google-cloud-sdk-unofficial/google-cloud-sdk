@@ -33,6 +33,7 @@ class CommandData(object):
     self.auto_generated = data.get('auto_generated', False)
     self.universe_compatible = data.get('universe_compatible', None)
     self.hints = data.get('hints', {})
+    self.guidance = data.get('guidance', None)
     self.release_tracks = [
         base.ReleaseTrack.FromId(i) for i in data.get('release_tracks', [])
     ]

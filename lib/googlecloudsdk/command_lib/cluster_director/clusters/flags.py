@@ -667,7 +667,7 @@ def AddSlurmNodeSets(
   alpha_help = textwrap.dedent(f"""
         Parameters to define slurm cluster nodeset config.
 
-        For e.g. --{name} id=ns1,computeId=c1,type=gce,staticNodeCount=1,maxDynamicNodeCount=2,startupScript="echo hello"
+        For e.g. --{name} id=ns1,computeId=c1,type=gce,staticNodeCount=1,maxDynamicNodeCount=2,startupScript="echo hello",bootDisk=type=hyperdisk-balanced,storagePools=[zones/us-central1-a/storagePools/pool1]
 
         To configure a node set backed by Google Kubernetes Engine, use type=gke. If type=gke is
         specified, Compute Engine specific fields (labels, startupScript, bootDisk,
@@ -685,6 +685,9 @@ def AddSlurmNodeSets(
           - Either str or file_path
           - For file_path, only bash file format (.sh or .bash) is supported.
           - For file_path, only absolute path is supported.
+        - bootDisk.storagePools:
+          - At most 1 storage pool is supported.
+          - storagePools: The name of the storage pool to use, in the format zones/us-central1-a/storagePools/pool1.
       """)
   beta_help = textwrap.dedent(f"""
         Parameters to define slurm cluster nodeset config.
@@ -851,7 +854,7 @@ def AddSlurmLoginNode(
   alpha_create_help = textwrap.dedent("""
         Parameters to define slurm cluster login node.
 
-        For e.g. --slurm-login-node machineType=n1-standard-1,zone=us-central1-a,count=1,enableOSLogin=true,enablePublicIPs=true,startupScript="echo hello",labels="k1=v1"
+        For e.g. --slurm-login-node machineType=n1-standard-1,zone=us-central1-a,count=1,enableOSLogin=true,enablePublicIPs=true,startupScript="echo hello",labels="k1=v1",bootDisk=type=hyperdisk-balanced,storagePools=[zones/us-central1-a/storagePools/pool1]
 
           If bootDisk is specified, sizeGb must be greater than 50.
 
@@ -866,6 +869,9 @@ def AddSlurmLoginNode(
           - Either str or file_path
           - For file_path, only bash file format (.sh or .bash) is supported.
           - For file_path, only absolute path is supported.
+        - bootDisk.storagePools:
+          - At most 1 storage pool is supported.
+          - storagePools: The name of the storage pool to use, in the format zones/us-central1-a/storagePools/pool1.
       """)
   beta_create_help = textwrap.dedent("""
         Parameters to define slurm cluster login node.
@@ -889,12 +895,26 @@ def AddSlurmLoginNode(
   flag_name = name
   if include_update_flags:
     flag_name = f"update-{name}"
-    help_text = textwrap.dedent(f"""
+    alpha_update_help = textwrap.dedent(f"""
+        Parameters to update slurm cluster login node.
+        Only bootDisk, count and startupScript can be updated.
+
+        For e.g. --{flag_name} count=2,startupScript="echo hello",bootDisk=type=hyperdisk-balanced,storagePools=[zones/us-central1-a/storagePools/pool1]
+
+        Note:
+        - bootDisk.storagePools:
+          - At most 1 storage pool is supported.
+          - storagePools: The name of the storage pool to use, in the format zones/us-central1-a/storagePools/pool1.
+    """)
+    beta_update_help = textwrap.dedent(f"""
         Parameters to update slurm cluster login node.
         Only bootDisk, count and startupScript can be updated.
 
         For e.g. --{flag_name} count=2,startupScript="echo hello"
     """)
+    help_text = (
+        alpha_update_help if api_version == "v1alpha" else beta_update_help
+    )
     flag_type = ft.GetSlurmLoginNodeUpdateObject()
   else:
     help_text = (

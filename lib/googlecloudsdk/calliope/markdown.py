@@ -1246,6 +1246,17 @@ class CommandMarkdownGenerator(MarkdownGenerator):
     self._ExtractSectionsFromDocstring(self._docstring)
     self._sections['description'] = self._sections.get('DESCRIPTION', '')
     self._sections.update(getattr(self._command, 'detailed_help', {}))
+
+    # Guidance sidecar help augmentation.
+    try:
+      guidance = getattr(self._command._common_type, 'guidance', None)
+      if guidance:
+        if isinstance(guidance, dict):
+          self._sections['GUIDANCE'] = guidance.get('content')
+    except Exception:  # pylint: disable=broad-except
+      # Fail gracefully if we cannot resolve the guidance.
+      pass
+
     self._subcommands = command.GetSubCommandHelps()
     self._subgroups = command.GetSubGroupHelps()
     self._sort_top_level_args = command.ai.sort_args

@@ -7708,6 +7708,7 @@ class VulnerabilityDetails(_messages.Message):
       high severity.
     cvssV2: The CVSS v2 score of this vulnerability.
     cvssV3: The CVSS v3 score of this vulnerability.
+    cvssV4: Optional. The CVSS v4 score of this vulnerability.
     cvssVersion: Output only. CVSS version used to populate cvss_score and
       severity.
     effectiveSeverity: The distro assigned severity for this vulnerability
@@ -7796,14 +7797,15 @@ class VulnerabilityDetails(_messages.Message):
   cvssScore = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
   cvssV2 = _messages.MessageField('CVSS', 2)
   cvssV3 = _messages.MessageField('CVSS', 3)
-  cvssVersion = _messages.EnumField('CvssVersionValueValuesEnum', 4)
-  effectiveSeverity = _messages.EnumField('EffectiveSeverityValueValuesEnum', 5)
-  extraDetails = _messages.StringField(6)
-  packageIssue = _messages.MessageField('PackageIssue', 7, repeated=True)
-  risk = _messages.MessageField('Risk', 8)
-  severity = _messages.EnumField('SeverityValueValuesEnum', 9)
-  type = _messages.StringField(10)
-  vexAssessment = _messages.MessageField('VexAssessment', 11)
+  cvssV4 = _messages.MessageField('CVSS', 4)
+  cvssVersion = _messages.EnumField('CvssVersionValueValuesEnum', 5)
+  effectiveSeverity = _messages.EnumField('EffectiveSeverityValueValuesEnum', 6)
+  extraDetails = _messages.StringField(7)
+  packageIssue = _messages.MessageField('PackageIssue', 8, repeated=True)
+  risk = _messages.MessageField('Risk', 9)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 10)
+  type = _messages.StringField(11)
+  vexAssessment = _messages.MessageField('VexAssessment', 12)
 
 
 class VulnerabilityLocation(_messages.Message):
@@ -7838,6 +7840,7 @@ class VulnerabilityType(_messages.Message):
     advisoryPublishTime: Time this advisory was published by the source.
     cvssScore: The CVSS score for this Vulnerability.
     cvssV2: The full description of the CVSS for version 2.
+    cvssV4: Optional. The full description of the CVSS for version 4.
     cvssVersion: CVSS version used to populate cvss_score and severity.
     cwe: A list of CWE for this vulnerability. For details, see:
       https://cwe.mitre.org/index.html
@@ -7882,10 +7885,11 @@ class VulnerabilityType(_messages.Message):
   advisoryPublishTime = _messages.StringField(1)
   cvssScore = _messages.FloatField(2, variant=_messages.Variant.FLOAT)
   cvssV2 = _messages.MessageField('CVSS', 3)
-  cvssVersion = _messages.EnumField('CvssVersionValueValuesEnum', 4)
-  cwe = _messages.StringField(5, repeated=True)
-  details = _messages.MessageField('Detail', 6, repeated=True)
-  severity = _messages.EnumField('SeverityValueValuesEnum', 7)
+  cvssV4 = _messages.MessageField('CVSS', 4)
+  cvssVersion = _messages.EnumField('CvssVersionValueValuesEnum', 5)
+  cwe = _messages.StringField(6, repeated=True)
+  details = _messages.MessageField('Detail', 7, repeated=True)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 8)
 
 
 encoding.AddCustomJsonFieldMapping(

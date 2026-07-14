@@ -1731,7 +1731,7 @@ class DatabaseResourceId(_messages.Message):
 
 
 class DatabaseResourceMetadata(_messages.Message):
-  r"""Common model for database resource instance metadata. Next ID: 34
+  r"""Common model for database resource instance metadata. Next ID: 35
 
   Enums:
     CurrentStateValueValuesEnum: Current state of the instance.
@@ -1776,6 +1776,7 @@ class DatabaseResourceMetadata(_messages.Message):
     instanceType: The type of the instance. Specified at creation time.
     internalAdditionalMetadata: Field to ingest additional metadata which
       support proto format.
+    ipAddress: Optional. Private and public IP address of the resource.
     isDeletionProtectionEnabled: Optional. Whether deletion protection is
       enabled for this resource.
     location: The resource location. REQUIRED
@@ -2007,22 +2008,23 @@ class DatabaseResourceMetadata(_messages.Message):
   id = _messages.MessageField('DatabaseResourceId', 13)
   instanceType = _messages.EnumField('InstanceTypeValueValuesEnum', 14)
   internalAdditionalMetadata = _messages.MessageField('InternalAdditionalMetadataValue', 15)
-  isDeletionProtectionEnabled = _messages.BooleanField(16)
-  location = _messages.StringField(17)
-  machineConfiguration = _messages.MessageField('MachineConfiguration', 18)
-  maintenanceInfo = _messages.MessageField('ResourceMaintenanceInfo', 19)
-  modes = _messages.EnumField('ModesValueListEntryValuesEnum', 20, repeated=True)
-  primaryResourceId = _messages.MessageField('DatabaseResourceId', 21)
-  primaryResourceLocation = _messages.StringField(22)
-  product = _messages.MessageField('Product', 23)
-  resourceContainer = _messages.StringField(24)
-  resourceFlags = _messages.MessageField('ResourceFlags', 25, repeated=True)
-  resourceName = _messages.StringField(26)
-  suspensionReason = _messages.EnumField('SuspensionReasonValueValuesEnum', 27)
-  tagsSet = _messages.MessageField('Tags', 28)
-  updationTime = _messages.StringField(29)
-  userLabelSet = _messages.MessageField('UserLabels', 30)
-  zone = _messages.StringField(31)
+  ipAddress = _messages.MessageField('IpAddress', 16)
+  isDeletionProtectionEnabled = _messages.BooleanField(17)
+  location = _messages.StringField(18)
+  machineConfiguration = _messages.MessageField('MachineConfiguration', 19)
+  maintenanceInfo = _messages.MessageField('ResourceMaintenanceInfo', 20)
+  modes = _messages.EnumField('ModesValueListEntryValuesEnum', 21, repeated=True)
+  primaryResourceId = _messages.MessageField('DatabaseResourceId', 22)
+  primaryResourceLocation = _messages.StringField(23)
+  product = _messages.MessageField('Product', 24)
+  resourceContainer = _messages.StringField(25)
+  resourceFlags = _messages.MessageField('ResourceFlags', 26, repeated=True)
+  resourceName = _messages.StringField(27)
+  suspensionReason = _messages.EnumField('SuspensionReasonValueValuesEnum', 28)
+  tagsSet = _messages.MessageField('Tags', 29)
+  updationTime = _messages.StringField(30)
+  userLabelSet = _messages.MessageField('UserLabels', 31)
+  zone = _messages.StringField(32)
 
 
 class DatabaseResourceRecommendationSignalData(_messages.Message):
@@ -3330,6 +3332,22 @@ class InternalResourceMetadata(_messages.Message):
   resourceName = _messages.StringField(6)
 
 
+class IpAddress(_messages.Message):
+  r"""Used to send IP address information for a database resource.
+
+  Fields:
+    privateIp: The private IP address assigned to the resource within a
+      Virtual Private Cloud (VPC). This IP is only reachable from within the
+      same VPC network. Stored in standard string format (e.g., "10.0.0.2").
+    publicIp: The public IP address assigned to the resource. This IP is
+      reachable from the internet. Stored in standard string format (e.g.,
+      "34.72.1.1").
+  """
+
+  privateIp = _messages.StringField(1)
+  publicIp = _messages.StringField(2)
+
+
 class ListAclPoliciesResponse(_messages.Message):
   r"""Response for `ListAclPolicies`.
 
@@ -4083,6 +4101,7 @@ class Product(_messages.Message):
       ENGINE_MEMORYSTORE_FOR_REDIS: Memorystore with Redis dialect.
       ENGINE_MEMORYSTORE_FOR_REDIS_CLUSTER: Memorystore with Redis cluster
         dialect.
+      ENGINE_MEMORSTORE_FOR_VALKEY: Memorystore with Valkey dialect.
       ENGINE_OTHER: Other refers to rest of other database engine. This is to
         be when engine is known, but it is not present in this enum.
       ENGINE_FIRESTORE_WITH_NATIVE_MODE: Firestore with native mode.
@@ -4105,12 +4124,13 @@ class Product(_messages.Message):
     ENGINE_CLOUD_SPANNER_WITH_GOOGLESQL_DIALECT = 10
     ENGINE_MEMORYSTORE_FOR_REDIS = 11
     ENGINE_MEMORYSTORE_FOR_REDIS_CLUSTER = 12
-    ENGINE_OTHER = 13
-    ENGINE_FIRESTORE_WITH_NATIVE_MODE = 14
-    ENGINE_FIRESTORE_WITH_DATASTORE_MODE = 15
-    ENGINE_FIRESTORE_WITH_MONGODB_COMPATIBILITY_MODE = 16
-    ENGINE_EXADATA_ORACLE = 17
-    ENGINE_ADB_SERVERLESS_ORACLE = 18
+    ENGINE_MEMORSTORE_FOR_VALKEY = 13
+    ENGINE_OTHER = 14
+    ENGINE_FIRESTORE_WITH_NATIVE_MODE = 15
+    ENGINE_FIRESTORE_WITH_DATASTORE_MODE = 16
+    ENGINE_FIRESTORE_WITH_MONGODB_COMPATIBILITY_MODE = 17
+    ENGINE_EXADATA_ORACLE = 18
+    ENGINE_ADB_SERVERLESS_ORACLE = 19
 
   class TypeValueValuesEnum(_messages.Enum):
     r"""Type of specific database product. It could be CloudSQL, AlloyDB etc..

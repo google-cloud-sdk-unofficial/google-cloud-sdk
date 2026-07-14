@@ -28,9 +28,7 @@ from googlecloudsdk.core.resource import resource_printer
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Obtain details about a given worker pool revision."""
 
@@ -93,3 +91,9 @@ class Describe(base.DescribeCommand):
           'Cannot find revision [{}]'.format(revision_ref.revisionsId)
       )
     return wrapped_revision
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.RegionalEndpointsSupported
+class BetaDescribe(Describe):
+  """Obtain details about a given worker pool revision."""

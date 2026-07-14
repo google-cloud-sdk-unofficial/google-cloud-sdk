@@ -87,7 +87,7 @@ class Create(base.CreateCommand):
             messages.HaController.FailoverInitiationValueValuesEnum,
         ),
         help=(
-            'Specifies how a failover is triggered. Set to MANUAL_ONLY if you'
+            'Specifies how a failover is triggered. Set to manual-only if you'
             ' want to trigger failovers yourself. Must be one of:'
             f' {utils.EnumTypeToChoices(messages.HaController.FailoverInitiationValueValuesEnum)}'
         ),

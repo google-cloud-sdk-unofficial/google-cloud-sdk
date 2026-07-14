@@ -664,8 +664,14 @@ class GoogleCloudPolicysimulatorV1alphaAccessActivityResource(_messages.Message)
       organizational scope. This can only be true when analyzing principal
       activities. E.g. a principal under my organization is accessing a
       resource outside of my organization.
-    fullResourceName: The full resource name of the resource.
+    fullResourceName: Deprecated: Migration to the `name` field is in
+      progress. Use the `name` field instead. The full resource name of the
+      resource.
     locations: The locations the resource is in. Example: "us-central1"
+    name: The name of the resource. While this is normally a full resource
+      name, the formatting is not guaranteed and it may some times be empty.
+      The exact value is dependent on internal details of the activity
+      collection.
     service: The service that the resource belongs to. Example:
       "compute.googleapis.com"
     type: The resource type.
@@ -674,8 +680,9 @@ class GoogleCloudPolicysimulatorV1alphaAccessActivityResource(_messages.Message)
   external = _messages.BooleanField(1)
   fullResourceName = _messages.StringField(2)
   locations = _messages.StringField(3, repeated=True)
-  service = _messages.StringField(4)
-  type = _messages.StringField(5)
+  name = _messages.StringField(4)
+  service = _messages.StringField(5)
+  type = _messages.StringField(6)
 
 
 class GoogleCloudPolicysimulatorV1alphaAccessChange(_messages.Message):

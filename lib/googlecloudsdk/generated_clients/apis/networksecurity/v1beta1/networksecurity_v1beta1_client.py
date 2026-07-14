@@ -38,6 +38,7 @@ class NetworksecurityV1beta1(base_api.BaseApiClient):
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
     self.organizations_locations_addressGroups = self.OrganizationsLocationsAddressGroupsService(self)
+    self.organizations_locations_firewallEndpoints_wildfireVerdictChangeRequests = self.OrganizationsLocationsFirewallEndpointsWildfireVerdictChangeRequestsService(self)
     self.organizations_locations_firewallEndpoints = self.OrganizationsLocationsFirewallEndpointsService(self)
     self.organizations_locations_operations = self.OrganizationsLocationsOperationsService(self)
     self.organizations_locations_securityProfileGroups = self.OrganizationsLocationsSecurityProfileGroupsService(self)
@@ -51,6 +52,7 @@ class NetworksecurityV1beta1(base_api.BaseApiClient):
     self.projects_locations_clientTlsPolicies = self.ProjectsLocationsClientTlsPoliciesService(self)
     self.projects_locations_dnsThreatDetectors = self.ProjectsLocationsDnsThreatDetectorsService(self)
     self.projects_locations_firewallEndpointAssociations = self.ProjectsLocationsFirewallEndpointAssociationsService(self)
+    self.projects_locations_firewallEndpoints_wildfireVerdictChangeRequests = self.ProjectsLocationsFirewallEndpointsWildfireVerdictChangeRequestsService(self)
     self.projects_locations_firewallEndpoints = self.ProjectsLocationsFirewallEndpointsService(self)
     self.projects_locations_gatewaySecurityPolicies_rules = self.ProjectsLocationsGatewaySecurityPoliciesRulesService(self)
     self.projects_locations_gatewaySecurityPolicies = self.ProjectsLocationsGatewaySecurityPoliciesService(self)
@@ -350,6 +352,97 @@ class NetworksecurityV1beta1(base_api.BaseApiClient):
         request_field='googleIamV1TestIamPermissionsRequest',
         request_type_name='NetworksecurityOrganizationsLocationsAddressGroupsTestIamPermissionsRequest',
         response_type_name='GoogleIamV1TestIamPermissionsResponse',
+        supports_download=False,
+    )
+
+  class OrganizationsLocationsFirewallEndpointsWildfireVerdictChangeRequestsService(base_api.BaseApiService):
+    """Service class for the organizations_locations_firewallEndpoints_wildfireVerdictChangeRequests resource."""
+
+    _NAME = 'organizations_locations_firewallEndpoints_wildfireVerdictChangeRequests'
+
+    def __init__(self, client):
+      super(NetworksecurityV1beta1.OrganizationsLocationsFirewallEndpointsWildfireVerdictChangeRequestsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Create WildfireVerdictChangeRequest in a given Firewall Endpoint in an organization and location.
+
+      Args:
+        request: (NetworksecurityOrganizationsLocationsFirewallEndpointsWildfireVerdictChangeRequestsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (WildfireVerdictChangeRequest) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/organizations/{organizationsId}/locations/{locationsId}/firewallEndpoints/{firewallEndpointsId}/wildfireVerdictChangeRequests',
+        http_method='POST',
+        method_id='networksecurity.organizations.locations.firewallEndpoints.wildfireVerdictChangeRequests.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1beta1/{+parent}/wildfireVerdictChangeRequests',
+        request_field='wildfireVerdictChangeRequest',
+        request_type_name='NetworksecurityOrganizationsLocationsFirewallEndpointsWildfireVerdictChangeRequestsCreateRequest',
+        response_type_name='WildfireVerdictChangeRequest',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Get WildfireVerdictChangeRequest in a given Firewall Endpoint in an organization and location.
+
+      Args:
+        request: (NetworksecurityOrganizationsLocationsFirewallEndpointsWildfireVerdictChangeRequestsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (WildfireVerdictChangeRequest) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/organizations/{organizationsId}/locations/{locationsId}/firewallEndpoints/{firewallEndpointsId}/wildfireVerdictChangeRequests/{wildfireVerdictChangeRequestsId}',
+        http_method='GET',
+        method_id='networksecurity.organizations.locations.firewallEndpoints.wildfireVerdictChangeRequests.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityOrganizationsLocationsFirewallEndpointsWildfireVerdictChangeRequestsGetRequest',
+        response_type_name='WildfireVerdictChangeRequest',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists WildfireVerdictChangeRequests in a given Firewall Endpoint in an organization and location.
+
+      Args:
+        request: (NetworksecurityOrganizationsLocationsFirewallEndpointsWildfireVerdictChangeRequestsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListWildfireVerdictChangeRequestsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/organizations/{organizationsId}/locations/{locationsId}/firewallEndpoints/{firewallEndpointsId}/wildfireVerdictChangeRequests',
+        http_method='GET',
+        method_id='networksecurity.organizations.locations.firewallEndpoints.wildfireVerdictChangeRequests.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1beta1/{+parent}/wildfireVerdictChangeRequests',
+        request_field='',
+        request_type_name='NetworksecurityOrganizationsLocationsFirewallEndpointsWildfireVerdictChangeRequestsListRequest',
+        response_type_name='ListWildfireVerdictChangeRequestsResponse',
         supports_download=False,
     )
 
@@ -2424,6 +2517,97 @@ class NetworksecurityV1beta1(base_api.BaseApiClient):
         request_field='firewallEndpointAssociation',
         request_type_name='NetworksecurityProjectsLocationsFirewallEndpointAssociationsPatchRequest',
         response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsFirewallEndpointsWildfireVerdictChangeRequestsService(base_api.BaseApiService):
+    """Service class for the projects_locations_firewallEndpoints_wildfireVerdictChangeRequests resource."""
+
+    _NAME = 'projects_locations_firewallEndpoints_wildfireVerdictChangeRequests'
+
+    def __init__(self, client):
+      super(NetworksecurityV1beta1.ProjectsLocationsFirewallEndpointsWildfireVerdictChangeRequestsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Create WildfireVerdictChangeRequest in a given Firewall Endpoint in a project and location.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsFirewallEndpointsWildfireVerdictChangeRequestsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (WildfireVerdictChangeRequest) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/firewallEndpoints/{firewallEndpointsId}/wildfireVerdictChangeRequests',
+        http_method='POST',
+        method_id='networksecurity.projects.locations.firewallEndpoints.wildfireVerdictChangeRequests.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1beta1/{+parent}/wildfireVerdictChangeRequests',
+        request_field='wildfireVerdictChangeRequest',
+        request_type_name='NetworksecurityProjectsLocationsFirewallEndpointsWildfireVerdictChangeRequestsCreateRequest',
+        response_type_name='WildfireVerdictChangeRequest',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Get WildfireVerdictChangeRequest in a given Firewall Endpoint in a project and location.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsFirewallEndpointsWildfireVerdictChangeRequestsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (WildfireVerdictChangeRequest) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/firewallEndpoints/{firewallEndpointsId}/wildfireVerdictChangeRequests/{wildfireVerdictChangeRequestsId}',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.firewallEndpoints.wildfireVerdictChangeRequests.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsFirewallEndpointsWildfireVerdictChangeRequestsGetRequest',
+        response_type_name='WildfireVerdictChangeRequest',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists WildfireVerdictChangeRequests in a given Firewall Endpoint in a project and location.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsFirewallEndpointsWildfireVerdictChangeRequestsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListWildfireVerdictChangeRequestsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/firewallEndpoints/{firewallEndpointsId}/wildfireVerdictChangeRequests',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.firewallEndpoints.wildfireVerdictChangeRequests.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1beta1/{+parent}/wildfireVerdictChangeRequests',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsFirewallEndpointsWildfireVerdictChangeRequestsListRequest',
+        response_type_name='ListWildfireVerdictChangeRequestsResponse',
         supports_download=False,
     )
 

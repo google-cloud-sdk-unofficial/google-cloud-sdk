@@ -3046,7 +3046,8 @@ class GoogleFirestoreAdminV1Index(_messages.Message):
       collections descended from a specific document, specified at query time,
       and that have the same collection ID as this index.
     searchIndexOptions: Optional. Options for search indexes that are at the
-      index definition level.
+      index definition level. This field is only currently supported for
+      indexes with MONGODB_COMPATIBLE_API ApiScope.
     shardCount: Optional. The number of shards for the index.
     state: Output only. The serving state of the index.
     unique: Optional. Whether it is an unique index. Unique index ensures all
@@ -3586,8 +3587,7 @@ class GoogleFirestoreAdminV1SearchGeoSpec(_messages.Message):
 
   Fields:
     geoJsonIndexingDisabled: Optional. Disables geoJSON indexing for the
-      field. By default, geoJSON points are indexed. Firestore GeoPoints are
-      indexed regardless of this value.
+      field. By default, geoJSON points are indexed.
   """
 
   geoJsonIndexingDisabled = _messages.BooleanField(1)
@@ -3605,9 +3605,10 @@ class GoogleFirestoreAdminV1SearchIndexOptions(_messages.Message):
       with `ANY_API` ApiScope: If unspecified, the default behavior is
       autodetect.
     textLanguageOverrideFieldPath: Optional. The field in the document that
-      specifies which language to use for that specific document. If
-      unspecified, the language is taken from the "language" field if it
-      exists or from `text_language` if it does not.
+      specifies which language to use for that specific document. For indexes
+      with MONGODB_COMPATIBLE_API ApiScope: if unspecified, the language is
+      taken from the "language" field if it exists or from `text_language` if
+      it does not.
   """
 
   textLanguage = _messages.StringField(1)
@@ -3633,7 +3634,8 @@ class GoogleFirestoreAdminV1SearchTextIndexSpec(_messages.Message):
     Values:
       TEXT_INDEX_TYPE_UNSPECIFIED: The index type is unspecified. Not a valid
         option.
-      TOKENIZED: Field values are tokenized.
+      TOKENIZED: Field values are tokenized. This is the only way currently
+        supported for MONGODB_COMPATIBLE_API.
     """
     TEXT_INDEX_TYPE_UNSPECIFIED = 0
     TOKENIZED = 1
@@ -3644,7 +3646,8 @@ class GoogleFirestoreAdminV1SearchTextIndexSpec(_messages.Message):
     Values:
       TEXT_MATCH_TYPE_UNSPECIFIED: The match type is unspecified. Not a valid
         option.
-      MATCH_GLOBALLY: Match on any indexed field.
+      MATCH_GLOBALLY: Match on any indexed field. This is the only way
+        currently supported for MONGODB_COMPATIBLE_API.
     """
     TEXT_MATCH_TYPE_UNSPECIFIED = 0
     MATCH_GLOBALLY = 1

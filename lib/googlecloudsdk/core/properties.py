@@ -1357,6 +1357,12 @@ class _SectionAuth(_Section):
             ' Credentials.'
         ),
     )
+    self.enable_sts_revoke_workforce_token = self._AddBool(
+        'enable_sts_revoke_workforce_token',
+        hidden=True,
+        default=False,
+        help_text='If True, use STS revoke endpoint to revoke workforce token.',
+    )
 
 
 class _SectionBatch(_Section):

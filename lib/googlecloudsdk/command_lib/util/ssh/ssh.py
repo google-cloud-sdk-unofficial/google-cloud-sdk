@@ -2129,8 +2129,10 @@ class SSHCommand(object):
     args = self.Build(env)
     log.debug('Running command [{}].'.format(' '.join(args)))
     # PuTTY and friends always ask on fingerprint mismatch
-    if env.suite is Suite.PUTTY and putty_force_connect:
+    if (env.suite is Suite.PUTTY and putty_force_connect and
+        args[0] == env.ssh):
       in_str = 'y\n'
+      args.insert(1, '-legacy-stdio-prompts')
     else:
       in_str = None
 
@@ -2373,6 +2375,7 @@ class SCPCommand(object):
     # TODO(b/35355795): Work out a better solution for PuTTY.
     if env.suite is Suite.PUTTY and putty_force_connect:
       in_str = 'y\n'
+      args.insert(1, '-legacy-stdio-prompts')
     else:
       in_str = None
     status = execution_utils.Exec(args, no_exit=True, in_str=in_str)

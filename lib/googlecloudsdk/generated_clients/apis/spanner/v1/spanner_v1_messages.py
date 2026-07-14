@@ -912,23 +912,91 @@ class CommitRequest(_messages.Message):
 class CommitResponse(_messages.Message):
   r"""The response for Commit.
 
+  Enums:
+    IsolationLevelValueValuesEnum: The isolation level used for the read-write
+      transaction.
+    ReadLockModeValueValuesEnum: The read lock mode used for the read-write
+      transaction.
+
   Fields:
     commitStats: The statistics about this `Commit`. Not returned by default.
       For more information, see CommitRequest.return_commit_stats.
     commitTimestamp: The Cloud Spanner timestamp at which the transaction
       committed.
+    isolationLevel: The isolation level used for the read-write transaction.
     precommitToken: If specified, transaction has not committed yet. You must
       retry the commit with the new precommit token.
+    readLockMode: The read lock mode used for the read-write transaction.
     snapshotTimestamp: If `TransactionOptions.isolation_level` is set to
       `IsolationLevel.REPEATABLE_READ`, then the snapshot timestamp is the
       timestamp at which all reads in the transaction ran. This timestamp is
       never returned.
   """
 
+  class IsolationLevelValueValuesEnum(_messages.Enum):
+    r"""The isolation level used for the read-write transaction.
+
+    Values:
+      ISOLATION_LEVEL_UNSPECIFIED: Default value. If the value is not
+        specified, the `SERIALIZABLE` isolation level is used.
+      SERIALIZABLE: All transactions appear as if they executed in a serial
+        order, even if some of the reads, writes, and other operations of
+        distinct transactions actually occurred in parallel. Spanner assigns
+        commit timestamps that reflect the order of committed transactions to
+        implement this property. Spanner offers a stronger guarantee than
+        serializability called external consistency. For more information, see
+        [TrueTime and external
+        consistency](https://cloud.google.com/spanner/docs/true-time-external-
+        consistency#serializability).
+      REPEATABLE_READ: All reads performed during the transaction observe a
+        consistent snapshot of the database, and the transaction is only
+        successfully committed in the absence of conflicts between its updates
+        and any concurrent updates that have occurred since that snapshot.
+        Consequently, in contrast to `SERIALIZABLE` transactions, only write-
+        write conflicts are detected in snapshot transactions. This isolation
+        level does not support read-only and partitioned DML transactions.
+        When `REPEATABLE_READ` is specified on a read-write transaction, the
+        locking semantics default to `OPTIMISTIC`.
+    """
+    ISOLATION_LEVEL_UNSPECIFIED = 0
+    SERIALIZABLE = 1
+    REPEATABLE_READ = 2
+
+  class ReadLockModeValueValuesEnum(_messages.Enum):
+    r"""The read lock mode used for the read-write transaction.
+
+    Values:
+      READ_LOCK_MODE_UNSPECIFIED: Default value. * If isolation level is
+        SERIALIZABLE, locking semantics default to `PESSIMISTIC`. * If
+        isolation level is REPEATABLE_READ, locking semantics default to
+        `OPTIMISTIC`. * See [Concurrency
+        control](https://cloud.google.com/spanner/docs/concurrency-control)
+        for more details.
+      PESSIMISTIC: Pessimistic lock mode. Lock acquisition behavior depends on
+        the isolation level in use. In SERIALIZABLE isolation, reads and
+        writes acquire necessary locks during transaction statement execution.
+        In REPEATABLE_READ isolation, reads that explicitly request to be
+        locked and writes acquire locks. See [Concurrency
+        control](https://cloud.google.com/spanner/docs/concurrency-control)
+        for details on the types of locks acquired at each transaction step.
+      OPTIMISTIC: Optimistic lock mode. Lock acquisition behavior depends on
+        the isolation level in use. In both SERIALIZABLE and REPEATABLE_READ
+        isolation, reads and writes do not acquire locks during transaction
+        statement execution. See [Concurrency
+        control](https://cloud.google.com/spanner/docs/concurrency-control)
+        for details on how the guarantees of each isolation level are provided
+        at commit time.
+    """
+    READ_LOCK_MODE_UNSPECIFIED = 0
+    PESSIMISTIC = 1
+    OPTIMISTIC = 2
+
   commitStats = _messages.MessageField('CommitStats', 1)
   commitTimestamp = _messages.StringField(2)
-  precommitToken = _messages.MessageField('MultiplexedSessionPrecommitToken', 3)
-  snapshotTimestamp = _messages.StringField(4)
+  isolationLevel = _messages.EnumField('IsolationLevelValueValuesEnum', 3)
+  precommitToken = _messages.MessageField('MultiplexedSessionPrecommitToken', 4)
+  readLockMode = _messages.EnumField('ReadLockModeValueValuesEnum', 5)
+  snapshotTimestamp = _messages.StringField(6)
 
 
 class CommitStats(_messages.Message):

@@ -1665,3 +1665,23 @@ def GetTagsMessage(args, tags_message, tags_arg_name='tags'):
           for key, value in sorted(six.iteritems(tags))
       ]
   )
+
+
+def AddTopicReplicationPolicyFlags(parser):
+  """Adds replication policy flags to the parser.
+
+  Args:
+    parser: The argparse parser.
+  """
+  help_text = (
+      'Whether to enable cross-region replication for the topic. '
+      'If enabled, messages published to the topic are replicated to a '
+      'second region.'
+  )
+  AddBooleanFlag(
+      parser=parser,
+      flag_name='enable-cross-region-replication',
+      action='store_true',
+      default=None,
+      help_text=help_text,
+  )

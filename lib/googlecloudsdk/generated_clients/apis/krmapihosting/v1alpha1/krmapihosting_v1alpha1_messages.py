@@ -339,16 +339,16 @@ class KrmApiHost(_messages.Message):
   Fields:
     bundlesConfig: Required. Configuration for the bundles that are enabled on
       the KrmApiHost.
-    clusterCidrBlock: The IP address range for the cluster pod IPs. Set to
-      blank to have a range chosen with the default size. Set to /netmask
-      (e.g. /14) to have a range chosen with a specific netmask. Set to a CIDR
-      notation (e.g. 10.96.0.0/14) from the RFC-1918 private networks (e.g.
-      10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16) to pick a specific range to
-      use.
-    clusterNamedRange: The name of the existing secondary range in the
-      cluster's subnetwork to use for pod IP addresses. Alternatively,
-      cluster_cidr_block can be used to automatically create a GKE-managed
-      one.
+    clusterCidrBlock: Deprecated: Use management_config instead. The IP
+      address range for the cluster pod IPs. Set to blank to have a range
+      chosen with the default size. Set to /netmask (e.g. /14) to have a range
+      chosen with a specific netmask. Set to a CIDR notation (e.g.
+      10.96.0.0/14) from the RFC-1918 private networks (e.g. 10.0.0.0/8,
+      172.16.0.0/12, 192.168.0.0/16) to pick a specific range to use.
+    clusterNamedRange: Deprecated: Use management_config instead. The name of
+      the existing secondary range in the cluster's subnetwork to use for pod
+      IP addresses. Alternatively, cluster_cidr_block can be used to
+      automatically create a GKE-managed one.
     gitBranch: The branch of the repository to sync from.
     gitEndpoint: The URL of the Git repository to use as the source of truth.
     gitPolicyDir: The path within the Git repository that represents the top
@@ -359,30 +359,34 @@ class KrmApiHost(_messages.Message):
     gkeResourceLink: Output only. KrmApiHost GCP self link used for
       identifying the underlying endpoint (GKE cluster currently).
     labels: Labels are used for additional information for a KrmApiHost.
-    manBlock: Master Authorized Network. Allows access to the k8s master from
-      this block.
+    manBlock: Deprecated: Use man_block in management_config instead. Master
+      Authorized Network. Allows access to the k8s master from this block.
     managementConfig: Configuration of the cluster management
-    masterIpv4CidrBlock: The /28 network that the masters will use.
-      Deprecated. Please use management_config instead.
+    masterIpv4CidrBlock: Deprecated: Use management_config instead. The /28
+      network that the masters will use.
     name: Output only. The name of this KrmApiHost resource in the format: 'pr
       ojects/{project_id}/locations/{location}/krmApiHosts/{krm_api_host_id}'.
-    network: Existing VPC Network to put the GKE cluster and nodes in.
-      Deprecated. Please use management_config instead.
-    servicesCidrBlock: The IP address range for the cluster service IPs. Set
-      to blank to have a range chosen with the default size. Set to /netmask
-      (e.g. /14) to have a range chosen with a specific netmask. Set to a CIDR
-      notation (e.g. 10.96.0.0/14) from the RFC-1918 private networks (e.g.
-      10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16) to pick a specific range to
-      use.
-    servicesNamedRange: The name of the existing secondary range in the
-      cluster's subnetwork to use for service ClusterIPs. Alternatively,
-      services_cidr_block can be used to automatically create a GKE-managed
-      one.
+    network: Deprecated: Use management_config instead. Existing VPC Network
+      to put the GKE cluster and nodes in.
+    satisfiesPzi: Output only. Whether the KrmApiHost satisfies the Platform
+      Zero Trust Infrastructure (PZI) compliance requirements.
+    satisfiesPzs: Output only. Whether the KrmApiHost satisfies the Platform
+      Zero Trust Service (PZS) compliance requirements.
+    servicesCidrBlock: Deprecated: Use management_config instead. The IP
+      address range for the cluster service IPs. Set to blank to have a range
+      chosen with the default size. Set to /netmask (e.g. /14) to have a range
+      chosen with a specific netmask. Set to a CIDR notation (e.g.
+      10.96.0.0/14) from the RFC-1918 private networks (e.g. 10.0.0.0/8,
+      172.16.0.0/12, 192.168.0.0/16) to pick a specific range to use.
+    servicesNamedRange: Deprecated: Use management_config instead. The name of
+      the existing secondary range in the cluster's subnetwork to use for
+      service ClusterIPs. Alternatively, services_cidr_block can be used to
+      automatically create a GKE-managed one.
     state: Output only. The current state of the internal state machine for
       the KrmApiHost.
-    subnet: Specifies the subnet that the interface will be part of. Network
-      key must be specified and the subnet must be a subnetwork of the
-      specified network.
+    subnet: Deprecated: Use subnet in management_config instead. Specifies the
+      subnet that the interface will be part of. Network key must be specified
+      and the subnet must be a subnetwork of the specified network.
     usePrivateEndpoint: Only allow access to the master's private endpoint IP.
   """
 
@@ -446,11 +450,13 @@ class KrmApiHost(_messages.Message):
   masterIpv4CidrBlock = _messages.StringField(12)
   name = _messages.StringField(13)
   network = _messages.StringField(14)
-  servicesCidrBlock = _messages.StringField(15)
-  servicesNamedRange = _messages.StringField(16)
-  state = _messages.EnumField('StateValueValuesEnum', 17)
-  subnet = _messages.StringField(18)
-  usePrivateEndpoint = _messages.BooleanField(19)
+  satisfiesPzi = _messages.BooleanField(15)
+  satisfiesPzs = _messages.BooleanField(16)
+  servicesCidrBlock = _messages.StringField(17)
+  servicesNamedRange = _messages.StringField(18)
+  state = _messages.EnumField('StateValueValuesEnum', 19)
+  subnet = _messages.StringField(20)
+  usePrivateEndpoint = _messages.BooleanField(21)
 
 
 class KrmapihostingProjectsLocationsGetRequest(_messages.Message):

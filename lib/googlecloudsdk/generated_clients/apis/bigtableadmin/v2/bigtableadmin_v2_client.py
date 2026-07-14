@@ -1091,7 +1091,7 @@ class BigtableadminV2(base_api.BaseApiClient):
         method_id='bigtableadmin.projects.instances.materializedViews.create',
         ordered_params=['parent'],
         path_params=['parent'],
-        query_params=['materializedViewId'],
+        query_params=['ignoreWarnings', 'materializedViewId'],
         relative_path='v2/{+parent}/materializedViews',
         request_field='materializedView',
         request_type_name='BigtableadminProjectsInstancesMaterializedViewsCreateRequest',

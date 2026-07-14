@@ -524,6 +524,8 @@ class Update(base.UpdateCommand):
                 )
             )
         )
+        if errors:
+          utils.RaiseToolException(errors)
 
     if args.IsSpecified('vm_count'):
       r_resize_request = _GetResizeRequest(args, reservation_ref, holder)

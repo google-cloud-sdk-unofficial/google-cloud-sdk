@@ -889,7 +889,7 @@ class BlueGreenDeployment(_messages.Message):
     state: Output only. The current state of the blue-green deployment.
     switchoverTargetInstance: Output only. Details about the primary target
       instance (the "Green" instance) that will be promoted during switchover.
-    targetConfig: Optional. Immutable. Optional on create, and immutable. The
+    requestedConfig: Optional. Immutable. Optional on create, and immutable. The
       configuration intended for the target instance(s) when the deployment
       was created.
   """
@@ -921,10 +921,10 @@ class BlueGreenDeployment(_messages.Message):
   errorDetail = _messages.StringField(4)
   name = _messages.StringField(5)
   pairedNodes = _messages.MessageField('SourceTargetPairedNode', 6, repeated=True)
-  sourceInstance = _messages.StringField(7)
-  state = _messages.EnumField('StateValueValuesEnum', 8)
-  switchoverTargetInstance = _messages.StringField(9)
-  targetConfig = _messages.MessageField('TargetConfig', 10)
+  requestedConfig = _messages.MessageField('RequestedConfig', 7)
+  sourceInstance = _messages.StringField(8)
+  state = _messages.EnumField('StateValueValuesEnum', 9)
+  switchoverTargetInstance = _messages.StringField(10)
 
 
 class CloneContext(_messages.Message):
@@ -5077,6 +5077,18 @@ class ReplicationCluster(_messages.Message):
   psaWriteEndpoint = _messages.StringField(3)
 
 
+class RequestedConfig(_messages.Message):
+  r"""Configuration specified by the user at creation time for the target
+  (Green) instance.
+
+  Fields:
+    databaseVersion: Optional. The target database major version for the
+      upgrade.
+  """
+
+  databaseVersion = _messages.StringField(1)
+
+
 class Reschedule(_messages.Message):
   r"""A Reschedule object.
 
@@ -7871,17 +7883,6 @@ class SyncFlags(_messages.Message):
   name = _messages.StringField(1)
   value = _messages.StringField(2)
 
-
-class TargetConfig(_messages.Message):
-  r"""Configuration specified by the user at creation time for the target
-  (Green) instance.
-
-  Fields:
-    databaseVersion: Optional. The target database major version for the
-      upgrade.
-  """
-
-  databaseVersion = _messages.StringField(1)
 
 
 class TargetMetric(_messages.Message):

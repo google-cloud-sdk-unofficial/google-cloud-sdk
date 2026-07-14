@@ -308,8 +308,11 @@ class Connector(_messages.Message):
       projects/{project}/locations/{location}/connectors/{connector}
     state: Optional. The state of the connector.
     updateTime: Output only. [Output only] Update time stamp
-    workloadIds: Optional. Input only. Workload identity (SPIFFE ID) of the
-      agent.
+    workloadIds: Optional. Input only. Workload identity in IAM principal://
+      format of the agent(s) that will use this connector. Example: `principal
+      ://agents.global.org-
+      ${ORG_ID}.system.id.goog/resources/aiplatform/projects/{PROJECT_ID}/loca
+      tions/{LOCATIONS}/reasoningEngines/{ID}`
   """
 
   class StateValueValuesEnum(_messages.Enum):

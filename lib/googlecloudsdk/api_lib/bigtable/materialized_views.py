@@ -67,6 +67,7 @@ def Create(
     materialized_view_ref: resources.Resource,
     query: str,
     deletion_protection: bool,
+    ignore_warnings: bool = False,
 ) -> bigtableadmin_v2_messages.MaterializedView:
   """Create a materialized view.
 
@@ -76,6 +77,8 @@ def Create(
     query: The query of the materialized view.
     deletion_protection: Whether the materialized view is protected from
       deletion.
+    ignore_warnings: Whether to ignore warnings when creating the materialized
+      view.
 
   Returns:
     Created materialized view resource object.
@@ -95,6 +98,10 @@ def Create(
       materializedViewId=materialized_view_ref.Name(),
       parent=instance_ref.RelativeName(),
   )
+  # only set ignore_warnings if it is set to True, since it is behind a
+  # visibility label.
+  if ignore_warnings:
+    msg.ignoreWarnings = ignore_warnings
   return client.projects_instances_materializedViews.Create(msg)
 
 

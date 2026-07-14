@@ -81,6 +81,7 @@ they will apply to the primary ingress container.
   group.AddArgument(flags.ArgsFlag())
   if release_track != base.ReleaseTrack.GA:
     group.AddArgument(flags.WorkdirFlag())
+    group.AddArgument(flags.SandboxLauncherFlag())
   group.AddArgument(flags.SecretsFlags())
   group.AddArgument(flags.DependsOnFlag())
   group.AddArgument(flags.AddVolumeMountFlag())

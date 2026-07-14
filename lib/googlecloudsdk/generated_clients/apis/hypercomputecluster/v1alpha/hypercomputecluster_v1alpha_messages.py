@@ -2076,6 +2076,8 @@ class ManagedInstanceGroup(_messages.Message):
       managed instance group.
     instanceTemplate: Output only. Instance template used to create instances
       in this group.
+    resourcePolicyConfig: Optional. Resource policy configuration for this
+      managed instance group.
     storageConfigs: Optional. How storage resources should be mounted on each
       instance in this managed instance group.
     targetSize: Optional. Target number of running instances for this managed
@@ -2084,8 +2086,9 @@ class ManagedInstanceGroup(_messages.Message):
 
   computeId = _messages.StringField(1)
   instanceTemplate = _messages.StringField(2)
-  storageConfigs = _messages.MessageField('StorageConfig', 3, repeated=True)
-  targetSize = _messages.IntegerField(4)
+  resourcePolicyConfig = _messages.MessageField('ResourcePolicyConfig', 3)
+  storageConfigs = _messages.MessageField('StorageConfig', 4, repeated=True)
+  targetSize = _messages.IntegerField(5)
 
 
 class Metrics(_messages.Message):
@@ -2949,6 +2952,11 @@ class ProfilerSession(_messages.Message):
     PythonTracerLevelValueValuesEnum: Optional. Python tracer level for the
       session. If the field is not set or unspecified, the default is
       `PYTHON_TRACER_LEVEL_DISABLED`.
+    StateValueValuesEnum: Output only. Profiler session state.
+
+  Messages:
+    TargetSessionsValue: Optional. Map of target session data for each target.
+      Key is the target name from `profiler_targets` field.
 
   Fields:
     createTime: Output only. The creation time of the session.
@@ -2959,6 +2967,8 @@ class ProfilerSession(_messages.Message):
       field is not set or unspecified, the default is
       `DEVICE_TRACER_LEVEL_ENABLED`.
     duration: Optional. Duration for the profiler session.
+    endTime: Output only. The maximum end time of the end time of the profiler
+      session on all the targets.
     etag: Optional. Etag for optimistic concurrency control.
     hostTracerLevel: Optional. Host tracer level for the session. If the field
       is not set or unspecified, the default is `HOST_TRACER_LEVEL_INFO`.
@@ -2973,8 +2983,14 @@ class ProfilerSession(_messages.Message):
     pythonTracerLevel: Optional. Python tracer level for the session. If the
       field is not set or unspecified, the default is
       `PYTHON_TRACER_LEVEL_DISABLED`.
+    startTime: Output only. The minimum start time of the start time of the
+      profiler session on all the targets.
+    state: Output only. Profiler session state.
+    status: Output only. Status of the profiler session
     storageFolderUri: Output only. The cloud storage path of the session.
       Example: `gs://my-bucket/my-run-directory/session-1`.
+    targetSessions: Optional. Map of target session data for each target. Key
+      is the target name from `profiler_targets` field.
   """
 
   class DeviceTracerLevelValueValuesEnum(_messages.Enum):
@@ -3037,18 +3053,65 @@ class ProfilerSession(_messages.Message):
     PYTHON_TRACER_LEVEL_DISABLED = 1
     PYTHON_TRACER_LEVEL_ENABLED = 2
 
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. Profiler session state.
+
+    Values:
+      STATE_UNSPECIFIED: Profiler session state is unspecified.
+      ACTIVE: Profiler session is active.
+      SUCCEEDED: Profiler session capture succeeded for all targets.
+      FAILED: Profiler session capture failed for 1 or more targets.
+      CANCELLED: Profiler session capture was cancelled.
+    """
+    STATE_UNSPECIFIED = 0
+    ACTIVE = 1
+    SUCCEEDED = 2
+    FAILED = 3
+    CANCELLED = 4
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class TargetSessionsValue(_messages.Message):
+    r"""Optional. Map of target session data for each target. Key is the
+    target name from `profiler_targets` field.
+
+    Messages:
+      AdditionalProperty: An additional property for a TargetSessionsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type TargetSessionsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a TargetSessionsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A TargetSession attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('TargetSession', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   createTime = _messages.StringField(1)
   dashboardUri = _messages.StringField(2)
   deviceTracerLevel = _messages.EnumField('DeviceTracerLevelValueValuesEnum', 3)
   duration = _messages.StringField(4)
-  etag = _messages.StringField(5)
-  hostTracerLevel = _messages.EnumField('HostTracerLevelValueValuesEnum', 6)
-  isTraceEnabled = _messages.BooleanField(7)
-  kind = _messages.EnumField('KindValueValuesEnum', 8)
-  name = _messages.StringField(9)
-  profilerTargets = _messages.StringField(10, repeated=True)
-  pythonTracerLevel = _messages.EnumField('PythonTracerLevelValueValuesEnum', 11)
-  storageFolderUri = _messages.StringField(12)
+  endTime = _messages.StringField(5)
+  etag = _messages.StringField(6)
+  hostTracerLevel = _messages.EnumField('HostTracerLevelValueValuesEnum', 7)
+  isTraceEnabled = _messages.BooleanField(8)
+  kind = _messages.EnumField('KindValueValuesEnum', 9)
+  name = _messages.StringField(10)
+  profilerTargets = _messages.StringField(11, repeated=True)
+  pythonTracerLevel = _messages.EnumField('PythonTracerLevelValueValuesEnum', 12)
+  startTime = _messages.StringField(13)
+  state = _messages.EnumField('StateValueValuesEnum', 14)
+  status = _messages.MessageField('Status', 15)
+  storageFolderUri = _messages.StringField(16)
+  targetSessions = _messages.MessageField('TargetSessionsValue', 17)
 
 
 class ProfilerTarget(_messages.Message):
@@ -3734,6 +3797,50 @@ class StorageResourceConfig(_messages.Message):
   newBucket = _messages.MessageField('NewBucketConfig', 4)
   newFilestore = _messages.MessageField('NewFilestoreConfig', 5)
   newLustre = _messages.MessageField('NewLustreConfig', 6)
+
+
+class TargetSession(_messages.Message):
+  r"""Represents a session of a single profiler session on a target.
+
+  Enums:
+    SessionPhaseValueValuesEnum: Optional. The phase of the profiler session
+      on the target.
+
+  Fields:
+    endTime: Optional. Actual end time for the profiler session on the target.
+    sessionPhase: Optional. The phase of the profiler session on the target.
+    startTime: Optional. Actual start time for the profiler session on the
+      target.
+    status: Optional. Error string in case of complete/partial failure on the
+      target.
+  """
+
+  class SessionPhaseValueValuesEnum(_messages.Enum):
+    r"""Optional. The phase of the profiler session on the target.
+
+    Values:
+      TARGET_SESSION_PHASE_UNSPECIFIED: Profiler session state is unspecified.
+      PENDING: Profiler session request received, but capture not started on
+        host.
+      ACTIVE: Profiler session is active.
+      SUCCEEDED: Profiler session capture succeeded for all targets.
+      FAILED: Profiler session capture failed for 1 or more targets.
+      CANCELLING: Cancel request received, but session cancellation is not
+        completed on host.
+      CANCELLED: Profiler session capture was cancelled.
+    """
+    TARGET_SESSION_PHASE_UNSPECIFIED = 0
+    PENDING = 1
+    ACTIVE = 2
+    SUCCEEDED = 3
+    FAILED = 4
+    CANCELLING = 5
+    CANCELLED = 6
+
+  endTime = _messages.StringField(1)
+  sessionPhase = _messages.EnumField('SessionPhaseValueValuesEnum', 2)
+  startTime = _messages.StringField(3)
+  status = _messages.MessageField('Status', 4)
 
 
 class TimeOfDay(_messages.Message):

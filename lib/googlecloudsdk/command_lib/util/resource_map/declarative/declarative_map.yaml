@@ -1601,22 +1601,6 @@ composer:
     - v1
     - v1alpha2
     - v1beta1
-composerflex:
-  projects:
-    supported_apis:
-    - v1alpha1
-  projects.locations:
-    supported_apis:
-    - v1alpha1
-  projects.locations.contexts:
-    supported_apis:
-    - v1alpha1
-  projects.locations.workflows:
-    supported_apis:
-    - v1alpha1
-  projects.locations.workflows.runs:
-    supported_apis:
-    - v1alpha1
 compute:
   acceleratorTypes:
     supported_apis:

@@ -667,6 +667,10 @@ class Bucket(_messages.Message):
             is N, this condition is satisfied when there are at least N
             versions (including the live version) newer than this version of
             the object.
+          sizeAboveBytes: Objects having a size greater than this value in
+            bytes will be matched.
+          sizeBelowBytes: Objects having a size less than this value in bytes
+            will be matched.
         """
 
         age = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -681,6 +685,8 @@ class Bucket(_messages.Message):
         matchesSuffix = _messages.StringField(10, repeated=True)
         noncurrentTimeBefore = extra_types.DateField(11)
         numNewerVersions = _messages.IntegerField(12, variant=_messages.Variant.INT32)
+        sizeAboveBytes = _messages.IntegerField(13)
+        sizeBelowBytes = _messages.IntegerField(14)
 
       action = _messages.MessageField('ActionValue', 1)
       condition = _messages.MessageField('ConditionValue', 2)

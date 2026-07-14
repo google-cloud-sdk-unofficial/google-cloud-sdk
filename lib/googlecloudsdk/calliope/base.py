@@ -575,7 +575,35 @@ class CommandHint(object):
     return json.dumps(hint_output)
 
 
-class HintsDescriptor(object):
+class _BaseSidecarDescriptor(object):
+  """A base descriptor that lazily loads the YAML sidecar file."""
+
+  def _LoadSidecarYAMLContent(self, owner):
+    """Loads the content of the YAML sidecar file if it exists."""
+    module_name = owner.__module__
+    resource_name = module_name.split('.')[-1] + '.yaml'
+    try:
+      return pkg_resources.GetResource(module_name, resource_name)
+    except FileNotFoundError:
+      return None
+
+  def _Parse(self, content):
+    """Parses the YAML content and returns it."""
+    if not content:
+      return []
+
+    # We don't catch yaml.YAMLParseError here because all sidecar files are
+    # discovered and validated against the schema at test time (see
+    # yaml_sidecar_validation_test.py). Malformed files will be caught there.
+    data = yaml.load(content)
+    if not data:
+      return []
+    if isinstance(data, dict):
+      return [data]
+    return data
+
+
+class HintsDescriptor(_BaseSidecarDescriptor):
   """A descriptor that lazily loads the YAML sidecar file and extracts hints.
 
   This descriptor handles the file I/O and parsing of the `.yaml` sidecar
@@ -611,29 +639,22 @@ class HintsDescriptor(object):
         return CommandHint(**item.get('hints', {}))
     return CommandHint()
 
-  def _LoadSidecarYAMLContent(self, owner):
-    """Loads the content of the YAML sidecar file if it exists."""
-    module_name = owner.__module__
-    resource_name = module_name.split('.')[-1] + '.yaml'
-    try:
-      return pkg_resources.GetResource(module_name, resource_name)
-    except FileNotFoundError:
+
+class GuidanceDescriptor(_BaseSidecarDescriptor):
+  """A descriptor that lazily loads the YAML sidecar file and extracts guidance."""
+
+  def __get__(self, instance, owner):
+    if owner is None:
       return None
 
-  def _Parse(self, content):
-    """Parses the YAML content and returns it."""
-    if not content:
-      return []
+    content = self._LoadSidecarYAMLContent(owner)
+    data = self._Parse(content)
+    track_name = owner.ReleaseTrack().name
 
-    # We don't catch yaml.YAMLParseError here because all sidecar files are
-    # discovered and validated against the schema at test time (see
-    # yaml_sidecar_validation_test.py). Malformed files will be caught there.
-    data = yaml.load(content)
-    if not data:
-      return []
-    if isinstance(data, dict):
-      return [data]
-    return data
+    for item in data:
+      if track_name in item.get('release_tracks', []):
+        return item.get('guidance', None)
+    return None
 
 
 class _Common(six.with_metaclass(abc.ABCMeta, object)):
@@ -836,6 +857,7 @@ class Command(six.with_metaclass(abc.ABCMeta, _Common)):
   IS_COMMAND = True
 
   hints = HintsDescriptor()
+  guidance = GuidanceDescriptor()
 
   def __init__(self, cli, context):
     super(Command, self).__init__(is_group=False)

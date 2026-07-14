@@ -2441,6 +2441,9 @@ class GitRemoteSettings(_messages.Message):
     effectiveDefaultBranch: Output only. The Git remote's effective default
       branch name. This is the default branch name of the Git remote if it is
       set, otherwise it is `main`.
+    gitRepositoryLink: Optional. Resource name for the GitRepositoryLink used
+      for machine credentials. Must be in the format
+      `projects/*/locations/*/connections/*/gitRepositoryLinks/*`
     sshAuthenticationConfig: Optional. Authentication fields for remote uris
       using SSH protocol.
     tokenStatus: Output only. Deprecated: The field does not contain any token
@@ -2472,9 +2475,10 @@ class GitRemoteSettings(_messages.Message):
   authenticationTokenSecretVersion = _messages.StringField(1)
   defaultBranch = _messages.StringField(2)
   effectiveDefaultBranch = _messages.StringField(3)
-  sshAuthenticationConfig = _messages.MessageField('SshAuthenticationConfig', 4)
-  tokenStatus = _messages.EnumField('TokenStatusValueValuesEnum', 5)
-  url = _messages.StringField(6)
+  gitRepositoryLink = _messages.StringField(4)
+  sshAuthenticationConfig = _messages.MessageField('SshAuthenticationConfig', 5)
+  tokenStatus = _messages.EnumField('TokenStatusValueValuesEnum', 6)
+  url = _messages.StringField(7)
 
 
 class IamPolicyOverrideView(_messages.Message):

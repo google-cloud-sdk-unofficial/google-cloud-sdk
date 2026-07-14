@@ -379,6 +379,52 @@ class VolumesClient(object):
     )
     return self.WaitForOperation(operation_ref)
 
+  def StartSplit(
+      self,
+      volume_ref,
+      async_,
+  ):
+    """Starts a clone volume split operation.
+
+    Args:
+      volume_ref: googlecloudsdk.core.resources.Resource, the parsed Volume
+        resource.
+      async_: bool, if False, wait for the operation to complete.
+
+    Returns:
+      An Operation if async_ is set to True, or the response of the
+      StartSplit operation if successful.
+    """
+    request = self.messages.NetappProjectsLocationsVolumesStartSplitRequest(
+        name=volume_ref.RelativeName(),
+        startSplitRequest=self.messages.StartSplitRequest(),
+    )
+    split_op = self.client.projects_locations_volumes.StartSplit(request)
+    if async_:
+      return split_op
+    operation_ref = resources.REGISTRY.ParseRelativeName(
+        split_op.name, collection=constants.OPERATIONS_COLLECTION
+    )
+    return self.WaitForOperation(operation_ref)
+
+  def GetSplitStatus(
+      self,
+      volume_ref,
+  ):
+    """Gets the split status of a clone volume.
+
+    Args:
+      volume_ref: googlecloudsdk.core.resources.Resource, the parsed Volume
+        resource.
+
+    Returns:
+      The SplitStatus response from SDE.
+    """
+    request = self.messages.NetappProjectsLocationsVolumesGetSplitStatusRequest(
+        name=volume_ref.RelativeName()
+    )
+    return self.client.projects_locations_volumes.GetSplitStatus(request)
+
 
 class VolumesAdapter(object):
   """Adapter for the Cloud NetApp Files API Volume resource."""

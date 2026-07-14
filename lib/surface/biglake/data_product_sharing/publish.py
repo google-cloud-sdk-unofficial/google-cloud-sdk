@@ -64,6 +64,14 @@ class PublishDataProduct(base.Command):
         help='The desired name of the Share as it will be published to',
         required=True,
     )
+    parser.add_argument(
+        '--sap-federated-identity',
+        help=('The resource name of the Workload Identity Federation (WIF) '
+              'provider resource representing the SAP federated identity. You '
+              'must manually grant this identity the necessary IAM permissions '
+              '(e.g., roles/biglake.viewer) on the underlying catalog.'),
+        required=True,
+    )
 
   def Run(self, args):
     client = apis.GetClientInstance('biglake', 'data_product_sharing_v1alpha')

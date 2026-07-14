@@ -289,6 +289,7 @@ class TopicsClient(object):
       ingestion_log_severity=None,
       message_transforms_file=None,
       tags=None,
+      enable_cross_region_replication=None,
   ):
     """Creates a Topic.
 
@@ -368,6 +369,8 @@ class TopicsClient(object):
       message_transforms_file (str): The file path to the JSON or YAML file
         containing the message transforms.
       tags (TagsValue): The tag Keys/Values to be bound to the topic.
+      enable_cross_region_replication (bool): Whether or not to enable cross
+        region replication.
 
     Returns:
       Topic: The created topic.
@@ -446,6 +449,19 @@ class TopicsClient(object):
 
     if tags:
       topic.tags = tags
+
+    if enable_cross_region_replication is not None:
+      strategy_enum = (
+          self.messages.ReplicationPolicy.ReplicationStrategyValueValuesEnum
+      )
+      strategy = (
+          strategy_enum.REGIONAL_SYNCHRONOUS
+          if enable_cross_region_replication
+          else strategy_enum.ZONAL_SYNCHRONOUS
+      )
+      topic.replicationPolicy = self.messages.ReplicationPolicy(
+          replicationStrategy=strategy
+      )
 
     return self._service.Create(topic)
 
@@ -716,6 +732,7 @@ class TopicsClient(object):
       ingestion_log_severity=None,
       message_transforms_file=None,
       clear_message_transforms=False,
+      enable_cross_region_replication=None,
   ):
     """Updates a Topic.
 
@@ -804,6 +821,8 @@ class TopicsClient(object):
         containing the message transforms.
       clear_message_transforms (bool): If set, clears all message transforms
         from the topic.
+      enable_cross_region_replication (bool): Whether or not to enable cross
+        region replication.
 
     Returns:
       Topic: The updated topic.
@@ -925,6 +944,22 @@ class TopicsClient(object):
           _TopicUpdateSetting(
               'messageTransforms', CLEAR_MESSAGE_TRANSFORMS_VALUE
           )
+      )
+
+    if enable_cross_region_replication is not None:
+      strategy_enum = (
+          self.messages.ReplicationPolicy.ReplicationStrategyValueValuesEnum
+      )
+      strategy = (
+          strategy_enum.REGIONAL_SYNCHRONOUS
+          if enable_cross_region_replication
+          else strategy_enum.ZONAL_SYNCHRONOUS
+      )
+      replication_policy = self.messages.ReplicationPolicy(
+          replicationStrategy=strategy
+      )
+      update_settings.append(
+          _TopicUpdateSetting('replicationPolicy', replication_policy)
       )
 
     topic = self.messages.Topic(name=topic_ref.RelativeName())

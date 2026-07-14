@@ -651,25 +651,45 @@ def _extract_unsupported_features_from_user_args(user_args, unsupported_fields):
 def _check_for_unsupported_s3_fields(user_request_args):
   """Raises error or logs warning if unsupported S3 field present."""
   user_resource_args = getattr(user_request_args, 'resource_args', None)
+
   # The default value of False would raise an error.
-  if user_resource_args and not getattr(
-      user_resource_args, 'retention_period_to_be_locked', None):
-    user_resource_args.retention_period_to_be_locked = None
-  error_fields_present = (
-      _extract_unsupported_features_from_user_args(user_request_args,
-                                                   S3_REQUEST_ERROR_FIELDS) +
-      _extract_unsupported_features_from_user_args(user_resource_args,
-                                                   S3_RESOURCE_ERROR_FIELDS))
+  error_fields_present = _extract_unsupported_features_from_user_args(
+      user_request_args, S3_REQUEST_ERROR_FIELDS
+  )
+
+  resource_error_fields = _extract_unsupported_features_from_user_args(
+      user_resource_args, S3_RESOURCE_ERROR_FIELDS
+  )
+
+  # The default value of False for retention_period_to_be_locked raises a false
+  # positive. We check and remove it from the error list instead of mutating the
+  # user_resource_args object, which prevents a dictionary-size-changed race
+  # condition in multithreaded operations.
+  if user_resource_args:
+    lock_val = getattr(
+        user_resource_args, 'retention_period_to_be_locked', None
+    )
+    if lock_val is not None and not lock_val:
+      lock_error_msg = S3_RESOURCE_ERROR_FIELDS['retention_period_to_be_locked']
+      if lock_error_msg in resource_error_fields:
+        resource_error_fields.remove(lock_error_msg)
+
+  error_fields_present.extend(resource_error_fields)
+
   if error_fields_present:
     raise errors.Error(
         'Features disallowed for S3: {}'.format(', '.join(error_fields_present))
     )
 
   warning_fields_present = _extract_unsupported_features_from_user_args(
-      user_resource_args, S3_RESOURCE_WARNING_FIELDS)
+      user_resource_args, S3_RESOURCE_WARNING_FIELDS
+  )
   if warning_fields_present:
-    log.warning('Some features do not have S3 support: {}'.format(
-        ', '.join(warning_fields_present)))
+    log.warning(
+        'Some features do not have S3 support: {}'.format(
+            ', '.join(warning_fields_present)
+        )
+    )
 
 
 def _get_request_config_resource_args(url,

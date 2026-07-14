@@ -41,6 +41,11 @@ class Credential(object):
     access_token: str, The current OAuth2 access token.
     token_expiry: str, The expiry time in UTC as an RFC3339 formatted string.
     id_token: str, The current OAuth2 identity token, if present.
+    regional_access_boundary: str, The current regional access boundary, if
+      present. This is a hex-encoded bitmap string (e.g. '0xA30') representing a
+      list of regions the credential is allowed to access.
+    regional_access_boundary_expiry: str, The expiry time of the regional access
+      boundary as an RFC3339 formatted string, if present.
   """
   _EXPIRY_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 
@@ -62,6 +67,13 @@ class Credential(object):
       id_token = getattr(cred, 'id_tokenb64', None)
 
     self.id_token = id_token
+    self.regional_access_boundary = getattr(
+        cred, 'regional_access_boundary', None
+    )
+    rab_expiry = getattr(cred, 'regional_access_boundary_expiry', None)
+    self.regional_access_boundary_expiry = (
+        rab_expiry.strftime(Credential._EXPIRY_FORMAT) if rab_expiry else None
+    )
 
 
 class Configuration(object):
