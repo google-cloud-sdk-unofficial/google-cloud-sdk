@@ -15,8 +15,10 @@
 
 """Implementation of create command for Feature Configs."""
 
+from googlecloudsdk.api_lib.storage import feature_config_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import flags
+from googlecloudsdk.core import properties
 
 
 @base.Hidden
@@ -55,7 +57,17 @@ class Create(base.Command):
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
-    del self, args  # Unused.
-    raise NotImplementedError(
-        'The feature-configs surface is not yet implemented.'
+    client = feature_config_api.FeatureConfigApi()
+    project = properties.VALUES.core.project.Get(required=True)
+    parent = f'projects/{project}/locations/global'
+
+    return client.create_feature_config(
+        parent=parent,
+        feature_config_id=args.CONFIG_ID,
+        description=args.description,
+        auto_annotate_models=args.auto_annotate_models,
+        include_locations=args.include_locations,
+        exclude_locations=args.exclude_locations,
+        include_bucket_id_regexes=args.include_bucket_id_regexes,
+        exclude_bucket_id_regexes=args.exclude_bucket_id_regexes,
     )

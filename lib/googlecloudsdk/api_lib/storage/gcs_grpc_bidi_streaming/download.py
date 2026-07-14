@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import binascii
 import io
+import queue
 from typing import Any, Callable, Tuple
 
 from googlecloudsdk.api_lib.storage import cloud_api
@@ -110,39 +111,41 @@ def _get_bidi_read_object_request(
 
 def _update_digesters(digesters, data, chunk_crc32c=None):
   """Updates digesters with data."""
-  for hash_algorithm, hash_object in digesters.items():
-    if (
-        isinstance(hash_object, fast_crc32c_util.DeferredCrc32c)
-        or hash_algorithm != hash_util.HashAlgorithm.CRC32C
-        or chunk_crc32c is None
-    ):
-      hash_object.update(data)
-    else:
-      digesters[hash_util.HashAlgorithm.CRC32C] = (
-          crc32c.get_crc32c_from_checksum(
-              crc32c.concat_checksums(
-                  int.from_bytes(hash_object.digest(), 'big'),
-                  chunk_crc32c,
-                  len(data),
-                  )
-              )
-          )
+  if digesters is None or chunk_crc32c is None:
+    return
+  if hash_util.HashAlgorithm.CRC32C not in digesters or isinstance(
+      digesters[hash_util.HashAlgorithm.CRC32C],
+      fast_crc32c_util.DeferredCrc32c,
+  ):
+    return
+
+  final_crc32c = crc32c.concat_checksums(
+      int.from_bytes(digesters[hash_util.HashAlgorithm.CRC32C].digest(), 'big'),
+      chunk_crc32c,
+      len(data),
+  )
+  if isinstance(
+      digesters[hash_util.HashAlgorithm.CRC32C],
+      fast_crc32c_util.OnTheFlyCrc32c,
+  ):
+    digesters[hash_util.HashAlgorithm.CRC32C] = fast_crc32c_util.OnTheFlyCrc32c(
+        final_crc32c
+    )
+    return
+  digesters[hash_util.HashAlgorithm.CRC32C] = crc32c.get_crc32c_from_checksum(
+      final_crc32c
+  )
 
 
 def _should_validate_chunk_integrity(digesters):
   """Returns true if chunk integrity should be validated."""
   if not digesters:
     return False
-  for hash_algorithm, hash_object in digesters.items():
-    # Perform chunk validation only when CRC32C is requested and the hash
-    # object is not a DeferredCrc32c.
-    # TODO: b/479490828 - Add support for DeferredCrc32c when partial
-    # checksumming is supported.
-    if (
-        hash_algorithm != hash_util.HashAlgorithm.CRC32C
-        or isinstance(hash_object, fast_crc32c_util.DeferredCrc32c)
-    ):
-      return False
+  if hash_util.HashAlgorithm.CRC32C not in digesters:
+    return False
+  hash_object = digesters[hash_util.HashAlgorithm.CRC32C]
+  if isinstance(hash_object, fast_crc32c_util.DeferredCrc32c):
+    return False
   return True
 
 
@@ -168,7 +171,9 @@ def _validate_chunk_integrity(crc32c_hash, data):
   """
   log.debug('Validating chunk integrity for CRC32C: %s', crc32c_hash)
   try:
-    hasher = crc32c.get_crc32c()
+    # Partial CRC32C calculation is done only if google_crc32c is present or if
+    # streaming download is used.
+    hasher = fast_crc32c_util.get_crc32c(is_streaming=True)
     hasher.update(data)
     calculated_crc32c = crc32c.get_checksum(hasher)
     if crc32c_hash != calculated_crc32c:
@@ -543,3 +548,127 @@ class BidiGrpcDownload(gcs_download.GcsDownload):
       return self.simple_download()
     else:
       return super(BidiGrpcDownload, self).run(retriable_in_flight=True)
+
+
+class OffsetSequencer:
+  """Sequences out-of-order chunks from a multi-range download stream.
+
+  Handles out-of-order chunks and yields contiguous blocks for the decoupled
+  writer. Note that the internal buffer is theoretically unbounded; it is the
+  responsibility of the client (e.g., via bounded network multiplexing)
+  to ensure peak memory is mathematically capped.
+  """
+
+  def __init__(self, start_offset: int):
+    self._next_expected_offset = start_offset
+    self._buffer = {}  # type: dict[int, bytes]
+
+  def add_chunk(self, offset: int, data: bytes):
+    """Caches a chunk of data at the given offset.
+
+    Args:
+      offset: The byte offset where this data starts.
+      data: The chunk's byte data.
+    """
+    if not data:
+      return
+
+    # Ignore chunks we've already processed (e.g., retried network ranges).
+    if offset < self._next_expected_offset:
+      overlap = self._next_expected_offset - offset
+      if overlap >= len(data):
+        return
+      data = data[overlap:]
+      offset = self._next_expected_offset
+
+    self._buffer[offset] = data
+
+  @property
+  def next_expected_offset(self) -> int:
+    """Returns the next contiguous byte offset expected."""
+    return self._next_expected_offset
+
+  def clear(self):
+    """Clears the internal cache of out-of-order chunks.
+
+    This must be called when the GRPC stream drops and is retried. It prevents
+    stale chunks from a previous dead stream from causing complex overlap
+    corruptions or memory leaks if the new stream uses different chunk
+    boundaries.
+    """
+    self._buffer.clear()
+
+  def yield_sequential_chunks(self):
+    """Yields all cached chunks that form a contiguous sequence.
+
+    Yields:
+      bytes: Contiguous chunks of data.
+    """
+    while self._next_expected_offset in self._buffer:
+      data = self._buffer.pop(self._next_expected_offset)
+      self._next_expected_offset += len(data)
+      yield data
+
+
+class AsyncDecoupledWriter:
+  """A decoupled thread for writing downloaded chunks to disk.
+
+  A consumer thread that pulls from a bounded queue and commits to disk
+  sequentially, avoiding blocking the network ingestion loop.
+  """
+
+  def __init__(self, target_stream: io.IOBase):
+    self._target_stream = target_stream
+    self._queue = queue.Queue(maxsize=2)  # Default max queue size
+    self._writer_thread = None
+
+  def start(self):
+    pass
+
+  def stop(self):
+    pass
+
+
+def bidi_download_object_optimized(
+    gapic_client,
+    cloud_resource,
+    download_stream,
+    digesters,
+    progress_callback,
+    start_byte,
+    end_byte,
+    download_strategy,
+    decryption_key,
+    redirection_handler,
+):
+  """Optimized Bidi download using Multi-Range Request and Decoupled Writer.
+
+  Currently a stub that falls back to the original bidi_download_object.
+
+  Args:
+    gapic_client: The GAPIC API client to interact with GCS using gRPC.
+    cloud_resource: See cloud_api.CloudApi.download_object.
+    download_stream: Stream to send the object data to.
+    digesters: See cloud_api.CloudApi.download_object.
+    progress_callback: See cloud_api.CloudApi.download_object.
+    start_byte: Starting point for download.
+    end_byte: Ending byte number, inclusive, for download.
+    download_strategy: Download strategy used to perform the download.
+    decryption_key: The decryption key to be used to download the object.
+    redirection_handler: The redirection handler for token errors.
+
+  Returns:
+    None
+  """
+  return bidi_download_object(
+      gapic_client,
+      cloud_resource,
+      download_stream,
+      digesters,
+      progress_callback,
+      start_byte,
+      end_byte,
+      download_strategy,
+      decryption_key,
+      redirection_handler,
+  )

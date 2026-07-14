@@ -151,6 +151,12 @@ class BiglakeIcebergV1RestcatalogExtensionsProjectsCatalogsListRequest(_messages
     ViewValueValuesEnum: Optional. The view of the catalog to return.
 
   Fields:
+    filter: Optional. The filter expression. The only parameter currently
+      supported is filtering based on the `IcebergCatalog.catalog_type` field.
+      Examples: * `catalog_type = CATALOG_TYPE_BIGLAKE` * `catalog_type !=
+      CATALOG_TYPE_GCS_BUCKET` * `catalog_type = CATALOG_TYPE_BIGLAKE OR
+      catalog_type = CATALOG_TYPE_GCS_BUCKET` * `NOT catalog_type =
+      CATALOG_TYPE_GCS_BUCKET`
     page_size: Optional. The maximum number of catalogs to return. The service
       may return fewer than this value.
     page_token: Optional. The page token, received from a previous
@@ -173,10 +179,11 @@ class BiglakeIcebergV1RestcatalogExtensionsProjectsCatalogsListRequest(_messages
     CATALOG_VIEW_BASIC = 1
     CATALOG_VIEW_FULL = 2
 
-  page_size = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  page_token = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
-  view = _messages.EnumField('ViewValueValuesEnum', 4)
+  filter = _messages.StringField(1)
+  page_size = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  page_token = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 5)
 
 
 class BiglakeIcebergV1RestcatalogExtensionsProjectsCatalogsPatchRequest(_messages.Message):
@@ -799,7 +806,8 @@ class FederatedCatalogOptions(_messages.Message):
       ons/{version_id}`. The project ID must match the catalog's project and
       location must match the catalog's location. If the version is not
       specified, the latest version will be used. This field is not used when
-      `service_principal_application_id` is set.
+      google.cloud.biglake.v1main.IcebergCatalog.FederatedCatalogOptions.Unity
+      CatalogInfo.service_principal_application_id is set.
     service_directory_name: Optional. The service directory resource name for
       routing traffic over a private network connection through Cross-Cloud
       Interconnect, in the format `projects/{project_id}/locations/{location_i
@@ -916,10 +924,6 @@ class IcebergCatalog(_messages.Message):
       catalog.
 
   Fields:
-    additional_locations: Optional. Additional Google Cloud Storage buckets
-      and locations (e.g., `gs://my-other-bucket/...`) that are permitted for
-      use by resources within a catalog. This field is currently only used for
-      BigLake catalogs.
     biglake_service_account: Output only. The service account used for
       credential vending, output only. Might be empty if Credential vending
       was never enabled for the catalog. For federated catalogs, the service
@@ -1002,20 +1006,19 @@ class IcebergCatalog(_messages.Message):
     CREDENTIAL_MODE_END_USER = 1
     CREDENTIAL_MODE_VENDED_CREDENTIALS = 2
 
-  additional_locations = _messages.StringField(1, repeated=True)
-  biglake_service_account = _messages.StringField(2)
-  biglake_service_account_id = _messages.StringField(3)
-  catalog_type = _messages.EnumField('CatalogTypeValueValuesEnum', 4)
-  create_time = _messages.StringField(5)
-  credential_mode = _messages.EnumField('CredentialModeValueValuesEnum', 6)
-  default_location = _messages.StringField(7)
-  description = _messages.StringField(8)
-  federated_catalog_options = _messages.MessageField('FederatedCatalogOptions', 9)
-  name = _messages.StringField(10)
-  replicas = _messages.MessageField('Replica', 11, repeated=True)
-  restricted_locations_config = _messages.MessageField('RestrictedLocationsConfig', 12)
-  storage_regions = _messages.StringField(13, repeated=True)
-  update_time = _messages.StringField(14)
+  biglake_service_account = _messages.StringField(1)
+  biglake_service_account_id = _messages.StringField(2)
+  catalog_type = _messages.EnumField('CatalogTypeValueValuesEnum', 3)
+  create_time = _messages.StringField(4)
+  credential_mode = _messages.EnumField('CredentialModeValueValuesEnum', 5)
+  default_location = _messages.StringField(6)
+  description = _messages.StringField(7)
+  federated_catalog_options = _messages.MessageField('FederatedCatalogOptions', 8)
+  name = _messages.StringField(9)
+  replicas = _messages.MessageField('Replica', 10, repeated=True)
+  restricted_locations_config = _messages.MessageField('RestrictedLocationsConfig', 11)
+  storage_regions = _messages.StringField(12, repeated=True)
+  update_time = _messages.StringField(13)
 
 
 class IcebergCatalogConfig(_messages.Message):
@@ -1674,8 +1677,7 @@ class UnityCatalogInfo(_messages.Message):
       instance name is 1.1.gcp.databricks.com.
     service_principal_application_id: Optional. The application ID of the
       Databricks service principal that will be used to access the Unity
-      Catalog in the OIDC authentication flow. With OIDC, the secret_name
-      field is not used.
+      Catalog in the OIDC authentication flow.
   """
 
   catalog_name = _messages.StringField(1)
@@ -1741,8 +1743,6 @@ encoding.AddCustomJsonFieldMapping(
     GlueCatalogInfo, 'aws_region', 'aws-region')
 encoding.AddCustomJsonFieldMapping(
     GlueCatalogInfo, 'aws_role_arn', 'aws-role-arn')
-encoding.AddCustomJsonFieldMapping(
-    IcebergCatalog, 'additional_locations', 'additional-locations')
 encoding.AddCustomJsonFieldMapping(
     IcebergCatalog, 'biglake_service_account', 'biglake-service-account')
 encoding.AddCustomJsonFieldMapping(

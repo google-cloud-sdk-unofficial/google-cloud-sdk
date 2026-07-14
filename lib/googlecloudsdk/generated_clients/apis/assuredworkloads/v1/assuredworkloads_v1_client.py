@@ -38,12 +38,19 @@ class AssuredworkloadsV1(base_api.BaseApiClient):
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
     self.assuredworkloads = self.AssuredworkloadsService(self)
+    self.folders_locations_dbFindingSummaries = self.FoldersLocationsDbFindingSummariesService(self)
+    self.folders_locations = self.FoldersLocationsService(self)
+    self.folders = self.FoldersService(self)
+    self.organizations_locations_dbFindingSummaries = self.OrganizationsLocationsDbFindingSummariesService(self)
     self.organizations_locations_operations = self.OrganizationsLocationsOperationsService(self)
     self.organizations_locations_workloads_updates = self.OrganizationsLocationsWorkloadsUpdatesService(self)
     self.organizations_locations_workloads_violations = self.OrganizationsLocationsWorkloadsViolationsService(self)
     self.organizations_locations_workloads = self.OrganizationsLocationsWorkloadsService(self)
     self.organizations_locations = self.OrganizationsLocationsService(self)
     self.organizations = self.OrganizationsService(self)
+    self.projects_locations_dbFindingSummaries = self.ProjectsLocationsDbFindingSummariesService(self)
+    self.projects_locations = self.ProjectsLocationsService(self)
+    self.projects = self.ProjectsService(self)
 
   class AssuredworkloadsService(base_api.BaseApiService):
     """Service class for the assuredworkloads resource."""
@@ -104,6 +111,100 @@ class AssuredworkloadsV1(base_api.BaseApiClient):
         request_field='<request>',
         request_type_name='GoogleCloudAssuredworkloadsV1RevertArchivedResourceEventsRequest',
         response_type_name='GoogleCloudAssuredworkloadsV1RevertArchivedResourceEventsResponse',
+        supports_download=False,
+    )
+
+  class FoldersLocationsDbFindingSummariesService(base_api.BaseApiService):
+    """Service class for the folders_locations_dbFindingSummaries resource."""
+
+    _NAME = 'folders_locations_dbFindingSummaries'
+
+    def __init__(self, client):
+      super(AssuredworkloadsV1.FoldersLocationsDbFindingSummariesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def List(self, request, global_params=None):
+      r"""Lists the finding summary by category for a given scope.
+
+      Args:
+        request: (AssuredworkloadsFoldersLocationsDbFindingSummariesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAssuredworkloadsV1ListDbFindingSummariesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/folders/{foldersId}/locations/{locationsId}/dbFindingSummaries',
+        http_method='GET',
+        method_id='assuredworkloads.folders.locations.dbFindingSummaries.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/dbFindingSummaries',
+        request_field='',
+        request_type_name='AssuredworkloadsFoldersLocationsDbFindingSummariesListRequest',
+        response_type_name='GoogleCloudAssuredworkloadsV1ListDbFindingSummariesResponse',
+        supports_download=False,
+    )
+
+  class FoldersLocationsService(base_api.BaseApiService):
+    """Service class for the folders_locations resource."""
+
+    _NAME = 'folders_locations'
+
+    def __init__(self, client):
+      super(AssuredworkloadsV1.FoldersLocationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class FoldersService(base_api.BaseApiService):
+    """Service class for the folders resource."""
+
+    _NAME = 'folders'
+
+    def __init__(self, client):
+      super(AssuredworkloadsV1.FoldersService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class OrganizationsLocationsDbFindingSummariesService(base_api.BaseApiService):
+    """Service class for the organizations_locations_dbFindingSummaries resource."""
+
+    _NAME = 'organizations_locations_dbFindingSummaries'
+
+    def __init__(self, client):
+      super(AssuredworkloadsV1.OrganizationsLocationsDbFindingSummariesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def List(self, request, global_params=None):
+      r"""Lists the finding summary by category for a given scope.
+
+      Args:
+        request: (AssuredworkloadsOrganizationsLocationsDbFindingSummariesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAssuredworkloadsV1ListDbFindingSummariesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/organizations/{organizationsId}/locations/{locationsId}/dbFindingSummaries',
+        http_method='GET',
+        method_id='assuredworkloads.organizations.locations.dbFindingSummaries.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/dbFindingSummaries',
+        request_field='',
+        request_type_name='AssuredworkloadsOrganizationsLocationsDbFindingSummariesListRequest',
+        response_type_name='GoogleCloudAssuredworkloadsV1ListDbFindingSummariesResponse',
         supports_download=False,
     )
 
@@ -650,5 +751,62 @@ class AssuredworkloadsV1(base_api.BaseApiClient):
 
     def __init__(self, client):
       super(AssuredworkloadsV1.OrganizationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class ProjectsLocationsDbFindingSummariesService(base_api.BaseApiService):
+    """Service class for the projects_locations_dbFindingSummaries resource."""
+
+    _NAME = 'projects_locations_dbFindingSummaries'
+
+    def __init__(self, client):
+      super(AssuredworkloadsV1.ProjectsLocationsDbFindingSummariesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def List(self, request, global_params=None):
+      r"""Lists the finding summary by category for a given scope.
+
+      Args:
+        request: (AssuredworkloadsProjectsLocationsDbFindingSummariesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAssuredworkloadsV1ListDbFindingSummariesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/dbFindingSummaries',
+        http_method='GET',
+        method_id='assuredworkloads.projects.locations.dbFindingSummaries.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/dbFindingSummaries',
+        request_field='',
+        request_type_name='AssuredworkloadsProjectsLocationsDbFindingSummariesListRequest',
+        response_type_name='GoogleCloudAssuredworkloadsV1ListDbFindingSummariesResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsService(base_api.BaseApiService):
+    """Service class for the projects_locations resource."""
+
+    _NAME = 'projects_locations'
+
+    def __init__(self, client):
+      super(AssuredworkloadsV1.ProjectsLocationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class ProjectsService(base_api.BaseApiService):
+    """Service class for the projects resource."""
+
+    _NAME = 'projects'
+
+    def __init__(self, client):
+      super(AssuredworkloadsV1.ProjectsService, self).__init__(client)
       self._upload_configs = {
           }

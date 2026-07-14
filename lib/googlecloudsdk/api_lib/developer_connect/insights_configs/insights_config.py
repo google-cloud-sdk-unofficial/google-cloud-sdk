@@ -16,7 +16,7 @@
 """Common utility functions for Developer Connect Insights Configs."""
 
 import datetime
-from typing import Any, Dict, List, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
@@ -718,49 +718,98 @@ class InsightsConfigClient(object):
 
   def update(
       self,
-      insight_config_ref,
-      discovery,
-      build_project,
-      artifact_uri,
-  ):
+      insight_config_ref: resources.Resource,
+      *,
+      discovery: bool,
+      build_project: Optional[str],
+      artifact_uri: Optional[str],
+      app_hub: Optional[str],
+      target_projects: Optional[List[str]],
+  ) -> get_messages_module().Operation:
     """Updates the insight config."""
-    if artifact_uri and build_project:
-      old_insights_config = self.handle_artifact_configs(
-          insight_config_ref, artifact_uri, build_project
-      )
-    else:
-      old_insights_config = self.get_existing_insights_config(
-          insight_config_ref
-      )
+    old_insights_config = self.get_existing_insights_config(
+        insight_config_ref
+    )
 
-    if not name.is_management_project(
-        name.extract_project(old_insights_config.appHubApplication)
+    # Validate before granting IAM permissions.
+    if app_hub and (
+        old_insights_config.appHubApplication or old_insights_config.projects
     ):
-      dependent_projects = self.get_dependent_projects(old_insights_config)
-      self.init_service_account(
-          insight_config_ref.projectsId,
-          dependent_projects,
-          management_project=False,
+      raise exceptions.Error(
+          'Cannot update App Hub application because a runtime context'
+          ' is already set for this Insight Config.'
       )
-    else:
-      # Management project, get permissions on the folder.
-      folder_number = projects_api.Get(
-          projects_util.ParseProject(
-              name.extract_project(old_insights_config.appHubApplication)
-          )
-      ).parent.id
-      dependent_folder = [folder_number]
-      self.init_service_account(
-          insight_config_ref.projectsId,
-          dependent_folder,
-          management_project=True,
+    if target_projects and (
+        old_insights_config.appHubApplication or old_insights_config.projects
+    ):
+      raise exceptions.Error(
+          'Cannot update target projects because a runtime context'
+          ' is already set for this Insight Config.'
       )
 
-    new_insights_config = self.insights_config_message_type(old_insights_config)
+    # Start with a copy of the old config to preserve existing fields.
+    new_insights_config = self.messages.InsightsConfig(
+        name=old_insights_config.name,
+        appHubApplication=old_insights_config.appHubApplication,
+        projects=old_insights_config.projects,
+        artifactConfigs=old_insights_config.artifactConfigs,
+        sourceConfigs=old_insights_config.sourceConfigs,
+        runtimeConfigs=old_insights_config.runtimeConfigs,
+        state=old_insights_config.state,
+    )
+
+    # Handle artifact config updates.
+    if artifact_uri and build_project:
+      self._update_artifact_config(
+          new_insights_config, artifact_uri, build_project
+      )
+
+    # Handle context updates.
+    if app_hub:
+      app_hub_application = name.parse_app_hub_application_uri(app_hub)
+      new_insights_config.appHubApplication = (
+          app_hub_application.resource_name()
+      )
+      new_insights_config.projects = None
+      discovery = True  # Any context addition requires discovery
+    elif target_projects:
+      projects = name.parse_target_projects(target_projects)
+      new_insights_config.projects = self.messages.Projects(projectIds=projects)
+      new_insights_config.appHubApplication = None
+      discovery = True
+
     if discovery:
       new_insights_config.state = (
           self.messages.InsightsConfig.StateValueValuesEnum.PENDING
       )
+    # IAM Permission Handling
+    dependent_projects = set(self.get_dependent_projects(new_insights_config))
+
+    effective_app_hub = new_insights_config.appHubApplication
+    effective_app_hub_project = (
+        name.extract_project(effective_app_hub) if effective_app_hub else None
+    )
+
+    if (
+        effective_app_hub
+        and effective_app_hub_project
+        and name.is_management_project(effective_app_hub_project)
+    ):
+      folder_number = projects_api.Get(
+          projects_util.ParseProject(effective_app_hub_project)
+      ).parent.id
+      self.init_service_account(
+          insight_config_ref.projectsId,
+          [folder_number],
+          management_project=True,
+      )
+    elif dependent_projects:
+      self.init_service_account(
+          insight_config_ref.projectsId,
+          sorted(dependent_projects),
+          management_project=False,
+      )
+
     update_request = self.messages.DeveloperconnectProjectsLocationsInsightsConfigsPatchRequest(
         insightsConfig=new_insights_config,
         name=insight_config_ref.RelativeName(),
@@ -769,8 +818,10 @@ class InsightsConfigClient(object):
         request=update_request
     )
 
-  def handle_artifact_configs(self, insights_ref, artifact_uri, build_project):
-    """Handles the artifact config."""
+  def _update_artifact_config(
+      self, insights_config, artifact_uri, build_project
+  ):
+    """Updates or adds an artifact config to the insights_config message."""
     artifact_project = name.validate_artifact_uri(artifact_uri)
     if not artifact_project:
       raise exceptions.Error(
@@ -797,33 +848,33 @@ class InsightsConfigClient(object):
           .format(build_project, e)
       )
 
-    ic = self.get_existing_insights_config(insights_ref)
-    for index, artifact_config in enumerate(ic.artifactConfigs):
-      if artifact_config.uri == artifact_uri:
-        updated_artifact = self.messages.ArtifactConfig(
-            uri=artifact_uri,
-            googleArtifactAnalysis=self.messages.GoogleArtifactAnalysis(
-                projectId=build_project
-            ),
-        )
-        ic.artifactConfigs[index] = updated_artifact
-        return ic
-    # Add a new artifact config since it doesn't exist.
-    ic.artifactConfigs.append(
-        self.messages.ArtifactConfig(
-            uri=artifact_uri,
-            googleArtifactAnalysis=self.messages.GoogleArtifactAnalysis(
-                projectId=build_project
-            ),
-        )
+    updated_artifact = self.messages.ArtifactConfig(
+        uri=artifact_uri,
+        googleArtifactAnalysis=self.messages.GoogleArtifactAnalysis(
+            projectId=build_project
+        ),
     )
-    return ic
+
+    found = False
+    if insights_config.artifactConfigs:
+      for index, artifact_config in enumerate(insights_config.artifactConfigs):
+        if artifact_config.uri == artifact_uri:
+          insights_config.artifactConfigs[index] = updated_artifact
+          found = True
+          break
+    if not found:
+      # Add a new artifact config since it doesn't exist.
+      if insights_config.artifactConfigs is None:
+        insights_config.artifactConfigs = []
+      insights_config.artifactConfigs.append(updated_artifact)
 
   def insights_config_message_type(self, current_insights_config):
     """Creates a new insights config message type."""
     return self.messages.InsightsConfig(
         state=current_insights_config.state,
         artifactConfigs=current_insights_config.artifactConfigs,
+        runtimeConfigs=current_insights_config.runtimeConfigs,
+        sourceConfigs=current_insights_config.sourceConfigs,
     )
 
   def get_existing_insights_config(self, insight_config_ref):
@@ -841,10 +892,21 @@ class InsightsConfigClient(object):
           f' [{insight_config_ref.locationsId}].'
       )
 
-  def get_dependent_projects(self, insights_config):
+  def get_dependent_projects(
+      self, insights_config: get_messages_module().InsightsConfig
+  ) -> List[str]:
     """Gets the P4SA projects for the insight config."""
     projects = set()
-    projects.add(name.extract_project(insights_config.appHubApplication))
+    app_hub_project = (
+        name.extract_project(insights_config.appHubApplication)
+        if insights_config.appHubApplication
+        else None
+    )
+    if app_hub_project:
+      projects.add(app_hub_project)
+    elif insights_config.projects and insights_config.projects.projectIds:
+      projects.update(insights_config.projects.projectIds)
+
     for artifact_config in insights_config.artifactConfigs:
       if artifact_config.uri:
         artifact_uri = name.validate_artifact_uri(artifact_config.uri)
@@ -855,11 +917,12 @@ class InsightsConfigClient(object):
           and artifact_config.googleArtifactAnalysis.projectId
       ):
         projects.add(artifact_config.googleArtifactAnalysis.projectId)
+
     for runtime_config in insights_config.runtimeConfigs:
       if runtime_config.uri:
         projects.add(name.extract_project(runtime_config.uri))
     # Sort projects for deterministic behavior.
-    return sorted(list(projects))
+    return sorted(projects)
 
   def init_service_account(
       self, p4sa_project, dependent_resources, management_project
@@ -1006,7 +1069,7 @@ class InsightsConfigClient(object):
   def get_operation_ref(self, operation):
     """Converts an operation to a resource that can be used with `waiter.WaitFor`."""
     return self._resource_parser.ParseRelativeName(
-        operation.name, 'securesourcemanager.projects.locations.operations')
+        operation.name, 'developerconnect.projects.locations.operations')
 
   def wait_for_operation(
       self,

@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, GA]
+  hints:
+    read_only: true
   help_text:
     brief: Describe a Cloud Security Command Center (SCC) IaC Validation Report.
     description: |

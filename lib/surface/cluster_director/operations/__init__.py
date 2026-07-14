@@ -28,3 +28,10 @@ class OperationsAlpha(extensions.OperationsAlpha):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class OperationsBeta(extensions.OperationsBeta):
   """Manage Operation resources."""
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class OperationsGa(extensions.OperationsGa):
+  """Manage Operation resources."""
+

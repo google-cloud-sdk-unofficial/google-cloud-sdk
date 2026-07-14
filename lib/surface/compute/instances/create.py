@@ -127,6 +127,7 @@ def _CommonArgs(
     support_dns64_eligible=False,
     support_nat64_eligible=False,
     support_vsock_mode=False,
+    support_standard_tier=False,
 ):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
@@ -205,7 +206,9 @@ def _CommonArgs(
   if support_numa_node_count:
     instances_flags.AddNumaNodeCountArgs(parser)
   instances_flags.AddStackTypeArgs(parser, support_ipv6_only=support_ipv6_only)
-  instances_flags.AddIpv6NetworkTierArgs(parser)
+  instances_flags.AddIpv6NetworkTierArgs(
+      parser, support_standard_tier=support_standard_tier
+  )
   instances_flags.AddNetworkPerformanceConfigsArgs(parser)
   instances_flags.AddInstanceTerminationActionVmArgs(parser)
   instances_flags.AddIPv6AddressArgs(parser)
@@ -1076,6 +1079,7 @@ class CreateAlpha(CreateBeta):
         support_dns64_eligible=cls._support_dns64_eligible,
         support_nat64_eligible=cls._support_nat64_eligible,
         support_vsock_mode=cls._support_vsock_mode,
+        support_standard_tier=True,
     )
 
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (

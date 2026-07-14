@@ -32,17 +32,18 @@ $ {command} my-rollout
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Describe a fleet rollout."""
 
-  _release_track = base.ReleaseTrack.BETA
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @classmethod
   def Args(cls, parser: parser_arguments.ArgumentInterceptor) -> None:
-    flags = rollout_flags.RolloutFlags(parser, cls._release_track)
+    flags = rollout_flags.RolloutFlags(parser, cls.ReleaseTrack())
     flags.AddRolloutResourceArg()
     resource_printer.RegisterFormatter(
         rollout_printer.ROLLOUT_PRINTER_FORMAT,
@@ -56,10 +57,3 @@ class Describe(base.DescribeCommand):
         name=util.RolloutName(args)
     )
     return fleet_client.DescribeRollout(req)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(Describe):
-  """Describe a fleet rollout."""
-
-  _release_track = base.ReleaseTrack.ALPHA

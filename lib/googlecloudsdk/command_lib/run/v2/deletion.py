@@ -59,8 +59,11 @@ class DeletionPoller(waiter.OperationPoller):
     return obj
 
 
-def Delete(ref, getter, deleter, async_):
+def Delete(ref, getter, deleter, async_, dry_run=False):
   """Deletes a resource for a surface, including a pretty progress tracker."""
+  if dry_run:
+    deleter(ref, dry_run=True)
+    return
   if async_:
     deleter(ref)
     return

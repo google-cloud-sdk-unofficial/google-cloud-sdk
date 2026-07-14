@@ -37,6 +37,7 @@ class ComputeAlpha(base_api.BaseApiClient):
         default_global_params=default_global_params,
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
+    self.acceleratorPodControllers = self.AcceleratorPodControllersService(self)
     self.acceleratorTypes = self.AcceleratorTypesService(self)
     self.addresses = self.AddressesService(self)
     self.advice = self.AdviceService(self)
@@ -188,6 +189,146 @@ class ComputeAlpha(base_api.BaseApiClient):
     self.zoneQueuedResources = self.ZoneQueuedResourcesService(self)
     self.zoneVmExtensionPolicies = self.ZoneVmExtensionPoliciesService(self)
     self.zones = self.ZonesService(self)
+
+  class AcceleratorPodControllersService(base_api.BaseApiService):
+    """Service class for the acceleratorPodControllers resource."""
+
+    _NAME = 'acceleratorPodControllers'
+
+    def __init__(self, client):
+      super(ComputeAlpha.AcceleratorPodControllersService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes the specified AcceleratorPodController resource.
+
+      Args:
+        request: (ComputeAcceleratorPodControllersDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='DELETE',
+        method_id='compute.acceleratorPodControllers.delete',
+        ordered_params=['project', 'zone', 'resourceId'],
+        path_params=['project', 'resourceId', 'zone'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/zones/{zone}/acceleratorPodControllers/{resourceId}',
+        request_field='',
+        request_type_name='ComputeAcceleratorPodControllersDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets the specified AcceleratorPodController resource.
+
+      Args:
+        request: (ComputeAcceleratorPodControllersGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AcceleratorPodController) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.acceleratorPodControllers.get',
+        ordered_params=['project', 'zone', 'resourceId'],
+        path_params=['project', 'resourceId', 'zone'],
+        query_params=[],
+        relative_path='projects/{project}/zones/{zone}/acceleratorPodControllers/{resourceId}',
+        request_field='',
+        request_type_name='ComputeAcceleratorPodControllersGetRequest',
+        response_type_name='AcceleratorPodController',
+        supports_download=False,
+    )
+
+    def Insert(self, request, global_params=None):
+      r"""Inserts a new AcceleratorPodController resource.
+
+      Args:
+        request: (ComputeAcceleratorPodControllersInsertRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Insert')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Insert.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.acceleratorPodControllers.insert',
+        ordered_params=['project', 'zone'],
+        path_params=['project', 'zone'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/zones/{zone}/acceleratorPodControllers',
+        request_field='acceleratorPodController',
+        request_type_name='ComputeAcceleratorPodControllersInsertRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists the AcceleratorPodController resources in the specified zone.
+
+      Args:
+        request: (ComputeAcceleratorPodControllersListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AcceleratorPodControllersListResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.acceleratorPodControllers.list',
+        ordered_params=['project', 'zone'],
+        path_params=['project', 'zone'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
+        relative_path='projects/{project}/zones/{zone}/acceleratorPodControllers',
+        request_field='',
+        request_type_name='ComputeAcceleratorPodControllersListRequest',
+        response_type_name='AcceleratorPodControllersListResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Patches the specified AcceleratorPodController resource.
+
+      Args:
+        request: (ComputeAcceleratorPodControllersPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='PATCH',
+        method_id='compute.acceleratorPodControllers.patch',
+        ordered_params=['project', 'zone', 'resourceId'],
+        path_params=['project', 'resourceId', 'zone'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='projects/{project}/zones/{zone}/acceleratorPodControllers/{resourceId}',
+        request_field='acceleratorPodController',
+        request_type_name='ComputeAcceleratorPodControllersPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
 
   class AcceleratorTypesService(base_api.BaseApiService):
     """Service class for the acceleratorTypes resource."""
@@ -1501,7 +1642,10 @@ project.
     )
 
     def ListUsable(self, request, global_params=None):
-      r"""Retrieves a list of all usable backend services in the specified project.
+      r"""Retrieves a list of all usable backend services for Application Load.
+Balancers and Proxy Network Load Balancers in the specified project.
+Backend services for external and internal passthrough Network Load
+Balancers are not included in the response.
 
       Args:
         request: (ComputeBackendServicesListUsableRequest) input message
@@ -18827,8 +18971,10 @@ specified project in the given region.
     )
 
     def ListUsable(self, request, global_params=None):
-      r"""Retrieves a list of all usable backend services in the specified project in.
-the given region.
+      r"""Retrieves a list of all usable backend services for Application Load.
+Balancers and Proxy Network Load Balancers in the specified project in the
+given region. Backend services for external and internal passthrough
+Network Load Balancers are not included in the response.
 
       Args:
         request: (ComputeRegionBackendServicesListUsableRequest) input message

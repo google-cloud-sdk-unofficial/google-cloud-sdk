@@ -8095,15 +8095,15 @@ class Rollout(_messages.Message):
     Values:
       ROLLOUT_INTENT_UNSPECIFIED: The default value.
       REGULAR_UPGRADE: A standard rollout.
-      FORCE_PATCH: A mandatory upgrade for clusters that haven't been patched
-        within the allowed window.
-      END_OF_LIFE_ENFORCEMENT: A mandatory upgrade for clusters that have
+      CONTROL_PLANE_PATCH_ENFORCEMENT: A mandatory upgrade for clusters that
+        haven't been patched within the allowed window.
+      END_OF_SUPPORT_ENFORCEMENT: A mandatory upgrade for clusters that have
         reached its end of support.
     """
     ROLLOUT_INTENT_UNSPECIFIED = 0
     REGULAR_UPGRADE = 1
-    FORCE_PATCH = 2
-    END_OF_LIFE_ENFORCEMENT = 3
+    CONTROL_PLANE_PATCH_ENFORCEMENT = 2
+    END_OF_SUPPORT_ENFORCEMENT = 3
 
   class StateReasonTypeValueValuesEnum(_messages.Enum):
     r"""Output only. StateReasonType specifies the reason type of the Rollout
@@ -9027,6 +9027,8 @@ class ServiceMeshCondition(_messages.Message):
         pod IP scalability limits.
       MODERNIZATION_INCOMPATIBLE_CONFIG: Incompatible config found in the
         cluster.
+      MODERNIZATION_INCOMPATIBLE_GATEWAY_POD_SCALE: Gateway pods per cluster
+        limit exceeded.
       MODERNIZATION_SCHEDULED: Modernization is scheduled for a cluster.
       MODERNIZATION_IN_PROGRESS: Modernization is in progress for a cluster.
       MODERNIZATION_COMPLETED: Modernization is completed for a cluster.
@@ -9108,28 +9110,29 @@ class ServiceMeshCondition(_messages.Message):
     MODERNIZATION_INCOMPATIBLE_POD_ANNOTATION = 41
     MODERNIZATION_INCOMPATIBLE_POD_IP_SCALE = 42
     MODERNIZATION_INCOMPATIBLE_CONFIG = 43
-    MODERNIZATION_SCHEDULED = 44
-    MODERNIZATION_IN_PROGRESS = 45
-    MODERNIZATION_COMPLETED = 46
-    MODERNIZATION_ABORTED = 47
-    MODERNIZATION_PREPARING = 48
-    MODERNIZATION_STALLED = 49
-    MODERNIZATION_PREPARED = 50
-    MODERNIZATION_MIGRATING_WORKLOADS = 51
-    MODERNIZATION_ROLLING_BACK_CLUSTER = 52
-    MODERNIZATION_WILL_BE_SCHEDULED = 53
-    MODERNIZATION_MANUAL = 54
-    MODERNIZATION_ELIGIBLE = 55
-    MODERNIZATION_MODERNIZING = 56
-    MODERNIZATION_MODERNIZED_SOAKING = 57
-    MODERNIZATION_FINALIZED = 58
-    MODERNIZATION_ROLLING_BACK_FLEET = 59
-    MODERNIZATION_MODERNIZED = 60
-    MODERNIZATION_INCOMPATIBLE_SERVICES_SCALE = 61
-    MODERNIZATION_COMPATIBLE = 62
-    MODERNIZATION_INCOMPATIBLE = 63
-    MODERNIZATION_INCOMPATIBLE_FLEET_SCALE = 64
-    MODERNIZATION_INCOMPATIBLE_FLEET_QUOTA = 65
+    MODERNIZATION_INCOMPATIBLE_GATEWAY_POD_SCALE = 44
+    MODERNIZATION_SCHEDULED = 45
+    MODERNIZATION_IN_PROGRESS = 46
+    MODERNIZATION_COMPLETED = 47
+    MODERNIZATION_ABORTED = 48
+    MODERNIZATION_PREPARING = 49
+    MODERNIZATION_STALLED = 50
+    MODERNIZATION_PREPARED = 51
+    MODERNIZATION_MIGRATING_WORKLOADS = 52
+    MODERNIZATION_ROLLING_BACK_CLUSTER = 53
+    MODERNIZATION_WILL_BE_SCHEDULED = 54
+    MODERNIZATION_MANUAL = 55
+    MODERNIZATION_ELIGIBLE = 56
+    MODERNIZATION_MODERNIZING = 57
+    MODERNIZATION_MODERNIZED_SOAKING = 58
+    MODERNIZATION_FINALIZED = 59
+    MODERNIZATION_ROLLING_BACK_FLEET = 60
+    MODERNIZATION_MODERNIZED = 61
+    MODERNIZATION_INCOMPATIBLE_SERVICES_SCALE = 62
+    MODERNIZATION_COMPATIBLE = 63
+    MODERNIZATION_INCOMPATIBLE = 64
+    MODERNIZATION_INCOMPATIBLE_FLEET_SCALE = 65
+    MODERNIZATION_INCOMPATIBLE_FLEET_QUOTA = 66
 
   class SeverityValueValuesEnum(_messages.Enum):
     r"""Severity level of the condition.
@@ -9443,6 +9446,8 @@ class ServiceMeshFeatureCondition(_messages.Message):
         pod IP scalability limits.
       MODERNIZATION_INCOMPATIBLE_CONFIG: Incompatible config found in the
         cluster.
+      MODERNIZATION_INCOMPATIBLE_GATEWAY_POD_SCALE: Gateway pods per cluster
+        limit exceeded.
       MODERNIZATION_SCHEDULED: Modernization is scheduled for a cluster.
       MODERNIZATION_IN_PROGRESS: Modernization is in progress for a cluster.
       MODERNIZATION_COMPLETED: Modernization is completed for a cluster.
@@ -9524,28 +9529,29 @@ class ServiceMeshFeatureCondition(_messages.Message):
     MODERNIZATION_INCOMPATIBLE_POD_ANNOTATION = 41
     MODERNIZATION_INCOMPATIBLE_POD_IP_SCALE = 42
     MODERNIZATION_INCOMPATIBLE_CONFIG = 43
-    MODERNIZATION_SCHEDULED = 44
-    MODERNIZATION_IN_PROGRESS = 45
-    MODERNIZATION_COMPLETED = 46
-    MODERNIZATION_ABORTED = 47
-    MODERNIZATION_PREPARING = 48
-    MODERNIZATION_STALLED = 49
-    MODERNIZATION_PREPARED = 50
-    MODERNIZATION_MIGRATING_WORKLOADS = 51
-    MODERNIZATION_ROLLING_BACK_CLUSTER = 52
-    MODERNIZATION_WILL_BE_SCHEDULED = 53
-    MODERNIZATION_MANUAL = 54
-    MODERNIZATION_ELIGIBLE = 55
-    MODERNIZATION_MODERNIZING = 56
-    MODERNIZATION_MODERNIZED_SOAKING = 57
-    MODERNIZATION_FINALIZED = 58
-    MODERNIZATION_ROLLING_BACK_FLEET = 59
-    MODERNIZATION_MODERNIZED = 60
-    MODERNIZATION_INCOMPATIBLE_SERVICES_SCALE = 61
-    MODERNIZATION_COMPATIBLE = 62
-    MODERNIZATION_INCOMPATIBLE = 63
-    MODERNIZATION_INCOMPATIBLE_FLEET_SCALE = 64
-    MODERNIZATION_INCOMPATIBLE_FLEET_QUOTA = 65
+    MODERNIZATION_INCOMPATIBLE_GATEWAY_POD_SCALE = 44
+    MODERNIZATION_SCHEDULED = 45
+    MODERNIZATION_IN_PROGRESS = 46
+    MODERNIZATION_COMPLETED = 47
+    MODERNIZATION_ABORTED = 48
+    MODERNIZATION_PREPARING = 49
+    MODERNIZATION_STALLED = 50
+    MODERNIZATION_PREPARED = 51
+    MODERNIZATION_MIGRATING_WORKLOADS = 52
+    MODERNIZATION_ROLLING_BACK_CLUSTER = 53
+    MODERNIZATION_WILL_BE_SCHEDULED = 54
+    MODERNIZATION_MANUAL = 55
+    MODERNIZATION_ELIGIBLE = 56
+    MODERNIZATION_MODERNIZING = 57
+    MODERNIZATION_MODERNIZED_SOAKING = 58
+    MODERNIZATION_FINALIZED = 59
+    MODERNIZATION_ROLLING_BACK_FLEET = 60
+    MODERNIZATION_MODERNIZED = 61
+    MODERNIZATION_INCOMPATIBLE_SERVICES_SCALE = 62
+    MODERNIZATION_COMPATIBLE = 63
+    MODERNIZATION_INCOMPATIBLE = 64
+    MODERNIZATION_INCOMPATIBLE_FLEET_SCALE = 65
+    MODERNIZATION_INCOMPATIBLE_FLEET_QUOTA = 66
 
   class SeverityValueValuesEnum(_messages.Enum):
     r"""Severity level of the condition.
@@ -9577,11 +9583,15 @@ class ServiceMeshFeatureSpec(_messages.Message):
       fleet.
     ModernizationCompatibilityValueValuesEnum: Optional. Specifies
       modernization compatibility for the fleet.
+    ModernizationStrategyValueValuesEnum: Optional. Declares your intended
+      modernization strategy for the fleet.
 
   Fields:
     modernization: Optional. Specifies modernization for the fleet.
     modernizationCompatibility: Optional. Specifies modernization
       compatibility for the fleet.
+    modernizationStrategy: Optional. Declares your intended modernization
+      strategy for the fleet.
   """
 
   class ModernizationCompatibilityValueValuesEnum(_messages.Enum):
@@ -9596,6 +9606,27 @@ class ServiceMeshFeatureSpec(_messages.Message):
     MODERNIZATION_COMPATIBILITY_UNSPECIFIED = 0
     VALIDATION_ENABLED = 1
     VALIDATION_DISABLED = 2
+
+  class ModernizationStrategyValueValuesEnum(_messages.Enum):
+    r"""Optional. Declares your intended modernization strategy for the fleet.
+
+    Values:
+      MODERNIZATION_STRATEGY_UNSPECIFIED: Default unspecified.
+      AUTOMATIC: The infrastructure is automatically modernized. Setting this
+        strategy initiates the modernization process. The system schedules the
+        modernization subject to configured maintenance windows and
+        maintenance exclusions.
+      DEFERRED: The infrastructure is pinned to the legacy implementation.
+        This fleet will not be selected for Google-driven modernization. If
+        the resource is actively modernizing, or if the modernization has
+        completed but is not yet finalized (e.g., during the soak time),
+        setting this strategy triggers a rollback to the legacy state. If the
+        modernization process has already been marked as finalized, setting
+        this strategy has no effect.
+    """
+    MODERNIZATION_STRATEGY_UNSPECIFIED = 0
+    AUTOMATIC = 1
+    DEFERRED = 2
 
   class ModernizationValueValuesEnum(_messages.Enum):
     r"""Optional. Specifies modernization for the fleet.
@@ -9613,6 +9644,7 @@ class ServiceMeshFeatureSpec(_messages.Message):
 
   modernization = _messages.EnumField('ModernizationValueValuesEnum', 1)
   modernizationCompatibility = _messages.EnumField('ModernizationCompatibilityValueValuesEnum', 2)
+  modernizationStrategy = _messages.EnumField('ModernizationStrategyValueValuesEnum', 3)
 
 
 class ServiceMeshFeatureState(_messages.Message):

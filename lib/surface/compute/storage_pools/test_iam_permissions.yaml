@@ -1,0 +1,30 @@
+- release_tracks: [ALPHA, BETA, PREVIEW]
+  help_text:
+    brief: "Test IAM permissions for a storage pool."
+    description: "Returns permissions that a caller has on the specified storage pool."
+    examples: |
+      To test if the caller has 'compute.storagePools.getIamPolicy' permission on a storage pool, run:
+
+        $ {command} my-storage-pool --permissions=compute.storagePools.getIamPolicy
+
+  request:
+    ALPHA:
+      api_version: alpha
+    BETA:
+      api_version: beta
+
+    collection: compute.storagePools
+    use_relative_name: false
+    method: testIamPermissions
+
+  arguments:
+    resource:
+      help_text: Storage pool you want to test the IAM permissions of.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:storage_pool
+    params:
+    - arg_name: permissions
+      api_field: testPermissionsRequest.permissions
+      required: true
+      repeated: true
+      help_text: |-
+        Permissions to be tested.

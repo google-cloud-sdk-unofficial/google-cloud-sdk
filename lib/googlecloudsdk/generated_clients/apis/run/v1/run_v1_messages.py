@@ -2957,8 +2957,8 @@ class HTTPHeader(_messages.Message):
 
 
 class Instance(_messages.Message):
-  r"""Instance represents the configuration of a single Instance, which
-  references a container image which is run to completion.
+  r"""An Instance represents the configuration of a single instance that
+  references a container image and runs to completion.
 
   Fields:
     apiVersion: Optional. APIVersion defines the versioned schema of this
@@ -2968,8 +2968,8 @@ class Instance(_messages.Message):
       object represents. Servers may infer this from the endpoint the client
       submits requests to. Cannot be updated. In CamelCase.
     metadata: Optional. Standard object's metadata.
-    spec: Optional. Specification of the desired behavior of a Instance.
-    status: Output only. Current status of a Instance.
+    spec: Optional. Specification of the desired behavior of an Instance.
+    status: Output only. Current status of an Instance.
   """
 
   apiVersion = _messages.StringField(1)
@@ -3054,7 +3054,7 @@ class InstanceSplit(_messages.Message):
 
 
 class InstanceStatus(_messages.Message):
-  r"""InstanceStatus represents the current state of a Instance.
+  r"""InstanceStatus represents the current state of an Instance.
 
   Fields:
     conditions: Output only. Conditions communicate information about
@@ -3537,15 +3537,15 @@ class ObjectMeta(_messages.Message):
       service-account`: Service. * `run.googleapis.com/build-source-location`:
       Service, Revision. * `run.googleapis.com/build-worker-pool`: Service. *
       `run.googleapis.com/client-name`: All resources. *
-      `run.googleapis.com/cloudsql-instances`: Revision, Execution . *
-      `run.googleapis.com/container-dependencies`: Revision . *
+      `run.googleapis.com/cloudsql-instances`: Revision, Execution, Instance.
+      * `run.googleapis.com/container-dependencies`: Revision . *
       `run.googleapis.com/cpu-throttling`: Revision. *
       `run.googleapis.com/custom-audiences`: Service. *
       `run.googleapis.com/default-url-disabled`: Service. *
       `run.googleapis.com/description`: Service. *
       `run.googleapis.com/encryption-key-shutdown-hours`: Revision *
-      `run.googleapis.com/encryption-key`: Revision, Execution . *
-      `run.googleapis.com/execution-environment`: Revision, Execution . *
+      `run.googleapis.com/encryption-key`: Revision, Execution, Instance. *
+      `run.googleapis.com/execution-environment`: Revision, Execution. *
       `run.googleapis.com/gc-traffic-tags`: Service. *
       `run.googleapis.com/gpu-zonal-redundancy-disabled`: Revision. *
       `run.googleapis.com/health-check-disabled`: Revision. *
@@ -3589,15 +3589,15 @@ class ObjectMeta(_messages.Message):
       service-account`: Service. * `run.googleapis.com/build-source-location`:
       Service, Revision. * `run.googleapis.com/build-worker-pool`: Service. *
       `run.googleapis.com/client-name`: All resources. *
-      `run.googleapis.com/cloudsql-instances`: Revision, Execution . *
-      `run.googleapis.com/container-dependencies`: Revision . *
+      `run.googleapis.com/cloudsql-instances`: Revision, Execution, Instance.
+      * `run.googleapis.com/container-dependencies`: Revision . *
       `run.googleapis.com/cpu-throttling`: Revision. *
       `run.googleapis.com/custom-audiences`: Service. *
       `run.googleapis.com/default-url-disabled`: Service. *
       `run.googleapis.com/description`: Service. *
       `run.googleapis.com/encryption-key-shutdown-hours`: Revision *
-      `run.googleapis.com/encryption-key`: Revision, Execution . *
-      `run.googleapis.com/execution-environment`: Revision, Execution . *
+      `run.googleapis.com/encryption-key`: Revision, Execution, Instance. *
+      `run.googleapis.com/execution-environment`: Revision, Execution. *
       `run.googleapis.com/gc-traffic-tags`: Service. *
       `run.googleapis.com/gpu-zonal-redundancy-disabled`: Revision. *
       `run.googleapis.com/health-check-disabled`: Revision. *
@@ -3671,15 +3671,15 @@ class ObjectMeta(_messages.Message):
     service-account`: Service. * `run.googleapis.com/build-source-location`:
     Service, Revision. * `run.googleapis.com/build-worker-pool`: Service. *
     `run.googleapis.com/client-name`: All resources. *
-    `run.googleapis.com/cloudsql-instances`: Revision, Execution . *
+    `run.googleapis.com/cloudsql-instances`: Revision, Execution, Instance. *
     `run.googleapis.com/container-dependencies`: Revision . *
     `run.googleapis.com/cpu-throttling`: Revision. *
     `run.googleapis.com/custom-audiences`: Service. *
     `run.googleapis.com/default-url-disabled`: Service. *
     `run.googleapis.com/description`: Service. *
     `run.googleapis.com/encryption-key-shutdown-hours`: Revision *
-    `run.googleapis.com/encryption-key`: Revision, Execution . *
-    `run.googleapis.com/execution-environment`: Revision, Execution . *
+    `run.googleapis.com/encryption-key`: Revision, Execution, Instance. *
+    `run.googleapis.com/execution-environment`: Revision, Execution. *
     `run.googleapis.com/gc-traffic-tags`: Service. * `run.googleapis.com/gpu-
     zonal-redundancy-disabled`: Revision. * `run.googleapis.com/health-check-
     disabled`: Revision. * `run.googleapis.com/ingress`: Service, Instance. *
@@ -4092,8 +4092,6 @@ class RevisionSpec(_messages.Message):
     nodeSelector: Optional. The Node Selector configuration. Map of selector
       key to a value which matches a node.
     runtimeClassName: Optional. Runtime. Leave unset for default.
-    sandboxes: Optional. Container templates that can be launched through the
-      `sandbox` CLI.
     serviceAccountName: Email address of the IAM service account associated
       with the revision of the service. The service account represents the
       identity of the running revision, and determines what permissions the
@@ -4137,10 +4135,9 @@ class RevisionSpec(_messages.Message):
   imagePullSecrets = _messages.MessageField('LocalObjectReference', 4, repeated=True)
   nodeSelector = _messages.MessageField('NodeSelectorValue', 5)
   runtimeClassName = _messages.StringField(6)
-  sandboxes = _messages.MessageField('Container', 7, repeated=True)
-  serviceAccountName = _messages.StringField(8)
-  timeoutSeconds = _messages.IntegerField(9, variant=_messages.Variant.INT32)
-  volumes = _messages.MessageField('Volume', 10, repeated=True)
+  serviceAccountName = _messages.StringField(7)
+  timeoutSeconds = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+  volumes = _messages.MessageField('Volume', 9, repeated=True)
 
 
 class RevisionStatus(_messages.Message):
@@ -4514,17 +4511,25 @@ class RunNamespacesInstancesCreateRequest(_messages.Message):
   r"""A RunNamespacesInstancesCreateRequest object.
 
   Fields:
+    dryRun: Optional. Indicates that the server should validate the request
+      and populate default values without persisting the request. Supported
+      values: `all`
     instance: A Instance resource to be passed as the request body.
-    parent: Required. The namespace in which the Instance should be created.
-      Replace {namespace} with the project ID or number. It takes the form
-      namespaces/{namespace}. For example: namespaces/PROJECT_ID
+    parent: Required. The resource's parent. In Cloud Run, it may be one of
+      the following: * `{project_id_or_number}` *
+      `namespaces/{project_id_or_number}` *
+      `namespaces/{project_id_or_number}/instances` *
+      `projects/{project_id_or_number}/locations/{region}` *
+      `projects/{project_id_or_number}/regions/{region}` Parent resource
+      namespace.
     region: Optional. The region in which this resource should be created when
       it's not provided in the parent field, or in the request header.
   """
 
-  instance = _messages.MessageField('Instance', 1)
-  parent = _messages.StringField(2, required=True)
-  region = _messages.StringField(3)
+  dryRun = _messages.StringField(1)
+  instance = _messages.MessageField('Instance', 2)
+  parent = _messages.StringField(3, required=True)
+  region = _messages.StringField(4)
 
 
 class RunNamespacesInstancesDeleteRequest(_messages.Message):
@@ -4532,10 +4537,16 @@ class RunNamespacesInstancesDeleteRequest(_messages.Message):
 
   Fields:
     apiVersion: Optional. Cloud Run currently ignores this parameter.
+    dryRun: Optional. Indicates that the server should validate the request
+      and populate default values without persisting the request. Supported
+      values: `all`
     kind: Optional. Cloud Run currently ignores this parameter.
-    name: Required. The name of the Instance to delete. Replace {namespace}
-      with the project ID or number. It takes the form namespaces/{namespace}.
-      For example: namespaces/PROJECT_ID
+    name: Required. The fully qualified name of the Instance to delete. It can
+      be any of the following forms: *
+      `namespaces/{project_id_or_number}/instances/{instance_name}` (only when
+      the `endpoint` is regional) * `projects/{project_id_or_number}/locations
+      /{region}/instances/{instance_name}` * `projects/{project_id_or_number}/
+      regions/{region}/instances/{instance_name}` Parent resource namespace.
     propagationPolicy: Optional. Specifies the propagation policy of delete.
       Cloud Run currently ignores this setting, and deletes in the background.
       Please see kubernetes.io/docs/concepts/workloads/controllers/garbage-
@@ -4545,19 +4556,23 @@ class RunNamespacesInstancesDeleteRequest(_messages.Message):
   """
 
   apiVersion = _messages.StringField(1)
-  kind = _messages.StringField(2)
-  name = _messages.StringField(3, required=True)
-  propagationPolicy = _messages.StringField(4)
-  region = _messages.StringField(5)
+  dryRun = _messages.StringField(2)
+  kind = _messages.StringField(3)
+  name = _messages.StringField(4, required=True)
+  propagationPolicy = _messages.StringField(5)
+  region = _messages.StringField(6)
 
 
 class RunNamespacesInstancesGetRequest(_messages.Message):
   r"""A RunNamespacesInstancesGetRequest object.
 
   Fields:
-    name: Required. The name of the Instance to retrieve. It takes the form
-      namespaces/{namespace}/instances/{Instance_name} and the `endpoint` must
-      be regional. Replace {namespace} with the project ID or number.
+    name: Required. The fully qualified name of the Instance to retrieve. It
+      can be any of the following forms: *
+      `namespaces/{project_id_or_number}/instances/{instance_name}` (only when
+      the `endpoint` is regional) * `projects/{project_id_or_number}/locations
+      /{region}/instances/{instance_name}` * `projects/{project_id_or_number}/
+      regions/{region}/instances/{instance_name}` Parent resource namespace.
     region: Optional. The region in which this resource should be retrieved
       when it's not provided in the parent field, or in the request header.
   """
@@ -4576,9 +4591,13 @@ class RunNamespacesInstancesListRequest(_messages.Message):
     labelSelector: Optional. Allows to filter resources based on a label.
       Supported operations are =, !=, exists, in, and notIn.
     limit: Optional. The maximum number of records that should be returned.
-    parent: Required. The namespace from which the Instances should be listed.
-      Replace {namespace} with the project ID or number. It takes the form
-      namespaces/{namespace}. For example: namespaces/PROJECT_ID
+    parent: Required. The parent from where the resources should be listed. In
+      Cloud Run, it may be one of the following: * `{project_id_or_number}` *
+      `namespaces/{project_id_or_number}` *
+      `namespaces/{project_id_or_number}/instances` *
+      `projects/{project_id_or_number}/locations/{region}` *
+      `projects/{project_id_or_number}/regions/{region}` Parent resource
+      namespace.
     region: Optional. The region in which this resource should be listed when
       it's not provided in the parent field, or in the request header.
     resourceVersion: Optional. Not supported by Cloud Run.
@@ -4600,17 +4619,24 @@ class RunNamespacesInstancesReplaceInstanceRequest(_messages.Message):
   r"""A RunNamespacesInstancesReplaceInstanceRequest object.
 
   Fields:
+    dryRun: Optional. Indicates that the server should validate the request
+      and populate default values without persisting the request. Supported
+      values: `all`
     instance: A Instance resource to be passed as the request body.
-    name: Required. The name of the Instance being replaced. Replace
-      {namespace} with the project ID or number. It takes the form
-      namespaces/{namespace}. For example: namespaces/PROJECT_ID
+    name: Required. The fully qualified name of the Instance being replaced.
+      It can be any of the following forms: *
+      `namespaces/{project_id_or_number}/instances/{instance_name}` (only when
+      the `endpoint` is regional) * `projects/{project_id_or_number}/locations
+      /{region}/instances/{instance_name}` * `projects/{project_id_or_number}/
+      regions/{region}/instances/{instance_name}` Parent resource namespace.
     region: Optional. The region in which this resource should be replaced
       when it's not provided in the parent field, or in the request header.
   """
 
-  instance = _messages.MessageField('Instance', 1)
-  name = _messages.StringField(2, required=True)
-  region = _messages.StringField(3)
+  dryRun = _messages.StringField(1)
+  instance = _messages.MessageField('Instance', 2)
+  name = _messages.StringField(3, required=True)
+  region = _messages.StringField(4)
 
 
 class RunNamespacesInstancesStartRequest(_messages.Message):
@@ -4647,14 +4673,18 @@ class RunNamespacesJobsCreateRequest(_messages.Message):
   r"""A RunNamespacesJobsCreateRequest object.
 
   Fields:
+    dryRun: Optional. Indicates that the server should validate the request
+      and populate default values without persisting the request. Supported
+      values: `all`
     job: A Job resource to be passed as the request body.
     parent: Required. The namespace in which the job should be created.
       Replace {namespace} with the project ID or number. It takes the form
       namespaces/{namespace}. For example: namespaces/PROJECT_ID
   """
 
-  job = _messages.MessageField('Job', 1)
-  parent = _messages.StringField(2, required=True)
+  dryRun = _messages.StringField(1)
+  job = _messages.MessageField('Job', 2)
+  parent = _messages.StringField(3, required=True)
 
 
 class RunNamespacesJobsDeleteRequest(_messages.Message):
@@ -4662,6 +4692,9 @@ class RunNamespacesJobsDeleteRequest(_messages.Message):
 
   Fields:
     apiVersion: Optional. Cloud Run currently ignores this parameter.
+    dryRun: Optional. Indicates that the server should validate the request
+      and populate default values without persisting the request. Supported
+      values: `all`
     force: If set to true, the Job and its Executions will be deleted no
       matter whether any Executions are still running or not. If set to false
       or unset, the Job and its Executions can only be deleted if there are no
@@ -4677,10 +4710,11 @@ class RunNamespacesJobsDeleteRequest(_messages.Message):
   """
 
   apiVersion = _messages.StringField(1)
-  force = _messages.BooleanField(2)
-  kind = _messages.StringField(3)
-  name = _messages.StringField(4, required=True)
-  propagationPolicy = _messages.StringField(5)
+  dryRun = _messages.StringField(2)
+  force = _messages.BooleanField(3)
+  kind = _messages.StringField(4)
+  name = _messages.StringField(5, required=True)
+  propagationPolicy = _messages.StringField(6)
 
 
 class RunNamespacesJobsGetRequest(_messages.Message):
@@ -4726,14 +4760,18 @@ class RunNamespacesJobsReplaceJobRequest(_messages.Message):
   r"""A RunNamespacesJobsReplaceJobRequest object.
 
   Fields:
+    dryRun: Optional. Indicates that the server should validate the request
+      and populate default values without persisting the request. Supported
+      values: `all`
     job: A Job resource to be passed as the request body.
     name: Required. The name of the job being replaced. Replace {namespace}
       with the project ID or number. It takes the form namespaces/{namespace}.
       For example: namespaces/PROJECT_ID
   """
 
-  job = _messages.MessageField('Job', 1)
-  name = _messages.StringField(2, required=True)
+  dryRun = _messages.StringField(1)
+  job = _messages.MessageField('Job', 2)
+  name = _messages.StringField(3, required=True)
 
 
 class RunNamespacesJobsRunRequest(_messages.Message):
@@ -6099,11 +6137,15 @@ class StartInstanceRequest(_messages.Message):
   r"""Request message for starting a stopped Instance.
 
   Fields:
+    dryRun: Optional. Indicates that the server should validate the request
+      and populate default values without persisting the request. Supported
+      values: `all`
     region: Optional. The region in which this resource should be run from
       when it's not provided in the parent field, or in the request header.
   """
 
-  region = _messages.StringField(1)
+  dryRun = _messages.StringField(1)
+  region = _messages.StringField(2)
 
 
 class Status(_messages.Message):
@@ -6191,11 +6233,15 @@ class StopInstanceRequest(_messages.Message):
   r"""Request message for stopping a running Instance.
 
   Fields:
+    dryRun: Optional. Indicates that the server should validate the request
+      and populate default values without persisting the request. Supported
+      values: `all`
     region: Optional. The region in which this resource should be run from
       when it's not provided in the parent field, or in the request header.
   """
 
-  region = _messages.StringField(1)
+  dryRun = _messages.StringField(1)
+  region = _messages.StringField(2)
 
 
 class TCPSocketAction(_messages.Message):

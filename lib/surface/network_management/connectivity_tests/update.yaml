@@ -148,6 +148,17 @@
     - group:
         mutex: true
         params:
+        - arg_name: source-cloud-run-job
+          api_field: connectivityTest.source.cloudRunJob
+          help_text: |
+            Cloud Run job URI as the source endpoint.
+        - arg_name: clear-source-cloud-run-job
+          type: bool
+          help_text: |
+            Clear existing source Cloud Run job.
+    - group:
+        mutex: true
+        params:
         - arg_name: destination-instance
           api_field: connectivityTest.destination.instance
           help_text: |
@@ -305,6 +316,7 @@
       - googlecloudsdk.command_lib.network_management.util:ValidateCloudFunctionsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateAppEngineVersionsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateCloudRunRevisionsURIs
+      - googlecloudsdk.command_lib.network_management.util:ValidateCloudRunJobsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateForwardingRulesURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateRedisInstancesURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateRedisClustersURIs
@@ -321,6 +333,7 @@
       - googlecloudsdk.command_lib.network_management.util:ValidateCloudFunctionsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateAppEngineVersionsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateCloudRunRevisionsURIs
+      - googlecloudsdk.command_lib.network_management.util:ValidateCloudRunJobsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateForwardingRulesURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateRedisInstancesURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateRedisClustersURIs

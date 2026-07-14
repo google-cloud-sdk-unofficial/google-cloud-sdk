@@ -4896,10 +4896,12 @@ class GooglePrivacyDlpV2ContentMetadata(_messages.Message):
   r"""Metadata on content to be scanned.
 
   Fields:
+    fileLabels: Optional. The file labels associated with the content.
     properties: User provided key-value pairs of content metadata.
   """
 
-  properties = _messages.MessageField('GooglePrivacyDlpV2KeyValueMetadataProperty', 1, repeated=True)
+  fileLabels = _messages.MessageField('GooglePrivacyDlpV2FileLabel', 1, repeated=True)
+  properties = _messages.MessageField('GooglePrivacyDlpV2KeyValueMetadataProperty', 2, repeated=True)
 
 
 class GooglePrivacyDlpV2ContentPolicy(_messages.Message):
@@ -5336,6 +5338,7 @@ class GooglePrivacyDlpV2CustomInfoType(_messages.Message):
       cause a finding to be returned. It still can be used for rules matching.
       Only supported for the `dictionary`, `regex`, and `stored_type`
       CustomInfoTypes.
+    fileLabelInfoType: File label to detect.
     infoType: CustomInfoType can either be a new infoType, or an extension of
       built-in infoType, when the name matches one of existing infoTypes and
       that infoType is specified in `InspectContent.info_types` field.
@@ -5396,13 +5399,14 @@ class GooglePrivacyDlpV2CustomInfoType(_messages.Message):
   detectionRules = _messages.MessageField('GooglePrivacyDlpV2DetectionRule', 1, repeated=True)
   dictionary = _messages.MessageField('GooglePrivacyDlpV2Dictionary', 2)
   exclusionType = _messages.EnumField('ExclusionTypeValueValuesEnum', 3)
-  infoType = _messages.MessageField('GooglePrivacyDlpV2InfoType', 4)
-  likelihood = _messages.EnumField('LikelihoodValueValuesEnum', 5)
-  metadataKeyValueExpression = _messages.MessageField('GooglePrivacyDlpV2MetadataKeyValueExpression', 6)
-  regex = _messages.MessageField('GooglePrivacyDlpV2Regex', 7)
-  sensitivityScore = _messages.MessageField('GooglePrivacyDlpV2SensitivityScore', 8)
-  storedType = _messages.MessageField('GooglePrivacyDlpV2StoredType', 9)
-  surrogateType = _messages.MessageField('GooglePrivacyDlpV2SurrogateType', 10)
+  fileLabelInfoType = _messages.MessageField('GooglePrivacyDlpV2FileLabelInfoType', 4)
+  infoType = _messages.MessageField('GooglePrivacyDlpV2InfoType', 5)
+  likelihood = _messages.EnumField('LikelihoodValueValuesEnum', 6)
+  metadataKeyValueExpression = _messages.MessageField('GooglePrivacyDlpV2MetadataKeyValueExpression', 7)
+  regex = _messages.MessageField('GooglePrivacyDlpV2Regex', 8)
+  sensitivityScore = _messages.MessageField('GooglePrivacyDlpV2SensitivityScore', 9)
+  storedType = _messages.MessageField('GooglePrivacyDlpV2StoredType', 10)
+  surrogateType = _messages.MessageField('GooglePrivacyDlpV2SurrogateType', 11)
 
 
 class GooglePrivacyDlpV2DataProfileAction(_messages.Message):
@@ -7036,27 +7040,28 @@ class GooglePrivacyDlpV2DlpJob(_messages.Message):
   r"""Combines all of the information about a DLP job.
 
   Enums:
-    StateValueValuesEnum: State of a job.
+    StateValueValuesEnum: Output only. State of a job.
     TypeValueValuesEnum: The type of job.
 
   Fields:
     actionDetails: Events that should occur after the job has completed.
-    createTime: Time when the job was created.
-    endTime: Time when the job finished.
-    errors: A stream of errors encountered running the job.
+    createTime: Output only. Time when the job was created.
+    endTime: Output only. Time when the job finished.
+    errors: Output only. A stream of errors encountered running the job.
     inspectDetails: Results from inspecting a data source.
-    jobTriggerName: If created by a job trigger, the resource name of the
-      trigger that instantiated the job.
-    lastModified: Time when the job was last modified by the system.
-    name: The server-assigned name.
+    jobTriggerName: Output only. If created by a job trigger, the resource
+      name of the trigger that instantiated the job.
+    lastModified: Output only. Time when the job was last modified by the
+      system.
+    name: Output only. The server-assigned name.
     riskDetails: Results from analyzing risk of a data source.
-    startTime: Time when the job started.
-    state: State of a job.
+    startTime: Output only. Time when the job started.
+    state: Output only. State of a job.
     type: The type of job.
   """
 
   class StateValueValuesEnum(_messages.Enum):
-    r"""State of a job.
+    r"""Output only. State of a job.
 
     Values:
       JOB_STATE_UNSPECIFIED: Unused.
@@ -7559,6 +7564,30 @@ class GooglePrivacyDlpV2FileExtensionInfo(_messages.Message):
   fileExtension = _messages.StringField(1)
 
 
+class GooglePrivacyDlpV2FileLabel(_messages.Message):
+  r"""Represents a file label.
+
+  Fields:
+    googleDriveLabel: Google Drive labels published by Google.
+    sensitivityLabel: Sensitivity labels published by Microsoft.
+  """
+
+  googleDriveLabel = _messages.MessageField('GooglePrivacyDlpV2GoogleDriveLabelMetadata', 1)
+  sensitivityLabel = _messages.MessageField('GooglePrivacyDlpV2SensitivityLabelMetadata', 2)
+
+
+class GooglePrivacyDlpV2FileLabelInfoType(_messages.Message):
+  r"""Configuration for a custom infoType that detects file labels.
+
+  Fields:
+    googleDriveLabel: Google Drive labels published by Google.
+    sensitivityLabel: Sensitivity labels published by Microsoft.
+  """
+
+  googleDriveLabel = _messages.MessageField('GooglePrivacyDlpV2GoogleDriveLabel', 1)
+  sensitivityLabel = _messages.MessageField('GooglePrivacyDlpV2SensitivityLabel', 2)
+
+
 class GooglePrivacyDlpV2FileSet(_messages.Message):
   r"""Set of files to scan.
 
@@ -8007,6 +8036,34 @@ class GooglePrivacyDlpV2FullyInside(_messages.Message):
 
 class GooglePrivacyDlpV2GlobalProcessing(_messages.Message):
   r"""Processing occurs in the global region."""
+
+
+class GooglePrivacyDlpV2GoogleDriveLabel(_messages.Message):
+  r"""Google Drive labels published by Google.
+
+  Fields:
+    labelFieldsToMatch: The field values of the Google Drive label to match.
+    labelId: The [label
+      ID](https://developers.google.com/workspace/drive/labels/guides/overview
+      ) of the Google Drive label.
+  """
+
+  labelFieldsToMatch = _messages.MessageField('GooglePrivacyDlpV2LabelField', 1, repeated=True)
+  labelId = _messages.StringField(2)
+
+
+class GooglePrivacyDlpV2GoogleDriveLabelMetadata(_messages.Message):
+  r"""Google Drive labels published by Google.
+
+  Fields:
+    labelFields: The field values of the Google Drive label
+    labelId: The [label
+      ID](https://developers.google.com/workspace/drive/labels/guides/overview
+      ) of the Google Drive label.
+  """
+
+  labelFields = _messages.MessageField('GooglePrivacyDlpV2LabelFieldMetadata', 1, repeated=True)
+  labelId = _messages.StringField(2)
 
 
 class GooglePrivacyDlpV2HotwordRule(_messages.Message):
@@ -9339,6 +9396,30 @@ class GooglePrivacyDlpV2LDiversityResult(_messages.Message):
   """
 
   sensitiveValueFrequencyHistogramBuckets = _messages.MessageField('GooglePrivacyDlpV2LDiversityHistogramBucket', 1, repeated=True)
+
+
+class GooglePrivacyDlpV2LabelField(_messages.Message):
+  r"""The field values of the Google Drive label to match.
+
+  Fields:
+    id: The identifier of the Label Field.
+    value: The value of the Label Field to match.
+  """
+
+  id = _messages.StringField(1)
+  value = _messages.StringField(2)
+
+
+class GooglePrivacyDlpV2LabelFieldMetadata(_messages.Message):
+  r"""The field values of the Google Drive label
+
+  Fields:
+    id: The identifier of the Label Field.
+    value: The value of the Label Field.
+  """
+
+  id = _messages.StringField(1)
+  value = _messages.MessageField('GooglePrivacyDlpV2Value', 2)
 
 
 class GooglePrivacyDlpV2LargeCustomDictionaryConfig(_messages.Message):
@@ -11017,6 +11098,26 @@ class GooglePrivacyDlpV2SelectedInfoTypes(_messages.Message):
   infoTypes = _messages.MessageField('GooglePrivacyDlpV2InfoType', 1, repeated=True)
 
 
+class GooglePrivacyDlpV2SensitivityLabel(_messages.Message):
+  r"""Sensitivity labels published by Microsoft.
+
+  Fields:
+    guid: The GUID of the sensitivity label.
+  """
+
+  guid = _messages.StringField(1)
+
+
+class GooglePrivacyDlpV2SensitivityLabelMetadata(_messages.Message):
+  r"""Sensitivity labels published by Microsoft.
+
+  Fields:
+    guid: Required. The GUID of the sensitivity label.
+  """
+
+  guid = _messages.StringField(1)
+
+
 class GooglePrivacyDlpV2SensitivityScore(_messages.Message):
   r"""Score is calculated from of all elements in the data profile. A higher
   level means the data is more sensitive.
@@ -11111,7 +11212,7 @@ class GooglePrivacyDlpV2StoredInfoType(_messages.Message):
 
   Fields:
     currentVersion: Current version of the stored info type.
-    name: Resource name.
+    name: Output only. Resource name.
     pendingVersions: Pending versions of the stored info type. Empty if no
       versions are pending.
   """
@@ -11158,31 +11259,32 @@ class GooglePrivacyDlpV2StoredInfoTypeVersion(_messages.Message):
   it, create timestamp, and current state.
 
   Enums:
-    StateValueValuesEnum: Stored info type version state. Read-only, updated
-      by the system during dictionary creation.
+    StateValueValuesEnum: Output only. Stored info type version state. Read-
+      only, updated by the system during dictionary creation.
 
   Fields:
     config: StoredInfoType configuration.
-    createTime: Create timestamp of the version. Read-only, determined by the
-      system when the version is created.
-    errors: Errors that occurred when creating this storedInfoType version, or
-      anomalies detected in the storedInfoType data that render it unusable.
-      Only the five most recent errors will be displayed, with the most recent
-      error appearing first. For example, some of the data for stored custom
-      dictionaries is put in the user's Cloud Storage bucket, and if this data
-      is modified or deleted by the user or another system, the dictionary
-      becomes invalid. If any errors occur, fix the problem indicated by the
-      error message and use the UpdateStoredInfoType API method to create
-      another version of the storedInfoType to continue using it, reusing the
-      same `config` if it was not the source of the error.
-    state: Stored info type version state. Read-only, updated by the system
-      during dictionary creation.
-    stats: Statistics about this storedInfoType version.
+    createTime: Output only. Create timestamp of the version. Read-only,
+      determined by the system when the version is created.
+    errors: Output only. Errors that occurred when creating this
+      storedInfoType version, or anomalies detected in the storedInfoType data
+      that render it unusable. Only the five most recent errors will be
+      displayed, with the most recent error appearing first. For example, some
+      of the data for stored custom dictionaries is put in the user's Cloud
+      Storage bucket, and if this data is modified or deleted by the user or
+      another system, the dictionary becomes invalid. If any errors occur, fix
+      the problem indicated by the error message and use the
+      UpdateStoredInfoType API method to create another version of the
+      storedInfoType to continue using it, reusing the same `config` if it was
+      not the source of the error.
+    state: Output only. Stored info type version state. Read-only, updated by
+      the system during dictionary creation.
+    stats: Output only. Statistics about this storedInfoType version.
   """
 
   class StateValueValuesEnum(_messages.Enum):
-    r"""Stored info type version state. Read-only, updated by the system
-    during dictionary creation.
+    r"""Output only. Stored info type version state. Read-only, updated by the
+    system during dictionary creation.
 
     Values:
       STORED_INFO_TYPE_STATE_UNSPECIFIED: Unused

@@ -200,7 +200,7 @@ def AddImageFlag(parser, hidden=False):
   """
 
   help_text = """\
-A specific image to use on the new instances.
+The Operating System image for the node pool. This is a private feature, please contact your Google account team for allowlisting this feature.
 """
 
   parser.add_argument('--image', help=help_text, hidden=hidden)
@@ -213,9 +213,8 @@ def AddImageProjectFlag(parser, hidden=False):
     parser: A given parser.
     hidden: if true, suppresses help text for this option.
   """
-  help_text = """/
-A specific project from which contains the os image or image family.  This is
-required when using --image-type=CUSTOM.
+  help_text = """\
+The Google Cloud project storing the Operating System image for the node pool. This is a private feature, please contact your Google account team for allowlisting this feature.
 """
 
   parser.add_argument('--image-project', help=help_text, hidden=hidden)
@@ -239,8 +238,8 @@ the image family, and the image is used.
 
 def AddImageFlagsCreate(parser):
   AddImageTypeFlag(parser, 'cluster')
-  AddImageFlag(parser, hidden=True)
-  AddImageProjectFlag(parser, hidden=True)
+  AddImageFlag(parser)
+  AddImageProjectFlag(parser)
   AddImageFamilyFlag(parser, hidden=True)
 
 
@@ -4848,6 +4847,17 @@ def AddVerticalPodAutoscalingFlagsExperimental(parser, hidden=False):
   return AddVerticalPodAutoscalingFlags(parser, hidden, experimental=True)
 
 
+def SandboxTypeValidator(value):
+  allowed = ['gvisor', 'microvm']
+  hidden = ['microvm']
+  if value not in allowed:
+    visible_allowed = [v for v in allowed if v not in hidden]
+    raise arg_parsers.ArgumentTypeError(
+        'Value must be one of [{0}].'.format(', '.join(visible_allowed))
+    )
+  return value
+
+
 def AddSandboxFlag(parser, hidden=False):
   """Adds a --sandbox flag to the given parser.
 
@@ -4855,13 +4865,12 @@ def AddSandboxFlag(parser, hidden=False):
     parser: A given parser.
     hidden: Whether or not to hide the help text.
   """
-  type_validator = arg_parsers.RegexpValidator(
-      r'^gvisor$', 'Type must be "gvisor"'
-  )
   parser.add_argument(
       '--sandbox',
       type=arg_parsers.ArgDict(
-          spec={'type': type_validator}, required_keys=['type'], max_length=1
+          spec={'type': SandboxTypeValidator},
+          required_keys=['type'],
+          max_length=1,
       ),
       metavar='type=TYPE',
       hidden=hidden,
@@ -5652,7 +5661,9 @@ def AddSystemConfigFlag(parser, hidden=True):
       hidden=hidden,
       help="""
 Path of the YAML/JSON file that contains the node configuration, including
-Linux kernel parameters (sysctls) and kubelet configs.
+Linux kernel parameters (sysctls) and kubelet configs. For more information
+about the configuration options, such as supported machine series and limits,
+see [Customize node system config](https://docs.cloud.google.com/kubernetes-engine/docs/how-to/node-system-config#kubelet-options).
 
 Examples:
 
@@ -5969,7 +5980,7 @@ Specifies the reservation for the {}.""".format(target)
 The type of the reservation for the {}.""".format(target)
   group.add_argument(
       '--reservation-affinity',
-      choices=['any', 'none', 'specific'],
+      choices=['any', 'none', 'specific', 'any-reservation-then-fail'],
       default=None,
       help=affinity_text,
   )
@@ -7178,9 +7189,19 @@ def AddAdditionalNodeNetworkFlag(parser):
     parser: A given parser.
   """
 
+  def _ValidateStackType(val):
+    valid_types = ['ipv4', 'ipv4-ipv6', 'ipv6']
+    val_lower = val.lower()
+    if val_lower not in valid_types:
+      raise arg_parsers.ArgumentTypeError(
+          'stack-type must be one of [ipv4, ipv4-ipv6, ipv6]'
+      )
+    return val_lower
+
   spec = {
       'network': str,
       'subnetwork': str,
+      'stack-type': _ValidateStackType,
   }
 
   parser.add_argument(
@@ -7190,17 +7211,21 @@ def AddAdditionalNodeNetworkFlag(parser):
           required_keys=['network', 'subnetwork'],
           max_length=len(spec),
       ),
-      metavar='network=NETWORK_NAME,subnetwork=SUBNETWORK_NAME',
+      metavar='network=NETWORK_NAME,subnetwork=SUBNETWORK_NAME[,stack-type=STACK_TYPE]',
       action='append',
       help="""\
       Attach an additional network interface to each node in the pool.
       This parameter can be specified up to 7 times.
 
-      e.g. --additional-node-network network=dataplane,subnetwork=subnet-dp
+      E.g., to configure the additional interface with 'dataplane' network, 'subnet-dp' subnetwork and dual-stack, run:
+        --additional-node-network network=dataplane,subnetwork=subnet-dp,stack-type=ipv4-ipv6
 
       *network*::: (Required) The network to attach the new interface to.
 
       *subnetwork*::: (Required) The subnetwork to attach the new interface to.
+
+      *stack-type*::: (Optional) The stack-type to be set on the new interface.
+      STACK_TYPE must be one of: ipv4, ipv4-ipv6, ipv6.
       """,
   )
 

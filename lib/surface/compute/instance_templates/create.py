@@ -135,7 +135,9 @@ def _CommonArgs(
   if support_numa_node_count:
     instances_flags.AddNumaNodeCountArgs(parser)
   instances_flags.AddStackTypeArgs(parser, support_ipv6_only)
-  instances_flags.AddIpv6NetworkTierArgs(parser)
+  instances_flags.AddIpv6NetworkTierArgs(
+      parser, support_standard_tier=(release_track == base.ReleaseTrack.ALPHA)
+  )
   maintenance_flags.AddResourcePoliciesArgs(
       parser, 'added to', 'instance-template'
   )

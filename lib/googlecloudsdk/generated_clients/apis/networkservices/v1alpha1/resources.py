@@ -107,6 +107,28 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_EXPRESSLINKS = (
+      'projects.locations.expressLinks',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/expressLinks/'
+              '{expressLinksId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_EXTENSIONBINDINGS = (
+      'projects.locations.extensionBindings',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'extensionBindings/{extensionBindingsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_GATEWAYS = (
       'projects.locations.gateways',
       '{+name}',
@@ -510,6 +532,17 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/tcpRoutes/'
               '{tcpRoutesId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_TELEMETRYPOLICIES = (
+      'projects.locations.telemetryPolicies',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'telemetryPolicies/{telemetryPoliciesId}',
       },
       ['name'],
       True

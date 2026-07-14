@@ -22,16 +22,50 @@ googlecloudsdk.command_lib.storage.tasks.task_executor.
 import os
 import sys
 import threading
+from typing import Any
 
 from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.api_lib.storage import request_config_factory
-from googlecloudsdk.api_lib.storage.gcs_grpc_bidi_streaming import client as grpc_bidi_streaming_client
+from googlecloudsdk.command_lib.storage import hash_util
 from googlecloudsdk.command_lib.storage import progress_callbacks
+from googlecloudsdk.command_lib.storage.resources import resource_reference
 from googlecloudsdk.command_lib.storage.tasks import task_status
 from googlecloudsdk.command_lib.storage.tasks.cp import copy_util
-from googlecloudsdk.core import exceptions as core_exceptions
+from googlecloudsdk.command_lib.storage.tasks.cp import download_util
+from googlecloudsdk.command_lib.util import crc32c
 from googlecloudsdk.core import properties
+
+
+def _validate_streaming_download(
+    source_resource: resource_reference.ObjectResource,
+    destination_resource: resource_reference.Resource,
+    digesters: dict[hash_util.HashAlgorithm, Any] | None,
+) -> None:
+  """Validates the streaming download."""
+  if not digesters:
+    return
+  # Validate the download.
+  if hash_util.HashAlgorithm.MD5 in digesters:
+    calculated_digest = hash_util.get_base64_hash_digest_string(
+        digesters[hash_util.HashAlgorithm.MD5]
+    )
+    download_util.validate_download_hash_and_delete_corrupt_files(
+        destination_resource.storage_url.resource_name,
+        source_resource.md5_hash,
+        calculated_digest,
+    )
+    return
+  if hash_util.HashAlgorithm.CRC32C in digesters:
+    calculated_digest = crc32c.get_hash(
+        digesters[hash_util.HashAlgorithm.CRC32C]
+    )
+    crc32c_hash = download_util.get_crc32c_hash_for_resource(source_resource)
+    download_util.validate_download_hash_and_delete_corrupt_files(
+        destination_resource.storage_url.resource_name,
+        crc32c_hash,
+        calculated_digest,
+    )
 
 
 class StreamingDownloadTask(copy_util.ObjectCopyTask):
@@ -116,20 +150,39 @@ class StreamingDownloadTask(copy_util.ObjectCopyTask):
     if properties.VALUES.storage.enable_zonal_buckets_bidi_streaming.GetBool():
       args.append(self._source_resource.storage_url.bucket_name)
     api = api_factory.get_api(*args)
-    if isinstance(api, grpc_bidi_streaming_client.GcsGrpcBidiStreamingClient):
-      raise core_exceptions.InternalError(
-          'Only Simple/Sliced downloads are supported for zonal buckets via'
-          ' Grpc Bidi Streaming API.'
+    is_full_download = self._start_byte == 0 and (
+        self._end_byte is None
+        or self._end_byte >= self._source_resource.size - 1
+    )
+    # Populate digesters only if the API supports on-the-fly checksums or if
+    # the download is a full download.
+    if (
+        is_full_download
+        or cloud_api.Capability.ON_THE_FLY_CHECKSUM in api.capabilities
+    ):
+      digesters = download_util.get_digesters(
+          None, self._source_resource, is_streaming=True
       )
+    else:
+      digesters = None
+
     api.download_object(
         self._source_resource,
         self._download_stream,
         request_config,
+        digesters=digesters,
         download_strategy=cloud_api.DownloadStrategy.ONE_SHOT,
         progress_callback=progress_callback,
         start_byte=self._start_byte,
-        end_byte=self._end_byte)
+        end_byte=self._end_byte,
+    )
     self._download_stream.flush()
+
+    if is_full_download:
+      _validate_streaming_download(
+          self._source_resource, self._destination_resource, digesters,
+      )
+
     self._print_created_message_if_requested(self._destination_resource)
 
   def __eq__(self, other):

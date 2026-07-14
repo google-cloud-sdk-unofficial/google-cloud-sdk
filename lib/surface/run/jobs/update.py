@@ -55,8 +55,7 @@ Container Flags
   group.AddArgument(flags.GpuFlag())
   group.AddArgument(flags.CommandFlag())
   group.AddArgument(flags.ArgsFlag())
-  if release_track != base.ReleaseTrack.GA:
-    group.AddArgument(flags.WorkdirFlag())
+  group.AddArgument(flags.WorkdirFlag())
   group.AddArgument(flags.SecretsFlags())
   group.AddArgument(flags.DependsOnFlag())
   group.AddArgument(flags.AddVolumeMountFlag())

@@ -43,6 +43,8 @@ class NetworkservicesV1alpha1(base_api.BaseApiClient):
     self.projects_locations_edgeCacheOrigins = self.ProjectsLocationsEdgeCacheOriginsService(self)
     self.projects_locations_edgeCacheServices = self.ProjectsLocationsEdgeCacheServicesService(self)
     self.projects_locations_endpointPolicies = self.ProjectsLocationsEndpointPoliciesService(self)
+    self.projects_locations_expressLinks = self.ProjectsLocationsExpressLinksService(self)
+    self.projects_locations_extensionBindings = self.ProjectsLocationsExtensionBindingsService(self)
     self.projects_locations_gateways_routeViews = self.ProjectsLocationsGatewaysRouteViewsService(self)
     self.projects_locations_gateways = self.ProjectsLocationsGatewaysService(self)
     self.projects_locations_global_googleTagGatewayPolicies = self.ProjectsLocationsGlobalGoogleTagGatewayPoliciesService(self)
@@ -80,6 +82,7 @@ class NetworkservicesV1alpha1(base_api.BaseApiClient):
     self.projects_locations_serviceLbPolicies = self.ProjectsLocationsServiceLbPoliciesService(self)
     self.projects_locations_swpSecurityExtensions = self.ProjectsLocationsSwpSecurityExtensionsService(self)
     self.projects_locations_tcpRoutes = self.ProjectsLocationsTcpRoutesService(self)
+    self.projects_locations_telemetryPolicies = self.ProjectsLocationsTelemetryPoliciesService(self)
     self.projects_locations_tlsRoutes = self.ProjectsLocationsTlsRoutesService(self)
     self.projects_locations_wasmActions = self.ProjectsLocationsWasmActionsService(self)
     self.projects_locations_wasmPlugins_versions = self.ProjectsLocationsWasmPluginsVersionsService(self)
@@ -1223,6 +1226,296 @@ class NetworkservicesV1alpha1(base_api.BaseApiClient):
         relative_path='v1alpha1/{+name}',
         request_field='endpointPolicy',
         request_type_name='NetworkservicesProjectsLocationsEndpointPoliciesPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsExpressLinksService(base_api.BaseApiService):
+    """Service class for the projects_locations_expressLinks resource."""
+
+    _NAME = 'projects_locations_expressLinks'
+
+    def __init__(self, client):
+      super(NetworkservicesV1alpha1.ProjectsLocationsExpressLinksService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new ExpressLink in a given project and location.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsExpressLinksCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/expressLinks',
+        http_method='POST',
+        method_id='networkservices.projects.locations.expressLinks.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['expressLinkId'],
+        relative_path='v1alpha1/{+parent}/expressLinks',
+        request_field='expressLink',
+        request_type_name='NetworkservicesProjectsLocationsExpressLinksCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single ExpressLink.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsExpressLinksDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/expressLinks/{expressLinksId}',
+        http_method='DELETE',
+        method_id='networkservices.projects.locations.expressLinks.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['etag'],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsExpressLinksDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single ExpressLink.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsExpressLinksGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ExpressLink) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/expressLinks/{expressLinksId}',
+        http_method='GET',
+        method_id='networkservices.projects.locations.expressLinks.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsExpressLinksGetRequest',
+        response_type_name='ExpressLink',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists ExpressLinks in a given project and location.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsExpressLinksListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListExpressLinksResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/expressLinks',
+        http_method='GET',
+        method_id='networkservices.projects.locations.expressLinks.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1alpha1/{+parent}/expressLinks',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsExpressLinksListRequest',
+        response_type_name='ListExpressLinksResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single ExpressLink.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsExpressLinksPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/expressLinks/{expressLinksId}',
+        http_method='PATCH',
+        method_id='networkservices.projects.locations.expressLinks.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1alpha1/{+name}',
+        request_field='expressLink',
+        request_type_name='NetworkservicesProjectsLocationsExpressLinksPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsExtensionBindingsService(base_api.BaseApiService):
+    """Service class for the projects_locations_extensionBindings resource."""
+
+    _NAME = 'projects_locations_extensionBindings'
+
+    def __init__(self, client):
+      super(NetworkservicesV1alpha1.ProjectsLocationsExtensionBindingsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new `ExtensionBinding` resource in a given project and location.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsExtensionBindingsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/extensionBindings',
+        http_method='POST',
+        method_id='networkservices.projects.locations.extensionBindings.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['extensionBindingId'],
+        relative_path='v1alpha1/{+parent}/extensionBindings',
+        request_field='extensionBinding',
+        request_type_name='NetworkservicesProjectsLocationsExtensionBindingsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes the specified `ExtensionBinding` resource.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsExtensionBindingsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/extensionBindings/{extensionBindingsId}',
+        http_method='DELETE',
+        method_id='networkservices.projects.locations.extensionBindings.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['etag'],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsExtensionBindingsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of the specified `ExtensionBinding` resource.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsExtensionBindingsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ExtensionBinding) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/extensionBindings/{extensionBindingsId}',
+        http_method='GET',
+        method_id='networkservices.projects.locations.extensionBindings.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsExtensionBindingsGetRequest',
+        response_type_name='ExtensionBinding',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists `ExtensionBinding` resources in a given project and location.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsExtensionBindingsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListExtensionBindingsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/extensionBindings',
+        http_method='GET',
+        method_id='networkservices.projects.locations.extensionBindings.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1alpha1/{+parent}/extensionBindings',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsExtensionBindingsListRequest',
+        response_type_name='ListExtensionBindingsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of the specified `ExtensionBinding` resource.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsExtensionBindingsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/extensionBindings/{extensionBindingsId}',
+        http_method='PATCH',
+        method_id='networkservices.projects.locations.extensionBindings.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1alpha1/{+name}',
+        request_field='extensionBinding',
+        request_type_name='NetworkservicesProjectsLocationsExtensionBindingsPatchRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -6318,6 +6611,151 @@ class NetworkservicesV1alpha1(base_api.BaseApiClient):
         relative_path='v1alpha1/{+name}',
         request_field='tcpRoute',
         request_type_name='NetworkservicesProjectsLocationsTcpRoutesPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsTelemetryPoliciesService(base_api.BaseApiService):
+    """Service class for the projects_locations_telemetryPolicies resource."""
+
+    _NAME = 'projects_locations_telemetryPolicies'
+
+    def __init__(self, client):
+      super(NetworkservicesV1alpha1.ProjectsLocationsTelemetryPoliciesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new TelemetryPolicy in a given project and location.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsTelemetryPoliciesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/telemetryPolicies',
+        http_method='POST',
+        method_id='networkservices.projects.locations.telemetryPolicies.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['telemetryPolicyId'],
+        relative_path='v1alpha1/{+parent}/telemetryPolicies',
+        request_field='telemetryPolicy',
+        request_type_name='NetworkservicesProjectsLocationsTelemetryPoliciesCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single TelemetryPolicy.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsTelemetryPoliciesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/telemetryPolicies/{telemetryPoliciesId}',
+        http_method='DELETE',
+        method_id='networkservices.projects.locations.telemetryPolicies.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['etag'],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsTelemetryPoliciesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single TelemetryPolicy.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsTelemetryPoliciesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TelemetryPolicy) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/telemetryPolicies/{telemetryPoliciesId}',
+        http_method='GET',
+        method_id='networkservices.projects.locations.telemetryPolicies.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsTelemetryPoliciesGetRequest',
+        response_type_name='TelemetryPolicy',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists TelemetryPolicies in a given project and location.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsTelemetryPoliciesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListTelemetryPoliciesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/telemetryPolicies',
+        http_method='GET',
+        method_id='networkservices.projects.locations.telemetryPolicies.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1alpha1/{+parent}/telemetryPolicies',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsTelemetryPoliciesListRequest',
+        response_type_name='ListTelemetryPoliciesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single TelemetryPolicy.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsTelemetryPoliciesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/telemetryPolicies/{telemetryPoliciesId}',
+        http_method='PATCH',
+        method_id='networkservices.projects.locations.telemetryPolicies.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['allowMissing', 'updateMask'],
+        relative_path='v1alpha1/{+name}',
+        request_field='telemetryPolicy',
+        request_type_name='NetworkservicesProjectsLocationsTelemetryPoliciesPatchRequest',
         response_type_name='Operation',
         supports_download=False,
     )

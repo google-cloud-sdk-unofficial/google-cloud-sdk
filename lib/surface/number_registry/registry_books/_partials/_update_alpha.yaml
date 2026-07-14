@@ -29,7 +29,7 @@
   arguments:
     params:
     - help_text: |-
-        Identifier. name of resource
+        Identifier. The resource name of the RegistryBook.
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.number_registry.v1alpha_resources:projects_locations_registry_books
@@ -39,7 +39,7 @@
       required: false
       repeated: true
       help_text: |-
-        Labels as key value pairs
+        User-defined labels.
       clearable: true
       spec:
       - api_field: key

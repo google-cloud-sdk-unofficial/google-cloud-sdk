@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA]
+  hints:
+    read_only: true
 
   help_text:
     brief: Get the details of an Event Threat Detection custom module.

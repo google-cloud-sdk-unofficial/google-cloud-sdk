@@ -15,6 +15,8 @@
 """Traffic-specific printer and functions for generating traffic formats."""
 
 
+from googlecloudsdk.api_lib.run import container_resource
+from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.api_lib.run import service
 from googlecloudsdk.api_lib.run import traffic_pair
 from googlecloudsdk.command_lib.run import platforms
@@ -66,8 +68,30 @@ def _TransformTrafficPair(pair):
           cp.Table([('', _GetTagAndStatus(t), t.url) for t in pair.tags]))
 
 
+def _GetInvokerIamCheck(record):
+  """Gets whether the invoker IAM check is enabled or disabled."""
+  disabled = (
+      record.annotations.get(container_resource.DISABLE_IAM_ANNOTATION)
+      == 'true'
+  )
+  return 'disabled' if disabled else 'enabled'
+
+
+def _GetSsh(record):
+  """Gets whether SSH is enabled or disabled."""
+  enabled = (
+      record.annotations.get(k8s_object.SSH_ENABLED_ANNOTATION) == 'true'
+  )
+  return 'enabled' if enabled else 'disabled'
+
+
 def _TransformTrafficPairs(
-    traffic_pairs, service_url, service_ingress=None, service_iap=None
+    traffic_pairs,
+    service_url,
+    service_ingress=None,
+    service_iap=None,
+    service_invoker_iam_check=None,
+    service_ssh=None,
 ):
   """Transforms a List[TrafficTargetPair] into a marker class structure."""
   route_section = [cp.Labeled([('URL', service_url)])]
@@ -75,6 +99,12 @@ def _TransformTrafficPairs(
     route_section.append(cp.Labeled([('Ingress', service_ingress)]))
   if service_iap is not None:
     route_section.append(cp.Labeled([('Iap Enabled', service_iap)]))
+  if service_invoker_iam_check is not None:
+    route_section.append(
+        cp.Labeled([('Invoker IAM Check', service_invoker_iam_check)])
+    )
+  if service_ssh is not None:
+    route_section.append(cp.Labeled([('SSH', service_ssh)]))
   if traffic_pairs is not None:
     traffic_section = cp.Section(
         [cp.Table(_TransformTrafficPair(p) for p in traffic_pairs)]
@@ -118,12 +148,13 @@ def TransformInstanceRouteFields(instance_record):
   Returns:
     A custom printer marker object describing the route fields print format.
   """
-  if not instance_record.urls:
-    return None
+  url = instance_record.urls[0] if instance_record.urls else None
   return _TransformTrafficPairs(
       None,
-      instance_record.urls[0],
-      _GetIngress(instance_record),
+      url,
+      _GetIngress(instance_record) if url else None,
+      service_invoker_iam_check=_GetInvokerIamCheck(instance_record),
+      service_ssh=_GetSsh(instance_record),
   )
 
 

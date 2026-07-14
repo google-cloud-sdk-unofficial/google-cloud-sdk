@@ -15,6 +15,7 @@
 """Command for updating env vars and other configuration info."""
 
 import copy
+import os
 
 from googlecloudsdk.api_lib.run import global_methods
 from googlecloudsdk.api_lib.run import service
@@ -81,10 +82,12 @@ class Replace(base.Command):
     parser.add_argument(
         'FILE',
         action='store',
+        nargs='?',
         type=arg_parsers.YAMLFileContents(),
         help=(
             'The absolute path to the YAML file with a Knative '
-            'service definition for the service to update or deploy.'
+            'service definition for the service to update or deploy. '
+            'Defaults to `service.yaml` if not specified.'
         ),
     )
 
@@ -135,6 +138,19 @@ class Replace(base.Command):
 
   def Run(self, args):
     """Create or Update service from YAML."""
+    if args.FILE is None:
+      if not os.path.exists('service.yaml'):
+        raise exceptions.ConfigurationError(
+            'No YAML service definition file specified and default'
+            ' [service.yaml] does not exist.'
+        )
+      try:
+        args.FILE = arg_parsers.YAMLFileContents()('service.yaml')
+      except arg_parsers.ArgumentTypeError as e:
+        raise exceptions.ConfigurationError(
+            'Failed to parse default [service.yaml]: {}'.format(e)
+        )
+
     run_messages = apis.GetMessagesModule(
         global_methods.SERVERLESS_API_NAME,
         global_methods.SERVERLESS_API_VERSION,

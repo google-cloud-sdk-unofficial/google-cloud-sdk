@@ -3580,10 +3580,11 @@ class MirroringEndpointGroup(_messages.Message):
       endpoint group is connected to, for example:
       `projects/123456789/locations/global/mirroringDeploymentGroups/my-dg`.
       See https://google.aip.dev/124.
-    mirroringDeploymentGroups: Immutable. A list of the deployment groups that
+    mirroringDeploymentGroups: Optional. A list of the deployment groups that
       this BROKER endpoint group is connected to, for example:
       `projects/123456789/locations/global/mirroringDeploymentGroups/my-dg`.
-      See https://google.aip.dev/124.
+      See https://google.aip.dev/124. Adding new deployment groups to this
+      list is supported. Deleting existing deployment groups is not supported.
     name: Immutable. Identifier. The resource name of this endpoint group, for
       example:
       `projects/123456789/locations/global/mirroringEndpointGroups/my-eg`. See
@@ -3723,6 +3724,9 @@ class MirroringEndpointGroupAssociation(_messages.Message):
     network: Immutable. The VPC network that is associated. for example:
       `projects/123456789/global/networks/my-network`. See
       https://google.aip.dev/124.
+    networkCookie: Output only. Identifier used by the data-path. See the NSI
+      GENEVE format for more details: https://docs.cloud.google.com/network-
+      security-integration/docs/understand-geneve#network_id
     reconciling: Output only. The current state of the resource does not match
       the user's intended state, and the system is working to reconcile them.
       This part of the normal operation (e.g. adding a new location to the
@@ -3793,9 +3797,10 @@ class MirroringEndpointGroupAssociation(_messages.Message):
   mirroringEndpointGroup = _messages.StringField(5)
   name = _messages.StringField(6)
   network = _messages.StringField(7)
-  reconciling = _messages.BooleanField(8)
-  state = _messages.EnumField('StateValueValuesEnum', 9)
-  updateTime = _messages.StringField(10)
+  networkCookie = _messages.IntegerField(8, variant=_messages.Variant.UINT32)
+  reconciling = _messages.BooleanField(9)
+  state = _messages.EnumField('StateValueValuesEnum', 10)
+  updateTime = _messages.StringField(11)
 
 
 class MirroringEndpointGroupAssociationDetails(_messages.Message):
@@ -8427,7 +8432,7 @@ class SecurityProfileGroup(_messages.Message):
     customMirroringProfile: Optional. Reference to a SecurityProfile with the
       CustomMirroring configuration.
     dataPathId: Output only. Identifier used by the data-path. Unique within
-      {container, location}.
+      \{container, location\}.
     description: Optional. An optional description of the profile group. Max
       length 2048 characters.
     etag: Output only. This checksum is computed by the server based on the

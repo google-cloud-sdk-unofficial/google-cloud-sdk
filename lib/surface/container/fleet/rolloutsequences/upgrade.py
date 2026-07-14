@@ -19,6 +19,7 @@ from __future__ import annotations
 from apitools.base.py import encoding
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.container.fleet import client
+from googlecloudsdk.api_lib.container.fleet import types
 from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.api_lib.util import exceptions as api_exceptions
 from googlecloudsdk.calliope import base
@@ -29,32 +30,31 @@ from googlecloudsdk.command_lib.container.fleet.rolloutsequences import flags as
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console.style import text
-from googlecloudsdk.generated_clients.apis.gkehub.v1alpha import gkehub_v1alpha_messages as alpha_messages
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Upgrade(base.Command):
   """Upgrade the clusters in a rollout sequence resource."""
-
-  _release_track = base.ReleaseTrack.ALPHA
 
   @classmethod
   def Args(cls, parser: parser_arguments.ArgumentInterceptor):
     """Registers flags for this command."""
     flags = rolloutsequence_flags.RolloutSequenceFlags(
-        parser, release_track=cls._release_track
+        parser, release_track=cls.ReleaseTrack()
     )
     flags.AddRolloutSequenceResourceArg()
     flags.AddUpgradeFlags()
     flags.AddAsync()
 
-  def Run(self, args: parser_extensions.Namespace) -> alpha_messages.Operation:
+  def Run(self, args: parser_extensions.Namespace) -> types.Operation | None:
     """Runs the upgrade command."""
-    fleet_client = client.FleetClient(release_track=self.ReleaseTrack())
+    release_track = self.ReleaseTrack()
+    fleet_client = client.FleetClient(release_track=release_track)
     flag_parser = rolloutsequence_flags.RolloutSequenceFlagParser(
-        args, release_track=self.ReleaseTrack()
+        args, release_track=release_track
     )
 
     req = fleet_client.messages.GkehubProjectsLocationsRolloutSequencesUpgradeRequest(
@@ -123,7 +123,7 @@ class Upgrade(base.Command):
       )
       return None
 
-    operation_client = client.OperationClient(release_track=self.ReleaseTrack())
+    operation_client = client.OperationClient(release_track=release_track)
     completed_operation = operation_client.Wait(util.OperationRef(operation))
 
     if completed_operation:

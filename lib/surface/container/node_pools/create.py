@@ -94,8 +94,8 @@ VM)`.
       type=arg_parsers.BinarySize(lower_bound='10GB'),
       help='Size for node VM boot disks in GB. Defaults to 100GB.')
   flags.AddImageTypeFlag(parser, 'node pool')
-  flags.AddImageFlag(parser, hidden=True)
-  flags.AddImageProjectFlag(parser, hidden=True)
+  flags.AddImageFlag(parser)
+  flags.AddImageProjectFlag(parser)
   flags.AddImageFamilyFlag(parser, hidden=True)
   flags.AddLabelsFlag(parser, for_node_pool=True)
   flags.AddNodeLabelsFlag(parser, for_node_pool=True)

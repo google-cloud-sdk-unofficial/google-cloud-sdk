@@ -12983,7 +12983,7 @@ class GoogleCloudApigeeV1RuntimeConfig(_messages.Message):
 
 
 class GoogleCloudApigeeV1RuntimeTraceConfig(_messages.Message):
-  r"""NEXT ID: 10 RuntimeTraceConfig defines the configurations for
+  r"""NEXT ID: 11 RuntimeTraceConfig defines the configurations for
   distributed trace in an environment.
 
   Enums:
@@ -12991,6 +12991,9 @@ class GoogleCloudApigeeV1RuntimeTraceConfig(_messages.Message):
       trace captured using OpenCensus. An exporter sends traces to any backend
       that is capable of consuming them. Recorded spans can be exported by
       registered exporters.
+    SpanSemanticsValueValuesEnum: Optional. The span semantics to use.
+      Configuration Requirements (if `span_semantics` is `OTEL`): -
+      `trace_protocol` must be `OTLP`.
     TraceProtocolValueValuesEnum: Optional. The trace protocol to use.
 
   Fields:
@@ -13014,6 +13017,9 @@ class GoogleCloudApigeeV1RuntimeTraceConfig(_messages.Message):
     revisionId: Revision number which can be used by the runtime to detect if
       the trace config has changed between two versions.
     samplingConfig: Trace configuration for all API proxies in an environment.
+    spanSemantics: Optional. The span semantics to use. Configuration
+      Requirements (if `span_semantics` is `OTEL`): - `trace_protocol` must be
+      `OTLP`.
     traceProtocol: Optional. The trace protocol to use.
   """
 
@@ -13038,6 +13044,20 @@ class GoogleCloudApigeeV1RuntimeTraceConfig(_messages.Message):
     OPEN_TELEMETRY_COLLECTOR = 3
     OPEN_TELEMETRY_CLOUD_TRACE = 4
 
+  class SpanSemanticsValueValuesEnum(_messages.Enum):
+    r"""Optional. The span semantics to use. Configuration Requirements (if
+    `span_semantics` is `OTEL`): - `trace_protocol` must be `OTLP`.
+
+    Values:
+      SPAN_SEMANTICS_UNSPECIFIED: Semantics unspecified. Defaults to LEGACY.
+      LEGACY: Uses Apigee legacy span and attribute names.
+      OTEL: Uses OpenTelemetry semantic-convention-aligned span and attribute
+        names.
+    """
+    SPAN_SEMANTICS_UNSPECIFIED = 0
+    LEGACY = 1
+    OTEL = 2
+
   class TraceProtocolValueValuesEnum(_messages.Enum):
     r"""Optional. The trace protocol to use.
 
@@ -13059,14 +13079,18 @@ class GoogleCloudApigeeV1RuntimeTraceConfig(_messages.Message):
   revisionCreateTime = _messages.StringField(6)
   revisionId = _messages.StringField(7)
   samplingConfig = _messages.MessageField('GoogleCloudApigeeV1RuntimeTraceSamplingConfig', 8)
-  traceProtocol = _messages.EnumField('TraceProtocolValueValuesEnum', 9)
+  spanSemantics = _messages.EnumField('SpanSemanticsValueValuesEnum', 9)
+  traceProtocol = _messages.EnumField('TraceProtocolValueValuesEnum', 10)
 
 
 class GoogleCloudApigeeV1RuntimeTraceConfigOverride(_messages.Message):
-  r"""NEXT ID: 9 Trace configuration override for a specific API proxy in an
+  r"""NEXT ID: 10 Trace configuration override for a specific API proxy in an
   environment.
 
   Enums:
+    SpanSemanticsValueValuesEnum: Optional. The span semantics to use.
+      Configuration Requirements (if `span_semantics` is `OTEL`): -
+      `trace_protocol` must be `OTLP`.
     TraceProtocolValueValuesEnum: Optional. The trace protocol to use.
 
   Fields:
@@ -13087,11 +13111,28 @@ class GoogleCloudApigeeV1RuntimeTraceConfigOverride(_messages.Message):
       the trace config override has changed between two versions.
     samplingConfig: Trace configuration override for a specific API proxy in
       an environment.
+    spanSemantics: Optional. The span semantics to use. Configuration
+      Requirements (if `span_semantics` is `OTEL`): - `trace_protocol` must be
+      `OTLP`.
     traceProtocol: Optional. The trace protocol to use.
     uid: Unique ID for the configuration override. The ID will only change if
       the override is deleted and recreated. Corresponds to name's "override"
       field.
   """
+
+  class SpanSemanticsValueValuesEnum(_messages.Enum):
+    r"""Optional. The span semantics to use. Configuration Requirements (if
+    `span_semantics` is `OTEL`): - `trace_protocol` must be `OTLP`.
+
+    Values:
+      SPAN_SEMANTICS_UNSPECIFIED: Semantics unspecified. Defaults to LEGACY.
+      LEGACY: Uses Apigee legacy span and attribute names.
+      OTEL: Uses OpenTelemetry semantic-convention-aligned span and attribute
+        names.
+    """
+    SPAN_SEMANTICS_UNSPECIFIED = 0
+    LEGACY = 1
+    OTEL = 2
 
   class TraceProtocolValueValuesEnum(_messages.Enum):
     r"""Optional. The trace protocol to use.
@@ -13112,8 +13153,9 @@ class GoogleCloudApigeeV1RuntimeTraceConfigOverride(_messages.Message):
   revisionCreateTime = _messages.StringField(4)
   revisionId = _messages.StringField(5)
   samplingConfig = _messages.MessageField('GoogleCloudApigeeV1RuntimeTraceSamplingConfig', 6)
-  traceProtocol = _messages.EnumField('TraceProtocolValueValuesEnum', 7)
-  uid = _messages.StringField(8)
+  spanSemantics = _messages.EnumField('SpanSemanticsValueValuesEnum', 7)
+  traceProtocol = _messages.EnumField('TraceProtocolValueValuesEnum', 8)
+  uid = _messages.StringField(9)
 
 
 class GoogleCloudApigeeV1RuntimeTraceSamplingConfig(_messages.Message):
@@ -14884,6 +14926,9 @@ class GoogleCloudApigeeV1TraceConfig(_messages.Message):
       distributed trace captured using the chosen trace protocol. An exporter
       sends traces to any backend that is capable of consuming them. Recorded
       spans can be exported by registered exporters.
+    SpanSemanticsValueValuesEnum: Optional. The span semantics to use.
+      Configuration Requirements (if span_semantics is OTEL): - trace_protocol
+      must be OTLP.
     TraceProtocolValueValuesEnum: Optional. The trace protocol to use.
       Configuration Requirements (if trace_protocol is OTLP): - Allowed
       Exporters: CLOUD_TRACE or OPEN_TELEMETRY_COLLECTOR. - If Exporter is
@@ -14902,6 +14947,8 @@ class GoogleCloudApigeeV1TraceConfig(_messages.Message):
     samplingConfig: Distributed trace configuration for all API proxies in an
       environment. You can also override the configuration for a specific API
       proxy using the distributed trace configuration overrides API.
+    spanSemantics: Optional. The span semantics to use. Configuration
+      Requirements (if span_semantics is OTEL): - trace_protocol must be OTLP.
     traceProtocol: Optional. The trace protocol to use. Configuration
       Requirements (if trace_protocol is OTLP): - Allowed Exporters:
       CLOUD_TRACE or OPEN_TELEMETRY_COLLECTOR. - If Exporter is
@@ -14932,6 +14979,20 @@ class GoogleCloudApigeeV1TraceConfig(_messages.Message):
     OPEN_TELEMETRY_COLLECTOR = 3
     OPEN_TELEMETRY_CLOUD_TRACE = 4
 
+  class SpanSemanticsValueValuesEnum(_messages.Enum):
+    r"""Optional. The span semantics to use. Configuration Requirements (if
+    span_semantics is OTEL): - trace_protocol must be OTLP.
+
+    Values:
+      SPAN_SEMANTICS_UNSPECIFIED: Semantics unspecified. Defaults to LEGACY.
+      LEGACY: Uses Apigee legacy span and attribute names.
+      OTEL: Uses OpenTelemetry semantic-convention-aligned span and attribute
+        names.
+    """
+    SPAN_SEMANTICS_UNSPECIFIED = 0
+    LEGACY = 1
+    OTEL = 2
+
   class TraceProtocolValueValuesEnum(_messages.Enum):
     r"""Optional. The trace protocol to use. Configuration Requirements (if
     trace_protocol is OTLP): - Allowed Exporters: CLOUD_TRACE or
@@ -14953,7 +15014,8 @@ class GoogleCloudApigeeV1TraceConfig(_messages.Message):
   exporter = _messages.EnumField('ExporterValueValuesEnum', 2)
   openTelemetryProtocolEnabled = _messages.BooleanField(3)
   samplingConfig = _messages.MessageField('GoogleCloudApigeeV1TraceSamplingConfig', 4)
-  traceProtocol = _messages.EnumField('TraceProtocolValueValuesEnum', 5)
+  spanSemantics = _messages.EnumField('SpanSemanticsValueValuesEnum', 5)
+  traceProtocol = _messages.EnumField('TraceProtocolValueValuesEnum', 6)
 
 
 class GoogleCloudApigeeV1TraceConfigOverride(_messages.Message):

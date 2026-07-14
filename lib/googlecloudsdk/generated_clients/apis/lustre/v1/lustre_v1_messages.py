@@ -535,6 +535,9 @@ class LustreProjectsLocationsInstancesDeleteRequest(_messages.Message):
   r"""A LustreProjectsLocationsInstancesDeleteRequest object.
 
   Fields:
+    force: Optional. If set to true, any sub-resources from this instance will
+      also be deleted. Otherwise, the request will only work if the instance
+      has no sub-resources.
     name: Required. The resource name of the instance to delete, in the format
       `projects/{projectId}/locations/{location}/instances/{instanceId}`.
     requestId: Optional. An optional request ID to identify requests. Specify
@@ -550,8 +553,9 @@ class LustreProjectsLocationsInstancesDeleteRequest(_messages.Message):
       not supported (00000000-0000-0000-0000-000000000000).
   """
 
-  name = _messages.StringField(1, required=True)
-  requestId = _messages.StringField(2)
+  force = _messages.BooleanField(1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
 
 
 class LustreProjectsLocationsInstancesExportDataRequest(_messages.Message):

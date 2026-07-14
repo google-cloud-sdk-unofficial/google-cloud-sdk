@@ -11,6 +11,9 @@
         restricted application in the 'binding-file'. In such case, the access level and/or
         session settings specified in the yaml file will be bound with the group and the restricted
         applications.
+
+        The access level can also be bound with a specific service account or all service accounts
+        in a specified project.
       examples: |
         To create a new cloud access binding, run:
 
@@ -57,6 +60,18 @@
             --level=accessPolicies/123/accessLevels/abc \
             --dry-run-level=accessPolicies/123/accessLevels/def \
             --binding-file='binding.yaml'
+
+        To create a new cloud access binding for a particular service account, run:
+
+          $ {command} --service-account=service-account@project.iam.gserviceaccount.com \
+            --level=accessPolicies/123/accessLevels/abc \
+            --organization='1234567890'
+
+        To create a new cloud access binding for all service accounts in a particular project, run:
+
+          $ {command} --service-account-project-number='987654321' \
+            --level=accessPolicies/123/accessLevels/abc \
+            --organization='1234567890'
     ALPHA:
       description: |
         Create a new access binding. The access level (if any) will be bound with
@@ -221,13 +236,13 @@
       GA:
         help_text: |
           Google Group ID whose members are subject to the restrictions of this
-          binding. At most one of `--group-key` or `--federated-principal` may be
+          binding. At most one of `--group-key` or `--federated-principal` can be
           specified.
       ALPHA:
         help_text: |
           Google Group ID whose members are subject to the restrictions of this
           binding. At most one of `--group-key`, `--federated-principal`,
-          `--service-account`, or `--service-account-project-number` may be
+          `--service-account`, or `--service-account-project-number` can be
           specified.
     - api_field: gcpUserAccessBinding.accessLevels
       arg_name: level
@@ -351,24 +366,22 @@
     - api_field: gcpUserAccessBinding.principal.serviceAccount
       arg_name: service-account
       required: false
-      release_tracks: [ALPHA]
       type: str
       help_text: |
         Service account email that this binding applies to. Used to assign
         policies to a single first-party service account. At most one of
         `--group-key`, `--federated-principal`, `--service-account`, or
-        `--service-account-project-number` may be specified.
+        `--service-account-project-number` can be specified.
     - api_field: gcpUserAccessBinding.principal.serviceAccountProjectNumber
       arg_name: service-account-project-number
       required: false
-      release_tracks: [ALPHA]
       type: str
       help_text: |
         Project number of the project that contains the service accounts
         that are subject to the restrictions of this binding. Used to assign policies to all service
         accounts in a Google Cloud project. At most one of `--group-key`,
         `--federated-principal`, `--service-account`, or
-        `--service-account-project-number` may be specified.
+        `--service-account-project-number` can be specified.
     - api_field: gcpUserAccessBinding.principal.federatedPrincipal
       arg_name: federated-principal
       required: false
@@ -379,14 +392,14 @@
           IAM federated principal that this binding applies to. Can be a single
           principal or a principal set. Used to assign policies to third-party
           workforce or workload identities. At most one of `--group-key` or
-          `--federated-principal` may be specified.
+          `--federated-principal` can be specified.
       ALPHA:
         help_text: |
           IAM federated principal that this binding applies to. Can be a single
           principal or a principal set. Used to assign policies to third-party
           workforce or workload identities. At most one of `--group-key`,
           `--federated-principal`, `--service-account`, or
-          `--service-account-project-number` may be specified.
+          `--service-account-project-number` can be specified.
 
   output:
     format: yaml

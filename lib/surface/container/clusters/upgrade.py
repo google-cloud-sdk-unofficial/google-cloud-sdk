@@ -52,7 +52,7 @@ To upgrade nodes to the latest available version, run
 
 
 class VersionVerifier(object):
-  """Compares the cluster and master versions for upgrade availablity."""
+  """Compares the cluster and master versions for upgrade availability."""
   UP_TO_DATE = 0
   UPGRADE_AVAILABLE = 1
   SUPPORT_ENDING = 2
@@ -131,8 +131,8 @@ You can find the list of allowed versions for upgrades by running:
       help='Timeout (seconds) for waiting on the operation to complete.')
   flags.AddAsyncFlag(parser)
   flags.AddImageTypeFlag(parser, 'cluster/node pool')
-  flags.AddImageFlag(parser, hidden=True)
-  flags.AddImageProjectFlag(parser, hidden=True)
+  flags.AddImageFlag(parser)
+  flags.AddImageProjectFlag(parser)
 
 
 def MaybeLog122UpgradeWarning(cluster):

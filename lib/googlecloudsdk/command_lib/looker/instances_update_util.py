@@ -32,14 +32,14 @@ _MSG_RELEASE_CHANNEL_UPGRADE_WARNING = (
 _MSG_RELEASE_CHANNEL_DOWNGRADE_WARNING = (
     'Caution: Your instance will remain on version {looker_version} until this'
     ' version becomes available in the {selected_channel} channel or may update'
-    ' instantly if {selected_channel} channel is on higher version. For more'
-    ' details, review'
+    ' instantly if the {selected_channel} channel is on a higher version. For'
+    ' more details, review'
     ' https://cloud.google.com/looker/docs/looker-core-release-process#release_channels.'
 )
 
 _MSG_RELEASE_CHANNEL_RAPID_MAINTENANCE_WARNING = (
-    'Switching to the Rapid channel automatically disables the maintenance'
-    ' window and all deny maintenance periods for this instance.'
+    'Switching to the Rapid channel automatically removes the maintenance'
+    ' window and deny maintenance periods for this instance.'
 )
 
 

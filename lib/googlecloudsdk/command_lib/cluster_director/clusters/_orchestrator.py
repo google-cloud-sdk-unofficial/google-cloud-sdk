@@ -397,7 +397,7 @@ def _MakeSlurmNodeSet(
 
   slurm_node_set = message_module.SlurmNodeSet(
       id=node_set.get("id"),
-      staticNodeCount=node_set.get("staticNodeCount", 1),
+      staticNodeCount=node_set.get("staticNodeCount"),
       maxDynamicNodeCount=node_set.get("maxDynamicNodeCount"),
       storageConfigs=node_set_storage_configs,
       computeId=node_set.get("computeId"),

@@ -150,6 +150,7 @@ class Create(base.Command):
     flags.AddIngressFlag(parser)
     flags.AddInvokerIamCheckFlag(parser)
     flags.AddRestartPolicyFlag(parser)
+    flags.AddSshFlag(parser)
     flags.AddDefaultUrlFlag(parser, resource_kind='instance')
 
     polling_group = parser.add_mutually_exclusive_group()

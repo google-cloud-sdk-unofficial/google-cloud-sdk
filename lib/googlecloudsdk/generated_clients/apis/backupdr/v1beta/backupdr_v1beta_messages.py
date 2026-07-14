@@ -4214,7 +4214,7 @@ class FetchAccessTokenResponse(_messages.Message):
   Fields:
     expireTime: The token is valid until this time.
     readLocation: The location in bucket that can be used for reading.
-    token: The downscoped token that was created.
+    token: Input only. The downscoped token that was created.
     writeLocation: The location in bucket that can be used for writing.
   """
 
@@ -6201,7 +6201,7 @@ class StandardSchedule(_messages.Message):
       and is not applicable otherwise. A validation error will occur if a
       value is supplied and `recurrence_type` is not `HOURLY`. The supported
       values for each resource type are as follows: *
-      `compute.googleapis.com/Instance`: 4-23 * `compute.googleapis.com/Disk`:
+      `compute.googleapis.com/Instance`: 1-23 * `compute.googleapis.com/Disk`:
       1-23 * `sqladmin.googleapis.com/Instance`: 6-23 *
       `alloydb.googleapis.com/Cluster`: 1-23 * `file.googleapis.com/Instance`:
       1-23 Refer to link https://cloud.google.com/backup-disaster-

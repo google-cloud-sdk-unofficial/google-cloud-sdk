@@ -235,6 +235,10 @@
     - googlecloudsdk.command_lib.artifacts.util:AppendUpstreamPoliciesToRequest
     - googlecloudsdk.command_lib.artifacts.util:SanitizeRemoteRepositoryConfig
 
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.artifacts.util:AddRegistryBaseToRepositoryInfo
+
 - release_tracks: [ALPHA, BETA]
 
   help_text:
@@ -304,3 +308,7 @@
     modify_request_hooks:
     - googlecloudsdk.command_lib.artifacts.util:CheckServiceAccountPermission
     - googlecloudsdk.command_lib.artifacts.util:AppendRepoDataToRequest
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.artifacts.util:AddRegistryBaseToRepositoryInfo

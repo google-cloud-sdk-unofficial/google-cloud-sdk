@@ -15,13 +15,13 @@
 """Command to force-complete a rollout stage."""
 
 from googlecloudsdk.api_lib.container.fleet import client
+from googlecloudsdk.api_lib.container.fleet import types
 from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.container.fleet.rollouts import flags as rollout_flags
 from googlecloudsdk.core import log
-from googlecloudsdk.generated_clients.apis.gkehub.v1alpha import gkehub_v1alpha_messages as alpha_messages
 
 
 _EXAMPLES = """
@@ -32,33 +32,35 @@ $ {command} ROLLOUT --stage=1
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class ForceCompleteStage(base.UpdateCommand):
   """Force-complete a rollout stage."""
 
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
-  @staticmethod
-  def Args(parser: parser_arguments.ArgumentInterceptor):
+  @classmethod
+  def Args(cls, parser: parser_arguments.ArgumentInterceptor):
     """Registers flags for the force-complete-stage command."""
-    flags = rollout_flags.RolloutFlags(parser)
+    flags = rollout_flags.RolloutFlags(parser, cls.ReleaseTrack())
     flags.AddRolloutResourceArg()
     flags.AddAsync()
     flags.AddStage()
 
-  def Run(self, args: parser_extensions.Namespace) -> alpha_messages.Operation:
+  def Run(self, args: parser_extensions.Namespace) -> types.Operation:
     """Runs the force-complete-stage command."""
     flag_parser = rollout_flags.RolloutFlagParser(
         args, release_track=self.ReleaseTrack()
     )
-    req = alpha_messages.GkehubProjectsLocationsRolloutsForceCompleteStageRequest(
+    fleet_client = client.FleetClient(release_track=self.ReleaseTrack())
+    req = fleet_client.messages.GkehubProjectsLocationsRolloutsForceCompleteStageRequest(
         name=util.RolloutName(args),
-        forceCompleteRolloutStageRequest=alpha_messages.ForceCompleteRolloutStageRequest(
+        forceCompleteRolloutStageRequest=fleet_client.messages.ForceCompleteRolloutStageRequest(
             stageNumber=args.stage,
         ),
     )
 
-    fleet_client = client.FleetClient(release_track=self.ReleaseTrack())
     operation = fleet_client.ForceCompleteRolloutStage(req)
     rollout_ref = util.RolloutRef(args)
 

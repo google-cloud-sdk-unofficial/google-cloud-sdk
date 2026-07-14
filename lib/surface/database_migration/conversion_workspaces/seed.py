@@ -31,15 +31,30 @@ class Seed(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
   """Seed a Database Migration Service conversion workspace."""
 
   detailed_help = {
-      'DESCRIPTION': """
+      'DESCRIPTION': (
+          """
         Seed a Database Migration Service conversion workspace.
-      """,
-      'EXAMPLES': """\
+
+        If --source-database-name-override is specified, this command updates the
+        conversion workspace's source database override before performing a seed
+        operation.
+      """
+      ),
+      'EXAMPLES': (
+          """\
         To seed a conversion workspace:
 
-            $ {command} my-conversion-workspace --region=us-central1
-            --source-connection-profile=cp1
-      """,
+          $ {command} my-conversion-workspace --region=us-central1 --source-connection-profile=cp1
+
+        To seed a conversion workspace and auto commit:
+
+          $ {command} my-conversion-workspace --region=us-central1 --source-connection-profile=cp1 --auto-commit
+
+        To update the source database override before seeding:
+
+          $ {command} my-conversion-workspace --region=us-central1 --source-connection-profile=cp1 --source-database-name-override=my-db
+      """
+      ),
   }
 
   @staticmethod
@@ -53,6 +68,7 @@ class Seed(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
     resource_args.AddConversionWorkspaceSeedResourceArg(parser, 'to seed')
     cw_flags.AddNoAsyncFlag(parser)
     cw_flags.AddAutoCommitFlag(parser)
+    cw_flags.AddSourceDatabaseNameOverrideFlag(parser)
 
   def Run(self, args: argparse.Namespace) -> Optional[messages.Operation]:
     """Seed a Database Migration Service conversion workspace.
@@ -77,6 +93,20 @@ class Seed(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
     src_cp_ref = args.CONCEPTS.source_connection_profile.Parse()
     dest_cp_ref = args.CONCEPTS.destination_connection_profile.Parse()
     client = self.GetClient(location=conversion_workspace_ref.locationsId)
+
+    if args.IsSpecified('source_database_name_override'):
+      update_op = client.crud.Update(
+          name=conversion_workspace_ref.RelativeName(),
+          display_name=None,
+          source_database_name_override=args.source_database_name_override,
+          global_filter=None,
+      )
+      self.HandleOperationResult(
+          conversion_workspace_ref=conversion_workspace_ref,
+          result_operation=update_op,
+          operation_name='Updated',
+          sync=True,
+      )
 
     result_operation = client.operations.Seed(
         name=conversion_workspace_ref.RelativeName(),

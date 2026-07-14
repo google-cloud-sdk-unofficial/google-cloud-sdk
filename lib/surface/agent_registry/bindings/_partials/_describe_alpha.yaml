@@ -19,12 +19,12 @@
   - ALPHA
   auto_generated: true
   help_text:
-    brief: Describe bindings
-    description: Describe a binding
+    brief: Retrieve binding details.
+    description: Retrieve configuration info for a specific binding connection between a source agent and a target resource or auth provider.
     examples: |-
-      To describe the binding, run:
+      To describe binding 'my-binding' in location 'us-central1', run:
 
-          $ {command}
+        $ {command} my-binding --location=us-central1
   arguments:
     params:
     - help_text: |-

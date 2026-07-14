@@ -1,0 +1,37 @@
+release_tracks: [ALPHA, BETA, GA, PREVIEW]
+
+help_text:
+  brief: Set the IAM policy for a Compute Engine network attachment.
+  description: |
+    Sets the IAM policy for the given network attachment as defined in a JSON or YAML file.
+
+  examples: |
+    The following command will read an IAM policy defined in a JSON file
+    'policy.json' and set it for the network attachment `my-network-attachment`:
+
+      $ {command} my-network-attachment --region=REGION policy.json
+
+    See https://cloud.google.com/iam/docs/managing-policies for details of the
+    policy file format and contents.
+
+request:
+  collection: compute.networkAttachments
+  api_version: v1
+  use_relative_name: false
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=regionSetPolicyRequest.policy.version
+  BETA:
+    api_version: beta
+  ALPHA:
+    api_version: alpha
+
+iam:
+  set_iam_policy_request_path: regionSetPolicyRequest
+  message_type_overrides:
+    policy: Policy
+    set_iam_policy_request: ComputeNetworkAttachmentsSetIamPolicyRequest
+
+arguments:
+  resource:
+    help_text: The network attachment to set the IAM policy for.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:network_attachment

@@ -3681,6 +3681,18 @@ class GoogleIdentityAccesscontextmanagerV1AccessPolicy(_messages.Message):
   title = _messages.StringField(5)
 
 
+class GoogleIdentityAccesscontextmanagerV1AddRequestHeader(_messages.Message):
+  r"""Adds a request header to the API.
+
+  Fields:
+    key: HTTP header key.
+    value: HTTP header value.
+  """
+
+  key = _messages.StringField(1)
+  value = _messages.StringField(2)
+
+
 class GoogleIdentityAccesscontextmanagerV1ApiOperation(_messages.Message):
   r"""Identification for an API Operation.
 
@@ -3989,6 +4001,8 @@ class GoogleIdentityAccesscontextmanagerV1EgressSource(_messages.Message):
       origins within the perimeter. Example:
       `accessPolicies/MY_POLICY/accessLevels/MY_LEVEL`. If a single `*` is
       specified for `access_level`, then all EgressSources will be allowed.
+    pscEndpoint: Requests from this PSC will be allowed from access perimeter
+      data.
     resource: A Google Cloud resource from the service perimeter that you want
       to allow to access data outside the perimeter. This field supports only
       projects. The project format is `projects/{project_number}`. You can't
@@ -3996,7 +4010,8 @@ class GoogleIdentityAccesscontextmanagerV1EgressSource(_messages.Message):
   """
 
   accessLevel = _messages.StringField(1)
-  resource = _messages.StringField(2)
+  pscEndpoint = _messages.MessageField('GoogleIdentityAccesscontextmanagerV1PrivateServiceConnectEndpoint', 2)
+  resource = _messages.StringField(3)
 
 
 class GoogleIdentityAccesscontextmanagerV1EgressTo(_messages.Message):
@@ -4122,6 +4137,8 @@ class GoogleIdentityAccesscontextmanagerV1IngressSource(_messages.Message):
       Cloud calls with request origins within the perimeter. Example:
       `accessPolicies/MY_POLICY/accessLevels/MY_LEVEL`. If a single `*` is
       specified for `access_level`, then all IngressSources will be allowed.
+    pscEndpoint: Requests from this PSC will be allowed to access perimeter
+      data.
     resource: A Google Cloud resource that is allowed to ingress the
       perimeter. Requests from these resources will be allowed to access
       perimeter data. Currently only projects and VPCs are allowed. Project
@@ -4133,7 +4150,8 @@ class GoogleIdentityAccesscontextmanagerV1IngressSource(_messages.Message):
   """
 
   accessLevel = _messages.StringField(1)
-  resource = _messages.StringField(2)
+  pscEndpoint = _messages.MessageField('GoogleIdentityAccesscontextmanagerV1PrivateServiceConnectEndpoint', 2)
+  resource = _messages.StringField(3)
 
 
 class GoogleIdentityAccesscontextmanagerV1IngressTo(_messages.Message):
@@ -4173,6 +4191,16 @@ class GoogleIdentityAccesscontextmanagerV1MethodSelector(_messages.Message):
 
   method = _messages.StringField(1)
   permission = _messages.StringField(2)
+
+
+class GoogleIdentityAccesscontextmanagerV1Modifier(_messages.Message):
+  r"""Modifier to apply to the API requests.
+
+  Fields:
+    addRequestHeader: Adds additional HTTP request headers.
+  """
+
+  addRequestHeader = _messages.MessageField('GoogleIdentityAccesscontextmanagerV1AddRequestHeader', 1)
 
 
 class GoogleIdentityAccesscontextmanagerV1OsConstraint(_messages.Message):
@@ -4216,6 +4244,34 @@ class GoogleIdentityAccesscontextmanagerV1OsConstraint(_messages.Message):
   minimumVersion = _messages.StringField(1)
   osType = _messages.EnumField('OsTypeValueValuesEnum', 2)
   requireVerifiedChromeOs = _messages.BooleanField(3)
+
+
+class GoogleIdentityAccesscontextmanagerV1PrivateServiceConnectEndpoint(_messages.Message):
+  r"""Specifies the PSC an API call refers to.
+
+  Fields:
+    forwardingRule: The global forwarding rule identifier. Forwarding rule
+      format: `//compute.googleapis.com/projects/{PROJECT_ID}/global/forwardin
+      gRules/{FORWARDING_RULE_ID}`.
+  """
+
+  forwardingRule = _messages.StringField(1)
+
+
+class GoogleIdentityAccesscontextmanagerV1ServicePattern(_messages.Message):
+  r"""Service patterns used to allow access.
+
+  Fields:
+    modifiers: Modifiers to apply to the requests that match the URL pattern.
+    pattern: URL pattern to allow. Only patterns of ".googleapis.com/*",
+      "www.googleapis.com//*" and "*.appspot.com/* forms are supported, where
+      should be alphanumerical name.
+    service: Supported service to allow.
+  """
+
+  modifiers = _messages.MessageField('GoogleIdentityAccesscontextmanagerV1Modifier', 1, repeated=True)
+  pattern = _messages.StringField(2)
+  service = _messages.StringField(3)
 
 
 class GoogleIdentityAccesscontextmanagerV1ServicePerimeter(_messages.Message):
@@ -4347,7 +4403,12 @@ class GoogleIdentityAccesscontextmanagerV1VpcAccessibleServices(_messages.Messag
   r"""Specifies how APIs are allowed to communicate within the Service
   Perimeter.
 
+  Enums:
+    ServicePatternsEnforcementScopesValueListEntryValuesEnum:
+
   Fields:
+    allowedServicePatterns: Specifies which Google services are allowed to be
+      accessed from VPC networks in the service perimeter.
     allowedServices: The list of APIs usable within the Service Perimeter.
       Must be empty unless 'enable_restriction' is True. You can specify a
       list of individual services, as well as include the 'RESTRICTED-
@@ -4355,10 +4416,28 @@ class GoogleIdentityAccesscontextmanagerV1VpcAccessibleServices(_messages.Messag
       protected by the perimeter.
     enableRestriction: Whether to restrict API calls within the Service
       Perimeter to the list of APIs specified in 'allowed_services'.
+    servicePatternsEnforcementScopes: Defines the enforcement scopes of
+      service patterns.
   """
 
-  allowedServices = _messages.StringField(1, repeated=True)
-  enableRestriction = _messages.BooleanField(2)
+  class ServicePatternsEnforcementScopesValueListEntryValuesEnum(_messages.Enum):
+    r"""ServicePatternsEnforcementScopesValueListEntryValuesEnum enum type.
+
+    Values:
+      SERVICE_PATTERNS_ENFORCEMENT_SCOPE_UNSPECIFIED: Default value. This can
+        not be used.
+      GOOGLE_APIS_VIA_PRIVATE_PATH: Enables VPC Accessible Services
+        enforcement for all APIs (including unsupported APIs) for Private
+        Google Access configured with Private VIP and Private Service Connect
+        Endpoint for Global Google APIs that uses 'all-apis' bundle.
+    """
+    SERVICE_PATTERNS_ENFORCEMENT_SCOPE_UNSPECIFIED = 0
+    GOOGLE_APIS_VIA_PRIVATE_PATH = 1
+
+  allowedServicePatterns = _messages.MessageField('GoogleIdentityAccesscontextmanagerV1ServicePattern', 1, repeated=True)
+  allowedServices = _messages.StringField(2, repeated=True)
+  enableRestriction = _messages.BooleanField(3)
+  servicePatternsEnforcementScopes = _messages.EnumField('ServicePatternsEnforcementScopesValueListEntryValuesEnum', 4, repeated=True)
 
 
 class GoogleIdentityAccesscontextmanagerV1VpcNetworkSource(_messages.Message):

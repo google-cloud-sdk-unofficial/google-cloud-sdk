@@ -46,6 +46,7 @@ class NetappV1alpha1(base_api.BaseApiClient):
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
     self.projects_locations_storagePools_backupConfigs = self.ProjectsLocationsStoragePoolsBackupConfigsService(self)
     self.projects_locations_storagePools_ontap = self.ProjectsLocationsStoragePoolsOntapService(self)
+    self.projects_locations_storagePools_volumePerformanceGroups = self.ProjectsLocationsStoragePoolsVolumePerformanceGroupsService(self)
     self.projects_locations_storagePools = self.ProjectsLocationsStoragePoolsService(self)
     self.projects_locations_trial = self.ProjectsLocationsTrialService(self)
     self.projects_locations_volumes_quotaRules = self.ProjectsLocationsVolumesQuotaRulesService(self)
@@ -1249,6 +1250,151 @@ class NetappV1alpha1(base_api.BaseApiClient):
         request_field='executeOntapPostRequest',
         request_type_name='NetappProjectsLocationsStoragePoolsOntapExecuteOntapPostRequest',
         response_type_name='ExecuteOntapPostResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsStoragePoolsVolumePerformanceGroupsService(base_api.BaseApiService):
+    """Service class for the projects_locations_storagePools_volumePerformanceGroups resource."""
+
+    _NAME = 'projects_locations_storagePools_volumePerformanceGroups'
+
+    def __init__(self, client):
+      super(NetappV1alpha1.ProjectsLocationsStoragePoolsVolumePerformanceGroupsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new volume performance group.
+
+      Args:
+        request: (NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/storagePools/{storagePoolsId}/volumePerformanceGroups',
+        http_method='POST',
+        method_id='netapp.projects.locations.storagePools.volumePerformanceGroups.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['volumePerformanceGroupId'],
+        relative_path='v1alpha1/{+parent}/volumePerformanceGroups',
+        request_field='volumePerformanceGroup',
+        request_type_name='NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a volume performance group.
+
+      Args:
+        request: (NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/storagePools/{storagePoolsId}/volumePerformanceGroups/{volumePerformanceGroupsId}',
+        http_method='DELETE',
+        method_id='netapp.projects.locations.storagePools.volumePerformanceGroups.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Returns details of the specified volume performance group.
+
+      Args:
+        request: (NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (VolumePerformanceGroup) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/storagePools/{storagePoolsId}/volumePerformanceGroups/{volumePerformanceGroupsId}',
+        http_method='GET',
+        method_id='netapp.projects.locations.storagePools.volumePerformanceGroups.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsGetRequest',
+        response_type_name='VolumePerformanceGroup',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Returns a list of volume performance groups in a `StoragePool`. Use `-` as storage pool name to list volume performance groups across all storage pools in a project.
+
+      Args:
+        request: (NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListVolumePerformanceGroupsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/storagePools/{storagePoolsId}/volumePerformanceGroups',
+        http_method='GET',
+        method_id='netapp.projects.locations.storagePools.volumePerformanceGroups.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1alpha1/{+parent}/volumePerformanceGroups',
+        request_field='',
+        request_type_name='NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsListRequest',
+        response_type_name='ListVolumePerformanceGroupsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates an existing volume performance group.
+
+      Args:
+        request: (NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/storagePools/{storagePoolsId}/volumePerformanceGroups/{volumePerformanceGroupsId}',
+        http_method='PATCH',
+        method_id='netapp.projects.locations.storagePools.volumePerformanceGroups.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1alpha1/{+name}',
+        request_field='volumePerformanceGroup',
+        request_type_name='NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsPatchRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

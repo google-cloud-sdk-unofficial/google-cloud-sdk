@@ -1,4 +1,6 @@
 - release_tracks: [GA, BETA, ALPHA, PREVIEW]
+  hints:
+    read_only: false
   help_text:
     brief: |
       Delete a VPC Access connector.

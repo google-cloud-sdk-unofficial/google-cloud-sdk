@@ -94,10 +94,3 @@ def AddOutputFormat(parser, release_track):
   parser.display_info.AddTransforms({
       'requestedRunDuration': _TransformRequestedRunDuration,
   })
-  # TODO: b/370477532 - Remove below transforms once the region field is
-  # available in Beta.
-  if release_track == base.ReleaseTrack.BETA:
-    parser.display_info.AddTransforms({
-        'location': _TransformLocation,
-        'location_scope': _TransformLocationScope,
-    })

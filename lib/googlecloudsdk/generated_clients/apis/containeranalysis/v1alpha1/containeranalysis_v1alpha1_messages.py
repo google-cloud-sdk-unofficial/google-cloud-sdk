@@ -747,6 +747,8 @@ class CVSS(_messages.Message):
       Defined in CVSS v2, v3.
     ConfidentialityImpactValueValuesEnum: Optional. Confidentiality Impact
       (C). Defined in CVSS v2, v3.
+    ExploitMaturityValueValuesEnum: Optional. Exploit Maturity (E). Defined in
+      CVSS v4.
     IntegrityImpactValueValuesEnum: Optional. Integrity Impact (I). Defined in
       CVSS v2, v3.
     PrivilegesRequiredValueValuesEnum: Optional. Privileges Required (PR).
@@ -780,6 +782,7 @@ class CVSS(_messages.Message):
       scores.
     confidentialityImpact: Optional. Confidentiality Impact (C). Defined in
       CVSS v2, v3.
+    exploitMaturity: Optional. Exploit Maturity (E). Defined in CVSS v4.
     exploitabilityScore: A number attribute.
     impactScore: A number attribute.
     integrityImpact: Optional. Integrity Impact (I). Defined in CVSS v2, v3.
@@ -904,6 +907,26 @@ class CVSS(_messages.Message):
     IMPACT_NONE = 3
     IMPACT_PARTIAL = 4
     IMPACT_COMPLETE = 5
+
+  class ExploitMaturityValueValuesEnum(_messages.Enum):
+    r"""Optional. Exploit Maturity (E). Defined in CVSS v4.
+
+    Values:
+      EXPLOIT_MATURITY_UNSPECIFIED: Unspecified.
+      EXPLOIT_MATURITY_NOT_DEFINED: Exploit maturity: Not defined (E:X).
+        Defined in CVSS v4.
+      EXPLOIT_MATURITY_ATTACKED: Exploit maturity: Attacked (E:A). Defined in
+        CVSS v4.
+      EXPLOIT_MATURITY_POC: Exploit maturity: Proof-of-concept (E:P). Defined
+        in CVSS v4.
+      EXPLOIT_MATURITY_UNREPORTED: Exploit maturity: Unreported (E:U). Defined
+        in CVSS v4.
+    """
+    EXPLOIT_MATURITY_UNSPECIFIED = 0
+    EXPLOIT_MATURITY_NOT_DEFINED = 1
+    EXPLOIT_MATURITY_ATTACKED = 2
+    EXPLOIT_MATURITY_POC = 3
+    EXPLOIT_MATURITY_UNREPORTED = 4
 
   class IntegrityImpactValueValuesEnum(_messages.Enum):
     r"""Optional. Integrity Impact (I). Defined in CVSS v2, v3.
@@ -1091,18 +1114,19 @@ class CVSS(_messages.Message):
   availabilityImpact = _messages.EnumField('AvailabilityImpactValueValuesEnum', 5)
   baseScore = _messages.FloatField(6, variant=_messages.Variant.FLOAT)
   confidentialityImpact = _messages.EnumField('ConfidentialityImpactValueValuesEnum', 7)
-  exploitabilityScore = _messages.FloatField(8, variant=_messages.Variant.FLOAT)
-  impactScore = _messages.FloatField(9, variant=_messages.Variant.FLOAT)
-  integrityImpact = _messages.EnumField('IntegrityImpactValueValuesEnum', 10)
-  privilegesRequired = _messages.EnumField('PrivilegesRequiredValueValuesEnum', 11)
-  scope = _messages.EnumField('ScopeValueValuesEnum', 12)
-  subsequentSystemAvailabilityImpact = _messages.EnumField('SubsequentSystemAvailabilityImpactValueValuesEnum', 13)
-  subsequentSystemConfidentialityImpact = _messages.EnumField('SubsequentSystemConfidentialityImpactValueValuesEnum', 14)
-  subsequentSystemIntegrityImpact = _messages.EnumField('SubsequentSystemIntegrityImpactValueValuesEnum', 15)
-  userInteraction = _messages.EnumField('UserInteractionValueValuesEnum', 16)
-  vulnerableSystemAvailabilityImpact = _messages.EnumField('VulnerableSystemAvailabilityImpactValueValuesEnum', 17)
-  vulnerableSystemConfidentialityImpact = _messages.EnumField('VulnerableSystemConfidentialityImpactValueValuesEnum', 18)
-  vulnerableSystemIntegrityImpact = _messages.EnumField('VulnerableSystemIntegrityImpactValueValuesEnum', 19)
+  exploitMaturity = _messages.EnumField('ExploitMaturityValueValuesEnum', 8)
+  exploitabilityScore = _messages.FloatField(9, variant=_messages.Variant.FLOAT)
+  impactScore = _messages.FloatField(10, variant=_messages.Variant.FLOAT)
+  integrityImpact = _messages.EnumField('IntegrityImpactValueValuesEnum', 11)
+  privilegesRequired = _messages.EnumField('PrivilegesRequiredValueValuesEnum', 12)
+  scope = _messages.EnumField('ScopeValueValuesEnum', 13)
+  subsequentSystemAvailabilityImpact = _messages.EnumField('SubsequentSystemAvailabilityImpactValueValuesEnum', 14)
+  subsequentSystemConfidentialityImpact = _messages.EnumField('SubsequentSystemConfidentialityImpactValueValuesEnum', 15)
+  subsequentSystemIntegrityImpact = _messages.EnumField('SubsequentSystemIntegrityImpactValueValuesEnum', 16)
+  userInteraction = _messages.EnumField('UserInteractionValueValuesEnum', 17)
+  vulnerableSystemAvailabilityImpact = _messages.EnumField('VulnerableSystemAvailabilityImpactValueValuesEnum', 18)
+  vulnerableSystemConfidentialityImpact = _messages.EnumField('VulnerableSystemConfidentialityImpactValueValuesEnum', 19)
+  vulnerableSystemIntegrityImpact = _messages.EnumField('VulnerableSystemIntegrityImpactValueValuesEnum', 20)
 
 
 class CisBenchmark(_messages.Message):
@@ -4339,10 +4363,12 @@ class Finding(_messages.Message):
       SCANNER_UNSPECIFIED: Unspecified scanner.
       STATIC: Static scanner.
       LLM: LLM scanner.
+      WS_POLICY: WS_POLICY scanner.
     """
     SCANNER_UNSPECIFIED = 0
     STATIC = 1
     LLM = 2
+    WS_POLICY = 3
 
   class SeverityValueValuesEnum(_messages.Enum):
     r"""Optional. Severity of the finding.

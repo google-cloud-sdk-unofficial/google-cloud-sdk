@@ -185,6 +185,9 @@ apis:
     v1:
       discovery_doc: apihub_v1.json
       default: true
+      resources:
+        projects.locations.servers:
+          path: projects/{projectsId}/locations/{locationsId}/servers
   ftp:
     v1alpha:
       discovery_doc: ftp_v1alpha.json
@@ -973,7 +976,8 @@ apis:
       default: true
       resources:
         projects.locations.instances:
-          path: projects/{projectsId}/locations/{locationsId}/instances/{instancesId}
+          path:
+            projects/{projectsId}/locations/{locationsId}/instances/{instancesId}
   dialogflow:
     v2:
       discovery_doc: dialogflow_v2.json
@@ -1017,14 +1021,6 @@ apis:
       resources:
         projects:
           path: projects/{project}
-  documentai:
-    v1:
-      discovery_doc: documentai_v1.json
-      default: true
-      resources:
-        projects.locations.processors.humanReviewConfig:
-          path:
-            projects/{projectsId}/locations/{locationsId}/processors/{processorsId}/humanReviewConfig
   domains:
     v1:
       discovery_doc: domains_v1.json
@@ -1336,6 +1332,8 @@ apis:
         projects.iap_web.services.versions:
           path:
             projects/{project}/iap_web/{iapWebId}/services/{serviceId}/versions/{versionId}
+        projects.iap_web.instances:
+          path: projects/{project}/iap_web/{iapWebId}/instances/{instanceId}
     v1:
       discovery_doc: iap_v1.json
       default: true
@@ -1347,6 +1345,8 @@ apis:
         projects.iap_web.services.versions:
           path:
             projects/{project}/iap_web/{iapWebId}/services/{serviceId}/versions/{versionId}
+        projects.iap_web.instances:
+          path: projects/{project}/iap_web/{iapWebId}/instances/{instanceId}
         projects.iap_tunnel.tunnel_types:
           path: projects/{project}/iap_tunnel/{tunnelType}
         projects.iap_tunnel.tunnel_types.locations:
@@ -1789,8 +1789,6 @@ apis:
     v2:
       discovery_doc: run_v2.json
       gcloud_gapic_library: google/cloud/run/v2:run_v2_py
-      skip:
-        bug: b/522732401
   runapps:
     v1alpha1:
       discovery_doc: runapps_v1alpha1.json
@@ -2265,7 +2263,8 @@ apis:
         projects.locations.skills:
           path: projects/{projectsId}/locations/{locationsId}/skills/{skillsId}
         projects.locations.skills.revisions:
-          path: projects/{projectsId}/locations/{locationsId}/skills/{skillsId}/revisions/{revisionsId}
+          path:
+            projects/{projectsId}/locations/{locationsId}/skills/{skillsId}/revisions/{revisionsId}
     v1:
       discovery_doc: agentregistry_v1.json
       default: true

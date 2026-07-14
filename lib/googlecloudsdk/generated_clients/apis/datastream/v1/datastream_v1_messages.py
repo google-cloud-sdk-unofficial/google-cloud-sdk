@@ -3264,7 +3264,8 @@ class SalesforceProfile(_messages.Message):
   Fields:
     domain: Required. Domain endpoint for the Salesforce connection.
     oauth2ClientCredentials: Connected app authentication.
-    userCredentials: User-password authentication.
+    userCredentials: Deprecated: Salesforce is retiring Username-Password
+      authentication. Use `oauth2_client_credentials` instead.
   """
 
   domain = _messages.StringField(1)
@@ -4172,7 +4173,8 @@ class TimeUnitPartition(_messages.Message):
 
 
 class UserCredentials(_messages.Message):
-  r"""Username-password credentials.
+  r"""Deprecated: Salesforce is retiring Username-Password authentication. Use
+  `Oauth2ClientCredentials` instead.
 
   Fields:
     password: Optional. Password for the Salesforce connection. Mutually

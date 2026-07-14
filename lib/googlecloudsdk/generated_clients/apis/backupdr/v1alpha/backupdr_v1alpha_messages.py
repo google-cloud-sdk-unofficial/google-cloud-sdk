@@ -1119,6 +1119,7 @@ class BackupPlanAssociation(_messages.Message):
       DELETING: The resource is being deleted.
       INACTIVE: The resource has been created but is not usable.
       UPDATING: The resource is being updated.
+      PAUSED: The resource has been created but backups are paused.
     """
     STATE_UNSPECIFIED = 0
     CREATING = 1
@@ -1126,6 +1127,7 @@ class BackupPlanAssociation(_messages.Message):
     DELETING = 3
     INACTIVE = 4
     UPDATING = 5
+    PAUSED = 6
 
   alloydbClusterBackupPlanAssociationProperties = _messages.MessageField('AlloyDBClusterBackupPlanAssociationProperties', 1)
   backupPlan = _messages.StringField(2)
@@ -1207,6 +1209,31 @@ class BackupRule(_messages.Message):
   backupRetentionDays = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   ruleId = _messages.StringField(2)
   standardSchedule = _messages.MessageField('StandardSchedule', 3)
+
+
+class BackupSelectionConfig(_messages.Message):
+  r"""Configuration for selecting a backup.
+
+  Enums:
+    SelectionCriteriaValueValuesEnum: Required. The backup selection criteria.
+
+  Fields:
+    selectionCriteria: Required. The backup selection criteria.
+    source: Required. Immutable. The fully qualified URI of the source.
+  """
+
+  class SelectionCriteriaValueValuesEnum(_messages.Enum):
+    r"""Required. The backup selection criteria.
+
+    Values:
+      BACKUP_SELECTION_CRITERIA_UNSPECIFIED: Selection criteria not specified.
+      LATEST: Select the latest backup.
+    """
+    BACKUP_SELECTION_CRITERIA_UNSPECIFIED = 0
+    LATEST = 1
+
+  selectionCriteria = _messages.EnumField('SelectionCriteriaValueValuesEnum', 1)
+  source = _messages.StringField(2)
 
 
 class BackupVault(_messages.Message):
@@ -2877,6 +2904,41 @@ class BackupdrProjectsLocationsResourceBackupConfigsListRequest(_messages.Messag
   parent = _messages.StringField(5, required=True)
 
 
+class BackupdrProjectsLocationsRestoreTemplatesCreateRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsRestoreTemplatesCreateRequest object.
+
+  Fields:
+    parent: Required. The restore template project and location in the format
+      'projects/{project_id}/locations/{location}'.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      request ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+    restoreTemplate: A RestoreTemplate resource to be passed as the request
+      body.
+    restoreTemplateId: Required. The ID of the restore template to create. The
+      ID must be unique for the specified project and location.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  restoreTemplate = _messages.MessageField('RestoreTemplate', 3)
+  restoreTemplateId = _messages.StringField(4)
+
+
+class BackupdrProjectsLocationsRestoreTemplatesGetRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsRestoreTemplatesGetRequest object.
+
+  Fields:
+    name: Required. The name of the restore template to retrieve. Format: 'pro
+      jects/{project_id}/locations/{location}/restoreTemplates/{restore_templa
+      te_id}'
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
 class BackupdrProjectsLocationsServiceConfigInitializeRequest(_messages.Message):
   r"""A BackupdrProjectsLocationsServiceConfigInitializeRequest object.
 
@@ -3126,12 +3188,18 @@ class ComputeInstanceBackupPlanProperties(_messages.Message):
   r"""Properties for a compute instance backup plan.
 
   Fields:
+    bootDiskOnly: Optional. If true, only the boot disk will be backed up.
+    diskExclusionLabels: Optional. Labels used to identify disks for exclusion
+      from the backup. If a disk carries any of these labels, it will be
+      excluded (OR logic).
     guestFlush: Optional. Indicates whether to perform a guest flush operation
       before taking a compute backup. When set to false, the system will
       create crash-consistent backups. Default value is false.
   """
 
-  guestFlush = _messages.BooleanField(1)
+  bootDiskOnly = _messages.BooleanField(1)
+  diskExclusionLabels = _messages.MessageField('DiskExclusionLabels', 2)
+  guestFlush = _messages.BooleanField(3)
 
 
 class ComputeInstanceBackupProperties(_messages.Message):
@@ -3547,12 +3615,14 @@ class DataSource(_messages.Message):
       ACTIVE: The data source has been created and is fully usable.
       DELETING: The data source is being deleted.
       ERROR: The data source is experiencing an issue and might be unusable.
+      PAUSED: The data source has been created but backups are paused.
     """
     STATE_UNSPECIFIED = 0
     CREATING = 1
     ACTIVE = 2
     DELETING = 3
     ERROR = 4
+    PAUSED = 5
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
@@ -3896,6 +3966,17 @@ class DiskDataSourceProperties(_messages.Message):
   type = _messages.StringField(4)
 
 
+class DiskExclusionLabels(_messages.Message):
+  r"""Message for selective disk backup exclusion labels.
+
+  Fields:
+    labels: Optional. Labels used to identify disks for exclusion from the
+      backup. If a disk carries any this label.
+  """
+
+  labels = _messages.MessageField('LabelKeyValPair', 1, repeated=True)
+
+
 class DiskRestoreProperties(_messages.Message):
   r"""DiskRestoreProperties represents the properties of a Disk restore.
 
@@ -4162,6 +4243,40 @@ class Entry(_messages.Message):
   value = _messages.StringField(2)
 
 
+class ExecutionSummary(_messages.Message):
+  r"""Summary of the last execution.
+
+  Enums:
+    LastExecutionStateValueValuesEnum: Output only. The state of the last
+      execution.
+
+  Fields:
+    lastExecution: Output only. The resource name of the last execution.
+      Format: `projects/{project}/locations/{location}/restoreTemplates/{resto
+      re_template}/executions/{execution}`
+    lastExecutionState: Output only. The state of the last execution.
+  """
+
+  class LastExecutionStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the last execution.
+
+    Values:
+      EXECUTION_STATE_UNSPECIFIED: State not set.
+      RUNNING: Execution is running.
+      SUCCEEDED: Execution succeeded.
+      FAILED: Execution failed.
+      DELETING: Resources are being deleted (cleanup).
+    """
+    EXECUTION_STATE_UNSPECIFIED = 0
+    RUNNING = 1
+    SUCCEEDED = 2
+    FAILED = 3
+    DELETING = 4
+
+  lastExecution = _messages.StringField(1)
+  lastExecutionState = _messages.EnumField('LastExecutionStateValueValuesEnum', 2)
+
+
 class Expr(_messages.Message):
   r"""Represents a textual expression in the Common Expression Language (CEL)
   syntax. CEL is a C-like expression language. The syntax and semantics of CEL
@@ -4214,7 +4329,7 @@ class FetchAccessTokenResponse(_messages.Message):
   Fields:
     expireTime: The token is valid until this time.
     readLocation: The location in bucket that can be used for reading.
-    token: The downscoped token that was created.
+    token: Input only. The downscoped token that was created.
     writeLocation: The location in bucket that can be used for writing.
   """
 
@@ -4711,6 +4826,27 @@ class InstanceParams(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   resourceManagerTags = _messages.MessageField('ResourceManagerTagsValue', 1)
+
+
+class LabelKeyValPair(_messages.Message):
+  r"""Message for a label key-value pair.
+
+  Fields:
+    key: Required. Key of the label. The key must follow the format:
+      `\p{Ll}\p{Lo}{0,62}`. This means the key must start with a lowercase
+      letter or a lowercase international character, followed by zero or more
+      lowercase letters, lowercase international characters, numbers,
+      underscores, or dashes. The key must be at most 63 characters long.
+      International characters are allowed.
+    value: Required. Value of the label. The value must follow the format:
+      `[\p{Ll}\p{Lo}\p{N}_-]{1,63}`. This means the value must be one or more
+      lowercase letters, lowercase international characters, numbers,
+      underscores, or dashes. The value must be at most 63 characters long.
+      International characters are allowed.
+  """
+
+  key = _messages.StringField(1)
+  value = _messages.StringField(2)
 
 
 class ListBackupPlanAssociationsResponse(_messages.Message):
@@ -5665,6 +5801,32 @@ class Policy(_messages.Message):
   version = _messages.IntegerField(4, variant=_messages.Variant.INT32)
 
 
+class PostRestoreConfig(_messages.Message):
+  r"""Configuration for Post-Restore.
+
+  Fields:
+    cloudRunJob: Cloud Run job action to execute. Format:
+      `projects/{project}/locations/{location}/jobs/{job}`
+    timeout: Optional. The timeout for this phase.
+  """
+
+  cloudRunJob = _messages.StringField(1)
+  timeout = _messages.StringField(2)
+
+
+class PreRestoreConfig(_messages.Message):
+  r"""Configuration for Pre-Restore.
+
+  Fields:
+    cloudRunJob: Cloud Run job action to execute. Format:
+      `projects/{project}/locations/{location}/jobs/{job}`
+    timeout: Optional. The timeout for this phase.
+  """
+
+  cloudRunJob = _messages.StringField(1)
+  timeout = _messages.StringField(2)
+
+
 class ReconciliationOperationMetadata(_messages.Message):
   r"""Operation metadata returned by the CLH during resource state
   reconciliation.
@@ -5881,6 +6043,121 @@ class RestoreDiskFromInstanceOptions(_messages.Message):
 
   bootDisk = _messages.BooleanField(1)
   sourceDeviceName = _messages.StringField(2)
+
+
+class RestoreTemplate(_messages.Message):
+  r"""A `RestoreTemplate` encapsulates DR readiness configurations for
+  validating backups.
+
+  Enums:
+    StateValueValuesEnum: Output only. The state of the restore template.
+
+  Messages:
+    LabelsValue: Optional. User-defined labels.
+    RestorePropertiesValue: Required. Defines target environments where the
+      resource will be restored.
+
+  Fields:
+    backupSelectionConfig: Required. Backup selection configuration.
+    createTime: Output only. The time when the restore template was created.
+    description: Optional. User-provided description of the restore template.
+    etag: Optional. Etag for concurrency control.
+    executionSummary: Output only. Summary of the last execution.
+    labels: Optional. User-defined labels.
+    name: Identifier. The resource name of the RestoreTemplate.
+    postRestoreConfig: Optional. Post-restore configuration.
+    preRestoreConfig: Optional. Pre-restore configuration.
+    resourceType: Required. Immutable. The specific type of the workload being
+      restored. The format is "{service_name}/{resource_kind}", for example,
+      "compute.googleapis.com/Instance".
+    restoreProperties: Required. Defines target environments where the
+      resource will be restored.
+    state: Output only. The state of the restore template.
+    updateTime: Output only. The time when the restore template was last
+      updated.
+    verificationConfig: Optional. Verification configuration.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the restore template.
+
+    Values:
+      STATE_UNSPECIFIED: State not specified.
+      CREATING: The template is being created.
+      ACTIVE: The template is active and ready to use.
+      UPDATING: The template is being updated.
+      DELETING: The template is being deleted.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    UPDATING = 3
+    DELETING = 4
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. User-defined labels.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class RestorePropertiesValue(_messages.Message):
+    r"""Required. Defines target environments where the resource will be
+    restored.
+
+    Messages:
+      AdditionalProperty: An additional property for a RestorePropertiesValue
+        object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a RestorePropertiesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  backupSelectionConfig = _messages.MessageField('BackupSelectionConfig', 1)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  etag = _messages.StringField(4)
+  executionSummary = _messages.MessageField('ExecutionSummary', 5)
+  labels = _messages.MessageField('LabelsValue', 6)
+  name = _messages.StringField(7)
+  postRestoreConfig = _messages.MessageField('PostRestoreConfig', 8)
+  preRestoreConfig = _messages.MessageField('PreRestoreConfig', 9)
+  resourceType = _messages.StringField(10)
+  restoreProperties = _messages.MessageField('RestorePropertiesValue', 11)
+  state = _messages.EnumField('StateValueValuesEnum', 12)
+  updateTime = _messages.StringField(13)
+  verificationConfig = _messages.MessageField('VerificationConfig', 14)
 
 
 class RuleConfigInfo(_messages.Message):
@@ -6201,7 +6478,7 @@ class StandardSchedule(_messages.Message):
       and is not applicable otherwise. A validation error will occur if a
       value is supplied and `recurrence_type` is not `HOURLY`. The supported
       values for each resource type are as follows: *
-      `compute.googleapis.com/Instance`: 4-23 * `compute.googleapis.com/Disk`:
+      `compute.googleapis.com/Instance`: 1-23 * `compute.googleapis.com/Disk`:
       1-23 * `sqladmin.googleapis.com/Instance`: 6-23 *
       `alloydb.googleapis.com/Cluster`: 1-23 * `file.googleapis.com/Instance`:
       1-23 Refer to link https://cloud.google.com/backup-disaster-
@@ -6506,6 +6783,19 @@ class TriggerBackupRequest(_messages.Message):
   labels = _messages.MessageField('LabelsValue', 2)
   requestId = _messages.StringField(3)
   ruleId = _messages.StringField(4)
+
+
+class VerificationConfig(_messages.Message):
+  r"""Configuration for Verification.
+
+  Fields:
+    cloudRunJob: Cloud Run job action to execute. Format:
+      `projects/{project}/locations/{location}/jobs/{job}`
+    timeout: Optional. The timeout for this phase.
+  """
+
+  cloudRunJob = _messages.StringField(1)
+  timeout = _messages.StringField(2)
 
 
 class WeekDayOfMonth(_messages.Message):

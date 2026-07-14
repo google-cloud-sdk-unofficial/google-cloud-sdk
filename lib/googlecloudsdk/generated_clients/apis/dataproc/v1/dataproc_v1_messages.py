@@ -637,6 +637,73 @@ class AttachedDiskConfig(_messages.Message):
   provisionedThroughput = _messages.IntegerField(4)
 
 
+class AttachmentOperationMetadata(_messages.Message):
+  r"""Metadata describing the Attachment operation.
+
+  Enums:
+    OperationTypeValueValuesEnum: Output only. The operation type.
+
+  Messages:
+    LabelsValue: Output only. Labels associated with the operation.
+
+  Fields:
+    attachment: Output only. Name of the attachment for the operation.
+    createTime: Output only. The time when the operation was created.
+    description: Output only. Short description of the operation.
+    doneTime: Output only. The time when the operation finished.
+    labels: Output only. Labels associated with the operation.
+    operationType: Output only. The operation type.
+    warnings: Output only. Warnings encountered during operation execution.
+  """
+
+  class OperationTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The operation type.
+
+    Values:
+      ATTACHMENT_OPERATION_TYPE_UNSPECIFIED: Attachment operation type is
+        unknown.
+      CREATE: Create Attachment operation type.
+      UPDATE: Update Attachment operation type.
+      DELETE: Delete Attachment operation type.
+    """
+    ATTACHMENT_OPERATION_TYPE_UNSPECIFIED = 0
+    CREATE = 1
+    UPDATE = 2
+    DELETE = 3
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Output only. Labels associated with the operation.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  attachment = _messages.StringField(1)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  doneTime = _messages.StringField(4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  operationType = _messages.EnumField('OperationTypeValueValuesEnum', 6)
+  warnings = _messages.StringField(7, repeated=True)
+
+
 class AuthenticationConfig(_messages.Message):
   r"""Authentication configuration for a workload is used to set the default
   identity for the workload execution. The config specifies the type of
@@ -1835,6 +1902,48 @@ class CohortInfo(_messages.Message):
   cohortSource = _messages.EnumField('CohortSourceValueValuesEnum', 2)
 
 
+class ComputeTuningConfigResponse(_messages.Message):
+  r"""Response for ComputeTuningConfig RPC.
+
+  Messages:
+    RecommendedPropertiesValue: Recommended Spark properties for the query
+      (e.g., {"spark.sql.shuffle.partitions": "500"}).
+
+  Fields:
+    recommendedProperties: Recommended Spark properties for the query (e.g.,
+      {"spark.sql.shuffle.partitions": "500"}).
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class RecommendedPropertiesValue(_messages.Message):
+    r"""Recommended Spark properties for the query (e.g.,
+    {"spark.sql.shuffle.partitions": "500"}).
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        RecommendedPropertiesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        RecommendedPropertiesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a RecommendedPropertiesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  recommendedProperties = _messages.MessageField('RecommendedPropertiesValue', 1)
+
+
 class ConfidentialInstanceConfig(_messages.Message):
   r"""Confidential Instance Config for clusters using Confidential VMs
   (https://cloud.google.com/confidential-computing/confidential-vm/docs)
@@ -2338,6 +2447,27 @@ class DataprocProjectsLocationsBatchesSparkApplicationsAccessStorageRddRequest(_
   name = _messages.StringField(1, required=True)
   parent = _messages.StringField(2)
   rddId = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+
+
+class DataprocProjectsLocationsBatchesSparkApplicationsComputeTuningConfigRequest(_messages.Message):
+  r"""A
+  DataprocProjectsLocationsBatchesSparkApplicationsComputeTuningConfigRequest
+  object.
+
+  Fields:
+    executionId: Required. Spark execution ID for the query.
+    name: Required. The fully qualified name of the spark application to
+      retrieve autotuning configuration for in the format "projects/PROJECT_ID
+      /locations/DATAPROC_REGION/batches/BATCH_ID/sparkApplications/APPLICATIO
+      N_ID"
+    parent: Required. Parent (Batch) resource reference.
+    semanticQueryId: Required. Spark semantic query ID.
+  """
+
+  executionId = _messages.IntegerField(1)
+  name = _messages.StringField(2, required=True)
+  parent = _messages.StringField(3)
+  semanticQueryId = _messages.StringField(4)
 
 
 class DataprocProjectsLocationsBatchesSparkApplicationsSearchExecutorStageSummaryRequest(_messages.Message):
@@ -5163,6 +5293,7 @@ class Empty(_messages.Message):
   """
 
 
+
 class EncryptionConfig(_messages.Message):
   r"""Encryption settings for the cluster.
 
@@ -6430,8 +6561,10 @@ class IdentityConfig(_messages.Message):
     UserServiceAccountMappingValue: Required. Map of user to service account.
 
   Fields:
-    enableSsh: Optional. Whether to enable SSH access for the cluster. Default
-      false as of image 3.1.
+    enableSsh: Optional. Whether to enable SSH access for the cluster. The
+      default is true for image versions prior to 3.1 and false for image
+      versions 3.1 and later. The default behavior can be changed when
+      creating clusters using image versions 2.3.30 and later.
     userServiceAccountMapping: Required. Map of user to service account.
   """
 
@@ -6733,8 +6866,10 @@ class InstanceSelection(_messages.Message):
   r"""Defines machines types and a rank to which the machines types belong.
 
   Fields:
-    diskConfig: Optional. Disk configuration to apply to the instance
-      selection.
+    diskConfig: Optional. Disk configuration to apply to the instances in this
+      instance selection. If specified on any entry in instanceSelectionList,
+      then it must be specified on every entry in instanceSelectionList and
+      the instanceGroupConfig must not specify any diskConfig.
     machineTypes: Optional. Full machine-type names, e.g. "n1-standard-16".
     rank: Optional. Preference of this instance selection. Lower number means
       higher preference. The service will first try to create a VM based on

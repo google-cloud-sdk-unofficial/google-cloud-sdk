@@ -26,7 +26,6 @@ from googlecloudsdk.core.console import console_io
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-@base.Hidden
 class Delete(base.DeleteCommand):
   """Deletes an AlloyDB endpoint."""
 

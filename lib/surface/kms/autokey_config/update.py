@@ -50,8 +50,9 @@ class Update(base.Command):
 
     update_mask = []
     autokey_config = messages.AutokeyConfig(name=name)
-    if key_project:
-      autokey_config.keyProject = key_project
+    if key_project is not None:
+      if key_project:
+        autokey_config.keyProject = key_project
       update_mask.append("keyProject")
     if key_project_resolution_mode:
       autokey_config.keyProjectResolutionMode = (

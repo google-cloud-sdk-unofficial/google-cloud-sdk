@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, GA]
+  hints:
+    read_only: false
   help_text:
     brief:  Describe a Cloud Security Command Center (SCC) posture long running operation.
     description: Describe a Cloud Security Command Center (SCC) posture long running operation.

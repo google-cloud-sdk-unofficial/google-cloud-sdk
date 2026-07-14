@@ -16,14 +16,13 @@
 
 from __future__ import annotations
 from googlecloudsdk.api_lib.container.fleet import client
+from googlecloudsdk.api_lib.container.fleet import types
 from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.container.fleet.rolloutsequences import flags as rolloutsequence_flags
 from googlecloudsdk.core import log
-from googlecloudsdk.generated_clients.apis.gkehub.v1alpha import gkehub_v1alpha_messages as alpha_messages
-from googlecloudsdk.generated_clients.apis.gkehub.v1beta import gkehub_v1beta_messages as beta_messages
 
 
 _EXAMPLES = """
@@ -34,18 +33,19 @@ $ {command} ROLLOUTSEQUENCE --stage-config=path/to/config.yaml
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Create(base.CreateCommand):
   """Create a rollout sequence resource."""
 
-  _release_track = base.ReleaseTrack.BETA
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @classmethod
   def Args(cls, parser: parser_arguments.ArgumentInterceptor):
     """Registers flags for this command."""
     flags = rolloutsequence_flags.RolloutSequenceFlags(
-        parser, release_track=cls._release_track
+        parser, release_track=cls.ReleaseTrack()
     )
     flags.AddRolloutSequenceResourceArg()
     flags.AddDisplayName()
@@ -57,7 +57,7 @@ class Create(base.CreateCommand):
 
   def Run(
       self, args: parser_extensions.Namespace
-  ) -> alpha_messages.Operation | beta_messages.Operation:
+  ) -> types.Operation:
     """Runs the create command."""
     flag_parser = rolloutsequence_flags.RolloutSequenceFlagParser(
         args, release_track=self.ReleaseTrack()
@@ -85,9 +85,3 @@ class Create(base.CreateCommand):
     completed_operation = operation_client.Wait(util.OperationRef(operation))
     log.CreatedResource(rolloutsequence_ref, kind='Rollout sequence')
     return completed_operation
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
-  """Create a rollout sequence resource."""
-  _release_track = base.ReleaseTrack.ALPHA

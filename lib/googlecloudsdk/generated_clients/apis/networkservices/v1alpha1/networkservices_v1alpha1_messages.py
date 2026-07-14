@@ -58,8 +58,8 @@ class AgentGateway(_messages.Message):
     protocols: Optional. Deprecated.
     registries: Optional. A list of Agent registries containing the agents,
       MCP servers and tools governed by the Agent Gateway. Note: Currently
-      limited to project-scoped registries Must be of format
-      `//agentregistry.googleapis.com/projects/{project}/locations/{location}/
+      limited to project-scoped registries Must be of format `//agentregistry.
+      googleapis.com/projects/{project}/locations/{location}/`
     selfManaged: Optional. Attach to existing Application Load Balancers or
       Secure Web Proxies.
     updateTime: Output only. The timestamp when the resource was updated.
@@ -194,24 +194,9 @@ class AgentGatewayNetworkConfigEgress(_messages.Message):
 
   Fields:
     networkAttachment: Optional. The URI of the Network Attachment resource.
-    trustConfig: Optional. TrustConfig defines the trust configuration for
-      egress.
   """
 
   networkAttachment = _messages.StringField(1)
-  trustConfig = _messages.MessageField('AgentGatewayNetworkConfigEgressTrustConfig', 2)
-
-
-class AgentGatewayNetworkConfigEgressTrustConfig(_messages.Message):
-  r"""TrustConfig defines the trust configuration for egress.
-
-  Fields:
-    pemCertificates: Required. PEM encoded root certificates used to validate
-      the identity of the upstream servers/destinations during egress
-      connections.
-  """
-
-  pemCertificates = _messages.StringField(1, repeated=True)
 
 
 class AgentGatewaySelfManaged(_messages.Message):
@@ -852,8 +837,8 @@ class CDNPolicyAddSignaturesOptions(_messages.Message):
       expression `[a-zA-Z]([a-zA-Z0-9_-])*` which means the first character
       must be a letter, and all following characters must be a dash,
       underscore, letter or digit. This field can only be set when the
-      `GENERATE_TOKEN_HLS_COOKIELESS` or `PROPAGATE_TOKEN_HLS_COOKIELESS`
-      actions are specified.
+      `GENERATE_TOKEN_HLS_COOKIELESS`, `PROPAGATE_TOKEN_HLS_COOKIELESS`, or
+      `PROPAGATE_TOKEN_DASH_COOKIELESS` actions are specified.
     tokenTtl: Optional. The duration the token is valid for starting from the
       moment the token is first generated. Defaults to `86400s` (1 day). The
       TTL must be >= 0 and <= 604,800 seconds (1 week). This field can only be
@@ -877,11 +862,15 @@ class CDNPolicyAddSignaturesOptions(_messages.Message):
         the request to the URLs in an HTTP Live Stream (HLS) playlist. This
         action cannot be combined with either the `GENERATE_COOKIE` action or
         the `GENERATE_TOKEN_HLS_COOKIELESS` action.
+      PROPAGATE_TOKEN_DASH_COOKIELESS: Copy the authentication token used in
+        the request to the URLs in a Dynamic Adaptive Streaming over HTTP
+        (DASH) manifest.
     """
     SIGNATURE_ACTION_UNSPECIFIED = 0
     GENERATE_COOKIE = 1
     GENERATE_TOKEN_HLS_COOKIELESS = 2
     PROPAGATE_TOKEN_HLS_COOKIELESS = 3
+    PROPAGATE_TOKEN_DASH_COOKIELESS = 4
 
   actions = _messages.EnumField('ActionsValueListEntryValuesEnum', 1, repeated=True)
   copiedParameters = _messages.StringField(2, repeated=True)
@@ -1586,6 +1575,389 @@ class Expr(_messages.Message):
   expression = _messages.StringField(2)
   location = _messages.StringField(3)
   title = _messages.StringField(4)
+
+
+class ExpressLink(_messages.Message):
+  r"""ExpressLink provides automated, zero-friction service-to-service secure
+  connectivity across network boundaries without manual infrastructure
+  configuration toil.
+
+  Messages:
+    LabelsValue: Optional. Set of label tags associated with the ExpressLink
+      resource.
+
+  Fields:
+    createTime: Output only. The timestamp when the resource was created.
+    description: Optional. A free-text description of the resource. Max length
+      1024 characters.
+    destination: Optional. The destination service(s) for this binding.
+    etag: Optional. Etag of the resource. If this is provided, it must match
+      the server's etag. If the provided etag does not match the server's
+      etag, the request will fail with a 409 ABORTED error.
+    labels: Optional. Set of label tags associated with the ExpressLink
+      resource.
+    matches: Optional. A list of matches define conditions used to match
+      requests to destination services. Each match is independent with the OR
+      semantic, i.e. we consider it matched if ANY one of the matches is
+      satisfied. This field is only applicable to Cloud Run services: If an
+      ExpressLink has only one Cloud Run service, Match is optional. If not
+      specified, the default hostname `-..run.app` or the short name can be
+      used. If an ExpressLink has multiple Cloud Run services, at least one
+      Match with valid hostname is required.
+    name: Identifier. Name of the ExpressLink resource. It matches pattern
+      `projects/*/locations/*/expressLinks/`.
+    source: Optional. The source service(s) for this binding.
+    updateTime: Output only. The timestamp when the resource was updated.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Set of label tags associated with the ExpressLink resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  destination = _messages.MessageField('ExpressLinkDestination', 3)
+  etag = _messages.StringField(4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  matches = _messages.MessageField('ExpressLinkMatch', 6, repeated=True)
+  name = _messages.StringField(7)
+  source = _messages.MessageField('ExpressLinkSource', 8)
+  updateTime = _messages.StringField(9)
+
+
+class ExpressLinkDestination(_messages.Message):
+  r"""The destination of the traffic. This defines the service that the source
+  wants to connect to.
+
+  Fields:
+    services: Optional. The service URIs to which the ExpressLink resource is
+      bound. Can be one of the following (all the service URIs should have the
+      same type):
+      `//compute.googleapis.com/projects/*/regions/*/serviceAttachments/`;
+      `//compute.googleapis.com/projects/*/regions/*/forwardingRules/`;
+      `//run.googleapis.com/projects/*/locations/*/services/`.
+  """
+
+  services = _messages.StringField(1, repeated=True)
+
+
+class ExpressLinkMatch(_messages.Message):
+  r"""Match defines the predicate used to match requests to destination
+  services. This field is only applicable to Cloud Run services.
+
+  Fields:
+    hostname: Optional. Specifies the hostname to match against the HTTP
+      request host header. Hostname is the fully qualified domain name of a
+      network host, as defined by RFC1123 with the exception that: - IPs are
+      not allowed. - Wildcard labels (`*.`) are not allowed. Hostname must be
+      "precise" which is a domain name without the terminating dot of a
+      network host (e.g. `foo.example.com`). Note that as per RFC1035 and
+      RFC1123, a label must consist of lower case alphanumeric characters or
+      '-', and must start and end with an alphanumeric character. No other
+      punctuation is allowed.
+  """
+
+  hostname = _messages.StringField(1)
+
+
+class ExpressLinkSource(_messages.Message):
+  r"""The source of the traffic. This defines where the connection originates
+  from.
+
+  Fields:
+    services: Optional. A list of resources attached to the ExpressLink. The
+      resources can be Cloud Run services of the format:
+      `//run.googleapis.com/projects/*/locations/*/services/`. The location of
+      the resources must match the location of the ExpressLink (unless the
+      ExpressLink is global).
+  """
+
+  services = _messages.StringField(1, repeated=True)
+
+
+class ExtensionBinding(_messages.Message):
+  r"""`ExtensionBinding` is a resource representing the attachment of an
+  extension to a service.
+
+  Messages:
+    LabelsValue: Optional. Set of labels associated with the
+      `ExtensionBinding` resource. The format must comply with [the following
+      requirements](https://cloud.google.com/compute/docs/labeling-
+      resources#requirements).
+    ProducerMetadataValue: Optional. Additional metadata that should be passed
+      to the attached extension with each request.
+
+  Fields:
+    createTime: Output only. The timestamp when the resource was created.
+    description: Optional. A human-readable description of the resource.
+    etag: Optional. Etag of the resource. If provided, it must match the
+      server's etag. If the provided etag does not match the server's etag,
+      the request will fail with a 409 ABORTED error.
+    failOpen: Optional. Determines the behavior of the extension binding when
+      the call to the extension fails or times out. Default value is `FALSE`.
+      When set to `TRUE`, failures of the extension are silently ignored.
+    labels: Optional. Set of labels associated with the `ExtensionBinding`
+      resource. The format must comply with [the following
+      requirements](https://cloud.google.com/compute/docs/labeling-
+      resources#requirements).
+    matchConditions: Optional. A list of match conditions to match against the
+      incoming request. The extension will be invoked if at least one
+      condition matches the request, or if no match conditions are specified.
+      Limited to 5 conditions.
+    name: Identifier. Name of the `ExtensionBinding` resource in the following
+      format: `projects/{project}/locations/{location}/extensionBindings/{exte
+      nsion_binding}`.
+    producerExtension: Required. The name of the extension that this binding
+      should attach to target resources. Format: For Google-provided
+      extensions, specify the service endpoint (see [Model Armor
+      integration](https://docs.cloud.google.com/model-armor/integrations))
+    producerMetadata: Optional. Additional metadata that should be passed to
+      the attached extension with each request.
+    targets: Required. Specifies a list of targets to which this
+      `ExtensionBinding` should be attached. Limited to 1 target.
+    updateTime: Output only. The timestamp when the resource was updated.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Set of labels associated with the `ExtensionBinding`
+    resource. The format must comply with [the following
+    requirements](https://cloud.google.com/compute/docs/labeling-
+    resources#requirements).
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ProducerMetadataValue(_messages.Message):
+    r"""Optional. Additional metadata that should be passed to the attached
+    extension with each request.
+
+    Messages:
+      AdditionalProperty: An additional property for a ProducerMetadataValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        ProducerMetadataValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ProducerMetadataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  etag = _messages.StringField(3)
+  failOpen = _messages.BooleanField(4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  matchConditions = _messages.MessageField('ExtensionBindingMatchCondition', 6, repeated=True)
+  name = _messages.StringField(7)
+  producerExtension = _messages.StringField(8)
+  producerMetadata = _messages.MessageField('ProducerMetadataValue', 9)
+  targets = _messages.MessageField('ExtensionBindingTarget', 10, repeated=True)
+  updateTime = _messages.StringField(11)
+
+
+class ExtensionBindingMatchCondition(_messages.Message):
+  r"""Conditions to match against the incoming request.
+
+  Fields:
+    from_: Optional. Describes properties of a source of a request. If
+      specified, the extension will only be invoked on requests from sources
+      that match the specified criteria.
+    to: Optional. Describes properties of a destination of a request. If
+      specified, the extension will only be invoked on requests to
+      destinations that match the specified criteria.
+  """
+
+  from_ = _messages.MessageField('ExtensionBindingMatchConditionFrom', 1)
+  to = _messages.MessageField('ExtensionBindingMatchConditionTo', 2)
+
+
+class ExtensionBindingMatchConditionFrom(_messages.Message):
+  r"""Describes properties of one or more sources of a request.
+
+  Fields:
+    notSource: Optional. Describes the negated properties of the request
+      source. Extension will not be invoked on requests that match the
+      criteria specified in this field. At least one of sources or not_source
+      must be specified.
+    source: Optional. Describes the properties of a request's sources. At
+      least one of sources or not_source must be specified.
+  """
+
+  notSource = _messages.MessageField('ExtensionBindingMatchConditionFromSource', 1)
+  source = _messages.MessageField('ExtensionBindingMatchConditionFromSource', 2)
+
+
+class ExtensionBindingMatchConditionFromSource(_messages.Message):
+  r"""Describes properties of a single source.
+
+  Fields:
+    principals: Optional. A list of non-empty strings whose value is matched
+      against the principal value. A match occurs if any of the principals
+      matches the principal value in the request.
+  """
+
+  principals = _messages.MessageField('ExtensionBindingMatchConditionStringMatch', 1, repeated=True)
+
+
+class ExtensionBindingMatchConditionHeaderMatch(_messages.Message):
+  r"""Determines how an HTTP header should be matched.
+
+  Fields:
+    name: Required. Specifies the name of the header in the request.
+    value: Optional. Specifies how the header match will be performed.
+  """
+
+  name = _messages.StringField(1)
+  value = _messages.MessageField('ExtensionBindingMatchConditionStringMatch', 2)
+
+
+class ExtensionBindingMatchConditionStringMatch(_messages.Message):
+  r"""Specifies matching logic for string values.
+
+  Fields:
+    contains: Optional. The input string must have the substring specified
+      here. Note: empty contains match is not allowed, please use regex
+      instead. Examples: * ``abc`` matches the value ``xyz.abc.def``
+    exact: Optional. The input string must match exactly the string specified
+      here. Examples: * ``abc`` only matches the value ``abc``.
+    ignoreCase: Optional. If true, indicates the exact/prefix/suffix/contains
+      matching should be case insensitive. For example, the matcher ``data``
+      will match both input string ``Data`` and ``data`` if set to true.
+    prefix: Optional. The input string must have the prefix specified here.
+      Note: empty prefix is not allowed. Examples: * ``abc`` matches the value
+      ``abc.xyz``
+    suffix: Optional. The input string must have the suffix specified here.
+      Note: empty prefix is not allowed, please use regex instead. Examples: *
+      ``abc`` matches the value ``xyz.abc``
+  """
+
+  contains = _messages.StringField(1)
+  exact = _messages.StringField(2)
+  ignoreCase = _messages.BooleanField(3)
+  prefix = _messages.StringField(4)
+  suffix = _messages.StringField(5)
+
+
+class ExtensionBindingMatchConditionTo(_messages.Message):
+  r"""Describes properties of one or more destinations of a request.
+
+  Fields:
+    destination: Optional. Describes properties of destination of a request.
+      Within a destination, the match follows AND semantics across fields and
+      OR semantics within a field, i.e. a match occurs when ANY path matches
+      AND ANY header matches and ANY method matches. At least one of
+      destination or not_destination must be specified.
+    notDestination: Optional. Describes the negated properties of the request
+      destination. Extension will not be invoked on requests that match the
+      criteria specified in this field. At least one of destination or
+      not_destination must be specified.
+  """
+
+  destination = _messages.MessageField('ExtensionBindingMatchConditionToDestination', 1)
+  notDestination = _messages.MessageField('ExtensionBindingMatchConditionToDestination', 2)
+
+
+class ExtensionBindingMatchConditionToDestination(_messages.Message):
+  r"""Describes properties of a single destination.
+
+  Fields:
+    headerSet: Optional. A set of HTTP headers to match against. If not
+      specified, requests with any headers are matched.
+    hosts: Optional. A list of HTTP Hosts to match against. Limited to 10
+      hosts. If not specified, any host is allowed. If specified, a match
+      occurs if any of the hosts matches the host value in the request.
+    paths: Optional. A list of paths to match against. Limited to 10 paths. If
+      not specified, any path is allowed. Note that this path match includes
+      the query parameters. For gRPC services, this should be a fully-
+      qualified name of the form /package.service/method.
+    resources: Optional. A list of non-empty strings whose value is matched
+      against the resource value. If not specified, any resource is allowed.
+      If specified, a match occurs if any of the resources matches the
+      resource value in the request. Limited to 5 resources.
+  """
+
+  headerSet = _messages.MessageField('ExtensionBindingMatchConditionToDestinationHeaderSet', 1)
+  hosts = _messages.MessageField('ExtensionBindingMatchConditionStringMatch', 2, repeated=True)
+  paths = _messages.MessageField('ExtensionBindingMatchConditionStringMatch', 3, repeated=True)
+  resources = _messages.MessageField('ExtensionBindingMatchConditionStringMatch', 4, repeated=True)
+
+
+class ExtensionBindingMatchConditionToDestinationHeaderSet(_messages.Message):
+  r"""Describes a set of HTTP headers to match against.
+
+  Fields:
+    headers: Required. A list of headers to match against in http header. If
+      multiple header matches are provided, they will be evaluated as an AND,
+      i.e. all header matches must match for the request to match.
+  """
+
+  headers = _messages.MessageField('ExtensionBindingMatchConditionHeaderMatch', 1, repeated=True)
+
+
+class ExtensionBindingTarget(_messages.Message):
+  r"""Specifies a list of targets to which this `ExtensionBinding` should
+  attach.
+
+  Fields:
+    resource: Required. The reference to the target resource, to which this
+      binding should attach. For Agent Gateway, this would be the full
+      resource name, in the format:
+      `projects/{project}/locations/{location}/agentGateways/{agent_gateway}`.
+      For AI App, this would be the full resource name, in the format:
+      `projects/{project}/locations/{location}/applications/{application}`.
+  """
+
+  resource = _messages.StringField(1)
 
 
 class ExtensionChain(_messages.Message):
@@ -4259,6 +4631,46 @@ class ListEndpointPoliciesResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListExpressLinksResponse(_messages.Message):
+  r"""Response returned by the ListExpressLinks method.
+
+  Fields:
+    expressLinks: List of ExpressLink resources.
+    nextPageToken: If there might be more results than those appearing in this
+      response, then `next_page_token` is included. To get the next set of
+      results, call this method again using the value of `next_page_token` as
+      `page_token`.
+    unreachable: Unordered list. Unreachable resources. Populated when the
+      request attempts to list all resources across all supported locations,
+      while some locations are temporarily unavailable.
+  """
+
+  expressLinks = _messages.MessageField('ExpressLink', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListExtensionBindingsResponse(_messages.Message):
+  r"""Response returned by the `ListExtensionBindings` method.
+
+  Fields:
+    extensionBindings: List of `ExtensionBinding` resources.
+    nextPageToken: If there might be more results than those appearing in this
+      response, then `next_page_token` is included. To get the next set of
+      results, call this method again using the value of `next_page_token` as
+      `page_token`.
+    unreachable: Unordered list. Unreachable resources. Populated when the
+      request attempts to list all resources across all supported locations,
+      while some locations are temporarily unavailable. The resource names are
+      in the format `projects/{project}/locations/{location}/extensionBindings
+      /{extension_binding}`.
+  """
+
+  extensionBindings = _messages.MessageField('ExtensionBinding', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListGatewayRouteViewsResponse(_messages.Message):
   r"""Response returned by the ListGatewayRouteViews method.
 
@@ -4863,6 +5275,25 @@ class ListTcpRoutesResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListTelemetryPoliciesResponse(_messages.Message):
+  r"""Response returned by the ListTelemetryPolicies method.
+
+  Fields:
+    nextPageToken: If there might be more results than those appearing in this
+      response, then `next_page_token` is included. To get the next set of
+      results, call this method again using the value of `next_page_token` as
+      `page_token`.
+    telemetryPolicies: List of TelemetryPolicy resources.
+    unreachable: Unreachable resources. Populated when the request attempts to
+      list all resources across all supported locations, while some locations
+      are temporarily unavailable.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  telemetryPolicies = _messages.MessageField('TelemetryPolicy', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListTlsRoutesResponse(_messages.Message):
   r"""Response returned by the ListTlsRoutes method.
 
@@ -5318,6 +5749,17 @@ class MetadataLabels(_messages.Message):
 
   labelName = _messages.StringField(1)
   labelValue = _messages.StringField(2)
+
+
+class MetricsConfiguration(_messages.Message):
+  r"""Configuration for metrics collection.
+
+  Fields:
+    enabled: Optional. Indicates whether metrics are enabled or disabled. Set
+      to true to explicitly enable, or false to explicitly disable.
+  """
+
+  enabled = _messages.BooleanField(1)
 
 
 class MulticastConsumerAssociation(_messages.Message):
@@ -6985,6 +7427,166 @@ class NetworkservicesProjectsLocationsEndpointPoliciesPatchRequest(_messages.Mes
   """
 
   endpointPolicy = _messages.MessageField('EndpointPolicy', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
+
+
+class NetworkservicesProjectsLocationsExpressLinksCreateRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsExpressLinksCreateRequest object.
+
+  Fields:
+    expressLink: A ExpressLink resource to be passed as the request body.
+    expressLinkId: Required. Short name of the ExpressLink resource to be
+      created.
+    parent: Required. The parent resource of the ExpressLink. Must be in the
+      format `projects/*/locations/*`.
+  """
+
+  expressLink = _messages.MessageField('ExpressLink', 1)
+  expressLinkId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class NetworkservicesProjectsLocationsExpressLinksDeleteRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsExpressLinksDeleteRequest object.
+
+  Fields:
+    etag: Optional. The etag of the ExpressLink to delete.
+    name: Required. A name of the ExpressLink to delete. Must be in the format
+      `projects/*/locations/*/expressLinks/*`.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetworkservicesProjectsLocationsExpressLinksGetRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsExpressLinksGetRequest object.
+
+  Fields:
+    name: Required. A name of the ExpressLink to get. Must be in the format
+      `projects/*/locations/*/expressLinks/*`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworkservicesProjectsLocationsExpressLinksListRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsExpressLinksListRequest object.
+
+  Fields:
+    pageSize: Maximum number of ExpressLinks to return per call.
+    pageToken: The value returned by the last `ListExpressLinksResponse`
+      Indicates that this is a continuation of a prior `ListExpressLinks`
+      call, and that the system should return the next page of data.
+    parent: Required. The project and location from which the ExpressLinks
+      should be listed, specified in the format `projects/*/locations/*`.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class NetworkservicesProjectsLocationsExpressLinksPatchRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsExpressLinksPatchRequest object.
+
+  Fields:
+    expressLink: A ExpressLink resource to be passed as the request body.
+    name: Identifier. Name of the ExpressLink resource. It matches pattern
+      `projects/*/locations/*/expressLinks/`.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the ExpressLink resource by the update. The fields
+      specified in the update_mask are relative to the resource, not the full
+      request. A field will be overwritten if it is in the mask. If the user
+      does not provide a mask then all fields will be overwritten.
+  """
+
+  expressLink = _messages.MessageField('ExpressLink', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
+
+
+class NetworkservicesProjectsLocationsExtensionBindingsCreateRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsExtensionBindingsCreateRequest object.
+
+  Fields:
+    extensionBinding: A ExtensionBinding resource to be passed as the request
+      body.
+    extensionBindingId: Required. Short name of the `ExtensionBinding`
+      resource to be created.
+    parent: Required. The parent resource of the `ExtensionBinding` resource.
+      Must be in the format `projects/{project}/locations/{location}`.
+  """
+
+  extensionBinding = _messages.MessageField('ExtensionBinding', 1)
+  extensionBindingId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class NetworkservicesProjectsLocationsExtensionBindingsDeleteRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsExtensionBindingsDeleteRequest object.
+
+  Fields:
+    etag: Optional. The etag of the ExtensionBinding to delete.
+    name: Required. A name of the `ExtensionBinding` resource to delete. Must
+      be in the format `projects/{project}/locations/{location}/extensionBindi
+      ngs/{extension_binding}`.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetworkservicesProjectsLocationsExtensionBindingsGetRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsExtensionBindingsGetRequest object.
+
+  Fields:
+    name: Required. A name of the `ExtensionBinding` resource to get. Must be
+      in the format `projects/{project}/locations/{location}/extensionBindings
+      /{extension_binding}`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworkservicesProjectsLocationsExtensionBindingsListRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsExtensionBindingsListRequest object.
+
+  Fields:
+    pageSize: Optional. Maximum number of `ExtensionBinding` resources to
+      return per call.
+    pageToken: Optional. The value returned by the last
+      `ListExtensionBindingsResponse` Indicates that this is a continuation of
+      a prior `ListExtensionBindings` call, and that the system should return
+      the next page of data.
+    parent: Required. The project and location from which the
+      `ExtensionBinding` resources should be listed, specified in the format
+      `projects/{project}/locations/{location}`.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class NetworkservicesProjectsLocationsExtensionBindingsPatchRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsExtensionBindingsPatchRequest object.
+
+  Fields:
+    extensionBinding: A ExtensionBinding resource to be passed as the request
+      body.
+    name: Identifier. Name of the `ExtensionBinding` resource in the following
+      format: `projects/{project}/locations/{location}/extensionBindings/{exte
+      nsion_binding}`.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the `ExtensionBinding` resource by the update. The fields
+      specified in the update_mask are relative to the resource, not the full
+      request. A field will be overwritten if it is in the mask. If the user
+      does not provide a mask then all fields will be overwritten.
+  """
+
+  extensionBinding = _messages.MessageField('ExtensionBinding', 1)
   name = _messages.StringField(2, required=True)
   updateMask = _messages.StringField(3)
 
@@ -11039,6 +11641,102 @@ class NetworkservicesProjectsLocationsTcpRoutesPatchRequest(_messages.Message):
   updateMask = _messages.StringField(3)
 
 
+class NetworkservicesProjectsLocationsTelemetryPoliciesCreateRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsTelemetryPoliciesCreateRequest object.
+
+  Fields:
+    parent: Required. The parent resource where this policy will be created.
+      Must be in the format `projects/{project}/locations/{location}`.
+    telemetryPolicy: A TelemetryPolicy resource to be passed as the request
+      body.
+    telemetryPolicyId: Required. The ID to use for the telemetry policy, which
+      will become the final component of the telemetry policy's resource name.
+      This value must be 4-63 characters long, and match the regular
+      expression `[a-z]([-a-z0-9]{2,61}[a-z0-9])`.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  telemetryPolicy = _messages.MessageField('TelemetryPolicy', 2)
+  telemetryPolicyId = _messages.StringField(3)
+
+
+class NetworkservicesProjectsLocationsTelemetryPoliciesDeleteRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsTelemetryPoliciesDeleteRequest object.
+
+  Fields:
+    etag: Optional. The etag of the TelemetryPolicy. If this is provided, it
+      must match the server's etag.
+    name: Required. A name of the TelemetryPolicy to delete. Must be in the
+      format `projects/{project}/locations/{location}/telemetryPolicies/{telem
+      etry_policy}`.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetworkservicesProjectsLocationsTelemetryPoliciesGetRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsTelemetryPoliciesGetRequest object.
+
+  Fields:
+    name: Required. A name of the TelemetryPolicy to get. Must be in the
+      format `projects/{project}/locations/{location}/telemetryPolicies/{telem
+      etry_policy}`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworkservicesProjectsLocationsTelemetryPoliciesListRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsTelemetryPoliciesListRequest object.
+
+  Fields:
+    pageSize: Optional. The maximum number of policies to return. The service
+      may return fewer than this value. If unspecified, at most 50 policies
+      will be returned. The maximum value is 1000; values above 1000 will be
+      coerced to 1000.
+    pageToken: Optional. A page token, received from a previous
+      `ListTelemetryPolicies` call. Provide this to retrieve the subsequent
+      page.
+    parent: Required. The project and location from which the
+      TelemetryPolicies should be listed, specified in the format
+      `projects/{project}/locations/{location}`.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class NetworkservicesProjectsLocationsTelemetryPoliciesPatchRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsTelemetryPoliciesPatchRequest object.
+
+  Fields:
+    allowMissing: Optional. If set to true, and the telemetry policy is not
+      found, a new telemetry policy will be created. In this situation,
+      `update_mask` is ignored.
+    name: Identifier. Represents the resource name of the policy. Format: `pro
+      jects/{project}/locations/{location}/telemetryPolicies/{telemetry_policy
+      }`
+    telemetryPolicy: A TelemetryPolicy resource to be passed as the request
+      body.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the TelemetryPolicy resource by the update. The fields
+      specified in the update_mask are relative to the resource, not the full
+      request. A field will be overwritten if it is in the mask. If the
+      `update_mask` is not provided, the service will treat it as an implied
+      field mask equivalent to all fields provided in the request message.
+      This means that only the fields populated in the `telemetry_policy`
+      field will be updated. The special value `*` can be used to indicate
+      full replacement.
+  """
+
+  allowMissing = _messages.BooleanField(1)
+  name = _messages.StringField(2, required=True)
+  telemetryPolicy = _messages.MessageField('TelemetryPolicy', 3)
+  updateMask = _messages.StringField(4)
+
+
 class NetworkservicesProjectsLocationsTlsRoutesCreateRequest(_messages.Message):
   r"""A NetworkservicesProjectsLocationsTlsRoutesCreateRequest object.
 
@@ -13175,6 +13873,97 @@ class TcpRouteRouteRule(_messages.Message):
   matches = _messages.MessageField('TcpRouteRouteMatch', 2, repeated=True)
 
 
+class TelemetryPolicy(_messages.Message):
+  r"""Provides a configuration for telemetry.
+
+  Messages:
+    LabelsValue: Optional. Set of label tags associated with the
+      TelemetryPolicy resource.
+
+  Fields:
+    createTime: Output only. Indicates the timestamp when the resource was
+      created.
+    displayName: Optional. Provides a human-readable name for the policy.
+    etag: Provides a mechanism for optimistic concurrency control.
+    labels: Optional. Set of label tags associated with the TelemetryPolicy
+      resource.
+    metricsConfiguration: Optional. Specifies the top-level configuration
+      block within the telemetry policy that contains all the settings for how
+      metrics will be applied to the target resources.
+    name: Identifier. Represents the resource name of the policy. Format: `pro
+      jects/{project}/locations/{location}/telemetryPolicies/{telemetry_policy
+      }`
+    telemetryTarget: Required. Specifies the set of targets to which this
+      telemetry policy applies.
+    tracingConfiguration: Optional. Specifies the top-level configuration
+      block within the telemetry policy that contains all the settings for how
+      tracing will be applied to the target resources.
+    uid: Output only. Specifies the server-assigned unique identifier for the
+      policy.
+    updateTime: Output only. Indicates the timestamp when the resource was
+      last updated.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Set of label tags associated with the TelemetryPolicy
+    resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  displayName = _messages.StringField(2)
+  etag = _messages.StringField(3)
+  labels = _messages.MessageField('LabelsValue', 4)
+  metricsConfiguration = _messages.MessageField('MetricsConfiguration', 5)
+  name = _messages.StringField(6)
+  telemetryTarget = _messages.MessageField('TelemetryTarget', 7)
+  tracingConfiguration = _messages.MessageField('TracingConfiguration', 8)
+  uid = _messages.StringField(9)
+  updateTime = _messages.StringField(10)
+
+
+class TelemetryTarget(_messages.Message):
+  r"""Specifies the set of targets to which the TelemetryPolicy should be
+  applied.
+
+  Fields:
+    resources: Required. Lists references to the resources that are targeted
+      by the policy. Types of resources supported: - `run.googleapis.com/` -
+      `compute.googleapis.com/` - `networkservices.googleapis.com/` The format
+      must be the full resource name of a supported resource. Examples: `//run
+      .googleapis.com/projects/{project}/locations/{location}/services/{servic
+      e}` `//compute.googleapis.com/projects/my-
+      project/global/forwardingRules/my-fr-1`
+      `//compute.googleapis.com/projects/my-project/regions/us-
+      central1/forwardingRules/my-fr-1`
+      `//networkservices.googleapis.com/projects/my-project/locations/us-
+      central1/gateways/my-secure-web-proxy-gateway`
+      `//networkservices.googleapis.com/projects/my-project/locations/us-
+      east1/agentGateways/my-agent-gateway`
+  """
+
+  resources = _messages.StringField(1, repeated=True)
+
+
 class TestIamPermissionsRequest(_messages.Message):
   r"""Request message for `TestIamPermissions` method.
 
@@ -13377,6 +14166,63 @@ class TlsRouteRouteRule(_messages.Message):
 
   action = _messages.MessageField('TlsRouteRouteAction', 1)
   matches = _messages.MessageField('TlsRouteRouteMatch', 2, repeated=True)
+
+
+class TracingConfiguration(_messages.Message):
+  r"""Configuration for tracing collection.
+
+  Fields:
+    customSpanAttributes: Optional. Provides key-value pairs for adding
+      context to spans. Supports literalValue (static) and fromHeaderValue
+      (dynamic extraction).
+    parentBasedSampling: Optional. Configures honoring a sampled bit in
+      downstream traceparentID headers.
+    samplingRate: Optional. Specifies the tracing sampling rate. The sampling
+      rate is a float number in the interval [0, 1]. The sampling rate is
+      applied to all requests to the targeted resources. The default value is
+      0.0.
+  """
+
+  customSpanAttributes = _messages.MessageField('TracingConfigurationCustomSpanAttribute', 1, repeated=True)
+  parentBasedSampling = _messages.MessageField('TracingConfigurationParentBasedSampling', 2)
+  samplingRate = _messages.FloatField(3, variant=_messages.Variant.FLOAT)
+
+
+class TracingConfigurationCustomSpanAttribute(_messages.Message):
+  r"""Key-value pairs for adding context to spans. Supports literal_value
+  (static) and from_header_value (dynamic extraction). Note: literal_value and
+  from_header_value are mutually exclusive, but at least one of them must be
+  set.
+
+  Fields:
+    attributeName: Required. Defines the key for a custom attribute that is
+      added to the trace spans generated by the Google Cloud Load Balancer
+      (GCLB).
+    fromHeaderValue: Optional. Specifies an incoming request header name from
+      which the value for the custom span attribute should be dynamically
+      extracted. Note: the value of the header might be changed during the
+      request processing; in this case the resulting value will be stored.
+    literalValue: Optional. Assigns a static, constant value to the custom
+      trace span attribute defined by the corresponding attribute_name.
+  """
+
+  attributeName = _messages.StringField(1)
+  fromHeaderValue = _messages.StringField(2)
+  literalValue = _messages.StringField(3)
+
+
+class TracingConfigurationParentBasedSampling(_messages.Message):
+  r"""Configures honoring a sampled bit in downstream traceparentID headers.
+
+  Fields:
+    enabled: Optional. Provides a master switch to respect a sampled bit in
+      incoming traceparentID headers. Default is false.
+    samplingRate: Optional. Specifies the sampling rate to use when the
+      sampled bit is set in the incoming traceparentID header.
+  """
+
+  enabled = _messages.BooleanField(1)
+  samplingRate = _messages.FloatField(2, variant=_messages.Variant.FLOAT)
 
 
 class TrafficPortSelector(_messages.Message):
@@ -14010,6 +14856,8 @@ class WasmPluginVersionDetails(_messages.Message):
   updateTime = _messages.StringField(9)
 
 
+encoding.AddCustomJsonFieldMapping(
+    ExtensionBindingMatchCondition, 'from_', 'from')
 encoding.AddCustomJsonFieldMapping(
     StandardQueryParameters, 'f__xgafv', '$.xgafv')
 encoding.AddCustomJsonEnumMapping(

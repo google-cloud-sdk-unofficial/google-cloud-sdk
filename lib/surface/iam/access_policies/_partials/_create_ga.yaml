@@ -99,6 +99,7 @@
               Includes Gmail, Cloud Identity, and Google Workspace user accounts. For
               example, `principal://goog/subject/alice@example.com`.
 
+
               If an identifier that was previously set on a policy is soft deleted, then
               calls to read that policy will return the identifier with a deleted
               prefix. Users cannot set identifiers with this syntax.

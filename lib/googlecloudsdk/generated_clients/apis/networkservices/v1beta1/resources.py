@@ -74,6 +74,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_EXPRESSLINKS = (
+      'projects.locations.expressLinks',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/expressLinks/'
+              '{expressLinksId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_GATEWAYS = (
       'projects.locations.gateways',
       '{+name}',

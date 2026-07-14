@@ -39,8 +39,7 @@ class Update(base.UpdateCommand):
   def Args(cls, parser):
     workstations_flags.AddAsyncFlag(parser)
     workstations_flags.AddWorkstationResourceArg(parser)
-    if cls.ReleaseTrack() != base.ReleaseTrack.GA:
-      workstations_flags.AddWorkstationUpdatePersistentDirectoryFields(parser)
+    workstations_flags.AddWorkstationUpdatePersistentDirectoryFields(parser)
 
   def Collection(self):
     return 'workstations.projects.locations.workstationClusters.workstationConfigs.workstations'

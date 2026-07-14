@@ -1780,7 +1780,7 @@ class GkehubV1alpha(base_api.BaseApiClient):
           }
 
     def Cancel(self, request, global_params=None):
-      r"""Cancels a paused Rollout. The rollout will not be started on new clusters, however the rollout running on the cluster will be allowed to finish. It's only valid to cancel a paused rollout, otherwise it will return a FAILED_PRECONDITION error.
+      r"""Cancels a Rollout. The rollout will not be started on new clusters, however the rollout running on the cluster will be allowed to finish.
 
       Args:
         request: (GkehubProjectsLocationsRolloutsCancelRequest) input message

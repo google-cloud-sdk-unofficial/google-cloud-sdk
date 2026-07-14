@@ -53,6 +53,7 @@ class BackupdrV1alpha(base_api.BaseApiClient):
     self.projects_locations_managementServers = self.ProjectsLocationsManagementServersService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
     self.projects_locations_resourceBackupConfigs = self.ProjectsLocationsResourceBackupConfigsService(self)
+    self.projects_locations_restoreTemplates = self.ProjectsLocationsRestoreTemplatesService(self)
     self.projects_locations_serviceConfig = self.ProjectsLocationsServiceConfigService(self)
     self.projects_locations_trial = self.ProjectsLocationsTrialService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
@@ -1700,6 +1701,70 @@ class BackupdrV1alpha(base_api.BaseApiClient):
         request_field='',
         request_type_name='BackupdrProjectsLocationsResourceBackupConfigsListRequest',
         response_type_name='ListResourceBackupConfigsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsRestoreTemplatesService(base_api.BaseApiService):
+    """Service class for the projects_locations_restoreTemplates resource."""
+
+    _NAME = 'projects_locations_restoreTemplates'
+
+    def __init__(self, client):
+      super(BackupdrV1alpha.ProjectsLocationsRestoreTemplatesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new RestoreTemplate in a given project and location.
+
+      Args:
+        request: (BackupdrProjectsLocationsRestoreTemplatesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/restoreTemplates',
+        http_method='POST',
+        method_id='backupdr.projects.locations.restoreTemplates.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['requestId', 'restoreTemplateId'],
+        relative_path='v1alpha/{+parent}/restoreTemplates',
+        request_field='restoreTemplate',
+        request_type_name='BackupdrProjectsLocationsRestoreTemplatesCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a RestoreTemplate.
+
+      Args:
+        request: (BackupdrProjectsLocationsRestoreTemplatesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (RestoreTemplate) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/restoreTemplates/{restoreTemplatesId}',
+        http_method='GET',
+        method_id='backupdr.projects.locations.restoreTemplates.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='BackupdrProjectsLocationsRestoreTemplatesGetRequest',
+        response_type_name='RestoreTemplate',
         supports_download=False,
     )
 

@@ -25,7 +25,6 @@ from googlecloudsdk.core.console import console_io
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-@base.Hidden
 class StartSplit(base.Command):
   """Starts splitting a Cloud NetApp clone volume from its source volume."""
 

@@ -15,7 +15,9 @@
 
 """Implementation of delete command for Feature Configs."""
 
+from googlecloudsdk.api_lib.storage import feature_config_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
 
 
 @base.Hidden
@@ -48,7 +50,9 @@ class Delete(base.Command):
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
-    del self, args  # Unused.
-    raise NotImplementedError(
-        'The feature-configs surface is not yet implemented.'
+    client = feature_config_api.FeatureConfigApi()
+    project = properties.VALUES.core.project.Get(required=True)
+    name = (
+        f'projects/{project}/locations/global/featureConfigs/{args.CONFIG_ID}'
     )
+    return client.delete_feature_config(name)

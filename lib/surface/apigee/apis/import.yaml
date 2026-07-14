@@ -1,0 +1,21 @@
+- release_tracks: [ALPHA]
+  is_python_command: true
+  hints:
+    read_only: false
+  guidance:
+    content: |
+      ### Prerequisites
+      Requires permission to create API proxies in the target Apigee
+      organization (for example, `roles/apigee.apiAdmin`), and an active Cloud
+      Platform project associated with that organization.
+
+      ### Working with templates
+      When using `--from-template`, keep the template file and every feature
+      file it references in the same directory. Feature paths are resolved
+      relative to the template file, so a template in one directory cannot
+      reference feature files in another.
+
+      ### After importing
+      Each import creates a new API proxy revision rather than overwriting an
+      existing one. Deploy the new revision to an environment with
+      `gcloud apigee apis deploy`.

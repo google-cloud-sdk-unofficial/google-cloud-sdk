@@ -39,8 +39,8 @@ class AffectedResource(_messages.Message):
     affectedResourceUri: Required. The full unique address (URI) of the Google
       Cloud resource affected by this `Experiment`. Example: the full path to
       a specific Compute Engine instance.
-    cloudConsoleUrl: Output only. A direct link to view this specific resource
-      in the Google Cloud Console.
+    cloudConsolePath: Output only. A direct link to view this specific
+      resource in the Google Cloud Console.
     displayName: Optional. A human-readable name for the affected resource
       record.
     error: Output only. Details of any error that occurred while setting up,
@@ -85,7 +85,7 @@ class AffectedResource(_messages.Message):
     COMPLETED = 6
 
   affectedResourceUri = _messages.StringField(1)
-  cloudConsoleUrl = _messages.StringField(2)
+  cloudConsolePath = _messages.StringField(2)
   displayName = _messages.StringField(3)
   error = _messages.MessageField('Status', 4)
   name = _messages.StringField(5)
@@ -1502,8 +1502,8 @@ class ValidationResource(_messages.Message):
   Fields:
     affectedResourceUri: Required. The full unique address (URI) of the Google
       Cloud resource that was identified.
-    cloudConsoleUrl: Output only. A direct link to view this specific resource
-      in the Google Cloud Console.
+    cloudConsolePath: Output only. A direct link to view this specific
+      resource in the Google Cloud Console.
     displayName: Optional. A human-readable name for the `ValidationResource`
       record.
     error: Output only. Details of any error encountered while checking the
@@ -1546,7 +1546,7 @@ class ValidationResource(_messages.Message):
     COMPLETED = 6
 
   affectedResourceUri = _messages.StringField(1)
-  cloudConsoleUrl = _messages.StringField(2)
+  cloudConsolePath = _messages.StringField(2)
   displayName = _messages.StringField(3)
   error = _messages.MessageField('Status', 4)
   name = _messages.StringField(5)

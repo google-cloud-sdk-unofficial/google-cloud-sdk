@@ -44,6 +44,9 @@ class GapicWrapperClient(object):
     self.executions = gapic_util.MakeAsyncClient(
         run_v2.services.executions.async_client.ExecutionsAsyncClient,
         credentials, **kwargs)
+    self.instances = gapic_util.MakeAsyncClient(
+        run_v2.services.instances.async_client.InstancesAsyncClient,
+        credentials, **kwargs)
     self.jobs = gapic_util.MakeAsyncClient(
         run_v2.services.jobs.async_client.JobsAsyncClient,
         credentials, **kwargs)
@@ -52,6 +55,9 @@ class GapicWrapperClient(object):
         credentials, **kwargs)
     self.services = gapic_util.MakeAsyncClient(
         run_v2.services.services.async_client.ServicesAsyncClient,
+        credentials, **kwargs)
+    self.source = gapic_util.MakeAsyncClient(
+        run_v2.services.source_upload.async_client.SourceUploadAsyncClient,
         credentials, **kwargs)
     self.tasks = gapic_util.MakeAsyncClient(
         run_v2.services.tasks.async_client.TasksAsyncClient,
@@ -63,9 +69,11 @@ class GapicWrapperClient(object):
   async def __aenter__(self):
     await self._aexit_stack.enter_async_context(self.builds)
     await self._aexit_stack.enter_async_context(self.executions)
+    await self._aexit_stack.enter_async_context(self.instances)
     await self._aexit_stack.enter_async_context(self.jobs)
     await self._aexit_stack.enter_async_context(self.revisions)
     await self._aexit_stack.enter_async_context(self.services)
+    await self._aexit_stack.enter_async_context(self.source)
     await self._aexit_stack.enter_async_context(self.tasks)
     await self._aexit_stack.enter_async_context(self.worker)
     return self

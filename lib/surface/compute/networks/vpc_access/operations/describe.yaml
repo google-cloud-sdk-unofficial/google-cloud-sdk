@@ -1,4 +1,6 @@
 - release_tracks: [GA, BETA, ALPHA, PREVIEW]
+  hints:
+    read_only: true
   help_text:
     brief: |
       Show metadata for a VPC Access Service operation.

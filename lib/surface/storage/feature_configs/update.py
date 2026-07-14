@@ -15,8 +15,10 @@
 
 """Implementation of update command for Feature Configs."""
 
+from googlecloudsdk.api_lib.storage import feature_config_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import flags
+from googlecloudsdk.core import properties
 
 
 @base.Hidden
@@ -54,7 +56,45 @@ class Update(base.Command):
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
-    del self, args  # Unused.
-    raise NotImplementedError(
-        'The feature-configs surface is not yet implemented.'
+    client = feature_config_api.FeatureConfigApi()
+    project = properties.VALUES.core.project.Get(required=True)
+    name = (
+        f'projects/{project}/locations/global/featureConfigs/{args.CONFIG_ID}'
+    )
+
+    description = args.description if args.IsSpecified('description') else None
+    auto_annotate_models = (
+        args.auto_annotate_models
+        if args.IsSpecified('auto_annotate_models')
+        else None
+    )
+    include_locations = (
+        args.include_locations
+        if args.IsSpecified('include_locations')
+        else None
+    )
+    exclude_locations = (
+        args.exclude_locations
+        if args.IsSpecified('exclude_locations')
+        else None
+    )
+    include_bucket_id_regexes = (
+        args.include_bucket_id_regexes
+        if args.IsSpecified('include_bucket_id_regexes')
+        else None
+    )
+    exclude_bucket_id_regexes = (
+        args.exclude_bucket_id_regexes
+        if args.IsSpecified('exclude_bucket_id_regexes')
+        else None
+    )
+
+    return client.update_feature_config(
+        name=name,
+        description=description,
+        auto_annotate_models=auto_annotate_models,
+        include_locations=include_locations,
+        exclude_locations=exclude_locations,
+        include_bucket_id_regexes=include_bucket_id_regexes,
+        exclude_bucket_id_regexes=exclude_bucket_id_regexes,
     )

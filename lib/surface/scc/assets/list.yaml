@@ -13,6 +13,8 @@
 # limitations under the License.
 
 - release_tracks: [ALPHA, BETA, GA]
+  hints:
+    read_only: true
   deprecate:
     is_removed: false
     warning: |

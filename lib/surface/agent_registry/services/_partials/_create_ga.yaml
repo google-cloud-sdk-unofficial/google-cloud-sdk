@@ -19,12 +19,22 @@
   - GA
   auto_generated: true
   help_text:
-    brief: Create services
-    description: Create a service
+    brief: Register a new service.
+    description: |-
+      Create a writable Service resource to manually register custom or external
+      agentic components into the registry. A Service represents an agent, an
+      MCP server, or an endpoint that is manually added to your registry.
+      Depending on the specification provided, Agent Registry automatically
+      projects this Service onto the consumer side as a read-only Agent,
+      McpServer, or Endpoint resource for discovery.
     examples: |-
-      To create the service, run:
+      To create an agent service with an interface URL and HTTP+JSON binding, run:
 
-          $ {command}
+        $ {command} my-service \
+            --location=us-central1 \
+            --display-name="My Agent Service" \
+            --agent-spec-type=no-spec \
+            --interfaces="url=https://example.com/api,protocolBinding=http-json"
   arguments:
     params:
     - group:
@@ -108,6 +118,11 @@
                 enum_value: NO_SPEC
                 help_text: |-
                   There is no spec for the Endpoint. The `content` field must be empty.
+              - arg_value: openapi-spec
+                enum_value: OPENAPI_SPEC
+                help_text: |-
+                  OpenAPI Specification.
+                hidden: true
             - arg_name: endpoint-spec-content
               api_field: service.endpointSpec.content
               required: false

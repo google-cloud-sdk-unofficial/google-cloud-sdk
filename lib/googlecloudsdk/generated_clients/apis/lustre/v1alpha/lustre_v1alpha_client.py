@@ -298,7 +298,7 @@ class LustreV1alpha(base_api.BaseApiClient):
         method_id='lustre.projects.locations.instances.delete',
         ordered_params=['name'],
         path_params=['name'],
-        query_params=['requestId'],
+        query_params=['force', 'requestId'],
         relative_path='v1alpha/{+name}',
         request_field='',
         request_type_name='LustreProjectsLocationsInstancesDeleteRequest',

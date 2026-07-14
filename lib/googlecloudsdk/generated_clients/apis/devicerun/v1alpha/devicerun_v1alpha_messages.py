@@ -52,95 +52,32 @@ class AllocationConfig(_messages.Message):
   maxAllocationWaitTime = _messages.StringField(3)
 
 
-class AndroidBugreportDeviceAction(_messages.Message):
-  r"""Retrieves the Android device bugreport of the test.
+class AndroidInstallPackagesDeviceAction(_messages.Message):
+  r"""Installs Android packages on the device.
 
   Fields:
-    bugreportOnPass: Optional. Whether to upload bugreport when test passes.
+    installables: Required. The Android packages to install on the device. The
+      installation will be performed in the order specified. Limits: - A
+      maximum of 20 installables are allowed. - A maximum of 100 files are
+      allowed in total across all installables.
   """
 
-  bugreportOnPass = _messages.BooleanField(1)
-
-
-class AndroidFilePullingDeviceAction(_messages.Message):
-  r"""Pulls directories and files from the device at the end of the run. Files
-  will be copied to the '/artifacts' directory, with the absolute path
-  structure preserved. Note that: 1. A clean device is provided for the run.
-  2. Any existing files in the output directory may be overwritten. 3. Pulling
-  files is best effort. Will skip files if they don't exist on the device.
-
-  Fields:
-    srcPathsOnDevice: Required. Absolute directory or file paths to pull from
-      the device.
-  """
-
-  srcPathsOnDevice = _messages.StringField(1, repeated=True)
-
-
-class AndroidFilePushingConfig(_messages.Message):
-  r"""The configuration of pushing a file to the device.
-
-  Fields:
-    destPathOnDevice: Required. The destination path on the device.
-    sourceFile: Required. The file to be pushed to the device.
-  """
-
-  destPathOnDevice = _messages.StringField(1)
-  sourceFile = _messages.MessageField('InputFile', 2)
-
-
-class AndroidFilePushingDeviceAction(_messages.Message):
-  r"""Pushes files to the device at the beginning of the run. Files are
-  overwritten if a file with the same path already exists on the device, if
-  device permissions allow.
-
-  Fields:
-    filePushingConfigs: Required. Configs of pushing files to the device.
-    overwriteDestination: Optional. Whether to overwrite the destination file
-      if it already exists. By default it is false.
-    pushTimeout: Optional. The timeout of pushing files to the device. If not
-      set, the default timeout is 5 minutes.
-  """
-
-  filePushingConfigs = _messages.MessageField('AndroidFilePushingConfig', 1, repeated=True)
-  overwriteDestination = _messages.BooleanField(2)
-  pushTimeout = _messages.StringField(3)
+  installables = _messages.MessageField('AndroidInstallable', 1, repeated=True)
 
 
 class AndroidInstallable(_messages.Message):
-  r"""An Android Installable represents the file(s) and options for installing
-  an Android package on a device.
-
-  Enums:
-    FileTypeValueValuesEnum: Required. The type of the files making up the
-      package.
+  r"""An Android Installable represents the file(s) for installing an Android
+  package on a device. This can be an APK, an Android App Bundle (AAB), or an
+  APK Set.
 
   Fields:
-    fileType: Required. The type of the files making up the package.
-    files: Required. Files that make up the package. For APK, supports both
-      single and split/multiple files. For AAB and APKS, only supports single
-      file.
-    options: Optional. Options for installing the package.
+    files: Required. Files that make up the package. Supported formats are
+      distinguished by their file extension: - APK: One or more files with
+      extension `.apk`. - App Bundle: A single file with extension `.aab`. -
+      APK Set: A single file with extension `.apks`.
   """
 
-  class FileTypeValueValuesEnum(_messages.Enum):
-    r"""Required. The type of the files making up the package.
-
-    Values:
-      FILE_TYPE_UNSPECIFIED: Unspecified file type. This value is unused.
-      APK: Android package file. Supports both single and split/multiple
-        files.
-      AAB: App Bundle file. Only supports single file.
-      APKS: APK Set Archive file. Only supports single file.
-    """
-    FILE_TYPE_UNSPECIFIED = 0
-    APK = 1
-    AAB = 2
-    APKS = 3
-
-  fileType = _messages.EnumField('FileTypeValueValuesEnum', 1)
-  files = _messages.MessageField('InputFile', 2, repeated=True)
-  options = _messages.MessageField('Options', 3)
+  files = _messages.MessageField('InputFile', 1, repeated=True)
 
 
 class AndroidInstrumentationTest(_messages.Message):
@@ -152,19 +89,26 @@ class AndroidInstrumentationTest(_messages.Message):
     AdditionalTestOptionsValue: Optional. Additional test options to pass to
       the test runner. Passed to `am instrument` command as `-e` options,
       which will be passed to the instrumentation test runner using its
-      `onCreate()` method. Limits: - Maximum number of entries: 40. - Maximum
-      key length: 128 characters. - Maximum value length: 4096 characters.
+      `onCreate()` method. Formats supoorted in test_targets are not allowed
+      to be used here. Limits: - Maximum number of entries: 40. - Maximum key
+      length: 128 characters. - Maximum value length: 4096 characters.
 
   Fields:
     additionalTestOptions: Optional. Additional test options to pass to the
       test runner. Passed to `am instrument` command as `-e` options, which
       will be passed to the instrumentation test runner using its `onCreate()`
-      method. Limits: - Maximum number of entries: 40. - Maximum key length:
-      128 characters. - Maximum value length: 4096 characters.
+      method. Formats supoorted in test_targets are not allowed to be used
+      here. Limits: - Maximum number of entries: 40. - Maximum key length: 128
+      characters. - Maximum value length: 4096 characters.
     enableCodeCoverage: Optional. Whether to enable code coverage collection
       for the test. A coverage file `coverage.ec` will be uploaded to the
       results folder. For this to work, your classes have to be instrumented
       offline (build time) by EMMA/JaCoCo.
+    instrumentationTimeout: Optional. The timeout of the instrumentation test.
+      Default value: 5 min. Range: [1 min, 60 min].
+    orchestratorVersion: Optional. The version of the Android Test
+      Orchestrator to use for the test. If not set, no orchestrator is used.
+      If set to "auto", a system-default orchestrator is used.
     smartSharding: Optional. Smart sharding strategy to split the job into
       multiple shards based on the test methods and their execution time.
     testInstallable: Required. The test package to install and run the test.
@@ -173,11 +117,16 @@ class AndroidInstrumentationTest(_messages.Message):
       it. The default value is determined by examining the application's
       manifest. If multiple instrumentations are found, the first one in the
       manifest will be used.
-    testTargets: Optional. A list of test targets to run. Each target must be
-      fully qualified with the package name or class name, in one of these
-      formats: - `package package_name` - `class package_name.class_name` -
-      `class package_name.class_name#method_name` If empty, all targets in the
-      module will be run. Limits: - Maximum number of entries: 1024.
+    testTargets: Optional. A list of test targets or target filters to run.
+      Each target must be fully qualified with the package name or class name,
+      in one of these formats: - `package package_name` - `notPackage
+      com.package.to.skip` - `class package_name.class_name` - `class
+      package_name.class_name#method_name` - `notClass com.foo.ClassToSkip` -
+      `notClass com.foo.ClassName#testMethodToSkip` - `annotation
+      com.foo.AnnotationToRun` - `notAnnotation com.foo.AnnotationToSkip` -
+      `size [small|medium|large]` Formats like `testfile` or `notTestfile`
+      won't be supported. If empty, all targets in the module will be run.
+      Limits: - Maximum number of entries: 1024.
     uniformSharding: Optional. Uniform sharding strategy to split the job into
       multiple shards with equal number of test methods.
   """
@@ -186,7 +135,8 @@ class AndroidInstrumentationTest(_messages.Message):
   class AdditionalTestOptionsValue(_messages.Message):
     r"""Optional. Additional test options to pass to the test runner. Passed
     to `am instrument` command as `-e` options, which will be passed to the
-    instrumentation test runner using its `onCreate()` method. Limits: -
+    instrumentation test runner using its `onCreate()` method. Formats
+    supoorted in test_targets are not allowed to be used here. Limits: -
     Maximum number of entries: 40. - Maximum key length: 128 characters. -
     Maximum value length: 4096 characters.
 
@@ -214,24 +164,20 @@ class AndroidInstrumentationTest(_messages.Message):
 
   additionalTestOptions = _messages.MessageField('AdditionalTestOptionsValue', 1)
   enableCodeCoverage = _messages.BooleanField(2)
-  smartSharding = _messages.MessageField('SmartSharding', 3)
-  testInstallable = _messages.MessageField('AndroidInstallable', 4)
-  testRunnerClass = _messages.StringField(5)
-  testTargets = _messages.StringField(6, repeated=True)
-  uniformSharding = _messages.MessageField('UniformSharding', 7)
+  instrumentationTimeout = _messages.StringField(3)
+  orchestratorVersion = _messages.StringField(4)
+  smartSharding = _messages.MessageField('SmartSharding', 5)
+  testInstallable = _messages.MessageField('AndroidInstallable', 6)
+  testRunnerClass = _messages.StringField(7)
+  testTargets = _messages.StringField(8, repeated=True)
+  uniformSharding = _messages.MessageField('UniformSharding', 9)
 
 
 class AndroidLogcatDeviceAction(_messages.Message):
   r"""Collects logcat output from the device. The output will be written to a
   file named `logcat.txt` in the execution output directory.
-
-  Fields:
-    logFilterSpecs: Optional. The log filter specs to filter the logcat.
-    logOptions: Optional. The log options to control the logcat.
   """
 
-  logFilterSpecs = _messages.StringField(1)
-  logOptions = _messages.StringField(2)
 
 
 class AndroidNativeBinary(_messages.Message):
@@ -305,19 +251,6 @@ class AndroidOrientationDeviceAction(_messages.Message):
   orientation = _messages.StringField(1)
 
 
-class AndroidPackageInstallationDeviceAction(_messages.Message):
-  r"""Installs Android packages on the device.
-
-  Fields:
-    installables: Required. The Android packages to install on the device. The
-      installation will be performed in the order specified. Limits: - A
-      maximum of 20 installables are allowed. - A maximum of 100 files are
-      allowed in total across all installables.
-  """
-
-  installables = _messages.MessageField('AndroidInstallable', 1, repeated=True)
-
-
 class AndroidPhysicalDeviceRequirement(_messages.Message):
   r"""The requirement of an Android physical device.
 
@@ -337,6 +270,44 @@ class AndroidPhysicalDeviceRequirement(_messages.Message):
   sdkVersion = _messages.MessageField('IntRequirement', 3)
 
 
+class AndroidPullFilesDeviceAction(_messages.Message):
+  r"""Pulls directories and files from the device at the end of the run. Files
+  will be copied to the '/artifacts' directory, with the absolute path
+  structure preserved. Note that: 1. A clean device is provided for the run.
+  2. Any existing files in the output directory may be overwritten. 3. Pulling
+  files is best effort. Will skip files if they don't exist on the device.
+
+  Fields:
+    paths: Required. Absolute directory or file paths to pull from the device.
+  """
+
+  paths = _messages.StringField(1, repeated=True)
+
+
+class AndroidPushFilesDeviceAction(_messages.Message):
+  r"""Pushes files to the device at the beginning of the run. Files are
+  overwritten if a file with the same path already exists on the device, if
+  device permissions allow.
+
+  Fields:
+    fileConfigs: Required. Configs of pushing files to the device.
+  """
+
+  fileConfigs = _messages.MessageField('FileConfig', 1, repeated=True)
+
+
+class AndroidRecordVideoDeviceAction(_messages.Message):
+  r"""Records a video of the device screen during the run. The video will be
+  written to a file named `video.mp4` in the execution output directory.
+
+  Fields:
+    discardOnPass: Optional. Whether to discard and not upload the recording
+      when the test passes. Default is false.
+  """
+
+  discardOnPass = _messages.BooleanField(1)
+
+
 class AndroidRoboTest(_messages.Message):
   r"""Android specific Robo test message."""
 
@@ -353,18 +324,6 @@ class AndroidSwitchLocaleDeviceAction(_messages.Message):
   """
 
   localeCode = _messages.StringField(1)
-
-
-class AndroidVideoRecordingDeviceAction(_messages.Message):
-  r"""Records a video of the device screen during the run. The video will be
-  written to a file named `video.mp4` in the execution output directory.
-
-  Fields:
-    discardOnPass: Optional. Whether to discard and not upload the recording
-      when the test passes. Default is false.
-  """
-
-  discardOnPass = _messages.BooleanField(1)
 
 
 class AttemptReport(_messages.Message):
@@ -422,41 +381,37 @@ class DeviceAction(_messages.Message):
   r"""The action to be performed on a device.
 
   Fields:
-    androidBugreport: Retrieves the Android device bugreport of the test.
-    androidFilePulling: Pulls directories and files from the device at the end
-      of the run.
-    androidFilePushing: Pushes files to the device at the beginning of the
-      run.
+    androidInstallPackages: Installs Android packages on the device.
     androidLogcat: Collects logcat output from the device.
     androidOrientation: Sets the orientation of the device.
-    androidPackageInstallation: Installs Android packages on the device.
+    androidPullFiles: Pulls directories and files from the device at the end
+      of the run.
+    androidPushFiles: Pushes files to the device at the beginning of the run.
+    androidRecordVideo: Records a video of the device screen during the run.
     androidSwitchLocale: Switches the locale (language and region) of the
       device.
-    androidVideoRecording: Records a video of the device screen during the
-      run.
   """
 
-  androidBugreport = _messages.MessageField('AndroidBugreportDeviceAction', 1)
-  androidFilePulling = _messages.MessageField('AndroidFilePullingDeviceAction', 2)
-  androidFilePushing = _messages.MessageField('AndroidFilePushingDeviceAction', 3)
-  androidLogcat = _messages.MessageField('AndroidLogcatDeviceAction', 4)
-  androidOrientation = _messages.MessageField('AndroidOrientationDeviceAction', 5)
-  androidPackageInstallation = _messages.MessageField('AndroidPackageInstallationDeviceAction', 6)
+  androidInstallPackages = _messages.MessageField('AndroidInstallPackagesDeviceAction', 1)
+  androidLogcat = _messages.MessageField('AndroidLogcatDeviceAction', 2)
+  androidOrientation = _messages.MessageField('AndroidOrientationDeviceAction', 3)
+  androidPullFiles = _messages.MessageField('AndroidPullFilesDeviceAction', 4)
+  androidPushFiles = _messages.MessageField('AndroidPushFilesDeviceAction', 5)
+  androidRecordVideo = _messages.MessageField('AndroidRecordVideoDeviceAction', 6)
   androidSwitchLocale = _messages.MessageField('AndroidSwitchLocaleDeviceAction', 7)
-  androidVideoRecording = _messages.MessageField('AndroidVideoRecordingDeviceAction', 8)
 
 
 class DeviceConfig(_messages.Message):
   r"""The configuration of a run on a device.
 
   Fields:
-    deviceActions: Required. The actions to be performed on the device.
-      Actions will be executed in the order they are specified in the list.
-    deviceRequirement: Required. The requirement of the device.
+    actions: Required. The actions to be performed on the device. Actions will
+      be executed in the order they are specified in the list.
+    requirement: Required. The requirement of the device.
   """
 
-  deviceActions = _messages.MessageField('DeviceAction', 1, repeated=True)
-  deviceRequirement = _messages.MessageField('DeviceRequirement', 2)
+  actions = _messages.MessageField('DeviceAction', 1, repeated=True)
+  requirement = _messages.MessageField('DeviceRequirement', 2)
 
 
 class DeviceRequirement(_messages.Message):
@@ -465,9 +420,12 @@ class DeviceRequirement(_messages.Message):
   Fields:
     androidPhysicalDeviceRequirement: The requirement of a physical Android
       device.
+    deviceId: The device ID of a device in the catalog. The device ID is the
+      last part of a device's resource name.
   """
 
   androidPhysicalDeviceRequirement = _messages.MessageField('AndroidPhysicalDeviceRequirement', 1)
+  deviceId = _messages.StringField(2)
 
 
 class DevicerunProjectsLocationsGetRequest(_messages.Message):
@@ -740,6 +698,32 @@ class ExecutionReport(_messages.Message):
   startTime = _messages.StringField(7)
   status = _messages.MessageField('Status', 8)
   warnings = _messages.MessageField('Warning', 9, repeated=True)
+
+
+class FileConfig(_messages.Message):
+  r"""The configuration of pushing a file to the device.
+
+  Fields:
+    destinationPath: Required. The destination path on the device.
+    sourceFile: Required. The file to be pushed to the device.
+  """
+
+  destinationPath = _messages.StringField(1)
+  sourceFile = _messages.MessageField('InputFile', 2)
+
+
+class FlakyTestRetryStrategy(_messages.Message):
+  r"""Default retry strategy. It will retry on test failures for up to
+  flaky_test_attempts(including the initial run). It also retries on infra
+  issues for up to 2 attempts(including the initial run). So in totally, an
+  execution can run up to flaky_test_attempts * 2 times in the worst case.
+
+  Fields:
+    flakyTestAttempts: Optional. The total attempts for flaky tests, including
+      the initial run. By default, it is 1 - no retry.
+  """
+
+  flakyTestAttempts = _messages.IntegerField(1, variant=_messages.Variant.INT32)
 
 
 class GcsPath(_messages.Message):
@@ -1149,14 +1133,12 @@ class JobSettings(_messages.Message):
   r"""Job settings to control the job execution.
 
   Fields:
-    repeatSettings: Optional. The repeat settings of the job.
     retrySettings: Optional. The retry settings of the job.
     timeoutSettings: Optional. The timeout settings of the job.
   """
 
-  repeatSettings = _messages.MessageField('RepeatSettings', 1)
-  retrySettings = _messages.MessageField('RetrySettings', 2)
-  timeoutSettings = _messages.MessageField('TimeoutSettings', 3)
+  retrySettings = _messages.MessageField('RetrySettings', 1)
+  timeoutSettings = _messages.MessageField('TimeoutSettings', 2)
 
 
 class ListLocationsResponse(_messages.Message):
@@ -1294,18 +1276,6 @@ class OperationMetadata(_messages.Message):
   verb = _messages.StringField(7)
 
 
-class Options(_messages.Message):
-  r"""Options for installing the package.
-
-  Fields:
-    dontGrantRuntimePermissions: Optional. If true, do not grant runtime
-      permissions to the app. Default is to grant all runtime permissions to
-      the app.
-  """
-
-  dontGrantRuntimePermissions = _messages.BooleanField(1)
-
-
 class OutputFile(_messages.Message):
   r"""Output file.
 
@@ -1314,16 +1284,6 @@ class OutputFile(_messages.Message):
   """
 
   gcsOutputFile = _messages.MessageField('GcsPath', 1)
-
-
-class RepeatSettings(_messages.Message):
-  r"""Repeat settings.
-
-  Fields:
-    repeatRuns: Optional. The number of repeat runs for each shard.
-  """
-
-  repeatRuns = _messages.IntegerField(1, variant=_messages.Variant.INT32)
 
 
 class Result(_messages.Message):
@@ -1383,6 +1343,8 @@ class RetrySettings(_messages.Message):
       set, the default retry level is ERROR.
 
   Fields:
+    flakyTestRetryStrategy: Optional. The default retry strategy. Allows an
+      Execution to retry on test failures and infrastructure errors.
     maxAttempts: Optional. The maximum number of attempts for each shard.
     retryLevel: Optional. The retry level of the job. If not set, the default
       retry level is ERROR.
@@ -1401,8 +1363,9 @@ class RetrySettings(_messages.Message):
     ERROR = 1
     FAIL = 2
 
-  maxAttempts = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  retryLevel = _messages.EnumField('RetryLevelValueValuesEnum', 2)
+  flakyTestRetryStrategy = _messages.MessageField('FlakyTestRetryStrategy', 1)
+  maxAttempts = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  retryLevel = _messages.EnumField('RetryLevelValueValuesEnum', 3)
 
 
 class RoboTest(_messages.Message):
@@ -1506,9 +1469,15 @@ class SmartSharding(_messages.Message):
 
   Fields:
     targetedShardDuration: Required. The targeted duration of each shard.
+    timingRecord: Required. The timing record file to use for smart sharding.
+      If the file is not existing, smart sharding will use default test time
+      (30s) for each test method to shard the job into multiple shards. This
+      file will be overwritten with the latest timing record after the job is
+      completed.
   """
 
   targetedShardDuration = _messages.StringField(1)
+  timingRecord = _messages.MessageField('InputFile', 2)
 
 
 class StandardQueryParameters(_messages.Message):

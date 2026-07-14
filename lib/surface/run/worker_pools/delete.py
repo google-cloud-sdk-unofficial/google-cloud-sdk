@@ -48,8 +48,8 @@ class Delete(base.Command):
       ),
   }
 
-  @staticmethod
-  def CommonArgs(parser):
+  @classmethod
+  def CommonArgs(cls, parser):
     worker_pool_presentation = presentation_specs.ResourcePresentationSpec(
         'WORKER_POOL',
         resource_args.GetV2WorkerPoolResourceSpec(),
@@ -61,46 +61,64 @@ class Delete(base.Command):
         parser
     )
     flags.AddAsyncFlag(parser)
+    if cls.ReleaseTrack() != base.ReleaseTrack.GA:
+      flags.AddDryRunFlag(parser)
 
-  @staticmethod
-  def Args(parser):
-    Delete.CommonArgs(parser)
+  @classmethod
+  def Args(cls, parser):
+    cls.CommonArgs(parser)
 
   def Run(self, args):
     """Delete a worker-pool."""
 
     worker_pool_ref = args.CONCEPTS.worker_pool.Parse()
     flags.ValidateResource(worker_pool_ref)
-    console_io.PromptContinue(
-        message='WorkerPool [{worker_pool}] will be deleted.'.format(
-            worker_pool=worker_pool_ref.workerPoolsId
-        ),
-        throw_if_unattended=True,
-        cancel_on_no=True,
-    )
-    run_client = run_util.GetGapicClientInstance(
+    dry_run = getattr(args, 'dry_run', False)
+    if not dry_run:
+      console_io.PromptContinue(
+          message='WorkerPool [{worker_pool}] will be deleted.'.format(
+              worker_pool=worker_pool_ref.workerPoolsId
+          ),
+          throw_if_unattended=True,
+          cancel_on_no=True,
+      )
+    with run_util.GetGapicClientInstance(
         region=worker_pool_ref.locationsId
-    )
-    worker_pools_client = worker_pools_operations.WorkerPoolsOperations(
-        run_client
-    )
+    ) as run_client:
+      worker_pools_client = worker_pools_operations.WorkerPoolsOperations(
+          run_client
+      )
 
-    def DeleteWithExistenceCheck(worker_pool_ref):
-      response = worker_pools_client.DeleteWorkerPool(worker_pool_ref)
-      if not response:
-        raise exceptions.ArgumentError(
-            'Cannot find worker pool [{}]'.format(worker_pool_ref.workerPoolsId)
+      def DeleteWithExistenceCheck(worker_pool_ref, dry_run=False):
+        kwargs = {}
+        if dry_run:
+          kwargs['dry_run'] = True
+        response = worker_pools_client.DeleteWorkerPool(
+            worker_pool_ref, **kwargs
         )
+        if not response:
+          raise exceptions.ArgumentError(
+              'Cannot find worker pool [{}]'.format(
+                  worker_pool_ref.workerPoolsId
+              )
+          )
 
-    # TODO: b/390067647 - Use response.result() once the issue is fixed
-    deletion.Delete(
-        worker_pool_ref,
-        worker_pools_client.GetWorkerPool,
-        DeleteWithExistenceCheck,
-        args.async_,
-    )
+      # TODO: b/390067647 - Use response.result() once the issue is fixed
+      deletion.Delete(
+          worker_pool_ref,
+          worker_pools_client.GetWorkerPool,
+          DeleteWithExistenceCheck,
+          args.async_,
+          dry_run=dry_run,
+      )
 
-    if args.async_:
+    if dry_run:
+      pretty_print.Success(
+          'Worker pool [{}] has been validated.'.format(
+              worker_pool_ref.workerPoolsId
+          )
+      )
+    elif args.async_:
       pretty_print.Success(
           'Worker pool [{}] is being deleted.'.format(
               worker_pool_ref.workerPoolsId

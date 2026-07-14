@@ -1421,7 +1421,10 @@ project.
     )
 
     def ListUsable(self, request, global_params=None):
-      r"""Retrieves a list of all usable backend services in the specified project.
+      r"""Retrieves a list of all usable backend services for Application Load.
+Balancers and Proxy Network Load Balancers in the specified project.
+Backend services for external and internal passthrough Network Load
+Balancers are not included in the response.
 
       Args:
         request: (ComputeBackendServicesListUsableRequest) input message
@@ -6133,7 +6136,7 @@ Deleting an instance group for more information.
         method_id='compute.instanceGroupManagers.delete',
         ordered_params=['project', 'zone', 'instanceGroupManager'],
         path_params=['instanceGroupManager', 'project', 'zone'],
-        query_params=['requestId'],
+        query_params=['noGracefulShutdown', 'requestId'],
         relative_path='projects/{project}/zones/{zone}/instanceGroupManagers/{instanceGroupManager}',
         request_field='',
         request_type_name='ComputeInstanceGroupManagersDeleteRequest',
@@ -6173,7 +6176,7 @@ You can specify a maximum of 1000 instances with this method per request.
         method_id='compute.instanceGroupManagers.deleteInstances',
         ordered_params=['project', 'zone', 'instanceGroupManager'],
         path_params=['instanceGroupManager', 'project', 'zone'],
-        query_params=['requestId'],
+        query_params=['noGracefulShutdown', 'requestId'],
         relative_path='projects/{project}/zones/{zone}/instanceGroupManagers/{instanceGroupManager}/deleteInstances',
         request_field='instanceGroupManagersDeleteInstancesRequest',
         request_type_name='ComputeInstanceGroupManagersDeleteInstancesRequest',
@@ -6484,7 +6487,7 @@ You can specify a maximum of 1000 instances with this method per request.
         method_id='compute.instanceGroupManagers.recreateInstances',
         ordered_params=['project', 'zone', 'instanceGroupManager'],
         path_params=['instanceGroupManager', 'project', 'zone'],
-        query_params=['requestId'],
+        query_params=['noGracefulShutdown', 'requestId'],
         relative_path='projects/{project}/zones/{zone}/instanceGroupManagers/{instanceGroupManager}/recreateInstances',
         request_field='instanceGroupManagersRecreateInstancesRequest',
         request_type_name='ComputeInstanceGroupManagersRecreateInstancesRequest',
@@ -6723,7 +6726,7 @@ You can specify a maximum of 1000 instances with this method per request.
         method_id='compute.instanceGroupManagers.stopInstances',
         ordered_params=['project', 'zone', 'instanceGroupManager'],
         path_params=['instanceGroupManager', 'project', 'zone'],
-        query_params=['requestId'],
+        query_params=['noGracefulShutdown', 'requestId'],
         relative_path='projects/{project}/zones/{zone}/instanceGroupManagers/{instanceGroupManager}/stopInstances',
         request_field='instanceGroupManagersStopInstancesRequest',
         request_type_name='ComputeInstanceGroupManagersStopInstancesRequest',
@@ -15689,8 +15692,10 @@ specified project in the given region.
     )
 
     def ListUsable(self, request, global_params=None):
-      r"""Retrieves a list of all usable backend services in the specified project in.
-the given region.
+      r"""Retrieves a list of all usable backend services for Application Load.
+Balancers and Proxy Network Load Balancers in the specified project in the
+given region. Backend services for external and internal passthrough
+Network Load Balancers are not included in the response.
 
       Args:
         request: (ComputeRegionBackendServicesListUsableRequest) input message
@@ -17886,7 +17891,7 @@ in that group.
         method_id='compute.regionInstanceGroupManagers.delete',
         ordered_params=['project', 'region', 'instanceGroupManager'],
         path_params=['instanceGroupManager', 'project', 'region'],
-        query_params=['requestId'],
+        query_params=['noGracefulShutdown', 'requestId'],
         relative_path='projects/{project}/regions/{region}/instanceGroupManagers/{instanceGroupManager}',
         request_field='',
         request_type_name='ComputeRegionInstanceGroupManagersDeleteRequest',
@@ -17926,7 +17931,7 @@ You can specify a maximum of 1000 instances with this method per request.
         method_id='compute.regionInstanceGroupManagers.deleteInstances',
         ordered_params=['project', 'region', 'instanceGroupManager'],
         path_params=['instanceGroupManager', 'project', 'region'],
-        query_params=['requestId'],
+        query_params=['noGracefulShutdown', 'requestId'],
         relative_path='projects/{project}/regions/{region}/instanceGroupManagers/{instanceGroupManager}/deleteInstances',
         request_field='regionInstanceGroupManagersDeleteInstancesRequest',
         request_type_name='ComputeRegionInstanceGroupManagersDeleteInstancesRequest',
@@ -18231,7 +18236,7 @@ You can specify a maximum of 1000 instances with this method per request.
         method_id='compute.regionInstanceGroupManagers.recreateInstances',
         ordered_params=['project', 'region', 'instanceGroupManager'],
         path_params=['instanceGroupManager', 'project', 'region'],
-        query_params=['requestId'],
+        query_params=['noGracefulShutdown', 'requestId'],
         relative_path='projects/{project}/regions/{region}/instanceGroupManagers/{instanceGroupManager}/recreateInstances',
         request_field='regionInstanceGroupManagersRecreateRequest',
         request_type_name='ComputeRegionInstanceGroupManagersRecreateInstancesRequest',
@@ -18455,7 +18460,7 @@ You can specify a maximum of 1000 instances with this method per request.
         method_id='compute.regionInstanceGroupManagers.stopInstances',
         ordered_params=['project', 'region', 'instanceGroupManager'],
         path_params=['instanceGroupManager', 'project', 'region'],
-        query_params=['requestId'],
+        query_params=['noGracefulShutdown', 'requestId'],
         relative_path='projects/{project}/regions/{region}/instanceGroupManagers/{instanceGroupManager}/stopInstances',
         request_field='regionInstanceGroupManagersStopInstancesRequest',
         request_type_name='ComputeRegionInstanceGroupManagersStopInstancesRequest',

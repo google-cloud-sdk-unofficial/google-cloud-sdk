@@ -11,6 +11,51 @@ from apitools.base.py import extra_types
 package = 'assuredworkloads'
 
 
+class AssuredworkloadsFoldersLocationsDbFindingSummariesListRequest(_messages.Message):
+  r"""A AssuredworkloadsFoldersLocationsDbFindingSummariesListRequest object.
+
+  Fields:
+    filter: Optional. The filtering results.
+    pageSize: Optional. The requested page size. The server might return fewer
+      items than requested. If unspecified, the server picks an appropriate
+      default.
+    pageToken: Optional. A token that identifies the page of results that the
+      server should return.
+    parent: Required. The parent scope for the framework overview page.
+      Formats: - projects/{project}/locations/{location} -
+      folders/{folder}/locations/{location} -
+      organizations/{organization}/locations/{location}
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+
+
+class AssuredworkloadsOrganizationsLocationsDbFindingSummariesListRequest(_messages.Message):
+  r"""A AssuredworkloadsOrganizationsLocationsDbFindingSummariesListRequest
+  object.
+
+  Fields:
+    filter: Optional. The filtering results.
+    pageSize: Optional. The requested page size. The server might return fewer
+      items than requested. If unspecified, the server picks an appropriate
+      default.
+    pageToken: Optional. A token that identifies the page of results that the
+      server should return.
+    parent: Required. The parent scope for the framework overview page.
+      Formats: - projects/{project}/locations/{location} -
+      folders/{folder}/locations/{location} -
+      organizations/{organization}/locations/{location}
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+
+
 class AssuredworkloadsOrganizationsLocationsOperationsGetRequest(_messages.Message):
   r"""A AssuredworkloadsOrganizationsLocationsOperationsGetRequest object.
 
@@ -331,6 +376,28 @@ class AssuredworkloadsOrganizationsLocationsWorkloadsViolationsListRequest(_mess
   parent = _messages.StringField(7, required=True)
 
 
+class AssuredworkloadsProjectsLocationsDbFindingSummariesListRequest(_messages.Message):
+  r"""A AssuredworkloadsProjectsLocationsDbFindingSummariesListRequest object.
+
+  Fields:
+    filter: Optional. The filtering results.
+    pageSize: Optional. The requested page size. The server might return fewer
+      items than requested. If unspecified, the server picks an appropriate
+      default.
+    pageToken: Optional. A token that identifies the page of results that the
+      server should return.
+    parent: Required. The parent scope for the framework overview page.
+      Formats: - projects/{project}/locations/{location} -
+      folders/{folder}/locations/{location} -
+      organizations/{organization}/locations/{location}
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+
+
 class GoogleCloudAssuredworkloadsV1AcknowledgeViolationRequest(_messages.Message):
   r"""Request for acknowledging the violation
 
@@ -535,7 +602,13 @@ class GoogleCloudAssuredworkloadsV1BatchAcknowledgeViolationsRequest(_messages.M
 
 
 class GoogleCloudAssuredworkloadsV1BatchAcknowledgeViolationsResponse(_messages.Message):
-  r"""Response for batch violation acknowledgement"""
+  r"""Response for batch violation acknowledgement
+
+  Fields:
+    acknowledgedViolationsCount: Count of acknowledged violations.
+  """
+
+  acknowledgedViolationsCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
 
 
 class GoogleCloudAssuredworkloadsV1CreateWorkloadOperationMetadata(_messages.Message):
@@ -586,6 +659,8 @@ class GoogleCloudAssuredworkloadsV1CreateWorkloadOperationMetadata(_messages.Mes
         Support
       ISRAEL_DATA_BOUNDARY_AND_SUPPORT: Israel Data Boundary and Support
       JAPAN_DATA_BOUNDARY: Japan Data Boundary
+      SWITZERLAND_DATA_BOUNDARY_WITH_ACCESS_JUSTIFICATIONS: Switzerland Data
+        Boundary with Access Justifications
       KSA_DATA_BOUNDARY_WITH_ACCESS_JUSTIFICATIONS: Kingdom of Saudi Arabia
         (KSA) Data Boundary with Access Justifications
       REGIONAL_DATA_BOUNDARY: Data boundary for one of Assured Workloads'
@@ -687,39 +762,146 @@ class GoogleCloudAssuredworkloadsV1CreateWorkloadOperationMetadata(_messages.Mes
     EU_DATA_BOUNDARY_AND_SUPPORT = 14
     ISRAEL_DATA_BOUNDARY_AND_SUPPORT = 15
     JAPAN_DATA_BOUNDARY = 16
-    KSA_DATA_BOUNDARY_WITH_ACCESS_JUSTIFICATIONS = 17
-    REGIONAL_DATA_BOUNDARY = 18
-    US_DATA_BOUNDARY_AND_SUPPORT = 19
-    US_DATA_BOUNDARY_FOR_HEALTHCARE_AND_LIFE_SCIENCES = 20
-    US_DATA_BOUNDARY_FOR_HEALTHCARE_AND_LIFE_SCIENCES_WITH_SUPPORT = 21
-    AU_REGIONS_AND_US_SUPPORT = 22
-    CA_PROTECTED_B = 23
-    CA_REGIONS_AND_SUPPORT = 24
-    CANADA_CONTROLLED_GOODS = 25
-    CJIS = 26
-    EU_REGIONS_AND_SUPPORT = 27
-    FEDRAMP_HIGH = 28
-    FEDRAMP_MODERATE = 29
-    HEALTHCARE_AND_LIFE_SCIENCES_CONTROLS = 30
-    HEALTHCARE_AND_LIFE_SCIENCES_CONTROLS_US_SUPPORT = 31
-    HIPAA = 32
-    HITRUST = 33
-    IL2 = 34
-    IL4 = 35
-    IL5 = 36
-    IRS_1075 = 37
-    ISR_REGIONS = 38
-    ISR_REGIONS_AND_SUPPORT = 39
-    ITAR = 40
-    JP_REGIONS_AND_SUPPORT = 41
-    KSA_REGIONS_AND_SUPPORT_WITH_SOVEREIGNTY_CONTROLS = 42
-    REGIONAL_CONTROLS = 43
-    US_REGIONAL_ACCESS = 44
+    SWITZERLAND_DATA_BOUNDARY_WITH_ACCESS_JUSTIFICATIONS = 17
+    KSA_DATA_BOUNDARY_WITH_ACCESS_JUSTIFICATIONS = 18
+    REGIONAL_DATA_BOUNDARY = 19
+    US_DATA_BOUNDARY_AND_SUPPORT = 20
+    US_DATA_BOUNDARY_FOR_HEALTHCARE_AND_LIFE_SCIENCES = 21
+    US_DATA_BOUNDARY_FOR_HEALTHCARE_AND_LIFE_SCIENCES_WITH_SUPPORT = 22
+    AU_REGIONS_AND_US_SUPPORT = 23
+    CA_PROTECTED_B = 24
+    CA_REGIONS_AND_SUPPORT = 25
+    CANADA_CONTROLLED_GOODS = 26
+    CJIS = 27
+    EU_REGIONS_AND_SUPPORT = 28
+    FEDRAMP_HIGH = 29
+    FEDRAMP_MODERATE = 30
+    HEALTHCARE_AND_LIFE_SCIENCES_CONTROLS = 31
+    HEALTHCARE_AND_LIFE_SCIENCES_CONTROLS_US_SUPPORT = 32
+    HIPAA = 33
+    HITRUST = 34
+    IL2 = 35
+    IL4 = 36
+    IL5 = 37
+    IRS_1075 = 38
+    ISR_REGIONS = 39
+    ISR_REGIONS_AND_SUPPORT = 40
+    ITAR = 41
+    JP_REGIONS_AND_SUPPORT = 42
+    KSA_REGIONS_AND_SUPPORT_WITH_SOVEREIGNTY_CONTROLS = 43
+    REGIONAL_CONTROLS = 44
+    US_REGIONAL_ACCESS = 45
 
   complianceRegime = _messages.EnumField('ComplianceRegimeValueValuesEnum', 1)
   createTime = _messages.StringField(2)
   displayName = _messages.StringField(3)
   parent = _messages.StringField(4)
+
+
+class GoogleCloudAssuredworkloadsV1DbFindingSummary(_messages.Message):
+  r"""The details for a finding.
+
+  Enums:
+    FindingClassValueValuesEnum: Output only. The class of the finding.
+    SeverityValueValuesEnum: Output only. The severity of the finding.
+
+  Fields:
+    findingCategory: Output only. The category of the finding.
+    findingClass: Output only. The class of the finding.
+    findingCount: Output only. The count of the finding.
+    name: Identifier. The name of the finding summary.
+    relatedFrameworks: Optional. The list of compliance frameworks that the
+      finding belongs to.
+    severity: Output only. The severity of the finding.
+    updateTime: Output only. The last updated time of the finding.
+  """
+
+  class FindingClassValueValuesEnum(_messages.Enum):
+    r"""Output only. The class of the finding.
+
+    Values:
+      FINDING_CLASS_UNSPECIFIED: Default value. This value is unused.
+      THREAT: The activity is unwanted or malicious.
+      VULNERABILITY: A potential weakness in software that increases risk to
+        confidentiality, integrity, and availability.
+      MISCONFIGURATION: A potential weakness in a cloud resource or asset
+        configuration that increases risk.
+      OBSERVATION: A security observation that is for informational purposes.
+      SCC_ERROR: An error that prevents Security Command Center from
+        functioning properly.
+      POSTURE_VIOLATION: A potential security risk that's due to a change in
+        the security posture.
+      TOXIC_COMBINATION: A combination of security issues that represent a
+        more severe security problem when taken together.
+      SENSITIVE_DATA_RISK: A potential security risk to data assets that
+        contain sensitive data.
+      CHOKEPOINT: A resource or resource group where high risk attack paths
+        converge, based on attack path simulations (APS).
+    """
+    FINDING_CLASS_UNSPECIFIED = 0
+    THREAT = 1
+    VULNERABILITY = 2
+    MISCONFIGURATION = 3
+    OBSERVATION = 4
+    SCC_ERROR = 5
+    POSTURE_VIOLATION = 6
+    TOXIC_COMBINATION = 7
+    SENSITIVE_DATA_RISK = 8
+    CHOKEPOINT = 9
+
+  class SeverityValueValuesEnum(_messages.Enum):
+    r"""Output only. The severity of the finding.
+
+    Values:
+      SEVERITY_UNSPECIFIED: Default value. This value is unused.
+      CRITICAL: A critical vulnerability is easily discoverable by an external
+        actor, exploitable, and results in the direct ability to execute
+        arbitrary code, exfiltrate data, and otherwise gain additional access
+        and privileges to cloud resources and workloads. Examples include
+        publicly accessible unprotected user data and public SSH access with
+        weak or no passwords. A critical threat is a threat that can access,
+        modify, or delete data or execute unauthorized code within existing
+        resources.
+      HIGH: A high-risk vulnerability can be easily discovered and exploited
+        in combination with other vulnerabilities to gain direct access and
+        the ability to execute arbitrary code, exfiltrate data, and otherwise
+        gain additional access and privileges to cloud resources and
+        workloads. An example is a database with weak or no passwords that is
+        only accessible internally. This database could easily be compromised
+        by an actor that had access to the internal network. A high-risk
+        threat is a threat that can create new computational resources in an
+        environment but can't access data or execute code in existing
+        resources.
+      MEDIUM: A medium-risk vulnerability can be used by an actor to gain
+        access to resources or privileges that enable them to eventually
+        (through multiple steps or a complex exploit) gain access and the
+        ability to execute arbitrary code or exfiltrate data. An example is a
+        service account with access to more projects than it should have. If
+        an actor gains access to the service account, they could potentially
+        use that access to manipulate a project the service account was not
+        intended to. A medium-risk threat can cause operational impact but
+        might not access data or execute unauthorized code.
+      LOW: A low-risk vulnerability hampers a security organization's ability
+        to detect vulnerabilities or active threats in their deployment, or
+        prevents the root cause investigation of security issues. An example
+        is monitoring and logs being disabled for resource configurations and
+        access. A low-risk threat is a threat that has obtained minimal access
+        to an environment but can't access data, execute code, or create
+        resources.
+    """
+    SEVERITY_UNSPECIFIED = 0
+    CRITICAL = 1
+    HIGH = 2
+    MEDIUM = 3
+    LOW = 4
+
+  findingCategory = _messages.StringField(1)
+  findingClass = _messages.EnumField('FindingClassValueValuesEnum', 2)
+  findingCount = _messages.IntegerField(3)
+  name = _messages.StringField(4)
+  relatedFrameworks = _messages.StringField(5, repeated=True)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 6)
+  updateTime = _messages.StringField(7)
 
 
 class GoogleCloudAssuredworkloadsV1EnableComplianceUpdatesResponse(_messages.Message):
@@ -728,6 +910,19 @@ class GoogleCloudAssuredworkloadsV1EnableComplianceUpdatesResponse(_messages.Mes
 
 class GoogleCloudAssuredworkloadsV1EnableResourceMonitoringResponse(_messages.Message):
   r"""Response for EnableResourceMonitoring endpoint."""
+
+
+class GoogleCloudAssuredworkloadsV1ListDbFindingSummariesResponse(_messages.Message):
+  r"""The response message for ListDbFindingSummaries.
+
+  Fields:
+    dbFindingSummaries: List of finding summary by category.
+    nextPageToken: Output only. The token to retrieve the next page of
+      results.
+  """
+
+  dbFindingSummaries = _messages.MessageField('GoogleCloudAssuredworkloadsV1DbFindingSummary', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
 
 
 class GoogleCloudAssuredworkloadsV1ListViolationsResponse(_messages.Message):
@@ -1322,6 +1517,8 @@ class GoogleCloudAssuredworkloadsV1Workload(_messages.Message):
         Support
       ISRAEL_DATA_BOUNDARY_AND_SUPPORT: Israel Data Boundary and Support
       JAPAN_DATA_BOUNDARY: Japan Data Boundary
+      SWITZERLAND_DATA_BOUNDARY_WITH_ACCESS_JUSTIFICATIONS: Switzerland Data
+        Boundary with Access Justifications
       KSA_DATA_BOUNDARY_WITH_ACCESS_JUSTIFICATIONS: Kingdom of Saudi Arabia
         (KSA) Data Boundary with Access Justifications
       REGIONAL_DATA_BOUNDARY: Data boundary for one of Assured Workloads'
@@ -1423,34 +1620,35 @@ class GoogleCloudAssuredworkloadsV1Workload(_messages.Message):
     EU_DATA_BOUNDARY_AND_SUPPORT = 14
     ISRAEL_DATA_BOUNDARY_AND_SUPPORT = 15
     JAPAN_DATA_BOUNDARY = 16
-    KSA_DATA_BOUNDARY_WITH_ACCESS_JUSTIFICATIONS = 17
-    REGIONAL_DATA_BOUNDARY = 18
-    US_DATA_BOUNDARY_AND_SUPPORT = 19
-    US_DATA_BOUNDARY_FOR_HEALTHCARE_AND_LIFE_SCIENCES = 20
-    US_DATA_BOUNDARY_FOR_HEALTHCARE_AND_LIFE_SCIENCES_WITH_SUPPORT = 21
-    AU_REGIONS_AND_US_SUPPORT = 22
-    CA_PROTECTED_B = 23
-    CA_REGIONS_AND_SUPPORT = 24
-    CANADA_CONTROLLED_GOODS = 25
-    CJIS = 26
-    EU_REGIONS_AND_SUPPORT = 27
-    FEDRAMP_HIGH = 28
-    FEDRAMP_MODERATE = 29
-    HEALTHCARE_AND_LIFE_SCIENCES_CONTROLS = 30
-    HEALTHCARE_AND_LIFE_SCIENCES_CONTROLS_US_SUPPORT = 31
-    HIPAA = 32
-    HITRUST = 33
-    IL2 = 34
-    IL4 = 35
-    IL5 = 36
-    IRS_1075 = 37
-    ISR_REGIONS = 38
-    ISR_REGIONS_AND_SUPPORT = 39
-    ITAR = 40
-    JP_REGIONS_AND_SUPPORT = 41
-    KSA_REGIONS_AND_SUPPORT_WITH_SOVEREIGNTY_CONTROLS = 42
-    REGIONAL_CONTROLS = 43
-    US_REGIONAL_ACCESS = 44
+    SWITZERLAND_DATA_BOUNDARY_WITH_ACCESS_JUSTIFICATIONS = 17
+    KSA_DATA_BOUNDARY_WITH_ACCESS_JUSTIFICATIONS = 18
+    REGIONAL_DATA_BOUNDARY = 19
+    US_DATA_BOUNDARY_AND_SUPPORT = 20
+    US_DATA_BOUNDARY_FOR_HEALTHCARE_AND_LIFE_SCIENCES = 21
+    US_DATA_BOUNDARY_FOR_HEALTHCARE_AND_LIFE_SCIENCES_WITH_SUPPORT = 22
+    AU_REGIONS_AND_US_SUPPORT = 23
+    CA_PROTECTED_B = 24
+    CA_REGIONS_AND_SUPPORT = 25
+    CANADA_CONTROLLED_GOODS = 26
+    CJIS = 27
+    EU_REGIONS_AND_SUPPORT = 28
+    FEDRAMP_HIGH = 29
+    FEDRAMP_MODERATE = 30
+    HEALTHCARE_AND_LIFE_SCIENCES_CONTROLS = 31
+    HEALTHCARE_AND_LIFE_SCIENCES_CONTROLS_US_SUPPORT = 32
+    HIPAA = 33
+    HITRUST = 34
+    IL2 = 35
+    IL4 = 36
+    IL5 = 37
+    IRS_1075 = 38
+    ISR_REGIONS = 39
+    ISR_REGIONS_AND_SUPPORT = 40
+    ITAR = 41
+    JP_REGIONS_AND_SUPPORT = 42
+    KSA_REGIONS_AND_SUPPORT_WITH_SOVEREIGNTY_CONTROLS = 43
+    REGIONAL_CONTROLS = 44
+    US_REGIONAL_ACCESS = 45
 
   class KajEnrollmentStateValueValuesEnum(_messages.Enum):
     r"""Output only. Represents the KAJ enrollment state of the given

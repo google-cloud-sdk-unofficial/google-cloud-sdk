@@ -175,10 +175,10 @@ class Binding(_messages.Message):
 
 
 class Channel(_messages.Message):
-  r"""A representation of the Channel resource. A Channel is a resource on
-  which event providers publish their events. The published events are
-  delivered through the transport associated with the channel. Note that a
-  channel is associated with exactly one event provider.
+  r"""Represents a subscriber's intent to receive events from an event
+  provider. Published events are delivered using the transport associated with
+  the Channel resource. A channel is associated with exactly one event
+  provider.
 
   Enums:
     StateValueValuesEnum: Output only. The state of a Channel.
@@ -1935,8 +1935,9 @@ class GKE(_messages.Message):
 
 
 class GoogleApiSource(_messages.Message):
-  r"""A GoogleApiSource represents a subscription of 1P events from a
-  MessageBus.
+  r"""Represents a subscription to first-party events for a MessageBus
+  resource. A GoogleApiSource resource lets you configure the delivery of
+  events from Google API sources to a designated bus.
 
   Messages:
     AnnotationsValue: Optional. Resource annotations.
@@ -2038,10 +2039,10 @@ class GoogleApiSource(_messages.Message):
 
 
 class GoogleChannelConfig(_messages.Message):
-  r"""A GoogleChannelConfig is a resource that stores the custom settings
-  respected by Eventarc first-party triggers in the matching region. Once
-  configured, first-party event data will be protected using the specified
-  custom managed encryption key instead of Google-managed encryption keys.
+  r"""Can be used to customize security settings for Eventarc first-party
+  triggers in a specific region. Once the GoogleChannelConfig resource is
+  configured, first-party event data is protected using the specified
+  customer-managed encryption key instead of a Google-managed encryption key.
 
   Messages:
     LabelsValue: Optional. Resource labels.

@@ -22,12 +22,16 @@ from .services.builds import BuildsClient
 from .services.builds import BuildsAsyncClient
 from .services.executions import ExecutionsClient
 from .services.executions import ExecutionsAsyncClient
+from .services.instances import InstancesClient
+from .services.instances import InstancesAsyncClient
 from .services.jobs import JobsClient
 from .services.jobs import JobsAsyncClient
 from .services.revisions import RevisionsClient
 from .services.revisions import RevisionsAsyncClient
 from .services.services import ServicesClient
 from .services.services import ServicesAsyncClient
+from .services.source_upload import SourceUploadClient
+from .services.source_upload import SourceUploadAsyncClient
 from .services.tasks import TasksClient
 from .services.tasks import TasksAsyncClient
 from .services.worker_pools import WorkerPoolsClient
@@ -44,6 +48,15 @@ from .types.execution import GetExecutionRequest
 from .types.execution import ListExecutionsRequest
 from .types.execution import ListExecutionsResponse
 from .types.execution_template import ExecutionTemplate
+from .types.instance import CreateInstanceRequest
+from .types.instance import DeleteInstanceRequest
+from .types.instance import GetInstanceRequest
+from .types.instance import Instance
+from .types.instance import ListInstancesRequest
+from .types.instance import ListInstancesResponse
+from .types.instance import StartInstanceRequest
+from .types.instance import StopInstanceRequest
+from .types.instance import UpdateInstanceRequest
 from .types.instance_split import InstanceSplit
 from .types.instance_split import InstanceSplitStatus
 from .types.instance_split import InstanceSplitAllocationType
@@ -91,6 +104,8 @@ from .types.service import ListServicesRequest
 from .types.service import ListServicesResponse
 from .types.service import Service
 from .types.service import UpdateServiceRequest
+from .types.source_upload import UploadSourceRequest
+from .types.source_upload import UploadSourceResponse
 from .types.status import RevisionScalingStatus
 from .types.task import GetTaskRequest
 from .types.task import ListTasksRequest
@@ -125,9 +140,11 @@ from .types.worker_pool_revision_template import WorkerPoolRevisionTemplate
 __all__ = (
     'BuildsAsyncClient',
     'ExecutionsAsyncClient',
+    'InstancesAsyncClient',
     'JobsAsyncClient',
     'RevisionsAsyncClient',
     'ServicesAsyncClient',
+    'SourceUploadAsyncClient',
     'TasksAsyncClient',
     'WorkerPoolsAsyncClient',
 'BinaryAuthorization',
@@ -141,10 +158,12 @@ __all__ = (
 'Container',
 'ContainerPort',
 'CpuScaling',
+'CreateInstanceRequest',
 'CreateJobRequest',
 'CreateServiceRequest',
 'CreateWorkerPoolRequest',
 'DeleteExecutionRequest',
+'DeleteInstanceRequest',
 'DeleteJobRequest',
 'DeleteRevisionRequest',
 'DeleteServiceRequest',
@@ -161,6 +180,7 @@ __all__ = (
 'GCSVolumeSource',
 'GRPCAction',
 'GetExecutionRequest',
+'GetInstanceRequest',
 'GetJobRequest',
 'GetRevisionRequest',
 'GetServiceRequest',
@@ -169,6 +189,8 @@ __all__ = (
 'HTTPGetAction',
 'HTTPHeader',
 'IngressTraffic',
+'Instance',
+'InstancesClient',
 'InstanceSplit',
 'InstanceSplitAllocationType',
 'InstanceSplitStatus',
@@ -176,6 +198,8 @@ __all__ = (
 'JobsClient',
 'ListExecutionsRequest',
 'ListExecutionsResponse',
+'ListInstancesRequest',
+'ListInstancesResponse',
 'ListJobsRequest',
 'ListJobsResponse',
 'ListRevisionsRequest',
@@ -203,6 +227,9 @@ __all__ = (
 'ServiceScaling',
 'ServicesClient',
 'SourceCode',
+'SourceUploadClient',
+'StartInstanceRequest',
+'StopInstanceRequest',
 'StorageSource',
 'SubmitBuildRequest',
 'SubmitBuildResponse',
@@ -214,9 +241,12 @@ __all__ = (
 'TrafficTarget',
 'TrafficTargetAllocationType',
 'TrafficTargetStatus',
+'UpdateInstanceRequest',
 'UpdateJobRequest',
 'UpdateServiceRequest',
 'UpdateWorkerPoolRequest',
+'UploadSourceRequest',
+'UploadSourceResponse',
 'VersionToPath',
 'Volume',
 'VolumeMount',

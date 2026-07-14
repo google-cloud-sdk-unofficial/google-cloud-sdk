@@ -3125,12 +3125,18 @@ class ComputeInstanceBackupPlanProperties(_messages.Message):
   r"""Properties for a compute instance backup plan.
 
   Fields:
+    bootDiskOnly: Optional. If true, only the boot disk will be backed up.
+    diskExclusionLabels: Optional. Labels used to identify disks for exclusion
+      from the backup. If a disk carries any of these labels, it will be
+      excluded (OR logic).
     guestFlush: Optional. Indicates whether to perform a guest flush operation
       before taking a compute backup. When set to false, the system will
       create crash-consistent backups. Default value is false.
   """
 
-  guestFlush = _messages.BooleanField(1)
+  bootDiskOnly = _messages.BooleanField(1)
+  diskExclusionLabels = _messages.MessageField('DiskExclusionLabels', 2)
+  guestFlush = _messages.BooleanField(3)
 
 
 class ComputeInstanceBackupProperties(_messages.Message):
@@ -3895,6 +3901,18 @@ class DiskDataSourceProperties(_messages.Message):
   type = _messages.StringField(4)
 
 
+class DiskExclusionLabels(_messages.Message):
+  r"""Message for selective disk backup exclusion labels.
+
+  Fields:
+    labels: Optional. Labels used to identify disks for exclusion from the
+      backup. If a disk carries any of these labels, it will be excluded (OR
+      logic).
+  """
+
+  labels = _messages.MessageField('LabelKeyValPair', 1, repeated=True)
+
+
 class DiskRestoreProperties(_messages.Message):
   r"""DiskRestoreProperties represents the properties of a Disk restore.
 
@@ -4213,7 +4231,7 @@ class FetchAccessTokenResponse(_messages.Message):
   Fields:
     expireTime: The token is valid until this time.
     readLocation: The location in bucket that can be used for reading.
-    token: The downscoped token that was created.
+    token: Input only. The downscoped token that was created.
     writeLocation: The location in bucket that can be used for writing.
   """
 
@@ -4725,6 +4743,27 @@ class InstanceParams(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   resourceManagerTags = _messages.MessageField('ResourceManagerTagsValue', 1)
+
+
+class LabelKeyValPair(_messages.Message):
+  r"""Message for a label key-value pair.
+
+  Fields:
+    key: Key of the label. The key must follow the format:
+      `\\p{Ll}\\p{Lo}{0,62}`. This means the key must start with a lowercase
+      letter or a lowercase international character, followed by zero or more
+      lowercase letters, lowercase international characters, numbers,
+      underscores, or dashes. The key must be at most 63 characters long.
+      International characters are allowed.
+    value: Value of the label. The value must follow the format:
+      `[\\p{Ll}\\p{Lo}\\p{N}_-]{1,63}`. This means the value must be one or
+      more lowercase letters, lowercase international characters, numbers,
+      underscores, or dashes. The value must be at most 63 characters long.
+      International characters are allowed.
+  """
+
+  key = _messages.StringField(1)
+  value = _messages.StringField(2)
 
 
 class ListBackupPlanAssociationsResponse(_messages.Message):
@@ -6197,7 +6236,7 @@ class StandardSchedule(_messages.Message):
       and is not applicable otherwise. A validation error will occur if a
       value is supplied and `recurrence_type` is not `HOURLY`. The supported
       values for each resource type are as follows: *
-      `compute.googleapis.com/Instance`: 4-23 * `compute.googleapis.com/Disk`:
+      `compute.googleapis.com/Instance`: 1-23 * `compute.googleapis.com/Disk`:
       1-23 * `sqladmin.googleapis.com/Instance`: 6-23 *
       `alloydb.googleapis.com/Cluster`: 1-23 * `file.googleapis.com/Instance`:
       1-23 Refer to link https://cloud.google.com/backup-disaster-

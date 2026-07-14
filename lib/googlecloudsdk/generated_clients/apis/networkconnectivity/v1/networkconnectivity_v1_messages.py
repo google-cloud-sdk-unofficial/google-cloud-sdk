@@ -343,7 +343,7 @@ class AutomatedDnsRecord(_messages.Message):
       type.
     serviceClass: Required. Immutable. The service class identifier which
       authorizes this AutomatedDnsRecord. Any API calls targeting this
-      AutomatedDnsRecord must have `networkconnectivity.serviceclasses.use`
+      AutomatedDnsRecord must have `networkconnectivity.serviceClasses.use`
       IAM permission for the provided service class.
     state: Output only. The current operational state of this
       AutomatedDnsRecord as managed by Service Connectivity Automation.

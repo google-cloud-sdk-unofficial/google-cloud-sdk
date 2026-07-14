@@ -44,8 +44,8 @@ def ReadAutokeyConfigFromConfigFileWithKeyProjectResolutionMode(file_path: str):
     A tuple (name, key_project_resolution_mode, key_project, etag), where name
     is the resource name of the AutokeyConfig, key_project_resolution_mode is
     the keyProjectResolutionMode field if present, key_project is the keyProject
-    field if present, and etag is the etag field if present, otherwise an empty
-    string.
+    field value if present (or an empty string if set to null), otherwise None,
+    and etag is the etag field if present, otherwise an empty string.
 
   Raises:
     googlecloudsdk.core.exceptions.Error: If the file cannot be loaded,
@@ -66,9 +66,13 @@ def ReadAutokeyConfigFromConfigFileWithKeyProjectResolutionMode(file_path: str):
         'AutokeyConfig name must start with folders/ or projects/.'
     )
 
+  key_project = None
+  if 'keyProject' in parsed_yaml:
+    key_project = parsed_yaml.get('keyProject') or ''
+
   return (
       name,
       parsed_yaml.get('keyProjectResolutionMode', ''),
-      parsed_yaml.get('keyProject', ''),
+      key_project,
       parsed_yaml.get('etag', ''),
   )

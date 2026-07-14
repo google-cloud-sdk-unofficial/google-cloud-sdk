@@ -1980,6 +1980,9 @@ class SoftwareConfig(_messages.Message):
   environment.
 
   Enums:
+    AuditLogsReplicationModeValueValuesEnum: Optional. The selected mode of
+      audit logs replication. This field is supported for Cloud Composer
+      environments in versions composer-3-airflow-*.*.*-build.* and newer.
     WebServerPluginsModeValueValuesEnum: Optional. Whether or not the web
       server uses custom plugins. If unspecified, the field defaults to
       `PLUGINS_ENABLED`. This field is supported for Cloud Composer
@@ -2030,6 +2033,9 @@ class SoftwareConfig(_messages.Message):
       format. Certain Apache Airflow configuration property values are
       [blocked](/composer/docs/concepts/airflow-configurations), and cannot be
       overridden.
+    auditLogsReplicationMode: Optional. The selected mode of audit logs
+      replication. This field is supported for Cloud Composer environments in
+      versions composer-3-airflow-*.*.*-build.* and newer.
     cloudDataLineageIntegration: Optional. The configuration for Cloud Data
       Lineage integration.
     envVariables: Optional. Additional environment variables to provide to the
@@ -2082,6 +2088,23 @@ class SoftwareConfig(_messages.Message):
       field is supported for Cloud Composer environments in versions
       composer-3-airflow-*.*.*-build.* and newer.
   """
+
+  class AuditLogsReplicationModeValueValuesEnum(_messages.Enum):
+    r"""Optional. The selected mode of audit logs replication. This field is
+    supported for Cloud Composer environments in versions
+    composer-3-airflow-*.*.*-build.* and newer.
+
+    Values:
+      AUDIT_LOGS_REPLICATION_MODE_UNSPECIFIED: The user's choice of logs
+        replication mode is unspecified.
+      AUDIT_LOGS_REPLICATION_DISABLED: The user opted out of audit logs
+        replication.
+      AUDIT_LOGS_REPLICATION_ENABLED: The user opted in to audit logs
+        replication.
+    """
+    AUDIT_LOGS_REPLICATION_MODE_UNSPECIFIED = 0
+    AUDIT_LOGS_REPLICATION_DISABLED = 1
+    AUDIT_LOGS_REPLICATION_ENABLED = 2
 
   class WebServerPluginsModeValueValuesEnum(_messages.Enum):
     r"""Optional. Whether or not the web server uses custom plugins. If
@@ -2200,13 +2223,14 @@ class SoftwareConfig(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   airflowConfigOverrides = _messages.MessageField('AirflowConfigOverridesValue', 1)
-  cloudDataLineageIntegration = _messages.MessageField('CloudDataLineageIntegration', 2)
-  envVariables = _messages.MessageField('EnvVariablesValue', 3)
-  imageVersion = _messages.StringField(4)
-  pypiPackages = _messages.MessageField('PypiPackagesValue', 5)
-  pythonVersion = _messages.StringField(6)
-  schedulerCount = _messages.IntegerField(7, variant=_messages.Variant.INT32)
-  webServerPluginsMode = _messages.EnumField('WebServerPluginsModeValueValuesEnum', 8)
+  auditLogsReplicationMode = _messages.EnumField('AuditLogsReplicationModeValueValuesEnum', 2)
+  cloudDataLineageIntegration = _messages.MessageField('CloudDataLineageIntegration', 3)
+  envVariables = _messages.MessageField('EnvVariablesValue', 4)
+  imageVersion = _messages.StringField(5)
+  pypiPackages = _messages.MessageField('PypiPackagesValue', 6)
+  pythonVersion = _messages.StringField(7)
+  schedulerCount = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+  webServerPluginsMode = _messages.EnumField('WebServerPluginsModeValueValuesEnum', 9)
 
 
 class StandardQueryParameters(_messages.Message):

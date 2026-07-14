@@ -67,8 +67,7 @@ Container Flags
   group.AddArgument(flags.CpuFlag())
   group.AddArgument(flags.GpuFlag())
   group.AddArgument(flags.ArgsFlag())
-  if release_track != base.ReleaseTrack.GA:
-    group.AddArgument(flags.WorkdirFlag())
+  group.AddArgument(flags.WorkdirFlag())
   group.AddArgument(flags.SecretsFlags())
   group.AddArgument(flags.CommandFlag())
   group.AddArgument(flags.DependsOnFlag())
@@ -206,13 +205,17 @@ class Deploy(base.Command):
               message,
           )
 
-    required_apis = [api_enabler.get_run_api()]
+    required_apis = []
+    if self.ReleaseTrack() == base.ReleaseTrack.GA:
+      required_apis.append(api_enabler.get_run_api())
     if build_from_source:
       required_apis.append('artifactregistry.googleapis.com')
       required_apis.append('cloudbuild.googleapis.com')
-    skip_activation_prompt = api_enabler.check_and_enable_apis(
-        properties.VALUES.core.project.Get(), required_apis
-    )
+    skip_activation_prompt = False
+    if required_apis:
+      skip_activation_prompt = api_enabler.check_and_enable_apis(
+          properties.VALUES.core.project.Get(), required_apis
+      )
     job_ref = args.CONCEPTS.job.Parse()
     flags.ValidateResource(job_ref)
 

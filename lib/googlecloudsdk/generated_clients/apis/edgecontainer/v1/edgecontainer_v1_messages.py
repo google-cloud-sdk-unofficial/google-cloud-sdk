@@ -1812,6 +1812,16 @@ class Remote(_messages.Message):
 
 
 
+class RobinCloudNativeStorage(_messages.Message):
+  r"""Defines configurations for Robin Cloud Native Storage.
+
+  Fields:
+    enable: Optional. If true, enable Robin CNS in this cluster.
+  """
+
+  enable = _messages.BooleanField(1)
+
+
 class ServerConfig(_messages.Message):
   r"""Server configuration for supported versions and release channels.
 
@@ -1988,11 +1998,14 @@ class SystemAddonsConfig(_messages.Message):
 
   Fields:
     ingress: Optional. Config for Ingress.
+    robinCloudNativeStorage: Optional. Configurations for Robin Cloud Native
+      Storage.
     vmServiceConfig: Optional. Config for VM Service.
   """
 
   ingress = _messages.MessageField('Ingress', 1)
-  vmServiceConfig = _messages.MessageField('VMServiceConfig', 2)
+  robinCloudNativeStorage = _messages.MessageField('RobinCloudNativeStorage', 2)
+  vmServiceConfig = _messages.MessageField('VMServiceConfig', 3)
 
 
 class TimeWindow(_messages.Message):

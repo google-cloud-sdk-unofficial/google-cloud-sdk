@@ -1142,6 +1142,8 @@ class GoogleCloudPolicysimulatorV1alphaActivityBacktestEvaluationSummary(_messag
       RAB_UNSUPPORTED: A RAB policy evaluation was requested for an
       unsupported resource type.
     evaluationErrorsCount: Output only. Number of failed evaluations.
+    evaluationResultsCount: Output only. Number of evaluation results for the
+      activity backtest.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -1179,6 +1181,7 @@ class GoogleCloudPolicysimulatorV1alphaActivityBacktestEvaluationSummary(_messag
   evaluatedResourcesCount = _messages.IntegerField(3)
   evaluationErrorReasonCounts = _messages.MessageField('EvaluationErrorReasonCountsValue', 4)
   evaluationErrorsCount = _messages.IntegerField(5)
+  evaluationResultsCount = _messages.IntegerField(6)
 
 
 class GoogleCloudPolicysimulatorV1alphaActivityBacktestResult(_messages.Message):
@@ -3362,6 +3365,15 @@ class GoogleCloudPolicysimulatorV1alphaPrincipalAccessBoundaryPolicyRule(_messag
       policy rule. Must be less than or equal to 256 characters.
     effect: Required. The access relationship of principals to the resources
       in this rule.
+    excludedResources: Optional. A list of Resource Manager resources. If a
+      resource is listed in the rule, then the rule does not apply for that
+      resource and its descendants. The number of excluded resources in this
+      field is limited to 500 across all rules in the policy. The following
+      resource types are supported: * Organizations, such as
+      `//cloudresourcemanager.googleapis.com/organizations/123`. * Folders,
+      such as `//cloudresourcemanager.googleapis.com/folders/123`. * Projects,
+      such as `//cloudresourcemanager.googleapis.com/projects/123` or
+      `//cloudresourcemanager.googleapis.com/projects/my-project-id`.
     operation: Optional. The operation attributes that determine whether this
       rule applies to a request. If this field is not specified, the rule
       applies to all operations.
@@ -3383,14 +3395,17 @@ class GoogleCloudPolicysimulatorV1alphaPrincipalAccessBoundaryPolicyRule(_messag
     Values:
       EFFECT_UNSPECIFIED: Effect unspecified.
       ALLOW: Allows access to the resources in this rule.
+      DENY: Denies access to the resources in this rule.
     """
     EFFECT_UNSPECIFIED = 0
     ALLOW = 1
+    DENY = 2
 
   description = _messages.StringField(1)
   effect = _messages.EnumField('EffectValueValuesEnum', 2)
-  operation = _messages.MessageField('GoogleCloudPolicysimulatorV1alphaPrincipalAccessBoundaryPolicyRuleOperation', 3)
-  resources = _messages.StringField(4, repeated=True)
+  excludedResources = _messages.StringField(3, repeated=True)
+  operation = _messages.MessageField('GoogleCloudPolicysimulatorV1alphaPrincipalAccessBoundaryPolicyRuleOperation', 4)
+  resources = _messages.StringField(5, repeated=True)
 
 
 class GoogleCloudPolicysimulatorV1alphaPrincipalAccessBoundaryPolicyRuleOperation(_messages.Message):

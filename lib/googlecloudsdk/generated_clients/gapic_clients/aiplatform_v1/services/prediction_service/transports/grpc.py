@@ -317,8 +317,6 @@ class PredictionServiceGrpcTransport(PredictionServiceTransport):
             prediction_service.PredictResponse]:
         r"""Return a callable for the predict method over gRPC.
 
-        Perform an online prediction.
-
         Returns:
             Callable[[~.PredictRequest],
                     ~.PredictResponse]:

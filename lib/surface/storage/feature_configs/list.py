@@ -14,7 +14,9 @@
 # limitations under the License.
 """Implementation of list command for Feature Configs."""
 
+from googlecloudsdk.api_lib.storage import feature_config_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
 
 
 @base.Hidden
@@ -44,10 +46,18 @@ class List(base.ListCommand):
 
   @classmethod
   def Args(cls, parser):
-    pass
+    super(List, cls).Args(parser)
+    parser.display_info.AddFormat("""
+        table(
+            name.basename():label=FEATURE_CONFIG_ID,
+            type:label=TYPE,
+            description:label=DESCRIPTION,
+            createTime:label=CREATE_TIME
+        )
+        """)
 
   def Run(self, args):
-    del self, args  # Unused.
-    raise NotImplementedError(
-        'The feature-configs surface is not yet implemented.'
-    )
+    client = feature_config_api.FeatureConfigApi()
+    project = properties.VALUES.core.project.Get(required=True)
+    parent = f'projects/{project}/locations/global'
+    return client.list_feature_configs(parent, page_size=args.page_size)

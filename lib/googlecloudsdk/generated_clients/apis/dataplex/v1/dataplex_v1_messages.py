@@ -690,6 +690,110 @@ class DataplexProjectsLocationsDataAttributeBindingsTestIamPermissionsRequest(_m
   resource = _messages.StringField(2, required=True)
 
 
+class DataplexProjectsLocationsDataDomainsBindingsCreateRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsDataDomainsBindingsCreateRequest object.
+
+  Fields:
+    dataDomainBindingId: Optional. DataDomainBinding identifier. * Must
+      contain only lowercase letters, numbers and hyphens. * Must start with a
+      letter. * Must be between 1-63 characters. * Must end with a number or a
+      letter. * Must be unique within the parent DataDomain. If not provided,
+      a system-generated UUID will be used.
+    googleCloudDataplexV1DataDomainBinding: A
+      GoogleCloudDataplexV1DataDomainBinding resource to be passed as the
+      request body.
+    parent: Required. The resource name of the parent DataDomain: projects/{pr
+      oject_id_or_number}/locations/{location_id}/dataDomains/{data_domain_id}
+    validateOnly: Optional. Only validate the request, but do not perform
+      mutations.
+  """
+
+  dataDomainBindingId = _messages.StringField(1)
+  googleCloudDataplexV1DataDomainBinding = _messages.MessageField('GoogleCloudDataplexV1DataDomainBinding', 2)
+  parent = _messages.StringField(3, required=True)
+  validateOnly = _messages.BooleanField(4)
+
+
+class DataplexProjectsLocationsDataDomainsBindingsDeleteRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsDataDomainsBindingsDeleteRequest object.
+
+  Fields:
+    name: Required. The resource name of the DataDomainBinding: projects/{proj
+      ect_id_or_number}/locations/{location_id}/dataDomains/{data_domain_id}/b
+      indings/{binding_id}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class DataplexProjectsLocationsDataDomainsBindingsGetRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsDataDomainsBindingsGetRequest object.
+
+  Fields:
+    name: Required. The resource name of the DataDomainBinding: projects/{proj
+      ect_id_or_number}/locations/{location_id}/dataDomains/{data_domain_id}/b
+      indings/{binding_id}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class DataplexProjectsLocationsDataDomainsBindingsListRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsDataDomainsBindingsListRequest object.
+
+  Fields:
+    filter: Optional. Filter request.
+    orderBy: Optional. Order by fields for the result.
+    pageSize: Optional. Maximum number of DataDomainBindings to return. The
+      service may return fewer. If unspecified, at most 50 bindings will be
+      returned. The maximum value is 100; values above 100 will be coerced to
+      100.
+    pageToken: Optional. Page token received from a previous
+      ListDataDomainBindings call.
+    parent: Required. The resource name of the parent DataDomain: projects/{pr
+      oject_id_or_number}/locations/{location_id}/dataDomains/{data_domain_id}
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class DataplexProjectsLocationsDataDomainsCreateRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsDataDomainsCreateRequest object.
+
+  Fields:
+    dataDomainId: Required. DataDomain identifier. * Must contain only
+      lowercase letters, numbers and hyphens. * Must start with a letter. *
+      Must be between 1-63 characters. * Must end with a number or a letter. *
+      Must be unique within the project and location.
+    googleCloudDataplexV1DataDomain: A GoogleCloudDataplexV1DataDomain
+      resource to be passed as the request body.
+    parent: Required. The resource name of the parent location:
+      projects/{project_id_or_number}/locations/{location_id}
+    validateOnly: Optional. Only validate the request, but do not perform
+      mutations.
+  """
+
+  dataDomainId = _messages.StringField(1)
+  googleCloudDataplexV1DataDomain = _messages.MessageField('GoogleCloudDataplexV1DataDomain', 2)
+  parent = _messages.StringField(3, required=True)
+  validateOnly = _messages.BooleanField(4)
+
+
+class DataplexProjectsLocationsDataDomainsDeleteRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsDataDomainsDeleteRequest object.
+
+  Fields:
+    name: Required. The resource name of the DataDomain: projects/{project_id_
+      or_number}/locations/{location_id}/dataDomains/{data_domain_id}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
 class DataplexProjectsLocationsDataDomainsGetIamPolicyRequest(_messages.Message):
   r"""A DataplexProjectsLocationsDataDomainsGetIamPolicyRequest object.
 
@@ -712,6 +816,59 @@ class DataplexProjectsLocationsDataDomainsGetIamPolicyRequest(_messages.Message)
 
   options_requestedPolicyVersion = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   resource = _messages.StringField(2, required=True)
+
+
+class DataplexProjectsLocationsDataDomainsGetRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsDataDomainsGetRequest object.
+
+  Fields:
+    name: Required. The resource name of the DataDomain: projects/{project_id_
+      or_number}/locations/{location_id}/dataDomains/{data_domain_id}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class DataplexProjectsLocationsDataDomainsListRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsDataDomainsListRequest object.
+
+  Fields:
+    filter: Optional. Filter request. Supports filter by parent_data_domain.
+    orderBy: Optional. Order by fields for the result.
+    pageSize: Optional. Maximum number of DataDomains to return. The service
+      may return fewer. If unspecified, at most 50 domains will be returned.
+      The maximum value is 100; values above 100 will be coerced to 100.
+    pageToken: Optional. Page token received from a previous ListDataDomains
+      call.
+    parent: Required. The resource name of the parent location:
+      projects/{project_id_or_number}/locations/{location_id}
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class DataplexProjectsLocationsDataDomainsPatchRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsDataDomainsPatchRequest object.
+
+  Fields:
+    googleCloudDataplexV1DataDomain: A GoogleCloudDataplexV1DataDomain
+      resource to be passed as the request body.
+    name: Identifier. The relative resource name of the DataDomain, of the
+      form: projects/{project_id_or_number}/locations/{location_id}/dataDomain
+      s/{data_domain_id}
+    updateMask: Optional. Mask of fields to update.
+    validateOnly: Optional. Only validate the request, but do not perform
+      mutations.
+  """
+
+  googleCloudDataplexV1DataDomain = _messages.MessageField('GoogleCloudDataplexV1DataDomain', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
+  validateOnly = _messages.BooleanField(4)
 
 
 class DataplexProjectsLocationsDataDomainsSetIamPolicyRequest(_messages.Message):
@@ -5234,6 +5391,33 @@ class GoogleCloudDataplexV1ChangeRequest(_messages.Message):
   updateTime = _messages.StringField(28)
 
 
+class GoogleCloudDataplexV1ContactIdentity(_messages.Message):
+  r"""Identity of a business contact.
+
+  Fields:
+    contactId: Optional. Email ID or freeform ID of the Contact person.
+    contactName: Required. Name of the contact person for the Data Domain;
+      unvalidated freeform text.
+    contactRole: Required. Designation of the person i.e. Data Steward or Data
+      Analyst. Example values: owner, steward, producer, admin.
+  """
+
+  contactId = _messages.StringField(1)
+  contactName = _messages.StringField(2)
+  contactRole = _messages.StringField(3)
+
+
+class GoogleCloudDataplexV1Contacts(_messages.Message):
+  r"""Business contacts part of business context of a Data Domain. Corresponds
+  to the Contacts Aspect in Dataplex Universal Catalog.
+
+  Fields:
+    identities: Required. Identities of the business contacts.
+  """
+
+  identities = _messages.MessageField('GoogleCloudDataplexV1ContactIdentity', 1, repeated=True)
+
+
 class GoogleCloudDataplexV1CreateEntryLinkRequest(_messages.Message):
   r"""Request message for CreateEntryLink.
 
@@ -6039,6 +6223,106 @@ class GoogleCloudDataplexV1DataDocumentationSpec(_messages.Message):
 
   catalogPublishingEnabled = _messages.BooleanField(1)
   generationScopes = _messages.EnumField('GenerationScopesValueListEntryValuesEnum', 2, repeated=True)
+
+
+class GoogleCloudDataplexV1DataDomain(_messages.Message):
+  r"""A DataDomain is a logical grouping of data resources for governance,
+  discovery, and management at scale.
+
+  Messages:
+    LabelsValue: Optional. User-defined labels for the DataDomain.
+
+  Fields:
+    contacts: Required. Contact info for the Data Domains.
+    createTime: Output only. The time at which the DataDomain was created.
+    description: Optional. User-provided description of the DataDomain.
+    displayName: Required. User-friendly display name.
+    labels: Optional. User-defined labels for the DataDomain.
+    name: Identifier. The relative resource name of the DataDomain, of the
+      form: projects/{project_id_or_number}/locations/{location_id}/dataDomain
+      s/{data_domain_id}
+    parentDataDomain: Optional. Immutable. The resource name of the parent
+      DataDomain. Empty if this is a top-level DataDomain. Format: projects/{p
+      roject_id_or_number}/locations/{location}/dataDomains/{parent_data_domai
+      n_id} This field is immutable after creation.
+    policyMember: Output only. Output-only policy member strings of this
+      resource.
+    uid: Output only. System-generated globally unique ID for the DataDomain.
+    updateTime: Output only. The time at which the DataDomain was last
+      updated.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. User-defined labels for the DataDomain.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  contacts = _messages.MessageField('GoogleCloudDataplexV1Contacts', 1)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  displayName = _messages.StringField(4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  name = _messages.StringField(6)
+  parentDataDomain = _messages.StringField(7)
+  policyMember = _messages.MessageField('GoogleIamV1ResourcePolicyMember', 8)
+  uid = _messages.StringField(9)
+  updateTime = _messages.StringField(10)
+
+
+class GoogleCloudDataplexV1DataDomainBinding(_messages.Message):
+  r"""DataDomainBinding represents a rule that includes a Google Cloud
+  resource and its contents into a DataDomain.
+
+  Fields:
+    createTime: Output only. The time at which the DataDomainBinding was
+      created.
+    name: Identifier. The relative resource name of the DataDomainBinding.
+      Format: projects/{project_id_or_number}/locations/{location}/dataDomains
+      /{data_domain_id}/bindings/{binding_id}
+    resource: Required. Immutable. The full resource name of the Google Cloud
+      resource to be bound (i.e. included together with its contents) to the
+      DataDomain.Format: IAM Full resource name
+      (https://docs.cloud.google.com/iam/docs/full-resource-names) Examples: -
+      GCP Project: //cloudresourcemanager.googleapis.com/projects/{project-id}
+      - BigQuery Dataset: //bigquery.googleapis.com/projects/{project-
+      id}/datasets/{dataset-id} - BigQuery Table:
+      //bigquery.googleapis.com/projects/{project-id}/datasets/{dataset-
+      id}/tables/{table-id} - Dataplex Data Product:
+      //dataplex.googleapis.com/projects/{project-
+      number}/locations/{location}/dataProducts/{data-product-
+      id}Authorization: the resource to be bound must first grant an IAM role
+      with the resource-specific setIamPolicy permission to the DataDomain.
+      Example: - resource: //bigquery.googleapis.com/projects/{project-
+      id}/datasets/{dataset-id} - IAM role: with
+      bigquery.datasets.setIamPolicy permission (e.g. roles/owner) - IAM
+      member: principal://dataplex.googleapis.com/projects/{project-
+      number}/name/locations/{location}/dataDomains/{data-domain-id}
+    uid: Output only. System-generated unique ID.
+  """
+
+  createTime = _messages.StringField(1)
+  name = _messages.StringField(2)
+  resource = _messages.StringField(3)
+  uid = _messages.StringField(4)
 
 
 class GoogleCloudDataplexV1DataProduct(_messages.Message):
@@ -10190,6 +10474,30 @@ class GoogleCloudDataplexV1ListDataAttributesResponse(_messages.Message):
   unreachableLocations = _messages.StringField(3, repeated=True)
 
 
+class GoogleCloudDataplexV1ListDataDomainBindingsResponse(_messages.Message):
+  r"""List DataDomainBindings response.
+
+  Fields:
+    dataDomainBindings: DataDomainBindings under the given parent.
+    nextPageToken: Token to retrieve the next page of results.
+  """
+
+  dataDomainBindings = _messages.MessageField('GoogleCloudDataplexV1DataDomainBinding', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
+class GoogleCloudDataplexV1ListDataDomainsResponse(_messages.Message):
+  r"""List DataDomains response.
+
+  Fields:
+    dataDomains: DataDomains under the given parent.
+    nextPageToken: Token to retrieve the next page of results.
+  """
+
+  dataDomains = _messages.MessageField('GoogleCloudDataplexV1DataDomain', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
 class GoogleCloudDataplexV1ListDataProductsResponse(_messages.Message):
   r"""Response message for listing data products.
 
@@ -12996,6 +13304,29 @@ class GoogleIamV1Policy(_messages.Message):
   bindings = _messages.MessageField('GoogleIamV1Binding', 2, repeated=True)
   etag = _messages.BytesField(3)
   version = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+
+
+class GoogleIamV1ResourcePolicyMember(_messages.Message):
+  r"""Output-only policy member strings of a Google Cloud resource's built-in
+  identity.
+
+  Fields:
+    iamPolicyNamePrincipal: Output only. IAM policy binding member referring
+      to a Google Cloud resource by user-assigned name
+      (https://google.aip.dev/122). If a resource is deleted and recreated
+      with the same name, the binding will be applicable to the new
+      resource.Example: principal://parametermanager.googleapis.com/projects/1
+      2345/name/locations/us-central1-a/parameters/my-parameter
+    iamPolicyUidPrincipal: Output only. IAM policy binding member referring to
+      a Google Cloud resource by system-assigned unique identifier
+      (https://google.aip.dev/148#uid). If a resource is deleted and recreated
+      with the same name, the binding will not be applicable to the new
+      resourceExample: principal://parametermanager.googleapis.com/projects/12
+      345/uid/locations/us-central1-a/parameters/a918fed5
+  """
+
+  iamPolicyNamePrincipal = _messages.StringField(1)
+  iamPolicyUidPrincipal = _messages.StringField(2)
 
 
 class GoogleIamV1SetIamPolicyRequest(_messages.Message):

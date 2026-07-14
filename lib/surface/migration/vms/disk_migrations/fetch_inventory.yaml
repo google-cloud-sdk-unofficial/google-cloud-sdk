@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA]
+  hints:
+    read_only: true
   help_text:
     brief: Lists source environment volume inventory.
     description: |

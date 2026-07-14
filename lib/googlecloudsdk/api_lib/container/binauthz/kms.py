@@ -44,29 +44,41 @@ class Client(object):
     self.messages = apis.GetMessagesModule(API_NAME, api_version)
 
   def GetPublicKey(self, key_ref):
-    """Retrieves the public key for given CryptoKeyVersion."""
+    """Retrieves the public key for the given CryptoKeyVersion.
+
+    Args:
+      key_ref: The CryptoKeyVersion relative resource name.
+
+    Returns:
+      A PublicKey message.
+    """
     req = self.messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsGetPublicKeyRequest(
         name=key_ref)
     return (
         self.client.projects_locations_keyRings_cryptoKeys_cryptoKeyVersions.
         GetPublicKey(req))
 
-  def AsymmetricSign(self, key_ref, digest_algorithm, plaintext):
+  def AsymmetricSign(
+      self, key_ref_name, digest_algorithm, plaintext, key_version_ref=None
+  ):
     """Sign a string payload with an asymmetric KMS CryptoKeyVersion.
 
     Args:
-      key_ref: The CryptoKeyVersion relative resource name to sign with.
+      key_ref_name: The CryptoKeyVersion relative resource name to sign with.
       digest_algorithm: The name of the digest algorithm to use in the signing
-          operation. May be one of 'sha256', 'sha384', 'sha512'.
+          operation. May be one of 'sha256', 'sha384', 'sha512', 'external-mu'.
+          Note that 'external-mu' requires 'key_version_ref' to be provided.
       plaintext: The plaintext bytes to sign.
+      key_version_ref: Optional CryptoKeyVersion resource reference. Required
+          if 'digest_algorithm' is 'external-mu'.
 
     Returns:
       An AsymmetricSignResponse.
     """
     digest = get_digest.GetDigestOfFile(
-        digest_algorithm, six.BytesIO(plaintext))
+        digest_algorithm, six.BytesIO(plaintext), key_version_ref)
     req = self.messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsAsymmetricSignRequest(
-        name=key_ref,
+        name=key_ref_name,
         asymmetricSignRequest=self.messages.AsymmetricSignRequest(
             digest=digest))
     return (
@@ -89,7 +101,17 @@ def GetKeyUri(key_ref):
 
 
 def GetAlgorithmDigestType(key_algorithm):
-  """Returns the digest name associated with the given CryptoKey Algorithm."""
+  """Returns the digest name associated with the given CryptoKey Algorithm.
+
+  Args:
+    key_algorithm: The CryptoKeyVersion algorithm to get the digest name for.
+
+  Returns:
+    The digest name string (e.g. 'sha256') or None if no match is found.
+  """
+  algo_name = key_algorithm.name.lower()
+  if 'ml_dsa' in algo_name or 'external_mu' in algo_name:
+    return 'external-mu'
   for digest_name in maps.DIGESTS:
-    if digest_name in key_algorithm.name.lower():
+    if digest_name in algo_name:
       return digest_name

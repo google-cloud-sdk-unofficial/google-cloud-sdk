@@ -27,7 +27,6 @@ from googlecloudsdk.core import resources
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
 )
-@base.Hidden
 @base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Creates a new AlloyDB endpoint."""

@@ -29,7 +29,7 @@
   arguments:
     params:
     - help_text: |-
-        Name of the resource
+        The resource name of the Realm to delete.
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.number_registry.v1alpha_resources:projects_locations_realms

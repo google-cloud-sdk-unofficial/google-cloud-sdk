@@ -1040,6 +1040,8 @@ class EventAnnotation(_messages.Message):
         event.
       INTERCONNECT_MAINTENANCE_COMPLETED: Interconnect maintenance completed
         event.
+      VPN_TRAFFIC_SELECTOR_NARROWING: VPN traffic selector narrowing event.
+      VPN_MAINTENANCE: VPN maintenance event.
     """
     EVENT_TYPE_UNSPECIFIED = 0
     GKE_WORKLOAD_DEPLOYMENT = 1
@@ -1068,6 +1070,8 @@ class EventAnnotation(_messages.Message):
     SAP_OPERATIONS = 24
     INTERCONNECT_MAINTENANCE_STARTED = 25
     INTERCONNECT_MAINTENANCE_COMPLETED = 26
+    VPN_TRAFFIC_SELECTOR_NARROWING = 27
+    VPN_MAINTENANCE = 28
 
   displayName = _messages.StringField(1)
   enabled = _messages.BooleanField(2)

@@ -149,11 +149,10 @@ def GetPythonExecutable(sdk_root=None):
   if not python_executable:
     raise ValueError('Could not find Python executable.')
 
-  executable_name = os.path.splitext(os.path.basename(python_executable))[0]
-  if executable_name in ('gocloud', 'gcloud'):
+  if encoding.GetEncodedValue(os.environ, 'CLOUDSDK_FROM_GOCLOUD'):
     # 1. Determine the bundled Python path based on OS
     current_os = platforms.OperatingSystem.Current()
-    root = sdk_root or config.Paths().sdk_root_path
+    root = sdk_root or config.Paths().sdk_root
     bundled = None
     if root:
       if current_os is platforms.OperatingSystem.WINDOWS:

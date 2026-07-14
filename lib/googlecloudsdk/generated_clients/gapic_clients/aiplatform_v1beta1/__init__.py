@@ -27,6 +27,7 @@ from .types.api_auth import ApiAuth
 from .types.auth import AuthConfig
 from .types.auth import AuthType
 from .types.auth import HttpElementLocation
+from .types.content import AudioResponseFormat
 from .types.content import Blob
 from .types.content import Candidate
 from .types.content import Citation
@@ -38,6 +39,7 @@ from .types.content import GroundingChunk
 from .types.content import GroundingMetadata
 from .types.content import GroundingSupport
 from .types.content import ImageConfig
+from .types.content import ImageResponseFormat
 from .types.content import LogprobsResult
 from .types.content import ModalityTokenCount
 from .types.content import ModelArmorConfig
@@ -46,6 +48,7 @@ from .types.content import Part
 from .types.content import PrebuiltVoiceConfig
 from .types.content import ProactivityConfig
 from .types.content import ReplicatedVoiceConfig
+from .types.content import ResponseFormat
 from .types.content import RetrievalMetadata
 from .types.content import SafetyRating
 from .types.content import SafetySetting
@@ -53,9 +56,11 @@ from .types.content import SearchEntryPoint
 from .types.content import Segment
 from .types.content import SpeakerVoiceConfig
 from .types.content import SpeechConfig
+from .types.content import TextResponseFormat
 from .types.content import UrlContextMetadata
 from .types.content import UrlMetadata
 from .types.content import VideoMetadata
+from .types.content import VideoResponseFormat
 from .types.content import VoiceConfig
 from .types.content import HarmCategory
 from .types.content import Modality
@@ -200,6 +205,7 @@ __all__ = (
     'SemanticGovernancePolicyServiceAsyncClient',
 'ApiAuth',
 'Attribution',
+'AudioResponseFormat',
 'AuthConfig',
 'AuthType',
 'AvroSource',
@@ -279,6 +285,7 @@ __all__ = (
 'HarmCategory',
 'HttpElementLocation',
 'ImageConfig',
+'ImageResponseFormat',
 'ImportRagFilesConfig',
 'Int64Array',
 'IntegratedGradientsAttribution',
@@ -323,6 +330,7 @@ __all__ = (
 'RagVectorDbConfig',
 'RawPredictRequest',
 'ReplicatedVoiceConfig',
+'ResponseFormat',
 'Retrieval',
 'RetrievalConfig',
 'RetrievalMetadata',
@@ -351,6 +359,7 @@ __all__ = (
 'StringArray',
 'TFRecordDestination',
 'Tensor',
+'TextResponseFormat',
 'Tool',
 'ToolConfig',
 'ToolUseExample',
@@ -369,6 +378,7 @@ __all__ = (
 'VertexMultimodalDatasetSource',
 'VertexRagStore',
 'VideoMetadata',
+'VideoResponseFormat',
 'VoiceConfig',
 'XraiAttribution',
 )

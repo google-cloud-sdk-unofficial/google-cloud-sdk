@@ -41,6 +41,9 @@ class GapicWrapperClient(object):
     self.executions = gapic_util.MakeRestClient(
         run_v2.services.executions.client.ExecutionsClient,
         credentials, **kwargs)
+    self.instances = gapic_util.MakeRestClient(
+        run_v2.services.instances.client.InstancesClient,
+        credentials, **kwargs)
     self.jobs = gapic_util.MakeRestClient(
         run_v2.services.jobs.client.JobsClient,
         credentials, **kwargs)
@@ -49,6 +52,9 @@ class GapicWrapperClient(object):
         credentials, **kwargs)
     self.services = gapic_util.MakeRestClient(
         run_v2.services.services.client.ServicesClient,
+        credentials, **kwargs)
+    self.source = gapic_util.MakeRestClient(
+        run_v2.services.source_upload.client.SourceUploadClient,
         credentials, **kwargs)
     self.tasks = gapic_util.MakeRestClient(
         run_v2.services.tasks.client.TasksClient,

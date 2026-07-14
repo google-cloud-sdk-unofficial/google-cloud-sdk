@@ -29,7 +29,7 @@
   arguments:
     params:
     - help_text: |-
-        Identifier. name of resource
+        Identifier. The resource name of the IpamAdminScope.
       is_positional: true
       is_primary_resource: true
       request_id_field: ipamAdminScopeId
@@ -40,7 +40,7 @@
       required: true
       repeated: true
       help_text: |-
-        Addon platforms that are enabled for this IPAM admin scope. Cloud Number
+        Add-on platforms that are enabled for this IpamAdminScope. Cloud Number
         Registry only discovers the IP addresses from the enabled platforms.
       choices:
       - arg_value: compute-engine
@@ -64,7 +64,7 @@
       required: false
       repeated: true
       help_text: |-
-        Labels as key value pairs
+        User-defined labels.
       spec:
       - api_field: key
       - api_field: value

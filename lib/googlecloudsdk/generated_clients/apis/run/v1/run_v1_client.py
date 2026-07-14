@@ -411,7 +411,7 @@ class RunV1(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Create a Instance.
+      r"""Create an Instance.
 
       Args:
         request: (RunNamespacesInstancesCreateRequest) input message
@@ -429,7 +429,7 @@ class RunV1(base_api.BaseApiClient):
         method_id='run.namespaces.instances.create',
         ordered_params=['parent'],
         path_params=['parent'],
-        query_params=['region'],
+        query_params=['dryRun', 'region'],
         relative_path='apis/run.googleapis.com/v1/{+parent}/instances',
         request_field='instance',
         request_type_name='RunNamespacesInstancesCreateRequest',
@@ -438,7 +438,7 @@ class RunV1(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Delete a Instance.
+      r"""Delete an Instance.
 
       Args:
         request: (RunNamespacesInstancesDeleteRequest) input message
@@ -456,7 +456,7 @@ class RunV1(base_api.BaseApiClient):
         method_id='run.namespaces.instances.delete',
         ordered_params=['name'],
         path_params=['name'],
-        query_params=['apiVersion', 'kind', 'propagationPolicy', 'region'],
+        query_params=['apiVersion', 'dryRun', 'kind', 'propagationPolicy', 'region'],
         relative_path='apis/run.googleapis.com/v1/{+name}',
         request_field='',
         request_type_name='RunNamespacesInstancesDeleteRequest',
@@ -537,7 +537,7 @@ class RunV1(base_api.BaseApiClient):
         method_id='run.namespaces.instances.replaceInstance',
         ordered_params=['name'],
         path_params=['name'],
-        query_params=['region'],
+        query_params=['dryRun', 'region'],
         relative_path='apis/run.googleapis.com/v1/{+name}',
         request_field='instance',
         request_type_name='RunNamespacesInstancesReplaceInstanceRequest',
@@ -628,7 +628,7 @@ class RunV1(base_api.BaseApiClient):
         method_id='run.namespaces.jobs.create',
         ordered_params=['parent'],
         path_params=['parent'],
-        query_params=[],
+        query_params=['dryRun'],
         relative_path='apis/run.googleapis.com/v1/{+parent}/jobs',
         request_field='job',
         request_type_name='RunNamespacesJobsCreateRequest',
@@ -655,7 +655,7 @@ class RunV1(base_api.BaseApiClient):
         method_id='run.namespaces.jobs.delete',
         ordered_params=['name'],
         path_params=['name'],
-        query_params=['apiVersion', 'force', 'kind', 'propagationPolicy'],
+        query_params=['apiVersion', 'dryRun', 'force', 'kind', 'propagationPolicy'],
         relative_path='apis/run.googleapis.com/v1/{+name}',
         request_field='',
         request_type_name='RunNamespacesJobsDeleteRequest',
@@ -736,7 +736,7 @@ class RunV1(base_api.BaseApiClient):
         method_id='run.namespaces.jobs.replaceJob',
         ordered_params=['name'],
         path_params=['name'],
-        query_params=[],
+        query_params=['dryRun'],
         relative_path='apis/run.googleapis.com/v1/{+name}',
         request_field='job',
         request_type_name='RunNamespacesJobsReplaceJobRequest',
@@ -1557,7 +1557,7 @@ class RunV1(base_api.BaseApiClient):
           }
 
     def GetIamPolicy(self, request, global_params=None):
-      r"""Get the IAM Access Control policy currently in effect for the given instance. This result does not include any inherited policies.
+      r"""Gets the IAM Access Control policy currently in effect for the given instance. This result does not include any inherited policies.
 
       Args:
         request: (RunProjectsLocationsInstancesGetIamPolicyRequest) input message

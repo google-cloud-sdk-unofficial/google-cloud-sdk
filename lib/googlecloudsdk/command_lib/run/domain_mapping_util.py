@@ -18,6 +18,31 @@ from googlecloudsdk.api_lib.run import global_methods
 from googlecloudsdk.api_lib.util import exceptions as api_lib_exceptions
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import platforms
+from googlecloudsdk.core import properties
+
+
+def IsCustomUrl(domain_mapping_url):
+  """Check if the domain mapping uses a custom URL.
+
+  Args:
+    domain_mapping_url: The domain mapping URL.
+
+  Returns:
+    True if the domain mapping uses a custom URL, False otherwise.
+  """
+  # Retrieve the run endpoint override
+  endpoint_property = getattr(properties.VALUES.api_endpoint_overrides, 'run')
+  run_endpoint = endpoint_property.Get()
+
+  # Check if the run endpoint is overridden with a staging URL
+  is_staging_env = run_endpoint and 'staging-run' in run_endpoint
+  if is_staging_env:
+    return domain_mapping_url.endswith(
+        '.vanity-cloud-run-qual.sandbox.google.com'
+    )
+  return domain_mapping_url.endswith(
+      '.cloud.run'
+  ) or domain_mapping_url.endswith('.ai.studio')
 
 
 def VerifyDomain(domain_mapping_ref):

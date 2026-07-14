@@ -1,0 +1,169 @@
+# -*- coding: utf-8 -*- #
+# Copyright 2026 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+- release_tracks:
+  - ALPHA
+  universe_compatible: false
+  help_text:
+    brief: Configure and deploy an API Hub server.
+    description: |-
+      Configures and deploys an API Hub server in the specified location.
+      If a server with the same target identity already exists, this
+      command overwrites it by creating a new revision; all existing tools
+      are replaced.
+
+      Currently only MCP (Model Context Protocol) servers on Apigee X are
+      supported.
+    examples: |-
+      To deploy an MCP server with a single tool on Apigee X:
+
+        $ {command} us-central1 --project=my-project \
+            --mcp-tools='tool-id=greet,description=Greet the user,operation=projects/my-project/locations/us-central1/apis/hello/versions/v1/operations/greet' \
+            --apigee-x-environment=eval \
+            --apigee-x-proxy=mcp-discovery-server \
+            --apigee-x-target-project=my-apigee-project
+
+      To deploy with a tools spec file (required for tools that reference
+      an HTTP operation by spec + path + method):
+
+        $ {command} us-central1 --project=my-project \
+            --mcp-tools-from-file=tools.yaml \
+            --apigee-x-environment=eval \
+            --apigee-x-proxy=mcp-discovery-server \
+            --apigee-x-target-project=my-apigee-project
+
+      If any flag value contains a comma, use the alternate delimiter
+      syntax `^DELIM^value` (see `gcloud topic escaping`). For example:
+
+        $ {command} us-central1 --project=my-project \
+            --mcp-tools='^|^tool-id=lookup|description=Lookup by id, name, or email|operation=projects/my-project/locations/us-central1/apis/users/versions/v1/operations/lookup' \
+            --apigee-x-environment=eval --apigee-x-proxy=mcp-discovery-server \
+            --apigee-x-target-project=my-apigee-project
+  arguments:
+    params:
+    - help_text: |-
+        The location in which to configure and deploy the server.
+        Format: `projects/{project}/locations/{location}`.
+      is_positional: true
+      is_primary_resource: true
+      is_parent_resource: true
+      resource_spec: !REF googlecloudsdk.command_lib.apihub.v1_resources:projects_locations
+      required: true
+    - group:
+        mutex: true
+        required: true
+        help_text: |-
+          Server protocol configuration. Exactly one server type must be
+          specified.
+        params:
+        - group:
+            mutex: true
+            required: true
+            help_text: |-
+              MCP (Model Context Protocol) server configuration. Provide
+              either --mcp-tools (one or more) or --mcp-tools-from-file.
+            params:
+            - arg_name: mcp-tools
+              api_field: googleCloudApihubV1ConfigureAndDeployServerRequest.mcpServerConfig.tools
+              repeated: true
+              help_text: |-
+                A tool to expose on the MCP server. Repeatable. Each value
+                is a comma-separated dict with keys:
+
+                  * tool-id     (required) Unique identifier for the tool.
+                  * description (required) What the tool does.
+                  * operation   (required) Full API Hub operation resource
+                                name, e.g. `projects/{project}/locations/
+                                {location}/apis/{api}/versions/{version}/
+                                operations/{operation}`.
+
+                For tools that reference an operation by spec + path +
+                method, use --mcp-tools-from-file instead (this flag
+                cannot express the http_operation oneof arm).
+              type:
+                arg_dict:
+                  flatten: false
+                  spec:
+                  - api_field: toolId
+                    arg_name: tool-id
+                    required: true
+                  - api_field: description
+                    arg_name: description
+                    required: true
+                  - api_field: operation.operation
+                    arg_name: operation
+                    required: true
+            - arg_name: mcp-tools-from-file
+              help_text: |-
+                Path to a YAML or JSON file containing a list of MCP tools.
+                Each list item maps 1:1 to a tool, with keys:
+
+                  * tool_id (required)
+                  * description (required)
+                  * Exactly one of:
+                    - operation: full API Hub operation resource name
+                    - http_operation: { spec, path, method }
+
+                where `method` is one of GET, PUT, POST, DELETE, OPTIONS,
+                HEAD, PATCH, TRACE.
+    - group:
+        mutex: true
+        required: true
+        help_text: |-
+          Deployment target runtime. Exactly one target must be specified.
+        params:
+        - group:
+            help_text: |-
+              Apigee X runtime target.
+            params:
+            - arg_name: apigee-x-environment
+              api_field: googleCloudApihubV1ConfigureAndDeployServerRequest.mcpServerConfig.apigeeXTargetDetails.environment
+              required: true
+              help_text: |-
+                The specific Apigee X environment where the server will be
+                deployed.
+            - arg_name: apigee-x-proxy
+              api_field: googleCloudApihubV1ConfigureAndDeployServerRequest.mcpServerConfig.apigeeXTargetDetails.proxy
+              required: true
+              help_text: |-
+                Name identifying the proxy resource in Apigee X. Standard
+                alphanumeric format (e.g. "mcp-discovery-server").
+            - arg_name: apigee-x-target-project
+              api_field: googleCloudApihubV1ConfigureAndDeployServerRequest.mcpServerConfig.apigeeXTargetDetails.targetProject
+              required: true
+              help_text: |-
+                The runtime project that hosts the Apigee X organization.
+                This must be one of the runtime projects attached to the
+                API Hub host project.
+            - arg_name: apigee-x-proxy-display-name
+              api_field: googleCloudApihubV1ConfigureAndDeployServerRequest.mcpServerConfig.apigeeXTargetDetails.metadata.displayName
+              required: false
+              help_text: |-
+                Display name for the deployed proxy revision in Apigee X.
+            - arg_name: apigee-x-proxy-description
+              api_field: googleCloudApihubV1ConfigureAndDeployServerRequest.mcpServerConfig.apigeeXTargetDetails.metadata.description
+              required: false
+              help_text: |-
+                Description for the deployed proxy revision in Apigee X.
+  request:
+    api_version: v1
+    collection:
+    - apihub.projects.locations.servers
+    method: configureAndDeployServer
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.apihub.hooks:ProcessMcpToolsFromFile
+  async:
+    collection:
+    - apihub.projects.locations.operations
+    extract_resource_result: false

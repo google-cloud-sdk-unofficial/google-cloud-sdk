@@ -19,12 +19,12 @@
   - GA
   auto_generated: true
   help_text:
-    brief: Describe endpoints
-    description: Describe an endpoint
+    brief: Retrieve endpoint details.
+    description: Get full configuration for a specific endpoint.
     examples: |-
-      To describe the endpoint, run:
+      To describe endpoint 'my-endpoint' in location 'us-central1', run:
 
-          $ {command}
+        $ {command} my-endpoint --location=us-central1
   arguments:
     params:
     - help_text: |-

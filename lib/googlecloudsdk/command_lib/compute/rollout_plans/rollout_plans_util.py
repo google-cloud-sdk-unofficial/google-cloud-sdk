@@ -113,4 +113,45 @@ def _DictToWaveMessage(wave_dict, messages):
               )
           val_msg.timeBasedValidationMetadata = meta_msg
       msg.validation = val_msg
+
+  # Orchestration Options
+  if 'orchestrationOptions' in wave_dict:
+    orch_dict = wave_dict['orchestrationOptions']
+    if orch_dict:
+      orch_msg = messages.RolloutPlanWaveOrchestrationOptions()
+      if 'maxConcurrentLocations' in orch_dict:
+        orch_msg.maxConcurrentLocations = orch_dict['maxConcurrentLocations']
+      if 'maxConcurrentResourcesPerLocation' in orch_dict:
+        orch_msg.maxConcurrentResourcesPerLocation = orch_dict[
+            'maxConcurrentResourcesPerLocation'
+        ]
+      if 'delays' in orch_dict:
+        orch_msg.delays = []
+        for delay_dict in orch_dict['delays']:
+          delay_msg = messages.RolloutPlanWaveOrchestrationOptionsDelay()
+          if 'duration' in delay_dict:
+            duration_input = delay_dict['duration']
+            if isinstance(duration_input, dict) and 'seconds' in duration_input:
+              delay_msg.duration = str(duration_input['seconds']) + 's'
+            elif isinstance(duration_input, str):
+              delay_msg.duration = duration_input
+            else:
+              raise ValueError(
+                  f'Invalid format for duration: {duration_input}'
+              )
+          if 'delimiter' in delay_dict:
+            delay_msg.delimiter = (
+                messages.RolloutPlanWaveOrchestrationOptionsDelay.DelimiterValueValuesEnum(
+                    delay_dict['delimiter']
+                )
+            )
+          if 'type' in delay_dict:
+            delay_msg.type = (
+                messages.RolloutPlanWaveOrchestrationOptionsDelay.TypeValueValuesEnum(
+                    delay_dict['type']
+                )
+            )
+          orch_msg.delays.append(delay_msg)
+      msg.orchestrationOptions = orch_msg
+
   return msg

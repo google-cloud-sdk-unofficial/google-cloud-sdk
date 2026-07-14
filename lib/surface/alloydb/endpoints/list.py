@@ -29,7 +29,6 @@ ENDPOINT_FORMAT = """
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List AlloyDB endpoints in a given project and region.

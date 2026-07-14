@@ -14,17 +14,21 @@
 # limitations under the License.
 """Utility functions for performing download operation."""
 
-
 import os
+from typing import Any
 
 from googlecloudsdk.command_lib.storage import errors
+from googlecloudsdk.command_lib.storage import fast_crc32c_util
 from googlecloudsdk.command_lib.storage import gzip_util
 from googlecloudsdk.command_lib.storage import hash_util
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import symlink_util
 from googlecloudsdk.command_lib.storage import tracker_file_util
+from googlecloudsdk.command_lib.storage.resources import resource_reference
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.util import hashing
+
 
 SYMLINK_TEMPORARY_PLACEHOLDER_SUFFIX = '_sym'
 
@@ -61,6 +65,55 @@ def _decompress_or_rename_file(
   else:
     os.rename(temporary_file_path, final_file_path)
   return True
+
+
+def get_digesters(
+    component_number: int | None,
+    resource: resource_reference.ObjectResource,
+    is_streaming: bool = False,
+) -> dict[hash_util.HashAlgorithm, Any]:
+  """Returns digesters dictionary for download hash validation.
+
+  Note: The digester object is not picklable. It cannot be passed between
+  tasks through the task graph.
+
+  Args:
+    component_number: Used to determine if downloading a slice in a sliced
+      download, which uses CRC32C for hashing.
+    resource: For checking if object has known hash to validate against.
+    is_streaming: Whether the download is a streaming download.
+
+  Returns:
+    Digesters dict.
+
+  Raises:
+    errors.Error: gcloud storage set to fail if performance-optimized digesters
+      could not be created.
+  """
+  digesters = {}
+  check_hashes = properties.VALUES.storage.check_hashes.Get()
+  if check_hashes == properties.CheckHashes.NEVER.value:
+    return digesters
+
+  if component_number is None and resource.md5_hash:
+    digesters[hash_util.HashAlgorithm.MD5] = hashing.get_md5()
+  elif resource.crc32c_hash and (
+      check_hashes == properties.CheckHashes.ALWAYS.value
+      or fast_crc32c_util.check_if_will_use_fast_crc32c(install_if_missing=True)
+  ):
+    digesters[hash_util.HashAlgorithm.CRC32C] = fast_crc32c_util.get_crc32c(
+        is_streaming=is_streaming
+    )
+
+  if not digesters:
+    log.warning(
+        'Found no hashes to validate download of object: %s. Component number:'
+        ' %s. Integrity cannot be assured without hashes.',
+        resource,
+        component_number,
+    )
+
+  return digesters
 
 
 def finalize_download(
@@ -131,7 +184,8 @@ def validate_download_hash_and_delete_corrupt_files(download_path, source_hash,
     hash_util.validate_object_hashes_match(download_path, source_hash,
                                            destination_hash)
   except errors.HashMismatchError:
-    os.remove(download_path)
+    if os.path.exists(download_path):
+      os.remove(download_path)
     tracker_file_util.delete_download_tracker_files(
         storage_url.storage_url_from_string(download_path))
     raise

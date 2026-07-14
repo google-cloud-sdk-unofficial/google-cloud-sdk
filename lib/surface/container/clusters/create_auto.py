@@ -70,6 +70,7 @@ auto_flags = [
     'secretSyncConfig',
     'controlPlaneEgress',
     'tag_bindings',
+    'imageflags',
     'managedOTelScope',
     'managedMLDiagnostics',
     'autopilotPrivilegedAdmission',

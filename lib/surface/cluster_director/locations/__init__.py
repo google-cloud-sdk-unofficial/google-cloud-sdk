@@ -27,3 +27,10 @@ class LocationsAlpha(extensions.LocationsAlpha):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class LocationsBeta(extensions.LocationsBeta):
   """View Locations resources."""
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class LocationsGa(extensions.LocationsGa):
+  """View Locations resources."""
+

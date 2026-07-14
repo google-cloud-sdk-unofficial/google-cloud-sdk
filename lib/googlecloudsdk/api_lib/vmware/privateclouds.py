@@ -83,6 +83,9 @@ class PrivateCloudsClient(util.VmwareClientBase):
       autoscaling_settings=None,
       service_subnet=None,
       kms_key=None,
+      nsx_edge_ha_mode=None,
+      nsx_edge_size=None,
+      nsx_edge_count=None,
   ):
     parent = resource.Parent().RelativeName()
     project = resource.Parent().Parent().Name()
@@ -95,10 +98,25 @@ class PrivateCloudsClient(util.VmwareClientBase):
       new_subnets = [
           self.messages.Subnet(ipCidrRange=cidr) for cidr in service_subnet
       ]
+    nsx_edge_config = None
+    if (
+        nsx_edge_ha_mode is not None
+        or nsx_edge_size is not None
+        or nsx_edge_count is not None
+    ):
+      nsx_edge_config = self.messages.NsxEdgeConfig()
+      if nsx_edge_ha_mode is not None:
+        nsx_edge_config.haMode = self.GetNsxEdgeHaMode(nsx_edge_ha_mode)
+      if nsx_edge_size is not None:
+        nsx_edge_config.size = self.GetNsxEdgeSize(nsx_edge_size)
+      if nsx_edge_count is not None:
+        nsx_edge_config.count = nsx_edge_count
+
     network_config = self.messages.NetworkConfig(
         managementCidr=network_cidr,
         vmwareEngineNetwork=ven.name,
         serviceSubnets=new_subnets,
+        nsxEdgeConfig=nsx_edge_config,
     )
 
     management_cluster = self.messages.ManagementCluster(clusterId=cluster_id)
@@ -155,6 +173,9 @@ class PrivateCloudsClient(util.VmwareClientBase):
       description,
       encryption_type=None,
       kms_key=None,
+      nsx_edge_ha_mode=None,
+      nsx_edge_size=None,
+      nsx_edge_count=None,
   ):
     private_cloud = self.Get(resource)
     update_mask = []
@@ -175,6 +196,34 @@ class PrivateCloudsClient(util.VmwareClientBase):
         # The EncryptionConfig.Type enum only has CMEK.
         # Setting encryptionConfig to None signifies Google-Managed Encryption.
         private_cloud.encryptionConfig = None
+
+    if (
+        nsx_edge_ha_mode is not None
+        or nsx_edge_count is not None
+        or nsx_edge_size is not None
+    ):
+      if private_cloud.networkConfig is None:
+        private_cloud.networkConfig = self.messages.NetworkConfig()
+      if private_cloud.networkConfig.nsxEdgeConfig is None:
+        private_cloud.networkConfig.nsxEdgeConfig = (
+            self.messages.NsxEdgeConfig()
+        )
+
+      if nsx_edge_ha_mode is not None:
+        private_cloud.networkConfig.nsxEdgeConfig.haMode = (
+            self.GetNsxEdgeHaMode(nsx_edge_ha_mode)
+        )
+        update_mask.append('network_config.nsx_edge_config.ha_mode')
+
+      if nsx_edge_count is not None:
+        private_cloud.networkConfig.nsxEdgeConfig.count = nsx_edge_count
+        update_mask.append('network_config.nsx_edge_config.count')
+
+      if nsx_edge_size is not None:
+        private_cloud.networkConfig.nsxEdgeConfig.size = (
+            self.GetNsxEdgeSize(nsx_edge_size)
+        )
+        update_mask.append('network_config.nsx_edge_config.size')
 
     request = (
         self.messages.VmwareengineProjectsLocationsPrivateCloudsPatchRequest(
@@ -279,6 +328,20 @@ class PrivateCloudsClient(util.VmwareClientBase):
         message_enum=self.messages.PrivateCloud.TypeValueValuesEnum,
     ).GetEnumForChoice(arg_utils.EnumNameToChoice(private_cloud_type))
     return type_enum
+
+  def GetNsxEdgeHaMode(self, ha_mode):
+    return arg_utils.ChoiceEnumMapper(
+        arg_name='nsx_edge_ha_mode',
+        message_enum=self.messages.NsxEdgeConfig.HaModeValueValuesEnum,
+        include_filter=lambda x: 'HA_MODE_UNSPECIFIED' not in x,
+    ).GetEnumForChoice(arg_utils.EnumNameToChoice(ha_mode))
+
+  def GetNsxEdgeSize(self, size):
+    return arg_utils.ChoiceEnumMapper(
+        arg_name='nsx_edge_size',
+        message_enum=self.messages.NsxEdgeConfig.SizeValueValuesEnum,
+        include_filter=lambda x: 'SIZE_UNSPECIFIED' not in x,
+    ).GetEnumForChoice(arg_utils.EnumNameToChoice(size))
 
   def GetManagementCluster(self, resource):
     for cluster in self.cluster_client.List(resource):

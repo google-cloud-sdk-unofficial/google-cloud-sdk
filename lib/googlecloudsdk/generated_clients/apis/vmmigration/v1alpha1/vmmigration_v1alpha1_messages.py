@@ -3556,6 +3556,15 @@ class PersistentDiskDefaults(_messages.Message):
   Fields:
     additionalLabels: A map of labels to associate with the Persistent Disk.
     diskName: Optional. The name of the Persistent Disk to create.
+    diskReplicaZones: Optional. Additional replica zones of the target
+      regional disk. If this list is not empty a regional disk will be
+      created. The first supported zone would be the one stated in the
+      ComputeEngineTargetDefaults.zone field, where the target VM is created.
+      The rest are taken from this list. For further details about regional vs
+      zonal disks, refer to: [Regional Disk Creation API]
+      (https://cloud.google.com/compute/docs/regions-zones/global-regional-
+      zonal-resources) If not set, a zonal disk will be created in the same
+      zone with the VM.
     diskType: The disk type to use.
     encryption: Optional. The encryption to apply to the disk.
     provisionedIops: Optional. The provisioned IOPS of the disk. If not
@@ -3626,13 +3635,14 @@ class PersistentDiskDefaults(_messages.Message):
 
   additionalLabels = _messages.MessageField('AdditionalLabelsValue', 1)
   diskName = _messages.StringField(2)
-  diskType = _messages.EnumField('DiskTypeValueValuesEnum', 3)
-  encryption = _messages.MessageField('Encryption', 4)
-  provisionedIops = _messages.IntegerField(5)
-  provisionedThroughput = _messages.IntegerField(6)
-  sourceDiskNumber = _messages.IntegerField(7, variant=_messages.Variant.INT32)
-  storagePool = _messages.StringField(8)
-  vmAttachmentDetails = _messages.MessageField('VmAttachmentDetails', 9)
+  diskReplicaZones = _messages.StringField(3, repeated=True)
+  diskType = _messages.EnumField('DiskTypeValueValuesEnum', 4)
+  encryption = _messages.MessageField('Encryption', 5)
+  provisionedIops = _messages.IntegerField(6)
+  provisionedThroughput = _messages.IntegerField(7)
+  sourceDiskNumber = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+  storagePool = _messages.StringField(9)
+  vmAttachmentDetails = _messages.MessageField('VmAttachmentDetails', 10)
 
 
 class PostProcessingStep(_messages.Message):

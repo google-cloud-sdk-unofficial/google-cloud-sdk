@@ -186,6 +186,7 @@ class AppEngineToCloudRun(replace.Replace):
   @classmethod
   def CommonArgs(cls, parser) -> None:
     """Common arguments for the App Engine to Cloud Run migration command."""
+    flags.AddRegionArg(parser)
     parser.add_argument(
         '--appyaml',
         help=(
@@ -232,9 +233,10 @@ class AppEngineToCloudRun(replace.Replace):
     self.release_track = self.ReleaseTrack()
 
     # If region is not specified, default to us-central1.
-    if not flags.GetRegion(args):
-      properties.VALUES.run.region.Set('us-central1')
-      setattr(args, 'region', 'us-central1')
+    region = flags.GetRegion(args) or 'us-central1'
+    properties.VALUES.run.region.Set(region)
+    if not getattr(args, 'region', None):
+      setattr(args, 'region', region)
 
     if not self._start_migration(args):
       return
@@ -471,7 +473,11 @@ class AppEngineToCloudRun(replace.Replace):
     yaml_path = None
 
     if export_val:
-      if os.path.isdir(export_val):
+      if (
+          os.path.isdir(export_val)
+          or export_val.endswith('/')
+          or export_val.endswith(os.sep)
+      ):
         yaml_path = os.path.join(export_val, 'service.yaml')
       else:
         yaml_path = export_val
@@ -568,6 +574,15 @@ class AppEngineToCloudRun(replace.Replace):
           f' "gcloud run deploy {service} --source=. --region={region}'
           f' --project={project}"\n'
       )
+
+    log.status.Print(
+        'Note: By default, the migrated Cloud Run service does not allow'
+        ' public access.\nTo allow public access, go to the Security tab of'
+        ' this service in the Cloud Run Console:\n '
+        f' https://console.cloud.google.com/run/detail/{region}/{service}/security?project={project}\nFor'
+        ' more details, see:'
+        ' https://cloud.google.com/run/docs/authenticating/public\n'
+    )
 
   def _parse_dict_string(self, value_str: str) -> dict[str, str]:
     """Parses a comma-separated key=value string into a dictionary.

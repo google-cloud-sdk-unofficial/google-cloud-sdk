@@ -415,8 +415,7 @@ class CompilationError(_messages.Message):
 
   Fields:
     actionTarget: Output only. The identifier of the action where this error
-      occurred, if available. LINT.ThenChange(//depot/google3/google/cloud/dat
-      aform/v2main/data_pipelines.proto:CompilationError)
+      occurred, if available.
     message: Output only. The error's top level message.
     path: Output only. The path of the file where this error occurred, if
       available, relative to the project root.
@@ -945,9 +944,7 @@ class DataformProjectsLocationsRepositoriesCompilationResultsGetRequest(_message
   object.
 
   Fields:
-    name: Required. The compilation result's name. LINT.ThenChange(//depot/goo
-      gle3/google/cloud/dataform/v2main/data_pipelines.proto:GetCompilationRes
-      ultRequest)
+    name: Required. The compilation result's name.
   """
 
   name = _messages.StringField(1, required=True)
@@ -958,9 +955,7 @@ class DataformProjectsLocationsRepositoriesCompilationResultsListRequest(_messag
   object.
 
   Fields:
-    filter: Optional. Filter for the returned list. LINT.ThenChange(//depot/go
-      ogle3/google/cloud/dataform/v2main/data_pipelines.proto:ListCompilationR
-      esultsRequest)
+    filter: Optional. Filter for the returned list.
     orderBy: Optional. This field only supports ordering by `name` and
       `create_time`. If unspecified, the server will choose the ordering. If
       specified, the default order is ascending for the `name` field.
@@ -1238,9 +1233,7 @@ class DataformProjectsLocationsRepositoriesReleaseConfigsCreateRequest(_messages
       Must be in the format `projects/*/locations/*/repositories/*`.
     releaseConfig: A ReleaseConfig resource to be passed as the request body.
     releaseConfigId: Required. The ID to use for the release config, which
-      will become the final component of the release config's resource name. L
-      INT.ThenChange(//depot/google3/google/cloud/dataform/v2main/data_pipelin
-      es.proto:CreateReleaseConfigRequest)
+      will become the final component of the release config's resource name.
   """
 
   parent = _messages.StringField(1, required=True)
@@ -1253,9 +1246,7 @@ class DataformProjectsLocationsRepositoriesReleaseConfigsDeleteRequest(_messages
   object.
 
   Fields:
-    name: Required. The release config's name. LINT.ThenChange(//depot/google3
-      /google/cloud/dataform/v2main/data_pipelines.proto:DeleteReleaseConfigRe
-      quest)
+    name: Required. The release config's name.
   """
 
   name = _messages.StringField(1, required=True)
@@ -1265,9 +1256,7 @@ class DataformProjectsLocationsRepositoriesReleaseConfigsGetRequest(_messages.Me
   r"""A DataformProjectsLocationsRepositoriesReleaseConfigsGetRequest object.
 
   Fields:
-    name: Required. The release config's name. LINT.ThenChange(//depot/google3
-      /google/cloud/dataform/v2main/data_pipelines.proto:GetReleaseConfigReque
-      st)
+    name: Required. The release config's name.
   """
 
   name = _messages.StringField(1, required=True)
@@ -1284,8 +1273,7 @@ class DataformProjectsLocationsRepositoriesReleaseConfigsListRequest(_messages.M
       `ListReleaseConfigs` call. Provide this to retrieve the subsequent page.
       When paginating, all other parameters provided to `ListReleaseConfigs`,
       with the exception of `page_size`, must match the call that provided the
-      page token. LINT.ThenChange(//depot/google3/google/cloud/dataform/v2main
-      /data_pipelines.proto:ListReleaseConfigsRequest)
+      page token.
     parent: Required. The repository in which to list release configs. Must be
       in the format `projects/*/locations/*/repositories/*`.
   """
@@ -2070,9 +2058,9 @@ class DataformProjectsLocationsTeamFoldersSearchRequest(_messages.Message):
     orderBy: Optional. Field to additionally sort results by. Supported
       keywords: `display_name` (default), `create_time`, `last_modified_time`.
       Examples: * `orderBy="display_name"` * `orderBy="display_name desc"`
-    pageSize: Optional. Maximum number of TeamFolders to return. The server
+    pageSize: Optional. Maximum number of `TeamFolders` to return. The server
       may return fewer items than requested. If unspecified, the server will
-      pick a default of page_size = 50.
+      pick a default of `page_size` = 50.
     pageToken: Optional. Page token received from a previous
       `SearchTeamFolders` call. Provide this to retrieve the subsequent page.
       When paginating, all other parameters provided to `SearchTeamFolders`,
@@ -2436,13 +2424,13 @@ class GitRemoteSettings(_messages.Message):
     authenticationTokenSecretVersion: Optional. The name of the Secret Manager
       secret version to use as an authentication token for Git operations.
       Must be in the format `projects/*/secrets/*/versions/*`.
-    defaultBranch: Optional. The Git remote's default branch name. If not set
+    defaultBranch: Optional. The Git remote's default branch name. If not set,
       `main` will be used.
     effectiveDefaultBranch: Output only. The Git remote's effective default
       branch name. This is the default branch name of the Git remote if it is
       set, otherwise it is `main`.
-    gitRepositoryLink: Optional. Resource name for the GitRepositoryLink used
-      for machine credentials. Must be in the format
+    gitRepositoryLink: Optional. Resource name for the `GitRepositoryLink`
+      used for machine credentials. Must be in the format
       `projects/*/locations/*/connections/*/gitRepositoryLinks/*`
     sshAuthenticationConfig: Optional. Authentication fields for remote uris
       using SSH protocol.
@@ -2622,9 +2610,7 @@ class ListCompilationResultsResponse(_messages.Message):
     compilationResults: List of compilation results.
     nextPageToken: A token, which can be sent as `page_token` to retrieve the
       next page. If this field is omitted, there are no subsequent pages.
-    unreachable: Locations which could not be reached. LINT.ThenChange(//depot
-      /google3/google/cloud/dataform/v2main/data_pipelines.proto:ListCompilati
-      onResultsResponse)
+    unreachable: Locations which could not be reached.
   """
 
   compilationResults = _messages.MessageField('CompilationResult', 1, repeated=True)
@@ -2670,9 +2656,7 @@ class ListReleaseConfigsResponse(_messages.Message):
     nextPageToken: A token, which can be sent as `page_token` to retrieve the
       next page. If this field is omitted, there are no subsequent pages.
     releaseConfigs: List of release configs.
-    unreachable: Locations which could not be reached. LINT.ThenChange(//depot
-      /google3/google/cloud/dataform/v2main/data_pipelines.proto:ListReleaseCo
-      nfigsResponse)
+    unreachable: Locations which could not be reached.
   """
 
   nextPageToken = _messages.StringField(1)
@@ -3571,9 +3555,7 @@ class ReleaseConfig(_messages.Message):
       commit SHA: `12ade345` - a tag: `tag1` - a branch name: `branch1`
     internalMetadata: Output only. All the metadata information that is used
       internally to serve the resource. For example: timestamps, flags, status
-      fields, etc. The format of this field is a JSON string. LINT.ThenChange(
-      //depot/google3/google/cloud/dataform/v2main/data_pipelines.proto:Releas
-      eConfig)
+      fields, etc. The format of this field is a JSON string.
     name: Identifier. The release config's name.
     recentScheduledReleaseRecords: Output only. Records of the 10 most recent
       scheduled release attempts, ordered in descending order of
@@ -3990,6 +3972,20 @@ class Status(_messages.Message):
   message = _messages.StringField(3)
 
 
+class TableUpdateTrigger(_messages.Message):
+  r"""Represents a table update trigger configuration.
+
+  Fields:
+    table: The target table to trigger the workflow.
+    triggerUpdateTime: Output only. The modification time of this table that
+      resulted in an invocation of the workflow. This would be updated by the
+      triggering service after a successful workflow invocation.
+  """
+
+  table = _messages.MessageField('Target', 1)
+  triggerUpdateTime = _messages.StringField(2)
+
+
 class Target(_messages.Message):
   r"""Represents an action identifier. If the action writes output, the output
   will be written to the referenced database object.
@@ -4079,6 +4075,21 @@ class TestIamPermissionsResponse(_messages.Message):
   permissions = _messages.StringField(1, repeated=True)
 
 
+class TriggerEvaluationRecord(_messages.Message):
+  r"""A record of an attempt to evaluate trigger conditions.
+
+  Fields:
+    evaluationTime: Output only. The timestamp of this trigger evaluation
+      attempt.
+    status: Output only. The status of the trigger evaluation. Success is
+      indicated by a code of 0 (OK). Message will only be present if the
+      status code is non-zero.
+  """
+
+  evaluationTime = _messages.StringField(1)
+  status = _messages.MessageField('Status', 2)
+
+
 class UncommittedFileChange(_messages.Message):
   r"""Represents the Git state of a file with uncommitted changes.
 
@@ -4139,6 +4150,9 @@ class WorkflowConfig(_messages.Message):
       unspecified, the default is UTC.
     updateTime: Output only. The timestamp of when the WorkflowConfig was last
       updated.
+    workflowTriggerConfig: Optional. Optional trigger configuration for this
+      workflow. If present, the workflow will be triggered based on the
+      specified triggers.
   """
 
   createTime = _messages.StringField(1)
@@ -4151,6 +4165,7 @@ class WorkflowConfig(_messages.Message):
   releaseConfig = _messages.StringField(8)
   timeZone = _messages.StringField(9)
   updateTime = _messages.StringField(10)
+  workflowTriggerConfig = _messages.MessageField('WorkflowTriggerConfig', 11)
 
 
 class WorkflowInvocation(_messages.Message):
@@ -4278,6 +4293,63 @@ class WorkflowInvocationAction(_messages.Message):
   notebookAction = _messages.MessageField('NotebookAction', 7)
   state = _messages.EnumField('StateValueValuesEnum', 8)
   target = _messages.MessageField('Target', 9)
+
+
+class WorkflowTrigger(_messages.Message):
+  r"""The trigger definition to invoke a workflow.
+
+  Fields:
+    tableUpdateTrigger: The table update trigger configuration.
+  """
+
+  tableUpdateTrigger = _messages.MessageField('TableUpdateTrigger', 1)
+
+
+class WorkflowTriggerConfig(_messages.Message):
+  r"""Represents a trigger configuration for a workflow.
+
+  Enums:
+    ConditionValueValuesEnum: Optional. The condition to use when triggering
+      the workflow.
+
+  Fields:
+    condition: Optional. The condition to use when triggering the workflow.
+    lastSuccessfulEvaluationTime: Output only. The timestamp of the last
+      successful trigger evaluation.
+    maxWaitDuration: Optional. The effective maximum wait time duration for
+      the trigger condition to be met. If not specified, the workflow won't be
+      triggered until conditions are met.
+    minExecutionDuration: Optional. Minimum duration between two consecutive
+      executions. If not specified, the workflow will be executed every time
+      trigger conditions are met and no ongoing workflow execution.
+    recentTriggerEvaluationRecords: Output only. Records of the 10 most recent
+      trigger evaluations, ordered in descending order of `evaluation_time`.
+      Updated whenever the service evaluates the trigger conditions (via
+      polling or upon receiving a push event).
+    workflowTriggers: Required. The trigger definitions to invoke a workflow.
+  """
+
+  class ConditionValueValuesEnum(_messages.Enum):
+    r"""Optional. The condition to use when triggering the workflow.
+
+    Values:
+      CONDITION_UNSPECIFIED: If CONDITION_UNSPECIFIED, the default value is
+        ANY.
+      ALL: If ALL, all the trigger config conditions must be met before a
+        workflow is invoked.
+      ANY: If ANY, at least one of the trigger config conditions must be met
+        before a workflow is invoked.
+    """
+    CONDITION_UNSPECIFIED = 0
+    ALL = 1
+    ANY = 2
+
+  condition = _messages.EnumField('ConditionValueValuesEnum', 1)
+  lastSuccessfulEvaluationTime = _messages.StringField(2)
+  maxWaitDuration = _messages.StringField(3)
+  minExecutionDuration = _messages.StringField(4)
+  recentTriggerEvaluationRecords = _messages.MessageField('TriggerEvaluationRecord', 5, repeated=True)
+  workflowTriggers = _messages.MessageField('WorkflowTrigger', 6, repeated=True)
 
 
 class Workspace(_messages.Message):

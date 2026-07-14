@@ -1993,6 +1993,29 @@ def _GetStackTypeCustomMappings():
   }
 
 
+def _GetAdditionalNodeNetworkStackTypeCustomMappings():
+  return {
+      'IPV4': 'ipv4',
+      'IPV4_IPV6': 'ipv4-ipv6',
+      'IPV6': 'ipv6',
+  }
+
+
+def GetAdditionalNodeInterfaceStackTypeMapper(messages, hidden=False):
+  """Returns a mapper from text options to the AdditionalNodeNetworkConfig StackType enum.
+
+  Args:
+    messages: The message module.
+    hidden: Whether the flag should be hidden in the choice_arg
+  """
+  return arg_utils.ChoiceEnumMapper(
+      'stack-type',
+      messages.AdditionalNodeNetworkConfig.StackTypeValueValuesEnum,
+      _GetAdditionalNodeNetworkStackTypeCustomMappings(),
+      hidden=hidden,
+  )
+
+
 def GetCreateInTransitEncryptionConfigMapper(messages, hidden=False):
   """Returns a mapper from text options to the InTransitEncryptionConfig enum.
 

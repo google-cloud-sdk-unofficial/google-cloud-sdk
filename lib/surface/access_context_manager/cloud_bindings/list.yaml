@@ -2,7 +2,12 @@
 
   help_text:
     brief: List cloud access bindings under an organization.
-    description: List cloud access bindings.
+    description: |
+      List cloud access bindings.
+
+      By default, this command returns only user bindings. Service account bindings
+      are only returned if the `--filter` flag is explicitly set to
+      `principal:serviceAccount OR principal:serviceAccountProjectNumber`.
     GA:
       examples: |
         To list cloud access bindings, run:
@@ -80,6 +85,31 @@
           principal:
             federatedPrincipal: principal://iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool-id/subject/subject-id
           name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
+
+        If filter is specified as
+        `principal:serviceAccount OR principal:serviceAccountProjectNumber`,
+        the output is printed in the following format:
+
+          ---
+          accessLevels:
+          - accessPolicies/9522/accessLevels/device_trusted
+          dryRunAccessLevels:
+          - accessPolicies/9522/accessLevels/specific_location
+          principal:
+          serviceAccount: service_account@project.iam.gserviceaccount.com
+          name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
+
+        Or
+
+          ---
+          accessLevels:
+          - accessPolicies/9522/accessLevels/device_trusted
+          dryRunAccessLevels:
+          - accessPolicies/9522/accessLevels/specific_location
+          principal:
+          serviceAccountProjectNumber: 123456789
+          name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
+
     ALPHA:
       examples: |
         To list cloud access bindings, run:

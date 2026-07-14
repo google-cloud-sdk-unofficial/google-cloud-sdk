@@ -63,8 +63,7 @@ Container Flags
   group.AddArgument(flags.MemoryFlag())
   group.AddArgument(flags.CpuFlag())
   group.AddArgument(flags.ArgsFlag())
-  if release_track != base.ReleaseTrack.GA:
-    group.AddArgument(flags.WorkdirFlag())
+  group.AddArgument(flags.WorkdirFlag())
   group.AddArgument(flags_parser.SecretsFlags())
   group.AddArgument(flags.DependsOnFlag())
   group.AddArgument(flags.CommandFlag())
@@ -126,6 +125,8 @@ class Deploy(base.Command):
     flags.AddNoPromoteFlag(parser)
     flags.AddGpuTypeFlag(parser)
     flags.GpuZonalRedundancyFlag(parser)
+    if cls.ReleaseTrack() != base.ReleaseTrack.GA:
+      flags.AddDryRunFlag(parser)
     worker_pool_presentation = presentation_specs.ResourcePresentationSpec(
         'WORKER_POOL',
         resource_args.GetV2WorkerPoolResourceSpec(prompt=True),
@@ -217,7 +218,9 @@ class Deploy(base.Command):
     return build_from_source
 
   def _GetRequiredApis(self):
-    return [api_enabler.get_run_api()]
+    if self.ReleaseTrack() == base.ReleaseTrack.GA:
+      return [api_enabler.get_run_api()]
+    return []
 
   def _BuildFromSource(
       self,
@@ -281,9 +284,11 @@ class Deploy(base.Command):
     if build_from_source:
       required_apis.append('artifactregistry.googleapis.com')
       required_apis.append('cloudbuild.googleapis.com')
-    skip_activation_prompt = api_enabler.check_and_enable_apis(
-        properties.VALUES.core.project.Get(), required_apis
-    )
+    skip_activation_prompt = False
+    if required_apis:
+      skip_activation_prompt = api_enabler.check_and_enable_apis(
+          properties.VALUES.core.project.Get(), required_apis
+      )
     # Obtaining the connection context prompts the user to select a region if
     # one hasn't been provided. We want to do this prior to preparing a source
     # deploy so that we can use that region for the Artifact Registry repo.
@@ -293,102 +298,125 @@ class Deploy(base.Command):
         self.ReleaseTrack(),
     )
 
-    run_client = run_util.GetGapicClientInstance(
+    with run_util.GetGapicClientInstance(
         region=worker_pool_ref.locationsId
-    )
-    worker_pools_client = worker_pools_operations.WorkerPoolsOperations(
-        run_client
-    )
-    # pre-fetch the worker pool in case it already exists.
-    worker_pool = worker_pools_client.GetWorkerPool(worker_pool_ref)
-    messages_util.MaybeLogDefaultGpuTypeMessageForV2Resource(args, worker_pool)
+    ) as run_client:
+      worker_pools_client = worker_pools_operations.WorkerPoolsOperations(
+          run_client
+      )
+      # pre-fetch the worker pool in case it already exists.
+      worker_pool = worker_pools_client.GetWorkerPool(worker_pool_ref)
+      messages_util.MaybeLogDefaultGpuTypeMessageForV2Resource(
+          args, worker_pool
+      )
 
-    build_image = None
-    build_pack = None
-    build_source = None
-    operation_message = 'Deploying container to'
-    repo_to_create = None
-    # Name of the container to be deployed from source.
-    container_name = None
-    if build_from_source:
-      (
-          build_image,
-          build_pack,
-          build_source,
-          operation_message,
-          repo_to_create,
-          container_name,
-      ) = self._BuildFromSource(
-          args, build_from_source, skip_activation_prompt, worker_pool_ref
-      )
-    pretty_print.Info(
-        messages_util.GetStartDeployMessage(
-            conn_context,
-            worker_pool_ref,
+      build_image = None
+      build_pack = None
+      build_source = None
+      operation_message = 'Deploying container to'
+      repo_to_create = None
+      # Name of the container to be deployed from source.
+      container_name = None
+      if build_from_source:
+        (
+            build_image,
+            build_pack,
+            build_source,
             operation_message,
-            resource_kind_lower='worker pool',
+            repo_to_create,
+            container_name,
+        ) = self._BuildFromSource(
+            args, build_from_source, skip_activation_prompt, worker_pool_ref
         )
-    )
-    config_changes = self._GetBaseChanges(args)
-    header = 'Deploying'
-    if worker_pool is None:
-      header += ' new worker pool'
-    header += '...'
-    with progress_tracker.StagedProgressTracker(
-        header,
-        stages.WorkerPoolStages(
-            include_build=bool(build_from_source),
-            include_create_repo=repo_to_create is not None,
-        ),
-        failure_message='Deployment failed',
-        suppress_output=args.async_,
-    ) as tracker:
-      # TODO: b/432102851 - Add retry logic with zonal redundancy off.
-      response = worker_pools_client.ReleaseWorkerPool(
-          worker_pool_ref,
-          config_changes,
-          self.ReleaseTrack(),
-          tracker=tracker,
-          prefetch=worker_pool,
-          build_image=build_image,
-          build_pack=build_pack,
-          build_source=build_source,
-          build_from_source_container_name=container_name,
-          repo_to_create=repo_to_create,
-          skip_activation_prompt=skip_activation_prompt,
-          force_new_revision=True,
+      pretty_print.Info(
+          messages_util.GetStartDeployMessage(
+              conn_context,
+              worker_pool_ref,
+              operation_message,
+              resource_kind_lower='worker pool',
+          )
       )
-      if not response:
-        raise exceptions.ArgumentError(
-            'Cannot deploy worker pool [{}]'.format(
+      config_changes = self._GetBaseChanges(args)
+      dry_run = getattr(args, 'dry_run', False)
+      header = 'Deploying'
+      if worker_pool is None:
+        header += ' new worker pool'
+      header += '...'
+      if dry_run:
+        header = 'Validating...'
+
+      include_build = bool(build_from_source) and not dry_run
+      include_create_repo = repo_to_create is not None and not dry_run
+
+      with progress_tracker.StagedProgressTracker(
+          header,
+          stages.WorkerPoolStages(
+              include_build=include_build,
+              include_create_repo=include_create_repo,
+          ),
+          failure_message='Deployment failed',
+          suppress_output=args.async_ or dry_run,
+      ) as tracker:
+        # TODO: b/432102851 - Add retry logic with zonal redundancy off.
+        kwargs = {}
+        if dry_run:
+          kwargs['dry_run'] = True
+        response = worker_pools_client.ReleaseWorkerPool(
+            worker_pool_ref,
+            config_changes,
+            self.ReleaseTrack(),
+            tracker=tracker,
+            prefetch=worker_pool,
+            build_image=build_image,
+            build_pack=build_pack,
+            build_source=build_source,
+            build_from_source_container_name=container_name,
+            repo_to_create=repo_to_create,
+            skip_activation_prompt=skip_activation_prompt,
+            force_new_revision=True,
+            **kwargs
+        )
+        if not response:
+          raise exceptions.ArgumentError(
+              'Cannot deploy worker pool [{}]'.format(
+                  worker_pool_ref.workerPoolsId
+              )
+          )
+
+      if dry_run:
+        try:
+          response.result()
+        except gapic_exceptions.GoogleAPICallError as e:
+          core_exceptions.reraise(core_exceptions.Error(str(e)))
+        pretty_print.Success(
+            'Worker pool [{}] has been validated.'.format(
                 worker_pool_ref.workerPoolsId
             )
         )
-
-    if args.async_:
-      pretty_print.Success(
-          'Worker pool [{{bold}}{worker_pool}{{reset}}] is being deployed '
-          'asynchronously.'.format(worker_pool=worker_pool_ref.workerPoolsId)
-      )
-    else:
-      try:
-        response.result()  # Wait for the operation to complete.
-      except gapic_exceptions.GoogleAPICallError as e:
-        core_exceptions.reraise(core_exceptions.Error(str(e)))
-      worker_pool_name = worker_pool_ref.workerPoolsId
-      revision_name = None
-      if response.metadata and response.metadata.latest_created_revision:
-        revision_name = resource_name_conversion.GetNameFromFullChildName(
-            response.metadata.latest_created_revision
+      elif args.async_:
+        pretty_print.Success(
+            'Worker pool [{{bold}}{worker_pool}{{reset}}] is being deployed '
+            'asynchronously.'.format(worker_pool=worker_pool_ref.workerPoolsId)
         )
-      pretty_print.Success(
-          messages_util.GetSuccessMessageForSynchronousWorkerPoolDeploy(
-              worker_pool_name,
-              self.ReleaseTrack(),
-              args.CONCEPTS.worker_pool.Parse().locationsId,
-              revision_name,
+      else:
+        try:
+          response.result()  # Wait for the operation to complete.
+        except gapic_exceptions.GoogleAPICallError as e:
+          core_exceptions.reraise(core_exceptions.Error(str(e)))
+        worker_pool_name = worker_pool_ref.workerPoolsId
+        revision_name = None
+        if response.metadata and response.metadata.latest_created_revision:
+          revision_name = resource_name_conversion.GetNameFromFullChildName(
+              response.metadata.latest_created_revision
           )
-      )
+        pretty_print.Success(
+            messages_util.GetSuccessMessageForSynchronousWorkerPoolDeploy(
+                worker_pool_name,
+                self.ReleaseTrack(),
+                args.CONCEPTS.worker_pool.Parse().locationsId,
+                revision_name,
+            )
+        )
 
 
 def _CreateBuildPack(container, release_track=base.ReleaseTrack.GA):

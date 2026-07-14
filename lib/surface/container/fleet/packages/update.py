@@ -63,6 +63,7 @@ class Update(base.UpdateCommand):
     )
 
     possible_attributes = [
+        'labels',
         'resourceBundleSelector',
         'target',
         'variantSelector',

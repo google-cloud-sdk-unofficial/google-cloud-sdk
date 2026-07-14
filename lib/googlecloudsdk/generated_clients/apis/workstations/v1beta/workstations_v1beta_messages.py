@@ -969,23 +969,28 @@ class ListWorkstationsResponse(_messages.Message):
 
 
 class OAuthToken(_messages.Message):
-  r"""OAuth token.
+  r"""Represents an OAuth 2.0 access token and its associated metadata.
 
   Fields:
-    accessToken: Required. The OAuth token.
-    email: Optional. The email address encapsulated in the OAuth token.
+    accessToken: Required. The OAuth 2.0 access token value.
+    email: Optional. The email address associated with the OAuth 2.0 access
+      token.
     expireTime: Optional. The time the OAuth access token will expire. This
       should be the time the access token was generated plus the expires_in
-      offset returned from the Access Token Response.
-    scopes: Optional. The scopes encapsulated in the OAuth token. See
-      https://developers.google.com/identity/protocols/oauth2/scopes for more
-      information.
+      offset returned from the Access Token Response. Only one of
+      `expire_time` or `expires_in` should be specified.
+    expiresIn: Optional. The lifetime duration of the access token. Only one
+      of `expire_time` or `expires_in` should be specified.
+    scopes: Optional. The scopes associated with the OAuth 2.0 access token.
+      See https://developers.google.com/identity/protocols/oauth2/scopes for
+      more information.
   """
 
   accessToken = _messages.StringField(1)
   email = _messages.StringField(2)
   expireTime = _messages.StringField(3)
-  scopes = _messages.StringField(4)
+  expiresIn = _messages.StringField(4)
+  scopes = _messages.StringField(5)
 
 
 class Operation(_messages.Message):
@@ -1267,8 +1272,9 @@ class PushCredentialsRequest(_messages.Message):
   Fields:
     applicationDefaultCredentials: Optional. Credentials used by Cloud Client
       Libraries, Google API Client Libraries, and other tooling within the
-      user conainer: https://cloud.google.com/docs/authentication/application-
-      default-credentials
+      user container. For more information, see
+      https://cloud.google.com/docs/authentication/application-default-
+      credentials
   """
 
   applicationDefaultCredentials = _messages.MessageField('OAuthToken', 1)
@@ -1496,6 +1502,20 @@ class StopWorkstationRequest(_messages.Message):
   validateOnly = _messages.BooleanField(2)
 
 
+class SuspendWorkstationRequest(_messages.Message):
+  r"""Request message for SuspendWorkstation.
+
+  Fields:
+    etag: Optional. If set, the request will be rejected if the latest version
+      of the workstation on the server does not have this ETag.
+    validateOnly: Optional. If set, validate the request and preview the
+      result, but do not actually apply it.
+  """
+
+  etag = _messages.StringField(1)
+  validateOnly = _messages.BooleanField(2)
+
+
 class TestIamPermissionsRequest(_messages.Message):
   r"""Request message for `TestIamPermissions` method.
 
@@ -1598,12 +1618,16 @@ class Workstation(_messages.Message):
       STATE_STOPPING: The workstation is being stopped.
       STATE_STOPPED: The workstation is stopped and will not be able to
         receive requests until it is started.
+      STATE_SUSPENDING: The workstation is being suspended.
+      STATE_SUSPENDED: The workstation is suspended.
     """
     STATE_UNSPECIFIED = 0
     STATE_STARTING = 1
     STATE_RUNNING = 2
     STATE_STOPPING = 3
     STATE_STOPPED = 4
+    STATE_SUSPENDING = 5
+    STATE_SUSPENDED = 6
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AnnotationsValue(_messages.Message):
@@ -1908,6 +1932,11 @@ class WorkstationConfig(_messages.Message):
   (IAM)](https://cloud.google.com/iam/docs/overview) rules to grant access to
   teams or to individual developers.
 
+  Enums:
+    IdleActionValueValuesEnum: Optional. The action to take when the
+      workstation has been idle for the duration specified in idle_timeout.
+      Defaults to STOP.
+
   Messages:
     AnnotationsValue: Optional. Client-specified annotations.
     LabelsValue: Optional.
@@ -1984,6 +2013,8 @@ class WorkstationConfig(_messages.Message):
     host: Optional. Runtime host for the workstation.
     httpOptions: Optional. HTTP options that customize the behavior of the
       workstation service's HTTP proxy.
+    idleAction: Optional. The action to take when the workstation has been
+      idle for the duration specified in idle_timeout. Defaults to STOP.
     idleTimeout: Optional. Number of seconds to wait before automatically
       stopping a workstation after it last received user traffic. A value of
       `"0s"` indicates that Cloud Workstations VMs created with this
@@ -2041,6 +2072,19 @@ class WorkstationConfig(_messages.Message):
     updateTime: Output only. Time when this workstation configuration was most
       recently updated.
   """
+
+  class IdleActionValueValuesEnum(_messages.Enum):
+    r"""Optional. The action to take when the workstation has been idle for
+    the duration specified in idle_timeout. Defaults to STOP.
+
+    Values:
+      IDLE_ACTION_UNSPECIFIED: Defaults to STOP.
+      STOP: Stop the workstation after idle_timeout.
+      SUSPEND: Suspend the workstation after idle_timeout.
+    """
+    IDLE_ACTION_UNSPECIFIED = 0
+    STOP = 1
+    SUSPEND = 2
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AnnotationsValue(_messages.Message):
@@ -2110,19 +2154,20 @@ class WorkstationConfig(_messages.Message):
   grantWorkstationAdminRoleOnCreate = _messages.BooleanField(15)
   host = _messages.MessageField('Host', 16)
   httpOptions = _messages.MessageField('HttpOptions', 17)
-  idleTimeout = _messages.StringField(18)
-  labels = _messages.MessageField('LabelsValue', 19)
-  maxUsableWorkstations = _messages.IntegerField(20, variant=_messages.Variant.INT32)
-  name = _messages.StringField(21)
-  persistentDirectories = _messages.MessageField('PersistentDirectory', 22, repeated=True)
-  readinessChecks = _messages.MessageField('ReadinessCheck', 23, repeated=True)
-  reconciling = _messages.BooleanField(24)
-  replicaZones = _messages.StringField(25, repeated=True)
-  runningTimeout = _messages.StringField(26)
-  satisfiesPzi = _messages.BooleanField(27)
-  satisfiesPzs = _messages.BooleanField(28)
-  uid = _messages.StringField(29)
-  updateTime = _messages.StringField(30)
+  idleAction = _messages.EnumField('IdleActionValueValuesEnum', 18)
+  idleTimeout = _messages.StringField(19)
+  labels = _messages.MessageField('LabelsValue', 20)
+  maxUsableWorkstations = _messages.IntegerField(21, variant=_messages.Variant.INT32)
+  name = _messages.StringField(22)
+  persistentDirectories = _messages.MessageField('PersistentDirectory', 23, repeated=True)
+  readinessChecks = _messages.MessageField('ReadinessCheck', 24, repeated=True)
+  reconciling = _messages.BooleanField(25)
+  replicaZones = _messages.StringField(26, repeated=True)
+  runningTimeout = _messages.StringField(27)
+  satisfiesPzi = _messages.BooleanField(28)
+  satisfiesPzs = _messages.BooleanField(29)
+  uid = _messages.StringField(30)
+  updateTime = _messages.StringField(31)
 
 
 class WorkstationPersistentDirectory(_messages.Message):
@@ -2661,6 +2706,20 @@ class WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWorkstat
 
   name = _messages.StringField(1, required=True)
   stopWorkstationRequest = _messages.MessageField('StopWorkstationRequest', 2)
+
+
+class WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWorkstationsSuspendRequest(_messages.Message):
+  r"""A WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWork
+  stationsSuspendRequest object.
+
+  Fields:
+    name: Required. Name of the workstation to suspend.
+    suspendWorkstationRequest: A SuspendWorkstationRequest resource to be
+      passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  suspendWorkstationRequest = _messages.MessageField('SuspendWorkstationRequest', 2)
 
 
 class WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWorkstationsTestIamPermissionsRequest(_messages.Message):

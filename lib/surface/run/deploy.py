@@ -79,8 +79,8 @@ they will apply to the primary ingress container.
   group.AddArgument(flags.MemoryFlag())
   group.AddArgument(flags.CpuFlag())
   group.AddArgument(flags.ArgsFlag())
+  group.AddArgument(flags.WorkdirFlag())
   if release_track != base.ReleaseTrack.GA:
-    group.AddArgument(flags.WorkdirFlag())
     group.AddArgument(flags.SandboxLauncherFlag())
   group.AddArgument(flags.SecretsFlags())
   group.AddArgument(flags.DependsOnFlag())
@@ -174,12 +174,14 @@ class Deploy(base.Command):
         'SERVICE',
         resource_args.GetServiceResourceSpec(
             prompt=True,
-            allow_project_prompt=cls.ReleaseTrack() != base.ReleaseTrack.GA,
+            allow_project_prompt=True,
         ),
         'Service to deploy to.',
         required=True,
         prefixes=False,
     )
+    if cls.ReleaseTrack() != base.ReleaseTrack.GA:
+      flags.AddDryRunFlag(parser)
     flags.AddPlatformAndLocationFlags(parser)
     flags.AddConcurrencyFlag(parser)
     flags.AddTimeoutFlag(parser)
@@ -707,7 +709,10 @@ class Deploy(base.Command):
         include_domain_mapping=getattr(args, 'domain', None) is not None,
         regions_list=self._GetRegionsForMultiRegion(),
     )
-    if requires_build:
+    dry_run = getattr(args, 'dry_run', False)
+    if dry_run:
+      header = 'Validating'
+    elif requires_build:
       header = 'Building and deploying'
     else:
       header = 'Deploying'
@@ -732,11 +737,13 @@ class Deploy(base.Command):
         header,
         deployment_stages,
         failure_message=failure_message,
-        suppress_output=args.async_,
+        suppress_output=args.async_ or dry_run,
     )
 
   def _GetRequiredApis(self, deploy_from_source, is_no_build_from_source):
-    apis = [api_enabler.get_run_api()]
+    apis = []
+    if self.ReleaseTrack() == base.ReleaseTrack.GA:
+      apis.append(api_enabler.get_run_api())
     if deploy_from_source and not is_no_build_from_source:
       apis.append('artifactregistry.googleapis.com')
       apis.append('cloudbuild.googleapis.com')
@@ -745,26 +752,10 @@ class Deploy(base.Command):
   def _DisplaySuccessMessage(
       self, service, args, allow_unauth, operations, service_ref, records=None
   ):
-    # TODO(b/402450629): Remove this block once the proxy call out message is
-    # ready for GA.
-    if self.ReleaseTrack() == base.ReleaseTrack.GA:
-      if self._IsMultiRegion() and not args.async_:
-        pretty_print.Success(
-            messages_util.GetSuccessMessageForMultiRegionSynchronousDeploy(
-                service, self._GetRegionsForMultiRegion()
-            )
-        )
-      elif args.async_:
-        pretty_print.Success(
-            'Service [{{bold}}{serv}{{reset}}] is deploying '
-            'asynchronously.'.format(serv=service.name)
-        )
-      else:
-        pretty_print.Success(
-            messages_util.GetSuccessMessageForSynchronousDeploy(
-                service, args.no_traffic
-            )
-        )
+    if getattr(args, 'dry_run', False):
+      pretty_print.Success(
+          'Service [{}] has been validated.'.format(service.name)
+      )
       return
 
     if self._IsMultiRegion() and not args.async_:
@@ -889,7 +880,7 @@ class Deploy(base.Command):
     )
 
     skip_activation_prompt = False
-    if platform == platforms.PLATFORM_MANAGED:
+    if required_apis and platform == platforms.PLATFORM_MANAGED:
       skip_activation_prompt = api_enabler.check_and_enable_apis(
           properties.VALUES.core.project.Get(), required_apis
       )
@@ -1013,6 +1004,9 @@ class Deploy(base.Command):
           )
 
       def _ReleaseService(changes_):
+        kwargs = {}
+        if getattr(args, 'dry_run', False):
+          kwargs['dry_run'] = True
         with self._GetTracker(
             args,
             service,
@@ -1059,6 +1053,7 @@ class Deploy(base.Command):
               iap_enabled=iap,
               skip_build=skip_build,
               upload_through_run_api=upload_through_run_api,
+              **kwargs
           )
           records = []
           if domain_mapping_ref:

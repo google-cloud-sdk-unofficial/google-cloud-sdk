@@ -87,6 +87,7 @@ class Update(base.UpdateCommand):
         """,
         default=None,
     )
+    flags.AddNsxEdgeConfigFlagsToParser(parser)
 
   def Run(self, args):
     privatecloud = args.CONCEPTS.private_cloud.Parse()
@@ -98,6 +99,9 @@ class Update(base.UpdateCommand):
         description=args.description,
         encryption_type=args.encryption_type,
         kms_key=args.kms_key,
+        nsx_edge_ha_mode=args.nsx_edge_ha_mode,
+        nsx_edge_size=args.nsx_edge_size,
+        nsx_edge_count=args.nsx_edge_count,
     )
     if is_async:
       log.UpdatedResource(operation.name, kind='private cloud', is_async=True)

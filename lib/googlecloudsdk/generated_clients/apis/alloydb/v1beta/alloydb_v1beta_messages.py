@@ -2109,6 +2109,12 @@ class ConnectionInfo(_messages.Message):
 class ConnectionPoolConfig(_messages.Message):
   r"""Configuration for Managed Connection Pool (MCP).
 
+  Enums:
+    AuthproxyPoolerScalingTypeValueValuesEnum: Optional. The scaling type of
+      the AuthProxy pooler.
+    PoolerScalingTypeValueValuesEnum: Optional. The scaling type of the
+      regular pooler.
+
   Messages:
     FlagsValue: Optional. Connection Pool flags, as a list of "key": "value"
       pairs.
@@ -2116,10 +2122,45 @@ class ConnectionPoolConfig(_messages.Message):
   Fields:
     authproxyPoolerCount: Output only. The number of running AuthProxy poolers
       per instance.
+    authproxyPoolerScalingType: Optional. The scaling type of the AuthProxy
+      pooler.
     enabled: Optional. Whether to enable Managed Connection Pool (MCP).
     flags: Optional. Connection Pool flags, as a list of "key": "value" pairs.
     poolerCount: Output only. The number of running poolers per instance.
+    poolerScalingType: Optional. The scaling type of the regular pooler.
   """
+
+  class AuthproxyPoolerScalingTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The scaling type of the AuthProxy pooler.
+
+    Values:
+      POOLER_SCALING_TYPE_UNSPECIFIED: The scaling type is not specified.
+      POOLER_NONE: No pooler is enabled.
+      POOLER_MACHINE_SIZED: The number of poolers is automatically determined
+        by the service based on the VM size.
+      POOLER_MANUAL_OVERRIDE: The number of poolers is kept unchanged no
+        matter the machine size.
+    """
+    POOLER_SCALING_TYPE_UNSPECIFIED = 0
+    POOLER_NONE = 1
+    POOLER_MACHINE_SIZED = 2
+    POOLER_MANUAL_OVERRIDE = 3
+
+  class PoolerScalingTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The scaling type of the regular pooler.
+
+    Values:
+      POOLER_SCALING_TYPE_UNSPECIFIED: The scaling type is not specified.
+      POOLER_NONE: No pooler is enabled.
+      POOLER_MACHINE_SIZED: The number of poolers is automatically determined
+        by the service based on the VM size.
+      POOLER_MANUAL_OVERRIDE: The number of poolers is kept unchanged no
+        matter the machine size.
+    """
+    POOLER_SCALING_TYPE_UNSPECIFIED = 0
+    POOLER_NONE = 1
+    POOLER_MACHINE_SIZED = 2
+    POOLER_MANUAL_OVERRIDE = 3
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class FlagsValue(_messages.Message):
@@ -2146,9 +2187,11 @@ class ConnectionPoolConfig(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   authproxyPoolerCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  enabled = _messages.BooleanField(2)
-  flags = _messages.MessageField('FlagsValue', 3)
-  poolerCount = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  authproxyPoolerScalingType = _messages.EnumField('AuthproxyPoolerScalingTypeValueValuesEnum', 2)
+  enabled = _messages.BooleanField(3)
+  flags = _messages.MessageField('FlagsValue', 4)
+  poolerCount = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  poolerScalingType = _messages.EnumField('PoolerScalingTypeValueValuesEnum', 6)
 
 
 class ContinuousBackupConfig(_messages.Message):
@@ -4085,11 +4128,17 @@ class PscInstanceConfig(_messages.Message):
   r"""PscInstanceConfig contains PSC related configuration at an instance
   level.
 
+  Enums:
+    PscAutoDnsStateValueValuesEnum: Optional. Configuration for setting up PSC
+      auto DNS for the instance.
+
   Fields:
     allowedConsumerProjects: Optional. List of consumer projects that are
       allowed to create PSC endpoints to service-attachments to this instance.
     pscAutoConnections: Optional. Configurations for setting up PSC service
       automation.
+    pscAutoDnsState: Optional. Configuration for setting up PSC auto DNS for
+      the instance.
     pscDnsName: Output only. The DNS name of the instance for PSC
       connectivity. Name convention: ...alloydb-psc.goog
     pscInterfaceConfigs: Optional. Configurations for setting up PSC
@@ -4102,11 +4151,28 @@ class PscInstanceConfig(_messages.Message):
       `projects//regions//serviceAttachments/`
   """
 
+  class PscAutoDnsStateValueValuesEnum(_messages.Enum):
+    r"""Optional. Configuration for setting up PSC auto DNS for the instance.
+
+    Values:
+      PSC_AUTO_DNS_STATE_UNSPECIFIED: The state is unspecified. For old
+        instances, this means the PSC auto DNS is disabled. For new instances,
+        this means the PSC auto DNS is enabled by default. Use
+        `effective_psc_auto_dns_enabled` to check the effective state of the
+        PSC auto DNS.
+      PSC_AUTO_DNS_STATE_ENABLED: Enables the PSC auto DNS for the instance.
+      PSC_AUTO_DNS_STATE_DISABLED: Disables the PSC auto DNS for the instance.
+    """
+    PSC_AUTO_DNS_STATE_UNSPECIFIED = 0
+    PSC_AUTO_DNS_STATE_ENABLED = 1
+    PSC_AUTO_DNS_STATE_DISABLED = 2
+
   allowedConsumerProjects = _messages.StringField(1, repeated=True)
   pscAutoConnections = _messages.MessageField('PscAutoConnectionConfig', 2, repeated=True)
-  pscDnsName = _messages.StringField(3)
-  pscInterfaceConfigs = _messages.MessageField('PscInterfaceConfig', 4, repeated=True)
-  serviceAttachmentLink = _messages.StringField(5)
+  pscAutoDnsState = _messages.EnumField('PscAutoDnsStateValueValuesEnum', 3)
+  pscDnsName = _messages.StringField(4)
+  pscInterfaceConfigs = _messages.MessageField('PscInterfaceConfig', 5, repeated=True)
+  serviceAttachmentLink = _messages.StringField(6)
 
 
 class PscInterfaceConfig(_messages.Message):
@@ -5362,6 +5428,10 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceHealthSignalData(_mes
       SIGNAL_TYPE_PERFORMANCE_KPI_CHANGE: Change in performance KPIs.
       SIGNAL_TYPE_VERSION_NEARING_END_OF_LIFE: Database version nearing end of
         life.
+      SIGNAL_TYPE_HIGH_MAINTENANCE_DOWNTIME_RISK: Indicates a high risk of
+        maintenance downtime.
+      SIGNAL_TYPE_LOW_CACHE_HIT_AND_MAINTENANCE_DOWNTIME: Indicates both a low
+        cache hit rate and a risk of maintenance downtime.
     """
     SIGNAL_TYPE_UNSPECIFIED = 0
     SIGNAL_TYPE_NOT_PROTECTED_BY_AUTOMATIC_FAILOVER = 1
@@ -5470,6 +5540,8 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceHealthSignalData(_mes
     SIGNAL_TYPE_EXTENDED_SUPPORT = 104
     SIGNAL_TYPE_PERFORMANCE_KPI_CHANGE = 105
     SIGNAL_TYPE_VERSION_NEARING_END_OF_LIFE = 106
+    SIGNAL_TYPE_HIGH_MAINTENANCE_DOWNTIME_RISK = 107
+    SIGNAL_TYPE_LOW_CACHE_HIT_AND_MAINTENANCE_DOWNTIME = 108
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Required. The state of the signal, such as if it's ACTIVE or RESOLVED.
@@ -5545,8 +5617,8 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceId(_messages.Message)
       go/keep-sorted start alloydb.googleapis.com/Cluster,
       alloydb.googleapis.com/Instance, bigtableadmin.googleapis.com/Cluster,
       bigtableadmin.googleapis.com/Instance compute.googleapis.com/Instance
-      firestore.googleapis.com/Database, redis.googleapis.com/Instance,
-      redis.googleapis.com/Cluster,
+      firestore.googleapis.com/Database, memorystore.googleapis.com/Instance,
+      redis.googleapis.com/Instance, redis.googleapis.com/Cluster,
       oracledatabase.googleapis.com/CloudExadataInfrastructure
       oracledatabase.googleapis.com/CloudVmCluster
       oracledatabase.googleapis.com/AutonomousDatabase
@@ -6188,6 +6260,10 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceRecommendationSignalD
       SIGNAL_TYPE_PERFORMANCE_KPI_CHANGE: Change in performance KPIs.
       SIGNAL_TYPE_VERSION_NEARING_END_OF_LIFE: Database version nearing end of
         life.
+      SIGNAL_TYPE_HIGH_MAINTENANCE_DOWNTIME_RISK: Indicates a high risk of
+        maintenance downtime.
+      SIGNAL_TYPE_LOW_CACHE_HIT_AND_MAINTENANCE_DOWNTIME: Indicates both a low
+        cache hit rate and a risk of maintenance downtime.
     """
     SIGNAL_TYPE_UNSPECIFIED = 0
     SIGNAL_TYPE_NOT_PROTECTED_BY_AUTOMATIC_FAILOVER = 1
@@ -6296,6 +6372,8 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceRecommendationSignalD
     SIGNAL_TYPE_EXTENDED_SUPPORT = 104
     SIGNAL_TYPE_PERFORMANCE_KPI_CHANGE = 105
     SIGNAL_TYPE_VERSION_NEARING_END_OF_LIFE = 106
+    SIGNAL_TYPE_HIGH_MAINTENANCE_DOWNTIME_RISK = 107
+    SIGNAL_TYPE_LOW_CACHE_HIT_AND_MAINTENANCE_DOWNTIME = 108
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AdditionalMetadataValue(_messages.Message):
@@ -7637,11 +7715,16 @@ class User(_messages.Message):
         authentication.
       ALLOYDB_IAM_GROUP: Database user that represents an IAM group whose
         members can authenticate via IAM group-based authentication.
+      ALLOYDB_IAM_GROUP_USER: Represents a user that belongs to an IAM group.
+      ALLOYDB_IAM_GROUP_SERVICE_ACCOUNT: Represents a service account that
+        belongs to an IAM group.
     """
     USER_TYPE_UNSPECIFIED = 0
     ALLOYDB_BUILT_IN = 1
     ALLOYDB_IAM_USER = 2
     ALLOYDB_IAM_GROUP = 3
+    ALLOYDB_IAM_GROUP_USER = 4
+    ALLOYDB_IAM_GROUP_SERVICE_ACCOUNT = 5
 
   databaseRoles = _messages.StringField(1, repeated=True)
   keepExtraRoles = _messages.BooleanField(2)

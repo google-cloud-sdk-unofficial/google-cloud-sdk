@@ -65,12 +65,30 @@ class PublishDataProduct(base.Command):
         required=True,
     )
     parser.add_argument(
-        '--sap-federated-identity',
+        '--sap-federated-identity-provider',
         help=('The resource name of the Workload Identity Federation (WIF) '
               'provider resource representing the SAP federated identity. You '
               'must manually grant this identity the necessary IAM permissions '
               '(e.g., roles/biglake.viewer) on the underlying catalog.'),
         required=True,
+    )
+    parser.add_argument(
+        '--title',
+        help=(
+            'The title of the published share. Required when publishing an'
+            ' Iceberg catalog.'
+        ),
+    )
+    parser.add_argument(
+        '--short-description',
+        help=(
+            'The short, concise description of the published share. Required'
+            ' when publishing an Iceberg catalog.'
+        ),
+    )
+    parser.add_argument(
+        '--description',
+        help='The optional detailed description of the published share.',
     )
 
   def Run(self, args):
@@ -79,7 +97,10 @@ class PublishDataProduct(base.Command):
     iceberg_catalog_ref = None
     if args.iceberg_catalog:
       iceberg_catalog_ref = messages.IcebergCatalogReference(
-          catalog=args.CONCEPTS.iceberg_catalog.Parse().RelativeName()
+          catalog=args.CONCEPTS.iceberg_catalog.Parse().RelativeName(),
+          title=args.title,
+          shortDescription=args.short_description,
+          description=args.description,
       )
     data_product_ref = None
     if args.data_product:
@@ -93,7 +114,7 @@ class PublishDataProduct(base.Command):
                 share=args.share,
                 dataProduct=data_product_ref,
                 icebergCatalog=iceberg_catalog_ref,
-                sapFederatedIdentity=args.sap_federated_identity,
+                sapFederatedIdentityProvider=args.sap_federated_identity_provider,
             ),
         )
     )

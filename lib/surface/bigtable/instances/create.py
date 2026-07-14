@@ -31,8 +31,6 @@ from googlecloudsdk.core import resources
 class CreateInstance(base.CreateCommand):
   """Create a new Bigtable instance."""
 
-  _support_tags = False
-
   detailed_help = {
       'EXAMPLES': textwrap.dedent("""\
           To create an instance with id `my-instance-id` with a cluster located
@@ -68,10 +66,8 @@ class CreateInstance(base.CreateCommand):
         .AddAsync()
         .AddDeprecatedInstanceType()
         .AddInstanceEdition()
+        .AddTags()
     )
-
-    if cls._support_tags:
-      arguments.ArgAdder(parser).AddTags()
 
     arguments.AddInstanceResourceArg(parser, 'to create', positional=True)
     parser.display_info.AddCacheUpdater(arguments.InstanceCompleter)
@@ -263,9 +259,6 @@ class CreateInstance(base.CreateCommand):
       A dict mapping from tag key to tag value.
     """
 
-    if not cls._support_tags:
-      return None
-
     tags = getattr(args, tags_arg_name)
     if not tags:
       return None
@@ -283,8 +276,6 @@ class CreateInstance(base.CreateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateInstanceAlpha(CreateInstance):
   """Create a new Bigtable instance."""
-
-  _support_tags = True
 
   @classmethod
   def Args(cls, parser):

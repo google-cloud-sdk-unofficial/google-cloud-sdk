@@ -19,12 +19,12 @@
   - GA
   auto_generated: true
   help_text:
-    brief: List mcpServers
-    description: List mcpServers
+    brief: List registered MCP servers.
+    description: Enumerate all Model Context Protocol servers in a given project and location.
     examples: |-
-      To list all mcpServers, run:
+      To list all MCP servers in location 'us-central1', run:
 
-          $ {command}
+        $ {command} --location=us-central1
   arguments:
     params:
     - help_text: |-

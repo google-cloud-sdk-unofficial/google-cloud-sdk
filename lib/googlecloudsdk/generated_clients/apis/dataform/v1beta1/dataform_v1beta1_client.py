@@ -1804,7 +1804,7 @@ class DataformV1beta1(base_api.BaseApiClient):
     )
 
     def DeleteLongRunning(self, request, global_params=None):
-      r"""Deletes a single Repository asynchronously.
+      r"""Deletes a single repository asynchronously.
 
       Args:
         request: (DataformProjectsLocationsRepositoriesDeleteLongRunningRequest) input message

@@ -33,7 +33,7 @@ class MultiRegionReplace(replace.Replace):
 
   @classmethod
   def Args(cls, parser):
-    replace.Replace.Args(parser)
+    super().Args(parser)
     flags.AddRegionsArg(parser)
     flags.AddAddRegionsArg(parser)
     flags.AddRemoveRegionsArg(parser)

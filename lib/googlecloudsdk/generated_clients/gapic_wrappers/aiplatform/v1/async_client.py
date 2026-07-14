@@ -15,10 +15,6 @@
 #
 """Aiplatform gRPC client. This class is automatically generated."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 import contextlib
 
 from googlecloudsdk.core import gapic_util
@@ -45,9 +41,17 @@ class GapicWrapperClient(object):
     self.prediction = gapic_util.MakeAsyncClient(
         aiplatform_v1.services.prediction_service.async_client.PredictionServiceAsyncClient,
         credentials, **kwargs)
+    self.semantic = gapic_util.MakeAsyncClient(
+        aiplatform_v1.services.semantic_governance_policy_engine_service.async_client.SemanticGovernancePolicyEngineServiceAsyncClient,
+        credentials, **kwargs)
+    self.semantic = gapic_util.MakeAsyncClient(
+        aiplatform_v1.services.semantic_governance_policy_service.async_client.SemanticGovernancePolicyServiceAsyncClient,
+        credentials, **kwargs)
 
   async def __aenter__(self):
     await self._aexit_stack.enter_async_context(self.prediction)
+    await self._aexit_stack.enter_async_context(self.semantic)
+    await self._aexit_stack.enter_async_context(self.semantic)
     return self
 
   async def __aexit__(self, exc_type, exc_value, traceback):

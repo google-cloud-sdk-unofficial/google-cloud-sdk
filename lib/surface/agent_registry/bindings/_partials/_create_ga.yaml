@@ -19,12 +19,19 @@
   - GA
   auto_generated: true
   help_text:
-    brief: Create bindings
-    description: Create a binding
+    brief: Create a new binding.
+    description: |-
+      Create a connection between a source agent and a target resource (such as
+      another agent, an MCP server, or an endpoint) or associate an agent with
+      an auth provider to support delegated permissions.
     examples: |-
-      To create the binding, run:
+      To create binding 'my-binding' connecting a source reasoning engine to a target reasoning engine and an auth provider connector, run:
 
-          $ {command}
+        $ {command} my-binding \
+            --location=us-central1 \
+            --source-identifier=urn:agent:my-agent-1:projects:123:locations:us-central1:aiplatform:reasoningEngines:123 \
+            --target-identifier=urn:agent:my-agent-2:projects:123:locations:us-central1:aiplatform:reasoningEngines:456 \
+            --auth-provider-binding=projects/my-project/locations/us-central1/connectors/my-connector
   arguments:
     params:
     - group:

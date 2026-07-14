@@ -35,103 +35,10 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW,
+                    base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class Delete(base.DeleteCommand):
-  """Delete a Compute Engine managed instance group resize request.
-
-  *{command}* deletes one or more Compute Engine managed instance
-  group resize requests.
-
-  You can only delete a request when it is in a state SUCCEEDED,
-  FAILED, or CANCELLED.
-  """
-
-  detailed_help = DETAILED_HELP
-
-  @classmethod
-  def Args(cls, parser):
-    instance_groups_flags.MakeZonalInstanceGroupManagerArg().AddArgument(
-        parser
-    )
-    parser.add_argument(
-        '--resize-requests',
-        type=arg_parsers.ArgList(min_length=1),
-        metavar='RESIZE_REQUEST_NAMES',
-        required=True,
-        help='A list of comma-separated names of resize requests to delete.',
-    )
-
-  def Run(self, args):
-    """Creates and issues multiple instanceGroupManagerResizeRequests.delete requests.
-
-    Args:
-      args: the argparse arguments that this command was invoked with.
-
-    Returns:
-      A list of URI paths of the successfully deleted resize requests.
-    """
-
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    resource_arg = instance_groups_flags.MakeZonalInstanceGroupManagerArg()
-    igm_ref = self._GetIgmRef(args, holder, resource_arg)
-    resize_requests_refs = self._CreateResizeRequestReferences(
-        args.resize_requests, igm_ref, holder.resources
-    )
-    utils.PromptForDeletion(resize_requests_refs)
-    return self._MakeRequests(holder.client, igm_ref, resize_requests_refs)
-
-  def _GetIgmRef(self, args, holder, resource_arg):
-    default_scope = compute_scope.ScopeEnum.ZONE
-    scope_lister = compute_flags.GetDefaultScopeLister(holder.client)
-    igm_ref = resource_arg.ResolveAsResource(
-        args,
-        holder.resources,
-        default_scope=default_scope,
-        scope_lister=scope_lister,
-    )
-    return igm_ref
-
-  def _CreateResizeRequestReferences(self, resize_requests, igm_ref, resources):
-    resize_request_references = []
-    if igm_ref.Collection() == 'compute.instanceGroupManagers':
-      for resize_request_name in resize_requests:
-        resize_request_references.append(resources.Parse(
-            resize_request_name,
-            {
-                'project': igm_ref.project,
-                'zone': igm_ref.zone,
-                'instanceGroupManager': igm_ref.instanceGroupManager,
-            },
-            collection='compute.instanceGroupManagerResizeRequests',
-        ))
-      return resize_request_references
-    raise ValueError(
-        'Unknown reference type {0}'.format(igm_ref.Collection())
-    )
-
-  def _MakeRequests(self, client, igm_ref, resize_request_refs):
-    requests = []
-    if igm_ref.Collection() == 'compute.instanceGroupManagers':
-      for resize_request_ref in resize_request_refs:
-        requests.append((
-            client.apitools_client.instanceGroupManagerResizeRequests,
-            'Delete',
-            client.messages.ComputeInstanceGroupManagerResizeRequestsDeleteRequest(
-                project=resize_request_ref.project,
-                zone=resize_request_ref.zone,
-                instanceGroupManager=resize_request_ref.instanceGroupManager,
-                resizeRequest=resize_request_ref.resizeRequest,
-            ),
-        ))
-      return client.MakeRequests(requests)
-    raise ValueError(
-        'Unknown reference type {0}'.format(igm_ref.Collection())
-    )
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class DeleteBeta(Delete):
   """Delete a Compute Engine managed instance group resize request.
 
   *{command}* deletes one or more Compute Engine managed instance
@@ -157,7 +64,14 @@ class DeleteBeta(Delete):
     )
 
   def Run(self, args):
-    """Creates and issues multiple instanceGroupManagerResizeRequests.delete requests."""
+    """Creates and issues multiple instanceGroupManagerResizeRequests.delete requests.
+
+    Args:
+      args: the argparse arguments that this command was invoked with.
+
+    Returns:
+      A list of URI paths of the successfully deleted resize requests.
+    """
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     resource_arg = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG

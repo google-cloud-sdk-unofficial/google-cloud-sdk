@@ -4431,69 +4431,6 @@ class StorageObjectsUpdateRequest(_messages.Message):
   userProject = _messages.StringField(12)
 
 
-class StorageObjectsWatchAllRequest(_messages.Message):
-  r"""A StorageObjectsWatchAllRequest object.
-
-  Enums:
-    ProjectionValueValuesEnum: Set of properties to return. Defaults to noAcl.
-
-  Fields:
-    bucket: Name of the bucket in which to look for objects.
-    channel: A Channel resource to be passed as the request body.
-    delimiter: Returns results in a directory-like mode. items will contain
-      only objects whose names, aside from the prefix, do not contain
-      delimiter. Objects whose names, aside from the prefix, contain delimiter
-      will have their name, truncated after the delimiter, returned in
-      prefixes. Duplicate prefixes are omitted.
-    endOffset: Filter results to objects whose names are lexicographically
-      before endOffset. If startOffset is also set, the objects listed will
-      have names between startOffset (inclusive) and endOffset (exclusive).
-    includeTrailingDelimiter: If true, objects that end in exactly one
-      instance of delimiter will have their metadata included in items in
-      addition to prefixes.
-    maxResults: Maximum number of items plus prefixes to return in a single
-      page of responses. As duplicate prefixes are omitted, fewer total
-      results may be returned than requested. The service will use this
-      parameter or 1,000 items, whichever is smaller.
-    pageToken: A previously-returned page token representing part of the
-      larger set of results to view.
-    prefix: Filter results to objects whose names begin with this prefix.
-    projection: Set of properties to return. Defaults to noAcl.
-    startOffset: Filter results to objects whose names are lexicographically
-      equal to or after startOffset. If endOffset is also set, the objects
-      listed will have names between startOffset (inclusive) and endOffset
-      (exclusive).
-    userProject: The project to be billed for this request. Required for
-      Requester Pays buckets.
-    versions: If true, lists all versions of an object as distinct results.
-      The default is false. For more information, see [Object
-      Versioning](https://cloud.google.com/storage/docs/object-versioning).
-  """
-
-  class ProjectionValueValuesEnum(_messages.Enum):
-    r"""Set of properties to return. Defaults to noAcl.
-
-    Values:
-      full: Include all properties.
-      noAcl: Omit the owner, acl property.
-    """
-    full = 0
-    noAcl = 1
-
-  bucket = _messages.StringField(1, required=True)
-  channel = _messages.MessageField('Channel', 2)
-  delimiter = _messages.StringField(3)
-  endOffset = _messages.StringField(4)
-  includeTrailingDelimiter = _messages.BooleanField(5)
-  maxResults = _messages.IntegerField(6, variant=_messages.Variant.UINT32, default=1000)
-  pageToken = _messages.StringField(7)
-  prefix = _messages.StringField(8)
-  projection = _messages.EnumField('ProjectionValueValuesEnum', 9)
-  startOffset = _messages.StringField(10)
-  userProject = _messages.StringField(11)
-  versions = _messages.BooleanField(12)
-
-
 class StorageProjectsHmacKeysCreateRequest(_messages.Message):
   r"""A StorageProjectsHmacKeysCreateRequest object.
 

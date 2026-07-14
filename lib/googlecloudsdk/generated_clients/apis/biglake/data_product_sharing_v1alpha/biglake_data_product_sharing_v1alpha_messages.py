@@ -46,16 +46,25 @@ class IcebergCatalogReference(_messages.Message):
   Fields:
     catalog: Required. The fully-qualified BigLake catalog path. Format:
       projects/{project}/catalogs/{catalog}
+    description: Optional. The detailed description of the published share.
+    shortDescription: Required. The short, concise description of the
+      published share.
+    title: Required. The title of the published share.
   """
 
   catalog = _messages.StringField(1)
+  description = _messages.StringField(2)
+  shortDescription = _messages.StringField(3)
+  title = _messages.StringField(4)
 
 
 class PublishDataProductRequest(_messages.Message):
   r"""Request message for PublishDataProduct.
 
   Fields:
-    dataProduct: Knowledge Catalog Data Product to publish.
+    dataProduct: Knowledge Catalog Data Product to publish. The published
+      share's title, short description, and description will be automatically
+      populated from the Knowledge Catalog Data Product metadata.
     icebergCatalog: The BigLake Iceberg REST Catalog whose tables will be
       published.
     sapFederatedIdentity: Optional. Deprecated. Use

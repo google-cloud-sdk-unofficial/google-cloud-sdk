@@ -44,6 +44,9 @@ class GapicWrapperClient(object):
     self.executions = gapic_util.MakeClient(
         run_v2.services.executions.client.ExecutionsClient,
         credentials, **kwargs)
+    self.instances = gapic_util.MakeClient(
+        run_v2.services.instances.client.InstancesClient,
+        credentials, **kwargs)
     self.jobs = gapic_util.MakeClient(
         run_v2.services.jobs.client.JobsClient,
         credentials, **kwargs)
@@ -52,6 +55,9 @@ class GapicWrapperClient(object):
         credentials, **kwargs)
     self.services = gapic_util.MakeClient(
         run_v2.services.services.client.ServicesClient,
+        credentials, **kwargs)
+    self.source = gapic_util.MakeClient(
+        run_v2.services.source_upload.client.SourceUploadClient,
         credentials, **kwargs)
     self.tasks = gapic_util.MakeClient(
         run_v2.services.tasks.client.TasksClient,
@@ -63,9 +69,11 @@ class GapicWrapperClient(object):
   def __enter__(self):
     self._exit_stack.enter_context(self.builds)
     self._exit_stack.enter_context(self.executions)
+    self._exit_stack.enter_context(self.instances)
     self._exit_stack.enter_context(self.jobs)
     self._exit_stack.enter_context(self.revisions)
     self._exit_stack.enter_context(self.services)
+    self._exit_stack.enter_context(self.source)
     self._exit_stack.enter_context(self.tasks)
     self._exit_stack.enter_context(self.worker)
     return self

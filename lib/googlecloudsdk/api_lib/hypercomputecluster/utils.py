@@ -26,9 +26,11 @@ from googlecloudsdk.core import resources
 API_NAME = 'hypercomputecluster'
 ALPHA_API_VERSION = 'v1alpha'
 BETA_API_VERSION = 'v1beta'
+GA_API_VERSION = 'v1'
 TRACK_TO_API_VERSION = {
     base.ReleaseTrack.ALPHA: ALPHA_API_VERSION,
     base.ReleaseTrack.BETA: BETA_API_VERSION,
+    base.ReleaseTrack.GA: GA_API_VERSION,
 }
 
 

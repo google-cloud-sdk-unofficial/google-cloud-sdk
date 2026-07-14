@@ -29,7 +29,7 @@
   arguments:
     params:
     - help_text: |-
-        Identifier. Unique name/ID of the realm
+        Identifier. The resource name of the Realm.
       is_positional: true
       is_primary_resource: true
       request_id_field: realmId
@@ -39,7 +39,7 @@
       api_field: realm.trafficType
       required: true
       help_text: |-
-        Traffic type of realm.
+        Traffic type of the Realm.
       choices:
       - arg_value: unset
         enum_value: UNSET
@@ -61,7 +61,7 @@
       api_field: realm.managementType
       required: true
       help_text: |-
-        Management type of realm.
+        Management type of the Realm.
       choices:
       - arg_value: cnr
         enum_value: CNR
@@ -73,7 +73,7 @@
           Managed by User.
     - arg_name: registry-book
       help_text: |-
-        URI of the registry book that claims the realm.
+        Name of the RegistryBook that claims the Realm.
       is_positional: false
       is_primary_resource: false
       resource_spec: !REF googlecloudsdk.command_lib.number_registry.v1alpha_resources:projects_locations_registry_books
@@ -85,7 +85,7 @@
       required: false
       repeated: true
       help_text: |-
-        Labels as key value pairs
+        User-defined labels.
       spec:
       - api_field: key
       - api_field: value
@@ -93,7 +93,7 @@
       api_field: realm.ipVersion
       required: false
       help_text: |-
-        IP version of the realm.
+        IP version of the Realm.
       choices:
       - arg_value: ipv4
         enum_value: IPV4

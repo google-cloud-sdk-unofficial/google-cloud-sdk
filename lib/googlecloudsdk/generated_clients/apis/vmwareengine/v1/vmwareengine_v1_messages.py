@@ -395,8 +395,6 @@ class Cluster(_messages.Message):
 
   Enums:
     StateValueValuesEnum: Output only. State of the resource.
-    VsanTypeValueValuesEnum: Optional. Immutable. The vSAN type of the
-      cluster.
 
   Messages:
     NodeTypeConfigsValue: Required. The map of cluster node types in this
@@ -431,7 +429,6 @@ class Cluster(_messages.Message):
       Required for clusters that belong to a STRETCHED private cloud.
     uid: Output only. System-generated unique identifier for the resource.
     updateTime: Output only. Last update time of this resource.
-    vsanType: Optional. Immutable. The vSAN type of the cluster.
   """
 
   class StateValueValuesEnum(_messages.Enum):
@@ -453,19 +450,6 @@ class Cluster(_messages.Message):
     UPDATING = 3
     DELETING = 4
     REPAIRING = 5
-
-  class VsanTypeValueValuesEnum(_messages.Enum):
-    r"""Optional. Immutable. The vSAN type of the cluster.
-
-    Values:
-      VSAN_TYPE_UNSPECIFIED: The default value. This value should never be
-        used.
-      VSAN_TYPE_OSA: Original Storage Architecture.
-      VSAN_TYPE_ESA: Express Storage Architecture.
-    """
-    VSAN_TYPE_UNSPECIFIED = 0
-    VSAN_TYPE_OSA = 1
-    VSAN_TYPE_ESA = 2
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class NodeTypeConfigsValue(_messages.Message):
@@ -506,7 +490,6 @@ class Cluster(_messages.Message):
   stretchedClusterConfig = _messages.MessageField('StretchedClusterConfig', 11)
   uid = _messages.StringField(12)
   updateTime = _messages.StringField(13)
-  vsanType = _messages.EnumField('VsanTypeValueValuesEnum', 14)
 
 
 class Constraints(_messages.Message):
@@ -1807,10 +1790,6 @@ class LoggingServer(_messages.Message):
 class ManagementCluster(_messages.Message):
   r"""Management cluster configuration.
 
-  Enums:
-    VsanTypeValueValuesEnum: Optional. Immutable. The vSAN type of the
-      cluster.
-
   Messages:
     NodeTypeConfigsValue: Required. The map of cluster node types in this
       cluster, where the key is canonical identifier of the node type
@@ -1837,21 +1816,7 @@ class ManagementCluster(_messages.Message):
       (`NodeType`) in this cluster. For example: standard-72.
     stretchedClusterConfig: Optional. Configuration of a stretched cluster.
       Required for STRETCHED private clouds.
-    vsanType: Optional. Immutable. The vSAN type of the cluster.
   """
-
-  class VsanTypeValueValuesEnum(_messages.Enum):
-    r"""Optional. Immutable. The vSAN type of the cluster.
-
-    Values:
-      VSAN_TYPE_UNSPECIFIED: The default value. This value should never be
-        used.
-      VSAN_TYPE_OSA: Original Storage Architecture.
-      VSAN_TYPE_ESA: Express Storage Architecture.
-    """
-    VSAN_TYPE_UNSPECIFIED = 0
-    VSAN_TYPE_OSA = 1
-    VSAN_TYPE_ESA = 2
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class NodeTypeConfigsValue(_messages.Message):
@@ -1886,7 +1851,6 @@ class ManagementCluster(_messages.Message):
   nodeTypeConfigs = _messages.MessageField('NodeTypeConfigsValue', 5)
   nodeTypeId = _messages.StringField(6)
   stretchedClusterConfig = _messages.MessageField('StretchedClusterConfig', 7)
-  vsanType = _messages.EnumField('VsanTypeValueValuesEnum', 8)
 
 
 class ManagementDnsZoneBinding(_messages.Message):

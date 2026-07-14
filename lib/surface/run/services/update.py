@@ -55,8 +55,8 @@ Container Flags
   group.AddArgument(flags.MutexEnvVarsFlags(release_track=release_track))
   group.AddArgument(flags.MemoryFlag())
   group.AddArgument(flags.CpuFlag())
+  group.AddArgument(flags.WorkdirFlag())
   if release_track != base.ReleaseTrack.GA:
-    group.AddArgument(flags.WorkdirFlag())
     group.AddArgument(flags.SandboxLauncherFlag())
   group.AddArgument(flags.CommandFlag())
   group.AddArgument(flags.ArgsFlag())
@@ -138,6 +138,8 @@ class Update(base.Command):
         required=True,
         prefixes=False,
     )
+    if cls.ReleaseTrack() != base.ReleaseTrack.GA:
+      flags.AddDryRunFlag(parser)
     flags.AddConcurrencyFlag(parser)
     flags.AddTimeoutFlag(parser)
     flags.AddAsyncFlag(parser)
@@ -157,7 +159,7 @@ class Update(base.Command):
 
   @classmethod
   def Args(cls, parser):
-    Update.CommonArgs(parser)
+    cls.CommonArgs(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(
         parser, container_args, cls.ReleaseTrack()
@@ -258,7 +260,12 @@ class Update(base.Command):
           regions_list=multiregion_regions,
           include_iap=iap is not None,
       )
-      if creates_revision:
+      dry_run = getattr(args, 'dry_run', False)
+      if dry_run:
+        progress_message = 'Validating...'
+        failure_message = 'Validation failed'
+        result_message = 'validating'
+      elif creates_revision:
         progress_message = 'Deploying...'
         failure_message = 'Deployment failed'
         result_message = 'deploying'
@@ -268,11 +275,14 @@ class Update(base.Command):
         result_message = 'updating'
 
       def _ReleaseService(changes_):
+        kwargs = {}
+        if dry_run:
+          kwargs['dry_run'] = True
         with progress_tracker.StagedProgressTracker(
             progress_message,
             deployment_stages,
             failure_message=failure_message,
-            suppress_output=args.async_,
+            suppress_output=args.async_ or dry_run,
         ) as tracker:
           return client.ReleaseService(
               service_ref,
@@ -288,6 +298,7 @@ class Update(base.Command):
               is_verbose=properties.VALUES.core.verbosity.Get() == 'debug',
               iap_enabled=iap,
               multiregion_regions=multiregion_regions,
+              **kwargs
           )
 
       try:
@@ -302,6 +313,12 @@ class Update(base.Command):
           service = _ReleaseService(changes)
         else:
           raise e
+
+      if getattr(args, 'dry_run', False):
+        pretty_print.Success(
+            'Service [{}] has been validated.'.format(service.name)
+        )
+        return service
 
       if args.async_:
         if service:
@@ -320,8 +337,7 @@ class Update(base.Command):
                 args, 'allow_unauthenticated', True
             )
             if (
-                self.ReleaseTrack() != base.ReleaseTrack.GA
-                and 'allow_unauthenticated' not in args
+                'allow_unauthenticated' not in args
                 and conn_context.supports_one_platform
                 and platforms.GetPlatform() == platforms.PLATFORM_MANAGED
                 and not self._IsMultiRegion()
@@ -336,10 +352,7 @@ class Update(base.Command):
                 messages_util.GetSuccessMessageForSynchronousDeploy(
                     service,
                     args.no_traffic,
-                    show_proxy_message=(
-                        self.ReleaseTrack() != base.ReleaseTrack.GA
-                        and requires_authentication
-                    ),
+                    show_proxy_message=requires_authentication,
                     project=project,
                     region=region,
                 )

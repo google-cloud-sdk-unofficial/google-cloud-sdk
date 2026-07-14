@@ -44,6 +44,7 @@ class DataplexV1(base_api.BaseApiClient):
     self.projects_locations_aspectTypes = self.ProjectsLocationsAspectTypesService(self)
     self.projects_locations_changeRequests = self.ProjectsLocationsChangeRequestsService(self)
     self.projects_locations_dataAttributeBindings = self.ProjectsLocationsDataAttributeBindingsService(self)
+    self.projects_locations_dataDomains_bindings = self.ProjectsLocationsDataDomainsBindingsService(self)
     self.projects_locations_dataDomains = self.ProjectsLocationsDataDomainsService(self)
     self.projects_locations_dataProducts_dataAssets = self.ProjectsLocationsDataProductsDataAssetsService(self)
     self.projects_locations_dataProducts = self.ProjectsLocationsDataProductsService(self)
@@ -1145,6 +1146,124 @@ class DataplexV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsDataDomainsBindingsService(base_api.BaseApiService):
+    """Service class for the projects_locations_dataDomains_bindings resource."""
+
+    _NAME = 'projects_locations_dataDomains_bindings'
+
+    def __init__(self, client):
+      super(DataplexV1.ProjectsLocationsDataDomainsBindingsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a DataDomainBinding resource.
+
+      Args:
+        request: (DataplexProjectsLocationsDataDomainsBindingsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/dataDomains/{dataDomainsId}/bindings',
+        http_method='POST',
+        method_id='dataplex.projects.locations.dataDomains.bindings.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['dataDomainBindingId', 'validateOnly'],
+        relative_path='v1/{+parent}/bindings',
+        request_field='googleCloudDataplexV1DataDomainBinding',
+        request_type_name='DataplexProjectsLocationsDataDomainsBindingsCreateRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a DataDomainBinding resource.
+
+      Args:
+        request: (DataplexProjectsLocationsDataDomainsBindingsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/dataDomains/{dataDomainsId}/bindings/{bindingsId}',
+        http_method='DELETE',
+        method_id='dataplex.projects.locations.dataDomains.bindings.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='DataplexProjectsLocationsDataDomainsBindingsDeleteRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Retrieves a DataDomainBinding resource.
+
+      Args:
+        request: (DataplexProjectsLocationsDataDomainsBindingsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudDataplexV1DataDomainBinding) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/dataDomains/{dataDomainsId}/bindings/{bindingsId}',
+        http_method='GET',
+        method_id='dataplex.projects.locations.dataDomains.bindings.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='DataplexProjectsLocationsDataDomainsBindingsGetRequest',
+        response_type_name='GoogleCloudDataplexV1DataDomainBinding',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists DataDomainBinding resources under a DataDomain.
+
+      Args:
+        request: (DataplexProjectsLocationsDataDomainsBindingsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudDataplexV1ListDataDomainBindingsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/dataDomains/{dataDomainsId}/bindings',
+        http_method='GET',
+        method_id='dataplex.projects.locations.dataDomains.bindings.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/bindings',
+        request_field='',
+        request_type_name='DataplexProjectsLocationsDataDomainsBindingsListRequest',
+        response_type_name='GoogleCloudDataplexV1ListDataDomainBindingsResponse',
+        supports_download=False,
+    )
+
   class ProjectsLocationsDataDomainsService(base_api.BaseApiService):
     """Service class for the projects_locations_dataDomains resource."""
 
@@ -1154,6 +1273,87 @@ class DataplexV1(base_api.BaseApiClient):
       super(DataplexV1.ProjectsLocationsDataDomainsService, self).__init__(client)
       self._upload_configs = {
           }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a DataDomain resource.
+
+      Args:
+        request: (DataplexProjectsLocationsDataDomainsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/dataDomains',
+        http_method='POST',
+        method_id='dataplex.projects.locations.dataDomains.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['dataDomainId', 'validateOnly'],
+        relative_path='v1/{+parent}/dataDomains',
+        request_field='googleCloudDataplexV1DataDomain',
+        request_type_name='DataplexProjectsLocationsDataDomainsCreateRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a DataDomain resource (allowed only when there are no bindings).
+
+      Args:
+        request: (DataplexProjectsLocationsDataDomainsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/dataDomains/{dataDomainsId}',
+        http_method='DELETE',
+        method_id='dataplex.projects.locations.dataDomains.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='DataplexProjectsLocationsDataDomainsDeleteRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Retrieves a DataDomain resource.
+
+      Args:
+        request: (DataplexProjectsLocationsDataDomainsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudDataplexV1DataDomain) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/dataDomains/{dataDomainsId}',
+        http_method='GET',
+        method_id='dataplex.projects.locations.dataDomains.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='DataplexProjectsLocationsDataDomainsGetRequest',
+        response_type_name='GoogleCloudDataplexV1DataDomain',
+        supports_download=False,
+    )
 
     def GetIamPolicy(self, request, global_params=None):
       r"""Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.
@@ -1179,6 +1379,60 @@ class DataplexV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='DataplexProjectsLocationsDataDomainsGetIamPolicyRequest',
         response_type_name='GoogleIamV1Policy',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists DataDomain resources in a project and location.
+
+      Args:
+        request: (DataplexProjectsLocationsDataDomainsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudDataplexV1ListDataDomainsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/dataDomains',
+        http_method='GET',
+        method_id='dataplex.projects.locations.dataDomains.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/dataDomains',
+        request_field='',
+        request_type_name='DataplexProjectsLocationsDataDomainsListRequest',
+        response_type_name='GoogleCloudDataplexV1ListDataDomainsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates a DataDomain resource.
+
+      Args:
+        request: (DataplexProjectsLocationsDataDomainsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/dataDomains/{dataDomainsId}',
+        http_method='PATCH',
+        method_id='dataplex.projects.locations.dataDomains.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask', 'validateOnly'],
+        relative_path='v1/{+name}',
+        request_field='googleCloudDataplexV1DataDomain',
+        request_type_name='DataplexProjectsLocationsDataDomainsPatchRequest',
+        response_type_name='GoogleLongrunningOperation',
         supports_download=False,
     )
 

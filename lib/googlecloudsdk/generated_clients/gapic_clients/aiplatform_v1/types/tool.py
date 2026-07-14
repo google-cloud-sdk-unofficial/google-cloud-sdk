@@ -33,6 +33,7 @@ __protobuf__ = proto.module(
         'UrlContext',
         'FunctionDeclaration',
         'FunctionCall',
+        'PartialArg',
         'FunctionResponsePart',
         'FunctionResponseBlob',
         'FunctionResponseFileData',
@@ -97,6 +98,17 @@ class Tool(proto.Message):
             Optional. Tool to support searching public
             web data, powered by Vertex AI Search and Sec4
             compliance.
+        parallel_ai_search (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Tool.ParallelAiSearch):
+            Optional. If specified, Vertex AI will use
+            Parallel.ai to search for information to answer
+            user queries. The search results will be
+            grounded on Parallel.ai and presented to the
+            model for response generation
+        exa_ai_search (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Tool.ExaAiSearch):
+            Optional. Uses Exa.ai to search for
+            information to answer user queries. The search
+            results will be grounded on Exa.ai and presented
+            to the model for response generation
         code_execution (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Tool.CodeExecution):
             Optional. CodeExecution tool type.
             Enables the model to execute code as part of
@@ -164,7 +176,44 @@ class Tool(proto.Message):
                 search results.
 
                 This field is a member of `oneof`_ ``_blocking_confidence``.
+            search_types (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Tool.GoogleSearch.SearchTypes):
+                Optional. The set of search types to enable.
+                If not set, web search is enabled by default.
         """
+
+        class WebSearch(proto.Message):
+            r"""Standard web search for grounding and related configurations.
+            Only text results are returned.
+
+            """
+
+        class ImageSearch(proto.Message):
+            r"""Image search for grounding and related configurations.
+            """
+
+        class SearchTypes(proto.Message):
+            r"""Different types of search that can be enabled on the
+            GoogleSearch tool.
+
+            Attributes:
+                web_search (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Tool.GoogleSearch.WebSearch):
+                    Optional. Setting this field enables web
+                    search. Only text results are returned.
+                image_search (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Tool.GoogleSearch.ImageSearch):
+                    Optional. Setting this field enables image
+                    search. Image bytes are returned.
+            """
+
+            web_search: 'Tool.GoogleSearch.WebSearch' = proto.Field(
+                proto.MESSAGE,
+                number=1,
+                message='Tool.GoogleSearch.WebSearch',
+            )
+            image_search: 'Tool.GoogleSearch.ImageSearch' = proto.Field(
+                proto.MESSAGE,
+                number=2,
+                message='Tool.GoogleSearch.ImageSearch',
+            )
 
         exclude_domains: MutableSequence[str] = proto.RepeatedField(
             proto.STRING,
@@ -176,13 +225,92 @@ class Tool(proto.Message):
             optional=True,
             enum='Tool.PhishBlockThreshold',
         )
+        search_types: 'Tool.GoogleSearch.SearchTypes' = proto.Field(
+            proto.MESSAGE,
+            number=6,
+            message='Tool.GoogleSearch.SearchTypes',
+        )
+
+    class ParallelAiSearch(proto.Message):
+        r"""ParallelAiSearch tool type.
+        A tool that uses the Parallel.ai search engine for grounding.
+
+        Attributes:
+            api_key (str):
+                Optional. The API key for ParallelAiSearch.
+                If an API key is not provided, the system will
+                attempt to verify access by checking for an
+                active Parallel.ai subscription through the
+                Google Cloud Marketplace.
+                See
+                https://docs.parallel.ai/search/search-quickstart
+                for more details.
+            enable_data_retention (bool):
+                Optional. Instructs Vertex Grounding to use
+                Parallel's Zero Data Retention Marketplace
+                product. If this value is "false" or omitted,
+                the Parallel Web Search for Grounding standard
+                subscription will be used. If this value is
+                "true", the Parallel Web Search for Grounding -
+                ZDR subscription will be used.
+            custom_configs (google.protobuf.struct_pb2.Struct):
+                Optional. Custom configs for ParallelAiSearch. This field
+                can be used to pass any parameter from the Parallel.ai
+                Search API. See the Parallel.ai documentation for the full
+                list of available parameters and their usage:
+                https://docs.parallel.ai/api-reference/search-beta/search
+                Currently only ``source_policy``, ``excerpts``,
+                ``max_results``, ``mode``, ``fetch_policy`` can be set via
+                this field. For example: { "source_policy": {
+                "include_domains": ["google.com", "wikipedia.org"],
+                "exclude_domains": ["example.com"] }, "fetch_policy": {
+                "max_age_seconds": 3600 } }
+        """
+
+        api_key: str = proto.Field(
+            proto.STRING,
+            number=1,
+        )
+        enable_data_retention: bool = proto.Field(
+            proto.BOOL,
+            number=2,
+        )
+        custom_configs: struct_pb2.Struct = proto.Field(
+            proto.MESSAGE,
+            number=3,
+            message=struct_pb2.Struct,
+        )
+
+    class ExaAiSearch(proto.Message):
+        r"""ExaAiSearch tool type.
+        A tool that uses the Exa.ai search engine for grounding.
+
+        Attributes:
+            api_key (str):
+                Required. The API key for ExaAiSearch.
+            custom_configs (google.protobuf.struct_pb2.Struct):
+                Optional. This field can be used to pass any
+                parameter from the Exa.ai Search API.
+        """
+
+        api_key: str = proto.Field(
+            proto.STRING,
+            number=1,
+        )
+        custom_configs: struct_pb2.Struct = proto.Field(
+            proto.MESSAGE,
+            number=2,
+            message=struct_pb2.Struct,
+        )
 
     class CodeExecution(proto.Message):
         r"""Tool that executes code generated by the model, and automatically
         returns the result to the model.
 
-        See also [ExecutableCode]and [CodeExecutionResult] which are input
-        and output to this tool.
+        See also [ExecutableCode][google.cloud.aiplatform.v1.ExecutableCode]
+        and
+        [CodeExecutionResult][google.cloud.aiplatform.v1.CodeExecutionResult],
+        which are input and output to this tool.
 
         """
 
@@ -202,6 +330,9 @@ class Tool(proto.Message):
                 1. Using a more restricted / different action space.
                 2. Improving the definitions / instructions of predefined
                    functions.
+            enable_prompt_injection_detection (bool):
+                Optional. Enables the prompt injection
+                detection check on computer-use request.
         """
         class Environment(proto.Enum):
             r"""Represents the environment being operated, such as a web
@@ -212,9 +343,15 @@ class Tool(proto.Message):
                     Defaults to browser.
                 ENVIRONMENT_BROWSER (1):
                     Operates in a web browser.
+                ENVIRONMENT_MOBILE (2):
+                    Operates in a mobile environment.
+                ENVIRONMENT_DESKTOP (3):
+                    Operates in a desktop environment.
             """
             ENVIRONMENT_UNSPECIFIED = 0
             ENVIRONMENT_BROWSER = 1
+            ENVIRONMENT_MOBILE = 2
+            ENVIRONMENT_DESKTOP = 3
 
         environment: 'Tool.ComputerUse.Environment' = proto.Field(
             proto.ENUM,
@@ -224,6 +361,10 @@ class Tool(proto.Message):
         excluded_predefined_functions: MutableSequence[str] = proto.RepeatedField(
             proto.STRING,
             number=2,
+        )
+        enable_prompt_injection_detection: bool = proto.Field(
+            proto.BOOL,
+            number=3,
         )
 
     function_declarations: MutableSequence['FunctionDeclaration'] = proto.RepeatedField(
@@ -256,6 +397,16 @@ class Tool(proto.Message):
         number=6,
         message='EnterpriseWebSearch',
     )
+    parallel_ai_search: ParallelAiSearch = proto.Field(
+        proto.MESSAGE,
+        number=13,
+        message=ParallelAiSearch,
+    )
+    exa_ai_search: ExaAiSearch = proto.Field(
+        proto.MESSAGE,
+        number=15,
+        message=ExaAiSearch,
+    )
     code_execution: CodeExecution = proto.Field(
         proto.MESSAGE,
         number=4,
@@ -287,12 +438,16 @@ class FunctionDeclaration(proto.Message):
     block of code that can be used as a ``Tool`` by the model and
     executed by the client.
 
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
     Attributes:
         name (str):
             Required. The name of the function to call.
             Must start with a letter or an underscore.
             Must be a-z, A-Z, 0-9, or contain underscores,
-            dots and dashes, with a maximum length of 64.
+            dots, colons and dashes, with a maximum length
+            of 128.
         description (str):
             Optional. Description and purpose of the
             function. Model uses it to decide how and
@@ -351,7 +506,35 @@ class FunctionDeclaration(proto.Message):
             response value of the function.
 
             This field is mutually exclusive with ``response``.
+        behavior (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.FunctionDeclaration.Behavior):
+            Optional. Specifies the function Behavior.
+            If not specified, the system keeps the current
+            function call behavior. This field is currently
+            only supported by the BidiGenerateContent
+            method.
+
+            This field is a member of `oneof`_ ``_behavior``.
     """
+    class Behavior(proto.Enum):
+        r"""Defines the function behavior.
+
+        Values:
+            UNSPECIFIED (0):
+                This value is unspecified.
+            BLOCKING (1):
+                If set, the system will wait to receive the
+                function response before continuing the
+                conversation.
+            NON_BLOCKING (2):
+                If set, the system will not wait to receive
+                the function response. Instead, it will attempt
+                to handle function responses as they become
+                available while maintaining the conversation
+                between the user and the model.
+        """
+        UNSPECIFIED = 0
+        BLOCKING = 1
+        NON_BLOCKING = 2
 
     name: str = proto.Field(
         proto.STRING,
@@ -381,21 +564,41 @@ class FunctionDeclaration(proto.Message):
         number=6,
         message=struct_pb2.Value,
     )
+    behavior: Behavior = proto.Field(
+        proto.ENUM,
+        number=8,
+        optional=True,
+        enum=Behavior,
+    )
 
 
 class FunctionCall(proto.Message):
-    r"""A predicted [FunctionCall] returned from the model that contains a
-    string representing the [FunctionDeclaration.name] and a structured
-    JSON object containing the parameters and their values.
+    r"""A predicted
+    [FunctionCall][google.cloud.aiplatform.v1.Part.function_call]
+    returned from the model that contains a string representing the
+    [FunctionDeclaration.name][google.cloud.aiplatform.v1.FunctionDeclaration.name]
+    and a structured JSON object containing the parameters and their
+    values.
 
     Attributes:
         name (str):
             Optional. The name of the function to call. Matches
-            [FunctionDeclaration.name].
+            [FunctionDeclaration.name][google.cloud.aiplatform.v1.FunctionDeclaration.name].
         args (google.protobuf.struct_pb2.Struct):
             Optional. The function parameters and values in JSON object
-            format. See [FunctionDeclaration.parameters] for parameter
-            details.
+            format. See
+            [FunctionDeclaration.parameters][google.cloud.aiplatform.v1.FunctionDeclaration.parameters]
+            for parameter details.
+        partial_args (MutableSequence[googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.PartialArg]):
+            Optional. The partial argument value of the
+            function call. If provided, represents the
+            arguments/fields that are streamed
+            incrementally.
+        will_continue (bool):
+            Optional. Whether this is the last part of
+            the FunctionCall. If true, another partial
+            message for the current FunctionCall is expected
+            to follow.
     """
 
     name: str = proto.Field(
@@ -406,6 +609,83 @@ class FunctionCall(proto.Message):
         proto.MESSAGE,
         number=2,
         message=struct_pb2.Struct,
+    )
+    partial_args: MutableSequence['PartialArg'] = proto.RepeatedField(
+        proto.MESSAGE,
+        number=4,
+        message='PartialArg',
+    )
+    will_continue: bool = proto.Field(
+        proto.BOOL,
+        number=5,
+    )
+
+
+class PartialArg(proto.Message):
+    r"""Partial argument value of the function call.
+
+    This message has `oneof`_ fields (mutually exclusive fields).
+    For each oneof, at most one member field can be set at the same time.
+    Setting any member of the oneof automatically clears all other
+    members.
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
+    Attributes:
+        null_value (google.protobuf.struct_pb2.NullValue):
+            Optional. Represents a null value.
+
+            This field is a member of `oneof`_ ``delta``.
+        number_value (float):
+            Optional. Represents a double value.
+
+            This field is a member of `oneof`_ ``delta``.
+        string_value (str):
+            Optional. Represents a string value.
+
+            This field is a member of `oneof`_ ``delta``.
+        bool_value (bool):
+            Optional. Represents a boolean value.
+
+            This field is a member of `oneof`_ ``delta``.
+        json_path (str):
+            Required. A JSON Path (RFC 9535) to the argument being
+            streamed. https://datatracker.ietf.org/doc/html/rfc9535.
+            e.g. "$.foo.bar[0].data".
+        will_continue (bool):
+            Optional. Whether this is not the last part of the same
+            json_path. If true, another PartialArg message for the
+            current json_path is expected to follow.
+    """
+
+    null_value: struct_pb2.NullValue = proto.Field(
+        proto.ENUM,
+        number=2,
+        oneof='delta',
+        enum=struct_pb2.NullValue,
+    )
+    number_value: float = proto.Field(
+        proto.DOUBLE,
+        number=3,
+        oneof='delta',
+    )
+    string_value: str = proto.Field(
+        proto.STRING,
+        number=4,
+        oneof='delta',
+    )
+    bool_value: bool = proto.Field(
+        proto.BOOL,
+        number=5,
+        oneof='delta',
+    )
+    json_path: str = proto.Field(
+        proto.STRING,
+        number=1,
+    )
+    will_continue: bool = proto.Field(
+        proto.BOOL,
+        number=6,
     )
 
 
@@ -527,16 +807,23 @@ class FunctionResponseFileData(proto.Message):
 
 
 class FunctionResponse(proto.Message):
-    r"""The result output from a [FunctionCall] that contains a string
-    representing the [FunctionDeclaration.name] and a structured JSON
-    object containing any output from the function is used as context to
-    the model. This should contain the result of a [FunctionCall] made
-    based on model prediction.
+    r"""The result output from a
+    [FunctionCall][google.cloud.aiplatform.v1.Part.function_call] that
+    contains a string representing the
+    [FunctionDeclaration.name][google.cloud.aiplatform.v1.FunctionDeclaration.name]
+    and a structured JSON object containing any output from the function
+    is used as context to the model. This should contain the result of a
+    ``FunctionCall`` made based on model prediction.
+
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
 
     Attributes:
         name (str):
             Required. The name of the function to call. Matches
-            [FunctionDeclaration.name] and [FunctionCall.name].
+            [FunctionDeclaration.name][google.cloud.aiplatform.v1.FunctionDeclaration.name]
+            and
+            [FunctionCall.name][google.cloud.aiplatform.v1.FunctionCall.name].
         response (google.protobuf.struct_pb2.Struct):
             Required. The function response in JSON
             object format. Use "output" key to specify
@@ -547,7 +834,36 @@ class FunctionResponse(proto.Message):
         parts (MutableSequence[googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.FunctionResponsePart]):
             Optional. Ordered ``Parts`` that constitute a function
             response. Parts may have different IANA MIME types.
+        scheduling (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.FunctionResponse.Scheduling):
+            Optional. Specifies how the response should be scheduled in
+            the conversation. Only applicable to NON_BLOCKING function
+            calls, is ignored otherwise. Defaults to WHEN_IDLE.
+
+            This field is a member of `oneof`_ ``_scheduling``.
     """
+    class Scheduling(proto.Enum):
+        r"""Specifies how the response should be scheduled in the
+        conversation.
+
+        Values:
+            SCHEDULING_UNSPECIFIED (0):
+                This value is unused.
+            SILENT (1):
+                Only add the result to the conversation
+                context, do not interrupt or trigger generation.
+            WHEN_IDLE (2):
+                Add the result to the conversation context,
+                and prompt to generate output without
+                interrupting ongoing generation.
+            INTERRUPT (3):
+                Add the result to the conversation context,
+                interrupt ongoing generation and prompt to
+                generate output.
+        """
+        SCHEDULING_UNSPECIFIED = 0
+        SILENT = 1
+        WHEN_IDLE = 2
+        INTERRUPT = 3
 
     name: str = proto.Field(
         proto.STRING,
@@ -563,15 +879,22 @@ class FunctionResponse(proto.Message):
         number=4,
         message='FunctionResponsePart',
     )
+    scheduling: Scheduling = proto.Field(
+        proto.ENUM,
+        number=5,
+        optional=True,
+        enum=Scheduling,
+    )
 
 
 class ExecutableCode(proto.Message):
     r"""Code generated by the model that is meant to be executed, and the
     result returned to the model.
 
-    Generated when using the [CodeExecution] tool, in which the code
+    Generated when using the ``CodeExecution`` tool, in which the code
     will be automatically executed, and a corresponding
-    [CodeExecutionResult] will also be generated.
+    [CodeExecutionResult][google.cloud.aiplatform.v1.CodeExecutionResult]
+    will also be generated.
 
     Attributes:
         language (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.ExecutableCode.Language):
@@ -605,10 +928,10 @@ class ExecutableCode(proto.Message):
 
 
 class CodeExecutionResult(proto.Message):
-    r"""Result of executing the [ExecutableCode].
+    r"""Result of executing the
+    [ExecutableCode][google.cloud.aiplatform.v1.ExecutableCode].
 
-    Only generated when using the [CodeExecution] tool, and always
-    follows a ``part`` containing the [ExecutableCode].
+    Generated only when the ``CodeExecution`` tool is used.
 
     Attributes:
         outcome (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.CodeExecutionResult.Outcome):
@@ -626,14 +949,14 @@ class CodeExecutionResult(proto.Message):
                 Unspecified status. This value should not be
                 used.
             OUTCOME_OK (1):
-                Code execution completed successfully.
+                Code execution completed successfully. ``output`` contains
+                the stdout, if any.
             OUTCOME_FAILED (2):
-                Code execution finished but with a failure. ``stderr``
-                should contain the reason.
+                Code execution failed. ``output`` contains the stderr and
+                stdout, if any.
             OUTCOME_DEADLINE_EXCEEDED (3):
-                Code execution ran for too long, and was
-                cancelled. There may or may not be a partial
-                output present.
+                Code execution ran for too long, and was cancelled. There
+                may or may not be a partial ``output`` present.
         """
         OUTCOME_UNSPECIFIED = 0
         OUTCOME_OK = 1
@@ -996,8 +1319,14 @@ class GoogleMaps(proto.Message):
 
     Attributes:
         enable_widget (bool):
-            Optional. If true, include the widget context
-            token in the response.
+            Optional. Deprecated: The Google Maps
+            contextual widget behavior in Grounding with
+            Google Maps is being deprecated; this field is
+            planned for removal and no longer has any effect
+            once removed.
+
+            If true, include the widget context token in the
+            response.
     """
 
     enable_widget: bool = proto.Field(
@@ -1110,9 +1439,15 @@ class FunctionCallingConfig(proto.Message):
             Optional. Function calling mode.
         allowed_function_names (MutableSequence[str]):
             Optional. Function names to call. Only set when the Mode is
-            ANY. Function names should match [FunctionDeclaration.name].
+            ANY. Function names should match
+            [FunctionDeclaration.name][google.cloud.aiplatform.v1.FunctionDeclaration.name].
             With mode set to ANY, model will predict a function call
             from the set of function names provided.
+        stream_function_call_arguments (bool):
+            Optional. When set to true, arguments of a single function
+            call will be streamed out in multiple
+            parts/contents/responses. Partial parameter results will be
+            returned in the ``FunctionCall.partial_args`` field.
     """
     class Mode(proto.Enum):
         r"""Function calling mode.
@@ -1135,11 +1470,19 @@ class FunctionCallingConfig(proto.Message):
                 Model will not predict any function calls.
                 Model behavior is same as when not passing any
                 function declarations.
+            VALIDATED (5):
+                Model is constrained to predict either function calls or
+                natural language response. If "allowed_function_names" are
+                set, the predicted function calls will be limited to any one
+                of "allowed_function_names", else the predicted function
+                calls will be any one of the provided
+                "function_declarations".
         """
         MODE_UNSPECIFIED = 0
         AUTO = 1
         ANY = 2
         NONE = 3
+        VALIDATED = 5
 
     mode: Mode = proto.Field(
         proto.ENUM,
@@ -1149,6 +1492,10 @@ class FunctionCallingConfig(proto.Message):
     allowed_function_names: MutableSequence[str] = proto.RepeatedField(
         proto.STRING,
         number=2,
+    )
+    stream_function_call_arguments: bool = proto.Field(
+        proto.BOOL,
+        number=4,
     )
 
 

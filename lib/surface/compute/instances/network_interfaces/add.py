@@ -63,7 +63,10 @@ class Add(base.UpdateCommand):
       )
     network_interfaces_flags.AddStackTypeArg(parser)
     network_interfaces_flags.AddNetworkTierArg(parser)
-    network_interfaces_flags.AddIpv6NetworkTierArg(parser)
+    network_interfaces_flags.AddIpv6NetworkTierArg(
+        parser,
+        support_standard_tier=(cls.ReleaseTrack() == base.ReleaseTrack.ALPHA),
+    )
     network_interfaces_flags.AddAddressArgs(parser)
     network_interfaces_flags.AddExternalIpv6AddressArg(parser)
     network_interfaces_flags.AddExternalIpv6PrefixLengthArg(parser)

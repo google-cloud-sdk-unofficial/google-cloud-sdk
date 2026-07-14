@@ -15,6 +15,7 @@
 """Command for creating or replacing instances from YAML."""
 
 import argparse
+import os
 
 from googlecloudsdk.api_lib.run import global_methods
 from googlecloudsdk.api_lib.run import instance
@@ -66,10 +67,12 @@ class AlphaReplace(base.Command):
     parser.add_argument(
         'FILE',
         action='store',
+        nargs='?',
         type=arg_parsers.YAMLFileContents(),
         help=(
             'The absolute path to the YAML file with a Cloud Run '
-            'instance definition for the instance to update or create.'
+            'instance definition for the instance to update or create. '
+            'Defaults to `instance.yaml` if not specified.'
         ),
     )
     # No output by default, can be overridden by --format
@@ -77,6 +80,19 @@ class AlphaReplace(base.Command):
 
   def Run(self, args: argparse.Namespace) -> instance.Instance:
     """Create or Update instance from YAML."""
+    if args.FILE is None:
+      if not os.path.exists('instance.yaml'):
+        raise exceptions.ConfigurationError(
+            'No YAML instance definition file specified and default'
+            ' [instance.yaml] does not exist.'
+        )
+      try:
+        args.FILE = arg_parsers.YAMLFileContents()('instance.yaml')
+      except arg_parsers.ArgumentTypeError as e:
+        raise exceptions.ConfigurationError(
+            'Failed to parse default [instance.yaml]: {}'.format(e)
+        )
+
     run_messages = apis.GetMessagesModule(
         global_methods.SERVERLESS_API_NAME,
         global_methods.SERVERLESS_API_VERSION,

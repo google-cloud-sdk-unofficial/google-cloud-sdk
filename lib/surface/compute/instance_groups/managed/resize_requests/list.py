@@ -55,8 +55,9 @@ class List(base.ListCommand):
   @classmethod
   def Args(cls, parser):
     rr_flags.AddOutputFormat(parser, base.ReleaseTrack.GA)
-    instance_groups_flags.MakeZonalInstanceGroupManagerArg().AddArgument(
-        parser)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser
+    )
 
   def Run(self, args):
     """Creates and issues an instanceGroupManagerResizeRequests.list request.
@@ -69,7 +70,7 @@ class List(base.ListCommand):
     """
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    resource_arg = instance_groups_flags.MakeZonalInstanceGroupManagerArg()
+    resource_arg = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
     igm_ref = self._GetIgmRef(args, holder, resource_arg)
     return self._Run(holder.client, igm_ref)
 
@@ -125,24 +126,8 @@ class ListBeta(List):
   def Args(cls, parser):
     rr_flags.AddOutputFormat(parser, base.ReleaseTrack.BETA)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
-        parser)
-
-  def Run(self, args):
-    """Creates and issues an instanceGroupManagerResizeRequests.list request."""
-
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    resource_arg = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
-    igm_ref = self._GetIgmRef(args, holder, resource_arg)
-    return self._Run(holder.client, igm_ref)
-
-  def _GetIgmRef(self, args, holder, resource_arg):
-    igm_ref = resource_arg.ResolveAsResource(
-        args,
-        holder.resources,
-        default_scope=compute_scope.ScopeEnum.ZONE,
-        scope_lister=flags.GetDefaultScopeLister(holder.client),
+        parser
     )
-    return igm_ref
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -155,4 +140,5 @@ class ListAlpha(ListBeta):
   def Args(cls, parser):
     rr_flags.AddOutputFormat(parser, base.ReleaseTrack.ALPHA)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
-        parser)
+        parser
+    )

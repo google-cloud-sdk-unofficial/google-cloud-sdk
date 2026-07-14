@@ -232,6 +232,8 @@ class StreamRawPredictRequest(proto.Message):
             Required. The name of the Endpoint requested to serve the
             prediction. Format:
             ``projects/{project}/locations/{location}/endpoints/{endpoint}``
+            or
+            ``projects/{project}/locations/{location}/publishers/{publisher}/models/{model}``
         http_body (google.api.httpbody_pb2.HttpBody):
             The prediction input. Supports HTTP headers
             and arbitrary data payload.
@@ -617,6 +619,17 @@ class PredictLongRunningRequest(proto.Message):
             ][google.cloud.aiplatform.v1.DeployedModel.model]
             [PredictSchemata's][google.cloud.aiplatform.v1.Model.predict_schemata]
             [parameters_schema_uri][google.cloud.aiplatform.v1.PredictSchemata.parameters_schema_uri].
+        labels (MutableMapping[str, str]):
+            Optional. The labels with user-defined
+            metadata for the request. It is used for billing
+            and reporting only.
+
+            Label keys and values can be no longer than 63
+            characters (Unicode codepoints) and can only
+            contain lowercase letters, numeric characters,
+            underscores, and dashes. International
+            characters are allowed. Label values are
+            optional. Label keys must start with a letter.
     """
 
     endpoint: str = proto.Field(
@@ -632,6 +645,11 @@ class PredictLongRunningRequest(proto.Message):
         proto.MESSAGE,
         number=3,
         message=struct_pb2.Value,
+    )
+    labels: MutableMapping[str, str] = proto.MapField(
+        proto.STRING,
+        proto.STRING,
+        number=4,
     )
 
 
@@ -1179,11 +1197,17 @@ class GenerateContentResponse(proto.Message):
                 ON_DEMAND (1):
                     The request was processed using Pay-As-You-Go
                     quota.
+                ON_DEMAND_PRIORITY (3):
+                    Type for Priority Pay-As-You-Go traffic.
+                ON_DEMAND_FLEX (4):
+                    Type for Flex traffic.
                 PROVISIONED_THROUGHPUT (2):
                     Type for Provisioned Throughput traffic.
             """
             TRAFFIC_TYPE_UNSPECIFIED = 0
             ON_DEMAND = 1
+            ON_DEMAND_PRIORITY = 3
+            ON_DEMAND_FLEX = 4
             PROVISIONED_THROUGHPUT = 2
 
         prompt_token_count: int = proto.Field(
@@ -1276,7 +1300,8 @@ class ChatCompletionsRequest(proto.Message):
             ``projects/{project}/locations/{location}/endpoints/{endpoint}``
         http_body (google.api.httpbody_pb2.HttpBody):
             Optional. The prediction input. Supports HTTP
-            headers and arbitrary data payload.
+            headers and a JSON body in the OpenAI-compatible
+            chat completions format.
     """
 
     endpoint: str = proto.Field(
@@ -1387,30 +1412,40 @@ class EmbedContentRequest(proto.Message):
 
             This field is a member of `oneof`_ ``_model``.
         content (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Content):
-            Required. Input content to be embedded.
-            Required.
+            Required. The content to be embedded.
 
             This field is a member of `oneof`_ ``_content``.
         title (str):
-            Optional. An optional title for the text.
+            Optional. Deprecated: Please use
+            EmbedContentConfig.title instead. The title for
+            the text.
 
             This field is a member of `oneof`_ ``_title``.
         task_type (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.EmbedContentRequest.EmbeddingTaskType):
-            Optional. The task type of the embedding.
+            Optional. Deprecated: Please use
+            EmbedContentConfig.task_type instead. The task type of the
+            embedding.
 
             This field is a member of `oneof`_ ``_task_type``.
         output_dimensionality (int):
-            Optional. Optional reduced dimension for the
-            output embedding. If set, excessive values in
-            the output embedding are truncated from the end.
+            Optional. Deprecated: Please use
+            EmbedContentConfig.output_dimensionality instead. Reduced
+            dimension for the output embedding. If set, excessive values
+            in the output embedding are truncated from the end.
 
             This field is a member of `oneof`_ ``_output_dimensionality``.
         auto_truncate (bool):
-            Optional. Whether to silently truncate the
-            input content if it's longer than the maximum
-            sequence length.
+            Optional. Deprecated: Please use
+            EmbedContentConfig.auto_truncate instead. Whether to
+            silently truncate the input content if it's longer than the
+            maximum sequence length.
 
             This field is a member of `oneof`_ ``_auto_truncate``.
+        embed_content_config (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.EmbedContentRequest.EmbedContentConfig):
+            Optional. Configuration for the EmbedContent
+            request.
+
+            This field is a member of `oneof`_ ``_embed_content_config``.
     """
     class EmbeddingTaskType(proto.Enum):
         r"""Represents a downstream task the embeddings will be used for.
@@ -1454,6 +1489,82 @@ class EmbedContentRequest(proto.Message):
         FACT_VERIFICATION = 8
         CODE_RETRIEVAL_QUERY = 9
 
+    class EmbedContentConfig(proto.Message):
+        r"""Configurations for the EmbedContent API.
+
+        .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
+        Attributes:
+            title (str):
+                Optional. The title for the text.
+
+                Only applicable to text-only embedding models.
+
+                This field is a member of `oneof`_ ``_title``.
+            task_type (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.EmbedContentRequest.EmbeddingTaskType):
+                Optional. The task type of the embedding.
+
+                Only applicable to text-only embedding models.
+
+                This field is a member of `oneof`_ ``_task_type``.
+            auto_truncate (bool):
+                Optional. Whether to silently truncate the
+                input content if it's longer than the maximum
+                sequence length.
+
+                Only applicable to text-only embedding models.
+
+                This field is a member of `oneof`_ ``_auto_truncate``.
+            output_dimensionality (int):
+                Optional. Reduced dimension for the output
+                embedding. If set, excessive values in the
+                output embedding are truncated from the end.
+
+                This field is a member of `oneof`_ ``_output_dimensionality``.
+            document_ocr (bool):
+                Optional. Whether to enable OCR for document
+                content.
+
+                This field is a member of `oneof`_ ``_document_ocr``.
+            audio_track_extraction (bool):
+                Optional. Whether to extract audio from video
+                content.
+
+                This field is a member of `oneof`_ ``_audio_track_extraction``.
+        """
+
+        title: str = proto.Field(
+            proto.STRING,
+            number=1,
+            optional=True,
+        )
+        task_type: 'EmbedContentRequest.EmbeddingTaskType' = proto.Field(
+            proto.ENUM,
+            number=2,
+            optional=True,
+            enum='EmbedContentRequest.EmbeddingTaskType',
+        )
+        auto_truncate: bool = proto.Field(
+            proto.BOOL,
+            number=3,
+            optional=True,
+        )
+        output_dimensionality: int = proto.Field(
+            proto.INT32,
+            number=4,
+            optional=True,
+        )
+        document_ocr: bool = proto.Field(
+            proto.BOOL,
+            number=5,
+            optional=True,
+        )
+        audio_track_extraction: bool = proto.Field(
+            proto.BOOL,
+            number=6,
+            optional=True,
+        )
+
     model: str = proto.Field(
         proto.STRING,
         number=1,
@@ -1486,6 +1597,12 @@ class EmbedContentRequest(proto.Message):
         number=7,
         optional=True,
     )
+    embed_content_config: EmbedContentConfig = proto.Field(
+        proto.MESSAGE,
+        number=8,
+        optional=True,
+        message=EmbedContentConfig,
+    )
 
 
 class EmbedContentResponse(proto.Message):
@@ -1497,7 +1614,7 @@ class EmbedContentResponse(proto.Message):
             The embedding generated from the input
             content.
         usage_metadata (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.UsageMetadata):
-            Metadata about the response(s).
+            Usage metadata about the response(s).
         truncated (bool):
             Whether the input content was truncated
             before generating the embedding.

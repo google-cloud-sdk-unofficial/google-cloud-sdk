@@ -362,3 +362,41 @@ def AddUpgradeArgToParser(
   )
 
   return concept_parsers.ConceptParser([presentation_spec]).AddToParser(parser)
+
+
+def AddNsxEdgeConfigFlagsToParser(parser):
+  """Adds NSX Edge Config flags to the parser."""
+  parser.add_argument(
+      '--nsx-edge-ha-mode',
+      required=False,
+      hidden=True,
+      choices={
+          'active-active': 'Active-active HA mode.',
+          'active-standby': 'Active-standby HA mode.',
+      },
+      help="""\
+      The HA mode of the NSX Edge cluster.
+      """,
+  )
+  parser.add_argument(
+      '--nsx-edge-size',
+      required=False,
+      hidden=True,
+      choices={
+          'large': 'Large edge VM size.',
+          'xlarge': 'Extra large edge VM size.',
+      },
+      help="""\
+      The size of the edge VMs in the NSX Edge cluster.
+      """,
+  )
+  parser.add_argument(
+      '--nsx-edge-count',
+      type=int,
+      required=False,
+      hidden=True,
+      help="""\
+      The number of edge VMs in the NSX Edge cluster.
+      """,
+  )
+

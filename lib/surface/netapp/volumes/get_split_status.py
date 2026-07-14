@@ -23,7 +23,6 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-@base.Hidden
 class GetSplitStatus(base.DescribeCommand):
   """Retrieves the split status of a Cloud NetApp clone volume."""
 

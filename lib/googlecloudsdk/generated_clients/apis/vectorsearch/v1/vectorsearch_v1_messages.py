@@ -649,11 +649,45 @@ class GoogleCloudVectorsearchV1ExportDataObjectsRequest(_messages.Message):
   r"""Request message for VectorSearchService.ExportDataObjects.
 
   Fields:
+    fieldFilter: Optional. Restricts which top-level Data Object fields appear
+      in each exported JSONL record. If unset, every field is exported (the
+      existing behavior). The primary use case is excluding the per-object
+      `etag` so that the exported records can be imported into a Collection in
+      a different region without optimistic-concurrency conflicts. Allowed
+      field names are `id`, `data`, `vectors`, `etag`.
     gcsDestination: The Cloud Storage location where user wants to export Data
       Objects.
   """
 
-  gcsDestination = _messages.MessageField('GoogleCloudVectorsearchV1ExportDataObjectsRequestGcsExportDestination', 1)
+  fieldFilter = _messages.MessageField('GoogleCloudVectorsearchV1ExportDataObjectsRequestFieldFilter', 1)
+  gcsDestination = _messages.MessageField('GoogleCloudVectorsearchV1ExportDataObjectsRequestGcsExportDestination', 2)
+
+
+class GoogleCloudVectorsearchV1ExportDataObjectsRequestFieldFilter(_messages.Message):
+  r"""Selects which top-level Data Object fields are emitted at export time.
+
+  Fields:
+    excludedFields: Optional. Every top-level field except these will appear
+      in each exported record.
+    includedFields: Optional. Only these top-level fields will appear in each
+      exported record.
+  """
+
+  excludedFields = _messages.MessageField('GoogleCloudVectorsearchV1ExportDataObjectsRequestFieldFilterFieldList', 1)
+  includedFields = _messages.MessageField('GoogleCloudVectorsearchV1ExportDataObjectsRequestFieldFilterFieldList', 2)
+
+
+class GoogleCloudVectorsearchV1ExportDataObjectsRequestFieldFilterFieldList(_messages.Message):
+  r"""Wrapper for a repeated string. Wrapping in a message lets the
+  surrounding `oneof` distinguish "field set to an empty list" (which is
+  rejected as INVALID_ARGUMENT) from "field not set".
+
+  Fields:
+    fields: Required. The list of top-level Data Object JSON field names.
+      Allowed values are `id`, `data`, `vectors`, `etag`.
+  """
+
+  fields = _messages.StringField(1, repeated=True)
 
 
 class GoogleCloudVectorsearchV1ExportDataObjectsRequestGcsExportDestination(_messages.Message):
@@ -1159,11 +1193,13 @@ class GoogleCloudVectorsearchV1TextSearch(_messages.Message):
       "sci-fi"}}`, represented as a `google.protobuf.Struct`.
 
   Fields:
-    dataFieldNames: Required. The data field names to search.
+    dataFieldNames: Optional. The data field names to search. Required when
+      using the default text search mode.
     filter: Optional. A JSON filter expression, e.g. `{"genre": {"$eq": "sci-
       fi"}}`, represented as a `google.protobuf.Struct`.
     outputFields: Optional. The fields to return in the search results.
-    searchText: Required. The query text.
+    searchText: Optional. The query text. Required when using the default text
+      search mode.
     topK: Optional. The number of results to return.
   """
 
@@ -1838,6 +1874,9 @@ class VectorsearchProjectsLocationsCollectionsDeleteRequest(_messages.Message):
   r"""A VectorsearchProjectsLocationsCollectionsDeleteRequest object.
 
   Fields:
+    force: Optional. If set to true, any Indexes and DataObjects from this
+      Collection will also be deleted. (Otherwise, the request will only work
+      if the Collection has no Indexes and DataObjects.)
     name: Required. Name of the resource
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
@@ -1852,8 +1891,9 @@ class VectorsearchProjectsLocationsCollectionsDeleteRequest(_messages.Message):
       not supported (00000000-0000-0000-0000-000000000000).
   """
 
-  name = _messages.StringField(1, required=True)
-  requestId = _messages.StringField(2)
+  force = _messages.BooleanField(1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
 
 
 class VectorsearchProjectsLocationsCollectionsExportDataObjectsRequest(_messages.Message):

@@ -15,6 +15,7 @@
 - release_tracks:
   - ALPHA
   - BETA
+  - GA
   help_text:
     brief: Gets details of a Cluster Director resource
     description: |
@@ -38,5 +39,7 @@
       api_version: v1alpha
     BETA:
       api_version: v1beta
+    GA:
+      api_version: v1
     collection:
     - hypercomputecluster.projects.locations.clusters

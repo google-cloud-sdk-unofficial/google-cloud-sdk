@@ -58,8 +58,8 @@ class AgentGateway(_messages.Message):
     protocols: Optional. Deprecated.
     registries: Optional. A list of Agent registries containing the agents,
       MCP servers and tools governed by the Agent Gateway. Note: Currently
-      limited to project-scoped registries Must be of format
-      `//agentregistry.googleapis.com/projects/{project}/locations/{location}/
+      limited to project-scoped registries Must be of format `//agentregistry.
+      googleapis.com/projects/{project}/locations/{location}/`
     selfManaged: Optional. Attach to existing Application Load Balancers or
       Secure Web Proxies.
     updateTime: Output only. The timestamp when the resource was updated.
@@ -194,24 +194,9 @@ class AgentGatewayNetworkConfigEgress(_messages.Message):
 
   Fields:
     networkAttachment: Optional. The URI of the Network Attachment resource.
-    trustConfig: Optional. TrustConfig defines the trust configuration for
-      egress.
   """
 
   networkAttachment = _messages.StringField(1)
-  trustConfig = _messages.MessageField('AgentGatewayNetworkConfigEgressTrustConfig', 2)
-
-
-class AgentGatewayNetworkConfigEgressTrustConfig(_messages.Message):
-  r"""TrustConfig defines the trust configuration for egress.
-
-  Fields:
-    pemCertificates: Required. PEM encoded root certificates used to validate
-      the identity of the upstream servers/destinations during egress
-      connections.
-  """
-
-  pemCertificates = _messages.StringField(1, repeated=True)
 
 
 class AgentGatewaySelfManaged(_messages.Message):
@@ -852,8 +837,8 @@ class CDNPolicyAddSignaturesOptions(_messages.Message):
       expression `[a-zA-Z]([a-zA-Z0-9_-])*` which means the first character
       must be a letter, and all following characters must be a dash,
       underscore, letter or digit. This field can only be set when the
-      `GENERATE_TOKEN_HLS_COOKIELESS` or `PROPAGATE_TOKEN_HLS_COOKIELESS`
-      actions are specified.
+      `GENERATE_TOKEN_HLS_COOKIELESS`, `PROPAGATE_TOKEN_HLS_COOKIELESS`, or
+      `PROPAGATE_TOKEN_DASH_COOKIELESS` actions are specified.
     tokenTtl: Optional. The duration the token is valid for starting from the
       moment the token is first generated. Defaults to `86400s` (1 day). The
       TTL must be >= 0 and <= 604,800 seconds (1 week). This field can only be
@@ -877,11 +862,15 @@ class CDNPolicyAddSignaturesOptions(_messages.Message):
         the request to the URLs in an HTTP Live Stream (HLS) playlist. This
         action cannot be combined with either the `GENERATE_COOKIE` action or
         the `GENERATE_TOKEN_HLS_COOKIELESS` action.
+      PROPAGATE_TOKEN_DASH_COOKIELESS: Copy the authentication token used in
+        the request to the URLs in a Dynamic Adaptive Streaming over HTTP
+        (DASH) manifest.
     """
     SIGNATURE_ACTION_UNSPECIFIED = 0
     GENERATE_COOKIE = 1
     GENERATE_TOKEN_HLS_COOKIELESS = 2
     PROPAGATE_TOKEN_HLS_COOKIELESS = 3
+    PROPAGATE_TOKEN_DASH_COOKIELESS = 4
 
   actions = _messages.EnumField('ActionsValueListEntryValuesEnum', 1, repeated=True)
   copiedParameters = _messages.StringField(2, repeated=True)

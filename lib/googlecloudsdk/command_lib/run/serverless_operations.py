@@ -51,6 +51,7 @@ from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.run import config_changes as config_changes_mod
+from googlecloudsdk.command_lib.run import domain_mapping_util
 from googlecloudsdk.command_lib.run import exceptions as serverless_exceptions
 from googlecloudsdk.command_lib.run import messages_util
 from googlecloudsdk.command_lib.run import name_generator
@@ -466,11 +467,12 @@ class ServerlessOperations(object):
     except api_exceptions.HttpNotFoundError:
       return None
 
-  def DeleteService(self, service_ref):
+  def DeleteService(self, service_ref, dry_run=False):
     """Delete the provided Service.
 
     Args:
       service_ref: Resource, a reference to the Service to delete
+      dry_run: bool, if True, only validate the request.
 
     Raises:
       ServiceNotFoundError: if provided service is not found.
@@ -479,6 +481,7 @@ class ServerlessOperations(object):
     service_name = service_ref.RelativeName()
     service_delete_request = messages.RunNamespacesServicesDeleteRequest(
         name=service_name,
+        dryRun='all' if dry_run else None,
     )
 
     try:
@@ -842,10 +845,11 @@ class ServerlessOperations(object):
 
     tracker.StartStage(stages.VALIDATE_SERVICE)
     tracker.UpdateHeaderMessage('Validating Service...')
-    self._UpdateOrCreateService(
+    result = self._UpdateOrCreateService(
         service_ref, validate_config_changes, True, svc, dry_run=True
     )
     tracker.CompleteStage(stages.VALIDATE_SERVICE)
+    return result
 
   def ReleaseService(
       self,
@@ -1013,9 +1017,11 @@ class ServerlessOperations(object):
     elif requires_build:
       new_conn = self._conn_context.GetContextWithRegionOverride(region)
       with new_conn:
-        self._ValidateServiceBeforeSourceDeploy(
+        validated_service = self._ValidateServiceBeforeSourceDeploy(
             tracker, service_ref, prefetch, config_changes, generate_name
         )
+        if dry_run:
+          return validated_service
         # TODO(b/355762514): Either remove or re-enable this validation.
         # self._ValidateService(service_ref, config_changes)
         (
@@ -1101,14 +1107,19 @@ class ServerlessOperations(object):
         service_ref, config_changes, with_image, serv, dry_run
     )
 
-    # Handle SetIamPolicy call(s).
-    self._HandleAllowUnauthenticated(
-        service_ref, allow_unauthenticated, multiregion_regions, tracker
-    )
+    if not dry_run:
+      # Handle SetIamPolicy call(s).
+      self._HandleAllowUnauthenticated(
+          service_ref, allow_unauthenticated, multiregion_regions, tracker
+      )
 
-    self._HandleIap(
-        service_ref, iap_enabled, updated_service, multiregion_regions, tracker
-    )
+      self._HandleIap(
+          service_ref,
+          iap_enabled,
+          updated_service,
+          multiregion_regions,
+          tracker,
+      )
 
     if not asyn and not dry_run:
       if updated_service.conditions.IsReady():
@@ -1749,7 +1760,7 @@ class ServerlessOperations(object):
       message = None
       if ready and ready.get('message'):
         message = ready['message']
-      if not mapping.records:
+      if not self._IsDomainMappingCreated(mapping):
         if (
             mapping.ready_condition['reason']
             == domain_mapping.MAPPING_ALREADY_EXISTS_CONDITION_REASON
@@ -1767,6 +1778,12 @@ class ServerlessOperations(object):
       return mapping
 
     return domain_mapping.DomainMapping(response, messages)
+
+  def _IsDomainMappingCreated(self, mapping):
+    if domain_mapping_util.IsCustomUrl(mapping.name):
+      return mapping.mapped_route_name
+    else:
+      return mapping.records
 
   def DeleteDomainMapping(self, domain_mapping_ref):
     """Delete a domain mapping.

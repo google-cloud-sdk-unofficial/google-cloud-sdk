@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, GA]
+  hints:
+    read_only: true
 
   help_text:
     brief: Get the details of a Security Health Analytics custom module.

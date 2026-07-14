@@ -170,6 +170,30 @@ class GoogleCloudPolicytroubleshooterGcpuseraccessbindingV3alphaTroubleshootGcpU
   principal = _messages.StringField(3)
 
 
+class GoogleCloudPolicytroubleshooterIamV3alphaAccessContext(_messages.Message):
+  r"""Information about the principal, resource, and permission for the
+  ErrorInfoId.
+
+  Fields:
+    name: The relative resource name, not including the / prefix. For example,
+      `projects/project-id`, `projects/-/serviceAccounts/11112222`
+    parent: The full resource name of the parent where IAM policy is
+      configured. For example,
+      `//cloudresourcemanager.googleapis.com/folders/444446666`
+    permission: Required. The IAM permission name provided by the user in the
+      access denied request.
+    principal: The email address of the principal who requested access. For
+      example, `alice@example.com` or `my-service-account@my-
+      project.iam.gserviceaccount.com`. The principal must be a Google Account
+      or a service account. Other types of principals are not supported.
+  """
+
+  name = _messages.StringField(1)
+  parent = _messages.StringField(2)
+  permission = _messages.StringField(3)
+  principal = _messages.StringField(4)
+
+
 class GoogleCloudPolicytroubleshooterIamV3alphaAccessTuple(_messages.Message):
   r"""Information about the principal, resource, and permission to check.
 
@@ -1715,6 +1739,10 @@ class GoogleCloudPolicytroubleshooterIamV3alphaExplainedPABRule(_messages.Messag
     explainedResources: List of resources that were explained to check the
       principal's access to specified resource, with annotations to indicate
       how each resource contributes to the overall access state.
+    pabUnsupportedFeatures: Output only. Unsupported features detected in this
+      rule. Supported values: * `OPERATION`: Permission Subsetting (Operation
+      constraints). See
+      google.iam.v3.PrincipalAccessBoundaryPolicyRule.operation.
     relevance: The relevance of this rule to the overall access state.
     ruleAccessState: Output only. Indicates whether the rule allows access to
       the specified resource.
@@ -1767,9 +1795,11 @@ class GoogleCloudPolicytroubleshooterIamV3alphaExplainedPABRule(_messages.Messag
     Values:
       EFFECT_UNSPECIFIED: Effect unspecified.
       ALLOW: Allows access to the resources in this rule.
+      DENY: Denies access to the resources in this rule.
     """
     EFFECT_UNSPECIFIED = 0
     ALLOW = 1
+    DENY = 2
 
   class RelevanceValueValuesEnum(_messages.Enum):
     r"""The relevance of this rule to the overall access state.
@@ -1820,8 +1850,9 @@ class GoogleCloudPolicytroubleshooterIamV3alphaExplainedPABRule(_messages.Messag
   effect = _messages.EnumField('EffectValueValuesEnum', 3)
   explainedOperation = _messages.MessageField('GoogleCloudPolicytroubleshooterIamV3alphaExplainedOperation', 4)
   explainedResources = _messages.MessageField('GoogleCloudPolicytroubleshooterIamV3alphaExplainedPABRuleExplainedResource', 5, repeated=True)
-  relevance = _messages.EnumField('RelevanceValueValuesEnum', 6)
-  ruleAccessState = _messages.EnumField('RuleAccessStateValueValuesEnum', 7)
+  pabUnsupportedFeatures = _messages.StringField(6, repeated=True)
+  relevance = _messages.EnumField('RelevanceValueValuesEnum', 7)
+  ruleAccessState = _messages.EnumField('RuleAccessStateValueValuesEnum', 8)
 
 
 class GoogleCloudPolicytroubleshooterIamV3alphaExplainedPABRuleExplainedResource(_messages.Message):
@@ -2454,6 +2485,72 @@ class GoogleCloudPolicytroubleshooterIamV3alphaRABPolicyExplanation(_messages.Me
   explainedResourceBindingsAndPolicies = _messages.MessageField('GoogleCloudPolicytroubleshooterIamV3alphaExplainedRABBindingAndPolicy', 2, repeated=True)
   regionalAccessBoundaryAccessState = _messages.EnumField('RegionalAccessBoundaryAccessStateValueValuesEnum', 3)
   relevance = _messages.EnumField('RelevanceValueValuesEnum', 4)
+
+
+class GoogleCloudPolicytroubleshooterIamV3alphaTroubleshootIamPolicyErrorRequest(_messages.Message):
+  r"""Request to troubleshoot access denial with the IAM error identifier.
+
+  Fields:
+    errorInfoId: This identifier is returned in the `ErrorInfo.metadata` with
+      key 'error_info_id' when an access requests is denied by the IAM
+      service.
+  """
+
+  errorInfoId = _messages.StringField(1)
+
+
+class GoogleCloudPolicytroubleshooterIamV3alphaTroubleshootIamPolicyErrorResponse(_messages.Message):
+  r"""Response for troubleshoot access denial with the IAM error identifier.
+
+  Enums:
+    OverallAccessStateValueValuesEnum: Indicates whether the principal has the
+      permission to access the resource, based on evaluating all types of the
+      applicable IAM policies.
+
+  Fields:
+    accessContext: The access context associated with the ErrorInfoId.
+    allowPolicyExplanation: An explanation of how the applicable IAM allow
+      policies affect the final access state.
+    denyPolicyExplanation: An explanation of how the applicable IAM deny
+      policies affect the final access state.
+    overallAccessState: Indicates whether the principal has the permission to
+      access the resource, based on evaluating all types of the applicable IAM
+      policies.
+    pabPolicyExplanation: An explanation of how the applicable principal
+      access boundary policies affect the final access state.
+    rabPolicyExplanation: An explanation of how the applicable regional access
+      boundary policies affect the final access state.
+  """
+
+  class OverallAccessStateValueValuesEnum(_messages.Enum):
+    r"""Indicates whether the principal has the permission to access the
+    resource, based on evaluating all types of the applicable IAM policies.
+
+    Values:
+      OVERALL_ACCESS_STATE_UNSPECIFIED: Not specified.
+      OVERALL_ACCESS_STATE_CAN_ACCESS: The principal has the permission.
+      OVERALL_ACCESS_STATE_CANNOT_ACCESS: The principal doesn't have the
+        permission.
+      OVERALL_ACCESS_STATE_UNKNOWN_INFO: The principal might have the
+        permission, but the sender can't access all of the information needed
+        to fully evaluate the principal's access.
+      OVERALL_ACCESS_STATE_UNKNOWN_CONDITIONAL: The principal might have the
+        permission, but Policy Troubleshooter can't fully evaluate the
+        principal's access because of the missing context to evaluate the
+        condition.
+    """
+    OVERALL_ACCESS_STATE_UNSPECIFIED = 0
+    OVERALL_ACCESS_STATE_CAN_ACCESS = 1
+    OVERALL_ACCESS_STATE_CANNOT_ACCESS = 2
+    OVERALL_ACCESS_STATE_UNKNOWN_INFO = 3
+    OVERALL_ACCESS_STATE_UNKNOWN_CONDITIONAL = 4
+
+  accessContext = _messages.MessageField('GoogleCloudPolicytroubleshooterIamV3alphaAccessContext', 1)
+  allowPolicyExplanation = _messages.MessageField('GoogleCloudPolicytroubleshooterIamV3alphaAllowPolicyExplanation', 2)
+  denyPolicyExplanation = _messages.MessageField('GoogleCloudPolicytroubleshooterIamV3alphaDenyPolicyExplanation', 3)
+  overallAccessState = _messages.EnumField('OverallAccessStateValueValuesEnum', 4)
+  pabPolicyExplanation = _messages.MessageField('GoogleCloudPolicytroubleshooterIamV3alphaPABPolicyExplanation', 5)
+  rabPolicyExplanation = _messages.MessageField('GoogleCloudPolicytroubleshooterIamV3alphaRABPolicyExplanation', 6)
 
 
 class GoogleCloudPolicytroubleshooterIamV3alphaTroubleshootIamPolicyRequest(_messages.Message):
@@ -3583,6 +3680,16 @@ class GoogleIamV3PrincipalAccessBoundaryPolicyRule(_messages.Message):
       policy rule. Must be less than or equal to 256 characters.
     effect: Required. The access relationship of principals to the resources
       in this rule.
+    excludedResources: Optional. A list of Resource Manager resources. If an
+      excluded resource is listed in the rule, then the rule does not apply
+      for that resource and its descendants. This takes precedence over the
+      `resources` field. The number of excluded resources in this field is
+      limited to 500 across all rules in the policy. The following resource
+      types are supported: * Organizations, such as
+      `//cloudresourcemanager.googleapis.com/organizations/123`. * Folders,
+      such as `//cloudresourcemanager.googleapis.com/folders/123`. * Projects,
+      such as `//cloudresourcemanager.googleapis.com/projects/123` or
+      `//cloudresourcemanager.googleapis.com/projects/my-project-id`.
     operation: Optional. The operation attributes that determine whether this
       rule applies to a request. If this field is not specified, the rule
       applies to all operations.
@@ -3604,14 +3711,17 @@ class GoogleIamV3PrincipalAccessBoundaryPolicyRule(_messages.Message):
     Values:
       EFFECT_UNSPECIFIED: Effect unspecified.
       ALLOW: Allows access to the resources in this rule.
+      DENY: Denies access to the resources in this rule.
     """
     EFFECT_UNSPECIFIED = 0
     ALLOW = 1
+    DENY = 2
 
   description = _messages.StringField(1)
   effect = _messages.EnumField('EffectValueValuesEnum', 2)
-  operation = _messages.MessageField('GoogleIamV3PrincipalAccessBoundaryPolicyRuleOperation', 3)
-  resources = _messages.StringField(4, repeated=True)
+  excludedResources = _messages.StringField(3, repeated=True)
+  operation = _messages.MessageField('GoogleIamV3PrincipalAccessBoundaryPolicyRuleOperation', 4)
+  resources = _messages.StringField(5, repeated=True)
 
 
 class GoogleIamV3PrincipalAccessBoundaryPolicyRuleOperation(_messages.Message):

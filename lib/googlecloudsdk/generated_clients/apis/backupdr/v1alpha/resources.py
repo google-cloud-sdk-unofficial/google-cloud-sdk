@@ -149,6 +149,17 @@ class Collections(enum.Enum):
       ['projectsId', 'locationsId', 'resourceBackupConfigsId'],
       True
   )
+  PROJECTS_LOCATIONS_RESTORETEMPLATES = (
+      'projects.locations.restoreTemplates',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'restoreTemplates/{restoreTemplatesId}',
+      },
+      ['name'],
+      True
+  )
 
   def __init__(self, collection_name, path, flat_paths, params,
                enable_uri_parsing):

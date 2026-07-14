@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, GA]
+  hints:
+    read_only: false
   command_type: GENERIC
   help_text:
     brief: Create a Cloud Security Command Center (SCC) posture deployment.

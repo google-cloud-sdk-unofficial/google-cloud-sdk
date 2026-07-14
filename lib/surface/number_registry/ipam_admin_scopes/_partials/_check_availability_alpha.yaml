@@ -29,7 +29,7 @@
   arguments:
     params:
     - help_text: |-
-        Parent value for the IpamAdminScopes.
+        The parent resource name, for example `projects/*/locations/*`.
       is_positional: false
       is_parent_resource: true
       is_primary_resource: true
@@ -40,7 +40,7 @@
       required: true
       repeated: true
       help_text: |-
-        The scopes of the IpamAdminScopes to look for.
+        The administrative scopes to check for availability.
   request:
     api_version: v1alpha
     collection:

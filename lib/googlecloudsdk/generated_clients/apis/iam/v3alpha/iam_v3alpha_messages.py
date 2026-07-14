@@ -362,7 +362,7 @@ class GoogleIamV3alphaAccessPolicyRuleOperation(_messages.Message):
       are as follows: * `eventarc.googleapis.com/messageBuses.publish`.
     serviceMethods: Optional. The service methods that are explicitly affected
       by this rule. Each service method uses the format
-      `{service_name}.{operation_name}`.
+      `{service_name}:{operation_name}`.
   """
 
   excludedPermissions = _messages.StringField(1, repeated=True)
@@ -1035,6 +1035,16 @@ class GoogleIamV3alphaPrincipalAccessBoundaryPolicyRule(_messages.Message):
       policy rule. Must be less than or equal to 256 characters.
     effect: Required. The access relationship of principals to the resources
       in this rule.
+    excludedResources: Optional. A list of Resource Manager resources. If an
+      excluded resource is listed in the rule, then the rule does not apply
+      for that resource and its descendants. This takes precedence over the
+      `resources` field. The number of excluded resources in this field is
+      limited to 500 across all rules in the policy. The following resource
+      types are supported: * Organizations, such as
+      `//cloudresourcemanager.googleapis.com/organizations/123`. * Folders,
+      such as `//cloudresourcemanager.googleapis.com/folders/123`. * Projects,
+      such as `//cloudresourcemanager.googleapis.com/projects/123` or
+      `//cloudresourcemanager.googleapis.com/projects/my-project-id`.
     operation: Optional. The operation attributes that determine whether this
       rule applies to a request. If this field is not specified, the rule
       applies to all operations.
@@ -1056,14 +1066,17 @@ class GoogleIamV3alphaPrincipalAccessBoundaryPolicyRule(_messages.Message):
     Values:
       EFFECT_UNSPECIFIED: Effect unspecified.
       ALLOW: Allows access to the resources in this rule.
+      DENY: Denies access to the resources in this rule.
     """
     EFFECT_UNSPECIFIED = 0
     ALLOW = 1
+    DENY = 2
 
   description = _messages.StringField(1)
   effect = _messages.EnumField('EffectValueValuesEnum', 2)
-  operation = _messages.MessageField('GoogleIamV3alphaPrincipalAccessBoundaryPolicyRuleOperation', 3)
-  resources = _messages.StringField(4, repeated=True)
+  excludedResources = _messages.StringField(3, repeated=True)
+  operation = _messages.MessageField('GoogleIamV3alphaPrincipalAccessBoundaryPolicyRuleOperation', 4)
+  resources = _messages.StringField(5, repeated=True)
 
 
 class GoogleIamV3alphaPrincipalAccessBoundaryPolicyRuleOperation(_messages.Message):

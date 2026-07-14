@@ -28,7 +28,7 @@ DETAILED_HELP = {
     "DESCRIPTION": textwrap.dedent("""
         *{command}* facilitates the creation of a cluster resource.
 
-        There are following ways to create a cluster:
+        Use one of the following options to create a cluster:
         - [Preferred] Use granular flags to define cluster specs.
         - Use --config flag with cluster specs in JSON format.
 
@@ -74,7 +74,9 @@ DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Create(base.CreateCommand):
   """Creates a Cluster Director resource."""
 

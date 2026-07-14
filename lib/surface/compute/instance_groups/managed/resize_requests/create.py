@@ -70,7 +70,9 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    instance_groups_flags.MakeZonalInstanceGroupManagerArg().AddArgument(parser)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser
+    )
     rr_flags.AddOutputFormat(parser, cls.ReleaseTrack())
     cls._AddArgsGaCommon(parser)
     parser.add_argument(
@@ -91,7 +93,7 @@ class Create(base.CreateCommand):
     """
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    resource_arg = instance_groups_flags.MakeZonalInstanceGroupManagerArg()
+    resource_arg = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
     igm_ref = self._GetIgmRef(args, holder, resource_arg)
 
     requested_run_duration = None
@@ -119,19 +121,29 @@ class Create(base.CreateCommand):
     return igm_ref
 
   def _MakeRequest(self, client, igm_ref, resize_request):
-    request = (
-        client.messages.ComputeInstanceGroupManagerResizeRequestsInsertRequest(
-            instanceGroupManager=igm_ref.Name(),
-            instanceGroupManagerResizeRequest=resize_request,
-            project=igm_ref.project,
-            zone=igm_ref.zone,
-        )
-    )
-    return client.MakeRequests([(
-        client.apitools_client.instanceGroupManagerResizeRequests,
-        'Insert',
-        request,
-    )])
+    if igm_ref.Collection() == 'compute.instanceGroupManagers':
+      return client.MakeRequests([(
+          client.apitools_client.instanceGroupManagerResizeRequests,
+          'Insert',
+          client.messages.ComputeInstanceGroupManagerResizeRequestsInsertRequest(
+              instanceGroupManager=igm_ref.Name(),
+              instanceGroupManagerResizeRequest=resize_request,
+              project=igm_ref.project,
+              zone=igm_ref.zone,
+          ),
+      )])
+    if igm_ref.Collection() == 'compute.regionInstanceGroupManagers':
+      return client.MakeRequests([(
+          client.apitools_client.regionInstanceGroupManagerResizeRequests,
+          'Insert',
+          client.messages.ComputeRegionInstanceGroupManagerResizeRequestsInsertRequest(
+              instanceGroupManager=igm_ref.Name(),
+              instanceGroupManagerResizeRequest=resize_request,
+              project=igm_ref.project,
+              region=igm_ref.region,
+          ),
+      )])
+    raise ValueError('Unknown reference type {0}'.format(igm_ref.Collection()))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -191,31 +203,6 @@ class CreateBeta(Create):
     )
 
     return self._MakeRequest(holder.client, igm_ref, resize_request)
-
-  def _MakeRequest(self, client, igm_ref, resize_request):
-    if igm_ref.Collection() == 'compute.instanceGroupManagers':
-      return client.MakeRequests([(
-          client.apitools_client.instanceGroupManagerResizeRequests,
-          'Insert',
-          client.messages.ComputeInstanceGroupManagerResizeRequestsInsertRequest(
-              instanceGroupManager=igm_ref.Name(),
-              instanceGroupManagerResizeRequest=resize_request,
-              project=igm_ref.project,
-              zone=igm_ref.zone,
-          ),
-      )])
-    if igm_ref.Collection() == 'compute.regionInstanceGroupManagers':
-      return client.MakeRequests([(
-          client.apitools_client.regionInstanceGroupManagerResizeRequests,
-          'Insert',
-          client.messages.ComputeRegionInstanceGroupManagerResizeRequestsInsertRequest(
-              instanceGroupManager=igm_ref.Name(),
-              instanceGroupManagerResizeRequest=resize_request,
-              project=igm_ref.project,
-              region=igm_ref.region,
-          ),
-      )])
-    raise ValueError('Unknown reference type {0}'.format(igm_ref.Collection()))
 
   def _CreatePerInstanceConfigList(self, holder, instances):
     """Creates a list of per instance configs for the given instances."""

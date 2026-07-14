@@ -1444,6 +1444,9 @@ class ThreeLeggedOAuth(_messages.Message):
       "https://auth.atlassian.com/authorize"
     clientId: Optional. The client ID of the OAuth client.
     clientSecret: Optional. Input only. The client secret of the OAuth client.
+    defaultContinueUri: Optional. The default continue URI for 3LO flow and it
+      will be used when no continue URI is provided in the RetrieveCredentials
+      request.
     enablePkce: Optional. Enables Proof Key for Code Exchange (PKCE) for the
       OAuth flow to prevent authorization code interception attacks.
     redirectUrl: Output only. The redirect URL this connector uses for the
@@ -1456,9 +1459,10 @@ class ThreeLeggedOAuth(_messages.Message):
   authorizationUrl = _messages.StringField(1)
   clientId = _messages.StringField(2)
   clientSecret = _messages.StringField(3)
-  enablePkce = _messages.BooleanField(4)
-  redirectUrl = _messages.StringField(5)
-  tokenUrl = _messages.StringField(6)
+  defaultContinueUri = _messages.StringField(4)
+  enablePkce = _messages.BooleanField(5)
+  redirectUrl = _messages.StringField(6)
+  tokenUrl = _messages.StringField(7)
 
 
 class TwoLeggedOAuth(_messages.Message):

@@ -38,6 +38,7 @@ __protobuf__ = proto.module(
         'FileData',
         'VideoMetadata',
         'PrebuiltVoiceConfig',
+        'ReplicatedVoiceConfig',
         'VoiceConfig',
         'SpeakerVoiceConfig',
         'MultiSpeakerVoiceConfig',
@@ -45,6 +46,11 @@ __protobuf__ = proto.module(
         'ProactivityConfig',
         'ImageConfig',
         'GenerationConfig',
+        'ResponseFormat',
+        'TextResponseFormat',
+        'AudioResponseFormat',
+        'ImageResponseFormat',
+        'VideoResponseFormat',
         'SafetySetting',
         'SafetyRating',
         'CitationMetadata',
@@ -195,7 +201,11 @@ class Part(proto.Message):
 
     Attributes:
         text (str):
-            Optional. The text content of the part.
+            Optional. The text content of the part. When sent from the
+            VSCode Gemini Code Assist extension, references to
+            @mentioned items will be converted to markdown boldface
+            text. For example ``@my-repo`` will be converted to and sent
+            as ``**my-repo**`` by the IDE agent.
 
             This field is a member of `oneof`_ ``data``.
         inline_data (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Blob):
@@ -245,7 +255,53 @@ class Part(proto.Message):
         thought_signature (bytes):
             Optional. An opaque signature for the thought
             so it can be reused in subsequent requests.
+        media_resolution (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Part.MediaResolution):
+            per part media resolution.
+            Media resolution for the input media.
     """
+
+    class MediaResolution(proto.Message):
+        r"""per part media resolution.
+        Media resolution for the input media.
+
+
+        .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
+        Attributes:
+            level (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Part.MediaResolution.Level):
+                The tokenization quality used for given
+                media.
+
+                This field is a member of `oneof`_ ``value``.
+        """
+        class Level(proto.Enum):
+            r"""The media resolution level.
+
+            Values:
+                MEDIA_RESOLUTION_UNSPECIFIED (0):
+                    Media resolution has not been set.
+                MEDIA_RESOLUTION_LOW (1):
+                    Media resolution set to low.
+                MEDIA_RESOLUTION_MEDIUM (2):
+                    Media resolution set to medium.
+                MEDIA_RESOLUTION_HIGH (3):
+                    Media resolution set to high.
+                MEDIA_RESOLUTION_ULTRA_HIGH (4):
+                    Media resolution set to ultra high. This is
+                    for image only.
+            """
+            MEDIA_RESOLUTION_UNSPECIFIED = 0
+            MEDIA_RESOLUTION_LOW = 1
+            MEDIA_RESOLUTION_MEDIUM = 2
+            MEDIA_RESOLUTION_HIGH = 3
+            MEDIA_RESOLUTION_ULTRA_HIGH = 4
+
+        level: 'Part.MediaResolution.Level' = proto.Field(
+            proto.ENUM,
+            number=1,
+            oneof='value',
+            enum='Part.MediaResolution.Level',
+        )
 
     text: str = proto.Field(
         proto.STRING,
@@ -301,6 +357,11 @@ class Part(proto.Message):
     thought_signature: bytes = proto.Field(
         proto.BYTES,
         number=11,
+    )
+    media_resolution: MediaResolution = proto.Field(
+        proto.MESSAGE,
+        number=12,
+        message=MediaResolution,
     )
 
 
@@ -430,14 +491,49 @@ class PrebuiltVoiceConfig(proto.Message):
     )
 
 
+class ReplicatedVoiceConfig(proto.Message):
+    r"""The configuration for the replicated voice to use.
+
+    Attributes:
+        mime_type (str):
+            Optional. The mimetype of the voice sample. The only
+            currently supported value is ``audio/wav``. This represents
+            16-bit signed little-endian wav data, with a 24kHz sampling
+            rate. ``mime_type`` will default to ``audio/wav`` if not
+            set.
+        voice_sample_audio (bytes):
+            Optional. The sample of the custom voice.
+    """
+
+    mime_type: str = proto.Field(
+        proto.STRING,
+        number=1,
+    )
+    voice_sample_audio: bytes = proto.Field(
+        proto.BYTES,
+        number=2,
+    )
+
+
 class VoiceConfig(proto.Message):
     r"""Configuration for a voice.
+
+    This message has `oneof`_ fields (mutually exclusive fields).
+    For each oneof, at most one member field can be set at the same time.
+    Setting any member of the oneof automatically clears all other
+    members.
 
     .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
 
     Attributes:
         prebuilt_voice_config (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.PrebuiltVoiceConfig):
             The configuration for a prebuilt voice.
+
+            This field is a member of `oneof`_ ``voice_config``.
+        replicated_voice_config (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.ReplicatedVoiceConfig):
+            Optional. The configuration for a replicated
+            voice. This enables users to replicate a voice
+            from an audio sample.
 
             This field is a member of `oneof`_ ``voice_config``.
     """
@@ -447,6 +543,12 @@ class VoiceConfig(proto.Message):
         number=1,
         oneof='voice_config',
         message='PrebuiltVoiceConfig',
+    )
+    replicated_voice_config: 'ReplicatedVoiceConfig' = proto.Field(
+        proto.MESSAGE,
+        number=3,
+        oneof='voice_config',
+        message='ReplicatedVoiceConfig',
     )
 
 
@@ -583,6 +685,19 @@ class ImageConfig(proto.Message):
             generate people.
 
             This field is a member of `oneof`_ ``_person_generation``.
+        image_size (str):
+            Optional. Specifies the size of generated images. Supported
+            values are ``1K``, ``2K``, ``4K``. If not specified, the
+            model will use default value ``1K``.
+
+            This field is a member of `oneof`_ ``_image_size``.
+        prominent_people (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.ImageConfig.ProminentPeople):
+            Optional. Controls whether prominent people (celebrities)
+            generation is allowed. If used with personGeneration,
+            personGeneration enum would take precedence. For instance,
+            if ALLOW_NONE is set, all person generation would be
+            blocked. If this field is unspecified, the default behavior
+            is to allow prominent people.
     """
     class PersonGeneration(proto.Enum):
         r"""Enum for controlling the generation of people in images.
@@ -606,6 +721,26 @@ class ImageConfig(proto.Message):
         ALLOW_ALL = 1
         ALLOW_ADULT = 2
         ALLOW_NONE = 3
+
+    class ProminentPeople(proto.Enum):
+        r"""Enum for controlling whether the model can generate images of
+        prominent people (celebrities).
+
+        Values:
+            PROMINENT_PEOPLE_UNSPECIFIED (0):
+                Unspecified value. The model will proceed
+                with the default behavior, which is to allow
+                generation of prominent people.
+            ALLOW_PROMINENT_PEOPLE (1):
+                Allows the model to generate images of
+                prominent people.
+            BLOCK_PROMINENT_PEOPLE (2):
+                Prevents the model from generating images of
+                prominent people.
+        """
+        PROMINENT_PEOPLE_UNSPECIFIED = 0
+        ALLOW_PROMINENT_PEOPLE = 1
+        BLOCK_PROMINENT_PEOPLE = 2
 
     class ImageOutputOptions(proto.Message):
         r"""The image output format for generated images.
@@ -652,6 +787,16 @@ class ImageConfig(proto.Message):
         number=3,
         optional=True,
         enum=PersonGeneration,
+    )
+    image_size: str = proto.Field(
+        proto.STRING,
+        number=4,
+        optional=True,
+    )
+    prominent_people: ProminentPeople = proto.Field(
+        proto.ENUM,
+        number=5,
+        enum=ProminentPeople,
     )
 
 
@@ -770,14 +915,12 @@ class GenerationConfig(proto.Message):
 
             This field is a member of `oneof`_ ``_seed``.
         response_mime_type (str):
-            Optional. The IANA standard MIME type of the
-            response. The model will generate output that
-            conforms to this MIME type. Supported values
-            include 'text/plain' (default) and
-            'application/json'. The model needs to be
-            prompted to output the appropriate response
-            type, otherwise the behavior is undefined. This
-            is a preview feature.
+            Optional. The IANA standard MIME type of the response. The
+            model will generate output that conforms to this MIME type.
+            Supported values include 'text/plain' (default) and
+            'application/json'. The model needs to be prompted to output
+            the appropriate response type, otherwise the behavior is
+            undefined. Deprecated: Use ``response_format`` instead.
         response_schema (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Schema):
             Optional. Lets you to specify a schema for the model's
             response, ensuring that the output conforms to a particular
@@ -788,7 +931,8 @@ class GenerationConfig(proto.Message):
             object.
 
             When this field is set, you must also set the
-            ``response_mime_type`` to ``application/json``.
+            ``response_mime_type`` to ``application/json``. Deprecated:
+            Use ``response_format`` instead.
 
             This field is a member of `oneof`_ ``_response_schema``.
         response_json_schema (google.protobuf.struct_pb2.Value):
@@ -796,7 +940,8 @@ class GenerationConfig(proto.Message):
             [response_schema][google.cloud.aiplatform.master.GenerationConfig.response_schema]
             must be omitted and
             [response_mime_type][google.cloud.aiplatform.master.GenerationConfig.response_mime_type]
-            must be set to ``application/json``.
+            must be set to ``application/json``. Deprecated: Use
+            ``response_format`` instead.
 
             This field is a member of `oneof`_ ``_response_json_schema``.
         routing_config (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.GenerationConfig.RoutingConfig):
@@ -846,10 +991,14 @@ class GenerationConfig(proto.Message):
 
             This field is a member of `oneof`_ ``_enable_affective_dialog``.
         image_config (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.ImageConfig):
-            Optional. Config for image generation
-            features.
+            Optional. Config for image generation features. Deprecated:
+            Use ``response_format.image`` instead.
 
             This field is a member of `oneof`_ ``_image_config``.
+        response_format (MutableSequence[googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.ResponseFormat]):
+            Optional. New response format field for the
+            model to configure output formatting and
+            delivery.
     """
     class Modality(proto.Enum):
         r"""The modalities of the response.
@@ -864,11 +1013,14 @@ class GenerationConfig(proto.Message):
                 Image modality.
             AUDIO (3):
                 Audio modality.
+            VIDEO (4):
+                Video modality.
         """
         MODALITY_UNSPECIFIED = 0
         TEXT = 1
         IMAGE = 2
         AUDIO = 3
+        VIDEO = 4
 
     class MediaResolution(proto.Enum):
         r"""Media resolution for the input media.
@@ -1025,7 +1177,32 @@ class GenerationConfig(proto.Message):
                 quality and latency.
 
                 This field is a member of `oneof`_ ``_thinking_budget``.
+            thinking_level (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.GenerationConfig.ThinkingConfig.ThinkingLevel):
+                Optional. The number of thoughts tokens that
+                the model should generate.
+
+                This field is a member of `oneof`_ ``_thinking_level``.
         """
+        class ThinkingLevel(proto.Enum):
+            r"""The thinking level for the model.
+
+            Values:
+                THINKING_LEVEL_UNSPECIFIED (0):
+                    Unspecified thinking level.
+                LOW (1):
+                    Low thinking level.
+                MEDIUM (2):
+                    Medium thinking level.
+                HIGH (3):
+                    High thinking level.
+                MINIMAL (4):
+                    MINIMAL thinking level.
+            """
+            THINKING_LEVEL_UNSPECIFIED = 0
+            LOW = 1
+            MEDIUM = 2
+            HIGH = 3
+            MINIMAL = 4
 
         include_thoughts: bool = proto.Field(
             proto.BOOL,
@@ -1036,6 +1213,12 @@ class GenerationConfig(proto.Message):
             proto.INT32,
             number=3,
             optional=True,
+        )
+        thinking_level: 'GenerationConfig.ThinkingConfig.ThinkingLevel' = proto.Field(
+            proto.ENUM,
+            number=4,
+            optional=True,
+            enum='GenerationConfig.ThinkingConfig.ThinkingLevel',
         )
 
     temperature: float = proto.Field(
@@ -1151,6 +1334,393 @@ class GenerationConfig(proto.Message):
         number=30,
         optional=True,
         message='ImageConfig',
+    )
+    response_format: MutableSequence['ResponseFormat'] = proto.RepeatedField(
+        proto.MESSAGE,
+        number=35,
+        message='ResponseFormat',
+    )
+
+
+class ResponseFormat(proto.Message):
+    r"""Configuration for the model to configure output formatting
+    and delivery.
+
+    This message has `oneof`_ fields (mutually exclusive fields).
+    For each oneof, at most one member field can be set at the same time.
+    Setting any member of the oneof automatically clears all other
+    members.
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
+    Attributes:
+        text (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.TextResponseFormat):
+            Text output format.
+
+            This field is a member of `oneof`_ ``format``.
+        audio (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.AudioResponseFormat):
+            Audio output format.
+
+            This field is a member of `oneof`_ ``format``.
+        image (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.ImageResponseFormat):
+            Image output format.
+
+            This field is a member of `oneof`_ ``format``.
+        video (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.VideoResponseFormat):
+            Video output format.
+
+            This field is a member of `oneof`_ ``format``.
+    """
+    class DeliveryMode(proto.Enum):
+        r"""The delivery mode for the output content.
+
+        Values:
+            DELIVERY_UNSPECIFIED (0):
+                Default value. This value is unused.
+            INLINE (1):
+                Generated bytes are returned inline in the
+                response.
+            URI (2):
+                Generated content is stored and a URI is
+                returned.
+        """
+        DELIVERY_UNSPECIFIED = 0
+        INLINE = 1
+        URI = 2
+
+    text: 'TextResponseFormat' = proto.Field(
+        proto.MESSAGE,
+        number=1,
+        oneof='format',
+        message='TextResponseFormat',
+    )
+    audio: 'AudioResponseFormat' = proto.Field(
+        proto.MESSAGE,
+        number=2,
+        oneof='format',
+        message='AudioResponseFormat',
+    )
+    image: 'ImageResponseFormat' = proto.Field(
+        proto.MESSAGE,
+        number=3,
+        oneof='format',
+        message='ImageResponseFormat',
+    )
+    video: 'VideoResponseFormat' = proto.Field(
+        proto.MESSAGE,
+        number=4,
+        oneof='format',
+        message='VideoResponseFormat',
+    )
+
+
+class TextResponseFormat(proto.Message):
+    r"""Configuration for text-specific output formatting.
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
+    Attributes:
+        mime_type (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.TextResponseFormat.MimeType):
+            Optional. The IANA standard MIME type of the
+            response.
+
+            This field is a member of `oneof`_ ``_mime_type``.
+        schema (google.protobuf.struct_pb2.Value):
+            Optional. The JSON schema that the output should conform to.
+            Only applicable when mime_type is APPLICATION_JSON.
+
+            This field is a member of `oneof`_ ``_schema``.
+    """
+    class MimeType(proto.Enum):
+        r"""Supported MIME types for text output.
+
+        Values:
+            MIME_TYPE_UNSPECIFIED (0):
+                Default value. This value is unused.
+            APPLICATION_JSON (1):
+                JSON output format.
+            TEXT_PLAIN (2):
+                Plain text output format.
+        """
+        MIME_TYPE_UNSPECIFIED = 0
+        APPLICATION_JSON = 1
+        TEXT_PLAIN = 2
+
+    mime_type: MimeType = proto.Field(
+        proto.ENUM,
+        number=1,
+        optional=True,
+        enum=MimeType,
+    )
+    schema: struct_pb2.Value = proto.Field(
+        proto.MESSAGE,
+        number=2,
+        optional=True,
+        message=struct_pb2.Value,
+    )
+
+
+class AudioResponseFormat(proto.Message):
+    r"""Configuration for audio-specific output formatting.
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
+    Attributes:
+        mime_type (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.AudioResponseFormat.MimeType):
+            Optional. The MIME type of the audio output.
+
+            This field is a member of `oneof`_ ``_mime_type``.
+        delivery (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.ResponseFormat.DeliveryMode):
+            Optional. Delivery mode for the generated
+            content.
+        sample_rate (int):
+            Optional. Sample rate for the generated audio
+            in Hertz.
+
+            This field is a member of `oneof`_ ``_sample_rate``.
+        bit_rate (int):
+            Optional. Bit rate in bits per second (bps).
+            Only applicable for compressed formats (MP3,
+            Opus).
+
+            This field is a member of `oneof`_ ``_bit_rate``.
+    """
+    class MimeType(proto.Enum):
+        r"""Supported MIME types for audio output.
+
+        Values:
+            MIME_TYPE_UNSPECIFIED (0):
+                Default value. This value is unused.
+            AUDIO_MP3 (1):
+                MP3 audio format.
+            AUDIO_OGG_OPUS (2):
+                OGG Opus audio format.
+            AUDIO_L16 (3):
+                Raw PCM (L16) audio format.
+            AUDIO_WAV (4):
+                WAV audio format.
+            AUDIO_ALAW (5):
+                A-law audio format.
+            AUDIO_MULAW (6):
+                Mu-law audio format.
+        """
+        MIME_TYPE_UNSPECIFIED = 0
+        AUDIO_MP3 = 1
+        AUDIO_OGG_OPUS = 2
+        AUDIO_L16 = 3
+        AUDIO_WAV = 4
+        AUDIO_ALAW = 5
+        AUDIO_MULAW = 6
+
+    mime_type: MimeType = proto.Field(
+        proto.ENUM,
+        number=1,
+        optional=True,
+        enum=MimeType,
+    )
+    delivery: 'ResponseFormat.DeliveryMode' = proto.Field(
+        proto.ENUM,
+        number=2,
+        enum='ResponseFormat.DeliveryMode',
+    )
+    sample_rate: int = proto.Field(
+        proto.INT32,
+        number=3,
+        optional=True,
+    )
+    bit_rate: int = proto.Field(
+        proto.INT32,
+        number=4,
+        optional=True,
+    )
+
+
+class ImageResponseFormat(proto.Message):
+    r"""Configuration for image-specific output formatting.
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
+    Attributes:
+        mime_type (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.ImageResponseFormat.MimeType):
+            Optional. The MIME type of the image output.
+
+            This field is a member of `oneof`_ ``_mime_type``.
+        delivery (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.ResponseFormat.DeliveryMode):
+            Optional. Delivery mode for the generated
+            content.
+        aspect_ratio (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.ImageResponseFormat.AspectRatio):
+            Optional. The aspect ratio for the image
+            output.
+
+            This field is a member of `oneof`_ ``_aspect_ratio``.
+        image_size (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.ImageResponseFormat.ImageSize):
+            Optional. The size of the image output.
+
+            This field is a member of `oneof`_ ``_image_size``.
+    """
+    class MimeType(proto.Enum):
+        r"""Supported MIME types for image output.
+
+        Values:
+            MIME_TYPE_UNSPECIFIED (0):
+                Default value. This value is unused.
+            IMAGE_JPEG (1):
+                JPEG image format.
+        """
+        MIME_TYPE_UNSPECIFIED = 0
+        IMAGE_JPEG = 1
+
+    class AspectRatio(proto.Enum):
+        r"""Supported aspect ratios for image output.
+
+        Values:
+            ASPECT_RATIO_UNSPECIFIED (0):
+                Default value. This value is unused.
+            ASPECT_RATIO_ONE_BY_ONE (1):
+                1:1 aspect ratio.
+            ASPECT_RATIO_TWO_BY_THREE (2):
+                2:3 aspect ratio.
+            ASPECT_RATIO_THREE_BY_TWO (3):
+                3:2 aspect ratio.
+            ASPECT_RATIO_THREE_BY_FOUR (4):
+                3:4 aspect ratio.
+            ASPECT_RATIO_FOUR_BY_THREE (5):
+                4:3 aspect ratio.
+            ASPECT_RATIO_FOUR_BY_FIVE (6):
+                4:5 aspect ratio.
+            ASPECT_RATIO_FIVE_BY_FOUR (7):
+                5:4 aspect ratio.
+            ASPECT_RATIO_NINE_BY_SIXTEEN (8):
+                9:16 aspect ratio.
+            ASPECT_RATIO_SIXTEEN_BY_NINE (9):
+                16:9 aspect ratio.
+            ASPECT_RATIO_TWENTY_ONE_BY_NINE (10):
+                21:9 aspect ratio.
+            ASPECT_RATIO_ONE_BY_EIGHT (11):
+                1:8 aspect ratio.
+            ASPECT_RATIO_EIGHT_BY_ONE (12):
+                8:1 aspect ratio.
+            ASPECT_RATIO_ONE_BY_FOUR (13):
+                1:4 aspect ratio.
+            ASPECT_RATIO_FOUR_BY_ONE (14):
+                4:1 aspect ratio.
+        """
+        ASPECT_RATIO_UNSPECIFIED = 0
+        ASPECT_RATIO_ONE_BY_ONE = 1
+        ASPECT_RATIO_TWO_BY_THREE = 2
+        ASPECT_RATIO_THREE_BY_TWO = 3
+        ASPECT_RATIO_THREE_BY_FOUR = 4
+        ASPECT_RATIO_FOUR_BY_THREE = 5
+        ASPECT_RATIO_FOUR_BY_FIVE = 6
+        ASPECT_RATIO_FIVE_BY_FOUR = 7
+        ASPECT_RATIO_NINE_BY_SIXTEEN = 8
+        ASPECT_RATIO_SIXTEEN_BY_NINE = 9
+        ASPECT_RATIO_TWENTY_ONE_BY_NINE = 10
+        ASPECT_RATIO_ONE_BY_EIGHT = 11
+        ASPECT_RATIO_EIGHT_BY_ONE = 12
+        ASPECT_RATIO_ONE_BY_FOUR = 13
+        ASPECT_RATIO_FOUR_BY_ONE = 14
+
+    class ImageSize(proto.Enum):
+        r"""Supported image sizes for image output.
+
+        Values:
+            IMAGE_SIZE_UNSPECIFIED (0):
+                Default value. This value is unused.
+            IMAGE_SIZE_FIVE_TWELVE (1):
+                512px image size.
+            IMAGE_SIZE_ONE_K (2):
+                1K image size.
+            IMAGE_SIZE_TWO_K (3):
+                2K image size.
+            IMAGE_SIZE_FOUR_K (4):
+                4K image size.
+        """
+        IMAGE_SIZE_UNSPECIFIED = 0
+        IMAGE_SIZE_FIVE_TWELVE = 1
+        IMAGE_SIZE_ONE_K = 2
+        IMAGE_SIZE_TWO_K = 3
+        IMAGE_SIZE_FOUR_K = 4
+
+    mime_type: MimeType = proto.Field(
+        proto.ENUM,
+        number=1,
+        optional=True,
+        enum=MimeType,
+    )
+    delivery: 'ResponseFormat.DeliveryMode' = proto.Field(
+        proto.ENUM,
+        number=2,
+        enum='ResponseFormat.DeliveryMode',
+    )
+    aspect_ratio: AspectRatio = proto.Field(
+        proto.ENUM,
+        number=3,
+        optional=True,
+        enum=AspectRatio,
+    )
+    image_size: ImageSize = proto.Field(
+        proto.ENUM,
+        number=4,
+        optional=True,
+        enum=ImageSize,
+    )
+
+
+class VideoResponseFormat(proto.Message):
+    r"""Configuration for video-specific output formatting.
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
+    Attributes:
+        delivery (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.ResponseFormat.DeliveryMode):
+            Optional. Delivery mode for the generated
+            content.
+        gcs_uri (str):
+            Optional. The Google Cloud Storage URI to
+            store the video output. Required for Vertex if
+            delivery is URI.
+        aspect_ratio (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.VideoResponseFormat.AspectRatio):
+            The aspect ratio for the video output.
+        duration (google.protobuf.duration_pb2.Duration):
+            Optional. The duration for the video output.
+
+            This field is a member of `oneof`_ ``_duration``.
+    """
+    class AspectRatio(proto.Enum):
+        r"""Supported aspect ratios for video output.
+
+        Values:
+            ASPECT_RATIO_UNSPECIFIED (0):
+                Default value. This value is unused.
+            ASPECT_RATIO_SIXTEEN_BY_NINE (1):
+                16:9 aspect ratio.
+            ASPECT_RATIO_NINE_BY_SIXTEEN (2):
+                9:16 aspect ratio.
+        """
+        ASPECT_RATIO_UNSPECIFIED = 0
+        ASPECT_RATIO_SIXTEEN_BY_NINE = 1
+        ASPECT_RATIO_NINE_BY_SIXTEEN = 2
+
+    delivery: 'ResponseFormat.DeliveryMode' = proto.Field(
+        proto.ENUM,
+        number=1,
+        enum='ResponseFormat.DeliveryMode',
+    )
+    gcs_uri: str = proto.Field(
+        proto.STRING,
+        number=2,
+    )
+    aspect_ratio: AspectRatio = proto.Field(
+        proto.ENUM,
+        number=3,
+        enum=AspectRatio,
+    )
+    duration: duration_pb2.Duration = proto.Field(
+        proto.MESSAGE,
+        number=4,
+        optional=True,
+        message=duration_pb2.Duration,
     )
 
 
@@ -1804,6 +2374,11 @@ class GroundingChunk(proto.Message):
             Search. See the ``Web`` message for details.
 
             This field is a member of `oneof`_ ``chunk_type``.
+        image (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.GroundingChunk.Image):
+            A grounding chunk from an image search result. See the
+            ``Image`` message for details.
+
+            This field is a member of `oneof`_ ``chunk_type``.
         retrieved_context (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.GroundingChunk.RetrievedContext):
             A grounding chunk from a data source retrieved by a
             retrieval tool, such as Vertex AI Search. See the
@@ -1858,6 +2433,55 @@ class GroundingChunk(proto.Message):
         domain: str = proto.Field(
             proto.STRING,
             number=3,
+            optional=True,
+        )
+
+    class Image(proto.Message):
+        r"""An ``Image`` chunk is a piece of evidence that comes from an image
+        search result. It contains the URI of the image search result and
+        the URI of the image. This is used to provide the user with a link
+        to the source of the information.
+
+
+        .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
+        Attributes:
+            source_uri (str):
+                The URI of the image search result page.
+
+                This field is a member of `oneof`_ ``_source_uri``.
+            image_uri (str):
+                The URI of the image.
+
+                This field is a member of `oneof`_ ``_image_uri``.
+            title (str):
+                The title of the image search result page.
+
+                This field is a member of `oneof`_ ``_title``.
+            domain (str):
+                The domain of the image search result page.
+
+                This field is a member of `oneof`_ ``_domain``.
+        """
+
+        source_uri: str = proto.Field(
+            proto.STRING,
+            number=1,
+            optional=True,
+        )
+        image_uri: str = proto.Field(
+            proto.STRING,
+            number=2,
+            optional=True,
+        )
+        title: str = proto.Field(
+            proto.STRING,
+            number=3,
+            optional=True,
+        )
+        domain: str = proto.Field(
+            proto.STRING,
+            number=4,
             optional=True,
         )
 
@@ -1926,10 +2550,9 @@ class GroundingChunk(proto.Message):
         )
 
     class Maps(proto.Message):
-        r"""A ``Maps`` chunk is a piece of evidence that comes from Google Maps.
-        It contains information about a place, such as its name, address,
-        and reviews. This is used to provide the user with rich,
-        location-based information.
+        r"""A ``Maps`` chunk is a piece of evidence that comes from Google Maps,
+        containing information about places or routes. This is used to
+        provide the user with rich, location-based information.
 
 
         .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
@@ -1958,6 +2581,8 @@ class GroundingChunk(proto.Message):
                 place answer. This includes review snippets and
                 photos that were used to generate the answer, as
                 well as URIs to flag content.
+            route (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.GroundingChunk.Maps.Route):
+                Output only. Route information.
         """
 
         class PlaceAnswerSources(proto.Message):
@@ -2003,6 +2628,33 @@ class GroundingChunk(proto.Message):
                 message='GroundingChunk.Maps.PlaceAnswerSources.ReviewSnippet',
             )
 
+        class Route(proto.Message):
+            r"""Route information from Google Maps.
+
+            Attributes:
+                distance_meters (int):
+                    The total distance of the route, in meters.
+                duration (google.protobuf.duration_pb2.Duration):
+                    The total duration of the route.
+                encoded_polyline (str):
+                    An encoded polyline of the route. See
+                    https://developers.google.com/maps/documentation/utilities/polylinealgorithm
+            """
+
+            distance_meters: int = proto.Field(
+                proto.INT32,
+                number=1,
+            )
+            duration: duration_pb2.Duration = proto.Field(
+                proto.MESSAGE,
+                number=2,
+                message=duration_pb2.Duration,
+            )
+            encoded_polyline: str = proto.Field(
+                proto.STRING,
+                number=3,
+            )
+
         uri: str = proto.Field(
             proto.STRING,
             number=1,
@@ -2028,12 +2680,23 @@ class GroundingChunk(proto.Message):
             number=5,
             message='GroundingChunk.Maps.PlaceAnswerSources',
         )
+        route: 'GroundingChunk.Maps.Route' = proto.Field(
+            proto.MESSAGE,
+            number=6,
+            message='GroundingChunk.Maps.Route',
+        )
 
     web: Web = proto.Field(
         proto.MESSAGE,
         number=1,
         oneof='chunk_type',
         message=Web,
+    )
+    image: Image = proto.Field(
+        proto.MESSAGE,
+        number=5,
+        oneof='chunk_type',
+        message=Image,
     )
     retrieved_context: RetrievedContext = proto.Field(
         proto.MESSAGE,
@@ -2050,8 +2713,8 @@ class GroundingChunk(proto.Message):
 
 
 class GroundingSupport(proto.Message):
-    r"""A collection of supporting references for a segment of the
-    model's response.
+    r"""A collection of supporting references for a segment or part
+    of the model's response.
 
 
     .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
@@ -2082,6 +2745,10 @@ class GroundingSupport(proto.Message):
             For Gemini 2.0 and before, this list has the same size as
             ``grounding_chunk_indices``. For Gemini 2.5 and later, this
             list is empty and should be ignored.
+        rendered_parts (MutableSequence[int]):
+            Indices into the ``rendered_parts`` field of the
+            ``GroundingMetadata`` message. These indices specify which
+            rendered parts are associated with this support message.
     """
 
     segment: 'Segment' = proto.Field(
@@ -2097,6 +2764,10 @@ class GroundingSupport(proto.Message):
     confidence_scores: MutableSequence[float] = proto.RepeatedField(
         proto.FLOAT,
         number=3,
+    )
+    rendered_parts: MutableSequence[int] = proto.RepeatedField(
+        proto.INT32,
+        number=4,
     )
 
 
@@ -2116,6 +2787,11 @@ class GroundingMetadata(proto.Message):
             used to generate the content. This field is
             populated only when the grounding source is
             Google Search.
+        image_search_queries (MutableSequence[str]):
+            Optional. The image search queries that were used to
+            generate the content. This field is populated only when the
+            grounding source is Google Search with the Image Search
+            search_type enabled.
         search_entry_point (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.SearchEntryPoint):
             Optional. A web search entry point that can
             be used to display search results. This field is
@@ -2140,10 +2816,16 @@ class GroundingMetadata(proto.Message):
 
             This field is a member of `oneof`_ ``_retrieval_metadata``.
         google_maps_widget_context_token (str):
-            Optional. Output only. A token that can be
-            used to render a Google Maps widget with the
-            contextual data. This field is populated only
-            when the grounding source is Google Maps.
+            Optional. Output only. Deprecated: The Google
+            Maps contextual widget behavior in Grounding
+            with Google Maps is being deprecated; this field
+            is planned for removal and will no longer be
+            populated once removed.
+
+            A token that can be used to render a Google Maps
+            widget with the contextual data. This field is
+            populated only when the grounding source is
+            Google Maps.
 
             This field is a member of `oneof`_ ``_google_maps_widget_context_token``.
         source_flagging_uris (MutableSequence[googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.GroundingMetadata.SourceFlaggingUri]):
@@ -2177,6 +2859,10 @@ class GroundingMetadata(proto.Message):
     web_search_queries: MutableSequence[str] = proto.RepeatedField(
         proto.STRING,
         number=1,
+    )
+    image_search_queries: MutableSequence[str] = proto.RepeatedField(
+        proto.STRING,
+        number=11,
     )
     search_entry_point: 'SearchEntryPoint' = proto.Field(
         proto.MESSAGE,

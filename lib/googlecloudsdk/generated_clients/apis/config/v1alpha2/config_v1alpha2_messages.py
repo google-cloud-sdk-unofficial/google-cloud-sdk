@@ -1677,6 +1677,8 @@ class DeploymentOperationMetadata(_messages.Message):
 
   Fields:
     applyResults: Outputs and artifacts from applying a deployment.
+    applyResultsAvailable: Output only. Indicating if early apply results are
+      available.
     build: Output only. Cloud Build instance UUID associated with this
       operation.
     logs: Output only. Location of Deployment operations logs in
@@ -1723,9 +1725,10 @@ class DeploymentOperationMetadata(_messages.Message):
     RUNNING_QUOTA_VALIDATION = 12
 
   applyResults = _messages.MessageField('ApplyResults', 1)
-  build = _messages.StringField(2)
-  logs = _messages.StringField(3)
-  step = _messages.EnumField('StepValueValuesEnum', 4)
+  applyResultsAvailable = _messages.BooleanField(2)
+  build = _messages.StringField(3)
+  logs = _messages.StringField(4)
+  step = _messages.EnumField('StepValueValuesEnum', 5)
 
 
 class DeploymentOperationSummary(_messages.Message):

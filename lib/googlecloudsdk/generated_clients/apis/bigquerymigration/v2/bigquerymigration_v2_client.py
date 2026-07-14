@@ -446,7 +446,7 @@ class BigquerymigrationV2(base_api.BaseApiClient):
           }
 
     def TranslateQuery(self, request, global_params=None):
-      r"""Translates input queries from source dialects to GoogleSQL.
+      r"""Deprecated: Use the regular CreateMigrationWorkflow method instead. The 'bigquerymigration.translation.translate' permission is replaced by 'bigquerymigration.workflows.create', 'bigquerymigration.workflows.get', and 'bigquerymigration.workflows.list'. Translates input queries from source dialects to GoogleSQL.
 
       Args:
         request: (BigquerymigrationProjectsLocationsTranslateQueryRequest) input message

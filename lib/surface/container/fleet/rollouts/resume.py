@@ -13,21 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command to resume a fleet rollout."""
-
-
-
 from typing import Any
 
 from apitools.base.py import encoding
-
 from googlecloudsdk import core
 from googlecloudsdk.api_lib.container.fleet import client
+from googlecloudsdk.api_lib.container.fleet import types
 from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.container.fleet.rollouts import flags as rollout_flags
-from googlecloudsdk.generated_clients.apis.gkehub.v1alpha import gkehub_v1alpha_messages as alpha_messages
 
 _EXAMPLES = """
 To resume a rollout, run:
@@ -37,29 +33,31 @@ $ {command} ROLLOUT
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Resume(base.UpdateCommand):
   """Resume a rollout resource."""
 
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
-  @staticmethod
-  def Args(parser: parser_arguments.ArgumentInterceptor) -> None:
+  @classmethod
+  def Args(cls, parser: parser_arguments.ArgumentInterceptor) -> None:
     """Registers flags for the resume command."""
-    flags = rollout_flags.RolloutFlags(parser)
+    flags = rollout_flags.RolloutFlags(parser, cls.ReleaseTrack())
     flags.AddRolloutResourceArg()
     flags.AddScheduleOffset()
     flags.AddValidateOnly()
     flags.AddAsync()
 
-  def Run(self, args: parser_extensions.Namespace) -> alpha_messages.Operation:
+  def Run(self, args: parser_extensions.Namespace) -> types.Operation:
     """Runs the resume command."""
     flag_parser = rollout_flags.RolloutFlagParser(
-        args, release_track=base.ReleaseTrack.ALPHA
+        args, release_track=self.ReleaseTrack()
     )
     fleet_client = client.FleetClient(release_track=self.ReleaseTrack())
     operation_client = client.OperationClient(
-        release_track=base.ReleaseTrack.ALPHA
+        release_track=self.ReleaseTrack()
     )
     rollout_ref = util.RolloutRef(args)
     utils = _Utils(args, operation_client, fleet_client)
@@ -129,9 +127,12 @@ class _Utils:
     self.fleet_client = fleet_client
 
   def resume_rollout_async(self, offset: str, validate_only: bool) -> Any:
-    req = alpha_messages.GkehubProjectsLocationsRolloutsResumeRequest()
+    req = (
+        self.fleet_client.messages
+        .GkehubProjectsLocationsRolloutsResumeRequest()
+    )
     req.name = self.rollout_name
-    req.resumeRolloutRequest = alpha_messages.ResumeRolloutRequest(
+    req.resumeRolloutRequest = self.fleet_client.messages.ResumeRolloutRequest(
         scheduleOffset=offset,
         validateOnly=validate_only,
     )

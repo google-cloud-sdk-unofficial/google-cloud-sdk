@@ -254,8 +254,8 @@ class BatchCreateBitbucketServerConnectedRepositoriesResponseMetadata(_messages.
 
 
 class BatchCreateGitLabConnectedRepositoriesRequest(_messages.Message):
-  r"""RPC request object accepted by BatchCreateGitLabConnectedRepositories
-  RPC method.
+  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated. RPC request
+  object accepted by BatchCreateGitLabConnectedRepositories RPC method.
 
   Fields:
     requests: Required. Requests to connect GitLab repositories.
@@ -265,7 +265,8 @@ class BatchCreateGitLabConnectedRepositoriesRequest(_messages.Message):
 
 
 class BatchCreateGitLabConnectedRepositoriesResponse(_messages.Message):
-  r"""Response of BatchCreateGitLabConnectedRepositories RPC method.
+  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated. Response of
+  BatchCreateGitLabConnectedRepositories RPC method.
 
   Fields:
     gitlabConnectedRepositories: The GitLab connected repository requests'
@@ -276,7 +277,8 @@ class BatchCreateGitLabConnectedRepositoriesResponse(_messages.Message):
 
 
 class BatchCreateGitLabConnectedRepositoriesResponseMetadata(_messages.Message):
-  r"""Metadata for `BatchCreateGitLabConnectedRepositories` operation.
+  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated. Metadata for
+  `BatchCreateGitLabConnectedRepositories` operation.
 
   Fields:
     completeTime: Time the operation was completed.
@@ -304,7 +306,7 @@ class BitbucketServerConfig(_messages.Message):
     hostUri: Required. Immutable. The URI of the Bitbucket Server host. Once
       this field has been set, it cannot be changed. If you need to change it,
       please create another BitbucketServerConfig.
-    name: The resource name for the config.
+    name: Identifier. The resource name for the config.
     peeredNetwork: Optional. The network to be used when reaching out to the
       Bitbucket Server instance. The VPC network must be enabled for private
       service connection. This should be set if the Bitbucket Server instance
@@ -1221,9 +1223,10 @@ class BuildTrigger(_messages.Message):
     github: GitHubEventsConfig describes the configuration of a trigger that
       creates a build whenever a GitHub event is received. Mutually exclusive
       with `trigger_template`.
-    gitlabEnterpriseEventsConfig: GitLabEnterpriseEventsConfig describes the
-      configuration of a trigger that creates a build whenever a GitLab
-      Enterprise event is received.
+    gitlabEnterpriseEventsConfig: Deprecated: CloudBuild GitLab V1 integration
+      is deprecated. GitLabEnterpriseEventsConfig describes the configuration
+      of a trigger that creates a build whenever a GitLab Enterprise event is
+      received.
     id: Output only. Unique identifier of the trigger.
     ignoredFiles: ignored_files and included_files are file glob matches using
       https://golang.org/pkg/path/filepath/#Match extended with support for
@@ -1751,9 +1754,9 @@ class CloudbuildProjectsGithubEnterpriseConfigsPatchRequest(_messages.Message):
   Fields:
     gitHubEnterpriseConfig: A GitHubEnterpriseConfig resource to be passed as
       the request body.
-    name: The full resource name for the GitHubEnterpriseConfig For example: "
-      projects/{$project_id}/locations/{$location_id}/githubEnterpriseConfigs/
-      {$config_id}"
+    name: Identifier. The full resource name for the GitHubEnterpriseConfig
+      For example: "projects/{$project_id}/locations/{$location_id}/githubEnte
+      rpriseConfigs/{$config_id}"
     updateMask: Update mask for the resource. If this is set, the server will
       only update the fields specified in the field mask. Otherwise, a full
       update of the mutable resource fields will be performed.
@@ -1998,7 +2001,7 @@ class CloudbuildProjectsLocationsBitbucketServerConfigsPatchRequest(_messages.Me
   Fields:
     bitbucketServerConfig: A BitbucketServerConfig resource to be passed as
       the request body.
-    name: The resource name for the config.
+    name: Identifier. The resource name for the config.
     updateMask: Update mask for the resource. If this is set, the server will
       only update the fields specified in the field mask. Otherwise, a full
       update of the mutable resource fields will be performed.
@@ -2206,7 +2209,7 @@ class CloudbuildProjectsLocationsGitLabConfigsPatchRequest(_messages.Message):
 
   Fields:
     gitLabConfig: A GitLabConfig resource to be passed as the request body.
-    name: The resource name for the config.
+    name: Identifier. The resource name for the config.
     updateMask: Update mask for the resource. If this is set, the server will
       only update the fields specified in the field mask. Otherwise, a full
       update of the mutable resource fields will be performed.
@@ -2342,9 +2345,9 @@ class CloudbuildProjectsLocationsGithubEnterpriseConfigsPatchRequest(_messages.M
   Fields:
     gitHubEnterpriseConfig: A GitHubEnterpriseConfig resource to be passed as
       the request body.
-    name: The full resource name for the GitHubEnterpriseConfig For example: "
-      projects/{$project_id}/locations/{$location_id}/githubEnterpriseConfigs/
-      {$config_id}"
+    name: Identifier. The full resource name for the GitHubEnterpriseConfig
+      For example: "projects/{$project_id}/locations/{$location_id}/githubEnte
+      rpriseConfigs/{$config_id}"
     updateMask: Update mask for the resource. If this is set, the server will
       only update the fields specified in the field mask. Otherwise, a full
       update of the mutable resource fields will be performed.
@@ -2943,7 +2946,8 @@ class CreateGitHubEnterpriseConfigOperationMetadata(_messages.Message):
 
 
 class CreateGitLabConfigOperationMetadata(_messages.Message):
-  r"""Metadata for `CreateGitLabConfig` operation.
+  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated. Metadata for
+  `CreateGitLabConfig` operation.
 
   Fields:
     completeTime: Time the operation was completed.
@@ -2958,7 +2962,8 @@ class CreateGitLabConfigOperationMetadata(_messages.Message):
 
 
 class CreateGitLabConnectedRepositoryRequest(_messages.Message):
-  r"""Request to connect a repository from a connected GitLab host.
+  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated. Request to
+  connect a repository from a connected GitLab host.
 
   Fields:
     gitlabConnectedRepository: Required. The GitLab repository to connect.
@@ -3067,7 +3072,8 @@ class DeleteGitHubEnterpriseConfigOperationMetadata(_messages.Message):
 
 
 class DeleteGitLabConfigOperationMetadata(_messages.Message):
-  r"""Metadata for `DeleteGitLabConfig` operation.
+  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated. Metadata for
+  `DeleteGitLabConfig` operation.
 
   Fields:
     completeTime: Time the operation was completed.
@@ -3411,9 +3417,9 @@ class GitHubEnterpriseConfig(_messages.Message):
       the project.
     displayName: Optional. Name to display for this config.
     hostUrl: The URL of the github enterprise host the configuration is for.
-    name: The full resource name for the GitHubEnterpriseConfig For example: "
-      projects/{$project_id}/locations/{$location_id}/githubEnterpriseConfigs/
-      {$config_id}"
+    name: Identifier. The full resource name for the GitHubEnterpriseConfig
+      For example: "projects/{$project_id}/locations/{$location_id}/githubEnte
+      rpriseConfigs/{$config_id}"
     peeredNetwork: Optional. The network to be used when reaching out to the
       GitHub Enterprise server. The VPC network must be enabled for private
       service connection. This should be set if the GitHub Enterprise server
@@ -3527,14 +3533,15 @@ class GitHubRepositorySettingList(_messages.Message):
 
 
 class GitLabConfig(_messages.Message):
-  r"""GitLabConfig represents the configuration for a GitLab integration.
+  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated. GitLabConfig
+  represents the configuration for a GitLab integration.
 
   Fields:
     connectedRepositories: Connected GitLab.com or GitLabEnterprise
       repositories for this config.
     createTime: Output only. Time when the config was created.
     enterpriseConfig: Optional. GitLabEnterprise config.
-    name: The resource name for the config.
+    name: Identifier. The resource name for the config.
     secrets: Required. Secret Manager secrets needed by the config.
     username: Username of the GitLab.com or GitLab Enterprise account Cloud
       Build will use.
@@ -3552,8 +3559,9 @@ class GitLabConfig(_messages.Message):
 
 
 class GitLabConnectedRepository(_messages.Message):
-  r"""GitLabConnectedRepository represents a GitLab connected repository
-  request response.
+  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated.
+  GitLabConnectedRepository represents a GitLab connected repository request
+  response.
 
   Fields:
     parent: The name of the `GitLabConfig` that added connected repository.
@@ -3568,8 +3576,9 @@ class GitLabConnectedRepository(_messages.Message):
 
 
 class GitLabEnterpriseConfig(_messages.Message):
-  r"""GitLabEnterpriseConfig represents the configuration for a
-  GitLabEnterprise integration.
+  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated.
+  GitLabEnterpriseConfig represents the configuration for a GitLabEnterprise
+  integration.
 
   Fields:
     hostUri: Immutable. The URI of the GitlabEnterprise host.
@@ -3585,8 +3594,9 @@ class GitLabEnterpriseConfig(_messages.Message):
 
 
 class GitLabEventsConfig(_messages.Message):
-  r"""GitLabEventsConfig describes the configuration of a trigger that creates
-  a build whenever a GitLab event is received.
+  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated.
+  GitLabEventsConfig describes the configuration of a trigger that creates a
+  build whenever a GitLab event is received.
 
   Fields:
     gitlabConfig: Output only. The GitLabConfig specified in the
@@ -3606,7 +3616,8 @@ class GitLabEventsConfig(_messages.Message):
 
 
 class GitLabRepository(_messages.Message):
-  r"""Proto Representing a GitLabRepository
+  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated. Proto
+  Representing a GitLabRepository
 
   Fields:
     browseUri: Link to the browse repo page on the GitLab instance
@@ -3640,7 +3651,8 @@ class GitLabRepositoryId(_messages.Message):
 
 
 class GitLabSecrets(_messages.Message):
-  r"""GitLabSecrets represents the secrets in Secret Manager for a GitLab
+  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated.
+  GitLabSecrets represents the secrets in Secret Manager for a GitLab
   integration.
 
   Fields:
@@ -4251,7 +4263,8 @@ class ListGitHubInstallationsResponse(_messages.Message):
 
 
 class ListGitLabConfigsResponse(_messages.Message):
-  r"""RPC response object returned by ListGitLabConfigs RPC method.
+  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated. RPC response
+  object returned by ListGitLabConfigs RPC method.
 
   Fields:
     gitlabConfigs: A list of GitLabConfigs
@@ -4264,7 +4277,8 @@ class ListGitLabConfigsResponse(_messages.Message):
 
 
 class ListGitLabRepositoriesResponse(_messages.Message):
-  r"""RPC response object returned by the ListGitLabRepositories RPC method.
+  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated. RPC response
+  object returned by the ListGitLabRepositories RPC method.
 
   Fields:
     gitlabRepositories: List of GitLab repositories
@@ -4924,8 +4938,8 @@ class RemoveBitbucketServerConnectedRepositoryRequest(_messages.Message):
 
 
 class RemoveGitLabConnectedRepositoryRequest(_messages.Message):
-  r"""RPC request object accepted by RemoveGitLabConnectedRepository RPC
-  method.
+  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated. RPC request
+  object accepted by RemoveGitLabConnectedRepository RPC method.
 
   Fields:
     connectedRepository: The connected repository to remove.
@@ -5246,8 +5260,9 @@ class SecurityConfig(_messages.Message):
 
 
 class ServiceDirectoryConfig(_messages.Message):
-  r"""ServiceDirectoryConfig represents Service Directory configuration for a
-  SCM host connection.
+  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated.
+  ServiceDirectoryConfig represents Service Directory configuration for a SCM
+  host connection.
 
   Fields:
     service: The Service Directory service name. Format: projects/{project}/lo
@@ -5708,7 +5723,8 @@ class UpdateGitHubEnterpriseConfigOperationMetadata(_messages.Message):
 
 
 class UpdateGitLabConfigOperationMetadata(_messages.Message):
-  r"""Metadata for `UpdateGitLabConfig` operation.
+  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated. Metadata for
+  `UpdateGitLabConfig` operation.
 
   Fields:
     completeTime: Time the operation was completed.

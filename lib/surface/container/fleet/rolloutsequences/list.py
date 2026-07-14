@@ -16,17 +16,14 @@
 
 from __future__ import annotations
 
-from typing import Generator
-
 from googlecloudsdk.api_lib.container.fleet import client
+from googlecloudsdk.api_lib.container.fleet import types
 from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.container.fleet import flags as fleet_flags
 from googlecloudsdk.command_lib.container.fleet import util as fleet_util
-from googlecloudsdk.generated_clients.apis.gkehub.v1alpha import gkehub_v1alpha_messages as alpha_messages
-from googlecloudsdk.generated_clients.apis.gkehub.v1beta import gkehub_v1beta_messages as beta_messages
 
 
 _EXAMPLES = """
@@ -37,7 +34,9 @@ $ {command}
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class List(base.ListCommand):
   """List all rollout sequences."""
 
@@ -53,9 +52,7 @@ class List(base.ListCommand):
 
   def Run(
       self, args: parser_extensions.Namespace
-  ) -> Generator[
-      alpha_messages.Operation | beta_messages.Operation, None, None
-  ]:
+  ) -> types.RolloutSequenceGenerator:
     """Runs the rollout sequence list command.
 
     Args:

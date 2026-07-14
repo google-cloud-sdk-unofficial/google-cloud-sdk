@@ -15,6 +15,8 @@
 """Command for running jobs."""
 
 import copy
+import subprocess
+import time
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
@@ -26,9 +28,13 @@ from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run import stages
+from googlecloudsdk.command_lib.run import streaming
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import progress_tracker
 
 
@@ -81,6 +87,13 @@ class Execute(base.Command):
     polling_group = parser.add_mutually_exclusive_group()
     flags.AddAsyncFlag(polling_group)
     flags.AddWaitForCompletionFlag(polling_group)
+    if cls.ReleaseTrack() in (base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA):
+      polling_group.add_argument(
+          '--tail',
+          action='store_true',
+          default=False,
+          help='Tail logs after launching the execution.',
+      )
     # No output by default, can be overridden by --format
     parser.display_info.AddFormat('none')
     flags.AddTaskTimeoutFlags(parser, for_execution_overrides=True)
@@ -168,6 +181,17 @@ class Execute(base.Command):
             overrides,
         )
 
+      if getattr(args, 'tail', False):
+        e = self._TailLogs(operations, job_ref, e, args)
+        pretty_print.Success(
+            'Execution [{{bold}}{execution}{{reset}}] has '
+            'successfully completed.'.format(execution=e.name)
+        )
+        log.status.Print(
+            messages_util.GetExecutionCreatedMessage(self.ReleaseTrack(), e)
+        )
+        return e
+
       if args.async_:
         pretty_print.Success(
             'Execution [{{bold}}{execution}{{reset}}] is being'
@@ -187,6 +211,75 @@ class Execute(base.Command):
           messages_util.GetExecutionCreatedMessage(self.ReleaseTrack(), e)
       )
       return e
+
+  def _TailLogs(self, operations, job_ref, e, args):
+    """Tail logs for the execution and wait for it to complete."""
+    region = flags.GetRegion(args)
+    project_id = properties.VALUES.core.project.Get(required=True)
+
+    filters = []
+    filters.append('resource.type=%s' % 'cloud_run_job')
+    filters.append(
+        # gcloud-disable-gdu-domain
+        'labels."run.googleapis.com/execution_name"=%s'
+        % e.name
+    )
+    filters.append('resource.labels.location=%s' % region)
+    filters.append('severity>=DEFAULT')
+    filter_str = ' '.join(filters)
+
+    wrapper = streaming.LogStreamingWrapper()
+    log_executable = wrapper.executable
+    log_args = [
+        log_executable,
+        '-projectId',
+        project_id,
+        '-filter',
+        filter_str,
+        '-format',
+        'run',
+    ]
+
+    log.status.Print('Tailing logs for execution [{}]...'.format(e.name))
+
+    env = execution_utils.GetToolEnv()
+    log_proc = subprocess.Popen(log_args, env=env)
+
+    execution_ref = resources.REGISTRY.Parse(
+        e.name,
+        params={'namespacesId': e.namespace},
+        collection='run.namespaces.executions',
+    )
+
+    is_completed = False
+    final_execution = e
+    try:
+      while not is_completed:
+        time.sleep(2)
+        if log_proc.poll() is not None:
+          log.debug(
+              'Log streaming process finished with code {}'.format(
+                  log_proc.returncode
+              )
+          )
+        final_execution = operations.GetExecution(execution_ref)
+        conditions = final_execution.conditions
+        if conditions and conditions.IsTerminal():
+          is_completed = True
+    finally:
+      if log_proc.poll() is None:
+        log_proc.terminate()
+        log_proc.wait()
+
+    if final_execution.conditions.IsFailed():
+      raise exceptions.ExecutionFailedError(
+          'The execution failed.'
+          + messages_util.GetExecutionCreatedMessage(
+              self.ReleaseTrack(), final_execution
+          )
+      )
+
+    return final_execution
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

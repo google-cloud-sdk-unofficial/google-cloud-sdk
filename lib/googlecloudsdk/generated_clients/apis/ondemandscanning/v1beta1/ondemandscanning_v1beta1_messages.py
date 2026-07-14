@@ -460,6 +460,7 @@ class CVSS(_messages.Message):
       CVSS v2, v3.
     ConfidentialityImpactValueValuesEnum: Confidentiality Impact (C). Defined
       in CVSS v2, v3.
+    ExploitMaturityValueValuesEnum: Exploit Maturity (E). Defined in CVSS v4.
     IntegrityImpactValueValuesEnum: Integrity Impact (I). Defined in CVSS v2,
       v3.
     PrivilegesRequiredValueValuesEnum: Privileges Required (PR). Defined in
@@ -488,6 +489,7 @@ class CVSS(_messages.Message):
     availabilityImpact: Availability Impact (A). Defined in CVSS v2, v3.
     baseScore: The base score is a function of the base metric scores.
     confidentialityImpact: Confidentiality Impact (C). Defined in CVSS v2, v3.
+    exploitMaturity: Exploit Maturity (E). Defined in CVSS v4.
     exploitabilityScore: A number attribute.
     impactScore: A number attribute.
     integrityImpact: Integrity Impact (I). Defined in CVSS v2, v3.
@@ -611,6 +613,26 @@ class CVSS(_messages.Message):
     IMPACT_NONE = 3
     IMPACT_PARTIAL = 4
     IMPACT_COMPLETE = 5
+
+  class ExploitMaturityValueValuesEnum(_messages.Enum):
+    r"""Exploit Maturity (E). Defined in CVSS v4.
+
+    Values:
+      EXPLOIT_MATURITY_UNSPECIFIED: Unspecified.
+      EXPLOIT_MATURITY_NOT_DEFINED: Exploit maturity: Not defined (E:X).
+        Defined in CVSS v4.
+      EXPLOIT_MATURITY_ATTACKED: Exploit maturity: Attacked (E:A). Defined in
+        CVSS v4.
+      EXPLOIT_MATURITY_POC: Exploit maturity: Proof-of-concept (E:P). Defined
+        in CVSS v4.
+      EXPLOIT_MATURITY_UNREPORTED: Exploit maturity: Unreported (E:U). Defined
+        in CVSS v4.
+    """
+    EXPLOIT_MATURITY_UNSPECIFIED = 0
+    EXPLOIT_MATURITY_NOT_DEFINED = 1
+    EXPLOIT_MATURITY_ATTACKED = 2
+    EXPLOIT_MATURITY_POC = 3
+    EXPLOIT_MATURITY_UNREPORTED = 4
 
   class IntegrityImpactValueValuesEnum(_messages.Enum):
     r"""Integrity Impact (I). Defined in CVSS v2, v3.
@@ -794,18 +816,19 @@ class CVSS(_messages.Message):
   availabilityImpact = _messages.EnumField('AvailabilityImpactValueValuesEnum', 5)
   baseScore = _messages.FloatField(6, variant=_messages.Variant.FLOAT)
   confidentialityImpact = _messages.EnumField('ConfidentialityImpactValueValuesEnum', 7)
-  exploitabilityScore = _messages.FloatField(8, variant=_messages.Variant.FLOAT)
-  impactScore = _messages.FloatField(9, variant=_messages.Variant.FLOAT)
-  integrityImpact = _messages.EnumField('IntegrityImpactValueValuesEnum', 10)
-  privilegesRequired = _messages.EnumField('PrivilegesRequiredValueValuesEnum', 11)
-  scope = _messages.EnumField('ScopeValueValuesEnum', 12)
-  subsequentSystemAvailabilityImpact = _messages.EnumField('SubsequentSystemAvailabilityImpactValueValuesEnum', 13)
-  subsequentSystemConfidentialityImpact = _messages.EnumField('SubsequentSystemConfidentialityImpactValueValuesEnum', 14)
-  subsequentSystemIntegrityImpact = _messages.EnumField('SubsequentSystemIntegrityImpactValueValuesEnum', 15)
-  userInteraction = _messages.EnumField('UserInteractionValueValuesEnum', 16)
-  vulnerableSystemAvailabilityImpact = _messages.EnumField('VulnerableSystemAvailabilityImpactValueValuesEnum', 17)
-  vulnerableSystemConfidentialityImpact = _messages.EnumField('VulnerableSystemConfidentialityImpactValueValuesEnum', 18)
-  vulnerableSystemIntegrityImpact = _messages.EnumField('VulnerableSystemIntegrityImpactValueValuesEnum', 19)
+  exploitMaturity = _messages.EnumField('ExploitMaturityValueValuesEnum', 8)
+  exploitabilityScore = _messages.FloatField(9, variant=_messages.Variant.FLOAT)
+  impactScore = _messages.FloatField(10, variant=_messages.Variant.FLOAT)
+  integrityImpact = _messages.EnumField('IntegrityImpactValueValuesEnum', 11)
+  privilegesRequired = _messages.EnumField('PrivilegesRequiredValueValuesEnum', 12)
+  scope = _messages.EnumField('ScopeValueValuesEnum', 13)
+  subsequentSystemAvailabilityImpact = _messages.EnumField('SubsequentSystemAvailabilityImpactValueValuesEnum', 14)
+  subsequentSystemConfidentialityImpact = _messages.EnumField('SubsequentSystemConfidentialityImpactValueValuesEnum', 15)
+  subsequentSystemIntegrityImpact = _messages.EnumField('SubsequentSystemIntegrityImpactValueValuesEnum', 16)
+  userInteraction = _messages.EnumField('UserInteractionValueValuesEnum', 17)
+  vulnerableSystemAvailabilityImpact = _messages.EnumField('VulnerableSystemAvailabilityImpactValueValuesEnum', 18)
+  vulnerableSystemConfidentialityImpact = _messages.EnumField('VulnerableSystemConfidentialityImpactValueValuesEnum', 19)
+  vulnerableSystemIntegrityImpact = _messages.EnumField('VulnerableSystemIntegrityImpactValueValuesEnum', 20)
 
 
 class Category(_messages.Message):
@@ -1184,10 +1207,12 @@ class Finding(_messages.Message):
       SCANNER_UNSPECIFIED: Unspecified scanner.
       STATIC: Static scanner.
       LLM: LLM scanner.
+      WS_POLICY: WS_POLICY scanner.
     """
     SCANNER_UNSPECIFIED = 0
     STATIC = 1
     LLM = 2
+    WS_POLICY = 3
 
   class SeverityValueValuesEnum(_messages.Enum):
     r"""Severity of the finding.
@@ -1623,6 +1648,36 @@ class InTotoStatement(_messages.Message):
   slsaProvenance = _messages.MessageField('SlsaProvenance', 4)
   slsaProvenanceZeroTwo = _messages.MessageField('SlsaProvenanceZeroTwo', 5)
   subject = _messages.MessageField('Subject', 6, repeated=True)
+
+
+class IngestionSource(_messages.Message):
+  r"""Indicates where an extracted package originates from.
+
+  Enums:
+    SourceValueValuesEnum:
+
+  Fields:
+    attachmentUri: The attachment URI that this package was extracted from.
+    resourceUrl: The resource URL of the resource that was scanned to find
+      this package.
+    source: A SourceValueValuesEnum attribute.
+  """
+
+  class SourceValueValuesEnum(_messages.Enum):
+    r"""SourceValueValuesEnum enum type.
+
+    Values:
+      SOURCE_UNSPECIFIED: <no description>
+      DOCKER_IMAGE: <no description>
+      SBOM_ATTACHMENT: <no description>
+    """
+    SOURCE_UNSPECIFIED = 0
+    DOCKER_IMAGE = 1
+    SBOM_ATTACHMENT = 2
+
+  attachmentUri = _messages.StringField(1)
+  resourceUrl = _messages.StringField(2)
+  source = _messages.EnumField('SourceValueValuesEnum', 3)
 
 
 class Justification(_messages.Message):
@@ -2226,6 +2281,9 @@ class PackageData(_messages.Message):
     hashDigest: HashDigest stores the SHA512 hash digest of the jar file if
       the package is of type Maven. This field will be unset for non Maven
       packages.
+    ingestionSources: The list of sources that were scanned to find this
+      package. This can be a Docker image, an SBOM attachment, or both, for
+      example.
     layerDetails: A LayerDetails attribute.
     licenses: The list of licenses found that are related to a given package.
       Note that licenses may also be stored on the BinarySourceInfo. If there
@@ -2283,17 +2341,18 @@ class PackageData(_messages.Message):
   dependencyChain = _messages.MessageField('LanguagePackageDependency', 5, repeated=True)
   fileLocation = _messages.MessageField('FileLocation', 6, repeated=True)
   hashDigest = _messages.StringField(7)
-  layerDetails = _messages.MessageField('LayerDetails', 8)
-  licenses = _messages.StringField(9, repeated=True)
-  maintainer = _messages.MessageField('Maintainer', 10)
-  os = _messages.StringField(11)
-  osVersion = _messages.StringField(12)
-  package = _messages.StringField(13)
-  packageType = _messages.EnumField('PackageTypeValueValuesEnum', 14)
-  patchedCve = _messages.StringField(15, repeated=True)
-  sourceVersion = _messages.MessageField('PackageVersion', 16)
-  unused = _messages.StringField(17)
-  version = _messages.StringField(18)
+  ingestionSources = _messages.MessageField('IngestionSource', 8, repeated=True)
+  layerDetails = _messages.MessageField('LayerDetails', 9)
+  licenses = _messages.StringField(10, repeated=True)
+  maintainer = _messages.MessageField('Maintainer', 11)
+  os = _messages.StringField(12)
+  osVersion = _messages.StringField(13)
+  package = _messages.StringField(14)
+  packageType = _messages.EnumField('PackageTypeValueValuesEnum', 15)
+  patchedCve = _messages.StringField(16, repeated=True)
+  sourceVersion = _messages.MessageField('PackageVersion', 17)
+  unused = _messages.StringField(18)
+  version = _messages.StringField(19)
 
 
 class PackageIssue(_messages.Message):

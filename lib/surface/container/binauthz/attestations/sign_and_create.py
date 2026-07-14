@@ -34,6 +34,7 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class SignAndCreate(base.CreateCommand):
   r"""Sign and create a Binary Authorization Attestation using a Cloud KMS key.
@@ -178,8 +179,8 @@ class SignAndCreate(base.CreateCommand):
     # to the beta surface or hardcode it e.g. to Beta.
     api_version = apis.GetApiVersion(self.ReleaseTrack())
 
-    key_ref = args.CONCEPTS.keyversion.Parse()
-    key_id = args.public_key_id_override or kms.GetKeyUri(key_ref)
+    key_version_ref = args.CONCEPTS.keyversion.Parse()
+    key_id = args.public_key_id_override or kms.GetKeyUri(key_version_ref)
 
     # TODO(b/138719072): Remove when validation is on by default
     validation_enabled = 'validate' in args and args.validate
@@ -231,12 +232,13 @@ class SignAndCreate(base.CreateCommand):
       )
 
     kms_client = kms.Client()
-    pubkey_response = kms_client.GetPublicKey(key_ref.RelativeName())
+    pubkey_response = kms_client.GetPublicKey(key_version_ref.RelativeName())
 
     sign_response = kms_client.AsymmetricSign(
-        key_ref.RelativeName(),
+        key_version_ref.RelativeName(),
         kms.GetAlgorithmDigestType(pubkey_response.algorithm),
         payload_for_signing,
+        key_version_ref=key_version_ref,
     )
 
     client = containeranalysis.Client(

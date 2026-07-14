@@ -36,74 +36,10 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW,
+                    base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class DescribeGA(base.DescribeCommand):
-  """Describe a Compute Engine managed instance group resize request resource.
-
-  *{command}* describes a Compute Engine managed instance group resize request
-  resource.
-  """
-
-  detailed_help = DETAILED_HELP
-
-  @staticmethod
-  def Args(parser):
-    instance_groups_flags.MakeZonalInstanceGroupManagerArg().AddArgument(
-        parser)
-    parser.add_argument(
-        '--resize-request',
-        metavar='RESIZE_REQUEST_NAME',
-        type=str,
-        required=True,
-        help="""The name of the resize request to describe.""")
-
-  def Run(self, args):
-    """Creates and issues an instanceGroupManagerResizeRequests.get request.
-
-    Args:
-      args: the argparse arguments that this command was invoked with.
-
-    Returns:
-      Detailed information about resize request.
-    """
-
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    resource_arg = instance_groups_flags.MakeZonalInstanceGroupManagerArg()
-    igm_ref = self._GetIgmRef(args, holder, resource_arg)
-    return self._MakeRequest(args, holder, igm_ref)
-
-  @classmethod
-  def _GetIgmRef(cls, args, holder, resource_arg):
-    igm_ref = resource_arg.ResolveAsResource(
-        args,
-        holder.resources,
-        default_scope=compute_scope.ScopeEnum.ZONE,
-        scope_lister=flags.GetDefaultScopeLister(holder.client))
-    return igm_ref
-
-  @classmethod
-  def _MakeRequest(cls, args, holder, igm_ref):
-    client = holder.client
-    if igm_ref.Collection() == 'compute.instanceGroupManagers':
-      requests = [(
-          client.apitools_client.instanceGroupManagerResizeRequests,
-          'Get',
-          client.messages.ComputeInstanceGroupManagerResizeRequestsGetRequest(
-              project=igm_ref.project,
-              zone=igm_ref.zone,
-              instanceGroupManager=igm_ref.instanceGroupManager,
-              resizeRequest=args.resize_request,
-          ),
-      )]
-      return client.MakeRequests(requests)[0]
-    raise ValueError(
-        'Unknown reference type {0}'.format(igm_ref.Collection())
-    )
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class Describe(DescribeGA):
   """Describe a Compute Engine managed instance group resize request resource.
 
   *{command}* describes a Compute Engine managed instance group resize request
@@ -124,7 +60,14 @@ class Describe(DescribeGA):
         help="""The name of the resize request to describe.""")
 
   def Run(self, args):
-    """Creates and issues an instanceGroupManagerResizeRequests.get request."""
+    """Creates and issues an instanceGroupManagerResizeRequests.get request.
+
+    Args:
+      args: the argparse arguments that this command was invoked with.
+
+    Returns:
+      Detailed information about resize request.
+    """
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     resource_arg = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
@@ -137,8 +80,7 @@ class Describe(DescribeGA):
         args,
         holder.resources,
         default_scope=compute_scope.ScopeEnum.ZONE,
-        scope_lister=flags.GetDefaultScopeLister(holder.client),
-    )
+        scope_lister=flags.GetDefaultScopeLister(holder.client))
 
   @classmethod
   def _MakeRequest(cls, args, holder, igm_ref):

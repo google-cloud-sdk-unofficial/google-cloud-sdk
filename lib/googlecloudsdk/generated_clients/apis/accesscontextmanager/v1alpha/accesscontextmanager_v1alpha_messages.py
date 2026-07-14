@@ -494,18 +494,50 @@ class AccesscontextmanagerAccessPoliciesServicePerimetersDeleteRequest(_messages
 class AccesscontextmanagerAccessPoliciesServicePerimetersGetRequest(_messages.Message):
   r"""A AccesscontextmanagerAccessPoliciesServicePerimetersGetRequest object.
 
+  Enums:
+    DeletedPrincipalSyntaxValueValuesEnum: Optional. If true, the response
+      will contain the deleted principal syntax for identities that support
+      it.
+
   Fields:
+    deletedPrincipalSyntax: Optional. If true, the response will contain the
+      deleted principal syntax for identities that support it.
     name: Required. Resource name for the Service Perimeter. Format:
       `accessPolicies/{policy_id}/servicePerimeters/{service_perimeters_id}`
   """
 
-  name = _messages.StringField(1, required=True)
+  class DeletedPrincipalSyntaxValueValuesEnum(_messages.Enum):
+    r"""Optional. If true, the response will contain the deleted principal
+    syntax for identities that support it.
+
+    Values:
+      DELETED_PRINCIPAL_SYNTAX_SUPPORT_UNSPECIFIED: Deleted principal syntax
+        support was not specified.
+      DELETED_PRINCIPAL_SYNTAX_SUPPORT_DISABLED: Deleted principal syntax is
+        disabled and no identities in the request or response will contain
+        deleted principal syntax.
+      DELETED_PRINCIPAL_SYNTAX_SUPPORT_ENABLED: The request and response can
+        contain identities with deleted IAM principal syntax.
+    """
+    DELETED_PRINCIPAL_SYNTAX_SUPPORT_UNSPECIFIED = 0
+    DELETED_PRINCIPAL_SYNTAX_SUPPORT_DISABLED = 1
+    DELETED_PRINCIPAL_SYNTAX_SUPPORT_ENABLED = 2
+
+  deletedPrincipalSyntax = _messages.EnumField('DeletedPrincipalSyntaxValueValuesEnum', 1)
+  name = _messages.StringField(2, required=True)
 
 
 class AccesscontextmanagerAccessPoliciesServicePerimetersListRequest(_messages.Message):
   r"""A AccesscontextmanagerAccessPoliciesServicePerimetersListRequest object.
 
+  Enums:
+    DeletedPrincipalSyntaxValueValuesEnum: Optional. If true, the response
+      will contain the deleted principal syntax for identities that support
+      it.
+
   Fields:
+    deletedPrincipalSyntax: Optional. If true, the response will contain the
+      deleted principal syntax for identities that support it.
     pageSize: Number of Service Perimeters to include in the list. Default
       100.
     pageToken: Next page token for the next batch of Service Perimeter
@@ -514,16 +546,42 @@ class AccesscontextmanagerAccessPoliciesServicePerimetersListRequest(_messages.M
       Perimeters from. Format: `accessPolicies/{policy_id}`
   """
 
-  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
+  class DeletedPrincipalSyntaxValueValuesEnum(_messages.Enum):
+    r"""Optional. If true, the response will contain the deleted principal
+    syntax for identities that support it.
+
+    Values:
+      DELETED_PRINCIPAL_SYNTAX_SUPPORT_UNSPECIFIED: Deleted principal syntax
+        support was not specified.
+      DELETED_PRINCIPAL_SYNTAX_SUPPORT_DISABLED: Deleted principal syntax is
+        disabled and no identities in the request or response will contain
+        deleted principal syntax.
+      DELETED_PRINCIPAL_SYNTAX_SUPPORT_ENABLED: The request and response can
+        contain identities with deleted IAM principal syntax.
+    """
+    DELETED_PRINCIPAL_SYNTAX_SUPPORT_UNSPECIFIED = 0
+    DELETED_PRINCIPAL_SYNTAX_SUPPORT_DISABLED = 1
+    DELETED_PRINCIPAL_SYNTAX_SUPPORT_ENABLED = 2
+
+  deletedPrincipalSyntax = _messages.EnumField('DeletedPrincipalSyntaxValueValuesEnum', 1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
 
 
 class AccesscontextmanagerAccessPoliciesServicePerimetersPatchRequest(_messages.Message):
   r"""A AccesscontextmanagerAccessPoliciesServicePerimetersPatchRequest
   object.
 
+  Enums:
+    DeletedPrincipalSyntaxValueValuesEnum: Optional. If true, the response
+      will contain the deleted principal syntax for identities that support it
+      and the request can contain identities with deleted principal syntax.
+
   Fields:
+    deletedPrincipalSyntax: Optional. If true, the response will contain the
+      deleted principal syntax for identities that support it and the request
+      can contain identities with deleted principal syntax.
     name: Identifier. Resource name for the `ServicePerimeter`. Format:
       `accessPolicies/{access_policy}/servicePerimeters/{service_perimeter}`.
       The `service_perimeter` component must begin with a letter, followed by
@@ -535,9 +593,28 @@ class AccesscontextmanagerAccessPoliciesServicePerimetersPatchRequest(_messages.
       non-empty.
   """
 
-  name = _messages.StringField(1, required=True)
-  servicePerimeter = _messages.MessageField('ServicePerimeter', 2)
-  updateMask = _messages.StringField(3)
+  class DeletedPrincipalSyntaxValueValuesEnum(_messages.Enum):
+    r"""Optional. If true, the response will contain the deleted principal
+    syntax for identities that support it and the request can contain
+    identities with deleted principal syntax.
+
+    Values:
+      DELETED_PRINCIPAL_SYNTAX_SUPPORT_UNSPECIFIED: Deleted principal syntax
+        support was not specified.
+      DELETED_PRINCIPAL_SYNTAX_SUPPORT_DISABLED: Deleted principal syntax is
+        disabled and no identities in the request or response will contain
+        deleted principal syntax.
+      DELETED_PRINCIPAL_SYNTAX_SUPPORT_ENABLED: The request and response can
+        contain identities with deleted IAM principal syntax.
+    """
+    DELETED_PRINCIPAL_SYNTAX_SUPPORT_UNSPECIFIED = 0
+    DELETED_PRINCIPAL_SYNTAX_SUPPORT_DISABLED = 1
+    DELETED_PRINCIPAL_SYNTAX_SUPPORT_ENABLED = 2
+
+  deletedPrincipalSyntax = _messages.EnumField('DeletedPrincipalSyntaxValueValuesEnum', 1)
+  name = _messages.StringField(2, required=True)
+  servicePerimeter = _messages.MessageField('ServicePerimeter', 3)
+  updateMask = _messages.StringField(4)
 
 
 class AccesscontextmanagerAccessPoliciesServicePerimetersReplaceAllRequest(_messages.Message):
@@ -2059,10 +2136,16 @@ class Project(_messages.Message):
   access.
 
   Fields:
-    projectNumber: The GCP project number. Example: "projects/1234567890"
+    name: The GCP project resource name. Format: "projects/{project_number}"
+      (Only the numeric project name variation is supported). Example:
+      "projects/1234567890"
+    projectNumber: Deprecated: Use name instead. See https://docs.google.com/d
+      ocument/d/1HFTsbfc6G5bI84wKZaO1Md9pOoUX7Thc6rWKGlYAHek/edit?tab=t.0#head
+      ing=h.4dd7ysci2jas for context.
   """
 
-  projectNumber = _messages.StringField(1)
+  name = _messages.StringField(1)
+  projectNumber = _messages.StringField(2)
 
 
 class ReplaceAccessLevelsRequest(_messages.Message):

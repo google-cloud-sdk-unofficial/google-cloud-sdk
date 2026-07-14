@@ -25,7 +25,10 @@ class AbortInfo(_messages.Message):
     projectsMissingPermission: List of project IDs the user specified in the
       request but lacks access to. In this case, analysis is aborted with the
       PERMISSION_DENIED cause.
-    resourceUri: URI of the resource that caused the abort.
+    resourceUri: URI of the resource that caused the abort. Format: *
+      `projects/{project_id}/global/networks/{network_id}` (VPC network) *
+      `projects/{project_id}/zones/{zone}/instances/{instance_id}` (VM
+      instance)
   """
 
   class CauseValueValuesEnum(_messages.Enum):
@@ -207,7 +210,8 @@ class AppEngineVersionInfo(_messages.Message):
     displayName: Name of an App Engine version.
     environment: App Engine execution environment for a version.
     runtime: Runtime of the App Engine version.
-    uri: URI of an App Engine version.
+    uri: URI of the App Engine version. Format:
+      `apps/{app_id}/services/{service_id}/versions/{version_id}`
   """
 
   displayName = _messages.StringField(1)
@@ -386,7 +390,8 @@ class CloudFunctionInfo(_messages.Message):
   Fields:
     displayName: Name of a Cloud Function.
     location: Location in which the Cloud Function is deployed.
-    uri: URI of a Cloud Function.
+    uri: URI of the Cloud Function. Format:
+      `projects/{project_id}/locations/{location}/functions/{function_id}`
     versionId: Latest successfully deployed version id of the Cloud Function.
   """
 
@@ -402,7 +407,8 @@ class CloudRunJobInfo(_messages.Message):
   Fields:
     displayName: Name of a Cloud Run job.
     location: Location in which this job is deployed.
-    uri: URI of a Cloud Run job.
+    uri: URI of the Cloud Run job. Format:
+      `projects/{project_id}/locations/{location}/jobs/{job_id}`
   """
 
   displayName = _messages.StringField(1)
@@ -432,8 +438,10 @@ class CloudRunRevisionInfo(_messages.Message):
   Fields:
     displayName: Name of a Cloud Run revision.
     location: Location in which this revision is deployed.
-    serviceUri: URI of Cloud Run service this revision belongs to.
-    uri: URI of a Cloud Run revision.
+    serviceUri: URI of Cloud Run service this revision belongs to. Format:
+      `projects/{project_id}/locations/{location}/services/{service_id}`
+    uri: URI of the Cloud Run revision. Format:
+      `projects/{project_id}/locations/{location}/revisions/{revision_id}`
   """
 
   displayName = _messages.StringField(1)
@@ -450,9 +458,11 @@ class CloudSQLInstanceInfo(_messages.Message):
     externalIp: External IP address of a Cloud SQL instance.
     internalIp: Internal IP address of a Cloud SQL instance.
     networkUri: URI of a Cloud SQL instance network or empty string if the
-      instance does not have one.
+      instance does not have one. In format
+      "projects/{project}/global/networks/{network}".
     region: Region in which the Cloud SQL instance is running.
-    uri: URI of a Cloud SQL instance.
+    uri: URI of a Cloud SQL instance in format
+      "projects/{project}/instances/{instance}"
   """
 
   displayName = _messages.StringField(1)
@@ -567,7 +577,10 @@ class DeliverInfo(_messages.Message):
     ipAddress: IP address of the target (if applicable).
     pscGoogleApiTarget: PSC Google API target the packet is delivered to (if
       applicable).
-    resourceUri: URI of the resource that the packet is delivered to.
+    resourceUri: URI of the resource that the packet is delivered to. For
+      example: * `"projects/{project}/zones/{zone}/instances/{instance}"` * `"
+      projects/{project}/regions/{region}/networkEndpointGroups/{network_endpo
+      int_group}"`
     storageBucket: Name of the Cloud Storage Bucket the packet is delivered to
       (if applicable).
     target: Target type where the packet is delivered to.
@@ -677,12 +690,14 @@ class DirectVpcEgressConnectionInfo(_messages.Message):
   egress connection.
 
   Fields:
-    networkUri: URI of direct access network.
+    networkUri: URI of the VPC network for direct egress. Format:
+      `projects/{project_id}/global/networks/{network_id}`
     region: Region in which the Direct VPC egress is deployed.
     selectedIpAddress: Selected starting IP address, from the selected IP
       range.
     selectedIpRange: Selected IP range.
-    subnetworkUri: URI of direct access subnetwork.
+    subnetworkUri: URI of the subnetwork for direct egress. Format:
+      `projects/{project_id}/regions/{region}/subnetworks/{subnetwork_id}`
   """
 
   networkUri = _messages.StringField(1)
@@ -704,7 +719,9 @@ class DropInfo(_messages.Message):
       IP address (if relevant).
     destinationIp: Destination IP address of the dropped packet (if relevant).
     region: Region of the dropped packet (if relevant).
-    resourceUri: URI of the resource that caused the drop.
+    resourceUri: URI of the resource that caused the drop. Format: *
+      `projects/{project_id}/global/firewalls/{firewall_id}` (firewall rule) *
+      `projects/{project_id}/global/routes/{route_id}` (route)
     sourceGeolocationCode: Geolocation (region code) of the source IP address
       (if relevant).
     sourceIp: Source IP address of the dropped packet (if relevant).
@@ -1493,12 +1510,14 @@ class EndpointInfo(_messages.Message):
   Fields:
     destinationIp: Destination IP address.
     destinationNetworkUri: URI of the network where this packet is sent to.
+      Format: `projects/{project_id}/global/networks/{network_id}`
     destinationPort: Destination port. Only valid when protocol is TCP or UDP.
     protocol: IP protocol in string format, for example: "TCP", "UDP", "ICMP".
     sourceAgentUri: URI of the source telemetry agent this packet originates
       from.
     sourceIp: Source IP address.
     sourceNetworkUri: URI of the network where this packet originates from.
+      Format: `projects/{project_id}/global/networks/{network_id}`
     sourcePort: Source port. Only valid when protocol is TCP or UDP.
   """
 
@@ -1563,8 +1582,9 @@ class FirewallInfo(_messages.Message):
       empty for firewall policy rules.
     firewallRuleType: The firewall rule's type.
     networkUri: The URI of the VPC network that the firewall rule is
-      associated with. This field is not applicable to hierarchical firewall
-      policy rules.
+      associated with in format
+      "projects/{project}/global/networks/{network}". This field is not
+      applicable to hierarchical firewall policy rules.
     policy: The name of the firewall policy that this rule is associated with.
       This field is not applicable to VPC firewall rules and implied VPC
       firewall rules.
@@ -1573,15 +1593,21 @@ class FirewallInfo(_messages.Message):
       implied VPC firewall rules.
     policyUri: The URI of the firewall policy that this rule is associated
       with. This field is not applicable to VPC firewall rules and implied VPC
-      firewall rules.
+      firewall rules. Format: *
+      `locations/global/firewallPolicies/{policy_id}` (hierarchical policy) *
+      `projects/{project_id}/global/firewallPolicies/{policy_id}` (global
+      network firewall policy) *
+      `projects/{project_id}/regions/{region}/firewallPolicies/{policy_id}`
+      (regional network firewall policy)
     priority: The priority of the firewall rule.
     targetServiceAccounts: The target service accounts specified by the
       firewall rule.
     targetTags: The target tags defined by the VPC firewall rule. This field
       is not applicable to firewall policy rules.
     targetType: Target type of the firewall rule.
-    uri: The URI of the firewall rule. This field is not applicable to implied
-      VPC firewall rules.
+    uri: The URI of the firewall rule in format
+      "projects/{project}/global/firewalls/{firewall}". This field is not
+      applicable to implied VPC firewall rules.
   """
 
   class FirewallRuleTypeValueValuesEnum(_messages.Enum):
@@ -1678,7 +1704,11 @@ class ForwardInfo(_messages.Message):
 
   Fields:
     ipAddress: IP address of the target (if applicable).
-    resourceUri: URI of the resource that the packet is forwarded to.
+    resourceUri: URI of the resource that the packet is forwarded to. Format:
+      * `projects/{project_id}/global/networks/{network_id}` (VPC peering
+      network) *
+      `projects/{project_id}/regions/{region}/vpnGateways/{vpn_gateway_id}`
+      (VPN gateway)
     target: Target type where this packet is forwarded to.
   """
 
@@ -1730,15 +1760,21 @@ class ForwardingRuleInfo(_messages.Message):
       the packet.
     matchedProtocol: Protocol defined in the forwarding rule that matches the
       packet.
-    networkUri: Network URI.
+    networkUri: URI of a VPC network where the forwarding rule is located in
+      format "projects/{project}/global/networks/{network}".
     pscGoogleApiTarget: PSC Google API target this forwarding rule targets (if
       applicable).
     pscServiceAttachmentUri: URI of the PSC service attachment this forwarding
-      rule targets (if applicable).
+      rule targets (if applicable) in format "projects/{project}/regions/{regi
+      on}/serviceAttachments/{service_attachment}".
     region: Region of the forwarding rule. Set only for regional forwarding
       rules.
     target: Target type of the forwarding rule.
-    uri: URI of the forwarding rule.
+    uri: URI of the forwarding rule in format
+      "projects/{project}/global/forwardingRules/{forwarding_rule}" (global)
+      or
+      "projects/{project}/regions/{region}/forwardingRules/{forwarding_rule}"
+      (regional).
     vip: VIP of the forwarding rule.
   """
 
@@ -1760,8 +1796,13 @@ class GKEMasterInfo(_messages.Message):
   (GKE) cluster master.
 
   Fields:
-    clusterNetworkUri: URI of a GKE cluster network.
-    clusterUri: URI of a GKE cluster.
+    clusterNetworkUri: URI of the GKE cluster network. Format:
+      `projects/{project_id}/global/networks/{network_id}`
+    clusterUri: URI of the GKE cluster. Format: *
+      `projects/{project_id}/locations/{location}/clusters/{cluster_id}`
+      (regional cluster) *
+      `projects/{project_id}/zones/{zone}/clusters/{cluster_id}` (zonal
+      cluster)
     dnsEndpoint: DNS endpoint of a GKE cluster control plane.
     externalIp: External IP address of a GKE cluster control plane.
     internalIp: Internal IP address of a GKE cluster control plane.
@@ -1903,7 +1944,8 @@ class GkePodInfo(_messages.Message):
   Fields:
     ipAddress: IP address of a GKE Pod. If the Pod is dual-stack, this is the
       IP address relevant to the trace.
-    networkUri: URI of the network containing the GKE Pod.
+    networkUri: URI of the network containing the GKE Pod. Format:
+      `projects/{project_id}/global/networks/{network_id}`
     podUri: URI of a GKE Pod. For Pods in regional Clusters, the URI format
       is: `projects/{project}/locations/{location}/clusters/{cluster}/k8s/name
       spaces/{namespace}/pods/{pod}` For Pods in zonal Clusters, the URI
@@ -2059,7 +2101,8 @@ class HybridSubnetInfo(_messages.Message):
     displayName: Name of a hybrid subnet.
     region: Name of a Google Cloud region where the hybrid subnet is
       configured.
-    uri: URI of a hybrid subnet.
+    uri: URI of the hybrid subnet. Format:
+      `projects/{project_id}/regions/{region}/subnetworks/{subnetwork_id}`
   """
 
   displayName = _messages.StringField(1)
@@ -2079,14 +2122,17 @@ class InstanceInfo(_messages.Message):
     interface: Name of the network interface of a Compute Engine instance.
     internalIp: Internal IP address of the network interface.
     networkTags: Network tags configured on the instance.
-    networkUri: URI of a Compute Engine network.
+    networkUri: URI of a Compute Engine network in format
+      "projects/{project}/global/networks/{network}"
     pscNetworkAttachmentUri: URI of the PSC network attachment the NIC is
-      attached to (if relevant).
+      attached to (if relevant) in format "projects/{project}/regions/{region}
+      /networkAttachments/{network_attachment}"
     running: Indicates whether the Compute Engine instance is running.
       Deprecated: use the `status` field instead.
     serviceAccount: Service account authorized for the instance.
     status: The status of the instance.
-    uri: URI of a Compute Engine instance.
+    uri: URI of a Compute Engine instance in format
+      "projects/{project}/zones/{zone}/instances/{instance}"
   """
 
   class StatusValueValuesEnum(_messages.Enum):
@@ -2122,15 +2168,17 @@ class InterconnectAttachmentInfo(_messages.Message):
 
   Fields:
     cloudRouterUri: URI of the Cloud Router to be used for dynamic routing.
+      Format: `projects/{project_id}/regions/{region}/routers/{router_id}`
     displayName: Name of an Interconnect attachment.
-    interconnectUri: URI of the Interconnect where the Interconnect attachment
-      is configured.
+    interconnectUri: URI of the Interconnect. Format:
+      `projects/{project_id}/global/interconnects/{interconnect_id}`
     l2AttachmentMatchedIpAddress: Appliance IP address that was matched for
       L2_DEDICATED attachments.
     region: Name of a Google Cloud region where the Interconnect attachment is
       configured.
     type: The type of interconnect attachment this is.
-    uri: URI of an Interconnect attachment.
+    uri: URI of the Interconnect attachment. Format: `projects/{project_id}/re
+      gions/{region}/interconnectAttachments/{attachment_id}`
   """
 
   class TypeValueValuesEnum(_messages.Enum):
@@ -2361,7 +2409,14 @@ class LoadBalancerBackend(_messages.Message):
       probes from health check IP ranges.
     healthCheckFirewallState: State of the health check firewall
       configuration.
-    uri: URI of a Compute Engine instance or network endpoint.
+    uri: URI of the backend instance or network endpoint. Format: *
+      `projects/{project_id}/zones/{zone}/instances/{instance_id}` (instance)
+      * `projects/{project_id}/zones/{zone}/networkEndpointGroups/{neg_id}`
+      (zonal NEG) *
+      `projects/{project_id}/regions/{region}/networkEndpointGroups/{neg_id}`
+      (regional NEG) *
+      `projects/{project_id}/global/networkEndpointGroups/{neg_id}` (global
+      NEG)
   """
 
   class HealthCheckFirewallStateValueValuesEnum(_messages.Enum):
@@ -2403,9 +2458,13 @@ class LoadBalancerBackendInfo(_messages.Message):
 
   Fields:
     backendBucketUri: URI of the backend bucket this backend targets (if
-      applicable).
+      applicable) in format
+      "projects/{project}/global/backendBuckets/{backend_bucket}".
     backendServiceUri: URI of the backend service this backend belongs to (if
-      applicable).
+      applicable) in format
+      "projects/{project}/regions/{region}/backendServices/{backend_service}"
+      (regional) or
+      "projects/{project}/global/backendServices/{backend_service}" (global).
     healthCheckFirewallsConfigState: Output only. Health check firewalls
       configuration state for the backend. This is a result of the static
       firewall analysis (verifying that health check traffic from required IP
@@ -2414,20 +2473,33 @@ class LoadBalancerBackendInfo(_messages.Message):
       documentation for more information: https://cloud.google.com/load-
       balancing/docs/firewall-rules
     healthCheckUri: URI of the health check attached to this backend (if
-      applicable).
+      applicable). Format: *
+      `projects/{project_id}/global/healthChecks/{health_check_id}` *
+      `projects/{project_id}/regions/{region}/healthChecks/{health_check_id}`
+      * `projects/{project_id}/global/httpHealthChecks/{health_check_id}`
+      (legacy)
     instanceGroupUri: URI of the instance group this backend belongs to (if
-      applicable).
-    instanceUri: URI of the backend instance (if applicable). Populated for
+      applicable) in format
+      "projects/{project}/zones/{zone}/instanceGroups/{instance_group}".
+    instanceUri: URI of the backend instance (if applicable) in format
+      "projects/{project}/zones/{zone}/instances/{instance}". Populated for
       instance group backends, and zonal NEG backends.
     name: Display name of the backend. For example, it might be an instance
       name for the instance group backends, or an IP address and port for
       zonal network endpoint group backends.
     networkEndpointGroupUri: URI of the network endpoint group this backend
-      belongs to (if applicable).
+      belongs to (if applicable) Format: *
+      `projects/{project_id}/zones/{zone}/networkEndpointGroups/{neg_id}`
+      (zonal NEG) *
+      `projects/{project_id}/regions/{region}/networkEndpointGroups/{neg_id}`
+      (regional NEG) *
+      `projects/{project_id}/global/networkEndpointGroups/{neg_id}` (global
+      NEG)
     pscGoogleApiTarget: PSC Google API target this PSC NEG backend targets (if
       applicable).
     pscServiceAttachmentUri: URI of the PSC service attachment this PSC NEG
-      backend targets (if applicable).
+      backend targets (if applicable) in format "projects/{project}/regions/{r
+      egion}/serviceAttachments/{service_attachment}".
   """
 
   class HealthCheckFirewallsConfigStateValueValuesEnum(_messages.Enum):
@@ -2483,7 +2555,13 @@ class LoadBalancerInfo(_messages.Message):
 
   Fields:
     backendType: Type of load balancer's backend configuration.
-    backendUri: Backend configuration URI.
+    backendUri: URI of the backend associated with the load balancer. Format:
+      * `projects/{project_id}/regions/{region}/backendServices/{backend_servi
+      ce_id}` *
+      `projects/{project_id}/global/backendServices/{backend_service_id}` *
+      `projects/{project_id}/regions/{region}/targetPools/{target_pool_id}` *
+      `projects/{project_id}/zones/{zone}/targetInstances/{target_instance_id}
+      `
     backends: Information for the loadbalancer backends.
     healthCheckUri: URI of the health check for the load balancer. Deprecated
       and no longer populated as different load balancer backends might have
@@ -2749,7 +2827,8 @@ class NatInfo(_messages.Message):
       CLOUD_NAT.
     natGatewayName: The name of Cloud NAT Gateway. Only valid when type is
       CLOUD_NAT.
-    networkUri: URI of the network where NAT translation takes place.
+    networkUri: URI of the VPC network where NAT translation takes place.
+      Format: `projects/{project_id}/global/networks/{network_id}`
     newDestinationIp: Destination IP address after NAT translation.
     newDestinationPort: Destination port after NAT translation. Only valid
       when protocol is TCP or UDP.
@@ -2763,7 +2842,8 @@ class NatInfo(_messages.Message):
     oldSourcePort: Source port before NAT translation. Only valid when
       protocol is TCP or UDP.
     protocol: IP protocol in string format, for example: "TCP", "UDP", "ICMP".
-    routerUri: Uri of the Cloud Router. Only valid when type is CLOUD_NAT.
+    routerUri: URI of the Cloud Router. Only valid when type is CLOUD_NAT.
+      Format: `projects/{project_id}/regions/{region}/routers/{router_id}`
     type: Type of NAT.
   """
 
@@ -2829,10 +2909,12 @@ class NetworkInfo(_messages.Message):
     matchedIpRange: The IP range of the subnet matching the source IP address
       of the test.
     matchedSubnetUri: URI of the subnet matching the source IP address of the
-      test.
+      test in format
+      "projects/{project}/regions/{region}/subnetworks/{subnetwork}"
     region: The region of the subnet matching the source IP address of the
       test.
-    uri: URI of a Compute Engine network.
+    uri: URI of a Compute Engine network in format
+      "projects/{project}/global/networks/{network}"
   """
 
   displayName = _messages.StringField(1)
@@ -3958,7 +4040,8 @@ class NgfwPacketInspectionInfo(_messages.Message):
 
   Fields:
     securityProfileGroupUri: URI of the security profile group associated with
-      this firewall packet inspection.
+      this firewall packet inspection. Format: `organizations/{organization_id
+      }/locations/global/securityProfileGroups/{security_profile_group_id}`
   """
 
   securityProfileGroupUri = _messages.StringField(1)
@@ -4311,7 +4394,8 @@ class ProxyConnectionInfo(_messages.Message):
   r"""For display only. Metadata associated with ProxyConnection.
 
   Fields:
-    networkUri: URI of the network where connection is proxied.
+    networkUri: URI of the VPC network where connection is proxied. Format:
+      `projects/{project_id}/global/networks/{network_id}`
     newDestinationIp: Destination IP address of a new connection.
     newDestinationPort: Destination port of a new connection. Only valid when
       protocol is TCP or UDP.
@@ -4325,7 +4409,8 @@ class ProxyConnectionInfo(_messages.Message):
     oldSourcePort: Source port of an original connection. Only valid when
       protocol is TCP or UDP.
     protocol: IP protocol in string format, for example: "TCP", "UDP", "ICMP".
-    subnetUri: Uri of proxy subnet.
+    subnetUri: URI of the proxy subnet. Format:
+      `projects/{project_id}/regions/{region}/subnetworks/{subnetwork_id}`
   """
 
   networkUri = _messages.StringField(1)
@@ -4440,12 +4525,14 @@ class RedisInstanceInfo(_messages.Message):
 
   Fields:
     displayName: Name of a Cloud Redis Instance.
-    networkUri: URI of a Cloud Redis Instance network.
+    networkUri: URI of a Cloud Redis Instance network in format
+      "projects/{project}/global/networks/{network}".
     primaryEndpointIp: Primary endpoint IP address of a Cloud Redis Instance.
     readEndpointIp: Read endpoint IP address of a Cloud Redis Instance (if
       applicable).
     region: Region in which the Cloud Redis Instance is defined.
-    uri: URI of a Cloud Redis Instance.
+    uri: URI of a Cloud Redis Instance in format
+      "projects/{project}/locations/{location}/instances/{instance}"
   """
 
   displayName = _messages.StringField(1)
@@ -4477,7 +4564,8 @@ class RouteInfo(_messages.Message):
       through, or URI of the source peered network. Deprecated in favor of the
       next_hop_uri field, not used in new tests.
     advertisedRouteSourceRouterUri: For ADVERTISED dynamic routes, the URI of
-      the Cloud Router that advertised the corresponding IP prefix.
+      the Cloud Router that advertised the corresponding IP prefix in format
+      "projects/{project}/regions/{region}/routers/{router}".
     destIpRange: Destination IP range of the route.
     destPortRanges: Destination port ranges of the route. POLICY_BASED routes
       only.
@@ -4485,24 +4573,31 @@ class RouteInfo(_messages.Message):
     instanceTags: Instance tags of the route.
     nccHubRouteUri: For PEERING_SUBNET and PEERING_DYNAMIC routes that are
       advertised by NCC Hub, the URI of the corresponding route in NCC Hub's
-      routing table.
-    nccHubUri: URI of the NCC Hub the route is advertised by. PEERING_SUBNET
-      and PEERING_DYNAMIC routes that are advertised by NCC Hub only.
-    nccSpokeUri: URI of the destination NCC Spoke. PEERING_SUBNET and
+      routing table. Format: `projects/{project_id}/locations/global/hubs/{hub
+      _id}/routeTables/{route_table_id}/routes/{route_id}`
+    nccHubUri: URI of the NCC Hub the route is advertised by in format
+      "projects/{project}/locations/global/hubs/{hub}". PEERING_SUBNET and
       PEERING_DYNAMIC routes that are advertised by NCC Hub only.
-    networkUri: URI of a VPC network where route is located.
+    nccSpokeUri: URI of the destination NCC Spoke in format
+      "projects/{project}/locations/{location}/spokes/{spoke}" (regional) or
+      "projects/{project}/locations/global/spokes/{spoke}" (global).
+      PEERING_SUBNET and PEERING_DYNAMIC routes that are advertised by NCC Hub
+      only.
+    networkUri: URI of a VPC network where route is located in format
+      "projects/{project}/global/networks/{network}".
     nextHop: String type of the next hop of the route (for example, "VPN
       tunnel"). Deprecated in favor of the next_hop_type and next_hop_uri
       fields, not used in new tests.
     nextHopNetworkUri: URI of a VPC network where the next hop resource is
-      located.
+      located in format "projects/{project}/global/networks/{network}".
     nextHopType: Type of next hop.
     nextHopUri: URI of the next hop resource.
     originatingRouteDisplayName: For PEERING_SUBNET, PEERING_STATIC and
       PEERING_DYNAMIC routes, the name of the originating
       SUBNET/STATIC/DYNAMIC route.
     originatingRouteUri: For PEERING_SUBNET and PEERING_STATIC routes, the URI
-      of the originating SUBNET/STATIC route.
+      of the originating SUBNET/STATIC route. Format:
+      `projects/{project_id}/global/routes/{route_id}`
     priority: Priority of the route.
     protocols: Protocols of the route. POLICY_BASED routes only.
     region: Region of the route. DYNAMIC, PEERING_DYNAMIC, POLICY_BASED and
@@ -4516,8 +4611,9 @@ class RouteInfo(_messages.Message):
     srcIpRange: Source IP address range of the route. POLICY_BASED routes
       only.
     srcPortRanges: Source port ranges of the route. POLICY_BASED routes only.
-    uri: URI of a route. SUBNET, STATIC, PEERING_SUBNET (only for peering
-      network) and POLICY_BASED routes only.
+    uri: URI of a route in format "projects/{project}/global/routes/{route}".
+      SUBNET, STATIC, PEERING_SUBNET (only for peering network) and
+      POLICY_BASED routes only.
   """
 
   class NextHopTypeValueValuesEnum(_messages.Enum):
@@ -4650,7 +4746,9 @@ class ServerlessNegInfo(_messages.Message):
   endpoint group backend.
 
   Fields:
-    negUri: URI of the serverless network endpoint group.
+    negUri: URI of the serverless network endpoint group in format "projects/{
+      project}/regions/{region}/networkEndpointGroups/{network_endpoint_group}
+      ".
   """
 
   negUri = _messages.StringField(1)
@@ -5198,7 +5296,8 @@ class VpcConnectorInfo(_messages.Message):
   Fields:
     displayName: Name of a VPC connector.
     location: Location in which the VPC connector is deployed.
-    uri: URI of a VPC connector.
+    uri: URI of a VPC connector. Format:
+      `projects/{project_id}/locations/{location}/connectors/{connector_id}`
   """
 
   displayName = _messages.StringField(1)
@@ -5412,14 +5511,18 @@ class VpnGatewayInfo(_messages.Message):
   Fields:
     displayName: Name of a VPN gateway.
     ipAddress: IP address of the VPN gateway.
-    networkUri: URI of a Compute Engine network where the VPN gateway is
-      configured.
+    networkUri: URI of the VPC network where the VPN gateway is configured.
+      Format: `projects/{project_id}/global/networks/{network_id}`
     region: Name of a Google Cloud region where this VPN gateway is
       configured.
-    uri: URI of a VPN gateway.
-    vpnTunnelUri: A VPN tunnel that is associated with this VPN gateway. There
+    uri: URI of the VPN gateway. Format: *
+      `projects/{project_id}/regions/{region}/vpnGateways/{vpn_gateway_id}`
+      (HA VPN gateway) * `projects/{project_id}/regions/{region}/targetVpnGate
+      ways/{target_vpn_gateway_id}` (Classic VPN gateway)
+    vpnTunnelUri: URI of the VPN tunnel associated with the VPN gateway. There
       may be multiple VPN tunnels configured on a VPN gateway, and only the
-      one relevant to the test is displayed.
+      one relevant to the test is displayed. Format:
+      `projects/{project_id}/regions/{region}/vpnTunnels/{vpn_tunnel_id}`
   """
 
   displayName = _messages.StringField(1)
@@ -5438,15 +5541,23 @@ class VpnTunnelInfo(_messages.Message):
 
   Fields:
     displayName: Name of a VPN tunnel.
-    networkUri: URI of a Compute Engine network where the VPN tunnel is
-      configured.
+    networkUri: URI of the VPC network where the VPN tunnel is configured.
+      Format: `projects/{project_id}/global/networks/{network_id}`
     region: Name of a Google Cloud region where this VPN tunnel is configured.
-    remoteGateway: URI of a VPN gateway at remote end of the tunnel.
+    remoteGateway: URI of a VPN gateway at remote end of the tunnel. Format: *
+      `projects/{project_id}/regions/{region}/vpnGateways/{vpn_gateway_id}`
+      (GCP HA VPN gateway) *
+      `projects/{project_id}/global/peerVpnGateways/{peer_vpn_gateway_id}`
+      (GCP peer VPN gateway)
     remoteGatewayIp: Remote VPN gateway's IP address.
     routingType: Type of the routing policy.
-    sourceGateway: URI of the VPN gateway at local end of the tunnel.
+    sourceGateway: URI of the VPN gateway at local end of the tunnel. Format:
+      * `projects/{project_id}/regions/{region}/vpnGateways/{vpn_gateway_id}`
+      (HA VPN gateway) * `projects/{project_id}/regions/{region}/targetVpnGate
+      ways/{target_vpn_gateway_id}` (Classic VPN gateway)
     sourceGatewayIp: Local VPN gateway's IP address.
-    uri: URI of a VPN tunnel.
+    uri: URI of the VPN tunnel. Format:
+      `projects/{project_id}/regions/{region}/vpnTunnels/{vpn_tunnel_id}`
   """
 
   class RoutingTypeValueValuesEnum(_messages.Enum):

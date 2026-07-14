@@ -163,8 +163,7 @@ class Application(_messages.Message):
       updating the application parameters while updating the application
       template revision.
     previewReference: Output only. Preview reference for the application.
-    projectParameters: Output only. Deprecated: This field is deprecated, use
-      roles_apis_config instead. List of project parameters for the
+    projectParameters: Output only. List of project parameters for the
       application.
     rolesApisConfig: Optional. Project-specific configurations required for
       application deployment, including IAM roles and APIs. The list can
@@ -933,8 +932,9 @@ class CatalogTemplateRevision(_messages.Message):
     developerConnectSourceConfig: Optional. Configuration for fetching content
       from source code repository such as GitHub or Bitbucket through
       Developer Connect.
-    gcsSourceUri: Optional. The Cloud Storage URI, which must be in the format
-      gs://[bucket] or gs://[bucket]/[object].
+    gcsSourceUri: Optional. Deprecated: Added new field tf_module_gcs_uri. The
+      Cloud Storage URI, which must be in the format gs://[bucket] or
+      gs://[bucket]/[object].
     gitSource: Optional. The git source.
     helmChartMetadata: Output only. The helm chart metadata.
     inferredMetadata: Output only. Metadata that was automatically inferred
@@ -1163,6 +1163,10 @@ class Component(_messages.Message):
     sharedTemplateRevisionUri: Required. Immutable. The shared template used
       to generate the component.
     updateTime: Output only. The component update timestamp.
+    useAsRootModule: Optional. Whether the component is exported as a separate
+      terraform root module in a composite application template. If this is
+      false, then native components will be exported as a submodule of a
+      separate terraform root module.
   """
 
   apis = _messages.StringField(1, repeated=True)
@@ -1176,6 +1180,7 @@ class Component(_messages.Message):
   roles = _messages.StringField(9, repeated=True)
   sharedTemplateRevisionUri = _messages.StringField(10)
   updateTime = _messages.StringField(11)
+  useAsRootModule = _messages.BooleanField(12)
 
 
 class ComponentApplicationInfo(_messages.Message):
@@ -1533,6 +1538,9 @@ class DeployApplicationRequest(_messages.Message):
       a service account here or on the Application resource. If you don't
       provide a service account, the deployment will fail. Format:
       projects/{PROJECT}/serviceAccounts/{EMAIL_ADDRESS}
+    validateOnly: Optional. If set to true, the request is validated, but no
+      actual deployment will occur. See https://google.aip.dev/163 for more
+      details.
     workerPool: Optional. The user-specified Worker Pool resource in which the
       Cloud Build job will execute. Format:
       projects/{project}/locations/{location}/workerPools/{workerPoolId} If
@@ -1544,7 +1552,8 @@ class DeployApplicationRequest(_messages.Message):
 
   replace = _messages.BooleanField(1)
   serviceAccount = _messages.StringField(2)
-  workerPool = _messages.StringField(3)
+  validateOnly = _messages.BooleanField(3)
+  workerPool = _messages.StringField(4)
 
 
 class DeploymentAttemptMetadata(_messages.Message):
@@ -4740,13 +4749,16 @@ class OciRepo(_messages.Message):
   r"""Open Container Initiative (OCI) repo.
 
   Fields:
+    moduleSourceUri: Optional. Field for containing the references to the
+      source from which the OCI repo was created.
     uri: Required. Path to Open Container Initiative (OCI) repo. Example:
       oci://us-west1-docker.pkg.dev/nyap-test/helm-repo/my-chart
     version: Optional. The version of the helm chart.
   """
 
-  uri = _messages.StringField(1)
-  version = _messages.StringField(2)
+  moduleSourceUri = _messages.StringField(1)
+  uri = _messages.StringField(2)
+  version = _messages.StringField(3)
 
 
 class Operation(_messages.Message):
@@ -4990,7 +5002,7 @@ class Policy(_messages.Message):
 
 
 class PreviewApplicationRequest(_messages.Message):
-  r"""Message for deploying an application.
+  r"""Message for previewing an application.
 
   Fields:
     serviceAccount: Optional. The email address of the service account to use
@@ -5471,6 +5483,10 @@ class SerializedComponent(_messages.Message):
     sharedTemplateRevisionUri: Optional. The shared template used to generate
       the component.
     uri: Optional. The component URI.
+    useAsRootModule: Optional. Whether the component is exported as a separate
+      terraform root module in a composite application template. If this is
+      false, then native components will be exported as a submodule of a
+      separate terraform root module.
   """
 
   apis = _messages.StringField(1, repeated=True)
@@ -5483,6 +5499,7 @@ class SerializedComponent(_messages.Message):
   roles = _messages.StringField(8, repeated=True)
   sharedTemplateRevisionUri = _messages.StringField(9)
   uri = _messages.StringField(10)
+  useAsRootModule = _messages.BooleanField(11)
 
 
 class SerializedConnection(_messages.Message):
@@ -5701,8 +5718,9 @@ class SharedTemplateRevision(_messages.Message):
     developerConnectSourceConfig: Optional. Configuration for fetching content
       from source code repository such as GitHub or Bitbucket through
       Developer Connect.
-    gcsSourceUri: Optional. The Cloud Storage URI, which must be in the format
-      gs://[bucket] or gs://[bucket]/[object].
+    gcsSourceUri: Optional. Deprecated: Added new field tf_module_gcs_uri. The
+      Cloud Storage URI, which must be in the format gs://[bucket] or
+      gs://[bucket]/[object].
     gitSource: Optional. The git source.
     helmChartMetadata: Output only. The helm chart metadata.
     inferredMetadata: Output only. Metadata that was automatically inferred
@@ -6130,9 +6148,12 @@ class TemplateUi(_messages.Message):
   Fields:
     input: Required. The top-level input section that defines the list of
       variables and their sections on the deployment page.
+    runtime: Optional. The top-level output section that defines the list of
+      outputs and their visibility on the deployment page.
   """
 
   input = _messages.MessageField('TemplateUiInput', 1)
+  runtime = _messages.MessageField('TemplateUiOutput', 2)
 
 
 class TemplateUiInput(_messages.Message):
@@ -6172,6 +6193,70 @@ class TemplateUiInput(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   variables = _messages.MessageField('VariablesValue', 1)
+
+
+class TemplateUiOutput(_messages.Message):
+  r"""TemplateUiOutput defines the list of outputs and their visibility on the
+  deployment page.
+
+  Messages:
+    OutputsValue: Required. outputs is a map defining all outputs on the UI.
+
+  Fields:
+    outputMessage: Optional. Message to be displayed in the UI.
+    outputs: Required. outputs is a map defining all outputs on the UI.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class OutputsValue(_messages.Message):
+    r"""Required. outputs is a map defining all outputs on the UI.
+
+    Messages:
+      AdditionalProperty: An additional property for a OutputsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type OutputsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a OutputsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A TemplateUiOutputDisplayVariable attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('TemplateUiOutputDisplayVariable', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  outputMessage = _messages.StringField(1)
+  outputs = _messages.MessageField('OutputsValue', 2)
+
+
+class TemplateUiOutputDisplayVariable(_messages.Message):
+  r"""Additional display specific Template pertaining to a particular output
+  variable.
+
+  Enums:
+    VisibilityValueValuesEnum: Required. Visibility of the output.
+
+  Fields:
+    visibility: Required. Visibility of the output.
+  """
+
+  class VisibilityValueValuesEnum(_messages.Enum):
+    r"""Required. Visibility of the output.
+
+    Values:
+      DISPLAY_VARIABLE_VISIBILITY_UNSPECIFIED: Default
+      DISPLAY_VARIABLE_VISIBILITY_ROOT: Expose output as root module output.
+    """
+    DISPLAY_VARIABLE_VISIBILITY_UNSPECIFIED = 0
+    DISPLAY_VARIABLE_VISIBILITY_ROOT = 1
+
+  visibility = _messages.EnumField('VisibilityValueValuesEnum', 1)
 
 
 class TemplateVariable(_messages.Message):

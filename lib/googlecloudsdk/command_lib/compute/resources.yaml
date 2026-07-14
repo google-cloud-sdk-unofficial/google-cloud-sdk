@@ -176,6 +176,25 @@ instance_template:
     attribute_name: instance_template
     help: The name of the Google Compute Engine instance template.
 
+interconnect_attachment_group:
+  name: interconnect_attachment_group
+  collection: compute.interconnectAttachmentGroups
+  attributes:
+  - *project
+  - parameter_name: interconnectAttachmentGroup
+    attribute_name: interconnect_attachment_group
+    help: The name of the Google Compute Engine interconnect attachment group.
+
+network_attachment:
+  name: network attachment
+  collection: compute.networkAttachments
+  attributes:
+  - *project
+  - *region
+  - parameter_name: networkAttachment
+    attribute_name: network_attachment
+    help: The name of the Google Compute Engine network attachment.
+
 network_profile:
   name: network_profile
   collection: compute.networkProfiles
@@ -226,6 +245,19 @@ reservation:
     attribute_name: reservation
     help:
       The name of the Google Compute Engine reservation.
+
+reservation_block:
+  name: reservation block
+  collection: compute.reservationBlocks
+  attributes:
+  - *project
+  - *zone
+  - parameter_name: reservationsId
+    attribute_name: reservation
+    help: The name of the Google Compute Engine reservation.
+  - parameter_name: reservationBlocksId
+    attribute_name: reservation_block
+    help: The name of the Google Compute Engine reservation block.
 
 subnet:
   name: subnetwork

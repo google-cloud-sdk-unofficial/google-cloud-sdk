@@ -323,3 +323,16 @@ def AddWorkdayCatalogArgs(parser):
       hidden=True,
       help='The Workday tenant name.',
   )
+
+
+def AddHiveTableCreateArgs(parser):
+  """Adds arguments for creating Hive tables."""
+  parser.add_argument(
+      '--file',
+      required=True,
+      help=(
+          'Path to a JSON or YAML file containing the Hive table definition.'
+          ' The format must follow the Hive Metastore API specification for'
+          ' `HiveTable`. The field `storageDescriptor` must be specified.'
+      ),
+  )

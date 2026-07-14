@@ -4048,13 +4048,17 @@ def AddStackTypeArgs(parser, support_ipv6_only=False):
   )
 
 
-def AddIpv6NetworkTierArgs(parser):
+def AddIpv6NetworkTierArgs(parser, support_standard_tier=False):
   """Adds IPv6 network tier for network interface IPv6 access config."""
+  choices = {
+      'PREMIUM': ('High quality, Google-grade network tier.'),
+  }
+  if support_standard_tier:
+    choices['STANDARD'] = ('Standard quality network tier.')
+
   parser.add_argument(
       '--ipv6-network-tier',
-      choices={
-          'PREMIUM': ('High quality, Google-grade network tier.'),
-      },
+      choices=choices,
       type=arg_utils.ChoiceToEnumName,
       help=('Specifies the IPv6 network tier that will be used to configure '
             'the instance network interface IPv6 access config.'))

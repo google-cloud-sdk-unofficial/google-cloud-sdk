@@ -36,11 +36,11 @@ class AgentGateway(_messages.Message):
     name: Identifier. Name of the AgentGateway resource. It matches pattern
       `projects/*/locations/*/agentGateways/`.
     networkConfig: Optional. Network configuration for the AgentGateway.
-    protocols: Required. List of protocols supported by an Agent Gateway
+    protocols: Optional. Deprecated.
     registries: Optional. A list of Agent registries containing the agents,
       MCP servers and tools governed by the Agent Gateway. Note: Currently
-      limited to project-scoped registries Must be of format
-      `//agentregistry.googleapis.com/projects/{project}/locations/{location}/
+      limited to project-scoped registries Must be of format `//agentregistry.
+      googleapis.com/projects/{project}/locations/{location}/`
     selfManaged: Optional. Attach to existing Application Load Balancers or
       Secure Web Proxies.
     updateTime: Output only. The timestamp when the resource was updated.
@@ -561,6 +561,124 @@ class EndpointPolicy(_messages.Message):
   trafficPortSelector = _messages.MessageField('TrafficPortSelector', 10)
   type = _messages.EnumField('TypeValueValuesEnum', 11)
   updateTime = _messages.StringField(12)
+
+
+class ExpressLink(_messages.Message):
+  r"""ExpressLink provides automated, zero-friction service-to-service secure
+  connectivity across network boundaries without manual infrastructure
+  configuration toil.
+
+  Messages:
+    LabelsValue: Optional. Set of label tags associated with the ExpressLink
+      resource.
+
+  Fields:
+    createTime: Output only. The timestamp when the resource was created.
+    description: Optional. A free-text description of the resource. Max length
+      1024 characters.
+    destination: Optional. The destination service(s) for this binding.
+    etag: Optional. Etag of the resource. If this is provided, it must match
+      the server's etag. If the provided etag does not match the server's
+      etag, the request will fail with a 409 ABORTED error.
+    labels: Optional. Set of label tags associated with the ExpressLink
+      resource.
+    matches: Optional. A list of matches define conditions used to match
+      requests to destination services. Each match is independent with the OR
+      semantic, i.e. we consider it matched if ANY one of the matches is
+      satisfied. This field is only applicable to Cloud Run services: If an
+      ExpressLink has only one Cloud Run service, Match is optional. If not
+      specified, the default hostname `-..run.app` or the short name can be
+      used. If an ExpressLink has multiple Cloud Run services, at least one
+      Match with valid hostname is required.
+    name: Identifier. Name of the ExpressLink resource. It matches pattern
+      `projects/*/locations/*/expressLinks/`.
+    source: Optional. The source service(s) for this binding.
+    updateTime: Output only. The timestamp when the resource was updated.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Set of label tags associated with the ExpressLink resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  destination = _messages.MessageField('ExpressLinkDestination', 3)
+  etag = _messages.StringField(4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  matches = _messages.MessageField('ExpressLinkMatch', 6, repeated=True)
+  name = _messages.StringField(7)
+  source = _messages.MessageField('ExpressLinkSource', 8)
+  updateTime = _messages.StringField(9)
+
+
+class ExpressLinkDestination(_messages.Message):
+  r"""The destination of the traffic. This defines the service that the source
+  wants to connect to.
+
+  Fields:
+    services: Optional. The service URIs to which the ExpressLink resource is
+      bound. Can be one of the following (all the service URIs should have the
+      same type):
+      `//compute.googleapis.com/projects/*/regions/*/serviceAttachments/`;
+      `//compute.googleapis.com/projects/*/regions/*/forwardingRules/`;
+      `//run.googleapis.com/projects/*/locations/*/services/`.
+  """
+
+  services = _messages.StringField(1, repeated=True)
+
+
+class ExpressLinkMatch(_messages.Message):
+  r"""Match defines the predicate used to match requests to destination
+  services. This field is only applicable to Cloud Run services.
+
+  Fields:
+    hostname: Optional. Specifies the hostname to match against the HTTP
+      request host header. Hostname is the fully qualified domain name of a
+      network host, as defined by RFC1123 with the exception that: - IPs are
+      not allowed. - Wildcard labels (`*.`) are not allowed. Hostname must be
+      "precise" which is a domain name without the terminating dot of a
+      network host (e.g. `foo.example.com`). Note that as per RFC1035 and
+      RFC1123, a label must consist of lower case alphanumeric characters or
+      '-', and must start and end with an alphanumeric character. No other
+      punctuation is allowed.
+  """
+
+  hostname = _messages.StringField(1)
+
+
+class ExpressLinkSource(_messages.Message):
+  r"""The source of the traffic. This defines where the connection originates
+  from.
+
+  Fields:
+    services: Optional. A list of resources attached to the ExpressLink. The
+      resources can be Cloud Run services of the format:
+      `//run.googleapis.com/projects/*/locations/*/services/`. The location of
+      the resources must match the location of the ExpressLink (unless the
+      ExpressLink is global).
+  """
+
+  services = _messages.StringField(1, repeated=True)
 
 
 class ExtensionChain(_messages.Message):
@@ -2655,6 +2773,25 @@ class ListEndpointPoliciesResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListExpressLinksResponse(_messages.Message):
+  r"""Response returned by the ListExpressLinks method.
+
+  Fields:
+    expressLinks: List of ExpressLink resources.
+    nextPageToken: If there might be more results than those appearing in this
+      response, then `next_page_token` is included. To get the next set of
+      results, call this method again using the value of `next_page_token` as
+      `page_token`.
+    unreachable: Unordered list. Unreachable resources. Populated when the
+      request attempts to list all resources across all supported locations,
+      while some locations are temporarily unavailable.
+  """
+
+  expressLinks = _messages.MessageField('ExpressLink', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListGatewayRouteViewsResponse(_messages.Message):
   r"""Response returned by the ListGatewayRouteViews method.
 
@@ -4584,6 +4721,82 @@ class NetworkservicesProjectsLocationsEndpointPoliciesPatchRequest(_messages.Mes
   updateMask = _messages.StringField(3)
 
 
+class NetworkservicesProjectsLocationsExpressLinksCreateRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsExpressLinksCreateRequest object.
+
+  Fields:
+    expressLink: A ExpressLink resource to be passed as the request body.
+    expressLinkId: Required. Short name of the ExpressLink resource to be
+      created.
+    parent: Required. The parent resource of the ExpressLink. Must be in the
+      format `projects/*/locations/*`.
+  """
+
+  expressLink = _messages.MessageField('ExpressLink', 1)
+  expressLinkId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class NetworkservicesProjectsLocationsExpressLinksDeleteRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsExpressLinksDeleteRequest object.
+
+  Fields:
+    etag: Optional. The etag of the ExpressLink to delete.
+    name: Required. A name of the ExpressLink to delete. Must be in the format
+      `projects/*/locations/*/expressLinks/*`.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetworkservicesProjectsLocationsExpressLinksGetRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsExpressLinksGetRequest object.
+
+  Fields:
+    name: Required. A name of the ExpressLink to get. Must be in the format
+      `projects/*/locations/*/expressLinks/*`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworkservicesProjectsLocationsExpressLinksListRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsExpressLinksListRequest object.
+
+  Fields:
+    pageSize: Maximum number of ExpressLinks to return per call.
+    pageToken: The value returned by the last `ListExpressLinksResponse`
+      Indicates that this is a continuation of a prior `ListExpressLinks`
+      call, and that the system should return the next page of data.
+    parent: Required. The project and location from which the ExpressLinks
+      should be listed, specified in the format `projects/*/locations/*`.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class NetworkservicesProjectsLocationsExpressLinksPatchRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsExpressLinksPatchRequest object.
+
+  Fields:
+    expressLink: A ExpressLink resource to be passed as the request body.
+    name: Identifier. Name of the ExpressLink resource. It matches pattern
+      `projects/*/locations/*/expressLinks/`.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the ExpressLink resource by the update. The fields
+      specified in the update_mask are relative to the resource, not the full
+      request. A field will be overwritten if it is in the mask. If the user
+      does not provide a mask then all fields will be overwritten.
+  """
+
+  expressLink = _messages.MessageField('ExpressLink', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
+
+
 class NetworkservicesProjectsLocationsGatewaysCreateRequest(_messages.Message):
   r"""A NetworkservicesProjectsLocationsGatewaysCreateRequest object.
 
@@ -5337,9 +5550,8 @@ class NetworkservicesProjectsLocationsListRequest(_messages.Message):
   r"""A NetworkservicesProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -9416,24 +9628,27 @@ class WasmPlugin(_messages.Message):
   Fields:
     createTime: Output only. The timestamp when the resource was created.
     description: Optional. A human-readable description of the resource.
-    kmsKeyName: Optional. The name of the customer managed Cloud KMS key to be
-      used to encrypt the `WasmPlugin` image (provided by image_uri) and
-      configuration (provided by plugin_config_data or plugin_config_uri) that
-      are stored by the `Service Extensions` product at rest. Format: "project
-      s/{project}/locations/{location}/keyRings/{keyring}/cryptoKeys/{key}" By
-      default, Google Cloud automatically encrypts all data at rest using
-      Google-owned and Google-managed encryption keys. If you need ownership
-      and control of the keys that protect your data at rest, you can specify
-      a customer-managed encryption key (CMEK) to encrypt your `WasmPlugin`
-      data. For more information, see [Using customer-managed encryption
-      keys](https://cloud.google.com/kms/docs/cmek).
-    kmsKeyVersion: Output only. The name of the specific CryptoKeyVersion used
-      to encrypt the `WasmPlugin` data, if the kms_key_name field is set.
-      Format: "projects/{project}/locations/{location}/keyRings/{keyring}/cryp
-      toKeys/{key}/cryptoKeyVersions/{version}" This is a read-only field.
-      `WasmPlugin` data is automatically encrypted using the most recent
-      `CryptoKeyVersion` of the `CryptoKey` provided in the `kms_key_name`
-      field. See [Cloud KMS
+    kmsKeyName: Optional. The name of the customer-managed [CryptoKey](https:/
+      /cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings
+      .cryptoKeys) to be used to encrypt the `WasmPlugin` image (provided by
+      image_uri) and configuration (provided by plugin_config_data or
+      plugin_config_uri) that are stored by the `Service Extensions` product
+      at rest. Format: `projects/{project}/locations/{location}/keyRings/{keyr
+      ing}/cryptoKeys/{key}` By default, Google Cloud automatically encrypts
+      all data at rest using Google-owned and Google-managed encryption keys.
+      If you need ownership and control of the keys that protect your data at
+      rest, you can specify a customer-managed encryption key (CMEK) to
+      encrypt your `WasmPlugin` data. For more information, see [Using
+      customer-managed encryption keys](https://cloud.google.com/service-
+      extensions/docs/cmek).
+    kmsKeyVersion: Output only. The name of the specific [CryptoKeyVersion](ht
+      tps://cloud.google.com/kms/docs/reference/rest/v1/projects.locations.key
+      Rings.cryptoKeys.cryptoKeyVersions) used to encrypt the `WasmPlugin`
+      data, if the kms_key_name field is set. Format: `projects/{project}/loca
+      tions/{location}/keyRings/{keyring}/cryptoKeys/{key}/cryptoKeyVersions/{
+      version}` This is a read-only field. `WasmPlugin` data is automatically
+      encrypted using the most recent `CryptoKeyVersion` of the `CryptoKey`
+      provided in the `kms_key_name` field. See [Cloud KMS
       resources](https://cloud.google.com/kms/docs/resource-hierarchy) for
       more information.
     labels: Optional. Set of labels associated with the `WasmPlugin` resource.

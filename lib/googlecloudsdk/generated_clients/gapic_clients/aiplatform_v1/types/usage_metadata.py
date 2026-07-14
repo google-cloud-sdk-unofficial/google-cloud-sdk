@@ -89,11 +89,17 @@ class UsageMetadata(proto.Message):
                 Unspecified request traffic type.
             ON_DEMAND (1):
                 Type for Pay-As-You-Go traffic.
+            ON_DEMAND_PRIORITY (3):
+                Type for Priority Pay-As-You-Go traffic.
+            ON_DEMAND_FLEX (4):
+                Type for Flex traffic.
             PROVISIONED_THROUGHPUT (2):
                 Type for Provisioned Throughput traffic.
         """
         TRAFFIC_TYPE_UNSPECIFIED = 0
         ON_DEMAND = 1
+        ON_DEMAND_PRIORITY = 3
+        ON_DEMAND_FLEX = 4
         PROVISIONED_THROUGHPUT = 2
 
     prompt_token_count: int = proto.Field(

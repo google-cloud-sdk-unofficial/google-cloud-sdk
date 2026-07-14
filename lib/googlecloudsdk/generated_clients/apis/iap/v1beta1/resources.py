@@ -38,6 +38,13 @@ class Collections(enum.Enum):
       ['project', 'iapWebId'],
       True
   )
+  PROJECTS_IAP_WEB_INSTANCES = (
+      'projects.iap_web.instances',
+      'projects/{project}/iap_web/{iapWebId}/instances/{instanceId}',
+      {},
+      ['project', 'iapWebId', 'instanceId'],
+      True
+  )
   PROJECTS_IAP_WEB_SERVICES = (
       'projects.iap_web.services',
       'projects/{project}/iap_web/{iapWebId}/services/{serviceId}',

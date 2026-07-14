@@ -7919,6 +7919,13 @@ class APIAdapter(object):
         node_network_config_msg = self.messages.AdditionalNodeNetworkConfig()
         node_network_config_msg.network = node_network_option['network']
         node_network_config_msg.subnetwork = node_network_option['subnetwork']
+        if 'stack-type' in node_network_option:
+          node_network_config_msg.stackType = (
+              util.GetAdditionalNodeInterfaceStackTypeMapper(
+                  self.messages
+              ).GetEnumForChoice(node_network_option['stack-type'])
+          )
+
         network_config.additionalNodeNetworkConfigs.append(
             node_network_config_msg
         )
@@ -11850,6 +11857,10 @@ def _AddReservationAffinityToNodeConfig(node_config, options, messages):
         key='compute.googleapis.com/reservation-name',
         values=[options.reservation],
     )
+  elif affinity == 'any-reservation-then-fail':
+    node_config.reservationAffinity = messages.ReservationAffinity(
+        consumeReservationType=messages.ReservationAffinity.ConsumeReservationTypeValueValuesEnum.ANY_RESERVATION_THEN_FAIL
+    )
 
 
 def _AddSandboxConfigToNodeConfig(node_config, options, messages):
@@ -11860,6 +11871,7 @@ def _AddSandboxConfigToNodeConfig(node_config, options, messages):
     sandbox_types = {
         'unspecified': messages.SandboxConfig.TypeValueValuesEnum.UNSPECIFIED,
         'gvisor': messages.SandboxConfig.TypeValueValuesEnum.GVISOR,
+        'microvm': messages.SandboxConfig.TypeValueValuesEnum.MICROVM,
     }
     if options.sandbox['type'] not in sandbox_types:
       raise util.Error(

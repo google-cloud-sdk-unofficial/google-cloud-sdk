@@ -2609,6 +2609,7 @@ class Finding(_messages.Message):
       way. This field cannot be updated. Its value is ignored in all update
       requests.
     iamBindings: Represents IAM bindings associated with the finding.
+    iamDetails: IamDetails associated with the finding.
     indicator: Represents what's commonly known as an *indicator of
       compromise* (IoC) in computer forensics. This is an artifact observed on
       a network or in an operating system that, with high confidence,
@@ -2929,39 +2930,40 @@ class Finding(_messages.Message):
   findingClass = _messages.EnumField('FindingClassValueValuesEnum', 34)
   groupMemberships = _messages.MessageField('GroupMembership', 35, repeated=True)
   iamBindings = _messages.MessageField('IamBinding', 36, repeated=True)
-  indicator = _messages.MessageField('Indicator', 37)
-  ipRules = _messages.MessageField('IpRules', 38)
-  job = _messages.MessageField('Job', 39)
-  kernelRootkit = _messages.MessageField('KernelRootkit', 40)
-  kubernetes = _messages.MessageField('Kubernetes', 41)
-  loadBalancers = _messages.MessageField('LoadBalancer', 42, repeated=True)
-  logEntries = _messages.MessageField('LogEntry', 43, repeated=True)
-  mitreAttack = _messages.MessageField('MitreAttack', 44)
-  moduleName = _messages.StringField(45)
-  mute = _messages.EnumField('MuteValueValuesEnum', 46)
-  muteAnnotation = _messages.StringField(47)
-  muteInfo = _messages.MessageField('MuteInfo', 48)
-  muteInitiator = _messages.StringField(49)
-  muteUpdateTime = _messages.StringField(50)
-  name = _messages.StringField(51)
-  networks = _messages.MessageField('Network', 52, repeated=True)
-  nextSteps = _messages.StringField(53)
-  notebook = _messages.MessageField('Notebook', 54)
-  orgPolicies = _messages.MessageField('OrgPolicy', 55, repeated=True)
-  parent = _messages.StringField(56)
-  parentDisplayName = _messages.StringField(57)
-  policyViolationSummary = _messages.MessageField('PolicyViolationSummary', 58)
-  processes = _messages.MessageField('Process', 59, repeated=True)
-  resourceName = _messages.StringField(60)
-  secret = _messages.MessageField('Secret', 61)
-  securityMarks = _messages.MessageField('SecurityMarks', 62)
-  securityPosture = _messages.MessageField('SecurityPosture', 63)
-  severity = _messages.EnumField('SeverityValueValuesEnum', 64)
-  sourceProperties = _messages.MessageField('SourcePropertiesValue', 65)
-  state = _messages.EnumField('StateValueValuesEnum', 66)
-  toxicCombination = _messages.MessageField('ToxicCombination', 67)
-  vertexAi = _messages.MessageField('VertexAi', 68)
-  vulnerability = _messages.MessageField('Vulnerability', 69)
+  iamDetails = _messages.MessageField('GoogleCloudSecuritycenterV1IamDetails', 37)
+  indicator = _messages.MessageField('Indicator', 38)
+  ipRules = _messages.MessageField('IpRules', 39)
+  job = _messages.MessageField('Job', 40)
+  kernelRootkit = _messages.MessageField('KernelRootkit', 41)
+  kubernetes = _messages.MessageField('Kubernetes', 42)
+  loadBalancers = _messages.MessageField('LoadBalancer', 43, repeated=True)
+  logEntries = _messages.MessageField('LogEntry', 44, repeated=True)
+  mitreAttack = _messages.MessageField('MitreAttack', 45)
+  moduleName = _messages.StringField(46)
+  mute = _messages.EnumField('MuteValueValuesEnum', 47)
+  muteAnnotation = _messages.StringField(48)
+  muteInfo = _messages.MessageField('MuteInfo', 49)
+  muteInitiator = _messages.StringField(50)
+  muteUpdateTime = _messages.StringField(51)
+  name = _messages.StringField(52)
+  networks = _messages.MessageField('Network', 53, repeated=True)
+  nextSteps = _messages.StringField(54)
+  notebook = _messages.MessageField('Notebook', 55)
+  orgPolicies = _messages.MessageField('OrgPolicy', 56, repeated=True)
+  parent = _messages.StringField(57)
+  parentDisplayName = _messages.StringField(58)
+  policyViolationSummary = _messages.MessageField('PolicyViolationSummary', 59)
+  processes = _messages.MessageField('Process', 60, repeated=True)
+  resourceName = _messages.StringField(61)
+  secret = _messages.MessageField('Secret', 62)
+  securityMarks = _messages.MessageField('SecurityMarks', 63)
+  securityPosture = _messages.MessageField('SecurityPosture', 64)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 65)
+  sourceProperties = _messages.MessageField('SourcePropertiesValue', 66)
+  state = _messages.EnumField('StateValueValuesEnum', 67)
+  toxicCombination = _messages.MessageField('ToxicCombination', 68)
+  vertexAi = _messages.MessageField('VertexAi', 69)
+  vulnerability = _messages.MessageField('Vulnerability', 70)
 
 
 class Folder(_messages.Message):
@@ -3352,6 +3354,29 @@ class GoogleCloudSecuritycenterV1ExternalSystem(_messages.Message):
   name = _messages.StringField(9)
   status = _messages.StringField(10)
   ticketInfo = _messages.MessageField('TicketInfo', 11)
+
+
+class GoogleCloudSecuritycenterV1IamDetails(_messages.Message):
+  r"""Details about IAM permissions.
+
+  Fields:
+    iamRolePermissions: A list of IAM permissions.
+  """
+
+  iamRolePermissions = _messages.MessageField('GoogleCloudSecuritycenterV1IamRolePermission', 1, repeated=True)
+
+
+class GoogleCloudSecuritycenterV1IamRolePermission(_messages.Message):
+  r"""Represents an IAM permission and the role that includes it.
+
+  Fields:
+    name: The name of the IAM permission, such as "storage.buckets.get".
+    role: Role that contains the IAM permission, such as "projects/my-
+      project/roles/myCustomRole".
+  """
+
+  name = _messages.StringField(1)
+  role = _messages.StringField(2)
 
 
 class GoogleCloudSecuritycenterV1MuteConfig(_messages.Message):
@@ -6192,6 +6217,7 @@ class GoogleCloudSecuritycenterV2Finding(_messages.Message):
       way. This field cannot be updated. Its value is ignored in all update
       requests.
     iamBindings: Represents IAM bindings associated with the finding.
+    iamDetails: IamDetails associated with the finding.
     indicator: Represents what's commonly known as an *indicator of
       compromise* (IoC) in computer forensics. This is an artifact observed on
       a network or in an operating system that, with high confidence,
@@ -6518,38 +6544,39 @@ class GoogleCloudSecuritycenterV2Finding(_messages.Message):
   findingClass = _messages.EnumField('FindingClassValueValuesEnum', 35)
   groupMemberships = _messages.MessageField('GoogleCloudSecuritycenterV2GroupMembership', 36, repeated=True)
   iamBindings = _messages.MessageField('GoogleCloudSecuritycenterV2IamBinding', 37, repeated=True)
-  indicator = _messages.MessageField('GoogleCloudSecuritycenterV2Indicator', 38)
-  ipRules = _messages.MessageField('GoogleCloudSecuritycenterV2IpRules', 39)
-  job = _messages.MessageField('GoogleCloudSecuritycenterV2Job', 40)
-  kernelRootkit = _messages.MessageField('GoogleCloudSecuritycenterV2KernelRootkit', 41)
-  kubernetes = _messages.MessageField('GoogleCloudSecuritycenterV2Kubernetes', 42)
-  loadBalancers = _messages.MessageField('GoogleCloudSecuritycenterV2LoadBalancer', 43, repeated=True)
-  logEntries = _messages.MessageField('GoogleCloudSecuritycenterV2LogEntry', 44, repeated=True)
-  mitreAttack = _messages.MessageField('GoogleCloudSecuritycenterV2MitreAttack', 45)
-  moduleName = _messages.StringField(46)
-  mute = _messages.EnumField('MuteValueValuesEnum', 47)
-  muteInfo = _messages.MessageField('GoogleCloudSecuritycenterV2MuteInfo', 48)
-  muteInitiator = _messages.StringField(49)
-  muteUpdateTime = _messages.StringField(50)
-  name = _messages.StringField(51)
-  networks = _messages.MessageField('GoogleCloudSecuritycenterV2Network', 52, repeated=True)
-  nextSteps = _messages.StringField(53)
-  notebook = _messages.MessageField('GoogleCloudSecuritycenterV2Notebook', 54)
-  orgPolicies = _messages.MessageField('GoogleCloudSecuritycenterV2OrgPolicy', 55, repeated=True)
-  parent = _messages.StringField(56)
-  parentDisplayName = _messages.StringField(57)
-  policyViolationSummary = _messages.MessageField('GoogleCloudSecuritycenterV2PolicyViolationSummary', 58)
-  processes = _messages.MessageField('GoogleCloudSecuritycenterV2Process', 59, repeated=True)
-  resourceName = _messages.StringField(60)
-  secret = _messages.MessageField('GoogleCloudSecuritycenterV2Secret', 61)
-  securityMarks = _messages.MessageField('GoogleCloudSecuritycenterV2SecurityMarks', 62)
-  securityPosture = _messages.MessageField('GoogleCloudSecuritycenterV2SecurityPosture', 63)
-  severity = _messages.EnumField('SeverityValueValuesEnum', 64)
-  sourceProperties = _messages.MessageField('SourcePropertiesValue', 65)
-  state = _messages.EnumField('StateValueValuesEnum', 66)
-  toxicCombination = _messages.MessageField('GoogleCloudSecuritycenterV2ToxicCombination', 67)
-  vertexAi = _messages.MessageField('GoogleCloudSecuritycenterV2VertexAi', 68)
-  vulnerability = _messages.MessageField('GoogleCloudSecuritycenterV2Vulnerability', 69)
+  iamDetails = _messages.MessageField('GoogleCloudSecuritycenterV2IamDetails', 38)
+  indicator = _messages.MessageField('GoogleCloudSecuritycenterV2Indicator', 39)
+  ipRules = _messages.MessageField('GoogleCloudSecuritycenterV2IpRules', 40)
+  job = _messages.MessageField('GoogleCloudSecuritycenterV2Job', 41)
+  kernelRootkit = _messages.MessageField('GoogleCloudSecuritycenterV2KernelRootkit', 42)
+  kubernetes = _messages.MessageField('GoogleCloudSecuritycenterV2Kubernetes', 43)
+  loadBalancers = _messages.MessageField('GoogleCloudSecuritycenterV2LoadBalancer', 44, repeated=True)
+  logEntries = _messages.MessageField('GoogleCloudSecuritycenterV2LogEntry', 45, repeated=True)
+  mitreAttack = _messages.MessageField('GoogleCloudSecuritycenterV2MitreAttack', 46)
+  moduleName = _messages.StringField(47)
+  mute = _messages.EnumField('MuteValueValuesEnum', 48)
+  muteInfo = _messages.MessageField('GoogleCloudSecuritycenterV2MuteInfo', 49)
+  muteInitiator = _messages.StringField(50)
+  muteUpdateTime = _messages.StringField(51)
+  name = _messages.StringField(52)
+  networks = _messages.MessageField('GoogleCloudSecuritycenterV2Network', 53, repeated=True)
+  nextSteps = _messages.StringField(54)
+  notebook = _messages.MessageField('GoogleCloudSecuritycenterV2Notebook', 55)
+  orgPolicies = _messages.MessageField('GoogleCloudSecuritycenterV2OrgPolicy', 56, repeated=True)
+  parent = _messages.StringField(57)
+  parentDisplayName = _messages.StringField(58)
+  policyViolationSummary = _messages.MessageField('GoogleCloudSecuritycenterV2PolicyViolationSummary', 59)
+  processes = _messages.MessageField('GoogleCloudSecuritycenterV2Process', 60, repeated=True)
+  resourceName = _messages.StringField(61)
+  secret = _messages.MessageField('GoogleCloudSecuritycenterV2Secret', 62)
+  securityMarks = _messages.MessageField('GoogleCloudSecuritycenterV2SecurityMarks', 63)
+  securityPosture = _messages.MessageField('GoogleCloudSecuritycenterV2SecurityPosture', 64)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 65)
+  sourceProperties = _messages.MessageField('SourcePropertiesValue', 66)
+  state = _messages.EnumField('StateValueValuesEnum', 67)
+  toxicCombination = _messages.MessageField('GoogleCloudSecuritycenterV2ToxicCombination', 68)
+  vertexAi = _messages.MessageField('GoogleCloudSecuritycenterV2VertexAi', 69)
+  vulnerability = _messages.MessageField('GoogleCloudSecuritycenterV2Vulnerability', 70)
 
 
 class GoogleCloudSecuritycenterV2Folder(_messages.Message):
@@ -6713,6 +6740,29 @@ class GoogleCloudSecuritycenterV2IamBinding(_messages.Message):
   action = _messages.EnumField('ActionValueValuesEnum', 1)
   member = _messages.StringField(2)
   role = _messages.StringField(3)
+
+
+class GoogleCloudSecuritycenterV2IamDetails(_messages.Message):
+  r"""Details about IAM permissions.
+
+  Fields:
+    iamRolePermissions: A list of IAM permissions.
+  """
+
+  iamRolePermissions = _messages.MessageField('GoogleCloudSecuritycenterV2IamRolePermission', 1, repeated=True)
+
+
+class GoogleCloudSecuritycenterV2IamRolePermission(_messages.Message):
+  r"""Represents an IAM permission and the role that includes it.
+
+  Fields:
+    name: The name of the IAM permission, such as "storage.buckets.get".
+    role: Role that contains the IAM permission, such as "projects/my-
+      project/roles/myCustomRole".
+  """
+
+  name = _messages.StringField(1)
+  role = _messages.StringField(2)
 
 
 class GoogleCloudSecuritycenterV2Indicator(_messages.Message):
@@ -8805,7 +8855,7 @@ class GoogleCloudSecuritycenterV2ResourceValueConfig(_messages.Message):
       Cloud resources, they are tag value IDs in the form of "tagValues/123".
       Example: `[ "tagValues/123", "tagValues/456", "tagValues/789" ]`
       https://cloud.google.com/resource-manager/docs/tags/tags-creating-and-
-      managing
+      managing Tag values to check against.
     updateTime: Output only. Timestamp this resource value configuration was
       last updated.
   """

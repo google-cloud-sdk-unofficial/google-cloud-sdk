@@ -19,12 +19,14 @@
   - GA
   auto_generated: true
   help_text:
-    brief: Update bindings
-    description: Update a binding
+    brief: Modify binding parameters.
+    description: |-
+      Update properties on a binding connecting a source agent to a target
+      resource or auth provider.
     examples: |-
-      To update the binding, run:
+      To update display name of binding 'my-binding' in location 'us-central1', run:
 
-          $ {command}
+        $ {command} my-binding --location=us-central1 --display-name="Updated Binding Name"
   arguments:
     params:
     - group:

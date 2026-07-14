@@ -57,6 +57,7 @@ class Update(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
     resource_args.AddConversionWorkspaceResourceArg(parser, 'to update')
     cw_flags.AddNoAsyncFlag(parser)
     cw_flags.AddDisplayNameFlag(parser)
+    cw_flags.AddSourceDatabaseNameOverrideFlag(parser)
     cw_flags.AddGlobalFilterFlag(parser)
     cw_flags.AddFeatureFlags(parser)
 
@@ -76,6 +77,7 @@ class Update(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
     result_operation = client.crud.Update(
         name=conversion_workspace_ref.RelativeName(),
         display_name=args.display_name,
+        source_database_name_override=args.source_database_name_override,
         global_filter=args.global_filter,
         auto_conversion=(
             args.auto_conversion

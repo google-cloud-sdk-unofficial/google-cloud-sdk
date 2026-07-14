@@ -98,96 +98,87 @@ GkehubProjectsLocationsRolloutsCreateRequest = (
 
 GkehubProjectsLocationsRolloutsDeleteRequest = (
     alpha_messages.GkehubProjectsLocationsRolloutsDeleteRequest
-    # Rollouts are not yet available in beta or GA.
-    # | beta_messages.GkehubProjectsLocationsRolloutsDeleteRequest
-    # | ga_messages.GkehubProjectsLocationsRolloutsDeleteRequest
+    | beta_messages.GkehubProjectsLocationsRolloutsDeleteRequest
+    | ga_messages.GkehubProjectsLocationsRolloutsDeleteRequest
 )
 
 GkehubProjectsLocationsRolloutsForceCompleteStageRequest = (
     alpha_messages.GkehubProjectsLocationsRolloutsForceCompleteStageRequest
-    # Rollouts are not yet available in beta or GA.
-    # | beta_messages.GkehubProjectsLocationsRolloutsForceCompleteStageRequest
-    # | ga_messages.GkehubProjectsLocationsRolloutsForceCompleteStageRequest
+    | beta_messages.GkehubProjectsLocationsRolloutsForceCompleteStageRequest
+    | ga_messages.GkehubProjectsLocationsRolloutsForceCompleteStageRequest
 )
 
 GkehubProjectsLocationsRolloutsCancelRequest = (
     alpha_messages.GkehubProjectsLocationsRolloutsCancelRequest
-    # Rollouts are not yet available in beta or GA.
-    # | beta_messages.GkehubProjectsLocationsRolloutsCancelRequest
-    # | ga_messages.GkehubProjectsLocationsRolloutsCancelRequest
+    | beta_messages.GkehubProjectsLocationsRolloutsCancelRequest
+    | ga_messages.GkehubProjectsLocationsRolloutsCancelRequest
 )
 
 GkehubProjectsLocationsRolloutsGetRequest = (
     alpha_messages.GkehubProjectsLocationsRolloutsGetRequest
-    # Rollouts are not yet available in beta or GA.
-    # | beta_messages.GkehubProjectsLocationsRolloutsGetRequest
-    # | ga_messages.GkehubProjectsLocationsRolloutsGetRequest
+    | beta_messages.GkehubProjectsLocationsRolloutsGetRequest
+    | ga_messages.GkehubProjectsLocationsRolloutsGetRequest
 )
 
 GkehubProjectsLocationsRolloutsListRequest = (
     alpha_messages.GkehubProjectsLocationsRolloutsListRequest
-    # Rollouts are not yet available in beta or GA.
-    # | beta_messages.GkehubProjectsLocationsRolloutsListRequest
-    # | ga_messages.GkehubProjectsLocationsRolloutsListRequest
+    | beta_messages.GkehubProjectsLocationsRolloutsListRequest
+    | ga_messages.GkehubProjectsLocationsRolloutsListRequest
 )
 
 GkehubProjectsLocationsRolloutsPauseRequest = (
     alpha_messages.GkehubProjectsLocationsRolloutsPauseRequest
-    # Rollouts are not yet available in beta or GA.
-    # | beta_messages.GkehubProjectsLocationsRolloutsPauseRequest
-    # | ga_messages.GkehubProjectsLocationsRolloutsPauseRequest
+    | beta_messages.GkehubProjectsLocationsRolloutsPauseRequest
+    | ga_messages.GkehubProjectsLocationsRolloutsPauseRequest
 )
 
 GkehubProjectsLocationsRolloutsResumeRequest = (
     alpha_messages.GkehubProjectsLocationsRolloutsResumeRequest
-    # Rollouts are not yet available in beta or GA.
-    # | beta_messages.GkehubProjectsLocationsRolloutsResumeRequest
-    # | ga_messages.GkehubProjectsLocationsRolloutsResumeRequest
+    | beta_messages.GkehubProjectsLocationsRolloutsResumeRequest
+    | ga_messages.GkehubProjectsLocationsRolloutsResumeRequest
 )
 
 GkehubProjectsLocationsRolloutSequencesCreateRequest = (
     alpha_messages.GkehubProjectsLocationsRolloutSequencesCreateRequest
-    # RolloutSequences are not yet available in beta or GA.
-    # | beta_messages.GkehubProjectsLocationsRolloutSequencesCreateRequest
-    # | ga_messages.GkehubProjectsLocationsRolloutSequencesCreateRequest
+    | beta_messages.GkehubProjectsLocationsRolloutSequencesCreateRequest
+    | ga_messages.GkehubProjectsLocationsRolloutSequencesCreateRequest
 )
 
 GkehubProjectsLocationsRolloutSequencesGetRequest = (
     alpha_messages.GkehubProjectsLocationsRolloutSequencesGetRequest
-    # RolloutSequences are not yet available in beta or GA.
-    # | beta_messages.GkehubProjectsLocationsRolloutSequencesGetRequest
-    # | ga_messages.GkehubProjectsLocationsRolloutSequencesGetRequest
+    | beta_messages.GkehubProjectsLocationsRolloutSequencesGetRequest
+    | ga_messages.GkehubProjectsLocationsRolloutSequencesGetRequest
 )
 
 GkehubProjectsLocationsRolloutSequencesListRequest = (
     alpha_messages.GkehubProjectsLocationsRolloutSequencesListRequest
-    # RolloutSequences are not yet available in beta or GA.
-    # | beta_messages.GkehubProjectsLocationsRolloutSequencesListRequest
-    # | ga_messages.GkehubProjectsLocationsRolloutSequencesListRequest
+    | beta_messages.GkehubProjectsLocationsRolloutSequencesListRequest
+    | ga_messages.GkehubProjectsLocationsRolloutSequencesListRequest
 )
 
 GkehubProjectsLocationsRolloutSequencesDeleteRequest = (
     alpha_messages.GkehubProjectsLocationsRolloutSequencesDeleteRequest
-    # RolloutSequences are not yet available in beta or GA.
-    # | beta_messages.GkehubProjectsLocationsRolloutSequencesDeleteRequest
-    # | ga_messages.GkehubProjectsLocationsRolloutSequencesDeleteRequest
+    | beta_messages.GkehubProjectsLocationsRolloutSequencesDeleteRequest
+    | ga_messages.GkehubProjectsLocationsRolloutSequencesDeleteRequest
 )
 
 GkehubProjectsLocationsRolloutSequencesUpgradeRequest = (
     alpha_messages.GkehubProjectsLocationsRolloutSequencesUpgradeRequest
-    # RolloutSequences are not yet available in beta or GA.
-    # | beta_messages.GkehubProjectsLocationsRolloutSequencesUpgradeRequest
-    # | ga_messages.GkehubProjectsLocationsRolloutSequencesUpgradeRequest
+    | beta_messages.GkehubProjectsLocationsRolloutSequencesUpgradeRequest
+    | ga_messages.GkehubProjectsLocationsRolloutSequencesUpgradeRequest
 )
 
 GkehubProjectsLocationsRolloutSequencesPatchRequest = (
     alpha_messages.GkehubProjectsLocationsRolloutSequencesPatchRequest
-    # RolloutSequences are not yet available in beta or GA.
-    # | beta_messages.GkehubProjectsLocationsRolloutSequencesPatchRequest
-    # | ga_messages.GkehubProjectsLocationsRolloutSequencesPatchRequest
+    | beta_messages.GkehubProjectsLocationsRolloutSequencesPatchRequest
+    | ga_messages.GkehubProjectsLocationsRolloutSequencesPatchRequest
 )
 
-Operation = alpha_messages.Operation | beta_messages.Operation | ga_messages.Operation
+Operation = (
+    alpha_messages.Operation
+    | beta_messages.Operation
+    | ga_messages.Operation
+)
 
 PolicyBinding = (
     alpha_messages.PolicyBinding
@@ -197,16 +188,14 @@ PolicyBinding = (
 
 Rollout = (
     alpha_messages.Rollout
-    # Rollouts are not yet available in beta or GA.
-    # | beta_messages.Rollout
-    # | ga_messages.Rollout
+    | beta_messages.Rollout
+    | ga_messages.Rollout
 )
 
 RolloutSequence = (
     alpha_messages.RolloutSequence
-    # RolloutSequences are not yet available in beta or GA.
-    # | beta_messages.RolloutSequence
-    # | ga_messages.RolloutSequence
+    | beta_messages.RolloutSequence
+    | ga_messages.RolloutSequence
 )
 
 RolloutGenerator = Generator[Rollout, None, None]

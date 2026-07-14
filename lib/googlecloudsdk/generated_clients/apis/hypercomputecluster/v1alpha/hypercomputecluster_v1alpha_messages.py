@@ -643,6 +643,149 @@ class ContainerNodePoolSlurmNodeSet(_messages.Message):
   startupScript = _messages.StringField(2)
 
 
+class ContinuousProfilingSweep(_messages.Message):
+  r"""Continuous profiling sweep for a machine learning run tracks the
+  profiling activity per target. A machine learning run can run on multiple
+  targets, and a target can't have multiple continuous profiling activities at
+  the same time.
+
+  Enums:
+    DeviceTracerLevelValueValuesEnum: Optional. The device tracer level for
+      the continuous profiling activity.
+    HostTracerLevelValueValuesEnum: Optional. The host tracer level for the
+      continuous profiling activity.
+    PythonTracerLevelValueValuesEnum: Optional. The python tracer level for
+      the continuous profiling activity.
+    StateValueValuesEnum: Output only. State representation for Current
+      Continuous profiling sweep based on combined status from all targets
+      (e.g., INPROGRESS, SUCCESS).
+
+  Messages:
+    TargetSessionsValue: Output only. Detailed status of the continuous
+      profiling sweep per target, not the snapshot status. The overall session
+      state (`state`) only captures the status of the snapshot session as a
+      whole, whereas this map provides target-specific progress. The map key
+      is the target hostname.
+
+  Fields:
+    deviceTracerLevel: Optional. The device tracer level for the continuous
+      profiling activity.
+    hostTracerLevel: Optional. The host tracer level for the continuous
+      profiling activity.
+    profilerTargets: Optional. Targets actively being profiled.
+    pythonTracerLevel: Optional. The python tracer level for the continuous
+      profiling activity.
+    startTime: Optional. Time when the continuous profiling session was
+      started.
+    state: Output only. State representation for Current Continuous profiling
+      sweep based on combined status from all targets (e.g., INPROGRESS,
+      SUCCESS).
+    sweepId: Optional. Unique identifier for the continuous profiling session.
+    targetSessions: Output only. Detailed status of the continuous profiling
+      sweep per target, not the snapshot status. The overall session state
+      (`state`) only captures the status of the snapshot session as a whole,
+      whereas this map provides target-specific progress. The map key is the
+      target hostname.
+  """
+
+  class DeviceTracerLevelValueValuesEnum(_messages.Enum):
+    r"""Optional. The device tracer level for the continuous profiling
+    activity.
+
+    Values:
+      DEVICE_TRACER_LEVEL_UNSPECIFIED: Tracer level is unspecified.
+      DEVICE_TRACER_LEVEL_DISABLED: Tracer level is disabled.
+      DEVICE_TRACER_LEVEL_ENABLED: Tracer level is enabled.
+    """
+    DEVICE_TRACER_LEVEL_UNSPECIFIED = 0
+    DEVICE_TRACER_LEVEL_DISABLED = 1
+    DEVICE_TRACER_LEVEL_ENABLED = 2
+
+  class HostTracerLevelValueValuesEnum(_messages.Enum):
+    r"""Optional. The host tracer level for the continuous profiling activity.
+
+    Values:
+      HOST_TRACER_LEVEL_UNSPECIFIED: Tracer level is unspecified.
+      HOST_TRACER_LEVEL_DISABLED: Tracer level is disabled.
+      HOST_TRACER_LEVEL_CRITICAL: Tracer level is critical.
+      HOST_TRACER_LEVEL_INFO: Tracer level is info.
+      HOST_TRACER_LEVEL_VERBOSE: Tracer level is verbose.
+    """
+    HOST_TRACER_LEVEL_UNSPECIFIED = 0
+    HOST_TRACER_LEVEL_DISABLED = 1
+    HOST_TRACER_LEVEL_CRITICAL = 2
+    HOST_TRACER_LEVEL_INFO = 3
+    HOST_TRACER_LEVEL_VERBOSE = 4
+
+  class PythonTracerLevelValueValuesEnum(_messages.Enum):
+    r"""Optional. The python tracer level for the continuous profiling
+    activity.
+
+    Values:
+      PYTHON_TRACER_LEVEL_UNSPECIFIED: Tracer level is unspecified.
+      PYTHON_TRACER_LEVEL_DISABLED: Tracer level is disabled.
+      PYTHON_TRACER_LEVEL_ENABLED: Tracer level is enabled.
+    """
+    PYTHON_TRACER_LEVEL_UNSPECIFIED = 0
+    PYTHON_TRACER_LEVEL_DISABLED = 1
+    PYTHON_TRACER_LEVEL_ENABLED = 2
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. State representation for Current Continuous profiling
+    sweep based on combined status from all targets (e.g., INPROGRESS,
+    SUCCESS).
+
+    Values:
+      STATE_UNSPECIFIED: Profiler session state is unspecified.
+      ACTIVE: Profiler session is active.
+      SUCCEEDED: Profiler session capture succeeded for all targets.
+      FAILED: Profiler session capture failed for 1 or more targets.
+      CANCELLED: Profiler session capture was cancelled.
+    """
+    STATE_UNSPECIFIED = 0
+    ACTIVE = 1
+    SUCCEEDED = 2
+    FAILED = 3
+    CANCELLED = 4
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class TargetSessionsValue(_messages.Message):
+    r"""Output only. Detailed status of the continuous profiling sweep per
+    target, not the snapshot status. The overall session state (`state`) only
+    captures the status of the snapshot session as a whole, whereas this map
+    provides target-specific progress. The map key is the target hostname.
+
+    Messages:
+      AdditionalProperty: An additional property for a TargetSessionsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type TargetSessionsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a TargetSessionsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A TargetSession attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('TargetSession', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  deviceTracerLevel = _messages.EnumField('DeviceTracerLevelValueValuesEnum', 1)
+  hostTracerLevel = _messages.EnumField('HostTracerLevelValueValuesEnum', 2)
+  profilerTargets = _messages.StringField(3, repeated=True)
+  pythonTracerLevel = _messages.EnumField('PythonTracerLevelValueValuesEnum', 4)
+  startTime = _messages.StringField(5)
+  state = _messages.EnumField('StateValueValuesEnum', 6)
+  sweepId = _messages.StringField(7)
+  targetSessions = _messages.MessageField('TargetSessionsValue', 8)
+
+
 class CreateFilestoreInstance(_messages.Message):
   r"""When set in OperationStep, indicates that a new filestore instance
   should be created.
@@ -1022,6 +1165,21 @@ class FilestoreReference(_messages.Message):
   filestore = _messages.StringField(1)
 
 
+class GCEWorkloadDetails(_messages.Message):
+  r"""Workload details for GCE orchestrator.
+
+  Fields:
+    createTime: Optional. Time when the workload was created.
+    displayName: Required. The display name of the workload. Example -
+      training-workload
+    id: Required. The identifier of the workload. Example - 1234567890
+  """
+
+  createTime = _messages.StringField(1)
+  displayName = _messages.StringField(2)
+  id = _messages.StringField(3)
+
+
 class GKEWorkloadDetails(_messages.Message):
   r"""Workload details for the GKE orchestrator.
 
@@ -1152,9 +1310,10 @@ class HypercomputeclusterProjectsLocationsClustersCreateRequest(_messages.Messag
 
   Fields:
     cluster: A Cluster resource to be passed as the request body.
-    clusterId: Required. ID of the cluster to create. Must conform to
-      [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034) (lower-case,
-      alphanumeric, and at most 63 characters).
+    clusterId: Required. The ID of the cluster to create. The cluster ID must
+      start with a lowercase letter (`a`-`z`), use only lowercase letters or
+      numbers, and contain up to 10 characters. For example, specify
+      `cluster001`.
     parent: Required. Parent location in which the cluster should be created,
       in the format `projects/{project}/locations/{location}`.
     requestId: Optional. A unique identifier for this request. A random UUID
@@ -1977,14 +2136,16 @@ class MachineLearningRun(_messages.Message):
     artifacts: Optional. Artifacts for the run.
     configs: Optional. Tracks configuration for this run, example: batch_size,
       jax_version, tpu_generation etc.
+    continuousProfilingSweep: Output only. Continuous profiling sweep for the
+      run.
     createTime: Output only. Time when the run was created.
     displayName: Optional. Display name for the run.
     endTime: Output only. Time when the run was completed. This field is set
       when the run is completed or failed.
     errorDetails: Optional. Error details for the run. This field is set when
       the run is failed.
-    etag: Optional. ETag for the run. It must be provided for update/delete
-      operations and must match the server's etag.
+    etag: ETag for the run. It must be provided for update operations and must
+      match the server's etag.
     labels: Optional. Any custom labels for this run Example: type:workload,
       type:simulation etc.
     metrics: Optional. Deprecated: Use Cloud Logging to retrieve metrics
@@ -2072,22 +2233,23 @@ class MachineLearningRun(_messages.Message):
 
   artifacts = _messages.MessageField('Artifacts', 1)
   configs = _messages.MessageField('Configs', 2)
-  createTime = _messages.StringField(3)
-  displayName = _messages.StringField(4)
-  endTime = _messages.StringField(5)
-  errorDetails = _messages.StringField(6)
-  etag = _messages.StringField(7)
-  labels = _messages.MessageField('LabelsValue', 8)
-  metrics = _messages.MessageField('Metrics', 9)
-  name = _messages.StringField(10)
-  orchestrator = _messages.EnumField('OrchestratorValueValuesEnum', 11)
-  runGroup = _messages.StringField(12)
-  runPhase = _messages.EnumField('RunPhaseValueValuesEnum', 13)
-  runSet = _messages.StringField(14)
-  state = _messages.EnumField('StateValueValuesEnum', 15)
-  tools = _messages.MessageField('Tool', 16, repeated=True)
-  updateTime = _messages.StringField(17)
-  workloadDetails = _messages.MessageField('WorkloadDetails', 18)
+  continuousProfilingSweep = _messages.MessageField('ContinuousProfilingSweep', 3)
+  createTime = _messages.StringField(4)
+  displayName = _messages.StringField(5)
+  endTime = _messages.StringField(6)
+  errorDetails = _messages.StringField(7)
+  etag = _messages.StringField(8)
+  labels = _messages.MessageField('LabelsValue', 9)
+  metrics = _messages.MessageField('Metrics', 10)
+  name = _messages.StringField(11)
+  orchestrator = _messages.EnumField('OrchestratorValueValuesEnum', 12)
+  runGroup = _messages.StringField(13)
+  runPhase = _messages.EnumField('RunPhaseValueValuesEnum', 14)
+  runSet = _messages.StringField(15)
+  state = _messages.EnumField('StateValueValuesEnum', 16)
+  tools = _messages.MessageField('Tool', 17, repeated=True)
+  updateTime = _messages.StringField(18)
+  workloadDetails = _messages.MessageField('WorkloadDetails', 19)
 
 
 class MaintenancePolicy(_messages.Message):
@@ -2209,10 +2371,11 @@ class MonitoredEvent(_messages.Message):
       an insight for this event.
     analyzerReports: Optional. Detailed reports from one or more analyzers
       regarding this event.
-    displayName: Optional. Display name of the event. If not provided, this
-      will default to the Monitored Event ID from the resource name.
+    displayName: Optional. Display name of the event.
     endTime: Optional. Exclusive timestamp when the event ended. If unset, the
       event is ongoing.
+    etag: ETag for the monitored event. It must be provided for update
+      operations and must match the server's etag.
     name: Identifier. Resource name of the monitored event. Format: projects/{
       project}/locations/{location}/machineLearningRuns/{machine_learning_run}
       /monitoredEvents/{monitored_event}
@@ -2228,19 +2391,22 @@ class MonitoredEvent(_messages.Message):
       PERFORMANCE_DEGRADATION: Performance degradation event.
       SLICE_DEGRADATION: Slice degradation event.
       HANG: Hang event.
+      ORCHESTRATOR_INTERRUPTION: Orchestrator interruption event.
     """
     EVENT_TYPE_UNSPECIFIED = 0
     PERFORMANCE_DEGRADATION = 1
     SLICE_DEGRADATION = 2
     HANG = 3
+    ORCHESTRATOR_INTERRUPTION = 4
 
   analyzerInsightFound = _messages.BooleanField(1)
   analyzerReports = _messages.MessageField('AnalyzerReport', 2, repeated=True)
   displayName = _messages.StringField(3)
   endTime = _messages.StringField(4)
-  name = _messages.StringField(5)
-  startTime = _messages.StringField(6)
-  type = _messages.EnumField('TypeValueValuesEnum', 7)
+  etag = _messages.StringField(5)
+  name = _messages.StringField(6)
+  startTime = _messages.StringField(7)
+  type = _messages.EnumField('TypeValueValuesEnum', 8)
 
 
 class NetworkReference(_messages.Message):
@@ -2677,6 +2843,8 @@ class Node(_messages.Message):
   r"""A resource representing a compute node managed by Cluster Director.
 
   Enums:
+    ProvisioningModelValueValuesEnum: Output only. Provisioning model of the
+      node.
     StateValueValuesEnum: Output only. High-level lifecycle state of the node.
 
   Fields:
@@ -2690,6 +2858,7 @@ class Node(_messages.Message):
     name: Identifier. [Relative resource name](https://google.aip.dev/122) of
       the node, in the format `projects/{project}/locations/{location}/cluster
       s/{cluster}/nodes/{node}`.
+    provisioningModel: Output only. Provisioning model of the node.
     runningJobs: Output only. Indicates whether the node is currently
       executing workloads.
     slurmDetails: Output only. Slurm-specific details for the node.
@@ -2700,6 +2869,26 @@ class Node(_messages.Message):
     zone: Output only. Name of the zone in which the node is running, e.g.
       `us-central1-a`.
   """
+
+  class ProvisioningModelValueValuesEnum(_messages.Enum):
+    r"""Output only. Provisioning model of the node.
+
+    Values:
+      PROVISIONING_MODEL_UNSPECIFIED: Not set.
+      ON_DEMAND: The node is provisioned on demand. User controlled runtime,
+        no discounts.
+      SPOT: The node is provisioned as a spot VM. Heavily discounted, no
+        guaranteed runtime.
+      RESERVATION_BOUND: The node is provisioned as a reservation-bound VM.
+        Bound to the lifecycle of the reservation in which it is provisioned.
+      FLEX_START: The node is provisioned as a flex-start VM. Has a limited
+        runtime.
+    """
+    PROVISIONING_MODEL_UNSPECIFIED = 0
+    ON_DEMAND = 1
+    SPOT = 2
+    RESERVATION_BOUND = 3
+    FLEX_START = 4
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. High-level lifecycle state of the node.
@@ -2732,12 +2921,13 @@ class Node(_messages.Message):
   containerEngineDetails = _messages.MessageField('ContainerEngineNodeDetails', 3)
   createTime = _messages.StringField(4)
   name = _messages.StringField(5)
-  runningJobs = _messages.BooleanField(6)
-  slurmDetails = _messages.MessageField('SlurmNodeDetails', 7)
-  state = _messages.EnumField('StateValueValuesEnum', 8)
-  stateMessage = _messages.StringField(9)
-  updateTime = _messages.StringField(10)
-  zone = _messages.StringField(11)
+  provisioningModel = _messages.EnumField('ProvisioningModelValueValuesEnum', 6)
+  runningJobs = _messages.BooleanField(7)
+  slurmDetails = _messages.MessageField('SlurmNodeDetails', 8)
+  state = _messages.EnumField('StateValueValuesEnum', 9)
+  stateMessage = _messages.StringField(10)
+  updateTime = _messages.StringField(11)
+  zone = _messages.StringField(12)
 
 
 class Operation(_messages.Message):
@@ -3057,7 +3247,7 @@ class ProfilerSession(_messages.Message):
     duration: Optional. Duration for the profiler session.
     endTime: Output only. The maximum end time of the end time of the profiler
       session on all the targets.
-    etag: Optional. Etag for optimistic concurrency control.
+    etag: Etag for optimistic concurrency control.
     hostTracerLevel: Optional. Host tracer level for the session. If the field
       is not set or unspecified, the default is `HOST_TRACER_LEVEL_INFO`.
     isTraceEnabled: Optional. Customer setting to enable trace level details
@@ -3122,11 +3312,14 @@ class ProfilerSession(_messages.Message):
         calls within workload code.
       KIND_SCANNED: Profiler session is scanned from Google Cloud Storage
         bucket.
+      KIND_SNAPSHOT: Profiler session is created via continuous profiling flow
+        to capture a snapshot.
     """
     KIND_UNSPECIFIED = 0
     KIND_ON_DEMAND = 1
     KIND_PROGRAMMATIC = 2
     KIND_SCANNED = 3
+    KIND_SNAPSHOT = 4
 
   class PythonTracerLevelValueValuesEnum(_messages.Enum):
     r"""Optional. Python tracer level for the session. If the field is not set
@@ -3206,7 +3399,7 @@ class ProfilerTarget(_messages.Message):
   r"""A Profiler Target.
 
   Fields:
-    etag: Optional. Etag for the profiler target
+    etag: Etag for the profiler target
     hostname: Required. Host name of the node / target.
     isMaster: Optional. Whether this node is the master node in the cluster.
     name: Identifier. The resource name of the ProfilerTarget. Format: project
@@ -3601,10 +3794,10 @@ class SlurmNodeSet(_messages.Message):
     healthChecks: Optional. Health checks on this nodeset. If specified, it
       overrides the cluster-level health checks. If not specified, the nodeset
       will inherit the cluster-level health checks.
-    id: Required. Identifier for the nodeset, which allows it to be referenced
-      by partitions. Must conform to
-      [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034) (lower-case,
-      alphanumeric, and at most 63 characters).
+    id: Required. The ID for the nodeset, which allows it to be referenced by
+      cluster partitions. The nodeset ID must start with a lowercase letter
+      (`a`-`z`), use only lowercase letters or numbers, and contain up to 15
+      characters. For example, specify `nodeset001`.
     maxDynamicNodeCount: Optional. Controls how many additional nodes a
       cluster can bring online to handle workloads. Set this value to enable
       dynamic node creation and limit the number of additional nodes the
@@ -3715,6 +3908,24 @@ class SlurmPartition(_messages.Message):
   exclusive = _messages.BooleanField(1)
   id = _messages.StringField(2)
   nodeSetIds = _messages.StringField(3, repeated=True)
+
+
+class SlurmWorkloadDetails(_messages.Message):
+  r"""Workload / Job details for Slurm orchestrator.
+
+  Fields:
+    cluster: Required. The cluster of the slurm job. Example -
+      projects//locations//clusters/
+    displayName: Optional. The display name of the slurm job (job_name).
+      Example - training-workload
+    jobId: Required. The identifier of the slurm job. Example - 1234567890
+    submitTime: Optional. The time when the slurm job was submitted.
+  """
+
+  cluster = _messages.StringField(1)
+  displayName = _messages.StringField(2)
+  jobId = _messages.StringField(3)
+  submitTime = _messages.StringField(4)
 
 
 class Smon(_messages.Message):
@@ -4031,12 +4242,16 @@ class WorkloadDetails(_messages.Message):
   cluster, Google Compute Engine instance etc.
 
   Fields:
+    gce: GCE Workload metadata.
     gke: GKE Workload metadata.
+    slurm: Slurm Workload metadata.
     targets: Optional. List of Targets/Hosts associated with the workload.
   """
 
-  gke = _messages.MessageField('GKEWorkloadDetails', 1)
-  targets = _messages.MessageField('WorkloadTarget', 2, repeated=True)
+  gce = _messages.MessageField('GCEWorkloadDetails', 1)
+  gke = _messages.MessageField('GKEWorkloadDetails', 2)
+  slurm = _messages.MessageField('SlurmWorkloadDetails', 3)
+  targets = _messages.MessageField('WorkloadTarget', 4, repeated=True)
 
 
 class WorkloadTarget(_messages.Message):

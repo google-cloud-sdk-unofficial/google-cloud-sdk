@@ -1,0 +1,32 @@
+project:
+  name: project
+  collection: datalineage.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: |
+      The project name.
+    property: core/project
+
+location:
+  name: location
+  collection: datalineage.projects.locations
+  attributes:
+  - *project
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: |
+      The location of the {resource}.
+
+process:
+  name: process
+  collection: datalineage.projects.locations.processes
+  attributes:
+  - *project
+  - *location
+  - &process
+    parameter_name: processesId
+    attribute_name: process
+    help: The name of the process.

@@ -274,7 +274,7 @@ class PredictionServiceAsyncClient:
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
             metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> prediction_service.PredictResponse:
-        r"""Perform an online prediction.
+        r"""
 
         .. code-block:: python
 
@@ -645,6 +645,8 @@ class PredictionServiceAsyncClient:
                 Required. The name of the Endpoint requested to serve
                 the prediction. Format:
                 ``projects/{project}/locations/{location}/endpoints/{endpoint}``
+                or
+                ``projects/{project}/locations/{location}/publishers/{publisher}/models/{model}``
 
                 This corresponds to the ``endpoint`` field
                 on the ``request`` instance; if ``request`` is provided, this
@@ -2296,8 +2298,9 @@ class PredictionServiceAsyncClient:
                 should not be set.
             http_body (:class:`google.api.httpbody_pb2.HttpBody`):
                 Optional. The prediction input.
-                Supports HTTP headers and arbitrary data
-                payload.
+                Supports HTTP headers and a JSON body in
+                the OpenAI-compatible chat completions
+                format.
 
                 This corresponds to the ``http_body`` field
                 on the ``request`` instance; if ``request`` is provided, this
@@ -2456,9 +2459,7 @@ class PredictionServiceAsyncClient:
                 on the ``request`` instance; if ``request`` is provided, this
                 should not be set.
             content (:class:`googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Content`):
-                Required. Input content to be
-                embedded. Required.
-
+                Required. The content to be embedded.
                 This corresponds to the ``content`` field
                 on the ``request`` instance; if ``request`` is provided, this
                 should not be set.

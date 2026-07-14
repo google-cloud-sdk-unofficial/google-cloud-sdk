@@ -2013,32 +2013,6 @@ class StorageV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
-    def WatchAll(self, request, global_params=None):
-      r"""Watch for changes on all objects in a bucket.
-
-      Args:
-        request: (StorageObjectsWatchAllRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (Channel) The response message.
-      """
-      config = self.GetMethodConfig('WatchAll')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    WatchAll.method_config = lambda: base_api.ApiMethodInfo(
-        http_method='POST',
-        method_id='storage.objects.watchAll',
-        ordered_params=['bucket'],
-        path_params=['bucket'],
-        query_params=['delimiter', 'endOffset', 'includeTrailingDelimiter', 'maxResults', 'pageToken', 'prefix', 'projection', 'startOffset', 'userProject', 'versions'],
-        relative_path='b/{bucket}/o/watch',
-        request_field='channel',
-        request_type_name='StorageObjectsWatchAllRequest',
-        response_type_name='Channel',
-        supports_download=False,
-    )
-
   class OperationsService(base_api.BaseApiService):
     """Service class for the operations resource."""
 

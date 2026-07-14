@@ -2536,7 +2536,8 @@ class RetentionPolicy(_messages.Message):
 
 
 class RotateBucketEncryptionKeyRequest(_messages.Message):
-  r"""Request message for RotateBucketEncryptionKey.
+  r"""LINT.IfChange(RotateBucketEncryptionKeyRequest) Request message for
+  RotateBucketEncryptionKey.
 
   Fields:
     kmsKey: Required. The id of the bucket Cloud KMS key version to be rotated

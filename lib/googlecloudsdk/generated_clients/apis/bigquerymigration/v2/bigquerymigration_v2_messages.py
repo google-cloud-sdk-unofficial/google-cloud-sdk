@@ -2148,7 +2148,11 @@ class GoogleCloudBigqueryMigrationV2TimeSeries(_messages.Message):
 
 
 class GoogleCloudBigqueryMigrationV2TranslateQueryRequest(_messages.Message):
-  r"""The request of translating a SQL query to GoogleSQL.
+  r"""Deprecated: Use the regular CreateMigrationWorkflow method instead. The
+  'bigquerymigration.translation.translate' permission is replaced by
+  'bigquerymigration.workflows.create', 'bigquerymigration.workflows.get', and
+  'bigquerymigration.workflows.list'. The request of translating a SQL query
+  to GoogleSQL.
 
   Enums:
     SourceDialectValueValuesEnum: Required. The source SQL dialect of
@@ -2209,7 +2213,11 @@ class GoogleCloudBigqueryMigrationV2TranslateQueryRequest(_messages.Message):
 
 
 class GoogleCloudBigqueryMigrationV2TranslateQueryResponse(_messages.Message):
-  r"""The response of translating a SQL query to GoogleSQL.
+  r"""Deprecated: Use the regular CreateMigrationWorkflow method instead. The
+  'bigquerymigration.translation.translate' permission is replaced by
+  'bigquerymigration.workflows.create', 'bigquerymigration.workflows.get', and
+  'bigquerymigration.workflows.list'. The response of translating a SQL query
+  to GoogleSQL.
 
   Fields:
     translatedQuery: The translated result. It may contain error/warning
@@ -2324,7 +2332,11 @@ class GoogleCloudBigqueryMigrationV2TranslationReportRecord(_messages.Message):
 
 
 class GoogleCloudBigqueryMigrationV2TranslationResultDetails(_messages.Message):
-  r"""Translation details like metrics, warning/error records.
+  r"""Deprecated: Use the regular CreateMigrationWorkflow method instead. The
+  'bigquerymigration.translation.translate' permission is replaced by
+  'bigquerymigration.workflows.create', 'bigquerymigration.workflows.get', and
+  'bigquerymigration.workflows.list'. Translation details like metrics,
+  warning/error records.
 
   Messages:
     TranslationMetricsValue: Translation metrics. E.g., Compiler_Clean: 5,

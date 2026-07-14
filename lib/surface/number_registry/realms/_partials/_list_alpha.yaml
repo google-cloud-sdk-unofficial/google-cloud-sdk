@@ -29,11 +29,29 @@
   arguments:
     params:
     - help_text: |-
-        Parent value for ListRealmsRequest
+        The parent resource name, for example `projects/*/locations/*`.
       is_positional: false
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.number_registry.v1alpha_resources:projects_locations
       required: true
+    - arg_name: view
+      api_field: view
+      required: false
+      help_text: |-
+        The view of the Realm to retrieve.
+      choices:
+      - arg_value: basic
+        enum_value: BASIC
+        help_text: |-
+          Basic view.
+      - arg_value: full
+        enum_value: FULL
+        help_text: |-
+          Full view. Includes the same data as the BASIC view.
+      - arg_value: aggregate
+        enum_value: AGGREGATE
+        help_text: |-
+          Aggregate includes data about the child resources of the Realm.
   request:
     api_version: v1alpha
     collection:

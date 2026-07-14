@@ -3180,8 +3180,7 @@ class FrameworkReference(_messages.Message):
   supported location is `global`.
 
   Fields:
-    framework: Required. The major version of the framework. If not specified,
-      the version corresponds to the latest version of the framework.
+    framework: Required. The name of the framework.
     majorRevisionId: Optional. The major version of the framework. If not
       specified, the version corresponds to the latest version of the
       framework.

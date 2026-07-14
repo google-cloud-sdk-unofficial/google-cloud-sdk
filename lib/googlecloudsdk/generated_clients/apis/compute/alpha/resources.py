@@ -24,6 +24,13 @@ DOCS_URL = 'https://cloud.google.com/compute/'
 class Collections(enum.Enum):
   """Collections for all supported apis."""
 
+  ACCELERATORPODCONTROLLERS = (
+      'acceleratorPodControllers',
+      'projects/{project}/zones/{zone}/acceleratorPodControllers/{resourceId}',
+      {},
+      ['project', 'zone', 'resourceId'],
+      True
+  )
   ACCELERATORTYPES = (
       'acceleratorTypes',
       'projects/{project}/zones/{zone}/acceleratorTypes/{acceleratorType}',

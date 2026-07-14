@@ -17973,7 +17973,13 @@ class GoogleCloudDialogflowV2SearchKnowledgeDebugInfo(_messages.Message):
     DatastoreResponseReasonValueValuesEnum: Response reason from datastore
       which indicates data serving status or answer quality degradation.
 
+  Messages:
+    CesDebugInfoValue: Optional. Debug info from the Customer Engagement Suite
+      (CES) execution.
+
   Fields:
+    cesDebugInfo: Optional. Debug info from the Customer Engagement Suite
+      (CES) execution.
     datastoreResponseReason: Response reason from datastore which indicates
       data serving status or answer quality degradation.
     ingestedContextReferenceDebugInfo: Information about parameters ingested
@@ -18013,10 +18019,37 @@ class GoogleCloudDialogflowV2SearchKnowledgeDebugInfo(_messages.Message):
     ANSWER_GENERATION_RAI_FAILED = 8
     ANSWER_GENERATION_NOT_GROUNDED = 9
 
-  datastoreResponseReason = _messages.EnumField('DatastoreResponseReasonValueValuesEnum', 1)
-  ingestedContextReferenceDebugInfo = _messages.MessageField('GoogleCloudDialogflowV2IngestedContextReferenceDebugInfo', 2)
-  searchKnowledgeBehavior = _messages.MessageField('GoogleCloudDialogflowV2SearchKnowledgeDebugInfoSearchKnowledgeBehavior', 3)
-  serviceLatency = _messages.MessageField('GoogleCloudDialogflowV2ServiceLatency', 4)
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class CesDebugInfoValue(_messages.Message):
+    r"""Optional. Debug info from the Customer Engagement Suite (CES)
+    execution.
+
+    Messages:
+      AdditionalProperty: An additional property for a CesDebugInfoValue
+        object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a CesDebugInfoValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  cesDebugInfo = _messages.MessageField('CesDebugInfoValue', 1)
+  datastoreResponseReason = _messages.EnumField('DatastoreResponseReasonValueValuesEnum', 2)
+  ingestedContextReferenceDebugInfo = _messages.MessageField('GoogleCloudDialogflowV2IngestedContextReferenceDebugInfo', 3)
+  searchKnowledgeBehavior = _messages.MessageField('GoogleCloudDialogflowV2SearchKnowledgeDebugInfoSearchKnowledgeBehavior', 4)
+  serviceLatency = _messages.MessageField('GoogleCloudDialogflowV2ServiceLatency', 5)
 
 
 class GoogleCloudDialogflowV2SearchKnowledgeDebugInfoSearchKnowledgeBehavior(_messages.Message):
@@ -18917,15 +18950,17 @@ class GoogleCloudDialogflowV2StreamingRecognitionResult(_messages.Message):
   contains the last finalized transcript. The complete end-user utterance is
   determined by concatenating the finalized transcript values received for the
   series of results. In the following example, single utterance is enabled. In
-  the case where single utterance is not enabled, result 7 would not occur.
-  ``` Num | transcript | message_type | is_final --- | -----------------------
-  | ----------------------- | -------- 1 | "tube" | TRANSCRIPT | false 2 | "to
-  be a" | TRANSCRIPT | false 3 | "to be" | TRANSCRIPT | false 4 | "to be or
-  not to be" | TRANSCRIPT | true 5 | "that's" | TRANSCRIPT | false 6 | "that
-  is | TRANSCRIPT | false 7 | unset | END_OF_SINGLE_UTTERANCE | unset 8 | "
-  that is the question" | TRANSCRIPT | true ``` Concatenating the finalized
-  transcripts with `is_final` set to true, the complete utterance becomes "to
-  be or not to be that is the question".
+  the case where single utterance is not enabled, result 8 would not occur.
+  ``` Num | transcript | message_type | is_final --- |
+  ------------------------ | ----------------------- | -------- 1 | "tube" |
+  TRANSCRIPT | false 2 | "to be a" | TRANSCRIPT | false 3 | "to be" |
+  TRANSCRIPT | false 4 | "to be or not to be" | TRANSCRIPT | true 5 | "that's"
+  | TRANSCRIPT | false 6 | "that is | TRANSCRIPT | false 7 | " that is the
+  question" | TRANSCRIPT | true 8 | unset | END_OF_SINGLE_UTTERANCE | unset 9
+  | ". Whether 'tis nobler" | TRANSCRIPT | true 10 | " in the mind" |
+  TRANSCRIPT | false 11 | " in the mind to suffer" | TRANSCRIPT | true ```
+  Concatenating the finalized transcripts with `is_final` set to true, the
+  complete utterance becomes "to be or not to be that is the question".
 
   Enums:
     MessageTypeValueValuesEnum: Type of the result message.
@@ -20216,11 +20251,12 @@ class GoogleCloudDialogflowV2ToolCallResult(_messages.Message):
       `projects//locations//apps//tools/`.
     cesToolset: Optional. CES toolset name for this call. Format:
       `projects//locations//apps//toolsets/ToolsetID>`.
-    content: Only populated if the response content is utf-8 encoded.
+    content: Optional. Only populated if the response content is utf-8
+      encoded.
     createTime: Output only. Create time of the tool call result.
-    error: The tool call's error.
-    rawContent: Only populated if the response content is not utf-8 encoded.
-      (by definition byte fields are base64 encoded).
+    error: Optional. The tool call's error.
+    rawContent: Optional. Only populated if the response content is not utf-8
+      encoded. (by definition byte fields are base64 encoded).
     tool: Optional. The tool associated with this call. Format:
       `projects//locations//tools/`.
   """
@@ -24177,15 +24213,17 @@ class GoogleCloudDialogflowV2beta1StreamingRecognitionResult(_messages.Message):
   contains the last finalized transcript. The complete end-user utterance is
   determined by concatenating the finalized transcript values received for the
   series of results. In the following example, single utterance is enabled. In
-  the case where single utterance is not enabled, result 7 would not occur.
-  ``` Num | transcript | message_type | is_final --- | -----------------------
-  | ----------------------- | -------- 1 | "tube" | TRANSCRIPT | false 2 | "to
-  be a" | TRANSCRIPT | false 3 | "to be" | TRANSCRIPT | false 4 | "to be or
-  not to be" | TRANSCRIPT | true 5 | "that's" | TRANSCRIPT | false 6 | "that
-  is | TRANSCRIPT | false 7 | unset | END_OF_SINGLE_UTTERANCE | unset 8 | "
-  that is the question" | TRANSCRIPT | true ``` Concatenating the finalized
-  transcripts with `is_final` set to true, the complete utterance becomes "to
-  be or not to be that is the question".
+  the case where single utterance is not enabled, result 8 would not occur.
+  ``` Num | transcript | message_type | is_final --- |
+  ------------------------ | ----------------------- | -------- 1 | "tube" |
+  TRANSCRIPT | false 2 | "to be a" | TRANSCRIPT | false 3 | "to be" |
+  TRANSCRIPT | false 4 | "to be or not to be" | TRANSCRIPT | true 5 | "that's"
+  | TRANSCRIPT | false 6 | "that is | TRANSCRIPT | false 7 | " that is the
+  question" | TRANSCRIPT | true 8 | unset | END_OF_SINGLE_UTTERANCE | unset 9
+  | ". Whether 'tis nobler" | TRANSCRIPT | true 10 | " in the mind" |
+  TRANSCRIPT | false 11 | " in the mind to suffer" | TRANSCRIPT | true ```
+  Concatenating the finalized transcripts with `is_final` set to true, the
+  complete utterance becomes "to be or not to be that is the question".
 
   Enums:
     MessageTypeValueValuesEnum: Type of the result message.
@@ -24557,11 +24595,12 @@ class GoogleCloudDialogflowV2beta1ToolCallResult(_messages.Message):
       `projects//locations//apps//tools/`.
     cesToolset: Optional. CES toolset name for this call. Format:
       `projects//locations//apps//toolsets/ToolsetID>`.
-    content: Only populated if the response content is utf-8 encoded.
+    content: Optional. Only populated if the response content is utf-8
+      encoded.
     createTime: Output only. Create time of the tool call result.
-    error: The tool call's error.
-    rawContent: Only populated if the response content is not utf-8 encoded.
-      (by definition byte fields are base64 encoded).
+    error: Optional. The tool call's error.
+    rawContent: Optional. Only populated if the response content is not utf-8
+      encoded. (by definition byte fields are base64 encoded).
     tool: Optional. The tool associated with this call. Format:
       `projects//locations//tools/`.
   """

@@ -369,6 +369,10 @@ class CancelOperationRequest(_messages.Message):
   r"""The request message for Operations.CancelOperation."""
 
 
+class CancelRolloutRequest(_messages.Message):
+  r"""Request message for cancelling a rollout."""
+
+
 class CloudAuditOptions(_messages.Message):
   r"""Write a Cloud Audit log
 
@@ -2891,6 +2895,16 @@ class FleetObservabilityRoutingConfig(_messages.Message):
   mode = _messages.EnumField('ModeValueValuesEnum', 1)
 
 
+class ForceCompleteRolloutStageRequest(_messages.Message):
+  r"""Request message for force-completing a rollout stage.
+
+  Fields:
+    stageNumber: Required. The stage number to force-complete.
+  """
+
+  stageNumber = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+
+
 class GenerateConnectManifestResponse(_messages.Message):
   r"""GenerateConnectManifestResponse contains manifest information for
   installing/upgrading a Connect agent.
@@ -3736,6 +3750,35 @@ class GkehubProjectsLocationsOperationsListRequest(_messages.Message):
   returnPartialSuccess = _messages.BooleanField(5)
 
 
+class GkehubProjectsLocationsRolloutSequencesCreateRequest(_messages.Message):
+  r"""A GkehubProjectsLocationsRolloutSequencesCreateRequest object.
+
+  Fields:
+    parent: Required. The parent resource where this rollout sequence will be
+      created. projects/{project}/locations/{location}
+    rolloutSequence: A RolloutSequence resource to be passed as the request
+      body.
+    rolloutSequenceId: Required. User provided identifier that is used as part
+      of the resource name; must conform to RFC-1034 and additionally restrict
+      to lower-cased letters. This comes out roughly to: /^a-z+[a-z0-9]$/
+  """
+
+  parent = _messages.StringField(1, required=True)
+  rolloutSequence = _messages.MessageField('RolloutSequence', 2)
+  rolloutSequenceId = _messages.StringField(3)
+
+
+class GkehubProjectsLocationsRolloutSequencesDeleteRequest(_messages.Message):
+  r"""A GkehubProjectsLocationsRolloutSequencesDeleteRequest object.
+
+  Fields:
+    name: Required. The name of the rollout sequence to delete. projects/{proj
+      ect}/locations/{location}/rolloutSequences/{rollout_sequence}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
 class GkehubProjectsLocationsRolloutSequencesGetRequest(_messages.Message):
   r"""A GkehubProjectsLocationsRolloutSequencesGetRequest object.
 
@@ -3747,6 +3790,111 @@ class GkehubProjectsLocationsRolloutSequencesGetRequest(_messages.Message):
   name = _messages.StringField(1, required=True)
 
 
+class GkehubProjectsLocationsRolloutSequencesListRequest(_messages.Message):
+  r"""A GkehubProjectsLocationsRolloutSequencesListRequest object.
+
+  Fields:
+    filter: Optional. Lists Rollout Sequences that match the filter
+      expression, following the syntax outlined in https://google.aip.dev/160.
+    pageSize: Optional. The maximum number of rollout sequences to return. The
+      service may return fewer than this value. If unspecified, at most 50
+      rollout sequences will be returned. The maximum value is 1000; values
+      above 1000 will be coerced to 1000.
+    pageToken: Optional. A page token, received from a previous
+      `ListRolloutSequences` call. Provide this to retrieve the subsequent
+      page. When paginating, all other parameters provided to
+      `ListRolloutSequences` must match the call that provided the page token.
+    parent: Required. The parent, which owns this collection of rollout
+      sequences. Format: projects/{project}/locations/{location}
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+
+
+class GkehubProjectsLocationsRolloutSequencesPatchRequest(_messages.Message):
+  r"""A GkehubProjectsLocationsRolloutSequencesPatchRequest object.
+
+  Fields:
+    name: Identifier. Name of the rollout sequence in the format of:
+      projects/{PROJECT_ID}/locations/global/rolloutSequences/{NAME}
+    rolloutSequence: A RolloutSequence resource to be passed as the request
+      body.
+    updateMask: Optional. The list of fields to update.
+  """
+
+  name = _messages.StringField(1, required=True)
+  rolloutSequence = _messages.MessageField('RolloutSequence', 2)
+  updateMask = _messages.StringField(3)
+
+
+class GkehubProjectsLocationsRolloutSequencesUpgradeRequest(_messages.Message):
+  r"""A GkehubProjectsLocationsRolloutSequencesUpgradeRequest object.
+
+  Fields:
+    name: Required. The name of the rollout sequence. Format: projects/{projec
+      t}/locations/{location}/rolloutSequences/{rollout_sequence}
+    upgradeRolloutSequenceRequest: A UpgradeRolloutSequenceRequest resource to
+      be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  upgradeRolloutSequenceRequest = _messages.MessageField('UpgradeRolloutSequenceRequest', 2)
+
+
+class GkehubProjectsLocationsRolloutsCancelRequest(_messages.Message):
+  r"""A GkehubProjectsLocationsRolloutsCancelRequest object.
+
+  Fields:
+    cancelRolloutRequest: A CancelRolloutRequest resource to be passed as the
+      request body.
+    name: Required. The name of the rollout to cancel.
+      projects/{project}/locations/{location}/rollouts/{rollout}
+  """
+
+  cancelRolloutRequest = _messages.MessageField('CancelRolloutRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class GkehubProjectsLocationsRolloutsDeleteRequest(_messages.Message):
+  r"""A GkehubProjectsLocationsRolloutsDeleteRequest object.
+
+  Fields:
+    name: Required. The name of the rollout to delete.
+      projects/{project}/locations/{location}/rollouts/{rollout}
+    requestId: Optional. A request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed. The server will
+      guarantee that for at least 60 minutes after the first request. For
+      example, consider a situation where you make an initial request and the
+      request times out. If you make the request again with the same request
+      ID, the server can check if original operation with the same request ID
+      was received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments. The request ID
+      must be a valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class GkehubProjectsLocationsRolloutsForceCompleteStageRequest(_messages.Message):
+  r"""A GkehubProjectsLocationsRolloutsForceCompleteStageRequest object.
+
+  Fields:
+    forceCompleteRolloutStageRequest: A ForceCompleteRolloutStageRequest
+      resource to be passed as the request body.
+    name: Required. The name of the rollout. Format:
+      projects/{project}/locations/{location}/rollouts/{rollout}
+  """
+
+  forceCompleteRolloutStageRequest = _messages.MessageField('ForceCompleteRolloutStageRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class GkehubProjectsLocationsRolloutsGetRequest(_messages.Message):
   r"""A GkehubProjectsLocationsRolloutsGetRequest object.
 
@@ -3756,6 +3904,58 @@ class GkehubProjectsLocationsRolloutsGetRequest(_messages.Message):
   """
 
   name = _messages.StringField(1, required=True)
+
+
+class GkehubProjectsLocationsRolloutsListRequest(_messages.Message):
+  r"""A GkehubProjectsLocationsRolloutsListRequest object.
+
+  Fields:
+    filter: Optional. Lists Rollouts that match the filter expression,
+      following the syntax outlined in https://google.aip.dev/160.
+    pageSize: The maximum number of rollout to return. The service may return
+      fewer than this value. If unspecified, at most 50 rollouts will be
+      returned. The maximum value is 1000; values above 1000 will be coerced
+      to 1000.
+    pageToken: A page token, received from a previous `ListRollouts` call.
+      Provide this to retrieve the subsequent page. When paginating, all other
+      parameters provided to `ListRollouts` must match the call that provided
+      the page token.
+    parent: Required. The parent, which owns this collection of rollout.
+      Format: projects/{project}/locations/{location}
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+
+
+class GkehubProjectsLocationsRolloutsPauseRequest(_messages.Message):
+  r"""A GkehubProjectsLocationsRolloutsPauseRequest object.
+
+  Fields:
+    name: Required. The name of the rollout to pause.
+      projects/{project}/locations/{location}/rollouts/{rollout}
+    pauseRolloutRequest: A PauseRolloutRequest resource to be passed as the
+      request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  pauseRolloutRequest = _messages.MessageField('PauseRolloutRequest', 2)
+
+
+class GkehubProjectsLocationsRolloutsResumeRequest(_messages.Message):
+  r"""A GkehubProjectsLocationsRolloutsResumeRequest object.
+
+  Fields:
+    name: Required. The name of the rollout to resume.
+      projects/{project}/locations/{location}/rollouts/{rollout}
+    resumeRolloutRequest: A ResumeRolloutRequest resource to be passed as the
+      request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  resumeRolloutRequest = _messages.MessageField('ResumeRolloutRequest', 2)
 
 
 class GkehubProjectsLocationsScopesCreateRequest(_messages.Message):
@@ -4926,6 +5126,33 @@ class ListReferencesResponse(_messages.Message):
   references = _messages.MessageField('Reference', 2, repeated=True)
 
 
+class ListRolloutSequencesResponse(_messages.Message):
+  r"""Response message for listing rollout sequences.
+
+  Fields:
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+    rolloutSequences: The rollout sequences from the specified parent
+      resource.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  rolloutSequences = _messages.MessageField('RolloutSequence', 2, repeated=True)
+
+
+class ListRolloutsResponse(_messages.Message):
+  r"""Response message for listing rollouts.
+
+  Fields:
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+    rollouts: The rollouts from the specified parent resource.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  rollouts = _messages.MessageField('Rollout', 2, repeated=True)
+
+
 class ListScopeNamespacesResponse(_messages.Message):
   r"""List of fleet namespaces.
 
@@ -5923,6 +6150,10 @@ class Origin(_messages.Message):
   type = _messages.EnumField('TypeValueValuesEnum', 1)
 
 
+class PauseRolloutRequest(_messages.Message):
+  r"""Request message for pausing a rollout."""
+
+
 class Policy(_messages.Message):
   r"""An Identity and Access Management (IAM) policy, which specifies access
   controls for Google Cloud resources. A `Policy` is a collection of
@@ -6785,6 +7016,19 @@ class ResourceOptions(_messages.Message):
   v1beta1Crd = _messages.BooleanField(4)
 
 
+class ResumeRolloutRequest(_messages.Message):
+  r"""Request message for resuming a rollout.
+
+  Fields:
+    scheduleOffset: Optional. The duration to offset the Rollout schedule by.
+    validateOnly: Optional. If set, resume rollout will be executed in dry-run
+      mode.
+  """
+
+  scheduleOffset = _messages.StringField(1)
+  validateOnly = _messages.BooleanField(2)
+
+
 class Role(_messages.Message):
   r"""Role is the type for Kubernetes roles
 
@@ -6892,15 +7136,15 @@ class Rollout(_messages.Message):
     Values:
       ROLLOUT_INTENT_UNSPECIFIED: The default value.
       REGULAR_UPGRADE: A standard rollout.
-      FORCE_PATCH: A mandatory upgrade for clusters that haven't been patched
-        within the allowed window.
-      END_OF_LIFE_ENFORCEMENT: A mandatory upgrade for clusters that have
+      CONTROL_PLANE_PATCH_ENFORCEMENT: A mandatory upgrade for clusters that
+        haven't been patched within the allowed window.
+      END_OF_SUPPORT_ENFORCEMENT: A mandatory upgrade for clusters that have
         reached its end of support.
     """
     ROLLOUT_INTENT_UNSPECIFIED = 0
     REGULAR_UPGRADE = 1
-    FORCE_PATCH = 2
-    END_OF_LIFE_ENFORCEMENT = 3
+    CONTROL_PLANE_PATCH_ENFORCEMENT = 2
+    END_OF_SUPPORT_ENFORCEMENT = 3
 
   class StateReasonTypeValueValuesEnum(_messages.Enum):
     r"""Output only. StateReasonType specifies the reason type of the Rollout
@@ -7732,6 +7976,8 @@ class ServiceMeshCondition(_messages.Message):
         pod IP scalability limits.
       MODERNIZATION_INCOMPATIBLE_CONFIG: Incompatible config found in the
         cluster.
+      MODERNIZATION_INCOMPATIBLE_GATEWAY_POD_SCALE: Gateway pods per cluster
+        limit exceeded.
       MODERNIZATION_SCHEDULED: Modernization is scheduled for a cluster.
       MODERNIZATION_IN_PROGRESS: Modernization is in progress for a cluster.
       MODERNIZATION_COMPLETED: Modernization is completed for a cluster.
@@ -7813,28 +8059,29 @@ class ServiceMeshCondition(_messages.Message):
     MODERNIZATION_INCOMPATIBLE_POD_ANNOTATION = 41
     MODERNIZATION_INCOMPATIBLE_POD_IP_SCALE = 42
     MODERNIZATION_INCOMPATIBLE_CONFIG = 43
-    MODERNIZATION_SCHEDULED = 44
-    MODERNIZATION_IN_PROGRESS = 45
-    MODERNIZATION_COMPLETED = 46
-    MODERNIZATION_ABORTED = 47
-    MODERNIZATION_PREPARING = 48
-    MODERNIZATION_STALLED = 49
-    MODERNIZATION_PREPARED = 50
-    MODERNIZATION_MIGRATING_WORKLOADS = 51
-    MODERNIZATION_ROLLING_BACK_CLUSTER = 52
-    MODERNIZATION_WILL_BE_SCHEDULED = 53
-    MODERNIZATION_MANUAL = 54
-    MODERNIZATION_ELIGIBLE = 55
-    MODERNIZATION_MODERNIZING = 56
-    MODERNIZATION_MODERNIZED_SOAKING = 57
-    MODERNIZATION_FINALIZED = 58
-    MODERNIZATION_ROLLING_BACK_FLEET = 59
-    MODERNIZATION_MODERNIZED = 60
-    MODERNIZATION_INCOMPATIBLE_SERVICES_SCALE = 61
-    MODERNIZATION_COMPATIBLE = 62
-    MODERNIZATION_INCOMPATIBLE = 63
-    MODERNIZATION_INCOMPATIBLE_FLEET_SCALE = 64
-    MODERNIZATION_INCOMPATIBLE_FLEET_QUOTA = 65
+    MODERNIZATION_INCOMPATIBLE_GATEWAY_POD_SCALE = 44
+    MODERNIZATION_SCHEDULED = 45
+    MODERNIZATION_IN_PROGRESS = 46
+    MODERNIZATION_COMPLETED = 47
+    MODERNIZATION_ABORTED = 48
+    MODERNIZATION_PREPARING = 49
+    MODERNIZATION_STALLED = 50
+    MODERNIZATION_PREPARED = 51
+    MODERNIZATION_MIGRATING_WORKLOADS = 52
+    MODERNIZATION_ROLLING_BACK_CLUSTER = 53
+    MODERNIZATION_WILL_BE_SCHEDULED = 54
+    MODERNIZATION_MANUAL = 55
+    MODERNIZATION_ELIGIBLE = 56
+    MODERNIZATION_MODERNIZING = 57
+    MODERNIZATION_MODERNIZED_SOAKING = 58
+    MODERNIZATION_FINALIZED = 59
+    MODERNIZATION_ROLLING_BACK_FLEET = 60
+    MODERNIZATION_MODERNIZED = 61
+    MODERNIZATION_INCOMPATIBLE_SERVICES_SCALE = 62
+    MODERNIZATION_COMPATIBLE = 63
+    MODERNIZATION_INCOMPATIBLE = 64
+    MODERNIZATION_INCOMPATIBLE_FLEET_SCALE = 65
+    MODERNIZATION_INCOMPATIBLE_FLEET_QUOTA = 66
 
   class SeverityValueValuesEnum(_messages.Enum):
     r"""Severity level of the condition.
@@ -7971,11 +8218,15 @@ class ServiceMeshFeatureSpec(_messages.Message):
       fleet.
     ModernizationCompatibilityValueValuesEnum: Optional. Specifies
       modernization compatibility for the fleet.
+    ModernizationStrategyValueValuesEnum: Optional. Declares your intended
+      modernization strategy for the fleet.
 
   Fields:
     modernization: Optional. Specifies modernization for the fleet.
     modernizationCompatibility: Optional. Specifies modernization
       compatibility for the fleet.
+    modernizationStrategy: Optional. Declares your intended modernization
+      strategy for the fleet.
   """
 
   class ModernizationCompatibilityValueValuesEnum(_messages.Enum):
@@ -7990,6 +8241,27 @@ class ServiceMeshFeatureSpec(_messages.Message):
     MODERNIZATION_COMPATIBILITY_UNSPECIFIED = 0
     VALIDATION_ENABLED = 1
     VALIDATION_DISABLED = 2
+
+  class ModernizationStrategyValueValuesEnum(_messages.Enum):
+    r"""Optional. Declares your intended modernization strategy for the fleet.
+
+    Values:
+      MODERNIZATION_STRATEGY_UNSPECIFIED: Default unspecified.
+      AUTOMATIC: The infrastructure is automatically modernized. Setting this
+        strategy initiates the modernization process. The system schedules the
+        modernization subject to configured maintenance windows and
+        maintenance exclusions.
+      DEFERRED: The infrastructure is pinned to the legacy implementation.
+        This fleet will not be selected for Google-driven modernization. If
+        the resource is actively modernizing, or if the modernization has
+        completed but is not yet finalized (e.g., during the soak time),
+        setting this strategy triggers a rollback to the legacy state. If the
+        modernization process has already been marked as finalized, setting
+        this strategy has no effect.
+    """
+    MODERNIZATION_STRATEGY_UNSPECIFIED = 0
+    AUTOMATIC = 1
+    DEFERRED = 2
 
   class ModernizationValueValuesEnum(_messages.Enum):
     r"""Optional. Specifies modernization for the fleet.
@@ -8007,6 +8279,7 @@ class ServiceMeshFeatureSpec(_messages.Message):
 
   modernization = _messages.EnumField('ModernizationValueValuesEnum', 1)
   modernizationCompatibility = _messages.EnumField('ModernizationCompatibilityValueValuesEnum', 2)
+  modernizationStrategy = _messages.EnumField('ModernizationStrategyValueValuesEnum', 3)
 
 
 class ServiceMeshMembershipSpec(_messages.Message):
@@ -8382,6 +8655,49 @@ class UIPRRolloutConfig(_messages.Message):
   customWaves = _messages.MessageField('WaveTemplate', 1, repeated=True)
   excludedMembershipNames = _messages.StringField(2, repeated=True)
   includeMembershipNames = _messages.StringField(3, repeated=True)
+
+
+class UpgradeRolloutSequenceRequest(_messages.Message):
+  r"""Request message for upgrading a rollout sequence.
+
+  Enums:
+    UpgradeTypeValueValuesEnum: Required. The type of upgrade.
+
+  Fields:
+    force: Optional. If set to true, any rollout already running on the first
+      stage of the sequence will be cancelled to allow for the creation of the
+      new rollout.
+    upgradeType: Required. The type of upgrade.
+    version: Required. GKE version to upgrade to. A valid GKE version
+      available on the release channel used by the sequence. Patch versions
+      from less conservative channels are allowed if their minor version is
+      already available in the sequence's channel. This is similar to single-
+      cluster upgrade rules, see https://cloud.google.com/kubernetes-
+      engine/docs/how-to/upgrading-a-cluster#supported-versions Example: With
+      the following versions available on the RAPID and REGULAR channels: *
+      REGULAR: 1.35.3-gke.123000 * RAPID: 1.36.4-gke.321000, 1.35.6-gke.045000
+      Valid versions are 1.35.3-gke.123, 1.35.6-gke.045000 Aliases like
+      `latest` are supported. For more information on valid upgrade versions
+      and specifying cluster versions, see:
+      https://cloud.google.com/kubernetes-
+      engine/versioning#specifying_cluster_version
+  """
+
+  class UpgradeTypeValueValuesEnum(_messages.Enum):
+    r"""Required. The type of upgrade.
+
+    Values:
+      UPGRADE_TYPE_UNSPECIFIED: Default unspecified value.
+      CONTROL_PLANE: Upgrade the control plane.
+      NODE: Upgrade the nodes.
+    """
+    UPGRADE_TYPE_UNSPECIFIED = 0
+    CONTROL_PLANE = 1
+    NODE = 2
+
+  force = _messages.BooleanField(1)
+  upgradeType = _messages.EnumField('UpgradeTypeValueValuesEnum', 2)
+  version = _messages.StringField(3)
 
 
 class VersionUpgrade(_messages.Message):

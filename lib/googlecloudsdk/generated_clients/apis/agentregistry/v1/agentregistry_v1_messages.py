@@ -943,9 +943,11 @@ class EndpointSpec(_messages.Message):
       TYPE_UNSPECIFIED: Unspecified type.
       NO_SPEC: There is no spec for the Endpoint. The `content` field must be
         empty.
+      OPENAPI_SPEC: OpenAPI Specification.
     """
     TYPE_UNSPECIFIED = 0
     NO_SPEC = 1
+    OPENAPI_SPEC = 2
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class ContentValue(_messages.Message):

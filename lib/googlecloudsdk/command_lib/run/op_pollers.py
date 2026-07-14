@@ -20,9 +20,11 @@ from typing import TYPE_CHECKING
 
 from googlecloudsdk.api_lib.run import instance
 from googlecloudsdk.api_lib.util import waiter
+from googlecloudsdk.command_lib.run import domain_mapping_util
 from googlecloudsdk.command_lib.run import exceptions as serverless_exceptions
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import resources
+
 
 # pylint: disable=g-bad-import-order
 if TYPE_CHECKING:
@@ -36,8 +38,15 @@ class DomainMappingResourceRecordPoller(waiter.OperationPoller):
     self._ops = ops
 
   def IsDone(self, mapping):
-    if getattr(mapping.status, 'resourceRecords', None):
+    if not domain_mapping_util.IsCustomUrl(mapping.name) and getattr(
+        mapping.status, 'resourceRecords', None
+    ):
       return True
+    if domain_mapping_util.IsCustomUrl(mapping.name) and getattr(
+        mapping.status, 'mappedRouteName', None
+    ):
+      return True
+
     conditions = mapping.conditions
     # pylint: disable=g-bool-id-comparison
     # False (indicating failure) as distinct from None (indicating not sure yet)

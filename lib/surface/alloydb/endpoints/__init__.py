@@ -21,7 +21,6 @@ from googlecloudsdk.calliope import base
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-@base.Hidden
 class Endpoints(base.Group):
   """Provide commands for managing AlloyDB endpoints.
 

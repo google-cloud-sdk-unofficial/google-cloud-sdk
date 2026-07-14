@@ -31,16 +31,17 @@ $ {command} my-rollout-sequence
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Describe(base.DescribeCommand):
   """Describe a rollout sequence."""
-  _release_track = base.ReleaseTrack.BETA
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @classmethod
   def Args(cls, parser: parser_arguments.ArgumentInterceptor):
     flags = rolloutsequence_flags.RolloutSequenceFlags(
-        parser, release_track=cls._release_track
+        parser, release_track=cls.ReleaseTrack()
     )
     flags.AddRolloutSequenceResourceArg()
 
@@ -53,9 +54,3 @@ class Describe(base.DescribeCommand):
     )
 
     return fleet_client.DescribeRolloutSequence(req)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(Describe):
-  """Describe a rollout sequence."""
-  _release_track = base.ReleaseTrack.ALPHA

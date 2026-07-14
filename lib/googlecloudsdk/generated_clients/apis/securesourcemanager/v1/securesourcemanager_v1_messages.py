@@ -1501,6 +1501,7 @@ class Repository(_messages.Message):
     name: Identifier. A unique identifier for a repository. The name should be
       of the format: `projects/{project}/locations/{location_id}/repositories/
       {repository_id}`
+    scanConfig: Optional. Provides configuration for scanning.
     serviceAccount: Optional. Repository level service account (BYOSA).
     uid: Output only. Unique identifier of the repository.
     updateTime: Output only. Update timestamp.
@@ -1513,10 +1514,11 @@ class Repository(_messages.Message):
   initialConfig = _messages.MessageField('InitialConfig', 4)
   instance = _messages.StringField(5)
   name = _messages.StringField(6)
-  serviceAccount = _messages.StringField(7)
-  uid = _messages.StringField(8)
-  updateTime = _messages.StringField(9)
-  uris = _messages.MessageField('URIs', 10)
+  scanConfig = _messages.MessageField('ScanConfig', 7)
+  serviceAccount = _messages.StringField(8)
+  uid = _messages.StringField(9)
+  updateTime = _messages.StringField(10)
+  uris = _messages.MessageField('URIs', 11)
 
 
 class ResolvePullRequestCommentsRequest(_messages.Message):
@@ -1577,6 +1579,29 @@ class Review(_messages.Message):
   actionType = _messages.EnumField('ActionTypeValueValuesEnum', 1)
   body = _messages.StringField(2)
   effectiveCommitSha = _messages.StringField(3)
+
+
+class ScanConfig(_messages.Message):
+  r"""Configuration for scanning.
+
+  Fields:
+    secretScanConfig: Optional. Configuration for secret scanning.
+  """
+
+  secretScanConfig = _messages.MessageField('SecretScanConfig', 1)
+
+
+class SecretScanConfig(_messages.Message):
+  r"""Configuration for secret scanning.
+
+  Fields:
+    enabled: Optional. Enables secret scanning for the repository.
+    inspectTemplate: Optional. The DLP inspect template to use for secret
+      scanning.
+  """
+
+  enabled = _messages.BooleanField(1)
+  inspectTemplate = _messages.StringField(2)
 
 
 class SecuresourcemanagerProjectsLocationsGetRequest(_messages.Message):

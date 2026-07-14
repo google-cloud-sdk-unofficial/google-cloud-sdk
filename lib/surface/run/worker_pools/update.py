@@ -50,8 +50,7 @@ Container Flags
   group.AddArgument(flags.CpuFlag())
   group.AddArgument(flags.CommandFlag())
   group.AddArgument(flags.ArgsFlag())
-  if release_track != base.ReleaseTrack.GA:
-    group.AddArgument(flags.WorkdirFlag())
+  group.AddArgument(flags.WorkdirFlag())
   group.AddArgument(flags_parser.SecretsFlags())
   group.AddArgument(flags.DependsOnFlag())
   group.AddArgument(flags.AddVolumeMountFlag())
@@ -112,6 +111,8 @@ class Update(base.Command):
     flags.AddNoPromoteFlag(parser)
     flags.AddGpuTypeFlag(parser)
     flags.GpuZonalRedundancyFlag(parser)
+    if cls.ReleaseTrack() != base.ReleaseTrack.GA:
+      flags.AddDryRunFlag(parser)
     worker_pool_presentation = presentation_specs.ResourcePresentationSpec(
         'WORKER_POOL',
         resource_args.GetV2WorkerPoolResourceSpec(prompt=True),
@@ -170,75 +171,95 @@ class Update(base.Command):
     worker_pool_ref = args.CONCEPTS.worker_pool.Parse()
     flags.ValidateResource(worker_pool_ref)
 
-    run_client = run_util.GetGapicClientInstance(
+    with run_util.GetGapicClientInstance(
         region=worker_pool_ref.locationsId
-    )
-    worker_pools_client = worker_pools_operations.WorkerPoolsOperations(
-        run_client
-    )
-    worker_pool = worker_pools_client.GetWorkerPool(worker_pool_ref)
-    messages_util.MaybeLogDefaultGpuTypeMessageForV2Resource(args, worker_pool)
-    config_changes = self._GetBaseChanges(args)
-    if worker_pool:
-      header = 'Updating...'
-      failure_message = 'Update failed'
-      result_message = 'updating'
-    else:
-      header = 'Deploying new worker pool...'
-      failure_message = 'Deployment failed'
-      result_message = 'deploying'
-    creates_revision = config_changes_mod.AdjustsTemplate(config_changes)
-    with progress_tracker.StagedProgressTracker(
-        header,
-        stages.WorkerPoolStages(include_create_revision=creates_revision),
-        failure_message=failure_message,
-        suppress_output=args.async_,
-    ):
-      # TODO: b/432102851 - Add retry logic with zonal redundancy off.
-      response = worker_pools_client.ReleaseWorkerPool(
-          worker_pool_ref, config_changes, prefetch=worker_pool
+    ) as run_client:
+      worker_pools_client = worker_pools_operations.WorkerPoolsOperations(
+          run_client
       )
-      if not response:
-        raise exceptions.ArgumentError(
-            'Cannot update worker pool [{}]'.format(
+      worker_pool = worker_pools_client.GetWorkerPool(worker_pool_ref)
+      messages_util.MaybeLogDefaultGpuTypeMessageForV2Resource(
+          args, worker_pool
+      )
+      config_changes = self._GetBaseChanges(args)
+      dry_run = getattr(args, 'dry_run', False)
+      if dry_run:
+        header = 'Validating...'
+        failure_message = 'Validation failed'
+        result_message = 'validating'
+      elif worker_pool:
+        header = 'Updating...'
+        failure_message = 'Update failed'
+        result_message = 'updating'
+      else:
+        header = 'Deploying new worker pool...'
+        failure_message = 'Deployment failed'
+        result_message = 'deploying'
+      creates_revision = config_changes_mod.AdjustsTemplate(config_changes)
+      with progress_tracker.StagedProgressTracker(
+          header,
+          stages.WorkerPoolStages(include_create_revision=creates_revision),
+          failure_message=failure_message,
+          suppress_output=args.async_ or dry_run,
+      ):
+        # TODO: b/432102851 - Add retry logic with zonal redundancy off.
+        kwargs = {}
+        if dry_run:
+          kwargs['dry_run'] = True
+        response = worker_pools_client.ReleaseWorkerPool(
+            worker_pool_ref, config_changes, prefetch=worker_pool, **kwargs
+        )
+        if not response:
+          raise exceptions.ArgumentError(
+              'Cannot update worker pool [{}]'.format(
+                  worker_pool_ref.workerPoolsId
+              )
+          )
+
+      if dry_run:
+        try:
+          response.result()
+        except gapic_exceptions.GoogleAPICallError as e:
+          core_exceptions.reraise(core_exceptions.Error(str(e)))
+        pretty_print.Success(
+            'Worker pool [{}] has been validated.'.format(
                 worker_pool_ref.workerPoolsId
             )
         )
-
-    if args.async_:
-      pretty_print.Success(
-          'Worker pool [{{bold}}{worker_pool}{{reset}}] is {result_message} '
-          'asynchronously.'.format(
-              worker_pool=worker_pool_ref.workerPoolsId,
-              result_message=result_message,
-          )
-      )
-    else:
-      try:
-        response.result()  # Wait for the operation to complete.
-      except gapic_exceptions.GoogleAPICallError as e:
-        core_exceptions.reraise(core_exceptions.Error(str(e)))
-      worker_pool_name = worker_pool_ref.workerPoolsId
-
-      if creates_revision:
-        revision_name = None
-        if response.metadata and response.metadata.latest_created_revision:
-          revision_name = resource_name_conversion.GetNameFromFullChildName(
-              response.metadata.latest_created_revision
-          )
+      elif args.async_:
         pretty_print.Success(
-            messages_util.GetSuccessMessageForSynchronousWorkerPoolDeploy(
-                worker_pool_name,
-                self.ReleaseTrack(),
-                args.CONCEPTS.worker_pool.Parse().locationsId,
-                revision_name,
+            'Worker pool [{{bold}}{worker_pool}{{reset}}] is {result_message} '
+            'asynchronously.'.format(
+                worker_pool=worker_pool_ref.workerPoolsId,
+                result_message=result_message,
             )
         )
       else:
-        pretty_print.Success(
-            'Worker pool [{{bold}}{worker_pool}{{reset}}] has been updated.'
-            .format(worker_pool=worker_pool_name)
-        )
+        try:
+          response.result()  # Wait for the operation to complete.
+        except gapic_exceptions.GoogleAPICallError as e:
+          core_exceptions.reraise(core_exceptions.Error(str(e)))
+        worker_pool_name = worker_pool_ref.workerPoolsId
+
+        if creates_revision:
+          revision_name = None
+          if response.metadata and response.metadata.latest_created_revision:
+            revision_name = resource_name_conversion.GetNameFromFullChildName(
+                response.metadata.latest_created_revision
+            )
+          pretty_print.Success(
+              messages_util.GetSuccessMessageForSynchronousWorkerPoolDeploy(
+                  worker_pool_name,
+                  self.ReleaseTrack(),
+                  args.CONCEPTS.worker_pool.Parse().locationsId,
+                  revision_name,
+              )
+          )
+        else:
+          pretty_print.Success(
+              'Worker pool [{{bold}}{worker_pool}{{reset}}] has been updated.'
+              .format(worker_pool=worker_pool_name)
+          )
 
 
 @base.RegionalEndpointsSupported

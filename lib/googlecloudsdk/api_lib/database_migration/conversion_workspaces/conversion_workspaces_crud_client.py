@@ -150,6 +150,7 @@ class ConversionWorkspacesCRUDClient(
       self,
       name: str,
       display_name: Optional[str],
+      source_database_name_override: Optional[str],
       global_filter: Optional[str],
       auto_conversion: Optional[bool] = None,
       quality_assessment: Optional[bool] = None,
@@ -161,6 +162,8 @@ class ConversionWorkspacesCRUDClient(
     Args:
       name: str, the reference of the conversion workspace to update.
       display_name: the display name to update.
+      source_database_name_override: the source database name override to
+        update.
       global_filter: the global filter for the conversion workspace.
       auto_conversion: whether to enable auto-conversion.
       quality_assessment: whether to enable quality assessment.
@@ -173,6 +176,7 @@ class ConversionWorkspacesCRUDClient(
     conversion_workspace, update_fields = self._GetUpdatedConversionWorkspace(
         conversion_workspace=self.Read(name),
         display_name=display_name,
+        source_database_name_override=source_database_name_override,
         global_filter=global_filter,
         auto_conversion=auto_conversion,
         quality_assessment=quality_assessment,
@@ -208,6 +212,7 @@ class ConversionWorkspacesCRUDClient(
       self,
       conversion_workspace: messages.ConversionWorkspace,
       display_name: Optional[str],
+      source_database_name_override: Optional[str],
       global_filter: Optional[str],
       auto_conversion: Optional[bool] = None,
       quality_assessment: Optional[bool] = None,
@@ -219,6 +224,8 @@ class ConversionWorkspacesCRUDClient(
     Args:
       conversion_workspace: the conversion workspace to update.
       display_name: the display name to update.
+      source_database_name_override: the source database name override to
+        update.
       global_filter: the global filter for the conversion workspace.
       auto_conversion: whether to enable auto-conversion.
       quality_assessment: whether to enable quality assessment.
@@ -244,6 +251,9 @@ class ConversionWorkspacesCRUDClient(
         current_settings[prop.key] = prop.value
 
     new_settings = current_settings.copy()
+
+    if source_database_name_override is not None:
+      new_settings['sourceDatabaseOverride'] = source_database_name_override
 
     if auto_conversion is not None:
       new_settings['aiConversion'] = str(auto_conversion).lower()

@@ -77,32 +77,32 @@ class Delete(base.Command):
         throw_if_unattended=True,
         cancel_on_no=True,
     )
-    run_client = run_util.GetGapicClientInstance(
+    with run_util.GetGapicClientInstance(
         region=worker_pool_revision_ref.locationsId
-    )
-    worker_pools_client = worker_pools_operations.WorkerPoolsOperations(
-        run_client
-    )
+    ) as run_client:
+      worker_pools_client = worker_pools_operations.WorkerPoolsOperations(
+          run_client
+      )
 
-    def DeleteWithExistenceCheck(worker_pool_revision_ref):
-      response = worker_pools_client.DeleteRevision(worker_pool_revision_ref)
-      if not response:
-        raise exceptions.ArgumentError(
-            'Cannot find revision [{revision}] under worker pool'
-            ' [{worker_pool}] in region [{region}]'.format(
-                revision=worker_pool_revision_ref.revisionsId,
-                worker_pool=worker_pool_revision_ref.workerPoolsId,
-                region=worker_pool_revision_ref.locationsId,
-            )
-        )
+      def DeleteWithExistenceCheck(worker_pool_revision_ref):
+        response = worker_pools_client.DeleteRevision(worker_pool_revision_ref)
+        if not response:
+          raise exceptions.ArgumentError(
+              'Cannot find revision [{revision}] under worker pool'
+              ' [{worker_pool}] in region [{region}]'.format(
+                  revision=worker_pool_revision_ref.revisionsId,
+                  worker_pool=worker_pool_revision_ref.workerPoolsId,
+                  region=worker_pool_revision_ref.locationsId,
+              )
+          )
 
-    # TODO: b/390067647 - Use response.result() once the issue is fixed
-    deletion.Delete(
-        worker_pool_revision_ref,
-        worker_pools_client.GetRevision,
-        DeleteWithExistenceCheck,
-        args.async_,
-    )
+      # TODO: b/390067647 - Use response.result() once the issue is fixed
+      deletion.Delete(
+          worker_pool_revision_ref,
+          worker_pools_client.GetRevision,
+          DeleteWithExistenceCheck,
+          args.async_,
+      )
 
     if args.async_:
       pretty_print.Success(

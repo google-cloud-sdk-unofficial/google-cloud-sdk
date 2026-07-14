@@ -592,6 +592,23 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  MEMORYBANKS = (
+      'memoryBanks',
+      'memoryBanks/{memoryBanksId}',
+      {},
+      ['memoryBanksId'],
+      True
+  )
+  MEMORYBANKS_MEMORIES = (
+      'memoryBanks.memories',
+      '{+name}',
+      {
+          '':
+              'memoryBanks/{memoryBanksId}/memories/{memoriesId}',
+      },
+      ['name'],
+      True
+  )
   METADATASTORES = (
       'metadataStores',
       'metadataStores/{metadataStoresId}',
@@ -1636,6 +1653,25 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/indexes/'
               '{indexesId}/operations/{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_MEMORYBANKS = (
+      'projects.locations.memoryBanks',
+      'projects/{projectsId}/locations/{locationsId}/memoryBanks/'
+      '{memoryBanksId}',
+      {},
+      ['projectsId', 'locationsId', 'memoryBanksId'],
+      True
+  )
+  PROJECTS_LOCATIONS_MEMORYBANKS_MEMORIES = (
+      'projects.locations.memoryBanks.memories',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/memoryBanks/'
+              '{memoryBanksId}/memories/{memoriesId}',
       },
       ['name'],
       True
@@ -2713,6 +2749,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_TUNINGJOBS_OPERATIONS = (
+      'projects.locations.tuningJobs.operations',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/tuningJobs/'
+              '{tuningJobsId}/operations/{operationsId}',
+      },
+      ['name'],
+      True
+  )
   PUBLISHERS = (
       'publishers',
       'publishers/{publishersId}',
@@ -3199,6 +3246,23 @@ class Collections(enum.Enum):
           '':
               'trainingPipelines/{trainingPipelinesId}/operations/'
               '{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  TUNINGJOBS = (
+      'tuningJobs',
+      'tuningJobs/{tuningJobsId}',
+      {},
+      ['tuningJobsId'],
+      True
+  )
+  TUNINGJOBS_OPERATIONS = (
+      'tuningJobs.operations',
+      '{+name}',
+      {
+          '':
+              'tuningJobs/{tuningJobsId}/operations/{operationsId}',
       },
       ['name'],
       True

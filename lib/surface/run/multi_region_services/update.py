@@ -30,7 +30,7 @@ class MultiRegionUpdate(update.Update):
 
   @classmethod
   def Args(cls, parser):
-    update.Update.Args(parser)
+    super().Args(parser)
     flags.AddAddRegionsArg(parser)
     flags.AddRemoveRegionsArg(parser)
 

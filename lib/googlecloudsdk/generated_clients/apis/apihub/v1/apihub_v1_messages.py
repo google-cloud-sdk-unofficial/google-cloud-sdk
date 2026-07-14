@@ -2133,6 +2133,20 @@ class ApihubProjectsLocationsSearchResourcesRequest(_messages.Message):
   location = _messages.StringField(2, required=True)
 
 
+class ApihubProjectsLocationsServersConfigureAndDeployServerRequest(_messages.Message):
+  r"""A ApihubProjectsLocationsServersConfigureAndDeployServerRequest object.
+
+  Fields:
+    googleCloudApihubV1ConfigureAndDeployServerRequest: A
+      GoogleCloudApihubV1ConfigureAndDeployServerRequest resource to be passed
+      as the request body.
+    parent: Required. Format: `projects/{project}/locations/{location}`
+  """
+
+  googleCloudApihubV1ConfigureAndDeployServerRequest = _messages.MessageField('GoogleCloudApihubV1ConfigureAndDeployServerRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
 class Empty(_messages.Message):
   r"""A generic empty message that you can re-use to avoid defining duplicated
   empty messages in your APIs. A typical example is to use it as the request
@@ -2821,6 +2835,30 @@ class GoogleCloudApihubV1ApigeeXHybridConfig(_messages.Message):
   environmentFilter = _messages.MessageField('GoogleCloudApihubV1EnvironmentFilter', 1)
 
 
+class GoogleCloudApihubV1ApigeeXTargetDetails(_messages.Message):
+  r"""The target configuration for Apigee X.
+
+  Fields:
+    deployedRevision: Output only. The revision number of the Apigee proxy
+      that was deployed.
+    environment: Required. The specific Apigee environment where the server
+      will be deployed.
+    metadata: Optional. Metadata for the proxy configuration in Apigee X.
+    proxy: Required. This name identifies the proxy resource in Apigee. It
+      typically follows a standard alphanumeric format (e.g., "mcp-discovery-
+      server").
+    targetProject: Required. The runtime project that hosts the Apigee X
+      organization. This must be one of the runtime projects attached to the
+      API Hub host project.
+  """
+
+  deployedRevision = _messages.StringField(1)
+  environment = _messages.StringField(2)
+  metadata = _messages.MessageField('GoogleCloudApihubV1MetaData', 3)
+  proxy = _messages.StringField(4)
+  targetProject = _messages.StringField(5)
+
+
 class GoogleCloudApihubV1ApplicationIntegrationEndpointDetails(_messages.Message):
   r"""The details of the Application Integration endpoint to be triggered for
   curation.
@@ -3260,6 +3298,16 @@ class GoogleCloudApihubV1ConfigVariableTemplate(_messages.Message):
   required = _messages.BooleanField(5)
   validationRegex = _messages.StringField(6)
   valueType = _messages.EnumField('ValueTypeValueValuesEnum', 7)
+
+
+class GoogleCloudApihubV1ConfigureAndDeployServerRequest(_messages.Message):
+  r"""Request message for ApiHub.ConfigureAndDeployServer.
+
+  Fields:
+    mcpServerConfig: MCP (Model Context Protocol) server configuration.
+  """
+
+  mcpServerConfig = _messages.MessageField('GoogleCloudApihubV1McpServerConfig', 1)
 
 
 class GoogleCloudApihubV1Curation(_messages.Message):
@@ -4279,6 +4327,55 @@ class GoogleCloudApihubV1HttpOperation(_messages.Message):
   path = _messages.MessageField('GoogleCloudApihubV1Path', 2)
 
 
+class GoogleCloudApihubV1HttpOperationConfig(_messages.Message):
+  r"""Identifies a single API Hub operation by spec resource name + HTTP path
+  + HTTP method.
+
+  Enums:
+    MethodValueValuesEnum: Required. HTTP method of the operation within the
+      referenced spec. (GET / PUT / POST / DELETE / OPTIONS / HEAD / PATCH /
+      TRACE).
+
+  Fields:
+    method: Required. HTTP method of the operation within the referenced spec.
+      (GET / PUT / POST / DELETE / OPTIONS / HEAD / PATCH / TRACE).
+    path: Required. HTTP path of the operation within the referenced spec.
+      Match is exact (no template substitution): the path here must appear
+      verbatim on an APIOperationRevision belonging to the spec.
+    spec: Required. Spec resource name: `projects/{project}/locations/{locatio
+      n}/apis/{api}/versions/{version}/specs/{spec}`
+  """
+
+  class MethodValueValuesEnum(_messages.Enum):
+    r"""Required. HTTP method of the operation within the referenced spec.
+    (GET / PUT / POST / DELETE / OPTIONS / HEAD / PATCH / TRACE).
+
+    Values:
+      METHOD_UNSPECIFIED: Method unspecified.
+      GET: Get Operation type.
+      PUT: Put Operation type.
+      POST: Post Operation type.
+      DELETE: Delete Operation type.
+      OPTIONS: Options Operation type.
+      HEAD: Head Operation type.
+      PATCH: Patch Operation type.
+      TRACE: Trace Operation type.
+    """
+    METHOD_UNSPECIFIED = 0
+    GET = 1
+    PUT = 2
+    POST = 3
+    DELETE = 4
+    OPTIONS = 5
+    HEAD = 6
+    PATCH = 7
+    TRACE = 8
+
+  method = _messages.EnumField('MethodValueValuesEnum', 1)
+  path = _messages.StringField(2)
+  spec = _messages.StringField(3)
+
+
 class GoogleCloudApihubV1HttpOperationDetails(_messages.Message):
   r"""An HTTP-based API Operation, sometimes called a "REST" Operation.
 
@@ -4869,6 +4966,18 @@ class GoogleCloudApihubV1MatchResult(_messages.Message):
   name = _messages.StringField(1)
 
 
+class GoogleCloudApihubV1McpServerConfig(_messages.Message):
+  r"""MCP-specific server configuration.
+
+  Fields:
+    apigeeXTargetDetails: Optional. The target Apigee X configuration.
+    tools: Required. The tools to expose on the MCP server.
+  """
+
+  apigeeXTargetDetails = _messages.MessageField('GoogleCloudApihubV1ApigeeXTargetDetails', 1)
+  tools = _messages.MessageField('GoogleCloudApihubV1McpToolConfig', 2, repeated=True)
+
+
 class GoogleCloudApihubV1McpTool(_messages.Message):
   r"""Details describing an MCP Tool.
 
@@ -4890,6 +4999,42 @@ class GoogleCloudApihubV1McpTool(_messages.Message):
   name = _messages.StringField(4)
   outputSchema = _messages.MessageField('GoogleCloudApihubV1OperationSchema', 5)
   title = _messages.StringField(6)
+
+
+class GoogleCloudApihubV1McpToolConfig(_messages.Message):
+  r"""A tool exposed by the MCP server. Each tool wraps exactly one API Hub
+  operation under a caller-supplied identifier.
+
+  Fields:
+    description: Required. Description of what the tool does and how it is
+      used. Description serves as key reference for the agent to know about
+      the tool capabilities.
+    operation: Required. The API Hub operation this tool exposes. Each tool
+      wraps exactly one operation; callers that want to expose multiple
+      operations should declare multiple tools.
+    toolId: Required. Caller-supplied identifier for the tool; each tool must
+      have a unique identifier. This will be by used by agents to invoke the
+      tool. Tool ID must be unique across all tools in the given MCP server
+      configuration.
+  """
+
+  description = _messages.StringField(1)
+  operation = _messages.MessageField('GoogleCloudApihubV1OperationConfig', 2)
+  toolId = _messages.StringField(3)
+
+
+class GoogleCloudApihubV1MetaData(_messages.Message):
+  r"""Metadata for the server configuration in Apigee X.
+
+  Fields:
+    description: Optional. Description for the server. For apigee target, this
+      will be used as revision description.
+    displayName: Optional. Display name for the server. For apigee target,
+      this will be used as revision display name.
+  """
+
+  description = _messages.StringField(1)
+  displayName = _messages.StringField(2)
 
 
 class GoogleCloudApihubV1MultiIntValues(_messages.Message):
@@ -4969,6 +5114,19 @@ class GoogleCloudApihubV1OpenApiSpecDetails(_messages.Message):
   format = _messages.EnumField('FormatValueValuesEnum', 1)
   owner = _messages.MessageField('GoogleCloudApihubV1Owner', 2)
   version = _messages.StringField(3)
+
+
+class GoogleCloudApihubV1OperationConfig(_messages.Message):
+  r"""API hub Operation config.
+
+  Fields:
+    httpOperation: The HTTP operation config.
+    operation: Full API Hub operation resource name: `projects/{project}/locat
+      ions/{location}/apis/{api}/versions/{version}/operations/{operation}`
+  """
+
+  httpOperation = _messages.MessageField('GoogleCloudApihubV1HttpOperationConfig', 1)
+  operation = _messages.StringField(2)
 
 
 class GoogleCloudApihubV1OperationDetails(_messages.Message):

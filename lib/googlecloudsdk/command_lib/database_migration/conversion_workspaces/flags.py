@@ -40,6 +40,18 @@ def AddDisplayNameFlag(parser: argparse.ArgumentParser) -> None:
   )
 
 
+def AddSourceDatabaseNameOverrideFlag(parser: argparse.ArgumentParser) -> None:
+  """Adds a --source-database-name-override flag to the given parser."""
+  parser.add_argument(
+      '--source-database-name-override',
+      help="""\
+        The database name to use when seeding from a connection profile. If not
+        specified, the database name from the connection profile is used.
+        Currently only supported for SQL Server source seeding.
+      """,
+  )
+
+
 def AddDatabaseEngineFlags(parser: argparse.ArgumentParser) -> None:
   """Adds database engine flags to the given parser.
 

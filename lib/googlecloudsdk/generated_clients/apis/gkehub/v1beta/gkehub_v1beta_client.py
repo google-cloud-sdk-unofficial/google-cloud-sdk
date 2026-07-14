@@ -1607,6 +1607,33 @@ class GkehubV1beta(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Upgrade(self, request, global_params=None):
+      r"""Upgrades a rollout sequence.
+
+      Args:
+        request: (GkehubProjectsLocationsRolloutSequencesUpgradeRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Upgrade')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Upgrade.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta/projects/{projectsId}/locations/{locationsId}/rolloutSequences/{rolloutSequencesId}:upgrade',
+        http_method='POST',
+        method_id='gkehub.projects.locations.rolloutSequences.upgrade',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta/{+name}:upgrade',
+        request_field='upgradeRolloutSequenceRequest',
+        request_type_name='GkehubProjectsLocationsRolloutSequencesUpgradeRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class ProjectsLocationsRolloutsService(base_api.BaseApiService):
     """Service class for the projects_locations_rollouts resource."""
 
@@ -1618,7 +1645,7 @@ class GkehubV1beta(base_api.BaseApiClient):
           }
 
     def Cancel(self, request, global_params=None):
-      r"""Cancels a paused Rollout. The rollout will not be started on new clusters, however the rollout running on the cluster will be allowed to finish. It's only valid to cancel a paused rollout, otherwise it will return a FAILED_PRECONDITION error.
+      r"""Cancels a Rollout. The rollout will not be started on new clusters, however the rollout running on the cluster will be allowed to finish.
 
       Args:
         request: (GkehubProjectsLocationsRolloutsCancelRequest) input message

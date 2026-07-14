@@ -41,11 +41,42 @@ def GetMessagesV1beta1():
 def ExportSbomV1beta1(project, uri):
   """Export SBOM for AR image resources."""
   client = GetClientV1beta1()
+
+  # Workaround for apitools `{+name}` reserved expansion behavior:
+  # apitools encodes `%` to `%25` for path parameters. To prevent Envoy/GFE
+  # from collapsing double slashes, we pass encoded slashes in the path,
+  # but apitools double-encodes them (e.g. `%3A%2F%2F` to `%253A%252F%252F`).
+  # This hook intercepts the outgoing request and restores the single-encoded
+  # slashes so Envoy doesn't collapse them.
+  original_process_http_request = client.ProcessHttpRequest
+
+  def CustomProcessHttpRequest(http_request):
+    if 'https%253A%252F%252F' in http_request.url:
+      http_request.url = http_request.url.replace(
+          'https%253A%252F%252F', 'https%3A%2F%2F'
+      )
+    if 'http%253A%252F%252F' in http_request.url:
+      http_request.url = http_request.url.replace(
+          'http%253A%252F%252F', 'http%3A%2F%2F'
+      )
+    return original_process_http_request(http_request)
+
+  client.ProcessHttpRequest = CustomProcessHttpRequest
+
+  # Encode the scheme prefix (https:// or http://) to avoid double-slashes in
+  # GFE/Envoy routing.
+  if uri.startswith('https://'):
+    encoded_uri = 'https%3A%2F%2F' + uri[8:]
+  elif uri.startswith('http://'):
+    encoded_uri = 'http%3A%2F%2F' + uri[7:]
+  else:
+    encoded_uri = uri
+
   messages = GetMessagesV1beta1()
   resource_ref = resources.REGISTRY.Create(
       'containeranalysis.projects.resources',
       projectsId=project,
-      resourcesId=uri
+      resourcesId=encoded_uri,
   )
   name = resource_ref.RelativeName()
   req = messages.ContaineranalysisProjectsResourcesExportSBOMRequest(name=name)

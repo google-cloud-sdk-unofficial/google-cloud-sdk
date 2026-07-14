@@ -5242,6 +5242,8 @@ class MigrationJob(_messages.Message):
       related underlying resources such as Compute Engine VMs. An object
       containing a list of "key": "value" pairs. Example: `{ "name": "wrench",
       "mass": "1.3kg", "count": "3" }`.
+    mysqlHomogeneousConfig: Optional. Configuration for MySQL homogeneous
+      migration.
     name: The name (URI) of this migration job resource, in the form of:
       projects/{project}/locations/{location}/migrationJobs/{migrationJob}.
     objectsConfig: Optional. The objects that need to be migrated.
@@ -5421,27 +5423,28 @@ class MigrationJob(_messages.Message):
   error = _messages.MessageField('Status', 12)
   filter = _messages.StringField(13)
   labels = _messages.MessageField('LabelsValue', 14)
-  name = _messages.StringField(15)
-  objectsConfig = _messages.MessageField('MigrationJobObjectsConfig', 16)
-  oracleToPostgresConfig = _messages.MessageField('OracleToPostgresConfig', 17)
-  originalMigrationName = _messages.StringField(18)
-  performanceConfig = _messages.MessageField('PerformanceConfig', 19)
-  phase = _messages.EnumField('PhaseValueValuesEnum', 20)
-  postgresHomogeneousConfig = _messages.MessageField('PostgresHomogeneousConfig', 21)
-  postgresToSqlserverConfig = _messages.MessageField('PostgresToSqlServerConfig', 22)
-  purpose = _messages.EnumField('PurposeValueValuesEnum', 23)
-  reverseSshConnectivity = _messages.MessageField('ReverseSshConnectivity', 24)
-  satisfiesPzi = _messages.BooleanField(25)
-  satisfiesPzs = _messages.BooleanField(26)
-  source = _messages.StringField(27)
-  sourceDatabase = _messages.MessageField('DatabaseType', 28)
-  sqlserverHomogeneousMigrationJobConfig = _messages.MessageField('SqlServerHomogeneousMigrationJobConfig', 29)
-  sqlserverToPostgresConfig = _messages.MessageField('SqlServerToPostgresConfig', 30)
-  state = _messages.EnumField('StateValueValuesEnum', 31)
-  staticIpConnectivity = _messages.MessageField('StaticIpConnectivity', 32)
-  type = _messages.EnumField('TypeValueValuesEnum', 33)
-  updateTime = _messages.StringField(34)
-  vpcPeeringConnectivity = _messages.MessageField('VpcPeeringConnectivity', 35)
+  mysqlHomogeneousConfig = _messages.MessageField('MySqlHomogeneousConfig', 15)
+  name = _messages.StringField(16)
+  objectsConfig = _messages.MessageField('MigrationJobObjectsConfig', 17)
+  oracleToPostgresConfig = _messages.MessageField('OracleToPostgresConfig', 18)
+  originalMigrationName = _messages.StringField(19)
+  performanceConfig = _messages.MessageField('PerformanceConfig', 20)
+  phase = _messages.EnumField('PhaseValueValuesEnum', 21)
+  postgresHomogeneousConfig = _messages.MessageField('PostgresHomogeneousConfig', 22)
+  postgresToSqlserverConfig = _messages.MessageField('PostgresToSqlServerConfig', 23)
+  purpose = _messages.EnumField('PurposeValueValuesEnum', 24)
+  reverseSshConnectivity = _messages.MessageField('ReverseSshConnectivity', 25)
+  satisfiesPzi = _messages.BooleanField(26)
+  satisfiesPzs = _messages.BooleanField(27)
+  source = _messages.StringField(28)
+  sourceDatabase = _messages.MessageField('DatabaseType', 29)
+  sqlserverHomogeneousMigrationJobConfig = _messages.MessageField('SqlServerHomogeneousMigrationJobConfig', 30)
+  sqlserverToPostgresConfig = _messages.MessageField('SqlServerToPostgresConfig', 31)
+  state = _messages.EnumField('StateValueValuesEnum', 32)
+  staticIpConnectivity = _messages.MessageField('StaticIpConnectivity', 33)
+  type = _messages.EnumField('TypeValueValuesEnum', 34)
+  updateTime = _messages.StringField(35)
+  vpcPeeringConnectivity = _messages.MessageField('VpcPeeringConnectivity', 36)
 
 
 class MigrationJobObject(_messages.Message):
@@ -5476,6 +5479,10 @@ class MigrationJobObject(_messages.Message):
       PROMOTED: The migration job is promoted.
       DIFF_BACKUP: The migration job object is in the differential backup
         phase.
+      CREATING_BACKUP: The migration job object is creating a fully managed
+        backup of the source.
+      RESTORING_BACKUP: The migration job object is restoring a fully managed
+        backup to the destination.
     """
     PHASE_UNSPECIFIED = 0
     FULL_DUMP = 1
@@ -5484,6 +5491,8 @@ class MigrationJobObject(_messages.Message):
     PROMOTE_IN_PROGRESS = 4
     PROMOTED = 5
     DIFF_BACKUP = 6
+    CREATING_BACKUP = 7
+    RESTORING_BACKUP = 8
 
   class StateValueValuesEnum(_messages.Enum):
     r"""The state of the migration job object.
@@ -5798,6 +5807,17 @@ class MySqlConnectionProfile(_messages.Message):
   ssl = _messages.MessageField('SslConfig', 8)
   staticServiceIpConnectivity = _messages.MessageField('StaticServiceIpConnectivity', 9)
   username = _messages.StringField(10)
+
+
+class MySqlHomogeneousConfig(_messages.Message):
+  r"""Configuration for MySQL to MySQL migrations.
+
+  Fields:
+    isPrimaryDestination: Optional. Whether the destination for the migration
+      job is a primary instance.
+  """
+
+  isPrimaryDestination = _messages.BooleanField(1)
 
 
 class Operation(_messages.Message):
@@ -7837,9 +7857,11 @@ class SummaryViewInfo(_messages.Message):
   only for SUMMARY view.
 
   Fields:
+    appliedCount: Output only. Number of objects that have been applied to the
+      destination. Only provided when looking at the DRAFT tree.
     conversionQualityMetrics: Output only. Metrics related to the quality of
       the conversion according to the current Draft DdlKind. Provided only for
-      summary view.
+      SOURCE_TREE summary view.
     entityAssessedCount: Output only. The number of entities (including sub-
       entities) that have an assessment.
     entityConversionStatusNoIssuesCount: Output only. The number of entities
@@ -7875,19 +7897,20 @@ class SummaryViewInfo(_messages.Message):
       test generated and executed on the target.
   """
 
-  conversionQualityMetrics = _messages.MessageField('ConversionQualityMetrics', 1)
-  entityAssessedCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  entityConversionStatusNoIssuesCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  entityConversionStatusReviewRecommendedCount = _messages.IntegerField(4, variant=_messages.Variant.INT32)
-  entityConvertedUsingGeminiCount = _messages.IntegerField(5, variant=_messages.Variant.INT32)
-  entityCount = _messages.IntegerField(6, variant=_messages.Variant.INT32)
-  entityHasErrorCount = _messages.IntegerField(7, variant=_messages.Variant.INT32)
-  entityHasWarningCount = _messages.IntegerField(8, variant=_messages.Variant.INT32)
-  entityHighQualityAssessedCount = _messages.IntegerField(9, variant=_messages.Variant.INT32)
-  entityUserModifiedCount = _messages.IntegerField(10, variant=_messages.Variant.INT32)
-  entityUserVerifiedCount = _messages.IntegerField(11, variant=_messages.Variant.INT32)
-  subEntityCount = _messages.IntegerField(12, variant=_messages.Variant.INT32)
-  testedObjectsCount = _messages.IntegerField(13, variant=_messages.Variant.INT32)
+  appliedCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  conversionQualityMetrics = _messages.MessageField('ConversionQualityMetrics', 2)
+  entityAssessedCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  entityConversionStatusNoIssuesCount = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  entityConversionStatusReviewRecommendedCount = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  entityConvertedUsingGeminiCount = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  entityCount = _messages.IntegerField(7, variant=_messages.Variant.INT32)
+  entityHasErrorCount = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+  entityHasWarningCount = _messages.IntegerField(9, variant=_messages.Variant.INT32)
+  entityHighQualityAssessedCount = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  entityUserModifiedCount = _messages.IntegerField(11, variant=_messages.Variant.INT32)
+  entityUserVerifiedCount = _messages.IntegerField(12, variant=_messages.Variant.INT32)
+  subEntityCount = _messages.IntegerField(13, variant=_messages.Variant.INT32)
+  testedObjectsCount = _messages.IntegerField(14, variant=_messages.Variant.INT32)
 
 
 class SynonymEntity(_messages.Message):

@@ -121,6 +121,31 @@ class Collections(enum.Enum):
       ['project', 'location'],
       True
   )
+  PROJECTS_LOCATIONS_SEMANTICGOVERNANCEPOLICIES = (
+      'projects.locations.semanticGovernancePolicies',
+      'projects/{projectsId}/locations/{locationsId}/'
+      'semanticGovernancePolicies/{semanticGovernancePoliciesId}',
+      {},
+      ['projectsId', 'locationsId', 'semanticGovernancePoliciesId'],
+      True
+  )
+  PROJECTS_LOCATIONS_SEMANTICGOVERNANCEPOLICIES_OPERATIONS = (
+      'projects.locations.semanticGovernancePolicies.operations',
+      'projects/{projectsId}/locations/{locationsId}/'
+      'semanticGovernancePolicies/{semanticGovernancePoliciesId}/operations/'
+      '{operationsId}',
+      {},
+      ['projectsId', 'locationsId', 'semanticGovernancePoliciesId', 'operationsId'],
+      True
+  )
+  PROJECTS_LOCATIONS_SEMANTICGOVERNANCEPOLICYENGINE = (
+      'projects.locations.semanticGovernancePolicyEngine',
+      'projects/{projectsId}/locations/{locationsId}/'
+      'semanticGovernancePolicyEngine',
+      {},
+      ['projectsId', 'locationsId'],
+      True
+  )
 
   def __init__(self, collection_name, path, flat_paths, params,
                enable_uri_parsing):

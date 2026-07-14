@@ -19,12 +19,15 @@
   - GA
   auto_generated: true
   help_text:
-    brief: List bindings
-    description: List bindings
+    brief: List bindings.
+    description: |-
+      Enumerate connections between source agents and target resources
+      (downstream agents, MCP servers, endpoints) or auth providers in a
+      targeted location.
     examples: |-
-      To list all bindings, run:
+      To list bindings in location 'us-central1', run:
 
-          $ {command}
+        $ {command} --location=us-central1
   arguments:
     params:
     - help_text: |-

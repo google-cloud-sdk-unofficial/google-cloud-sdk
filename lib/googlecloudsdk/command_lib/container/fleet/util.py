@@ -109,7 +109,11 @@ table(
 ROLLOUT_LIST_FORMAT = """
 table(
     name.basename():label=NAME,
+    version_upgrade.type.upgrade_type():label=UPGRADE_TYPE,
+    version_upgrade.desired_version:label=TARGET_VERSION,
     state:label=STATE,
+    stages.active_stage():label=ACTIVE_STAGE,
+    trigger.rollout_trigger():label=TRIGGER,
     create_time.date():sort=1:reverse:label=CREATE_TIME
 )
 """

@@ -2071,6 +2071,7 @@ class Operation(_messages.Message):
     creationTimestamp: [Deprecated] This field is deprecated.
     description: [Output Only] A textual description of the operation, which
       is set when the operation is created.
+    details: [Output Only] Extended details about the operation's execution.
     endTime: [Output Only] The time that this operation was completed. This
       value is in RFC3339 text format.
     error: [Output Only] If errors are generated during processing of the
@@ -2378,33 +2379,73 @@ class Operation(_messages.Message):
   clientOperationId = _messages.StringField(1)
   creationTimestamp = _messages.StringField(2)
   description = _messages.StringField(3)
-  endTime = _messages.StringField(4)
-  error = _messages.MessageField('ErrorValue', 5)
-  firewallPolicyRuleOperationMetadata = _messages.MessageField('FirewallPolicyRuleOperationMetadata', 6)
-  getVersionOperationMetadata = _messages.MessageField('GetVersionOperationMetadata', 7)
-  httpErrorMessage = _messages.StringField(8)
-  httpErrorStatusCode = _messages.IntegerField(9, variant=_messages.Variant.INT32)
-  id = _messages.IntegerField(10, variant=_messages.Variant.UINT64)
-  insertTime = _messages.StringField(11)
-  instancesBulkInsertOperationMetadata = _messages.MessageField('InstancesBulkInsertOperationMetadata', 12)
-  kind = _messages.StringField(13, default='compute#operation')
-  name = _messages.StringField(14)
-  operationGroupId = _messages.StringField(15)
-  operationType = _messages.StringField(16)
-  progress = _messages.IntegerField(17, variant=_messages.Variant.INT32)
-  region = _messages.StringField(18)
-  selfLink = _messages.StringField(19)
-  selfLinkWithId = _messages.StringField(20)
-  setAutoscalerLinkOperationMetadata = _messages.MessageField('SetAutoscalerLinkOperationMetadata', 21)
-  setCommonInstanceMetadataOperationMetadata = _messages.MessageField('SetCommonInstanceMetadataOperationMetadata', 22)
-  startTime = _messages.StringField(23)
-  status = _messages.EnumField('StatusValueValuesEnum', 24)
-  statusMessage = _messages.StringField(25)
-  targetId = _messages.IntegerField(26, variant=_messages.Variant.UINT64)
-  targetLink = _messages.StringField(27)
-  user = _messages.StringField(28)
-  warnings = _messages.MessageField('WarningsValueListEntry', 29, repeated=True)
-  zone = _messages.StringField(30)
+  details = _messages.MessageField('OperationDetails', 4)
+  endTime = _messages.StringField(5)
+  error = _messages.MessageField('ErrorValue', 6)
+  firewallPolicyRuleOperationMetadata = _messages.MessageField('FirewallPolicyRuleOperationMetadata', 7)
+  getVersionOperationMetadata = _messages.MessageField('GetVersionOperationMetadata', 8)
+  httpErrorMessage = _messages.StringField(9)
+  httpErrorStatusCode = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  id = _messages.IntegerField(11, variant=_messages.Variant.UINT64)
+  insertTime = _messages.StringField(12)
+  instancesBulkInsertOperationMetadata = _messages.MessageField('InstancesBulkInsertOperationMetadata', 13)
+  kind = _messages.StringField(14, default='compute#operation')
+  name = _messages.StringField(15)
+  operationGroupId = _messages.StringField(16)
+  operationType = _messages.StringField(17)
+  progress = _messages.IntegerField(18, variant=_messages.Variant.INT32)
+  region = _messages.StringField(19)
+  selfLink = _messages.StringField(20)
+  selfLinkWithId = _messages.StringField(21)
+  setAutoscalerLinkOperationMetadata = _messages.MessageField('SetAutoscalerLinkOperationMetadata', 22)
+  setCommonInstanceMetadataOperationMetadata = _messages.MessageField('SetCommonInstanceMetadataOperationMetadata', 23)
+  startTime = _messages.StringField(24)
+  status = _messages.EnumField('StatusValueValuesEnum', 25)
+  statusMessage = _messages.StringField(26)
+  targetId = _messages.IntegerField(27, variant=_messages.Variant.UINT64)
+  targetLink = _messages.StringField(28)
+  user = _messages.StringField(29)
+  warnings = _messages.MessageField('WarningsValueListEntry', 30, repeated=True)
+  zone = _messages.StringField(31)
+
+
+class OperationDetails(_messages.Message):
+  r"""A OperationDetails object.
+
+  Messages:
+    DataValue: Machine readable data from the message.
+
+  Fields:
+    data: Machine readable data from the message.
+    message: Human or AI readable details on execution of the operation.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class DataValue(_messages.Message):
+    r"""Machine readable data from the message.
+
+    Messages:
+      AdditionalProperty: An additional property for a DataValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type DataValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a DataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  data = _messages.MessageField('DataValue', 1)
+  message = _messages.StringField(2)
 
 
 class OperationsListResponse(_messages.Message):

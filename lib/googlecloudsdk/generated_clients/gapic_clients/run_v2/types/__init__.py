@@ -48,6 +48,17 @@ from .job import (
     RunJobRequest,
     UpdateJobRequest,
 )
+from .instance import (
+    CreateInstanceRequest,
+    DeleteInstanceRequest,
+    GetInstanceRequest,
+    Instance,
+    ListInstancesRequest,
+    ListInstancesResponse,
+    StartInstanceRequest,
+    StopInstanceRequest,
+    UpdateInstanceRequest,
+)
 from .k8s_min import (
     BuildConfiguration,
     BuildInfo,
@@ -93,6 +104,10 @@ from .service import (
 )
 from .status import (
     RevisionScalingStatus,
+)
+from .source_upload import (
+    UploadSourceRequest,
+    UploadSourceResponse,
 )
 from .task import (
     GetTaskRequest,
@@ -160,6 +175,15 @@ __all__ = (
     'ListJobsResponse',
     'RunJobRequest',
     'UpdateJobRequest',
+    'CreateInstanceRequest',
+    'DeleteInstanceRequest',
+    'GetInstanceRequest',
+    'Instance',
+    'ListInstancesRequest',
+    'ListInstancesResponse',
+    'StartInstanceRequest',
+    'StopInstanceRequest',
+    'UpdateInstanceRequest',
     'BuildConfiguration',
     'BuildInfo',
     'CloudSqlInstance',
@@ -196,6 +220,8 @@ __all__ = (
     'Service',
     'UpdateServiceRequest',
     'RevisionScalingStatus',
+    'UploadSourceRequest',
+    'UploadSourceResponse',
     'GetTaskRequest',
     'ListTasksRequest',
     'ListTasksResponse',

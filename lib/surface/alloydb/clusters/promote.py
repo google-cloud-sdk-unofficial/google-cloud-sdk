@@ -96,7 +96,6 @@ class PromoteBeta(Promote):
         '--failover',
         action='store_true',
         default=False,
-        hidden=True,
         help=('If set, the promote operation will attempt to recreate the '
               'original primary cluster as a secondary cluster when it '
               'comes back online. Otherwise, the promoted cluster will be '

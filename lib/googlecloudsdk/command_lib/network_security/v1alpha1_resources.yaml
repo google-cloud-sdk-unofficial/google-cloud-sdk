@@ -66,6 +66,18 @@ projects_locations_mirroring_endpoints:
     attribute_name: mirroring_endpoint
     help: The mirroringEndpoint id of the {resource} resource.
   disable_auto_completers: false
+projects_locations_rate_limit_policies:
+  name: rateLimitPolicy
+  plural_name: rateLimitPolicies
+  collection: networksecurity.projects.locations.rateLimitPolicies
+  attributes:
+  - *project
+  - *location
+  - &rateLimitPolicy
+    parameter_name: rateLimitPoliciesId
+    attribute_name: rate_limit_policy
+    help: The rateLimitPolicy id of the {resource} resource.
+  disable_auto_completers: false
 projects_locations_ull_mirroring_collectors:
   name: ullMirroringCollector
   plural_name: ullMirroringCollectors
@@ -77,7 +89,7 @@ projects_locations_ull_mirroring_collectors:
     parameter_name: ullMirroringCollectorsId
     attribute_name: ull_mirroring_collector
     help: The ullMirroringCollector id of the {resource} resource.
-  disable_auto_completers: true
+  disable_auto_completers: false
 projects_locations_ull_mirroring_engines:
   name: ullMirroringEngine
   plural_name: ullMirroringEngines
@@ -114,15 +126,15 @@ projects_none_networks:
     help: The network id of the {resource} resource.
   disable_auto_completers: true
 projects_locations_ull_mirroring_collectors_rules:
-  name: ullMirroringCollectorRule
+  name: rule
   plural_name: rules
   collection: networksecurity.projects.locations.ullMirroringCollectors.rules
   attributes:
   - *project
   - *location
   - *ullMirroringCollector
-  - &ullMirroringCollectorRule
+  - &rule
     parameter_name: rulesId
-    attribute_name: ull_mirroring_collector_rule
-    help: The ullMirroringCollectorRule id of the {resource} resource.
+    attribute_name: rule
+    help: The rule id of the {resource} resource.
   disable_auto_completers: false

@@ -552,7 +552,7 @@ class VectorsearchV1beta(base_api.BaseApiClient):
         method_id='vectorsearch.projects.locations.collections.delete',
         ordered_params=['name'],
         path_params=['name'],
-        query_params=['requestId'],
+        query_params=['force', 'requestId'],
         relative_path='v1beta/{+name}',
         request_field='',
         request_type_name='VectorsearchProjectsLocationsCollectionsDeleteRequest',

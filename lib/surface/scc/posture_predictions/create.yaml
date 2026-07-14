@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA]
+  hints:
+    read_only: false
   hidden: true
   help_text:
     brief: Create a Cloud Security Command Center (SCC) posture prediction resource using AI.

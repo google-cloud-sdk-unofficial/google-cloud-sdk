@@ -5119,7 +5119,7 @@ class NetworksecurityV1alpha1(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a new RateLimitPolicy in a given project and location.
+      r"""Creates a new `RateLimitPolicy` in a given project and location.
 
       Args:
         request: (NetworksecurityProjectsLocationsRateLimitPoliciesCreateRequest) input message
@@ -5146,7 +5146,7 @@ class NetworksecurityV1alpha1(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a single RateLimitPolicy.
+      r"""Deletes a single `RateLimitPolicy`.
 
       Args:
         request: (NetworksecurityProjectsLocationsRateLimitPoliciesDeleteRequest) input message
@@ -5173,7 +5173,7 @@ class NetworksecurityV1alpha1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets details of a single RateLimitPolicy.
+      r"""Gets details of a single `RateLimitPolicy`.
 
       Args:
         request: (NetworksecurityProjectsLocationsRateLimitPoliciesGetRequest) input message
@@ -5200,7 +5200,7 @@ class NetworksecurityV1alpha1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists RateLimitPolicies in a given project and location.
+      r"""Lists `RateLimitPolicy` resources in a given project and location.
 
       Args:
         request: (NetworksecurityProjectsLocationsRateLimitPoliciesListRequest) input message
@@ -5227,7 +5227,7 @@ class NetworksecurityV1alpha1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates the parameters of a single RateLimitPolicy.
+      r"""Updates the parameters of a single `RateLimitPolicy`.
 
       Args:
         request: (NetworksecurityProjectsLocationsRateLimitPoliciesPatchRequest) input message

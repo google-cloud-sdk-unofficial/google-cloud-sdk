@@ -14,6 +14,7 @@
 # limitations under the License.
 """Provides common arguments for the Run command surface."""
 
+import argparse
 import enum
 import os
 import re
@@ -22,6 +23,7 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.container import kubeconfig
 from googlecloudsdk.api_lib.run import container_resource
 from googlecloudsdk.api_lib.run import global_methods
+from googlecloudsdk.api_lib.run import instance
 from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.api_lib.run import revision
 from googlecloudsdk.api_lib.run import service
@@ -93,7 +95,6 @@ IDENTITY_TYPE_FLAG = base.ChoiceArgument(
         'Configures the type of identity to be used by the resource. Allowed'
         ' values: service-account, workload-identity, agent-identity.'
     ),
-    hidden=True,
 )
 
 _AMBIENT_NETWORKING_CHOICES = {
@@ -127,7 +128,6 @@ FUNCTIONAL_TYPE_FLAG = base.ChoiceArgument(
         'Specifies the function of the workload for Agent Registry. Allowed'
         ' values: agent, mcp-server.'
     ),
-    hidden=True,
 )
 
 MESH_DATAPLANE_FLAG = base.Argument(
@@ -474,8 +474,8 @@ def AddSshFlag(parser):
       '--ssh',
       action=arg_parsers.StoreTrueFalseAction,
       help=(
-          "Whether to enable SSH access to the service's container instances"
-          'for inspection and debugging.'
+          'Whether to enable SSH access to the container for'
+          ' inspection and debugging.'
       ),
   )
 
@@ -1865,7 +1865,6 @@ def SandboxLauncherFlag():
       '--sandbox-launcher',
       action=arg_parsers.StoreTrueFalseAction,
       help='Set the container as a sandbox supervisor to launch sandboxes.',
-      hidden=True,
   )
 
 
@@ -3624,7 +3623,7 @@ def GetServiceConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
   if FlagIsExplicitlySet(args, 'containers'):
     for container_name, container_args in args.containers.items():
       changes.extend(
-          _GetServiceContainerChanges(container_args, container_name)
+          _GetContainerIngressChanges(container_args, container_name)
       )
     dependency_changes = {
         container_name: container_args.depends_on
@@ -3669,8 +3668,18 @@ def _MaybePrintFunctionalTypeWarning(functional_type):
     )
 
 
-def _GetServiceContainerChanges(container_args, container_name=None):
-  """Returns per-container Service changes."""
+def _GetContainerIngressChanges(
+    container_args: argparse.Namespace, container_name: str | None = None
+) -> list[config_changes.ContainerPortChange]:
+  """Returns per-container ingress changes.
+
+  Args:
+    container_args: The container-specific arguments.
+    container_name: The name of the container to apply changes to.
+
+  Returns:
+    The changes to apply to the container ingress configuration.
+  """
   changes = []
   if container_args.IsSpecified('port'):
     changes.append(
@@ -3744,6 +3753,9 @@ def GetInstanceConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
   changes = _GetConfigurationChanges(args, release_track=release_track)
   if 'gpu_type' in args and args.gpu_type:
     changes.append(config_changes.GpuTypeChange(gpu_type=args.gpu_type))
+  if 'update_annotations' in args and args.update_annotations:
+    for key, value in args.update_annotations.items():
+      changes.append(config_changes.SetAnnotationChange(key, value))
 
   if FlagIsExplicitlySet(args, 'ingress'):
     changes.append(_GetIngressChanges(args))
@@ -3763,10 +3775,27 @@ def GetInstanceConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
     changes.append(
         config_changes.RestartPolicyChange(restart_policy=args.restart_policy)
     )
+  if FlagIsExplicitlySet(args, 'ssh'):
+    if args.ssh:
+      changes.append(
+          config_changes.SetAnnotationChange(
+              instance.Instance.INSTANCE_SSH_ENABLED_ANNOTATION, 'true'
+          )
+      )
+    else:
+      changes.append(
+          config_changes.SetAnnotationChange(
+              instance.Instance.INSTANCE_SSH_ENABLED_ANNOTATION, 'false'
+          )
+      )
 
   _PrependClientNameAndVersionChange(args, changes)
 
   if FlagIsExplicitlySet(args, 'containers'):
+    for container_name, container_args in args.containers.items():
+      changes.extend(
+          _GetContainerIngressChanges(container_args, container_name)
+      )
     dependency_changes = {
         container_name: container_args.depends_on
         for container_name, container_args in args.containers.items()
@@ -3837,7 +3866,7 @@ def PromptForRegion(parsed_args=None, release_track=None):
   client = None
   all_regions = []
 
-  if release_track == base.ReleaseTrack.ALPHA:
+  if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
     # Check if resource with this name exists in any region
     service_name = getattr(parsed_args, 'SERVICE', None)
     job_name = getattr(parsed_args, 'JOB', None)
@@ -3959,7 +3988,7 @@ def PromptForRegion(parsed_args=None, release_track=None):
       client = global_methods.GetServerlessClientInstance()
     all_regions = global_methods.ListRegions(client)
     image = getattr(parsed_args, 'image', None)
-    if release_track != base.ReleaseTrack.GA and image:
+    if image:
       inferred_region, _ = resource_args.ParseArImage(image)
       if inferred_region and inferred_region in all_regions:
         if console_io.PromptContinue(
@@ -5228,7 +5257,7 @@ def AddDryRunFlag(parser):
       default=False,
       help=(
           'If set to true, only validates the configuration. The configuration'
-          ' will not be applied.'
+          ' is not applied.'
       ),
   )
 

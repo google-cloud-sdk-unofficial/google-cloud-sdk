@@ -28,3 +28,10 @@ class ClusterDirectorAlpha(extensions.ClusterDirectorAlpha):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ClusterDirectorBeta(extensions.ClusterDirectorBeta):
   """Manage Cluster Director resources."""
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.Hidden
+class ClusterDirectorGa(extensions.ClusterDirectorGa):
+  """Manage Cluster Director resources."""

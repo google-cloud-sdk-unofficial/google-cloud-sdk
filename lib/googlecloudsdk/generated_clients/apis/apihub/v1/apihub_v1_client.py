@@ -57,6 +57,7 @@ class ApihubV1(base_api.BaseApiClient):
     self.projects_locations_plugins_styleGuide = self.ProjectsLocationsPluginsStyleGuideService(self)
     self.projects_locations_plugins = self.ProjectsLocationsPluginsService(self)
     self.projects_locations_runtimeProjectAttachments = self.ProjectsLocationsRuntimeProjectAttachmentsService(self)
+    self.projects_locations_servers = self.ProjectsLocationsServersService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects = self.ProjectsService(self)
 
@@ -2687,6 +2688,43 @@ class ApihubV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='ApihubProjectsLocationsRuntimeProjectAttachmentsListRequest',
         response_type_name='GoogleCloudApihubV1ListRuntimeProjectAttachmentsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsServersService(base_api.BaseApiService):
+    """Service class for the projects_locations_servers resource."""
+
+    _NAME = 'projects_locations_servers'
+
+    def __init__(self, client):
+      super(ApihubV1.ProjectsLocationsServersService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def ConfigureAndDeployServer(self, request, global_params=None):
+      r"""Configures and deploys a given server config for given target. Currently this API supports only deploying MCP server in Apigee X. For mcp server deployment in apigee X, if there is already a mcp proxy deployed, then this method will try to overwrite it by creating new revision i.e. all existing tools will be removed and new set of tools will be deployed.
+
+      Args:
+        request: (ApihubProjectsLocationsServersConfigureAndDeployServerRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('ConfigureAndDeployServer')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ConfigureAndDeployServer.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/servers:configureAndDeployServer',
+        http_method='POST',
+        method_id='apihub.projects.locations.servers.configureAndDeployServer',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1/{+parent}/servers:configureAndDeployServer',
+        request_field='googleCloudApihubV1ConfigureAndDeployServerRequest',
+        request_type_name='ApihubProjectsLocationsServersConfigureAndDeployServerRequest',
+        response_type_name='GoogleLongrunningOperation',
         supports_download=False,
     )
 

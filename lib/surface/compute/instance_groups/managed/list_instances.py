@@ -42,6 +42,18 @@ class ListInstances(base.ListCommand):
         parser)
 
   def Run(self, args):
+    managed_instances = self.GetManagedInstances(args)
+    # if uri and format are not provided by the user, then change the output to
+    # hide dynamic fields if they are not present in fetched instances
+    if not args.uri and not args.IsSpecified('format'):
+      args.format = (
+          instance_groups_flags.GetListInstancesOutputWithDynamicFields(
+              managed_instances, self.ReleaseTrack()
+          )
+      )
+    return managed_instances
+
+  def GetManagedInstances(self, args):
     """Retrieves response with instance in the instance group."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
@@ -77,6 +89,7 @@ class ListInstances(base.ListCommand):
 
     if errors:
       utils.RaiseToolException(errors)
+
     return results
 
 
@@ -120,18 +133,6 @@ ListInstances.detailed_help = {
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListInstancesBeta(ListInstances):
   """List Compute Engine instances present in managed instance group."""
-
-  def Run(self, args):
-    managed_instances = super().Run(args)
-    # if uri and format are not provided by the user, then change the output to
-    # hide dynamic fields if they are not present in fetched instances
-    if not args.uri and not args.IsSpecified('format'):
-      args.format = (
-          instance_groups_flags.GetListInstancesOutputWithDynamicFields(
-              managed_instances, self.ReleaseTrack()
-          )
-      )
-    return managed_instances
 
   @staticmethod
   def Args(parser):

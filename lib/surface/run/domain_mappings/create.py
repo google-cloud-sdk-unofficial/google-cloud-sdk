@@ -86,6 +86,12 @@ class Create(base.Command):
   def Args(parser):
     Create.CommonArgs(parser)
 
+  def VerifyDomain(self, domain_mapping_ref):
+    """Verify the domain ownership."""
+    # Check if the provided domain has already been verified
+    # if mapping to a non-CRoGKE service
+    domain_mapping_util.VerifyDomain(domain_mapping_ref)
+
   def Run(self, args):
     """Create a domain mapping."""
     # domains.cloudrun.com api group only supports v1alpha1 on clusters.
@@ -100,10 +106,7 @@ class Create(base.Command):
     changes = [
         config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack())
     ]
-
-    # Check if the provided domain has already been verified
-    # if mapping to a non-CRoGKE service
-    domain_mapping_util.VerifyDomain(domain_mapping_ref)
+    self.VerifyDomain(domain_mapping_ref)
 
     with serverless_operations.Connect(conn_context) as client:
       try:
@@ -112,7 +115,7 @@ class Create(base.Command):
       except exceptions.DomainMappingAlreadyExistsError as e:
         if console_io.CanPrompt() and console_io.PromptContinue(
             ('This domain is already being used as a mapping elsewhere. '
-             'The existing mapping can be overriden by passing '
+             'The existing mapping can be overridden by passing '
              '`--force-override` or by continuing at the prompt below.'),
             prompt_string='Override the existing mapping'):
           deletion.Delete(domain_mapping_ref, client.GetDomainMapping,
@@ -153,3 +156,10 @@ class AlphaCreate(BetaCreate):
   @staticmethod
   def Args(parser):
     Create.CommonArgs(parser)
+
+  def VerifyDomain(self, domain_mapping_ref):
+    """Verify the domain ownership. Skip for custom URLs."""
+    if not domain_mapping_util.IsCustomUrl(domain_mapping_ref.Name()):
+      # Check if the provided domain has already been verified
+      # if mapping to a non-CRoGKE service
+      domain_mapping_util.VerifyDomain(domain_mapping_ref)

@@ -5715,6 +5715,8 @@ class WorkforcePool(_messages.Message):
       lifetime of the token is the minimum of the `session_duration` and the
       `SessionNotOnOrAfter` claim in the SAML assertion.
     state: Output only. The state of the pool.
+    workspaceLinkConfig: Optional. Configuration for interopability of
+      Workforce Identity with Cloud Identity.
   """
 
   class StateValueValuesEnum(_messages.Enum):
@@ -5744,6 +5746,7 @@ class WorkforcePool(_messages.Message):
   parent = _messages.StringField(7)
   sessionDuration = _messages.StringField(8)
   state = _messages.EnumField('StateValueValuesEnum', 9)
+  workspaceLinkConfig = _messages.MessageField('WorkspaceLinkConfig', 10)
 
 
 class WorkforcePoolProvider(_messages.Message):
@@ -6846,6 +6849,45 @@ class WorkloadSource(_messages.Message):
   identityAssignments = _messages.MessageField('IdentityAssignment', 2, repeated=True)
   name = _messages.StringField(3)
   singleAttributeSelectors = _messages.MessageField('SingleAttributeSelector', 4, repeated=True)
+
+
+class WorkspaceLinkConfig(_messages.Message):
+  r"""Configuration for interopability of Workforce Identity with Cloud
+  Identity.
+
+  Enums:
+    StateValueValuesEnum: Output only. Indicates the status of enabling
+      Workspace interopability for the workforce pool provider.
+
+  Fields:
+    customerId: Output only. The Dasher customer ID that users are restricted
+      to.
+    primaryProvider: Optional. The name of the provider for which interop is
+      enabled. e.g. locations/global/workforcePools//providers/
+    state: Output only. Indicates the status of enabling Workspace
+      interopability for the workforce pool provider.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. Indicates the status of enabling Workspace interopability
+    for the workforce pool provider.
+
+    Values:
+      STATE_UNSPECIFIED: Default value.
+      UNLINKED: Workspace interopability has not been authorized.
+      PENDING: Workspace interopability has been authorized by the Workspace
+        admin, but sign-ins will still use the primary provider.
+      LINKED: The interop flow has been validated by the BYOID Admin and sign-
+        ins will use the shadow provider.
+    """
+    STATE_UNSPECIFIED = 0
+    UNLINKED = 1
+    PENDING = 2
+    LINKED = 3
+
+  customerId = _messages.StringField(1)
+  primaryProvider = _messages.StringField(2)
+  state = _messages.EnumField('StateValueValuesEnum', 3)
 
 
 class X509(_messages.Message):

@@ -17,6 +17,7 @@
 
 from __future__ import annotations
 from googlecloudsdk.api_lib.container.fleet import client
+from googlecloudsdk.api_lib.container.fleet import types
 from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import parser_arguments
@@ -24,8 +25,6 @@ from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.container.fleet.rolloutsequences import flags as rolloutsequence_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
-from googlecloudsdk.generated_clients.apis.gkehub.v1alpha import gkehub_v1alpha_messages as alpha_messages
-from googlecloudsdk.generated_clients.apis.gkehub.v1beta import gkehub_v1beta_messages as beta_messages
 
 _EXAMPLES = """
 To delete a rollout sequence, run:
@@ -35,25 +34,26 @@ $ {command} ROLLOUTSEQUENCE
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Delete(base.DeleteCommand):
   """Delete a rollout sequence resource."""
 
-  _release_track = base.ReleaseTrack.BETA
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @classmethod
   def Args(cls, parser: parser_arguments.ArgumentInterceptor):
     """Registers flags for the delete command."""
     flags = rolloutsequence_flags.RolloutSequenceFlags(
-        parser, release_track=cls._release_track
+        parser, release_track=cls.ReleaseTrack()
     )
     flags.AddRolloutSequenceResourceArg()
     flags.AddAsync()
 
   def Run(
       self, args: parser_extensions.Namespace
-  ) -> alpha_messages.Operation | beta_messages.Operation:
+  ) -> types.Operation:
     """Runs the delete command."""
     flag_parser = rolloutsequence_flags.RolloutSequenceFlagParser(
         args, release_track=self.ReleaseTrack()
@@ -90,10 +90,3 @@ class Delete(base.DeleteCommand):
     log.Print(f'Deleted Rollout sequence [{rolloutsequence_ref.SelfLink()}].')
 
     return completed_operation
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(Delete):
-  """Delete a rollout sequence resource."""
-
-  _release_track = base.ReleaseTrack.ALPHA

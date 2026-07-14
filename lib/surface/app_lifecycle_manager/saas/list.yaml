@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: true
   help_text:
     brief: List SaaS
     description: List SaaS

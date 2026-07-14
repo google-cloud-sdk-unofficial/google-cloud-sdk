@@ -202,9 +202,27 @@ def ArgsForClusterRef(
       ),
       metavar='type=MACHINE_TYPE[,type=MACHINE_TYPE...][,rank=RANK]',
       type=ArgMultiValueDict(),
-      hidden=True,
       action=arg_parsers.FlattenAction(),
   )
+  if alpha:
+    master_machine_type_group.add_argument(
+        '--master-instance-selection',
+        type=arg_parsers.ArgJSON(),
+        action=arg_parsers.FlattenAction(),
+        hidden=True,
+        help="""\
+        Instance selection configurations for the master node group.
+        """,
+    )
+    master_machine_type_group.add_argument(
+        '--master-instance-flexibility-policy-file',
+        type=arg_parsers.YAMLFileContents(),
+        hidden=True,
+        help="""\
+        Path to a YAML or JSON file containing the instance flexibility policy
+        for the master node group.
+        """,
+    )
 
   worker_machine_type_group = parser.add_argument_group(mutex=True)
   worker_machine_type_group.add_argument(
@@ -233,6 +251,25 @@ def ArgsForClusterRef(
       type=ArgMultiValueDict(),
       action=arg_parsers.FlattenAction(),
   )
+  if alpha:
+    worker_machine_type_group.add_argument(
+        '--worker-instance-selection',
+        type=arg_parsers.ArgJSON(),
+        action=arg_parsers.FlattenAction(),
+        hidden=True,
+        help="""\
+        Instance selection configurations for the primary worker node group.
+        """,
+    )
+    worker_machine_type_group.add_argument(
+        '--worker-instance-flexibility-policy-file',
+        type=arg_parsers.YAMLFileContents(),
+        hidden=True,
+        help="""\
+        Path to a YAML or JSON file containing the instance flexibility policy
+        for the primary worker node group.
+        """,
+    )
 
   parser.add_argument(
       '--min-secondary-worker-fraction',
@@ -273,7 +310,8 @@ def ArgsForClusterRef(
       ),
   )
 
-  parser.add_argument(
+  secondary_worker_machine_type_group = parser.add_argument_group(mutex=True)
+  secondary_worker_machine_type_group.add_argument(
       '--secondary-worker-machine-types',
       help=(
           'Types of machines with optional rank for secondary workers to use. '
@@ -284,6 +322,25 @@ def ArgsForClusterRef(
       type=ArgMultiValueDict(),
       action=arg_parsers.FlattenAction(),
   )
+  if alpha:
+    secondary_worker_machine_type_group.add_argument(
+        '--secondary-worker-instance-selection',
+        type=arg_parsers.ArgJSON(),
+        action=arg_parsers.FlattenAction(),
+        hidden=True,
+        help="""\
+        Instance selection configurations for the secondary worker node group.
+        """,
+    )
+    secondary_worker_machine_type_group.add_argument(
+        '--secondary-worker-instance-flexibility-policy-file',
+        type=arg_parsers.YAMLFileContents(),
+        hidden=True,
+        help="""\
+        Path to a YAML or JSON file containing the instance flexibility policy
+        for the secondary worker node group.
+        """,
+    )
 
   parser.add_argument(
       '--cluster-type',
@@ -864,9 +921,11 @@ If you want to enable all scopes use the 'cloud-platform' scope.
   parser.add_argument(
       '--enable-ssh',
       action=arg_parsers.StoreTrueFalseAction,
-      hidden=True,
       help="""\
-      Enable SSH access for the cluster.
+      Enable SSH access for the cluster. This is supported for Dataproc image
+      version 2.3.30 and later. SSH is enabled by default for image versions
+      earlier than 3.1, and will be disabled by default starting from image
+      version 3.1.
       """,
   )
 
@@ -1546,6 +1605,48 @@ def GetClusterConfig(
         )
     )
 
+  master_disk_config = GetDiskConfig(
+      dataproc,
+      args.master_boot_disk_type,
+      master_boot_disk_size_gb,
+      args.num_master_local_ssds,
+      args.master_local_ssd_interface,
+      'Master',
+      args.master_boot_disk_provisioned_iops,
+      args.master_boot_disk_provisioned_throughput,
+      args.master_attached_disks,
+  )
+  master_policy = GetInstanceFlexibilityPolicy(dataproc, args, 'master')
+  if (
+      _HasDiskConfig(master_disk_config)
+      and _HasDiskConfigInPolicy(master_policy)
+  ):
+    raise exceptions.ArgumentError(
+        'Cannot define both the base and instance selection disk configs '
+        'for master.'
+    )
+
+  worker_disk_config = GetDiskConfig(
+      dataproc,
+      args.worker_boot_disk_type,
+      worker_boot_disk_size_gb,
+      args.num_worker_local_ssds,
+      args.worker_local_ssd_interface,
+      'Worker',
+      args.worker_boot_disk_provisioned_iops,
+      args.worker_boot_disk_provisioned_throughput,
+      args.worker_attached_disks,
+  )
+  worker_policy = GetInstanceFlexibilityPolicy(dataproc, args, 'worker')
+  if (
+      _HasDiskConfig(worker_disk_config)
+      and _HasDiskConfigInPolicy(worker_policy)
+  ):
+    raise exceptions.ArgumentError(
+        'Cannot define both the base and instance selection disk configs '
+        'for worker.'
+    )
+
   cluster_config = dataproc.messages.ClusterConfig(
       configBucket=args.bucket,
       tempBucket=args.temp_bucket,
@@ -1558,21 +1659,9 @@ def GetClusterConfig(
           imageUri=image_ref and image_ref.SelfLink(),
           machineTypeUri=args.master_machine_type,
           accelerators=master_accelerators,
-          diskConfig=GetDiskConfig(
-              dataproc,
-              args.master_boot_disk_type,
-              master_boot_disk_size_gb,
-              args.num_master_local_ssds,
-              args.master_local_ssd_interface,
-              'Master',
-              args.master_boot_disk_provisioned_iops,
-              args.master_boot_disk_provisioned_throughput,
-              args.master_attached_disks,
-          ),
+          diskConfig=master_disk_config,
           minCpuPlatform=args.master_min_cpu_platform,
-          instanceFlexibilityPolicy=GetInstanceFlexibilityPolicy(
-              dataproc, None, args.master_machine_types, 'master'
-          ),
+          instanceFlexibilityPolicy=master_policy,
       ),
       workerConfig=dataproc.messages.InstanceGroupConfig(
           numInstances=args.num_workers,
@@ -1580,21 +1669,9 @@ def GetClusterConfig(
           imageUri=image_ref and image_ref.SelfLink(),
           machineTypeUri=args.worker_machine_type,
           accelerators=worker_accelerators,
-          diskConfig=GetDiskConfig(
-              dataproc,
-              args.worker_boot_disk_type,
-              worker_boot_disk_size_gb,
-              args.num_worker_local_ssds,
-              args.worker_local_ssd_interface,
-              'Worker',
-              args.worker_boot_disk_provisioned_iops,
-              args.worker_boot_disk_provisioned_throughput,
-              args.worker_attached_disks,
-          ),
+          diskConfig=worker_disk_config,
           minCpuPlatform=args.worker_min_cpu_platform,
-          instanceFlexibilityPolicy=GetInstanceFlexibilityPolicy(
-              dataproc, None, args.worker_machine_types, 'worker'
-          ),
+          instanceFlexibilityPolicy=worker_policy,
       ),
       initializationActions=init_actions,
       softwareConfig=software_config,
@@ -1840,34 +1917,49 @@ def GetClusterConfig(
       or args.secondary_worker_machine_types is not None
       or args.min_secondary_worker_fraction is not None
       or args.secondary_worker_attached_disks is not None
+      or getattr(args, 'secondary_worker_instance_selection', None) is not None
+      or getattr(
+          args, 'secondary_worker_instance_flexibility_policy_file', None
+      )
+      is not None
   ):
     instance_flexibility_policy = GetInstanceFlexibilityPolicy(
         dataproc,
+        args,
+        'secondary-worker',
         GetProvisioningModelMix(
             dataproc,
             args.secondary_worker_standard_capacity_base,
             args.secondary_worker_standard_capacity_percent_above_base,
         ),
-        args.secondary_worker_machine_types,
-        'secondary-worker',
     )
+
+    secondary_disk_config = GetDiskConfig(
+        dataproc,
+        secondary_worker_boot_disk_type,
+        secondary_worker_boot_disk_size_gb,
+        num_secondary_worker_local_ssds,
+        args.secondary_worker_local_ssd_interface,
+        'Secondary worker',
+        args.secondary_worker_boot_disk_provisioned_iops,
+        args.secondary_worker_boot_disk_provisioned_throughput,
+        args.secondary_worker_attached_disks,
+    )
+    if (
+        _HasDiskConfig(secondary_disk_config)
+        and _HasDiskConfigInPolicy(instance_flexibility_policy)
+    ):
+      raise exceptions.ArgumentError(
+          'Cannot define both the base and instance selection disk configs '
+          'for secondary-worker.'
+      )
 
     startup_config = GetStartupConfig(dataproc, args)
     cluster_config.secondaryWorkerConfig = (
         dataproc.messages.InstanceGroupConfig(
             numInstances=num_secondary_workers,
             accelerators=secondary_worker_accelerators,
-            diskConfig=GetDiskConfig(
-                dataproc,
-                secondary_worker_boot_disk_type,
-                secondary_worker_boot_disk_size_gb,
-                num_secondary_worker_local_ssds,
-                args.secondary_worker_local_ssd_interface,
-                'Secondary worker',
-                args.secondary_worker_boot_disk_provisioned_iops,
-                args.secondary_worker_boot_disk_provisioned_throughput,
-                args.secondary_worker_attached_disks,
-            ),
+            diskConfig=secondary_disk_config,
             minCpuPlatform=args.worker_min_cpu_platform,
             preemptibility=_GetInstanceGroupPreemptibility(
                 dataproc, args.secondary_worker_type
@@ -2294,40 +2386,105 @@ def GetDiskConfig(
   )
 
 
+def _HasDiskConfig(disk_config):
+  """Checks if a DiskConfig message has any fields set."""
+  if not disk_config:
+    return False
+  return (
+      disk_config.bootDiskType is not None
+      or disk_config.bootDiskSizeGb is not None
+      or disk_config.bootDiskProvisionedIops is not None
+      or disk_config.bootDiskProvisionedThroughput is not None
+      or disk_config.numLocalSsds is not None
+      or disk_config.localSsdInterface is not None
+      or bool(disk_config.attachedDiskConfigs)
+  )
+
+
+def _HasDiskConfigInPolicy(policy):
+  """Checks if any InstanceSelection in the policy has a DiskConfig set."""
+  if not policy or not policy.instanceSelectionList:
+    return False
+  for selection in policy.instanceSelectionList:
+    if selection.diskConfig and _HasDiskConfig(selection.diskConfig):
+      return True
+  return False
+
+
 def GetInstanceFlexibilityPolicy(
     dataproc,
-    provisioning_model_mix,
-    machine_types,
+    args,
     node_type,
+    provisioning_model_mix=None,
 ):
   """Get instance flexibility policy.
 
   Args:
     dataproc: Dataproc object that contains client, messages, and resources
-    provisioning_model_mix: Provisioning model mix for instance flexibility
-      policy
-    machine_types: Machine types with rank for instance selection
+    args: Arguments parsed from argparse.ArgParser.
     node_type: Type of the dataproc node. One of master, worker,
       secondary-worker
+    provisioning_model_mix: Provisioning model mix for instance flexibility
+      policy
 
   Returns:
-    InstanceFlexibilityPolicy of the secondary worker group.
+    InstanceFlexibilityPolicy of the node group.
   """
+  policy_file_flag = (
+      f'{node_type.replace("-", "_")}_instance_flexibility_policy_file'
+  )
+  selection_flag = f'{node_type.replace("-", "_")}_instance_selection'
+  machine_types_flag = f'{node_type.replace("-", "_")}_machine_types'
 
-  if provisioning_model_mix is None and machine_types is None:
+  policy_file = getattr(args, policy_file_flag, None)
+  selection = getattr(args, selection_flag, None)
+  machine_types = getattr(args, machine_types_flag, None)
+
+  if (
+      provisioning_model_mix is None
+      and machine_types is None
+      and selection is None
+      and policy_file is None
+  ):
     return None
 
-  instance_selection_list = []
+  if policy_file:
+    policy = encoding.PyValueToMessage(
+        dataproc.messages.InstanceFlexibilityPolicy, policy_file
+    )
+    if (
+        policy.provisioningModelMix is None
+        and provisioning_model_mix is not None
+    ):
+      policy.provisioningModelMix = provisioning_model_mix
+    return policy
+
+  if selection:
+    instance_selection_list = []
+    for sel in selection:
+      instance_selection_list.append(
+          encoding.PyValueToMessage(dataproc.messages.InstanceSelection, sel)
+      )
+    return dataproc.messages.InstanceFlexibilityPolicy(
+        instanceSelectionList=instance_selection_list,
+        provisioningModelMix=provisioning_model_mix,
+    )
 
   if machine_types:
     instance_selection_list = GetInstanceSelectionList(
         dataproc, machine_types, node_type
     )
+    return dataproc.messages.InstanceFlexibilityPolicy(
+        instanceSelectionList=instance_selection_list,
+        provisioningModelMix=provisioning_model_mix,
+    )
 
-  return dataproc.messages.InstanceFlexibilityPolicy(
-      instanceSelectionList=instance_selection_list,
-      provisioningModelMix=provisioning_model_mix,
-  )
+  if provisioning_model_mix:
+    return dataproc.messages.InstanceFlexibilityPolicy(
+        provisioningModelMix=provisioning_model_mix
+    )
+
+  return None
 
 
 def GetProvisioningModelMix(

@@ -41,7 +41,7 @@
   arguments:
     params:
     - help_text: |-
-        The name of the RegistryBook to search in.
+        The resource name of the RegistryBook to search in.
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.number_registry.v1alpha_resources:projects_locations_registry_books
@@ -52,33 +52,58 @@
       repeated: false
       help_text: |-
         Search query. This string filters resources in an AIP-160-like format.
-        It has some limitations. You can only specify top level conjunctions or
-        attribute level negations. Each restriction can only be used once except
-        the attribute restriction. The available restrictions are:
-        - `realm`: The realm name to search in.
-        - `ip_address`: The IP address to search for within ranges.
+        It has some limitations. You can only
+        specify top level conjunctions or attribute level negations. Each
+        restriction can only be used once except the attribute restriction.
+
+        The available restrictions for Ranges are:
+        - `realm`: The Realm name to search in.
+        - `ip_address`: The IP address to search for within Ranges.
         - `ip_version`: The IP version to filter by (e.g., "IPV4", "IPV6").
-        - `attribute_text`: The attribute text to search for within ranges.
+        - `parent_range`: The parent Range of the Range to search for.
+        - `attribute_text`: The attribute text to search for within Ranges.
         - `attribute`: The attribute key and value to filter by.
+
+        The available restrictions for Realms are:
+        - `ip_version`: The IP version to search for.
+        - `management_type`: The management type of the Realm (e.g., "CNR",
+        "USER").
 
         Only one of attribute_text or multiple attribute filters can be specified.
         Examples:
-        - realm=test-realm
-        - realm=test-realm AND ip_address=10.0.0.0
-        - realm=test-realm AND ip_version=IPV6
-        - realm=test-realm AND attribute_text=test
-        - ip_address=10.0.0.0 AND attribute:(key1=value1) AND
-        attribute:(key2=value2)
-        - attribute_text=test AND
-        parent_range=projects/123/locations/global/discoveredRanges/test-parent-range
+        - `realm=test-realm`
+        - `realm=test-realm AND ip_address=10.0.0.0`
+        - `realm=test-realm AND ip_version=IPV6`
+        - `realm=test-realm AND attribute_text=test`
+        - `ip_address=10.0.0.0 AND attribute:(key1=value1) AND
+        attribute:(key2=value2)`
+        - `attribute_text=test AND
+        parent_range=projects/123/locations/global/discoveredRanges/test-parent-range`
+        - `management_type=CNR`
     - arg_name: show-utilization
       api_field: searchIpResourcesRequest.showUtilization
       action: store_true
       required: false
       type: bool
       help_text: |-
-        Whether to show the utilization of the ranges in the response.
+        Whether to show the utilization of the Ranges in the response.
       default: null
+    - arg_name: search-resource-types
+      api_field: searchIpResourcesRequest.searchResourceTypes
+      required: false
+      repeated: true
+      help_text: |-
+        The type of resources to search for. If not specified, the server will
+        return Ranges.
+      choices:
+      - arg_value: ranges
+        enum_value: RANGES
+        help_text: |-
+          Search for Ranges.
+      - arg_value: realms
+        enum_value: REALMS
+        help_text: |-
+          Search for Realms.
   request:
     api_version: v1alpha
     collection:

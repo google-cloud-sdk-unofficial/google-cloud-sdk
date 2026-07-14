@@ -245,26 +245,26 @@
         - api_field: instance.releaseChannel
           arg_name: release-channel
           help_text: |
-            The selected release channel for the instance.
+            The selected release channel for the instance. For more details on release channels,
+            review https://cloud.google.com/looker/docs/looker-core-release-process#release_channels.
           choices:
           - arg_value: no-channel
             enum_value: RELEASE_CHANNEL_UNSPECIFIED
             help_text: |
               Maintains existing monthly update cadence and features. This channel will remain
-              available for a limited period to prevent immediate deployment disruptions. Follow the
-              default rollout schedule.
+              available for a limited period to prevent immediate deployment disruptions.
           - arg_value: rapid
             enum_value: RAPID
             help_text: |
-              Versions in the Rapid channel let you test new releases before they're qualified for
-              production use or general availability. We recommend using the Rapid channel to test
-              newer Looker versions and API on pre-production environments.
+              Access new features as soon as they are released. Use the Rapid channel to thoroughly
+              test upcoming versions in your development or non-production environments before they
+              roll out to production. Note: This channel is excluded from the Looker SLA.
           - arg_value: regular
             enum_value: REGULAR
             help_text: |
-              Versions in the Regular channel have been qualified over a longer period. They offer a
-              balance of feature availability and release stability. We recommend the Regular
-              channel for most users.
+              Maintain a reliable balance between feature availability and platform stability.
+              Versions in the Regular channel are qualified over a longer period and are recommended
+              for critical production workloads.
           - arg_value: stable
             enum_value: STABLE
             help_text: |

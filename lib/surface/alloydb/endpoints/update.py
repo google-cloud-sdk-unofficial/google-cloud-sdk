@@ -24,7 +24,6 @@ from googlecloudsdk.core import resources
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Update an AlloyDB endpoint."""

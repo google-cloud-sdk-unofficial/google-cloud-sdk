@@ -52,7 +52,7 @@ properties:
     description: |-
       A list of origins that are allowed to do CORS requests. This
       translates to the `Access-Control-Allow-Origin` response header.
-      You can specify up to 25 allowed origins.
+      You can specify up to 100 allowed origins.
     type: array
     items:
       type: string

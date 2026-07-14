@@ -24,581 +24,6 @@ DOCS_URL = 'https://cloud.google.com/vertex-ai/'
 class Collections(enum.Enum):
   """Collections for all supported apis."""
 
-  BATCHPREDICTIONJOBS = (
-      'batchPredictionJobs',
-      '{+name}',
-      {
-          '':
-              'batchPredictionJobs/{batchPredictionJobsId}',
-      },
-      ['name'],
-      True
-  )
-  CUSTOMJOBS = (
-      'customJobs',
-      'customJobs/{customJobsId}',
-      {},
-      ['customJobsId'],
-      True
-  )
-  CUSTOMJOBS_OPERATIONS = (
-      'customJobs.operations',
-      '{+name}',
-      {
-          '':
-              'customJobs/{customJobsId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  DATALABELINGJOBS = (
-      'dataLabelingJobs',
-      'dataLabelingJobs/{dataLabelingJobsId}',
-      {},
-      ['dataLabelingJobsId'],
-      True
-  )
-  DATALABELINGJOBS_OPERATIONS = (
-      'dataLabelingJobs.operations',
-      '{+name}',
-      {
-          '':
-              'dataLabelingJobs/{dataLabelingJobsId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  DATASETS = (
-      'datasets',
-      '{+name}',
-      {
-          '':
-              'datasets/{datasetsId}',
-      },
-      ['name'],
-      True
-  )
-  DATASETS_ANNOTATIONSPECS = (
-      'datasets.annotationSpecs',
-      'datasets/{datasetsId}/annotationSpecs/{annotationSpecsId}',
-      {},
-      ['datasetsId', 'annotationSpecsId'],
-      True
-  )
-  DATASETS_ANNOTATIONSPECS_OPERATIONS = (
-      'datasets.annotationSpecs.operations',
-      '{+name}',
-      {
-          '':
-              'datasets/{datasetsId}/annotationSpecs/{annotationSpecsId}/'
-              'operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  DATASETS_DATAITEMS = (
-      'datasets.dataItems',
-      'datasets/{datasetsId}/dataItems/{dataItemsId}',
-      {},
-      ['datasetsId', 'dataItemsId'],
-      True
-  )
-  DATASETS_DATAITEMS_ANNOTATIONS = (
-      'datasets.dataItems.annotations',
-      'datasets/{datasetsId}/dataItems/{dataItemsId}/annotations/'
-      '{annotationsId}',
-      {},
-      ['datasetsId', 'dataItemsId', 'annotationsId'],
-      True
-  )
-  DATASETS_DATAITEMS_ANNOTATIONS_OPERATIONS = (
-      'datasets.dataItems.annotations.operations',
-      '{+name}',
-      {
-          '':
-              'datasets/{datasetsId}/dataItems/{dataItemsId}/annotations/'
-              '{annotationsId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  DATASETS_DATAITEMS_OPERATIONS = (
-      'datasets.dataItems.operations',
-      '{+name}',
-      {
-          '':
-              'datasets/{datasetsId}/dataItems/{dataItemsId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  DATASETS_DATASETVERSIONS = (
-      'datasets.datasetVersions',
-      '{+name}',
-      {
-          '':
-              'datasets/{datasetsId}/datasetVersions/{datasetVersionsId}',
-      },
-      ['name'],
-      True
-  )
-  DATASETS_OPERATIONS = (
-      'datasets.operations',
-      '{+name}',
-      {
-          '':
-              'datasets/{datasetsId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  DATASETS_SAVEDQUERIES = (
-      'datasets.savedQueries',
-      'datasets/{datasetsId}/savedQueries/{savedQueriesId}',
-      {},
-      ['datasetsId', 'savedQueriesId'],
-      True
-  )
-  DATASETS_SAVEDQUERIES_OPERATIONS = (
-      'datasets.savedQueries.operations',
-      '{+name}',
-      {
-          '':
-              'datasets/{datasetsId}/savedQueries/{savedQueriesId}/'
-              'operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  DEPLOYMENTRESOURCEPOOLS = (
-      'deploymentResourcePools',
-      'deploymentResourcePools/{deploymentResourcePoolsId}',
-      {},
-      ['deploymentResourcePoolsId'],
-      True
-  )
-  DEPLOYMENTRESOURCEPOOLS_OPERATIONS = (
-      'deploymentResourcePools.operations',
-      '{+name}',
-      {
-          '':
-              'deploymentResourcePools/{deploymentResourcePoolsId}/'
-              'operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  ENDPOINTS = (
-      'endpoints',
-      'endpoints/{endpointsId}',
-      {},
-      ['endpointsId'],
-      True
-  )
-  ENDPOINTS_OPERATIONS = (
-      'endpoints.operations',
-      '{+name}',
-      {
-          '':
-              'endpoints/{endpointsId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  FEATUREGROUPS = (
-      'featureGroups',
-      'featureGroups/{featureGroupsId}',
-      {},
-      ['featureGroupsId'],
-      True
-  )
-  FEATUREGROUPS_FEATURES = (
-      'featureGroups.features',
-      'featureGroups/{featureGroupsId}/features/{featuresId}',
-      {},
-      ['featureGroupsId', 'featuresId'],
-      True
-  )
-  FEATUREGROUPS_FEATURES_OPERATIONS = (
-      'featureGroups.features.operations',
-      '{+name}',
-      {
-          '':
-              'featureGroups/{featureGroupsId}/features/{featuresId}/'
-              'operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  FEATUREGROUPS_OPERATIONS = (
-      'featureGroups.operations',
-      '{+name}',
-      {
-          '':
-              'featureGroups/{featureGroupsId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  FEATUREONLINESTORES = (
-      'featureOnlineStores',
-      'featureOnlineStores/{featureOnlineStoresId}',
-      {},
-      ['featureOnlineStoresId'],
-      True
-  )
-  FEATUREONLINESTORES_FEATUREVIEWS = (
-      'featureOnlineStores.featureViews',
-      'featureOnlineStores/{featureOnlineStoresId}/featureViews/'
-      '{featureViewsId}',
-      {},
-      ['featureOnlineStoresId', 'featureViewsId'],
-      True
-  )
-  FEATUREONLINESTORES_FEATUREVIEWS_OPERATIONS = (
-      'featureOnlineStores.featureViews.operations',
-      '{+name}',
-      {
-          '':
-              'featureOnlineStores/{featureOnlineStoresId}/featureViews/'
-              '{featureViewsId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  FEATUREONLINESTORES_OPERATIONS = (
-      'featureOnlineStores.operations',
-      '{+name}',
-      {
-          '':
-              'featureOnlineStores/{featureOnlineStoresId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  FEATURESTORES = (
-      'featurestores',
-      'featurestores/{featurestoresId}',
-      {},
-      ['featurestoresId'],
-      True
-  )
-  FEATURESTORES_ENTITYTYPES = (
-      'featurestores.entityTypes',
-      'featurestores/{featurestoresId}/entityTypes/{entityTypesId}',
-      {},
-      ['featurestoresId', 'entityTypesId'],
-      True
-  )
-  FEATURESTORES_ENTITYTYPES_FEATURES = (
-      'featurestores.entityTypes.features',
-      'featurestores/{featurestoresId}/entityTypes/{entityTypesId}/features/'
-      '{featuresId}',
-      {},
-      ['featurestoresId', 'entityTypesId', 'featuresId'],
-      True
-  )
-  FEATURESTORES_ENTITYTYPES_FEATURES_OPERATIONS = (
-      'featurestores.entityTypes.features.operations',
-      '{+name}',
-      {
-          '':
-              'featurestores/{featurestoresId}/entityTypes/{entityTypesId}/'
-              'features/{featuresId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  FEATURESTORES_ENTITYTYPES_OPERATIONS = (
-      'featurestores.entityTypes.operations',
-      '{+name}',
-      {
-          '':
-              'featurestores/{featurestoresId}/entityTypes/{entityTypesId}/'
-              'operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  FEATURESTORES_OPERATIONS = (
-      'featurestores.operations',
-      '{+name}',
-      {
-          '':
-              'featurestores/{featurestoresId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  HYPERPARAMETERTUNINGJOBS = (
-      'hyperparameterTuningJobs',
-      'hyperparameterTuningJobs/{hyperparameterTuningJobsId}',
-      {},
-      ['hyperparameterTuningJobsId'],
-      True
-  )
-  HYPERPARAMETERTUNINGJOBS_OPERATIONS = (
-      'hyperparameterTuningJobs.operations',
-      '{+name}',
-      {
-          '':
-              'hyperparameterTuningJobs/{hyperparameterTuningJobsId}/'
-              'operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  INDEXENDPOINTS = (
-      'indexEndpoints',
-      'indexEndpoints/{indexEndpointsId}',
-      {},
-      ['indexEndpointsId'],
-      True
-  )
-  INDEXENDPOINTS_OPERATIONS = (
-      'indexEndpoints.operations',
-      '{+name}',
-      {
-          '':
-              'indexEndpoints/{indexEndpointsId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  INDEXES = (
-      'indexes',
-      'indexes/{indexesId}',
-      {},
-      ['indexesId'],
-      True
-  )
-  INDEXES_OPERATIONS = (
-      'indexes.operations',
-      '{+name}',
-      {
-          '':
-              'indexes/{indexesId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  METADATASTORES = (
-      'metadataStores',
-      'metadataStores/{metadataStoresId}',
-      {},
-      ['metadataStoresId'],
-      True
-  )
-  METADATASTORES_ARTIFACTS = (
-      'metadataStores.artifacts',
-      'metadataStores/{metadataStoresId}/artifacts/{artifactsId}',
-      {},
-      ['metadataStoresId', 'artifactsId'],
-      True
-  )
-  METADATASTORES_ARTIFACTS_OPERATIONS = (
-      'metadataStores.artifacts.operations',
-      '{+name}',
-      {
-          '':
-              'metadataStores/{metadataStoresId}/artifacts/{artifactsId}/'
-              'operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  METADATASTORES_CONTEXTS = (
-      'metadataStores.contexts',
-      'metadataStores/{metadataStoresId}/contexts/{contextsId}',
-      {},
-      ['metadataStoresId', 'contextsId'],
-      True
-  )
-  METADATASTORES_CONTEXTS_OPERATIONS = (
-      'metadataStores.contexts.operations',
-      '{+name}',
-      {
-          '':
-              'metadataStores/{metadataStoresId}/contexts/{contextsId}/'
-              'operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  METADATASTORES_EXECUTIONS = (
-      'metadataStores.executions',
-      'metadataStores/{metadataStoresId}/executions/{executionsId}',
-      {},
-      ['metadataStoresId', 'executionsId'],
-      True
-  )
-  METADATASTORES_EXECUTIONS_OPERATIONS = (
-      'metadataStores.executions.operations',
-      '{+name}',
-      {
-          '':
-              'metadataStores/{metadataStoresId}/executions/{executionsId}/'
-              'operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  METADATASTORES_OPERATIONS = (
-      'metadataStores.operations',
-      '{+name}',
-      {
-          '':
-              'metadataStores/{metadataStoresId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  MIGRATABLERESOURCES = (
-      'migratableResources',
-      'migratableResources/{migratableResourcesId}',
-      {},
-      ['migratableResourcesId'],
-      True
-  )
-  MIGRATABLERESOURCES_OPERATIONS = (
-      'migratableResources.operations',
-      '{+name}',
-      {
-          '':
-              'migratableResources/{migratableResourcesId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  MODELDEPLOYMENTMONITORINGJOBS = (
-      'modelDeploymentMonitoringJobs',
-      'modelDeploymentMonitoringJobs/{modelDeploymentMonitoringJobsId}',
-      {},
-      ['modelDeploymentMonitoringJobsId'],
-      True
-  )
-  MODELDEPLOYMENTMONITORINGJOBS_OPERATIONS = (
-      'modelDeploymentMonitoringJobs.operations',
-      '{+name}',
-      {
-          '':
-              'modelDeploymentMonitoringJobs/'
-              '{modelDeploymentMonitoringJobsId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  MODELS = (
-      'models',
-      'models/{modelsId}',
-      {},
-      ['modelsId'],
-      True
-  )
-  MODELS_EVALUATIONS = (
-      'models.evaluations',
-      'models/{modelsId}/evaluations/{evaluationsId}',
-      {},
-      ['modelsId', 'evaluationsId'],
-      True
-  )
-  MODELS_EVALUATIONS_OPERATIONS = (
-      'models.evaluations.operations',
-      '{+name}',
-      {
-          '':
-              'models/{modelsId}/evaluations/{evaluationsId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  MODELS_OPERATIONS = (
-      'models.operations',
-      '{+name}',
-      {
-          '':
-              'models/{modelsId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  NOTEBOOKEXECUTIONJOBS = (
-      'notebookExecutionJobs',
-      'notebookExecutionJobs/{notebookExecutionJobsId}',
-      {},
-      ['notebookExecutionJobsId'],
-      True
-  )
-  NOTEBOOKEXECUTIONJOBS_OPERATIONS = (
-      'notebookExecutionJobs.operations',
-      '{+name}',
-      {
-          '':
-              'notebookExecutionJobs/{notebookExecutionJobsId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  NOTEBOOKRUNTIMETEMPLATES = (
-      'notebookRuntimeTemplates',
-      'notebookRuntimeTemplates/{notebookRuntimeTemplatesId}',
-      {},
-      ['notebookRuntimeTemplatesId'],
-      True
-  )
-  NOTEBOOKRUNTIMETEMPLATES_OPERATIONS = (
-      'notebookRuntimeTemplates.operations',
-      '{+name}',
-      {
-          '':
-              'notebookRuntimeTemplates/{notebookRuntimeTemplatesId}/'
-              'operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  NOTEBOOKRUNTIMES = (
-      'notebookRuntimes',
-      'notebookRuntimes/{notebookRuntimesId}',
-      {},
-      ['notebookRuntimesId'],
-      True
-  )
-  NOTEBOOKRUNTIMES_OPERATIONS = (
-      'notebookRuntimes.operations',
-      '{+name}',
-      {
-          '':
-              'notebookRuntimes/{notebookRuntimesId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  ONLINEEVALUATORS = (
-      'onlineEvaluators',
-      'onlineEvaluators/{onlineEvaluatorsId}',
-      {},
-      ['onlineEvaluatorsId'],
-      True
-  )
-  ONLINEEVALUATORS_OPERATIONS = (
-      'onlineEvaluators.operations',
-      '{+name}',
-      {
-          '':
-              'onlineEvaluators/{onlineEvaluatorsId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
   OPERATIONS = (
       'operations',
       '{+name}',
@@ -609,67 +34,11 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
-  PERSISTENTRESOURCES = (
-      'persistentResources',
-      'persistentResources/{persistentResourcesId}',
-      {},
-      ['persistentResourcesId'],
-      True
-  )
-  PERSISTENTRESOURCES_OPERATIONS = (
-      'persistentResources.operations',
-      '{+name}',
-      {
-          '':
-              'persistentResources/{persistentResourcesId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  PIPELINEJOBS = (
-      'pipelineJobs',
-      'pipelineJobs/{pipelineJobsId}',
-      {},
-      ['pipelineJobsId'],
-      True
-  )
-  PIPELINEJOBS_OPERATIONS = (
-      'pipelineJobs.operations',
-      '{+name}',
-      {
-          '':
-              'pipelineJobs/{pipelineJobsId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS = (
-      'projects',
-      'projects/{projectsId}',
-      {},
-      ['projectsId'],
-      True
-  )
   PROJECTS_LOCATIONS = (
       'projects.locations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_AGENTS = (
-      'projects.locations.agents',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/agents/'
-              '{agentsId}',
-      },
-      ['name'],
+      'projects/{projectsId}/locations/{locationsId}',
+      {},
+      ['projectsId', 'locationsId'],
       True
   )
   PROJECTS_LOCATIONS_BATCHPREDICTIONJOBS = (
@@ -705,40 +74,6 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
-  PROJECTS_LOCATIONS_CUSTOMJOBS_OPERATIONS = (
-      'projects.locations.customJobs.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/customJobs/'
-              '{customJobsId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_DATALABELINGJOBS = (
-      'projects.locations.dataLabelingJobs',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'dataLabelingJobs/{dataLabelingJobsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_DATALABELINGJOBS_OPERATIONS = (
-      'projects.locations.dataLabelingJobs.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'dataLabelingJobs/{dataLabelingJobsId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS_LOCATIONS_DATASETS = (
       'projects.locations.datasets',
       '{+name}',
@@ -761,57 +96,6 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
-  PROJECTS_LOCATIONS_DATASETS_ANNOTATIONSPECS_OPERATIONS = (
-      'projects.locations.datasets.annotationSpecs.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/datasets/'
-              '{datasetsId}/annotationSpecs/{annotationSpecsId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_DATASETS_DATAITEMS = (
-      'projects.locations.datasets.dataItems',
-      'projects/{projectsId}/locations/{locationsId}/datasets/{datasetsId}/'
-      'dataItems/{dataItemsId}',
-      {},
-      ['projectsId', 'locationsId', 'datasetsId', 'dataItemsId'],
-      True
-  )
-  PROJECTS_LOCATIONS_DATASETS_DATAITEMS_ANNOTATIONS = (
-      'projects.locations.datasets.dataItems.annotations',
-      'projects/{projectsId}/locations/{locationsId}/datasets/{datasetsId}/'
-      'dataItems/{dataItemsId}/annotations/{annotationsId}',
-      {},
-      ['projectsId', 'locationsId', 'datasetsId', 'dataItemsId', 'annotationsId'],
-      True
-  )
-  PROJECTS_LOCATIONS_DATASETS_DATAITEMS_ANNOTATIONS_OPERATIONS = (
-      'projects.locations.datasets.dataItems.annotations.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/datasets/'
-              '{datasetsId}/dataItems/{dataItemsId}/annotations/'
-              '{annotationsId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_DATASETS_DATAITEMS_OPERATIONS = (
-      'projects.locations.datasets.dataItems.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/datasets/'
-              '{datasetsId}/dataItems/{dataItemsId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS_LOCATIONS_DATASETS_DATASETVERSIONS = (
       'projects.locations.datasets.datasetVersions',
       '{+name}',
@@ -823,37 +107,6 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
-  PROJECTS_LOCATIONS_DATASETS_OPERATIONS = (
-      'projects.locations.datasets.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/datasets/'
-              '{datasetsId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_DATASETS_SAVEDQUERIES = (
-      'projects.locations.datasets.savedQueries',
-      'projects/{projectsId}/locations/{locationsId}/datasets/{datasetsId}/'
-      'savedQueries/{savedQueriesId}',
-      {},
-      ['projectsId', 'locationsId', 'datasetsId', 'savedQueriesId'],
-      True
-  )
-  PROJECTS_LOCATIONS_DATASETS_SAVEDQUERIES_OPERATIONS = (
-      'projects.locations.datasets.savedQueries.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/datasets/'
-              '{datasetsId}/savedQueries/{savedQueriesId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS_LOCATIONS_DEPLOYMENTRESOURCEPOOLS = (
       'projects.locations.deploymentResourcePools',
       '{+name}',
@@ -861,18 +114,6 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/'
               'deploymentResourcePools/{deploymentResourcePoolsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_DEPLOYMENTRESOURCEPOOLS_OPERATIONS = (
-      'projects.locations.deploymentResourcePools.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'deploymentResourcePools/{deploymentResourcePoolsId}/'
-              'operations/{operationsId}',
       },
       ['name'],
       True
@@ -890,46 +131,10 @@ class Collections(enum.Enum):
   )
   PROJECTS_LOCATIONS_ENDPOINTS_OPERATIONS = (
       'projects.locations.endpoints.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/endpoints/'
-              '{endpointsId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_EVALUATIONITEMS = (
-      'projects.locations.evaluationItems',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/evaluationItems/'
-              '{evaluationItemsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_EVALUATIONRUNS = (
-      'projects.locations.evaluationRuns',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/evaluationRuns/'
-              '{evaluationRunsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_EVALUATIONSETS = (
-      'projects.locations.evaluationSets',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/evaluationSets/'
-              '{evaluationSetsId}',
-      },
-      ['name'],
+      'projects/{projectsId}/locations/{locationsId}/endpoints/{endpointsId}/'
+      'operations/{operationsId}',
+      {},
+      ['projectsId', 'locationsId', 'endpointsId', 'operationsId'],
       True
   )
   PROJECTS_LOCATIONS_FEATUREGROUPS = (
@@ -950,29 +155,6 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/featureGroups/'
               '{featureGroupsId}/features/{featuresId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_FEATUREGROUPS_FEATURES_OPERATIONS = (
-      'projects.locations.featureGroups.features.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/featureGroups/'
-              '{featureGroupsId}/features/{featuresId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_FEATUREGROUPS_OPERATIONS = (
-      'projects.locations.featureGroups.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/featureGroups/'
-              '{featureGroupsId}/operations/{operationsId}',
       },
       ['name'],
       True
@@ -1012,30 +194,6 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
-  PROJECTS_LOCATIONS_FEATUREONLINESTORES_FEATUREVIEWS_OPERATIONS = (
-      'projects.locations.featureOnlineStores.featureViews.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'featureOnlineStores/{featureOnlineStoresId}/featureViews/'
-              '{featureViewsId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_FEATUREONLINESTORES_OPERATIONS = (
-      'projects.locations.featureOnlineStores.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'featureOnlineStores/{featureOnlineStoresId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS_LOCATIONS_FEATURESTORES = (
       'projects.locations.featurestores',
       '{+name}',
@@ -1070,41 +228,6 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
-  PROJECTS_LOCATIONS_FEATURESTORES_ENTITYTYPES_FEATURES_OPERATIONS = (
-      'projects.locations.featurestores.entityTypes.features.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/featurestores/'
-              '{featurestoresId}/entityTypes/{entityTypesId}/features/'
-              '{featuresId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_FEATURESTORES_ENTITYTYPES_OPERATIONS = (
-      'projects.locations.featurestores.entityTypes.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/featurestores/'
-              '{featurestoresId}/entityTypes/{entityTypesId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_FEATURESTORES_OPERATIONS = (
-      'projects.locations.featurestores.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/featurestores/'
-              '{featurestoresId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS_LOCATIONS_HYPERPARAMETERTUNINGJOBS = (
       'projects.locations.hyperparameterTuningJobs',
       '{+name}',
@@ -1112,18 +235,6 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/'
               'hyperparameterTuningJobs/{hyperparameterTuningJobsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_HYPERPARAMETERTUNINGJOBS_OPERATIONS = (
-      'projects.locations.hyperparameterTuningJobs.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'hyperparameterTuningJobs/{hyperparameterTuningJobsId}/'
-              'operations/{operationsId}',
       },
       ['name'],
       True
@@ -1141,13 +252,10 @@ class Collections(enum.Enum):
   )
   PROJECTS_LOCATIONS_INDEXENDPOINTS_OPERATIONS = (
       'projects.locations.indexEndpoints.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/indexEndpoints/'
-              '{indexEndpointsId}/operations/{operationsId}',
-      },
-      ['name'],
+      'projects/{projectsId}/locations/{locationsId}/indexEndpoints/'
+      '{indexEndpointsId}/operations/{operationsId}',
+      {},
+      ['projectsId', 'locationsId', 'indexEndpointsId', 'operationsId'],
       True
   )
   PROJECTS_LOCATIONS_INDEXES = (
@@ -1163,13 +271,10 @@ class Collections(enum.Enum):
   )
   PROJECTS_LOCATIONS_INDEXES_OPERATIONS = (
       'projects.locations.indexes.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/indexes/'
-              '{indexesId}/operations/{operationsId}',
-      },
-      ['name'],
+      'projects/{projectsId}/locations/{locationsId}/indexes/{indexesId}/'
+      'operations/{operationsId}',
+      {},
+      ['projectsId', 'locationsId', 'indexesId', 'operationsId'],
       True
   )
   PROJECTS_LOCATIONS_METADATASTORES = (
@@ -1194,18 +299,6 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
-  PROJECTS_LOCATIONS_METADATASTORES_ARTIFACTS_OPERATIONS = (
-      'projects.locations.metadataStores.artifacts.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/metadataStores/'
-              '{metadataStoresId}/artifacts/{artifactsId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS_LOCATIONS_METADATASTORES_CONTEXTS = (
       'projects.locations.metadataStores.contexts',
       '{+name}',
@@ -1213,18 +306,6 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/metadataStores/'
               '{metadataStoresId}/contexts/{contextsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_METADATASTORES_CONTEXTS_OPERATIONS = (
-      'projects.locations.metadataStores.contexts.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/metadataStores/'
-              '{metadataStoresId}/contexts/{contextsId}/operations/'
-              '{operationsId}',
       },
       ['name'],
       True
@@ -1240,18 +321,6 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
-  PROJECTS_LOCATIONS_METADATASTORES_EXECUTIONS_OPERATIONS = (
-      'projects.locations.metadataStores.executions.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/metadataStores/'
-              '{metadataStoresId}/executions/{executionsId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS_LOCATIONS_METADATASTORES_METADATASCHEMAS = (
       'projects.locations.metadataStores.metadataSchemas',
       '{+name}',
@@ -1259,37 +328,6 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/metadataStores/'
               '{metadataStoresId}/metadataSchemas/{metadataSchemasId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_METADATASTORES_OPERATIONS = (
-      'projects.locations.metadataStores.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/metadataStores/'
-              '{metadataStoresId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_MIGRATABLERESOURCES = (
-      'projects.locations.migratableResources',
-      'projects/{projectsId}/locations/{locationsId}/migratableResources/'
-      '{migratableResourcesId}',
-      {},
-      ['projectsId', 'locationsId', 'migratableResourcesId'],
-      True
-  )
-  PROJECTS_LOCATIONS_MIGRATABLERESOURCES_OPERATIONS = (
-      'projects.locations.migratableResources.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'migratableResources/{migratableResourcesId}/operations/'
-              '{operationsId}',
       },
       ['name'],
       True
@@ -1302,18 +340,6 @@ class Collections(enum.Enum):
               'projects/{projectsId}/locations/{locationsId}/'
               'modelDeploymentMonitoringJobs/'
               '{modelDeploymentMonitoringJobsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_MODELDEPLOYMENTMONITORINGJOBS_OPERATIONS = (
-      'projects.locations.modelDeploymentMonitoringJobs.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'modelDeploymentMonitoringJobs/'
-              '{modelDeploymentMonitoringJobsId}/operations/{operationsId}',
       },
       ['name'],
       True
@@ -1340,18 +366,6 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
-  PROJECTS_LOCATIONS_MODELS_EVALUATIONS_OPERATIONS = (
-      'projects.locations.models.evaluations.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/models/'
-              '{modelsId}/evaluations/{evaluationsId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS_LOCATIONS_MODELS_EVALUATIONS_SLICES = (
       'projects.locations.models.evaluations.slices',
       '{+name}',
@@ -1365,13 +379,10 @@ class Collections(enum.Enum):
   )
   PROJECTS_LOCATIONS_MODELS_OPERATIONS = (
       'projects.locations.models.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/models/'
-              '{modelsId}/operations/{operationsId}',
-      },
-      ['name'],
+      'projects/{projectsId}/locations/{locationsId}/models/{modelsId}/'
+      'operations/{operationsId}',
+      {},
+      ['projectsId', 'locationsId', 'modelsId', 'operationsId'],
       True
   )
   PROJECTS_LOCATIONS_NASJOBS = (
@@ -1407,18 +418,6 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
-  PROJECTS_LOCATIONS_NOTEBOOKEXECUTIONJOBS_OPERATIONS = (
-      'projects.locations.notebookExecutionJobs.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'notebookExecutionJobs/{notebookExecutionJobsId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS_LOCATIONS_NOTEBOOKRUNTIMETEMPLATES = (
       'projects.locations.notebookRuntimeTemplates',
       '{+name}',
@@ -1430,18 +429,6 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
-  PROJECTS_LOCATIONS_NOTEBOOKRUNTIMETEMPLATES_OPERATIONS = (
-      'projects.locations.notebookRuntimeTemplates.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'notebookRuntimeTemplates/{notebookRuntimeTemplatesId}/'
-              'operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS_LOCATIONS_NOTEBOOKRUNTIMES = (
       'projects.locations.notebookRuntimes',
       '{+name}',
@@ -1449,41 +436,6 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/'
               'notebookRuntimes/{notebookRuntimesId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_NOTEBOOKRUNTIMES_OPERATIONS = (
-      'projects.locations.notebookRuntimes.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'notebookRuntimes/{notebookRuntimesId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_ONLINEEVALUATORS = (
-      'projects.locations.onlineEvaluators',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'onlineEvaluators/{onlineEvaluatorsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_ONLINEEVALUATORS_OPERATIONS = (
-      'projects.locations.onlineEvaluators.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'onlineEvaluators/{onlineEvaluatorsId}/operations/'
-              '{operationsId}',
       },
       ['name'],
       True
@@ -1510,18 +462,6 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
-  PROJECTS_LOCATIONS_PERSISTENTRESOURCES_OPERATIONS = (
-      'projects.locations.persistentResources.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'persistentResources/{persistentResourcesId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS_LOCATIONS_PIPELINEJOBS = (
       'projects.locations.pipelineJobs',
       '{+name}',
@@ -1529,17 +469,6 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/pipelineJobs/'
               '{pipelineJobsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_PIPELINEJOBS_OPERATIONS = (
-      'projects.locations.pipelineJobs.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/pipelineJobs/'
-              '{pipelineJobsId}/operations/{operationsId}',
       },
       ['name'],
       True
@@ -1555,17 +484,6 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
-  PROJECTS_LOCATIONS_RAGCORPORA_OPERATIONS = (
-      'projects.locations.ragCorpora.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/ragCorpora/'
-              '{ragCorporaId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS_LOCATIONS_RAGCORPORA_RAGFILES = (
       'projects.locations.ragCorpora.ragFiles',
       '{+name}',
@@ -1573,28 +491,6 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/ragCorpora/'
               '{ragCorporaId}/ragFiles/{ragFilesId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_RAGCORPORA_RAGFILES_OPERATIONS = (
-      'projects.locations.ragCorpora.ragFiles.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/ragCorpora/'
-              '{ragCorporaId}/ragFiles/{ragFilesId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_RAGENGINECONFIG_OPERATIONS = (
-      'projects.locations.ragEngineConfig.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/ragEngineConfig/'
-              'operations/{operationsId}',
       },
       ['name'],
       True
@@ -1610,127 +506,6 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
-  PROJECTS_LOCATIONS_REASONINGENGINES_MEMORIES = (
-      'projects.locations.reasoningEngines.memories',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'reasoningEngines/{reasoningEnginesId}/memories/{memoriesId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_REASONINGENGINES_MEMORIES_OPERATIONS = (
-      'projects.locations.reasoningEngines.memories.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'reasoningEngines/{reasoningEnginesId}/memories/{memoriesId}/'
-              'operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_REASONINGENGINES_MEMORIES_REVISIONS = (
-      'projects.locations.reasoningEngines.memories.revisions',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'reasoningEngines/{reasoningEnginesId}/memories/{memoriesId}/'
-              'revisions/{revisionsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_REASONINGENGINES_OPERATIONS = (
-      'projects.locations.reasoningEngines.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'reasoningEngines/{reasoningEnginesId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_REASONINGENGINES_SANDBOXENVIRONMENTSNAPSHOTS = (
-      'projects.locations.reasoningEngines.sandboxEnvironmentSnapshots',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'reasoningEngines/{reasoningEnginesId}/'
-              'sandboxEnvironmentSnapshots/{sandboxEnvironmentSnapshotsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_REASONINGENGINES_SANDBOXENVIRONMENTSNAPSHOTS_OPERATIONS = (
-      'projects.locations.reasoningEngines.sandboxEnvironmentSnapshots.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'reasoningEngines/{reasoningEnginesId}/'
-              'sandboxEnvironmentSnapshots/{sandboxEnvironmentSnapshotsId}/'
-              'operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_REASONINGENGINES_SANDBOXENVIRONMENTTEMPLATES = (
-      'projects.locations.reasoningEngines.sandboxEnvironmentTemplates',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'reasoningEngines/{reasoningEnginesId}/'
-              'sandboxEnvironmentTemplates/{sandboxEnvironmentTemplatesId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_REASONINGENGINES_SANDBOXENVIRONMENTTEMPLATES_OPERATIONS = (
-      'projects.locations.reasoningEngines.sandboxEnvironmentTemplates.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'reasoningEngines/{reasoningEnginesId}/'
-              'sandboxEnvironmentTemplates/{sandboxEnvironmentTemplatesId}/'
-              'operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_REASONINGENGINES_SANDBOXENVIRONMENTS = (
-      'projects.locations.reasoningEngines.sandboxEnvironments',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'reasoningEngines/{reasoningEnginesId}/sandboxEnvironments/'
-              '{sandboxEnvironmentsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_REASONINGENGINES_SANDBOXENVIRONMENTS_OPERATIONS = (
-      'projects.locations.reasoningEngines.sandboxEnvironments.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'reasoningEngines/{reasoningEnginesId}/sandboxEnvironments/'
-              '{sandboxEnvironmentsId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS_LOCATIONS_REASONINGENGINES_SESSIONS = (
       'projects.locations.reasoningEngines.sessions',
       '{+name}',
@@ -1742,18 +517,6 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
-  PROJECTS_LOCATIONS_REASONINGENGINES_SESSIONS_OPERATIONS = (
-      'projects.locations.reasoningEngines.sessions.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'reasoningEngines/{reasoningEnginesId}/sessions/{sessionsId}/'
-              'operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS_LOCATIONS_SCHEDULES = (
       'projects.locations.schedules',
       '{+name}',
@@ -1761,17 +524,6 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/schedules/'
               '{schedulesId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_SCHEDULES_OPERATIONS = (
-      'projects.locations.schedules.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/schedules/'
-              '{schedulesId}/operations/{operationsId}',
       },
       ['name'],
       True
@@ -1804,24 +556,6 @@ class Collections(enum.Enum):
       ['projectsId', 'locationsId'],
       True
   )
-  PROJECTS_LOCATIONS_SKILLS = (
-      'projects.locations.skills',
-      'projects/{projectsId}/locations/{locationsId}/skills/{skillsId}',
-      {},
-      ['projectsId', 'locationsId', 'skillsId'],
-      True
-  )
-  PROJECTS_LOCATIONS_SKILLS_OPERATIONS = (
-      'projects.locations.skills.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/skills/'
-              '{skillsId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS_LOCATIONS_SPECIALISTPOOLS = (
       'projects.locations.specialistPools',
       '{+name}',
@@ -1829,17 +563,6 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/specialistPools/'
               '{specialistPoolsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_SPECIALISTPOOLS_OPERATIONS = (
-      'projects.locations.specialistPools.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/specialistPools/'
-              '{specialistPoolsId}/operations/{operationsId}',
       },
       ['name'],
       True
@@ -1855,17 +578,6 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
-  PROJECTS_LOCATIONS_STUDIES_OPERATIONS = (
-      'projects.locations.studies.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/studies/'
-              '{studiesId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS_LOCATIONS_STUDIES_TRIALS = (
       'projects.locations.studies.trials',
       '{+name}',
@@ -1873,17 +585,6 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/studies/'
               '{studiesId}/trials/{trialsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_STUDIES_TRIALS_OPERATIONS = (
-      'projects.locations.studies.trials.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/studies/'
-              '{studiesId}/trials/{trialsId}/operations/{operationsId}',
       },
       ['name'],
       True
@@ -1910,18 +611,6 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
-  PROJECTS_LOCATIONS_TENSORBOARDS_EXPERIMENTS_OPERATIONS = (
-      'projects.locations.tensorboards.experiments.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/tensorboards/'
-              '{tensorboardsId}/experiments/{experimentsId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS_LOCATIONS_TENSORBOARDS_EXPERIMENTS_RUNS = (
       'projects.locations.tensorboards.experiments.runs',
       '{+name}',
@@ -1929,18 +618,6 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/tensorboards/'
               '{tensorboardsId}/experiments/{experimentsId}/runs/{runsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_TENSORBOARDS_EXPERIMENTS_RUNS_OPERATIONS = (
-      'projects.locations.tensorboards.experiments.runs.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/tensorboards/'
-              '{tensorboardsId}/experiments/{experimentsId}/runs/{runsId}/'
-              'operations/{operationsId}',
       },
       ['name'],
       True
@@ -1957,29 +634,6 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
-  PROJECTS_LOCATIONS_TENSORBOARDS_EXPERIMENTS_RUNS_TIMESERIES_OPERATIONS = (
-      'projects.locations.tensorboards.experiments.runs.timeSeries.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/tensorboards/'
-              '{tensorboardsId}/experiments/{experimentsId}/runs/{runsId}/'
-              'timeSeries/{timeSeriesId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_TENSORBOARDS_OPERATIONS = (
-      'projects.locations.tensorboards.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/tensorboards/'
-              '{tensorboardsId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS_LOCATIONS_TRAININGPIPELINES = (
       'projects.locations.trainingPipelines',
       '{+name}',
@@ -1991,18 +645,6 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
-  PROJECTS_LOCATIONS_TRAININGPIPELINES_OPERATIONS = (
-      'projects.locations.trainingPipelines.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'trainingPipelines/{trainingPipelinesId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS_LOCATIONS_TUNINGJOBS = (
       'projects.locations.tuningJobs',
       '{+name}',
@@ -2010,17 +652,6 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/tuningJobs/'
               '{tuningJobsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_TUNINGJOBS_OPERATIONS = (
-      'projects.locations.tuningJobs.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/tuningJobs/'
-              '{tuningJobsId}/operations/{operationsId}',
       },
       ['name'],
       True
@@ -2038,371 +669,6 @@ class Collections(enum.Enum):
       {
           '':
               'publishers/{publishersId}/models/{modelsId}',
-      },
-      ['name'],
-      True
-  )
-  RAGCORPORA = (
-      'ragCorpora',
-      'ragCorpora/{ragCorporaId}',
-      {},
-      ['ragCorporaId'],
-      True
-  )
-  RAGCORPORA_OPERATIONS = (
-      'ragCorpora.operations',
-      '{+name}',
-      {
-          '':
-              'ragCorpora/{ragCorporaId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  RAGCORPORA_RAGFILES = (
-      'ragCorpora.ragFiles',
-      'ragCorpora/{ragCorporaId}/ragFiles/{ragFilesId}',
-      {},
-      ['ragCorporaId', 'ragFilesId'],
-      True
-  )
-  RAGCORPORA_RAGFILES_OPERATIONS = (
-      'ragCorpora.ragFiles.operations',
-      '{+name}',
-      {
-          '':
-              'ragCorpora/{ragCorporaId}/ragFiles/{ragFilesId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  RAGENGINECONFIG_OPERATIONS = (
-      'ragEngineConfig.operations',
-      '{+name}',
-      {
-          '':
-              'ragEngineConfig/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  REASONINGENGINES = (
-      'reasoningEngines',
-      '{+name}',
-      {
-          '':
-              'reasoningEngines/{reasoningEnginesId}',
-      },
-      ['name'],
-      True
-  )
-  REASONINGENGINES_MEMORIES = (
-      'reasoningEngines.memories',
-      'reasoningEngines/{reasoningEnginesId}/memories/{memoriesId}',
-      {},
-      ['reasoningEnginesId', 'memoriesId'],
-      True
-  )
-  REASONINGENGINES_MEMORIES_OPERATIONS = (
-      'reasoningEngines.memories.operations',
-      '{+name}',
-      {
-          '':
-              'reasoningEngines/{reasoningEnginesId}/memories/{memoriesId}/'
-              'operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  REASONINGENGINES_OPERATIONS = (
-      'reasoningEngines.operations',
-      '{+name}',
-      {
-          '':
-              'reasoningEngines/{reasoningEnginesId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  REASONINGENGINES_SANDBOXENVIRONMENTSNAPSHOTS = (
-      'reasoningEngines.sandboxEnvironmentSnapshots',
-      '{+name}',
-      {
-          '':
-              'reasoningEngines/{reasoningEnginesId}/'
-              'sandboxEnvironmentSnapshots/{sandboxEnvironmentSnapshotsId}',
-      },
-      ['name'],
-      True
-  )
-  REASONINGENGINES_SANDBOXENVIRONMENTSNAPSHOTS_OPERATIONS = (
-      'reasoningEngines.sandboxEnvironmentSnapshots.operations',
-      '{+name}',
-      {
-          '':
-              'reasoningEngines/{reasoningEnginesId}/'
-              'sandboxEnvironmentSnapshots/{sandboxEnvironmentSnapshotsId}/'
-              'operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  REASONINGENGINES_SANDBOXENVIRONMENTTEMPLATES = (
-      'reasoningEngines.sandboxEnvironmentTemplates',
-      '{+name}',
-      {
-          '':
-              'reasoningEngines/{reasoningEnginesId}/'
-              'sandboxEnvironmentTemplates/{sandboxEnvironmentTemplatesId}',
-      },
-      ['name'],
-      True
-  )
-  REASONINGENGINES_SANDBOXENVIRONMENTTEMPLATES_OPERATIONS = (
-      'reasoningEngines.sandboxEnvironmentTemplates.operations',
-      '{+name}',
-      {
-          '':
-              'reasoningEngines/{reasoningEnginesId}/'
-              'sandboxEnvironmentTemplates/{sandboxEnvironmentTemplatesId}/'
-              'operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  REASONINGENGINES_SANDBOXENVIRONMENTS = (
-      'reasoningEngines.sandboxEnvironments',
-      '{+name}',
-      {
-          '':
-              'reasoningEngines/{reasoningEnginesId}/sandboxEnvironments/'
-              '{sandboxEnvironmentsId}',
-      },
-      ['name'],
-      True
-  )
-  REASONINGENGINES_SANDBOXENVIRONMENTS_OPERATIONS = (
-      'reasoningEngines.sandboxEnvironments.operations',
-      '{+name}',
-      {
-          '':
-              'reasoningEngines/{reasoningEnginesId}/sandboxEnvironments/'
-              '{sandboxEnvironmentsId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  REASONINGENGINES_SESSIONS = (
-      'reasoningEngines.sessions',
-      'reasoningEngines/{reasoningEnginesId}/sessions/{sessionsId}',
-      {},
-      ['reasoningEnginesId', 'sessionsId'],
-      True
-  )
-  REASONINGENGINES_SESSIONS_OPERATIONS = (
-      'reasoningEngines.sessions.operations',
-      '{+name}',
-      {
-          '':
-              'reasoningEngines/{reasoningEnginesId}/sessions/{sessionsId}/'
-              'operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  SCHEDULES = (
-      'schedules',
-      'schedules/{schedulesId}',
-      {},
-      ['schedulesId'],
-      True
-  )
-  SCHEDULES_OPERATIONS = (
-      'schedules.operations',
-      '{+name}',
-      {
-          '':
-              'schedules/{schedulesId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  SKILLS = (
-      'skills',
-      'skills/{skillsId}',
-      {},
-      ['skillsId'],
-      True
-  )
-  SKILLS_OPERATIONS = (
-      'skills.operations',
-      '{+name}',
-      {
-          '':
-              'skills/{skillsId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  SPECIALISTPOOLS = (
-      'specialistPools',
-      'specialistPools/{specialistPoolsId}',
-      {},
-      ['specialistPoolsId'],
-      True
-  )
-  SPECIALISTPOOLS_OPERATIONS = (
-      'specialistPools.operations',
-      '{+name}',
-      {
-          '':
-              'specialistPools/{specialistPoolsId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  STUDIES = (
-      'studies',
-      'studies/{studiesId}',
-      {},
-      ['studiesId'],
-      True
-  )
-  STUDIES_OPERATIONS = (
-      'studies.operations',
-      '{+name}',
-      {
-          '':
-              'studies/{studiesId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  STUDIES_TRIALS = (
-      'studies.trials',
-      'studies/{studiesId}/trials/{trialsId}',
-      {},
-      ['studiesId', 'trialsId'],
-      True
-  )
-  STUDIES_TRIALS_OPERATIONS = (
-      'studies.trials.operations',
-      '{+name}',
-      {
-          '':
-              'studies/{studiesId}/trials/{trialsId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  TENSORBOARDS = (
-      'tensorboards',
-      'tensorboards/{tensorboardsId}',
-      {},
-      ['tensorboardsId'],
-      True
-  )
-  TENSORBOARDS_EXPERIMENTS = (
-      'tensorboards.experiments',
-      'tensorboards/{tensorboardsId}/experiments/{experimentsId}',
-      {},
-      ['tensorboardsId', 'experimentsId'],
-      True
-  )
-  TENSORBOARDS_EXPERIMENTS_OPERATIONS = (
-      'tensorboards.experiments.operations',
-      '{+name}',
-      {
-          '':
-              'tensorboards/{tensorboardsId}/experiments/{experimentsId}/'
-              'operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  TENSORBOARDS_EXPERIMENTS_RUNS = (
-      'tensorboards.experiments.runs',
-      'tensorboards/{tensorboardsId}/experiments/{experimentsId}/runs/'
-      '{runsId}',
-      {},
-      ['tensorboardsId', 'experimentsId', 'runsId'],
-      True
-  )
-  TENSORBOARDS_EXPERIMENTS_RUNS_OPERATIONS = (
-      'tensorboards.experiments.runs.operations',
-      '{+name}',
-      {
-          '':
-              'tensorboards/{tensorboardsId}/experiments/{experimentsId}/'
-              'runs/{runsId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  TENSORBOARDS_EXPERIMENTS_RUNS_TIMESERIES = (
-      'tensorboards.experiments.runs.timeSeries',
-      'tensorboards/{tensorboardsId}/experiments/{experimentsId}/runs/'
-      '{runsId}/timeSeries/{timeSeriesId}',
-      {},
-      ['tensorboardsId', 'experimentsId', 'runsId', 'timeSeriesId'],
-      True
-  )
-  TENSORBOARDS_EXPERIMENTS_RUNS_TIMESERIES_OPERATIONS = (
-      'tensorboards.experiments.runs.timeSeries.operations',
-      '{+name}',
-      {
-          '':
-              'tensorboards/{tensorboardsId}/experiments/{experimentsId}/'
-              'runs/{runsId}/timeSeries/{timeSeriesId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  TENSORBOARDS_OPERATIONS = (
-      'tensorboards.operations',
-      '{+name}',
-      {
-          '':
-              'tensorboards/{tensorboardsId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  TRAININGPIPELINES = (
-      'trainingPipelines',
-      'trainingPipelines/{trainingPipelinesId}',
-      {},
-      ['trainingPipelinesId'],
-      True
-  )
-  TRAININGPIPELINES_OPERATIONS = (
-      'trainingPipelines.operations',
-      '{+name}',
-      {
-          '':
-              'trainingPipelines/{trainingPipelinesId}/operations/'
-              '{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  TUNINGJOBS = (
-      'tuningJobs',
-      'tuningJobs/{tuningJobsId}',
-      {},
-      ['tuningJobsId'],
-      True
-  )
-  TUNINGJOBS_OPERATIONS = (
-      'tuningJobs.operations',
-      '{+name}',
-      {
-          '':
-              'tuningJobs/{tuningJobsId}/operations/{operationsId}',
       },
       ['name'],
       True

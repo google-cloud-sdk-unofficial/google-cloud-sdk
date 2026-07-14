@@ -190,7 +190,7 @@ class BiglakeV1(base_api.BaseApiClient):
         method_id='biglake.iceberg.v1.restcatalog.extensions.projects.catalogs.list',
         ordered_params=['parent'],
         path_params=['parent'],
-        query_params=['page_size', 'page_token', 'view'],
+        query_params=['filter', 'page_size', 'page_token', 'view'],
         relative_path='iceberg/v1/restcatalog/extensions/{+parent}/catalogs',
         request_field='',
         request_type_name='BiglakeIcebergV1RestcatalogExtensionsProjectsCatalogsListRequest',

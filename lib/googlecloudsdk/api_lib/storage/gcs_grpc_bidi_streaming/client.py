@@ -94,6 +94,7 @@ class GcsGrpcBidiStreamingClient(cloud_api.CloudApi):
       cloud_api.Capability.RESUMABLE_UPLOAD,
       cloud_api.Capability.SLICED_DOWNLOAD,
       cloud_api.Capability.DAISY_CHAIN_SEEKABLE_UPLOAD_STREAM,
+      cloud_api.Capability.ON_THE_FLY_CHECKSUM,
   ]
 
   def __init__(self):
@@ -312,7 +313,10 @@ class GcsGrpcBidiStreamingClient(cloud_api.CloudApi):
     if resource_args:
       encryption_key = getattr(resource_args, 'encryption_key', None)
 
-    if upload_strategy == cloud_api.UploadStrategy.SIMPLE:
+    if (
+        upload_strategy == cloud_api.UploadStrategy.SIMPLE
+        or upload_strategy == cloud_api.UploadStrategy.STREAMING
+    ):
       uploader = upload.SimpleUpload(
           client=client,
           source_stream=source_stream,
@@ -322,6 +326,9 @@ class GcsGrpcBidiStreamingClient(cloud_api.CloudApi):
           delegator=self._delegator,
           posix_to_set=posix_to_set,
           encryption_key=encryption_key,
+          is_streaming_upload=(
+              upload_strategy == cloud_api.UploadStrategy.STREAMING
+          ),
       )
     elif upload_strategy == cloud_api.UploadStrategy.RESUMABLE:
       uploader = upload.ResumableUpload(
@@ -336,8 +343,8 @@ class GcsGrpcBidiStreamingClient(cloud_api.CloudApi):
       )
     else:
       raise core_exceptions.InternalError(
-          'Only simple/resumable upload strategy is supported for Zonal Buckets'
-          ' with bidi streaming API.'
+          'Only simple, resumable, and streaming upload strategies are'
+          ' supported for Zonal Buckets with bidi streaming API.'
       )
     try:
       return uploader.run()

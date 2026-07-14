@@ -321,7 +321,8 @@ _LIST_INSTANCES_FORMAT = """\
               version.name:label=VERSION_NAME,
               lastAttempt.errors.errors.map().format(
                 "Error {0}: {1}", code, message).list(separator=", ")
-                :label=LAST_ERROR
+                :label=LAST_ERROR,
+              scheduling.terminationTimestamp:label=TERMINATION_TIMESTAMP
         )"""
 
 _LIST_INSTANCES_FORMAT_BETA = """\
@@ -360,6 +361,16 @@ _RELEASE_TRACK_TO_LIST_INSTANCES_FORMAT = {
     base.ReleaseTrack.ALPHA: _LIST_INSTANCES_FORMAT_ALPHA,
 }
 
+_LIST_INSTANCES_STATIC_FIELDS_GA = [
+    'NAME',
+    'ZONE',
+    'STATUS',
+    'HEALTH_STATE',
+    'ACTION',
+    'INSTANCE_TEMPLATE',
+    'VERSION_NAME',
+    'LAST_ERROR'
+]
 _LIST_INSTANCES_STATIC_FIELDS_BETA = [
     'NAME',
     'ZONE',
@@ -373,8 +384,8 @@ _LIST_INSTANCES_STATIC_FIELDS_BETA = [
 ]
 _LIST_INSTANCES_STATIC_FIELDS_ALPHA = _LIST_INSTANCES_STATIC_FIELDS_BETA
 
-# TODO(b/426414503): Add base fields for beta and ga.
 _RELEASE_TRACK_TO_LIST_INSTANCES_BASE_STATIC_FIELDS = {
+    base.ReleaseTrack.GA: _LIST_INSTANCES_STATIC_FIELDS_GA,
     base.ReleaseTrack.BETA: _LIST_INSTANCES_STATIC_FIELDS_BETA,
     base.ReleaseTrack.ALPHA: _LIST_INSTANCES_STATIC_FIELDS_ALPHA,
 }
@@ -387,12 +398,9 @@ class DynamicField:
 
   @classmethod
   def GetManagedInstanceDynamicFields(
-      cls, instance, release_track=base.ReleaseTrack.BETA
+      cls, instance, release_track=base.ReleaseTrack.GA
   ) -> List[str]:
     """Returns dynamic fields for a managed instance based on its properties.
-
-    Note that an empty list of dynamic fields is returned for the GA release
-    track.
 
     Args:
       instance: Managed instance.
@@ -401,11 +409,10 @@ class DynamicField:
       List of dynamic fields.
     """
     dynamic_fields = []
-    if release_track == base.ReleaseTrack.GA:
-      return dynamic_fields
 
     if cls._HasTerminationTimestamp(instance):
       dynamic_fields.append(cls.TERMINATION_TIMESTAMP)
+
     return dynamic_fields
 
   @classmethod
@@ -416,7 +423,7 @@ class DynamicField:
 
 
 def _GetIgmDynamicFields(
-    managed_instances, release_track=base.ReleaseTrack.BETA
+    managed_instances, release_track=base.ReleaseTrack.GA
 ) -> List[str]:
   """Returns dynamic fields for a list of managed instances.
 
@@ -462,7 +469,7 @@ def _TransformPreservedState(instance):
 
 
 def GetListInstancesOutputWithDynamicFields(
-    managed_instances, release_track=base.ReleaseTrack.BETA
+    managed_instances, release_track=base.ReleaseTrack.GA
 ) -> str:
   """Builds an output format string with dynamic fields (if they are present).
 

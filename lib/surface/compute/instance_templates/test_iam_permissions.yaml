@@ -1,0 +1,33 @@
+- release_tracks: [ALPHA, BETA, GA, PREVIEW]
+  help_text:
+    brief: Test IAM permissions for a Compute Engine instance template.
+    description: |
+      Returns permissions that a caller has on the specified instance template.
+    examples: |
+      To test if the caller has `compute.instanceTemplates.get` permission on an instance template, run:
+
+        $ {command} my-instance-template --permissions=compute.instanceTemplates.get
+
+  request:
+    collection: compute.instanceTemplates
+    api_version: v1
+    method: testIamPermissions
+    use_relative_name: false
+    BETA:
+      api_version: beta
+    ALPHA:
+      api_version: alpha
+
+  command_type: GENERIC
+
+  arguments:
+    resource:
+      help_text: The instance template for which to test permissions.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:instance_template
+    params:
+    - arg_name: permissions
+      api_field: testPermissionsRequest.permissions
+      required: true
+      repeated: true
+      help_text: |-
+        Permissions to be tested.

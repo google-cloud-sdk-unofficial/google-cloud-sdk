@@ -2079,8 +2079,6 @@ class TransferRun(_messages.Message):
     endTime: Output only. Time when transfer run ended. Parameter ignored by
       server for input requests.
     errorStatus: Status of the transfer run.
-    metadataDestination: Output only. The metadata destination of the transfer
-      run.
     name: Identifier. The resource name of the transfer run. Transfer run
       names have the form `projects/{project_id}/locations/{location}/transfer
       Configs/{config_id}/runs/{run_id}`. The name is ignored when creating a
@@ -2162,17 +2160,16 @@ class TransferRun(_messages.Message):
   emailPreferences = _messages.MessageField('EmailPreferences', 3)
   endTime = _messages.StringField(4)
   errorStatus = _messages.MessageField('Status', 5)
-  metadataDestination = _messages.MessageField('MetadataDestination', 6)
-  name = _messages.StringField(7)
-  notificationPubsubTopic = _messages.StringField(8)
-  params = _messages.MessageField('ParamsValue', 9)
-  runTime = _messages.StringField(10)
-  schedule = _messages.StringField(11)
-  scheduleTime = _messages.StringField(12)
-  startTime = _messages.StringField(13)
-  state = _messages.EnumField('StateValueValuesEnum', 14)
-  updateTime = _messages.StringField(15)
-  userId = _messages.IntegerField(16)
+  name = _messages.StringField(6)
+  notificationPubsubTopic = _messages.StringField(7)
+  params = _messages.MessageField('ParamsValue', 8)
+  runTime = _messages.StringField(9)
+  schedule = _messages.StringField(10)
+  scheduleTime = _messages.StringField(11)
+  startTime = _messages.StringField(12)
+  state = _messages.EnumField('StateValueValuesEnum', 13)
+  updateTime = _messages.StringField(14)
+  userId = _messages.IntegerField(15)
 
 
 class TransferRunBrief(_messages.Message):

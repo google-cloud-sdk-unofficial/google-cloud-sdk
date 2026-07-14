@@ -53,8 +53,7 @@ class AclPolicy(_messages.Message):
     name: Identifier. Full resource path of the ACL policy.
     rules: Required. The ACL rules within the ACL policy.
     state: Output only. The state of the ACL policy.
-    version: Output only. The version of the ACL policy. Used in drift
-      resolution.
+    version: Output only. Deprecated: Used in drift resolution.
   """
 
   class StateValueValuesEnum(_messages.Enum):
@@ -62,11 +61,11 @@ class AclPolicy(_messages.Message):
 
     Values:
       STATE_UNSPECIFIED: Not set.
-      ACTIVE: ACL Policy has been created and is fully usable. Since ACL
-        Policy creation is synchronous and not an LRO, there is no CREATING
+      ACTIVE: ACL policy has been created and is fully usable. Since ACL
+        policy creation is synchronous and not an LRO, there is no CREATING
         state.
-      UPDATING: ACL Policy is being updated.
-      DELETING: ACL Policy is being deleted.
+      UPDATING: ACL policy is being updated.
+      DELETING: ACL policy is being deleted.
     """
     STATE_UNSPECIFIED = 0
     ACTIVE = 1
@@ -560,9 +559,8 @@ class Cluster(_messages.Message):
 
   Fields:
     aclPolicy: Optional. The ACL policy to be applied to the cluster.
-    aclPolicyInSync: Optional. Output only. Indicates whether the ACL rules
-      applied to the cluster are in sync with the latest ACL policy rules.
-      This field is only applicable if the ACL policy is set for the cluster.
+    aclPolicyInSync: Optional. Output only. Deprecated: Indicates whether the
+      ACL rules applied to the cluster are in sync.
     allowFewerZonesDeployment: Optional. Immutable. Deprecated, do not use.
     asyncClusterEndpointsDeletionEnabled: Optional. If true, cluster endpoints
       that are created and registered by customers can be deleted
@@ -1570,6 +1568,10 @@ class DatabaseResourceHealthSignalData(_messages.Message):
       SIGNAL_TYPE_PERFORMANCE_KPI_CHANGE: Change in performance KPIs.
       SIGNAL_TYPE_VERSION_NEARING_END_OF_LIFE: Database version nearing end of
         life.
+      SIGNAL_TYPE_HIGH_MAINTENANCE_DOWNTIME_RISK: Indicates a high risk of
+        maintenance downtime.
+      SIGNAL_TYPE_LOW_CACHE_HIT_AND_MAINTENANCE_DOWNTIME: Indicates both a low
+        cache hit rate and a risk of maintenance downtime.
     """
     SIGNAL_TYPE_UNSPECIFIED = 0
     SIGNAL_TYPE_NOT_PROTECTED_BY_AUTOMATIC_FAILOVER = 1
@@ -1678,6 +1680,8 @@ class DatabaseResourceHealthSignalData(_messages.Message):
     SIGNAL_TYPE_EXTENDED_SUPPORT = 104
     SIGNAL_TYPE_PERFORMANCE_KPI_CHANGE = 105
     SIGNAL_TYPE_VERSION_NEARING_END_OF_LIFE = 106
+    SIGNAL_TYPE_HIGH_MAINTENANCE_DOWNTIME_RISK = 107
+    SIGNAL_TYPE_LOW_CACHE_HIT_AND_MAINTENANCE_DOWNTIME = 108
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Required. The state of the signal, such as if it's ACTIVE or RESOLVED.
@@ -1753,8 +1757,8 @@ class DatabaseResourceId(_messages.Message):
       go/keep-sorted start alloydb.googleapis.com/Cluster,
       alloydb.googleapis.com/Instance, bigtableadmin.googleapis.com/Cluster,
       bigtableadmin.googleapis.com/Instance compute.googleapis.com/Instance
-      firestore.googleapis.com/Database, redis.googleapis.com/Instance,
-      redis.googleapis.com/Cluster,
+      firestore.googleapis.com/Database, memorystore.googleapis.com/Instance,
+      redis.googleapis.com/Instance, redis.googleapis.com/Cluster,
       oracledatabase.googleapis.com/CloudExadataInfrastructure
       oracledatabase.googleapis.com/CloudVmCluster
       oracledatabase.googleapis.com/AutonomousDatabase
@@ -2396,6 +2400,10 @@ class DatabaseResourceRecommendationSignalData(_messages.Message):
       SIGNAL_TYPE_PERFORMANCE_KPI_CHANGE: Change in performance KPIs.
       SIGNAL_TYPE_VERSION_NEARING_END_OF_LIFE: Database version nearing end of
         life.
+      SIGNAL_TYPE_HIGH_MAINTENANCE_DOWNTIME_RISK: Indicates a high risk of
+        maintenance downtime.
+      SIGNAL_TYPE_LOW_CACHE_HIT_AND_MAINTENANCE_DOWNTIME: Indicates both a low
+        cache hit rate and a risk of maintenance downtime.
     """
     SIGNAL_TYPE_UNSPECIFIED = 0
     SIGNAL_TYPE_NOT_PROTECTED_BY_AUTOMATIC_FAILOVER = 1
@@ -2504,6 +2512,8 @@ class DatabaseResourceRecommendationSignalData(_messages.Message):
     SIGNAL_TYPE_EXTENDED_SUPPORT = 104
     SIGNAL_TYPE_PERFORMANCE_KPI_CHANGE = 105
     SIGNAL_TYPE_VERSION_NEARING_END_OF_LIFE = 106
+    SIGNAL_TYPE_HIGH_MAINTENANCE_DOWNTIME_RISK = 107
+    SIGNAL_TYPE_LOW_CACHE_HIT_AND_MAINTENANCE_DOWNTIME = 108
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AdditionalMetadataValue(_messages.Message):
@@ -3375,7 +3385,7 @@ class ListAclPoliciesResponse(_messages.Message):
       queried, and the results aggregated.
     nextPageToken: Token to retrieve the next page of results, or empty if
       there are no more results in the list.
-    unreachable: Locations that could not be reached.
+    unreachable: Unordered list. Locations that could not be reached.
   """
 
   aclPolicies = _messages.MessageField('AclPolicy', 1, repeated=True)
@@ -4575,7 +4585,7 @@ class RedisProjectsLocationsAclPoliciesCreateRequest(_messages.Message):
 
   Fields:
     aclPolicy: A AclPolicy resource to be passed as the request body.
-    aclPolicyId: Required. The logical name of the ACL Policy in the customer
+    aclPolicyId: Required. The logical name of the ACL policy in the customer
       project with the following restrictions: * Must contain only lowercase
       letters, numbers, and hyphens. * Must start with a letter. * Must be
       between 1-63 characters. * Must end with a number or a letter. * Must be
@@ -4598,7 +4608,7 @@ class RedisProjectsLocationsAclPoliciesDeleteRequest(_messages.Message):
   Fields:
     etag: Optional. Etag of the ACL policy. If this is different from the
       server's etag, the request will fail with an ABORTED error.
-    name: Required. Redis ACL Policy resource name using the form: `projects/{
+    name: Required. Redis ACL policy resource name using the form: `projects/{
       project_id}/locations/{location_id}/aclPolicies/{acl_policy_id}` where
       `location_id` refers to a GCP region.
     requestId: Optional. Idempotent request UUID.
@@ -4613,7 +4623,7 @@ class RedisProjectsLocationsAclPoliciesGetRequest(_messages.Message):
   r"""A RedisProjectsLocationsAclPoliciesGetRequest object.
 
   Fields:
-    name: Required. Redis ACL Policy resource name using the form: `projects/{
+    name: Required. Redis ACL policy resource name using the form: `projects/{
       project_id}/locations/{location_id}/aclPolicies/{acl_policy_id}` where
       `location_id` refers to a GCP region.
   """
@@ -4633,7 +4643,7 @@ class RedisProjectsLocationsAclPoliciesListRequest(_messages.Message):
       value is 1000; values above 1000 will be coerced to 1000.
     pageToken: Optional. The `next_page_token` value returned from a previous
       `ListAclPolicies` request, if any.
-    parent: Required. The resource name of the cluster location using the
+    parent: Required. The resource name of the ACL policy location using the
       form: `projects/{project_id}/locations/{location_id}` where
       `location_id` refers to a Google Cloud region.
   """

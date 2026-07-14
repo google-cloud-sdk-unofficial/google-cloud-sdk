@@ -46,7 +46,7 @@ class Export(base.Command):
           To export the `exampleKind` and `otherKind` kinds in the `exampleNs`
           namespace in the `exampleProject` project to the `exampleBucket`, run:
 
-            $ {command} gs://exampleBucket --kinds='exampleKind','otherKind' --namespaces='exampleNs' --project='exampleProject'
+            $ {command} gs://exampleBucket --kinds='exampleKind,otherKind' --namespaces='exampleNs' --project='exampleProject'
 
           To export all namespaces and kinds in the currently set project to the
           `exampleBucket` without waiting for the operation to complete, run:

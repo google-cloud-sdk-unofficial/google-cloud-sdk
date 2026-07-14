@@ -17,6 +17,10 @@ package = 'modelarmor'
 class AiPlatformFloorSetting(_messages.Message):
   r"""message describing AiPlatformFloorSetting
 
+  Enums:
+    ModelFamiliesValueListEntryValuesEnum:
+    RequestTypesValueListEntryValuesEnum:
+
   Fields:
     enableCloudLogging: Optional. If true, log Model Armor filter results to
       Cloud Logging.
@@ -25,11 +29,41 @@ class AiPlatformFloorSetting(_messages.Message):
       blocked.
     inspectOnly: Optional. If true, Model Armor filters will be run in inspect
       only mode. No action will be taken on the request.
+    modelFamilies: Optional. Specifies which Vertex AI model families are in
+      scope for Model Armor.
+    requestTypes: Optional. Specifies the request types in scope for Model
+      Armor.
   """
+
+  class ModelFamiliesValueListEntryValuesEnum(_messages.Enum):
+    r"""ModelFamiliesValueListEntryValuesEnum enum type.
+
+    Values:
+      MODEL_FAMILY_UNSPECIFIED: Unspecified model family.
+      GEMINI: Gemini model.
+      CLAUDE: Claude model.
+    """
+    MODEL_FAMILY_UNSPECIFIED = 0
+    GEMINI = 1
+    CLAUDE = 2
+
+  class RequestTypesValueListEntryValuesEnum(_messages.Enum):
+    r"""RequestTypesValueListEntryValuesEnum enum type.
+
+    Values:
+      REQUEST_TYPE_UNSPECIFIED: Unspecified request type.
+      UNARY: Unary request.
+      STREAMING: Streaming request.
+    """
+    REQUEST_TYPE_UNSPECIFIED = 0
+    UNARY = 1
+    STREAMING = 2
 
   enableCloudLogging = _messages.BooleanField(1)
   inspectAndBlock = _messages.BooleanField(2)
   inspectOnly = _messages.BooleanField(3)
+  modelFamilies = _messages.EnumField('ModelFamiliesValueListEntryValuesEnum', 4, repeated=True)
+  requestTypes = _messages.EnumField('RequestTypesValueListEntryValuesEnum', 5, repeated=True)
 
 
 class ByteDataItem(_messages.Message):
@@ -57,6 +91,7 @@ class ByteDataItem(_messages.Message):
       POWERPOINT_DOCUMENT: PPTX, PPTM, POTX, POTM, POT
       TXT: TXT
       CSV: CSV
+      IMAGE: IMAGE
       ZIP: ZIP
     """
     BYTE_ITEM_TYPE_UNSPECIFIED = 0
@@ -67,7 +102,8 @@ class ByteDataItem(_messages.Message):
     POWERPOINT_DOCUMENT = 5
     TXT = 6
     CSV = 7
-    ZIP = 8
+    IMAGE = 8
+    ZIP = 9
 
   byteData = _messages.BytesField(1)
   byteDataType = _messages.EnumField('ByteDataTypeValueValuesEnum', 2)
@@ -1558,6 +1594,38 @@ class SdpBasicConfig(_messages.Message):
   filterEnforcement = _messages.EnumField('FilterEnforcementValueValuesEnum', 1)
 
 
+class SdpBoundingBox(_messages.Message):
+  r"""Bounding box encompassing a finding within an image.
+
+  Fields:
+    height: Height of the bounding box in pixels.
+    left: Left coordinate of the bounding box. (0,0) is upper left.
+    top: Top coordinate of the bounding box. (0,0) is upper left.
+    width: Width of the bounding box in pixels.
+  """
+
+  height = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  left = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  top = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  width = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+
+
+class SdpContentLocation(_messages.Message):
+  r"""Precise location of the finding within a document, record, image, or
+  metadata container.
+
+  Fields:
+    containerName: Name of the container where the finding is located. The top
+      level name is the source file name or table name. Nested names could be
+      absent if the embedded object has no string identifier (for example, an
+      image contained within a document).
+    imageFindingLocation: Location within an image's pixels.
+  """
+
+  containerName = _messages.StringField(1)
+  imageFindingLocation = _messages.MessageField('SdpImageFindingLocation', 2)
+
+
 class SdpDeidentifyResult(_messages.Message):
   r"""Sensitive Data Protection Deidentification Result.
 
@@ -1626,10 +1694,13 @@ class SdpFilterResult(_messages.Message):
       deidentification is performed.
     inspectResult: Sensitive Data Protection Inspection result if inspection
       is performed.
+    redactResult: Sensitive Data Protection Redaction result if redaction is
+      performed. This is primarily used for image redaction.
   """
 
   deidentifyResult = _messages.MessageField('SdpDeidentifyResult', 1)
   inspectResult = _messages.MessageField('SdpInspectResult', 2)
+  redactResult = _messages.MessageField('SdpRedactResult', 3)
 
 
 class SdpFilterSettings(_messages.Message):
@@ -1698,10 +1769,29 @@ class SdpFindingLocation(_messages.Message):
     codepointRange: Unicode character offsets delimiting the finding. These
       are relative to the finding's containing element. Provided when the
       content is text. Note: Omitted if content is an image.
+    contentLocations: List of nested objects pointing to the precise location
+      of the finding within an image, file or record. For example, a single
+      finding might be detected in two separate bounding boxes within an image
+      (e.g., if it wraps across a line or is partially obscured). In such
+      cases, content_locations would contain two SdpContentLocation entries,
+      each with an image_finding_location pointing to a different bounding
+      box.
   """
 
   byteRange = _messages.MessageField('RangeInfo', 1)
   codepointRange = _messages.MessageField('RangeInfo', 2)
+  contentLocations = _messages.MessageField('SdpContentLocation', 3, repeated=True)
+
+
+class SdpImageFindingLocation(_messages.Message):
+  r"""Location of the finding within an image.
+
+  Fields:
+    boundingBoxes: Bounding boxes locating the pixels within the image
+      containing the finding.
+  """
+
+  boundingBoxes = _messages.MessageField('SdpBoundingBox', 1, repeated=True)
 
 
 class SdpInspectResult(_messages.Message):
@@ -1717,6 +1807,7 @@ class SdpInspectResult(_messages.Message):
   Fields:
     executionState: Output only. Reports whether Sensitive Data Protection
       inspection was successfully executed or not.
+    extractedImageText: Contains text extracted from the image, if applicable.
     findings: List of Sensitive Data Protection findings.
     findingsTruncated: If true, then there is possibility that more findings
       were identified and the findings returned are a subset of all findings.
@@ -1759,10 +1850,71 @@ class SdpInspectResult(_messages.Message):
     MATCH_FOUND = 2
 
   executionState = _messages.EnumField('ExecutionStateValueValuesEnum', 1)
-  findings = _messages.MessageField('SdpFinding', 2, repeated=True)
-  findingsTruncated = _messages.BooleanField(3)
+  extractedImageText = _messages.StringField(2)
+  findings = _messages.MessageField('SdpFinding', 3, repeated=True)
+  findingsTruncated = _messages.BooleanField(4)
+  matchState = _messages.EnumField('MatchStateValueValuesEnum', 5)
+  messageItems = _messages.MessageField('MessageItem', 6, repeated=True)
+
+
+class SdpRedactResult(_messages.Message):
+  r"""Sensitive Data Protection Redaction Result.
+
+  Enums:
+    ExecutionStateValueValuesEnum: Output only. Reports whether Sensitive Data
+      Protection redaction was successfully executed or not.
+    MatchStateValueValuesEnum: Output only. Match state for Sensitive Data
+      Protection Redaction. Value is MATCH_FOUND if content is redacted.
+
+  Fields:
+    executionState: Output only. Reports whether Sensitive Data Protection
+      redaction was successfully executed or not.
+    extractedImageText: The extracted text from the image.
+    findings: Output only. The findings. This field is populated in the
+      response only when include_findings in the SDP template is set to true.
+    matchState: Output only. Match state for Sensitive Data Protection
+      Redaction. Value is MATCH_FOUND if content is redacted.
+    messageItems: Output only. Optional messages corresponding to the result.
+      A message can provide warnings or error details. For example, if
+      execution state is skipped then this field provides related
+      reason/explanation.
+    redactedImage: Output only. The redacted image. The type will be the same
+      as the original image.
+  """
+
+  class ExecutionStateValueValuesEnum(_messages.Enum):
+    r"""Output only. Reports whether Sensitive Data Protection redaction was
+    successfully executed or not.
+
+    Values:
+      FILTER_EXECUTION_STATE_UNSPECIFIED: Unused
+      EXECUTION_SUCCESS: Filter executed successfully
+      EXECUTION_SKIPPED: Filter execution was skipped. This can happen due to
+        server-side error or permission issue.
+    """
+    FILTER_EXECUTION_STATE_UNSPECIFIED = 0
+    EXECUTION_SUCCESS = 1
+    EXECUTION_SKIPPED = 2
+
+  class MatchStateValueValuesEnum(_messages.Enum):
+    r"""Output only. Match state for Sensitive Data Protection Redaction.
+    Value is MATCH_FOUND if content is redacted.
+
+    Values:
+      FILTER_MATCH_STATE_UNSPECIFIED: Unused
+      NO_MATCH_FOUND: Matching criteria is not achieved for filters.
+      MATCH_FOUND: Matching criteria is achieved for the filter.
+    """
+    FILTER_MATCH_STATE_UNSPECIFIED = 0
+    NO_MATCH_FOUND = 1
+    MATCH_FOUND = 2
+
+  executionState = _messages.EnumField('ExecutionStateValueValuesEnum', 1)
+  extractedImageText = _messages.StringField(2)
+  findings = _messages.MessageField('SdpFinding', 3, repeated=True)
   matchState = _messages.EnumField('MatchStateValueValuesEnum', 4)
   messageItems = _messages.MessageField('MessageItem', 5, repeated=True)
+  redactedImage = _messages.BytesField(6)
 
 
 class StandardQueryParameters(_messages.Message):
@@ -1881,6 +2033,7 @@ class TemplateMetadata(_messages.Message):
   Enums:
     EnforcementTypeValueValuesEnum: Optional. Enforcement type for Model Armor
       filters.
+    ModalitiesValueListEntryValuesEnum:
 
   Fields:
     customLlmResponseSafetyErrorCode: Optional. Indicates the custom error
@@ -1905,6 +2058,8 @@ class TemplateMetadata(_messages.Message):
       failures should be ignored.
     logSanitizeOperations: Optional. If true, log sanitize operations.
     logTemplateOperations: Optional. If true, log template crud operations.
+    modalities: Optional. Specifies the modalities to scan. If empty, only
+      text modality will be scanned.
     multiLanguageDetection: Optional. Metadata for multi language detection.
   """
 
@@ -1922,6 +2077,23 @@ class TemplateMetadata(_messages.Message):
     INSPECT_ONLY = 1
     INSPECT_AND_BLOCK = 2
 
+  class ModalitiesValueListEntryValuesEnum(_messages.Enum):
+    r"""ModalitiesValueListEntryValuesEnum enum type.
+
+    Values:
+      MODALITY_UNSPECIFIED: Unspecified modality. If specified, all modalities
+        will be sanitized.
+      MODALITY_TEXT: Represents text modality. If specified, it will sanitize
+        text fields, and text extracted from rich text files (like PDFs, DOCs)
+        and plain text files (like TXT).
+      MODALITY_IMAGE: Represents image modality. If specified, it will
+        sanitize image files. The visual content and the text content in the
+        image will be sanitized depending on the filter configuration.
+    """
+    MODALITY_UNSPECIFIED = 0
+    MODALITY_TEXT = 1
+    MODALITY_IMAGE = 2
+
   customLlmResponseSafetyErrorCode = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   customLlmResponseSafetyErrorMessage = _messages.StringField(2)
   customPromptSafetyErrorCode = _messages.IntegerField(3, variant=_messages.Variant.INT32)
@@ -1931,7 +2103,8 @@ class TemplateMetadata(_messages.Message):
   ignorePartialInvocationFailures = _messages.BooleanField(7)
   logSanitizeOperations = _messages.BooleanField(8)
   logTemplateOperations = _messages.BooleanField(9)
-  multiLanguageDetection = _messages.MessageField('MultiLanguageDetection', 10)
+  modalities = _messages.EnumField('ModalitiesValueListEntryValuesEnum', 10, repeated=True)
+  multiLanguageDetection = _messages.MessageField('MultiLanguageDetection', 11)
 
 
 class VirusDetail(_messages.Message):

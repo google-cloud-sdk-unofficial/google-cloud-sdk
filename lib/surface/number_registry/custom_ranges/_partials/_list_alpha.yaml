@@ -29,7 +29,7 @@
   arguments:
     params:
     - help_text: |-
-        Parent value for ListCustomRangesRequest
+        The parent resource name, for example `projects/*/locations/*`.
       is_positional: false
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.number_registry.v1alpha_resources:projects_locations

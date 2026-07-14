@@ -25,6 +25,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
@@ -77,4 +78,6 @@ class Create(base.CreateCommand):
                     displayName=args.display_name,
                     description=args.description))))
     log.CreatedResource(args.name, kind='service account')
+    log.status.Print('Service account email: {0}'.format(result.email))
     return result
+

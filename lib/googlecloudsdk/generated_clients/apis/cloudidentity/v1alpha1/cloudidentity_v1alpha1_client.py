@@ -294,7 +294,7 @@ class CloudidentityV1alpha1(base_api.BaseApiClient):
     )
 
     def SearchDirectGroups(self, request, global_params=None):
-      r"""Searches direct groups of a member.
+      r"""Searches direct groups of a member. Groups for which the actor does not have the permission to view memberships are silently filtered out.
 
       Args:
         request: (CloudidentityGroupsMembershipsSearchDirectGroupsRequest) input message

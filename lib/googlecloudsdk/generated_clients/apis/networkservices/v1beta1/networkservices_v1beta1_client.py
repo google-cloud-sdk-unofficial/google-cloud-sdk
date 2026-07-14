@@ -40,6 +40,7 @@ class NetworkservicesV1beta1(base_api.BaseApiClient):
     self.projects_locations_agentGateways = self.ProjectsLocationsAgentGatewaysService(self)
     self.projects_locations_authzExtensions = self.ProjectsLocationsAuthzExtensionsService(self)
     self.projects_locations_endpointPolicies = self.ProjectsLocationsEndpointPoliciesService(self)
+    self.projects_locations_expressLinks = self.ProjectsLocationsExpressLinksService(self)
     self.projects_locations_gateways_routeViews = self.ProjectsLocationsGatewaysRouteViewsService(self)
     self.projects_locations_gateways = self.ProjectsLocationsGatewaysService(self)
     self.projects_locations_grpcRoutes = self.ProjectsLocationsGrpcRoutesService(self)
@@ -506,6 +507,151 @@ class NetworkservicesV1beta1(base_api.BaseApiClient):
         relative_path='v1beta1/{+name}',
         request_field='endpointPolicy',
         request_type_name='NetworkservicesProjectsLocationsEndpointPoliciesPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsExpressLinksService(base_api.BaseApiService):
+    """Service class for the projects_locations_expressLinks resource."""
+
+    _NAME = 'projects_locations_expressLinks'
+
+    def __init__(self, client):
+      super(NetworkservicesV1beta1.ProjectsLocationsExpressLinksService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new ExpressLink in a given project and location.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsExpressLinksCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/expressLinks',
+        http_method='POST',
+        method_id='networkservices.projects.locations.expressLinks.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['expressLinkId'],
+        relative_path='v1beta1/{+parent}/expressLinks',
+        request_field='expressLink',
+        request_type_name='NetworkservicesProjectsLocationsExpressLinksCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single ExpressLink.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsExpressLinksDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/expressLinks/{expressLinksId}',
+        http_method='DELETE',
+        method_id='networkservices.projects.locations.expressLinks.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['etag'],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsExpressLinksDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single ExpressLink.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsExpressLinksGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ExpressLink) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/expressLinks/{expressLinksId}',
+        http_method='GET',
+        method_id='networkservices.projects.locations.expressLinks.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsExpressLinksGetRequest',
+        response_type_name='ExpressLink',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists ExpressLinks in a given project and location.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsExpressLinksListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListExpressLinksResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/expressLinks',
+        http_method='GET',
+        method_id='networkservices.projects.locations.expressLinks.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1beta1/{+parent}/expressLinks',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsExpressLinksListRequest',
+        response_type_name='ListExpressLinksResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single ExpressLink.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsExpressLinksPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/expressLinks/{expressLinksId}',
+        http_method='PATCH',
+        method_id='networkservices.projects.locations.expressLinks.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1beta1/{+name}',
+        request_field='expressLink',
+        request_type_name='NetworkservicesProjectsLocationsExpressLinksPatchRequest',
         response_type_name='Operation',
         supports_download=False,
     )

@@ -65,6 +65,10 @@ def GetContainer(
       ('Args', ' '.join(container.args)),
       ('Working Directory', container.workingDir),
       (
+          'Sandbox launcher',
+          'true' if getattr(container, 'sandboxLauncher', None) else None,
+      ),
+      (
           'Port',
           ' '.join(str(p.containerPort) for p in container.ports),
       ),

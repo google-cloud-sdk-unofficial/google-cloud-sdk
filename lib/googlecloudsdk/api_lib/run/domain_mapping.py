@@ -50,3 +50,7 @@ class DomainMapping(k8s_object.KubernetesObject):
   @property
   def records(self):
     return getattr(self._m.status, 'resourceRecords', None)
+
+  @property
+  def mapped_route_name(self):
+    return getattr(self._m.status, 'mappedRouteName', None)

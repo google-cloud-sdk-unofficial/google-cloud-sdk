@@ -46,6 +46,11 @@ __protobuf__ = proto.module(
         'ProactivityConfig',
         'ImageConfig',
         'GenerationConfig',
+        'ResponseFormat',
+        'TextResponseFormat',
+        'AudioResponseFormat',
+        'ImageResponseFormat',
+        'VideoResponseFormat',
         'SafetySetting',
         'SafetyRating',
         'CitationMetadata',
@@ -910,13 +915,12 @@ class GenerationConfig(proto.Message):
 
             This field is a member of `oneof`_ ``_seed``.
         response_mime_type (str):
-            Optional. The IANA standard MIME type of the
-            response. The model will generate output that
-            conforms to this MIME type. Supported values
-            include 'text/plain' (default) and
-            'application/json'. The model needs to be
-            prompted to output the appropriate response
-            type, otherwise the behavior is undefined.
+            Optional. The IANA standard MIME type of the response. The
+            model will generate output that conforms to this MIME type.
+            Supported values include 'text/plain' (default) and
+            'application/json'. The model needs to be prompted to output
+            the appropriate response type, otherwise the behavior is
+            undefined. Deprecated: Use ``response_format`` instead.
         response_schema (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.Schema):
             Optional. Lets you to specify a schema for the model's
             response, ensuring that the output conforms to a particular
@@ -927,7 +931,8 @@ class GenerationConfig(proto.Message):
             object.
 
             When this field is set, you must also set the
-            ``response_mime_type`` to ``application/json``.
+            ``response_mime_type`` to ``application/json``. Deprecated:
+            Use ``response_format`` instead.
 
             This field is a member of `oneof`_ ``_response_schema``.
         response_json_schema (google.protobuf.struct_pb2.Value):
@@ -935,7 +940,8 @@ class GenerationConfig(proto.Message):
             [response_schema][google.cloud.aiplatform.master.GenerationConfig.response_schema]
             must be omitted and
             [response_mime_type][google.cloud.aiplatform.master.GenerationConfig.response_mime_type]
-            must be set to ``application/json``.
+            must be set to ``application/json``. Deprecated: Use
+            ``response_format`` instead.
 
             This field is a member of `oneof`_ ``_response_json_schema``.
         routing_config (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.GenerationConfig.RoutingConfig):
@@ -987,10 +993,14 @@ class GenerationConfig(proto.Message):
 
             This field is a member of `oneof`_ ``_enable_affective_dialog``.
         image_config (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.ImageConfig):
-            Optional. Config for image generation
-            features.
+            Optional. Config for image generation features. Deprecated:
+            Use ``response_format.image`` instead.
 
             This field is a member of `oneof`_ ``_image_config``.
+        response_format (MutableSequence[googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.ResponseFormat]):
+            Optional. New response format field for the
+            model to configure output formatting and
+            delivery.
     """
     class Modality(proto.Enum):
         r"""The modalities of the response.
@@ -1362,6 +1372,393 @@ class GenerationConfig(proto.Message):
         number=30,
         optional=True,
         message='ImageConfig',
+    )
+    response_format: MutableSequence['ResponseFormat'] = proto.RepeatedField(
+        proto.MESSAGE,
+        number=35,
+        message='ResponseFormat',
+    )
+
+
+class ResponseFormat(proto.Message):
+    r"""Configuration for the model to configure output formatting
+    and delivery.
+
+    This message has `oneof`_ fields (mutually exclusive fields).
+    For each oneof, at most one member field can be set at the same time.
+    Setting any member of the oneof automatically clears all other
+    members.
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
+    Attributes:
+        text (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.TextResponseFormat):
+            Text output format.
+
+            This field is a member of `oneof`_ ``format``.
+        audio (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.AudioResponseFormat):
+            Audio output format.
+
+            This field is a member of `oneof`_ ``format``.
+        image (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.ImageResponseFormat):
+            Image output format.
+
+            This field is a member of `oneof`_ ``format``.
+        video (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.VideoResponseFormat):
+            Video output format.
+
+            This field is a member of `oneof`_ ``format``.
+    """
+    class DeliveryMode(proto.Enum):
+        r"""The delivery mode for the output content.
+
+        Values:
+            DELIVERY_UNSPECIFIED (0):
+                Default value. This value is unused.
+            INLINE (1):
+                Generated bytes are returned inline in the
+                response.
+            URI (2):
+                Generated content is stored and a URI is
+                returned.
+        """
+        DELIVERY_UNSPECIFIED = 0
+        INLINE = 1
+        URI = 2
+
+    text: 'TextResponseFormat' = proto.Field(
+        proto.MESSAGE,
+        number=1,
+        oneof='format',
+        message='TextResponseFormat',
+    )
+    audio: 'AudioResponseFormat' = proto.Field(
+        proto.MESSAGE,
+        number=2,
+        oneof='format',
+        message='AudioResponseFormat',
+    )
+    image: 'ImageResponseFormat' = proto.Field(
+        proto.MESSAGE,
+        number=3,
+        oneof='format',
+        message='ImageResponseFormat',
+    )
+    video: 'VideoResponseFormat' = proto.Field(
+        proto.MESSAGE,
+        number=4,
+        oneof='format',
+        message='VideoResponseFormat',
+    )
+
+
+class TextResponseFormat(proto.Message):
+    r"""Configuration for text-specific output formatting.
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
+    Attributes:
+        mime_type (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.TextResponseFormat.MimeType):
+            Optional. The IANA standard MIME type of the
+            response.
+
+            This field is a member of `oneof`_ ``_mime_type``.
+        schema (google.protobuf.struct_pb2.Value):
+            Optional. The JSON schema that the output should conform to.
+            Only applicable when mime_type is APPLICATION_JSON.
+
+            This field is a member of `oneof`_ ``_schema``.
+    """
+    class MimeType(proto.Enum):
+        r"""Supported MIME types for text output.
+
+        Values:
+            MIME_TYPE_UNSPECIFIED (0):
+                Default value. This value is unused.
+            APPLICATION_JSON (1):
+                JSON output format.
+            TEXT_PLAIN (2):
+                Plain text output format.
+        """
+        MIME_TYPE_UNSPECIFIED = 0
+        APPLICATION_JSON = 1
+        TEXT_PLAIN = 2
+
+    mime_type: MimeType = proto.Field(
+        proto.ENUM,
+        number=1,
+        optional=True,
+        enum=MimeType,
+    )
+    schema: struct_pb2.Value = proto.Field(
+        proto.MESSAGE,
+        number=2,
+        optional=True,
+        message=struct_pb2.Value,
+    )
+
+
+class AudioResponseFormat(proto.Message):
+    r"""Configuration for audio-specific output formatting.
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
+    Attributes:
+        mime_type (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.AudioResponseFormat.MimeType):
+            Optional. The MIME type of the audio output.
+
+            This field is a member of `oneof`_ ``_mime_type``.
+        delivery (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.ResponseFormat.DeliveryMode):
+            Optional. Delivery mode for the generated
+            content.
+        sample_rate (int):
+            Optional. Sample rate for the generated audio
+            in Hertz.
+
+            This field is a member of `oneof`_ ``_sample_rate``.
+        bit_rate (int):
+            Optional. Bit rate in bits per second (bps).
+            Only applicable for compressed formats (MP3,
+            Opus).
+
+            This field is a member of `oneof`_ ``_bit_rate``.
+    """
+    class MimeType(proto.Enum):
+        r"""Supported MIME types for audio output.
+
+        Values:
+            MIME_TYPE_UNSPECIFIED (0):
+                Default value. This value is unused.
+            AUDIO_MP3 (1):
+                MP3 audio format.
+            AUDIO_OGG_OPUS (2):
+                OGG Opus audio format.
+            AUDIO_L16 (3):
+                Raw PCM (L16) audio format.
+            AUDIO_WAV (4):
+                WAV audio format.
+            AUDIO_ALAW (5):
+                A-law audio format.
+            AUDIO_MULAW (6):
+                Mu-law audio format.
+        """
+        MIME_TYPE_UNSPECIFIED = 0
+        AUDIO_MP3 = 1
+        AUDIO_OGG_OPUS = 2
+        AUDIO_L16 = 3
+        AUDIO_WAV = 4
+        AUDIO_ALAW = 5
+        AUDIO_MULAW = 6
+
+    mime_type: MimeType = proto.Field(
+        proto.ENUM,
+        number=1,
+        optional=True,
+        enum=MimeType,
+    )
+    delivery: 'ResponseFormat.DeliveryMode' = proto.Field(
+        proto.ENUM,
+        number=2,
+        enum='ResponseFormat.DeliveryMode',
+    )
+    sample_rate: int = proto.Field(
+        proto.INT32,
+        number=3,
+        optional=True,
+    )
+    bit_rate: int = proto.Field(
+        proto.INT32,
+        number=4,
+        optional=True,
+    )
+
+
+class ImageResponseFormat(proto.Message):
+    r"""Configuration for image-specific output formatting.
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
+    Attributes:
+        mime_type (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.ImageResponseFormat.MimeType):
+            Optional. The MIME type of the image output.
+
+            This field is a member of `oneof`_ ``_mime_type``.
+        delivery (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.ResponseFormat.DeliveryMode):
+            Optional. Delivery mode for the generated
+            content.
+        aspect_ratio (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.ImageResponseFormat.AspectRatio):
+            Optional. The aspect ratio for the image
+            output.
+
+            This field is a member of `oneof`_ ``_aspect_ratio``.
+        image_size (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.ImageResponseFormat.ImageSize):
+            Optional. The size of the image output.
+
+            This field is a member of `oneof`_ ``_image_size``.
+    """
+    class MimeType(proto.Enum):
+        r"""Supported MIME types for image output.
+
+        Values:
+            MIME_TYPE_UNSPECIFIED (0):
+                Default value. This value is unused.
+            IMAGE_JPEG (1):
+                JPEG image format.
+        """
+        MIME_TYPE_UNSPECIFIED = 0
+        IMAGE_JPEG = 1
+
+    class AspectRatio(proto.Enum):
+        r"""Supported aspect ratios for image output.
+
+        Values:
+            ASPECT_RATIO_UNSPECIFIED (0):
+                Default value. This value is unused.
+            ASPECT_RATIO_ONE_BY_ONE (1):
+                1:1 aspect ratio.
+            ASPECT_RATIO_TWO_BY_THREE (2):
+                2:3 aspect ratio.
+            ASPECT_RATIO_THREE_BY_TWO (3):
+                3:2 aspect ratio.
+            ASPECT_RATIO_THREE_BY_FOUR (4):
+                3:4 aspect ratio.
+            ASPECT_RATIO_FOUR_BY_THREE (5):
+                4:3 aspect ratio.
+            ASPECT_RATIO_FOUR_BY_FIVE (6):
+                4:5 aspect ratio.
+            ASPECT_RATIO_FIVE_BY_FOUR (7):
+                5:4 aspect ratio.
+            ASPECT_RATIO_NINE_BY_SIXTEEN (8):
+                9:16 aspect ratio.
+            ASPECT_RATIO_SIXTEEN_BY_NINE (9):
+                16:9 aspect ratio.
+            ASPECT_RATIO_TWENTY_ONE_BY_NINE (10):
+                21:9 aspect ratio.
+            ASPECT_RATIO_ONE_BY_EIGHT (11):
+                1:8 aspect ratio.
+            ASPECT_RATIO_EIGHT_BY_ONE (12):
+                8:1 aspect ratio.
+            ASPECT_RATIO_ONE_BY_FOUR (13):
+                1:4 aspect ratio.
+            ASPECT_RATIO_FOUR_BY_ONE (14):
+                4:1 aspect ratio.
+        """
+        ASPECT_RATIO_UNSPECIFIED = 0
+        ASPECT_RATIO_ONE_BY_ONE = 1
+        ASPECT_RATIO_TWO_BY_THREE = 2
+        ASPECT_RATIO_THREE_BY_TWO = 3
+        ASPECT_RATIO_THREE_BY_FOUR = 4
+        ASPECT_RATIO_FOUR_BY_THREE = 5
+        ASPECT_RATIO_FOUR_BY_FIVE = 6
+        ASPECT_RATIO_FIVE_BY_FOUR = 7
+        ASPECT_RATIO_NINE_BY_SIXTEEN = 8
+        ASPECT_RATIO_SIXTEEN_BY_NINE = 9
+        ASPECT_RATIO_TWENTY_ONE_BY_NINE = 10
+        ASPECT_RATIO_ONE_BY_EIGHT = 11
+        ASPECT_RATIO_EIGHT_BY_ONE = 12
+        ASPECT_RATIO_ONE_BY_FOUR = 13
+        ASPECT_RATIO_FOUR_BY_ONE = 14
+
+    class ImageSize(proto.Enum):
+        r"""Supported image sizes for image output.
+
+        Values:
+            IMAGE_SIZE_UNSPECIFIED (0):
+                Default value. This value is unused.
+            IMAGE_SIZE_FIVE_TWELVE (1):
+                512px image size.
+            IMAGE_SIZE_ONE_K (2):
+                1K image size.
+            IMAGE_SIZE_TWO_K (3):
+                2K image size.
+            IMAGE_SIZE_FOUR_K (4):
+                4K image size.
+        """
+        IMAGE_SIZE_UNSPECIFIED = 0
+        IMAGE_SIZE_FIVE_TWELVE = 1
+        IMAGE_SIZE_ONE_K = 2
+        IMAGE_SIZE_TWO_K = 3
+        IMAGE_SIZE_FOUR_K = 4
+
+    mime_type: MimeType = proto.Field(
+        proto.ENUM,
+        number=1,
+        optional=True,
+        enum=MimeType,
+    )
+    delivery: 'ResponseFormat.DeliveryMode' = proto.Field(
+        proto.ENUM,
+        number=2,
+        enum='ResponseFormat.DeliveryMode',
+    )
+    aspect_ratio: AspectRatio = proto.Field(
+        proto.ENUM,
+        number=3,
+        optional=True,
+        enum=AspectRatio,
+    )
+    image_size: ImageSize = proto.Field(
+        proto.ENUM,
+        number=4,
+        optional=True,
+        enum=ImageSize,
+    )
+
+
+class VideoResponseFormat(proto.Message):
+    r"""Configuration for video-specific output formatting.
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
+    Attributes:
+        delivery (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.ResponseFormat.DeliveryMode):
+            Optional. Delivery mode for the generated
+            content.
+        gcs_uri (str):
+            Optional. The Google Cloud Storage URI to
+            store the video output. Required for Vertex if
+            delivery is URI.
+        aspect_ratio (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.VideoResponseFormat.AspectRatio):
+            The aspect ratio for the video output.
+        duration (google.protobuf.duration_pb2.Duration):
+            Optional. The duration for the video output.
+
+            This field is a member of `oneof`_ ``_duration``.
+    """
+    class AspectRatio(proto.Enum):
+        r"""Supported aspect ratios for video output.
+
+        Values:
+            ASPECT_RATIO_UNSPECIFIED (0):
+                Default value. This value is unused.
+            ASPECT_RATIO_SIXTEEN_BY_NINE (1):
+                16:9 aspect ratio.
+            ASPECT_RATIO_NINE_BY_SIXTEEN (2):
+                9:16 aspect ratio.
+        """
+        ASPECT_RATIO_UNSPECIFIED = 0
+        ASPECT_RATIO_SIXTEEN_BY_NINE = 1
+        ASPECT_RATIO_NINE_BY_SIXTEEN = 2
+
+    delivery: 'ResponseFormat.DeliveryMode' = proto.Field(
+        proto.ENUM,
+        number=1,
+        enum='ResponseFormat.DeliveryMode',
+    )
+    gcs_uri: str = proto.Field(
+        proto.STRING,
+        number=2,
+    )
+    aspect_ratio: AspectRatio = proto.Field(
+        proto.ENUM,
+        number=3,
+        enum=AspectRatio,
+    )
+    duration: duration_pb2.Duration = proto.Field(
+        proto.MESSAGE,
+        number=4,
+        optional=True,
+        message=duration_pb2.Duration,
     )
 
 

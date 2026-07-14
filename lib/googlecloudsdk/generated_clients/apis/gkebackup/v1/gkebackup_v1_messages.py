@@ -127,7 +127,7 @@ class BDRBackupPlanJobLog(_messages.Message):
 
 class BDRBackupRestoreJobLog(_messages.Message):
   r"""Log entry for Backup and Restore Job for resources using BackupPlan
-  based protection. Next Id: 25
+  based protection. Next Id: 26
 
   Fields:
     backupConsistencyTime: Backup consistency time.
@@ -160,6 +160,7 @@ class BDRBackupRestoreJobLog(_messages.Message):
     sourceResourceLocation: Source resource location.
     sourceResourceName: Full resource name of the protected resource.
     startTime: Start time of the job.
+    storageTier: The storage tier associated with the backup.
     targetResourceType: The target resource type for restore jobs.
   """
 
@@ -186,7 +187,8 @@ class BDRBackupRestoreJobLog(_messages.Message):
   sourceResourceLocation = _messages.StringField(21)
   sourceResourceName = _messages.StringField(22)
   startTime = _messages.StringField(23)
-  targetResourceType = _messages.StringField(24)
+  storageTier = _messages.StringField(24)
+  targetResourceType = _messages.StringField(25)
 
 
 class Backup(_messages.Message):

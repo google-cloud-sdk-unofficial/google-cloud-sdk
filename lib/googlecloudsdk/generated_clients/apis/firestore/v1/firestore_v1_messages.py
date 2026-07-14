@@ -128,6 +128,7 @@ class BatchGetDocumentsRequest(_messages.Message):
       microsecond precision timestamp within the past one hour, or if Point-
       in-Time Recovery is enabled, can additionally be a whole minute
       timestamp within the past 7 days.
+    requestOptions: Optional. The request options for this request.
     transaction: Reads documents in a transaction.
   """
 
@@ -135,7 +136,8 @@ class BatchGetDocumentsRequest(_messages.Message):
   mask = _messages.MessageField('DocumentMask', 2)
   newTransaction = _messages.MessageField('TransactionOptions', 3)
   readTime = _messages.StringField(4)
-  transaction = _messages.BytesField(5)
+  requestOptions = _messages.MessageField('RequestOptions', 5)
+  transaction = _messages.BytesField(6)
 
 
 class BatchGetDocumentsResponse(_messages.Message):
@@ -168,6 +170,7 @@ class BatchWriteRequest(_messages.Message):
 
   Fields:
     labels: Labels associated with this batch write.
+    requestOptions: Optional. The request options for this request.
     writes: The writes to apply. Method does not apply writes atomically and
       does not guarantee ordering. Each write succeeds or fails independently.
       You cannot write to the same document more than once per request.
@@ -198,7 +201,8 @@ class BatchWriteRequest(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   labels = _messages.MessageField('LabelsValue', 1)
-  writes = _messages.MessageField('Write', 2, repeated=True)
+  requestOptions = _messages.MessageField('RequestOptions', 2)
+  writes = _messages.MessageField('Write', 3, repeated=True)
 
 
 class BatchWriteResponse(_messages.Message):
@@ -221,9 +225,11 @@ class BeginTransactionRequest(_messages.Message):
   Fields:
     options: The options for the transaction. Defaults to a read-write
       transaction.
+    requestOptions: Optional. The request options for this request.
   """
 
   options = _messages.MessageField('TransactionOptions', 1)
+  requestOptions = _messages.MessageField('RequestOptions', 2)
 
 
 class BeginTransactionResponse(_messages.Message):
@@ -299,13 +305,15 @@ class CommitRequest(_messages.Message):
   r"""The request for Firestore.Commit.
 
   Fields:
+    requestOptions: Optional. The request options for this request.
     transaction: If set, applies all writes in this transaction, and commits
       it.
     writes: The writes to apply. Always executed atomically and in order.
   """
 
-  transaction = _messages.BytesField(1)
-  writes = _messages.MessageField('Write', 2, repeated=True)
+  requestOptions = _messages.MessageField('RequestOptions', 1)
+  transaction = _messages.BytesField(2)
+  writes = _messages.MessageField('Write', 3, repeated=True)
 
 
 class CommitResponse(_messages.Message):
@@ -601,6 +609,7 @@ class ExecutePipelineRequest(_messages.Message):
       time. This must be a microsecond precision timestamp within the past one
       hour, or if Point-in-Time Recovery is enabled, can additionally be a
       whole minute timestamp within the past 7 days.
+    requestOptions: Optional. The request options for this request.
     structuredPipeline: A pipelined operation.
     transaction: Run the query within an already active transaction. The value
       here is the opaque transaction ID to execute the query in.
@@ -609,8 +618,9 @@ class ExecutePipelineRequest(_messages.Message):
   autoCommitTransaction = _messages.BooleanField(1)
   newTransaction = _messages.MessageField('TransactionOptions', 2)
   readTime = _messages.StringField(3)
-  structuredPipeline = _messages.MessageField('StructuredPipeline', 4)
-  transaction = _messages.BytesField(5)
+  requestOptions = _messages.MessageField('RequestOptions', 4)
+  structuredPipeline = _messages.MessageField('StructuredPipeline', 5)
+  transaction = _messages.BytesField(6)
 
 
 class ExecutePipelineResponse(_messages.Message):
@@ -1360,6 +1370,7 @@ class FirestoreProjectsDatabasesDocumentsCreateDocumentRequest(_messages.Message
     parent: Required. The parent resource. For example:
       `projects/{project_id}/databases/{database_id}/documents` or `projects/{
       project_id}/databases/{database_id}/documents/chatrooms/{chatroom_id}`
+    requestOptions_requestTags: Optional. The request tags for the request.
   """
 
   collectionId = _messages.StringField(1, required=True)
@@ -1367,6 +1378,7 @@ class FirestoreProjectsDatabasesDocumentsCreateDocumentRequest(_messages.Message
   documentId = _messages.StringField(3)
   mask_fieldPaths = _messages.StringField(4, repeated=True)
   parent = _messages.StringField(5, required=True)
+  requestOptions_requestTags = _messages.StringField(6, repeated=True)
 
 
 class FirestoreProjectsDatabasesDocumentsDeleteRequest(_messages.Message):
@@ -1381,11 +1393,13 @@ class FirestoreProjectsDatabasesDocumentsDeleteRequest(_messages.Message):
     name: Required. The resource name of the Document to delete. In the
       format: `projects/{project_id}/databases/{database_id}/documents/{docume
       nt_path}`.
+    requestOptions_requestTags: Optional. The request tags for the request.
   """
 
   currentDocument_exists = _messages.BooleanField(1)
   currentDocument_updateTime = _messages.StringField(2)
   name = _messages.StringField(3, required=True)
+  requestOptions_requestTags = _messages.StringField(4, repeated=True)
 
 
 class FirestoreProjectsDatabasesDocumentsExecutePipelineRequest(_messages.Message):
@@ -1415,13 +1429,15 @@ class FirestoreProjectsDatabasesDocumentsGetRequest(_messages.Message):
       be a microsecond precision timestamp within the past one hour, or if
       Point-in-Time Recovery is enabled, can additionally be a whole minute
       timestamp within the past 7 days.
+    requestOptions_requestTags: Optional. The request tags for the request.
     transaction: Reads the document in a transaction.
   """
 
   mask_fieldPaths = _messages.StringField(1, repeated=True)
   name = _messages.StringField(2, required=True)
   readTime = _messages.StringField(3)
-  transaction = _messages.BytesField(4)
+  requestOptions_requestTags = _messages.StringField(4, repeated=True)
+  transaction = _messages.BytesField(5)
 
 
 class FirestoreProjectsDatabasesDocumentsListCollectionIdsRequest(_messages.Message):
@@ -1473,6 +1489,13 @@ class FirestoreProjectsDatabasesDocumentsListDocumentsRequest(_messages.Message)
       microsecond precision timestamp within the past one hour, or if Point-
       in-Time Recovery is enabled, can additionally be a whole minute
       timestamp within the past 7 days.
+    recursive: Optional. If the list should recursively include all documents
+      nested under the parent at any level. If the request specifies a
+      `collection_id`, then the list will include all nested documents in the
+      collection under the parent. This is optional, and when not provided,
+      Firestore will only list documents nested immediately under the parent.
+      Requests with `recursive` may not specify `show_missing`.
+    requestOptions_requestTags: Optional. The request tags for the request.
     showMissing: If the list should show missing documents. A document is
       missing if it does not exist, but there are sub-documents nested
       underneath it. When true, such missing documents will be returned with a
@@ -1488,8 +1511,10 @@ class FirestoreProjectsDatabasesDocumentsListDocumentsRequest(_messages.Message)
   pageToken = _messages.StringField(5)
   parent = _messages.StringField(6, required=True)
   readTime = _messages.StringField(7)
-  showMissing = _messages.BooleanField(8)
-  transaction = _messages.BytesField(9)
+  recursive = _messages.BooleanField(8)
+  requestOptions_requestTags = _messages.StringField(9, repeated=True)
+  showMissing = _messages.BooleanField(10)
+  transaction = _messages.BytesField(11)
 
 
 class FirestoreProjectsDatabasesDocumentsListRequest(_messages.Message):
@@ -1523,6 +1548,13 @@ class FirestoreProjectsDatabasesDocumentsListRequest(_messages.Message):
       microsecond precision timestamp within the past one hour, or if Point-
       in-Time Recovery is enabled, can additionally be a whole minute
       timestamp within the past 7 days.
+    recursive: Optional. If the list should recursively include all documents
+      nested under the parent at any level. If the request specifies a
+      `collection_id`, then the list will include all nested documents in the
+      collection under the parent. This is optional, and when not provided,
+      Firestore will only list documents nested immediately under the parent.
+      Requests with `recursive` may not specify `show_missing`.
+    requestOptions_requestTags: Optional. The request tags for the request.
     showMissing: If the list should show missing documents. A document is
       missing if it does not exist, but there are sub-documents nested
       underneath it. When true, such missing documents will be returned with a
@@ -1538,8 +1570,10 @@ class FirestoreProjectsDatabasesDocumentsListRequest(_messages.Message):
   pageToken = _messages.StringField(5)
   parent = _messages.StringField(6, required=True)
   readTime = _messages.StringField(7)
-  showMissing = _messages.BooleanField(8)
-  transaction = _messages.BytesField(9)
+  recursive = _messages.BooleanField(8)
+  requestOptions_requestTags = _messages.StringField(9, repeated=True)
+  showMissing = _messages.BooleanField(10)
+  transaction = _messages.BytesField(11)
 
 
 class FirestoreProjectsDatabasesDocumentsListenRequest(_messages.Message):
@@ -1586,6 +1620,7 @@ class FirestoreProjectsDatabasesDocumentsPatchRequest(_messages.Message):
     name: The resource name of the document, for example
       `projects/{project_id}/databases/{database_id}/documents/{document_path}
       `.
+    requestOptions_requestTags: Optional. The request tags for the request.
     updateMask_fieldPaths: The list of field paths in the mask. See
       Document.fields for a field path syntax reference.
   """
@@ -1595,7 +1630,8 @@ class FirestoreProjectsDatabasesDocumentsPatchRequest(_messages.Message):
   document = _messages.MessageField('Document', 3)
   mask_fieldPaths = _messages.StringField(4, repeated=True)
   name = _messages.StringField(5, required=True)
-  updateMask_fieldPaths = _messages.StringField(6, repeated=True)
+  requestOptions_requestTags = _messages.StringField(6, repeated=True)
+  updateMask_fieldPaths = _messages.StringField(7, repeated=True)
 
 
 class FirestoreProjectsDatabasesDocumentsRollbackRequest(_messages.Message):
@@ -4040,11 +4076,13 @@ class ListCollectionIdsRequest(_messages.Message):
       microsecond precision timestamp within the past one hour, or if Point-
       in-Time Recovery is enabled, can additionally be a whole minute
       timestamp within the past 7 days.
+    requestOptions: Optional. The request options for this request.
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(2)
   readTime = _messages.StringField(3)
+  requestOptions = _messages.MessageField('RequestOptions', 4)
 
 
 class ListCollectionIdsResponse(_messages.Message):
@@ -4095,6 +4133,7 @@ class ListenRequest(_messages.Message):
     addTarget: A target to add to this stream.
     labels: Labels associated with this target change.
     removeTarget: The ID of a target to remove from this stream.
+    requestOptions: Optional. The request options for the request.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -4124,6 +4163,7 @@ class ListenRequest(_messages.Message):
   addTarget = _messages.MessageField('Target', 1)
   labels = _messages.MessageField('LabelsValue', 2)
   removeTarget = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  requestOptions = _messages.MessageField('RequestOptions', 4)
 
 
 class ListenResponse(_messages.Message):
@@ -4331,6 +4371,7 @@ class PartitionQueryRequest(_messages.Message):
       microsecond precision timestamp within the past one hour, or if Point-
       in-Time Recovery is enabled, can additionally be a whole minute
       timestamp within the past 7 days.
+    requestOptions: Optional. The request options for the request.
     structuredQuery: A structured query. Query must specify collection with
       all descendants and be ordered by name ascending. Other filters, order
       bys, limits, offsets, and start/end cursors are not supported.
@@ -4340,7 +4381,8 @@ class PartitionQueryRequest(_messages.Message):
   pageToken = _messages.StringField(2)
   partitionCount = _messages.IntegerField(3)
   readTime = _messages.StringField(4)
-  structuredQuery = _messages.MessageField('StructuredQuery', 5)
+  requestOptions = _messages.MessageField('RequestOptions', 5)
+  structuredQuery = _messages.MessageField('StructuredQuery', 6)
 
 
 class PartitionQueryResponse(_messages.Message):
@@ -4515,14 +4557,26 @@ class ReadWrite(_messages.Message):
   retryTransaction = _messages.BytesField(2)
 
 
+class RequestOptions(_messages.Message):
+  r"""Options for a server request.
+
+  Fields:
+    requestTags: Optional. The request tags for the request.
+  """
+
+  requestTags = _messages.StringField(1, repeated=True)
+
+
 class RollbackRequest(_messages.Message):
   r"""The request for Firestore.Rollback.
 
   Fields:
+    requestOptions: Optional. The request options for this request.
     transaction: Required. The transaction to roll back.
   """
 
-  transaction = _messages.BytesField(1)
+  requestOptions = _messages.MessageField('RequestOptions', 1)
+  transaction = _messages.BytesField(2)
 
 
 class RunAggregationQueryRequest(_messages.Message):
@@ -4539,6 +4593,7 @@ class RunAggregationQueryRequest(_messages.Message):
       microsecond precision timestamp within the past one hour, or if Point-
       in-Time Recovery is enabled, can additionally be a whole minute
       timestamp within the past 7 days.
+    requestOptions: Optional. The request options for the request.
     structuredAggregationQuery: An aggregation query.
     transaction: Run the aggregation within an already active transaction. The
       value here is the opaque transaction ID to execute the query in.
@@ -4547,8 +4602,9 @@ class RunAggregationQueryRequest(_messages.Message):
   explainOptions = _messages.MessageField('ExplainOptions', 1)
   newTransaction = _messages.MessageField('TransactionOptions', 2)
   readTime = _messages.StringField(3)
-  structuredAggregationQuery = _messages.MessageField('StructuredAggregationQuery', 4)
-  transaction = _messages.BytesField(5)
+  requestOptions = _messages.MessageField('RequestOptions', 4)
+  structuredAggregationQuery = _messages.MessageField('StructuredAggregationQuery', 5)
+  transaction = _messages.BytesField(6)
 
 
 class RunAggregationQueryResponse(_messages.Message):
@@ -4591,6 +4647,7 @@ class RunQueryRequest(_messages.Message):
       microsecond precision timestamp within the past one hour, or if Point-
       in-Time Recovery is enabled, can additionally be a whole minute
       timestamp within the past 7 days.
+    requestOptions: Optional. The request options for this request.
     structuredQuery: A structured query.
     transaction: Run the query within an already active transaction. The value
       here is the opaque transaction ID to execute the query in.
@@ -4599,8 +4656,9 @@ class RunQueryRequest(_messages.Message):
   explainOptions = _messages.MessageField('ExplainOptions', 1)
   newTransaction = _messages.MessageField('TransactionOptions', 2)
   readTime = _messages.StringField(3)
-  structuredQuery = _messages.MessageField('StructuredQuery', 4)
-  transaction = _messages.BytesField(5)
+  requestOptions = _messages.MessageField('RequestOptions', 4)
+  structuredQuery = _messages.MessageField('StructuredQuery', 5)
+  transaction = _messages.BytesField(6)
 
 
 class RunQueryResponse(_messages.Message):
@@ -5206,6 +5264,7 @@ class WriteRequest(_messages.Message):
 
   Fields:
     labels: Labels associated with this write request.
+    requestOptions: Optional. The request options for the request.
     streamId: The ID of the write stream to resume. This may only be set in
       the first message. When left empty, a new write stream will be created.
     streamToken: A stream token that was previously sent by the server. The
@@ -5247,9 +5306,10 @@ class WriteRequest(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   labels = _messages.MessageField('LabelsValue', 1)
-  streamId = _messages.StringField(2)
-  streamToken = _messages.BytesField(3)
-  writes = _messages.MessageField('Write', 4, repeated=True)
+  requestOptions = _messages.MessageField('RequestOptions', 2)
+  streamId = _messages.StringField(3)
+  streamToken = _messages.BytesField(4)
+  writes = _messages.MessageField('Write', 5, repeated=True)
 
 
 class WriteResponse(_messages.Message):
@@ -5299,20 +5359,32 @@ encoding.AddCustomJsonEnumMapping(
 encoding.AddCustomJsonFieldMapping(
     FirestoreProjectsDatabasesDocumentsCreateDocumentRequest, 'mask_fieldPaths', 'mask.fieldPaths')
 encoding.AddCustomJsonFieldMapping(
+    FirestoreProjectsDatabasesDocumentsCreateDocumentRequest, 'requestOptions_requestTags', 'requestOptions.requestTags')
+encoding.AddCustomJsonFieldMapping(
     FirestoreProjectsDatabasesDocumentsDeleteRequest, 'currentDocument_exists', 'currentDocument.exists')
 encoding.AddCustomJsonFieldMapping(
     FirestoreProjectsDatabasesDocumentsDeleteRequest, 'currentDocument_updateTime', 'currentDocument.updateTime')
 encoding.AddCustomJsonFieldMapping(
+    FirestoreProjectsDatabasesDocumentsDeleteRequest, 'requestOptions_requestTags', 'requestOptions.requestTags')
+encoding.AddCustomJsonFieldMapping(
     FirestoreProjectsDatabasesDocumentsGetRequest, 'mask_fieldPaths', 'mask.fieldPaths')
+encoding.AddCustomJsonFieldMapping(
+    FirestoreProjectsDatabasesDocumentsGetRequest, 'requestOptions_requestTags', 'requestOptions.requestTags')
 encoding.AddCustomJsonFieldMapping(
     FirestoreProjectsDatabasesDocumentsListRequest, 'mask_fieldPaths', 'mask.fieldPaths')
 encoding.AddCustomJsonFieldMapping(
+    FirestoreProjectsDatabasesDocumentsListRequest, 'requestOptions_requestTags', 'requestOptions.requestTags')
+encoding.AddCustomJsonFieldMapping(
     FirestoreProjectsDatabasesDocumentsListDocumentsRequest, 'mask_fieldPaths', 'mask.fieldPaths')
+encoding.AddCustomJsonFieldMapping(
+    FirestoreProjectsDatabasesDocumentsListDocumentsRequest, 'requestOptions_requestTags', 'requestOptions.requestTags')
 encoding.AddCustomJsonFieldMapping(
     FirestoreProjectsDatabasesDocumentsPatchRequest, 'currentDocument_exists', 'currentDocument.exists')
 encoding.AddCustomJsonFieldMapping(
     FirestoreProjectsDatabasesDocumentsPatchRequest, 'currentDocument_updateTime', 'currentDocument.updateTime')
 encoding.AddCustomJsonFieldMapping(
     FirestoreProjectsDatabasesDocumentsPatchRequest, 'mask_fieldPaths', 'mask.fieldPaths')
+encoding.AddCustomJsonFieldMapping(
+    FirestoreProjectsDatabasesDocumentsPatchRequest, 'requestOptions_requestTags', 'requestOptions.requestTags')
 encoding.AddCustomJsonFieldMapping(
     FirestoreProjectsDatabasesDocumentsPatchRequest, 'updateMask_fieldPaths', 'updateMask.fieldPaths')

@@ -14,7 +14,6 @@
 # limitations under the License.
 """Executes a statement on a Cloud SQL instance."""
 
-
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
@@ -43,8 +42,9 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 @base.DefaultUniverseOnly
 class ExecuteSql(base.Command):
   """Executes a statement on a Cloud SQL instance."""
@@ -112,17 +112,22 @@ class ExecuteSql(base.Command):
     parser.add_argument(
         '--password-secret-version',
         required=False,
-        hidden=True,
         help=(
-            'The Secret Manager secret holding the password for the database'
-            ' user.'
+            'The resource name of the Secret Manager secret holding the'
+            ' password for the database user. The secret should be created'
+            ' using the regional endpoint and stored in the same region as'
+            ' the Cloud SQL instance. The expected resource name format is'
+            ' <code>projects/{project}/locations/{location}/secrets/{secret}/versions/{secret_version}</code>.'
+            ' Used together with <code>--user</code>.'
         ),
     )
     parser.add_argument(
         '--user',
         required=False,
-        hidden=True,
-        help='The database user to authenticate as.',
+        help=(
+            'The database user to authenticate as. Used together with'
+            ' <code>--password-secret-version</code>.'
+        ),
     )
 
   def Run(self, args):

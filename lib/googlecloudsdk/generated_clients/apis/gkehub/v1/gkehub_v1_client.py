@@ -1180,6 +1180,60 @@ class GkehubV1(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+    def Create(self, request, global_params=None):
+      r"""Creates a new rollout sequence resource.
+
+      Args:
+        request: (GkehubProjectsLocationsRolloutSequencesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/rolloutSequences',
+        http_method='POST',
+        method_id='gkehub.projects.locations.rolloutSequences.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['rolloutSequenceId'],
+        relative_path='v1/{+parent}/rolloutSequences',
+        request_field='rolloutSequence',
+        request_type_name='GkehubProjectsLocationsRolloutSequencesCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Removes a RolloutSequence.
+
+      Args:
+        request: (GkehubProjectsLocationsRolloutSequencesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/rolloutSequences/{rolloutSequencesId}',
+        http_method='DELETE',
+        method_id='gkehub.projects.locations.rolloutSequences.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='GkehubProjectsLocationsRolloutSequencesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Retrieve a single rollout sequence.
 
@@ -1207,6 +1261,87 @@ class GkehubV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def List(self, request, global_params=None):
+      r"""Retrieves the list of all rollout sequences.
+
+      Args:
+        request: (GkehubProjectsLocationsRolloutSequencesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListRolloutSequencesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/rolloutSequences',
+        http_method='GET',
+        method_id='gkehub.projects.locations.rolloutSequences.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/rolloutSequences',
+        request_field='',
+        request_type_name='GkehubProjectsLocationsRolloutSequencesListRequest',
+        response_type_name='ListRolloutSequencesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates a rollout sequence.
+
+      Args:
+        request: (GkehubProjectsLocationsRolloutSequencesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/rolloutSequences/{rolloutSequencesId}',
+        http_method='PATCH',
+        method_id='gkehub.projects.locations.rolloutSequences.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1/{+name}',
+        request_field='rolloutSequence',
+        request_type_name='GkehubProjectsLocationsRolloutSequencesPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Upgrade(self, request, global_params=None):
+      r"""Upgrades a rollout sequence.
+
+      Args:
+        request: (GkehubProjectsLocationsRolloutSequencesUpgradeRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Upgrade')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Upgrade.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/rolloutSequences/{rolloutSequencesId}:upgrade',
+        http_method='POST',
+        method_id='gkehub.projects.locations.rolloutSequences.upgrade',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:upgrade',
+        request_field='upgradeRolloutSequenceRequest',
+        request_type_name='GkehubProjectsLocationsRolloutSequencesUpgradeRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class ProjectsLocationsRolloutsService(base_api.BaseApiService):
     """Service class for the projects_locations_rollouts resource."""
 
@@ -1216,6 +1351,87 @@ class GkehubV1(base_api.BaseApiClient):
       super(GkehubV1.ProjectsLocationsRolloutsService, self).__init__(client)
       self._upload_configs = {
           }
+
+    def Cancel(self, request, global_params=None):
+      r"""Cancels a Rollout. The rollout will not be started on new clusters, however the rollout running on the cluster will be allowed to finish.
+
+      Args:
+        request: (GkehubProjectsLocationsRolloutsCancelRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Cancel')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Cancel.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/rollouts/{rolloutsId}:cancel',
+        http_method='POST',
+        method_id='gkehub.projects.locations.rollouts.cancel',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:cancel',
+        request_field='cancelRolloutRequest',
+        request_type_name='GkehubProjectsLocationsRolloutsCancelRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Removes a Rollout.
+
+      Args:
+        request: (GkehubProjectsLocationsRolloutsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/rollouts/{rolloutsId}',
+        http_method='DELETE',
+        method_id='gkehub.projects.locations.rollouts.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='GkehubProjectsLocationsRolloutsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def ForceCompleteStage(self, request, global_params=None):
+      r"""Force-completes a rollout stage. Only the active stage of an active rollout can be force-completed.
+
+      Args:
+        request: (GkehubProjectsLocationsRolloutsForceCompleteStageRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('ForceCompleteStage')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ForceCompleteStage.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/rollouts/{rolloutsId}:forceCompleteStage',
+        http_method='POST',
+        method_id='gkehub.projects.locations.rollouts.forceCompleteStage',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:forceCompleteStage',
+        request_field='forceCompleteRolloutStageRequest',
+        request_type_name='GkehubProjectsLocationsRolloutsForceCompleteStageRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
 
     def Get(self, request, global_params=None):
       r"""Retrieves a single rollout.
@@ -1241,6 +1457,87 @@ class GkehubV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='GkehubProjectsLocationsRolloutsGetRequest',
         response_type_name='Rollout',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Retrieves the list of all rollouts.
+
+      Args:
+        request: (GkehubProjectsLocationsRolloutsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListRolloutsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/rollouts',
+        http_method='GET',
+        method_id='gkehub.projects.locations.rollouts.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/rollouts',
+        request_field='',
+        request_type_name='GkehubProjectsLocationsRolloutsListRequest',
+        response_type_name='ListRolloutsResponse',
+        supports_download=False,
+    )
+
+    def Pause(self, request, global_params=None):
+      r"""Pauses a running Rollout. The rollout will not be started on new clusters, however the rollout running on the cluster will be allowed to finish.
+
+      Args:
+        request: (GkehubProjectsLocationsRolloutsPauseRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Pause')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Pause.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/rollouts/{rolloutsId}:pause',
+        http_method='POST',
+        method_id='gkehub.projects.locations.rollouts.pause',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:pause',
+        request_field='pauseRolloutRequest',
+        request_type_name='GkehubProjectsLocationsRolloutsPauseRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Resume(self, request, global_params=None):
+      r"""Resume a paused Rollout. The rollout will be resumed and allowed to be started on clusters.
+
+      Args:
+        request: (GkehubProjectsLocationsRolloutsResumeRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Resume')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Resume.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/rollouts/{rolloutsId}:resume',
+        http_method='POST',
+        method_id='gkehub.projects.locations.rollouts.resume',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:resume',
+        request_field='resumeRolloutRequest',
+        request_type_name='GkehubProjectsLocationsRolloutsResumeRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

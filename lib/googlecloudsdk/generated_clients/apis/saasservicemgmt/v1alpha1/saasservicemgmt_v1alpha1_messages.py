@@ -293,6 +293,35 @@ class Flag(_messages.Message):
   variants = _messages.MessageField('FlagVariant', 13, repeated=True)
 
 
+class FlagAllocation(_messages.Message):
+  r"""Defines a target for a dynamic allocation rollout.
+
+  Fields:
+    dynamicAllocationName: Required. The dynamic allocation being targeted
+      within that flag's EvaluationSpec.
+    finalVariant: Optional. The name of the target variant of the launch - the
+      one that should be at 100%.
+    flagName: Required. The flag resource containing the allocation.
+    initialVariant: Optional. The name of the "starting" variant during the
+      launch - the one at 0%.
+  """
+
+  dynamicAllocationName = _messages.StringField(1)
+  finalVariant = _messages.StringField(2)
+  flagName = _messages.StringField(3)
+  initialVariant = _messages.StringField(4)
+
+
+class FlagAllocationList(_messages.Message):
+  r"""Wrapper for a list of flag allocations.
+
+  Fields:
+    allocations: Required. FlagAllocations to be rolled out.
+  """
+
+  allocations = _messages.MessageField('FlagAllocation', 1, repeated=True)
+
+
 class FlagRelease(_messages.Message):
   r"""A collection of FlagRevisions.
 
@@ -315,6 +344,8 @@ class FlagRelease(_messages.Message):
     etag: Output only. An opaque value that uniquely identifies a version or
       generation of a resource. It can be used to confirm that the client and
       server agree on the ordering of a resource being written.
+    flagAllocationsRelease: Optional. Immutable. Specifies the release targets
+      dynamic allocations.
     flagRevisions: Optional. Immutable. FlagRevisions to be rolled out. This
       is the ultimate source of truth of what a Rollout or a UnitOperation
       carries.
@@ -393,13 +424,14 @@ class FlagRelease(_messages.Message):
   annotations = _messages.MessageField('AnnotationsValue', 1)
   createTime = _messages.StringField(2)
   etag = _messages.StringField(3)
-  flagRevisions = _messages.StringField(4, repeated=True)
-  labels = _messages.MessageField('LabelsValue', 5)
-  name = _messages.StringField(6)
-  obsoleteFlags = _messages.StringField(7, repeated=True)
-  uid = _messages.StringField(8)
-  unitKind = _messages.StringField(9)
-  updateTime = _messages.StringField(10)
+  flagAllocationsRelease = _messages.MessageField('FlagAllocationList', 4)
+  flagRevisions = _messages.StringField(5, repeated=True)
+  labels = _messages.MessageField('LabelsValue', 6)
+  name = _messages.StringField(7)
+  obsoleteFlags = _messages.StringField(8, repeated=True)
+  uid = _messages.StringField(9)
+  unitKind = _messages.StringField(10)
+  updateTime = _messages.StringField(11)
 
 
 class FlagRevision(_messages.Message):

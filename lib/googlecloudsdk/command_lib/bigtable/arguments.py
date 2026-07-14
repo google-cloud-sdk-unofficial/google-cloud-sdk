@@ -731,7 +731,6 @@ class ArgAdder(object):
         required=required,
         type=arg_parsers.ArgDict(),
         action=arg_parsers.UpdateAction,
-        hidden=True,  # TODO(b/745685146): Unhide
     )
     return self
 

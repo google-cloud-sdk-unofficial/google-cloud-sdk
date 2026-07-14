@@ -1747,6 +1747,22 @@ class ListStoragePoolsResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListVolumePerformanceGroupsResponse(_messages.Message):
+  r"""ListVolumePerformanceGroupsResponse is the response to a
+  ListVolumePerformanceGroupsRequest.
+
+  Fields:
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    unreachable: Unordered list. Locations that could not be reached.
+    volumePerformanceGroups: The list of volume performance groups.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  unreachable = _messages.StringField(2, repeated=True)
+  volumePerformanceGroups = _messages.MessageField('VolumePerformanceGroup', 3, repeated=True)
+
+
 class ListVolumesResponse(_messages.Message):
   r"""Message for response to listing Volumes
 
@@ -1846,10 +1862,14 @@ class LocationMetadata(_messages.Message):
   r"""Metadata for a given google.cloud.location.Location.
 
   Enums:
+    FlexPerformanceTierValueValuesEnum: Output only. Indicates the flex
+      performance tier of this location.
     SupportedFlexPerformanceValueListEntryValuesEnum:
     SupportedServiceLevelsValueListEntryValuesEnum:
 
   Fields:
+    flexPerformanceTier: Output only. Indicates the flex performance tier of
+      this location.
     hasOntapProxy: Output only. Indicates if the location has ONTAP Proxy
       support.
     hasVcp: Output only. Indicates if the location has VCP support.
@@ -1858,6 +1878,16 @@ class LocationMetadata(_messages.Message):
     supportedServiceLevels: Output only. Supported service levels in a
       location.
   """
+
+  class FlexPerformanceTierValueValuesEnum(_messages.Enum):
+    r"""Output only. Indicates the flex performance tier of this location.
+
+    Values:
+      FLEX_PERFORMANCE_TIER_UNSPECIFIED: Unspecified flex performance tier.
+      LIMITED: Flex performance tier is limited.
+    """
+    FLEX_PERFORMANCE_TIER_UNSPECIFIED = 0
+    LIMITED = 1
 
   class SupportedFlexPerformanceValueListEntryValuesEnum(_messages.Enum):
     r"""SupportedFlexPerformanceValueListEntryValuesEnum enum type.
@@ -1887,10 +1917,11 @@ class LocationMetadata(_messages.Message):
     STANDARD = 3
     FLEX = 4
 
-  hasOntapProxy = _messages.BooleanField(1)
-  hasVcp = _messages.BooleanField(2)
-  supportedFlexPerformance = _messages.EnumField('SupportedFlexPerformanceValueListEntryValuesEnum', 3, repeated=True)
-  supportedServiceLevels = _messages.EnumField('SupportedServiceLevelsValueListEntryValuesEnum', 4, repeated=True)
+  flexPerformanceTier = _messages.EnumField('FlexPerformanceTierValueValuesEnum', 1)
+  hasOntapProxy = _messages.BooleanField(2)
+  hasVcp = _messages.BooleanField(3)
+  supportedFlexPerformance = _messages.EnumField('SupportedFlexPerformanceValueListEntryValuesEnum', 4, repeated=True)
+  supportedServiceLevels = _messages.EnumField('SupportedServiceLevelsValueListEntryValuesEnum', 5, repeated=True)
 
 
 class MonthlySchedule(_messages.Message):
@@ -2777,6 +2808,92 @@ class NetappProjectsLocationsStoragePoolsValidateDirectoryServiceRequest(_messag
 
   name = _messages.StringField(1, required=True)
   validateDirectoryServiceRequest = _messages.MessageField('ValidateDirectoryServiceRequest', 2)
+
+
+class NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsCreateRequest(_messages.Message):
+  r"""A
+  NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsCreateRequest
+  object.
+
+  Fields:
+    parent: Required. Value for parent.
+    volumePerformanceGroup: A VolumePerformanceGroup resource to be passed as
+      the request body.
+    volumePerformanceGroupId: Required. The ID to use for the volume
+      performance group, which will become the final component of the volume
+      performance group's resource name.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  volumePerformanceGroup = _messages.MessageField('VolumePerformanceGroup', 2)
+  volumePerformanceGroupId = _messages.StringField(3)
+
+
+class NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsDeleteRequest(_messages.Message):
+  r"""A
+  NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsDeleteRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the volume performance group. Format:
+      projects/{project}/locations/{location}/storagePools/{storage_pool}/volu
+      mePerformanceGroups/{volume_performance_group}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsGetRequest(_messages.Message):
+  r"""A NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsGetRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the volume performance group. Format:
+      projects/{project}/locations/{location}/storagePools/{storage_pool}/volu
+      mePerformanceGroups/{volume_performance_group}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsListRequest(_messages.Message):
+  r"""A NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsListRequest
+  object.
+
+  Fields:
+    filter: Optional. Filter to apply to the request. Supported fields for
+      filtering: - `name` - `throughput_mibps` - `allocation_type` For
+      example: `allocation_type = "SHARED" AND throughput_mibps > 100`
+    orderBy: Optional. Hint for how to order the results
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, the server will pick an appropriate
+      default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Parent value for ListVolumePerformanceGroupsRequest
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsPatchRequest(_messages.Message):
+  r"""A NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsPatchRequest
+  object.
+
+  Fields:
+    name: Identifier. The resource name of the volume performance group.
+    updateMask: Optional. The list of fields to update.
+    volumePerformanceGroup: A VolumePerformanceGroup resource to be passed as
+      the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  updateMask = _messages.StringField(2)
+  volumePerformanceGroup = _messages.MessageField('VolumePerformanceGroup', 3)
 
 
 class NetappProjectsLocationsTrialEndRequest(_messages.Message):
@@ -4984,6 +5101,40 @@ class VolumeBackupConfig(_messages.Message):
 
   backupConfig = _messages.MessageField('BackupConfig', 1)
   volumeUuid = _messages.StringField(2)
+
+
+class VolumePerformanceGroup(_messages.Message):
+  r"""A Volume Performance Group resource under a Storage Pool.
+
+  Enums:
+    AllocationTypeValueValuesEnum: Required. Allocation type of the volume
+      performance group.
+
+  Fields:
+    allocationType: Required. Allocation type of the volume performance group.
+    iops: Required. IOPS limit for the group. Minimum value is 1.
+    name: Identifier. The resource name of the volume performance group.
+    throughputMibPerSecond: Required. Throughput in MiB/s. Minimum value is 1.
+  """
+
+  class AllocationTypeValueValuesEnum(_messages.Enum):
+    r"""Required. Allocation type of the volume performance group.
+
+    Values:
+      ALLOCATION_TYPE_UNSPECIFIED: Unspecified allocation type.
+      SHARED: The VPG's performance limits are shared collectively by all
+        volumes in the group.
+      PER_VOLUME: The VPG's performance limits are applied to each volume in
+        the group individually.
+    """
+    ALLOCATION_TYPE_UNSPECIFIED = 0
+    SHARED = 1
+    PER_VOLUME = 2
+
+  allocationType = _messages.EnumField('AllocationTypeValueValuesEnum', 1)
+  iops = _messages.IntegerField(2)
+  name = _messages.StringField(3)
+  throughputMibPerSecond = _messages.IntegerField(4)
 
 
 class WeeklySchedule(_messages.Message):

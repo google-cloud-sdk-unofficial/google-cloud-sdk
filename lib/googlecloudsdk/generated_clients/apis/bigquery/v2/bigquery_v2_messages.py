@@ -385,6 +385,88 @@ class ArimaSingleModelForecastingMetrics(_messages.Message):
   timeSeriesIds = _messages.StringField(9, repeated=True)
 
 
+class ArrowRecordBatch(_messages.Message):
+  r"""Arrow RecordBatch. This feature is not yet available.
+
+  Fields:
+    serializedRecordBatch: IPC-serialized Arrow RecordBatch.
+  """
+
+  serializedRecordBatch = _messages.BytesField(1)
+
+
+class ArrowSchema(_messages.Message):
+  r"""Arrow schema as specified in
+  https://arrow.apache.org/docs/python/api/datatypes.html and serialized to
+  bytes using IPC:
+  https://arrow.apache.org/docs/format/Columnar.html#serialization-and-
+  interprocess-communication-ipc See code samples on how this message can be
+  deserialized. This feature is not yet available.
+
+  Fields:
+    serializedSchema: IPC serialized Arrow schema.
+  """
+
+  serializedSchema = _messages.BytesField(1)
+
+
+class ArrowSerializationOptions(_messages.Message):
+  r"""Contains options specific to Arrow Serialization. This feature is not
+  yet available.
+
+  Enums:
+    BufferCompressionValueValuesEnum: The compression codec to use for Arrow
+      buffers in serialized record batches.
+    PicosTimestampPrecisionValueValuesEnum: Optional. Set timestamp precision
+      option. If not set, the default precision is microseconds.
+
+  Fields:
+    bufferCompression: The compression codec to use for Arrow buffers in
+      serialized record batches.
+    picosTimestampPrecision: Optional. Set timestamp precision option. If not
+      set, the default precision is microseconds.
+  """
+
+  class BufferCompressionValueValuesEnum(_messages.Enum):
+    r"""The compression codec to use for Arrow buffers in serialized record
+    batches.
+
+    Values:
+      COMPRESSION_UNSPECIFIED: If unspecified no compression will be used.
+      LZ4_FRAME: LZ4 Frame
+        (https://github.com/lz4/lz4/blob/dev/doc/lz4_Frame_format.md)
+      ZSTD: Zstandard compression.
+    """
+    COMPRESSION_UNSPECIFIED = 0
+    LZ4_FRAME = 1
+    ZSTD = 2
+
+  class PicosTimestampPrecisionValueValuesEnum(_messages.Enum):
+    r"""Optional. Set timestamp precision option. If not set, the default
+    precision is microseconds.
+
+    Values:
+      PICOS_TIMESTAMP_PRECISION_UNSPECIFIED: Unspecified timestamp precision.
+        The default precision is microseconds.
+      TIMESTAMP_PRECISION_MICROS: Timestamp values returned in the results
+        will be truncated to microsecond level precision. The value will be
+        encoded as Arrow TIMESTAMP type in a 64 bit integer.
+      TIMESTAMP_PRECISION_NANOS: Timestamp values returned in the results will
+        be truncated to nanosecond level precision. The value will be encoded
+        as Arrow TIMESTAMP type in a 64 bit integer.
+      TIMESTAMP_PRECISION_PICOS: Timestamp values returned in the results will
+        contain full precision picosecond value. The value will be encoded as
+        a string which conforms to ISO 8601 format.
+    """
+    PICOS_TIMESTAMP_PRECISION_UNSPECIFIED = 0
+    TIMESTAMP_PRECISION_MICROS = 1
+    TIMESTAMP_PRECISION_NANOS = 2
+    TIMESTAMP_PRECISION_PICOS = 3
+
+  bufferCompression = _messages.EnumField('BufferCompressionValueValuesEnum', 1)
+  picosTimestampPrecision = _messages.EnumField('PicosTimestampPrecisionValueValuesEnum', 2)
+
+
 class AuditConfig(_messages.Message):
   r"""Specifies the audit configuration for a service. The configuration
   determines which permission types are logged, and what identities, if any,
@@ -4021,7 +4103,7 @@ class GeneratedExpressionInfo(_messages.Message):
     asynchronous: Optional. Whether the column generation is done
       asynchronously.
     generationExpression: Optional. The generation expression (e.g.
-      AI.EMBED(...)) used to generated the field.
+      AI.EMBED(...)) used to generate the field.
     stored: Optional. Whether the generated column is stored in the table.
   """
 
@@ -7238,6 +7320,14 @@ class QueryRequest(_messages.Message):
     JobCreationModeValueValuesEnum: Optional. If not set, jobs are always
       required. If set, the query request will follow the behavior described
       JobCreationMode.
+    QueryResultsFormatValueValuesEnum: Optional. The query results format. If
+      the value is anything other than `STRUCT_ENCODING` or unspecified: * The
+      schema of the results will be provided in `QueryResponse.results_schema`
+      field. * The results of the first page will be provided in
+      `QueryResponse.results` field. * The `QueryResponse.rows` will not be
+      populated. * The `QueryResponse.schema` for `QueryResponse.rows` will
+      also not be populated since it is the schema of the
+      `QueryResponse.rows`. This feature is not yet available.
 
   Messages:
     LabelsValue: Optional. The labels associated with this query. Labels can
@@ -7248,6 +7338,8 @@ class QueryRequest(_messages.Message):
       must have a different key.
 
   Fields:
+    arrowSerializationOptions: Optional. Options specific to the Apache Arrow
+      output format.
     connectionProperties: Optional. Connection properties which can modify the
       query behavior.
     continuous: [Optional] Specifies whether the query should be executed as a
@@ -7310,6 +7402,14 @@ class QueryRequest(_messages.Message):
       legacy SQL syntax. Example: "SELECT COUNT(f1) FROM
       myProjectId.myDatasetId.myTableId".
     queryParameters: Query parameters for GoogleSQL queries.
+    queryResultsFormat: Optional. The query results format. If the value is
+      anything other than `STRUCT_ENCODING` or unspecified: * The schema of
+      the results will be provided in `QueryResponse.results_schema` field. *
+      The results of the first page will be provided in
+      `QueryResponse.results` field. * The `QueryResponse.rows` will not be
+      populated. * The `QueryResponse.schema` for `QueryResponse.rows` will
+      also not be populated since it is the schema of the
+      `QueryResponse.rows`. This feature is not yet available.
     requestId: Optional. A unique user provided identifier to ensure
       idempotent behavior for queries. Note that this is different from the
       job_id. It has the following properties: 1. It is case-sensitive,
@@ -7380,6 +7480,27 @@ class QueryRequest(_messages.Message):
     JOB_CREATION_REQUIRED = 1
     JOB_CREATION_OPTIONAL = 2
 
+  class QueryResultsFormatValueValuesEnum(_messages.Enum):
+    r"""Optional. The query results format. If the value is anything other
+    than `STRUCT_ENCODING` or unspecified: * The schema of the results will be
+    provided in `QueryResponse.results_schema` field. * The results of the
+    first page will be provided in `QueryResponse.results` field. * The
+    `QueryResponse.rows` will not be populated. * The `QueryResponse.schema`
+    for `QueryResponse.rows` will also not be populated since it is the schema
+    of the `QueryResponse.rows`. This feature is not yet available.
+
+    Values:
+      QUERY_RESULTS_FORMAT_UNSPECIFIED: If unspecified it will default to
+        struct `QueryResponse.rows` (`STRUCT_ENCODING`)
+      STRUCT_ENCODING: Default encoding of results as struct in
+        `QueryResponse.rows`
+      ARROW: Arrow is a standard open source column-based message format. See
+        https://arrow.apache.org/ for more details.
+    """
+    QUERY_RESULTS_FORMAT_UNSPECIFIED = 0
+    STRUCT_ENCODING = 1
+    ARROW = 2
+
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
     r"""Optional. The labels associated with this query. Labels can be used to
@@ -7409,37 +7530,42 @@ class QueryRequest(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  connectionProperties = _messages.MessageField('ConnectionProperty', 1, repeated=True)
-  continuous = _messages.BooleanField(2)
-  createSession = _messages.BooleanField(3)
-  defaultDataset = _messages.MessageField('DatasetReference', 4)
-  destinationEncryptionConfiguration = _messages.MessageField('EncryptionConfiguration', 5)
-  dryRun = _messages.BooleanField(6)
-  formatOptions = _messages.MessageField('DataFormatOptions', 7)
-  jobCreationMode = _messages.EnumField('JobCreationModeValueValuesEnum', 8)
-  jobTimeoutMs = _messages.IntegerField(9)
-  kind = _messages.StringField(10, default='bigquery#queryRequest')
-  labels = _messages.MessageField('LabelsValue', 11)
-  location = _messages.StringField(12)
-  maxResults = _messages.IntegerField(13, variant=_messages.Variant.UINT32)
-  maxSlots = _messages.IntegerField(14, variant=_messages.Variant.INT32)
-  maximumBytesBilled = _messages.IntegerField(15)
-  parameterMode = _messages.StringField(16)
-  preserveNulls = _messages.BooleanField(17)
-  query = _messages.StringField(18)
-  queryParameters = _messages.MessageField('QueryParameter', 19, repeated=True)
-  requestId = _messages.StringField(20)
-  reservation = _messages.StringField(21)
-  timeoutMs = _messages.IntegerField(22, variant=_messages.Variant.UINT32)
-  useLegacySql = _messages.BooleanField(23, default=True)
-  useQueryCache = _messages.BooleanField(24, default=True)
-  writeIncrementalResults = _messages.BooleanField(25)
+  arrowSerializationOptions = _messages.MessageField('ArrowSerializationOptions', 1)
+  connectionProperties = _messages.MessageField('ConnectionProperty', 2, repeated=True)
+  continuous = _messages.BooleanField(3)
+  createSession = _messages.BooleanField(4)
+  defaultDataset = _messages.MessageField('DatasetReference', 5)
+  destinationEncryptionConfiguration = _messages.MessageField('EncryptionConfiguration', 6)
+  dryRun = _messages.BooleanField(7)
+  formatOptions = _messages.MessageField('DataFormatOptions', 8)
+  jobCreationMode = _messages.EnumField('JobCreationModeValueValuesEnum', 9)
+  jobTimeoutMs = _messages.IntegerField(10)
+  kind = _messages.StringField(11, default='bigquery#queryRequest')
+  labels = _messages.MessageField('LabelsValue', 12)
+  location = _messages.StringField(13)
+  maxResults = _messages.IntegerField(14, variant=_messages.Variant.UINT32)
+  maxSlots = _messages.IntegerField(15, variant=_messages.Variant.INT32)
+  maximumBytesBilled = _messages.IntegerField(16)
+  parameterMode = _messages.StringField(17)
+  preserveNulls = _messages.BooleanField(18)
+  query = _messages.StringField(19)
+  queryParameters = _messages.MessageField('QueryParameter', 20, repeated=True)
+  queryResultsFormat = _messages.EnumField('QueryResultsFormatValueValuesEnum', 21)
+  requestId = _messages.StringField(22)
+  reservation = _messages.StringField(23)
+  timeoutMs = _messages.IntegerField(24, variant=_messages.Variant.UINT32)
+  useLegacySql = _messages.BooleanField(25, default=True)
+  useQueryCache = _messages.BooleanField(26, default=True)
+  writeIncrementalResults = _messages.BooleanField(27)
 
 
 class QueryResponse(_messages.Message):
   r"""A QueryResponse object.
 
   Fields:
+    arrowRecordBatch: Output only. Serialized row data in Arrow RecordBatch
+      format.
+    arrowSchema: Output only. Arrow schema
     cacheHit: Whether the query result was fetched from the query cache.
     creationTime: Output only. Creation time of this query, in milliseconds
       since the epoch. This field will be present on all queries.
@@ -7474,6 +7600,8 @@ class QueryResponse(_messages.Message):
       https://cloud.google.com/bigquery/docs/locations
     numDmlAffectedRows: Output only. The number of rows affected by a DML
       statement. Present only for DML statements INSERT, UPDATE or DELETE.
+    pageRowCount: Output only. The number of rows out of `total_rows` returned
+      in this response. This feature is not yet available.
     pageToken: A token used for paging results. A non-empty token indicates
       that additional results are available. To see additional results, query
       the [`jobs.getQueryResults`](https://cloud.google.com/bigquery/docs/refe
@@ -7505,27 +7633,30 @@ class QueryResponse(_messages.Message):
       for.
   """
 
-  cacheHit = _messages.BooleanField(1)
-  creationTime = _messages.IntegerField(2)
-  dmlStats = _messages.MessageField('DmlStatistics', 3)
-  endTime = _messages.IntegerField(4)
-  errors = _messages.MessageField('ErrorProto', 5, repeated=True)
-  jobComplete = _messages.BooleanField(6)
-  jobCreationReason = _messages.MessageField('JobCreationReason', 7)
-  jobReference = _messages.MessageField('JobReference', 8)
-  kind = _messages.StringField(9, default='bigquery#queryResponse')
-  location = _messages.StringField(10)
-  numDmlAffectedRows = _messages.IntegerField(11)
-  pageToken = _messages.StringField(12)
-  queryId = _messages.StringField(13)
-  rows = _messages.MessageField('TableRow', 14, repeated=True)
-  schema = _messages.MessageField('TableSchema', 15)
-  sessionInfo = _messages.MessageField('SessionInfo', 16)
-  startTime = _messages.IntegerField(17)
-  totalBytesBilled = _messages.IntegerField(18)
-  totalBytesProcessed = _messages.IntegerField(19)
-  totalRows = _messages.IntegerField(20, variant=_messages.Variant.UINT64)
-  totalSlotMs = _messages.IntegerField(21)
+  arrowRecordBatch = _messages.MessageField('ArrowRecordBatch', 1)
+  arrowSchema = _messages.MessageField('ArrowSchema', 2)
+  cacheHit = _messages.BooleanField(3)
+  creationTime = _messages.IntegerField(4)
+  dmlStats = _messages.MessageField('DmlStatistics', 5)
+  endTime = _messages.IntegerField(6)
+  errors = _messages.MessageField('ErrorProto', 7, repeated=True)
+  jobComplete = _messages.BooleanField(8)
+  jobCreationReason = _messages.MessageField('JobCreationReason', 9)
+  jobReference = _messages.MessageField('JobReference', 10)
+  kind = _messages.StringField(11, default='bigquery#queryResponse')
+  location = _messages.StringField(12)
+  numDmlAffectedRows = _messages.IntegerField(13)
+  pageRowCount = _messages.IntegerField(14)
+  pageToken = _messages.StringField(15)
+  queryId = _messages.StringField(16)
+  rows = _messages.MessageField('TableRow', 17, repeated=True)
+  schema = _messages.MessageField('TableSchema', 18)
+  sessionInfo = _messages.MessageField('SessionInfo', 19)
+  startTime = _messages.IntegerField(20)
+  totalBytesBilled = _messages.IntegerField(21)
+  totalBytesProcessed = _messages.IntegerField(22)
+  totalRows = _messages.IntegerField(23, variant=_messages.Variant.UINT64)
+  totalSlotMs = _messages.IntegerField(24)
 
 
 class QueryTimelineSample(_messages.Message):

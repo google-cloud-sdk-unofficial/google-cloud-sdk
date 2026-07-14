@@ -176,8 +176,9 @@ class BidiRedirectedTokenErrorHandler:
     self._source_resource = source_resource
     self._destination_resource = destination_resource
     if (
-        destination_resource is not None and
-        hasattr(destination_resource, 'storage_url')
+        destination_resource is not None
+        and isinstance(destination_resource, resource_reference.Resource)
+        and hasattr(destination_resource, 'storage_url')
         and destination_resource.storage_url.bucket_name
     ):
       self._cloud_resource = destination_resource

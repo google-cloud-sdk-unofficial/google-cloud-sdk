@@ -1,0 +1,49 @@
+- release_tracks: [ALPHA, BETA, GA, PREVIEW]
+  help_text:
+    brief: Set the QUIC override policy for a Compute Engine target HTTPS proxy.
+    description: |
+      Sets the QUIC override policy for the given target HTTPS proxy.
+    examples: |
+      To set the QUIC override policy to ENABLE for `my-target-https-proxy`, run:
+
+        $ {command} my-target-https-proxy --quic-override=ENABLE
+
+  request:
+    collection: compute.targetHttpsProxies
+    api_version: v1
+    method: setQuicOverride
+    use_relative_name: false
+    BETA:
+      api_version: beta
+    ALPHA:
+      api_version: alpha
+
+  async:
+    collection: compute.globalOperations
+    response_name_field: selfLink
+    state:
+      field: status
+      success_values: ['DONE']
+
+  command_type: GENERIC
+
+  arguments:
+    resource:
+      help_text: The target HTTPS proxy to set the QUIC override for.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:target_https_proxy
+    params:
+    - arg_name: quic-override
+      api_field: targetHttpsProxiesSetQuicOverrideRequest.quicOverride
+      required: true
+      help_text: |-
+        QUIC policy for the TargetHttpsProxy resource.
+      choices:
+      - arg_value: NONE
+        enum_value: NONE
+        help_text: No overrides to the default QUIC policy.
+      - arg_value: ENABLE
+        enum_value: ENABLE
+        help_text: The load balancer will attempt to negotiate QUIC with clients.
+      - arg_value: DISABLE
+        enum_value: DISABLE
+        help_text: The load balancer will not attempt to negotiate QUIC with clients.

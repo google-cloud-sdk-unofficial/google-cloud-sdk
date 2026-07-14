@@ -49,8 +49,8 @@ class Delete(base.Command):
       ),
   }
 
-  @staticmethod
-  def CommonArgs(parser):
+  @classmethod
+  def CommonArgs(cls, parser):
     service_presentation = presentation_specs.ResourcePresentationSpec(
         'SERVICE',
         resource_args.GetServiceResourceSpec(),
@@ -60,10 +60,12 @@ class Delete(base.Command):
     )
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
     flags.AddAsyncFlag(parser, default_async_for_cluster=True)
+    if cls.ReleaseTrack() != base.ReleaseTrack.GA:
+      flags.AddDryRunFlag(parser)
 
-  @staticmethod
-  def Args(parser):
-    Delete.CommonArgs(parser)
+  @classmethod
+  def Args(cls, parser):
+    cls.CommonArgs(parser)
 
   def _ConnectionContext(self, args):
     return connection_context.GetConnectionContext(
@@ -75,20 +77,28 @@ class Delete(base.Command):
     conn_context = self._ConnectionContext(args)
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
-    console_io.PromptContinue(
-        message='Service [{service}] will be deleted.'.format(
-            service=service_ref.servicesId
-        ),
-        throw_if_unattended=True,
-        cancel_on_no=True,
-    )
+    dry_run = getattr(args, 'dry_run', False)
+    if not dry_run:
+      console_io.PromptContinue(
+          message='Service [{service}] will be deleted.'.format(
+              service=service_ref.servicesId
+          ),
+          throw_if_unattended=True,
+          cancel_on_no=True,
+      )
 
     async_ = deletion.AsyncOrDefault(args.async_)
     with serverless_operations.Connect(conn_context) as client:
       deletion.Delete(
-          service_ref, client.GetService, client.DeleteService, async_
+          service_ref, client.GetService, client.DeleteService, async_, dry_run
       )
-    if async_:
+    if dry_run:
+      log.status.Print(
+          'Dry run: Service [{}] would be deleted.'.format(
+              service_ref.servicesId
+          )
+      )
+    elif async_:
       pretty_print.Success(
           'Service [{}] is being deleted.'.format(service_ref.servicesId)
       )
@@ -108,9 +118,9 @@ class BetaDelete(Delete):
 class AlphaDelete(BetaDelete):
   """Delete a service."""
 
-  @staticmethod
-  def Args(parser):
-    Delete.CommonArgs(parser)
+  @classmethod
+  def Args(cls, parser):
+    cls.CommonArgs(parser)
 
 
 AlphaDelete.__doc__ = Delete.__doc__

@@ -67,7 +67,10 @@ class Update(base.UpdateCommand):
     if cls.support_alias_ipv6_ranges:
       network_interfaces_flags.AddIpv6AliasesArg(parser)
     network_interfaces_flags.AddStackTypeArg(parser)
-    network_interfaces_flags.AddIpv6NetworkTierArg(parser)
+    network_interfaces_flags.AddIpv6NetworkTierArg(
+        parser,
+        support_standard_tier=(cls.ReleaseTrack() == base.ReleaseTrack.ALPHA),
+    )
     network_interfaces_flags.AddExternalIpv6AddressArg(parser)
     network_interfaces_flags.AddExternalIpv6PrefixLengthArg(parser)
     network_interfaces_flags.AddInternalIpv6AddressArg(parser)

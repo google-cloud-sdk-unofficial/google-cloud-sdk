@@ -1020,20 +1020,32 @@ class RagManagedDbConfig(proto.Message):
 
     Attributes:
         scaled (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.RagManagedDbConfig.Scaled):
-            Sets the RagManagedDb to the Scaled tier.
-            This is the default tier if not explicitly
-            chosen.
+            Deprecated: Use ``mode`` instead to set the tier under
+            Spanner. Sets the RagManagedDb to the Scaled tier.
 
             This field is a member of `oneof`_ ``tier``.
         basic (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.RagManagedDbConfig.Basic):
-            Sets the RagManagedDb to the Basic tier.
+            Deprecated: Use ``mode`` instead to set the tier under
+            Spanner. Sets the RagManagedDb to the Basic tier.
 
             This field is a member of `oneof`_ ``tier``.
         unprovisioned (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.RagManagedDbConfig.Unprovisioned):
-            Sets the RagManagedDb to the Unprovisioned
-            tier.
+            Deprecated: Use ``mode`` instead to set the tier under
+            Spanner. Sets the RagManagedDb to the Unprovisioned tier.
 
             This field is a member of `oneof`_ ``tier``.
+        serverless (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.RagManagedDbConfig.Serverless):
+            Sets the backend to be the serverless mode
+            offered by RAG Engine.
+
+            This field is a member of `oneof`_ ``mode``.
+        spanner (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.RagManagedDbConfig.Spanner):
+            Sets the RAG Engine backend to be
+            RagManagedDb, built on top of Spanner.
+            NOTE: This is the default mode (w/ Basic Tier)
+            if not explicitly chosen.
+
+            This field is a member of `oneof`_ ``mode``.
     """
 
     class Scaled(proto.Message):
@@ -1052,7 +1064,8 @@ class RagManagedDbConfig(proto.Message):
         - Latency insensitive workload.
         - Only using RAG Engine with external vector DBs.
 
-        NOTE: This is the default tier if not explicitly chosen.
+        NOTE: This is the default tier under Spanner mode if not explicitly
+        chosen.
 
         """
 
@@ -1064,6 +1077,60 @@ class RagManagedDbConfig(proto.Message):
         NOTE: Once deleted the data cannot be recovered. To start using
         RAG Engine again, you will need to update the tier by calling
         the UpdateRagEngineConfig API.
+
+        """
+
+    class Spanner(proto.Message):
+        r"""Message to configure the Spanner database used by
+        RagManagedDb.
+
+        This message has `oneof`_ fields (mutually exclusive fields).
+        For each oneof, at most one member field can be set at the same time.
+        Setting any member of the oneof automatically clears all other
+        members.
+
+        .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
+        Attributes:
+            scaled (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.RagManagedDbConfig.Scaled):
+                Sets the RagManagedDb to the Scaled tier.
+
+                This field is a member of `oneof`_ ``tier``.
+            basic (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.RagManagedDbConfig.Basic):
+                Sets the RagManagedDb to the Basic tier. This
+                is the default tier for Spanner mode if not
+                explicitly chosen.
+
+                This field is a member of `oneof`_ ``tier``.
+            unprovisioned (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.RagManagedDbConfig.Unprovisioned):
+                Sets the RagManagedDb to the Unprovisioned
+                tier.
+
+                This field is a member of `oneof`_ ``tier``.
+        """
+
+        scaled: 'RagManagedDbConfig.Scaled' = proto.Field(
+            proto.MESSAGE,
+            number=1,
+            oneof='tier',
+            message='RagManagedDbConfig.Scaled',
+        )
+        basic: 'RagManagedDbConfig.Basic' = proto.Field(
+            proto.MESSAGE,
+            number=2,
+            oneof='tier',
+            message='RagManagedDbConfig.Basic',
+        )
+        unprovisioned: 'RagManagedDbConfig.Unprovisioned' = proto.Field(
+            proto.MESSAGE,
+            number=3,
+            oneof='tier',
+            message='RagManagedDbConfig.Unprovisioned',
+        )
+
+    class Serverless(proto.Message):
+        r"""Message to configure the serverless mode offered by RAG
+        Engine.
 
         """
 
@@ -1084,6 +1151,18 @@ class RagManagedDbConfig(proto.Message):
         number=3,
         oneof='tier',
         message=Unprovisioned,
+    )
+    serverless: Serverless = proto.Field(
+        proto.MESSAGE,
+        number=5,
+        oneof='mode',
+        message=Serverless,
+    )
+    spanner: Spanner = proto.Field(
+        proto.MESSAGE,
+        number=6,
+        oneof='mode',
+        message=Spanner,
     )
 
 

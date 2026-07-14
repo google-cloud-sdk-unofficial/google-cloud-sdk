@@ -52,6 +52,7 @@ class Instance(container_resource.ContainerResource):
   CHECK_MARK_SYMBOL = '\N{HEAVY CHECK MARK}'
 
   OPERATION_ID_ANNOTATION = 'run.googleapis.com/operation-id'
+  INSTANCE_SSH_ENABLED_ANNOTATION = 'run.googleapis.com/ssh-enabled'
 
   INSTANCE_SYMBOLS = {
       InstanceStatus.PENDING: InstanceSymbol(

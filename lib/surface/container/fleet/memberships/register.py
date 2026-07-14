@@ -33,6 +33,7 @@ from googlecloudsdk.command_lib.container.fleet.memberships import gke_util
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
 
@@ -434,6 +435,15 @@ class Register(base.CreateCommand):
             or kube_client.processor.gke_cluster_uri
             or None
         )
+
+        # If the user did not explicitly provide a public issuer URL, and the
+        # fallback URI includes an mTLS endpoint, strip the mTLS subdomain to
+        # match the canonical issuer URL returned in the discovery doc.
+        if not args.public_issuer_url and public_issuer_url:
+          universe_domain = properties.VALUES.core.universe_domain.Get()
+          public_issuer_url = public_issuer_url.replace(
+              f'.mtls.{universe_domain}', f'.{universe_domain}'
+          )
 
         try:
           openid_config_raw = kube_client.GetOpenIDConfiguration(

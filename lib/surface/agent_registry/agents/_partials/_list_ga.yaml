@@ -19,12 +19,12 @@
   - GA
   auto_generated: true
   help_text:
-    brief: List agents
-    description: List agents
+    brief: List accessible agents.
+    description: List all agents accessible by the caller in a given project and location.
     examples: |-
-      To list all agents, run:
+      To list agents in location 'us-central1', run:
 
-          $ {command}
+        $ {command} --location=us-central1
   arguments:
     params:
     - help_text: |-

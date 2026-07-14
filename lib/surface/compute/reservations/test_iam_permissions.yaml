@@ -1,0 +1,34 @@
+release_tracks: [ALPHA, BETA, GA, PREVIEW]
+help_text:
+  brief: Test IAM permissions for a Compute Engine reservation.
+  description: |
+    Returns permissions that a caller has on the specified reservation.
+
+  examples: |
+    To test if the caller has 'compute.reservations.get' permission on a reservation `my-reservation`, run:
+
+      $ {command} my-reservation --zone=ZONE --permissions=compute.reservations.get
+
+request:
+  collection: compute.reservations
+  api_version: v1
+  method: testIamPermissions
+  use_relative_name: false
+  BETA:
+    api_version: beta
+  ALPHA:
+    api_version: alpha
+
+command_type: GENERIC
+
+arguments:
+  resource:
+    help_text: The reservation for which to test permissions.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:reservation
+  params:
+  - arg_name: permissions
+    api_field: testPermissionsRequest.permissions
+    required: true
+    repeated: true
+    help_text: |-
+      The permissions to test.

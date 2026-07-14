@@ -16,13 +16,19 @@
 
 import dataclasses
 import re
-from typing import Any, Dict, List, Optional, TypeVar
+import typing
+from typing import Any, Dict, List, Optional, TypeVar, Union
 
 T = TypeVar("T", bound=dataclasses.dataclass)
 
 
 def _to_snake_case(name: str) -> str:
   """Converts a camelCase string to snake_case."""
+  # This regex matches every position that satisfies both of these conditions:
+  # - not at the beginning of the string (the lookbehind `(?<!^)`)
+  # - immediately followed by an uppercase letter (the lookahead `(?=[A-Z])`)
+  # The matches are zero-length, so replacing them with "_" effectively just
+  # means "add an underscore there".
   return re.sub(r"(?<!^)(?=[A-Z])", "_", name).lower()
 
 
@@ -34,30 +40,106 @@ def _to_camel_case(name: str) -> str:
 
 def from_dict(cls: type[T], data: dict[str, Any]) -> T:
   """Creates a dataclass instance from a dictionary."""
-  # Dictionary representation uses camelCase, while dataclasses use
-  # snake_case.
-
-  snakey_data = {}
+  field_types = {f.name: f.type for f in dataclasses.fields(cls)}
+  rewritten_data = {}
   for k, v in data.items():
-    snakey_data[_to_snake_case(k)] = v
+    # The dataclasses use snake_case to match Python conventions, but the
+    # dictionary representation uses camelCase to match the YAML format.
+    k = _to_snake_case(k)
 
-  return cls(
-      **{
-          k: v
-          for k, v in data.items()
-          if k in dataclasses.fields(cls)
-      }
-  )
+    if k not in field_types:
+      raise ValueError(
+          f'{cls} objects do not have a field named "{k}": {data!r}'
+      )
+    field_type = field_types[k]
+    origin_type = typing.get_origin(field_type)
+    type_args = typing.get_args(field_type)
+
+    # Make sure that nested dataclasses and lists of dataclasses are
+    # converted from dicts to instances.
+    if dataclasses.is_dataclass(field_type) and isinstance(v, dict):
+      v = from_dict(field_type, v)
+    elif origin_type and type_args:
+      # Handle parameterized types: Optional, List, etc.
+      # Optional[T] is represented as Union[T, None] under the hood, so checking
+      # it requires matching the Union pattern instead of the Optional pattern.
+      is_optional = (origin_type is Union
+                     and type(None) in type_args
+                     and len(type_args) == 2)
+
+      # Determine the wrapped dataclass type, if any.
+      dataclass_args = [t for t in type_args if dataclasses.is_dataclass(t)]
+      inner_dataclass = dataclass_args[0] if dataclass_args else None
+
+      if is_optional and inner_dataclass and v is not None:
+        v = from_dict(inner_dataclass, v)
+      elif origin_type is list and inner_dataclass:
+        v = [e if dataclasses.is_dataclass(e) else from_dict(inner_dataclass, e)
+             for e in v]
+    rewritten_data[k] = v
+
+  return cls(**rewritten_data)
+
+
+def _snake_to_camel_dict_factory(
+    data: list[tuple[str, Any]],
+) -> dict[str, Any]:
+  """Build a dict with camelCase keys from a list of (snake_case, value) tuples."""
+  return {
+      _to_camel_case(k): v
+      for k, v in data
+  }
 
 
 def to_dict(instance: T) -> dict[str, Any]:
   """Converts a dataclass instance to a dictionary."""
-  data = dataclasses.asdict(instance)
-  return {
-      _to_camel_case(k): v
-      for k, v in data.items()
-      if k in dataclasses.fields(instance) and v is not None
-  }
+  return dataclasses.asdict(instance, dict_factory=_snake_to_camel_dict_factory)
+
+
+class AftSchemaError(ValueError):
+  """Raised when an AFT document violates the schema contract."""
+
+
+# Closed supported sets for the top-level discriminator fields. Both are sorted
+# in error messages for deterministic, parity-friendly diagnostics.
+SUPPORTED_GATEWAYS = frozenset({"apigee"})
+SUPPORTED_SCHEMA_VERSIONS = frozenset({"1.0.0"})
+
+
+def _validate_supported_field(
+    field_name: str, value: str, supported_values: frozenset[str]
+) -> None:
+  if not value:
+    raise AftSchemaError(f"missing required top-level {field_name!r} field")
+  if value not in supported_values:
+    supported = ", ".join(sorted(supported_values))
+    raise AftSchemaError(
+        f"unsupported {field_name} {value!r}; supported: {supported}"
+    )
+
+
+def validate_gateway(value: str) -> None:
+  """Validates the top-level `gateway` field (missing-first, then unsupported).
+
+  Args:
+    value: The gateway value to validate.
+
+  Raises:
+    AftSchemaError: If `value` is empty/missing or not a supported gateway.
+  """
+  _validate_supported_field("gateway", value, SUPPORTED_GATEWAYS)
+
+
+def validate_schema_version(value: str) -> None:
+  """Validates the top-level `schemaVersion` field (missing-first, then unsupported).
+
+  Args:
+    value: The schemaVersion value to validate.
+
+  Raises:
+    AftSchemaError: If `value` is empty/missing or not a supported version.
+  """
+  _validate_supported_field("schemaVersion", value, SUPPORTED_SCHEMA_VERSIONS)
 
 
 @dataclasses.dataclass
@@ -165,6 +247,8 @@ class Test:
 class Template:
   """Represents an Apigee API proxy template."""
 
+  gateway: str = ""
+  schema_version: str = ""
   name: str = ""
   type: str = "template"
   priority: Optional[int] = None
@@ -175,11 +259,17 @@ class Template:
   targets: List[Target] = dataclasses.field(default_factory=list)
   tests: List[Test] = dataclasses.field(default_factory=list)
 
+  def __post_init__(self):
+    validate_gateway(self.gateway)
+    validate_schema_version(self.schema_version)
+
 
 @dataclasses.dataclass
 class Proxy:
   """Represents an Apigee API proxy."""
 
+  gateway: str = ""
+  schema_version: str = ""
   name: str = ""
   display_name: Optional[str] = None
   uid: Optional[str] = None
@@ -195,11 +285,17 @@ class Proxy:
   resources: List[Resource] = dataclasses.field(default_factory=list)
   tests: List[Test] = dataclasses.field(default_factory=list)
 
+  def __post_init__(self):
+    validate_gateway(self.gateway)
+    validate_schema_version(self.schema_version)
+
 
 @dataclasses.dataclass
 class Feature:
   """Represents an abstract feature to be included in a templated Apigee proxy."""
 
+  gateway: str = ""
+  schema_version: str = ""
   name: str = ""
   display_name: Optional[str] = None
   uid: Optional[str] = None
@@ -216,3 +312,7 @@ class Feature:
   policies: List[Policy] = dataclasses.field(default_factory=list)
   resources: List[Resource] = dataclasses.field(default_factory=list)
   tests: List[Test] = dataclasses.field(default_factory=list)
+
+  def __post_init__(self):
+    validate_gateway(self.gateway)
+    validate_schema_version(self.schema_version)

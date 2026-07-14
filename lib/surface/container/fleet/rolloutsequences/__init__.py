@@ -19,6 +19,8 @@ from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class Clusters(base.Group):
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
+class RolloutSequences(base.Group):
   """Create and manage rollout sequences."""

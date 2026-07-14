@@ -127,32 +127,32 @@ class AdjustInstanceSplit(base.Command):
     worker_pool_ref = args.CONCEPTS.worker_pool.Parse()
     flags.ValidateResource(worker_pool_ref)
 
-    run_client = run_util.GetGapicClientInstance(
+    with run_util.GetGapicClientInstance(
         region=worker_pool_ref.locationsId
-    )
-    worker_pools_client = worker_pools_operations.WorkerPoolsOperations(
-        run_client
-    )
-    config_changes = self._GetBaseChanges(args)
-    with progress_tracker.StagedProgressTracker(
-        'Updating instance split...',
-        stages.UpdateInstanceSplitStages(),
-        failure_message='Updating instance split failed',
-        suppress_output=args.async_,
-    ):
-      response = worker_pools_client.UpdateInstanceSplit(
-          worker_pool_ref,
-          config_changes,
+    ) as run_client:
+      worker_pools_client = worker_pools_operations.WorkerPoolsOperations(
+          run_client
       )
+      config_changes = self._GetBaseChanges(args)
+      with progress_tracker.StagedProgressTracker(
+          'Updating instance split...',
+          stages.UpdateInstanceSplitStages(),
+          failure_message='Updating instance split failed',
+          suppress_output=args.async_,
+      ):
+        response = worker_pools_client.UpdateInstanceSplit(
+            worker_pool_ref,
+            config_changes,
+        )
 
-      if args.async_:
-        pretty_print.Success('Updating instance split asynchronously.')
-      else:
-        try:
-          response.result()  # Wait for the operation to complete.
-        except gapic_exceptions.GoogleAPICallError as e:
-          core_exceptions.reraise(core_exceptions.Error(str(e)))
-        return instance_split.GetInstanceSplitPairs(response.metadata)
+        if args.async_:
+          pretty_print.Success('Updating instance split asynchronously.')
+        else:
+          try:
+            response.result()  # Wait for the operation to complete.
+          except gapic_exceptions.GoogleAPICallError as e:
+            core_exceptions.reraise(core_exceptions.Error(str(e)))
+          return instance_split.GetInstanceSplitPairs(response.metadata)
 
 
 @base.RegionalEndpointsSupported

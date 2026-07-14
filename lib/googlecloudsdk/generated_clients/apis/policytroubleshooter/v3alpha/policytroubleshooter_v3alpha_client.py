@@ -111,3 +111,29 @@ class PolicytroubleshooterV3alpha(base_api.BaseApiClient):
         response_type_name='GoogleCloudPolicytroubleshooterIamV3alphaTroubleshootIamPolicyResponse',
         supports_download=False,
     )
+
+    def TroubleshootError(self, request, global_params=None):
+      r"""Checks the access request associated with the error identifier and explains why the access is denied by IAM policies.
+
+      Args:
+        request: (GoogleCloudPolicytroubleshooterIamV3alphaTroubleshootIamPolicyErrorRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudPolicytroubleshooterIamV3alphaTroubleshootIamPolicyErrorResponse) The response message.
+      """
+      config = self.GetMethodConfig('TroubleshootError')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    TroubleshootError.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='policytroubleshooter.iam.troubleshootError',
+        ordered_params=[],
+        path_params=[],
+        query_params=[],
+        relative_path='v3alpha/iam:troubleshootError',
+        request_field='<request>',
+        request_type_name='GoogleCloudPolicytroubleshooterIamV3alphaTroubleshootIamPolicyErrorRequest',
+        response_type_name='GoogleCloudPolicytroubleshooterIamV3alphaTroubleshootIamPolicyErrorResponse',
+        supports_download=False,
+    )

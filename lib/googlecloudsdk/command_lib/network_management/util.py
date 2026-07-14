@@ -73,10 +73,12 @@ def AddFieldToUpdateMask(field, patch_request):
 
 
 def ClearEndpointValue(endpoint, endpoint_name):
+  """Clears the value of the specified endpoint field."""
   proto_endpoint_fields = {
       "cloudFunction",
       "appEngineVersion",
       "cloudRunRevision",
+      "cloudRunJob",
   }
   if endpoint_name in proto_endpoint_fields:
     # Endpoint is a proto message: Set to None.
@@ -99,6 +101,7 @@ def ClearSingleEndpointAttr(patch_request, endpoint_type, endpoint_name):
       "cloudFunction",
       "appEngineVersion",
       "cloudRunRevision",
+      "cloudRunJob",
       "forwardingRule",
       "redisInstance",
       "redisCluster",
@@ -129,6 +132,7 @@ def ClearSingleEndpointAttr(patch_request, endpoint_type, endpoint_name):
           "cloud-function",
           "app-engine-version",
           "cloud-run-revision",
+          "cloud-run-job",
       ])
     if endpoint_type == "destination":
       endpoints.extend([
@@ -152,6 +156,7 @@ def ClearEndpointAttrs(unused_ref, args, patch_request):
       ("clear_source_cloud_function", "source", "cloudFunction"),
       ("clear_source_app_engine_version", "source", "appEngineVersion"),
       ("clear_source_cloud_run_revision", "source", "cloudRunRevision"),
+      ("clear_source_cloud_run_job", "source", "cloudRunJob"),
       ("clear_destination_instance", "destination", "instance"),
       ("clear_destination_ip_address", "destination", "ipAddress"),
       (
@@ -194,6 +199,7 @@ def ClearSingleEndpointAttrBeta(patch_request, endpoint_type, endpoint_name):
       "cloudFunction",
       "appEngineVersion",
       "cloudRunRevision",
+      "cloudRunJob",
       "forwardingRule",
       "redisInstance",
       "redisCluster",
@@ -224,6 +230,7 @@ def ClearSingleEndpointAttrBeta(patch_request, endpoint_type, endpoint_name):
           "cloud-function",
           "app-engine-version",
           "cloud-run-revision",
+          "cloud-run-job",
       ])
     if endpoint_type == "destination":
       endpoints.extend([
@@ -247,6 +254,7 @@ def ClearEndpointAttrsBeta(unused_ref, args, patch_request):
       ("clear_source_cloud_function", "source", "cloudFunction"),
       ("clear_source_app_engine_version", "source", "appEngineVersion"),
       ("clear_source_cloud_run_revision", "source", "cloudRunRevision"),
+      ("clear_source_cloud_run_job", "source", "cloudRunJob"),
       ("clear_destination_instance", "destination", "instance"),
       ("clear_destination_ip_address", "destination", "ipAddress"),
       (
@@ -434,6 +442,30 @@ def ValidateCloudRunRevisionsURIs(unused_ref, args, request):
           "Expected Cloud Run revision in the following format:\n"
           "  projects/my-project/locations/location/revisions/my-revision"
           .format(flag, revision)
+      )
+  return request
+
+
+def ValidateCloudRunJobsURIs(unused_ref, args, request):
+  """Checks if all provided Cloud Run jobs URIs are in correct format."""
+  flags = [
+      "source_cloud_run_job",
+  ]
+  job_pattern = re.compile(
+      r"projects/(?:[a-z][a-z0-9-\.:]*[a-z0-9])/locations/[-\w]+/jobs/[-\w]+"
+  )
+  for flag in flags:
+    if not args.IsSpecified(flag):
+      continue
+
+    job = getattr(args, flag)
+    if not job_pattern.match(job):
+      raise InvalidInputError(
+          "Invalid value for flag {}: {}\n"
+          "Expected Cloud Run job in the following format:\n"
+          "  projects/my-project/locations/location/jobs/my-job".format(
+              flag, job
+          )
       )
   return request
 

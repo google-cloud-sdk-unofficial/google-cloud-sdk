@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA]
+  hints:
+    read_only: true
   hidden: true
   help_text:
     brief: Describe Cloud Security Command Center (SCC) IaC validation failure criteria.

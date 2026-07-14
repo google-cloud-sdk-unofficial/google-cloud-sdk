@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: false
   help_text:
     brief: Delete a Tenant
     description: Delete a Tenant

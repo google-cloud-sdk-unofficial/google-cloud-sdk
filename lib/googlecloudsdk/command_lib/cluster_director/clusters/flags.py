@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.cluster_director.clusters import flag_types
 
 def AddConfig(parser, api_version=None, required=False, hidden=False):
   """Adds a config flag for the given API version."""
-  if api_version not in ["v1alpha", "v1beta"]:
+  if api_version not in ["v1alpha", "v1beta", "v1"]:
     raise ValueError(f"Unsupported API version for config: {api_version!r}")
   parser.add_argument(
       "--config",
@@ -86,7 +86,7 @@ def AddConfig(parser, api_version=None, required=False, hidden=False):
 
 def AddBlueprint(parser, api_version=None, hidden=False):
   """Adds a blueprint flag for the given API version."""
-  if api_version not in ["v1alpha", "v1beta"]:
+  if api_version not in ["v1alpha", "v1beta", "v1"]:
     raise ValueError(f"Unsupported API version for blueprint: {api_version!r}")
   parser.add_argument(
       "--blueprint",
@@ -119,7 +119,7 @@ def AddQuickstartCluster(parser, hidden=False):
 
 def AddUpdateMask(parser, api_version=None, required=False, hidden=False):
   """Adds an update mask flag for the given API version."""
-  if api_version not in ["v1alpha", "v1beta"]:
+  if api_version not in ["v1alpha", "v1beta", "v1"]:
     raise ValueError(
         f"Unsupported API version for update-mask: {api_version!r}"
     )
@@ -138,7 +138,7 @@ def AddUpdateMask(parser, api_version=None, required=False, hidden=False):
 
 def AddDescription(parser, api_version=None, hidden=False):
   """Adds a description flag for the given API version."""
-  if api_version not in ["v1alpha", "v1beta"]:
+  if api_version not in ["v1alpha", "v1beta", "v1"]:
     raise ValueError(
         f"Unsupported API version for description: {api_version!r}"
     )
@@ -162,7 +162,7 @@ def AddLabels(
     include_update_flags=False,
 ):
   """Adds a labels flag for the given API version."""
-  if api_version not in ["v1alpha", "v1beta"]:
+  if api_version not in ["v1alpha", "v1beta", "v1"]:
     raise ValueError(f"Unsupported API version for labels: {api_version!r}")
   remove_flag_name = f"remove-{name}"
   if include_update_flags:
@@ -193,14 +193,17 @@ def AddLabels(
 
 def AddCreateNetwork(parser, api_version=None, hidden=False):
   """Adds a create network flag for the given API version."""
-  if api_version not in ["v1alpha", "v1beta"]:
+  if api_version not in ["v1alpha", "v1beta", "v1"]:
     raise ValueError(
         f"Unsupported API version for create-network: {api_version!r}"
     )
   parser.add_argument(
       "--create-network",
       help=textwrap.dedent("""
-        Parameters to create a network.
+        Parameters to create a VPC (Virtual Private Cloud) network.
+
+        Required fields:
+        - name
         Name: Must match the regex `[a-z]([-a-z0-9]*[a-z0-9])?`, be 1-63
         characters in length, and comply with RFC1035.
 
@@ -215,7 +218,7 @@ def AddCreateNetwork(parser, api_version=None, hidden=False):
 
 def AddNetworkSource(parser, api_version=None, required=False, hidden=False):
   """Adds a network flag for the given API version."""
-  if api_version not in ["v1alpha", "v1beta"]:
+  if api_version not in ["v1alpha", "v1beta", "v1"]:
     raise ValueError(f"Unsupported API version for network: {api_version!r}")
   parser.add_argument(
       "--network",
@@ -234,7 +237,7 @@ def AddNetworkSource(parser, api_version=None, required=False, hidden=False):
 
 def AddNetworkProject(parser, api_version=None, hidden=False):
   """Adds a network project flag for the given API version."""
-  if api_version not in ["v1alpha", "v1beta"]:
+  if api_version not in ["v1alpha", "v1beta", "v1"]:
     raise ValueError(
         f"Unsupported API version for network-project: {api_version!r}"
     )
@@ -251,7 +254,7 @@ def AddNetworkProject(parser, api_version=None, hidden=False):
 
 def AddSubnetSource(parser, api_version=None, required=False, hidden=False):
   """Adds a subnet flag for the given API version."""
-  if api_version not in ["v1alpha", "v1beta"]:
+  if api_version not in ["v1alpha", "v1beta", "v1"]:
     raise ValueError(f"Unsupported API version for subnet: {api_version!r}")
   parser.add_argument(
       "--subnet",
@@ -276,7 +279,7 @@ def AddCreateFilestores(
     include_update_flags=False,
 ):
   """Adds a create filestores flag for the given API version."""
-  if api_version not in ["v1alpha", "v1beta"]:
+  if api_version not in ["v1alpha", "v1beta", "v1"]:
     raise ValueError(
         f"Unsupported API version for create-filestores: {api_version!r}"
     )
@@ -287,9 +290,16 @@ def AddCreateFilestores(
       help=textwrap.dedent("""
         Parameters to create a filestore instance.
 
+        Required fields:
+        - id
+        - name
+        - tier
+        - capacityGb
+        - fileshare
+
         For example --create-filestores id=my-fs,name=locations/us-central1/instances/filestore-1,tier=REGIONAL,capacityGb=1024,fileshare=share1
 
-        id: ID of the filestore resource, used to refer to this resource in storage-configs.
+        id: Alphanumeric identifier of the filestore resource. Can be used to refer to this resource in storage-configs.
         name: Name of the filestore instance to create in your project in the format of locations/us-central1/instances/filestore-1.
 
         capacityGb: Size of the filestore in GiB. Must be between 1024 and 102400, and must meet scalability requirements described at
@@ -298,9 +308,6 @@ def AddCreateFilestores(
         fileshare: The directory on a Filestore instance where all shared files
         are stored. Must match the regex `[a-z]([-a-z0-9]*[a-z0-9])?`, be 1-63
         characters in length, and comply with RFC1035.
-        Supported tier values:
-        - ZONAL
-        - REGIONAL
 
         Supported protocol values:
         - NFSV3
@@ -324,7 +331,7 @@ def AddFilestores(
     include_update_flags=False,
 ):
   """Adds a filestores flag for the given API version."""
-  if api_version not in ["v1alpha", "v1beta"]:
+  if api_version not in ["v1alpha", "v1beta", "v1"]:
     raise ValueError(f"Unsupported API version for filestores: {api_version!r}")
   remove_flag_name = "remove-filestore-instances"
   if include_update_flags:
@@ -365,7 +372,7 @@ def AddCreateGcsBuckets(
     include_update_flags: bool = False,
 ):
   """Adds a create Google Cloud Storage buckets flag for the given API version."""
-  if api_version not in ["v1alpha", "v1beta"]:
+  if api_version not in ["v1alpha", "v1beta", "v1"]:
     raise ValueError(
         f"Unsupported API version for create-buckets: {api_version!r}"
     )
@@ -374,8 +381,13 @@ def AddCreateGcsBuckets(
   alpha_help = textwrap.dedent(f"""
         Parameters to create a Google Cloud Storage bucket.
 
-        id: ID of the bucket resource, used to refer to this resource in storage-configs.
-        name: Name of the Cloud Storage bucket to create in your project in the format of bucket-1.
+        Required fields:
+        - id
+        - name
+
+        id: Alphanumeric identifier of the bucket resource. Can be used to refer to this resource in storage-configs.
+
+        name: Name of the Cloud Storage bucket. Must be globally unique and omit any sensitive information.
 
         For example --{name} id=my-bucket,name=bucket-1,storageClass=STANDARD,terminalStorageClass=NEARLINE,enableHNS=true
 
@@ -394,12 +406,16 @@ def AddCreateGcsBuckets(
 
         Note:
         - Either storageClass or enableAutoclass can be set.
-        - HNS: Hierarchical namespace
+        - HNS: Hierarchical namespace. Hierarchical namespace buckets cannot use Autoclass.
       """)
   beta_help = textwrap.dedent(f"""
         Parameters to create a Google Cloud Storage bucket.
 
-        For example --{name} name=bucket-1,storageClass=STANDARD,enableHNS=true
+        Required fields:
+        - id
+        - name
+
+        For example --{name} id=my-bucket,name=bucket-1,storageClass=STANDARD,enableHNS=true
 
         Supported storageClass values:
         - STANDARD
@@ -412,7 +428,7 @@ def AddCreateGcsBuckets(
 
         Note:
         - Either storageClass or enableAutoclass can be set.
-        - HNS: Hierarchical namespace
+        - HNS: Hierarchical namespace. Hierarchical namespace buckets cannot use Autoclass.
       """)
   parser.add_argument(
       f"--{name}",
@@ -431,7 +447,7 @@ def AddGcsBuckets(
     include_update_flags: bool = False,
 ):
   """Adds a Google Cloud Storage buckets flag for the given API version."""
-  if api_version not in ["v1alpha", "v1beta"]:
+  if api_version not in ["v1alpha", "v1beta", "v1"]:
     raise ValueError(f"Unsupported API version for buckets: {api_version!r}")
   remove_flag_name = f"remove-storage-{name}"
   if include_update_flags:
@@ -472,7 +488,7 @@ def AddCreateLustres(
     include_update_flags: bool = False,
 ):
   """Adds a create lustres flag for the given API version."""
-  if api_version not in ["v1alpha", "v1beta"]:
+  if api_version not in ["v1alpha", "v1beta", "v1"]:
     raise ValueError(
         f"Unsupported API version for create-lustres: {api_version!r}"
     )
@@ -483,7 +499,14 @@ def AddCreateLustres(
       help=textwrap.dedent(f"""
         Parameters to create a Lustre instance.
 
+        Required fields:
+        - id
+        - name
+        - capacityGb
+        - filesystem.
+
         id: ID of the lustre resource, used to refer to this resource in storage-configs.
+
         name: Name of the Managed Lustre instance to create in your project in the format of locations/us-central1/instances/lustre-1.
 
         For example --{name} id=my-lustre,name=locations/us-central1/instances/lustre-1,capacityGb=1024,filesystem=fs-1,perUnitStorageThroughput=1000
@@ -504,7 +527,7 @@ def AddLustres(
     include_update_flags=False,
 ):
   """Adds a lustres flag for the given API version."""
-  if api_version not in ["v1alpha", "v1beta"]:
+  if api_version not in ["v1alpha", "v1beta", "v1"]:
     raise ValueError(f"Unsupported API version for lustres: {api_version!r}")
   remove_flag_name = "remove-lustre-instances"
   if include_update_flags:
@@ -544,8 +567,8 @@ def AddOnDemandInstances(
     hidden=False,
     include_update_flags=False,
 ):
-  """Adds an on demand instances flag for the given API version."""
-  if api_version not in ["v1alpha", "v1beta"]:
+  """Adds an on-demand instances flag for the given API version."""
+  if api_version not in ["v1alpha", "v1beta", "v1"]:
     raise ValueError(
         f"Unsupported API version for on-demand-instances: {api_version!r}"
     )
@@ -590,8 +613,8 @@ def AddSpotInstances(
     hidden=False,
     include_update_flags=False,
 ):
-  """Adds an spot instances flag for the given API version."""
-  if api_version not in ["v1alpha", "v1beta"]:
+  """Adds a spot VM instances flag for the given API version."""
+  if api_version not in ["v1alpha", "v1beta", "v1"]:
     raise ValueError(
         f"Unsupported API version for spot-instances: {api_version!r}"
     )
@@ -636,8 +659,8 @@ def AddReservedInstances(
     hidden=False,
     include_update_flags=False,
 ):
-  """Adds an reserved instances flag for the given API version."""
-  if api_version not in ["v1alpha", "v1beta"]:
+  """Adds a reserved instances flag for the given API version."""
+  if api_version not in ["v1alpha", "v1beta", "v1"]:
     raise ValueError(
         f"Unsupported API version for reserved-instances: {api_version!r}"
     )
@@ -687,8 +710,8 @@ def AddFlexStartInstances(
     hidden=False,
     include_update_flags=False,
 ):
-  """Adds an Flex Start instances flag for the given API version."""
-  if api_version not in ["v1alpha", "v1beta"]:
+  """Adds a flex-start VM instances flag for the given API version."""
+  if api_version not in ["v1alpha", "v1beta", "v1"]:
     raise ValueError(
         f"Unsupported API version for flex-start-instances: {api_version!r}"
     )
@@ -734,8 +757,8 @@ def AddSlurmNodeSets(
     hidden=False,
     include_update_flags=False,
 ):
-  """Adds a slurm node sets flag for the given API version."""
-  if api_version not in ["v1alpha", "v1beta"]:
+  """Adds a slurm nodesets flag for the given API version."""
+  if api_version not in ["v1alpha", "v1beta", "v1"]:
     raise ValueError(
         f"Unsupported API version for slurm-node-sets: {api_version!r}"
     )
@@ -746,9 +769,12 @@ def AddSlurmNodeSets(
   alpha_help = textwrap.dedent(f"""
         Parameters to define slurm cluster nodeset config.
 
+        Required fields:
+        - id
+
         For example --{name} id=ns1,computeId=c1,type=gce,staticNodeCount=1,maxDynamicNodeCount=2,startupScript="echo hello",bootDisk=type=hyperdisk-balanced,storagePools=[zones/us-central1-a/storagePools/pool1]
 
-        To configure a node set backed by Google Kubernetes Engine, use type=gke. If type=gke is
+        To configure a nodeset backed by Google Kubernetes Engine, use type=gke. If type=gke is
         specified, Compute Engine specific fields (labels, startupScript, bootDisk,
         startupScriptTimeout) cannot be used, but container-specific fields
         (container-resource-labels, container-startup-script) may be used.
@@ -756,7 +782,6 @@ def AddSlurmNodeSets(
         For example --{name} id=ns1,computeId=c1,type=gke,container-resource-labels="k1=v1",container-startup-script="echo hello"
 
         Defaults:
-        - staticNodeCount: 1
         - type: gce
 
         Note:
@@ -771,10 +796,12 @@ def AddSlurmNodeSets(
   beta_help = textwrap.dedent(f"""
         Parameters to define slurm cluster nodeset config.
 
+        Required fields:
+        - id
+
         For example --{name} id=ns1,computeId=c1,staticNodeCount=1,maxDynamicNodeCount=2,computeInstance=[startupScript="echo hello",labels="k1=v1"]
 
         Defaults:
-        - staticNodeCount: 1
 
         Note:
         - startupScript:
@@ -837,7 +864,7 @@ def AddSlurmPartitions(
     include_update_flags=False,
 ):
   """Adds a slurm partitions flag for the given API version."""
-  if api_version not in ["v1alpha", "v1beta"]:
+  if api_version not in ["v1alpha", "v1beta", "v1"]:
     raise ValueError(
         f"Unsupported API version for slurm-partitions: {api_version!r}"
     )
@@ -900,7 +927,7 @@ def AddSlurmPartitions(
 
 def AddSlurmDefaultPartition(parser, api_version=None, hidden=False):
   """Adds a slurm default partition flag for the given API version."""
-  if api_version not in ["v1alpha", "v1beta"]:
+  if api_version not in ["v1alpha", "v1beta", "v1"]:
     raise ValueError(
         f"Unsupported API version for slurm-default-partition: {api_version!r}"
     )
@@ -925,7 +952,7 @@ def AddSlurmLoginNode(
     include_update_flags=False,
 ):
   """Adds a slurm login node flag for the given API version."""
-  if api_version not in ["v1alpha", "v1beta"]:
+  if api_version not in ["v1alpha", "v1beta", "v1"]:
     raise ValueError(
         f"Unsupported API version for slurm-login-node: {api_version!r}"
     )
@@ -1022,7 +1049,7 @@ def _AddScriptFlags(
     parser, name, help_kind, api_version, hidden, include_update_flags
 ):
   """Helper to add script flags."""
-  if api_version not in ["v1alpha", "v1beta"]:
+  if api_version not in ["v1alpha", "v1beta", "v1"]:
     raise ValueError(
         f"Unsupported API version for {help_kind}: {api_version!r}"
     )

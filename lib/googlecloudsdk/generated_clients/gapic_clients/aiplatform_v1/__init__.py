@@ -20,11 +20,16 @@ __version__ = package_version.__version__
 
 from .services.prediction_service import PredictionServiceClient
 from .services.prediction_service import PredictionServiceAsyncClient
+from .services.semantic_governance_policy_engine_service import SemanticGovernancePolicyEngineServiceClient
+from .services.semantic_governance_policy_engine_service import SemanticGovernancePolicyEngineServiceAsyncClient
+from .services.semantic_governance_policy_service import SemanticGovernancePolicyServiceClient
+from .services.semantic_governance_policy_service import SemanticGovernancePolicyServiceAsyncClient
 
 from .types.api_auth import ApiAuth
 from .types.auth import AuthConfig
 from .types.auth import AuthType
 from .types.auth import HttpElementLocation
+from .types.content import AudioResponseFormat
 from .types.content import Blob
 from .types.content import Candidate
 from .types.content import Citation
@@ -36,6 +41,7 @@ from .types.content import GroundingChunk
 from .types.content import GroundingMetadata
 from .types.content import GroundingSupport
 from .types.content import ImageConfig
+from .types.content import ImageResponseFormat
 from .types.content import LogprobsResult
 from .types.content import ModalityTokenCount
 from .types.content import ModelArmorConfig
@@ -43,6 +49,8 @@ from .types.content import MultiSpeakerVoiceConfig
 from .types.content import Part
 from .types.content import PrebuiltVoiceConfig
 from .types.content import ProactivityConfig
+from .types.content import ReplicatedVoiceConfig
+from .types.content import ResponseFormat
 from .types.content import RetrievalMetadata
 from .types.content import SafetyRating
 from .types.content import SafetySetting
@@ -50,9 +58,11 @@ from .types.content import SearchEntryPoint
 from .types.content import Segment
 from .types.content import SpeakerVoiceConfig
 from .types.content import SpeechConfig
+from .types.content import TextResponseFormat
 from .types.content import UrlContextMetadata
 from .types.content import UrlMetadata
 from .types.content import VideoMetadata
+from .types.content import VideoResponseFormat
 from .types.content import VoiceConfig
 from .types.content import HarmCategory
 from .types.content import Modality
@@ -90,8 +100,12 @@ from .types.io import JiraSource
 from .types.io import SharePointSources
 from .types.io import SlackSource
 from .types.io import TFRecordDestination
+from .types.io import VertexMultimodalDatasetDestination
+from .types.io import VertexMultimodalDatasetSource
 from .types.openapi import Schema
 from .types.openapi import Type
+from .types.operation import DeleteOperationMetadata
+from .types.operation import GenericOperationMetadata
 from .types.prediction_service import ChatCompletionsRequest
 from .types.prediction_service import CountTokensRequest
 from .types.prediction_service import CountTokensResponse
@@ -121,6 +135,23 @@ from .types.prediction_service import StreamingPredictResponse
 from .types.prediction_service import StreamingRawPredictRequest
 from .types.prediction_service import StreamingRawPredictResponse
 from .types.prediction_service import StreamRawPredictRequest
+from .types.semantic_governance_policy_engine_service import DeprovisionSemanticGovernancePolicyEngineOperationMetadata
+from .types.semantic_governance_policy_engine_service import DeprovisionSemanticGovernancePolicyEngineRequest
+from .types.semantic_governance_policy_engine_service import GatewayConfig
+from .types.semantic_governance_policy_engine_service import GetSemanticGovernancePolicyEngineRequest
+from .types.semantic_governance_policy_engine_service import SemanticGovernancePolicyEngine
+from .types.semantic_governance_policy_engine_service import UpdateSemanticGovernancePolicyEngineOperationMetadata
+from .types.semantic_governance_policy_engine_service import UpdateSemanticGovernancePolicyEngineRequest
+from .types.semantic_governance_policy_service import CreateSemanticGovernancePolicyOperationMetadata
+from .types.semantic_governance_policy_service import CreateSemanticGovernancePolicyRequest
+from .types.semantic_governance_policy_service import DeleteSemanticGovernancePolicyOperationMetadata
+from .types.semantic_governance_policy_service import DeleteSemanticGovernancePolicyRequest
+from .types.semantic_governance_policy_service import GetSemanticGovernancePolicyRequest
+from .types.semantic_governance_policy_service import ListSemanticGovernancePoliciesRequest
+from .types.semantic_governance_policy_service import ListSemanticGovernancePoliciesResponse
+from .types.semantic_governance_policy_service import SemanticGovernancePolicy
+from .types.semantic_governance_policy_service import UpdateSemanticGovernancePolicyOperationMetadata
+from .types.semantic_governance_policy_service import UpdateSemanticGovernancePolicyRequest
 from .types.tool import CodeExecutionResult
 from .types.tool import DynamicRetrievalConfig
 from .types.tool import EnterpriseWebSearch
@@ -135,6 +166,7 @@ from .types.tool import FunctionResponseFileData
 from .types.tool import FunctionResponsePart
 from .types.tool import GoogleMaps
 from .types.tool import GoogleSearchRetrieval
+from .types.tool import PartialArg
 from .types.tool import RagRetrievalConfig
 from .types.tool import Retrieval
 from .types.tool import RetrievalConfig
@@ -167,8 +199,11 @@ from .types.vertex_rag_data import VertexAiSearchConfig
 
 __all__ = (
     'PredictionServiceAsyncClient',
+    'SemanticGovernancePolicyEngineServiceAsyncClient',
+    'SemanticGovernancePolicyServiceAsyncClient',
 'ApiAuth',
 'Attribution',
+'AudioResponseFormat',
 'AuthConfig',
 'AuthType',
 'AvroSource',
@@ -187,8 +222,15 @@ __all__ = (
 'CorpusStatus',
 'CountTokensRequest',
 'CountTokensResponse',
+'CreateSemanticGovernancePolicyOperationMetadata',
+'CreateSemanticGovernancePolicyRequest',
 'CsvDestination',
 'CsvSource',
+'DeleteOperationMetadata',
+'DeleteSemanticGovernancePolicyOperationMetadata',
+'DeleteSemanticGovernancePolicyRequest',
+'DeprovisionSemanticGovernancePolicyEngineOperationMetadata',
+'DeprovisionSemanticGovernancePolicyEngineRequest',
 'DirectPredictRequest',
 'DirectPredictResponse',
 'DirectRawPredictRequest',
@@ -224,12 +266,16 @@ __all__ = (
 'FunctionResponseBlob',
 'FunctionResponseFileData',
 'FunctionResponsePart',
+'GatewayConfig',
 'GcsDestination',
 'GcsSource',
 'GenerateContentRequest',
 'GenerateContentResponse',
 'GenerateVideoResponse',
 'GenerationConfig',
+'GenericOperationMetadata',
+'GetSemanticGovernancePolicyEngineRequest',
+'GetSemanticGovernancePolicyRequest',
 'GoogleDriveSource',
 'GoogleMaps',
 'GoogleSearchRetrieval',
@@ -239,11 +285,14 @@ __all__ = (
 'HarmCategory',
 'HttpElementLocation',
 'ImageConfig',
+'ImageResponseFormat',
 'ImportRagFilesConfig',
 'Int64Array',
 'IntegratedGradientsAttribution',
 'InvokeRequest',
 'JiraSource',
+'ListSemanticGovernancePoliciesRequest',
+'ListSemanticGovernancePoliciesResponse',
 'LogprobsResult',
 'Modality',
 'ModalityTokenCount',
@@ -252,6 +301,7 @@ __all__ = (
 'MultiSpeakerVoiceConfig',
 'Neighbor',
 'Part',
+'PartialArg',
 'PrebuiltVoiceConfig',
 'PredictLongRunningRequest',
 'PredictRequest',
@@ -271,6 +321,8 @@ __all__ = (
 'RagRetrievalConfig',
 'RagVectorDbConfig',
 'RawPredictRequest',
+'ReplicatedVoiceConfig',
+'ResponseFormat',
 'Retrieval',
 'RetrievalConfig',
 'RetrievalMetadata',
@@ -280,6 +332,10 @@ __all__ = (
 'Schema',
 'SearchEntryPoint',
 'Segment',
+'SemanticGovernancePolicy',
+'SemanticGovernancePolicyEngine',
+'SemanticGovernancePolicyEngineServiceClient',
+'SemanticGovernancePolicyServiceClient',
 'SharePointSources',
 'SlackSource',
 'SmoothGradConfig',
@@ -297,9 +353,14 @@ __all__ = (
 'StringArray',
 'TFRecordDestination',
 'Tensor',
+'TextResponseFormat',
 'Tool',
 'ToolConfig',
 'Type',
+'UpdateSemanticGovernancePolicyEngineOperationMetadata',
+'UpdateSemanticGovernancePolicyEngineRequest',
+'UpdateSemanticGovernancePolicyOperationMetadata',
+'UpdateSemanticGovernancePolicyRequest',
 'UploadRagFileConfig',
 'UrlContext',
 'UrlContextMetadata',
@@ -307,8 +368,11 @@ __all__ = (
 'UsageMetadata',
 'VertexAISearch',
 'VertexAiSearchConfig',
+'VertexMultimodalDatasetDestination',
+'VertexMultimodalDatasetSource',
 'VertexRagStore',
 'VideoMetadata',
+'VideoResponseFormat',
 'VoiceConfig',
 'XraiAttribution',
 )

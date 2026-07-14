@@ -79,18 +79,20 @@ class WorkerPoolsOperations(object):
       raise
 
   @_CatchGoogleAPICallError
-  def DeleteWorkerPool(self, worker_pool_ref):
+  def DeleteWorkerPool(self, worker_pool_ref, dry_run=False):
     """Delete the WorkerPool.
 
     Args:
       worker_pool_ref: Resource, WorkerPool to delete.
+      dry_run: bool, if True only validate the change.
 
     Returns:
       A LRO for delete operation.
     """
     worker_pools = self._client.worker
     delete_request = self._client.types.DeleteWorkerPoolRequest(
-        name=worker_pool_ref.RelativeName()
+        name=worker_pool_ref.RelativeName(),
+        validate_only=dry_run,
     )
     try:
       with metrics.RecordDuration(metric_names.DELETE_WORKER_POOL):
@@ -138,6 +140,7 @@ class WorkerPoolsOperations(object):
       repo_to_create=None,
       skip_activation_prompt=False,
       force_new_revision=False,
+      dry_run=False,
   ):
     """Stubbed method for worker pool deploy surface.
 
@@ -163,6 +166,7 @@ class WorkerPoolsOperations(object):
       skip_activation_prompt: bool. If true, skip activation prompts for
         services
       force_new_revision: bool to force a new revision to be created.
+      dry_run: bool to indicate if this is a dry run.
 
     Returns:
       A WorkerPool object.
@@ -178,7 +182,7 @@ class WorkerPoolsOperations(object):
       )
 
     # Deploying from a source.
-    if build_source is not None:
+    if build_source is not None and not dry_run:
       (
           image_digest,
           _,  # build_base_image
@@ -229,6 +233,7 @@ class WorkerPoolsOperations(object):
         worker_pool=worker_pool,
         allow_missing=True,
         force_new_revision=force_new_revision,
+        validate_only=dry_run,
     )
     with metrics.RecordDuration(metric_name):
       return worker_pools.update_worker_pool(upsert_request)

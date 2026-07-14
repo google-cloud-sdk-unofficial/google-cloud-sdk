@@ -561,6 +561,33 @@ class DataprocV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def ComputeTuningConfig(self, request, global_params=None):
+      r"""Returns autotuning configuration for a specific query plan id and cohort id. Called by Spark during query planning.
+
+      Args:
+        request: (DataprocProjectsLocationsBatchesSparkApplicationsComputeTuningConfigRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ComputeTuningConfigResponse) The response message.
+      """
+      config = self.GetMethodConfig('ComputeTuningConfig')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ComputeTuningConfig.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/batches/{batchesId}/sparkApplications/{sparkApplicationsId}:computeTuningConfig',
+        http_method='GET',
+        method_id='dataproc.projects.locations.batches.sparkApplications.computeTuningConfig',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['executionId', 'parent', 'semanticQueryId'],
+        relative_path='v1/{+name}:computeTuningConfig',
+        request_field='',
+        request_type_name='DataprocProjectsLocationsBatchesSparkApplicationsComputeTuningConfigRequest',
+        response_type_name='ComputeTuningConfigResponse',
+        supports_download=False,
+    )
+
     def Search(self, request, global_params=None):
       r"""Obtain high level information and list of Spark Applications corresponding to a batch.
 

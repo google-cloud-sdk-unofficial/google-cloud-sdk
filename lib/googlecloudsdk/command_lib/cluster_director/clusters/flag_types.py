@@ -31,6 +31,7 @@ NETWORK_OBJECT = arg_parsers.ArgObject(
     },
     required_keys=["name"],
     enable_shorthand=True,
+    disable_key_description=True,
 )
 
 LABEL = arg_parsers.ArgObject(
@@ -90,6 +91,7 @@ LUSTRES_OBJECT = arg_parsers.ArgObject(
     required_keys=["id", "name", "capacityGb", "filesystem"],
     repeated=True,
     enable_shorthand=True,
+    disable_key_description=True,
 )
 
 
@@ -180,6 +182,7 @@ class FlagTypes:
         required_keys=["id", "name", "tier", "capacityGb", "fileshare"],
         enable_shorthand=True,
         repeated=True,
+        disable_key_description=True,
     )
 
   def GetProtoBootDiskType(self) -> arg_parsers.ArgObject:
@@ -219,6 +222,7 @@ class FlagTypes:
         required_keys=["id", "name"],
         enable_shorthand=True,
         repeated=True,
+        disable_key_description=True,
     )
 
   def GetOnDemandInstancesObject(self) -> arg_parsers.ArgObject:
@@ -318,6 +322,7 @@ class FlagTypes:
           required_keys=["id"],
           enable_shorthand=True,
           repeated=True,
+          disable_key_description=True,
       )
     else:
       return arg_parsers.ArgObject(
@@ -339,6 +344,7 @@ class FlagTypes:
           required_keys=["id"],
           enable_shorthand=True,
           repeated=True,
+          disable_key_description=True,
       )
 
   def _GetSlurmPartitionSpec(self) -> dict[str, Any]:

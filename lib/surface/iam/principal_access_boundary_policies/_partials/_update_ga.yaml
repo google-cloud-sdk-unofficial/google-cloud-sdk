@@ -100,7 +100,6 @@
             help_text: |-
               The access relationship of principals to the resources in this rule.
           - api_field: operation
-            # TODO(b/517156713): Hard coded hidden field, do not remove on re-generation.
             hidden: true
             help_text: |-
               The operation attributes that determine whether this rule applies to a
@@ -108,9 +107,11 @@
               operations.
             spec:
             - api_field: permissions
+              hidden: true
               help_text: |-
                 The permissions that are explicitly affected by this rule. The number of
-                permission strings in this field is limited to 50.
+                permission strings in this field is limited to 50 across all rules in the
+                policy.
 
                 Each permission uses the format `{service_fqdn}/{resource}.{verb}`,
                 where `{service_fqdn}` is the fully qualified domain name for the
@@ -136,10 +137,12 @@
                 updated, the wildcard will automatically expand to include new
                 permissions in the updated version.
             - api_field: excludedPermissions
+              hidden: true
               help_text: |-
                 Specifies the permissions that this rule excludes from the set of
                 affected permissions given by `permissions`. The number of excluded
-                permission strings in this field is limited to 50.
+                permission strings in this field is limited to 50 across all rules in
+                the policy.
 
                 If a permission appears in both `permissions` and `excluded_permissions`
                 then it will _not_ be subject to the policy effect.

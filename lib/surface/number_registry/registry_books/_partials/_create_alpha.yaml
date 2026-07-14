@@ -29,7 +29,7 @@
   arguments:
     params:
     - help_text: |-
-        Identifier. name of resource
+        Identifier. The resource name of the RegistryBook.
       is_positional: true
       is_primary_resource: true
       request_id_field: registryBookId
@@ -40,7 +40,7 @@
       required: false
       repeated: true
       help_text: |-
-        Labels as key value pairs
+        User-defined labels.
       spec:
       - api_field: key
       - api_field: value

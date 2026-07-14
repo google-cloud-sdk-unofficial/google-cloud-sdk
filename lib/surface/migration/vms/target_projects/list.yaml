@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, GA]
+  hints:
+    read_only: true
   help_text:
     brief: list Target Projects.
     description: |
